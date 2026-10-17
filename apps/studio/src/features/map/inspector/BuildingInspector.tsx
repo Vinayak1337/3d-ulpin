@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { FilePlus, Stack, Trash, WarningOctagon } from '@phosphor-icons/react';
+import type { NormalizedBuilding } from '@ulpin/contracts/canonical-scene';
 import type { BuildingLedger } from '@ulpin/api-client/draft';
 import {
-  Button, DescriptionList, EvidenceChip, Icon, ReadinessMeter, RevisionTimeline, Skeleton, StatusBadge, Tabs, formatCount, formatDate,
-  UlpinCode, formatMeasure, type Fact,
+  Button, DescriptionList, EvidenceChip, Icon, ReadinessMeter, RevisionTimeline, Skeleton, StatusBadge, Tabs,
+  formatCount, formatDate, UlpinCode, formatMeasure, type Fact,
 } from '@ulpin/ui';
 import { featureCode, type AreaFeature, type BuildingRegister } from '../../../api/queries';
 import type { BuildingModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
+import { Cited } from '../../register/ReadingNote';
+import { useReadingStatements } from '../../register/useReadingStatements';
 import { CheckBadge } from '../CheckBadge';
-import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerStatus } from '../ledger';
+import { RecordState } from '../RecordState';
+import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerStatus, revisionChain, revisionKey } from '../ledger';
 import { featureEvidence } from './evidence';
 import { InspectorShell, type Crumb } from './InspectorShell';
 import styles from './Inspector.module.css';
@@ -24,19 +28,20 @@ export function levelSummary(model: BuildingModel): string {
   const ground = above.find((l) => /^g/i.test(l.label));
   const upper = above.filter((l) => l !== ground).length;
   const below = model.levels.filter((l) => l.belowGround).map((l) => l.label);
-  const parts = [ground ? `G + ${upper}` : `${upper} floors`];
+  const parts = [ground ? `G + ${upper}` : `${upper} ${upper === 1 ? 'floor' : 'floors'}`];
   if (ground?.record.use?.toLowerCase().includes('stilt')) parts.push('stilt');
   if (below.length) parts.push(below.join(', '));
   return parts.join(' · ');
 }
 
-export function BuildingInspector({ feature, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles, onDelete }: {
-  feature: AreaFeature; register: BuildingRegister | undefined; model: BuildingModel | null; ledger: BuildingLedger | null | undefined;
+export function BuildingInspector({ feature, canonical, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles, onDelete }: {
+  feature: AreaFeature; canonical: NormalizedBuilding | undefined; register: BuildingRegister | undefined; model: BuildingModel | null; ledger: BuildingLedger | null | undefined;
   registerPending: boolean; crumbs: Crumb[]; exploring: boolean; onExplore: () => void; onFindings: (findingId?: string) => void; onAddFiles?: () => void; onDelete?: () => void;
 }) {
   const [tab, setTab] = useState<Tab>('overview');
   const openEvidence = useOpenEvidence();
   const evidence = featureEvidence(feature);
+  const readings = useReadingStatements(feature.id, (register?.property.revision ?? 0) > 0);
   const levels = model?.levels ?? [];
   const units = model?.spaces.filter((s) => s.use === 'apartment').length ?? 0;
   const findings = register?.findings ?? [];
@@ -57,10 +62,15 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
       <span className="ul-row">
         {known ? <span className="ul-num">{formatMeasure(feature.height.value, 'm', 1)}</span> : <StatusBadge status="Unknown" />}
         {evidence.height.slice(0, 1).map((ref) => (
-          <EvidenceChip key={ref.locator.text} kind="feature" source={feature.height.originalValue !== undefined ? 'Roof height' : ref.label}
-            locator={feature.height.originalValue !== undefined ? sourceValue(feature.height.originalValue, feature.height.originalUnit, 2) : ref.locator.text}
-            exact={feature.height.originalValue !== undefined ? sourceValue(feature.height.originalValue, feature.height.originalUnit) : undefined}
-            onOpen={() => openEvidence(ref)} />
+          <Cited key={ref.locator.text} sourceId={ref.sourceId}>
+            <EvidenceChip kind="feature"
+              source={feature.height.originalValue !== undefined ? 'Roof height' : ref.label}
+              locator={feature.height.originalValue !== undefined
+                ? sourceValue(feature.height.originalValue, feature.height.originalUnit, 2) : ref.locator.text}
+              exact={feature.height.originalValue !== undefined
+                ? sourceValue(feature.height.originalValue, feature.height.originalUnit) : undefined}
+              onOpen={() => openEvidence(ref)} />
+          </Cited>
         ))}
       </span>
     ),
@@ -71,8 +81,9 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
       ? <button type="button" className={`ul-badge ${blocking ? 'ul-badge--danger' : 'ul-badge--warning'}`} onClick={() => onFindings()}><Icon icon={WarningOctagon} size={16} />{blocking ? `${blocking} blocking` : `${findings.length} to review`}</button>
       : <button type="button" className="ul-badge" onClick={() => onFindings()} title="Open findings mode">Not assessed</button>,
   });
-  if (!ledger && typeof props.geom_source === 'string') facts.push({ label: 'Captured by', value: props.geom_source });
-  if (!ledger && typeof feature.semantics?.sourceDate === 'string') facts.push({ label: 'Source edited', value: formatDate(feature.semantics.sourceDate) });
+  if (ledger && !ledger.readiness.dimensions.length) facts.push({ label: 'Readiness', value: <StatusBadge status="Not assessed" /> });
+  if (typeof props.geom_source === 'string') facts.push({ label: 'Captured by', value: props.geom_source });
+  if (typeof feature.semantics?.sourceDate === 'string') facts.push({ label: 'Source edited', value: formatDate(feature.semantics.sourceDate) });
 
   const tabs: { value: Tab; label: string; count?: number }[] = [{ value: 'overview', label: 'Overview' }];
   if (ledger) tabs.push({ value: 'rights', label: 'Rights' });
@@ -83,9 +94,10 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
   return (
     <InspectorShell
       rekey={feature.id}
+      readings={readings}
       crumbs={crumbs}
       title={feature.name}
-      status={status ? <StatusBadge status={status} /> : undefined}
+      status={canonical ? <RecordState state={canonical.recordState} /> : status ? <StatusBadge status={status} /> : undefined}
       subtitle={<span className="ul-mono">{parcel ? <>Parcel ULPIN · {parcel}</> : feature.identifier}</span>}
       tabs={<Tabs label="Building details" value={tab} onChange={setTab} tabs={tabs} />}
       actions={(
@@ -103,9 +115,10 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
         <>
           {featureCode(feature) ? <UlpinCode code={featureCode(feature)} location={feature.identifier ? feature.identifier.split('/') : null} /> : null}
           <DescriptionList items={facts} />
-          {ledger ? (
+          {ledger?.readiness.dimensions.length ? (
             <ReadinessMeter task={ledger.readiness.task} dimensions={ledger.readiness.dimensions.map((d) => ({ name: d.name, value: d.value ?? 'unknown', label: d.label }))} />
           ) : <p className={styles.note}>Geometry and height come from the source. They do not establish ownership, floors or rights.</p>}
+          {canonical?.gaps.length ? <ul className={styles.gaps} aria-label="Gaps in this record">{canonical.gaps.map((gap) => <li key={gap}>{gap}</li>)}</ul> : null}
           {onDelete ? <Button variant="ghost" icon={Trash} className={styles.delete} onClick={onDelete} aria-label={`Delete ${feature.name}`}>Delete building</Button> : null}
         </>
       ) : tab === 'rights' && ledger ? (
@@ -113,12 +126,23 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
       ) : tab === 'evidence' ? (
         <div className={styles.chips}>
           {ledger
-            ? ledger.sources.map((s) => <EvidenceChip key={s.sourceId} kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({ sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }) })} />)
-            : evidence.geometry.map((ref) => <EvidenceChip key={ref.sourceId + ref.locator.text} kind="feature" source={ref.label} locator={ref.locator.text} onOpen={() => openEvidence(ref)} />)}
+            ? ledger.sources.map((s) => (
+              <Cited key={s.sourceId} sourceId={s.sourceId}>
+                <EvidenceChip kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({
+                  sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
+                })} />
+              </Cited>
+            ))
+            : evidence.geometry.map((ref) => (
+              <Cited key={ref.sourceId + ref.locator.text} sourceId={ref.sourceId}>
+                <EvidenceChip kind="feature" source={ref.label} locator={ref.locator.text}
+                  onOpen={() => openEvidence(ref)} />
+              </Cited>
+            ))}
           {register?.missing.length ? <ul className={styles.gaps}>{register.missing.map((m) => <li key={m}>{m}</li>)}</ul> : null}
         </div>
       ) : tab === 'checks' && ledger ? (
-        <ul className={styles.list}>
+        ledger.checks.length === 0 ? <p className={styles.note}>{ledger.checkMethod}</p> : <ul className={styles.list}>
           {ledger.checks.map((c) => (
             <li key={c.name}>
               <button type="button" disabled={!c.findingId} onClick={() => c.findingId && onFindings(c.findingId)}>
@@ -128,9 +152,11 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
             </li>
           ))}
         </ul>
+      ) : ledger?.revisions.length === 0 ? (
+        <p className={styles.note}>No history is recorded for this building.</p>
       ) : ledger ? (
-        <RevisionTimeline chain="consistent" revisions={ledger.revisions.map((r) => ({
-          id: r.hash, title: r.title, kind: r.kind, byline: `${r.actor} · ${formatDate(r.at)}`, hash: shortHash(r.hash), previousHash: r.previousHash ? shortHash(r.previousHash) : null,
+        <RevisionTimeline chain={revisionChain(ledger.revisions)} revisions={ledger.revisions.map((r) => ({
+          id: revisionKey(r), title: r.title, kind: r.kind, byline: `${r.actor ?? 'Unknown'} · ${formatDate(r.at)}`, hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,
         }))} />
       ) : null}
     </InspectorShell>
@@ -144,7 +170,7 @@ function RightsSummary({ ledger }: { ledger: BuildingLedger }) {
   for (const s of ledger.spaces) counts.set(s.rights, (counts.get(s.rights) ?? 0) + 1);
   return (
     <>
-      <div className={styles.rightsList}>
+      {ledger.spaces.length ? <div className={styles.rightsList}>
         {(['exclusive', 'shared', 'public', 'unknown'] as const).map((r) => (
           <span key={r} className={styles.rightsRow}>
             <span className={`ul-swatch${r === 'unknown' ? ' ul-hatch' : ''}`} style={{ backgroundColor: `var(${RIGHTS_TOKEN[r]})` }} />
@@ -152,7 +178,7 @@ function RightsSummary({ ledger }: { ledger: BuildingLedger }) {
             <span className="ul-num ul-muted">{counts.get(r) ?? 0}</span>
           </span>
         ))}
-      </div>
+      </div> : null}
       <DescriptionList items={[
         { label: 'Declaration', value: ledger.declaration ?? <span className="ul-unknown">Unknown</span> },
         { label: 'Shares total', value: ledger.shareTotalPct === null ? <StatusBadge status="Unknown" /> : (

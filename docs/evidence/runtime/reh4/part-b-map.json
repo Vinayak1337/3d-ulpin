@@ -1,0 +1,15 @@
+{ "at": "2026-10-17T10:52:21.252Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}",
+"route": "/studio/areas/:areaId", "browser": "Chromium 153.0.8010.12 headless", "viewport": "1440x900",
+"loadSeconds": 6, "canvas": { "x": 12, "y": 68, "width": 1416, "height": 820 }, "open": { "label": "opened",
+"at": "2026-10-17T10:52:27.300Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [],
+"banners": [], "headings": [], "screenshot": "map-1.png", "readsSoFar": 5, "reads": [ {
+"path": "/api/v1/workspace-capabilities", "query": null, "status": 200, "seconds": 0.007 }, { "path": "/api/v1/areas",
+"query": null, "status": 200, "seconds": 0.235 }, { "path": "/api/v1/areas/{areaId}/context", "query": null,
+"status": 422, "seconds": 1.074 }, { "path": "/api/v1/areas/a1c1252a-949f-42a7-a879-5ad2aaa7cc46/display-summary",
+"failed": true }, { "path": "/api/v1/areas/{areaId}/display-summary", "query": null, "status": 200, "seconds": 0.375 } ]
+}, "zoomed": { "label": "after 8 wheel ticks in, 2 s", "at": "2026-10-17T10:52:30.482Z",
+"url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [], "banners": [], "headings": [],
+"screenshot": "map-2.png", "readsSoFar": 5, "reads": [] }, "clicked": { "label": "after a click at the canvas centre",
+"at": "2026-10-17T10:52:32.032Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [],
+"banners": [], "headings": [], "screenshot": "map-3.png", "readsSoFar": 5, "inspector": false, "reads": [] },
+"windowReads": [], "pageErrors": [] }

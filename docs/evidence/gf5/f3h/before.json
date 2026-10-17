@@ -1,0 +1,70 @@
+{
+  "task": "F3h",
+  "readAt": "2026-10-10T17:16Z",
+  "api": "http://127.0.0.1:3194 (GET only)",
+  "building": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+  "reads": {
+    "canonical": "GET /api/v1/buildings/{buildingId}/canonical",
+    "register": "GET /api/v1/buildings/{buildingId}/register",
+    "ledger": "GET /api/v1/buildings/{buildingId}/ledger"
+  },
+  "floor": {
+    "id": "614ca200-1f3d-48ac-b7db-d1b893b352a1",
+    "name": "2ND FLOOR PLAN",
+    "identifier": {
+      "register": "register[].identifier = 3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001 (ulpin3d holds the same string)",
+      "registerWhenNone": [
+        "identifier is published as a required string, so the read has no state word for none;",
+        "a floor it states none for is a floor with no entry in register[]"
+      ],
+      "canonical": "no identifier field: levels[] carries levelId and registryFloorId, both the record id",
+      "ledger": "no floor rows"
+    },
+    "kind": {
+      "register": "register[].kind = floor (the entry's type); use is omitted",
+      "canonical": "no kind field on a level",
+      "ledger": "no floor rows"
+    },
+    "area": {
+      "register": "register[].geometry is omitted, so geometry.area is not stated; footprint = []",
+      "canonical": "no area field on a level; polygons = {value: null, state: absent}",
+      "ledger": "no floor rows"
+    },
+    "heights": "canonical lowerM and upperM = {value: null, state: unknown, unit: m}; heightState = unknown"
+  },
+  "unit": {
+    "id": "46b7265e-ca88-402d-83df-065cf7c45140",
+    "name": "UNIT-3B",
+    "identifier": {
+      "register": "register[].identifier = 3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001:S001 (ulpin3d the same)",
+      "ledger": "spaces.records[].applicationId holds the same string",
+      "canonical": [
+        "no identifier field; proposedCode = {value: P3-YBF8MA4FYHGFRA0CERYJ-T3, state: reviewed}",
+        "is the assigned application code, a different value"
+      ]
+    },
+    "kind": {
+      "canonical": "levels[].spaces[].kind = {value: null, state: unknown}",
+      "register": "register[].kind = space (the entry's type); use is omitted (published as optional)",
+      "ledger": "spaces.records[].use = null"
+    },
+    "area": {
+      "canonical": "levels[].spaces[].areaM2 = {value: null, state: unknown, unit: m2}; polygons state absent",
+      "register": "register[].geometry is omitted, so geometry.area is not stated; footprint = []",
+      "ledger": "no area field on a space row"
+    }
+  },
+  "panelBefore": {
+    "floor": "prints the name and the two heights as Unknown; no identifier row; the panel sends no register read",
+    "unit": [
+      "Kind Unknown and Area Unknown, each the canonical state word with a capital;",
+      "a state of absent would print Absent, and a field the read omits prints Not reported"
+    ]
+  },
+  "finding": [
+    "Only the register read holds the floor's identifier. For UNIT-3B the canonical read itself says unknown",
+    "for kind and for area, so those two words stay Unknown on this record after the change; absent is stated",
+    "only for the polygons of the floor and the unit."
+  ],
+  "studioTestsBefore": 243
+}

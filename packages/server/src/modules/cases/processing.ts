@@ -2,9 +2,10 @@ import { randomUUID } from "node:crypto";
 import type { BuildInput, ModelSnapshot } from "@ulpin/contracts";
 import { query, transaction } from "../../infrastructure/db";
 import { settings } from "../../infrastructure/config";
+import { AppError } from "../../infrastructure/errors";
 import { fingerprint, lockCase, recordEvent } from "./domain";
 import { buildResultSchema, inspectionSchema } from "../../infrastructure/validation";
-import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning } from "../spatial/spatial-ml";
+import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning, admitSpatialMlDispatch } from "../spatial/spatial-ml";
 
 import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from '../datasets/dataset-ml';
 import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../usp/ingestion/projected-publication';
@@ -14,21 +15,53 @@ import {runLargeOriginalStorageJob} from '../usp/ingestion/large-original';
 import {runStreamingVectorJob} from '../usp/ingestion/streaming-vector-worker';
 import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
+import {runIntakeDraftJob} from '../usp/ingestion/intake-draft-worker';
+import {runIntakeLargeJob} from '../usp/ingestion/intake-large-worker';
+import {runIntakeZipLayersJob} from '../usp/ingestion/intake-zip-layers-worker';
+import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
 import {runIFCJob} from '../usp/ingestion/ifc-worker';
+import {runDXFJob} from '../usp/ingestion/dxf-worker';
+import {runKMLJob} from '../usp/ingestion/kml-worker';
+import {runCityGMLJob} from '../usp/ingestion/citygml-worker';
+import {runObjJob} from '../usp/ingestion/obj-worker';
+import {runGltfJob} from '../usp/ingestion/gltf-worker';
+import {runGeoParquetJob} from '../usp/ingestion/geoparquet-worker';
 import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
+import type {runPacketPdfJob} from '../usp/packets/pdf-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
 let chunkMappingWorker:Promise<void>|undefined;
 let streamedProfileWorker:Promise<void>|undefined;
+let intakeDraftWorker:Promise<void>|undefined;
+let intakeLargeWorker:Promise<void>|undefined;
+let intakeZipLayersWorker:Promise<void>|undefined;
+let intakeRunWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
+let dxfWorker:Promise<void>|undefined;
+let kmlWorker:Promise<void>|undefined;
+let citygmlWorker:Promise<void>|undefined;
+let objWorker:Promise<void>|undefined;
+let gltfWorker:Promise<void>|undefined;
+let geoparquetWorker:Promise<void>|undefined;
 let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
+let packetPdfWorker:Promise<void>|undefined;
+/** Keeps the code a background worker's error carries, never its message: messages can carry file content. */
+function keepWorkerError(operation:string,jobId:string){
+  return (error:unknown)=>{
+    const own=typeof error==='object'&&error!==null&&Object.hasOwn(error,'code')?Reflect.get(error,'code'):undefined;
+    const code=error instanceof AppError?error.code
+      :typeof own==='string'&&/^[A-Z0-9_]{1,40}$/.test(own)?own
+      :error instanceof Error?error.name:'unknown';
+    console.warn(`The ${operation} worker dispatched from job ${jobId} ended with error code ${code}`);
+  };
+}
 
 type WorkerReply = {
   jobId: string;
@@ -81,6 +114,7 @@ async function failJob(id: string, message: string) {
 
 export async function ingestJob(id: string, result: unknown) {
   const operation = (await query("SELECT operation FROM jobs WHERE id=$1", [id])).rows[0]?.operation;
+  if(operation==='packet-pdf')throw new Error('Queued PDF acceptance requires its registered fenced packet validator.');
   if(operation==='projected-vector')return ingestProjectedResult(id,result);
   if (operation === "dataset-spatial-inference") return ingestDatasetMl(id,result);
   if (operation === "spatial-inference") return ingestSpatialMlJob(id, result);
@@ -186,64 +220,157 @@ export async function ingestJob(id: string, result: unknown) {
   });
 }
 
-export async function dispatchTick(): Promise<number> {
+export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={}): Promise<number> {
   const pending = await query(
-    "SELECT * FROM jobs WHERE status IN ('queued','running') AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now() ORDER BY created_at LIMIT 12",
+    // Operations in turn, each one's oldest job first: a backlog cannot hide another operation's job, and an
+    // unguarded operation still gets up to 12 parallel jobs when nothing else waits.
+    `SELECT * FROM (SELECT *, row_number() OVER (PARTITION BY operation ORDER BY created_at) AS operation_rank
+      FROM jobs WHERE status IN ('queued','running') AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now()) ranked
+    ORDER BY operation_rank, created_at LIMIT 12`,
   );
   await Promise.all(
     pending.rows.map(async (job) => {
+      if(job.operation==='packet-pdf'){
+        if(!packetPdfWorker)packetPdfWorker=(async()=>{
+          const run=runners.packetPdf??(await import('../usp/packets/pdf-worker')).runPacketPdfJob;await run(job.id);
+        })()
+          // Canonical attempt/packet publication owns recovery.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{packetPdfWorker=undefined;});
+        return;
+      }
       if(job.operation==='large-original-storage'){
         // One bounded storage worker per dispatcher process; the SQL upload lease fences peers and restart.
         if(!largeOriginalWorker)largeOriginalWorker=runLargeOriginalStorageJob(job.id)
-          .catch(()=>{/* The upload job persists its own bounded retry/failure state. */})
+          // The upload job persists its own bounded retry/failure state.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{largeOriginalWorker=undefined;});
         return;
       }
       if(job.operation==='streaming-vector'){
         if(!streamingVectorWorker)streamingVectorWorker=runStreamingVectorJob(job.id)
-          .catch(()=>{/* Fenced attempt and durable job state permit replay after restart. */})
+          // Fenced attempt and durable job state permit replay after restart.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{streamingVectorWorker=undefined;});
         return;
       }
       if(job.operation==='raster-window'){
         if(!rasterWindowWorker)rasterWindowWorker=runRasterWindowJob(job.id)
-          .catch(()=>{/* The shared attempt fence and durable status own recovery. */})
+          // The shared attempt fence and durable status own recovery.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{rasterWindowWorker=undefined;});
         return;
       }
       if(job.operation==='cityjson-validation'){
         if(!cityjsonValidationWorker)cityjsonValidationWorker=runCityJSONValidationJob(job.id)
-          .catch(()=>{/* Canonical fenced validation status owns recovery; retries are explicit. */})
+          // Canonical fenced validation status owns recovery; retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{cityjsonValidationWorker=undefined;});
         return;
       }
       if(job.operation==='ifc-native'){
         if(!ifcWorker)ifcWorker=runIFCJob(job.id)
-          .catch(()=>{/* Canonical fenced status owns recovery; native retries are explicit. */})
+          // Canonical fenced status owns recovery; native retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{ifcWorker=undefined;});
+        return;
+      }
+      if(job.operation==='dxf-native'){
+        if(!dxfWorker)dxfWorker=runDXFJob(job.id)
+          // Canonical fenced status owns recovery; native retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{dxfWorker=undefined;});
+        return;
+      }
+      if(job.operation==='kml-native'){
+        if(!kmlWorker)kmlWorker=runKMLJob(job.id)
+          // Canonical fenced state owns recovery; member retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{kmlWorker=undefined;});
+        return;
+      }
+      if(job.operation==='citygml-native'){
+        if(!citygmlWorker)citygmlWorker=runCityGMLJob(job.id)
+          // Canonical fenced state owns recovery; native retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{citygmlWorker=undefined;});
+        return;
+      }
+      if(job.operation==='obj-native'){
+        if(!objWorker)objWorker=runObjJob(job.id)
+          // Canonical fenced state owns recovery; native retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{objWorker=undefined;});
+        return;
+      }
+      if(job.operation==='gltf-native'){
+        if(!gltfWorker)gltfWorker=runGltfJob(job.id)
+          // Canonical fenced state owns recovery; native retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{gltfWorker=undefined;});
+        return;
+      }
+      if(job.operation==='geoparquet-native'){
+        if(!geoparquetWorker)geoparquetWorker=runGeoParquetJob(job.id)
+          // Canonical fenced state owns recovery; native retries are explicit.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{geoparquetWorker=undefined;});
         return;
       }
       if(job.operation==='cityjson-native'){
         if(!cityjsonWorker)cityjsonWorker=runCityJSONJob(job.id)
-          .catch(()=>{/* Canonical fenced job status owns recovery. */})
+          // Canonical fenced job status owns recovery.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{cityjsonWorker=undefined;});
         return;
       }
       if(job.operation==='point-batch'){
         if(!pointBatchWorker)pointBatchWorker=runPointBatchJob(job.id)
-          .catch(()=>{/* The shared attempt fence and durable status own recovery. */})
+          // The shared attempt fence and durable status own recovery.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{pointBatchWorker=undefined;});
         return;
       }
       if(job.operation==='chunk-mapping'){
         if(!chunkMappingWorker)chunkMappingWorker=runChunkMappingJob(job.id)
-          .catch(()=>{/* The shared attempt fence owns retry and durable terminal state. */})
+          // The shared attempt fence owns retry and durable terminal state.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{chunkMappingWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-draft'){
+        if(!intakeDraftWorker)intakeDraftWorker=runIntakeDraftJob(job.id)
+          // The fenced attempt and durable draft state own recovery.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakeDraftWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-large'){
+        if(!intakeLargeWorker)intakeLargeWorker=runIntakeLargeJob(job.id)
+          // The fenced attempt and the stored step rows own recovery.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakeLargeWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-zip-layers'){
+        if(!intakeZipLayersWorker)intakeZipLayersWorker=runIntakeZipLayersJob(job.id)
+          // The fenced attempt and the member rows own recovery; a rerun keeps nothing twice.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakeZipLayersWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-run'){
+        // The run picks its own next job, so a target an officer opened goes first.
+        if(!intakeRunWorker)intakeRunWorker=runNextIntakeRunJob()
+          // The fenced attempt and the stored target state own recovery.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakeRunWorker=undefined;});
         return;
       }
       if(job.operation==='streamed-profile'){
         if(!streamedProfileWorker)streamedProfileWorker=runStreamedProfileJob(job.id)
-          .catch(()=>{/* The shared attempt fence owns retry and durable terminal state. */})
+          // The shared attempt fence owns retry and durable terminal state.
+          .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{streamedProfileWorker=undefined;});
         return;
       }
@@ -258,6 +385,7 @@ export async function dispatchTick(): Promise<number> {
       }
       try {
         if (!job.dispatched_at) {
+          if (job.operation === 'spatial-inference' && !(await admitSpatialMlDispatch(job.id))) return;
           const reply = await geo("/internal/jobs", {
             method: "POST",
             body: JSON.stringify({

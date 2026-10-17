@@ -1,0 +1,145 @@
+{"task":"K3d","privateRoot":"E:/BhuAayam-data/task-data/k3d","originals":[{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-magnolia-sanctioned-layout-original.pdf","sha256":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","bytes":2455183,"pageCount":6,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[2384.0,1684.0],"rotation":0,"type"
+:"vector CAD drawing","nativeLines":104,"retainedLines":104,"status":"complete","origin":"native_text"},{"page":2,
+"pagePt":[2384.0,1684.0],"rotation":0,"type":"vector CAD drawing","nativeLines":1093,"retainedLines":1093,"status":
+"complete","origin":"native_text"},{"page":3,"pagePt":[578.1599731445312,824.4000244140625],"rotation":0,"type":
+"scanned page","nativeLines":0,"retainedLines":39,"status":"complete","origin":"ocr"},{"page":4,"pagePt":[
+578.1599731445312,824.4000244140625],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":42,"status":
+"complete","origin":"ocr"},{"page":5,"pagePt":[578.1599731445312,824.4000244140625],"rotation":0,"type":"scanned page",
+"nativeLines":0,"retainedLines":18,"status":"complete","origin":"ocr"},{"page":6,"pagePt":[578.1599731445312,
+824.4000244140625],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":33,"status":"complete","origin":
+"ocr"}],"nativeDirectory":"magnolia-native-01","pageStoreDirectory":"magnolia-ocr-01","pageStoreFile":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3.pages.json","pageStoreSha256":
+"753bf2f38333fe7494297701d4d358280aa412f06a4f1b9410f9930f6f9a446d","ocrTiles":16},{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/RERAP01282025205138-1/sanctioned-building-plan.pdf","sha256":
+"b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d","bytes":28181151,"pageCount":5,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[2395.0,1749.0],"rotation":0,"type"
+:"scanned page","nativeLines":0,"retainedLines":333,"status":"complete","origin":"ocr"},{"page":2,"pagePt":[2592.0,
+1744.0],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":465,"status":"complete","origin":"ocr"},{
+"page":3,"pagePt":[2592.0,1743.0],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":468,"status":
+"complete","origin":"ocr"},{"page":4,"pagePt":[2361.0,1828.0],"rotation":0,"type":"scanned page","nativeLines":0,
+"retainedLines":200,"status":"complete","origin":"ocr"},{"page":5,"pagePt":[2592.0,1813.0],"rotation":0,"type":
+"scanned page","nativeLines":0,"retainedLines":571,"status":"complete","origin":"ocr"}],"nativeDirectory":
+"RERAP01282025205138-1-native-01","pageStoreDirectory":"RERAP01282025205138-1-ocr-01","pageStoreFile":
+"b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d.pages.json","pageStoreSha256":
+"657156d33bba9f99b36b639f9c96625035060ae024d3c281cd6b10e43654ac47","ocrTiles":258},{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/RERAP279201800923-1/sanctioned-building-plan.pdf","sha256":
+"0f793ce7ebd5c5a3b02e5f41b802f41a1bcae89cbbffa26b5c25eeb1ad35b008","bytes":3691612,"pageCount":2,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[1190.550048828125,
+841.8900146484375],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":161,"status":"complete","origin":
+"ocr"},{"page":2,"pagePt":[2290.5,1539.0],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":157,
+"status":"complete","origin":"ocr"}],"nativeDirectory":"RERAP279201800923-1-native-01","pageStoreDirectory":
+"RERAP279201800923-1-ocr-01","pageStoreFile":
+"0f793ce7ebd5c5a3b02e5f41b802f41a1bcae89cbbffa26b5c25eeb1ad35b008.pages.json","pageStoreSha256":
+"a903e782b3d12f001cdb36e04e031e3e08c345c32002f10393f4bb992e160486","ocrTiles":26},{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/RERAP285201800427-9/sanctioned-building-plan.pdf","sha256":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7","bytes":6555258,"pageCount":11,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[611.0,841.0],"rotation":0,"type":
+"scanned page","nativeLines":0,"retainedLines":37,"status":"complete","origin":"ocr"},{"page":2,"pagePt":[611.0,841.0],
+"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":37,"status":"complete","origin":"ocr"},{"page":3,
+"pagePt":[1858.0,2446.0],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":58,"status":"complete",
+"origin":"ocr"},{"page":4,"pagePt":[1893.0,2462.0],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":56
+,"status":"complete","origin":"ocr"},{"page":5,"pagePt":[2545.0,1886.0],"rotation":0,"type":"scanned page","nativeLines"
+:0,"retainedLines":68,"status":"complete","origin":"ocr"},{"page":6,"pagePt":[2436.0,1847.0],"rotation":0,"type":
+"scanned page","nativeLines":0,"retainedLines":89,"status":"complete","origin":"ocr"},{"page":7,"pagePt":[2505.0,1909.0]
+,"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":59,"status":"complete","origin":"ocr"},{"page":8,
+"pagePt":[2596.0,1756.0],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":52,"status":"complete",
+"origin":"ocr"},{"page":9,"pagePt":[2594.0,1736.0],"rotation":0,"type":"scanned page","nativeLines":0,"retainedLines":58
+,"status":"complete","origin":"ocr"},{"page":10,"pagePt":[2591.0,1745.0],"rotation":0,"type":"scanned page",
+"nativeLines":0,"retainedLines":91,"status":"complete","origin":"ocr"},{"page":11,"pagePt":[2484.0,1926.0],"rotation":0,
+"type":"scanned page","nativeLines":0,"retainedLines":52,"status":"complete","origin":"ocr"}],"nativeDirectory":
+"RERAP285201800427-9-native-01","pageStoreDirectory":"RERAP285201800427-9-ocr-01","pageStoreFile":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7.pages.json","pageStoreSha256":
+"1cf9bf556dc82e0c252ecdb9a9aa7ab23349d1e1e3da0e4fe19919e7d56c3bc0","ocrTiles":248},{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-site-plan.pdf","sha256":
+"26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9","bytes":3782332,"pageCount":1,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[2585.0,3390.0],"rotation":0,"type"
+:"scanned page","nativeLines":0,"retainedLines":278,"status":"complete","origin":"ocr"}],"nativeDirectory":
+"site-plan-native-01","pageStoreDirectory":"site-plan-ocr-01","pageStoreFile":
+"26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9.pages.json","pageStoreSha256":
+"223bf29a0cdedc9f7c8d660d901b8a35a1f519cf72c6994e5c16305c3c0e79e6","ocrTiles":48},{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf","sha256":
+"2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865","bytes":1655334,"pageCount":1,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[2586.0,1695.0],"rotation":0,"type"
+:"scanned page","nativeLines":0,"retainedLines":1047,"status":"complete","origin":"ocr"}],"nativeDirectory":
+"tower3-plan1-native-01","pageStoreDirectory":"tower3-plan1-ocr-01","pageStoreFile":
+"2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865.pages.json","pageStoreSha256":
+"184e6b6d04896553582ff923e129cee54bef9c1a5f9eb7e15247bc3b5b119ddb","ocrTiles":24},{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan2.pdf","sha256":
+"2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1","bytes":1630108,"pageCount":1,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[2586.0,1694.0],"rotation":0,"type"
+:"scanned page","nativeLines":0,"retainedLines":1073,"status":"complete","origin":"ocr"}],"nativeDirectory":
+"tower3-plan2-native-01","pageStoreDirectory":"tower3-plan2-ocr-01","pageStoreFile":
+"2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1.pages.json","pageStoreSha256":
+"726f19980c7230cc107e12deed46bb6a2da8d22fe43a59d25bdca3f7862a08b2","ocrTiles":24},{"original":
+"E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-section.pdf","sha256":
+"f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b","bytes":2448909,"pageCount":1,"mediaType":
+"application/pdf","immutable":true,"purpose":"test_only","pages":[{"page":1,"pagePt":[2545.0,2590.0],"rotation":0,"type"
+:"scanned page","nativeLines":0,"retainedLines":568,"status":"complete","origin":"ocr"}],"nativeDirectory":
+"tower3-section-native-01","pageStoreDirectory":"tower3-section-ocr-01","pageStoreFile":
+"f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b.pages.json","pageStoreSha256":
+"0b61c6ec57d3bc35e0601283722d80fd8a678cd92b7012ede2c102c97eade662","ocrTiles":36}],"originalCount":8,"pagesSearched":28,
+"allPages":"Native text/dimension pass followed by existing CPU OCR on every text-free page","absenceProof":false,
+"sourceBytesUnchanged":true,"views":[{"file":"3d-apartment-block-a-section.png","sha256":
+"73d8f4d6a26997358e3703a896e02a931a5ad842447a87f208c4a089149b2e51","sourceSha256":
+"b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d","page":3,"regionPt":[1250.0,80.0,1850.0,850.0],
+"receipt":"3d-apartment-block-a-section.json","rotationCounterclockwise":0},{"file":"3d-apartment-block-b-section.png",
+"sha256":"582e57aa454de680867bfcd074ebfd0799689f5806e7aa50c5c51084f25d9490","sourceSha256":
+"b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d","page":1,"regionPt":[100.0,850.0,900.0,1610.0],
+"receipt":"3d-apartment-block-b-section.json","rotationCounterclockwise":0},{"file":"3d-apartment-height-unit.png",
+"sha256":"a1909e686fd74088d0b6da14877eaf740d475c70ee58ce8ed744db30ad208502","sourceSha256":
+"b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d","page":1,"regionPt":[865.0,170.0,905.0,600.0],
+"receipt":"3d-apartment-height-unit.json","rotationCounterclockwise":0},{"file":"heritage-section.png","sha256":
+"a3fc65fc77a9896f69a309d62a73f758204168ee8eba138b3dddefcf84d7c00a","sourceSha256":
+"0f793ce7ebd5c5a3b02e5f41b802f41a1bcae89cbbffa26b5c25eeb1ad35b008","page":2,"regionPt":[610.0,800.0,1200.0,1510.0],
+"receipt":"heritage-section.json","rotationCounterclockwise":0},{"file":"magnolia-ground.png","sha256":
+"c649bdb1eab989ec294d524d2671373fabc771a33c0d271b1f46ec4500cfe163","sourceSha256":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","page":2,"regionPt":[412.0,1090.0,690.0,1635.0],
+"receipt":"magnolia-ground.json","rotationCounterclockwise":0},{"file":"magnolia-notes.png","sha256":
+"3a666a603b2f4d7788fc5ccf8378b14a6bce2e7f187e99d36848835dd0c5fa59","sourceSha256":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","page":2,"regionPt":[2080.0,42.0,2325.0,323.0],
+"receipt":"magnolia-notes.json","rotationCounterclockwise":0},{"file":"magnolia-section-aa.png","sha256":
+"e15be79f90182ed2a1dae48e0709fafa1c38c27b2bf3c59a1c2dbb69feb1ba1e","sourceSha256":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","page":2,"regionPt":[115.0,670.0,420.0,1050.0],
+"receipt":"magnolia-section-aa.json","rotationCounterclockwise":0},{"file":"magnolia-title.png","sha256":
+"5c04b7efcab09be2efd8b3100d0ad27200193320a130bec8f4c54ddb8f115599","sourceSha256":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","page":2,"regionPt":[2070.0,825.0,2320.0,1010.0],
+"receipt":"magnolia-title.json","rotationCounterclockwise":0},{"file":"magnolia-type4-detail.png","sha256":
+"98a8de78f71a9bfd15788eeebbef5bdc25e4fc1ba0a061caeaf3ace9d6a86008","sourceSha256":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","page":2,"regionPt":[910.0,405.0,1055.0,465.0],
+"receipt":"magnolia-type4-detail.json","rotationCounterclockwise":0},{"file":"magnolia-upper-plans.png","sha256":
+"476eb7502285014378555891cf6f6547ecdf336a0ff5d9b2d801498233c7eaee","sourceSha256":
+"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","page":2,"regionPt":[720.0,1090.0,1150.0,1640.0],
+"receipt":"magnolia-upper-plans.json","rotationCounterclockwise":0},{"file":"pinnacle-page11-upright.png","sha256":
+"734fe32734a08b533077ee1cd9545d5d79c568dbd981c87c859c026e817bfac5","sourceSha256":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7","page":11,"regionPt":[0.0,0.0,2484.0,1926.0],
+"receipt":"pinnacle-page11-upright.json","rotationCounterclockwise":270},{"file":"pinnacle-page7-corrected.png","sha256"
+:"9ce8318ffd6482f58c8026226e52dbef47f6193ee31bd06f0db2e180164355c9","sourceSha256":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7","page":7,"regionPt":[0.0,0.0,2505.0,1909.0],"receipt"
+:"pinnacle-page7-corrected.json","rotationCounterclockwise":90},{"file":"pinnacle-page7-upright.png","sha256":
+"3627c794b047a9aadbef33bfa9937325b2da373fb221ad3a544da4fbfc48fd93","sourceSha256":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7","page":7,"regionPt":[0.0,0.0,2505.0,1909.0],"receipt"
+:"pinnacle-page7-upright.json","rotationCounterclockwise":270},{"file":"pinnacle-page9-corrected.png","sha256":
+"ed71e2d05472129bacf2bbefe7b2c47e29107bb6ca117e196bb5b52deb0c177c","sourceSha256":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7","page":9,"regionPt":[0.0,0.0,2594.0,1736.0],"receipt"
+:"pinnacle-page9-corrected.json","rotationCounterclockwise":90},{"file":"pinnacle-page9-upright.png","sha256":
+"6446673c0dba672c2386984944687bd890209e6d4012c82960f159d77528d1c9","sourceSha256":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7","page":9,"regionPt":[0.0,0.0,2594.0,1736.0],"receipt"
+:"pinnacle-page9-upright.json","rotationCounterclockwise":270},{"file":"pinnacle-section-levels.png","sha256":
+"c7c2a097720c0d0d57b46c308eb0a7b3a4a1ffa1f97316cddc895af296d923db","sourceSha256":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7","page":7,"regionPt":[1380.0,1030.0,1780.0,1850.0],
+"receipt":"pinnacle-section-levels.json","rotationCounterclockwise":90},{"file":"tower3-section-lower.png","sha256":
+"9981c024c561a11cc7c068154889cb6fea8d95c0b3fe7519968ad75273d92b71","sourceSha256":
+"f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b","page":1,"regionPt":[35.0,2030.0,225.0,2480.0],
+"receipt":"tower3-section-lower.json","rotationCounterclockwise":0},{"file":"tower3-section-title.png","sha256":
+"f208a1f932c630981f9e79afd1c4e19d8e48198ad029a56afe120f6ddb180021","sourceSha256":
+"f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b","page":1,"regionPt":[2180.0,1740.0,2520.0,2580.0],
+"receipt":"tower3-section-title.json","rotationCounterclockwise":0},{"file":"tower3-unit-conventions.png","sha256":
+"3bd74131c912eca0ecb59e209c951e2097b3a4a4cf70c412a7ef7eb128bad3b9","sourceSha256":
+"2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865","page":1,"regionPt":[1900.0,1100.0,2220.0,1350.0],
+"receipt":"tower3-unit-conventions.json","rotationCounterclockwise":0},{"file":"tower3-unit-label.png","sha256":
+"69f0b3703a8241880f0fb162f3052fceaf77788eea3e153ccf846ac517034b96","sourceSha256":
+"2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865","page":1,"regionPt":[596.0,390.0,644.0,409.0],
+"receipt":"tower3-unit-label.json","rotationCounterclockwise":0}]}

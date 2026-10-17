@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { z } from 'zod';
 import {
   LARGE_ORIGINAL_LIMITS as limits, LARGE_ORIGINAL_V2_LIMITS as v2Limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
-  LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard,
+  LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard, type LargeUploadCreate, type LargeOriginalEvidence,
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -13,6 +13,11 @@ import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { lockUnassignedSourceCase } from './service';
 import { appendCaseIngestionTx } from './events';
+
+/** Origin is a caller statement, not something byte verification can establish. */
+export function storedUploadProvenance(value:LargeUploadCreate['provenance']):LargeOriginalEvidence['provenance']{
+  return 'origin' in value?{...value,state:'not_stated'}:{...value,state:'caller_declared'};
+}
 
 const uuid=z.string().uuid(),lease=()=>new Date(Date.now()+limits.leaseSeconds*1000);
 type Upload=Record<string,any>;
@@ -261,7 +266,7 @@ export class LargeOriginalService {
           conflict('The upload/case fence changed before original publication; retained bytes remain unreachable until reconciliation.');
         const inspection={profile:'large-original-v1',status:'needs_input',issues:[],summary:'Original bytes retained and hash-verified. Conversion is unsupported; no parsing, placement, approval or publication of semantic records occurred.',
           largeOriginal:LargeOriginalEvidenceSchema.parse({uploadId:id,operatorSubject:fresh.operator_subject,objectEtag:verified!.etag,verifiedSha256:verified!.sha256,verifiedBytes:verified!.bytes,
-            provenance:{...fresh.body.input.provenance,state:'caller_declared'},conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed'})};
+            provenance:storedUploadProvenance(fresh.body.input.provenance),conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed'})};
         await client.query("INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,'large-original-v1',$4,$5,$6,$7,'needs_input',$8)",
           [fresh.source_id,caseId,fresh.body.input.filename,fresh.body.input.mediaType,fresh.original_bytes,verified!.sha256,key,inspection]);
         await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
@@ -432,7 +437,7 @@ export class LargeOriginalService {
       const inspection={profile:'large-original-v1',status:'needs_input',issues:[],summary:'Original bytes retained and hash-verified. Conversion is unsupported; no parsing, placement, approval or publication of semantic records occurred.',
         largeOriginal:LargeOriginalEvidenceSchema.parse({uploadId:id,operatorSubject:fresh.operator_subject,objectEtag:verified!.etag,
           verifiedSha256:verified!.sha256,verifiedBytes:verified!.bytes,receiptVersion:v2Limits.version,
-          provenance:{...fresh.body.input.provenance,state:'caller_declared'},conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed'})};
+          provenance:storedUploadProvenance(fresh.body.input.provenance),conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed'})};
       await client.query("INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,'large-original-v1',$4,$5,$6,$7,'needs_input',$8)",
         [fresh.source_id,upload.case_id,fresh.body.input.filename,fresh.body.input.mediaType,fresh.original_bytes,verified!.sha256,key,inspection]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[upload.case_id]);

@@ -1,0 +1,253 @@
+{
+  "task": "K9e",
+  "date": "2026-10-10",
+  "branch": "task/k9e-large-page-whole-at-reduced-scale",
+  "base": "b791d80a",
+  "step0": "docs/evidence/gf1/k9e/step0.json (committed before any code, d4471813)",
+  "leadDecision": [
+    "Step 0 accepted. The one header line X-Page-View: reduced in document-pages.controller.ts is added to the",
+    "owned paths. run_pdf_pages.py may change; the consequence for the packet-region profile is written under",
+    "NEXT. renderSupport 'reduced' is a new value with optional reducedScalePxPerPt and a url. The floor of",
+    "0.4 px per pt is the lead's bound on the stated reason."
+  ],
+  "partA": {
+    "rule": [
+      "A page with a side over 2000 pt is drawn whole at min(3, 1400/width, 1400/height, sqrt(1,600,000/area)),",
+      "the renderer's existing _bounded_render_scale: no new constant sets the scale.",
+      "It is drawn only when that scale is at least MIN_WHOLE_PAGE_VIEW_SCALE = 0.4 px per pt, a legibility",
+      "floor and not a measured limit of the renderer. Below it the page keeps renderSupport 'unsupported' and",
+      "the raster read keeps 422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED.",
+      "A page within the limit takes the same code path as before and answers with the same fields and bytes."
+    ],
+    "published": {
+      "listing": "pages[i].renderSupport 'reduced', pages[i].reducedScalePxPerPt (only then), pages[i].url",
+      "rasterRecord": "render.reduced true (only then); render.scale equals the listing's reducedScalePxPerPt",
+      "rasterHeader": "X-Page-View: reduced (only then); X-Page-Pixel-Affine and X-Page-Pixels as before",
+      "contractRule": "A reduced page states its scale, and only a reduced page does (listing and worker answer)",
+      "stored": "nothing: the pages read keeps its scratch folder for one request only"
+    },
+    "viewingOnlyGuarantee": [
+      "docling_tesseract._selection and render_pdf_selection take a keyword-only viewing argument, False by",
+      "default. Only run_pdf_pages.py passes viewing=True; a test scans scripts/ and services/geo/geo for it.",
+      "extract_source_page (OCR) and render_pdf_selection without the argument still refuse a page over the",
+      "limit with unsupported_pdf_page_frame before any picture exists; a selected region is never widened.",
+      "The packet region path imports only _deny_external_files and PageError from run_pdf_pages.py and draws",
+      "with PDFium at its own scale; it calls neither function.",
+      "document-pages.ts refuses a raster whose reduced flag or scale differs from its own listing."
+    ],
+    "floorSupport": {
+      "sheet": "haryana-2831-tower3-plan1.pdf page 1, 2586 x 1695 pt, no text layer",
+      "caption": "'2ND FLOOR PLAN' at [850,875,1020,910] pt, capitals about 11 pt high",
+      "pictures": [
+        {"scalePxPerPt": 0.5413766434648105, "pixels": [1400, 918], "pngBytes": 1057621, "wallSeconds": 0.132,
+          "caption": "every letter clear (capitals about 6 px)"},
+        {"scalePxPerPt": 0.5, "pixels": [1293, 848], "pngBytes": 871911, "wallSeconds": 0.089,
+          "caption": "every letter clear"},
+        {"scalePxPerPt": 0.4, "pixels": [1035, 678], "pngBytes": 598499, "wallSeconds": 0.071,
+          "caption": "every letter still distinct (4.4 px)"},
+        {"scalePxPerPt": 0.3, "pixels": [776, 509], "pngBytes": 362421, "wallSeconds": 0.049,
+          "caption": "words can be guessed, letters run together (3.3 px)"},
+        {"scalePxPerPt": 0.25, "pixels": [647, 424], "pngBytes": 249381, "wallSeconds": 0.036,
+          "caption": "'FLOOR' is lost"},
+        {"scalePxPerPt": 0.2, "pixels": [518, 339], "pngBytes": 173108, "wallSeconds": 0.032,
+          "caption": "nothing reads"}
+      ],
+      "peakWorkingSetBytes": "about 136,000,000 at every scale (135,483,392 to 136,695,808)",
+      "kept": "E:/BhuAayam-data/task-data/k9e/step0-measure/ (six pictures, measure.json, caption-contact-sheet.png)",
+      "limitOfThis": [
+        "One sheet's caption is the whole basis. Room names and dimensions on this sheet are not legible at",
+        "any of these scales: the whole-sheet picture shows where a region lies, not its words."
+      ]
+    },
+    "whatTheFloorAdmits": [
+      "Tower 3 plan 2586 x 1695 pt at 0.5414; the demo's site plan 2585 x 3390 pt at 0.4130; an A0 sheet",
+      "2384 x 3370 pt at 0.4154. Refused in tests: 3600 x 1000, 4000 x 4000 and 14400 x 14400 pt."
+    ]
+  },
+  "productEntry": {
+    "what": [
+      "DocumentPagesService with its real worker (inspectPrivateDocumentPages -> run_pdf_pages.py), on the",
+      "scratch copy: the listing, then the picture. The source identity was supplied in place of the database",
+      "lookup. One script run, CPU only, no demo request."
+    ],
+    "script": "docs/evidence/gf1/k9e/product-entry.ts",
+    "python": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe (started, never modified)",
+    "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "listing": {"renderSupport": "reduced", "reducedScalePxPerPt": 0.5413766434648105, "urlPresent": true,
+      "ms": 2080},
+    "picture": {"pixels": [1400, 918], "scale": 0.5413766434648105, "pixelOrigin": [0, 0],
+      "dpi": [96.012, 96.012], "bytes": 1057621, "reduced": true, "header": "X-Page-View: reduced", "ms": 1994,
+      "sha256": "ad9a7745998a817c06feb1318771f7c6f36439a8e99ca876da2282f63e9053cb"},
+    "kept": [
+      "E:/BhuAayam-data/task-data/k9e/product-entry/page-1-1791653024579.png",
+      "E:/BhuAayam-data/task-data/k9e/product-entry/product-entry-1791653024579.json"
+    ]
+  },
+  "partB": {
+    "rule": [
+      "quoteRegionText: a cited box must lie in the stored OCR region. When the result states regionEdge the",
+      "answer is measureOcrRegionEdge(region, [box], regionEdge.renderScalePxPerPt).outside, the contract's own",
+      "function; when it states none the region is exact, as before. No tolerance is typed in either reader.",
+      "resultQuotePages passes the result's regionEdge to the quote page (one key).",
+      "storey_quote_verifier.within_stored_region is the Python twin: optional page keys storedRegion and",
+      "regionEdge.renderScalePxPerPt, same arithmetic; a page without them reads exactly as before."
+    ],
+    "cases": [
+      {"case": "cited box equal to the overhanging box 'a' of the retained site plan result, edge stated",
+        "typescript": "text read", "python": "text read"},
+      {"case": "the same box, result without the block", "typescript": "no text", "python": "no text"},
+      {"case": "a box 1.3 pt out (allowance 1.2286 pt), edge stated", "typescript": "no text",
+        "python": "no text"}
+    ],
+    "numbers": {"region": [280, 860, 960, 2580], "renderScalePxPerPt": 0.813953488372093,
+      "box": [278.8857142857143, 1117.2131, 293.63041428571427, 1174.5536], "overhangPt": 1.1142857142857,
+      "allowedPt": 1.2285714285714},
+    "throughTheService": [
+      "tests/document-proposals.test.ts: a stored OCR product that states its edge, cited at its overhanging",
+      "box, saves with quote_at_locator; one without the block, 0.5 pt out, saves not_checked/no_region_text.",
+      "With the one key removed from resultQuotePages this test fails (tried, then restored)."
+    ],
+    "warning": [
+      "citation_extends_declared_region is unchanged and still emitted. It carries a code and a basis and no",
+      "words; its contract (packages/contracts/src/usp/document-proposals.ts) is strict and not this task's,",
+      "so no overhang in points was added."
+    ]
+  },
+  "checks": {
+    "typecheckBackend": "pnpm typecheck:backend: exit 0",
+    "studioTypecheck": "pnpm studio:typecheck: exit 0",
+    "openapiCheck": [
+      "apps/api/scripts/openapi.ts --check: exit 0. 'Native API catalogue matches: 301 operations, 342 named",
+      "schemas; no listener or domain operation opened.'"
+    ],
+    "apiCheck": [
+      "python -B scripts/api/check.py on the checkout: exit 1, 'API-DOC: runtime receipt changed' and nothing",
+      "else (the known line-ending effect). On an LF export of the branch head",
+      "(docs/evidence/gf1/k9e/check-lf-export.py): exit 0, 'API-DOC: 301 native operations (132 baseline + 169",
+      "added), 342 named schemas; pins, manifests, models, dataset link valid'."
+    ],
+    "contractRefresh": [
+      "scripts/api/refresh-contract.ts b791d80a and pnpm studio:api-types run on the branch after Part A and",
+      "again after Part B. Repinned: document-pages.controller.ts, contracts/src/document-pages.ts,",
+      "ingestion/document-pages.ts, ingestion/document-proposal-quotes.ts, ingestion/document-proposals.ts."
+    ],
+    "tests": [
+      {"file": "tests/document-pages.test.ts", "before": 6, "after": 8, "failed": 0},
+      {"file": "packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts", "before": 2,
+        "after": 3, "failed": 0},
+      {"file": "tests/document-proposals.test.ts", "before": 22, "after": 23, "failed": 0},
+      {"file": "tests/source-fusion.test.ts", "before": 12, "after": 12, "failed": 0},
+      {"file": "tests/document-claims.test.ts", "before": 6, "after": 6, "failed": 0},
+      {"file": "tests/spatial-ml-source.test.ts", "before": 11, "after": 11, "failed": 0},
+      {"file": "tests/packet-region-runtime.test.ts", "before": 2, "after": 2, "failed": 0,
+        "note": "both skipped before and after: they need a built region profile"},
+      {"file": "tests/test_document_pages.py", "before": 2, "after": 6, "failed": 0, "python": "venv-plans"},
+      {"file": "services/geo/tests/test_source_ocr_candidate.py", "before": 6, "after": 7, "failed": 0,
+        "python": "venv-demo-documents-20261010 (venv-plans has no psutil: 2 errors there before this task)"},
+      {"file": "scripts/usp/learning/test_storey_quote_verifier.py", "before": 7, "after": 8, "failed": 0,
+        "python": "venv-plans"},
+      {"file": "scripts/usp/learning/test_document_fields_baseline.py", "before": null, "after": 23, "failed": 0,
+        "python": "venv-plans", "note": "calls region_text; not run before this task, the test file is unchanged"}
+    ],
+    "testsNote": [
+      "Source fusion, document claims and spatial source are unchanged files run once after the change; their",
+      "'before' is the count of the same unchanged file."
+    ],
+    "guard": "every Node run under docs/evidence/gf1/k9e/safety.cjs; Python with -B and CUDA_VISIBLE_DEVICES empty",
+    "gitDiffCheck": "exit 0",
+    "lineLength": "no new line over 120 characters outside the generated docs/api files"
+  },
+  "notDone": [
+    "No request to the demo, no runtime start or stop, no profile rebuilt, no GPU, no provider call.",
+    "apps/studio is unchanged: the viewer shows the reduced picture in place but does not say it is reduced.",
+    "The X-Page-View header line is typed and documented; no test sends it over HTTP."
+  ],
+  "report": {
+    "TASK": [
+      "K9e: a page over the whole-page limit is drawn whole at a reduced, stated scale, for viewing only; the",
+      "quote check and its Python twin read a cited box within the OCR result's own stated edge."
+    ],
+    "WORKS": [
+      "The Tower 3 plan (2586 x 1695 pt) is listed as renderSupport 'reduced' with reducedScalePxPerPt 0.5414",
+      "and a url, and drawn whole at 1400 x 918 px (1.06 MB, about 2 s) through the product's own pages read.",
+      "A page within the limit answers with the same fields and the same picture bytes as before.",
+      "A page whose bounded scale falls under 0.4 px per pt keeps 422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED.",
+      "OCR and every caller without the explicit viewing argument still refuse a page over the limit.",
+      "The quote check reads a cited box within one rendered pixel of a result that states its edge, in",
+      "TypeScript and in Python with equal answers; without the block the region is exact, as before."
+    ],
+    "SEE IT": [
+      "cd E:/Projects/ulpin-wt/f1; G=E:/Projects/ulpin-wt/f1/docs/evidence/gf1/k9e/safety.cjs",
+      "export NODE_OPTIONS=\"--require $G\" TSX_TSCONFIG_PATH=apps/api/tsconfig.json",
+      "node --require $G --import tsx --test tests/document-pages.test.ts   (8 of 8)",
+      "node --require $G --import tsx --test tests/document-proposals.test.ts   (23 of 23)",
+      "node --require $G --import tsx --test \\",
+      "  packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts   (3 of 3)",
+      "E:/BhuAayam-data/task-data/k9e/product-entry/page-1-1791653024579.png   (the reduced picture)",
+      "E:/BhuAayam-data/task-data/k9e/step0-measure/caption-contact-sheet.png   (the caption at six scales)"
+    ],
+    "INPUTS": [
+      "haryana-2831-tower3-plan1.pdf page 1, public RERA sheet, development only, read from a scratch copy",
+      "(sha256 2b9f8803...4c865). The region, scale and one box of K9's retained site plan OCR result, as",
+      "numbers in tests. The Tower 3 A5 packet the proposals test already used. Drawn controls in Python tests."
+    ],
+    "GAPS": [
+      "The floor of 0.4 rests on one sheet's caption; room names and dimensions are not legible in any",
+      "reduced whole-sheet picture, so it shows where a region lies and not its words.",
+      "Not seen over HTTP or in the demo: the service ran in process with the source identity supplied.",
+      "The X-Page-View header line has no test that sends it.",
+      "The Studio viewer places the reduced picture correctly but does not tell the officer it is reduced.",
+      "No real stored OCR result with a regionEdge block was readable to this task; the service test builds",
+      "one in the existing harness from the retained numbers.",
+      "No Python page store carries storedRegion today, so the twin's rule runs only in tests.",
+      "The locator warning has no words to extend and its contract is not this task's: unchanged.",
+      "tests/packet-region-runtime.test.ts stays skipped (2): no region profile here.",
+      "The product's worker again wrote git-ignored .pyc files in the worktree during the one product run."
+    ],
+    "DESIGN": [
+      "The reduced scale is the renderer's existing bounded scale; the only new number is the floor, named a",
+      "legibility floor in the code. 'reduced' is a new renderSupport value; 'supported' and 'unsupported'",
+      "mean what they meant, and the scale and the header are present only for a reduced page.",
+      "Viewing is an explicit keyword only the pages read passes, so every other caller keeps the refusal.",
+      "Both quote readers take the allowance from the result's own scale; TypeScript asks the contract's",
+      "measureOcrRegionEdge and one test runs both languages on the same inputs.",
+      "Touched beyond the plain list: the one controller header line (lead's decision) and one key in",
+      "resultQuotePages (document-proposals.ts) that hands the result's regionEdge to the quote check.",
+      "For the Studio worker: a picture is reduced when pages[i].renderSupport === 'reduced'; its scale is",
+      "pages[i].reducedScalePxPerPt in pixels per point (absent otherwise), and pages[i].url is present as for",
+      "a supported page. The raster response repeats it as the header X-Page-View: reduced (absent otherwise),",
+      "with X-Page-Pixel-Affine (scale;origin) and X-Page-Pixels as before. The viewer already stretches the",
+      "picture over pages[i].frame in points, so regions land in the right place with no change; what is",
+      "missing is the label that the picture is reduced and that small text is not readable in it."
+    ],
+    "COMMITS": [
+      "d4471813 docs(documents): K9e where the whole-page limit comes from and what a reduced whole-page",
+      "  picture costs",
+      "bb78eb38 feat(documents): a page over the whole-page limit is drawn whole at a reduced, stated scale,",
+      "  for viewing only",
+      "f7d48c37 fix(documents): the quote check reads a cited box within the OCR result's own stated edge",
+      "docs(documents): K9e evidence (this commit)"
+    ],
+    "CHECKS": [
+      "pnpm typecheck:backend 0; pnpm studio:typecheck 0; openapi.ts --check 0 (301 operations, 342 schemas).",
+      "scripts/api/check.py: checkout prints 'API-DOC: runtime receipt changed' (exit 1, line endings); the LF",
+      "export of the branch head passes (exit 0).",
+      "Tests before -> after, none failed: pages 6 -> 8; quotes 2 -> 3; proposals 22 -> 23; source fusion 12;",
+      "document claims 6; spatial source 11; Python pages 2 -> 6; renderer 6 -> 7; quote verifier 7 -> 8;",
+      "fields baseline 23. git diff --check 0; no new line over 120 outside generated docs/api files.",
+      "refresh-contract (base b791d80a) and studio:api-types run on the branch; the lead regenerates at merge."
+    ],
+    "NEXT": [
+      "Runtime owner: after a roll that includes K9e the region read answers PACKET_REGION_EXECUTABLE_DRIFT",
+      "until the packet-region profile is rebuilt (DEMO-RUNTIME.md step 5). Pinned file changed:",
+      "scripts/usp/document-models/run_pdf_pages.py, and no other file of the pinned list. No profile was",
+      "rebuilt by this task. docling_tesseract.py is not in the pinned list and its change sits behind the",
+      "explicit viewing argument: test_whole_page_over_the_limit_is_drawn_reduced_for_viewing_and_for_",
+      "nothing_else shows the same bytes within the limit and the same refusals without the argument.",
+      "Studio worker: label a reduced picture from renderSupport and reducedScalePxPerPt (DESIGN, last lines).",
+      "Lead: regenerate docs/api and the client types at the merge; decide whether the locator warning should",
+      "carry an overhang in points, which needs its contract.",
+      "Still noted for the runtime owner from K9d: run_trial.py starts its worker without -B."
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{ "at": "2026-10-17T12:02:33.934Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}",
+"route": "/studio/areas/:areaId", "browser": "Chromium 153.0.8010.12 headless", "viewport": "1440x900",
+"loadSeconds": 7.9, "canvas": { "x": 12, "y": 68, "width": 1416, "height": 820 }, "open": { "label": "opened",
+"at": "2026-10-17T12:02:41.963Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [
+"Showing 4,000 of 41,809 buildings; move closer to see the rest." ], "banners": [], "emptySentence": false,
+"headings": [], "screenshot": "map-1.png", "readsSoFar": 6, "reads": [ { "path": "/api/v1/workspace-capabilities",
+"query": null, "status": 200, "seconds": 0.007 }, { "path": "/api/v1/areas", "query": null, "status": 200,
+"seconds": 0.221 }, { "path": "/api/v1/areas/{areaId}/context", "query": null, "status": 422, "seconds": 1.081 }, {
+"path": "/api/v1/areas/{areaId}/display-summary", "failed": "net::ERR_ABORTED" }, {
+"path": "/api/v1/areas/{areaId}/display-summary", "query": null, "status": 200, "seconds": 1.946 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=-550.7221877221018&maxX=13281.69762057485&maxY=21022.047946", "77999&limit=4000" ],
+"status": 200, "features": 4000, "seconds": 1.732 } ], "windowReads": { "count": 1, "statuses": [ 200 ], "seconds": [
+1.732 ], "features": [ 4000 ] } }, "zoomed": { "label": "after 8 wheel ticks in over the canvas centre, 2 s",
+"at": "2026-10-17T12:02:47.446Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [
+"Showing 12,000 of 41,809 buildings; move closer to see the rest." ], "banners": [], "emptySentence": false,
+"headings": [], "screenshot": "map-2.png", "readsSoFar": 9, "reads": [ {
+"path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=-550.7221877221018&maxX=13281.69762057485&maxY=21022.047946", "77999&after=3DU-51R4" ],
+"status": 200, "features": 4000, "seconds": 1.904 }, { "path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=-550.7221877221018&maxX=13281.69762057485&maxY=21022.047946", "77999&after=3DU-51R4" ],
+"status": 200, "features": 4000, "seconds": 2.474 }, { "path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=-550.7221877221018&maxX=13281.69762057485&maxY=21022.047946", "77999&after=3DU-51R4" ],
+"status": 200, "features": 3000, "seconds": 2.34 } ], "windowReads": { "count": 3, "statuses": [ 200 ], "seconds": [
+1.904, 2.474, 2.34 ], "features": [ 4000, 4000, 3000 ] } }, "clicked": {
+"label": "after clicks on a grid, centre first, until a building is picked", "at": "2026-10-17T12:04:28.083Z",
+"url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [
+"Showing 15,000 of 41,809 buildings; move closer to see the rest." ], "banners": [], "emptySentence": false,
+"headings": [], "screenshot": "map-3.png", "readsSoFar": 13, "clicks": 165, "inspector": false, "reads": [ {
+"path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=3880.537289738247&maxX=12823.857709922795&maxY=21022.047946", "77999&limit=4000" ],
+"status": 200, "features": 4000, "seconds": 1.939 }, { "path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=3880.537289738247&maxX=12823.857709922795&maxY=21022.047946", "77999&after=3DU-51R4" ],
+"status": 200, "features": 4000, "seconds": 2.576 }, { "path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=3880.537289738247&maxX=12823.857709922795&maxY=21022.047946", "77999&after=3DU-51R4" ],
+"status": 200, "features": 4000, "seconds": 2.789 }, { "path": "/api/v1/areas/{areaId}/display-window", "query": [
+"?minX=-62.182009784155525&minY=3880.537289738247&maxX=12823.857709922795&maxY=21022.047946", "77999&after=3DU-51R4" ],
+"status": 200, "features": 3000, "seconds": 2.697 } ] }, "windowReads": { "count": 8, "statuses": [ 200 ], "seconds": [
+1.732, 1.904, 2.474, 2.34, 1.939, 2.576, 2.789, 2.697 ], "features": [ 4000, 4000, 4000, 3000, 4000, 4000, 4000, 3000 ]
+}, "pageErrors": [] }

@@ -1,0 +1,47 @@
+{
+  "part": "B",
+  "done": false,
+  "through": "card generation 200 and exact revision-1 PDF GET 200; 29 requests, serial, never retried",
+  "cardIssued": true,
+  "builderProof": {
+    "assignment.ts": "captureBody, reviewBody, answeredReview and assignBody send the code flow",
+    "issue.ts": "generateBody sends the actual prepared card request",
+    "prepare.ts": "prepareFirstCard sends capture, entries, plan, confirm, execute and preview without copying",
+    "allElevenRegistryRoutes": "All eleven routes named by F3e2 answered 200 before the final read."
+  },
+  "firstRefusal": {
+    "route": "POST /api/v1/usp/property-cards/read",
+    "http": 400,
+    "code": "USP_REQUEST_FAILED",
+    "request": "http-029.json; the driver's cardId/revision object also contained expiresAt",
+    "answer": "This operation is unavailable. Check its input or service state.",
+    "where": "journey.ts issue(), the diagnostic read after the issued card; NOT a Studio-generated body",
+    "cause": "UspReadPropertyCardSchema (property-card.ts:17-19) is strict and takes cardId and revision only.",
+    "decision": "No corrected resend or workaround. Part B ends here; snapshot listing and verification skipped."
+  },
+  "judgeWhatAlreadyExists": {
+    "pdf": "E:/BhuAayam-data/task-data/reh1/card-revision-1.pdf",
+    "factsOrigin": "027-response.json data.facts, not a fabricated card or successful read",
+    "code": "P3-GS0J76ZSTEXDYMEF1V9H-YD",
+    "unit": "UNIT-3B",
+    "floor": "2ND FLOOR PLAN",
+    "geometry": "absent",
+    "measurements": "unknown",
+    "rights": "not assessed",
+    "qualification": "Private local application summary; not official ULPIN, title or approval."
+  },
+  "documentRead": {
+    "nativeJob": "007: status stale, DOCUMENT_INPUT_STALE (HTTP 200), not an extracted-text success",
+    "whyPossible": "Each of four retained originals advances the case revision; early jobs pin earlier revisions.",
+    "pages": "008: source metadata reads 2586 x 1695 pt; whole page unsupported; original remains available",
+    "region": "Packet plan executed its real 144 x 57 px source-label crop, no whole-page raster needed.",
+    "retry": "None; no OCR extraction or reading repair is claimed."
+  },
+  "transcriptions": {
+    "legacyK2": "The old request lacks the now-required transcription discriminator.",
+    "currentRequest": "Both existing G+41/G+42 literals say by agent REH1-worker and remain candidates.",
+    "noOfficerMasquerade": true,
+    "noScheduleReview": "A reviewed conflicting schedule was NOT created; the floor is a literal, not an ordinal."
+  },
+  "partCEligibility": "Part C is allowed by the explicit card-issued condition, despite this diagnostic read failure."
+}

@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
-import {STREAMING_VECTOR_LIMITS as limits,StreamingVectorInputSchema,StreamingVectorPayloadSchema,
-  type StreamingVectorInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
+import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,AnyStreamingInputSchema,
+  StreamingVectorPayloadSchema,type AnyStreamingInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {openObjectStream,putOriginal,readObject,sha256} from '../../../infrastructure/storage';
@@ -9,14 +9,31 @@ import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
-import {readStreamingFeatures,sourceRecord} from './streaming-vector-reader';
+import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
+  type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
+import {resolveStreamedReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
+import {queueIntakeLargeTx,writeIntakeLargeReadTx} from './intake-large';
+import {AREA_PROCESSOR_OPERATION} from '../../areas/areas';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
 
+const PROGRESS_MS=2000;
+
+function tabularChunkRows(width:number){
+  return Math.max(1,Math.min(TABULAR_LIMITS.chunkRows,Math.floor(TABULAR_LIMITS.columns/width)));
+}
+
+/** One whole read counts each set-aside record under its code; every attempt replays from byte zero. */
+export function tallySetAside(tally:Record<string,number>,record:StreamingVectorRecord){
+  if(record.disposition!=='quarantined')return;
+  const code=record.issueCode??'UNSTATED';
+  tally[code]=(tally[code]??0)+1;
+}
+
 /** A single SQL watermark is the ordered publication authority; SSE cursors stay per subscriber. */
-export async function publishStreamingPrefixTx(client:PoolClient,input:StreamingVectorInput){
+export async function publishStreamingPrefixTx(client:PoolClient,input:AnyStreamingInput){
   while(true){
     const state=(await client.query('SELECT next_publish_index FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR UPDATE',
@@ -31,7 +48,7 @@ export async function publishStreamingPrefixTx(client:PoolClient,input:Streaming
   }
 }
 
-async function storeChunk(input:StreamingVectorInput,index:number,records:StreamingVectorRecord[]){
+async function storeChunk(input:AnyStreamingInput,index:number,records:StreamingVectorRecord[]){
   const payload=StreamingVectorPayloadSchema.parse({version:limits.version,jobId:input.jobId,sourceId:input.sourceId,
     sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,chunkIndex:index,records});
   const bytes=Buffer.from(JSON.stringify(payload));
@@ -49,7 +66,8 @@ async function storeChunk(input:StreamingVectorInput,index:number,records:Stream
     bytes:bytes.length,ref:{key,sha256:hash,bytes:bytes.length},issueCode:null,resultSha256:hash} satisfies Slot;
 }
 
-async function acceptSlot(input:StreamingVectorInput,attempt:UspJobAttempt,slot:Slot){
+/** `progress` also refreshes a batch row's reading counts from the slot's own transaction. */
+async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slot,progress=false){
   await transaction(async client=>{
     await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
@@ -74,36 +92,61 @@ async function acceptSlot(input:StreamingVectorInput,attempt:UspJobAttempt,slot:
     await client.query('UPDATE usp_streaming_vector_imports SET records=records+$2,accepted=accepted+$3,quarantined=quarantined+$4,updated_at=now() WHERE job_id=$1',
       [input.jobId,slot.records,slot.accepted,slot.quarantined]);
     await publishStreamingPrefixTx(client,input);
+    if(progress)await writeIntakeLargeReadTx(client,input.sourceId);
   });
 }
 
-async function terminal(input:StreamingVectorInput,attempt:UspJobAttempt,code:string,nextIndex:number,nextFeatureIndex:number,stale=false){
+type ImportRow={records:number;sealed_chunks:number|null;next_publish_index:number};
+type Marker={index:number;featureIndex:number;attempt:number;fence:number};
+
+/** Before the seal a failure's ordered issue marker closes the published prefix (a stale end writes none). After
+ * the seal the sealed prefix stays as the seal left it: no slot past it, nothing published, its remainder known. */
+export async function endImportTx(client:PoolClient,input:AnyStreamingInput,row:ImportRow,code:string,
+  stale:boolean,marker:Marker|null){
+  const sealed=row.sealed_chunks!==null&&row.sealed_chunks===row.next_publish_index;
+  if(marker&&!sealed){
+    if(row.records!==marker.featureIndex)conflict('The terminal source position differs from the committed prefix.');
+    const hash=fingerprint({version:limits.version,jobId:input.jobId,sourceRevision:input.sourceRevision,
+      chunkIndex:marker.index,code});
+    await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,
+      first_feature_index,last_feature_index,records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
+      VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
+      [input.jobId,input.sourceRevision,marker.index,marker.featureIndex,code,hash,marker.attempt,marker.fence]);
+    await publishStreamingPrefixTx(client,input);
+  }
+  const status=stale?'stale':'failed';
+  await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
+    [input.jobId]);
+  await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[input.jobId,status,code]);
+  await client.query(`UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=$4,
+    updated_at=now() WHERE job_id=$1`,[input.jobId,status,code,!sealed]);
+  if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
+    sourceRevision:input.sourceRevision,jobId:input.jobId,status:'failed'},input.subject);
+  await queueIntakeLargeTx(client,input.sourceId);
+}
+
+/** CR1's words for a refused declaration stay beside where its receipt would be, for the officer's row. */
+async function keepCrsRefusalTx(client:PoolClient,input:AnyStreamingInput,words:string){
+  await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedMapRefusal}',$2::jsonb)
+    WHERE id=$1 AND profile='large-original-v1'`,[input.sourceId,JSON.stringify({rawJobId:input.jobId,words})]);
+}
+
+async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,
+  nextIndex:number,nextFeatureIndex:number,stale=false,words:string|null=null){
   await transaction(async client=>{
     if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     if(!state)conflict('The streaming import state is unavailable.');
-    if(!stale){
-      if(state.records!==nextFeatureIndex)conflict('The terminal source position differs from the committed prefix.');
-      const hash=fingerprint({version:limits.version,jobId:input.jobId,sourceRevision:input.sourceRevision,chunkIndex:nextIndex,code});
-      await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,first_feature_index,last_feature_index,
-        records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
-        VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
-        [input.jobId,input.sourceRevision,nextIndex,nextFeatureIndex,code,hash,attempt.number,attempt.fence]);
-      await publishStreamingPrefixTx(client,input);
-    }
     await client.query('UPDATE usp_job_attempts SET state=$3 WHERE job_id=$1 AND number=$2',[input.jobId,attempt.number,'fenced']);
-    await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[input.jobId]);
-    await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[input.jobId,stale?'stale':'failed',code]);
-    await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=true,updated_at=now() WHERE job_id=$1',
-      [input.jobId,stale?'stale':'failed',code]);
-    if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
-      sourceRevision:input.sourceRevision,jobId:input.jobId,status:'failed'},input.subject);
+    if(words)await keepCrsRefusalTx(client,input,words);
+    await endImportTx(client,input,state,code,stale,stale?null:{index:nextIndex,featureIndex:nextFeatureIndex,
+      attempt:attempt.number,fence:attempt.fence});
   });
 }
 
-async function retry(input:StreamingVectorInput,attempt:UspJobAttempt,code:string){
+async function retry(input:AnyStreamingInput,attempt:UspJobAttempt,code:string){
   await transaction(async client=>{
     await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
@@ -120,11 +163,25 @@ async function retry(input:StreamingVectorInput,attempt:UspJobAttempt,code:strin
   });
 }
 
+/** A file the reader refuses, or a processor without the operation, ends the job at once: the same bytes and the
+ * same processor image cannot pass on another attempt. Only a fault that may clear is retried. */
+export function streamingFailureKind(error:unknown):'final'|'stale'|'retry'{
+  if(!(error instanceof AppError))return 'retry';
+  if([413,422].includes(error.status)||error.code===AREA_PROCESSOR_OPERATION)return 'final';
+  if([403,404,409].includes(error.status))return 'stale';
+  return 'retry';
+}
+
+/** A lost fence is refused with the shared conflict code; any other failure to end the job is not hidden. */
+export function fencedOut(error:unknown){
+  return error instanceof AppError&&error.status===409&&error.code==='STALE_REVISION';
+}
+
 /** Dispatcher-owned bounded reader. Replays an accepted prefix from byte zero with exact hashes. */
 export async function runStreamingVectorJob(jobId:string){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='streaming-vector'",[jobId])).rows[0];
   if(!job||!['queued','running'].includes(job.status))return;
-  const input=StreamingVectorInputSchema.parse(job.payload);
+  const input=AnyStreamingInputSchema.parse(job.payload);
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(jobId,`streaming-vector:${randomUUID()}`,client=>assertStreamingInputTx(client,input).then(()=>{}));}
   catch(error){
@@ -140,23 +197,14 @@ export async function runStreamingVectorJob(jobId:string){
       const stale=code==='STREAMING_CONTEXT_STALE';
       const stillActive=(await client.query("SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active' AND lease_until>now() LIMIT 1",[jobId])).rowCount;
       if(!current||!['queued','running'].includes(current.status)||stillActive)return;
+      let marker:Marker|null=null;
       if(!stale){
         await assertStreamingInputTx(client,input);
         const index=Number((await client.query('SELECT count(*)::int n FROM usp_streaming_vector_slots WHERE job_id=$1',[jobId])).rows[0].n);
-        const hash=fingerprint({version:limits.version,jobId,sourceRevision:input.sourceRevision,chunkIndex:index,code});
         const last=(await client.query('SELECT number,fence FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',[jobId])).rows[0];
-        await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,first_feature_index,last_feature_index,
-          records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
-          VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
-          [jobId,input.sourceRevision,index,row.records,code,hash,last.number,last.fence]);
-        await publishStreamingPrefixTx(client,input);
+        marker={index,featureIndex:row.records,attempt:last.number,fence:last.fence};
       }
-      await client.query("UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1",[jobId,code==='STREAMING_CONTEXT_STALE'?'stale':'failed',code]);
-      await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
-      await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=true WHERE job_id=$1',
-        [jobId,stale?'stale':'failed',code]);
-      if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
-        sourceRevision:input.sourceRevision,jobId,status:'failed'},input.subject);
+      await endImportTx(client,input,row,code,stale,marker);
     });
     return;
   }
@@ -167,7 +215,8 @@ export async function runStreamingVectorJob(jobId:string){
     await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);
   });
-  let nextIndex=0,nextFeatureIndex=0,pending:StreamingVectorRecord[]=[],pendingBytes=0,lastHeartbeat=Date.now();
+  let nextIndex=0,nextFeatureIndex=0,pending:StreamingVectorRecord[]=[],pendingBytes=0,lastHeartbeat=Date.now(),lastProgress=0;
+  const setAside:Record<string,number>={};
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertStreamingInputTx(client,input).then(()=>{}));lastHeartbeat=Date.now();
     await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",[jobId]);
@@ -175,30 +224,38 @@ export async function runStreamingVectorJob(jobId:string){
   const flush=async()=>{
     if(!pending.length)return;
     await pulse();const slot=await storeChunk(input,nextIndex,pending);
-    await acceptSlot(input,attempt,slot);nextIndex++;pending=[];pendingBytes=0;
+    // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
+    const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
+    await acceptSlot(input,attempt,slot,progress);nextIndex++;pending=[];pendingBytes=0;
   };
   try{
     const etag=(await query('SELECT inspection FROM sources WHERE id=$1',[input.sourceId])).rows[0]?.inspection?.largeOriginal?.objectEtag;
     const object=await openObjectStream(input.objectKey,input.sourceBytes,limits.readMs,etag);
     let result;
     try{
-      result=await readStreamingFeatures(object.body,input.framing,async item=>{
-        await pulse();const record=sourceRecord(item);nextFeatureIndex=item.index+1;
-        if(record.disposition==='accepted'){
+      const consume=async(item:SourceFeature)=>{
+        await pulse();const record=input.framing==='tabular'?tabularSourceRecord(item):sourceRecord(item);
+        nextFeatureIndex=item.index+1;
+        if(record.disposition==='accepted'&&input.framing!=='tabular'){
           const issue=await validateStreamingTopology((record.feature as {geometry:unknown}).geometry);
           if(issue){record.disposition='quarantined';record.issueCode=issue;record.feature=null;}
         }
+        const width=input.framing==='tabular'?(item.feature as {headers:string[]}).headers.length:1;
+        const countLimit=input.framing==='tabular'?tabularChunkRows(width):limits.chunkFeatures;
         let recordBytes=Buffer.byteLength(JSON.stringify(record));
         if(recordBytes>limits.chunkBytes-2048){record.feature=null;record.disposition='quarantined';record.issueCode='DRAFT_UNIT_BUDGET';recordBytes=Buffer.byteLength(JSON.stringify(record));}
-        if(pending.length&&(pending.length>=limits.chunkFeatures||pendingBytes+recordBytes+2048>limits.chunkBytes))await flush();
-        pending.push(record);pendingBytes+=recordBytes;
-        if(pending.length>=limits.chunkFeatures)await flush();
-      });
+        if(pending.length&&(pending.length>=countLimit||pendingBytes+recordBytes+2048>limits.chunkBytes))await flush();
+        tallySetAside(setAside,record);pending.push(record);pendingBytes+=recordBytes;
+        if(pending.length>=countLimit)await flush();
+      };
+      result=input.framing==='tabular'?await readStreamingTabular(object.body,input.tabular,consume)
+        :await readStreamingFeatures(object.body,input.framing,consume);
     }finally{object.body.destroy();}
     if(result.bytes!==input.sourceBytes||result.sha256!==input.sourceSha256)
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');
     if(!result.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
     await flush();
+    const reference=input.framing==='feature-collection'?await resolveStreamedReference(result.metadata):undefined;
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
@@ -215,20 +272,26 @@ export async function runStreamingVectorJob(jobId:string){
         const state=(await client.query('SELECT quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
         const status=state.quarantined?'completed_with_rejections':'completed';
         await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
+        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,
+          {...result,quarantinedByCode:setAside},reference);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
+        await queueIntakeLargeTx(client,input.sourceId);
       });
   }catch(error){
     const code=error instanceof AppError?error.code:'STREAMING_WORKER_ERROR';
-    const structural=error instanceof AppError&&[413,422].includes(error.status);
-    const stale=error instanceof AppError&&[403,404,409].includes(error.status);
+    const kind=streamingFailureKind(error);
+    const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
     try{
-      if(structural){
+      if(kind==='final'){
         // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
-        await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
-      }else if(stale)await terminal(input,attempt,'STREAMING_CONTEXT_STALE',nextIndex,nextFeatureIndex,true);
+        await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex,false,words);
+      }else if(kind==='stale')await terminal(input,attempt,'STREAMING_CONTEXT_STALE',nextIndex,nextFeatureIndex,true);
       else if(attempt.number>=3)await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
       else await retry(input,attempt,code);
-    }catch{/* A newer fence owns this job; it alone may change durable state. */}
+    }catch(failure){
+      // A newer fence owns this job; it alone may change durable state.
+      if(!fencedOut(failure))throw failure;
+    }
   }
 }

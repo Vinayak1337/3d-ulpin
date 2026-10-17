@@ -9,6 +9,13 @@ import { migrateUsp } from "../modules/usp/migrations";
 import { settings } from "./config";
 import {AppError} from './errors';
 export type DbDeadline={deadlineAt:number;signal?:AbortSignal};
+/** Internal opt-in; omitted mode preserves the connection's transaction defaults. */
+export type DbTransactionMode='repeatable_read_only';
+function transactionBegin(mode?:DbTransactionMode){
+  if(mode===undefined)return 'BEGIN';
+  if(mode==='repeatable_read_only')return 'BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY';
+  throw new AppError(500,'DB_TRANSACTION_MODE','Unsupported internal transaction mode.');
+}
 export class DbCommitOutcomeUnknown extends AppError {
   constructor(){super(503,'DB_COMMIT_UNKNOWN','Commit was dispatched before cancellation; its outcome requires a fresh authoritative read.');}
 }
@@ -48,11 +55,13 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
 export async function transaction<T>(
   action: (client: PoolClient) => Promise<T>,
   deadline?:DbDeadline,
+  mode?:DbTransactionMode,
 ): Promise<T> {
-  if(deadline)return deadlineTransaction(action,deadline);
+  const begin=transactionBegin(mode);
+  if(deadline)return deadlineTransaction(action,deadline,begin);
   const client = await pool().connect();
   try {
-    await client.query("BEGIN");
+    await client.query(begin);
     const result = await action(client);
     await client.query("COMMIT");
     return result;
@@ -66,7 +75,8 @@ export async function transaction<T>(
 /** Opt-in only: exclusive pooled connection, server bounds and active connection
  * destruction on stop/deadline. A cancelled connection is never returned idle.
  * No SQL/action may continue on it, including after a delayed query callback. */
-async function deadlineTransaction<T>(action:(client:PoolClient)=>Promise<T>,options:DbDeadline):Promise<T>{
+async function deadlineTransaction<T>(action:(client:PoolClient)=>Promise<T>,options:DbDeadline,
+  begin:ReturnType<typeof transactionBegin>):Promise<T>{
   if(!Number.isFinite(options.deadlineAt))throw new AppError(500,'DB_DEADLINE_CONFIG','A finite absolute database deadline is required.');
   let raw:PoolClient|undefined,released=false,destroyed=false,aborted:unknown,commitSent=false,
     pendingReject:((error:unknown)=>void)|undefined,actionReject:((error:unknown)=>void)|undefined;
@@ -122,7 +132,8 @@ async function deadlineTransaction<T>(action:(client:PoolClient)=>Promise<T>,opt
       },error=>{pendingReject=undefined;reject(error);});
     });
     raw.on?.('error',onClientError);
-    check();await run(['BEGIN']);await guard();
+    // A guard SELECT is already a transaction query: select the mode in BEGIN.
+    check();await run([begin]);await guard();
     const client=new Proxy(raw,{get(target,key){
       if(key==='query')return async(...args:unknown[])=>{await guard();const value=await run(args);check();return value;};
       const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value;

@@ -59,23 +59,58 @@ def _text(value, label, limit=256):
     return value.strip()
 
 
-def _crs(value, label):
-    if not isinstance(value, str) or not re.fullmatch(r"EPSG:[1-9][0-9]{2,5}", value, re.IGNORECASE):
+def _crs(value, label, named=False):
+    if not named and (not isinstance(value, str)
+                      or not re.fullmatch(r"EPSG:[1-9][0-9]{2,5}", value, re.IGNORECASE)):
         raise InputError(f"{label} requires an explicit EPSG code, for example EPSG:32643.")
+    if named and (not isinstance(value, str) or not value.strip()):
+        raise InputError(f"{label} requires nonempty coordinate reference system text.")
     try:
-        result = CRS.from_user_input(value.upper())
+        result = CRS.from_user_input(value if named else value.upper())
     except CRSError:
-        raise InputError(f"{label} is not a recognized EPSG coordinate reference system.") from None
-    if len(result.axis_info) != 2 or not (result.is_projected or result.is_geographic):
+        description = "coordinate reference system" if named else "EPSG coordinate reference system"
+        raise InputError(f"{label} is not a recognized {description}.") from None
+    if result.is_compound or len(result.axis_info) != 2 or not (result.is_projected or result.is_geographic):
         raise InputError(f"{label} must be a two-dimensional horizontal CRS.")
     return result
+
+
+def _geojson_crs(source: dict) -> tuple[CRS, str | None]:
+    """Resolve only the collection's exact named declaration; never infer from coordinates."""
+    if "crs" not in source:
+        return CRS.from_epsg(4326), None
+    member = source["crs"]
+    declared = json.dumps(member, ensure_ascii=False, separators=(",", ":"))
+    label = f"The file's crs member declares {declared}; its name"
+    if (not isinstance(member, dict) or set(member) != {"type", "properties"}
+            or member.get("type") != "name" or not isinstance(member.get("properties"), dict)
+            or set(member["properties"]) != {"name"}):
+        raise InputError(f"The file's crs member declares {declared}; requires the 2008 named CRS form.")
+    name = member["properties"]["name"]
+    result = _crs(name, label, named=True)
+    if result.to_authority() is None:
+        raise InputError(f"{label} must resolve to an authority:code coordinate reference system.")
+    # Preserve the existing CRS84 normalization result, including its EPSG:4326 reference.
+    if name == "urn:ogc:def:crs:OGC:1.3:CRS84":
+        result = CRS.from_epsg(4326)
+    return result, name
+
+
+def resolve_geojson_crs(data):
+    """CR1's resolution alone, for a large file whose collection members are read apart from its features."""
+    collection = data.get("collection") if isinstance(data, dict) else None
+    if not isinstance(collection, dict) or "features" in collection:
+        raise InputError("Resolution requires the collection's members without its features.")
+    result, name = _geojson_crs(collection)
+    return {"declared": name, "authority": ":".join(result.to_authority()), "unit": result.axis_info[0].unit_name}
 
 
 def _analysis_crs(value):
     result = _crs(value, "analysisCrs")
     code = result.to_epsg()
-    if code is None or not (32601 <= code <= 32660 or 32701 <= code <= 32760):
-        raise InputError("analysisCrs must be a WGS84 UTM EPSG:32601–32660 or EPSG:32701–32760 frame in metres.")
+    if code is None or not (code == 6933 or 32601 <= code <= 32660 or 32701 <= code <= 32760):
+        raise InputError("analysisCrs requires WGS84 UTM or EPSG:6933 in metres; "
+                         "display placement is not qualification.")
     return result
 
 
@@ -92,8 +127,23 @@ class GeometryRejected(InputError):
         self.vertices, self.code = vertices, code
 
 
-def _geometry(raw, label="geometry", geographic=False, topology=True):
-    """Validate before GEOS, so unsupported dimensions cannot be silently discarded."""
+def _position_height(value, label, heights, count):
+    """A GeoJSON position's third number is its height as the file states it; every position has one or none does."""
+    if len(value) > 3:
+        raise InputError(f"{label} has a position of {len(value)} numbers; a position takes two coordinates and "
+                         "may add a height, and a fourth (M) value is unsupported and will not be dropped.")
+    if count and (len(value) == 3) != bool(heights):
+        raise InputError(f"{label} mixes positions with and without a height; every position of a feature "
+                         "has a height or none does.")
+    if len(value) == 3:
+        _number(value[2], label + " height")
+        heights.append(value[2])
+
+
+def _geometry(raw, label="geometry", geographic=False, topology=True, undeclared=False, heights=None):
+    """Validate before GEOS, so unsupported dimensions cannot be silently discarded.
+
+    Only a caller that passes `heights` reads a position's third number; it collects them as written."""
     if not isinstance(raw, dict) or "crs" in raw:
         raise InputError(f"{label} requires a geometry object without a per-feature CRS override.")
     kind, coordinates = raw.get("type"), raw.get("coordinates")
@@ -101,10 +151,14 @@ def _geometry(raw, label="geometry", geographic=False, topology=True):
 
     def position(value):
         nonlocal count
-        if not isinstance(value, list) or len(value) != 2:
+        if heights is not None and isinstance(value, list) and len(value) >= 2:
+            _position_height(value, label, heights, count)
+        elif not isinstance(value, list) or len(value) != 2:
             raise InputError(f"{label} requires exactly two coordinates; Z/M values are unsupported and will not be dropped.")
-        x, y = (_number(v, label + " coordinate") for v in value)
+        x, y = (_number(v, label + " coordinate") for v in value[:2])
         if geographic and not (-180 <= x <= 180 and -90 <= y <= 90):
+            if undeclared:
+                raise InputError("The file declares no coordinate system and its coordinates are not longitude and latitude.")
             raise InputError(f"{label} longitude/latitude are outside geographic bounds.")
         count += 1
         if count > MAX_FEATURE_VERTICES:
@@ -253,6 +307,14 @@ def _height(properties, fields, warnings, source_key):
     return result
 
 
+def _source_heights(heights):
+    """The file's own heights, beside the outline; their unit and reference level are not stated by the file."""
+    if not heights:
+        return {}
+    return {"sourceHeights": {"positions": len(heights), "min": min(heights), "max": max(heights),
+                              "unit": None, "reference": None, "basis": "source_coordinates"}}
+
+
 def normalize_area(data):
     if isinstance(data, dict) and data.get("format") in ("gpkg", "shapefile_zip"):
         from .native_gis import normalize_native
@@ -288,17 +350,17 @@ def normalize_area(data):
     if not isinstance(reference, dict):
         raise InputError("reference must be an object.")
     source_crs = None
-    legacy_geojson_crs = False
+    geojson_crs_name = None
     if data["format"] == "geojson":
-        # Socrata's unchanged NYC export declares CRS84, whose x/y order is
-        # explicitly longitude/latitude. This is a recognized legacy declaration,
-        # not permission to reinterpret projected GeoJSON as EPSG:4326.
-        legacy_geojson_crs = source.get("crs") == {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}
-        if source.get("type") != "FeatureCollection" or "crs" in source and not legacy_geojson_crs:
-            raise InputError("GeoJSON requires an RFC 7946 FeatureCollection in longitude/latitude EPSG:4326, without a crs override.")
-        source_crs = CRS.from_epsg(4326)
-        if reference.get("sourceCrs") and not _crs(reference["sourceCrs"], "sourceCrs").equals(source_crs):
-            raise InputError("RFC GeoJSON input is EPSG:4326; projected data must use an explicit source adapter.")
+        if source.get("type") != "FeatureCollection":
+            raise InputError("GeoJSON requires a FeatureCollection.")
+        source_crs, geojson_crs_name = _geojson_crs(source)
+        if reference.get("sourceCrs") or geojson_crs_name is not None and "sourceCrs" in reference:
+            specified = _crs(reference["sourceCrs"], "sourceCrs", named=geojson_crs_name is not None)
+            if not specified.equals(source_crs, ignore_axis_order=geojson_crs_name is not None):
+                if geojson_crs_name is not None:
+                    raise InputError("Explicit sourceCrs conflicts with the file's crs member.")
+                raise InputError("RFC GeoJSON input is EPSG:4326; projected data must use an explicit source adapter.")
     else:
         if source.get("exceededTransferLimit"):
             raise InputError("ArcGIS transfer is incomplete; retrieve and reconcile all pages before normalization.")
@@ -314,8 +376,13 @@ def normalize_area(data):
     collection_reference = source_crs is not None
     rows = _list(source.get("features"), "Source features", 1, MAX_FEATURES)
     prepared, warnings, keys, total_vertices, rejected = [], [], set(), 0, []
-    if legacy_geojson_crs:
+    if geojson_crs_name == "urn:ogc:def:crs:OGC:1.3:CRS84":
         warnings.append("Recognized the source's legacy OGC CRS84 declaration as longitude/latitude WGS84. Original bytes retain that declaration; normalized geographic geometry uses RFC 7946 coordinates.")
+    elif geojson_crs_name is not None:
+        authority = ":".join(source_crs.to_authority())
+        warnings.append(f"The source declares `{geojson_crs_name}`; read as `{authority}`, "
+                        "coordinates in the order written (x, y). Original bytes keep that declaration; "
+                        "normalized geographic geometry uses RFC 7946 coordinates.")
     for index, feature in enumerate(rows):
         if not isinstance(feature, dict) or "crs" in feature:
             raise InputError("Each source feature must be an object without a CRS override.")
@@ -367,7 +434,12 @@ def normalize_area(data):
         try:
             if data["format"] == "arcgis":
                 parsed = _arcgis_geometry(original, geographic=source_crs.equals(CRS.from_epsg(4326)))
-            geometry, count = _geometry(parsed, f"Feature {source_key}", geographic=source_crs.equals(CRS.from_epsg(4326)))
+            geographic_source = (source_crs.is_geographic if data["format"] == "geojson"
+                                 else source_crs.equals(CRS.from_epsg(4326)))
+            heights = [] if data["format"] == "geojson" else None
+            geometry, count = _geometry(parsed, f"Feature {source_key}", geographic=geographic_source,
+                                        undeclared=data["format"] == "geojson" and geojson_crs_name is None,
+                                        heights=heights)
             if fields["kind"] in ("building", "parcel", "public_land") and geometry.geom_type not in ("Polygon", "MultiPolygon"):
                 raise GeometryRejected(f"{fields['kind']} requires Polygon or MultiPolygon geometry.", count, "GEOMETRY_KIND")
         except GeometryRejected as error:
@@ -380,7 +452,7 @@ def normalize_area(data):
         if total_vertices > MAX_VERTICES:
             raise InputError(f"An import supports at most {MAX_VERTICES} vertices.")
         prepared.append({"sourceKey": source_key, "sourceFeatureIndex": index, "name": name, "kind": fields["kind"], "sourceGeometry": copy.deepcopy(original),
-                         "height": height, "worldStatus": world_status,
+                         "height": height, **_source_heights(heights), "worldStatus": world_status,
                          "properties": allowed, "_shape": geometry, **typed})
     if source_crs is None:
         raise InputError("ArcGIS source CRS is unknown; provide spatialReference.wkid or reference.sourceCrs.")
@@ -528,8 +600,8 @@ def check_area(data):
 
 def extract_document(data):
     """Extract native text with locators, without interpreting document instructions."""
-    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "archive", "text", "csv", "csv_reference"):
-        raise InputError("Native document format must be pdf, an OOXML archive, text, a CSV reference table or the strict CSV level schedule.")
+    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "archive", "text", "csv", "csv_reference", "html"):
+        raise InputError("Native document format must be pdf, an OOXML archive, text, HTML tables, a CSV reference table or the strict CSV level schedule.")
     encoded = data.get("base64")
     if not isinstance(encoded, str) or len(encoded) > (MAX_DOCUMENT_BYTES + 2) // 3 * 4:
         raise InputError("Document must be base64 with at most 10 MiB of decoded bytes.")
@@ -545,6 +617,11 @@ def extract_document(data):
     if data["format"] == "csv_reference":
         from .native_schedule import extract_reference_table
         return {"format": "csv_reference", "method": "native_reference", "sourceSha256": hashlib.sha256(raw).hexdigest(), **extract_reference_table(raw)}
+    if data["format"] == "html":
+        from .native_html_table import extract_native_html_tables
+        result = extract_native_html_tables(raw)
+        result["sourceSha256"] = hashlib.sha256(raw).hexdigest()
+        return result
     parts, warnings, total_text = [], [], 0
     native_format = data["format"]
 
@@ -620,11 +697,18 @@ def extract_document(data):
                     if data["format"] == "archive":
                         return archive_inventory()
                     raise InputError("NATIVE_ARCHIVE_LIMIT")
+                from .native_ods import is_ods_archive, extract_native_ods
+                ods_candidate = is_ods_archive(archive)
                 if any(info.flag_bits & 1 for info in entries):
                     ooxml_candidate = ("xl/workbook.xml" in names) != ("word/document.xml" in names)
-                    if data["format"] == "archive" and not ooxml_candidate:
+                    if data["format"] == "archive" and not (ooxml_candidate or ods_candidate):
                         return archive_inventory()
                     raise InputError("Encrypted document archive is unsupported.")
+                if ods_candidate:
+                    native_format = "ods"
+                    result = extract_native_ods(archive)
+                    result["sourceSha256"] = hashlib.sha256(raw).hexdigest()
+                    return result
                 if data["format"] == "archive" and not (
                         ("xl/workbook.xml" in names) != ("word/document.xml" in names)):
                     return archive_inventory()
@@ -700,7 +784,7 @@ def extract_document(data):
         except (zipfile.BadZipFile, ElementTree.ParseError, KeyError, RuntimeError):
             if data["format"] == "archive" and native_format == "archive":
                 return archive_inventory()
-            raise InputError("NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
+            raise InputError("NATIVE_ODS_INVALID" if native_format == "ods" else "NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
     warnings.append("Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.")
     return {"format": native_format, "method": "native_parse", "status": "ready" if parts else "needs_input",
             "sourceSha256": hashlib.sha256(raw).hexdigest(), "parts": parts, "warnings": warnings, "characterCount": total_text}

@@ -1,0 +1,385 @@
+{
+  "task": "S0.3",
+  "gate": "GF-BACKEND",
+  "status": "demo_runtime_passed_desktop_recurrence_unresolved",
+  "initialObservedAt": "2026-10-10T00:40:23+05:30",
+  "decision": "Lead authorized explicitly new ulpin-demo; all retained projects remain untouched; schema-only bootstrap, no seeds",
+  "initialEngine": {
+    "context": "desktop-linux",
+    "version": "29.8.0",
+    "os": "linux",
+    "containers": 24,
+    "running": 0,
+    "stopped": 24,
+    "volumes": 14
+  },
+  "requestedProjectInventory": {
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "volumeOwners": {
+      "ulpin_postgres-data": null,
+      "ulpin_minio-data": null,
+      "ulpin_redis-data": null
+    },
+    "containers": []
+  },
+  "retainedContainerIds": [
+    "6364b6953d28",
+    "7853e43f4983",
+    "bd0355de03e8",
+    "48c6d484c93f",
+    "76baf446c695",
+    "9beb3a3c42e9",
+    "91ecb45a0133",
+    "cba41efe0158",
+    "90a95be27e15",
+    "964250818f0f",
+    "28d608487694",
+    "525f9ed699b3",
+    "00c1027a6af2",
+    "84f2c808f2b5",
+    "13727f2681c3",
+    "06d88638fa53",
+    "d1fa3830725f",
+    "0c396431d8d4",
+    "d2742b369b0b",
+    "fd0a1840048f",
+    "682b7506665c",
+    "c8e7be990ee2",
+    "7fc635b0e018",
+    "b62191ad1f46"
+  ],
+  "recovery": {
+    "baseline": "Linux engine pipe absent; ordinary Desktop start cancelled by inaccessible stale AF_UNIX socket",
+    "backendLog": "%LOCALAPPDATA%/Docker/log/host/com.docker.backend.exe.log",
+    "failureTimestampUtc": "2026-10-09T19:01:31.955573100Z",
+    "failureSignature": "initializing Ingest server: rename sailor-ingest.sock to sailor-ingest.sock.stale: The file cannot be accessed by the system",
+    "fsutilError": 1920,
+    "firstDesktopStart": "tool timeout at 95 seconds; backend log confirms startup cancellation and engine shutdown",
+    "desktopStop": "reported Failed to stop Docker Desktop; tool timeout at 45 seconds",
+    "hypothesis": "Preserving the verified inaccessible runtime socket directory and recreating it empty will allow normal startup, without touching VM/data storage",
+    "comparison": "one materially different documented socket-directory preservation, then one bounded official startup",
+    "preconditions": "Failed-start Docker clients/backend/Desktop terminated; docker-desktop WSL stopped; exact run directory contains only four known zero-byte reparse sockets; secret socket directory absent",
+    "backup": "%LOCALAPPDATA%/Docker/run.saved-s03-20261010-003445",
+    "preservedEntries": [
+      "dockerEthernetVfkit",
+      "dockerInference",
+      "sailor-ingest.sock",
+      "userAnalyticsOtlpHttp.sock"
+    ],
+    "successCriterion": "Normal Desktop startup and Linux Engine response, with retained container/volume inventory",
+    "stopCondition": "Any unexpected runtime entry, surviving original directory, security-product evidence, or second startup failure",
+    "result": "Docker Desktop start --timeout 45 succeeded; Linux Engine 29.8.0 responded",
+    "publicAnalogue": "https://github.com/docker/desktop-feedback/issues/554",
+    "permanentRecurrenceFixQualified": false,
+    "defenderEvidence": "Only October 6 unrelated inline-command detections observed; no Docker startup/socket event observed",
+    "securitySettingsChanged": false
+  },
+  "initialVerification": {
+    "coldDoctor": {
+      "command": "pnpm platform:doctor",
+      "exitCode": 1,
+      "failures": 10
+    },
+    "guardedStart": {
+      "command": "pnpm platform:start",
+      "exitCode": 1,
+      "composeStartReached": false
+    },
+    "warmRestart": {
+      "status": "not_attempted",
+      "reason": "Required existing ulpin project absent; same blocked start not retried"
+    },
+    "api": {
+      "command": "curl --silent --max-time 5 --output /dev/null http://127.0.0.1:3188/api/v1/health",
+      "exitCode": 7,
+      "httpStatus": "000"
+    },
+    "nodeSyntax": {
+      "commands": [
+        "node --check scripts/platform/runtime.mjs",
+        "node --check scripts/platform/doctor"
+      ],
+      "exitCode": 0
+    },
+    "shellSyntax": {
+      "command": "bash -n scripts/platform-start.sh scripts/platform-stop.sh scripts/platform-health.sh scripts/platform-lib.sh",
+      "exitCode": 0
+    },
+    "composeSyntax": {
+      "command": "docker compose --env-file NUL config --no-interpolate --quiet",
+      "exitCode": 0,
+      "note": "NUL avoids loading any .env; no configuration values printed"
+    },
+    "regression": {
+      "command": "node --test scripts/platform/runtime.test.mjs",
+      "exitCode": 0,
+      "tests": 1
+    },
+    "inventoryPreserved": {
+      "same24ContainerIds": true,
+      "same14VolumeNames": true,
+      "allContainersStillStopped": true,
+      "programmaticComparisonExitCode": 0
+    },
+    "stackStarted": false,
+    "engineLeftRunning": true
+  },
+  "next": [
+    "K2 can populate ulpin-demo only through real import routes; no seeds or restored profiles",
+    "Owner should pursue the recurring Docker Desktop stale AF_UNIX socket defect; no security exclusion is justified by current evidence",
+    "Before retiring this worktree, use platform:stop --profile demo then start from the integrated checkout so native processes use accepted code"
+  ],
+  "demo": {
+    "observedAt": "2026-10-09T19:51:10.015Z",
+    "project": "ulpin-demo",
+    "configuration": "E:\\BhuAayam-data\\runtime\\ulpin-demo\\demo.env",
+    "configurationSha256": "6a2fbc3bd134d72fb1c2d743af1fb0cac7438ffc7eda2e8714f92acc205247d8",
+    "configurationSecurity": "0600-style; Windows ACL inheritance removed on new demo directory; grants only operator, SYSTEM, Administrators",
+    "engine": {
+      "version": "29.8.0",
+      "containers": 30
+    },
+    "gatewayEnabled": false,
+    "ports": {
+      "POSTGRES_PORT": 15434,
+      "S3_PORT": 19020,
+      "S3_CONSOLE_PORT": 19021,
+      "REDIS_PORT": 16381,
+      "GEO_PORT": 18002,
+      "API_PORT": 3194
+    },
+    "volumes": [
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_redis-data"
+    ],
+    "containers": [
+      {
+        "id": "4f88e547f40e614882526e09808dff36bb22832cb525327fa60fc5d30f3b6876",
+        "service": "worker",
+        "state": "running",
+        "health": "healthy",
+        "restart": "unless-stopped"
+      },
+      {
+        "id": "cff67882e5e67ab86c6e19558c98310cdf193a6ed4b7889d835c2c047f09d021",
+        "service": "geo",
+        "state": "running",
+        "health": "healthy",
+        "restart": "unless-stopped"
+      },
+      {
+        "id": "ce9ecf3830f9ab3b9b66dfbbdf45257de435a483ab7d9c7d4b6a4af3c50a66c2",
+        "service": "minio-init",
+        "state": "exited",
+        "health": null,
+        "restart": "no"
+      },
+      {
+        "id": "0faae53a2e856672b376dcf34f59323cd2122ef332b1a9f0de8368180f777093",
+        "service": "redis",
+        "state": "running",
+        "health": "healthy",
+        "restart": "unless-stopped"
+      },
+      {
+        "id": "df261f4d5d7a1cda8af8a0530675b48e45497588e05b8a53abd4e6031f0cf536",
+        "service": "postgres",
+        "state": "running",
+        "health": "healthy",
+        "restart": "unless-stopped"
+      },
+      {
+        "id": "35134ae4d72687a491d4bf586f95528be80c873820a88d5709a104c3b5b2d099",
+        "service": "minio",
+        "state": "running",
+        "health": "healthy",
+        "restart": "unless-stopped"
+      }
+    ],
+    "nativeProcesses": {
+      "api": {
+        "project": "ulpin-demo",
+        "label": "api",
+        "pid": 36556,
+        "creationDate": "/Date(1791575454590)/",
+        "executable": "C:\\Program Files\\nodejs\\node.exe",
+        "entry": "E:\\Projects\\ulpin-wt\\s03\\apps\\api\\src\\main.ts",
+        "preload": "E:\\Projects\\ulpin-wt\\s03\\scripts\\platform\\isolated-env.cjs"
+      },
+      "dispatcher": {
+        "project": "ulpin-demo",
+        "label": "dispatcher",
+        "pid": 6220,
+        "creationDate": "/Date(1791575455416)/",
+        "executable": "C:\\Program Files\\nodejs\\node.exe",
+        "entry": "E:\\Projects\\ulpin-wt\\s03\\scripts\\dispatcher.ts",
+        "preload": "E:\\Projects\\ulpin-wt\\s03\\scripts\\platform\\isolated-env.cjs"
+      }
+    },
+    "retainedProjectsUnchanged": {
+      "containerIds": true,
+      "all24StillStopped": true,
+      "all14OriginalVolumeNamesPresent": true,
+      "only3ApprovedNewVolumes": true
+    },
+    "schemaAudit": {
+      "publicTables": 96,
+      "domainTables": 94,
+      "domainRows": 0,
+      "nonemptyTables": {
+        "spatial_ref_sys": 8500,
+        "usp_migration_ledger": 7
+      },
+      "migrationMarkers": [
+        "usp_declarations_001",
+        "usp_f1_min_001",
+        "usp_geometry_separation_001",
+        "usp_identity_001",
+        "usp_packet_pdf_entry_checkpoints_001",
+        "usp_packet_plans_001",
+        "usp_property_cards_001"
+      ],
+      "backfills": "identity_floors/spaces and map_areas derive only from existing units/sites; inserted zero rows in this new database",
+      "otherMigrations": "Existing lazy dataset and model-gateway schema producers invoked once, without enabling the gateway or creating examples"
+    },
+    "api": {
+      "healthHttpStatus": 200,
+      "healthOk": true,
+      "schemaReady": true,
+      "manifestSha256": "7fbac0f4ebb8d3f28dc6420ee99d2d2f31ffdaa062bfe170efe29393021f086b",
+      "databaseTargetToken": "41f7e091b5d652b19f97ce9d1cb6f8881fe65f8bb821ca1fbc6d6b05b554a597",
+      "unvalidatedConstraints": [
+        {
+          "name": "usp_feature_history_no_illustrative",
+          "table": "physical_feature_revisions"
+        },
+        {
+          "name": "usp_features_no_illustrative",
+          "table": "physical_features"
+        },
+        {
+          "name": "usp_registry_history_no_illustrative",
+          "table": "registry_revisions"
+        },
+        {
+          "name": "usp_registry_no_illustrative",
+          "table": "registry_records"
+        },
+        {
+          "name": "usp_unit_history_no_illustrative",
+          "table": "unit_revisions"
+        },
+        {
+          "name": "usp_units_no_illustrative",
+          "table": "units"
+        }
+      ],
+      "areasHttpStatus": 200,
+      "areas": []
+    },
+    "finalDoctor": {
+      "command": "node scripts/platform/doctor --profile demo",
+      "exitCode": 0,
+      "checks": 24,
+      "output": "scripts/platform/evidence/s03/warm-doctor.txt"
+    },
+    "runs": {
+      "cold": {
+        "completedAt": "2026-10-10T01:06:45+05:30",
+        "engineStopCommand": "docker desktop stop --timeout 45",
+        "engineStopExitCode": 0,
+        "normalEngineStartExitCode": 1,
+        "recurrenceTimestampUtc": "2026-10-09T19:27:55.849477200Z",
+        "recurrenceSignature": "Graceful stop followed by same sailor-ingest.sock rename: The file cannot be accessed by the system",
+        "recentDefenderBlockEvents": 0,
+        "recovery": "One documented comparison: failed-start processes terminated; WSL stopped; exact four run sockets plus engine.sock preserved after zero-byte/reparse checks; empty original paths recreated",
+        "backups": [
+          "%LOCALAPPDATA%/Docker/run.saved-s03-cold-20261010-010439",
+          "%LOCALAPPDATA%/docker-secrets-engine.saved-s03-cold-20261010-010439"
+        ],
+        "recoveredEngineStartCommand": "docker desktop start --timeout 45",
+        "recoveredEngineStartExitCode": 0,
+        "startCommand": "pnpm platform:start --profile demo --create",
+        "bootstrapAttempts": [
+          {
+            "exitCode": 1,
+            "reason": "Infra/bootstrap bucket completed; Windows NODE_OPTIONS path lost backslashes before migration. Fixed by using slash-normalized preload path; original demo.env preserved"
+          },
+          {
+            "exitCode": 1,
+            "reason": "Migrations/build/native readiness succeeded; doctor Docker template failed on minio-init absent Health key. Fixed by optional map lookup"
+          }
+        ],
+        "doctorCommand": "pnpm platform:doctor --profile demo",
+        "doctorExitCode": 0,
+        "healthHttpStatus": 200,
+        "areasHttpStatus": 200,
+        "areas": [],
+        "output": "scripts/platform/evidence/s03/cold-doctor.txt",
+        "qualification": "Green after documented socket recovery, not an unattended Desktop startup qualification"
+      },
+      "warm": {
+        "firstCompletedAt": "2026-10-10T01:10:12+05:30",
+        "completedAt": "2026-10-10T01:21:10+05:30",
+        "stopCommand": "pnpm platform:stop --profile demo",
+        "stopExitCode": 0,
+        "stoppedApiCurlExitCode": 7,
+        "stoppedDemoRunningContainers": 0,
+        "startCommand": "pnpm platform:start --profile demo",
+        "startExitCode": 0,
+        "doctorCommand": "pnpm platform:doctor --profile demo",
+        "doctorExitCode": 0,
+        "configurationShaUnchanged": true,
+        "same6DemoContainerIds": true,
+        "same3DemoVolumeNames": true,
+        "output": "scripts/platform/evidence/s03/warm-doctor.txt"
+      },
+      "idempotentResume": {
+        "command": "pnpm platform:start --profile demo",
+        "exitCode": 0,
+        "noCreationOrSchemaOnResume": true
+      },
+      "regression": {
+        "command": "node --test scripts/platform/runtime.test.mjs",
+        "exitCode": 0,
+        "tests": 3
+      },
+      "checkoutEnvBlock": {
+        "command": "ULPIN_PROFILE=demo node --require ./scripts/platform/isolated-env.cjs <read-guard probe>",
+        "exitCode": 0
+      },
+      "distinctHostPorts": {
+        "comparison": "Demo ports compared with HostConfig.PortBindings of all 24 retained containers",
+        "exitCode": 0,
+        "existingDockerHostPorts": [15433, 16380, 18001, 19010, 19011, 25432, 26379, 26432, 26479, 27028, 28000, 28100, 29000, 29001, 29100, 29101]
+      },
+      "configurationAcl": {
+        "command": "Get-Acl -LiteralPath E:/BhuAayam-data/runtime/ulpin-demo/demo.env",
+        "exitCode": 0,
+        "onlyOperatorSystemAdministrators": true,
+        "fileInheritsRestrictedDemoDirectory": true
+      },
+      "syntax": {
+        "commands": ["node --check scripts/platform/*.mjs (each file), isolated-env.cjs and doctor", "bash -n scripts/platform-{start,stop,health,lib}.sh", "docker compose --env-file NUL -p ulpin-demo -f compose.yaml -f scripts/platform/demo.compose.json config --no-interpolate --quiet"],
+        "exitCode": 0
+      }
+    },
+    "leftRunning": true
+  }
+}

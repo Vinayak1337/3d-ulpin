@@ -1,0 +1,65 @@
+{
+  "task": "IN1",
+  "gates": ["GF1", "GF5"],
+  "codeCommit": "e6c770db",
+  "qualification": "Offline metadata, protocol controls and read-only public NYC inputs; no runtime qualification.",
+  "recognition": {
+    "knownFormatLabels": 40,
+    "byBytes": 39,
+    "bytesAndName": ["shapefile-index"],
+    "structureDepthKinds": 17,
+    "headerOrSampleStructures": ["geojson", "geojson-seq", "ndjson", "csv", "tsv", "xlsx", "shapefile", "dbf", "zip", "pdf", "las", "laz", "tiff", "geotiff"],
+    "directoryStructuresOnly": ["docx", "ods", "kmz"],
+    "signatureKinds": ["pdf", "png", "jpeg", "las", "sqlite", "parquet", "zip", "tiff", "bigtiff", "glb", "dwg", "e57", "7z", "rar", "flatgeobuf", "geojson", "cityjson", "geojson-seq", "ndjson", "csv", "tsv", "ifc", "citygml", "gml", "kml", "dxf", "gltf", "obj", "ply", "geopackage", "laz", "dbf", "shapefile", "xlsx", "docx", "ods", "kmz", "geoparquet", "geotiff", "shapefile-index"],
+    "interpretation": "Counts are distinct recognized labels, including aliases and container-derived kinds, not full native-reader coverage. Structure depth is input-dependent; PDF structure is its version only. File Geodatabase remains unknown; COG layout is not established."
+  },
+  "evidence": {
+    "audit": "step0.json",
+    "real": "nyc-pack.json",
+    "packBytesRead": 569772,
+    "packProbeMs": 19.3,
+    "packMembers": 10,
+    "difficult": {"name": "sidewalk.geojson", "sizeBytes": 1854113, "sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9", "probeBytesRead": 131072, "probeMs": 0.943, "below200KiB": true},
+    "integrity": "Separate read-only streaming SHA-256 passes are excluded from all probe byte/time measurements.",
+    "difficultSelection": "No eligible catalogue-path shapefile or GeoPackage was found under datasets. The fallback is the largest verified public NYC GeoJSON among the inspected files, not an exhaustive largest-file claim across datasets."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-*.test.ts", "exit": 0, "tests": 60, "passed": 60, "failed": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-*.test.ts tests/manual-ingestion.test.ts tests/ingestion-events.test.ts", "exit": 0, "tests": 65, "passed": 65, "failed": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts", "exit": 0, "operations": 305, "schemas": 346, "beforeOperations": 301, "beforeSchemas": 342},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "output": "Native API catalogue matches: 305 operations, 346 named schemas; no listener or domain operation opened."},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "python -B scripts/api/check.py", "exit": 1, "output": "API-DOC: runtime receipt changed", "diagnosis": "Unchanged repository receipts differ only in CRLF/LF bytes; their LF hashes match the qualification pins. No receipt, qualification pin or checker was edited."},
+    {"command": "python -B docs/evidence/gf1/in1/verify-static.py", "exit": 0, "output": "IN1-STATIC: 4 tables, 9 statement hashes, 5 mirrored enums; new source lines <=120"},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/in1/probe-real.ts", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "wholeSuite": {"run": false, "beforeTests": null, "afterTests": null, "reason": "The whole tests directory is not a safely isolated runtime-free command: document-ods-bridge.test.ts can POST /stop to a configured bridge; native/bytecode tests can read or write other task roots, and model-gateway/sql.test.ts admits SQL runtimes. Only the explicit offline intake/neighbour subset was executed. No whole-suite pass or count is claimed."},
+  "designDifferences": [
+    "Workbook child size_bytes and size_class are null before extraction; zero would invent a size. Top-level sizes remain required. Parts, keys and extent tables exist but receive no IN1 rows.",
+    "migrateIntakeLedgerTx loads the hand-authored, hash-pinned SQL through the existing loader; central migrateUsp wiring is outside ownership and remains undone. SQL was applied nowhere.",
+    "Budget retries keep the item received and retry the bounded pure probe; no partial parser checkpoint is persisted. A later failed/budget probe cannot erase an existing card or officer pin.",
+    "Nested ZIPs are retained at signature depth rather than recursively opened. This is stricter than the depth-two ceiling; it avoids extracting child originals in this task.",
+    "File Geodatabase has no reliable single-head classification here and remains unknown with a stated limit. COG is recognized only as TIFF/GeoTIFF, never asserted as COG.",
+    "PDF encryption/page counts require validated trailer/page-tree resolution and remain null. LAS VLR CRS is unresolved. TIFF IFD dimensions/bands/tiling/GeoKeys are bounded, but transform, overviews and COG layout are not qualified. BigTIFF stays signature-only.",
+    "PRJ bytes are hashed only when the entire sidecar fits the member head. CRS code resolution, raster world-file transforms, and non-4326 extent conversion are deferred to existing native readers. Sidecar hashes never become guessed CRS codes.",
+    "GeoPackage layers and GeoParquet row groups/CRS/extent remain unplanned, as permitted by this task's signature-only scope. NYC manifest.json stays unknown; its declared values are not copied into cards.",
+    "source.retained notifications are emitted only for canonical status needs_input, its schema's required literal. Other source statuses publish nothing; no stream or Studio contract was changed.",
+    "Existing receipt counts/CRS/types and accepted-result hashes are cited, not recalculated by a native job. Retained-count coverage is explicitly distinguished from a recomputed raw-file total.",
+    "Non-UTF8 high-byte ZIP names are refused rather than mislabeled with a CP437/Windows-1252 guess. Member count, directory size, expanded bytes, ratio, unsafe paths and depth guards are protocol-tested."
+  ],
+  "reviewFindingsFixed": [
+    "Case-folding ZIP folders/base names could borrow another item's CRS sidecar. Grouping now requires exact folder/base equality; a regression checks differently cased folders and bases.",
+    "Arbitrary GeoParquet version text could escape as a metadata code. Only numeric semantic-version codes are accepted; a protocol control checks that an untyped value never appears in the serialized card."
+  ],
+  "safety": {"sqlApplied": false, "runtimeStartedOrChanged": false, "nativeReaderStarted": false, "providerCalls": 0, "gpuUsed": false, "originalsModified": false, "restrictedFoldersRead": false, "pushed": false},
+  "next": [
+    "Lead wires migrateIntakeLedgerTx into the existing USP migration and admits IN1 in scripts/db/verify_extraction.py's authored-task list, then qualifies SQL/routes on the separately authorized rehearsal runtime.",
+    "Tray integration adds an intake-specific notification together with Studio support, or consumes the manifest directly; current notifications intentionally cover needs_input sources only.",
+    "Follow-up probe work can add File Geodatabase grouped signatures, validated PDF trailer/page-tree metadata, LAS VLR CRS, raster transforms/COG qualification, and a resumable probe checkpoint if large archive probes cannot finish within two seconds.",
+    "Re-run the API checker in a checkout preserving the pinned receipt bytes; do not replace runtime receipts to hide line-ending artefacts."
+  ],
+  "report": "TASK   IN1 — 40 known format labels (39 bytes + SHX bytes/name), 17 metadata-structure kinds   GATE GF1/GF5\nWORKS  Bounded holdings cards, four additive tables and four published/offline-tested registration/read/pin routes; no reader starts.\nSEE IT pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/in1/probe-real.ts\nINPUTS NYC multimodal.zip: 569772 B / 19.3 ms; member cards below (compressed-range bytes include local headers).\n       sidewalk.geojson — GeoJSON W1, features unknown; 65536 B / 7.670 ms\n       buildings-original.geojson — GeoJSON W1, features unknown; 65536 B / 1.705 ms\n       boundary-original.geojson — GeoJSON W1, 1 feature; 2278 B / 0.718 ms\n       hydrography.geojson — GeoJSON W1, 1 feature; 897 B / 0.606 ms\n       roadbed.geojson — GeoJSON W1, features unknown; 65536 B / 1.322 ms\n       parks.geojson — GeoJSON W1, features unknown; 39016 B / 1.895 ms\n       nyc-10013-dem-2017.tif — TIFF W2, bands unknown; 65536 B / 1.379 ms\n       nyc-10013-lidar-2017.laz — LAZ W2, 1726222 points; 65536 B / 0.943 ms\n       nyc-10013-ortho-2018.tif — GeoTIFF W2, 4 bands; 65536 B / 0.725 ms\n       manifest.json — unknown W4; 2573 B / 0.716 ms\n       Difficult: loose sidewalk.geojson (1854113 B), 131072 B / 0.943 ms; SHA-256 5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9. No eligible catalogue-path SHP/GPKG was found.\nGAPS   No migration wiring/runtime qualification or whole-suite run; FileGDB unknown, COG/PDF pages/encryption/LAS CRS/raster transforms deferred; API checker reports a verified line-ending artefact.\nDESIGN intake-ledger.sql + strict intake.ts define metadata and future tables; intake-probe.ts uses bounded range/format helpers and profileColumns.\n       intake-service.ts probes between transactions; intake-context.ts rechecks original/access pins; intake-ledger.ts cites receipts.\n       Sheet sizes stay null, nested ZIPs are not opened, only needs_input sources emit source.retained; other design deviations are recorded above.\nCOMMITS 1c11c574 docs(ingestion): IN1 what a retained source already says about itself\n        638146ce feat(ingestion): the intake ledger, visible SQL\n        e0ece05f feat(ingestion): a holdings card for every kind of file, from its head and tail only\n        f0effc61 feat(api): a case's intake manifest, registration and the officer's pin\n        e6c770db fix(ingestion): keep ZIP paths exact and metadata codes bounded\n        HEAD docs(ingestion): IN1 evidence (this evidence commit)\nCHECKS pnpm typecheck:backend — 0; intake tests — 0 (60/60); intake + manual-ingestion + ingestion-events — 0 (65/65).\n       OpenAPI generate/check — 0 (305 operations / 346 schemas); pnpm studio:api-types — 0; pnpm studio:typecheck — 0.\n       python -B scripts/api/check.py — 1: API-DOC: runtime receipt changed (unchanged CRLF/LF receipts).\n       python -B docs/evidence/gf1/in1/verify-static.py — 0; real probe command above — 0; git diff --check — 0.\nNEXT   Lead wires the migration and verifier task allowance, qualifies the runtime, then connects the tray/scheduler. Nothing pushed."
+}

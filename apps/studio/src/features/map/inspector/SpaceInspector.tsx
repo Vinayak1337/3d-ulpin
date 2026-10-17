@@ -1,35 +1,64 @@
 import { useState, type ReactNode } from 'react';
-import { CheckCircle, QrCode, ShieldCheck } from '@phosphor-icons/react';
+import { Link } from 'react-router';
+import { QrCode } from '@phosphor-icons/react';
 import type { BuildingLedger, SourcedValue } from '@ulpin/api-client/draft';
-import { Badge, Button, DescriptionList, EvidenceChip, StatusBadge, Tabs, UlpinCode, type Fact, type StatusWord } from '@ulpin/ui';
-import type { BuildingRegister } from '../../../api/queries';
+import { Badge, Button, DescriptionList, EvidenceChip, StatusBadge, Tabs, UlpinCode, type Fact } from '@ulpin/ui';
+import { useBuildingCanonical, useUnitCards, type BuildingRegister } from '../../../api/queries';
 import type { BuildingModel, LevelModel, SpaceModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
-import { useRecordReview, useSpaceWorkflow } from '../../workflow/useWorkflow';
+import { cardAction, readFailure } from '../../identity/registryCard';
+import { Cited } from '../../register/ReadingNote';
+import { useReadingStatements } from '../../register/useReadingStatements';
+import type { RecordedUnit } from '../../review/recorded/model';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from '../ledger';
 import { recordEvidence } from './evidence';
 import { InspectorShell, type Crumb } from './InspectorShell';
+import { recordedUnit, recordedUnitPath, registryStatus } from './registryState';
 import styles from './Inspector.module.css';
 
 type Tab = 'overview' | 'rights' | 'evidence';
 
+const NOT_RECORDED = 'The registry lists no recorded unit for this space, so no review, code or card is recorded '
+  + 'for it from here.';
+const UNREAD = 'The record of this building could not be read.';
+const AT_ITS_UNIT = 'The review, the code and the cards of this unit are recorded in the registry from its '
+  + 'recorded unit.';
+
+/** The way to the recorded unit: the inspector's one button, or a text link when a card holds that place. */
+function UnitLink({ buildingId, unit, asText }: { buildingId: string; unit: RecordedUnit; asText: boolean }) {
+  return (
+    <Link className={asText ? undefined : 'ul-btn ul-btn--primary'} to={recordedUnitPath(buildingId, unit.id)}>
+      Open recorded unit
+    </Link>
+  );
+}
+
 /**
- * Space variant: status (Draft → Reviewed → Assigned, or the ledger's review status), the proposed code
- * once assigned, facts with inline evidence, and one primary action that moves the space forward.
+ * Space variant: the status and the code the registry states, facts with inline evidence, and the way on. The
+ * inspector writes nothing and reads nothing from this browser's store: a recorded unit links to its block on
+ * the record page, where it is reviewed, assigned its code and issued a card through the registry. A card the
+ * registry lists for the unit enables the Property Card action by itself; the link to the recorded unit is then
+ * text beside its note, so the actions hold one button.
  */
-export function SpaceInspector({ space, level, model, register, ledger, buildingId, crumbs, datum, onSelectSpace, onAssign, onCard, onFinding }: {
+export function SpaceInspector({
+  space, level, model, register, ledger, buildingId, crumbs, datum, onSelectSpace, onCard, onFinding,
+}: {
   space: SpaceModel; level: LevelModel | null; model: BuildingModel; register: BuildingRegister; ledger: BuildingLedger | null | undefined;
-  buildingId: string; crumbs: Crumb[]; datum: string | null; onSelectSpace: (id: string) => void; onAssign: () => void; onCard: () => void;
+  buildingId: string; crumbs: Crumb[]; datum: string | null;
+  onSelectSpace: (id: string) => void; onCard: () => void;
   onFinding: (findingId: string) => void;
 }) {
   const [tab, setTab] = useState<Tab>('overview');
   const openEvidence = useOpenEvidence();
-  const workflow = useSpaceWorkflow(space.id);
-  const review = useRecordReview();
+  const readings = useReadingStatements(buildingId, register.property.revision > 0);
+  const canonical = useBuildingCanonical(buildingId);
+  const unit = recordedUnit(canonical.data, space.id);
+  // The registry is asked for the cards of the selected unit only; a refusal is stated below, never read as none.
+  const cards = useUnitCards(buildingId, space.id);
+  const card = cardAction(cards, false);
   const facts = ledgerSpace(ledger, space.id);
-  const recorded = workflow.data?.status;
-  const status: StatusWord = recorded ?? (facts?.status === 'needs_review' ? 'Needs review' : facts?.status === 'reviewed' ? 'Reviewed' : 'Draft');
+  const status = registryStatus(unit, facts?.status);
   const sourceName = (id: string) => register.sources.find((s) => s.id === id)?.name ?? 'Source';
   const refs = recordEvidence(space.record, sourceName, space.name);
   const parent = space.parentId ? model.spaceById.get(space.parentId) : null;
@@ -41,6 +70,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
     return (
       <span className="ul-row">
         <span className="ul-num">{format(value.value as never)}</span>
+        <Cited sourceId={value.sourceId}>
         {value.sourceId
           ? <EvidenceChip source={value.source ?? 'Source'} locator={value.locator ?? undefined} onOpen={() => openEvidence({
               sourceId: value.sourceId!, label: value.source ?? 'Source', locator: parseLocator({ locator: value.locator ?? undefined }),
@@ -48,6 +78,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
               supports: supportsFrom(value.sourceId!),
             })} />
           : <EvidenceChip state="missing" source="Needs evidence" />}
+        </Cited>
         {extra}
       </span>
     );
@@ -85,31 +116,40 @@ export function SpaceInspector({ space, level, model, register, ledger, building
   }
   if (parent) rows.push({ label: 'Within', value: <button type="button" className="ul-evid" onClick={() => onSelectSpace(parent.id)}><b>{parent.name}</b></button> });
   if (rooms.length) rows.push({ label: 'Rooms', value: <span className="ul-row">{rooms.map((r) => <button key={r.id} type="button" className="ul-evid" onClick={() => onSelectSpace(r.id)}><b>{r.shortName}</b></button>)}</span> });
+  if (card.opens === 'registry') rows.push({ label: 'Cards', value: 'Listed by the registry' });
 
-  const primary = status === 'Assigned'
-    ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button>
-    : status === 'Reviewed'
-      ? <Button variant="primary" icon={ShieldCheck} onClick={onAssign}>Assign code</Button>
-      : <Button variant="primary" icon={CheckCircle} disabled={review.isPending} onClick={() => review.mutate({ spaceId: space.id, buildingId, spaceName: space.name, recordRevision: space.record.revision })}>Record reviewed details</Button>;
+  const cardButton = card.opens
+    ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button> : null;
+  const listed = Boolean(card.opens);
+  const unitLink = unit ? <UnitLink buildingId={buildingId} unit={unit} asText={listed} /> : null;
+  const unread = canonical.error ? `${UNREAD} ${readFailure(canonical.error)}` : null;
   const secondary = finding && status !== 'Assigned'
     ? <Button onClick={() => onFinding(finding.id)}>{finding.code === 'carpet_area_deviation' ? 'Review area' : 'Open finding'}</Button> : null;
+  // A space the registry holds no recorded unit, card or finding for has no action: the shell then has no footer.
+  const unitButton = listed ? null : unitLink;
+  const hasActions = Boolean(cardButton || unitButton || secondary);
 
   const rights = facts?.rights ?? 'unknown';
   return (
     <InspectorShell
       rekey={space.id}
+      readings={readings}
       crumbs={crumbs}
       title={space.name}
       status={<StatusBadge status={status} />}
       subtitle={<span className="ul-mono">{space.record.identifier.replace(/\//g, ' / ')}</span>}
       tabs={<Tabs label="Space details" value={tab} onChange={setTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'rights', label: 'Rights' }, { value: 'evidence', label: 'Evidence', count: refs.length }]} />}
-      actions={<>{primary}{secondary}</>}
+      actions={hasActions ? <>{cardButton}{unitButton}{secondary}</> : undefined}
     >
       {tab === 'overview' ? (
         <>
-          {workflow.data?.code ? <UlpinCode code={workflow.data.code} state="assigned" /> : null}
+          {unit?.code ? <UlpinCode code={unit.code} state="assigned" /> : null}
           <DescriptionList items={rows} />
-          {status === 'Draft' || status === 'Needs review' ? <p className={styles.note}>Review the details against the sources, then record them. A proposed code can be assigned after review.</p> : null}
+          {card.unanswered ? <p className={styles.note}>{card.unanswered}</p> : null}
+          {unread ? <p className={styles.note}>{unread}</p> : null}
+          {canonical.data ? (
+            <p className={styles.note}>{unit ? AT_ITS_UNIT : NOT_RECORDED} {listed ? unitLink : null}</p>
+          ) : null}
         </>
       ) : tab === 'rights' ? (
         <DescriptionList items={[
@@ -118,7 +158,14 @@ export function SpaceInspector({ space, level, model, register, ledger, building
           { label: 'Share', value: facts?.sharePct ? `${facts.sharePct.value.toFixed(2)} %` : <StatusBadge status="Unknown" /> },
         ]} />
       ) : (
-        <div className={styles.chips}>{refs.map((ref) => <EvidenceChip key={ref.locator.text + ref.sourceId} kind="document" source={ref.label} locator={ref.locator.text} onOpen={() => openEvidence(ref)} />)}</div>
+        <div className={styles.chips}>
+          {refs.map((ref) => (
+            <Cited key={ref.locator.text + ref.sourceId} sourceId={ref.sourceId}>
+              <EvidenceChip kind="document" source={ref.label} locator={ref.locator.text}
+                onOpen={() => openEvidence(ref)} />
+            </Cited>
+          ))}
+        </div>
       )}
     </InspectorShell>
   );

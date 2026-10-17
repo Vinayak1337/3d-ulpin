@@ -27,7 +27,9 @@ function useSettled(done: boolean) {
  * S3: the tray while an area import streams (?package=). Records arrive on the map as they are saved;
  * nothing here moves the camera. Polls until the package settles; SSE replaces polling later.
  */
-export function ImportTray({ packageId, onClose }: { packageId: string; onClose: () => void }) {
+export function ImportTray({ packageId, drawnBuildings, onClose }: {
+  packageId: string; drawnBuildings?: number; onClose: () => void;
+}) {
   const pkg = useQuery({
     queryKey: ['import-packages', packageId],
     queryFn: async () => unwrap(await api.GET('/api/v1/import-packages/{packageId}', { params: { path: { packageId } } })),
@@ -45,10 +47,14 @@ export function ImportTray({ packageId, onClose }: { packageId: string; onClose:
     const n = features.filter((f) => kinds.includes(String(f.kind))).length;
     return { id: label, file: label, state: running ? 'running' : 'saved', detail: n ? `${formatCount(n)} ${unit} ${recorded ? 'recorded' : 'accepted for review'}` : running ? 'reading' : 'none accepted from this file' };
   });
+  const received = `${formatCount(features.length)} features${isDemoId(packageId) ? ' received' : ''}`;
+  const drawn = isDemoId(packageId) && drawnBuildings !== undefined
+    ? ` · ${formatCount(drawnBuildings)} buildings drawn` : '';
+  const state = running ? '' : recorded ? ' · recorded' : ' · unrecorded proposals';
   return (
     <div>
       <ImportStream title={running ? `Importing ${pkg.data.name}` : `Imported ${pkg.data.name}`} rows={rows}
-        meta={quarantine ? quarantine.message : `${formatCount(features.length)} features${running ? '' : recorded ? ' · recorded' : ' · unrecorded proposals'}`}
+        meta={quarantine ? quarantine.message : `${received}${drawn}${state}`}
         aside={!running ? <Button variant="ghost" onClick={onClose}>Done</Button> : null} />
       {quarantine ? <details className="ul-panel ul-pad">
         <summary>{formatCount(quarantine.rejected)} skipped source features</summary>

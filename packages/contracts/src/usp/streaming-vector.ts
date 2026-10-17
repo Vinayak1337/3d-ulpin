@@ -33,7 +33,11 @@ export const StreamingVectorSlotSchema=z.strictObject({
   ref:StreamingVectorRefSchema.nullable(),issueCode:z.string().max(80).nullable(),
   resultSha256:hash,attempt:z.number().int().positive(),fence:z.number().int().positive(),
 });
+/** Read-only freshness never changes retained results or grants current mutation authority. */
+export const RetainedResultFreshnessSchema=z.strictObject({current:z.boolean(),
+  reasons:z.array(z.enum(['case_advanced','reader_changed','converter_changed','source_superseded'])).max(4)});
 export const StreamingVectorStatusSchema=z.strictObject({
+  ...RetainedResultFreshnessSchema.shape,
   version:z.literal(STREAMING_VECTOR_LIMITS.version),jobId:id,caseId:id,sourceId:id,
   sourceRevision:z.number().int().positive(),sourceSha256:hash,framing:StreamingVectorFramingSchema,
   status:z.enum(['queued','running','completed','completed_with_rejections','failed','stale']),
@@ -55,6 +59,7 @@ export const StreamingVectorPayloadSchema=z.strictObject({
   records:z.array(StreamingVectorRecordSchema).max(STREAMING_VECTOR_LIMITS.chunkFeatures),
 });
 export const StreamingVectorChunkResponseSchema=z.strictObject({
+  ...RetainedResultFreshnessSchema.shape,
   slot:StreamingVectorSlotSchema,payload:StreamingVectorPayloadSchema.nullable(),
   sourceComplete:z.boolean(),unknownRemainder:z.boolean(),
 });

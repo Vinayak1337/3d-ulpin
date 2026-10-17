@@ -1,0 +1,15 @@
+{
+  "storeyCount": {"value": null, "expression": null, "citations": []},
+  "basementCount": {"value": null, "expression": null, "citations": []},
+  "floorExpressions": [
+    {"expression": "G+42", "scope": null, "citations": [{"partId": "p1-l88", "quote": "G+42"}]}
+  ],
+  "labels": [
+    {"label": "BASEMENT", "kind": "basement", "citations": [{"partId": "p1-l56", "quote": "BASEMENT"}]}
+  ],
+  "heights": [],
+  "unitCounts": [],
+  "conflicts": [],
+  "abstain": false,
+  "abstainReason": null
+}

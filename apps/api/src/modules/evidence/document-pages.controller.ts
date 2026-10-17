@@ -42,7 +42,10 @@ export class DocumentPagesController{
   @ApiParam({name:'page',schema:{type:'integer',minimum:1,maximum:400}})
   @ApiQuery({name:'revision',required:true,schema:{type:'integer',minimum:1}})
   @ApiQuery({name:'sha256',required:true,schema:{type:'string',pattern:'^[a-f0-9]{64}$'}})
-  @ApiResponse({status:200,content:{'image/png':{schema:{type:'string',format:'binary'}}}})
+  @ApiResponse({status:200,content:{'image/png':{schema:{type:'string',format:'binary'}}},
+    headers:{'X-Page-View':{schema:{type:'string',enum:['reduced']},description:'Sent only when the page is over '+
+      'the whole-page limit and is drawn whole at a reduced scale, for viewing only. The scale is the first '+
+      'value of X-Page-Pixel-Affine.'}}})
   async raster(@Param('sourceId') sourceId:string,@Param('page') page:string,@Req() request:Request,@Res() response:Response){
     const data=await this.service.raster(idSchema.parse(sourceId),DocumentPageNumberSchema.parse(page),query(request));
     response.setHeader('Cache-Control','private, no-store');response.setHeader('Content-Type','image/png');
@@ -53,6 +56,7 @@ export class DocumentPagesController{
     response.setHeader('X-Page-Pixels',data.render.pixels.join(','));
     response.setHeader('X-Page-Frame',`${data.frame.kind};${data.frame.width},${data.frame.height};rotation=${data.frame.rotation}`);
     response.setHeader('X-Page-Pixel-Affine',`${data.render.scale};${data.render.pixelOrigin.join(',')}`);
+    if(data.render.reduced)response.setHeader('X-Page-View','reduced');
     response.end(data.bytes);
   }
 }

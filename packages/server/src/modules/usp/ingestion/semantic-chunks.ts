@@ -26,8 +26,22 @@ export function semanticPublisherSha(){
 }
 const preIFCPublisherReadSha=new Set(['2fc75b285a9b57fffaebad822497a30c59274b6e7345e44f760470a39f284be1',
   '2410cb1dc2581631c11f3eea1f10bbe79c5d328d457426b7fb60ae550594673a']);
+// DXF-02: exact cfc679fd Git/LF and retained physical pre-DXF constituents.
+// Only immutable reads use these; preparation/publication remain exact.
+const preDXFPublisherReadSha=new Set(['d38d11c0c0c9e97339fee2f1adf30fa40f01faa7e6bff0ba87a606940041ae66',
+  '4278b5bbf56687af035f87f97b991b7fd240eb9b818c76419d9603adb5c8d9ce']);
+// KML-02: fd36a4b9 exact historical Git/LF and actual physical publisher.
+const preKMLPublisherReadSha=new Set(['aefcce46f18502786d2cc4c15ce0a306ec765045c5039afe78e5500866d19e3e',
+  'c32495d23f7df31384bc0ee83dea1481b34f9d1cbe92b8dbf2f32a99394e67cc']);
+// CITYGML-02: exact assigned-base Git/LF and physical publisher for immutable reads.
+const preCityGMLPublisherReadSha=new Set(["35c11ba89f22268f858c11599ac930f88fa3af2c6e5f2d51bf6a2b9dda240d24", "fd4ab52af946b2be387e3619faf7003657ebe666a111ede66f03f5170bf19252"]);
+// GEOPARQUET-02: exact assigned-base code, immutable reads only.
+const preGeoParquetPublisherReadSha=new Set(["a34189b6a8fd60c58340ddc622f680c69d0705d44ab4e78e04f5cc6a122ad1c5", "e45f2695f016a6e84c1cc225e2cd10dd1f3f0ebd29552cbb42175d8ff5a80eeb"]);
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["f5abbdbabd56d2675bac74e033b1186803a869ea45fb20e0a80a692a9eaa45f9","3e70b8b75e1872c011f12a44d68cec924db0f9c6b6db6819ec7e5b79c33b93b4"]);
 export function semanticPublisherReadCompatible(stored:string,current=semanticPublisherSha()){
-  return stored===current||preIFCPublisherReadSha.has(stored)&&current===semanticPublisherSha();
+  return stored===current||(prePacketPdfReadCodeSha.has(stored)||preIFCPublisherReadSha.has(stored)||preDXFPublisherReadSha.has(stored)||(preKMLPublisherReadSha.has(stored)||(preCityGMLPublisherReadSha.has(stored)||preGeoParquetPublisherReadSha.has(stored))))&&current===semanticPublisherSha();
 }
 export function semanticPartitions(index:SemanticPreparation['index']):SemanticPartition[]{
   const partitions:SemanticPartition[]=[];let first=0,positions=0,bytes=0;

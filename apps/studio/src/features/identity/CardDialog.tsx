@@ -1,26 +1,33 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Printer, QrCode } from '@phosphor-icons/react';
-import { Button, Dialog, Icon, PropertyCard, SegmentedControl, Toggle } from '@ulpin/ui';
+import { Banner, Button, Dialog, Icon, SegmentedControl, Toggle } from '@ulpin/ui';
 import type { SpaceModel, LevelModel } from '../../model/building';
 import type { SpaceWorkflow } from '../../local/workflow';
-import { shortHash } from '../../local/workflow';
-import { Qr } from './Qr';
 import { useCardFacts } from './cardFacts';
+import { DraftCard } from './DraftCard';
+import { DraftNotice } from './DraftNotice';
+import { useLocalChain } from './localChain';
 
 export function verifyPath(workflow: SpaceWorkflow) {
   return `/verify/${encodeURIComponent(workflow.code!)}?rev=${workflow.events[0]!.revision}`;
 }
 
-/** S14: the card preview with scope and audience; party names are forced off for Public. */
-export function CardDialog({ workflow, space, level, buildingName, onClose }: {
-  workflow: SpaceWorkflow; space: SpaceModel; level: LevelModel | null; buildingName: string; onClose: () => void;
+/**
+ * S14: the card preview with scope and audience; party names are forced off for Public. The code, revisions
+ * and chain are this browser's own (local/workflow.ts), so the dialog says it is a draft on this device.
+ */
+export function CardDialog({ workflow, space, level, buildingName, unanswered = null, onClose }: {
+  workflow: SpaceWorkflow; space: SpaceModel; level: LevelModel | null; buildingName: string;
+  /** What `cardAction` states when the registry did not answer that it lists no card for this unit. */
+  unanswered?: string | null; onClose: () => void;
 }) {
   const [audience, setAudience] = useState<'public' | 'owner' | 'officer'>('public');
   const [names, setNames] = useState(false);
   const head = workflow.events[0]!;
   const link = `${window.location.origin}${verifyPath(workflow)}`;
   const card = useCardFacts(workflow);
+  const chain = useLocalChain(workflow);
   void level;
   return (
     <Dialog
@@ -34,15 +41,18 @@ export function CardDialog({ workflow, space, level, buildingName, onClose }: {
         </>
       )}
     >
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 240px', gap: 24 }}>
-        <PropertyCard
+      <DraftNotice />
+      {unanswered ? <Banner tone="info">{unanswered}</Banner> : null}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 240px', gap: 24,
+        marginTop: 'var(--ui-space-4)' }}>
+        <DraftCard
           title={`${space.name}, ${buildingName}`}
           code={workflow.code}
           location={card?.location ?? null}
-          revision={`r${head.revision}`}
-          hash={shortHash(head.hash)}
-          chain="Chain consistent"
-          qr={<Qr value={link} size={88} label="QR code: verification page" />}
+          revision={head.revision}
+          hash={head.hash}
+          chain={chain}
+          link={link}
           facts={[
             ...(card?.facts ?? []),
             ...(audience !== 'public' && names ? [{ label: 'Party names', value: <em className="ul-unknown">Restricted (officer role)</em> }] : []),

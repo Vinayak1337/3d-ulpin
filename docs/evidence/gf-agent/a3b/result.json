@@ -1,0 +1,112 @@
+{
+  "task": "A3b — Tabular sources through the real chunk-mapping job",
+  "gate": "GF-AGENT",
+  "branch": "task/a3b-tabular-wiring",
+  "base": "f5539916",
+  "verifiedCodeCheckpoint": "3f07d9d6",
+  "qualification": "software controls pass; public runtime remains blocked and deliberately unrun",
+  "runtime": {"executed": false, "owner": "K3b until explicit handover", "plan": "runtime-plan.md"},
+  "design": {
+    "admission": "tabular-source.ts reuses Papa/native readers; exact public D8 dev bytes and selection required",
+    "approval": "service.ts author/decide uses existing append-only recipe revisions and operation receipts",
+    "worker": "acceptTabularDataSlot uses the existing fenced chunk worker; publishTabularMappingTx commits slot and outbox",
+    "learning": "learnApprovedTabularTx verifies persisted approval, serializes one Stage A partial_fit and records its receipt",
+    "authority": "No new job type, store, approval authority or registry writer; tabular registry execution refuses",
+    "provenance": "Logical citations, selected sheet and explicit original sourceRows; native absent and unknown remain distinct",
+    "metrics": "Direct officer approval is not counted as memory; only validated cache/accepted-memory lookup is a hit"
+  },
+  "realInputs": [
+    {"id": "mi-d10-01.csv", "role": "good", "sha256": "9c20032a80044527b24decd365e20e321de029f80453d12e4232b7e2ec6e7111"},
+    {"id": "mi-d11-01.csv", "role": "difficult duplicate headers", "sha256": "ceb36ecb3d456ff100964a87cde33ec13fead27e48feed7356716700d23eac60"},
+    {"id": "mi-d19-01.xlsx", "role": "native selected headers 4/5", "sha256": "fc3f75eafdb7b954348ac182d1db3c3a558fc08aecf072d6a3807735d15e38a2"}
+  ],
+  "inputQualification": "Existing immutable D8 public development originals; test_only; permission unconfirmed; no property truth invented",
+  "controls": {
+    "focusedTests": 30,
+    "a3bTests": 7,
+    "covered": [
+      "real retained CSV through mocked storage/SQL; source hash, unsupported, empty-header and byte-budget refusal",
+      "duplicate headers positional; native workbook selection and unchanged reader bounds",
+      "GIS contract compatibility; explicit tabular plan/pins; officer field ordering and nonblank reasons",
+      "existing author/approve append and idempotency; configured local subject containing a colon",
+      "unapproved learning and tabular registry execute refuse",
+      "learning SQL rollback recovers immutable completed model with no second partial_fit",
+      "slot/outbox rollback publishes neither; success publishes both and serializes valid mapping.chunk SSE",
+      "real raw-row worker routing publishes only candidates and never trains an unapproved proposal",
+      "approved unknown decisions reuse accepted memory with teacherCalls=0 and active learnerVersion=v44"
+    ],
+    "boundary": "SQL and S3 doubles, real bounded source bytes, real local Python model; no live DB/S3/API/provider"
+  },
+  "approvedLearningControl": {
+    "model": "E:/BhuAayam-data/task-data/a3b/controls/133f6293-fda6-4ab9-a4fd-46df21979704/approvals/4a263860-5f38-463a-be68-d3e926e863f3-2/learner/v44",
+    "modelSha256": "cf0ad0567ba12e3e8449f81887d26d336f8a486073d37ff3fde20129d127cc33",
+    "manifestSha256": "2cbd6635263d343a00ffe2227bfbe0f39a8143de03f929070a64b4309dfcb7c6",
+    "metricsSha256": "ca52fa3f750ab383961f801802f9d83a51761ce3f4368c3f19190e9b19a0aacc",
+    "parentVersion": "v43",
+    "version": "v44",
+    "partialFitCalls": 1,
+    "fitExamples": 408,
+    "threshold": null,
+    "studentCommitted": 0,
+    "labelQualification": "Officer-protocol software answers are all unknown, not authenticated human property facts or evaluation truth"
+  },
+  "layoutPreflight": {
+    "command": "pnpm exec tsx scripts/agent/a3b-runtime.ts layout <first-id> <second-id>",
+    "mi-d10-01.csv": {"rows": 37, "layout": "a8fc72ee447a2fac136ec94d7516c1067b7858a7335af0cf0a447044a2e4540a"},
+    "mi-d10-02.csv": {"rows": 33, "layout": "1bad3087f1a878369e82dcafaae3ff334ee3ef3cd52ea4c5295a775c96b5e66d"},
+    "mi-d10-03.csv": {"rows": 8, "layout": "1bad3087f1a878369e82dcafaae3ff334ee3ef3cd52ea4c5295a775c96b5e66d"},
+    "first01Second02Exit": 1,
+    "first02Second03Exit": 0,
+    "first01Second02Failure": "A3B_LAYOUT_MISMATCH",
+    "runtimeMemoryClaim": false
+  },
+  "checks": {
+    "pnpm typecheck:backend": 0,
+    "pnpm exec tsc -p scripts/agent/tsconfig.json": 0,
+    "pnpm test:ai": {"exit": 0, "passed": 22},
+    "focused": {"exit": 0, "passed": 30, "entry": "scripts/agent/a3b-wiring.test.ts"},
+    "ruff stage_a.py read_workbook_cells.py": 0,
+    "native catalogue refresh without listener": 0,
+    "pnpm studio:api-types": 0,
+    "pnpm --filter @ulpin/api-client typecheck": 0,
+    "producer pins": 0,
+    "new-code 120-character and new-TypeScript-function 40-line audits": 0,
+    "protected paths unchanged": 0,
+    "git diff --check": 0,
+    "true LF archive": 0,
+    "true LF scripts/api/check.py": 1
+  },
+  "contractCheck": {
+    "checkpoint": "3f07d9d6",
+    "export": "E:/BhuAayam-data/task-data/a3b/api-lf-bf24ff8c0e5b45c8abef77b5a686cddc",
+    "archiveCommand": "git -c core.autocrlf=false archive HEAD | tar -x -C <fresh-unique-dir>",
+    "onlyFailure": "API-DOC: runtime receipt changed",
+    "receipt": "docs/evidence/usp/cityjson-admission-runtime.json",
+    "receiptChangedByA3b": false,
+    "ownerAction": "Reserved receipt pin mismatch; no worker repin or claim of full checker success"
+  },
+  "recovery": [
+    {"signature": "TS1241/TS1270 API decorators", "fix": "API-tsconfig CLI plus dynamic AppModule import; agent/backend typing pass"},
+    {"signature": "TS2307 express test type", "fix": "derive FrameResponse from existing transport function; agent typing passes"},
+    {"signature": "added test import/mock field mismatch", "fix": "use actual receipt field and explicit tabular schema; focused suite passes"},
+    {"signature": "long lines or test callback over 40 lines", "fix": "targeted wrapping and named checkpoint helper; audits pass"},
+    {"signature": "01/02 exact layout mismatch", "fix": "fail closed; preserve original headers; ask lead for data or 02/03 authorization"},
+    {"signature": "API-DOC: runtime receipt changed", "fix": "retain unchanged owner receipt; no repeated checker workaround"}
+  ],
+  "gaps": [
+    "Unowned jobs.ts registerUspJobInputTx still validates streaming-vector with GIS-only StreamingVectorInputSchema",
+    "Lead must authorize and apply AnyStreamingInputSchema at that seam while preserving existing scope checks",
+    "No current distinct D8 original exactly matches mi-d10-01.csv; lead/data action needed or authorize the real 02-to-03 pair",
+    "Runtime activation, two-file API/SSE, actual PostgreSQL fencing/concurrency and crash durability remain unrun",
+    "Busy approval follow-up requires replaying the same approval request; no new durable queue was added",
+    "Incomplete external learner checkpoints or superseded parent models fail closed for owner recovery",
+    "mi-d03 calibration fitting is denied; new weights abstain until development recalibration",
+    "A3 held-out finding remains 97 columns and zero positive targets; no positive accuracy or student improvement claim"
+  ],
+  "preserved": ["A3 truth/evidence", "original inputs", "populated runtime", "credentials", "staging/main", "unrelated source pins"],
+  "commits": ["6ed8d704", "03867558", "cae7df7d", "9222cdd9", "3f07d9d6"],
+  "logsRoot": "C:/Users/kvina/AppData/Local/Temp/",
+  "logs": ["a3b-backend-final.log", "a3b-agent-final.log", "a3b-focused-final.log", "a3b-ai-final.log",
+    "a3b-ruff-final.log", "a3b-contract-final.log", "a3b-client-final.log", "a3b-client-typecheck.log",
+    "a3b-api-lf-final.log", "a3b-layout-first.log", "a3b-layout-second.log"]
+}

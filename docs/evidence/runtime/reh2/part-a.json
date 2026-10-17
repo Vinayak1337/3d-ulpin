@@ -1,0 +1,24 @@
+{ "at": "2026-10-16T22:41:32.927Z", "commit": "54d43d0bed053c803245fe82f64ffb7125eebe86", "steps": [ { "step": 1,
+"command": "git worktree add --detach E:/Projects/ulpin-wt/ulpin-reh-02 54d43d0bed053c803245fe82f64ffb7125eebe86",
+"exit": 0, "seconds": 2.379 }, { "step": 2, "command": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 10.686 },
+{ "step": 3, "command": "pnpm platform:start --profile demo --create --runtime ulpin-reh-02", "exit": 0,
+"seconds": 26.257 }, { "step": 4,
+"command": "node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02", "exit": 0, "seconds": 43.759
+}, { "step": 5, "command": "pnpm platform:start --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 15.957 },
+{ "step": 6, "command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 5.977 } ],
+"doctor": { "pass": 27, "fail": [],
+"last": "Doctor: all checks passed (dispatcher liveness, not a job execution proof)." }, "partBCanRun": true,
+"rehearsalProcesses": [ { "pid": 580, "started": "2026-10-16T22:40:43.5385870Z",
+"entry": "E:/Projects/ulpin-wt/ulpin-reh-02/apps/api/src/main.ts" }, { "pid": 44872,
+"started": "2026-10-16T22:40:43.9181290Z", "entry": "E:/Projects/ulpin-wt/ulpin-reh-02/scripts/dispatcher.ts" } ],
+"rehearsalListeners": [ 21026, 21025, 21024, 21023, 21022, 21021 ], "gpu": {
+"reading": "nvidia-smi compute apps; WDDM reports used memory N/A, so the test is by process id", "before": 22,
+"afterStart": 22, "now": 22, "newSinceBefore": [], "rehearsalPidsHoldingGpu": [] }, "demo": {
+"checkout": "E:/Projects/ulpin-wt/demo", "commitBefore": "99e0026ecc90a1b95b2a735a2418ec6433d02fe1",
+"commitAfter": "99e0026ecc90a1b95b2a735a2418ec6433d02fe1", "processesBefore": [ { "pid": 37204,
+"started": "2026-10-16T12:31:08.6915830Z", "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 44520,
+"started": "2026-10-16T12:31:09.6049940Z", "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ],
+"processesAfter": [ { "pid": 37204, "started": "2026-10-16T12:31:08.6915830Z",
+"entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 44520, "started": "2026-10-16T12:31:09.6049940Z",
+"entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ], "doctorExitBefore": 0, "doctorExitAfter": 0,
+"healthAfter": "200", "matchesBaseline": true } }

@@ -1,4 +1,4 @@
-import {Controller,Get,HttpCode,Inject,Param,Post,Query,Req,UseGuards} from '@nestjs/common';
+import {Controller,Get,Header,HttpCode,Inject,Param,Post,Query,Req,UseGuards} from '@nestjs/common';
 import {ApiOperation,ApiParam,ApiQuery} from '@nestjs/swagger';
 import type {Request} from 'express';
 import {DocumentRetainSchema,DocumentRetrySchema,DocumentReceiptSchema,DocumentStatusSchema} from '@ulpin/contracts/usp';
@@ -30,6 +30,7 @@ export class DocumentsController{
     return this.documents.retain(caseId,input,{name:file.name,bytes:new Uint8Array(await file.arrayBuffer())});
   }
   @Get('cases/:caseId/sources/:sourceId/documents/jobs/:jobId')
+  @Header('Cache-Control','private, no-store')
   @param('caseId') @param('sourceId') @param('jobId')
   @ApiQuery({name:'page',required:false,schema:{type:'integer',minimum:0,maximum:399}})
   @ApiQuery({name:'ocrPage',required:false,schema:{type:'integer',minimum:0,maximum:2}})

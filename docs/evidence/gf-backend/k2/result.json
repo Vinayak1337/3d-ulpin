@@ -1,0 +1,203 @@
+{
+  "schemaVersion": "k2-runtime-evidence/2",
+  "gatesPassed": [],
+  "gateStatus": {
+    "GF-BACKEND": "source_ingestion_verified_analytical_geometry_unqualified",
+    "GF-DATA": "two_demo_buildings_installed_ocr_incomplete"
+  },
+  "runtime": {
+    "profile": "demo",
+    "worktree": "E:/Projects/ulpin-wt/k1",
+    "leftRunning": true,
+    "health": true,
+    "servedBackendCodeCommit": "c90a8a3e",
+    "restarts": [
+      {
+        "completedAt": "2026-10-10T04:19:14+05:30",
+        "reason": "geometry-free intake and OCR paths"
+      },
+      {
+        "completedAt": "2026-10-10T04:22:28+05:30",
+        "reason": "original-only citation authority fix"
+      },
+      {
+        "completedAt": "2026-10-10T04:49:56+05:30",
+        "reason": "final source citations and administrative context"
+      }
+    ],
+    "containersAndVolumesPreserved": true
+  },
+  "checks": {
+    "backendTypecheck": {
+      "exitCode": 0
+    },
+    "focusedTests": {
+      "exitCode": 0,
+      "passed": 9,
+      "skipped": 0
+    },
+    "canonicalRuntime": {
+      "exitCode": 0
+    },
+    "apiContractLfExport": {
+      "exitCode": 0,
+      "operations": 290,
+      "namedSchemas": 323,
+      "reviewedProducers": 34
+    },
+    "doctor": {
+      "exitCode": 0,
+      "scope": "paths/health/ownership; not OCR execution qualification"
+    },
+    "diffCheck": {
+      "exitCode": 0
+    }
+  },
+  "records": {
+    "reviewedOrCommittedBuildings": 2,
+    "tower3BuildingInstalled": true,
+    "biharMagnoliaBuildingInstalled": true,
+    "administrativeSectors": 2,
+    "administrativePhysicalFeaturesCreated": 0,
+    "retainedRoadProposals": 2,
+    "retainedNycProposals": 62,
+    "sourceReceipts": 9
+  },
+  "canonical": {
+    "tower": {
+      "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190",
+      "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b"
+    },
+    "magnolia": {
+      "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
+      "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72",
+      "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2"
+    },
+    "currentEtags": 200,
+    "unavailableRevision": 404,
+    "crossSite": 403,
+    "unknownFootprintsRemainNull": true
+  },
+  "originals": {
+    "tower": [
+      "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+    ],
+    "magnolia": [
+      "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+    ],
+    "sectors": [
+      "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8"
+    ],
+    "allRetainedHashesVerified": true
+  },
+  "difficultInput": {
+    "storeyCount": "conflicting",
+    "alternatives": [
+      "G+41",
+      "G+42"
+    ],
+    "installedConflictVerified": true,
+    "native": {
+      "status": "needs_ocr",
+      "format": "pdf",
+      "readerSha256": "44aa35d71606febc6eca0efe029c1512a374c1d3b090e783d574fbc0f7d08186",
+      "code": "NATIVE_TEXT_UNAVAILABLE",
+      "warnings": [
+        "PDF page 1 has no native text; image interpretation/OCR remains unresolved.",
+        "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed."
+      ]
+    },
+    "wholePageOcr": {
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "sourceRevision": 1,
+      "sourcePage": 1,
+      "requestedRegion": null,
+      "sourcePageFrame": null,
+      "method": "ocr:tesseract-cli-5.5.1:sparse-tsv-v1",
+      "toolStatus": "unavailable",
+      "outputStatus": "failed",
+      "textCompleteness": "unverified",
+      "issues": [
+        "OCR_UNSUPPORTED_PDF_PAGE_FRAME"
+      ],
+      "execution": {
+        "maxSeconds": 90,
+        "exitCode": 1,
+        "receiptSha256": "f16e1ac1adfdaf1f73406f3f630028464d7781ba38bd4947c76c23b02a73cdb1",
+        "candidateSha256": "5c97e02ad29a9402985f12e219cd9e4e7f857d6505fff4e0f845ba4b135490c8",
+        "worker": {
+          "exitCode": 0,
+          "stopReason": null,
+          "elapsedSeconds": 0.515,
+          "peakObservedRssBytes": 60776448,
+          "peakJobPrivateBytes": 64000000,
+          "gatedStart": true,
+          "logSha256": "6a770b460e61b82e9df911816d616e27008d30e4decf4dca4a12a379ca2e0a35"
+        }
+      }
+    },
+    "boundedRegionOcr": {
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "sourceRevision": 1,
+      "sourcePage": 1,
+      "requestedRegion": [
+        280,
+        860,
+        960,
+        2580
+      ],
+      "sourcePageFrame": null,
+      "method": "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+      "toolStatus": "failed",
+      "outputStatus": "failed",
+      "textCompleteness": "unverified",
+      "issues": [
+        "OCR_UNEXPECTED_WORKER_ERROR"
+      ],
+      "execution": {
+        "maxSeconds": 90,
+        "exitCode": 1,
+        "receiptSha256": "b46a6711f82ff004fdb4e85460f8d6d1098b94d6a0244d3bffc909a18d539db7",
+        "candidateSha256": "7c06ee9ecb97e4fe21aec247c57c6c2738843dc753c97bbffeac5be1998d2f63",
+        "worker": {
+          "exitCode": 1,
+          "stopReason": null,
+          "elapsedSeconds": 18.407,
+          "peakObservedRssBytes": 378208256,
+          "peakJobPrivateBytes": 461058048,
+          "gatedStart": true,
+          "logSha256": "8d66b14c6aee2e9470e9bb4a6b3c31e67c5f3edfc90aaf84e988fda12be57b41"
+        }
+      }
+    },
+    "firstResultLines": [],
+    "hindi": "unavailable"
+  },
+  "geometrySafeguards": {
+    "review": {
+      "status": 422,
+      "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED"
+    },
+    "prepare": {
+      "status": 422,
+      "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED"
+    },
+    "commit": {
+      "status": 409,
+      "code": "STALE_REVISION"
+    }
+  },
+  "nycUnchanged": true,
+  "sourcePinsRegenerated": true,
+  "remaining": [
+    "OCR runner exception diagnostic; no text or Hindi result claimed.",
+    "Geometry-bearing fresh import qualification/review remains blocked; no safeguard bypass.",
+    "Scene owner must render administrative context and candidate/hatch sidecar.",
+    "Generic GIS/registry corrections for unknown-footprint records require their own explicit source-only contract.",
+    "Complete historical projection revisions remain unavailable."
+  ]
+}

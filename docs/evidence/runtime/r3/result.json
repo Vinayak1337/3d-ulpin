@@ -1,0 +1,602 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "R3",
+ "gates": ["GF1","GF4"],
+ "artifactsRoot": "E:/BhuAayam-data/task-data/r3",
+ "api": "http://127.0.0.1:3194/api/v1",
+ "overall": "all five steps done; the Tower 3 unit has an assigned code, an executed packet and one verified card",
+ "step0": {
+  "result": "done: cause located; nothing rebuilt, restarted or repaired in this step",
+  "doctorBefore": {
+   "at": "2026-10-10T13:34:05Z",
+   "exit": 1,
+   "failed": ["Document runtimes"],
+   "servedCommit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+   "servedCheckoutClean": true
+  },
+  "diagnostic": {
+   "script": "E:/BhuAayam-data/task-data/r3/step0/diagnose-document-runtime.mjs",
+   "output": "E:/BhuAayam-data/task-data/r3/step0/diagnostic-output-4.txt",
+   "how": "paths from the demo checkout; verifiedProfile comparisons repeated one by one; read-only",
+   "firstRunNote": "diagnostic-output.txt shows FAIL 3 (profile shape): a key-order mistake in the diagnostic, fixed"
+  },
+  "helperChild": {"code":"PACKET_REGION_EXECUTABLE_DRIFT","ms":853},
+  "comparisons": {
+   "profileFileWithinLimit": "pass",
+   "profileBytesEqualConfiguredHash": "pass",
+   "profileBuiltAt": "2026-10-10T12:25:56Z",
+   "profileShape": "pass",
+   "repoEqualsServingCheckout": "pass",
+   "repoFilesEqualServedList": "pass",
+   "boundsAndClosure": "pass",
+   "pinnedFileBytes": "FAIL: 111 of 1361 pinned files drifted",
+   "repoAndInterpreterBinding": "pass"
+  },
+  "cause": {
+   "where": "verifiedRegionHash -> verifiedProfile, the per-file comparison (resolved path, length, bytes)",
+   "what": [
+    "The frozen profile's base interpreter is not a uv base Python. It is the Codex desktop application's",
+    "bundled runtime, Python 3.12.14, at",
+    "C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python.",
+    "That whole directory was re-created at 2026-10-10T13:14:56Z (18:44:56 IST), between R2's PASS (17:56 IST)",
+    "and the first FAIL (18:47 IST)."
+   ],
+   "interpreterEnvironment": {
+    "name": "desktop-ai04f-docling-tesseract/venv",
+    "underDataMl": false,
+    "note": "the configured OCR interpreter; its base installation is the Codex runtime named above"
+   },
+   "drifted": {
+    "replacedBinaries": {
+     "count": 41,
+     "kinds": "python.exe, pythonw.exe, python3.dll, python312.dll, DLLs/*.pyd, DLLs/*.dll, Lib/venv/scripts/nt/*.exe",
+     "comparison": "length differs: each is exactly 864 bytes shorter than its pinned size",
+     "modified": "2026-10-07T19:25Z to 19:32Z (kept from the package)",
+     "created": "2026-10-10T13:14:56Z",
+     "signature": "all 41 Authenticode Valid, signer OpenAI OpCo, LLC, timestamped; file version 3.12.14"
+    },
+    "missingBytecodeCaches": {
+     "count": 70,
+     "kinds": "Lib/**/__pycache__/*.cpython-312.pyc (argparse, asyncio, multiprocessing, unittest, sqlite3, others)",
+     "comparison": "unreadable, ENOENT: the re-created runtime has no such cache file"
+    },
+    "unchangedButRecreated": "791 other pinned files under that base still match, yet were created after the profile",
+    "repoFiles": 0,
+    "configuredInterpreter": 0,
+    "packages": 0
+   },
+   "who": [
+    "No project worker edited a pinned file. The Codex application replaced its own managed runtime (the same",
+    "Python version, re-signed binaries) while the demo was serving."
+   ],
+   "accountedFor": true,
+   "consequence": [
+    "The rebuild in Step 1 pins the replaced bytes. The check will fail again whenever the Codex application",
+    "next refreshes that runtime, because the demo's frozen interpreter base is owned by another program."
+   ],
+   "notTheCause": [
+    "the check itself",
+    "the 60-second helper timeout",
+    "the demo checkout",
+    "the profile file or its hash"
+   ]
+  },
+  "leadCandidate": {
+   "file": "venv-vision/Lib/site-packages/__pycache__/_virtualenv.cpython-311.pyc",
+   "isPinnedEntry": false,
+   "pinnedEntriesInsideVenvVision": 0,
+   "pinnedEntriesNamedVirtualenv": 0,
+   "verdict": "not the cause of FAIL Document runtimes: another set of files, in another interpreter (3.12, not 3.11)",
+   "action": "file left alone: not moved, not read, not hashed by this task"
+  }
+ },
+ "step1": {
+  "result": "done",
+  "before": {
+   "commit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+   "doctorExit": 1,
+   "doctorFailed": ["Document runtimes"],
+   "api": {
+    "pid": 25080,
+    "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts",
+    "started": "2026-10-10T12:26:03.836Z"
+   },
+   "dispatcher": {
+    "pid": 14424,
+    "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts",
+    "started": "2026-10-10T12:26:04.558Z"
+   },
+   "health": {"http":200,"databaseReadiness":"structurally_ready","missingRelations":[],"missingMigrations":[]}
+  },
+  "schemaStep": {
+   "filesReadFirst": [
+    "docs/evidence/gf4/k5/run-migration.mjs",
+    "docs/evidence/gf4/k5/apply-migration.ts",
+    "database/sql/60-usp/23-property-card-revocations-check.sql",
+    "database/sql/60-usp/24-property-card-revocations-schema.sql",
+    "database/sql/60-usp/25-property-card-revocations-mark.sql"
+   ],
+   "readFinding": [
+    "Additive only: one table with a foreign key to usp_property_cards(id, revision), one function, one trigger",
+    "on the new table, one ledger row; 5 s statement and 2 s lock timeouts. Nothing beyond the roll-out document."
+   ],
+   "offlinePrecheck": [
+    "The four manifest hashes (usp.lock and the three steps) match the files in a2; the card table has the",
+    "referenced primary key and the columns the runner compares."
+   ],
+   "ranFrom": "E:/Projects/ulpin-wt/a2",
+   "worktreeCommit": {
+    "head": "b90176e5",
+    "is": "staging e387b37d plus two R3 evidence commits",
+    "stagingAtRun": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+    "stagingMovedBy": ["9b2a37c9 docs(status)","fbe525f7 docs(learner)"],
+    "nonDocPathsDifferingFromStaging": 0,
+    "note": [
+     "merge --ff-only was not possible: the Step 0 evidence commits were already on the branch. No merge or",
+     "rebase was made. Both new staging commits change documentation only, so every file the runner loads is",
+     "the staging file."
+    ]
+   },
+   "command": "node docs/evidence/gf4/k5/run-migration.mjs",
+   "runs": 1,
+   "exit": 0,
+   "at": "2026-10-10T13:40:53.964Z",
+   "output": "usp_property_card_revocations_001: applied; card rows unchanged.",
+   "receipt": {
+    "file": "docs/evidence/gf4/k5/migration-receipt.json",
+    "applied": true,
+    "cardRowsBefore": 0,
+    "cardRowsAfter": 0,
+    "tableBefore": false,
+    "tableAfter": true,
+    "markedBefore": false,
+    "markedAfter": true
+   },
+   "oldApiAfter": {"commit":"9aad8da2","healthHttp":200,"databaseReadiness":"structurally_ready"}
+  },
+  "target": {
+   "commit": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+   "selection": "lead checkout staging at roll-out time; contains e387b37d",
+   "lockfileChangedSince9aad8da2": false,
+   "install": "not needed"
+  },
+  "procedure": {
+   "stopExit": 0,
+   "checkoutExit": 0,
+   "documentBuildExit": 0,
+   "startExit": 0,
+   "doctorExit": 0,
+   "stoppedAt": "2026-10-10T13:41:26Z",
+   "answeringAgainBy": "2026-10-10T13:42:06Z",
+   "containersStoppedOrReplaced": false,
+   "create": false,
+   "step8AutomaticDispatch": "not in this task (steps 2 to 7 only)"
+  },
+  "after": {
+   "commit": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+   "checkoutClean": true,
+   "api": {"pid":6308,"entry":"E:/Projects/ulpin-wt/demo/apps/api/src/main.ts","started":"2026-10-10T13:41:45.071Z"},
+   "dispatcher": {
+    "pid": 32148,
+    "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts",
+    "started": "2026-10-10T13:41:45.748Z"
+   },
+   "documentRuntimes": "PASS",
+   "regionProfileSha256": "b759a5ab6a85b73a1a901e53093afd50a2b634589a102372a35f7dc4da93723b",
+   "regionProfileNote": "pins the replaced Codex-runtime bytes found in Step 0",
+   "health": {"http":200,"databaseReadiness":"structurally_ready","missingRelations":[],"missingMigrations":[]},
+   "gatewayEnabled": false
+  },
+  "documentation": [
+   "DEMO-RUNTIME.md commit line -> fbe525f7",
+   "DEMO-RUNTIME.md K5 row -> applied on the demo 10 October 2026, applied: true"
+  ]
+ },
+ "step2": {
+  "result": "done: all eight answer 200; two differences from the K6 expectation recorded as findings",
+  "at": "2026-10-10T13:44Z",
+  "reads": [
+   {
+    "building": "Tower 3 6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+    "registerConsolidated": 200,
+    "register": 200,
+    "ledger": 200,
+    "dossier": 200
+   },
+   {
+    "building": "Magnolia e8777ffc-9409-4129-bacf-f680160d8795",
+    "registerConsolidated": 200,
+    "register": 200,
+    "ledger": 200,
+    "dossier": 200
+   }
+  ],
+  "consolidatedSources": {
+   "tower3": [
+    {"id":"5293cd72-2377-4deb-a51c-c76d11ccb429","documentResult":null},
+    {
+     "id": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "documentResult": {"current":false,"reasons":["reader_changed","policy_changed"]}
+    }
+   ],
+   "magnolia": [
+    {"id":"10946c4c-0cae-41f7-8303-41f2512e630d","documentResult":{"current":false,"reasons":["reader_changed"]}}
+   ]
+  },
+  "ledgerNotes": {
+   "tower3": [
+    [
+     "The document reading retained beside source c59d2027-f176-4773-a799-5f0eb682fa2a is no longer current",
+     "(reader_changed, policy_changed); the recorded citation is unchanged."
+    ]
+   ],
+   "magnolia": [
+    [
+     "The document reading retained beside source 10946c4c-0cae-41f7-8303-41f2512e630d is no longer current",
+     "(reader_changed); the recorded citation is unchanged."
+    ]
+   ]
+  },
+  "asExpected": [
+   "all eight 200",
+   "10946c4c current:false reader_changed",
+   "5293cd72 carries no documentResult",
+   "one ledger note per source that carries documentResult (one each)",
+   "default register and dossier state no freshness"
+  ],
+  "differencesFromK6": [
+   [
+    "Tower 3 consolidated sources[] lists two sources (5293cd72, c59d2027), not four. 25a8fbcb and 357b6258 do",
+    "not appear in the consolidated report, the ledger, the default register or the dossier, so 25a8fbcb",
+    "carries no documentResult in any of the four reads and the Tower 3 ledger has one note, not two.",
+    "The snapshot (step 3) does list 25a8fbcb, with reader_changed."
+   ],
+   [
+    "c59d2027 states two reasons, reader_changed and policy_changed; K6 expected reader_changed (it named a",
+    "gateway policy pin as a possible extra for this source)."
+   ]
+  ],
+  "notExplained": "why 25a8fbcb is absent from the four reads was not investigated; the responses are under step2/"
+ },
+ "step3": {
+  "result": "done: snapshot, review, assignment, plan, confirmation, execution, card, list and tamper checks answered",
+  "target": {
+   "spaceId": "46b7265e-ca88-402d-83df-065cf7c45140",
+   "floorId": "614ca200-1f3d-48ac-b7db-d1b893b352a1",
+   "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325"
+  },
+  "canonicalBefore": {
+   "http": 200,
+   "canonicalRevision": "e913035173ea3e49fb2bec272ec06cd7e7b75a0bd2e1c1beb2f5e2f1c6bba9a4",
+   "recordedFloors": 1,
+   "recordedUnits": 1,
+   "floorLabel": "2ND FLOOR PLAN",
+   "unitLabel": "UNIT-3B",
+   "proposedCode": null,
+   "proposedCodeState": "unknown",
+   "schedule": "conflicting"
+  },
+  "snapshot": {
+   "http": 200,
+   "request": "R2 step2/03-snapshot-request.json body, unchanged",
+   "requestKey": "none: the R2 request carried no key or header, and neither did this one",
+   "manifestId": "d97e01c5-c5af-45de-971e-2bb1d355d810",
+   "digest": "62615138508a4d302b414b8ee2cbc3b1f818a394ed1f916c80faaa09aa5ec2f1",
+   "members": 11,
+   "coverage": "complete",
+   "memberKinds": {"area_feature":1,"registry_record":3,"registry_site":1,"source_revision":6},
+   "documentResultMembers": [
+    {"source":"25a8fbcb-2607-4a88-81e2-f2a247deb56f","current":false,"reasons":["reader_changed"]},
+    {"source":"a6b2fd14-4bd2-43a7-b363-c9633cbb52c3","current":false,"reasons":["reader_changed"]},
+    {"source":"c59d2027-f176-4773-a799-5f0eb682fa2a","current":false,"reasons":["reader_changed","policy_changed"]}
+   ],
+   "sourcesWithoutDocumentResult": [
+    "1811f56c-a5bd-413d-a787-ce41d611ede3",
+    "357b6258-4f19-4a81-83b6-6da93874dd31",
+    "5293cd72-2377-4deb-a51c-c76d11ccb429"
+   ]
+  },
+  "review": {
+   "http": 200,
+   "reviewId": "105e6dc7-f413-4bbb-9b0f-50bfd352cf04",
+   "operation": "assign",
+   "reason": "the R2 record reason, unchanged and unshortened (the limit is 2000 characters)",
+   "evidenceLocator": "page 1; region pt [596,390,644,409]; literal UNIT-3B",
+   "location": "anchor not_supplied; no parcel; locator ? 1 / L? / ? 1 (the contract's unknown tokens)"
+  },
+  "assign": {
+   "http": 200,
+   "requestKey": "7dd3b677-34f3-43fc-9760-6c52233d638e",
+   "receiptId": "a5df8323-6d11-4d7d-97c6-0cd9b7111825",
+   "spaceRevisionBefore": 1,
+   "spaceRevisionAfter": 2,
+   "code": "P3-YBF8MA4FYHGFRA0CERYJ-T3",
+   "committedAt": "2026-10-10T13:48:45.439Z",
+   "eventSequence": "1",
+   "snapshotAfter": {
+    "manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+    "digest": "b7bfa9d7c8f51583d80b985551161bdd758c47315b256267caf62e1d119ff7e0"
+   }
+  },
+  "readBack": {
+   "http": 200,
+   "canonicalRevision": "906c2e9bbe7e24134dd7ec2bef2b5dba18046d626e5f3aed3b9ca50d16f21bdb",
+   "proposedCode": "P3-YBF8MA4FYHGFRA0CERYJ-T3",
+   "proposedCodeState": "reviewed",
+   "proposedCodeMethod": "reviewer:selection-demo-runtime",
+   "floorGeometry": "absent",
+   "spaceGeometry": "absent",
+   "lowerM": "unknown",
+   "upperM": "unknown",
+   "areaM2": "unknown",
+   "spaceKind": "unknown",
+   "parcelRefs": [],
+   "schedule": "conflicting"
+  },
+  "resolve": {
+   "http": 200,
+   "recordId": "46b7265e-ca88-402d-83df-065cf7c45140",
+   "projectCode": "P3-YBF8MA4FYHGFRA0CERYJ-T3",
+   "profile": "P3/1",
+   "status": "assigned",
+   "recordVersion": 2,
+   "registryIdentifier": "3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001:S001",
+   "location": "NO-ANCHOR / ?01 / L? / ?001",
+   "successors": [],
+   "sameRecordAsReadBack": true
+  },
+  "plan": {
+   "http": 200,
+   "planId": "8f3ebb97-deab-4235-a377-819e5942bfd8",
+   "version": 1,
+   "planSha256": "ea157f47de9512d3fa58e60925ffe3229345dc48953629907f83110f3b828477",
+   "entryHandle": "1e3291701c573f7561ce1b13fc49bc2394561760cb4214394638115435f731de",
+   "citationId": "ef6f96bf0f5e8f8801a0e200654fbb4cf2f772caa4580bccc945c8f7af7c3197",
+   "entryState": "included",
+   "requiredContext": "available",
+   "expiresAt": "2026-10-11T13:39:00.580Z",
+   "crop": {
+    "pixels": [144,57],
+    "bytes": 5531,
+    "renderer": "real renderer, pypdfium2 5.13.0 / pymupdf 1.25.5",
+    "profileSha256": "b759a5ab6a85b73a1a901e53093afd50a2b634589a102372a35f7dc4da93723b"
+   },
+   "k6OpenPoint": [
+    "Not hit. The plan for a recorded source-only citation was created, confirmed and executed although source",
+    "5293cd72 never had an accepted document reading. The current-pins requirement K6 names is on another path."
+   ]
+  },
+  "confirm": {
+   "http": 200,
+   "confirmationId": "9a9b3852-23ab-4031-b733-78a1992da0f9",
+   "confirmedAt": "2026-10-10T13:49:12.678Z"
+  },
+  "execute": {
+   "http": 200,
+   "packetId": "82c65018-7282-44f9-b99c-a67228c10303",
+   "receiptVersion": "packet-pdf/1",
+   "pdfBytes": 6783,
+   "pdfSha256": "c6ef4457002e763f31be29f6575a204353fdbad3c793a958a652bbf7a50a9989",
+   "downloadHttp": 200,
+   "downloadedHashEqualsReceipt": true,
+   "omissions": 0
+  },
+  "card": {
+   "generateHttp": 200,
+   "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+   "revision": 1,
+   "profile": "property-card-summary-ascii/1",
+   "createdAt": "2026-10-10T13:49:30.624Z",
+   "expiresAt": "2026-10-11T13:39:30.390Z",
+   "pdfBytes": 7117,
+   "pdfSha256": "f17c3a34dd25f26e62cc17fcc54f27a6b33a1c8d326575e8b0b821d224ff7bc7",
+   "cardSha256": "4e5c85a2f609428535ce6c4c3ee6a77ae35f1c2cf4e17e6d83d6fb1692e4fd38",
+   "resolverUrl": "http://127.0.0.1:3194/api/v1/usp/property-cards/6a997624-6c8d-40a9-8215-8a671a74dc1c/revisions/1",
+   "readHttp": 200,
+   "readSnapshotState": "same_revision",
+   "currentTargetRevision": 2,
+   "pdfHttp": 200,
+   "pdfHashEqualsArtifact": true,
+   "facts": {"available":8,"unavailable":7,"notAssessed":1},
+   "verification": {
+    "http": 200,
+    "result": "consistent",
+    "pass": 6,
+    "fail": 0,
+    "notChecked": 0,
+    "latestRevision": 1,
+    "superseded": false,
+    "expired": false,
+    "revocation": null,
+    "snapshot": "same_revision",
+    "signature": "not_assessed (NO_TRUSTED_KEY_POLICY)"
+   },
+   "revoked": false
+  },
+  "printed": {
+   "lookedAt": ["step3/08-packet.png","step3/11-card.png"],
+   "packet": [
+    "One page, 108 x 42.75 pt, one image and no text layer: the boxed label UNIT-3B alone. No UNIT-3A, no other",
+    "label and no plan line outside the box."
+   ],
+   "card": [
+    "A4, one page. Heading \"Property card\", \"PRIVATE - Exact card revision 1 - recorded snapshot\" and",
+    "\"Application summary. No official ULPIN issuance, title or legal approval is implied.\"",
+    "Selected record: UNIT-3B (space); revision 2.",
+    "Registry identifier: 3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001:S001.",
+    "Application identity: P3-YBF8MA4FYHGFRA0CERYJ-T3; assigned (P3/1).",
+    "Recorded location: NO-ANCHOR / ?01 / L? / ?001.",
+    "Space label (source literal): UNIT-3B; officer-entered, not a boundary.",
+    "Floor label (source literal): 2ND FLOOR PLAN; a caption, not a level ordinal.",
+    "Building (recorded name): TOWER 3.",
+    "Source citation: page 1; region pt [596, 390, 644, 409]; source 5293cd72-2377-4deb-a51c-c76d11ccb429",
+    "revision 1; sha256 2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865.",
+    "Unavailable: parent parcel assertions, recorded declared share, level ordinal, use / classification,",
+    "geometry / frame / datum, measurements / quantities, selected-space render.",
+    "Not assessed: rights / title / issuance.",
+    "Footer: card, plan and packet ids, \"Included entries: 1; optional omissions: 0\", snapshot captured",
+    "2026-10-10T13:48:45.428Z, card expires 2026-10-11T13:39:30.390Z, the packet SHA-256."
+   ],
+   "qr": {
+    "decoded": "http://127.0.0.1:3194/api/v1/usp/property-cards/6a997624-6c8d-40a9-8215-8a671a74dc1c/revisions/1",
+    "equalsResolverUrl": true,
+    "printedAsText": "no: the card prints \"Local demonstration link\" and \"Private operator access\" under the QR"
+   }
+  },
+  "list": {
+   "unit": {
+    "http": 200,
+    "items": 1,
+    "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+    "revision": 1,
+    "integrity": "consistent",
+    "revoked": false,
+    "superseded": false,
+    "expired": false,
+    "snapshotState": "same_revision",
+    "truncated": false
+   },
+   "building": {"http":200,"items":0,"truncated":false},
+   "scope": "the post-assignment snapshot scope the card carries (manifest a9fd4c9d)"
+  },
+  "tamper": {
+   "cases": ["unknown card id","the card id with its last character changed","the card id at revision 2"],
+   "routes": ["GET .../verification","POST /usp/property-cards/read"],
+   "observed": "six of six: 404 NOT_FOUND, \"The exact property card revision is unavailable.\"",
+   "storedBytesAltered": false
+  },
+  "unknownFactDefectsObserved": [],
+  "observations": [
+   [
+    "The card and the ledger show the registry identifier 3DU-...:B001:F001:S001 (it exists since R2 recorded",
+    "the unit). Its F001 and S001 segments are positional tokens; on the same card the level ordinal is",
+    "unavailable. Not a defect under this task's rule; a reader may still take F001 for a floor number."
+   ],
+   "The QR opens a loopback URL and its text is not printed on the card.",
+   "The card expires at 2026-10-11T13:39:30Z (19:09 IST), within 24 hours by design."
+  ]
+ },
+ "step4": {
+  "result": "done as reads; no Studio server was started and none answers on port 5188; no page was seen in a browser",
+  "studioUrls": {
+   "tower3": "http://127.0.0.1:5188/studio/review/6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+   "register": "http://127.0.0.1:5188/studio/properties/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/register"
+  },
+  "studioProbe": {"reviewPage":"no connection","registerPage":"no connection","serverStarted":false},
+  "reads": [
+   {
+    "route": "GET /buildings/{id}/canonical",
+    "http": 200,
+    "floorLabel": true,
+    "unitLabel": true,
+    "assignedCode": true,
+    "citations": 2
+   },
+   {"route":"GET /sources/5293cd72.../pages","http":200,"framePt":[2586,1695]},
+   {"route":"GET /buildings/{id}/ledger","http":200,"floorLabel":true,"unitLabel":true,"assignedCode":false},
+   {
+    "route": "GET /buildings/{id}/register?profile=consolidated&format=json",
+    "http": 200,
+    "floorLabel": true,
+    "unitLabel": true,
+    "assignedCode": false
+   }
+  ],
+  "citations": [
+   {"literal":"2ND FLOOR PLAN","page":1,"regionPt":[850,875,1020,910]},
+   {"literal":"UNIT-3B","page":1,"regionPt":[596,390,644,409]}
+  ],
+  "finding": [
+   "The assigned code P3-YBF8MA4FYHGFRA0CERYJ-T3 is in the canonical read (the review page). The ledger and the",
+   "consolidated register, which the register page reads, show the unit and floor labels and the 3DU identifier",
+   "but not the assigned code."
+  ]
+ },
+ "invariants": {
+  "before": {
+   "registry": 4,
+   "areas": 4,
+   "sites": 4,
+   "importPackages": 7,
+   "cases": 11,
+   "sources": 38,
+   "physicalFeatures": 67,
+   "learnerVersion": "v44"
+  },
+  "after": {
+   "registry": 4,
+   "areas": 4,
+   "sites": 4,
+   "importPackages": 7,
+   "cases": 11,
+   "sources": 38,
+   "physicalFeatures": 67,
+   "learnerVersion": "v44"
+  },
+  "learnerVersionSource": "R1 last-job retained chunk metrics, the same read R1 and R2 used; no learning operation",
+  "countsChanged": [],
+  "changedOutsideTheseCounts": [
+   "schema: +1 table usp_property_card_revocations, +1 function, +1 trigger, +1 ledger row (the K5 step)",
+   "unit 46b7265e: revision 1 -> 2, application code assigned (the assignment)",
+   "canonical revision of Tower 3: e9130351... -> 906c2e9b... (follows from the assignment)",
+   "snapshots: +2 (d97e01c5 captured by request; a9fd4c9d captured by the assignment)",
+   "identity: +1 review, +1 assignment receipt, registry event sequence 1",
+   "packet plans: +1 plan (version 1), +1 confirmation, +1 execution; packets: +1 (one PDF object)",
+   "property cards: 0 -> 1 (one PDF object); revocations: 0"
+  ],
+  "notCreated": ["floor","unit","parcel","ULPIN","area","use","owner","right","source","case","package"]
+ },
+ "finalRuntime": {
+  "servedCommit": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+  "servedCheckoutClean": true,
+  "apiPid": 6308,
+  "dispatcherPid": 32148,
+  "nativeProcessesRunning": true,
+  "documentRuntimesPass": true,
+  "gatewayEnabled": false,
+  "containersPreserved": true,
+  "doctorExit": 0,
+  "doctorAt": "2026-10-10T13:59:38Z"
+ },
+ "processNotes": [
+  "No provider call; no SQL by hand; no second floor or unit; no source-spaces request; the card was not revoked.",
+  [
+   "Commit trailer: Claude Opus 5.5, as docs/next-steps/WORKERS.md section 7 gives for a Claude subagent; the",
+   "task file names \"Claude worker\". The checked-in rule was followed."
+  ],
+  [
+   "Python launched by this task: venv-plans with -B (PDF render); the system C:/Python313 with -B (QR decode)",
+   "and, four times, without -B (stdin scripts that edit a file and import only pathlib). Checked afterwards:",
+   "no .pyc was written under either installation since the task began."
+  ],
+  "This environment does not create REPORT.md files, so the one-screen report is kept here."
+ ],
+ "checks": {
+  "doctorFinal": 0,
+  "doctorOutput": "E:/BhuAayam-data/task-data/r3/doctor-final-2.txt",
+  "driverTypecheck": 0,
+  "diffCheck": 0,
+  "linesOver120": {
+   "scripts/agent/r3-live.ts": 0,
+   "docs/evidence/runtime/r3/result.json": 0,
+   "docs/evidence/gf4/k5/migration-receipt.json": "one line of 378, as the K5 runner wrote it; not reformatted"
+  },
+  "selfReview": "git diff staging...HEAD read: five files, all owned paths"
+ },
+ "report": [
+  "TASK   R3 - demo rolled to staging with K5 and K6; refused reads confirmed; Tower 3 identity resumed to the card",
+  "       GATE GF1, GF4",
+  "WORKS  Step 0 Done: FAIL Document runtimes was a replaced interpreter base (Codex runtime), not a worker edit.",
+  "       Step 1 Done: K5 table applied once (exit 0), demo serves fbe525f7, doctor 0, PASS Document runtimes.",
+  "       Step 2 Done: all eight reads 200; two differences from K6 recorded.",
+  "       Step 3 Done: snapshot 200, code assigned, packet executed, card generated, verification consistent.",
+  "       Step 4 Done as reads: labels, code and both citations in the canonical read; no Studio server running.",
+  "SEE IT http://127.0.0.1:5188/studio/review/6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+  "       http://127.0.0.1:5188/studio/properties/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/register",
+  "       E:/BhuAayam-data/task-data/r3/step3/08-packet.pdf, 08-packet.png, 11-card.pdf, 11-card.png",
+  "INPUTS Tower 3 plan1 (5293cd72, revision 1), boxed label UNIT-3B [596,390,644,409] on 2ND FLOOR PLAN.",
+  "       Difficult: a site whose other document readings went stale, and an original that was never read.",
+  "GAPS   No browser view; the register page reads do not carry the assigned code; the card expires in 24 hours.",
+  "NEXT   See the worker reply: interpreter base owned by the Codex application; DEMO-RUNTIME paragraph now stale."
+ ]
+}

@@ -1,0 +1,20 @@
+{
+  "timings": {
+    "mergedMs": 16.9,
+    "batch24MaxMs": 6.4,
+    "padDrawCallsBefore": 1662,
+    "padDrawCallsMerged": 1,
+    "shadowFar": 8059.13551,
+    "shadowRight": 1259.239923
+  },
+  "shadowBefore": {"far":8059.13551,"right":1259.239923},
+  "shadowForced": {"far":8693.381804},
+  "rect": {"x":12,"y":68,"width":1416,"height":632},
+  "comparisons": {
+    "unmodified": {"meanAbsoluteError255":0.970701,"changedFraction":0.023905},
+    "merged-pads": {"meanAbsoluteError255":0.970698,"changedFraction":0.023905},
+    "shadow-refit": {"meanAbsoluteError255":0.970698,"changedFraction":0.023905},
+    "shadow-forced-update": {"meanAbsoluteError255":0.975401,"changedFraction":0.024066}
+  },
+  "scratch": "E:/BhuAayam-data/task-data/lv1/lv2-diagnosis-1791665529286"
+}

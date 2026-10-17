@@ -5,7 +5,7 @@ import { EventEmitter } from 'node:events';
 import type { Response } from 'express';
 import { CaseIngestionOutboxSchema } from '../packages/contracts/src/usp/ingestion-events';
 import { AppError } from '../packages/server/src/infrastructure/errors';
-import { ingestionBinding, ingestionCursor, parseIngestionCursor, reserveIngestionReader, assertIngestionBinding } from '../packages/server/src/modules/usp/ingestion/events';
+import { ingestionBinding, ingestionCursor, parseIngestionCursor, reserveIngestionReader, assertIngestionBinding, INGESTION_EVENT_LIMITS } from '../packages/server/src/modules/usp/ingestion/events';
 import { writeIngestionFrame } from '../apps/api/src/modules/ingestion/events.transport';
 
 test('case/access-bound decimal cursors reject cross-case, malformed and conflicting replay',()=>{
@@ -38,12 +38,59 @@ test('case ingestion envelope rejects old registry bodies and extra source paylo
   assert.equal(CaseIngestionOutboxSchema.safeParse({streamId:'registry:control',type:'prepared',scope:{},manifestId:randomUUID(),correlationId:randomUUID()}).success,false);
 });
 
+test('a ninth reader across batches meets the operator bound, and release frees its place',()=>{
+  const previous=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='reservation-operator-control';
+  const releases:Array<()=>void>=[];
+  try {
+    for(let index=0;index<INGESTION_EVENT_LIMITS.perOperator;index++)
+      releases.push(reserveIngestionReader(ingestionBinding(randomUUID(),'reservation-operator-control')));
+    assert.equal(releases.length,8);
+    assert.throws(()=>reserveIngestionReader(ingestionBinding(randomUUID(),'reservation-operator-control')),
+      {status:429,code:'INGESTION_STREAM_LIMIT',
+        message:'At most 8 pages can follow batches live for one operator. Close one of them.'});
+    releases.pop()!();
+    releases.push(reserveIngestionReader(ingestionBinding(randomUUID(),'reservation-operator-control')));
+  } finally {
+    for(const release of releases)release();
+    if(previous===undefined)delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=previous;
+  }
+});
+
+test('the total server bound uses the prescribed operator words and leaves other limits unchanged',()=>{
+  const previous=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='reservation-total-control';
+  assert.deepEqual(INGESTION_EVENT_LIMITS,{connections:16,perOperator:8,perCase:4,page:32,replay:256,sources:256,
+    eventBytes:1024,frameBytes:2048,bufferBytes:4096,pollMs:500,heartbeatMs:10000,durationMs:60000,
+    writeMs:2000,statementMs:2000,readMs:6000,reads:121});
+  const releases:Array<()=>void>=[];
+  try {
+    for(let index=0;index<INGESTION_EVENT_LIMITS.connections;index++)
+      releases.push(reserveIngestionReader(ingestionBinding(randomUUID(),`reservation-total-${index}`)));
+    assert.throws(()=>reserveIngestionReader(ingestionBinding(randomUUID(),'reservation-total-next')),
+      {status:429,code:'INGESTION_STREAM_LIMIT',
+        message:'At most 8 pages can follow batches live for one operator. Close one of them.'});
+  } finally {
+    for(const release of releases)release();
+    if(previous===undefined)delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=previous;
+  }
+});
+
 test('reader reservations and backpressure release on disconnect without queued frames',async()=>{
   const previous=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='ingestion-disconnect-control';
   try {
-    const binding=ingestionBinding(randomUUID()),release=reserveIngestionReader(binding);
-    assert.throws(()=>reserveIngestionReader(ingestionBinding(binding.caseId)),(e:unknown)=>e instanceof AppError&&e.status===429);
-    release();reserveIngestionReader(ingestionBinding(binding.caseId))();
+    const binding=ingestionBinding(randomUUID()),releases:Array<()=>void>=[];
+    try {
+      for(let index=0;index<INGESTION_EVENT_LIMITS.perCase;index++)
+        releases.push(reserveIngestionReader(ingestionBinding(binding.caseId)));
+      assert.equal(releases.length,4);
+      assert.throws(()=>reserveIngestionReader(ingestionBinding(binding.caseId)),{status:429,
+        code:'INGESTION_STREAM_LIMIT',message:'At most 4 pages can follow one batch live. Close another page that shows this batch; this page keeps what it has already shown.'});
+      releases.pop()!();
+      releases.push(reserveIngestionReader(ingestionBinding(binding.caseId)));
+    } finally {for(const release of releases)release();}
     const emitter=new EventEmitter(),abort=new AbortController();
     const response=Object.assign(emitter,{destroyed:false,writableEnded:false,writableLength:0,write:()=>false}) as unknown as Response;
     const writing=writeIngestionFrame(response,': heartbeat\n\n',abort.signal,()=>{});

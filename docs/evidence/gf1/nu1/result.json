@@ -1,0 +1,79 @@
+{
+  "task": "NU1",
+  "gate": "GF1",
+  "base": "536510c32cbfdd4462e5bdbc871ef9c79a114c65",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers and the real probe over synthetic control bytes. No database, object store, processor or served HTTP walk was run.",
+  "defect": "AU2 G02: a probed item of a family no batch reader takes rested placement 'undecided' with no limit_reason, so the batch page said Not placed yet forever.",
+  "decisions": [
+    "D1 intake-draft.ts queueIntakeDraftTx: in the probe publication transaction, a card that keptOnly accepts (family document, image, raster, point_cloud, model3d, unknown, or a non-ZIP archive such as 7z/rar; a table only when the source profile is large-original-v1) goes to settleKeptTx, which writes placement 'not_understood', state 'probed' unchanged, and keptWords' sentence through writeIntakeDraftTx (an equal write publishes nothing).",
+    "D1 keptWords: 'Kept as a <FORMAT> <family noun> (<size>). No reader in a batch takes this kind of file yet, so it is not on the map; the original is kept with its SHA-256.' Card format 'unknown': 'Kept (<size>); its kind was not recognised from its first and last bytes.' A family-unknown card with a named format (DWG) uses the first sentence with the noun 'file', because its kind was recognised.",
+    "D1 sizeWords uses the batch page's units: bytes below 1 KB, whole KB (/1024, as AddFilesDialog) below 1 MB, MB to one decimal (/1024^2, trailing .0 dropped, as upload-model) below 1 GB, GB above it.",
+    "D1 other placement writers are untouched: ZIP parents (settleZipParentTx, zipParentStageTx), the shapefile ZIP (format zip, still no transition), KML and other vectors (intakeDraftLimit needs_answer), large GeoJSON (vector family: step jobs or STREAMING_SOURCE_BUDGET).",
+    "D2 settleKeptTx writes only a probed, unplanned root item whose placement is 'undecided' or 'not_understood', so a later reader's placement stands. No new state, column or schema step.",
+    "D2 the size is the retained original's byte count (sources.bytes, also usp_intake_items.size_bytes); the card carries no size of its own.",
+    "D3 the Studio already shows limitReason in the tray's Reason column and treats not_understood as settled; batch-model.ts is unchanged.",
+    "D4 intake-zip-layers.ts zipParentStageTx selects card only. The in-memory ledgers in tests/intake-ledger.test.ts and tests/intake-zip-layers.test.ts match that statement too (the latter file is outside the named test list, changed only for D4)."
+  ],
+  "tests": {
+    "server": {
+      "command": "D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts packages/server/src/modules/areas/*.test.ts packages/server/src/modules/officer/*.test.ts tests/manual-author.test.ts tests/ingestion-events.test.ts packages/server/src/modules/cases/processing.test.ts tests/usp-packet-pdf.test.ts tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts",
+      "before": {
+        "tests": 332,
+        "pass": 295,
+        "fail": 15,
+        "skipped": 22
+      },
+      "after": {
+        "tests": 339,
+        "pass": 302,
+        "fail": 15,
+        "skipped": 22
+      },
+      "failuresUnchanged": true,
+      "failureCause": "The same 15 tests fail before and after on this checkout: they read originals under E:/BhuAayam-data or other inputs absent here.",
+      "changed": [
+        "intake-draft.test.ts: a probed PDF (3.2 MB), TIFF (512 bytes), LAZ (7 GB), IFC (412 KB) and unknown card (412 KB) each rest not_understood with their sentence, one event; a replay adds none; a re-probe that cleared the words writes the same words once.",
+        "intake-draft.test.ts: a kept item a later reader placed ('attached') and a CSV table outside a large original are not written; the KML test also asserts needs_answer.",
+        "tests/intake-ledger.test.ts: through IntakeService and the real probe, PDF control bytes and unrecognised bytes rest not_understood with their sentence; a second enrolment keeps the same words."
+      ]
+    },
+    "backendTypecheck": {
+      "command": "pnpm typecheck:backend",
+      "before": 0,
+      "after": 0
+    },
+    "studioTypecheck": {
+      "command": "pnpm studio:typecheck",
+      "before": 0,
+      "after": 0
+    },
+    "studioTest": {
+      "command": "pnpm studio:test",
+      "before": {
+        "studio": 472,
+        "scene": 55,
+        "ui": 7,
+        "apiClient": 2
+      },
+      "after": {
+        "studio": 472,
+        "scene": 55,
+        "ui": 7,
+        "apiClient": 2
+      }
+    },
+    "openapi": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0,
+      "afterEdit": "stale docs/api/source-pins.json",
+      "afterRefresh": 0,
+      "refresh": "scripts/api/refresh-contract.ts origin/staging repinned intake-draft.ts and intake-zip-layers.ts; studio:api-types and scripts/api/check.py ran clean; schema unchanged."
+    }
+  },
+  "realInputs": "No dataset original was read. Control bytes ('%PDF-1.7' header, eight unrecognised bytes) are protocol controls, not records.",
+  "limits": [
+    "A later reader task moves kept items on; NU1 writes nothing once a placement other than undecided or not_understood stands.",
+    "An item with no card (probe failed or budget) keeps its existing probe code words."
+  ]
+}

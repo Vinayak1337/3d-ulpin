@@ -1,0 +1,40 @@
+{
+  "task": "ZW1",
+  "gate": "GF1",
+  "base": "7a6fded09eba3543cfdd6194334215f13e13ac56",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers (the job authority's statements included), the real probe and real repository inputs. No database, object store, processor, dispatcher loop or served HTTP walk was run.",
+  "defect": "Since ZJ1 the ZIP's own item said '<N> map layers in this ZIP are taken in as their own files: ...' while its intake-zip-layers job was only queued, and a failed job appended ZJ1's D5 sentence after those words, so the item said both.",
+  "decisions": [
+    "D1 intake-draft.ts zipParentWords takes a stage: 'taken' (ZF2b's sentence, the default), 'taking' ('<N> map layers in this ZIP are being taken in as their own files: <names>.', one layer 'is being taken in as its own file') or { stopped } (ZJ1's D5 sentence in place of the layers' sentence). The same listWords budgets (800 for layers, 900 for the 'Not taken in' tail) hold in every stage; the tail stays because those members are not taken in at any stage.",
+    "D2 intake-zip-layers.ts zipParentStageTx reads the archive item's stored card and rewrites only its limit_reason through writeIntakeDraftTx (an equal write publishes nothing). It runs in queueZipLayersTx's transaction after the job is registered ('taking'), in acceptUspJobAttempt's validator transaction ('taken'), and in stoppedTx for a claimed or unclaimed failure ({ stopped: D5 }). No read path or Studio change.",
+    "D2 a re-enrolment while a job is queued or running: ZF2's settlement in the same publish transaction writes ZF2b's words first, so queueZipLayersTx writes 'taking' again before returning null; before ZW1 it returned null and the words regressed to 'taken in'.",
+    "D3 when no job is queued (no layer waiting, or a shapefile ZIP), queueZipLayersTx writes nothing and ZF2b's words stand."
+  ],
+  "tests": {
+    "server": {
+      "command": "D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts packages/server/src/modules/areas/*.test.ts packages/server/src/modules/officer/*.test.ts tests/manual-author.test.ts tests/ingestion-events.test.ts packages/server/src/modules/cases/processing.test.ts tests/usp-packet-pdf.test.ts tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts",
+      "before": { "tests": 332, "pass": 295, "fail": 15, "skipped": 22 },
+      "after": { "tests": 332, "pass": 295, "fail": 15, "skipped": 22 },
+      "failuresUnchanged": true,
+      "failureCause": "The same 15 tests fail before and after on this checkout: they read originals under E:/BhuAayam-data or other inputs absent here (NYC, Niagara, OCR/quote parity, memory, PDF progress fixtures).",
+      "changed": [
+        "tests/intake-zip-layers.test.ts: a real three-layer ZIP's item says 'are being taken in' once queued and ZF2b's 'are taken in' once the job succeeds; a job failing as a whole or ending stale leaves only the D5 sentence (plus the README's 'Not taken in' tail); enrolling again after the failure queues a fresh job and the in-progress sentence returns, then ZF2b's after it succeeds; the real mixed ZIP that queues no job keeps its words unchanged.",
+        "tests/intake-ledger.test.ts: through IntakeService.register on a real two-layer ZIP, the item says 'are being taken in' after enrolment, still after a second enrolment while the job is queued, again after a re-enrolment that follows a failed job, and ZF2b's words when nothing waits and no job is queued."
+      ]
+    },
+    "typecheckBackend": { "command": "pnpm typecheck:backend", "before": 0, "after": 0 },
+    "studioTypecheck": { "command": "pnpm studio:typecheck", "before": 0, "after": 0 },
+    "studioTest": { "command": "pnpm studio:test", "before": "532 passed (studio 471, scene 52, ui 7, api-client 2)", "after": "532 passed (studio 471, scene 52, ui 7, api-client 2)" },
+    "openapi": { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before": "0 on staging; after the code change it reported docs/api/source-pins.json stale", "after": 0, "regenerated": "scripts/api/refresh-contract.ts origin/staging repinned intake-draft.ts, intake-zip-layers.ts, intake-zip-layers-worker.ts; pnpm studio:api-types produced no change; scripts/api/check.py exit 0 (314 operations, 356 schemas)" },
+    "diffCheck": { "command": "git diff --check", "after": 0 }
+  },
+  "realInputs": [
+    "fixtures/google-uttam (OSM / Google Open Buildings layers and README, test_only), zipped in the tests and never committed",
+    "fixtures/lake-view-complete-inputs.zip (ArcGIS JSON, PDFs, models; no layer waits)"
+  ],
+  "limits": [
+    "A job cancelled through cancelUspJob keeps the in-progress sentence until the next enrolment rewrites the words; cancellation is not one of D1's transitions and its transaction is outside this task's files.",
+    "Which members are layers, the layer and size limits, and the Studio are unchanged (D4)."
+  ]
+}

@@ -1,0 +1,4 @@
+{ "original": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+"sourceSha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8", "bytes": 1728,
+"provenance": "Retained K2 gmda-context-input.json; only returned area pin and requestKey rebound",
+"requestKey": "cc0e2f2e-f248-420d-8cc4-c15d3ba3ea04", "expectedAreaRevision": 2 }

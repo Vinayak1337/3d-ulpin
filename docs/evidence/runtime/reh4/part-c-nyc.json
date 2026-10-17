@@ -1,0 +1,86 @@
+{ "at": "2026-10-17T10:56:17.356Z", "api": "http://127.0.0.1:21026", "caseId": "c64977a6-e741-4d5f-a4cc-b4e03d5c23eb",
+"wallSeconds": 7.7, "restSeconds": 6.1, "stoppedAt": null, "input": {
+"path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip", "bytes": 14621643,
+"sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da", "verifiedBeforeUpload": true },
+"zipRoute": "intake", "archive": { "sourceId": "6ad37394-7306-4651-bf6a-4fced33615a1",
+"sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da" }, "requests": [ {
+"step": "create batch case", "method": "POST", "route": "/api/v1/cases", "status": 201, "seconds": 0.032,
+"requestKey": null }, { "step": "case revision", "method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200,
+"seconds": 0.011, "requestKey": null }, { "step": "retain archive", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/intake/archives", "status": 201, "seconds": 0.26,
+"requestKey": "ad5e5636-9450-495c-8576-0ea0dd5989b5" }, { "step": "enrol archive (fan-out)", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/intake/items", "status": 201, "seconds": 1.134,
+"requestKey": "f2658cb6-389d-4cf1-873f-cb3763d7b5b6" }, { "step": "manifest at rest", "method": "GET",
+"route": "/api/v1/ingestion/cases/{caseId}/intake", "status": 200, "seconds": 0.013, "requestKey": null }, {
+"step": "case sources and lineage", "method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200, "seconds": 0.025,
+"requestKey": null } ], "quietManifestReads": 4, "trail": [ { "seconds": 0, "items": [
+"nyc-10013-multimodal.zip: read/undecided", "boundary-original.geojson: probed/undecided",
+"buildings-original.geojson: probed/undecided", "hydrography.geojson: probed/undecided",
+"parks.geojson: probed/undecided", "roadbed.geojson: probed/undecided", "sidewalk.geojson: probed/undecided" ] }, {
+"seconds": 2.1, "items": [ "nyc-10013-multimodal.zip: read/undecided", "boundary-original.geojson: probed/undecided",
+"buildings-original.geojson: read/undecided", "hydrography.geojson: probed/undecided",
+"parks.geojson: probed/undecided", "roadbed.geojson: probed/undecided", "sidewalk.geojson: probed/needs_answer" ] }, {
+"seconds": 4.1, "items": [ "nyc-10013-multimodal.zip: read/undecided", "boundary-original.geojson: probed/needs_answer",
+"buildings-original.geojson: read/undecided", "hydrography.geojson: probed/needs_answer",
+"parks.geojson: probed/undecided", "roadbed.geojson: probed/needs_answer", "sidewalk.geojson: probed/needs_answer" ] },
+{ "seconds": 6.1, "items": [ "nyc-10013-multimodal.zip: read/undecided",
+"boundary-original.geojson: probed/needs_answer", "buildings-original.geojson: read/undecided",
+"hydrography.geojson: probed/needs_answer", "parks.geojson: probed/needs_answer",
+"roadbed.geojson: probed/needs_answer", "sidewalk.geojson: probed/needs_answer" ] } ], "parent": {
+"itemId": "6ad37394-7306-4651-bf6a-4fced33615a1", "parentItemId": null, "memberPath": null,
+"name": "nyc-10013-multimodal.zip", "sourceId": "6ad37394-7306-4651-bf6a-4fced33615a1", "family": "archive",
+"format": "zip", "state": "read", "placement": "undecided", "reason": [
+"6 map layers in this ZIP are taken in as their own files: layers/sidewalk.geojson, layers/",
+"buildings-original.geojson, layers/boundary-original.geojson, layers/hydrography.geojson, ",
+"layers/roadbed.geojson, layers/parks.geojson. Not taken in: layers/nyc-10013-dem-2017.tif ",
+"(not a map layer), layers/nyc-10013-lidar-2017.laz (not a map layer), layers/nyc-10013-ort",
+"ho-2018.tif (not a map layer), manifest.json (not a map layer)." ], "existingAreaId": null }, "layers": [ {
+"member": "layers/boundary-original.geojson",
+"memberSha256": "9a0c9f23bfd6a0b6ba71ab628ee25159e6b3754b4c40231d4a8090259e19c6cf",
+"itemId": "915b74e4-7bec-46fa-ac6a-bdd1e4f872ac", "parentItemId": null, "memberPath": null,
+"name": "boundary-original.geojson", "sourceId": "915b74e4-7bec-46fa-ac6a-bdd1e4f872ac", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null }, { "member": "layers/buildings-original.geojson",
+"memberSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+"itemId": "5b45f2d6-458b-4f8b-873b-0cf105aaed5f", "parentItemId": null, "memberPath": null,
+"name": "buildings-original.geojson", "sourceId": "5b45f2d6-458b-4f8b-873b-0cf105aaed5f", "family": "vector",
+"format": "geojson", "state": "read", "placement": "undecided", "reason": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ], "existingAreaId": "e4874150-ba45-4282-af98-61f2d50007b7" }, {
+"member": "layers/hydrography.geojson",
+"memberSha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+"itemId": "1c124634-7ebb-4022-a715-554a8a9890c3", "parentItemId": null, "memberPath": null,
+"name": "hydrography.geojson", "sourceId": "1c124634-7ebb-4022-a715-554a8a9890c3", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null }, { "member": "layers/parks.geojson",
+"memberSha256": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13",
+"itemId": "564087df-874e-475b-be3f-9db99e2830c0", "parentItemId": null, "memberPath": null, "name": "parks.geojson",
+"sourceId": "564087df-874e-475b-be3f-9db99e2830c0", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null }, { "member": "layers/roadbed.geojson",
+"memberSha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+"itemId": "d6595e39-2d47-4bc8-a5eb-e96fe94d95d7", "parentItemId": null, "memberPath": null, "name": "roadbed.geojson",
+"sourceId": "d6595e39-2d47-4bc8-a5eb-e96fe94d95d7", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null }, { "member": "layers/sidewalk.geojson",
+"memberSha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+"itemId": "d2fe4879-3c56-4790-a7c4-591a930bac62", "parentItemId": null, "memberPath": null, "name": "sidewalk.geojson",
+"sourceId": "d2fe4879-3c56-4790-a7c4-591a930bac62", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null } ], "membersKeptInsideArchive": [ { "memberPath": "layers/nyc-10013-dem-2017.tif",
+"state": "probed", "placement": "undecided" }, { "memberPath": "layers/nyc-10013-lidar-2017.laz", "state": "probed",
+"placement": "undecided" }, { "memberPath": "layers/nyc-10013-ortho-2018.tif", "state": "probed",
+"placement": "undecided" }, { "memberPath": "manifest.json", "state": "probed", "placement": "undecided" } ],
+"buildingsItemAsTheStudioReadsIt": { "route": "GET /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}",
+"status": 200, "seconds": 0.031, "itemId": "5b45f2d6-458b-4f8b-873b-0cf105aaed5f", "parentItemId": null,
+"memberPath": null, "name": "buildings-original.geojson", "sourceId": "5b45f2d6-458b-4f8b-873b-0cf105aaed5f",
+"family": "vector", "format": "geojson", "state": "read", "placement": "undecided", "reason": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ], "existingAreaId": "e4874150-ba45-4282-af98-61f2d50007b7", "cardFeatures": 1662,
+"cardCrs": "EPSG:4326", "cardSha256Present": true }, "expected": { "parentReadUndecidedWithWords": true,
+"buildingsReadUndecidedWithSentence": true, "buildingsExistingAreaIsReh2": true, "buildingsNotNeedsAnswer": true } }

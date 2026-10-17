@@ -1,0 +1,181 @@
+{
+  "task": "FX2",
+  "gate": "GF1",
+  "base": "ffa05e0a",
+  "branch": "task/fx2-pinned-files-keep-their-bytes",
+  "status": "repaired under the approved six-path line-ending exception",
+  "step0_commit": "0687ab8a",
+  "repair_commit": "43021733",
+  "works": "Pinned checkout bytes now match available pins; mesh and API receipt checks pass without semantic edits.",
+  "inventory": {
+    "before": "docs/evidence/gf1/fx2/step0.json#/table",
+    "after": "docs/evidence/gf1/fx2/after.json#/table",
+    "comparators_and_pin_locations": "docs/evidence/gf1/fx2/step0.json#/scopes",
+    "reproduce": "node docs/evidence/gf1/fx2/inventory.mjs",
+    "files": 755,
+    "current_api_producer_pins": 587,
+    "files_with_only_unavailable_expected_pins": 82,
+    "known_pins_matching_neither_byte_form": [],
+    "known_conflicting_raw_byte_pins": [],
+    "exhaustive": false,
+    "limit": "Optional external profile/job pins remain unavailable; no expected hash is inferred for them.",
+    "working_hashes_changed": 96,
+    "index_hashes_changed": 6,
+    "index_change_set_equals_authorized_six_paths": true,
+    "lf_rule_paths": 176,
+    "lf_index_blobs_unchanged": true,
+    "raw_scope_constituents": "LF index matches available pins; unknown external aggregate pins remain unqualified.",
+    "excluded": [
+      "489 paths having only normalizing API-producer or isolation-harness scopes need no new EOL rule.",
+      "The binary NotoSansDevanagari.ttf already has identical pinned bytes; no text rule is added.",
+      "82 paths with only unavailable expected pins are unchanged, pending the actual external pins."
+    ]
+  },
+  "six_path_exception": {
+    "authorization": "Lead lifted stop rule (a) only for these six files and only for line endings.",
+    "rule": "-text with pinned CRLF index and working bytes",
+    "verification": "Before commit, staged SHA256 matched each pin and cached ignore-cr-at-eol diff was empty.",
+    "committed_verification": "Committed SHA256s match the same pins; staging...HEAD semantic diffs are empty.",
+    "paths": [
+      {
+        "path": "docs/evidence/usp/cityjson-admission-readiness-runtime.json",
+        "stored_pin_and_staged_sha256": "064ee1bf64104a349e9b474b04257cb1928da5c5a1bca727735868e32491f7e7",
+        "pin_location": "docs/api/runtime-qualification.json#/additionalRuns",
+        "ignore_cr_at_eol_diff_empty": true
+      },
+      {
+        "path": "docs/evidence/usp/cityjson-admission-runtime.json",
+        "stored_pin_and_staged_sha256": "307ce2d5c64a632effb29548151c4019757ef7f745e3726271a97b3cc29306e8",
+        "pin_location": "docs/api/runtime-qualification.json#/additionalRuns",
+        "ignore_cr_at_eol_diff_empty": true
+      },
+      {
+        "path": "docs/evidence/usp/cityjson-reference-runtime.json",
+        "stored_pin_and_staged_sha256": "2de63f30c0e52ca3671f68ea57e701eb20dd1d9969f3c6d54ad67c509e830aab",
+        "pin_location": "docs/api/runtime-qualification.json#/additionalRuns",
+        "ignore_cr_at_eol_diff_empty": true
+      },
+      {
+        "path": "docs/evidence/usp/reference-document-enrollment/runtime.json",
+        "stored_pin_and_staged_sha256": "c87fd6547de8c91a8ec45f9f860f40f3ca84b2bf89a2a52cf82d2576ab8564c4",
+        "pin_location": "docs/api/runtime-qualification.json#/additionalRuns",
+        "ignore_cr_at_eol_diff_empty": true
+      },
+      {
+        "path": "scripts/usp/desktop-gltf-read.py",
+        "stored_pin_and_staged_sha256": "95e9301d3178438a26333ef28ee8ca1282779fe968b889c092a8cd7b81fcb0ba",
+        "pin_location": "docs/evidence/usp/native-obj/runtime-lock.json#/code",
+        "ignore_cr_at_eol_diff_empty": true
+      },
+      {
+        "path": "services/geo/geo/__init__.py",
+        "stored_pin_and_staged_sha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a",
+        "pin_location": "docs/evidence/usp/native-obj/runtime-lock.json#/code",
+        "ignore_cr_at_eol_diff_empty": true
+      }
+    ],
+    "excluded_for_failed_verification": []
+  },
+  "checks": [
+    {
+      "command": "FX1 suite_command_parts joined with spaces (docs/evidence/gf1/fx1/result.json)",
+      "phase": "before",
+      "tests": 33, "pass": 28, "fail": 2, "skipped": 3, "exit": 1,
+      "failures": ["complete/partial OBJ sufficiency", "mesh originals with unavailable processing"]
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/sufficiency-mesh.test.ts",
+      "phase": "after",
+      "tests": 3, "pass": 3, "fail": 0, "skipped": 0, "exit": 0
+    },
+    {
+      "command": "FX1 suite_command_parts joined with spaces (docs/evidence/gf1/fx1/result.json)",
+      "phase": "after",
+      "tests": 33, "pass": 30, "fail": 0, "skipped": 3, "exit": 0,
+      "qualification": "Plain suite; native bridge and configured learner prerequisites still cause three skips."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "phase": "before", "exit": 1,
+      "first_error": "API-DOC: runtime receipt changed",
+      "first_receipt": "docs/evidence/usp/cityjson-validation-runtime.json"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "phase": "after", "exit": 0,
+      "operations": 305, "schemas": 346
+    },
+    { "command": "pnpm typecheck:backend", "phase": "after", "exit": 0 },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "phase": "after", "exit": 0,
+      "operations": 305, "schemas": 346
+    },
+    { "command": "node docs/evidence/gf1/fx2/inventory.mjs", "phase": "after", "exit": 0 },
+    { "command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh", "phase": "after", "exit": 0 },
+    { "command": "git diff --check", "scope": "working tree after refresh", "exit": 0 },
+    {
+      "command": "git diff --cached --check",
+      "scope": "before repair commit", "exit": 2,
+      "final_plain_check": "git diff staging...HEAD --check also exits 2 for the same preserved CRLF endings",
+      "reason": "Git treats the deliberately preserved CR at each CRLF line ending as trailing whitespace."
+    },
+    {
+      "command": "git -c core.whitespace=cr-at-eol diff staging...HEAD --check",
+      "exit": 0,
+      "qualification": "Command-local CRLF-aware check; no Git configuration or pinned whitespace is rewritten."
+    },
+    { "command": "git diff staging...HEAD --stat", "exit": 0, "owned_paths_only": true },
+    { "command": "awk length>120 on new evidence and attributes", "exit": 0, "findings": 0 }
+  ],
+  "checkout_recovery": {
+    "signature": "git checkout and forced checkout-index leave stat-unchanged CRLF working files untouched.",
+    "diagnosis": "Attributes are correct; index bytes are LF; old working files still have their CRLF hashes.",
+    "hypothesis": "A temporary index checkout bypasses the existing working-file/stat shortcut.",
+    "bounded_comparison": "One private-mvt.controller.ts temporary checkout hash versus its unchanged index hash.",
+    "success_criterion": "Temporary checkout hash equals the LF index hash.",
+    "result": "Criterion met; checked temporary copies refreshed only reviewed paths, then were removed.",
+    "cache": "git add of verified identical LF blobs refreshes stale stat entries without changing index content.",
+    "stop_condition": "Unexpected working, index or temporary bytes stop the helper before copying that path."
+  },
+  "existing_checkout_refresh": {
+    "command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh",
+    "when": "After integration, in an existing checkout with no edits to the pinned paths.",
+    "guard": "All reviewed index/working hashes are checked before any copy; changed product bytes are refused.",
+    "scope": "176 LF paths plus six CRLF paths; only identical LF blobs may be re-added for stat-cache refresh."
+  },
+  "demo": {
+    "source": "Docker build COPY uses physical working-copy files from ./services/geo, not Git objects.",
+    "rebuild_needed": true,
+    "decision": "Owner-controlled rebuild of geo/worker images is needed to acquire corrected copied Python bytes.",
+    "qualification": "Existing images and protected demo checkout were not inspected; no image was built here.",
+    "obj_host_boundary": "Canonical OBJ uses local Windows Python and host pins; geo rebuild alone is insufficient."
+  },
+  "inputs": {
+    "good": "Retained test_only no_material.obj native artifact through unchanged mesh/sufficiency tests.",
+    "difficult": "Retained test_only missing_material_file.obj partial artifact through the same tests.",
+    "new_operational_records": 0
+  },
+  "historical_pin_note": {
+    "record": "docs/evidence/usp/rfdetr-runtime-profile-20261005.json#/code/sha256",
+    "qualification": "Historical telemetry differs from current script bytes; no active comparison established.",
+    "decision": "Neither changed nor used as an attribute authority."
+  },
+  "safety": {
+    "attributes_changed": true,
+    "semantic_product_edits": 0,
+    "test_edits": 0,
+    "pin_values_lock_values_or_receipt_content_rewritten": false,
+    "authorized_receipt_line_endings_only": true,
+    "other_pinned_index_blobs_changed": false,
+    "credentials_or_env_opened": false,
+    "external_originals_or_profiles_modified": false,
+    "images_or_services_started": false,
+    "branch_switched_merged_rebased_or_pushed": false
+  },
+  "next": [
+    "Lead reviews the narrow attributes and six byte-only migrations, then integrates and refreshes checkouts.",
+    "Owner controls demo image rebuild and native bridge qualification; these checks do not qualify execution.",
+    "Supply optional profile/job pins for the remaining inventory gaps; do not invent or rewrite expected hashes."
+  ]
+}

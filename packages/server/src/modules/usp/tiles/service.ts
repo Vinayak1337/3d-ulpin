@@ -10,6 +10,7 @@ import {sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {acceptedProjectedTx,projectedContextTx,observation} from '../ingestion/projected-vector';
+import {compareSourcePins} from '../ingestion/source-pin';
 import {appendCaseIngestionTx,ingestionBinding} from '../ingestion/events';
 import {mvtCompilerPinsTx,mvtReadCompilerCompatible} from './compiler';
 import {cellKey,sortedCells,boundsCells,windowCells,extentOf,type Bounds} from './grid';
@@ -46,7 +47,7 @@ async function assertMvtSourceInputTx(client:PoolClient,job:any,lock=false,mode:
     {inputFingerprint,...base}=input;
   if(input.jobId!==job.id||job.case_id!==input.source.caseId||job.source_id!==input.source.sourceId
     ||job.input_fingerprint!==inputFingerprint||fingerprint(base)!==inputFingerprint
-    ||fingerprint(ctx.source)!==fingerprint(input.source))
+    ||!compareSourcePins(ctx.source,input.source).current)
     throw new AppError(409,'MVT_CONTEXT_STALE','The tile source, admission, case or current private access context changed.');
   return {input,ctx};
 }

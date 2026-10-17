@@ -1,0 +1,204 @@
+{
+  "schemaVersion": "rera-storey-source-truth/1",
+  "canonicalBuildingId": null,
+  "split": "demo",
+  "recordedAt": "2026-10-09T19:21:27.571665+00:00",
+  "purpose": "test_only",
+  "permission": {
+    "state": "unconfirmed",
+    "scope": "Owner-approved public local development; no operational publication or training grant."
+  },
+  "reference": {
+    "horizontalCrs": null,
+    "verticalReference": "building_relative drawing labels; global datum unknown"
+  },
+  "projectSourceId": "RERAP2311201700019-3",
+  "buildingLiteral": "Magnolia Residency",
+  "truthKind": "independent_registry_literals",
+  "sources": [
+    {
+      "role": "independent_registry",
+      "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+      "retrievedAt": "2026-09-30T12:55:36.807272+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-project.html",
+      "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+      "bytes": 132607,
+      "reuseFrom": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project.html",
+      "operation": "unchanged copy of retained original; not new download"
+    },
+    {
+      "role": "extraction_pdf",
+      "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+      "retrievedAt": "2026-09-25T00:38:59.574536Z",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-magnolia-sanctioned-layout-original.pdf",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "bytes": 2455183,
+      "reuseFrom": "E:/BhuAayam-data/task-data/association-sources-20260929/bihar-magnolia-sanctioned-layout-original.pdf",
+      "operation": "unchanged copy of retained original; not new download"
+    }
+  ],
+  "registry": {
+    "projectSanctionedBuildingOrWingCount": {
+      "value": "12",
+      "state": "source_supported",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+          "retrievedAt": "2026-09-30T12:55:36.807272+00:00",
+          "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+          "locator": "#Label141",
+          "quote": "12",
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "floorExpression": {
+      "value": "3",
+      "state": "source_supported",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+          "retrievedAt": "2026-09-30T12:55:36.807272+00:00",
+          "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+          "locator": "#GV_Building tr[2] td[2]",
+          "quote": "3",
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "basementCount": {
+      "value": null,
+      "state": "unknown",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+          "retrievedAt": "2026-09-30T12:55:36.807272+00:00",
+          "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+          "locator": "#GV_Building, no basement count field",
+          "quote": null,
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "unitCount": {
+      "value": "12",
+      "state": "source_supported",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+          "retrievedAt": "2026-09-30T12:55:36.807272+00:00",
+          "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+          "locator": "#GV_Building tr[2] td[4]",
+          "quote": "12",
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "unitCountsByApartmentType": [
+      {
+        "apartmentTypeLiteral": "Duplex",
+        "countLiteral": "12",
+        "citations": [
+          {
+            "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+            "retrievedAt": "2026-09-30T12:55:36.807272+00:00",
+            "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+            "locator": "#GV_Building tr[2] td[3..4]",
+            "page": null,
+            "quoteLiterals": [
+              "Duplex",
+              "12"
+            ],
+            "quoteQualification": "Two exact source-cell literals, not a fabricated joined quote."
+          }
+        ]
+      }
+    ]
+  },
+  "documentStatements": [
+    {
+      "kind": "plan_floor_label",
+      "value": "GROUND FLOOR PLAN",
+      "citation": {
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+        "retrievedAt": "2026-09-25T00:38:59.574536Z",
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": "page 2 drawing caption",
+        "quote": "GROUND FLOOR PLAN",
+        "page": 2
+      }
+    },
+    {
+      "kind": "plan_floor_label",
+      "value": "FIRST FLOOR PLAN",
+      "citation": {
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+        "retrievedAt": "2026-09-25T00:38:59.574536Z",
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": "page 2 drawing caption",
+        "quote": "FIRST FLOOR PLAN",
+        "page": 2
+      }
+    },
+    {
+      "kind": "plan_floor_label",
+      "value": "SECOND FLOOR PLAN",
+      "citation": {
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+        "retrievedAt": "2026-09-25T00:38:59.574536Z",
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": "page 2 drawing caption",
+        "quote": "SECOND FLOOR PLAN",
+        "page": 2
+      }
+    },
+    {
+      "kind": "plan_floor_label",
+      "value": "TERRACE FLOOR PLAN",
+      "citation": {
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+        "retrievedAt": "2026-09-25T00:38:59.574536Z",
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": "page 2 drawing caption",
+        "quote": "TERRACE FLOOR PLAN",
+        "page": 2
+      }
+    }
+  ],
+  "placement": {
+    "state": "unknown",
+    "registryAddress": {
+      "value": "Deva Nagar, Singhaul",
+      "state": "source_supported",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+          "retrievedAt": "2026-09-30T12:55:36.807272+00:00",
+          "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+          "locator": "#Label121",
+          "quote": "Deva Nagar, Singhaul",
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "coordinate": null,
+    "method": "No geocoding; local drawing frame only."
+  },
+  "limitations": [
+    "Registry building-group name is not a keyed Villa Type 5 identifier.",
+    "Plan title has blank UNIT NO.; Type 4/5 and source-ID associations remain unresolved.",
+    "Registry literal 3 is not normalized to a height or an issued unit schedule.",
+    "Terrace is a literal plan scope, not an additional inferred statutory storey.",
+    "CAD vector dimensions support source-literal checks only; current sanction/as-built/rights unqualified."
+  ]
+}

@@ -1,0 +1,20 @@
+{ "at": "2026-10-10T18:03:36.159Z", "commit": "afd23f2999c412ed5c2b21aae10c3fae0c859003", "receipt": { "command": [
+"pnpm platform:stop --profile demo --runtime ulpin-reh-01" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-01", "exit": 0,
+"seconds": 6.143, "output": [ "> 3d-ulpin@ platform:stop E:\\Projects\\ulpin-wt\\ulpin-reh-01",
+"> bash scripts/platform-stop.sh \"--profile\" \"demo\" \"--runtime\" \"ulpin-reh-01\"", "",
+"ulpin-reh-01 API/dispatcher and containers stopped; all data volumes preserved." ], "error": null }, "gpu": null,
+"state": { "runtimeEntries": [ "api.process.json", "bootstrap.complete.json", "dispatcher.process.json",
+"document-ocr-6ab9cbac-c311-4c70-99d7-66eb1d6f341d-N4MaNh", "document-runtime-paths.json", "learning", "logs", "models",
+"ocr-paths.json", "ocr-scratch", "runtime.env", "tabular-paths.json" ], "volumes": { "command": [
+"docker volume ls --filter name=ulpin-reh-01_ --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.158, "output": [
+"ulpin-reh-01_minio-data", "ulpin-reh-01_postgres-data", "ulpin-reh-01_redis-data" ], "error": null }, "containers": {
+"command": [ "docker ps -a --filter label=com.docker.compose.project=ulpin-reh-01 --format \"{{.Names}} {",
+"{.State}} {{.Status}}\"" ], "from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.183,
+"output": [ "ulpin-reh-01-worker-1 exited Exited (0) Less than a second ago",
+"ulpin-reh-01-geo-1 exited Exited (0) 1 second ago", "ulpin-reh-01-minio-init-1 exited Exited (0) 15 minutes ago",
+"ulpin-reh-01-redis-1 exited Exited (0) 2 seconds ago", "ulpin-reh-01-minio-1 exited Exited (0) 2 seconds ago",
+"ulpin-reh-01-postgres-1 exited Exited (0) 2 seconds ago" ], "error": null }, "networks": { "command": [
+"docker network ls --filter name=ulpin-reh-01 --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.164, "output": [
+"ulpin-reh-01_default" ], "error": null }, "listeners": [] } }

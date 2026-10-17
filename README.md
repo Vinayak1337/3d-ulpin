@@ -8,6 +8,8 @@ Smart India Hackathon 2026 · Problem statement SIH26011 · Team Tech Builders
 
 <!-- plan-next-gate: GF0 -->
 
+Agent work starts with the [orchestrator prompt](docs/orchestration/ORCHESTRATOR.md) and [small task queue](docs/orchestration/WORK_ITEMS.md). Product/ML workers are currently paused. See the [review assessment](docs/orchestration/delivery-reset-20261004/README.md) for implemented versus unqualified scope and the [cleanup decisions](docs/orchestration/CLEANUP_20261004.md) for retained history.
+
 ## Why it exists
 
 ULPIN gives every land parcel in India a permanent identity, but it stops at the ground. A single parcel can carry a tower of flats, shared stairs, basements, parking and utility lines, and none of them has its own identity in the land record. To check one flat today, an officer reads a deed, a sanctioned plan and a survey that rarely agree, and reconciles them by hand.

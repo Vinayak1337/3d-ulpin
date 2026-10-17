@@ -1,0 +1,57 @@
+{
+  "task": "CA2",
+  "gate": "GF1 / B-snapshot-site-limit / B-site-digest-b1",
+  "baseline": "944f7a22",
+  "step0": "docs/evidence/gf1/ca2/step0.json",
+  "status": "offline protocol checks pass; runtime rehearsal pending",
+  "closure": [
+    {"part":"Exact selected registry records; recursively named sourceOnly.parentId/buildingId and within/floor/serves/crosses link targets","built":"snapshots.ts:111-142 targetRecordRows","reader":"source-stated-snapshots.ts:44-63; card-source-facts.ts:30-40; snapshots.ts baseline:317-321,355-376"},
+    {"part":"Recorded features whose record_id belongs to that closure","built":"snapshots.ts:170-183 targetRows","reader":"building-snapshots.ts:36-43; source-stated-snapshots.ts:26-30"},
+    {"part":"Record/feature evidence, rights, geometry bindings, source-only citations, document/IFC citations and registry metadata source receipts; associated feature-package document pins","built":"snapshots.ts:144-150,161-193","reader":"exchange.ts:25-32,319-333; document-association-targets.ts:32-39; source-stated-binding.ts:34-45; source-stated-snapshots.ts:26-40"},
+    {"part":"Reference parts of captured sources only; unchanged original-only authority and pins","built":"snapshots.ts:199-218 and unchanged source-stated-snapshots.ts","reader":"packet0.ts:48-58; plan-authority.ts:187-191; source-stated-identity.ts:37-45"},
+    {"part":"Current geometry qualifications of closure records/features only","built":"snapshots.ts:220-228 snapshotQualifications","reader":"snapshots.ts baseline:322-334; inherited qualification member-id contract defect recorded separately"},
+    {"part":"Relevant latest declarations, complete entry bodies for those declarations, applicability of closure targets, all contributing declaration sources","built":"declarations/projection.ts:11-37 optional recordIds; snapshots.ts:152-159","reader":"declarations/service.ts:306-350; packets/plan-authority.ts:32-43; packets/card-projection.ts:75-88","why_more_than_initial_rule":"Reader checks every entry for integrity and authorizes all input/review evidence. Do not silently capture sibling population records; shared packet eligibility remains not_assessed unless all dependency pins are in the selected closure."},
+    {"part":"Aliases and split/merge successor ids of closure records inside their existing body projection","built":"snapshots.ts:236-247,257-260","reader":"project-identity.ts:375-398; plan-authority.ts:172-180; pdf-authority.ts:164-173"},
+    {"part":"Site body {id,identifier,frame} at pin revision 0","built":"snapshots.ts:194-196,251-256","reader":"exchange.ts:40-47,301-303; snapshots.ts digest/manifest frame projection","why":"Explicit record/identity writers advance registry_sites.revision for unrelated records. Actual frame changes still alter the scoped digest."}
+  ],
+  "unchanged": ["Site selection queries, ceilings and captured row values; small-site golden members/digest match", "Digest/member/manifest/body hashing and immutable stored artefact readers", "sourceStatedSnapshotPinsTx", "No contract, migration, command, packet or card changes"],
+  "rollout": {
+    "issued_artefacts_need_recapture": [],
+    "unfinished_artefacts_need_new_capture": ["Unconsumed identity reviews: capture and review again", "Uncommitted registry proposals: prepare again from new capture", "Uncommitted declaration proposals/reviews: prepare and review from new capture"],
+    "packet_plans": "No digest recapture: confirmation/execution reassess the selected target/source/entry bodies. Existing retained plan and card revisions keep their old context.",
+    "legacy_marker": "Not needed for completed artefact verification/replay; existing manifests and bodies are never rewritten.",
+    "rehearsal_must_show": ["A one-target capture succeeds on the NYC site with more than 1000 recorded buildings; full site capture stays 413", "A file added in another case leaves the repeated target digest identical", "A review made from the new scoped capture still authorizes assignment after that file; no review refresh", "An already-issued packet/card and assigned-code resolution using pre-rollout manifests still read/verify their retained linkage"]
+  },
+  "tests": {
+    "existing_files": ["packages/server/src/modules/usp/identity-reviews.test.ts", "packages/server/src/modules/usp/building-snapshots.test.ts", "packages/server/src/modules/usp/packets/card-listing.test.ts", "packages/server/src/modules/usp/source-stated-identity.test.ts", "apps/api/src/modules/register/building-snapshots.controller.test.ts"],
+    "before": {"files":5,"tests":46,"pass":46,"fail":0,"skipped":0,"exit":0},
+    "after_existing": {"files":5,"tests":46,"pass":46,"fail":0,"skipped":0,"exit":0},
+    "new": {"file":"packages/server/src/modules/usp/snapshots.test.ts","tests":11,"pass":11,"fail":0,"skipped":0,"exit":0},
+    "after_search_all": {"files":6,"tests":57,"pass":57,"fail":0,"skipped":0,"exit":0},
+    "retained_extra": {"files":["packets/card-verification.test.ts","packets/card-preview.test.ts","packets/source-stated-binding.test.ts"],"tests":19,"pass":19,"fail":0,"skipped":0,"exit":0},
+    "site_golden": "docs/evidence/gf1/ca2/site-golden.json; captured from unchanged baseline before production edit",
+    "contract": "Each actual captured manifest passes UspSnapshotManifestSchema inside the capture function; existing controller contract tests stay green. No new wire fields.",
+    "commands": [
+      {"command":"pnpm typecheck:backend","exit":0},
+      {"command":"pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/snapshots.test.ts 2>&1 | grep -E '^ℹ (tests|pass|fail|skipped) |✖'","exit":0},
+      {"command":"rg -l 'captureRegistrySnapshot|usp_snapshot' packages/server/src apps/api scripts -g '*.test.ts' then pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <listed files>","exit":0},
+      {"command":"pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/packets/{card-verification,card-preview,source-stated-binding}.test.ts","exit":0},
+      {"command":"git diff staging...HEAD --check; new TypeScript file awk length>120 check","exit":0}
+    ]
+  },
+  "inputs": {
+    "good":"Retained Haryana RERA 2831 Tower 3 building body and original hashes from gf-backend/k2/tower3-source-import.json; small-site golden and closure protocol checks.",
+    "difficult":"Retained conflicting Tower 3 level schedule and source-only UNIT-3B/2ND FLOOR PLAN from source-spaces.test-fixture.ts, original-only snapshot protocol; nothing inferred as geometry or level ordinal.",
+    "scale":"1200-record/2100-source protocol-only site, not real persisted records. NYC data not loaded or modified; its runtime proof belongs to rehearsal.",
+    "io":"No database, container, migration, object store, network or runtime started or written. Protocol fixtures alone simulate SQL writes."
+  },
+  "gaps": [
+    {"finding":"Qualification member ids use @revision while CoreIdSchema excludes @","evidence":"qualification-baseline.json","next":"Separate contract/member-id decision. The same baseline expression is unchanged; runtime replay of relocated baseline was not qualified. New unrelated-qualification scoping test passes."},
+    {"finding":"Target closure task supports registry_record pins only; unsupported namespaces/non-UUID pins return USP_STALE_TARGET","next":"Current product captures select registry records. Any future feature/source-only capture profile needs its own defined closure."},
+    {"finding":"New SQL executed only by protocol controls, not PostgreSQL","next":"Runtime owner must run the NYC and retained-artifact rehearsal; no runtime gate claim here."}
+  ],
+  "attempts": [
+    {"failure":"Qualification test: ZodError members pin ref id","diagnosis":"Existing @revision id expression violates unchanged CoreIdSchema","decision":"Keep format and contract unchanged; report gap. Test unrelated qualification exclusion without claiming successful qualified capture."},
+    {"failure":"Temporary baseline replay dependency loading on Windows","diagnosis":"Relocated module lost package resolution; absolute drive paths are not ESM URLs. Evaluation commands also produced no evidence.","decision":"Removed temporary scripts. Baseline defect established by unchanged expression/schema comparison, not a falsely claimed runtime replay."}
+  ]
+}

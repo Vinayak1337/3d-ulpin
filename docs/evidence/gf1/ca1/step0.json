@@ -1,0 +1,694 @@
+{
+  "task": "CA1",
+  "gate": "GF1 / B-area-commit-revision-zero",
+  "base": "944f7a22",
+  "method": "Static source read; no database, container, original, credential or product code changed.",
+  "decision": "STOP: the proposed revision-1 exterior breaks later per-building preparation.",
+  "examinedRecord": {
+    "revision": 1,
+    "kind": "building",
+    "footprint": [],
+    "geometry": "absent",
+    "rights": [],
+    "links": [],
+    "representation": "physical_exterior",
+    "evidence": "one sourceId/locator binding; not geometry, title or issuance qualification"
+  },
+  "stopFindings": [
+    {
+      "id": "placement-treats-exterior-as-detail",
+      "reader": "setPreparationPlacement",
+      "refs": [
+        "packages/server/src/modules/officer/officer-preparation.ts:345-370",
+        "packages/server/src/modules/areas/areas.ts:574-579",
+        "services/geo/geo/area.py:42,434-436"
+      ],
+      "effect": [
+        "Native area normalization declares building-relative; not aligned between features as the vertical reference.",
+        "ingestArea copies that reference into registry_sites.frame.benchmark.",
+        "A supported different placement datum enters the /not aligned|unknown|unresolved/ branch.",
+        "SELECT 1 ... revision>0 finds the exterior even though it has no detailed coordinates or levels.",
+        "The function throws 422 EXISTING_DATUM before it can establish the first detailed registry datum.",
+        "This is a new refusal caused by the proposed lift, not the expected MISSING_DETAIL_EVIDENCE refusal."
+      ],
+      "smallestChange": [
+        "The officer owner must exempt only geometry-free physical_exterior records from this existing-detail guard.",
+        "Keep the guard for detailed coordinates/geometry; do not rename their datum."
+      ]
+    },
+    {
+      "id": "detailed-import-retains-observation-marker",
+      "reader": "importRegistryCase / importRecord, then prepareRegistryReview / evidenceChecks",
+      "refs": [
+        "packages/server/src/modules/registry/registry-seed.ts:178-218",
+        "packages/server/src/modules/registry/registry.ts:55-92,474-483,673-678"
+      ],
+      "effect": [
+        "The detailed import deletes the reserved representation marker only when current.revision===0.",
+        "At revision 1 it spreads current.body and the new detailed body, leaving physical_exterior in the draft.",
+        "recordBodySchema is strict and has no representation field; evidenceChecks rejects the imported correction.",
+        "openPreparation and prepareDetails need not expect registry revision 0 for this later review to break."
+      ],
+      "smallestChange": [
+        "The registry owner must strip the observation-only marker on an explicit detailed import at either revision.",
+        "Preserve the revision baseline, history, rights and metadata; do not re-reserve identity."
+      ]
+    },
+    {
+      "id": "geometry-free-peer-breaks-site-review",
+      "reader": "evidenceChecks via prepareRegistryReview, persistRegistryReviewTx and commitRegistryReviewTx",
+      "refs": [
+        "packages/server/src/modules/registry/registry.ts:205-210,474-483,673-678,728-738,832-866",
+        "packages/server/src/infrastructure/validation.ts:6"
+      ],
+      "effect": [
+        "Review combines every positive-revision current record of the site with the draft records.",
+        "An unchanged exterior peer hits recordBodySchema, whose footprint requires >=3 points.",
+        "Its footprint [] and representation marker both fail, even if the selected detailed building was normalized.",
+        "Thus another lifted exterior can prevent an otherwise valid per-building detailed review."
+      ],
+      "smallestChange": [
+        "The registry owner must distinguish citation-only exterior peers from detailed geometric review inputs.",
+        "Keep their source/record authority checks, but do not run the detailed-footprint schema/processor on them.",
+        "Fixing only registry-seed's marker removal does not fix empty-footprint peers."
+      ]
+    }
+  ],
+  "answer1": {
+    "inventoryCommand": "rg -n 'registry_records|registry_revisions' packages/server/src apps/api/src -g '!*.test.ts'",
+    "inventory": "37 matching files: 31 production server files, 2 API delegates, 3 test fixtures, 1 route manifest.",
+    "publication": {
+      "comment": "packages/server/src/modules/areas/areas.ts:737-738",
+      "meaning": [
+        "There is no function literally named legacy rights publication path.",
+        "The revision>0 boundary is currentRecords (siteDetail/registryQuery) and resolveRecord.",
+        "siteDetail publishes current bodies and explicitly stored rights to the local API caller.",
+        "resolveRecord publishes the current record and immutable history, including stored rights.",
+        "exportRegistryRecord downloads that record/history and cited source metadata as 3d-ulpin-registry-v1 JSON.",
+        "commitRegistryReviewTx is the write authority: it copies actual record.rights into registry_rights.",
+        "None creates a right from revision>0, representation, footprint or evidence alone. Empty rights stay empty."
+      ],
+      "refs": [
+        "packages/server/src/modules/registry/registry.ts:205-258,876-917,918-1000",
+        "packages/server/src/modules/registry/registry-operations.ts:57-98",
+        "apps/api/src/modules/register/register.controller.ts:143-157,207-223",
+        "apps/api/src/main.ts:14-31",
+        "apps/api/src/common/request-context.ts:41-77"
+      ],
+      "audience": [
+        "GET /api/v1/sites/:siteId, GET /api/v1/registry/:identifier and its /export serve the local workbench caller.",
+        "Nest binds 127.0.0.1 and enforces loopback Host/Origin, not public issued-title service.",
+        "Private document-citation routes additionally use PrivateSpatialGuard."
+      ],
+      "safetyConclusion": [
+        "No reader infers an owner/right, verified level/geometry, official issuance or assigned P3 from this row.",
+        "Snapshot resolution labels the allocated application identifier reviewed; that is not an assigned P3 code.",
+        "The required stop is preparation incompatibility, not automatic rights publication."
+      ]
+    },
+    "readers": [
+      {
+        "file": "packages/server/src/modules/areas/areas.ts",
+        "lines": [626,730,740],
+        "functions": "ingestArea",
+        "effect": [
+          "The revision>0 count can trigger PLACEMENT_REQUIRED only for an old area lacking reference at revision 0.",
+          "Ordinal allocation counts all identities; INSERT reserves, it does not publish rights.",
+          "A fresh native area has a reference; the exterior causes no ownership/level inference here."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/areas/area-resolver.ts",
+        "lines": [13,15,18,33,109,115,135,241],
+        "functions": "syncLegacyIdentifiers, resolveAreaIdentifier, bindExternalIdentifier",
+        "effect": [
+          "No officialUlpin means no legacy official_ulpin assertion is created.",
+          "Resolution includes the record, often attaching it to its existing physical feature match.",
+          "Empty links yield no record-derived parcel/building relations; physical relations have their own authority.",
+          "Manually binding official_ulpin requires kind parcel; the building cannot acquire one implicitly."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/snapshots.ts",
+        "lines": [75,123],
+        "functions": "snapshotRows, captureRegistrySnapshotTx, resolveRegistryTarget, readRegistryScope",
+        "effect": [
+          "Captures the row as registry_record@1 with its evidence; the full-site 1000-record bound still applies.",
+          "No project-code row gives projectIdentity:null; the resolver returns no project-p3-1 identifier.",
+          "Empty links give no vertical chain; evidence becomes a verbatim feature locator pointing to the source.",
+          "Geometry eligibility requires a separate exact qualification, not revision 1 or an evidence binding.",
+          "readRegistryEvidence returns not_assessed for preview/extract; original access keeps source authority."
+        ],
+        "projectionRefs": ["packages/server/src/modules/usp/snapshots.ts:284-349,353-379,400-454"]
+      },
+      {
+        "file": "packages/server/src/modules/usp/project-identity.ts",
+        "lines": [43,197,198,207],
+        "functions": "lockedRecords, bumpRevisions, finish; identity review/assignment/mutation",
+        "effect": [
+          "lockedRecords refuses a building with USP_IDENTITY_TARGET: every identity target must be a recorded space.",
+          "No building identity is assigned or raised by the later revision/history writers."
+        ],
+        "guardRef": "packages/server/src/modules/usp/project-identity.ts:40-49"
+      },
+      {
+        "file": "packages/server/src/modules/usp/commands.ts",
+        "lines": [127],
+        "functions": "commitProposalTx",
+        "effect": [
+          "Reads post-write revision pins only after commitRegistryReviewTx; writes a receipt/outbox and new snapshot.",
+          "Does not turn the exterior into rights; the generic review incompatibilities still apply."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/geometry.ts",
+        "lines": [82],
+        "functions": "recordGeometryQualificationTx; qualifiedGeometryRecordPins, geometryProjection",
+        "effect": [
+          "The dynamically chosen registry_records table checks an exact current body hash for qualification writes.",
+          "Revision 1 is only a possible target, not qualification; qualification needs its own receipt/metadata.",
+          "Without that authority analytical geometry remains insufficient/not_assessed."
+        ],
+        "refs": ["packages/server/src/modules/usp/geometry.ts:33-71,78-89,99-115"]
+      },
+      {
+        "file": "packages/server/src/modules/usp/display-compiler.ts",
+        "lines": [11,34,59],
+        "functions": "displayInputsCurrentTx, readDisplayDerivativesForCompiler, storeDisplayDerivativeTx",
+        "effect": [
+          "Accepts the exact record as a display target, but creates no derivative/analytic geometry itself.",
+          "No existing display derivative means an empty listing; supplied display outputs remain display-only."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/identity-reviews.ts",
+        "lines": [21],
+        "functions": "recordSiteTx / identity review listing",
+        "effect": "Revision 1 permits site lookup; no reviews means an empty list, not an issued identity."
+      },
+      {
+        "file": "packages/server/src/modules/usp/declarations/authority.ts",
+        "lines": [93],
+        "functions": "assertPopulationTx",
+        "effect": [
+          "building@1 can be a declaration member; this is target authority, not a share/right.",
+          "No declaration is constructed from the record. An actual declaration needs its separate instrument/review."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/document-association-targets.ts",
+        "lines": [67,147,178],
+        "functions": "associationTargets, associationTargetAuthority",
+        "effect": [
+          "Allows a building target with evidence/empty relations, subject to snapshot/source access.",
+          "Locks/rechecks exact bodies and identity rows; a document association is not geometry, title or ownership."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/packets/plan-authority.ts",
+        "lines": [106,156],
+        "functions": "authorizePlanTx, assessPlanTx",
+        "effect": [
+          "Building is an allowed target. Direct evidence must equal its recorded sourceId/verbatim locator.",
+          "GeoJSON feature locators have no supported text/CSV excerpt: exact_extract_unavailable.",
+          "A required entry blocks the plan rather than inventing source facts, measured geometry or rights."
+        ],
+        "refs": ["packages/server/src/modules/usp/packets/plan-authority.ts:141-169,197-236"]
+      },
+      {
+        "file": "packages/server/src/modules/usp/packets/pdf-authority.ts",
+        "lines": [106,112,115,152],
+        "functions": "committedTargetTx, assessPdfPlanTx, authorizePdfPlanTx",
+        "effect": [
+          "Uses current or immutable historical bodies for exact target/region authority, not a revision-based right.",
+          "No documentCitations/sourceOnly means no region binding; required entries block as unavailable.",
+          "The GeoJSON evidence binding is not automatically a PDF/image region citation."
+        ],
+        "refs": ["packages/server/src/modules/usp/packets/pdf-authority.ts:30-56,105-119,144-179"]
+      },
+      {
+        "file": "packages/server/src/modules/usp/packets/card-service.ts",
+        "lines": [156],
+        "functions": "currentRevisionTx; property card preview/generation",
+        "effect": [
+          "Revision 1 satisfies only the current-revision guard; an executed confirmed packet plan is still required.",
+          "Card facts say no P3 identity/location, geometry/measurements unavailable and rights/title not assessed.",
+          "The present GeoJSON plan gap means no card can be generated from this binding alone."
+        ],
+        "refs": [
+          "packages/server/src/modules/usp/packets/card-service.ts:109-113,155-160",
+          "packages/server/src/modules/usp/packets/card-projection.ts:68-72,88-96"
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/officer/officer-preparation.ts",
+        "lines": [356],
+        "functions": "setPreparationPlacement; prepareDetails and other preparation commands",
+        "effect": [
+          "The any-revision>0 datum guard refuses the first supported different datum: stop finding 1.",
+          "prepareDetails itself tests package/placement/physical revisions, not registry revision 0."
+        ],
+        "refs": ["packages/server/src/modules/officer/officer-preparation.ts:345-379,463-504,554-564,693-709"]
+      },
+      {
+        "file": "packages/server/src/modules/officer/officer.ts",
+        "lines": [121,288,289,293,294],
+        "functions": "changeAssociation, relatedRegistryRecordQuery, buildingDossier, openPreparation",
+        "effect": [
+          "The same-id record joins the building's explicit graph; it carries no spaces, parents or rights by itself.",
+          "Dossier includes its source binding; footprint<3 produces no registry polygon or level/volume projection.",
+          "Geometry qualification is checked independently; missing detailed-space statements remain.",
+          "openPreparation checks physical revision, not reserved registry revision; it performs no registry lift."
+        ],
+        "refs": ["packages/server/src/modules/officer/officer.ts:456-526,539-604,605-741"]
+      },
+      {
+        "file": "packages/server/src/modules/officer/building-ledger.ts",
+        "lines": [123],
+        "functions": "buildingLedger, ledgerSourceLocators",
+        "effect": [
+          "Includes the exterior root in the explicit record graph and its evidence in source authorization/history.",
+          "spaces filters kind space, so this building does not count as a detailed space.",
+          "Reports no detailed spaces, no confirmed parcels and technical readiness/rights/deviation not assessed.",
+          "registryRecordedSourceTx admits native GeoJSON; this reader does not require registry revision 0."
+        ],
+        "refs": ["packages/server/src/modules/officer/building-ledger.ts:44-73,104-124,144-186"]
+      },
+      {
+        "file": "packages/server/src/modules/officer/building-ledger-history.ts",
+        "lines": [57],
+        "functions": "ledgerRegistryHistorySql, ledgerRegistryHistoryEntry",
+        "effect": "Names the building revision/time and null actor if absent; no right/issuance inference."
+      },
+      {
+        "file": "packages/server/src/modules/officer/consolidated-register.ts",
+        "lines": [78,79,83,84,85,99],
+        "functions": "captureTx / exportConsolidatedRegister",
+        "effect": [
+          "Includes the record as a building fact with its exact registry recorded time; no revision-zero expectation.",
+          "ownershipClaims maps actual ownership_claim rights, so [] gives none; occupancy/address stay unknown.",
+          "Empty links add no parcel/floor/unit. It exports no drawings, measurements or extracted source text.",
+          "The report states geometry does not establish ownership/issuance; application IDs are separate."
+        ],
+        "refs": ["packages/server/src/modules/officer/consolidated-register.ts:129-149,178-201,209-225"]
+      },
+      {
+        "file": "packages/server/src/modules/officer/officer-operations.ts",
+        "lines": [35,36,39],
+        "functions": "propertyDirectory, reviewBuildingDetails",
+        "effect": [
+          "Includes the root, but counts spaces/floors by kind: 0 for this isolated building exterior.",
+          "reviewBuildingDetails imports the built case and prepares generic registry review: stop findings 2 and 3."
+        ],
+        "refs": ["packages/server/src/modules/officer/officer-operations.ts:30-42,52-69"]
+      },
+      {
+        "file": "packages/server/src/modules/officer/canonical-conflict-decisions.ts",
+        "lines": [83,86,130],
+        "functions": "decideCanonicalConflict, appendReviewedRevision",
+        "effect": [
+          "Positive revision permits lookup, but an explicit supported conflict/citation/decision must still exist.",
+          "No conflict is synthesized. Accepted decisions append metadata/history, preserving geometry and rights."
+        ],
+        "refs": ["packages/server/src/modules/officer/canonical-conflict-decisions.ts:71-89,112-139"]
+      },
+      {
+        "file": "packages/server/src/modules/officer/source-spaces.ts",
+        "lines": [109],
+        "functions": "commandSourceSpace, assertSourceBuilding",
+        "effect": [
+          "Requires placement unknown, classification test_only and document pins, not revision 1 alone.",
+          "The reserved native map body lacks those fields, so SOURCE_SPACE_BUILDING refuses it.",
+          "This document-only path is not the per-building detailed preparation path and does not fabricate floors."
+        ],
+        "refs": ["packages/server/src/modules/officer/source-spaces.ts:25-47,103-134"]
+      },
+      {
+        "file": "packages/server/src/modules/registry/canonical-source-identity.ts",
+        "lines": [17,38],
+        "functions": "readSourceProjectCodes, assertSourceChildRevisions",
+        "effect": "Filters sourceOnly children/spaces; this exterior is neither, so it adds no code or child identity."
+      },
+      {
+        "file": "packages/server/src/modules/registry/registry-document-evidence.ts",
+        "lines": [128,175],
+        "functions": "currentTargetTx, historicalTargetTx, assertRegistryDocumentCitationsTx, publicRegistryBody",
+        "effect": [
+          "building@1 can be a correction target; it authorizes ordinary evidence sources, not inferred facts.",
+          "No documentCitations means an empty list. Historical pins require immutable body hashes if citations exist.",
+          "publicRegistryBody leaves ordinary evidence/rights intact; it hides private citations/native candidates."
+        ],
+        "refs": ["packages/server/src/modules/registry/registry-document-evidence.ts:107-140,170-187"]
+      },
+      {
+        "file": "packages/server/src/modules/registry/registry-record-evidence.ts",
+        "lines": [36,49,50],
+        "functions": "targetTx, captureTx, readRegistryRecordEvidenceTx",
+        "effect": [
+          "Target kind/revision and matching history qualify for lookup only.",
+          "captureTx then parses raw current/history bodies with strict recordBodySchema: [] and extra fields fail.",
+          "It does not read plain evidence entries as document citations or infer rights/geometry from the revision."
+        ],
+        "refs": ["packages/server/src/modules/registry/registry-record-evidence.ts:27-75,103-133"]
+      },
+      {
+        "file": "packages/server/src/modules/registry/registry-operations.ts",
+        "lines": [52],
+        "functions": "searchRegistry, resolveRegistryIdentifier, exportRegistryRecord",
+        "effect": [
+          "Search includes the building by identifier/alias/name; searching rights text does not assert a right.",
+          "Resolution/export emit empty rights, no geometry and actual source metadata via registry readers.",
+          "Export classification stays unknown for nonsynthetic data; limitations deny title/ownership inference."
+        ],
+        "refs": ["packages/server/src/modules/registry/registry-operations.ts:29-98"]
+      },
+      {
+        "file": "packages/server/src/modules/registry/registry-seed.ts",
+        "lines": [168],
+        "functions": "importRegistryCase / importRecord",
+        "effect": [
+          "Reuses identity@1 and draft baseline@1; it does not force zero or raise the revision itself.",
+          "Existing rights/metadata survive explicit detailed import; the proposed footprint is source-backed detail.",
+          "The revision-zero-only marker deletion causes stop finding 2; no right is inferred from the exterior."
+        ],
+        "refs": ["packages/server/src/modules/registry/registry-seed.ts:137-218,224-250"]
+      },
+      {
+        "file": "packages/server/src/modules/registry/registry.ts",
+        "lines": [207,243,252,276,296,330,344,876,880,939,964],
+        "functions": [
+          "currentRecords, siteDetail, resolveRecord, reserveRecord, createRegistryDraftTx",
+          "prepareRegistryReview, persistRegistryReviewTx, commitRegistryReviewTx, registryQuery"
+        ],
+        "effect": [
+          "Reads/history publish the actual body; no right, owner, geometry or verified level is added.",
+          "A valid correction starts at revision 1 and records revision 2; it does not require zero.",
+          "Ordinal/INSERT paths reserve. Spatial queries select kind space, excluding this building.",
+          "Generic site-wide review fails for the empty-footprint exterior peers: stop finding 3.",
+          "An inspected GeoJSON original cannot pass the generic evidenceChecks ready/needs_input/reference-part rule.",
+          "Rights table writes iterate actual reviewed rights only; the specified exterior has none."
+        ],
+        "refs": ["packages/server/src/modules/registry/registry.ts:474-616,673-678,738,866,876-917,918-986"]
+      },
+      {
+        "file": "packages/server/src/modules/spatial/spatial-core-read.ts",
+        "lines": [52,55],
+        "functions": "readLegacySpatialSlice",
+        "effect": [
+          "Reads linked sites and positive-revision records, explicitly removing rights from record bodies.",
+          "Envelope fields must match stored row/revision; no footprint/geometry is invented.",
+          "Ordinary evidence supplies source metadata IDs; downstream analytics retain their independent qualification."
+        ],
+        "refs": ["packages/server/src/modules/spatial/spatial-core-read.ts:50-76"]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/source-building-candidates.ts",
+        "lines": [82,83,113,118,121],
+        "functions": "lockBuildingMetadataTx, commandTx, appendBuildingMetadataRevisionTx",
+        "effect": [
+          "Building lookup accepts revision 1; no candidate/patch is added absent an explicit reviewed command.",
+          "Candidate commands recheck canonical/source authority and retain candidates, not spaces.",
+          "Accepted metadata writes append building/physical histories and site revision, retaining original rights."
+        ],
+        "refs": ["packages/server/src/modules/usp/ingestion/source-building-candidates.ts:69-92,112-149"]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/source-building-children.ts",
+        "lines": [32,33,39,44,51,72],
+        "functions": "reserveChildTx, sourceFloorTx, sourceSpaceTx",
+        "effect": [
+          "Ordinal/sibling checks count floor/space kinds or explicit parent links, not this building as a child.",
+          "Children need commandSourceSpace's accepted document literal; that gate refuses this map body.",
+          "A revision-1 building alone creates no verified floor, space, geometry or right."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/source-building-records.ts",
+        "lines": [19,42,73,79,82],
+        "functions": "reserveIdentityTx, reserveSourceBuildingTx, recordSourceBuildingTx",
+        "effect": [
+          "Document allocation counts ordinals/reserves, but rejects an already-linked source identity.",
+          "The document commit compares both physical and registry revisions and refuses geometry/rights replacement.",
+          "A mismatched document baseline refuses; ordinary map packages do not call this function.",
+          "It records no right/geometry: it demonstrates the geometry-free registry lift and immutable history pattern."
+        ],
+        "refs": ["packages/server/src/modules/usp/ingestion/source-building-records.ts:10-32,56-92"]
+      },
+      {
+        "file": "apps/api/src/modules/register/record-evidence.controller.ts",
+        "lines": [18],
+        "functions": "RegistryRecordEvidenceController.read",
+        "effect": "No SQL; the private exact-revision delegate hits registry-record-evidence's schema refusal.",
+        "refs": ["apps/api/src/modules/register/record-evidence.controller.ts:12-29"]
+      },
+      {
+        "file": "apps/api/src/modules/register/record-evidence-export.controller.ts",
+        "lines": [17],
+        "functions": "RegistryRecordEvidenceExportController.read",
+        "effect": "No SQL; private text/CSV delegate uses the same exact evidence read before sending any attachment.",
+        "refs": ["apps/api/src/modules/register/record-evidence-export.controller.ts:11-41"]
+      },
+      {
+        "file": "apps/api/src/modules/register/operation-manifest.json",
+        "lines": [28,29],
+        "functions": "none",
+        "effect": "Route metadata, not a registry reader or runtime publication path."
+      },
+      {
+        "file": "packages/server/src/modules/officer/source-spaces.test-fixture.ts",
+        "lines": [46,52,55,69,72,77],
+        "functions": "test fake-client reads/writes",
+        "effect": "In-memory protocol fixture, not production; simulates rows/history, publishes nothing."
+      },
+      {
+        "file": "packages/server/src/modules/usp/source-stated-identity.test-fixture.ts",
+        "lines": [84,117,139],
+        "functions": "test identity/packet fake-client reads/writes",
+        "effect": "In-memory identity/packet fixture; no production publication or DB access."
+      },
+      {
+        "file": "packages/server/src/modules/usp/packets/card-verification.test-fixture.ts",
+        "lines": [206],
+        "functions": "Card fake-client rows",
+        "effect": "In-memory card protocol fixture; no production publication or issuance."
+      }
+    ],
+    "indirectExports": {
+      "refs": [
+        "packages/server/src/modules/officer/officer-investigations.ts:500-565,604-646",
+        "packages/server/src/modules/usp/packets/card-projection.ts:68-96"
+      ],
+      "effect": [
+        "Officer export consumes dossier records; geometry/analytical findings still need their own qualification.",
+        "Empty registry geometry prints Not supplied, application identifiers expressly are not national issuance.",
+        "A card consumes an executed plan and prints rights/title/issuance as not_assessed, never an inferred owner."
+      ]
+    }
+  },
+  "answer2": {
+    "directPreparation": [
+      {
+        "refs": ["packages/server/src/modules/officer/officer.ts:605-741"],
+        "answer": "openPreparation pins physical revision/evidence; it does not check/lift registry revision 0."
+      },
+      {
+        "refs": ["packages/server/src/modules/officer/officer-preparation.ts:34-67,69-158,223-285"],
+        "answer": "Facts/requirements depend on package, selected claims and placement, not registry revision 0."
+      },
+      {
+        "refs": ["packages/server/src/modules/officer/officer-preparation.ts:345-379"],
+        "answer": "setPreparationPlacement refuses the first different resolved datum after the lift: EXISTING_DATUM."
+      },
+      {
+        "refs": ["packages/server/src/modules/officer/officer-preparation.ts:463-504,554-564,693-709"],
+        "answer": [
+          "prepareDetails requires at least one selected detailed space and reviewed placement; absence still refuses.",
+          "It checks physical revision, prepares an evidenced derivative/build and adds the identity mapping.",
+          "It never updates registry_records; later registry import/review records the details."
+        ]
+      },
+      {
+        "refs": [
+          "packages/server/src/modules/officer/officer-operations.ts:52-69",
+          "packages/server/src/modules/registry/registry-seed.ts:178-218",
+          "packages/server/src/modules/registry/registry.ts:673-678,871-880"
+        ],
+        "answer": [
+          "The detailed draft starts from registry revision 1 and would record revision 2 on successful commit.",
+          "But the retained marker and empty-footprint peers prevent that successful review (stop findings 2 and 3)."
+        ]
+      }
+    ],
+    "readOnlyViews": [
+      "buildingLedger and consolidated-register accept the root's positive physical revision and registry@1 graph.",
+      "Neither expects registry@0, raises registry revisions or refuses just because registry revision is already 1.",
+      "They authorize the native GeoJSON source, give zero detailed spaces and no recorded ownership claims.",
+      "Their exact file/line references and qualifications are in answer1.readers."
+    ]
+  },
+  "answer3": {
+    "refs": [
+      "packages/server/src/modules/areas/areas.ts:689-740,762-835,1306-1323,1373-1445",
+      "packages/server/src/modules/usp/ingestion/source-building-review.ts:162-175"
+    ],
+    "linkedPath": [
+      "Namespace plus candidate.sourceKey resolves the existing physical feature through source_feature_links.",
+      "Kind changes, synthetic/hypothetical promotion and another-area reuse are refused.",
+      "Reuses linked.id, identifier and record_id, pinning linked.revision; no new registry reservation.",
+      "The package feature/evidence cites the new source ID; the physical row changes only on commit.",
+      "commitPackage rejects a stale physical baseline, then increments physical revision and writes physical history.",
+      "Expires/replaces dataset identifiers and raises map_areas revision, not registry_sites revision.",
+      "Today it never changes the reserved registry row. A hypothetical CA1 lift would keep an already-recorded row.",
+      "That keeps registry@1 and its original feature citation intact on later physical corrections/source revisions.",
+      "Physical-feature revision and registry revision need not remain equal after later exterior packages."
+    ],
+    "siteRevisionPattern": [
+      "The document caller locks registry_sites, reads site.revision once and passes site.revision+1 to every feature.",
+      "It increments registry_sites once after the loop; recordSourceBuildingTx only writes history with that number.",
+      "The native commit currently has no corresponding site-revision lock/read/increment.",
+      "The requested import plus one call ownership does not allow copying those caller statements into commitPackage.",
+      "If resumed, the lead must settle that ownership/signature seam; do not use areaRevision as siteRevision."
+    ],
+    "recordIdShape": [
+      "PhysicalFeature has no record_id member; physical_features holds that column from reservation.",
+      "A resumed helper must resolve that column through the existing physical feature, not assume id===record_id."
+    ],
+    "recordIdRefs": ["packages/contracts/src/area.ts:95-104", "packages/server/src/modules/areas/areas.ts:722,831-835"]
+  },
+  "answer4": {
+    "refs": [
+      "packages/contracts/src/area.ts:1-6,33-47,61-73,95-104",
+      "packages/server/src/modules/areas/areas.ts:367-373,534-537,762-768,810-825,882-883",
+      "services/geo/geo/area_semantics.py:50-58",
+      "services/geo/geo/area.py:341-349,383-385"
+    ],
+    "nativeShape": "[{sourceRevisionId:sourceId,featureId:candidate.sourceKey}]",
+    "meaning": [
+      "PhysicalFeature.evidence is SourceLocator[]; sourceRevisionId is the source row UUID, not its numeric revision.",
+      "Optional SourceLocator fields are page,row,partId,featureId,jsonPointer and normalized region.",
+      "Ordinary GeoJSON ingest adds exactly the sourceRevisionId and featureId fields above.",
+      "Registry bindings must use each entry's sourceRevisionId/featureId without uppercasing.",
+      "sourceFeatureIndex is separate; it is not the feature locator written by the native evidence constructor.",
+      "The normalizer validates/stringifies/trims source keys; the helper must cite the feature's stated key."
+    ],
+    "derivedShape": [
+      "The internal derivedObservation input pins the original image source/hash and document part, plus a receipt.",
+      "ingestArea sets semantics.evidenceState='unresolved' and properties.spatialExtraction=that receipt.",
+      "Evidence additionally includes {sourceRevisionId:originalId,partId:derivedPartId,page:input.page}.",
+      "The package retains the linked document part and a derived-proposal warning.",
+      "derivedObservation itself is not persisted on PhysicalFeature; spatialExtraction is its persisted marker.",
+      "Native features can also be unresolved when geometryRole is unknown: unresolved alone is not a derived test.",
+      "A resumed helper should keep any feature carrying the spatialExtraction marker, regardless of worldStatus."
+    ]
+  },
+  "answer5": {
+    "contractAndReads": [
+      {
+        "refs": ["packages/contracts/src/registry.ts:24-42", "packages/contracts/src/index.ts:30-33"],
+        "answer": "RegistryBody.evidence is SourceBinding[] with sourceId and locator; no source-format discriminator."
+      },
+      {
+        "refs": ["packages/server/src/modules/registry/registry.ts:37-40,55-92,619-635"],
+        "answer": [
+          "Runtime binding validates UUID and nonempty locator <=500; no GeoJSON-specific refusal in that binding.",
+          "The enclosing strict detailed body requires a >=3-point footprint and does not admit representation.",
+          "bodyOnly strips envelope fields for review, but not representation."
+        ]
+      },
+      {
+        "refs": [
+          "packages/server/src/modules/registry/registry.ts:127-139,205-258",
+          "packages/server/src/modules/registry/registry-document-evidence.ts:107-116",
+          "packages/server/src/modules/registry/registry-operations.ts:57-98"
+        ],
+        "answer": "Ordinary current/history/export readers project stored evidence; they do not run evidenceChecks."
+      },
+      {
+        "refs": [
+          "apps/studio/src/features/map/inspector/evidence.ts:18-23",
+          "apps/studio/src/features/map/inspector/SpaceInspector.tsx:58-63",
+          "apps/studio/src/features/map/inspector/BuildingInspector.tsx:43-49,134-155",
+          "apps/studio/src/features/evidence/refs.ts:38-46"
+        ],
+        "answer": [
+          "recordEvidence maps bindings to the viewer; parseLocator preserves feature K as free text.",
+          "The building panel shows physical/ledger source refs; no source-profile refusal runs there.",
+          "The UI has no feature-specific extraction resolver; this is not proof that a cited GeoJSON feature opens."
+        ]
+      }
+    ],
+    "policyCallSites": [
+      {
+        "refs": [
+          "packages/server/src/modules/registry/registry-reference-policy.ts:16-24",
+          "packages/server/src/modules/registry/registry.ts:474-483,571-614,678,738,866",
+          "packages/server/src/modules/areas/areas.ts:657-681",
+          "apps/api/src/modules/register/register.controller.ts:259-274",
+          "apps/api/src/modules/register/officer.controller.ts:186-194",
+          "apps/api/src/modules/evidence/evidence.controllers.ts:103-123"
+        ],
+        "answer": [
+          "evidenceChecks asks the policy whether an inspected text/CSV reference part may count for purpose record.",
+          "This is alternative admission, not a GeoJSON ban; ready/qualifying needs_input sources also pass.",
+          "Native GeoJSON is status inspected, inspection.status interpreted, without a retained text/CSV part.",
+          "It fails ready/needs_input/reference-part admission as EVIDENCE_UNAVAILABLE if body checks pass.",
+          "Empty exteriors fail body validation first; source refusal is a subsequent independent blocker."
+        ],
+        "routes": [
+          "POST /api/v1/registry-drafts/:draftId/review (both review snapshot and persist recheck)",
+          "POST /api/v1/registry-reviews/:reviewId/commit",
+          "POST /api/v1/usp/proposals/commit for registry kind (delegates to commitRegistryReviewTx)",
+          "POST /api/v1/buildings/:buildingId/detail-review (delegates to prepareRegistryReview)"
+        ]
+      },
+      {
+        "refs": ["packages/server/src/modules/registry/registry-metadata.ts:35-57,71-82"],
+        "answer": [
+          "registrySourceTx accepts interpreted native area profiles before evaluating the reference policy.",
+          "Native GeoJSON bypasses those policy calls for ledger, consolidated register and metadata source access.",
+          "It supports citation-target/document-association authority without refusing native GeoJSON.",
+          "Generic listing/search/export/snapshot/native commit do not run registry.ts evidenceChecks."
+        ]
+      }
+    ],
+    "otherCitationRouteGaps": [
+      {
+        "refs": [
+          "packages/server/src/modules/registry/registry-record-evidence.ts:42-65",
+          "apps/api/src/modules/register/record-evidence.controller.ts:16-29",
+          "apps/api/src/modules/register/record-evidence-export.controller.ts:15-34"
+        ],
+        "answer": [
+          "GET registry-records/:recordId/revisions/:revision/document-citations and its /export parse raw bodies.",
+          "Strict recordBodySchema refuses [] and representation/envelope fields, not reference-source policy.",
+          "They serve documentCitations, not the plain feature evidence binding; CA4 must qualify the appropriate kind."
+        ]
+      },
+      {
+        "refs": ["packages/server/src/modules/usp/packets/plan-authority.ts:197-236"],
+        "answer": [
+          "Text/CSV packet plan creation sees the binding but returns exact_extract_unavailable for GeoJSON.",
+          "This is recipe selection/extraction, not a call to registry-reference-policy. CA4 owns the citation support."
+        ]
+      }
+    ],
+    "next": "Report the named routes to CA4; do not widen registry-reference-policy.ts in CA1."
+  },
+  "verification": {
+    "kind": "static only",
+    "productChecks": "Not run: stop rule applies before implementation, area baselines or real-feature tests.",
+    "schemaCheck": "node --import tsx: existing footprintSchema rejects []; no DB or service imports.",
+    "schemaCheckExit": 0,
+    "unqualifiedAttempt": "pnpm exec tsx -e exited 0 without a receipt; only the direct node check is counted.",
+    "audit": "Python JSON/inventory/match-line/reference-bounds audit; all 37 matching files accounted for.",
+    "runtime": "No database started, connected, migrated or written; no container actions.",
+    "realInputs": "None read: ordinary/sparse NYC feature tests are deferred with the implementation.",
+    "unqualified": "No commit-to-snapshot rehearsal or runtime gate pass is claimed."
+  },
+  "next": [
+    "Review the three preparation blockers with officer/registry owners before authorizing the native exterior lift.",
+    "Resolve the siteRevision caller-ownership seam before resuming the requested three-argument helper.",
+    "CA4 owns generic record/feature citation admission, strict evidence read compatibility and packet extraction.",
+    "After prerequisites, implement/test CA1; the runtime owner then rehearses commit -> snapshot listing."
+  ]
+}

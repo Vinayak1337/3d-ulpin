@@ -16,18 +16,26 @@ export const DocumentPageFrameSchema=z.strictObject({kind:z.literal('pdf_display
 export const DocumentPageInfoSchema=z.strictObject({page:z.number().int().min(1).max(400),
   label:z.string().min(1).max(200),sourceLabel:z.string().max(200).nullable(),frame:DocumentPageFrameSchema,
   mediaBox:box,cropBox:box,boxConvention:z.literal('pymupdf_page_rectangles/1'),
-  renderSupport:z.enum(['supported','unsupported'])});
+  // 'reduced' (K9e): the page is over the whole-page limit and is drawn whole at a smaller, stated scale, for
+  // viewing only. 'supported' and 'unsupported' mean what they meant; only a reduced page states the scale.
+  renderSupport:z.enum(['supported','reduced','unsupported']),
+  reducedScalePxPerPt:z.number().finite().positive().max(3).optional()});
+type StatedPages={pages:readonly {renderSupport:string;reducedScalePxPerPt?:number}[]};
+const reducedStatesScale=(value:StatedPages)=>value.pages.every(page=>
+  (page.renderSupport==='reduced')===(page.reducedScalePxPerPt!==undefined));
+const reducedRule={message:'A reduced page states its scale, and only a reduced page does.'};
 export const DocumentPageRenderSchema=z.strictObject({page:z.number().int().min(1).max(400),
   sha256:hash,bytes:z.number().int().positive().max(DOCUMENT_PAGE_LIMITS.pngBytes),
   pixels:z.tuple([z.number().int().positive().max(1400),z.number().int().positive().max(1400)]),
   scale:z.number().finite().positive().max(3),pixelOrigin:z.tuple([z.number().int(),z.number().int()]),
-  dpi:z.tuple([z.number().finite().positive(),z.number().finite().positive()])});
+  dpi:z.tuple([z.number().finite().positive(),z.number().finite().positive()]),
+  reduced:z.literal(true).optional()});
 /** Internal supervised output. It never supplies object keys, executable paths or URLs. */
 export const DocumentPagesWorkerSchema=z.strictObject({version:z.literal('document-pages-local/1'),
   sourceSha256:hash,sourceBytes:z.number().int().positive().max(DOCUMENT_PAGE_LIMITS.originalBytes),
   pageCount:z.number().int().min(1).max(400),offset:z.number().int().min(0).max(399),
   limit:z.number().int().min(1).max(50),pages:z.array(DocumentPageInfoSchema).min(1).max(50),
-  render:DocumentPageRenderSchema.nullable()});
+  render:DocumentPageRenderSchema.nullable()}).refine(reducedStatesScale,reducedRule);
 export const DocumentPagesSchema=z.strictObject({version:z.literal('document-pages/1'),sourceId:id,caseId:id,
   caseRevision:z.number().int().nonnegative(),sourceRevision:z.number().int().positive(),sourceSha256:hash,
   sourceBytes:z.number().int().positive().max(DOCUMENT_PAGE_LIMITS.originalBytes),name:z.string().max(150),
@@ -35,6 +43,7 @@ export const DocumentPagesSchema=z.strictObject({version:z.literal('document-pag
   offset:z.number().int().min(0).max(399),limit:z.number().int().min(1).max(50),hasMore:z.boolean(),
   pages:z.array(DocumentPageInfoSchema.extend({url:z.string().max(512).nullable(),
     locator:z.strictObject({kind:z.literal('pdf_page'),page:z.number().int().min(1).max(400)}),calibration:z.null()})).max(50),
-  anchors:z.array(z.strictObject({locator:z.string().regex(/^page:[1-9]\d*$/),page:z.number().int().min(1).max(400),region:z.null()})).max(50)});
+  anchors:z.array(z.strictObject({locator:z.string().regex(/^page:[1-9]\d*$/),
+    page:z.number().int().min(1).max(400),region:z.null()})).max(50)}).refine(reducedStatesScale,reducedRule);
 export type DocumentPagePin=z.output<typeof DocumentPagePinSchema>;
 export type DocumentPagesWorker=z.output<typeof DocumentPagesWorkerSchema>;

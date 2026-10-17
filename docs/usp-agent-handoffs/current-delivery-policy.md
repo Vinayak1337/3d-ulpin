@@ -1,12 +1,12 @@
-# Current delivery policy — updated 26 September 2026
+# Current delivery policy — reconciled 4 October 2026
 
-This records the user's direct instructions and applies to all current implementation assignments. It takes precedence over older handoff text, H97 hardening addenda, task cards, design references and worked examples. [AGENTS.md](../../AGENTS.md) carries the same operating rules. Historical evidence remains evidence only at its recorded revision.
+This records the user's direct instructions. Product/ML work remains paused until resumed; [the orchestrator prompt](../orchestration/ORCHESTRATOR.md) and [queue](../orchestration/WORK_ITEMS.md) govern future dispatch. It takes precedence over older handoff text, H97 hardening addenda, task cards, design references and worked examples. [AGENTS.md](../../AGENTS.md) carries the same operating rules. Historical evidence remains evidence only at its recorded revision.
 
 ## Official sources and unchanged originals
 
-Use real data discovered through **data.gov.in first**, or downloaded directly from the responsible government/public authority or official issuing institution. Verify and record that authority; a community collection, mirror, vendor prediction, open licence or repository alone does not establish official provenance. Check source-specific access, use and redistribution permission separately.
+For operational records and official qualification, use real data discovered through **data.gov.in first**, or downloaded directly from the responsible government/public authority or official issuing institution. Verify and record that authority; a community collection, mirror, vendor prediction, open licence or repository alone does not establish official provenance. Check source-specific access, use and redistribution permission separately. For public development research/experiments, the later AGENTS.md direction permits community/vendor/research resources with provenance and honest limitations; routine research is not blocked on production-launch clearance. Experimental predictions/teacher labels do not become official facts or independently qualified truth.
 
-Do not author synthetic datasets, dummy identifiers, generated documents/images, artificial geometry, simulated records, altered-source adverse cases or invented source facts to fill a test. Deterministic extraction/conversion is allowed only with a trace to unchanged official originals. Expected values may be independently calculated from those actual source facts, with the derivation and uncertainty recorded; do not invent an oracle's input facts.
+Do not invent operational datasets, identifiers, documents/images, geometry, records or source facts to fill qualification gaps. Official-qualification extraction/conversion must trace to unchanged official originals; permitted development inputs retain their separate origin and limitations. Expected qualification values may be independently calculated from actual source facts, with derivation and uncertainty recorded; do not invent an oracle's input facts. Provisional teacher examples cannot supply their own independent evaluation truth.
 
 Preserve issuer, original URL/resource ID, release/acquisition date, licence and permissions, original bytes/hashes, native IDs, geography, CRS/vertical reference, units and exact extraction lineage. Missing or conflicting source values stay missing or conflicting. Access to an official file does not establish survey accuracy, current title or permission to expose private information.
 
@@ -20,9 +20,9 @@ The safety and correctness requirements remain: unsupported must not read as zer
 
 ## Backend-only planning and user-owned UI
 
-The later 26 September request authorizes modular NestJS backend migration, parallel Sol API batches, readable SQL, and final lead-owned API/dataset documentation. The [migration ledger](../orchestration/NESTJS_MIGRATION.md) controls the current sequence; older requirements to retain Next as the backend are superseded. Frontend implementation remains user-owned.
+The later 26 September request authorizes modular NestJS backend migration, parallel Sol API batches, readable SQL, and integration-owner API/dataset documentation. The [current queue](../orchestration/WORK_ITEMS.md) controls assignments after resume; the [migration ledger](../orchestration/NESTJS_MIGRATION.md) preserves implementation history; older requirements to retain Next as the backend are superseded. Frontend implementation remains user-owned.
 
-The user's 26 September direction makes **all active plans backend-focused only**. The later user direction authorizes assigned backend plan tasks in separate model worktrees after lead normalization; see [the normalized decisions](backend-streaming-plan.md). The lead may execute an assigned bounded task directly. Delegation uses ordinary reusable Codex tasks, not subagents, under the [operating guide](../orchestration/OPERATING_GUIDE.md).
+The user's 26 September direction makes **all active plans backend-focused only**. The later user direction authorizes assigned backend plan tasks in separate model worktrees after lead normalization; see [the normalized decisions](backend-streaming-plan.md). The future orchestrator delegates execution; the current personally assigned prompt/cleanup work is the explicit exception. Delegation uses ordinary reusable Codex tasks, not subagents, under the [operating guide](../orchestration/OPERATING_GUIDE.md).
 
 Plan services, schemas, routes, jobs, conversion, evidence, storage, permissions, recovery and their measurable backend acceptance. Preserve API contracts required by the user's ongoing UI, compatible saved URLs, exact selection/revision semantics and existing document/GIS/raster/point-cloud inspection capabilities. A view model is a projection of authorized canonical records, never a second store, invented sample dataset or instruction to build a screen.
 
@@ -30,11 +30,9 @@ The user owns the UI redesign. Do not schedule screen replacement, frontend tech
 
 GF-VIEW, GF-SCENE and GF-REHEARSAL retain their existing IDs and safety/processing requirements, but active acceptance measures backend contracts, assets, state transitions and receipts. User-owned UI/runtime integration remains an explicit external dependency: backend success cannot claim browser rendering, usability, accessibility, visual quality or the complete product release passed. Historical V1–V8 captures remain tied to their original revision. Full-product commitments are retained as deferred backend contracts and constraints, not a new execution queue.
 
-## Tasks, worktrees and Fast preference
+## Tasks and worktrees
 
-The lead owns plan hardening directly. Ordinary workers execute backend/data tasks in separate pinned worktrees, one writer per shared seam. Every Luna task uses max only; higher-effort Sol and Astra workers are authorized where they improve quality, with effort chosen per assignment. Preserve `design-mockup/` unchanged.
-
-Use the user's configured Fast preference. `service_tier = "priority"` was observed in the local Codex configuration on 26 September; task creation has no speed parameter. Record requested Fast, configured tier and any actually observed per-turn tier separately. Do not infer observed service tier from effort, task title or configuration alone, and do not alter credentials/configuration to force it. Report an authentication/start failure once; do not retry in a loop. Model/effort and ownership rules live in the operating guide.
+Use the current settings and responsibilities in [ORCHESTRATOR.md](../orchestration/ORCHESTRATOR.md). Workers use Sol 6.1 high/xhigh, or max for a specific hard problem, at default/standard 1×. Never request Fast/priority/1.5×. No tier observation is inferred from a prompt or reasoning effort. Keep exclusive worktrees, callback-driven assignment, and one owner for each shared file/resource. Integration and technical review are delegated; the coordinator does not execute them. Preserve `design-mockup/` unchanged.
 
 ## Scene and future work
 

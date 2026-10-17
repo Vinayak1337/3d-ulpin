@@ -23,7 +23,7 @@ const dossiers = await Promise.all([
   get(`/buildings/${investigation.buildingId}/dossier`),
   get("/buildings/2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6/dossier"),
 ]);
-assert.equal(real.features.length, 62);
+assert.equal(real.displayFeatures.length, 62);
 assert.equal(investigation.status, "CLOSED");
 assert(investigation.findings.some((f: any) => Math.abs(f.areaM2 - 20) < 1e-6));
 const sourceChecks = [];
@@ -47,9 +47,9 @@ for (const source of new Map(
   });
 }
 const stable = {
-  realCount: real.features.length,
+  realCount: real.displayFeatures.length,
   realIdentities: digest(
-    real.features
+    real.displayFeatures
       .map((f: any) => [
         f.id,
         f.identifier,

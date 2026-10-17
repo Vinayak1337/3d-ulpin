@@ -82,7 +82,7 @@ export function studioDemoImport(){
     const jobs=new Map(), subscribers=new Map();
     const sourceFor=(job,sid)=>job.sources.find(s=>s.id===sid);
     const summary=job=>({id:job.id,schemaVersion:'ulpin-canonical/2',areaId:job.area.id,name:profile.title,datasetNamespace:'nyc-context-demo',revision:0,state:job.state,features:job.features.map(f=>({id:f.id,kind:f.kind})),sourceRevisionIds:job.sources.map(s=>s.id),questions:[],factCandidates:[],parts:[],warnings:job.error?[job.error]:[],createdAt:job.createdAt,quarantine:job.quarantine??null});
-    const context=job=>({area:{...job.area,featureCount:job.features.length},features:[],displayFeatures:job.features,parcelAssociations:[],parcelIdentifiers:[],sceneAssets:[],supplementalDatasets:job.datasets??[],packages:[summary(job)],latestCheck:null,demoSequence:job.sequence});
+    const context=job=>({area:{...job.area,featureCount:job.features.length},displayFeatures:job.features,parcelAssociations:[],parcelIdentifiers:[],sceneAssets:[],supplementalDatasets:job.datasets??[],packages:[summary(job)],latestCheck:null,demoSequence:job.sequence});
     const save=async job=>{const path=join(root,job.id,'state.json');const {process,ack,...state}=job;await writeFile(path+'.tmp',JSON.stringify(state));await rename(path+'.tmp',path);};
     for(const name of await readdir(root))if(demoId(name)){
       try{const job=JSON.parse(await readFile(join(root,name,'state.json'),'utf8'));if(job.state==='RECEIVED'){job.state='FAILED';job.error='Demo server restarted during processing. Upload the same pack to retry.';}jobs.set(job.id,job);}catch{/* An incomplete write is never advertised as a complete import. */}

@@ -1,0 +1,571 @@
+{
+  "task": "R5c",
+  "title": ["UNIT-3A's region as a candidate under the lead's decisions; the demo rolled to staging with the",
+    "project-owned document interpreter; the new reads live"],
+  "gate": "GF1, GF4, GF5",
+  "worktree": "E:/Projects/ulpin-wt/r5, branch task/r5c-roll-k9c-k11b-k12, cut from staging 18b5e74c",
+  "part0": {
+    "what": "UNIT-3A's page region as a candidate under the lead's decisions D1 to D3; nothing sent or recorded",
+    "control": {
+      "command": ["E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B",
+        "scripts/agent/r5b-unit-region.py control"],
+      "exit": 0, "matches": true, "recordedPt": [596, 390, 644, 409], "reproducedPt": [596, 390, 644, 409],
+      "differencePt": [0, 0, 0, 0], "cropSameAsK4c": true,
+      "unchanged": "The control passes no label size, so no decision applies to it; its output is the R5b output."
+    },
+    "candidate": {
+      "command": ["E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B",
+        "scripts/agent/r5b-unit-region.py measure UNIT-3A"],
+      "exit": 0, "state": "candidate", "label": "UNIT-3A", "decidedBy": "lead, 10 October 2026",
+      "confirmedByOfficer": false,
+      "unit": "PDF points, frame pdf_display_page_top_left_points (origin top left, y down), [x0, y0, x1, y1]",
+      "regionPt": [1077.5, 395.75, 1125.75, 414.75], "expectedByTheLeadPt": [1077.5, 395.75, 1125.75, 414.75],
+      "differencePt": [0, 0, 0, 0], "labelBoxPt": [1082.5, 400.75, 1119.75, 410.75], "marginsPt": [5, 5, 6, 4],
+      "k4cMarginsPt": [5, 5, 6, 4.25], "strayMarksPt": null, "inkBelow": 128, "seedPt": [1105, 405],
+      "source": {
+        "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "revision": 1,
+        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865", "page": 1
+      },
+      "literal": ["UNIT-3A, read by eye from the saved crop. The sheet has no text layer and no OCR was run; the",
+        "reading is unreviewed."],
+      "decisions": [
+        {"id": "D1",
+          "rule": ["several frame groups at the seed are one label when their boxes overlap and the box around them",
+            "has the control label's size within 0.5 pt on each side"],
+          "appliedTo": "frame groups", "before": [[1082.5, 400.75, 1111.75, 410.75], [1091.75, 401, 1119.75, 410.5]],
+          "after": [1082.5, 400.75, 1119.75, 410.75]},
+        {"id": "D2", "rule": "ink is below grey 128, the level the control is run at; no per-label level",
+          "appliedTo": "ink level", "before": "108 to 144 all reproduce the control", "after": 128},
+        {"id": "D3",
+          "rule": ["each margin is K4c's, reduced to the clear paper where another mark is nearer, never below 3.0",
+            "pt"],
+          "appliedTo": "bottom margin", "before": 4.25, "after": 4}
+      ],
+      "pictures": [
+        {"path": "E:/BhuAayam-data/task-data/r5c/unit-3a-candidate-label.png",
+          "sha256": "62a142947adc6d0931b0e2313b262d2e405623de89ed049d50356caea5cf8539", "pixels": [193, 76],
+          "shows": "the region as a renderer would crop it"},
+        {"path": "E:/BhuAayam-data/task-data/r5c/unit-3a-candidate-outlined.png",
+          "sha256": "cea55e2b984e3637d844f80dad3f39b38029983789e1098acd670fdd9938b0f1", "pixels": [913, 556],
+          "shows": "surroundings, region outlined; not original"}
+      ],
+      "picturesNote": "Private, not in Git, new files only. The outline is drawn on an in-memory copy."
+    },
+    "rulesInCode": [
+      ["D1 scripts/agent/r5b-unit-region.py one_label(): every group's box overlaps another's and the box",
+        "around them is within 0.5 pt of the"],
+      "   control label box on each side; the size comes from the control run, not from a constant",
+      ["D2 scripts/agent/r5b-unit-region.py candidate() measures at INK_BELOW only; \"measure --ink-below",
+        "144\" is refused (exit 2)"],
+      ["D3 scripts/agent/r5b-unit-region.py clear_margins() and refusal(): a mark beyond one side reduces",
+        "that margin to the clear paper;"],
+      "   under 3.0 pt is MARGIN_UNDER_THE_FLOOR; a mark beyond two sides (a corner) reduces nothing and is",
+      "   refused as OTHER_INK_IN_REGION, because the decision does not say which side gives way"
+    ],
+    "locatorForm": {
+      "question": "Are fractional points accepted end to end?",
+      "answer": [
+        "Yes, by reading the code: every step takes any finite number, so the candidate is the measured box,",
+        "unrounded. No step parses the locator string back into numbers. This was read, not exercised: no",
+        "fractional region has been recorded on the demo, and this task sends no write."
+      ],
+      "stringItWouldStore": "page 1; region pt [1077.5,395.75,1125.75,414.75]; literal UNIT-3A",
+      "steps": [
+        {"step": "record request", "file": "packages/contracts/src/canonical/source-spaces.ts:5-6",
+          "says": "region is four finite numbers, x0 and y0 not negative, x0 < x1 and y0 < y1; no whole-number rule"},
+        {"step": "record command", "file": "packages/server/src/modules/officer/source-spaces.ts:69-74",
+          "says": "only checks the box lies inside the page frame"},
+        {"step": "locator string", "file": "packages/contracts/src/canonical/source-spaces.ts:54-56",
+          "says": "built with region.join(\",\"); the record schema rebuilds and compares it (:45), never parses it"},
+        {"step": "citation in the building read",
+          "file": "packages/server/src/modules/registry/canonical-building.ts:579-585",
+          "says": "x, y, width, height as numbers; packages/contracts/src/canonical/building.ts:10, 26-33 (finite)"},
+        {"step": "packet binding", "file": "packages/server/src/modules/usp/packets/source-stated-binding.ts:80-94",
+          "says": "divides by the page frame; a whole-point box is fractional here too"},
+        {"step": "crop renderer", "file": "packages/server/src/modules/usp/packets/region-extract.ts:34-47",
+          "says": ["renders at up to 3 times and rounds the box inward to complete pixels, so a packet crop",
+            "lies inside the candidate by under a third of a point on a side"]},
+        {"step": "card", "file": "packages/server/src/modules/usp/packets/card-source-facts.ts:45",
+          "says": "prints region.join(\", \")"},
+        {"step": "Studio", "file": "apps/studio/src/features/evidence/pageGeometry.ts:42-50, 63-67",
+          "says": "draws and words the numbers as recorded"}
+      ],
+      "roundedBox": "not needed; none is given"
+    },
+    "tests": ["E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B -m unittest",
+      "scripts/agent/test_r5b_unit_region.py: 12 tests OK (7 new: 6 synthetic, 1 sheet)"],
+    "nothingSent": "No request was sent for UNIT-3A. It is unrecorded on the demo."
+  },
+  "part1": {
+    "what": "The demo rolled from 83965a21 to staging 18b5e74c with the interpreter switch between steps 4 and 5",
+    "item1Before": {
+      "at": "2026-10-10T16:14:39Z to 16:14:46Z", "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30",
+      "checkoutClean": true,
+      "doctor": {"exit": 0, "pass": 27, "fail": 0, "documentRuntimes": "PASS", "gatewayEnabled": false},
+      "api": {"pid": 36092, "started": "2026-10-10T14:07:16.521Z"},
+      "dispatcher": {"pid": 5820, "started": "2026-10-10T14:07:17.197Z"},
+      "health": {
+        "status": 200, "readiness": "structurally_ready", "sourceCount": 38, "importPackageCount": 7,
+        "physicalFeatureCount": 67, "activeLegacyDatasetCount": 0
+      },
+      "schema": {
+        "pending": false, "servedReady": true, "steps": 55,
+        "manifestSha256": "2a48bf71a14da7536a960ee53ee37b78b54cedd8522695355af3cb71c1f48ac9",
+        "same": [
+          "The served health's databaseReadiness.manifestSha256 equals the SHA-256 of database/manifest.json at",
+          "83965a21 and at 18b5e74c; its missing relations, columns and migrations are empty; no file under",
+          "database/ differs between the two commits."
+        ]
+      },
+      "alsoChecked": "pnpm-lock.yaml is the same at both commits, so no install was needed in the demo checkout."
+    },
+    "item2Roll": {
+      "target": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795",
+      "targetIs": "the staging commit this branch was cut from",
+      "script": "one shell script, outputs under E:/BhuAayam-data/task-data/r5c/roll",
+      "times": ["16:15:51Z stop begins (roll-out step 2, stopProcesses)",
+        "16:15:52Z stop exit 0; git checkout --detach 18b5e74c exit 0",
+        "16:16:06Z switch-ocr-python exit 0, stderr empty",
+        "16:16:22Z build --python <the same> exit 0",
+        "16:16:38Z pnpm platform:start --profile demo exit 0; health 200"],
+      "downtime": {"start": "2026-10-10T16:15:51Z", "end": "2026-10-10T16:16:38Z", "seconds": 47},
+      "preparedBeforeTheStop": ["The new interpreter's imports were run once (13.6 s) so the switch's check was",
+        "quick."],
+      "switch": {
+        "refused": false,
+        "jsonLine": {
+          "restored": false,
+          "previousPython": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe",
+          "newPython": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe",
+          "baseInsideEnvironment": true,
+          "savedPreviousFile": "ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json",
+          "previousSha256": "6d04196dc0c66e72f1b3cebc597d7f971f93d77d1587d213feba60abb58f5873",
+          "newSha256": "aa0c4bbb63d3dd12fb7202982ee0275ee3d8ea829ddcb970e07dd973c68a656b"
+        },
+        "savedPreviousFile": "ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json",
+        "note": "The line is as printed: paths and two hashes of the path file, no file contents."
+      },
+      "build": {
+        "printed": "six configured key names and two hashes; no value",
+        "regionProfileSha256": "bebc234cadcc25609468353c1f5a4e848762c276afad084bdd222bcf86fdee9f",
+        "documentRuntimePathsSha256": "d506d3f76e06a1c37b1475928c9275dcf95c39a432fe2a0e36b8b42613ee4700"
+      }
+    },
+    "item3After": {
+      "doctor": {
+        "at": "2026-10-10T16:16:51Z", "exit": 0, "pass": 27, "fail": 0, "documentRuntimes": "PASS",
+        "regionRepoMatches": true, "gatewayEnabled": false, "mappingTeacherAdapter": "replay"
+      },
+      "servedCommit": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795", "checkoutClean": true,
+      "api": {
+        "pid": 35160, "started": "2026-10-10T16:16:28.043Z",
+        "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts"
+      },
+      "dispatcher": {
+        "pid": 28836, "started": "2026-10-10T16:16:28.665Z",
+        "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts"
+      },
+      "ownerChecks": {
+        "profile": {
+          "command": ["node E:/Projects/ulpin-wt/r5/docs/evidence/runtime/r5c/owner-checks.mjs",
+            "E:/Projects/ulpin-wt/demo"],
+          "repo": "E:\\Projects\\ulpin-wt\\demo", "repoIsTheDemoCheckout": true,
+          "python": "E:\\BhuAayam-data\\ml\\venv-demo-documents-20261010\\Scripts\\python.exe",
+          "pagesPythonIsTheSame": true, "regionsPythonIsTheSame": true,
+          "base": "E:\\BhuAayam-data\\ml\\venv-demo-documents-20261010\\base\\cpython-3.12.14-windows-x86_64-none",
+          "pythonInTheNewEnvironment": true, "baseInTheNewEnvironment": true,
+          "pins": {"files": 1175, "bytes": 110696811, "underTheCheckout": 9, "underDataMl": 1166, "elsewhere": 0}
+        },
+        "classes": {
+          "tool": "K9's profile-files.mjs, classes compared with K9's environment.json",
+          "files": {
+            "base_dlls": 37, "stdlib_source": 595, "stdlib_cache": 159, "stdlib_support_and_launchers": 2,
+            "base_interpreter_and_support": 6, "package_source": 177, "package_metadata": 36,
+            "package_assets_and_native": 111, "venv_config": 1, "venv_interpreter_and_support": 42, "repo": 9
+          },
+          "everyClassEqualsK9": true, "packageCacheClass": "absent, as K9 states"
+        },
+        "stability": {
+          "tool": "K9's stability.mjs, once, from the demo checkout at 16:17:18Z", "exit": 0, "starts": 10,
+          "everyStartExit0": true, "everyStderrEmpty": true, "sameProfileBeforeAndAfter": true,
+          "regionProfileSha256": "bebc234cadcc25609468353c1f5a4e848762c276afad084bdd222bcf86fdee9f",
+          "receipt": "E:/BhuAayam-data/task-data/r5c/roll/stability.json"
+        },
+        "ocr": {
+          "command": ["pnpm exec tsx --tsconfig scripts/agent/tsconfig.json scripts/agent/r5c-live.ts ocr-site-plan",
+            "| ocr-label"],
+          "how": [
+            "The product's own entry runSourceOcr, called from r5 (the same files as the served commit), with the",
+            "five OCR paths the demo itself reads through readDemoOcrPaths: the new interpreter and the existing",
+            "complete prefix. CPU only, two threads, the product's 90 second bound."
+          ],
+          "interpreter": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe",
+          "difficultInput": {
+            "file": "haryana-2831-site-plan.pdf", "regionPt": [280, 860, 960, 2580], "supervisorExit": 0,
+            "workerExit": 0, "stopReason": null, "workerSeconds": 74.844,
+            "resultSha256": "3d69916ebbb8a5a802a1996d7ca6582148a5a95015cacc78d709cce9e0e8b81e",
+            "bridge": {
+              "toolStatus": "failed", "outputStatus": "failed", "issues": ["OCR_BRIDGE_FAILED"], "lines": 0
+            },
+            "sameResultBytesAsK9AndK2f": true, "lines": 64,
+            "textSha256": "c4453529d7805ccb914775da6c67d5a2fc4134b6ef502ced2beb20ab374c4cb9",
+            "linesAndTextFrom": ["the scratch diagnosis run of the same input, which read the worker result before",
+              "the bridge"],
+            "verdict": [
+              "The OCR step on the new interpreter with the demo's prefix gives K9's and K2f's result byte for byte",
+              "(64 lines, the same text hash). The interpreter switch changed nothing in the OCR output."
+            ]
+          },
+          "labelRegion": {
+            "file": "haryana-2831-tower3-plan1.pdf", "regionPt": [596, 390, 644, 409], "supervisorExit": 0,
+            "workerExit": 0, "stopReason": null, "workerSeconds": 26.312,
+            "resultSha256": "d0ad10a234cf5826857efb5857e6e5387acd46c987a690a2b1c39de4d1667db3",
+            "bridge": {
+              "toolStatus": "complete", "outputStatus": "partial", "issues": ["no_ocr_text_emitted"], "lines": 0
+            },
+            "verdict": [
+              "The bridge accepts this answer end to end on the new interpreter. OCR emitted no text for the 48 by",
+              "19 pt label crop; UNIT-3B stays a literal read by eye, as K4c recorded."
+            ]
+          },
+          "finding": {
+            "id": "F1", "what": "The bridge refuses the correct result of the difficult input as OCR_BRIDGE_FAILED.",
+            "cause": ["The contract's rule \"OCR boxes must stay in the selected source region\" allows 1 pt",
+              "(packages/contracts/src/usp/document-ingestion.ts:144-147). The worker rendered this 680 by 1720 pt",
+              "region at 0.814 px per pt with pixel origin [227, 700], which is 278.886 pt: 1.114 pt left of the",
+              "requested 280. 3 of the 69 boxes (3 of 64 items) start there. Any region rendered under 1 px per pt",
+              "can do this."],
+            "hidden": ["The schema error is caught and answered as OCR_BRIDGE_FAILED with no items",
+              "(packages/server/src/modules/usp/ingestion/document-ocr.ts:182-186), so the reason is not in the",
+              "answer."],
+            "notTheSwitch": [
+              "The refusal depends only on the result bytes and the requested region, and the bytes are the ones",
+              "the old interpreter gave in K2f and K9 (3d69916e…). K2f and K9 ran the worker, not the bridge."
+            ],
+            "located": ["Two scratch runs that read the worker result and the receipt and replayed the contract",
+              "check."],
+            "action": "Not repaired. No rollback: Document runtimes passes and the OCR output is unchanged."
+          },
+          "runs": ["Six bridge runs in all: the first check, two for the diagnosis, and one each for ocr-check.json,",
+            "ocr-site-plan.json and ocr-label.json. Worker seconds for the difficult input, where recorded: 27.3,",
+            "28.1 and 74.8 (bound 90); the cause of the slow last run was not looked for."],
+          "bytecode": ["The bridge starts Python without -B (product code). It wrote one ignored cache file,",
+            "scripts/usp/document-models/__pycache__/run_trial.cpython-312.pyc, in r5; removed after the runs. No",
+            "file in the new environment is newer than the switch."],
+          "receipts": ["E:/BhuAayam-data/task-data/r5c/roll/ocr-site-plan.json",
+            "E:/BhuAayam-data/task-data/r5c/roll/ocr-label.json",
+            "E:/BhuAayam-data/task-data/r5c/roll/ocr-check.json",
+            "E:/BhuAayam-data/task-data/r5c/roll/ocr-summary.json"]
+        }
+      },
+      "rollback": "not needed"
+    },
+    "item4Step8": {
+      "state": "not exercised, as in R3 and R4",
+      "why": ["Proving that a job authority is dispatched automatically needs a new job, and this task forbids",
+        "every write request. What reads show: the dispatcher process is the one the start recorded and",
+        "doctor's \"Dispatcher process ownership (liveness only)\" passes. R1 holds the last proof with a real",
+        "dispatch."]
+    },
+    "item5Runbook": {
+      "file": "docs/backend/DEMO-RUNTIME.md",
+      "changed": [
+        "the \"Current reviewed staging commit\" line: 18b5e74c, R5c roll-out, project-owned interpreter",
+        ["\"Changing the document interpreter\": the switch was made by R5c on 10 October 2026; saved file",
+          "ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json"]
+      ]
+    }
+  },
+  "part2": {
+    "what": "The new reads on the demo at 18b5e74c; every request a read, nothing created",
+    "at": "2026-10-10T16:29:46Z to 16:32:17Z",
+    "item1Snapshots": {
+      "request": "GET /api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/snapshots?limit=20",
+      "command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json scripts/agent/r5c-live.ts snapshots",
+      "status": 200, "items": 4, "truncated": false, "unreadable": 0, "everyItemHasCapturedAt": true,
+      "capturedAtNeverRises": true,
+      "listed": [
+        ["a9fd4c9d-0a5a-4f4d-9032-527ab7857b78 capturedAt 2026-10-10T13:48:45.428Z createdAt",
+          "2026-10-10T13:48:45.076Z"],
+        ["109e73b3-4759-48de-a852-0f0a3308ccac capturedAt 2026-10-10T13:48:45.255Z createdAt",
+          "2026-10-10T13:48:45.076Z"],
+        ["e53c4653-af3a-4fca-a9ed-9b1b50d98bc4 capturedAt 2026-10-10T13:48:39.444Z createdAt",
+          "2026-10-10T13:48:39.282Z"],
+        ["d97e01c5-c5af-45de-971e-2bb1d355d810 capturedAt 2026-10-10T13:48:32.412Z createdAt",
+          "2026-10-10T13:48:32.230Z"]
+      ],
+      "sameOrderAndTimesAsK8bStates": true,
+      "showsTheChange": [
+        "The first two share createdAt 13:48:45.076Z; the one captured later (…45.428Z) is listed first. No",
+        "snapshot newer than R4's four lists Tower 3."
+      ],
+      "receipts": "E:/BhuAayam-data/task-data/r5c/k8b/"
+    },
+    "item2Reviews": {
+      "request": "GET /api/v1/usp/identity/records/46b7265e-ca88-402d-83df-065cf7c45140/reviews?limit=5",
+      "command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json scripts/agent/r5c-live.ts reviews",
+      "fieldByField": [
+        {"field": "status", "same": true, "answered": 200},
+        {"field": "recordId", "same": true, "answered": "46b7265e-ca88-402d-83df-065cf7c45140"},
+        {"field": "truncated", "same": true, "answered": false},
+        {"field": "unreadable", "same": true, "answered": 0},
+        {"field": "items", "same": true, "answered": 1},
+        {"field": "reviewId", "same": true, "answered": "105e6dc7-f413-4bbb-9b0f-50bfd352cf04"},
+        {"field": "operation", "same": true, "answered": "assign"},
+        {"field": "reason", "same": true,
+          "answered": "the R2 record reason, the text of `reason` in scripts/agent/r2-live.ts"},
+        {"field": "scope.manifestId", "same": true, "answered": "d97e01c5-c5af-45de-971e-2bb1d355d810"},
+        {"field": "scope.snapshotDigest", "same": true,
+          "answered": "62615138508a4d302b414b8ee2cbc3b1f818a394ed1f916c80faaa09aa5ec2f1"},
+        {"field": "expectedManifestId", "same": true, "answered": "d97e01c5-c5af-45de-971e-2bb1d355d810"},
+        {"field": "expectedRecordVersion", "same": true, "answered": 1},
+        {"field": "used.operation", "same": true, "answered": "assign"},
+        {"field": "used.at", "same": true, "answered": "2026-10-10T13:48:45.076Z"}
+      ],
+      "everyFieldSame": true,
+      "notInGitBefore": {
+        "createdAt": "2026-10-10T13:48:39.282Z",
+        "commandSha256": "de5c5053c0e1f53bd2dde841696c1d9bb951b2e590b3d675f57997f48a70087b",
+        "note": "K11b had no value for these two; they are stated here as read, not compared."
+      },
+      "otherFieldsOfTheItem": "siteId on the list; scope.kind, scopeId, world and stage on the item",
+      "refusals": [
+        {"request": "an unknown record id (a fresh random UUID), ?limit=5", "status": 404, "code": "NOT_FOUND",
+          "message": "This record could not be found."},
+        {"request": "?limit=0", "status": 422, "code": "INVALID_INPUT",
+          "message": "Input: Invalid string: must match pattern /^[1-9][0-9]?$/"},
+        {"request": "?limit=abc", "status": 422, "code": "INVALID_INPUT",
+          "message": "Input: Invalid string: must match pattern /^[1-9][0-9]?$/"}
+      ],
+      "refusalsAsExpected": true,
+      "recordWithNoReview": {
+        "which": ["614ca200-1f3d-48ac-b7db-d1b893b352a1, the recorded floor of the same site (\"2ND FLOOR PLAN\"): a",
+          "registry record that no identity review names."],
+        "status": 200, "recordId": "614ca200-1f3d-48ac-b7db-d1b893b352a1",
+        "siteId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "items": 0, "truncated": false, "unreadable": 0
+      },
+      "receipts": "E:/BhuAayam-data/task-data/r5c/k11b/"
+    },
+    "item3Entries": {
+      "request": "POST /api/v1/usp/packets/plans/entries, the body of REQUESTS.md section 1 unchanged",
+      "command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json scripts/agent/r5c-live.ts entries",
+      "status": 200, "entries": 1,
+      "target": {
+        "ref": {"namespace": "registry_record", "id": "46b7265e-ca88-402d-83df-065cf7c45140"}, "revision": 2
+      },
+      "entry": {
+        "bindingId": "1e3291701c573f7561ce1b13fc49bc2394561760cb4214394638115435f731de", "kind": "source_statement",
+        "label": "UNIT-3B", "includable": true, "reasonCode": null,
+        "citation": {
+          "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "revision": 1,
+          "locator": "page 1; region pt [596,390,644,409]; literal UNIT-3B", "page": 1,
+          "region": [596, 390, 644, 409]
+        }
+      },
+      "asExpected": true,
+      "otherProfile": {
+        "sent": [
+          "The same scope with the Tower 3 building record, 6f95d04e-2067-4ac8-a3c2-6cc21ea46325 revision 5, a",
+          "member of that snapshot."
+        ],
+        "answered": {
+          "status": 422, "code": "PACKET_PLAN_SELECTION",
+          "message": "Select one exact building, floor or space snapshot."
+        },
+        "expectedByTheTask": "422 PACKET_PLAN_ENTRIES_SOURCE_ONLY",
+        "finding": {
+          "id": "F2",
+          "what": ["A target of another profile is refused as PACKET_PLAN_SELECTION, not",
+            "PACKET_PLAN_ENTRIES_SOURCE_ONLY."],
+          "why": ["The plan check runs first and requires the request's target to be the snapshot's one selected pin",
+            "(packages/server/src/modules/usp/packets/pdf-authority.ts:33-34); the profile check comes after it",
+            "(plan-entries.ts:21-25). All four recorded snapshots of Tower 3 select the unit (revision 1 or 2),",
+            "so no building or floor target can reach the profile check with them. K12's own test reaches it by",
+            "changing the captured body's kind in memory (plan-entries.test.ts:88-100)."],
+          "notReached": [
+            "PACKET_PLAN_ENTRIES_SOURCE_ONLY was not seen live. It needs a snapshot that selects a record of",
+            "another profile, and capturing one is a write this task forbids."
+          ],
+          "serverLog": "The API log holds no line with the refusal's request id (0 lines saved).",
+          "action": ["Not repaired. For the lead: accept this refusal for a non-selected target, or name the",
+            "snapshot."]
+        }
+      },
+      "receipts": "E:/BhuAayam-data/task-data/r5c/k12/entries-*.json"
+    },
+    "item4Preview": {
+      "request": "POST /api/v1/usp/property-cards/preview, the body of REQUESTS.md section 2",
+      "command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json scripts/agent/r5c-live.ts preview",
+      "expiresAtSent": "2026-10-11T15:31:47.195Z", "sentAheadHours": 23, "status": 200, "mode": "update",
+      "revision": 2, "expiresAtAnswered": "2026-10-11T15:31:47.195Z", "scopeIsThePlansScope": true, "facts": 16,
+      "factsInOrder": ["target: available",
+        "identifier: available",
+        "project_identity: available",
+        "vertical_locator: available",
+        "parcel_assertions: unavailable",
+        "declared_share: unavailable",
+        "source_space_label: available",
+        "source_floor_label: available",
+        "source_building: available",
+        "source_citation: available",
+        "level_ordinal: unavailable",
+        "use: unavailable",
+        "geometry: unavailable",
+        "measurements: unavailable",
+        "render: unavailable",
+        "rights: not_assessed"],
+      "repeat": {"sentTwice": true, "sameData": true, "differs": "meta.requestId only"},
+      "nothingCreated": {
+        "cardListBefore": {
+          "items": 1, "truncated": false, "newestRevision": 1,
+          "cards": [
+            {"cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c", "revision": 1, "expired": false, "revoked": false,
+              "superseded": false, "expiresAt": "2026-10-11T13:39:30.390Z"}
+          ]
+        },
+        "cardListAfter": {
+          "items": 1, "truncated": false, "newestRevision": 1,
+          "cards": [
+            {"cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c", "revision": 1, "expired": false, "revoked": false,
+              "superseded": false, "expiresAt": "2026-10-11T13:39:30.390Z"}
+          ]
+        },
+        "sameData": true,
+        "list": "POST /api/v1/usp/property-cards/list with the same scope and the unit as target (a read)",
+        "receipts": [
+          "No read route used here lists request receipts. By the code the preview reads no receipt and stores",
+          "nothing (packages/server/src/modules/usp/packets/card-service.ts, previewPropertyCard)."
+        ]
+      },
+      "existingCardExpiry": {
+        "card": "6a997624-6c8d-40a9-8215-8a671a74dc1c revision 1", "expiresAt": "2026-10-11T13:39:30.390Z",
+        "inIst": "11 October 2026, 19:09:30 IST", "expiredNow": false,
+        "whatThePreviewAnswers": [
+          "Nothing about it. The preview has no field for the stored revision's expiry: its expiresAt is the",
+          "one sent, which revision 2 would carry (15:31:47Z on 11 October here, 1 h 52 min after revision 1",
+          "ends)."
+        ],
+        "afterItExpires": [
+          "Not exercised: the card is live until then. By the code, an update checks that the latest revision",
+          "is not revoked and does not check its expiry (card-service.ts, nextCardRevisionTx), as REQUESTS.md",
+          "states; so the preview should still answer revision 2 after 19:09 IST."
+        ],
+        "journeyNote": [
+          "The journey's card step expects no revoked or expired revision, so it will stop passing at that time",
+          "unless a revision is generated first. That is a write and the lead's decision."
+        ]
+      },
+      "firstRun": [
+        "An earlier run of the same four requests is under k12/ (cards-*, preview-*): the same answers. Its",
+        "summary says the repeat differed because it compared whole bodies, meta.requestId included; the",
+        "driver now compares data."
+      ],
+      "receipts": "E:/BhuAayam-data/task-data/r5c/k12/preview/"
+    },
+    "item5Journey": {
+      "command": "pnpm journey:check (from r5, once)", "exit": 0,
+      "servedCommit": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795",
+      "summary": {"pass": 11, "fail": 0, "blocked": 0, "skipped": 2},
+      "table": ["doctor      pass     7029 ms",
+        "installed   pass     23 ms",
+        "canonical   pass     2021 ms",
+        "roofprints  pass     15 ms",
+        "storeys     pass     2 ms",
+        "recorded    pass     8 ms",
+        "tables      pass     7401 ms",
+        "register    pass     538 ms",
+        "identity    pass     87 ms",
+        "geometry    skipped  2 ms",
+        "exchange    skipped  5 ms",
+        "card        pass     446 ms",
+        "invariants  pass     45 ms"],
+      "fails": "none",
+      "skipped": ["geometry: no placed reviewed geometry or cited heights (known)",
+        "exchange: no GET CityJSON export; a POST export is not sent in check mode (known)"],
+      "againstR4": "R4: exit 1, 9 pass, 1 fail (identity), 3 skipped. Now identity and card pass.",
+      "files": ["The tool rewrote docs/evidence/gf5/20261010/journey.json and added attempt-3.json there, paths this",
+        "task does not own. The run is kept under E:/BhuAayam-data/task-data/r5c/journey/; the tracked file",
+        "was restored and the added file removed, so nothing under docs/evidence/gf5 changed."]
+    },
+    "item6Findings": {
+      "status500": "none", "wrongCounts": "none",
+      "unlistedRefusals": ["F2: PACKET_PLAN_SELECTION where the task expected PACKET_PLAN_ENTRIES_SOURCE_ONLY"],
+      "fromPart1": ["F1: the OCR bridge refuses a correct result as OCR_BRIDGE_FAILED (1 pt box rule)"],
+      "repaired": "nothing"
+    },
+    "requestsSent": {
+      "byTheDriver": {"get": 6, "postReads": 10}, "writes": 0,
+      "detail": ["GET: 1 snapshot listing, 5 review reads. POST reads: 2 plan entries, 4 card previews and 4 card",
+        "lists over the two preview runs. The journey sends its own GETs and its 2 named POST read routes",
+        "(identity resolve, card list); they are in its file. The OCR checks send nothing to the API."]
+    }
+  },
+  "checks": {
+    "control": "exit 0", "unitTests": "12 OK", "tsc": "pnpm exec tsc -p scripts/agent/tsconfig.json: exit 0",
+    "gitDiffCheck": "clean", "linesOver120": "none new (DEMO-RUNTIME.md line 44 is older and untouched)",
+    "closingDoctor": {
+      "from": "E:/Projects/ulpin-wt/demo", "at": "2026-10-10T16:36:54Z to 16:37:00Z", "exit": 0, "pass": 27,
+      "fail": 0, "documentRuntimes": "PASS", "gatewayEnabled": false, "mappingTeacherAdapter": "replay",
+      "servedCommit": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795", "checkoutClean": true, "health": 200,
+      "apiPid": 35160, "dispatcherPid": 28836
+    },
+    "hardLimits": ["no write request sent; UNIT-3A unrecorded",
+      "gateway never enabled; no provider call",
+      "no --create, reset, container, volume, down or prune",
+      "no GPU; every Python this task started used -B",
+      "no .env read; runtime folder touched only by the switch, the builder and the product OCR scratch",
+      "api.log searched once for one request id (0 lines), as the task asks for a finding",
+      "demo checkout: only the commit selected",
+      "not pushed"]
+  },
+  "report": [
+    "TASK   R5c: UNIT-3A's region as a candidate under D1 to D3; the demo rolled to staging 18b5e74c with the",
+    "       project-owned document interpreter; the K8b, K11b and K12 reads live. Done; two findings, none",
+    "       repaired.",
+    "WORKS  0 Candidate [1077.5, 395.75, 1125.75, 414.75] pt, equal to the lead's; bottom margin 4.25 to 4.0;",
+    "       control unchanged; fractional points accepted end to end (read, not exercised); nothing sent.",
+    "       1.1 Before: 83965a21, doctor 0, api 36092, dispatcher 5820, health 200; no schema step pending.",
+    "       1.2 Rolled to 18b5e74c; downtime 47 seconds (16:15:51Z to 16:16:38Z); switch exit 0, not refused.",
+    "       1.3 Doctor 0, PASS Document runtimes, gateway disabled. Profile repo, python, base and 1175 pins as",
+    "       required; every class equals K9's; stability 10 of 10; OCR output is K9's byte for byte (see F1).",
+    "       1.4 Step 8 not exercised, as in R4: it needs a new job, a write. Dispatcher owned and alive.",
+    "       1.5 DEMO-RUNTIME.md: the commit line and the switch sentence, with the saved file's name.",
+    "       2.1 Snapshots: 4 items, each with capturedAt, never rising; K8b's order and times exactly.",
+    "       2.2 Reviews: all 14 expected fields the same; 404 NOT_FOUND; 422 INVALID_INPUT twice; the recorded",
+    "       floor 614ca200 has no review: 200 with an empty list.",
+    "       2.3 Entries: one entry, bindingId 1e329170…f731de, includable true. Other profile: see F2.",
+    "       2.4 Preview: update, revision 2, 16 ordered facts, same on repeat; card list unchanged (1 card,",
+    "       newest revision 1). It says nothing about the old card's expiry; it answers the new one.",
+    "       2.5 Journey: exit 0, 11 pass, 0 fail, 2 skipped (geometry, exchange).",
+    "       2.6 No 500, no wrong count. F1: the OCR bridge refuses the correct result of K9's difficult input as",
+    "       OCR_BRIDGE_FAILED (3 boxes start 1.114 pt left of the region; the contract allows 1 pt); not caused",
+    "       by the switch. F2: the building of the same snapshot is refused as PACKET_PLAN_SELECTION, not",
+    "       PACKET_PLAN_ENTRIES_SOURCE_ONLY, because every recorded snapshot selects the unit.",
+    "SEE IT docs/evidence/runtime/r5c/result.json (part0, part1, part2). Private receipts:",
+    "       E:/BhuAayam-data/task-data/r5c/ (roll/, k8b/, k11b/, k12/, journey/, two candidate pictures).",
+    "       Switch line: part1.item2Roll.switch.jsonLine in this file, as printed (restored false,",
+    "       baseInsideEnvironment true, savedPreviousFile",
+    "       ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json).",
+    "INPUTS Task file r5c.md; K9, K9c, K8b, K11b evidence and K12 REQUESTS.md; the Tower 3 plan sheet and the",
+    "       site plan (public RERA sheets, unchanged); the demo at 127.0.0.1:3194. No provider call, no GPU.",
+    "GAPS   PACKET_PLAN_ENTRIES_SOURCE_ONLY not seen live (needs a snapshot of another profile: a write). Step 8",
+    "       not proven. The preview after the old card expires was read from code, not run. The OCR bridge",
+    "       starts Python without -B: one ignored cache file appeared in r5 and was removed. Six OCR runs, not",
+    "       one: the first failed and two located the cause.",
+    "DESIGN The roll ran as one script so the stop, checkout, switch, build and start were timed to the second.",
+    "       The OCR check calls the product's entry with the demo's own paths; when it refused, the cause was",
+    "       located from the worker result instead of repeating the run. Reads keep each exchange as files.",
+    "COMMITS b643e693 feat(runtime): UNIT-3A's page region as a candidate under the lead's three recorded",
+    "       decisions; cc8cfd1c docs(runtime): R5c roll-out to 18b5e74c with the project-owned document",
+    "       interpreter; this commit: docs(runtime): R5c the reviews, plan-entries and card-preview reads on the",
+    "       demo. Not pushed.",
+    "CHECKS Control exit 0; 12 unit tests OK; tsc -p scripts/agent/tsconfig.json exit 0; git diff --check clean;",
+    "       no new line over 120; closing doctor from the demo checkout exit 0 at 16:37:00Z, 27 PASS, gateway",
+    "       disabled, serving 18b5e74c, api 35160, dispatcher 28836.",
+    "NEXT   Lead: decide F1 (widen the box rule or clamp boxes to the region) and F2 (accept the selection",
+    "       refusal or name a snapshot). The card expires on 11 October at 19:09:30 IST; the journey's card step",
+    "       expects no expired revision, so a revision before then is the lead's call. Rollback, if ever needed:",
+    "       --restore \"ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json\", then build. Commit trailer is",
+    "       \"Claude Opus 5.5\" as the session requires, not \"Claude worker\"."
+  ]
+}

@@ -1,11 +1,13 @@
 import type {PoolClient} from 'pg';
-import {DocumentInputSchema,DocumentOriginalSchema,DOCUMENT_POLICY,type DocumentInput} from '@ulpin/contracts/usp';
+import {DocumentInputSchema,DocumentOriginalSchema,DOCUMENT_POLICY,RetainedDocumentFreshnessSchema,
+  type DocumentInput,type RetainedDocumentFreshness} from '@ulpin/contracts/usp';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {ingestionBinding,assertIngestionBinding} from './events';
 import {documentReaderSha} from './document-native';
 import {modelGatewayPolicyHash} from '../../model-gateway/runtime';
 import {documentOcrConfigSha} from './document-ocr';
+import {compareSourcePins} from './source-pin';
 
 export function documentLayoutCap(){
   const value=process.env.ULPIN_DOCUMENT_MODEL_LAYOUT_CAP;
@@ -40,10 +42,38 @@ export function documentInput(ctx:Awaited<ReturnType<typeof documentSourceTx>>,j
     gatewayPolicySha256:mode==='propose'?documentGatewayHash():null,layoutCap:mode==='propose'?documentLayoutCap():null,mode,
     ...(ocrSelection?{ocrSelection,ocrConfigSha256:documentOcrConfigSha()}: {}),...(archiveSelection?{archiveSelection}:{})});
 }
+type DocumentSourceContext=Awaited<ReturnType<typeof documentSourceTx>>;
+/** What moved on since a retained input was pinned. Private scope and the immutable original are checked elsewhere. */
+export function documentInputFreshness(ctx:DocumentSourceContext,input:DocumentInput):RetainedDocumentFreshness{
+  const now=documentInput(ctx,input.jobId,input.mode,input.ocrSelection,input.archiveSelection);
+  const pins=compareSourcePins(now,input);
+  const moved=(...fields:(keyof DocumentInput)[])=>fields.some(field=>pins.moved.includes(field));
+  const reasons:RetainedDocumentFreshness['reasons'][number][]=[];
+  if(moved('caseContextSha256'))reasons.push('case_advanced');
+  if(moved('readerSha256'))reasons.push('reader_changed');
+  if(moved('policyVersion','gatewayPolicySha256','layoutCap','ocrConfigSha256'))reasons.push('policy_changed');
+  if(!ctx.latest)reasons.push('source_superseded');
+  return RetainedDocumentFreshnessSchema.parse({current:pins.current&&ctx.latest,reasons});
+}
+/** Authorize and locate a retained input for a read or a capture of what is already recorded. An archived case,
+ * another operator's context or a changed original still refuses; a moved-on case, reader or policy is reported
+ * as freshness and never grants authority to derive or write. */
+export async function locateDocumentInputTx(client:PoolClient,input:DocumentInput){
+  const ctx=await documentSourceTx(client,input.caseId,input.sourceId);
+  if(input.subject!==ctx.binding.subject||input.accessSha256!==ctx.binding.access)
+    throw new AppError(403,'DOCUMENT_DENIED','This source context is unavailable.');
+  if(input.sourceRevision!==ctx.source.revision||input.familyId!==ctx.source.family_id
+    ||input.sourceSha256!==ctx.source.sha256||input.sourceBytes!==Number(ctx.source.bytes)
+    ||input.objectKey!==ctx.source.object_key)
+    throw new AppError(422,'DOCUMENT_SOURCE_INTEGRITY','The retained input differs from its canonical source.');
+  return {ctx,freshness:documentInputFreshness(ctx,input)};
+}
+/** Require current pins: every path that derives or writes something new under this input. */
 export async function assertDocumentInputTx(client:PoolClient,input:DocumentInput,lock=false){
   const ctx=await documentSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest || fingerprint(documentInput(ctx,input.jobId,input.mode,input.ocrSelection,input.archiveSelection))!==fingerprint(input))
-    conflict('The document source, case, reader, access or model policy changed. Retry under current pins.');
+  const pins=compareSourcePins(documentInput(ctx,input.jobId,input.mode,input.ocrSelection,input.archiveSelection),input);
+  if(!ctx.latest || !pins.current)
+    conflict('The document source, case context, reader, access or model policy changed; retry under current pins.');
   const job=(await client.query(`SELECT payload,input_fingerprint FROM jobs
     WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='document-extraction'`,[input.jobId,input.caseId,input.sourceId])).rows[0];
   if((input.archiveSelection || job?.payload?.archiveSelection) &&

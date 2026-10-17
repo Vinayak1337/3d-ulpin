@@ -1,0 +1,454 @@
+{
+  "schemaVersion": "da1-map-originals/1",
+  "task": "DA1",
+  "gate": "GF1",
+  "status": "acquisition_complete_contract_check_blocked",
+  "startedAtIst": "2026-10-11T08:03:29+05:30",
+  "recordedAtIst": "2026-10-11T08:37:36.328676+05:30",
+  "scope": "Unchanged authority originals, external to Git; local format/size inspection only.",
+  "indiaFirstMinutes": 10,
+  "indiaEvidence": "docs/evidence/gf1/da1/india-search.json",
+  "originalCount": 5,
+  "totalQualifiedOriginalBytes": 134673921,
+  "totalDownloadedOriginalBytesIncludingExcluded": 265057731,
+  "externalDirectoryBytesIncludingMetadata": 265136228,
+  "downloadCapBytes": 3221225472,
+  "freeSpaceBeforeBytes": 581797883904,
+  "freeSpaceAfterBytes": 581320515584,
+  "kinds": [
+    {
+      "kind": 1,
+      "status": "acquired_inspected",
+      "paths": ["E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip"]
+    },
+    {
+      "kind": 2,
+      "status": "acquired_inspected",
+      "paths": ["E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg"]
+    },
+    {
+      "kind": 3,
+      "status": "acquired_inspected",
+      "paths": ["E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-6082425467155238185.kmz"]
+    },
+    {
+      "kind": 4,
+      "status": "acquired_inspected",
+      "paths": [
+        "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson"
+      ]
+    },
+    {
+      "kind": 5,
+      "status": "acquired_inspected",
+      "paths": [
+        "E:/BhuAayam-data/datasets/map-formats/halifax-regional-municipality/Buildings_4912564227567820355.geojson"
+      ]
+    },
+    {
+      "kind": 6,
+      "status": "acquired_inspected",
+      "paths": [
+        "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg",
+        "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "issuer": "Halifax Regional Municipality",
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/1f73c9ad861a4fd9998c097d3544c08e/geojson?layers=0",
+      "sourcePage": "https://data-hrm.hub.arcgis.com/datasets/1f73c9ad861a4fd9998c097d3544c08e_0",
+      "licence": {
+        "name": "Open Government Licence - Halifax 1.0",
+        "textUrl": "https://data-hrm.hub.arcgis.com/pages/open-data-licence",
+        "permission": "confirmed issuer terms for attributed reuse; local format/size tests only"
+      },
+      "geography": "Halifax Regional Municipality, Nova Scotia, Canada",
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "EPSG:3857"
+        }
+      },
+      "verticalReference": null,
+      "portalGeneratedExport": true,
+      "formatRequested": "geojson",
+      "kinds": [5],
+      "privacyBasis": "Publisher ids, codes, sources and dates; no free-text personal notes/contact fields.",
+      "acquiredAtIst": "2026-10-11T08:34:48.985214+05:30",
+      "path": "E:/BhuAayam-data/datasets/map-formats/halifax-regional-municipality/Buildings_4912564227567820355.geojson",
+      "bytes": 107832285,
+      "sha256": "d94886859416fa97c160e11dd5785b73bf064e47e92b5916f3d64b301f62cff9",
+      "classification": "test_only",
+      "inspection": {
+        "path": "E:/BhuAayam-data/datasets/map-formats/halifax-regional-municipality/Buildings_4912564227567820355.geojson",
+        "bytes": 107832285,
+        "sha256": "d94886859416fa97c160e11dd5785b73bf064e47e92b5916f3d64b301f62cff9",
+        "features": 172409,
+        "allPropertyNames": [
+          "ADDDATE",
+          "BLPOLY_ID",
+          "BL_ID",
+          "FCODE",
+          "GLOBALID",
+          "HGTSOURCE",
+          "MODDATE",
+          "OBJECTID",
+          "SACC",
+          "SOURCE"
+        ],
+        "geometryTypes": ["MultiPolygon", null, "Polygon"],
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:3857"
+          }
+        },
+        "crsState": "stated",
+        "inspectionSeconds": 7.517
+      },
+      "disposition": "retained_test_only",
+      "features": 172409,
+      "receiptPath": "E:/BhuAayam-data/datasets/map-formats/halifax-regional-municipality/Buildings_4912564227567820355.geojson.receipt.json",
+      "receiptSha256": "d42ff860b2cd081a4ed6ca462437744e527d6e8577716bdb30c61f271e2e25ec",
+      "headBytes": 107832285,
+      "sourceLastModified": "Sun, 11 Oct 2026 03:02:20 GMT",
+      "etag": "\"0x8DF274410B1CD3F\""
+    },
+    {
+      "issuer": "City of Niagara Falls",
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/0e4764a531e84b7182cfaf3c4da7e8f4/geojson?layers=0",
+      "sourcePage": "https://open.niagarafalls.ca/datasets/0e4764a531e84b7182cfaf3c4da7e8f4_0",
+      "licence": {
+        "name": "Open Government Licence - Niagara Falls 1.0",
+        "textUrl": "https://open.niagarafalls.ca/pages/terms-of-use",
+        "permission": "confirmed for attributed reuse; local test only"
+      },
+      "geography": "Niagara Falls, Ontario, Canada",
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "EPSG:2958"
+        }
+      },
+      "verticalReference": null,
+      "portalGeneratedExport": true,
+      "formatRequested": "geojson",
+      "kinds": [4],
+      "privacyBasis": "Publisher geometry/elevation/year attributes; no owner/occupant/contact fields.",
+      "acquiredAtIst": "2026-10-11T08:28:14.098735+05:30",
+      "path": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+      "bytes": 26660992,
+      "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+      "classification": "test_only",
+      "inspection": {
+        "path": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+        "bytes": 26660992,
+        "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+        "features": 42247,
+        "allPropertyNames": [
+          "AREA_SQM",
+          "AvgEavElev",
+          "Avg_Elev_m",
+          "Height_m",
+          "LENGTH_M",
+          "Max_Elev_m",
+          "Min_Elev_m",
+          "OBJECTID",
+          "Year_coll"
+        ],
+        "geometryTypes": ["Polygon"],
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:2958"
+          }
+        },
+        "crsState": "stated",
+        "inspectionSeconds": 1.491
+      },
+      "disposition": "retained_test_only",
+      "features": 42247,
+      "receiptPath": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson.receipt.json",
+      "receiptSha256": "b2cc80275abd3a06c9e1d1893f6007687c39f3c84e33c57b2dbd25e853e94ae6",
+      "headBytes": 26660992,
+      "sourceLastModified": "Mon, 28 Sep 2026 15:40:40 GMT",
+      "etag": "\"0x8DF1D76D9E89540\""
+    },
+    {
+      "issuer": "Tweed Shire Council",
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/e54a8e9268364411b68775528f73f423/geoPackage?layers=0",
+      "sourcePage": "https://data-tweed.opendata.arcgis.com/datasets/e54a8e9268364411b68775528f73f423_0",
+      "licence": {
+        "name": "Creative Commons Attribution (version not stated)",
+        "textUrl": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json",
+        "permission": "confirmed for attributed reuse; local test only"
+      },
+      "geography": "Tweed Shire, New South Wales, Australia",
+      "crs": "EPSG:28356 (inspected PRJ/GPKG authority declaration)",
+      "verticalReference": null,
+      "portalGeneratedExport": true,
+      "formatRequested": "geoPackage",
+      "kinds": [2, 6],
+      "privacyBasis": [
+        "Publisher layer fields OBJECTID, Building_Name, OPEN_DATA, TIMESTAMP, Asset_Name,",
+        "locality, Shape__Area, Shape__Length; no owner/occupant/contact fields."
+      ],
+      "acquiredAtIst": "2026-10-11T08:15:53.250404+05:30",
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg",
+      "bytes": 151552,
+      "sha256": "c1156f7a95e5d9d1d7c912aac6b764db948b523b4cb1bb719caf54f1c2e1e635",
+      "classification": "test_only",
+      "inspection": {
+        "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg",
+        "bytes": 151552,
+        "sha256": "c1156f7a95e5d9d1d7c912aac6b764db948b523b4cb1bb719caf54f1c2e1e635",
+        "openMode": "mode=ro; PRAGMA query_only=ON",
+        "layers": [
+          {
+            "table": "Council_Buildings",
+            "dataType": "features",
+            "identifier": "Council_Buildings",
+            "features": 88,
+            "srsId": 28356,
+            "srs": ["GDA_1994_MGA_Zone_56", "EPSG", 28356],
+            "fields": ["OBJECTID", "SHAPE", "Building_Name", "OPEN_DATA", "TIMESTAMP", "Asset_Name", "locality"]
+          }
+        ]
+      },
+      "disposition": "retained_test_only",
+      "features": 88,
+      "receiptPath": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg.receipt.json",
+      "receiptSha256": "4de38501f76c7da3e338dbe866d3f5169ea42cec8017b66f9990aed3090bdfcb",
+      "headBytes": 151552,
+      "sourceLastModified": "Sat, 10 Oct 2026 15:50:08 GMT",
+      "etag": "\"0x8DF26E62910178B\""
+    },
+    {
+      "issuer": "Tweed Shire Council",
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/e54a8e9268364411b68775528f73f423/kml?layers=0",
+      "sourcePage": "https://data-tweed.opendata.arcgis.com/datasets/e54a8e9268364411b68775528f73f423_0",
+      "licence": {
+        "name": "Creative Commons Attribution (version not stated)",
+        "textUrl": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json",
+        "permission": "confirmed for attributed reuse; local test only"
+      },
+      "geography": "Tweed Shire, New South Wales, Australia",
+      "crs": null,
+      "verticalReference": null,
+      "portalGeneratedExport": true,
+      "formatRequested": "kml",
+      "kinds": [3],
+      "privacyBasis": [
+        "Publisher layer fields OBJECTID, Building_Name, OPEN_DATA, TIMESTAMP, Asset_Name,",
+        "locality, Shape__Area, Shape__Length; no owner/occupant/contact fields."
+      ],
+      "acquiredAtIst": "2026-10-11T08:15:51.717987+05:30",
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-6082425467155238185.kmz",
+      "bytes": 16243,
+      "sha256": "262c52e1695afa2eaafa8f4641e87236bc70a1a3ed0a22965da58460cb3d0ca9",
+      "classification": "test_only",
+      "inspection": {
+        "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-6082425467155238185.kmz",
+        "bytes": 16243,
+        "sha256": "262c52e1695afa2eaafa8f4641e87236bc70a1a3ed0a22965da58460cb3d0ca9",
+        "kmlMembers": {
+          "doc.kml": {
+            "features": 88,
+            "fields": [],
+            "geometryTypes": ["Polygon"]
+          }
+        },
+        "features": 88,
+        "crs": null,
+        "crsState": "no explicit EPSG declaration; KML coordinate semantics"
+      },
+      "disposition": "retained_test_only",
+      "features": 88,
+      "receiptPath": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-6082425467155238185.kmz.receipt.json",
+      "receiptSha256": "6e74305399de008c9d4d8648667f83d6de9782c41efd1eed3934b33355db4797",
+      "headBytes": 16243,
+      "sourceLastModified": "Sun, 11 Oct 2026 02:44:15 GMT",
+      "etag": "\"0x8DF274189F7AF78\""
+    },
+    {
+      "issuer": "Tweed Shire Council",
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/e54a8e9268364411b68775528f73f423/shapefile?layers=0",
+      "sourcePage": "https://data-tweed.opendata.arcgis.com/datasets/e54a8e9268364411b68775528f73f423_0",
+      "licence": {
+        "name": "Creative Commons Attribution (version not stated)",
+        "textUrl": "https://www.arcgis.com/sharing/rest/content/items/e54a8e9268364411b68775528f73f423?f=json",
+        "permission": "confirmed for attributed reuse; local test only"
+      },
+      "geography": "Tweed Shire, New South Wales, Australia",
+      "crs": "EPSG:28356 (inspected PRJ/GPKG authority declaration)",
+      "verticalReference": null,
+      "portalGeneratedExport": true,
+      "formatRequested": "shapefile",
+      "kinds": [1, 6],
+      "privacyBasis": [
+        "Publisher layer fields OBJECTID, Building_Name, OPEN_DATA, TIMESTAMP, Asset_Name,",
+        "locality, Shape__Area, Shape__Length; no owner/occupant/contact fields."
+      ],
+      "acquiredAtIst": "2026-10-11T08:15:52.784586+05:30",
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip",
+      "bytes": 12849,
+      "sha256": "5e8b07aa6e6121070766a5ecbea28b8f136655ada60e58662897c422c825bf2e",
+      "classification": "test_only",
+      "inspection": {
+        "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip",
+        "bytes": 12849,
+        "sha256": "5e8b07aa6e6121070766a5ecbea28b8f136655ada60e58662897c422c825bf2e",
+        "members": [
+          {
+            "name": "Council_Buildings.cpg",
+            "bytes": 5
+          },
+          {
+            "name": "Council_Buildings.dbf",
+            "bytes": 73586
+          },
+          {
+            "name": "Council_Buildings.prj",
+            "bytes": 410
+          },
+          {
+            "name": "Council_Buildings.shp",
+            "bytes": 16372
+          },
+          {
+            "name": "Council_Buildings.shx",
+            "bytes": 804
+          }
+        ],
+        "layers": [
+          {
+            "member": "Council_Buildings.shp",
+            "features": 88,
+            "headerBytes": 193,
+            "fields": [
+              {
+                "name": "Building_N",
+                "type": "C",
+                "length": 100
+              },
+              {
+                "name": "OPEN_DATA",
+                "type": "C",
+                "length": 25
+              },
+              {
+                "name": "TIMESTAMP",
+                "type": "C",
+                "length": 200
+              },
+              {
+                "name": "Asset_Name",
+                "type": "C",
+                "length": 254
+              },
+              {
+                "name": "locality",
+                "type": "C",
+                "length": 254
+              }
+            ],
+            "shxRecords": 88,
+            "epsg": 28356
+          }
+        ]
+      },
+      "disposition": "retained_test_only",
+      "features": 88,
+      "receiptPath": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip.receipt.json",
+      "receiptSha256": "291a2e99efa3a6739408df30767ce5781f075b44e2feb99e09eea5d0875e0576",
+      "headBytes": 12849,
+      "sourceLastModified": "Sun, 11 Oct 2026 02:43:41 GMT",
+      "etag": "\"0x8DF2741763A75A1\""
+    }
+  ],
+  "excludedOriginals": [
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/kitchener/Building_Outlines_-8386740156269276405.geojson",
+      "issuer": "City of Kitchener",
+      "bytes": 130383810,
+      "sha256": "d099c99acd944113ba11f9d86d02db78260f7f7f8ef61dea11a3b946bc5bd59d",
+      "disposition": "excluded_privacy",
+      "privacyFinding": "NOTES contain person names; pre-download schema-only screening was insufficient."
+    }
+  ],
+  "controlArtifacts": [
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/city-of-kitchener/Building_Outlines_-8386740156269276405.geojson",
+      "bytes": 183,
+      "sha256": "7fd244f2755f7efd8695a8818cc1588f655445472b42a180fe859898063a67fe",
+      "disposition": "excluded_control_response",
+      "reason": "Pending/control response or size-bound refusal; not an original."
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/geojson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "disposition": "excluded_control_response",
+      "reason": "Pending/control response or size-bound refusal; not an original."
+    }
+  ],
+  "existingKmlDisposition": "Software examples do not meet authority-record rule; unchanged, no duplicate.",
+  "safety": {
+    "originalsChanged": false,
+    "conversions": 0,
+    "productChanges": 0,
+    "runtimeImports": 0,
+    "providerCalls": 0,
+    "trainingOrLabels": 0,
+    "learningSplitsChanged": false,
+    "credentialsOrFormsUsed": false
+  },
+  "checks": {
+    "headSizeAndSha256": "passed; every retained original matches HEAD bytes and receipt hash",
+    "nativeInventory": "passed; DBF/SHX, read-only GPKG, KML and streamed GeoJSON counts",
+    "sixKindsAndSizeBands": "passed",
+    "privacy": "Kitchener excluded after NOTES inspection; Halifax replaces kind 5",
+    "contract": "Pre-existing CRLF runtime-receipt failure; lead must refresh pins/EOL.",
+    "contractEvidence": "docs/evidence/gf1/da1/check-baseline.json"
+  },
+  "gaps": [
+    "No eligible Indian original located; owner access/permission routes recorded.",
+    "No product intake, rights, geometry accuracy or GF1 runtime qualification.",
+    "Tweed CC BY version unstated; vertical references remain unqualified/null.",
+    "Halifax/Kitchener evaluation families stay closed to labels, tuning and providers.",
+    "Kitchener privacy exclusion demonstrates schema-only screening is insufficient."
+  ],
+  "next": "Lead review/integrate and owned pin/EOL refresh; intake owner reuses originals.",
+  "inspectionTools": [
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/discovery/da1-scripts/acquire_original.py",
+      "sha256": "8d782ba99de1265e2dbe60bfb293eeb1d0fc4b33905763df01777144f0e71cfd"
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/discovery/da1-scripts/build_evidence.py",
+      "sha256": "79acbef26c24ca5aba51c5e66e633dc4d34d0f110ec87715944029f0103d7a93"
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/discovery/da1-scripts/inspect_original.py",
+      "sha256": "fa963cde4a1ad231e382e5eb559fca8670e04764b5e254fee1236a22a5516341"
+    }
+  ],
+  "inspectionToolScope": "External utilities; issuer originals and full WKT stay in external receipts.",
+  "attributionStatements": {
+    "Tweed": "Tweed Shire Council, Council Buildings",
+    "Niagara": "Contains information licensed under the Open Government Licence–Niagara Falls.",
+    "Halifax": "Contains information licenced under the Open Government Licence–Halifax."
+  },
+  "licenceEvidence": [
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/discovery/halifax-licence-page.json",
+      "sha256": "b07055b3dc679457297a7ce58b3cc34a5491101488abec0046f1c9e90d3b505f"
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/discovery/niagara-licence-page.json",
+      "sha256": "c38ce3c5f6f52831c2c255b8aa3512b8d80a001219ed3ffeef13ed5e0a0f9655"
+    }
+  ]
+}

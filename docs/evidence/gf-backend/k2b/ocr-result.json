@@ -1,0 +1,42 @@
+{
+  "jobId": "828d327b-f9f7-4a12-b4fb-39c756c02ab3",
+  "status": "completed",
+  "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+  "ocr": {
+    "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "sourceRevision": 1,
+    "sourcePage": 1,
+    "requestedRegion": [
+      280,
+      860,
+      960,
+      2580
+    ],
+    "sourcePageFrame": null,
+    "method": "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+    "toolStatus": "failed",
+    "outputStatus": "failed",
+    "textCompleteness": "unverified",
+    "issues": [
+      "OCR_SUPERVISOR_FAILED"
+    ],
+    "execution": {
+      "maxSeconds": 90,
+      "exitCode": 1,
+      "receiptSha256": "e5965c7b6c279b34a1964fd5c60b579fd19e6b76b7caeb95f3800f5ef62f441d",
+      "candidateSha256": "f8d4edce86806cf5ba366410aa69d9acb03ee981dde8e1c5d76442ff7ad49d62",
+      "worker": {
+        "exitCode": 1,
+        "stopReason": null,
+        "elapsedSeconds": 10.25,
+        "peakObservedRssBytes": 851124224,
+        "peakJobPrivateBytes": 999006208,
+        "gatedStart": true,
+        "logSha256": "d9cca9e67cd5d563d4f5e5d78b49fc615184d8e7cf798ee677ad130798b72a67"
+      }
+    }
+  },
+  "firstLines": [],
+  "nativeStatus": "needs_ocr",
+  "qualification": "OCR observations only; no reviewed field, accuracy, level schedule or Hindi execution claim"
+}

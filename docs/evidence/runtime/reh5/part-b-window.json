@@ -1,0 +1,172 @@
+{ "at": "2026-10-17T12:00:33.905Z", "api": "http://127.0.0.1:21026", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"limitReads": { "context": { "step": "context", "route": "/api/v1/areas/{areaId}/context", "status": 422,
+"seconds": 1.099, "bytes": 147, "refusal": { "code": "AREA_LIMIT",
+"words": "Choose an area with at most 10,000 display features." } }, "canonical": { "step": "canonical",
+"route": "/api/v1/areas/{areaId}/canonical", "status": 422, "seconds": 1.037, "bytes": 147, "refusal": {
+"code": "AREA_LIMIT", "words": "Choose an area with at most 10,000 display features." } } }, "summary": {
+"step": "display-summary", "route": "/api/v1/areas/{areaId}/display-summary", "status": 200, "seconds": 1.76,
+"bytes": 194, "featureCount": 41809, "extent": [ -62.182009784155525, -550.7221877221018, 13281.69762057485,
+21022.04794677999 ], "areaRevision": 0, "displayLimit": 10000, "fields": [ "areaId", "areaRevision", "featureCount",
+"extent", "displayLimit" ],
+"splitByState": "not in the reply (the schema has no recorded or proposal count); counted from the pages below",
+"againstReh4": "REH4 (01a11f93) answered featureCount 0 and extent null", "againstReh3": "equals REH3 41,809" },
+"whole": { "window": [ -62.182009784155525, -550.7221877221018, 13281.69762057485, 21022.04794677999 ], "pages": [ {
+"page": 1, "features": 4000, "seconds": 1.695, "bytes": 1642977, "next": "set", "areaRevision": 0 }, { "page": 2,
+"features": 4000, "seconds": 1.728, "bytes": 2174135, "next": "set", "areaRevision": 0 }, { "page": 3, "features": 4000,
+"seconds": 1.634, "bytes": 2294770, "next": "set", "areaRevision": 0 }, { "page": 4, "features": 4000, "seconds": 1.563,
+"bytes": 2345604, "next": "set", "areaRevision": 0 }, { "page": 5, "features": 4000, "seconds": 1.628, "bytes": 2297564,
+"next": "set", "areaRevision": 0 }, { "page": 6, "features": 4000, "seconds": 1.634, "bytes": 2442013, "next": "set",
+"areaRevision": 0 }, { "page": 7, "features": 4000, "seconds": 1.549, "bytes": 2448014, "next": "set", "areaRevision": 0
+}, { "page": 8, "features": 4000, "seconds": 1.346, "bytes": 2553263, "next": "set", "areaRevision": 0 }, { "page": 9,
+"features": 4000, "seconds": 1.267, "bytes": 2198238, "next": "set", "areaRevision": 0 }, { "page": 10,
+"features": 4000, "seconds": 1.189, "bytes": 1611937, "next": "set", "areaRevision": 0 }, { "page": 11,
+"features": 1809, "seconds": 1.146, "bytes": 729063, "next": null, "areaRevision": 0 } ], "pageCount": 11,
+"seconds": 16.379, "bytes": 22737578, "features": 41809, "uniqueIds": 41809, "uniqueIdentifiers": 41809,
+"sumEqualsFeatureCount": true, "noRepeat": true, "identifiersStrictlyAscending": true, "kinds": [ "building" ],
+"vertices": 359833, "outsidePaddedExtent": 0, "paddedExtent": [ -162.18200978415553, -650.7221877221018,
+13381.69762057485, 21122.04794677999 ], "displayStates": { "unrecorded_proposal": 41809 }, "heightStates": {
+"unknown": 41809 }, "heightMNullByState": { "unknown": 41809 }, "unknownHeightNotNull": 0, "heightMZero": 0,
+"withoutOutline": 0, "reh3NoHeightSamples": [ { "id": "7117844c-597d-4c47-89b2-c336d10c91f5",
+"identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B001", "kind": "building", "displayState": "unrecorded_proposal",
+"ringVertexCount": 13, "rings": 1, "heightM": null, "heightState": "unknown" }, {
+"id": "322d228f-b10b-4dac-8185-e65c325dbec5", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B39096", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 7, "rings": 1, "heightM": null, "heightState": "unknown" }, {
+"id": "16b49989-b162-4ef0-bf17-def838e173d5", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B34000", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 11, "rings": 1, "heightM": null, "heightState": "unknown" } ]
+}, "nearCentre": { "id": "7d8ef013-f19b-43fd-bb79-5f313b681533", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411",
+"vertex": [ 6572.442365094088, 10394.752916565165 ], "metresFromCentre": 163.4 }, "window500": { "window": {
+"minX": 6359.7578053953475, "minY": 9985.662879528943, "maxX": 6859.7578053953475, "maxY": 10485.662879528943 },
+"runs": [ { "run": 1, "features": 3, "seconds": 1.516, "pages": 1, "bytes": 1601 }, { "run": 2, "features": 3,
+"seconds": 1.517, "pages": 1, "bytes": 1601 }, { "run": 3, "features": 3, "seconds": 1.534, "pages": 1, "bytes": 1601 }
+], "sameIdsEachRun": true, "features": 3, "unique": 3, "displayStates": { "unrecorded_proposal": 3 },
+"allInWhole": true, "samples": [ { "id": "7d8ef013-f19b-43fd-bb79-5f313b681533",
+"identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411", "kind": "building", "displayState": "unrecorded_proposal",
+"ringVertexCount": 5, "rings": 1, "heightM": null, "heightState": "unknown" }, {
+"id": "3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 7, "rings": 1, "heightM": null, "heightState": "unknown" }, {
+"id": "11a0fb4c-989b-47b8-ab5e-faadd6e5ce99", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 11, "rings": 1, "heightM": null, "heightState": "unknown" } ]
+}, "window50": { "window": { "minX": 6584.7578053953475, "minY": 10210.662879528943, "maxX": 6634.7578053953475,
+"maxY": 10260.662879528943 }, "runs": [ { "run": 1, "features": 0, "seconds": 1.526, "pages": 1, "bytes": 92 }, {
+"run": 2, "features": 0, "seconds": 1.557, "pages": 1, "bytes": 92 }, { "run": 3, "features": 0, "seconds": 1.543,
+"pages": 1, "bytes": 92 } ], "sameIdsEachRun": true, "features": 0, "unique": 0, "displayStates": {},
+"allInWhole": true, "samples": [] }, "window500Near": { "window": { "minX": 6322.442365094088,
+"minY": 10144.752916565165, "maxX": 6822.442365094088, "maxY": 10644.752916565165 }, "runs": [ { "run": 1,
+"features": 2, "seconds": 1.537, "pages": 1, "bytes": 974 }, { "run": 2, "features": 2, "seconds": 1.53, "pages": 1,
+"bytes": 974 }, { "run": 3, "features": 2, "seconds": 1.545, "pages": 1, "bytes": 974 } ], "sameIdsEachRun": true,
+"features": 2, "unique": 2, "displayStates": { "unrecorded_proposal": 2 }, "allInWhole": true, "samples": [ {
+"id": "7d8ef013-f19b-43fd-bb79-5f313b681533", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 5, "rings": 1, "heightM": null, "heightState": "unknown" }, {
+"id": "3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 7, "rings": 1, "heightM": null, "heightState": "unknown" } ]
+}, "window50Near": { "window": { "minX": 6547.442365094088, "minY": 10369.752916565165, "maxX": 6597.442365094088,
+"maxY": 10419.752916565165 }, "runs": [ { "run": 1, "features": 1, "seconds": 1.522, "pages": 1, "bytes": 495 }, {
+"run": 2, "features": 1, "seconds": 1.548, "pages": 1, "bytes": 495 }, { "run": 3, "features": 1, "seconds": 1.555,
+"pages": 1, "bytes": 495 } ], "sameIdsEachRun": true, "features": 1, "unique": 1, "displayStates": {
+"unrecorded_proposal": 1 }, "allInWhole": true, "samples": [ { "id": "7d8ef013-f19b-43fd-bb79-5f313b681533",
+"identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411", "kind": "building", "displayState": "unrecorded_proposal",
+"ringVertexCount": 5, "rings": 1, "heightM": null, "heightState": "unknown" } ] }, "refusals": { "limit=0": {
+"step": "refuse limit=0", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&limit=0" ], "status": 422, "seconds": 0.016, "bytes": 141, "refusal": {
+"code": "INVALID_INPUT", "words": "limit: Too small: expected number to be >=1" } }, "limit=4001": {
+"step": "refuse limit=4001", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&limit=4001" ], "status": 422, "seconds": 0.014, "bytes": 142, "refusal": {
+"code": "INVALID_INPUT", "words": "limit: Too big: expected number to be <=4000" } }, "minX >= maxX": {
+"step": "refuse minX >= maxX", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=13281.69762057485&minY=-550.7221877221018&maxX=",
+"-62.182009784155525&maxY=21022.04794677999&limit=10" ], "status": 422, "seconds": 0.015, "bytes": 169, "refusal": {
+"code": "INVALID_INPUT", "words": "Input: Choose a window whose minimum is below its maximum on both axes." } },
+"minX = maxX": { "step": "refuse minX = maxX", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=-62.182009784155525&maxY=21022.04794677999&limit=10" ], "status": 422, "seconds": 0.001, "bytes": 169, "refusal": {
+"code": "INVALID_INPUT", "words": "Input: Choose a window whose minimum is below its maximum on both axes." } } },
+"requests": [ { "step": "context", "route": "/api/v1/areas/{areaId}/context", "status": 422, "seconds": 1.099,
+"bytes": 147, "refusal": { "code": "AREA_LIMIT", "words": "Choose an area with at most 10,000 display features." } }, {
+"step": "canonical", "route": "/api/v1/areas/{areaId}/canonical", "status": 422, "seconds": 1.037, "bytes": 147,
+"refusal": { "code": "AREA_LIMIT", "words": "Choose an area with at most 10,000 display features." } }, {
+"step": "display-summary", "route": "/api/v1/areas/{areaId}/display-summary", "status": 200, "seconds": 1.76,
+"bytes": 194 }, { "step": "whole extent page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&limit=4000" ], "status": 200, "seconds": 1.695, "bytes": 1642977 }, {
+"step": "whole extent page 2", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB13512&l", "imit=4000" ],
+"status": 200, "seconds": 1.728, "bytes": 2174135 }, { "step": "whole extent page 3", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB17116&l", "imit=4000" ],
+"status": 200, "seconds": 1.634, "bytes": 2294770 }, { "step": "whole extent page 4", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB2072&li", "mit=4000" ],
+"status": 200, "seconds": 1.563, "bytes": 2345604 }, { "step": "whole extent page 5", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB24323&l", "imit=4000" ],
+"status": 200, "seconds": 1.628, "bytes": 2297564 }, { "step": "whole extent page 6", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB27927&l", "imit=4000" ],
+"status": 200, "seconds": 1.634, "bytes": 2442013 }, { "step": "whole extent page 7", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB31530&l", "imit=4000" ],
+"status": 200, "seconds": 1.549, "bytes": 2448014 }, { "step": "whole extent page 8", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB35134&l", "imit=4000" ],
+"status": 200, "seconds": 1.346, "bytes": 2553263 }, { "step": "whole extent page 9", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB38738&l", "imit=4000" ],
+"status": 200, "seconds": 1.267, "bytes": 2198238 }, { "step": "whole extent page 10", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB4718&li", "mit=4000" ],
+"status": 200, "seconds": 1.189, "bytes": 1611937 }, { "step": "whole extent page 11", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&after=3DU-51R4JJN54Z8AKTGYATTANAFK26%3AB8354&li", "mit=4000" ],
+"status": 200, "seconds": 1.146, "bytes": 729063 }, { "step": "window 500 m run 1 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6359.7578053953475&minY=9985.662879528943&maxX=",
+"6859.7578053953475&maxY=10485.662879528943&limit=4000" ], "status": 200, "seconds": 1.516, "bytes": 1601 }, {
+"step": "window 500 m run 2 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6359.7578053953475&minY=9985.662879528943&maxX=",
+"6859.7578053953475&maxY=10485.662879528943&limit=4000" ], "status": 200, "seconds": 1.517, "bytes": 1601 }, {
+"step": "window 500 m run 3 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6359.7578053953475&minY=9985.662879528943&maxX=",
+"6859.7578053953475&maxY=10485.662879528943&limit=4000" ], "status": 200, "seconds": 1.534, "bytes": 1601 }, {
+"step": "window 50 m run 1 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6584.7578053953475&minY=10210.662879528943&maxX",
+"=6634.7578053953475&maxY=10260.662879528943&limit=4000" ], "status": 200, "seconds": 1.526, "bytes": 92 }, {
+"step": "window 50 m run 2 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6584.7578053953475&minY=10210.662879528943&maxX",
+"=6634.7578053953475&maxY=10260.662879528943&limit=4000" ], "status": 200, "seconds": 1.557, "bytes": 92 }, {
+"step": "window 50 m run 3 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6584.7578053953475&minY=10210.662879528943&maxX",
+"=6634.7578053953475&maxY=10260.662879528943&limit=4000" ], "status": 200, "seconds": 1.543, "bytes": 92 }, {
+"step": "window 500 m near the centre run 1 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6322.442365094088&minY=10144.752916565165&maxX=",
+"6822.442365094088&maxY=10644.752916565165&limit=4000" ], "status": 200, "seconds": 1.537, "bytes": 974 }, {
+"step": "window 500 m near the centre run 2 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6322.442365094088&minY=10144.752916565165&maxX=",
+"6822.442365094088&maxY=10644.752916565165&limit=4000" ], "status": 200, "seconds": 1.53, "bytes": 974 }, {
+"step": "window 500 m near the centre run 3 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6322.442365094088&minY=10144.752916565165&maxX=",
+"6822.442365094088&maxY=10644.752916565165&limit=4000" ], "status": 200, "seconds": 1.545, "bytes": 974 }, {
+"step": "window 50 m near the centre run 1 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6547.442365094088&minY=10369.752916565165&maxX=",
+"6597.442365094088&maxY=10419.752916565165&limit=4000" ], "status": 200, "seconds": 1.522, "bytes": 495 }, {
+"step": "window 50 m near the centre run 2 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6547.442365094088&minY=10369.752916565165&maxX=",
+"6597.442365094088&maxY=10419.752916565165&limit=4000" ], "status": 200, "seconds": 1.548, "bytes": 495 }, {
+"step": "window 50 m near the centre run 3 page 1", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6547.442365094088&minY=10369.752916565165&maxX=",
+"6597.442365094088&maxY=10419.752916565165&limit=4000" ], "status": 200, "seconds": 1.555, "bytes": 495 }, {
+"step": "refuse limit=0", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&limit=0" ], "status": 422, "seconds": 0.016, "bytes": 141, "refusal": {
+"code": "INVALID_INPUT", "words": "limit: Too small: expected number to be >=1" } }, { "step": "refuse limit=4001",
+"route": [ "/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=13281.69762057485&maxY=21022.04794677999&limit=4001" ], "status": 422, "seconds": 0.014, "bytes": 142, "refusal": {
+"code": "INVALID_INPUT", "words": "limit: Too big: expected number to be <=4000" } }, { "step": "refuse minX >= maxX",
+"route": [ "/api/v1/areas/{areaId}/display-window?minX=13281.69762057485&minY=-550.7221877221018&maxX=",
+"-62.182009784155525&maxY=21022.04794677999&limit=10" ], "status": 422, "seconds": 0.015, "bytes": 169, "refusal": {
+"code": "INVALID_INPUT", "words": "Input: Choose a window whose minimum is below its maximum on both axes." } }, {
+"step": "refuse minX = maxX", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=-62.182009784155525&minY=-550.7221877221018&max",
+"X=-62.182009784155525&maxY=21022.04794677999&limit=10" ], "status": 422, "seconds": 0.001, "bytes": 169, "refusal": {
+"code": "INVALID_INPUT", "words": "Input: Choose a window whose minimum is below its maximum on both axes." } } ] }

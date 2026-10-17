@@ -1,0 +1,63 @@
+{
+ "task": "LA1",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "410247e4",
+ "defect": "REH3 (17 October): /areas/{id}/context and /canonical answer 422 AREA_LIMIT for the Niagara Falls area (41,809 buildings), so the Studio map drew nothing.",
+ "decisions": {
+  "D1_summary": {
+   "route": "apps/api/src/modules/intake/area-sources.controller.ts:95 GET /api/v1/areas/{areaId}/display-summary",
+   "read": "packages/server/src/modules/areas/area-display-window.ts:56 areaDisplaySummary; SQL at :21 (count and ST_Extent of the local geometry in one statement over the membership rule at :14)",
+   "contract": "packages/contracts/src/area.ts:340 AreaDisplaySummarySchema; manifest apps/api/src/modules/intake/operation-manifest.json:165"
+  },
+  "D2_window": {
+   "route": "apps/api/src/modules/intake/area-sources.controller.ts:107 GET /api/v1/areas/{areaId}/display-window",
+   "query": "packages/server/src/modules/areas/area-validation.ts:133 areaDisplayWindowSchema (limit 1..4000, default 2000; after <= 500 chars; min < max on both axes)",
+   "read": "packages/server/src/modules/areas/area-display-window.ts:70 areaDisplayWindow; SQL at :25; keyset by identifier (UNIQUE column), next = last identifier when a further row exists",
+   "height": "area-display-window.ts:87 heightM only when the record's height state is not unknown and its value is a number; otherwise null, never 0",
+   "noReference": "area-display-window.ts:47 409 AREA_REFERENCE with a plain sentence",
+   "timeout": "area-display-window.ts:44 SET LOCAL statement_timeout='15s' inside a repeatable-read read-only transaction, as spatial-core-read",
+   "contract": "packages/contracts/src/area.ts:354 AreaDisplayWindowSchema; manifest operation-manifest.json:166; docs/api/openapi.json regenerated; packages/api-client/src/schema.d.ts regenerated"
+  },
+  "D3_studio": {
+   "switch": "apps/studio/src/features/map/MapPage.tsx:45 (context AREA_LIMIT -> WindowedArea) and MapWorkspace.tsx:123 (canonical AREA_LIMIT -> window footprints, error banner hidden)",
+   "detect": "apps/studio/src/features/map/areaWindow.ts:19 isAreaLimit (ApiError 422 with error.code AREA_LIMIT)",
+   "reads": "areaWindow.ts:57 WindowReader: 300 ms settle (:11), pages by next up to the 15,000 budget (:9), AbortController per view, a stale read aborted (:78) and never published",
+   "camera": "areaWindow.ts:132 centres on the extent with engine.panTo; the engine then frames the arrived footprints",
+   "draw": "areaWindow.ts:33 windowScene: buildings as FootprintInput (extruded only where heightM is stated), other kinds as flat base inputs",
+   "line": "areaWindow.ts:46 windowLine",
+   "select": "apps/studio/src/features/map/WindowedArea.tsx:41 pick dispatches the shared selection; the inspector shows kind and the identifier (copyable) only"
+  },
+  "D4": "No merged or tiled far view; analytical reads keep AREA_FEATURE_LIMIT 2,000; package commits and apps/web untouched."
+ },
+ "expectedPlan": {
+  "window": "Bitmap Index Scan on physical_geographic_gist (gist(geographic_geometry), database/sql/20-area/area.sql:38) for ST_Intersects(f.geographic_geometry, win.g), with win.g the envelope transformed once to EPSG:4326; the column is never transformed in the filter. Membership (area_id or block group EXISTS) and the identifier cursor are applied as filters on the index result, then Sort by identifier and Limit limit+1.",
+  "summary": "One sequential pass over the area's members (no spatial filter): count(*) and ST_Extent of each geometry projected to the analysis CRS; bounded by the 15 s statement timeout.",
+  "measured": false,
+  "why": "No PostgreSQL with PostGIS on this box; the plan was not captured with EXPLAIN."
+ },
+ "tests": {
+  "server": "packages/server/src/modules/areas/area-display-window.test.ts: 5 tests (summary counts and extent, empty extent null, timeout set; window envelope and keyset pages without repeat or gap, SQL filters the column through ST_Intersects untransformed; null height kept null and outline in local metres; limit 0/4001/2.5 and an empty window refused; 409 without a reference)",
+  "studio": "apps/studio/src/features/map/areaWindow.test.ts: 6 tests (window mode on for AREA_LIMIT only; line for a cut and for all drawn; extrusion only with a stated height; view clipped to the extent; settle, paging and budget; a stale read aborted and not published)"
+ },
+ "checks": {
+  "typecheck:backend": {"exit": 0},
+  "studio:typecheck": {"exit": 0},
+  "studio:test": {"exit": 0, "before": 452, "after": 458},
+  "backendTests": {"exit": 1, "before": {"tests": 262, "pass": 225, "fail": 15, "skipped": 22},
+   "after": {"tests": 267, "pass": 230, "fail": 15, "skipped": 22},
+   "note": "The same 15 tests fail before and after: they read originals under E:/BhuAayam-data or the Python tool chain absent from this box."},
+  "openapi": {"generate": 0, "check": 0, "operations": 314, "namedSchemas": 356},
+  "studio:api-types": {"exit": 0},
+  "refresh-contract": {"exit": 0},
+  "scripts/api/check.py": {"exit": 0},
+  "git diff --check": {"exit": 0},
+  "ui-design-check": "docs/evidence/gf1/la1/ui-design-check.md (scan exit 0)"
+ },
+ "gaps": [
+  "The window and summary are in the analysis CRS translated by its origin (D1); the canonical scene's buildings are in ENU about the area anchor. In window mode the map draws only window features, so they agree with each other, but an explored building's canonical record and window footprints may differ by the grid convergence between the two frames.",
+  "Selecting a footprint in an area whose context read refused shows only its identifier and kind; the building's register, ledger and canonical record are not opened from window mode.",
+  "The camera is centred on the extent (engine.panTo); fitting the whole extent needs a scene engine method outside this task's paths.",
+  "The summary's featureCount counts every kind; the line says 'buildings' when every drawn feature is a building and 'features' otherwise."
+ ]
+}

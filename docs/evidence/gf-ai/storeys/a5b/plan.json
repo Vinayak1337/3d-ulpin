@@ -1,0 +1,56 @@
+{
+ "schemaVersion": "storey-a5b-plan/1",
+ "task": "A5b",
+ "gate": "GF-AI/storeys",
+ "preregisteredBeforeAnyRun": true,
+ "base": "e17239a1",
+ "claimScope": "Development projects and the demo Tower 3 sheets only; this comparison makes no holdout claim, and the spent A5 holdout is neither opened, rendered nor scored.",
+ "hypothesis": "A5's OCR input bound loses small storey literals: each 500 pt tile is rendered to at most 1400 px on its long side (scale 2.8, about 202 dpi), and the Bihar sanctioned-plan scans are 300 dpi originals, so the render is a downsample of the scan.",
+ "dataBoundary": {
+  "developmentRecords": ["3D APARTMENT", "A ONE HERITAGE", "A M PINNACLE TOWER 3", "A M PINNACLE TOWER 1", "A M PINNACLE TOWER 2", "A M PINNACLE TOWER 4 EWS+LIG"],
+  "developmentSources": ["b6f0178b9951", "0f793ce7ebd5", "cf152f3220e7"],
+  "demoTower3Sources": ["26c2d3101bfe", "2b9f8803e179", "2aadce88509b", "f0dc0d56b786"],
+  "excluded": "every holdout record, file and page; storey-truth/holdout is not opened",
+  "providerCalls": "none"
+ },
+ "settings": {
+  "baselineRerun": {
+   "what": "The existing `pages` command: 500 pt tiles with 50 pt overlap through scripts/usp/document-models/run_source_ocr.py (Docling adapter, one tile at most 1400 px and 1.6 MP, at most 64 items and a 60 confidence floor per tile), Tesseract --psm 11 -l eng.",
+   "changedVersusA5": "only the tessdata prefix: the complete prefix with osd and configs, with eng hash 7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2 (unchanged)",
+   "why": "A5 ran before the prefix repair; this control separates the prefix repair from the tiling change"
+  },
+  "alternative": {
+   "what": "`pages --ocr-tiles`: each page that has no native text layer is rendered tile by tile at its source's native scan resolution and each tile is at most 1400 px on both sides, with 10 percent overlap (step 1260 px).",
+   "resolution": "dpi = native image dpi of the page, lifted to 200 when lower and capped at 300; 300 dpi for pages with no raster image. The lift to 200 is an interpretation fixed now: the baseline already renders about 202 dpi, so a lower render cannot test a downsampling hypothesis; the 72 and 150 dpi sources are therefore not made coarser.",
+   "ocr": "Tesseract executable pinned by hash ea22b4adaa35ba9f449aaff9f111c97550ecd2220510cdce60c1503465a38357, --psm 11 -l eng, the same 60 word confidence floor, the complete tessdata prefix; no Docling layout model, no per-tile item cap.",
+   "merge": "Words are mapped to source-page points and deduplicated by their page box: IoU of 0.5 or more keeps the word with the higher confidence. Rows are then joined by the existing join_rows.",
+   "unchanged": ["the rule table (apply_rules)", "the quote verifier", "the storey command", "the scoring code"]
+  }
+ },
+ "metric": {
+  "scorer": "docs/evidence/gf-ai/storeys/a5/score.py imported read-only (score_system and its helpers); its dev-stage output files are not written",
+  "fields": ["floorExpression", "floorLabels", "unitCount", "basementIndicated"],
+  "each": "precision and recall with their denominators, as A5 defines them",
+  "tower3": "whether G+41 and G+42 are each found as a verified storey item with a page locator on the four demo Tower 3 sheets (A5 found G+42 only)",
+  "references": ["A5 as committed in a5/result.json", "baselineRerun", "alternative"]
+ },
+ "decisionRule": {
+  "rule": "The alternative replaces the baseline only if floorExpression dev precision does not fall and floorExpression dev recall rises, each against the baselineRerun on the same records. Otherwise the baseline stays and the result is reported as no gain.",
+  "precisionNull": "A precision with no extractions is undefined: a null alternative precision against a non-null baseline precision counts as a fall; a null baseline precision cannot fall.",
+  "recallRises": "strictly greater hit count on the same denominator",
+  "alsoReported": "the same comparison against A5 as committed, without changing the decision"
+ },
+ "diagnosticsNotUsedForTheDecision": [
+  "tiles of the baseline stores that hit item_limit_reached or invalid_ocr_box, from the stores' own tile summaries",
+  "raw words kept per path",
+  "caveat: the alternative also removes the 64-item cap and the invalid_ocr_box withholds, so a gain cannot be credited to resolution alone"
+ ],
+ "environment": {
+  "ocrPython": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe (A5's OCR interpreter, with the Docling runner)",
+  "rulesPython": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe (PyMuPDF, Pillow, shapely; the rules import geo.vector_plan)",
+  "tesseract": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/tesseract/Library/bin/tesseract.exe",
+  "tessdata": "E:/BhuAayam-data/runtime/ulpin-demo/tessdata-complete",
+  "privateOutputs": "E:/BhuAayam-data/task-data/a5b/"
+ },
+ "stopCondition": "one run of each setting; no re-tuning of tile size, overlap, resolution or the dedupe threshold after the first result"
+}

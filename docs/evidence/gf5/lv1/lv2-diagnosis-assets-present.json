@@ -1,0 +1,69 @@
+{
+  "timings": {
+    "mergedMs": 19.3,
+    "batch24MaxMs": 6.4,
+    "padDrawCallsBefore": 1662,
+    "padDrawCallsMerged": 1,
+    "shadowFar": 8059.13551,
+    "shadowRight": 1259.239923
+  },
+  "shadowBefore": {"far":8059.13551,"right":1259.239923},
+  "shadowForced": {"far":8693.381804},
+  "regions": [
+    {"name":"labels","x":538.31897,"y":552.395508,"width":97.8125,"height":14},
+    {"name":"labels","x":237.68045,"y":364.359192,"width":138.234375,"height":14},
+    {"name":"labels","x":390.078033,"y":264.414276,"width":84.8125,"height":14},
+    {"name":"labels","x":556.462646,"y":649.464905,"width":84,"height":14},
+    {"name":"assetErrorNote","x":28,"y":660,"width":92.859375,"height":24}
+  ],
+  "rect": {"x":12,"y":68,"width":1416,"height":632},
+  "comparisons": {
+    "unmodified": {
+      "meanAbsoluteError255": 0.066849,
+      "changedFraction": 0.002421,
+      "regions": {
+        "labels": {"changedPixels":2167,"shareOfChanged":1,"fractionOfCanvas":0.002421},
+        "assetErrorNote": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0},
+        "remainder": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0}
+      }
+    },
+    "merged-pads": {
+      "meanAbsoluteError255": 0.066846,
+      "changedFraction": 0.002421,
+      "regions": {
+        "labels": {"changedPixels":2167,"shareOfChanged":1,"fractionOfCanvas":0.002421},
+        "assetErrorNote": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0},
+        "remainder": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0}
+      }
+    },
+    "shadow-refit": {
+      "meanAbsoluteError255": 0.066846,
+      "changedFraction": 0.002421,
+      "regions": {
+        "labels": {"changedPixels":2167,"shareOfChanged":1,"fractionOfCanvas":0.002421},
+        "assetErrorNote": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0},
+        "remainder": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0}
+      }
+    },
+    "shadow-forced-update": {
+      "meanAbsoluteError255": 0.071549,
+      "changedFraction": 0.002582,
+      "regions": {
+        "labels": {"changedPixels":2182,"shareOfChanged":0.94418,"fractionOfCanvas":0.002438},
+        "assetErrorNote": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0},
+        "remainder": {"changedPixels":129,"shareOfChanged":0.05582,"fractionOfCanvas":0.000144}
+      }
+    }
+  },
+  "missingAssetsRegions": {
+    "meanAbsoluteError255": 0.970701,
+    "changedFraction": 0.023905,
+    "regions": {
+      "labels": {"changedPixels":2167,"shareOfChanged":0.101295,"fractionOfCanvas":0.002421},
+      "assetErrorNote": {"changedPixels":19226,"shareOfChanged":0.898705,"fractionOfCanvas":0.021484},
+      "remainder": {"changedPixels":0,"shareOfChanged":0,"fractionOfCanvas":0}
+    }
+  },
+  "regionLimit": "Missing-assets note bounds read from its captured screenshot; text bounds from live DOM.",
+  "scratch": "E:/BhuAayam-data/task-data/lv1/lv2-diagnosis-1791665674182"
+}

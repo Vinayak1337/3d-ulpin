@@ -58,6 +58,9 @@ test("UI-02 frame keeps one scene and selection across panels, tray and phone in
   const receipt = JSON.parse(await readFile(receiptFile!, "utf8"));
   const buildingId = receipt.physicalFeatures["B-A"];
   const area = await (await request.get(`/api/v1/areas/${receipt.areaId}/context`)).json();
+  const latestPackage = area.packages.length
+    ? await (await request.get(`/api/v1/import-packages/${area.packages[0].id}`)).json()
+    : null;
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   const screenshots = process.env.ULPIN_UI02_SCREENSHOT_DIR;
@@ -77,7 +80,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray and phone in
   const scope = page.getByLabel("Area scope");
   await expect(scope).toContainText(area.area.name);
   await expect(scope).toContainText(`Revision ${area.area.revision}`);
-  await expect(scope).toContainText(area.features.find((feature: { id: string }) => feature.id === buildingId).name);
+  await expect(scope).toContainText(area.displayFeatures.find((feature: { id: string }) => feature.id === buildingId).name);
   await expect(page.locator("[data-product-header]")).toHaveCSS("height", "56px");
   await expect(page.getByRole("navigation", { name: "Product sections" })).toContainText("Batches");
   await expect(page.getByRole("navigation", { name: "Product sections" })).toContainText("Map");
@@ -221,11 +224,11 @@ test("UI-02 frame keeps one scene and selection across panels, tray and phone in
   await page.getByRole("button", { name: "Sources", exact: true }).click();
   const sourcesPanel = page.getByRole("complementary", { name: "Sources panel" });
   await expect(sourcesPanel).toContainText("Loading source evidence");
-  if (area.packages.length) await expect(sourcesPanel).toContainText(area.packages[0].name);
+  if (latestPackage) await expect(sourcesPanel).toContainText(latestPackage.name);
   releaseDossier();
   await expect(sourcesPanel).toContainText("Source evidence unavailable");
   await expect(sourcesPanel).not.toContainText("No sources in this scope");
-  if (area.packages.length) await expect(sourcesPanel).toContainText(area.packages[0].name);
+  if (latestPackage) await expect(sourcesPanel).toContainText(latestPackage.name);
   await page.unroute(`**/api/v1/buildings/${buildingId}/dossier`);
   if (screenshots) await writeFile(join(screenshots, "measurements.json"), JSON.stringify({ areaId: receipt.areaId, selectedFeatureId: buildingId, runtimeId, camera, measurements, pageErrors: errors }, null, 2) + "\n");
   for (const item of measurements) {

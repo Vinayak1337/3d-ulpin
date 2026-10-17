@@ -1,0 +1,35 @@
+{
+  "hypothesis": "FP16 GradScaler startup scale overflows gradients, not the repaired scalar loss; native RTX 3070 BF16 avoids gradient scaling without changing labels/LR/batch/seed.",
+  "baseline": {
+    "error": "Non-finite unscaled gradients: stop before optimizer",
+    "type": "FloatingPointError",
+    "optimizer_step": 0,
+    "micro_steps": 4,
+    "peak_reserved_bytes": 3221225472,
+    "holdout_calls": 0
+  },
+  "baseline_losses": [
+    1.2103323936462402,
+    34.156253814697266,
+    41.44008255004883,
+    36.17290115356445
+  ],
+  "one_principal_change": "AMP fp16 -> bf16",
+  "success_criterion": "50 optimizer steps, finite losses/unscaled gradients, final 20 mean loss below first 20, <=6 GiB",
+  "stop_condition": "Any repeat nonfinite loss/gradient or budget excess; no unchanged relaunch",
+  "comparison": {
+    "status": "passed",
+    "optimizer_steps": 50,
+    "micro_steps": 200,
+    "first_20_mean_loss": 27.917877912521362,
+    "last_20_mean_loss": 11.542180617339909,
+    "peak_allocated_bytes": 3419323392,
+    "peak_reserved_bytes": 3634364416,
+    "budget_bytes": 6442450944,
+    "seconds": 37.26500000001397,
+    "dev_epochs": [],
+    "holdout_calls": 0,
+    "run_config_sha256": "1f883db275480d2fc54aa85f3dec83a9953f163984e745e1eed983ebc3c8c38b"
+  },
+  "decision": "Use BF16 AMP for Karnataka Run 1; no LR/data/loss changes from FP16 smoke."
+}

@@ -1,0 +1,41 @@
+{
+ "task": "LA7",
+ "gate": "GF1",
+ "status": "partial",
+ "base": "7a6fded0",
+ "defects": {
+  "1_partial_count": "fixed. While a view's pages were still arriving the line showed the count so far as if final.",
+  "2_footprint_reach": "changed as decided: the read footprint reaches at most 1.5 camera distances from the target (was 4, measured along each corner ray from the camera). See windowSizes: at the area preset's pitch this alone shrinks the window by about a quarter in area, so at a 200 m scale bar it is still about 10 km a side."
+ },
+ "decisions": {
+  "D1_loading": "WindowReader publishes (features, cut, loading); loading is true only while a next page is pending and the budget is not reached, so it is false after the last page, after a cut and for a view with no bounds. useAreaWindow keeps it in state and returns it. windowLine(features, total, cut, loading) says 'Loading <noun> in view: <n> so far' plus the proposal note while loading, LA5's final wording once the reads end. No extra request.",
+  "D1_failure": "A page that fails mid-view publishes nothing, so loading stays true beside the failure banner: the view's reads did not end, and the count stays marked 'so far' rather than reading as final. The view is read again when the camera next settles (lastKey is reset).",
+  "D2_reach": "engine.viewFootprint: each screen corner is followed to the ground (a ray that misses it is followed to distance + reach), then its ground offset from the orbit target is scaled back to at most VIEW_REACH = 1.5 camera distances. Still clipped to the area extent by viewBounds. Nothing beyond the reach is read; the window drawn is the last view read, replaced when the new view's first page arrives.",
+  "D2_looking_down": "Looking straight down, a corner lies d * tan(16 deg) * sqrt(1 + a^2) from the target (32 deg vertical field, aspect a), which is within 1.5 d for any canvas up to 5.1 times as wide as high, so the window holds the whole screen. Checked in engine.test.ts: at 1440 x 900 looking down, the four corners are at +-720 and +-450 metres-per-pixel from the target, unclamped."
+ },
+ "windowSizes": {
+  "method": "engine.test.ts poses the engine's own camera (32 deg, 1440 x 900) so the scale bar reads S at its widest (S / 60 m per px, since the bar picks the smallest step spanning 60 px; it reads S down to half that for 200 m and 1 km, 0.4 for 500 m), then measures the bounding box of viewFootprint, east x north in metres.",
+  "lookingDown": {"100 m": [2400, 1500], "200 m": [4800, 3000], "500 m": [12000, 7500], "1 km": [24000, 15000]},
+  "areaPresetPitch": {"100 m": [5069, 5219], "200 m": [10138, 10437], "500 m": [25344, 26093], "1 km": [50688, 52186]},
+  "areaPresetPitchBefore": {"100 m": [5885, 6059], "200 m": [11770, 12118], "500 m": [29425, 30295], "1 km": [58850, 60589], "note": "the old 4-distance rule, computed the same way outside the tests for comparison"}
+ },
+ "tests": {
+  "areaWindow.test.ts": "19 tests (18 at LA5, 1 more): the loading line with p=0 and p>0 and the final line after it; the reader publishes loading true for a page with a next pending, false after the last page and false after a cut (cut and loading are never both true).",
+  "engine.test.ts": "5 tests (2 before, 3 more): the footprint stays within 1.5 distances at the area pitch, looking down and near the horizon; looking down it covers the whole 1440 x 900 screen; the window sizes above."
+ },
+ "checks": {
+  "typecheck:backend": {"before": 0, "after": 0},
+  "studio:typecheck": {"before": 0, "after": 0},
+  "studio:test": {"before": {"exit": 0, "api-client": 2, "ui": 7, "scene": 52, "studio": 471}, "after": {"exit": 0, "api-client": 2, "ui": 7, "scene": 55, "studio": 472}},
+  "backendTests": {"exit": 1, "tests": 332, "pass": 295, "fail": 15, "skipped": 22, "note": "no backend file changed, so before equals after. This box has no E: data drive: the failures are ENOENT on E:/BhuAayam-data originals, TEACHER_OUTPUT_IN_GIT, the TypeScript/Python agreement checks and retained recovery rows, none in code this task touches."},
+  "openapi --check": {"exit": 0, "operations": 314, "schemas": 356},
+  "contract regeneration": "not needed: openapi --check reported no stale pins",
+  "ui-design-check scan": {"exit": 0, "candidates": 0},
+  "git diff --check": {"exit": 0}
+ },
+ "gaps": [
+  "At the area preset's pitch (about 27 deg above the ground) the 1.5-distance reach cuts the window only from about 11.8 x 12.1 km to 10.1 x 10.4 km at a 200 m scale bar, because the screen's top corners already met the ground near 2.4 distances from the camera. On Niagara's 41,809 buildings a 200 m view at that pitch may still be cut; looking down, the window is the screen (4.8 x 3.0 km).",
+  "No live Studio run against Niagara (no runtime allowed): the line words and the footprint are checked by unit tests and the camera maths only.",
+  "Features of a previous view stay drawn until the new view's first page replaces them; nothing beyond the reach is kept or read once that page arrives."
+ ]
+}

@@ -1,5 +1,8 @@
 # 02 · Backend execution ownership and ordinary Codex tasks
 
+**Current coordination, 4 October:** use [ORCHESTRATOR.md](../orchestration/ORCHESTRATOR.md) and [WORK_ITEMS.md](../orchestration/WORK_ITEMS.md). The future orchestrator delegates all execution; product/ML work is paused. Older role/model/sequencing instructions below are historical. Feature requirements and actual acceptance evidence remain applicable; a stale task card does not restart work.
+
+
 **Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) and the [operating guide](../orchestration/OPERATING_GUIDE.md) govern. All active plans are backend-only. The lead hardens plans directly, then delegates authorized backend implementation/data tasks under the normalized decisions. The lead may execute an assigned bounded task directly. The user owns UI design and implementation.
 
 <!-- plan-next-gate: GF0 -->

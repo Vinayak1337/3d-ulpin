@@ -1,0 +1,22 @@
+{
+  "schema": "building-download-checkpoint/1",
+  "manifest": "E:\\BhuAayam-data\\datasets\\ramp\\manifest.json",
+  "manifest_sha256": "79b75370c5b0a7c094858b4ee1d93580cd54077766c6153d446cf6ac858a909d",
+  "download": {
+    "pid": 21896,
+    "planned_files_seen": 104711,
+    "completed_files": 104711,
+    "completed_bytes": 11080366643,
+    "failures": [],
+    "regions": [
+      "karnataka_india",
+      "dhaka_bangladesh",
+      "sylhet_bangladesh",
+      "chittagong_bangladesh",
+      "barishal_bangladesh",
+      "jashore_bangladesh",
+      "coxs_bazar_bangladesh"
+    ]
+  },
+  "note": "Prior detached PID 21896 finished with event complete; no source file modified by B3. Run 2/remaining Bangladesh COCO shards not started."
+}

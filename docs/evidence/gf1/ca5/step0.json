@@ -1,0 +1,72 @@
+{
+  "task": "CA5",
+  "branch": "task/ca5-review-of-a-native-package",
+  "baseline": "0c170657",
+  "origin": "docs/evidence/gf1/car/result.json: scaffoldComputation.reviewPrerequisite",
+  "decisionStatus": "Decisions 1-3 are the lead's interpretation of an open governance item; owner confirmation is pending in parallel. Model-roofprint deferral is unchanged.",
+  "gateCallers": [
+    {"at": "areas/areas.ts:1249", "function": "reviewPackage", "protects": "Admission check of package candidates plus recorded context", "class": "admission", "changed": true},
+    {"at": "areas/areas.ts:1456", "function": "runAreaCheck", "protects": "Spatial findings on recorded area/neighbour features", "class": "analysis", "changed": false},
+    {"at": "registry/registry.ts:694", "function": "prepareRegistryReview", "protects": "Geometry analysis over combined registry draft/current records before review", "class": "registry admission with analytical gate, not native area admission", "changed": false},
+    {"at": "registry/registry.ts:833", "function": "commitRegistryReviewTx", "protects": "READY qualification of reviewed geometry before registry recording", "class": "registry admission with analytical gate", "changed": false},
+    {"at": "registry/registry.ts:929", "function": "registryQuery", "protects": "Current recorded spaces before spatial query", "class": "analysis", "changed": false},
+    {"at": "registry/registry.ts:973", "function": "registryQuery", "protects": "Returned recorded query payloads", "class": "analysis", "changed": false},
+    {"at": "officer/block-export.ts:65", "function": "exportBlock", "protects": "Whether recorded geometry may appear in export", "class": "analysis/export projection", "changed": false},
+    {"at": "officer/block-export.ts:69", "function": "exportBlock", "protects": "PACK qualification before PDF/ZIP", "class": "analysis/export", "changed": false},
+    {"at": "officer/officer-investigations.ts:511", "function": "exportRegister", "protects": "Recorded building/parcel geometry availability", "class": "analysis/export projection", "changed": false},
+    {"at": "officer/officer-investigations.ts:512", "function": "exportRegister", "protects": "Recorded registry geometry availability", "class": "analysis/export projection", "changed": false},
+    {"at": "officer/officer-investigations.ts:517", "function": "exportRegister", "protects": "PACK building/parcel qualification", "class": "analysis/export", "changed": false},
+    {"at": "officer/officer-investigations.ts:518", "function": "exportRegister", "protects": "PACK registry qualification", "class": "analysis/export", "changed": false},
+    {"at": "officer/officer.ts:550", "function": "buildingDossier", "protects": "READY recorded building/parcel availability", "class": "analysis/readiness projection", "changed": false},
+    {"at": "officer/officer.ts:551", "function": "buildingDossier", "protects": "READY recorded registry geometry availability", "class": "analysis/readiness projection", "changed": false}
+  ],
+  "existingReviewTests": {
+    "search": "reviewPackage in tests and packages/server/src/**/*.ts",
+    "directTests": "None on this baseline. The routes/service delegate to reviewPackage; no existing unit test calls it.",
+    "exteriorCommit": "areas/exterior-records-commit.test.ts:80,116,131 supplies a reviewed envelope/fingerprint directly to commitPackage; it never crosses the blocked review gate.",
+    "footprintIntegration": "tests/spatial-ml-footprint-integration.ts:26-73 creates explicitly synthetic native/model controls and asserts derived semantics unresolved and zero positive feature revisions; contrary to the prompt's shorthand, it does not call reviewPackage or assert its refusal on this checkout. Leave it unchanged.",
+    "retainedRefusal": "docs/evidence/gf-backend/k2c/roofprint-recording.json and k2d/admission-result.json retain actual model-review USP_GEOMETRY_PAYLOAD_UNQUALIFIED refusals.",
+    "baselineFocused": {"tests": 49, "pass": 49, "fail": 0, "skipped": 0},
+    "files": ["areas/exterior-records.test.ts", "areas/exterior-records-commit.test.ts", "spatial/spatial-ml-footprints.test.ts", "spatial/spatial-ml-georeference.test.ts", "tests/spatial-ml-backend.test.ts", "tests/spatial-ml-retained-calibration.test.ts", "tests/spatial-ml-source.test.ts", "tests/usp-geometry.test.ts"]
+  },
+  "candidateRule": {
+    "fields": "revision===0; worldStatus observed/planned (excludes synthetic/hypothetical); no own properties.spatialExtraction, even null; semantics.evidenceState !== unresolved; feature.sourceRevisionId in pkg.sourceRevisionIds and feature.evidence names that exact own source",
+    "producer": "areas/areas.ts:763-830 marks derivedObservation with properties.spatialExtraction and semantics.evidenceState unresolved; spatial/spatial-ml-footprints.ts:238-262 calls this path with the retained inference receipt. Native parsing preserves worldStatus; area.py:363-366 disallows synthetic-to-real mapping.",
+    "nativeExample": "docs/evidence/gf-backend/k1/nyc-import.json feature 914f5b9b-ecb9-47dc-a5b9-f6f6f42c14dc, sourceKey 7491, revision 0, observed, own source e7566996-d4ce-4ea7-9276-bed09ee885c7 and exact feature evidence, no extraction marker. Its old mapping left semantics unresolved, so this exact old package is still refused; a source-supported role must be mapped, not silently relabelled.",
+    "supportedNativeExample": "docs/evidence/gf-backend/k2/gmda-import.json feature 6fb53506-73d7-488a-b8e8-f9d3e6c8d17a: revision 0, observed road, semantics road_surface/source_supported, own source evidence. The predicate is not building-only.",
+    "modelAndDerivedExample": "The real retained fixture docs/evidence/gf-backend/k2c/roofprint-draft.json, consumed by spatial-ml-footprints.test.ts, holds revision-0 observed feature a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4 with properties.spatialExtraction and semantics unresolved. A native-looking derived original is not publisher authority.",
+    "syntheticExample": "tests/spatial-ml-footprint-integration.ts:26-28 imports synthetic-base with worldStatus synthetic; no actual model inference or operational geometry is asserted by that control.",
+    "runtimeMapping": "Use observed_roof_projection, supported by the retained issuer wording 'full perimeter outline ... viewed from directly above' in fixtures/real-area/evidence/nyc-building-metadata.md:10. No ground occupation, heights, rights or qualification are inferred. CAR's mapping omitted this role; area_semantics.py:49-58 then deliberately emits unresolved."
+  },
+  "effectiveSet": {
+    "at": "areas/areas.ts:1028-1094",
+    "newArea": "Own package features, plus positive-revision foreign observed/planned geographic neighbours, confirmed occupies_parcel targets or explicit block members. A genuinely empty box has none.",
+    "populatedArea": "All positive-revision current features in the same area except IDs replaced by the package, then the package features, then recorded foreign neighbours. withNeighbours filters geometry-null source-only declarations and enforces the existing 2000-feature cap.",
+    "secondPackageAfterDecisions1to3": "No, if its effective set includes any recorded unqualified feature. createPackageCorrection carries the current positive revisions itself, so even a correction replacing every ID is gated. A geometrically unrelated genuinely empty area can still admit its first native package. No qualification is emitted by decisions 1-3."
+  },
+  "coverage": {
+    "contract": "packages/contracts/src/area.ts:243-249: review.coverage is string[]; services/geo/geo/area.py:470-474 uses explanatory sentences.",
+    "change": "Append one sentence with the effective source-native candidate admission count and the recorded context count, stating that recorded neighbours require canonical qualification and that candidate checks are not recorded-geometry analysis.",
+    "schemaChangeNeeded": false
+  },
+  "decision4": {
+    "4a": {"answer": "no", "evidence": "P5-geometry-and-identity.md:55-63 proposes a minimal future reviewed-prism producer, not a native-footprint issuer/check/verdict policy. H01 defines same-client reviewed commands; H27 defines qualified reference/topology requirements. 09-geometry-schema.sql:42-61 specifies required passed/accepted strings but not who may issue native qualification or what those checks mean. geometry.ts:76-91 explicitly names a future qualified processor."},
+    "4b": {"answer": "partial, not a governed yes", "evidence": "normalize_area area.py:296-304,392-435 checks declared CRS, bounded transforms with always_xy, allow_ballpark=False, only_best=True and records transformation/version; _geometry:96-147 rejects invalid/empty topology and check_area:441-527 validates supplied geometries and computes findings. ingestArea:401,522-531 and storage.putOriginal:136-163 hash/verify original bytes. These ran, but no native qualification profile defines topology pass/blocking codes or a fresh commit source-integrity acceptance; AreaFinding has no blocking/severity field and commitPackage accepts unresolved findings with acknowledgement."},
+    "4c": {"answer": "no", "evidence": "areas.ts:1334-1341 acknowledges physical observations and unresolved findings; neither that code nor P5/H01/H27 defines this acknowledgement as accepted qualify_geometry review. The SQL accepted verdict alone cannot supply that governance."},
+    "4d": {"answer": "yes for ledger storage/replay, not an implemented public command", "evidence": "commands.ts:28-39 requestReceiptTx accepts operation:string; inserts at :72-75 and :145-148 use the existing ledger. UspRegistryCommitReceiptSchema operation is CoreIdSchema (domain.ts:186), and SQL accepts a JSON body. No existing qualification-specific DTO/producer defines checks/review; no receipt is written in this task."},
+    "build": false,
+    "smallestGovernedFollowUp": "Approve a source-native 2D qualification profile naming the issuer, reference/topology/source-integrity acceptance and blocking findings, and whether/how officer acknowledgement is accepted review. Then bind that approved receipt and metadata to exact post-write SQL bytes in the existing transaction; separately resolve the snapshot qualification-member ID incompatibility."
+  },
+  "qualificationCapture": {
+    "at": "usp/snapshots.ts:256-257 and packages/contracts/src/spatial/core/scalars.ts:5",
+    "answer": "Does not parse: geometry_qualification member ID namespace:uuid@revision contains @ excluded by CoreIdSchema. Capture constructs a manifest and parses it before persistence. Inherited defect remains outside scope; no qualification row may be scaffolded to demonstrate it.",
+    "runtimeStep5": "Not applicable because decision 4 is not built."
+  },
+  "stopRule": {"a": false, "b": false, "c": false, "decision": "Proceed with decisions 1-3 and tests only; do not build decision 4."},
+  "runtimePlan": {
+    "reuse": "CAR nonce-labelled tmpfs PostGIS box with pinned image, pull never, loopback port and owned-only removal; compare sorted machine names; no volumes, external runtime or .env access.",
+    "reviewScaffold": "None. Call ingestArea, reviewPackage, commitPackage and createPackageCorrection directly.",
+    "knownRuntimeRisk": "CAR's product enrichFindings over 1803 findings hit the default five-second pool acquisition timeout. If repeated here, make one bounded comparison with the same eight connections and a longer acquisition deadline only in this disposable process; report default-profile latency as unqualified. Do not alter officer code or replace review computation.",
+    "derivedRuntime": "No accepted live model receipt/pixels on this box; do not fabricate them. Use the unchanged retained real roofprint fixture in the new fake-client review refusal test if honest product draft creation is unavailable."
+  }
+}

@@ -5,6 +5,8 @@ import { Button, DescriptionList, EvidenceChip, FindingCard, Icon, StatusBadge, 
 import type { BuildingRegister } from '../../../api/queries';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
+import { Cited, ReadingStatementsContext } from '../../register/ReadingNote';
+import { useReadingStatements } from '../../register/useReadingStatements';
 import { InspectorShell, type Crumb } from './InspectorShell';
 import styles from './Inspector.module.css';
 
@@ -17,6 +19,7 @@ export function FindingsInspector({ register, ledger, findingId, buildingId, cru
   crumbs: Crumb[]; onOpenSpace: (spaceId: string) => void;
 }) {
   const openEvidence = useOpenEvidence();
+  const readings = useReadingStatements(buildingId, (register?.property.revision ?? 0) > 0);
   const findings = register?.findings ?? [];
   const finding = findings.find((f) => f.id === findingId) ?? findings[0];
   if (!finding) {
@@ -50,10 +53,20 @@ export function FindingsInspector({ register, ledger, findingId, buildingId, cru
         method={`${finding.method ?? ledger?.checkMethod ?? 'Check'} · r${register?.property.revision ?? 1}`}
         title={finding.message}
         calculation={detail?.calculation}
-        evidence={detail?.evidence.length ? detail.evidence.map((e, i) => (
-          <EvidenceChip key={i} kind={e.kind ?? 'document'} state={e.state ?? 'linked'} source={e.source ?? 'Needs evidence'} locator={e.locator ?? undefined}
-            onOpen={e.sourceId ? () => openEvidence({ sourceId: e.sourceId!, label: e.source ?? 'Source', locator: parseLocator({ locator: e.locator ?? undefined }) }) : undefined} />
-        )) : undefined}
+        evidence={detail?.evidence.length ? (
+          <ReadingStatementsContext.Provider value={readings}>
+            {detail.evidence.map((e, i) => (
+              <Cited key={i} sourceId={e.sourceId}>
+                <EvidenceChip kind={e.kind ?? 'document'} state={e.state ?? 'linked'}
+                  source={e.source ?? 'Needs evidence'} locator={e.locator ?? undefined}
+                  onOpen={e.sourceId ? () => openEvidence({
+                    sourceId: e.sourceId!, label: e.source ?? 'Source',
+                    locator: parseLocator({ locator: e.locator ?? undefined }),
+                  }) : undefined} />
+              </Cited>
+            ))}
+          </ReadingStatementsContext.Provider>
+        ) : undefined}
         actions={detail?.actions.length ? <>{detail.actions.map(action)}</> : undefined}
       />
       {finding.limitations?.length ? <ul className={styles.gaps}>{finding.limitations.map((l) => <li key={l}>{l}</li>)}</ul> : null}

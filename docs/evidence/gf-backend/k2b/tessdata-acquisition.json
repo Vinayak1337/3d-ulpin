@@ -1,0 +1,23 @@
+{
+  "issuer": "tesseract-ocr/tessdata_fast",
+  "commit": "87416418657359cb625c412a48b6e1d6d41c29bd",
+  "acquiredAt": "2026-10-10T00:15:58.374Z",
+  "licence": "Apache-2.0",
+  "licenceUrl": "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/87416418657359cb625c412a48b6e1d6d41c29bd/LICENSE",
+  "licenceSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+  "directory": "E:/BhuAayam-data/runtime/ulpin-demo/tessdata",
+  "languages": [
+    {
+      "language": "hin",
+      "url": "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/87416418657359cb625c412a48b6e1d6d41c29bd/hin.traineddata",
+      "sha256": "4c73ffc59d497c186b19d1e90f5d721d678ea6b2e277b719bee4e2af12271825",
+      "bytes": 1122751
+    },
+    {
+      "language": "eng",
+      "operation": "unchanged copy of retained pinned asset",
+      "sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+    }
+  ],
+  "qualification": "assets available; runner currently configured for English only, not Hindi execution"
+}

@@ -175,12 +175,11 @@ export async function importRegistryCase(
             "IMPORT_IDENTITY_CONFLICT",
             `${body.alias}: its mapped record is missing or has a different kind.`,
           );
-        const previous: RegistryBody = current.revision > 0
+        const previous: RegistryBody = { ...(current.revision > 0
           ? current.body
-          : historicalRecords.get(recordId) ?? current.body;
-        // Reserved physical identities contain an observation-only marker; it
-        // does not belong in the detailed registry body being reviewed.
-        if (current.revision === 0) delete (previous as any).representation;
+          : historicalRecords.get(recordId) ?? current.body) };
+        // An explicit detailed import replaces the observation marker, not its history or identity.
+        delete (previous as any).representation;
         // Preserve independently recorded rights and metadata. Imported relations
         // replace a relation type only when this source explicitly supplies it.
         const replacedLinkTypes = new Set(body.links.map((link) => link.type));

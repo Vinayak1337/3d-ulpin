@@ -1,0 +1,111 @@
+{
+  "task": "S5 step 0",
+  "base": "39ed2dbb",
+  "method": "a throwaway script (not committed) built each request with the existing builders and counted characters and bytes; no cell value, header or line text was written. Nothing was sent; no key, no database.",
+  "point1_overSizeMappingMessages": {
+    "source": "the two recorded development derivatives of family mi-d22, prepared as the screen prepares a table (prepareTable, literal headers)",
+    "unit": "characters of JSON text; bytes where said",
+    "tables": [
+      {
+        "file": "schemes-yes-v1.csv", "columns": 90, "samplesPerColumnToday": 10, "sampleValuesInAll": 900,
+        "systemMessage": 693,
+        "userMessage": 45599,
+        "userMessageByPart": {
+          "sampleValues": 12601, "valueShapes": 17717, "targetVocabulary": 5356, "columnNames": 1419,
+          "everythingElse": 8506
+        },
+        "userMessageWithNoSamples": 33178,
+        "messagesBytesAsBuilt": { "tenSamples": 51915, "noSamples": 37690 },
+        "outputSchemaBytes": 4389
+      },
+      {
+        "file": "schemes-no-v1.csv", "columns": 90, "samplesPerColumnToday": 10, "sampleValuesInAll": 900,
+        "systemMessage": 693,
+        "userMessage": 45086,
+        "userMessageByPart": {
+          "sampleValues": 12212, "valueShapes": 17655, "targetVocabulary": 5356, "columnNames": 1419,
+          "everythingElse": 8444
+        },
+        "userMessageWithNoSamples": 33054,
+        "messagesBytesAsBuilt": { "tenSamples": 51406, "noSamples": 37566 },
+        "outputSchemaBytes": 4389
+      }
+    ],
+    "everythingElseIs": "the keys and punctuation of 90 column objects, their sourceField alias and inferredType, and the profile's version, sourceKind and sampleShortfall",
+    "againstS3": "S3 measured 45,161 and 44,648 characters; the same tables measure 438 more on this base. The cause was not looked for.",
+    "finding": "Taking every sample value away does not bring either table within any of the gateway's bounds. With no samples the user message is 33,178 and 33,054 characters against 32,768 (over by 410 and 286), and the two messages together, as built, are 37,690 and 37,566 bytes against 24,576 (over by 13,114 and 12,990). Samples are 28% of the message; the value shapes are 39%.",
+    "whatMustShrink": "to pass the 24,576-byte bound each table must lose about 13,100 bytes beyond its samples. Only the value shapes (17,717 and 17,655) are large enough; headers, the vocabulary and the column structure are fixed by the decisions. The other way is two requests of 45 columns each, which drops no column but is not the decided rule.",
+    "whoTheRuleHelps": "by these sizes a table costs about 307 bytes a column with no samples and about 447 with ten, beside 693 + 5,356 of fixed text. The rule can bring within the bound a table of roughly 42 to 59 columns (an estimate from these two tables); a wider one is refused with no samples. Of the 50 development mapping requests, S3 found 2 refused (these two); none is in the range the rule helps."
+  },
+  "point2_theGatewaysBounds": {
+    "bounds": [
+      {
+        "what": "one message's content: at most 32,768 characters",
+        "where": "packages/server/src/modules/model-gateway/adapter.ts:41-42 (the zod schema of minimizeMessages)",
+        "codeWhenOver": "403 MODEL_PROMPT_PRIVACY (adapter.ts:44)",
+        "shared": "yes: the same throw answers a wrong message shape, more than 4 messages and the whole-message check; redaction.ts:7 throws the same code for text it cannot minimize"
+      },
+      {
+        "what": "all messages after minimizing, as JSON: at most 24 * 1024 = 24,576 bytes",
+        "where": "adapter.ts:46-47",
+        "codeWhenOver": "413 MODEL_INPUT_LIMIT",
+        "shared": "only with the body bound below; both are size"
+      },
+      {
+        "what": "the request body (messages, output schema, model, output tokens): at most min(budget.maxInputBytes, 32,768) bytes, and bytes + 2,048 within inputBound.maxPromptTokens (34,816 in every policy here)",
+        "where": "packages/server/src/modules/model-gateway/gateway.ts:53-55",
+        "codeWhenOver": "413 MODEL_INPUT_LIMIT",
+        "shared": "only with the bound above"
+      }
+    ],
+    "tightestForAMappingMessage": "the 24,576-byte bound: it is reached before a single message is 32,768 characters long. The mi-d22 tables answer MODEL_PROMPT_PRIVACY only because the character bound is checked first.",
+    "decision": "the first bound shares its code with privacy refusals, so under the lead's decision it gets the size code. The gateway already has one, MODEL_INPUT_LIMIT (413), for its two other size bounds; using it keeps one size code. A message that is over-long and also fails the shape or the whole-message check keeps MODEL_PROMPT_PRIVACY.",
+    "publishedContract": "neither code appears anywhere under docs/api/ or packages/contracts/; the change is server only. tests/model-gateway/control.test.ts:55 expects any throw for a 25,600-character message, which is the 24,576-byte bound and is not touched.",
+    "callers": "teacherFailureCode maps both codes to TEACHER_UNAVAILABLE today"
+  },
+  "point3_theWholeMessageCheck": {
+    "predicate": "/data:|image_url|base64/i.test(content), on each message's content before it is minimized",
+    "where": "packages/server/src/modules/model-gateway/adapter.ts:43",
+    "storeySelectionToday": "packages/server/src/modules/ai/document-storey-agent.ts:110-118 asks minimizeStructuredText per line; it does not ask this predicate",
+    "documents": "the 8 documents of the plan (3 development, 5 demo), page stores under E:/BhuAayam-data/task-data/a5/stores",
+    "counts": [
+      { "document": "cf152f32", "split": "development", "lines": 229, "selected": 5, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 0 },
+      { "document": "0f793ce7", "split": "development", "lines": 124, "selected": 14, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 0 },
+      { "document": "b6f0178b", "split": "development", "lines": 654, "selected": 55, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 0 },
+      { "document": "2aadce88", "split": "demo", "lines": 293, "selected": 9, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 3 },
+      { "document": "2b9f8803", "split": "demo", "lines": 357, "selected": 18, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 2 },
+      { "document": "f8a55dc2", "split": "demo", "lines": 1271, "selected": 27, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 0 },
+      { "document": "26c2d310", "split": "demo", "lines": 343, "selected": 34, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 0 },
+      { "document": "f0dc0d56", "split": "demo", "lines": 180, "selected": 42, "linesTheCheckRefuses": 0, "selectedLinesTheCheckRefuses": 0, "leftOutToday": 0 }
+    ],
+    "total": { "lines": 3451, "selected": 204, "linesTheCheckRefuses": 0 },
+    "meaning": "the per-line check changes none of the 8 planned storey requests"
+  },
+  "point4_tenRequestHashes": {
+    "plan": { "calls": 10, "estimate": "₹1.14 (estimate)", "atMost": "₹7.75 (upper bound)", "tariff": "lead-proposal-20261010, printed by the script as not approved" },
+    "hashes": [
+      { "step": 1, "id": "storey-cf152f32-batch1", "requestHash": "0d903c8168fe683444ebd135a1f4e68d11be9a767f0340e44e15ed2d02602a58" },
+      { "step": 3, "id": "curve-file1-chunk1", "requestHash": "31239c7b58632002df0878c4989d7446fee3cec3d0f34fbf99a23b7b25a83a7f" },
+      { "step": 6, "id": "curve-file2-chunk1", "requestHash": "79783fc47c41c269ca6a7971b4966ce17f93afd64392b255743d44ea6e0c97c0" },
+      { "step": 9, "id": "storey-0f793ce7-batch1", "requestHash": "7a2a47446923a0693b057d6488b50379883c58282789c7e1689acff013ca835e" },
+      { "step": 10, "id": "storey-b6f0178b-batch1", "requestHash": "cb8ce54322b3cf6b39efc677068f0b102e2960eb2aec32dbccb835c3cba10cdc" },
+      { "step": 11, "id": "storey-2aadce88-batch1", "requestHash": "3115fb3ce57515b60cefd11ce74ead50ffaefd9a5eede32329780ab44f91267f" },
+      { "step": 12, "id": "storey-2b9f8803-batch1", "requestHash": "0863b5eeb10dfdf3174e8c87adde114471d2e3e60ad0f5cf569227ea7dcfb2a7" },
+      { "step": 13, "id": "storey-f8a55dc2-batch1", "requestHash": "d26fac3a82093137724a06533406a1859ca52df573bd65da02282356b1951f9e" },
+      { "step": 14, "id": "storey-26c2d310-batch1", "requestHash": "eaf4203c849143f24afebd661dea7989321e1ccb5baf4ab933eb2efcdba77eba" },
+      { "step": 15, "id": "storey-f0dc0d56-batch1", "requestHash": "bdf44f2a080cb460192ca4e22aaa3642c7f360e5f1597831de8f7e0e8f6e09c9" }
+    ]
+  },
+  "testsBefore": {
+    "scripts/agent/mapping-teacher.test.ts": { "pass": 13, "fail": 0 },
+    "packages/server/src/modules/ai/document-storey-agent.test.ts": { "pass": 10, "fail": 0 },
+    "scripts/agent/live-proof.test.ts": { "pass": 10, "fail": 0 },
+    "scripts/agent/injection-screen.test.ts": { "pass": 9, "fail": 0 },
+    "tests/model-gateway/*.test.ts": { "tests": 23, "pass": 22, "fail": 0, "skipped": 1 }
+  },
+  "forTheLead": [
+    "Item 1's second test cannot be written as the task file words it: the two mi-d22 tables are not within the bound at any number of samples. Under the decided rule they end at 0 samples and are refused before the gateway is asked, with the size code.",
+    "The decided rule is built as decided and proven on a synthetic table that the rule does bring within the bound. Whether value shapes may shrink, or a wide table may go as two requests, is a decision this task does not take.",
+    "Item 5: the mi-d22 half of the screen's refusal case therefore stays a real refused table; only its code and its sample count change."
+  ]
+}

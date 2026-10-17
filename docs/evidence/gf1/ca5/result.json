@@ -1,0 +1,193 @@
+{
+  "task": "CA5",
+  "title": "Source-native admission review, with unassessed recorded context disclosed",
+  "gate": "GF1 native-package admission prerequisite",
+  "branch": "task/ca5-review-of-a-native-package",
+  "baseline": "0c170657",
+  "status": "Admission rule implemented and PostgreSQL journey passed in the one bounded acquisition-deadline comparison; default-profile large-package enrichment remains blocked",
+  "decisionStatus": "The lead's interpretation of an open governance item, including resume amendments A/B; owner confirmation is pending in parallel. Qualification production is not built.",
+  "acceptedStep0": "97abbf38; its original unresolved-semantics restriction and recorded-neighbour refusal are superseded by the resume amendments below; its qualification-design answers and caller audit stand.",
+  "amendments": {
+    "A": "Unknown/unresolved publisher roles do not refuse admission. An own properties.spatialExtraction member, even null or undefined, identifies derived observation authority. No role is mapped in the runtime proof.",
+    "B": "Unqualified recorded context is omitted from candidate checks and counted in coverage, but the full effective set and full associations still determine the recording fingerprint. The package's own non-candidates retain the qualification gate."
+  },
+  "design": {
+    "geometry.ts": "isSourceNativeCandidate centralizes revision-0, observed/planned, no own extraction marker and exact own-source/evidence predicates. splitPackageReviewGeometry separates own candidates/non-candidates and exact-qualified recorded context, and creates admission/unknown-role/omission coverage sentences.",
+    "areas.ts": "reviewPackage requires qualification for own non-candidates, sends only admitted/qualified features and their associations to the area check, enriches only those participants, and stores the existing full-effective-set fingerprint.",
+    "fingerprint": "commitPackage is unchanged. Its same sorted withNeighbours result, full checkAssociations result, reference, area revision, package revision and area-check-officer-v1 hash recompute the stored review fingerprint. The unit control verifies an omitted-neighbour revision changes it; real hydrography proof independently recomputed it with all 1661 recorded buildings and then committed through the unchanged product function.",
+    "qualification": "No qualification row, receipt, SQL function, trigger, grant, schema, label promotion or draft revision lift was introduced.",
+    "unchanged": ["runAreaCheck", "registry guards", "officer readiness and export guards", "commitPackage", "snapshots", "contracts", "database schema", "model footprint producer"]
+  },
+  "gateCallerTable": [
+    {"at": "areas.ts:1249 (baseline)", "caller": "reviewPackage", "class": "candidate admission plus recorded context", "changed": true, "rule": "Candidate admission exception; own non-candidate gate; exact-qualified context only, omissions disclosed"},
+    {"at": "areas.ts:1456", "caller": "runAreaCheck", "class": "recorded analysis", "changed": false},
+    {"at": "registry.ts:694", "caller": "prepareRegistryReview", "class": "registry admission with analytical qualification", "changed": false},
+    {"at": "registry.ts:833", "caller": "commitRegistryReviewTx", "class": "registry recording with READY qualification", "changed": false},
+    {"at": "registry.ts:929,973", "caller": "registryQuery", "class": "recorded analysis", "changed": false},
+    {"at": "officer/block-export.ts:65,69", "caller": "exportBlock", "class": "recorded export projection/PACK", "changed": false},
+    {"at": "officer/officer-investigations.ts:511-512,517-518", "caller": "exportRegister", "class": "recorded export projection/PACK", "changed": false},
+    {"at": "officer/officer.ts:550-551", "caller": "buildingDossier", "class": "recorded READY projection", "changed": false}
+  ],
+  "qualificationDecision": {
+    "4a": "NO: P5.3 proposes a future reviewed-prism producer; H01/H27 and SQL define required predicates, not a native-footprint issuer/check/verdict profile.",
+    "4b": "PARTIAL, not a governed yes: normalize_area computes CRS/transform and validity, check_area computes findings, putOriginal verifies hashes, but native qualification pass/blocking criteria and fresh commit source-integrity acceptance are not defined.",
+    "4c": "NO: commitPackage acknowledgement of observations/unresolved findings is not defined as accepted qualify_geometry review.",
+    "4d": "YES for existing ledger storage/replay: requestReceiptTx takes operation:string and the same-client receipt insert accepts JSON; there is no implemented qualification-specific public producer/DTO.",
+    "references": "step0.json decision4 names file/line for each answer; no producer is built because all four answers must be yes.",
+    "smallestGovernedFollowUp": "Approve a source-native 2D qualification profile naming issuer, reference/topology/source-integrity acceptance and blocking findings, and whether/how officer acknowledgement is accepted review. Then bind receipt/metadata to exact post-write SQL bytes in the existing transaction. Separately resolve the qualification snapshot-member @ incompatibility."
+  },
+  "inputs": [
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "bytes": 1103282,
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "use": "test_only; issuing-authority NYC building footprints, not Indian operational records",
+      "mapping": {"kind": "building", "idField": "doitt_id", "identifierFields": ["bin"]},
+      "noRoleMapped": true,
+      "sourceFeatures": 1662,
+      "accepted": 1661,
+      "difficultFeature": {"index": 1322, "sourceKey": "751920", "code": "INVALID_GEOMETRY", "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]"},
+      "originalHashBeforeEqualsAfter": true,
+      "geometryRepaired": false,
+      "heightAndRoleUnknown": true
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/hydrography.geojson",
+      "bytes": 2055,
+      "sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+      "use": "test_only; CAR's retained unchanged second native layer",
+      "originalHashBeforeEqualsAfter": true
+    },
+    {"path": "docs/evidence/gf-backend/k2c/roofprint-draft.json", "use": "Retained real model/derived refusal fixture, fake-client tests only; no inference, weights or GPU"}
+  ],
+  "runtime": {
+    "defaultReceipt": "runtime-default.json",
+    "comparisonReceipt": "runtime.json",
+    "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+    "method": "CAR isolated tmpfs box, generated memory-only secret, pull never, loopback published port; native bootstrap.postgis and infrastructure/db.migrate(); product import/review/commit functions",
+    "standIns": "Loopback in-memory S3 byte adapter and unchanged normalize_area/check_area invoked with existing Python interpreter, -B, PROJ_NETWORK=OFF",
+    "reviewScaffolding": [],
+    "default": {
+      "poolMax": 8,
+      "acquisitionDeadlineMs": 5000,
+      "reviewWallMs": 6196.977,
+      "result": "Failed: timeout exceeded when trying to connect, Promise.all finding index 255",
+      "enrichmentWindowUntilRefusalMs": 5000.438,
+      "projectionsDispatchedAtRefusal": 247,
+      "findingsAlreadyComputed": 1803,
+      "rootCause": "Product enrichFindings dispatches area-statistics reads for all finding geometries concurrently, exceeding pg acquisition deadline. Admission gating is no longer the failure.",
+      "container": "ulpin-ca5-tmp-a973ce82ceaacc5a",
+      "removed": true,
+      "machineNamesEqual": true
+    },
+    "boundedComparison": {
+      "hypothesis": "Keep exactly the product functions, eight connections and queries; extending only acquisition allowance to 60000 ms permits existing enrichment to finish and tests admission/commit independently of its queue deadline.",
+      "successCriterion": "Real review/store/commit, native second layer with disclosed omissions and unchanged full fingerprint, correction exact refusal; no scaffold or qualification writes; container removed and machine names equal",
+      "stopCondition": "One comparison only; child bounded to 180 seconds; no product performance tuning",
+      "poolMax": 8,
+      "acquisitionDeadlineMs": 60000,
+      "exit": 0,
+      "container": "ulpin-ca5-tmp-cdaefee275e0d946",
+      "removed": true,
+      "machineNamesEqual": true
+    },
+    "otherRuntimeAccess": "None; sorted container/volume/network names enumerated only",
+    "volumesCreated": 0,
+    "publicServicesStarted": false,
+    "sourceHashesUnchanged": true
+  },
+  "stepTable": [
+    {"step": "1 import", "actual": "Product ingestArea retained unchanged original; 1661 candidates, one honest invalid-geometry quarantine; every role/height remains unknown", "wallMs": 5321.194},
+    {
+      "step": "1 review",
+      "actual": "Product reviewPackage persisted REVIEWED, immutable package history, actual findings and coverage; product getPackage read-back matched exactly",
+      "wallMsIncludingReadBackVerification": 39992.352,
+      "enrichFindingsWindowMs": 37648.779,
+      "enrichmentTimingMethod": "First enrichment area-read dispatch to the post-enrichment full-association dispatch. It includes queue/SQL work and no replaced product function; it is not a profiler-exclusive CPU timing.",
+      "findings": 1803,
+      "findingsByCode": {"BOUNDARY_CONTACT": 1694, "BUILDING_FOOTPRINT_OVERLAP": 106, "HORIZONTAL_INTERSECTION": 3},
+      "coverageLine": "1661 source-native candidate(s) checked for admission, not recorded-geometry analysis. 1661 of these have no stated role; what the outline represents is unknown. 0 recorded context feature(s) assessed; recorded neighbours require canonical geometry qualification."
+    },
+    {
+      "step": "2 commit",
+      "actual": "Product commitPackage recorded 1661 physical features and exteriors at revision 1; exact evidence/history/reservation fields preserved, footprint/rights empty, registry geometry absent; area/site 0 to 1 once",
+      "commitWallMs": 7552.035,
+      "carCommitWallMs": 7556.158,
+      "qualificationRows": 0,
+      "qualificationReceipts": 0,
+      "qualificationStep5": "Not applicable: decision 4 not built; no qualified rows scaffolded"
+    },
+    {
+      "step": "3 second native layer",
+      "actual": "Hydrography ingested, reviewed and committed by the product in the same area; effective set actually contained all 1661 recorded buildings; check input contained only the one new candidate",
+      "wallMsIncludingImportReviewFingerprintCheckCommit": 1271.624,
+      "commitWrapperWallMsIncludingRevisionRead": 70.823,
+      "fullFingerprintVerified": true,
+      "checkContainsRecordedBuildings": false,
+      "recordedBuildingsNotAssessed": 1661,
+      "coverageLine": "1661 recorded features in or beside this area hold no geometry qualification and were not assessed against these candidates.",
+      "areaRevision": "1 to 2",
+      "siteRevision": "remains 1",
+      "findings": 0,
+      "meaning": "Zero findings from the one supplied candidate is not a no-conflict assessment against the omitted buildings"
+    },
+    {"step": "4 correction", "actual": "Product createPackageCorrection retained 1661 own positive-revision features; product reviewPackage refused 422 USP_GEOMETRY_PAYLOAD_UNQUALIFIED with today's exact message; no review written", "wallMsIncludingCorrectionCreation": 1555.011},
+    {"step": "model/derived refusal", "actual": "No honest accepted model receipt/pixels on the box, so no runtime draft fabricated; retained real K2c roofprint fake-client review asserts exact unchanged status/code/message"}
+  ],
+  "secondPackageAnswer": "YES for a fresh publisher-native second layer: hydrography reviewed and committed while all 1661 recorded unqualified buildings were omitted, disclosed and fingerprinted. NO for createPackageCorrection carrying recorded unqualified own features; the exact refusal remains.",
+  "whatOfficerSees": "Stored review coverage names candidate admission counts, unknown role counts, qualified recorded context counts, and a separate nonzero count of recorded features not assessed against candidates. K=0 produces no omission sentence. No clean/full-neighbour-assessment claim is made.",
+  "checks": {
+    "baselineExisting": {"tests": 49, "pass": 49, "fail": 0, "skipped": 0},
+    "afterExistingPlusNew": {"tests": 60, "pass": 60, "fail": 0, "skipped": 0},
+    "newTests": 11,
+    "finalDerivedLabelControl": {"command": "tsx --test packages/server/src/modules/usp/geometry.test.ts (same isolated-env preload)", "tests": 5, "pass": 5, "exit": 0},
+    "existingTestFiles": [
+      "packages/server/src/modules/areas/exterior-records.test.ts",
+      "packages/server/src/modules/areas/exterior-records-commit.test.ts",
+      "packages/server/src/modules/spatial/spatial-ml-footprints.test.ts",
+      "packages/server/src/modules/spatial/spatial-ml-georeference.test.ts",
+      "tests/spatial-ml-backend.test.ts",
+      "tests/spatial-ml-retained-calibration.test.ts",
+      "tests/spatial-ml-source.test.ts",
+      "tests/usp-geometry.test.ts"
+    ],
+    "newTestFiles": ["packages/server/src/modules/areas/native-review.test.ts", "packages/server/src/modules/usp/geometry.test.ts"],
+    "testCommand": "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <existingTestFiles and newTestFiles> 2>&1 | grep -E '^ℹ (tests|pass|fail|skipped) |✖' (pipefail enabled)",
+    "typecheck": {"command": "pnpm typecheck:backend", "exit": 0},
+    "runtimeDefault": {"command": "node docs/evidence/gf1/ca5/run-runtime.mjs docs/evidence/gf1/ca5/runtime-default.json", "exit": 1, "expectedFinding": "Default large-package enrichment acquisition timeout"},
+    "runtimeComparison": {"command": "node docs/evidence/gf1/ca5/run-runtime.mjs docs/evidence/gf1/ca5/runtime.json --long-acquisition", "exit": 0},
+    "openapi": {
+      "command": "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/ca5/openapi-check.ts",
+      "exit": 0,
+      "method": "Executes the unmodified apps/api/scripts/openapi.ts generator, then its --check branch, with catalogue publication/read-back in memory to honor owned-path restrictions",
+      "operations": 305,
+      "schemas": 346,
+      "catalogueEqual": true,
+      "operationPinsEqual": true,
+      "onlySourcePinsChanged": ["packages/server/src/modules/areas/areas.ts", "packages/server/src/modules/usp/geometry.ts"],
+      "generatedPinsSha256": "8719d021285e2f4b1404023de096609dc7388ec6087cb3938cb23771ffc1afc5",
+      "publishedFilesModified": false,
+      "leadAction": "Regenerate published source-pins during integration; publishing docs/api is outside this task's owned paths"
+    },
+    "footprintIntegration": "tests/spatial-ml-footprint-integration.ts unchanged; not rerun against other runtimes or fabricated box inference. Its existing control asserts zero positive draft revisions, not reviewPackage refusal (Step 0 audit).",
+    "diffAndStyle": {"command": "git diff staging...HEAD --check; created code lines <=120; strict full-diff review", "exit": 0}
+  },
+  "attemptLedger": [
+    {"signature": "Initial new fake-client successful review test: Missing GEO_URL", "cause": "Successful path now reaches geo settings unlike refusal paths", "fix": "Set/restore dummy loopback settings around mocked fetch only", "result": "11 new tests passed"},
+    {"receipt": "runtime-default.json", "signature": "pg acquisition timeout, enrichment Promise.all index 255", "result": "Actual admission check computed; review could not persist on default deadline; owned container removed"},
+    {"receipt": "runtime.json", "comparison": "60000 ms acquisition allowance, same eight connections and unchanged product computation", "result": "Full native review/record/second-layer journey passed; correction refused; no retry or product tuning afterward"}
+  ],
+  "gaps": [
+    "Default-profile large-package review still fails during enrichFindings; the roughly 40-second bounded comparison is not presentation-ready latency. Assign the area-statistics/concurrency performance finding separately.",
+    "Recorded own-feature corrections, model/derived/synthetic admission and recorded analysis/export remain blocked without governed qualification. Unqualified neighbours are explicitly not assessed, not silently cleared.",
+    "Native qualifier producer remains unbuilt because 4a and 4c are no; source accuracy, topology acceptance policy, actual review authorization and qualified exports are not established by admission.",
+    "Inherited geometry_qualification snapshot member ID contains @ excluded by CoreIdSchema; untouched and not runtime-qualified because no positive qualifier exists.",
+    "Model draft runtime proof is not attempted without an honest accepted inference; the retained real refusal fixture supplies focused regression evidence.",
+    "OpenAPI publication/source-pin refresh belongs to the lead at integration; memory generation/check established no contract or catalogue change."
+  ],
+  "commits": [
+    {"sha": "97abbf38", "subject": "docs(usp): CA5 step 0, why no native package can be reviewed and what the qualification design says"},
+    {"sha": "82f49915", "subject": "fix(areas): a package's own source-native candidates are admitted to its review; recorded geometry with no qualification is left out and said so"}
+  ],
+  "next": "Lead reviews/integrates and republishes source pins; obtain the owner qualification-profile decision, assign the default enrichment timeout/performance finding separately, and keep corrections/analysis/model admission visibly unqualified."
+}

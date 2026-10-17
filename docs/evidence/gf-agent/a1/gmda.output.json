@@ -1,0 +1,165 @@
+{
+  "input": {
+    "path": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+    "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+    "bytes": 1728,
+    "permission": "unconfirmed",
+    "purpose": "test_only",
+    "sourceCrs": "EPSG:32643"
+  },
+  "validation": {
+    "success": true,
+    "plan": {
+      "version": "mapping-plan/2",
+      "layoutFingerprint": "967ed0fd32d4dca1796fcc9504800c3cb7274c08f3a2352aa8b502b2dfa59181",
+      "sourceKind": "gis_attributes",
+      "method": "reviewer:a1-worker",
+      "fields": [
+        {
+          "sourceField": "FID",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "Feature identifier of an administrative sector polygon, not a building source key or cadastral parcel identifier."
+        },
+        {
+          "sourceField": "Name",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "Sector labels remain source literals; neither sector number nor sector name establishes a building or unit."
+        },
+        {
+          "sourceField": "Area",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "Source sector Area field has no declared unit or cadastral meaning. Do not interpret its zeroes as known parcel area."
+        }
+      ]
+    },
+    "errors": []
+  },
+  "execution": {
+    "version": "mapping-executor/1",
+    "method": "reviewer:a1-worker",
+    "layoutFingerprint": "967ed0fd32d4dca1796fcc9504800c3cb7274c08f3a2352aa8b502b2dfa59181",
+    "rows": [
+      {
+        "row": 0,
+        "fields": [
+          {
+            "sourceField": "FID",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "gmda-sector-boundaries",
+                "row": 0,
+                "column": "FID"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": 165
+          },
+          {
+            "sourceField": "Name",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "gmda-sector-boundaries",
+                "row": 0,
+                "column": "Name"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "63 A"
+          },
+          {
+            "sourceField": "Area",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "gmda-sector-boundaries",
+                "row": 0,
+                "column": "Area"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": 0
+          }
+        ]
+      },
+      {
+        "row": 1,
+        "fields": [
+          {
+            "sourceField": "FID",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "gmda-sector-boundaries",
+                "row": 1,
+                "column": "FID"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": 166
+          },
+          {
+            "sourceField": "Name",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "gmda-sector-boundaries",
+                "row": 1,
+                "column": "Name"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "59"
+          },
+          {
+            "sourceField": "Area",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "gmda-sector-boundaries",
+                "row": 1,
+                "column": "Area"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": 0
+          }
+        ]
+      }
+    ],
+    "counts": {
+      "cells": 6,
+      "candidate": 0,
+      "needsInput": 0,
+      "unknown": 6,
+      "absent": 0,
+      "null": 0,
+      "conflicting": 0
+    }
+  }
+}

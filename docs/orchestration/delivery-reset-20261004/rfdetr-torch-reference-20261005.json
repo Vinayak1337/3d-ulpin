@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "latestTask": "D07-RFDETR-SAVED-CANDIDATE-REFERENCE-PREP",
+  "latestState": "saved_final_candidate_UNBOUND_reference_unrun",
+  "experimentalBaselineV2": {
+    "baseCommit": "155170c1973eadb85f37010e0898c5ac0447ff3f",
+    "branch": "task/d07-rfdetr-torch-baseline-contract-20261005",
+    "privateRoot": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-baseline-20261005",
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "actualModelEffortTier": "unexposed",
+      "suppliedPermissions": "never/danger-full-access"
+    },
+    "scope": "Existing runner and this existing handoff only. The original fields below describe preserved v1 preparation; original executed v1 smoke7842a410/result2dc7ff9d remains FAILED. Diagnosis88ac89e6 remains unresolved. No retroactive pass, model promotion, ONNX equivalence or release claim.",
+    "scriptSnapshot": {
+      "file": "prepared-v2/compare_ramp_torch.py",
+      "bytes": 32387,
+      "sha256": "7882a3bf3ff99076add9f551c1b5881a52fba1c98bbe553bf125768cd0d84db1"
+    },
+    "plan": {
+      "file": "prepared-v2/baseline-plan.json",
+      "bytes": 27288,
+      "sha256": "d350f2f0fa943423150e20ed77cd3d0fcc7558a4213456bb2b321d4bd384a3b0",
+      "canonicalPlanSha256": "9213f05e33f34400f8b0689c7bef6bb97bba53648f21eab0af29c64495372397",
+      "schema": "ramp-torch-baseline-plan/2",
+      "mode": "experimental-baseline",
+      "executionAuthorized": false
+    },
+    "interface": {
+      "file": "prepared-v2/mount-interface.json",
+      "bytes": 17908,
+      "sha256": "2c37c0e547f1d0724d0525bc3103e1edbc7ca3bff7137a106fa94000968ec3f6",
+      "schema": "ramp-torch-baseline-interface/2"
+    },
+    "authorization": {
+      "schema": "ramp-torch-baseline-authorization/2",
+      "required": "Existing rootThreadId/rootAuthorized, exact mode/planSha256/current-scriptSha256, exact baselinePolicy, all3 exact prerequisite pins and current-PID preflightReceipt. Same exact image/modelOwner/native-network/resource/mount/environment/exclusive-GPU checks. No execution authorization or actual-process proof created here.",
+      "prerequisites": [
+        {
+          "name": "originalExecution",
+          "containerPath": "/inputs/reference/prerequisites/original-execution.json",
+          "file": "original-execution.json",
+          "bytes": 14033,
+          "sha256": "5abf5ab3390020c90785d235b8635e192a596cfefde81478ea802aa95f78b9a8",
+          "origin": "Exact Git bytes7842a410:docs/evidence/usp/rfdetr-torch-reference-20261005.json; accepted original load/head/input and execution receipt, not a new model run"
+        },
+        {
+          "name": "originalSmokeResult",
+          "containerPath": "/inputs/reference/prerequisites/original-smoke-result.json",
+          "hostPath": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005/output/reference-smoke/result.json",
+          "bytes": 2637,
+          "sha256": "2dc7ff9d59fc381b03b4392ee165676a204898684b99252be6e57a76d3c79da8",
+          "numericState": "failed; successful input formula checks bound separately"
+        },
+        {
+          "name": "cachedDiagnosis",
+          "containerPath": "/inputs/reference/prerequisites/cached-diagnosis.json",
+          "hostPath": "E:/BhuAayam-data/task-data/d07-rfdetr-parity-diagnosis-20261005/diagnostic.json",
+          "bytes": 9911,
+          "sha256": "ce3b79d7258deaf2258608a9788b40f146cc95bd58edab2a5a34ff002fa88dfe",
+          "qualification": "Two cached active masks/geometries agree; positive scores differ and raw cause remains unresolved"
+        }
+      ]
+    },
+    "experiment": "ramp-torch-own-baseline/2: unchanged original weights/head/config/processor, local-only eager FP32 eval/inference_mode, all200/native108 outputs, original fixed-order ALL24 Karnataka/19positive5publisher-empty/178roof instances. Open development only, no training/final/closed evaluation or label edits. Original432 BILINEAR/ImageNet and production0.5/logit0 unchanged; strict reload/head/current input formula<=1e-6/finite shape/native/runtime controls remain fatal on failure.",
+    "resultContract": "ramp-torch-baseline-result/2; valid complete ordered24 yields experimental_baseline_completed. Every item still retains numericParityPassed and original fixed1e-4/rtol1e-4 same-index residual/sign counts; numericComparisonState independently reports all24_numeric_parity_passed/failed. Failure never becomes a numeric pass. Partial/invalid input/output/source/runtime evidence cannot complete. Fit/promotion/ONNX equivalence remain false; quality is unscored and not assumed to pass.",
+    "mountDelta": "Reuse accepted18RO baseInterfaceeaeb7e13. Add exact new runner/plan, original ordered24 baseline cache files and3 prerequisite receipts=29RO additions/47RO before future authorization/native-control mounts. Replace only RW output with this task/output -> /outputs/rfdetr; result goes experimental-baseline-v2. No old runner/plan/result writes, broad model/cache/home/checkout/wheelhouse/secret mounts.",
+    "argv": [
+      "/opt/conda/bin/python",
+      "-I",
+      "-B",
+      "/inputs/reference/compare_ramp_torch.py",
+      "--plan",
+      "/inputs/reference/plan.json",
+      "--experimental-baseline-run",
+      "--authorization",
+      "/inputs/reference/authorization.json",
+      "--authorization-sha256",
+      "<actual-root-receipt-sha256>"
+    ],
+    "checks": [
+      {
+        "command": "C:/Python313/python.exe -I -B scripts/usp/learning/compare_ramp_torch.py --prepare-baseline",
+        "exit": 0,
+        "result": "Separate v2 snapshot/plan/interface frozen from exact accepted v1 metadata and three prerequisite receipts; no source/RLE/array/library/model checks or imports."
+      },
+      {
+        "command": "In-memory stdlib syntax/metadata/auth/result controls and guarded CLI probes",
+        "exit": 0,
+        "result": "17 metadata checks and7 CLI probes: old/new versions inspect, subset/order/fit/tolerance/prerequisite/schema/current-PID/network failures refuse; unauthorized/mixed-mode/no-fit execute2 before heavy imports. Controlled v2 result reports completion separately from failed numeric observation; partial result refuses and legacy failed smoke/development remain failed/blocked. Original five small frozen artifacts retain their exact hashes. No native containment/inference qualification."
+      },
+      {
+        "command": "Changed-code review and git diff --check",
+        "exit": 0,
+        "result": "Existing strict runtime/load/input/source/output checks retained; v2 is explicit and cannot pass v1 smoke gate. Only owned runner/handoff changed; no scorer/trainer/launcher/shared metadata edits."
+      }
+    ],
+    "checkReceipt": {
+      "file": "checks.json",
+      "bytes": 4729,
+      "sha256": "682245e9ca66a08fa39ecbcd4b0d32e86aa7a57cf8ef2ff68ffe2571727581cc",
+      "limitation": "Positive authorization/result controls use disclosed metadata envelopes and synthetic item metadata; actual prerequisite bytes checked. Initial checker wrongly matched heavy imports in an expected refusal message; unique marker corrected checker only, frozen code/plan unchanged; corrected check0. Temporary controlled files removed."
+    },
+    "next": "Independent review, then root separately assigns teacher one contained ALL24 own-route baseline on existing image47ee371d. Teacher must adapt its owned profile to this finite v2 invocation/mount delta, seal fresh actual-process authorization/native/resource/GPU checks and retain partial output on failure. Afterwards reuse cached production scorer at0.5/logit0 for human-labelled pixel/object/empty-scene quality and old-deployed-output disagreement overALL24; no favourable subset/assumed pass. Instrumented CPU/GPU proposal remains deferred and unauthorized; no fit/promotion admitted.",
+    "resources": "Preparation only; no model/container/GPU/native/ONNX/instrumentation/optimizer/fit, dependencies/weights/images, source decoding or full data validation. No owned background resources; staging read-only, original88ac89e6/33e618a/20d2905e branches/private outputs preserved. Data audit remains parked; no provider/frontend/push/main/deployment."
+  },
+  "task": "D07-RFDETR-TORCH-REFERENCE-PREP",
+  "state": "prepared_only_model_inference_unrun",
+  "baseCommit": "5362534e6645eb7d278ec09b084c0a7c354fba0d",
+  "branch": "task/d07-rfdetr-torch-reference-20261005",
+  "worktree": "C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin",
+  "ownedSource": "scripts/usp/learning/compare_ramp_torch.py",
+  "settings": {
+    "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+    "actualModelEffortTier": "unexposed",
+    "suppliedPermissions": "never/danger-full-access"
+  },
+  "preservedCheckpoint": "task/d07-rfdetr-mounted-plan-20261005@20d2905ed6f9faa269b59e394315ac702ab99155; staging read-only; originals and prior outputs untouched",
+  "privateRoot": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005",
+  "scriptSnapshot": {
+    "file": "compare_ramp_torch.py",
+    "bytes": 21894,
+    "sha256": "cb771a12ac46ee4ae448bd90ce42574676d9a6afc28ac147aa1cd9e98212e0a1"
+  },
+  "artifacts": {
+    "smoke": {
+      "file": "smoke-plan.json",
+      "bytes": 24688,
+      "sha256": "c971142103a4dc19c4165a0f051664df8856013e5699565b4349030af4e96e20",
+      "canonicalPlanSha256": "4e2d0287cb995b9ff75f00718e755f4a4d9231d9294a7d0535e46c1233d10b3a"
+    },
+    "development": {
+      "file": "development-plan.json",
+      "bytes": 25998,
+      "sha256": "88a3b33c742044c19d868d31b3d19a362b65c7e113899f1367b89a22f71fdfca",
+      "canonicalPlanSha256": "db6486970c6a6cfbbc4039a7b90d5ace79a8406aa82d00beb6da82a264608ed3"
+    },
+    "mountInterface": {
+      "file": "mount-interface.json",
+      "bytes": 20132,
+      "sha256": "dca3b54f2ca7401cf2b3a02656d845a6985b023d79db309b4cbfe2a9d754c993"
+    }
+  },
+  "model": {
+    "repository": "merve/rf-detr-seg-satellite-buildings",
+    "revision": "05b80dce9a57701724ad6a0fc052827c8b724257",
+    "weights": "141551436B/f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+    "config": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7",
+    "processor": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382",
+    "loading": "Standard local-only RfDetrForInstanceSegmentation.from_pretrained; safetensors, eager FP32, complete missing/unexpected/mismatched/error checks; original one-building head/config/200queries; no replacement/reinitialization, Trainer, optimizer or fit path.",
+    "inference": "eval + inference_mode, batch1, CUDA0 only after root sole-owner assignment; TF32 disabled, no autocast/compile; outputs.logits and outputs.pred_masks retained unfiltered."
+  },
+  "retainedImplementationSources": {
+    "modeling": "E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/primary-modeling_rf_detr.py SHA17d2bdb5ba80857eb773d3cd857ec54007c91d77d6e6c155e5c2e6d50a7aab71; inspected final forward outputs/logits/pred_masks and source head",
+    "processor": "E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/primary-image_processing_rf_detr.py SHA9add84010672fc77b1364dfb9130ebf958090ca3608586d6734558c363539b22; inspected rescale/normalization/no-pad path",
+    "production": "services/geo/geo/spatial_ml.py _building_tile and _resize_logits; evaluate_vision_cohort.py native capture; compare_building_ramp.py cached_masks",
+    "attribution": "Existing publisher model/card/revision and upstream Transformers5.17 sources retained by TRAIN-PREP; no rediscovery/download/import here."
+  },
+  "inputs": {
+    "mountedConfigSha256": "14d3936c88b983a5838f027bc411c9a656804de6b301f8e5be6d1aa6a87cf367",
+    "mountedPlanSha256": "14343270b4511007b6d0bdbcfb6b4f473f4f60b20d5ee49f95b971af7fcdb9ac",
+    "portableDescriptorSha256": "5063af10cd818804c93196df6cb80f1b5ddf428d58a4f3439e56e3447afd4267",
+    "onnxFreezeSha256": "9b580000468c6db12e9d74a2ff25e68fa44eed289204e9fd73dd4461acbffe2c",
+    "onnxResultsSha256": "57becbda6d0058e1e07cca834a29965c193ec60c598d040ef2531172980b0dc1",
+    "cohortIdentitySha256": "808b423e8e4602a984eaa89c2c6d2294ae3b2b8b73bfe3b07d19331e5d35afeb",
+    "smokeIds": [
+      "ramp-karnataka/0020b409-a333-4eb4-89c8-531b8110312a",
+      "ramp-karnataka/17e0ac69-4c8a-4da9-a06a-10bfa0fa1661"
+    ],
+    "selection": "Mechanically first positive/first source-empty in original frozen Karnataka ordering; then every24 in that exact ordering,19positive5source-empty. No favourable selection, new split, old/final holdout access or threshold tuning.",
+    "sourceRole": "ALL24 Karnataka solely open development,178 publisher roof annotations; source-empty ambiguity/pretraining overlap/rooftop versus ground-footprint limits retained. Barishal24 remains train candidates/unallocated/not_fit_admitted; runner reads no training annotations/labels."
+  },
+  "preprocessingAndParity": {
+    "pipeline": "Original256 RGB -> Pillow square432 BILINEAR -> exact local processor with do_resize=False/do_pad=False; rescale1/255/ImageNet mean(.485,.456,.406)/std(.229,.224,.225). No crop/pad/tile change. Source and baseline PNG bytes match COCO export pins.",
+    "inputComparison": "Current actual processor tensor versus reproduced production float32 division/normalization formula on same Pillow-resized RGB; fixed atol1e-6/rtol0 before inference, retain both hashes/maxAbs. Historical432 ONNX input tensors absent, so this is not their direct byte comparison.",
+    "outputComparison": "All same-index raw logits/masks versus retained ONNX CPU outputs; fixed atol1e-4/rtol1e-4, maxAbs/meanAbs/outsideTolerance and sign-boundary disagreement counts. No query permutation/filtering or tolerance revision after results. Full24 follows successful same-code two-case numeric smoke under separate root authorization.",
+    "reason": "FP32 backend kernels, accumulation and processor rounding may differ. Retained ONNX used Pillow11.2.1/NumPy2.0.2/ORT1.19.2; new Linux image uses Pillow11.0/NumPy2.3.2/Torch2.8cu128. Identical source weights do not establish numerical parity; miss requires diagnosis, preserved outputs and changed hypothesis before retry/adaptation.",
+    "rawContract": "native-00.npz exactly output0(1,200,1) and output1(1,200,108,108), finite C-order float32; all200 queries/native108 masks. Output/result folder IDs use existing id.replace('/','--').",
+    "scoringReuse": "Use existing compare_building_ramp.cached_masks(e,logits,masks,0.5,256,256) and retained evaluator/object/polygon scoring. Existing replay-recall0.30 remains a closed distinct experiment; this runner performs no quality scoring or label edits."
+  },
+  "runtimeInterface": {
+    "image": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316 --pull=never; Linuxamd64/Python3.11.13 /opt/conda/bin/python UID10001:10001/full134 exact versions",
+    "baseInterface": "eaeb7e13580fb3a43f7079e11626e815e8dde60b537bcd6b6cd6225aa0f3194c, accepted18RO; original profile/artifacts preserved",
+    "mountDelta": "Exact RO runner+mode plan and2/24 exact cached native files; inherit accepted inputs; replace single RW output with this task/output -> /outputs/rfdetr. Smoke22RO/development44RO before separately sealed authorization/preflight and dev smoke-result gate mounts. No baseline directory, home, checkout, wheelhouse or secret mounts.",
+    "argv": [
+      "/opt/conda/bin/python",
+      "-I",
+      "-B",
+      "/inputs/reference/compare_ramp_torch.py",
+      "--plan",
+      "/inputs/reference/plan.json",
+      "--reference-run",
+      "--authorization",
+      "/inputs/reference/authorization.json",
+      "--authorization-sha256",
+      "<actual-root-receipt-sha256>"
+    ],
+    "gate": "ramp-torch-reference-authorization/1: exact rootThreadId/rootAuthorized/mode/planSha256/scriptSha256 and preflightReceipt pin. Control requires this PID, exact imageDigest, teacher modelOwner, verified native network/resource/mount/env boundaries and exclusive GPU transfer. Development additionally binds successful same-code/cohort smokeResult pin and exact two IDs. These root/actual-process receipts do not exist yet.",
+    "resourcePrerequisite": "Teacher remains sole future GPU owner. Root must explicitly adapt no-device/void profile to bounded monitored RTX3070 CUDA0 reference, including wall time/child cleanup/cgroup/host limits and measured GPU use. Runner supplements local-only flags; it does not implement OS/resource containment or manufacture a preflight."
+  },
+  "checks": [
+    {
+      "command": "python -B scripts/usp/learning/compare_ramp_torch.py --prepare",
+      "exit": 0,
+      "result": "Two separately frozen plans and finite mount delta saved; metadata identities cross-match, two bounded retained NPZ headers support contract. Reused24 cache/image hashes and current archive sizes; no array/library/model loading or full source/RLE/image campaign."
+    },
+    {
+      "command": "In-memory stdlib syntax/plan/refusal controls; --plan inspection for each mode",
+      "exit": 0,
+      "result": "2/24 cases valid; omitted development case,199query shape and absent authorization refused; no numpy/Torch/PIL/Transformers imports. Exact private runner snapshot equals owned source."
+    },
+    {
+      "command": "Captured unauthorized --reference-run subprocess",
+      "exit": 2,
+      "result": "Fails before heavy imports. Initial combined PowerShell command reported wrapper1 for the expected negative; isolated subprocess captured actual child2, supervisor check0."
+    },
+    {
+      "command": "Changed-code review and git diff --check",
+      "exit": 0,
+      "result": "Finite input/output and unchanged model/processor/output contracts reviewed. No shared trainer/scorer/profile/source changes."
+    }
+  ],
+  "notRun": "New model weights/tensor/CUDA/container/inference/processor/dependencies/acquisition/OS/runtime/PG/provider/frontend/push/main; full image/RLE/source revalidation. Prior processor/import/loader/tinyGPU controls inherited honestly; prior loader cases were Barishal1/13, not these Karnataka reference IDs.",
+  "next": "Root assigns actual two-case contained model reference to teacher, seals current-process authorization/native-control mounts and resource/device scope; preserve originals/partial output on failure. Only successful same-code smoke permits subsequently authorized full24 unchanged reference and cached quality scoring; no adaptation/promotion/fit admitted here.",
+  "resources": "No owned processes/containers/GPU/Jobs; staging read-only; old20d2905e branch and all checkpoints retained.",
+  "callback": "01a0ed8a-4383-79c3-a0ae-35c1e969ef66 / local",
+  "savedCandidateReference": {
+    "task": "D07-RFDETR-SAVED-CANDIDATE-REFERENCE-PREP",
+    "baseCommit": "fb48f85874fdc94aa515cbea0a1eb7f1878466ea",
+    "branch": "task/d07-rfdetr-candidate-reference-prep-20261005",
+    "state": "saved_final_candidate_UNBOUND_reference_unrun",
+    "executionAuthorized": false,
+    "privateRoot": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-candidate-reference-20261005",
+    "artifacts": {
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-candidate-reference-20261005\\compare_ramp_torch.py",
+        "bytes": 54124,
+        "sha256": "02012a552b37c400e3075f184b963e0f50e3997a0318bd4d531b8ef5006a8d48"
+      },
+      "template": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-candidate-reference-20261005\\candidate-template.json",
+        "bytes": 27924,
+        "sha256": "0c42af6f71bdb678ac29afd1004030132983fe055f3e600e9fc0d2adbe84e31a"
+      },
+      "interface": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-candidate-reference-20261005\\mount-interface-unbound.json",
+        "bytes": 5209,
+        "sha256": "610342929d6352710d10aa4b91ca39333625ccb4f2dfcce5755715d679c479c1"
+      },
+      "checks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-candidate-reference-20261005\\checks.json",
+        "bytes": 6033,
+        "sha256": "26a9ddd9e69829bbbd4e77eaa18e74e13c3c65f041bba627d3018ab0acf629f4"
+      },
+      "checker": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-candidate-reference-20261005\\checks.py",
+        "bytes": 6743,
+        "sha256": "82da871a1e2951e6a6f980fb903b39110300f270dc26e42033de937c37400926"
+      }
+    },
+    "canonicalTemplateSha256": "3408d5391e3f5fc82a6d2779e3052e9da24299b8d130277f5664f64490c38813",
+    "route": "One guarded saved-final mode through existing reference runner. No Trainer/optimizer/loss/fit, subset, threshold or checkpoint selection; original/v1/v2 frozen files/results/gates unchanged.",
+    "binding": {
+      "state": "UNBOUND",
+      "missing": "Successful fixed-final pilot result.json plus exact fit authorization/root-fit-assignment/fit-current-PID proof JSON and final model/config/processor trio. No informational fit callback received during preparation; no candidate files invented.",
+      "pilot": {
+        "path": "/inputs/candidate/pilot-plan.json",
+        "bytes": 96561,
+        "sha256": "22b0a1bd318490bb3a5b484dd248eebdba9d94c87879897f1c3d2de60f7abe37"
+      },
+      "canonicalPilotSha256": "8139eedd077a78513daadfa4b5a6173fcb75b13e637f76ce4ea2bf3954c41716",
+      "acceptedPilotOwner": "105b5c49 integrateda7b980b1",
+      "command": "Frozen private compare_ramp_torch.py --bind-candidate <receipt-only binding spec>; then candidate-plan.json and mount-interface.json are new artifacts, unbound originals remain.",
+      "checks": "Exact completed36 optimizer updates/144 forwards+train examples/six-epoch recipe, finite loss/no dev or final evaluation, no promotion, root/code/source/runtime/sole-fit-owner/native lineage and final-only saved pins. Original weight hash cannot masquerade as fitted candidate; result path and trio are derived only from fixed pilot-fit-v1 output.",
+      "weightVerification": "Binding checks metadata and current file size without opening/hash-reading weights. Later separately authorized reference must verify exact saved bytes before imports. No positive binding qualified yet."
+    },
+    "reference": {
+      "schemaVersion": "ramp-torch-candidate-plan/1",
+      "mode": "saved-candidate",
+      "argv": "--plan /inputs/reference/plan.json --candidate-run --authorization /inputs/reference/authorization.json --authorization-sha256 <later actual root hash>",
+      "authorization": "ramp-torch-candidate-authorization/1; separate root scope one_saved_final_ALL24_reference_only binds plan/code/saved lineage/policy/bounds; fresh same-PID/image/teacher-owner/exact GPU UUID/native/mount/environment/resource proof. Fit/baseline/preparation receipts grant no candidate run.",
+      "inputs": "ALL24 original-order Karnataka/19 positive/5 publisher-empty/178 research roofs; zero final. Original model/config/class/query/input/source/environment authority unchanged.",
+      "reload": "Local-only safetensors/FP32/eager/eval/strict complete load with zero missing/unexpected/mismatched/error keys; original one-building head/all200/native108, semantic model configuration and processor equality checked. Serialization name/commit/version bookkeeping alone excluded from semantic architecture comparison.",
+      "output": "Saved native-00.npz/reference.json/result.json use existing cached production scorer at unchanged0.5/logit0; report mask/polygon/object/empty/omissions against exact own baseline9239661b. No candidate scoring now.",
+      "parity": "Changed candidate weights do not invoke old ONNX numeric comparison. Original v1/v2 raw numeric parity remains FAILED and is never marked passed.",
+      "decision": {
+        "maskIoUMin": 0.468383,
+        "maskRecallMin": 0.5380144,
+        "maskPrecisionMin": 0.8266567,
+        "emptyFalsePositiveScenesMax": 1,
+        "emptyScenes": 5,
+        "role": "open_cohort_decision_not_model_readiness",
+        "report": [
+          "polygon_matches",
+          "polygon_false_positives",
+          "polygon_misses",
+          "geometry_omissions"
+        ],
+        "candidateEvaluation": "later_separately_assigned_teacher_saved_final_ALL24_once_FP32_432_confidence0.5_logit0_cached_production_scorer",
+        "finalAccess": false,
+        "checkpointOrThresholdSelection": false
+      }
+    },
+    "interface": {
+      "base": "Original18 RO launch-interface-runtime-v1 preserved",
+      "unboundDelta": "4 RO runner/template/pilot-plan/own-score; no old ONNX array mounts",
+      "boundDelta": "On successful receipt binding, four exact fit JSON receipts and one final-only checkpoint directory are added;9 total RO delta/27 with base, then2 future exact candidate auth/process mounts. Single new task RW output.",
+      "bounds": {
+        "cpu": 2,
+        "containerMemoryBytes": 5368709120,
+        "hostJobMemoryBytes": 536870912,
+        "swapBytes": 0,
+        "pids": 32,
+        "gpuAllocationBytes": 5368709120,
+        "referenceAndCleanupSeconds": 600,
+        "cleanupReserveSeconds": 45,
+        "innerReferenceSeconds": 555
+      },
+      "actualLauncherOrNativeReadback": "unrun; teacher received information only"
+    },
+    "verification": {
+      "command": "C:/Python313/python.exe -I -B E:/BhuAayam-data/task-data/d07-rfdetr-candidate-reference-20261005/checks.py",
+      "exitCode": 0,
+      "checks": 27,
+      "cli": "one unbound inspection0;five unauthorized/unbound/wrong-mode/no-fit/prepare-execute refusals2",
+      "scope": "stdlib syntax/real pinned pilot+v1/v2 metadata/authority/no-subset/reorder/wrong-pilot/baseline/threshold/query/decision/fit-role/original-weight lineage refusal/import and payload traps",
+      "seconds": 0.478,
+      "review": "Scoped changed-code review; original inference/parity branches remain, candidate semantic reload and cached-scorer raw layout reviewed. No actual bound reload or current-process positive gate claimed.",
+      "heavyModulesImported": false,
+      "modelGpuInferenceScoringFitCalls": 0
+    },
+    "gaps": [
+      "Successful fixed-final fit receipt chain/trio unavailable to this preparation; keep UNBOUND until actual callback",
+      "Later independent review/root candidate-run authority and fresh contained process proof",
+      "Actual saved reload/ALL24 predictions/cached quality decision unrun",
+      "Research/noncommercial rooftop/clip/ignore/local-audit/pretraining/final limitations preserved; no operational or release readiness"
+    ],
+    "cleanup": {
+      "ownedResourcesRemaining": 0,
+      "containersOrGpuStarted": false,
+      "sourceOrWeightsModified": false,
+      "boundCandidateOrOutputCreated": false,
+      "stagingEdited": false,
+      "dataAudit": "parked"
+    },
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "observedPerTurnModelEffortTier": null,
+      "suppliedPermissions": "never/danger-full-access"
+    }
+  }
+}

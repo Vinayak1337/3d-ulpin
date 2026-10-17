@@ -1,0 +1,62 @@
+{
+  "task": "RC1",
+  "gate": "GF1",
+  "branch": "task/rc1-receipt-set-aside-codes",
+  "base": "133e0f18",
+  "runtime": "none: code and tests only (no Docker, no database, no provider call)",
+  "defect": "A sealed map receipt counted its set-aside records (quarantined) but not their reasons; each record's issueCode lived only in the reader's records while it read, and the slot rows keep counts only.",
+  "decisions": {
+    "D1": {
+      "where": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:26 tallySetAside",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:205 setAside, one per run",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:232 tallied in consume after the record's last disposition change (DRAFT_UNIT_BUDGET included)"
+      ],
+      "wholeRead": "runStreamingVectorJob opens the original from byte zero on every attempt (openObjectStream, nextIndex=0, nextFeatureIndex=0) and consume sees every feature; acceptSlot re-checks already accepted slots against the replay instead of skipping their records. The tally is local to the run, so the one run that reaches the seal has tallied every record. A run that fails discards its tally with itself.",
+      "unstated": "No present path produces a quarantined record without a code: sourceRecord sets quarantined only from a truthy issueCode (streaming-vector-reader.ts:234-237), the topology check sets its returned code (worker:224), and the budget path sets DRAFT_UNIT_BUDGET (worker:230); tabular records are never quarantined. UNSTATED is reachable only by a future path that forgets its code."
+    },
+    "D2": {
+      "where": [
+        "packages/contracts/src/usp/ingestion.ts:102-104 quarantinedByCode: record of /^[A-Z][A-Z0-9_]{0,79}$/ to positive int, at most 64 keys, optional",
+        "packages/contracts/src/usp/ingestion.ts:117-121 superRefine: present only with quarantined > 0, values sum to quarantined",
+        "packages/server/src/modules/usp/ingestion/streamed-map-receipt.ts:12-14 Closure.quarantinedByCode",
+        "packages/server/src/modules/usp/ingestion/streamed-map-receipt.ts:84 written only when quarantined > 0",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:259-260 the tally reaches writeSealedMapReceiptTx with the closure"
+      ],
+      "missingTally": "The closure member is optional so callers whose reads set nothing aside are unchanged; a receipt that sets records aside with no tally is written as {} and refused by the sum check, so a reason is never silently dropped.",
+      "database": "none"
+    },
+    "D3": {
+      "readers": "none added",
+      "openapi": "The receipt schema is not published: openapi.ts regenerated docs/api/openapi.json unchanged and studio:api-types regenerated schema.d.ts unchanged. source-pins.json repinned for the three changed sources."
+    }
+  },
+  "tests": [
+    "streamed-map-receipt.test.ts:166 two codes sum to quarantined; a differing sum, an empty and a missing tally are refused; a zero count, a lower-case key and 65 keys are refused, 64 keys pass",
+    "streamed-map-receipt.test.ts:183 nothing set aside writes no member (an empty member is refused); a stored receipt without the member still parses with quarantined 1",
+    "streaming-vector-worker.test.ts:74 the real reader over six features: 3 UNREPRESENTABLE_NUMBER (one with an open ring too: the value code wins), 2 OPEN_RING, accepted records uncounted; a coded-less set-aside record counts under UNSTATED"
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "backend tests (task's list, NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false)",
+      "exit": 1,
+      "before": { "at": "133e0f18", "tests": 257, "pass": 220, "fail": 15, "skipped": 22 },
+      "after": { "tests": 260, "pass": 223, "fail": 15, "skipped": 22 },
+      "note": "Cloud box without the E: data drive or the Python geo interpreter: the same 15 tests fail before and after (NYC/Niagara real-bytes readers, TypeScript-Python agreement, memory/teacher store, table layout enrolment, PDF entry progress); the 3 new tests pass." },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts (then --check)", "exit": 0,
+      "operations": 311, "schemas": 352, "note": "openapi.json unchanged" },
+    { "command": "pnpm studio:api-types", "exit": 0, "note": "schema.d.ts unchanged" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 133e0f18", "exit": 0,
+      "repinned": ["packages/contracts/src/usp/ingestion.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-map-receipt.ts",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts"] },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0,
+      "note": "311 native operations, 352 named schemas; pins, manifests, models, dataset link valid" },
+    { "command": "git diff --check", "exit": 0 }
+  ],
+  "leadNotes": [
+    "All three changed sources are in streaming-vector.ts readerFiles, so streamingReaderSha moves: a streaming-vector job queued before this commit is refused on its pinned reader and its source needs a new read. packages/contracts/src/usp/ingestion.ts is also in chunk-mapping.ts converterFiles, so the converter pin moves too. No runtime data exists in this task.",
+    "Receipts already sealed (the Niagara Falls walk among them) keep no codes; only a new read writes the member."
+  ]
+}

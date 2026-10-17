@@ -1,0 +1,30 @@
+{
+ "destination": "apps/api/src/modules/evidence/operation-manifest.json",
+ "action": "Lead appends these two objects to operations before regeneration or roll-out; not applied by this worker.",
+ "operations": [
+  {
+   "method": "POST",
+   "path": "/api/v1/usp/packets/plans/entries",
+   "operationId": "POST_api_v1_usp_packets_plans_entries",
+   "disposition": "added",
+   "batch": "PACK-K12",
+   "controller": "PacketEvidenceController.entries",
+   "requestSchema": "UspReadPacketPlanEntriesSchema",
+   "responseSchema": "UspPacketPlanEntriesSchema",
+   "runtimeEvidence": "pending",
+   "access": "Local operator; checked scope and exact-current target; source-stated units only; no-store; no writes"
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/usp/property-cards/preview",
+   "operationId": "POST_api_v1_usp_property_cards_preview",
+   "disposition": "added",
+   "batch": "CARD-K12",
+   "controller": "PropertyCardController.preview",
+   "requestSchema": "UspPreviewPropertyCardSchema",
+   "responseSchema": "UspPropertyCardPreviewSchema",
+   "runtimeEvidence": "pending",
+   "access": "PrivateSpatialGuard; protected executed plan/packet; no-store; no receipt, card, PDF or persistent lock"
+  }
+ ]
+}

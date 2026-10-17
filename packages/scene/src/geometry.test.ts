@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FLAT_THICKNESS_M, boundsOf, footprintGeometry, hasKnownHeight } from './geometry';
+import { FLAT_THICKNESS_M, boundsOf, buildingLook, footprintGeometry, hasKnownHeight } from './geometry';
 import type { FootprintInput } from './types';
 
 // A 10 m square: a geometric test shape, not a record.
@@ -20,6 +20,14 @@ describe('footprint geometry', () => {
     expect(hasKnownHeight(input)).toBe(false);
     expect(footprintGeometry(input).boundingBox!.max.y).toBeCloseTo(FLAT_THICKNESS_M);
     expect(hasKnownHeight({ ...input, heightM: 9, heightState: 'unresolved' })).toBe(false);
+  });
+  it('draws a candidate as a ghost and hatches unknown or estimated heights', () => {
+    const reviewed: FootprintInput = { id: 'a', polygons: square, heightM: 9, heightState: 'reviewed' };
+    expect(buildingLook(reviewed)).toBe('solid');
+    expect(buildingLook({ ...reviewed, candidate: true })).toBe('candidate');
+    expect(buildingLook({ ...reviewed, heightState: 'estimated' })).toBe('hatch');
+    expect(buildingLook({ ...reviewed, heightM: null, heightState: 'unknown' })).toBe('hatch');
+    expect(buildingLook({ ...reviewed, candidate: true, heightM: null, heightState: 'unknown' })).toBe('candidate');
   });
   it('computes plan bounds from outer rings', () => {
     expect(boundsOf([{ polygons: square }])).toEqual({ minX: 0, minY: 0, maxX: 10, maxY: 10 });

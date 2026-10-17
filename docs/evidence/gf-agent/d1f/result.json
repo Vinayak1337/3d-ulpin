@@ -1,0 +1,153 @@
+{
+  "task": "D1f",
+  "gate": "GF-AGENT",
+  "status": "partial; no gate pass",
+  "checkpoint": {
+    "branch": "task/d1f-positive-families", "base": "c342b144",
+    "startedAt": "2026-10-10T11:54:07Z", "continuedAt": "2026-10-10T13:53:24Z",
+    "checkpointAt": "2026-10-10T14:09:49Z",
+    "previousStop": "account limit, not a task decision",
+    "boundary": "Eight fully recorded acquisition families; five profile-ready families; no new downloads on resume.",
+    "resume": "Lead assigns shared masker/admission fixes, then an additive profile version in a fresh directory."
+  },
+  "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
+  "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
+  "familyReport": "docs/evidence/gf-agent/d1f/families.json",
+  "reportContents": "Measured issuer, URL, licence, file/row/column counts, dictionary file/hash and coverage.",
+  "requested": {"newFamilies": 10, "matchingColumns": 120, "columnsPerTarget": 12},
+  "counts": {
+    "India": {"families": 0, "files": 0, "columns": 0, "documentedColumns": 0, "profiledFiles": 0},
+    "UnitedStates": {
+      "families": 6, "familiesWithColumnDefinitions": 5, "files": 7,
+      "columns": 202, "documentedColumns": 194,
+      "datasetScopeGeometryDescriptions": 1, "profiledFamilies": 4, "profiledFiles": 5,
+      "profiledColumns": 184, "profiledDictionaryRows": 184
+    },
+    "Canada": {
+      "families": 2, "familiesWithColumnDefinitions": 1, "files": 2,
+      "columns": 17, "documentedColumns": 9,
+      "datasetScopeGeometryDescriptions": 1, "profiledFamilies": 1, "profiledFiles": 1,
+      "profiledColumns": 14, "profiledDictionaryRows": 9
+    },
+    "foreignTotal": {
+      "families": 8, "familiesWithColumnDefinitions": 6, "files": 9,
+      "rows": 802564, "columns": 219, "documentedColumns": 203,
+      "datasetScopeGeometryDescriptions": 2, "profiledFamilies": 5, "profiledFiles": 6,
+      "profiledColumns": 198, "profiledDictionaryRows": 193,
+      "originalBytes": 311457765, "publisherMetadataFiles": 9, "prefixDerivatives": 9
+    }
+  },
+  "countQualification": {
+    "scope": "Column instances across retained files, not independent positives; SF's two similar designs count once.",
+    "documented": "Only non-empty verbatim column descriptions count. Dataset-level geometry text is separate.",
+    "undocumentedFootprints": "New Orleans and Edmonton each have zero column definitions; not unknown or estimated.",
+    "missingLicence": "A null licence in families.json means no licence statement in retained publisher metadata.",
+    "matchingColumns": "unknown",
+    "matchingColumnsPerTarget": {
+      "building.name": "unknown", "building.addressLiteral": "unknown", "building.storeyLabel": "unknown",
+      "document.registrationNo": "unknown", "unit.type": "unknown", "building.footprint": "unknown"
+    },
+    "canonicalAssignments": 0, "goalMet": false,
+    "reason": "Most documented fields are energy metrics. No qualified six-target audit or labels were made.",
+    "notSubstituted": "Counts are not storey literals; building use is not unit type; keys are not registrations."
+  },
+  "restart": {
+    "recordedFilesChecked": 104, "hashOrSizeMismatches": 0, "partialOrUnrecordedFiles": [],
+    "acquisitionProcessesInFlight": 0, "noFilesRepairedDeletedMovedOrReacquired": true,
+    "initialCatalogueCheck": 1, "finalCatalogueCheck": 0,
+    "selfReview": "Task-root validation alone admitted credential filenames; guard and no-read regression added.",
+    "cause": "Interrupted pending issuer/CRS corrections left the manifest, registry and catalogue pins inconsistent.",
+    "fix": "Refresh only owned registry/catalogue/pin metadata and preserve all original receipts and bytes.",
+    "audit": "E:/BhuAayam-data/task-data/d1f/resume-integrity-v1.json"
+  },
+  "profileCoverage": {
+    "allTablesProfiled": false, "ready": 6, "n": 9,
+    "blockedFiles": ["baton-footprint.csv", "nola-footprint.csv", "edmonton-footprint.csv"],
+    "signature": "D1F_T1_MASKED_SAMPLE_LIMIT_UNOWNED",
+    "cause": "WKT replacement expansion occurs after T1's 256-character truncation and exceeds the schema limit.",
+    "policy": "No input clipping, feature variants, geometry repair, masking/backend/contract edits or labels.",
+    "reproduction": "--check now asserts equality of existing profiles, links, dictionary rows and inventories."
+  },
+  "heldOut": {
+    "additional": {
+      "families": {"count": 0, "n": 0}, "files": {"count": 0, "n": 0},
+      "columns": {"count": 0, "n": 0}, "positives": {"count": 0, "n": 0}
+    },
+    "unchangedPublicCheckpoint": {
+      "families": {"count": 2, "n": 2}, "files": {"count": 2, "n": 2},
+      "columns": {"count": 4, "n": 4}, "scorablePositives": {"count": 2, "n": 4}
+    },
+    "standingShortfall": {
+      "families": {"count": 1, "n": 3}, "positiveColumns": {"count": 23, "n": 25}
+    },
+    "continuationFilesOpened": 0,
+    "policy": "Counts come from existing public evidence. Reuse D8 development checks only; never its private main().",
+    "historicalCheck": "The prior session ran the full count-output verifier; this continuation does not repeat it."
+  },
+  "blockedRoutes": [
+    {"id": "IN-1", "http": 200, "reason": "Catalogue returned unrelated telemetry, not property tables."},
+    {"id": "IN-2", "http": null, "reason": "Authority open-data endpoint transport failure; not retried."},
+    {"id": "IN-3", "http": 200, "reason": "OGD catalogue shell; no safe documented native export acquired."},
+    {"id": "IN-4", "http": 404, "reason": "Public schema-document endpoint absent; no session/backend probing."},
+    {"id": "IN-5", "http": 404, "reason": "Authority service catalogue route absent; not retried."},
+    {"id": "IN-6", "http": 200, "reason": "Map sheet portal, not a documented property table; sign-in path stopped."},
+    {"id": "foreign-dictionaries", "http": 403, "reason": "Publisher dictionary downloads blocked; not bypassed."},
+    {"id": "foreign-owner-registers", "http": 200, "reason": "Identity/contact schemas rejected before CSV download."},
+    {"id": "foreign-undocumented", "http": 200, "reason": "No field meanings, wrong scope or more than 256 columns."},
+    {"id": "foreign-robots", "http": 200, "reason": "Issuer robots policy forbids API exports; no data request made."}
+  ],
+  "privacy": {
+    "disposition": "discovery-disposition-final-v1.json",
+    "sha256": "9c9b9df2a48bacf636ed4f927d68264a53e4286fac5f15d4c65bb095be187d0a",
+    "inventoryFiles": 104,
+    "classes": {
+      "selected": 27, "selected_provisional_duplicate": 18, "policy_evidence_closed": 17,
+      "prohibited_schema_metadata_closed": 8, "unscreened_metadata_closed": 30,
+      "contact_risk_unresolved_closed": 4
+    },
+    "signature": "D1F_PROMOTED_BEFORE_EXPANDED_FREE_TEXT_DIGIT_SCREEN",
+    "riskRows": 4, "n": 28329, "confirmedPersonalContactRows": "unknown",
+    "decision": "Chicago copies withdrawn before profile/manifest dispatch; exact paths await owner disposition.",
+    "selectedWholeFilePasses": 9, "unsafeProfileOrManifestReferences": 0, "deletions": 0, "moves": 0
+  },
+  "admission": {
+    "qualifiedRuntimeImports": 0, "originalsWithinRawBounds": {"count": 2, "n": 9},
+    "prefixesWithinRawBounds": {"count": 9, "n": 9}, "oneLineRegistrationSufficient": false,
+    "reason": "Foreign IDs fail the mi-d contract; exact-source/derivative registration and T1 are Indian-D8 fenced.",
+    "geometry": "Publisher CRS statements retained separately; CSV export CRS remains unverified, never inferred.",
+    "indianManifestOrEvaluatorModified": false, "backendOrContractsModified": false
+  },
+  "artifacts": {
+    "root": "E:/BhuAayam-data/task-data/d1f", "hashScope": "Raw immutable file bytes unless stated otherwise.",
+    "profiles.jsonl": "3a22f11297e292c9f2132defe9f3037fc16e0f0eac53b341b21efd55e9695bf6",
+    "profile-links.jsonl": "6af3c2b4b343020dc5ce3d4ce57e97f9ab0345f70e5198cf051f8663ac4a0b74",
+    "dictionary.jsonl": "13a04abcb6286441f652d51edee2a381a09c3b68fb948bc134f6877903212487",
+    "profiles/summary.json": "96ff008ae48f99f287eefc624c9d31b962aa02027ce653e932687b67ebbdf7ad",
+    "verifier/inventory.json": "58fdcac9e3829c691e7057d71e94325e3a3db4488d94ac61702d1f9d78a78e1d",
+    "provenance-corrections-v2.json": "7a70ca633a82f19e5f5cf166615e3c5d70f7c274a8b3b4d7a2a542ff634c1e23",
+    "profileInputManifest":
+      "manifests/profile-source-a7cf16b42ac1c8f27e9191de621e6e50c18c6b4db7af9cd2a6ca204f86bb555f.json",
+    "manifestQualification": "Issuer/attribution and declared-CRS corrections plus wrapping; all input pins unchanged.",
+    "correctionHistory": "v2 corrects v1's wrong SF dictionary digest; v1 and all acquisition receipts stay immutable.",
+    "codeSnapshots": "executed-code/; historical prefix-maker versions reconstructed and hash-verified.",
+    "profileProducer": "171c09d0c3eb692db00e8d9a43ae15f4471e6b40786fb3fec3d6aea1d7bf430c",
+    "rowObjectHashes": "The immutable summary hashes serialized row objects; those are not raw JSONL byte hashes."
+  },
+  "checks": [
+    {"command": "python scripts/api/build-dataset-catalog.py --check", "exit": 0},
+    {"command": "python scripts/agent/verify-d1f.py --indian-development", "exit": 0},
+    {"command": "pnpm exec tsx scripts/agent/d1f-acquisition.ts --check", "exit": 0, "profiledTables": 6, "n": 9},
+    {"command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exit": 0},
+    {"command": "pytest --noconftest: catalogue and acquisition tests; task-owned temp/cache", "exit": 0, "passed": 7},
+    {"command": "ruff check: acquire-d1f.py, test_acquire_d1f.py, verify-d1f.py", "exit": 0},
+    {"command": "git diff --check; new-file lines <=120", "exit": 0}
+  ],
+  "sideEffects": {"labels": 0, "training": 0, "teacherCalls": 0, "providerCalls": 0, "runtimeChanges": 0},
+  "dataCommits": ["de57ee99", "9d1d7fe5", "e20b9df3", "5efa2ac9"],
+  "guardCommit": "36c82377",
+  "next": [
+    "Lead can label the 193 profiled dictionary-linked columns; undocumented columns cannot gain invented meanings.",
+    "Owner reviews closed-discovery exact paths. Lead assigns the shared masker and foreign admission seams.",
+    "Ten documented target-qualified families are not supplied: only six have column definitions; five are profiled."
+  ]
+}

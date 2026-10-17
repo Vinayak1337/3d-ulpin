@@ -1,0 +1,81 @@
+{
+  "task": "AU2",
+  "container": "ulpin-au2-tmp-4e2ce3320195306b",
+  "startedAt": "2026-10-11T02:47:41.904Z",
+  "inventoryEncoding": "count and sha256 of UTF8 JSON.stringify(sorted Docker name array); condensed from raw receipt",
+  "before": {
+    "containers": {"count": 36, "sha256": "34e859f72b9aa6ee56837cc3b5de0991376f42e2f77efaf0badd5fdf580284aa"},
+    "volumes": {"count": 20, "sha256": "711439ee6570a82e1860b02746bc15b64bbce6a64855203ad832d53cab13974a"},
+    "networks": {"count": 9, "sha256": "68ce33ced8ea32849002da57d1accea28bb484b53d3c18ba5ac1e2d81c6ff9fb"}
+  },
+  "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "readyAfterSeconds": 1,
+  "during": {
+    "containers": {"count": 37, "sha256": "b1303872525096d49d7222909fa0e7a0b024f6702e663d15fc04a1c49cc11463"},
+    "volumes": {"count": 20, "sha256": "711439ee6570a82e1860b02746bc15b64bbce6a64855203ad832d53cab13974a"},
+    "networks": {"count": 9, "sha256": "68ce33ced8ea32849002da57d1accea28bb484b53d3c18ba5ac1e2d81c6ff9fb"}
+  },
+  "published": "127.0.0.1:62832",
+  "runtime": {
+    "exit": 0, "signal": null, "errorCode": null, "progress": [],
+    "evidence": {
+      "originalPath": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "bytes": 1103282,
+      "entryPoint": "runStreamingVectorJob",
+      "transport": "CAR memory-only S3 HTTP control; real PostgreSQL/PostGIS; product topology check",
+      "seconds": 3.01, "featuresPerSecond": 552,
+      "parts": 17, "records": 1662, "accepted": 1661, "quarantined": 1,
+      "slots": [
+        {"chunk_index":0,"status":"ready","published":true,"first_feature_index":0,"last_feature_index":99,
+          "records":100,"accepted":100,"quarantined":0,"bytes":83337},
+        {"chunk_index":1,"status":"ready","published":true,"first_feature_index":100,"last_feature_index":199,
+          "records":100,"accepted":100,"quarantined":0,"bytes":83560},
+        {"chunk_index":2,"status":"ready","published":true,"first_feature_index":200,"last_feature_index":299,
+          "records":100,"accepted":100,"quarantined":0,"bytes":83506},
+        {"chunk_index":3,"status":"ready","published":true,"first_feature_index":300,"last_feature_index":399,
+          "records":100,"accepted":100,"quarantined":0,"bytes":87427},
+        {"chunk_index":4,"status":"ready","published":true,"first_feature_index":400,"last_feature_index":499,
+          "records":100,"accepted":100,"quarantined":0,"bytes":85570},
+        {"chunk_index":5,"status":"ready","published":true,"first_feature_index":500,"last_feature_index":599,
+          "records":100,"accepted":100,"quarantined":0,"bytes":81777},
+        {"chunk_index":6,"status":"ready","published":true,"first_feature_index":600,"last_feature_index":699,
+          "records":100,"accepted":100,"quarantined":0,"bytes":87194},
+        {"chunk_index":7,"status":"ready","published":true,"first_feature_index":700,"last_feature_index":799,
+          "records":100,"accepted":100,"quarantined":0,"bytes":83501},
+        {"chunk_index":8,"status":"ready","published":true,"first_feature_index":800,"last_feature_index":899,
+          "records":100,"accepted":100,"quarantined":0,"bytes":85164},
+        {"chunk_index":9,"status":"ready","published":true,"first_feature_index":900,"last_feature_index":999,
+          "records":100,"accepted":100,"quarantined":0,"bytes":85762},
+        {"chunk_index":10,"status":"ready","published":true,"first_feature_index":1000,"last_feature_index":1099,
+          "records":100,"accepted":100,"quarantined":0,"bytes":84337},
+        {"chunk_index":11,"status":"ready","published":true,"first_feature_index":1100,"last_feature_index":1199,
+          "records":100,"accepted":100,"quarantined":0,"bytes":87404},
+        {"chunk_index":12,"status":"ready","published":true,"first_feature_index":1200,"last_feature_index":1299,
+          "records":100,"accepted":100,"quarantined":0,"bytes":89468},
+        {"chunk_index":13,"status":"ready","published":true,"first_feature_index":1300,"last_feature_index":1399,
+          "records":100,"accepted":99,"quarantined":1,"bytes":84614},
+        {"chunk_index":14,"status":"ready","published":true,"first_feature_index":1400,"last_feature_index":1499,
+          "records":100,"accepted":100,"quarantined":0,"bytes":84509},
+        {"chunk_index":15,"status":"ready","published":true,"first_feature_index":1500,"last_feature_index":1599,
+          "records":100,"accepted":100,"quarantined":0,"bytes":91105},
+        {"chunk_index":16,"status":"ready","published":true,"first_feature_index":1600,"last_feature_index":1661,
+          "records":62,"accepted":62,"quarantined":0,"bytes":51227}
+      ],
+      "rejected": [{
+        "featureIndex": 1322, "byteStart": 874418, "byteEnd": 875446,
+        "rawSha256": "22589b58123ebd27ccfebc847d37d7a02cf6710d4dc9608fab09a418b1f85fa8",
+        "disposition": "quarantined", "issueCode": "SELF_INTERSECTION", "feature": null
+      }],
+      "packages": 0, "mappedSlots": 0, "unknownRemainder": false, "originalUnchanged": true
+    }
+  },
+  "removed": "ulpin-au2-tmp-4e2ce3320195306b",
+  "after": {
+    "containers": {"count": 36, "sha256": "34e859f72b9aa6ee56837cc3b5de0991376f42e2f77efaf0badd5fdf580284aa"},
+    "volumes": {"count": 20, "sha256": "711439ee6570a82e1860b02746bc15b64bbce6a64855203ad832d53cab13974a"},
+    "networks": {"count": 9, "sha256": "68ce33ced8ea32849002da57d1accea28bb484b53d3c18ba5ac1e2d81c6ff9fb"}
+  },
+  "machineUnchanged": true,
+  "finishedAt": "2026-10-11T02:47:51.177Z"
+}

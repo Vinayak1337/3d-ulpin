@@ -1,0 +1,583 @@
+{
+ "schema": "building-b9-result/1",
+ "task": "b9-more-regions",
+ "gate": "GF-AI/building_mask",
+ "status": "improved",
+ "written_at": "2026-10-11T00:27:47+05:30",
+ "run_id": "b9-ka-three-regions-20261010",
+ "plan": "docs/evidence/gf-ai/building/b9/plan.json (amendments 1 and 2)",
+ "rule": {
+  "filter": {
+   "precision_at_050_min": 0.8,
+   "empty_chip_false_buildings_max": 40
+  },
+  "rule": [
+   "Among epochs passing the filter, the highest DEV recall at 0.5; a tie goes to the earlier",
+   "epoch."
+  ],
+  "threshold": "0.5, not tuned",
+  "outcomes": {
+   "pass_dev": "selected DEV recall >= 0.70",
+   "improved": "selected DEV recall >= 0.6724 and < 0.70",
+   "rejected": "anything else, or no epoch satisfies the selection filter"
+  },
+  "applied_by": "this file's generator, from the trainer's per-epoch DEV receipts; no number was tuned"
+ },
+ "selected": {
+  "epoch": 3,
+  "weights": "E:/BhuAayam-data/ml/runs/b9-ka-three-regions-20261010/epoch-003/model.safetensors",
+  "weights_sha256": "4aa80bffda07db47b64f8264cd02f8419a00b1b1a642de8f6a275f99c77296ee",
+  "at_050": {
+   "precision": 0.8627909241406174,
+   "recall": 0.6734569778048038,
+   "tp": 8860,
+   "fp": 1409,
+   "fn": 4296,
+   "empty_chip_false_buildings": 11,
+   "empty_chips_with_false_buildings": 11,
+   "mean_iou_of_matches": 0.8179
+  },
+  "epochs_passing_the_filter": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ]
+ },
+ "against_baseline": {
+  "baseline": "B3 epoch 4 at 0.5 on DEV",
+  "baseline_at_050": {
+   "precision": 0.8544117647058823,
+   "recall": 0.6624353906962602,
+   "tp": 8715,
+   "fp": 1485,
+   "fn": 4441,
+   "empty_chip_false_buildings": 20,
+   "empty_chips_with_false_buildings": 13,
+   "mean_iou_of_matches": 0.8164
+  },
+  "recall_change": 0.011,
+  "precision_change": 0.0084,
+  "matched_roofs_change": 145,
+  "publisher_roofs_on_dev": 13156,
+  "empty_chip_false_buildings_change": -9,
+  "matched_roofs_needed_for_improved": 8847,
+  "matched_roofs_above_that_floor": 13,
+  "matched_roofs_needed_for_pass_dev": 9210,
+  "matched_roofs_short_of_pass_dev": 350,
+  "size_recall_at_050": {
+   "[0,16)": {
+    "baseline": 0.0,
+    "selected": 0.0,
+    "baseline_tp": 0,
+    "selected_tp": 0,
+    "truth_buildings": 29
+   },
+   "[16,64)": {
+    "baseline": 0.1269,
+    "selected": 0.0725,
+    "baseline_tp": 42,
+    "selected_tp": 24,
+    "truth_buildings": 331
+   },
+   "[64,128)": {
+    "baseline": 0.2979,
+    "selected": 0.2369,
+    "baseline_tp": 210,
+    "selected_tp": 167,
+    "truth_buildings": 705
+   },
+   "[128,256)": {
+    "baseline": 0.3953,
+    "selected": 0.3711,
+    "baseline_tp": 621,
+    "selected_tp": 583,
+    "truth_buildings": 1571
+   },
+   "[256,512)": {
+    "baseline": 0.6013,
+    "selected": 0.5983,
+    "baseline_tp": 1597,
+    "selected_tp": 1589,
+    "truth_buildings": 2656
+   },
+   "[512,1024)": {
+    "baseline": 0.7591,
+    "selected": 0.7874,
+    "baseline_tp": 2846,
+    "selected_tp": 2952,
+    "truth_buildings": 3749
+   },
+   "[1024,inf)": {
+    "baseline": 0.826,
+    "selected": 0.8615,
+    "baseline_tp": 3399,
+    "selected_tp": 3545,
+    "truth_buildings": 4115
+   }
+  },
+  "size_bin_unit": "publisher mask area in source pixels; baseline bins from the B5 diagnosis of the same weights"
+ },
+ "reading": [
+  "Outcome improved: the selected DEV recall is at or above 0.6724 and below 0.70. The 0.70",
+  "target is not reached. No holdout run; the lead decides.",
+  "The comparison changed two things at once (three extra RAMP regions; scale and colour",
+  "augmentation) and does not separate them. Which of the two moved recall is unknown.",
+  "The gain sits in roofs of 512 source pixels and more. Recall fell in every bin under 512",
+  "pixels, so the small-roof weakness B5 diagnosed is not repaired by this recipe.",
+  "One run, one seed. DEV recall at 0.5 moved between 0.5610 and 0.6735 across the",
+  "six epochs of this run, a wider range than the gain over the baseline. The selected epoch",
+  "is the best of six on the same DEV split it is compared on (the baseline was chosen the",
+  "same way), so the size of the gain is not established beyond this split.",
+  "Thresholds 0.3 and 0.7 are reported only and took no part in selection. At 0.3, recall",
+  "stayed between 0.7660 and 0.7978 across the six epochs (baseline 0.7930), so the",
+  "epochs differ mostly in how confident the scores are and less in which roofs are found.",
+  "That is a description of the receipts, not a threshold proposal."
+ ],
+ "epochs": [
+  {
+   "epoch": 1,
+   "weights_sha256": "55d8460f755fd1d40820a1248875c4e5dede73af1ceb907d2376a80e8ab8edb2",
+   "at_050": {
+    "precision": 0.8937120604741725,
+    "recall": 0.5931134083307996,
+    "tp": 7803,
+    "fp": 928,
+    "fn": 5353,
+    "empty_chip_false_buildings": 13,
+    "empty_chips_with_false_buildings": 11,
+    "mean_iou_of_matches": 0.824
+   },
+   "size_recall_at_050": {
+    "[0,16)": 0.0,
+    "[16,64)": 0.0363,
+    "[64,128)": 0.1787,
+    "[128,256)": 0.2782,
+    "[256,512)": 0.4876,
+    "[512,1024)": 0.6909,
+    "[1024,inf)": 0.8124
+   },
+   "size_tp_at_050": {
+    "[0,16)": 0,
+    "[16,64)": 12,
+    "[64,128)": 126,
+    "[128,256)": 437,
+    "[256,512)": 1295,
+    "[512,1024)": 2590,
+    "[1024,inf)": 3343
+   },
+   "reported_only": {
+    "at_030": {
+     "precision": 0.6587575777328727,
+     "recall": 0.768166615992703,
+     "tp": 10106,
+     "fp": 5235,
+     "fn": 3050,
+     "empty_chip_false_buildings": 29,
+     "empty_chips_with_false_buildings": 20,
+     "mean_iou_of_matches": 0.8048
+    },
+    "at_070": {
+     "precision": 0.9624199876109849,
+     "recall": 0.3542870173304956,
+     "tp": 4661,
+     "fp": 182,
+     "fn": 8495,
+     "empty_chip_false_buildings": 4,
+     "empty_chips_with_false_buildings": 4,
+     "mean_iou_of_matches": 0.8471
+    }
+   },
+   "mean_train_loss": 30.2007,
+   "receipts": [
+    "b9-ka-three-regions-20261010-epoch001-dev-t050",
+    "b9-ka-three-regions-20261010-epoch001-dev-t030",
+    "b9-ka-three-regions-20261010-epoch001-dev-t070"
+   ]
+  },
+  {
+   "epoch": 2,
+   "weights_sha256": "19f5b1a35fc3e9c2b1f0265f34536a75d042d6ba39dce50a51a4ecc6d49c0abe",
+   "at_050": {
+    "precision": 0.8822531027898589,
+    "recall": 0.6321830343569474,
+    "tp": 8317,
+    "fp": 1110,
+    "fn": 4839,
+    "empty_chip_false_buildings": 10,
+    "empty_chips_with_false_buildings": 10,
+    "mean_iou_of_matches": 0.8234
+   },
+   "size_recall_at_050": {
+    "[0,16)": 0.0,
+    "[16,64)": 0.0332,
+    "[64,128)": 0.2099,
+    "[128,256)": 0.3164,
+    "[256,512)": 0.5553,
+    "[512,1024)": 0.7359,
+    "[1024,inf)": 0.8328
+   },
+   "size_tp_at_050": {
+    "[0,16)": 0,
+    "[16,64)": 11,
+    "[64,128)": 148,
+    "[128,256)": 497,
+    "[256,512)": 1475,
+    "[512,1024)": 2759,
+    "[1024,inf)": 3427
+   },
+   "reported_only": {
+    "at_030": {
+     "precision": 0.6353621761339159,
+     "recall": 0.7847370021283064,
+     "tp": 10324,
+     "fp": 5925,
+     "fn": 2832,
+     "empty_chip_false_buildings": 21,
+     "empty_chips_with_false_buildings": 16,
+     "mean_iou_of_matches": 0.806
+    },
+    "at_070": {
+     "precision": 0.9600373482726424,
+     "recall": 0.3907722712070538,
+     "tp": 5141,
+     "fp": 214,
+     "fn": 8015,
+     "empty_chip_false_buildings": 3,
+     "empty_chips_with_false_buildings": 3,
+     "mean_iou_of_matches": 0.8464
+    }
+   },
+   "mean_train_loss": 28.9352,
+   "receipts": [
+    "b9-ka-three-regions-20261010-epoch002-dev-t050",
+    "b9-ka-three-regions-20261010-epoch002-dev-t030",
+    "b9-ka-three-regions-20261010-epoch002-dev-t070"
+   ]
+  },
+  {
+   "epoch": 3,
+   "weights_sha256": "4aa80bffda07db47b64f8264cd02f8419a00b1b1a642de8f6a275f99c77296ee",
+   "at_050": {
+    "precision": 0.8627909241406174,
+    "recall": 0.6734569778048038,
+    "tp": 8860,
+    "fp": 1409,
+    "fn": 4296,
+    "empty_chip_false_buildings": 11,
+    "empty_chips_with_false_buildings": 11,
+    "mean_iou_of_matches": 0.8179
+   },
+   "size_recall_at_050": {
+    "[0,16)": 0.0,
+    "[16,64)": 0.0725,
+    "[64,128)": 0.2369,
+    "[128,256)": 0.3711,
+    "[256,512)": 0.5983,
+    "[512,1024)": 0.7874,
+    "[1024,inf)": 0.8615
+   },
+   "size_tp_at_050": {
+    "[0,16)": 0,
+    "[16,64)": 24,
+    "[64,128)": 167,
+    "[128,256)": 583,
+    "[256,512)": 1589,
+    "[512,1024)": 2952,
+    "[1024,inf)": 3545
+   },
+   "reported_only": {
+    "at_030": {
+     "precision": 0.640429556409787,
+     "recall": 0.7978108847674065,
+     "tp": 10496,
+     "fp": 5893,
+     "fn": 2660,
+     "empty_chip_false_buildings": 25,
+     "empty_chips_with_false_buildings": 19,
+     "mean_iou_of_matches": 0.8028
+    },
+    "at_070": {
+     "precision": 0.9504740111147434,
+     "recall": 0.44200364852538765,
+     "tp": 5815,
+     "fp": 303,
+     "fn": 7341,
+     "empty_chip_false_buildings": 6,
+     "empty_chips_with_false_buildings": 6,
+     "mean_iou_of_matches": 0.8397
+    }
+   },
+   "mean_train_loss": 28.3102,
+   "receipts": [
+    "b9-ka-three-regions-20261010-epoch003-dev-t050",
+    "b9-ka-three-regions-20261010-epoch003-dev-t030",
+    "b9-ka-three-regions-20261010-epoch003-dev-t070"
+   ]
+  },
+  {
+   "epoch": 4,
+   "weights_sha256": "de757c0dbab673d829cef186d1be9638f9739c47f8ff038807c1c984eae8a88f",
+   "at_050": {
+    "precision": 0.9147248388696083,
+    "recall": 0.5609607783520827,
+    "tp": 7380,
+    "fp": 688,
+    "fn": 5776,
+    "empty_chip_false_buildings": 8,
+    "empty_chips_with_false_buildings": 7,
+    "mean_iou_of_matches": 0.8325
+   },
+   "size_recall_at_050": {
+    "[0,16)": 0.0,
+    "[16,64)": 0.0151,
+    "[64,128)": 0.1262,
+    "[128,256)": 0.2062,
+    "[256,512)": 0.4495,
+    "[512,1024)": 0.6604,
+    "[1024,inf)": 0.8
+   },
+   "size_tp_at_050": {
+    "[0,16)": 0,
+    "[16,64)": 5,
+    "[64,128)": 89,
+    "[128,256)": 324,
+    "[256,512)": 1194,
+    "[512,1024)": 2476,
+    "[1024,inf)": 3292
+   },
+   "reported_only": {
+    "at_030": {
+     "precision": 0.6769664808221939,
+     "recall": 0.7660383095165704,
+     "tp": 10078,
+     "fp": 4809,
+     "fn": 3078,
+     "empty_chip_false_buildings": 14,
+     "empty_chips_with_false_buildings": 12,
+     "mean_iou_of_matches": 0.8097
+    },
+    "at_070": {
+     "precision": 0.9751493428912784,
+     "recall": 0.3102006688963211,
+     "tp": 4081,
+     "fp": 104,
+     "fn": 9075,
+     "empty_chip_false_buildings": 4,
+     "empty_chips_with_false_buildings": 4,
+     "mean_iou_of_matches": 0.8586
+    }
+   },
+   "mean_train_loss": 27.9586,
+   "receipts": [
+    "b9-ka-three-regions-20261010-epoch004-dev-t050",
+    "b9-ka-three-regions-20261010-epoch004-dev-t030",
+    "b9-ka-three-regions-20261010-epoch004-dev-t070"
+   ]
+  },
+  {
+   "epoch": 5,
+   "weights_sha256": "fbc56d579de6e00c1f0089060d5ad56a68b068de0b66cb3ad709f59225778ee3",
+   "at_050": {
+    "precision": 0.8985947161326588,
+    "recall": 0.6075554879902706,
+    "tp": 7993,
+    "fp": 902,
+    "fn": 5163,
+    "empty_chip_false_buildings": 9,
+    "empty_chips_with_false_buildings": 9,
+    "mean_iou_of_matches": 0.8292
+   },
+   "size_recall_at_050": {
+    "[0,16)": 0.0,
+    "[16,64)": 0.0332,
+    "[64,128)": 0.1787,
+    "[128,256)": 0.2769,
+    "[256,512)": 0.5139,
+    "[512,1024)": 0.7178,
+    "[1024,inf)": 0.8177
+   },
+   "size_tp_at_050": {
+    "[0,16)": 0,
+    "[16,64)": 11,
+    "[64,128)": 126,
+    "[128,256)": 435,
+    "[256,512)": 1365,
+    "[512,1024)": 2691,
+    "[1024,inf)": 3365
+   },
+   "reported_only": {
+    "at_030": {
+     "precision": 0.6756049705689994,
+     "recall": 0.7851930678017635,
+     "tp": 10330,
+     "fp": 4960,
+     "fn": 2826,
+     "empty_chip_false_buildings": 23,
+     "empty_chips_with_false_buildings": 15,
+     "mean_iou_of_matches": 0.8092
+    },
+    "at_070": {
+     "precision": 0.9632904093792043,
+     "recall": 0.38096685922772877,
+     "tp": 5012,
+     "fp": 191,
+     "fn": 8144,
+     "empty_chip_false_buildings": 5,
+     "empty_chips_with_false_buildings": 5,
+     "mean_iou_of_matches": 0.8508
+    }
+   },
+   "mean_train_loss": 27.6315,
+   "receipts": [
+    "b9-ka-three-regions-20261010-epoch005-dev-t050",
+    "b9-ka-three-regions-20261010-epoch005-dev-t030",
+    "b9-ka-three-regions-20261010-epoch005-dev-t070"
+   ]
+  },
+  {
+   "epoch": 6,
+   "weights_sha256": "7507551b466cccb30e56a9b627cd6328d3230a4ad9355305c52b50bf507f22e3",
+   "at_050": {
+    "precision": 0.9026208503203261,
+    "recall": 0.5890088172696868,
+    "tp": 7749,
+    "fp": 836,
+    "fn": 5407,
+    "empty_chip_false_buildings": 10,
+    "empty_chips_with_false_buildings": 9,
+    "mean_iou_of_matches": 0.8299
+   },
+   "size_recall_at_050": {
+    "[0,16)": 0.0,
+    "[16,64)": 0.0332,
+    "[64,128)": 0.1773,
+    "[128,256)": 0.2788,
+    "[256,512)": 0.5169,
+    "[512,1024)": 0.6949,
+    "[1024,inf)": 0.7769
+   },
+   "size_tp_at_050": {
+    "[0,16)": 0,
+    "[16,64)": 11,
+    "[64,128)": 125,
+    "[128,256)": 438,
+    "[256,512)": 1373,
+    "[512,1024)": 2605,
+    "[1024,inf)": 3197
+   },
+   "reported_only": {
+    "at_030": {
+     "precision": 0.694066998520113,
+     "recall": 0.7842809364548495,
+     "tp": 10318,
+     "fp": 4548,
+     "fn": 2838,
+     "empty_chip_false_buildings": 21,
+     "empty_chips_with_false_buildings": 16,
+     "mean_iou_of_matches": 0.8086
+    },
+    "at_070": {
+     "precision": 0.9630585898709036,
+     "recall": 0.3685770750988142,
+     "tp": 4849,
+     "fp": 186,
+     "fn": 8307,
+     "empty_chip_false_buildings": 5,
+     "empty_chips_with_false_buildings": 5,
+     "mean_iou_of_matches": 0.8516
+    }
+   },
+   "mean_train_loss": 27.7761,
+   "receipts": [
+    "b9-ka-three-regions-20261010-epoch006-dev-t050",
+    "b9-ka-three-regions-20261010-epoch006-dev-t030",
+    "b9-ka-three-regions-20261010-epoch006-dev-t070"
+   ]
+  }
+ ],
+ "baseline_reported_only": {
+  "at_030": {
+   "precision": 0.6257422179571763,
+   "recall": 0.7930221951961083,
+   "tp": 10433,
+   "fp": 6240,
+   "fn": 2723,
+   "empty_chip_false_buildings": 42,
+   "empty_chips_with_false_buildings": 27,
+   "mean_iou_of_matches": 0.8016
+  },
+  "at_070": {
+   "precision": 0.9509527170077628,
+   "recall": 0.4096989966555184,
+   "tp": 5390,
+   "fp": 278,
+   "fn": 7766,
+   "empty_chip_false_buildings": 8,
+   "empty_chips_with_false_buildings": 8,
+   "mean_iou_of_matches": 0.8417
+  }
+ },
+ "run": {
+  "ended": {
+   "returncode": 0,
+   "ended_at": "2026-10-10T18:50:43.319412+00:00",
+   "result_json": true,
+   "failure_json": false
+  },
+  "stop_reason": "early stop: epochs 4, 5 and 6 did not improve DEV recall at 0.5 by more than 0.001",
+  "epochs_completed": 6,
+  "optimizer_steps": 18876,
+  "chips_per_epoch": 12581,
+  "training_and_scoring_minutes": 298.2,
+  "peak_reserved_bytes": 5425332224,
+  "budget_bytes": 6442450944,
+  "non_finite_losses": 0,
+  "relaunches": 0,
+  "runtime_faults": 0,
+  "git_sha": "e5f3fbc3e5dc6d99ce7d3420e53a520f0f64d5d6",
+  "split_sha256": "b92cbf81d6f1a6e777db14a218080f87e26fbb6769fd9b9b937b214578cb3bb6",
+  "run_config_sha256": "3192d2d9f62a80336c3500f8d3d9f4ed59c5f4cbec3db68bbe21a99274159211",
+  "result_sha256": "1a2e1b4fc8e039d2a4f4602a94c8f1068daef0afc6175137b94fcbb854d51c6e",
+  "dev_selection_sha256": "4ba2a1fa35bccedbf02c4c5a10004adf472b0509f7cec688386d1d6c8acf5a8b",
+  "steps_sha256": "b0802495593b6953813eb0462b26eed6b823cf74382c86adf033d4f0aab4ba32",
+  "directory": "E:/BhuAayam-data/ml/runs/b9-ka-three-regions-20261010",
+  "weights": "outside Git; not registered, not exported"
+ },
+ "comparability": {
+  "baseline_scored_by": {
+   "evaluator_sha256": "c0a6dc6100f82f82eabab626600508afd275f37f3c345835e99ef425fc5dea3e",
+   "production_source_sha256": "c3838b5b591a144fd96c8afba7b6fb70b5f6ae787960722cfe796461f362af2b",
+   "git_sha": "bc46d10024107a002298c4fbf88f98466636fb8b"
+  },
+  "b9_scored_by": {
+   "evaluator_sha256": "fdcf911cc48fe663134a91ac12353513af96d54e206b19da03df375095a57f03",
+   "production_source_sha256": "030c6dc0a4256a88705c5ece11fd8768d1a71c7632396cad40541eaa93d80d66",
+   "git_sha": "4e1e9ecf0f3658ab77d4cfe25a171358a211595f"
+  },
+  "same": [
+   "split_sha256",
+   "coco_sha256",
+   "split_chip_ids_sha256",
+   "profile version",
+   "threshold 0.5"
+  ],
+  "note": [
+   "The baseline was not scored again (plan: new_model_calls 0), so the two sides come from",
+   "two revisions of the evaluator and of services/geo/geo/spatial_ml.py. Every removed or",
+   "replaced line between them was read: the changes add transfer slots, size bins, an input",
+   "resolution that defaults to 432, activation guards and a TIFF type, and split the matcher",
+   "into helpers with the same IoU matrix, reward and assignment. That is a reading of the",
+   "diff, not a measurement. Run-to-run variation of the scorer on unchanged weights is",
+   "unknown: it was not measured. The selected epoch clears the improved floor by 13 roofs."
+  ]
+ },
+ "closed_sets": {
+  "karnataka_holdout_calls": 0,
+  "transfer_calls": 0,
+  "holdout_runs_jsonl": "unchanged",
+  "registration_export_serving": "none"
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "mapping-plan/2",
+  "sourceKind": "gis_attributes",
+  "layoutFingerprint": "967ed0fd32d4dca1796fcc9504800c3cb7274c08f3a2352aa8b502b2dfa59181",
+  "method": "reviewer:a1-worker",
+  "fields": [
+    {"sourceField":"FID","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"Feature identifier of an administrative sector polygon, not a building source key or cadastral parcel identifier."},
+    {"sourceField":"Name","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"Sector labels remain source literals; neither sector number nor sector name establishes a building or unit."},
+    {"sourceField":"Area","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"Source sector Area field has no declared unit or cadastral meaning. Do not interpret its zeroes as known parcel area."}
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "task": "LP1",
+  "baselinePreparation": {
+    "signature": "STALE_REVISION: The recipe changed or already executed; refresh before editing.",
+    "attempts": [
+      {"receipt": "before-01.json", "result": "Second draft proposed a remembered layout; harness authored revision zero."},
+      {"receipt": "before-02.json", "result": "A packageId check did not distinguish that remembered proposed recipe."}
+    ],
+    "diagnosis": "intake-draft-worker.ts retains remembered proposed recipes; approve their actual revision.",
+    "boundedComparison": {
+      "hypothesis": "Approve the existing proposed recipe at its actual revision rather than author another.",
+      "baseline": "before-02.json",
+      "success": "Both halves prepare at area revision zero; one confirmation reaches the second commit.",
+      "stop": "Same refusal after this materially different authority sequence."
+    },
+    "result": "Passed; before-03 reproduced the break and plan, then an ancillary full-file import hit AREA_LIMIT.",
+    "before03Path": "E:/BhuAayam-data/task-data/lp1/attempts/before-03.json",
+    "final": "before-04.json removes that unnecessary ancillary walk and passes; performance baseline stays CA6."
+  },
+  "postBuildSpatialReview": {
+    "signature": "The cross-area geographic prefilter used the original bbox, not the widened local extent.",
+    "baseline": "after-01.json",
+    "diagnosis": "Own-area selection was widened correctly; cross-area selection could omit nearby qualified context.",
+    "hypothesis": "Transform the widened local envelope for indexed selection and intersect in the package frame.",
+    "implementation": "Shared bounds CTE; geographic GiST prefilter; final intersection against widened local extent.",
+    "countCorrection": "Unqualified-in-scope count now includes eligible cross-area rows using the same selector.",
+    "success": "Batch/cards/layers pass; actual NYC cross-area rows beyond the own bbox enter the raw selector.",
+    "stop": "SRID mismatch, no cross-area rows beyond own bbox, manufactured qualification, or recording refusal.",
+    "comparison": "after-02.json",
+    "result": "Passed; 468 real cross-area rows beyond the own bbox, zero qualified context, both spatial indexes used.",
+    "next": "Use after-02 as final runtime evidence; after-01 is explicitly superseded for scope correctness."
+  },
+  "protocolChecks": {
+    "signature": "Snapshot protocol doubles rejected the new exact-membership SQL spelling.",
+    "diagnosis": "Unimplemented mock statement, not a changed domain outcome or revision-reader dependency.",
+    "correction": "Retain the established result projection; add exact feature-revision/package selection in its join.",
+    "result": "CA1/CA2, retained-document, source-only and packet tests pass; no external reader was edited."
+  },
+  "contractPublication": {
+    "signature": "Python API check requested producer repinning after application edits.",
+    "correction": "Run scripts/api/refresh-contract.ts against the task base, then native and Python API checks.",
+    "result": "Catalogue unchanged; four owned producer pins refreshed; both checks pass.",
+    "remaining": "Optional review.scope needs the hand-written API projection updated by its owner at integration."
+  }
+}

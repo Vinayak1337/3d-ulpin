@@ -1,0 +1,8 @@
+{ "at": "2026-10-16T22:41:43.313Z", "reading": "docker inspect, read only: no device (GPU) request; the reused image",
+"receipt": { "command": [ "docker inspect ulpin-reh-02-geo-1 ulpin-reh-02-worker-1 --format \"{{.Name}} devices={{.Hos",
+"tConfig.DeviceRequests}} image={{.Config.Image}} id={{.Image}}\"" ], "from": "E:/Projects/ulpin-wt/k2", "exit": 0,
+"seconds": 0.169, "output": [
+"/ulpin-reh-02-geo-1 devices=[] image=ulpin-geo:demo-k3b id=sha256:f66bd7e9af672b75805bc1f8",
+"39f2bec92dff2452595a31c4ddda5edd4dbd3c73",
+"/ulpin-reh-02-worker-1 devices=[] image=ulpin-geo:demo-k3b id=sha256:f66bd7e9af672b75805bc",
+"1f839f2bec92dff2452595a31c4ddda5edd4dbd3c73" ], "error": null } }

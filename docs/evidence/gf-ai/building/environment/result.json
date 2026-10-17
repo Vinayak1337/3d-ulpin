@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "framework": "Transformers RF-DETR instance-segmentation (same installed checkpoint); rfdetr package imported",
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "cuda": "12.8",
+  "versions": {
+    "torch": "2.8.0+cu128",
+    "torchvision": "0.23.0+cu128",
+    "rfdetr": "1.11.2",
+    "transformers": "5.17.0",
+    "onnxruntime-gpu": "1.23.2",
+    "numpy": "2.0.2",
+    "pillow": "11.2.1",
+    "pycocotools": "2.0.11"
+  },
+  "input": {
+    "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+    "sha256": "7e146a4543c77da6ae092c971298948c4cd7e55f063422ee136d098ce7e8815c",
+    "instances": 10,
+    "allocation": "retained_Barishal_train_only"
+  },
+  "model_sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+  "forward_calls": 1,
+  "backward_calls": 1,
+  "optimizer_steps": 0,
+  "holdout_calls": 0,
+  "loss": 29.93855094909668,
+  "finite_gradients": true,
+  "parameters_with_gradients": 591,
+  "forward_backward_seconds": 1.645377799984999,
+  "peak_allocated_bytes": 3254294528,
+  "peak_reserved_bytes": 3514826752,
+  "budget_bytes": 6442450944,
+  "precision": "autocast_fp16; FP32 parameters/gradients",
+  "python": "3.11.15 (main, Aug  7 2026, 02:24:19) [MSC v.1944 64 bit (AMD64)]",
+  "git_sha": "28d5f6aeb90a747a2c9aa08336cc8205f224620d",
+  "smoke_code_sha256": "1929b3b53ac1887e743c8c4324348e959392dfefc81dbd474d600e8bd521fb24",
+  "uncommitted_worker_code_at_execution": true,
+  "network_model_fetches": 0
+}

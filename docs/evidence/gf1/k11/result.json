@@ -1,0 +1,305 @@
+{
+ "task": "K11",
+ "gates": ["GF1", "GF4", "GF5"],
+ "base": "e434ab64",
+ "mode": "offline; protocol doubles and Git evidence only",
+ "report": {
+  "TASK": "K11 Part 1: an unqualified location carries no number nobody stated; GF1/GF4/GF5",
+  "WORKS": "A source-stated assign review omits location; assignment resolves NO-ANCHOR / ? / L? / ?.",
+  "SEE IT": [
+   "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+   "packages/server/src/modules/usp/source-stated-identity.test.ts"
+  ],
+  "INPUTS": "Retained Tower 3 UNIT-3B label; difficult: legacy R3 numbered location and UNIT-3A on the same sheet.",
+  "GAPS": "Part 2 stops at the ownership boundary; no review read or new operation. No live SQL/runtime checks.",
+  "DESIGN": [
+   "project-identity contract loosens numbers only for unknown kinds; verticalLocator preserves numbered output.",
+   "assignmentLocation derives UNQUALIFIED_SOURCE_LOCATION without changing the stored review command/hash.",
+   "source-stated guard refuses either number; fixture omits location and names one numbered legacy form."
+  ],
+  "COMMITS": [
+   "fdebf415 docs(identity): K11 where a location's numbers are used and what marks a review used",
+   ["b743fb00 fix(identity): an unqualified location carries no structure or space number;",
+    "a source-stated review omits it"]
+  ],
+  "CHECKS": "See checks and tests below for commands, counts, initial failures and final results.",
+  "NEXT": [
+   "Lead authorizes the evidence operation manifest, then dispatches Part 2 with this Step 0 and proposal entry.",
+   "Studio review omits location; the read-only f3a-fixtures.ts needs its old numbered write removed by its owner.",
+   "Runtime owner qualifies the rollout; do not correct or rewrite R3's stored numbered identity automatically."
+  ]
+ },
+ "step0": {
+  "writtenBeforeCode": true,
+  "decision": "Proceed: allocation and database constraints do not depend on location numbers; stored time exists.",
+  "numbers": {
+   "allocation": [
+    "packages/server/src/modules/usp/project-identity.ts:165-183 allocate takes record/site/review and a code factory,",
+    "not a location. It reserves a random checked code; retries only usp_project_codes_pkey collisions.",
+    "database/sql/60-usp/06-identity-schema.sql:9-16: code primary key and record_id UNIQUE; no locator uniqueness.",
+    "The state table at :33-37 has a record_id primary key and location jsonb NOT NULL, no JSON constraint/index."
+   ],
+   "readersAndWriters": [
+    ["contracts/usp/project-identity.ts:50-86", "Requires both numbers today; verticalLocator displays padding only."],
+    ["server/usp/project-identity.ts:75-111", "Review validates location/evidence; assign/correct require it today."],
+    ["server/usp/project-identity.ts:108-109", "Split uniqueness compares complete verticalLocator strings."],
+    ["server/usp/project-identity.ts:319-325",
+     "Merge requires distinct unreserved successor records/codes, not locations."],
+    ["server/usp/project-identity.ts:254-255,311-312,323-324",
+     "Assign/correct/split/merge store validated location JSON."],
+    ["server/usp/project-identity.ts:148-160", "checkedReview parses the stored command and verifies its hash."],
+    ["server/usp/project-identity.ts:389-390", "Resolve parses snapshot identity.location and prints verticalLocator."],
+    ["server/usp/source-stated-identity.ts:12-16", "Checks unknown kinds/level/anchor, not numbers today."],
+    ["server/usp/snapshots.ts:74-77,132-134", "Copies state JSON into captured identity; no number calculation."],
+    ["server/usp/ingestion/document-association-targets.ts:19,67-68,151,178-179",
+     "Copies location into target fingerprint and locks state; no number calculation."],
+    ["server/usp/packets/plan-authority.ts:155-165; pdf-authority.ts:151-160",
+     "Copies state into current identity for equality/integrity; does not require individual numbers."],
+    ["server/usp/packets/card-projection.ts:44-46", "Parses then prints verticalLocator with parcels suppressed."],
+    ["server/usp/packets/card-verification.ts", "Reprojects facts and checks immutable hashes; no number allocation."],
+    ["server/usp/exchange.ts:144-171,273-293",
+     "CityJSON exports code; sidecar carries body including location unchanged."],
+    ["server/registry/canonical-source-identity.ts:16-31", "Reads code/version/reviewer, not location numbers."],
+    ["apps/studio/scripts/f3a-fixtures.ts:36-37; scripts/agent/r3-live.ts:26-27",
+     "Offline Studio display fixture and historical runtime driver hold 1/1; neither is an allocator."],
+    ["tests/usp-project-identity-code.test.ts; usp-project-identity-authority.test.ts; usp-property-card.test.ts",
+     "Existing known-kind display, exact-snapshot and card fixtures use numbers and must remain unchanged."],
+    ["tests/usp-packet-pdf.test.ts; scripts/usp/gf/GF-T15-live.ts",
+     "Known-kind assignment/split/merge journey fixtures require numbers; no source-only fallback there."]
+   ],
+   "conclusion": [
+    "Only schema/display and split display-string uniqueness need the numeric parts. Source-only records cannot",
+    "split or merge. Equal unqualified locations on independently assigned records do not collide. No SQL",
+    "constraint or index reads either numeric field. Legacy apps/web has no additional locator implementation."
+   ]
+  },
+  "legacy": {
+   "source": "docs/evidence/runtime/r3/result.json step3.review.location and step3.resolve.location",
+   "location": {
+    "anchorState": "not_supplied", "parcels": [],
+    "locator": {"structureKind": "?", "structureNumber": 1, "levels": ["L?"], "spaceKind": "?", "spaceNumber": 1}
+   },
+   "line": "NO-ANCHOR / ?01 / L? / ?001",
+   "preservation": [
+    "Optional numeric fields still parse existing numbers; verticalLocator retains their padding. Stored review",
+    "body/hash, identity state, receipt, captured body/hash and card facts are not rewritten. Assignment replay",
+    "returns the stored receipt before source-only validation; resolve/card verification do not run write guards."
+   ],
+   "testsToProve": [
+    "source-stated-identity.test.ts: stored numbered source-only review, state and snapshot remain readable",
+    "source-stated-identity.test.ts: stored numbered assignment receipt replays unchanged",
+    "tests/usp-project-identity-code.test.ts; tests/usp-project-identity-authority.test.ts",
+    "tests/usp-property-card.test.ts; packets/card-verification.test.ts; packets/card-listing.test.ts"
+   ]
+  },
+  "reviews": {
+   "table": "database/sql/60-usp/06-identity-schema.sql:2-8 usp_project_identity_reviews",
+   "columns": ["id", "scope_id", "manifest_id", "operation", "command_hash", "reviewer_subject", "body",
+    "consumed_at (nullable timestamptz)", "created_at (timestamptz NOT NULL DEFAULT now())"],
+   "used": [
+    "project-identity.ts:219-227 finish stores usp_project_identity_audit with review_id, operation and receipt",
+    "body, stores usp_command_receipts whose body names reviewId, then sets reviews.consumed_at=now().",
+    "Audit operation is assign/correct/etc.; its receipt operation is project_identity_assign/etc.",
+    "checkedReview :150-159 refuses consumed_at, hash mismatch, different scope/manifest/subject/operation,",
+    "record ids/versions or predecessor/successor order. Codes/state/lineage also reference review_id."
+   ],
+   "body": [
+    "The parsed client command: operation, scope, recordIds, expectedVersions, reason, evidence and optional",
+    "location(s), predecessor/successor ids and transferredGeometry. List only operation/reason/bound scope,",
+    "this record's expected version and command hash; omit evidence/location/other participant details."
+   ]
+  },
+  "access": [
+   "K8 building-snapshots.ts:15-24 finds a building in an unarchived area; :39-48 filters stored manifests by",
+   "site, accessViewId and policyVersion before LIMIT. assertLocalUsp checks the configured local subject.",
+   "Apply the same manifest access/policy rule to review reads, with a recorded registry record on a site",
+   "of an unarchived map area. No readable manifest for that site means the same NOT_FOUND as absent record.",
+   "No identity review read is published today. canonical-source-identity.ts:31 embeds the assigned actor",
+   "in canonical proposedCode.method (R3 step3.readBack), so an assigned reviewer is indirectly already public",
+   "to the local operator. This route deliberately omits reviewer subject: it is not needed to resume writes.",
+   "Listing checks stored manifests, not current cited documents; subsequent assignment keeps all exact-scope",
+   "and document guards. expectedManifestId is the original body.scope.manifestId, never the review's twin",
+   "snapshot or the first building snapshot listed (docs/evidence/gf1/k8b/result.json duplicateSnapshots)."
+  ]
+ },
+ "part1": {
+  "state": "complete offline; no live qualification",
+  "storedCommand": "usp_project_identity_reviews.body stores the parsed client review, with location absent.",
+  "hash": "command_hash remains fingerprint(review); no derived location is inserted into the command.",
+  "derivedLocation": "assignmentLocation selects the one constant; only usp_project_identity_state.location stores it.",
+  "replay": "An identical assignment returns the stored receipt before source-only write validation, unchanged.",
+  "legacy": [
+   "ProjectIdentityReviewSchema parses the numbered fixture without changing its fingerprint; resolving a",
+   "captured numbered state and projecting its card facts still returns NO-ANCHOR / ?01 / L? / ?001.",
+   "Tests model legacy rows on the protocol double. No actual R3 state, receipt, snapshot or card was read/changed."
+  ],
+  "observed": [
+   ["assign review without location", "accepted; stored body has no location; assigned locator has no numbers"],
+   ["either number, including per-record locations", "422 USP_SOURCE_IDENTITY; no review is stored"],
+   ["non-source-stated assign review without location", "422 unsupported_lineage_kind"],
+   ["legacy numbered location", "parses, resolves, projects card line and replays unchanged"],
+   ["two real sheet labels in one building", "two assignments; different codes; equal unqualified locations"]
+  ]
+ },
+ "part2": {
+  "state": "not started; stopped at a complete part boundary",
+  "blocker": "apps/api/src/modules/evidence/operation-manifest.json is read-only under this task's owned paths.",
+  "whyRequired": [
+   "apps/api/src/openapi.ts:69-75 refuses a registered route without a matching operation-manifest entry.",
+   "Both refresh-contract.ts and API docs setup invoke createApiDocument. A route-only edit would therefore",
+   "break contract generation and API startup. scripts/api/check.py:85-91 also requires the declared entry."
+  ],
+  "proposal": "docs/evidence/gf1/k11/identity-reviews-operation.json; the lead applies/authorizes it, not this worker.",
+  "remaining": [
+   "The bounded contracts, identity-reviews.ts reader/test and guarded GET route; no new controller module is needed.",
+   "Use the existing controller, method-scoped PrivateSpatialGuard and the K8/global 422 error filter/contract.",
+   "Filter unreadable manifests by current accessViewId/policyVersion before LIMIT; order stored created_at/id.",
+   "Return body.scope unchanged, body.expectedVersions[recordId], original manifest_id and command_hash.",
+   "used.at comes from consumed_at, operation from the audit row naming review_id; do not use committedAt as now().",
+   "A single page statement reads limit+1; protocol tests compose with the real assignProjectCode and assert SQL.",
+   "Regenerate the contract/types and expect one added operation only after the manifest entry is authorized."
+  ]
+ },
+ "studioReview": {
+  "request": "POST /api/v1/usp/identity/reviews",
+  "bodyFieldByField": {
+   "operation": "assign",
+   "scope": "capture.data.scope, unchanged",
+   "recordIds": "[selected recorded unit id]",
+   "expectedVersions": "{ [unit id]: canonical.inputRevisions registry_record entry's revision }",
+   "reason": "the officer's required text, as accepted by the existing trimmed 1-2000 character contract",
+   "evidence": [{
+    "sourceId": "the recorded register evidence sourceId",
+    "revision": "the canonical label citation's sourceRevision",
+    "locator": "the recorded register evidence locator string, unchanged"
+   }]
+  },
+  "omitted": ["location", "locations", "predecessors", "successors", "transferredGeometry", "reviewer"],
+  "notBrowserWork": "No source number, location default, reviewer name or server hash is invented by the Studio."
+ },
+ "afterPart2AndRollout": {
+  "request": {
+   "method": "GET",
+   "url": "http://127.0.0.1:3194/api/v1/usp/identity/records/46b7265e-ca88-402d-83df-065cf7c45140/reviews?limit=20"
+  },
+  "headers": "none; configured local operator and loopback guards",
+  "expectedTower3": {
+   "recordId": "46b7265e-ca88-402d-83df-065cf7c45140",
+   "reviewId": "105e6dc7-f413-4bbb-9b0f-50bfd352cf04",
+   "operation": "assign",
+   "expectedManifestId": "d97e01c5-c5af-45de-971e-2bb1d355d810",
+   "expectedVersions": 1,
+   "items": 1,
+   "truncated": false,
+   "used": "non-null; at = stored consumed_at, operation = assign",
+   "scope": "the original client snapshot scope bound to d97e01c5, not the review twin e53c4653",
+   "reason": "the R2 reason exported by scripts/agent/r2-live.ts:17-19, unchanged",
+   "createdAtAndHash": "stored review values; not read here and not substituted from another timestamp"
+  },
+  "qualification": [
+   "Expected only if no further identity reviews were stored and access/policy still match. The current record",
+   "revision is 2; expectedVersions is the review's original 1, not today's revision.",
+   "Part 1 alone does NOT add this route: after its rollout this GET is still unavailable. Do not send it as a",
+   "K11 acceptance test until Part 2 is implemented and rolled out. No request was sent here."
+  ]
+ },
+ "checks": {
+  "pnpm typecheck:backend": {"exit": 0, "initial": "exit 2: new test needed outcome-union narrowing; fixed"},
+  "pnpm studio:typecheck": {"exit": 0},
+  "pnpm exec tsc -p scripts/agent/tsconfig.json": {"exit": 0},
+  "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts staging": {"exit": 0},
+  "pnpm studio:api-types": {"exit": 0},
+  "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {"exit": 0},
+  "python -B scripts/api/check.py": {"exit": 1, "reason": "three unchanged receipts have CRLF checkout bytes"},
+  "canonicalReceiptDiagnostic": {
+   "exit": 0,
+   "command": "python -B <stdin>; existing check.main with unchanged receipt reads using their Git LF bytes",
+   "notAReplacementForRawCheck": true,
+   "proof": "Each substituted receipt's current bytes differ from e434ab64 only by CRLF and its Git hash is pinned.",
+   "initial": "exit 1: diagnostic raced refresh and saw the pre-refresh producer pin; rerun after generation passed"
+  },
+  "git diff --check": {"exit": 0},
+  "addedSourceAndEvidenceLinesOver120": 0,
+  "generatedOnlyException": "Four source-pins hash entries retain their pre-existing 121-132 character line widths.",
+  "openapi": {"before": 298, "after": 298, "added": 0, "removed": 0, "namedSchemas": 337},
+  "selfReview": "Full diff against staging merge-base read; no packets or other read-only paths changed."
+ },
+ "tests": {
+  "focused": {
+   "command": [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+    "packages/server/src/modules/usp/source-stated-identity.test.ts",
+    "tests/usp-project-identity-code.test.ts tests/usp-project-identity-authority.test.ts"
+   ],
+   "exit": 0, "pass": 22,
+   "initial": "21 pass/1 fail: known utility kind now needs its number before the source guard; fixture fixed"
+  },
+  "neighbours": {
+   "command": [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json",
+    "--import ./packages/server/src/modules/registry/registry-image-region-evidence.ts --test",
+    "--test-skip-pattern 'retained current image runtime files match' --test-reporter=tap",
+    "tests/*identity*.test.ts tests/*snapshot*.test.ts tests/*packet*.test.ts tests/*card*.test.ts",
+    "packages/server/src/modules/usp/source-stated-identity.test.ts",
+    "packages/server/src/modules/usp/*snapshot*.test.ts packages/server/src/modules/usp/packets/*.test.ts",
+    "apps/api/src/modules/evidence/*packet*.controller.test.ts",
+    "apps/api/src/modules/evidence/property-card.controller.test.ts",
+    "apps/api/src/modules/register/building-snapshots.controller.test.ts"
+   ],
+   "exit": 0, "pass": 250, "skipped": 3, "excludedAfterFailure": 1, "files": 32,
+   "perFileColumns": ["file", "passed", "skipped"],
+   "perFile": [
+    ["apps/api/src/modules/evidence/packet-bundle.controller.test.ts", 1, 0],
+    ["apps/api/src/modules/evidence/packet-image-region.controller.test.ts", 1, 0],
+    ["apps/api/src/modules/evidence/packet-plans.controller.test.ts", 1, 0],
+    ["apps/api/src/modules/evidence/packet-region.controller.test.ts", 2, 0],
+    ["apps/api/src/modules/evidence/property-card.controller.test.ts", 4, 0],
+    ["apps/api/src/modules/register/building-snapshots.controller.test.ts", 3, 0],
+    ["packages/server/src/modules/usp/building-snapshots.test.ts", 13, 0],
+    ["packages/server/src/modules/usp/packets/card-listing.test.ts", 8, 0],
+    ["packages/server/src/modules/usp/packets/card-revocation.test.ts", 9, 0],
+    ["packages/server/src/modules/usp/packets/card-verification.test.ts", 9, 0],
+    ["packages/server/src/modules/usp/packets/source-stated-binding.test.ts", 3, 0],
+    ["packages/server/src/modules/usp/snapshot-retained-documents.test.ts", 3, 0],
+    ["packages/server/src/modules/usp/source-stated-identity.test.ts", 14, 0],
+    ["tests/core-identity.test.ts", 52, 0],
+    ["tests/core-snapshot.test.ts", 57, 0],
+    ["tests/packet-image-pdf-bundle.test.ts", 2, 0],
+    ["tests/packet-image-region.test.ts", 3, 0],
+    ["tests/packet-pdf-bundle.test.ts", 2, 0],
+    ["tests/packet-pdf-job-compatibility.test.ts", 1, 0],
+    ["tests/packet-pdf-render.test.ts", 0, 1],
+    ["tests/packet-region-extract.test.ts", 8, 0],
+    ["tests/packet-region-runtime.test.ts", 0, 2],
+    ["tests/usp-packet-image-pdf-recovery.test.ts", 5, 0],
+    ["tests/usp-packet-image-pdf.test.ts", 2, 0],
+    ["tests/usp-packet-mixed-pdf.test.ts", 3, 0],
+    ["tests/usp-packet-pdf.test.ts", 18, 0],
+    ["tests/usp-packet-plans.test.ts", 13, 0],
+    ["tests/usp-project-identity-authority.test.ts", 4, 0],
+    ["tests/usp-project-identity-code.test.ts", 4, 0],
+    ["tests/usp-property-card-image.test.ts", 2, 0],
+    ["tests/usp-property-card-unicode.test.ts", 1, 0],
+    ["tests/usp-property-card.test.ts", 2, 0]
+   ]
+  },
+  "neighbourFailures": [
+   "Initial unmodified broad command: exit 1, 246 pass, 3 fail, 3 skipped. Two leaf modules hit an existing",
+   "ESM circular-initialization TDZ at registry-image-region-evidence.ts:47 (PacketImageRegionService).",
+   "Hypothesis: entry order, not identity logic. One bounded preload comparison: both files pass, 4 tests, exit 0.",
+   "A broad run with that preload: 250 pass, 1 fail, 3 skipped, exit 1. Its negative start regex did not",
+   "exclude the external-runtime test. No image runtime was repaired or retried after the repeated failure.",
+   "Final run explicitly excludes it using --test-skip-pattern. It needs the retained launcher's current",
+   "filesystem layout accepted by image-checkpoint-runtime.ts:84-89; it fails closed with 503",
+   "PACKET_IMAGE_CHECKPOINT_RUNTIME_UNAVAILABLE. The other three native tests skip without opt-in inputs."
+  ]
+ },
+ "GAPS": [
+  "No live API/provider call, runtime start/stop, database SQL/migration or held-out/private runtime read.",
+  "Part 2 is absent, so its page SQL and 404/422/listed-used behaviour are not yet implemented or qualified.",
+  "Legacy fixtures prove parsing/resolve/projection/replay offline, not the actual stored R3 card's live verification.",
+  "Three native tests need opt-in fixtures; one existing image runtime pin/layout test fails and remains excluded.",
+  "Raw API check needs LF checkout bytes for three unchanged receipts; those read-only files were left untouched.",
+  "No UI file changed; ui-design-check is not applicable. No push or branch/worktree switch."
+ ]
+}

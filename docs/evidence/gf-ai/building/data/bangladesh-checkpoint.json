@@ -1,0 +1,59 @@
+{
+  "schema": "ramp-background-checkpoint/1",
+  "at": "2026-10-09T19:48:06.301047+00:00",
+  "pid": 21896,
+  "process_confirmed_alive": true,
+  "launch": "Windows DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP; stdout/stderr redirected, no inherited handles",
+  "log": "E:/BhuAayam-data/datasets/ramp/download.log",
+  "manifest_checkpoint": "E:/BhuAayam-data/datasets/ramp/manifest-checkpoint-b1-final-20261010.json",
+  "manifest_sha256": "4bba0049d43552a18d6bdeb5eab5e53aaa698626b5435599f414b80eeab2c00e",
+  "completed_files": 70250,
+  "completed_bytes": 7293003576,
+  "regions": {
+    "karnataka_india": {
+      "downloaded_files": 12578,
+      "downloaded_bytes": 1294633753,
+      "inventory_files_seen": 12578,
+      "status": "complete"
+    },
+    "dhaka_bangladesh": {
+      "downloaded_files": 23812,
+      "downloaded_bytes": 2557396146,
+      "inventory_files_seen": 23812,
+      "status": "complete"
+    },
+    "sylhet_bangladesh": {
+      "downloaded_files": 32436,
+      "downloaded_bytes": 3427795636,
+      "inventory_files_seen": 32436,
+      "status": "complete"
+    },
+    "chittagong_bangladesh": {
+      "downloaded_files": 1424,
+      "downloaded_bytes": 13178041,
+      "inventory_files_seen": 10460,
+      "status": "downloading"
+    },
+    "barishal_bangladesh": {
+      "downloaded_files": 0,
+      "downloaded_bytes": 0,
+      "inventory_files_seen": 0,
+      "status": "pending"
+    },
+    "jashore_bangladesh": {
+      "downloaded_files": 0,
+      "downloaded_bytes": 0,
+      "inventory_files_seen": 0,
+      "status": "pending"
+    },
+    "coxs_bazar_bangladesh": {
+      "downloaded_files": 0,
+      "downloaded_bytes": 0,
+      "inventory_files_seen": 0,
+      "status": "pending"
+    }
+  },
+  "failures": [],
+  "bangladesh_allocation": "TRAIN_only",
+  "next": "All six Bangladesh regions continue in one detached process. Export remaining TRAIN-only shards when each region completes; Dhaka already exported. Resume command uses corrected modern Azure range headers."
+}

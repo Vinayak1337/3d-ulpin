@@ -1,0 +1,13 @@
+{ "index": "023", "method": "POST", "route": "/api/v1/usp/packets/plans/create", "status": 200, "seconds": 7.998,
+"requestKey": "19679509-778a-4d86-ae52-72fd702e5077", "idempotencyHeader": null, "ids": {
+"planId": "4a9e1fea-4ae9-4073-879f-6601952599cb", "version": 1, "accessViewId": "local-demo-view-1" }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/023", "request": { "guard": { "mode": "create",
+"requestKey": "19679509-778a-4d86-ae52-72fd702e5077" }, "input": { "target": { "ref": { "namespace": "registry_record",
+"id": "f6bb6847-0116-48b9-8cd3-e16ed0cb85ce" }, "revision": 2 }, "scope": { "kind": "snapshot",
+"scopeId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "world": { "namespace": "world",
+"id": "registry-site/daf0c3e9-a952-4177-88a5-f90f15e39112" }, "manifestId": "291ca42f-ab90-47ae-b17e-7d760607a03b",
+"snapshotDigest": "[omitted non-source digest]", "stage": "recorded" }, "purpose": "record_evidence", "format": "pdf",
+"recipe": "pack1-single-region-image/1", "expiresAt": "2026-10-11T16:55:58.268Z", "entries": [ {
+"bindingId": "[omitted non-source digest]", "required": true, "inclusionReason": [
+"REH1 local rehearsal replay of the cited R2 boxed label UNIT-3B on 2ND FLOOR PLAN. Label e",
+"vidence only: no boundary, area, use, geometry or rights. Not a field officer decision." ] } ] } } }

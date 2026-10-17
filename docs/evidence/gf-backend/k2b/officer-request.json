@@ -1,0 +1,16 @@
+{
+  "requestKey": "60fab706-cacb-46cf-9252-2bfcf3301837",
+  "expectedCanonicalRevision": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82",
+  "property": "building.storeyLabel",
+  "reason": "checked against site-plan page 1; D2 truth preserves G+41/G+42 conflict; unresolved, needs a current Tower-3-keyed approved source",
+  "citation": {
+    "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+    "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "locator": {
+      "kind": "page",
+      "page": 1,
+      "text": "central T-3 tower graphic"
+    }
+  },
+  "outcome": "unresolved"
+}

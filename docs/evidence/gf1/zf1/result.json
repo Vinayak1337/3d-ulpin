@@ -1,0 +1,58 @@
+{
+  "task": "ZF1",
+  "gate": "GF1",
+  "base": "85243cbb1d98402000b73b6360f8996ccc1e4b14",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers and real repository inputs (no database, object store, processor or served HTTP walk). The task text reached this session cut off after step 3; scope, paths and checks below are the worker's reading of the title and are recorded as decisions.",
+  "tests": {
+    "server": {
+      "command": "npx tsx --test tests/intake-probe.test.ts tests/intake-ledger.test.ts tests/intake-storage.test.ts tests/source-intake.test.ts tests/t089-intake-routing.test.ts tests/intake-zip-layers.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts; npx tsx --tsconfig apps/api/tsconfig.json --test tests/intake-api.test.ts tests/nest-intake.test.ts",
+      "before": { "pass": 164, "fail": 1 },
+      "after": { "pass": 169, "fail": 1 },
+      "failuresUnchanged": true,
+      "failureCause": "intake-package-cuts.test.ts 'real NYC reader preserves global indexes and spans through deterministic cuts' fails on the base too (its original is not in this checkout).",
+      "changed": "tests/intake-ledger.test.ts: its in-memory ledger answers the fan-out's member read; the test's assertions are unchanged."
+    },
+    "studio": {
+      "command": "cd apps/studio && npx vitest run src/features/intake",
+      "before": { "tests": 108, "pass": 108 },
+      "after": { "tests": 110, "pass": 110 }
+    },
+    "typecheck": { "backend": "0 errors before and after", "studio": "0 errors before and after" },
+    "contract": "python3 scripts/api/check.py: 312 native operations (180 added), pins and manifests valid; openapi.json, source-pins.json and api-client schema.d.ts regenerated with scripts/api/refresh-contract.ts origin/staging and the api-client generator",
+    "added": [
+      "tests/intake-zip-layers.test.ts: a member read back whole, stored and deflated, hash equal to the original file",
+      "tests/intake-zip-layers.test.ts: missing, oversized and damaged (CRC) members refused by code",
+      "tests/intake-zip-layers.test.ts: good real input, three Uttam Nagar GeoJSON layers and a README zipped at test time: three child originals with exact lineage, member rows name them, all retained before any is enrolled, a replay keeps nothing twice",
+      "tests/intake-zip-layers.test.ts: one layer refused by its receipt keeps a code-only reason (no parser text); siblings kept",
+      "tests/intake-zip-layers.test.ts: difficult real input fixtures/lake-view-complete-inputs.zip (38 members: ArcGIS JSON, PDFs, PNGs, GLB) keeps no layer",
+      "apps/studio batch-model.test.ts: a ZIP of GeoJSON layers routes to the batch, shapefile and other ZIPs to direct import, unreadable bytes to direct",
+      "apps/studio batch-model.test.ts: a kept layer is listed once"
+    ]
+  },
+  "realInputs": {
+    "good": { "files": ["fixtures/google-uttam/01-google-building-footprints.geojson", "fixtures/google-uttam/02-osm-road-centrelines.geojson", "fixtures/google-uttam/block-boundary.geojson", "fixtures/google-uttam/README.md"], "layersKept": 3, "readmeKept": false, "memberSha256EqualsFile": true },
+    "difficult": { "file": "fixtures/lake-view-complete-inputs.zip", "members": 38, "geojsonMembers": 0, "layersKept": 0 }
+  },
+  "uiDesignCheck": {
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging",
+    "exit": 0,
+    "note": "The scan covers apps/web only. Studio diff read by hand: one help sentence changed in AddFilesDialog (sentence case, no tokens, CSS or controls); the tray lists a kept layer once instead of twice. No blocking or design-system findings."
+  },
+  "decisions": [
+    "A ZIP of at most 16 MiB is retained unchanged by a new route POST /api/v1/ingestion/cases/{caseId}/intake/archives (profile zip-manual-v1, actor bound, case revision +1, idempotent by request key, deduplicated by hash). A larger ZIP keeps arriving through /uploads as large-original-v1.",
+    "Fan-out runs when the archive is enrolled (POST .../intake/items) and again on every later enrolment, which is the retry: members already kept are not kept twice.",
+    "A layer is a member the probe read as geojson without refusal. Each is read back from the retained ZIP in one-MiB ranges, inflated to at most 16 MiB, checked against the directory size and CRC-32, then retained through the existing GeoJSON retain (geojson-manual-v1, same inventory and processor inspection as a dropped file) with inspection.archiveMember = zip-layer/1 lineage: archive source id, revision, sha256, archive item id, member path, directory ordinal, sizes, CRC-32 and member sha256.",
+    "Every layer is retained before any is enrolled: a layer's draft creates packages, after which the GeoJSON retain refuses the case.",
+    "The member row under the archive names its child original (source_id). The child original has its own top-level item, so drafting, large-file and run code is unchanged; the Studio tray hides the member row of a kept layer.",
+    "At most 64 layers per archive, each at most 16 MiB; the rest stay in the archive with a limit reason (ZIP_LAYER_LIMIT, ZIP_LAYER_SIZE). A failed layer stores a code and fixed words only.",
+    "Identical bytes already retained in the case reuse that original (the existing hash deduplication); its receipt then carries no lineage, and the member row still names it.",
+    "The Studio reads a ZIP's central directory from its tail to route it: GeoJSON/JSON members and no .shp/.gpkg go to the batch; every other ZIP keeps direct import."
+  ],
+  "limits": [
+    "No PostgreSQL, object store, processor or served HTTP walk was run; the processor inspection of each layer is the existing retain's and is stubbed in the tests.",
+    "Fan-out runs inside the enrol request; a ZIP with many large layers makes that request long. A job would remove that.",
+    "A batch case that already has drafted packages refuses new originals, archives and their layers included (existing rule of the GeoJSON retain).",
+    "ZIP64, encrypted, nested and non-UTF-8-named members are not kept; their reasons come from the existing ZIP guards."
+  ]
+}

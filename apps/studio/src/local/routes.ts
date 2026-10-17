@@ -23,25 +23,20 @@ export interface RouteEntry {
 export const ROUTES: RouteEntry[] = [
   { method: 'GET', path: '/api/v1/health', mode: 'live' },
   { method: 'GET', path: '/api/v1/workspace-capabilities', mode: 'live' },
-  {
-    method: 'GET', path: '/api/v1/work-queue', mode: 'local',
-    reason: 'The linked database holds no current area work; answers with the Lake View batches.',
-  },
+  { method: 'GET', path: '/api/v1/work-queue', mode: 'live' },
   {
     method: 'GET', path: '/api/v1/work-board', mode: 'local', draft: true,
     reason: 'READY-01: stage, next action and readiness per work item.',
   },
-  {
-    method: 'GET', path: '/api/v1/buildings/:buildingId/ledger', mode: 'local', draft: true,
-    reason: 'READY-01, RIGHTS-01, HISTORY-02: rights, areas, shares, readiness, checks and revisions per building.',
-  },
+  { method: 'GET', path: '/api/v1/buildings/:buildingId/ledger', mode: 'live' },
   {
     method: 'GET', path: '/api/v1/buildings/:buildingId/residents', mode: 'local', draft: true,
     reason: 'REGISTER-02: registered holders and occupants of each unit.',
   },
   {
     method: 'GET', path: '/api/v1/buildings/:buildingId/levels/:levelId/review', mode: 'local', draft: true,
-    reason: 'EXTRACT-02: room candidates from a plan page, or the level question to confirm.',
+    reason: 'EXTRACT-02: superseded for candidates by the canonical records (F2a); '
+      + 'only the level question of the old workspace still reads it.',
   },
   {
     method: 'GET', path: '/api/v1/import-batches/:batchId', mode: 'local', draft: true,
@@ -49,7 +44,7 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     method: 'GET', path: '/api/v1/sources/:sourceId/pages', mode: 'local', draft: true,
-    reason: 'DOC-01: page list, locator anchors and plan calibration of a retained document.',
+    reason: 'DOC-01: page list, locator anchors and plan calibration of a retained document. The published path has another shape (ROUTES-LIVE.md).',
   },
   {
     method: 'GET', path: '/api/v1/sources/:sourceId/pages/:page', mode: 'local', draft: true,
@@ -107,18 +102,9 @@ export const ROUTES: RouteEntry[] = [
     method: 'DELETE', path: '/api/v1/areas/:areaId', mode: 'local', draft: true,
     reason: 'Removes an imported area with its buildings; the public map follows.',
   },
-  {
-    method: 'POST', path: '/api/v1/import-packages/inspect', mode: 'local',
-    reason: 'Reads the uploaded GIS file in the browser (count, fields, CRS) while the import worker is not linked.',
-  },
-  {
-    method: 'POST', path: '/api/v1/import-packages', mode: 'local',
-    reason: 'Starts the area import and streams its records into the area context.',
-  },
-  {
-    method: 'GET', path: '/api/v1/import-packages/:packageId', mode: 'local',
-    reason: 'Progress of the area import started here.',
-  },
+  { method: 'POST', path: '/api/v1/import-packages/inspect', mode: 'live' },
+  { method: 'POST', path: '/api/v1/import-packages', mode: 'live' },
+  { method: 'GET', path: '/api/v1/import-packages/:packageId', mode: 'live' },
   {
     method: 'POST', path: '/api/v1/buildings/:buildingId/imports/inspect', mode: 'local', draft: true,
     reason: 'INGEST-04: recognises building documents (plans, level schedules, inventories, deeds).',
@@ -131,22 +117,40 @@ export const ROUTES: RouteEntry[] = [
     method: 'GET', path: '/api/v1/building-imports/:importId', mode: 'local', draft: true,
     reason: 'INGEST-04: progress of a building import.',
   },
-  {
-    method: 'GET', path: '/api/v1/areas', mode: 'local',
-    reason: 'No area is installed in the running API. Answers with Lake View and the areas derived from retained official sources (NYC OTI Bronx crop; Swiss Dwellings site 127).',
-  },
-  {
-    method: 'GET', path: '/api/v1/areas/:areaId/context', mode: 'local',
-    reason: 'Derived NYC OTI and Swiss Dwellings areas; unknown area IDs fall through to the live API.',
-  },
-  {
-    method: 'GET', path: '/api/v1/buildings/:buildingId/register', mode: 'local',
-    reason: 'Registers for the derived buildings: the Swiss floor with its units and rooms, NYC footprints with no floors.',
-  },
-  {
-    method: 'GET', path: '/api/v1/sources/:sourceId/file', mode: 'local',
-    reason: 'Serves the retained original bytes behind the derived records, for the evidence viewer.',
-  },
+  { method: 'GET', path: '/api/v1/areas', mode: 'live' },
+  { method: 'GET', path: '/api/v1/areas/:areaId/context', mode: 'live' },
+  { method: 'GET', path: '/api/v1/buildings/:buildingId/register', mode: 'live' },
+  { method: 'GET', path: '/api/v1/areas/:areaId/canonical', mode: 'live' },
+  { method: 'GET', path: '/api/v1/buildings/:buildingId/canonical', mode: 'live' },
+  { method: 'GET', path: '/api/v1/buildings/:buildingId/snapshots', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/property-cards/list', mode: 'live' },
+  { method: 'GET', path: '/api/v1/usp/property-cards/:cardId/revisions/:revision', mode: 'live' },
+  { method: 'GET', path: '/api/v1/usp/property-cards/:cardId/revisions/:revision/verification', mode: 'live' },
+  { method: 'GET', path: '/api/v1/usp/identity/records/:recordId/reviews', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/snapshots', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/identity/reviews', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/identity/assign', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/packets/plans/entries', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/packets/plans/create', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/packets/plans/confirm', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/packets/plans/execute', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/property-cards/read', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/property-cards/preview', mode: 'live' },
+  { method: 'POST', path: '/api/v1/usp/property-cards/generate', mode: 'live' },
+  { method: 'GET', path: '/api/v1/sources/:sourceId/file', mode: 'live' },
+  { method: 'GET', path: '/api/v1/spatial-ml/batches/:batchId', mode: 'live' },
+  { method: 'GET', path: '/api/v1/spatial-ml/items/:itemId', mode: 'live' },
+  { method: 'POST', path: '/api/v1/spatial-ml/items/:itemId/footprint-drafts', mode: 'live' },
+  { method: 'POST', path: '/api/v1/buildings/:buildingId/candidates', mode: 'live' },
+  { method: 'POST', path: '/api/v1/import-packages/:packageId/review', mode: 'live' },
 ];
 
 export const localRoutes = () => ROUTES.filter((route) => route.mode === 'local');
+
+/** True when the local data layer is started in this build (see `startLocalData`). */
+const canStartLocalLayer = import.meta.env.DEV || import.meta.env.VITE_HOSTED_DEMO === '1';
+export const localLayerOn = canStartLocalLayer && import.meta.env.VITE_LOCAL_DATA === 'on';
+
+/** Whether this build can answer the route: live routes always, local routes only with the local layer on. */
+export const isServed = (method: RouteEntry['method'], path: string): boolean =>
+  ROUTES.some((route) => route.method === method && route.path === path && (route.mode === 'live' || localLayerOn));

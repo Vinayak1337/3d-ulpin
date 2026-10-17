@@ -1,0 +1,14 @@
+{
+  "review": {
+    "status": 422,
+    "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED"
+  },
+  "prepare": {
+    "status": 422,
+    "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED"
+  },
+  "commit": {
+    "status": 409,
+    "code": "STALE_REVISION"
+  }
+}

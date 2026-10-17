@@ -1,0 +1,15 @@
+{ "at": "2026-10-17T18:15:26.347Z", "doctor": { "command": [ "pnpm platform:doctor --profile demo" ],
+"from": "E:/Projects/ulpin-wt/demo", "exit": 1, "seconds": 2.292, "output": [
+"> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\demo", "> node scripts/platform/doctor \"--profile\" \"demo\"", "",
+"  documentPagesConfigured: true", "  packetRegionsConfigured: true",
+"  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true", "PASS Document runtimes",
+"PASS Demo external configuration", "PASS Local document OCR paths available; eng+hin assets (runner uses eng).",
+"  enabled: false", "  policyHash: null", "  providerKeyPresent: true", "  mappingTeacherAdapter: replay",
+"  dailyCapPresent: false", "  providerKeysNamed: 0", "  providerKeysPresent: 1", "PASS Model gateway state",
+"FAIL Docker local Linux engine and context/socket",
+"  Fix: start Docker Desktop on its existing local Linux context; inspect %LOCALAPPDATA%/Do",
+"cker/log if startup fails.", "Doctor: 1 failure(s); runtime NOT qualified.",
+" ELIFECYCLE  Command failed with exit code 1." ], "error": null },
+"commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "checkoutClean": true, "health": "000", "machine": {
+"processes": [], "freeGB": 680.472, "listeners": [] }, "containers": [], "matchesFirstInCommitAndProcessIds": true,
+"rehearsalContainers": [] }

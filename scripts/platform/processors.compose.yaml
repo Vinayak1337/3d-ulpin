@@ -1,0 +1,27 @@
+# The processors of every demo-profile runtime (ulpin-demo and each ulpin-reh-NN), laid over compose.yaml by
+# scripts/platform/demo.mjs. They run the one pinned image, scripts/platform/processor-image.json, by its tag:
+# never built here (the build section is removed), never pulled and never retagged. demo.mjs sets
+# ULPIN_PROCESSOR_IMAGE from the pin; only scripts/platform/processor-image.mjs builds that image.
+# The environment is the one K3b gave the demo's processors.
+services:
+  geo:
+    image: ${ULPIN_PROCESSOR_IMAGE:?Processor image pin missing}
+    pull_policy: never
+    build: !reset null
+    environment:
+      ULPIN_PROFILE: demo
+    volumes:
+      - type: bind
+        source: ${ULPIN_DEMO_MODEL_DIR:?Runtime model directory missing}
+        target: /models
+        read_only: true
+  worker:
+    image: ${ULPIN_PROCESSOR_IMAGE:?Processor image pin missing}
+    pull_policy: never
+    environment:
+      ULPIN_PROFILE: demo
+    volumes:
+      - type: bind
+        source: ${ULPIN_DEMO_MODEL_DIR:?Runtime model directory missing}
+        target: /models
+        read_only: true

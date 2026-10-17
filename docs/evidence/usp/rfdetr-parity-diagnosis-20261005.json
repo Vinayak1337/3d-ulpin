@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-PARITY-DIAGNOSIS",
+  "status": "two_cached_cases_diagnosed_raw_parity_failed_cause_unresolved",
+  "baseCommit": "ade9efe0f4d9d0ca676a7e2e3f2efb1781cce3ec",
+  "branch": "task/d07-rfdetr-parity-diagnosis-20261005",
+  "worktree": "C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin",
+  "privateRoot": "E:/BhuAayam-data/task-data/d07-rfdetr-parity-diagnosis-20261005",
+  "settings": {"requested": "gpt-6.1-sol/xhigh/default-standard1x", "actualModelEffortTier": "unexposed", "suppliedPermissions": "never/danger-full-access"},
+  "priorAttempt": {
+    "teacherCommit": "7842a410",
+    "handoff": "docs/evidence/usp/rfdetr-torch-reference-20261005.json at that commit",
+    "smokeResult": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005/output/reference-smoke/result.json",
+    "smokeResultSha256": "2dc7ff9d59fc381b03b4392ee165676a204898684b99252be6e57a76d3c79da8",
+    "runnerSha256": "cb771a12ac46ee4ae448bd90ce42574676d9a6afc28ac147aa1cd9e98212e0a1",
+    "canonicalSmokePlanSha256": "4e2d0287cb995b9ff75f00718e755f4a4d9231d9294a7d0535e46c1233d10b3a",
+    "cohortSha256": "808b423e8e4602a984eaa89c2c6d2294ae3b2b8b73bfe3b07d19331e5d35afeb",
+    "preserved": "Complete exact-checkpoint loads, both original forwards, passed current input-formula/native/resource/cleanup controls and failed frozen raw parity. ALL24/scoring/fit were not admitted. No repeated inference here."
+  },
+  "inputs": {
+    "onnxRoot": "E:/BhuAayam-data/task-data/d07-karnataka-baseline-20261005/raw",
+    "torchRoot": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005/output/reference-smoke",
+    "retainedPinsReusedNotRehashed": [
+      {"case": "0020b409-a333-4eb4-89c8-531b8110312a", "onnxBytes": 8154667, "onnxSha256": "93f12b0a1206acff196c728b5428a12e3e04f26e6a06c011c5d056eeaab24334", "torchBytes": 8153539, "torchSha256": "65f0f043fc6926171763d0e800741f71f0eebfade10dc2ef63c17abc08c3c5d6"},
+      {"case": "17e0ac69-4c8a-4da9-a06a-10bfa0fa1661", "onnxBytes": 8065622, "onnxSha256": "664a7f3098d9a5909fb58d6cf133c1c86be3287825d27ff0a2819cf1561ce936", "torchBytes": 8068175, "torchSha256": "6a98932cec644ba44135d47974f8a35f2413206e18733b67762fa542b800a0df"}
+    ],
+    "scope": "Only these two mechanically frozen open-development cases, four complete caches and their small saved masks/confidence/polygons. No source RGB decoding/revalidation, labels, other cases, training/final/closed evaluation or models.",
+    "sourceQualification": "Retained RAMP Karnataka research rooftop annotations and frame/source receipts reused. No independent Indian accuracy, official property or learning qualification inferred."
+  },
+  "method": {
+    "raw": "Compare all same query indices0..199 and every finite FP32 output element. Original atol1e-4/rtol1e-4 unchanged; no permutation or threshold sweep.",
+    "relativeReporting": "L2 norm(delta)/norm(ONNX); element relative percentiles use abs(delta)/max(abs(ONNX),1e-4). This denominator floor only describes errors, never changes the fixed gate.",
+    "projection": "AST-execute only unchanged cached_masks, _resize_logits and _components. Sigmoid score>0.5, half-pixel bilinear108-to256 mask logits>0, confidence-stable painting, four-connected polygonization/minimum16pixels/simplification0.5/max100components/max500vertices. No whole-module model imports.",
+    "historicalValidation": "For both cases reconstructed ONNX labels/confidence equal saved processing-mask.png/confidence.npy exactly; geometry/rounded scores/omissions equal saved polygons.json. Comparison fingerprint is diagnostic only; no canonical IDs or records written.",
+    "sources": [
+      {"file": "services/geo/geo/spatial_ml.py", "sha256": "c3838b5b591a144fd96c8afba7b6fb70b5f6ae787960722cfe796461f362af2b", "functions": "_resize_logits252-260; _components330-361"},
+      {"file": "scripts/usp/learning/compare_building_ramp.py", "sha256": "5efcd2f60e40bbcc0c4673d27efe979fb08fa84b092091d12b5b05abf1dde6d5", "functions": "cached_masks339-360"}
+    ]
+  },
+  "observations": [
+    {
+      "id": "ramp-karnataka/0020b409-a333-4eb4-89c8-531b8110312a",
+      "rawLogits": {"outside": 164, "elements": 200, "maxAbs": 0.5710864067077637, "relativeL2": 0.016976622747306817, "signChanges": 0},
+      "rawMasks": {"outside": 2230251, "elements": 2332800, "absPercentiles50_90_99_100": [0.03936004638671875, 0.5116750717163088, 13.433807516097955, 177.92190170288086], "meanAbs": 0.5142324861727045, "relativeL2": 0.11026332363702349, "nativeSignChanges": 470, "nativeSignChangedQueries": 48, "all200ResizedSignChanges": 2477},
+      "acceptedQueryOrderBoth": [0, 1],
+      "confidenceThresholdCrossings": 0,
+      "acceptedNativeAndResizedSignChanges": 0,
+      "largestDifference": "Rejected query68: masks maxAbs177.9219/relativeL2.5138; object logits-3.8490 versus-4.4201. Other large rejected-query changes include67/132. All48 native-sign-changing queries are rejected by both outputs; no permutation was attempted.",
+      "acceptedMaskRelativeL2": [0.000420831690735732, 0.00007413872510188416],
+      "highestRejectedLogitsQuery2": [-0.698167085647583, -0.6967709064483643],
+      "projection": {"foregroundPixelsBoth": 729, "foregroundXorPixels": 0, "instanceLabelDisagreements": 0, "foregroundIoU": 1.0, "candidatesBoth": 2, "exactGeometriesShared": 2, "omissionsBoth": 0, "foregroundScoreMaxAbs": 0.00009137392044067383},
+      "candidateScoresOnnxThenTorch": [[0.814696, 0.814787], [0.894497, 0.894583]]
+    },
+    {
+      "id": "ramp-karnataka/17e0ac69-4c8a-4da9-a06a-10bfa0fa1661",
+      "rawLogits": {"outside": 0, "elements": 200, "maxAbs": 0.00018358230590820312, "relativeL2": 0.0000030358169957871593, "signChanges": 0},
+      "rawMasks": {"outside": 4654, "elements": 2332800, "absPercentiles50_90_99_100": [0.00002574920654296875, 0.00013637542724609375, 0.0005054473876953125, 0.004811286926269531], "meanAbs": 0.000057961805736382884, "relativeL2": 0.000005968055972899498, "nativeSignChanges": 0, "all200ResizedSignChanges": 1},
+      "acceptedQueryOrderBoth": [],
+      "confidenceThresholdCrossings": 0,
+      "projection": {"foregroundPixelsBoth": 0, "foregroundXorPixels": 0, "instanceLabelDisagreements": 0, "foregroundIoU": null, "candidatesBoth": 0, "omissionsBoth": 0}
+    }
+  ],
+  "causeAssessment": {
+    "established": "Raw numerical equivalence fails. At production thresholds these two caches have equal accepted masks/geometry but unequal positive candidate scores. This does not qualify other scenes, lower thresholds, raw parity or model accuracy.",
+    "outputSemantics": "No observed output-contract defect: exporter Building.forward returns final result.logits/result.pred_masks directly; runner saves those same fields, both shapes(1,200,1)/(1,200,108,108). No upstream postprocessor or score/top-K filtering intervenes before raw capture. One-class sigmoid and production projection reproduce the saved baseline exactly.",
+    "leadingUnresolvedHypothesis": "Numerical differences before encoder proposal TopK may change low-confidence query initialization and amplify final same-index errors. Retained TF5.17 generate_topk_proposals selects ordered proposals with torch.topk then gathers references/features; the source has learned index-specific query features. Final caches lack proposal scores/indices or intermediate tensors, so a reorder or selection change is NOT established and cannot be repaired by permuting outputs.",
+    "ordinaryNumerics": "The empty case's mask relativeL2~6e-6 is compatible with ordinary FP32 backend differences. Positive relativeL2~.11 and rejected-query maxAbs177.9 require localization; general CPU/GPU guidance alone does not explain them. Accepted positive queries are much closer, but also fail the frozen raw gate.",
+    "inputResizeNormalization": "Retained source/RGB/frame pins and current processor-vs-current formula maxAbs3.5763e-7/2.3842e-7 passed1e-6. Historical ONNX432 tensors are absent. Pillow11.2.1/NumPy2.0.2 versus Pillow11.0/NumPy2.3.2 and processor operation rounding remain an unresolved historical-input alternative; source-byte identity does not prove equal input tensors.",
+    "architecturePositionMask": "Same accepted checkpoint/config/head/200queries and complete load reduce replacement/head hypotheses. Retained config uses432 image, patch12,2windows, one feature level, mask downsample4; square shape leaves no evident transpose/padding mismatch. Retained source uses align_corners=False masks and bicubic antialias positional interpolation with a same-grid shortcut. Declared exporter passes explicit all-ones bool pixel_mask; runner lets model create all-ones int64 mask. No evidence those equivalent valid-pixel states or positional branch cause this mismatch; graph/intermediate evidence is missing.",
+    "exportLineage": "Current reproducible recipe in scripts/ml/setup-models.py declares TF5.17/Torch2.14/ONNX1.19.1/onnxscript.7, dynamoTrue/opset18/CPU eager. Observed new reference is TF5.17/Torch2.8cu128/LinuxGPU. The recipe and retained Windows metadata are not an executed historic-export source/graph receipt; no ONNX binary or weights read here. Operator lowering/actual installed backbone implementation remains unresolved despite version/name/key agreement.",
+    "pinpointedCodeDefect": null
+  },
+  "research": [
+    {"url": "https://github.com/huggingface/transformers/blob/v5.17.0/src/transformers/models/rf_detr/modeling_rf_detr.py", "version": "v5.17.0; retained primary source17d2bdb5", "applies": "Exact selected HF architecture; inspect TopK/gather1623-1667, positional97-138 and final logits/masks2084-2168 in retained source. Supports instrumentation location, not diagnosed causality."},
+    {"url": "https://github.com/huggingface/transformers/blob/v5.17.0/src/transformers/models/rf_detr/image_processing_rf_detr.py", "version": "v5.17.0; retained primary source9add8401", "applies": "Same raw sigmoid/mask0/bilinear concepts; cached production projection remains the actual comparison authority."},
+    {"url": "https://docs.pytorch.org/docs/2.8/generated/torch.topk.html", "version": "2.8", "applies": "Tied TopK indices need not be stable; useful hypothesis only, since our encoder scores were not saved."},
+    {"url": "https://onnx.ai/onnx/operators/onnx__TopK.html#topk-11", "version": "TopK11 specification, applicable to declared opset18", "applies": "Equal-value ordering uses lower source index, unlike Torch's unstabilized ties. Actual exported node attributes/values uninspected."},
+    {"url": "https://github.com/huggingface/transformers/blob/main/tests/exporters/test_export.py", "version": "main inspected2026-10-05, not pinned5.17", "applies": "Upstream LwDetr near-tied proposal example describes ONNX arithmetic changing rank order. Analogous architecture, tiny test inputs, not our RF-DETR case; corresponding exception absent from inspectedv5.17 tests. No exemption adopted."},
+    {"url": "https://github.com/roboflow/rf-detr/issues/1453", "version": "upstream report inspected2026-10-05", "applies": "Native FP16/TensorRT report shows slot-wise differences caused by TopK order. Our HF eagerFP32/ORTCPU pair differs in precision/backend; no TensorRT fix or IoU-matching workaround applies here."},
+    {"url": "https://docs.pytorch.org/docs/2.8/notes/numerical_accuracy.html", "version": "2.8; prior teacher research reused", "applies": "CPU/GPU/release calculations may differ. Does not establish the positive error's cause or justify changing tolerance."}
+  ],
+  "smallestNextAction": {
+    "state": "proposed_only_requires_separate_root_execution_assignment",
+    "ownerRouting": "Teacher owns contained execution/profile; runner owner owns separately pinned diagnostic observer leaf. Do not alter current accepted runner/scorer/launcher or upstream model computation.",
+    "hypothesis": "Changing only execution device within exact image47ee371d and identical FP32 input causes proposal-score/ordered-TopK changes before downstream rejected-query amplification.",
+    "experiment": "One instrumented CPU/GPU pair on ONLY0020b409 inside existing pinned image/stack. Materialize one input tensor, retain bytes and require original GPU input SHA51916c48aefff1e49cc054fe2496042b088b864cf895f4418792811830dcca3a. Observe encoder spatial proposal scores, ordered TopK indices/gathered references/features and final same-index outputs without sorting/replacing them. Keep original weights/head/eager/FP32/TF32off/thresholds/tolerances fixed.",
+    "baseline": "Retained original GPU arrays and ONNX arrays stay immutable. Instrumented GPU final output must first reproduce prior raw GPU output under the unchanged gate; compare CPU/GPU same indices and locate earliest divergence. Do not infer exact historical ONNX input equivalence.",
+    "successAndStop": "One bounded pair only, resource-capacity preflight and sole GPU owner required. Stop on input/hash/native/resource drift or GPU reproduction failure. Different ordered indices with small pre-TopK score differences localizes device-sensitive selection; equal indices route remaining difference to backbone/decoder/segmentation kernels. No unchanged retry, full24, labels/fit/evaluation/promotion or automatic gate pass. Historical export attribution remains unresolved unless separately evidenced."
+  },
+  "privateArtifacts": [
+    {"file": "diagnose_cached.py", "bytes": 10043, "sha256": "8600bf348b90629439b9a55135081d0319af436010414387756567fae6e58dd6"},
+    {"file": "diagnostic.json", "bytes": 9911, "sha256": "ce3b79d7258deaf2258608a9788b40f146cc95bd58edab2a5a34ff002fa88dfe"},
+    {"file": "ramp-karnataka--0020b409-a333-4eb4-89c8-531b8110312a--queries.csv", "bytes": 24200, "sha256": "76d1f4e11468ea850a4436e3ad3ec6b375499d87074503602e8467c6f93de7b1"},
+    {"file": "ramp-karnataka--17e0ac69-4c8a-4da9-a06a-10bfa0fa1661--queries.csv", "bytes": 24194, "sha256": "c32876245977f60a5477791889f41e1e9831e5fac66dca5d9166ec510400cf41"},
+    {"file": "ramp-karnataka--0020b409-a333-4eb4-89c8-531b8110312a--candidates.json", "bytes": 11114, "sha256": "db23000587a1e63f50e168ae6aafd9daab7d9b6b4f7c9fcfb67376593a71760e"},
+    {"file": "ramp-karnataka--17e0ac69-4c8a-4da9-a06a-10bfa0fa1661--candidates.json", "bytes": 110, "sha256": "794bf48fa6192c4de7c8ff786595325adbcc4e46c02dbea680fb4cd5ae01e6f3"}
+  ],
+  "execution": {
+    "command": "E:/BhuAayam-data/task-data/d07-vision-baseline-20261005/env/Scripts/python.exe -I -B E:/BhuAayam-data/task-data/d07-rfdetr-parity-diagnosis-20261005/diagnose_cached.py",
+    "exitCode": 0,
+    "elapsedCommandSeconds": 1.618,
+    "diagnosticSeconds": 1.297,
+    "python": "3.12.14/Windows",
+    "versions": {"numpy": "2.0.2", "pillow": "11.2.1", "rasterio": "1.4.4", "shapely": "2.0.7"},
+    "cpuAffinity": [0, 1],
+    "endRssBytes": 80928768,
+    "privateArtifactBytes": 79572,
+    "bounds": "Four caches each compressed/decompressed<10MiB; complete shape/finite checks; two cases only; per-query streaming resize; source AST limited to three pure functions. Python audit denies model imports/network/subprocess; socket.gethostname denied once during library import. No new OS/native isolation qualification.",
+    "setupFailures": "Bundled interpreter lacks rasterio/shapely; bareC:/Python313 isolated interpreter lacks NumPy. Reused existing qualified D07 environment, no dependency changes. First diagnostic command exited1 at syntax parse before imports/cache reads/output; missing dictionary brace fixed, then exactly one actual cached computation succeeded. No inference retry."
+  },
+  "verification": {"exitCode": 0, "checks": "Stdlib JSON/summary consistency against retained diagnostic; six newly created private artifact lengths/hashes; in-memory diagnostic syntax; git diff --check. Changed evidence reviewed against exact projection/raw output and source lines. No cached-array/model rerun or expanded tests."},
+  "decision": "Strict smoke gate remains FAILED, ALL24/scoring/fit/promotion blocked under that frozen contract. Two-case masks/geometry equivalence is retained as a separate downstream observation, candidate scores differ. A separate Torch backend/output contract would require its own comparable fixed-cohort baseline and root decision; no substitution made.",
+  "resourcesAndScope": "No owned background process/container/GPU/Jobs; originals/caches/labels/shared code/staging untouched, one new evidence leaf only. No model/runtime/native inference, dependencies, image/weight acquisition, provider/frontend/push/main/deployment. Data audit remains parked; prior33e618a/20d2905e/audit branches preserved.",
+  "callback": "01a0ed8a-4383-79c3-a0ae-35c1e969ef66 / local"
+}

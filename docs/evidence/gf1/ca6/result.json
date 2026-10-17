@@ -1,0 +1,49 @@
+{
+  "task": "CA6",
+  "gate": "GF1 native review prerequisite: enrich-findings.test.ts and real default-profile NYC admission journey",
+  "status": "passed",
+  "baseline": "35c9400e",
+  "commits": {"audit": "e75c3480", "implementation": "cff887d3"},
+  "design": {
+    "file": "packages/server/src/modules/officer/officer.ts",
+    "sharedRule": "geographicReference extracts the existing PLACEMENT_REQUIRED rule from geographicGeometryInArea; the single function retains its original transform expression and behaviour.",
+    "enrichment": "One getArea only when at least one finding has geometry; sequential text-array/ORDINALITY batches of at most 500; parsed values restored by ord with row-count and ordinal validation. One feature-id position map and sorted positions preserve features-array order for participants, fallback evidence and revision pins. No signatures, callers, pool settings or other product functions changed.",
+    "ownership": "Only officer.ts enrichment/reference helpers, its adjacent test and ca6 evidence changed. areas.ts, contracts, storage, database, registry and other runtimes untouched."
+  },
+  "review": {
+    "candidates": 1661,
+    "storedFindings": 1803,
+    "findingsByCode": {"BOUNDARY_CONTACT": 1694, "BUILDING_FOOTPRINT_OVERLAP": 106, "HORIZONTAL_INTERSECTION": 3},
+    "comparisonMs": {
+      "ca5Default": {"receipt": "../ca5/runtime-default.json", "reviewFailed": 6196.977, "enrichmentToFailure": 5000.438, "acquisitionMillis": 5000},
+      "ca5LongAcquisition": {"receipt": "../ca5/runtime.json", "reviewIncludingReadBack": 39992.352, "enrichment": 37648.779, "acquisitionMillis": 60000},
+      "ca6Default": {"receipt": "runtime.json", "reviewIncludingReadBack": 2466.347, "productReview": 2210.886, "readBack": 246.909, "enrichment": 167.174, "acquisitionMillis": 5000}
+    },
+    "timingMethod": "Same CA5 enrichment window: first post-check area-read dispatch to post-enrichment fingerprint-association dispatch. The comparable outer review timing includes stored read-back verification; product-only timing is also reported. No computation replaced.",
+    "areaReadsInEnrichment": 1,
+    "transformStatements": 4,
+    "batchSizes": [500, 500, 500, 303],
+    "pool": {"max": 8, "connectionTimeoutMillis": 5000},
+    "remainingTime": {"fiveSecondThresholdExceeded": false, "geometryCheckProcessorWallMs": 733.07, "associationReadMs": [10.119, 1.988, 1.768], "reviewUpdateMs": 463.841, "reviewHistoryInsertMs": 368.044, "note": "Processor time excludes HTTP serialization/read; query timings include dispatch/await overhead, not server-only plans. No further tuning performed."},
+    "singleTransformProof": {"compared": 278, "byCode": {"BOUNDARY_CONTACT": 169, "BUILDING_FOOTPRINT_OVERLAP": 106, "HORIZONTAL_INTERSECTION": 3}, "selection": "All non-contact findings; one-based contact ordinals 10,20,...,1690 in stored order", "deepEqualParsedGeoJSON": true, "sequential": true, "verificationWallMs": 42877.451, "note": "The deliberately slow single-read comparison is outside the product review timing. Participants and revision arrays were independently compared for every stored finding against the old filter projection over the actual ID-sorted caller input."}
+  },
+  "inputs": [
+    {"path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson", "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e", "bytes": 1103282, "mapping": {"kind": "building", "idField": "doitt_id", "identifierFields": ["bin"]}, "roleMapped": false, "accepted": 1661, "sourceFeatures": 1662, "difficult": "Feature index 1322/source key 751920 quarantined INVALID_GEOMETRY, ring self-intersection; no repair. Roles and heights remain unknown."},
+    {"path": "E:/BhuAayam-data/datasets/nyc-10013/files/hydrography.geojson", "sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192", "candidates": 1, "kind": "public_land", "classification": "NYC test_only, retained publisher input; no acquisition"}
+  ],
+  "recording": {"buildingCommitMs": 7724.103, "physicalRevisionOne": 1661, "registryHistory": 1661, "reservationAndEvidenceExact": true, "buildingAreaRevision": [0, 1], "buildingSiteRevision": [0, 1], "secondLayerCommitted": true, "secondLayerReviewMs": 493.429, "secondLayerCommitMs": 60.47, "secondLayerAreaRevision": [1, 2], "secondLayerSiteRevision": [1, 1], "fullFingerprintVerified": true, "secondLayerEnrichmentAreaReads": 0, "secondLayerTransformStatements": 0},
+  "coverage": "1661 recorded features in or beside this area hold no geometry qualification and were not assessed against these candidates.",
+  "qualification": {"produced": 0, "receipts": 0, "correctionRefused": "422 USP_GEOMETRY_PAYLOAD_UNQUALIFIED", "reviewWrittenForCorrection": false, "note": "Recording does not qualify geometry or resolve conflicts with omitted neighbours; canonical gates untouched."},
+  "safety": {"receipt": "runtime.json", "exit": 0, "tmpfs": true, "pull": "never", "loopbackOnly": true, "scaffolding": [], "originalHashesUnchanged": true, "bothOwnedContainersRemoved": true, "machineNamesEqualBeforeAfterBothAttempts": true, "volumeNamesUnchanged": true, "externalRuntimeOrGPUOrProviderUsed": false},
+  "recovery": {"runtimeFirst": "runtime-first.json", "ledger": "recovery.json", "firstExit": 1, "productReviewPassedFirstAttempt": true, "cause": "Independent participant assertion used import order instead of the caller's ID-sorted order; no single/batch geometry mismatch. Evidence-only correction, then one bounded default-profile rerun.", "unitSetup": "Initial fake-client setup expected package.reference, absent in the retained package; corrected to the retained first feature's sourceReference. No manufactured reference."},
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "NODE_OPTIONS='--require=./scripts/platform/isolated-env.cjs' ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/officer/enrich-findings.test.ts packages/server/src/modules/areas/native-review.test.ts packages/server/src/modules/usp/geometry.test.ts", "exit": 0, "tests": 16, "pass": 16, "fail": 0, "skipped": 0},
+    {"command": "node docs/evidence/gf1/ca6/run-runtime.mjs docs/evidence/gf1/ca6/runtime.json", "exit": 0},
+    {"command": "NODE_OPTIONS='--require=./scripts/platform/isolated-env.cjs' ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/ca6/openapi-check.ts", "exit": 0, "nativeGeneration": "memory", "nativeCheck": "memory --check", "operations": 305, "schemas": 346, "changedPins": ["packages/server/src/modules/officer/officer.ts"], "publication": "Lead owns docs/api; catalogue and operation pins equal, only officer source pin moves"},
+    {"command": "git diff staging...HEAD --check", "exit": 0},
+    {"command": "awk 'length>120 {print FILENAME \": \" FNR \": \" length; bad=1} END {exit bad}' packages/server/src/modules/officer/enrich-findings.test.ts docs/evidence/gf1/ca6/*.ts docs/evidence/gf1/ca6/*.mjs", "exit": 0, "note": "New code lines <=120; existing untouched single-transform SQL retains its original length."}
+  ],
+  "gaps": "Native geometry qualification governance/producer and recorded analytical/export eligibility remain unbuilt; model runtime lacked genuine inference inputs. CA5's model refusal regression remains passed. No such work or further tuning included here.",
+  "next": "Lead review/integration and republish the officer.ts source pin; no pool change required for the presentation review. Commit still takes about 7.7 seconds, outside this repair's scope. No push."
+}

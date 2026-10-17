@@ -1,0 +1,40 @@
+{
+  "schema": "building-b9-launch-check/1",
+  "status": "running_first_epoch",
+  "checked_at": "2026-10-10T18:47:30+05:30",
+  "run_id": "b9-ka-more-regions-20261010",
+  "end_file": "E:/BhuAayam-data/ml/runs/b9-ka-more-regions-20261010/ended.json",
+  "end_file_present": false,
+  "pids": {
+    "trainer_launcher_stub": 24192,
+    "trainer_interpreter_on_gpu": [
+      "2696"
+    ],
+    "supervisor": 31416
+  },
+  "chips_seen": 861,
+  "optimizer_step": 215,
+  "optimizer_steps_per_epoch": 3146,
+  "loss_lines_in_log": 21,
+  "last_loss_line": "{'loss': '33.55', 'grad_norm': '1241', 'learning_rate': '0.0001', 'epoch': '0.06677'}",
+  "mean_seconds_per_chip": 0.2187,
+  "projected_training_minutes_per_epoch": 45.9,
+  "peak_reserved_bytes": 4139778048,
+  "gpu_memory_used_and_utilisation": "5909 MiB, 16 %",
+  "trainer_deadline_minutes": 424,
+  "when_it_ends": {
+    "normal": "result.json, dev-selection.jsonl and epoch-00N-dev.json in the run directory",
+    "failure": "failure.json in the run directory; ended.json carries the exit code either way",
+    "dev_receipts": "docs/evidence/gf-ai/building/b9-ka-more-regions-20261010-epoch00N-dev-tXXX/, untracked"
+  },
+  "while_it_runs": [
+    "Keep this worktree on task/b9-more-regions: every epoch runs scripts/ml/eval_buildings.py from it.",
+    "Start no other GPU work; the trainer may reserve up to 6 GiB beside the desktop's 1.5 GB."
+  ],
+  "not_verified": [
+    "A relaunch from a saved epoch (--resume with the same arguments and a new run id) was not exercised.",
+    "The epoch-end path (checkpoint, three DEV scorings with size bins) first runs at the end of epoch 1."
+  ],
+  "holdout_calls": 0,
+  "transfer_calls": 0
+}

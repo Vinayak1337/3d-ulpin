@@ -1,0 +1,221 @@
+{
+  "task": "REH2",
+  "gate": ["GF5", "GF1"],
+  "status": "Part A done; Part B done to the first refusal of each input; rehearsal stopped, everything kept",
+  "branch": "task/reh2-presentation-rehearsal",
+  "staging": "54d43d0bed053c803245fe82f64ffb7125eebe86",
+  "runtime": "ulpin-reh-02",
+  "servingCheckout": "E:/Projects/ulpin-wt/ulpin-reh-02 (detached at staging 54d43d0b, installed, git status clean)",
+  "api": "http://127.0.0.1:21026",
+  "parts": {
+    "A": {
+      "done": true,
+      "steps": [
+        { "step": "git worktree add --detach", "exit": 0, "seconds": 2.379 },
+        { "step": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 10.686 },
+        { "step": "platform:start --create --runtime ulpin-reh-02", "exit": 0, "seconds": 26.257 },
+        { "step": "demo-document-runtime.mjs build --runtime ulpin-reh-02", "exit": 0, "seconds": 43.759 },
+        { "step": "platform:start --runtime ulpin-reh-02", "exit": 0, "seconds": 15.957 },
+        { "step": "platform:doctor --runtime ulpin-reh-02", "exit": 0, "seconds": 5.977 }
+      ],
+      "createdOnce": "create exited 0 on its first run; no resume was needed",
+      "rehearsalDoctor": { "pass": 27, "fail": 0, "partBCouldRun": true },
+      "gateway": { "enabled": false, "providerKeysNamed": 0, "providerKeysPresent": 0 },
+      "gpu": {
+        "reading": "nvidia-smi compute apps by process id; WDDM reports memory as N/A, so no MiB is claimed",
+        "computeProcessesBefore": 22, "afterStart": 22, "newSinceBefore": [], "rehearsalPidsOnGpu": [],
+        "processorContainers": "geo and worker have no device request (processor-containers.json)"
+      },
+      "evidence": ["before.json", "step-1.json ... step-6.json", "part-a.json", "processor-containers.json",
+        "demo-part-a.json"]
+    },
+    "B": {
+      "done": "to the first refusal of each input",
+      "caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6",
+      "wallSeconds": { "zip": 0.3, "nycMember": 14.4, "niagara": 287.1, "views": 1.4, "total": 303.2 },
+      "nycZip": {
+        "result": "refused",
+        "route": "POST /api/v1/import-packages/inspect (the Add files dialog sends a .zip to direct import)",
+        "status": 422, "code": "AREA_PROCESSING", "words": "Shapefile ZIP must contain 1–100 layers.",
+        "seconds": 0.276, "evidence": "part-b-zip.json"
+      },
+      "nycBuildingsMember": {
+        "result": "reviewed package on the map; not confirmed into the register",
+        "input": "layers/buildings-original.geojson, 1103282 bytes, extracted unchanged from the zip (plan-b.json)",
+        "sourceId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7",
+        "card": { "present": true, "format": "geojson", "sizeClass": "S", "family": "vector" },
+        "question": "needs_answer 2 s after registration: no approved layout matches this file",
+        "answer": "kind building, identifier /features/*/properties/bin (literal_identifier@1), no name, no height",
+        "recipeId": "71ffd772-3bf1-4bb3-8562-45baf2a4464b",
+        "recipe": "proposed, then approved; executed by the import; destination a new area 'buildings original'",
+        "onMapSecondsAfterApproval": 8.1,
+        "package": { "id": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc", "state": "REVIEWED", "ready": 1661 },
+        "quarantine": "1661 of 1662 accepted; 1 skipped, INVALID_GEOMETRY ring self-intersection; none repaired",
+        "areaId": "e4874150-ba45-4282-af98-61f2d50007b7",
+        "mapFeatures": { "count": 1661, "insideLowerManhattanBox": 1661, "heights": "unknown on all samples",
+          "samples": ["Building 1002421 ~(-73.997775, 40.715789)", "Building 1003057 ~(-73.99909, 40.719813)",
+            "Building 1007042 ~(-74.001437, 40.721666)"],
+          "placing": "display features are local metres from the area anchor; lon/lat by a flat step, approximate" },
+        "evidence": ["part-b-nyc.json", "part-b-view-nyc.json"]
+      },
+      "niagara": {
+        "result": "refused before the layout question: no package, no map feature",
+        "retained": { "uploadId": "31163e79-71e3-482c-82b6-c81b73b079c4", "parts": 4, "hashVerified": true },
+        "sourceId": "c7cc6ea5-5675-4c30-a058-44491d416635",
+        "card": { "present": true, "format": "geojson", "sizeClass": "M", "family": "vector" },
+        "streamedProfileJobId": "d2274c5b-5d79-4a8a-ad40-0089906b8cdb",
+        "rawReaderJobId": "a1d8dba2-c769-4e1e-9340-912881a3ec10",
+        "rawReader": "423 chunks, 42247 records (41809 accepted, 438 set aside) published, never sealed",
+        "stop": { "rawReader": "failed, AREA_PROCESSING", "inventory": "failed, AREA_PROCESSING",
+          "manifest": "failed_part / not_understood after 286 s",
+          "words": "This file could not be read and interpreted completely; nothing was prepared from it." },
+        "layoutAnswered": false,
+        "evidence": ["part-b-niagara.json", "niagara-jobs.json", "part-b-view-niagara.json"]
+      },
+      "requests": "every request with route, status, ids, idempotency key, seconds is in part-b-*.json",
+      "harness": "walk.ts: ST1c's request code against the platform API; Studio builders imported as ST1c does"
+    }
+  },
+  "findings": [
+    {
+      "where": "apps/studio/src/features/intake/file-route.ts:6; AddFilesDialog.tsx:148-160; native_gis.py:215-217",
+      "what": [
+        "The officer's pick of our whole NYC pack is refused: a .zip goes to direct shapefile import, and this zip",
+        "holds GeoJSON, TIFF and LAZ, no .shp. The words count layers (1-100) instead of saying no shapefile is in",
+        "the zip. No route takes a GeoJSON-layer zip into intake; the presentation's 'our data' needs its members."
+      ],
+      "evidence": "part-b-zip.json (422 AREA_PROCESSING); native_gis.py is unchanged since 99e0026e"
+    },
+    {
+      "where": "streaming-vector-worker.ts:242 -> streamed-map-receipt.ts:49 'resolve-geojson-crs'; geo api.py:118",
+      "what": [
+        "A large GeoJSON with a crs member cannot seal on the reused image: the seal asks the geo service for",
+        "'resolve-geojson-crs', added by c7a7e720; the image's service lacks it. Niagara stopped not_understood."
+      ],
+      "evidence": [
+        "niagara-jobs.json: raw reader and inventory failed AREA_PROCESSING, 423 chunks published, unsealed;",
+        "ST1c (gf1/st1c/result.json) took this exact file to its package with staging's geo code and counted",
+        "one resolve-geojson-crs call. The 404 itself is read from code (api.py:124-125), not seen in a log."
+      ]
+    },
+    {
+      "where": "packages/server/src/modules/areas/areas.ts:108-116; streaming-vector-worker.ts:265-276",
+      "what": [
+        "A permanent processor answer (404, unknown operation) becomes 503 AREA_PROCESSING, so the worker treats",
+        "it as transient and re-reads the 26.7 MB original from byte zero up to three times (286 s) before failing."
+      ],
+      "evidence": "part-b-niagara.json trail: reading 2 s, failed_part at 286 s"
+    },
+    {
+      "where": "GET /api/v1/ingestion/cases/{caseId}/intake, the large item",
+      "what": [
+        "While the raw reader published all 423 chunks, the manifest item stayed at partsDone 3, recordsSeen 300",
+        "for 284 s; the Studio's batch page would show a stalled file, then a sudden failure."
+      ],
+      "evidence": "part-b-niagara.json toQuestion.trail; niagara-jobs.json"
+    },
+    {
+      "where": "scripts/platform/doctor:167-170 'Processor /health'",
+      "what": [
+        "Both doctors pass while the processors lack an operation the API calls: no check compares the image's",
+        "services with the serving commit. The rehearsal doctor's 27 PASS did not foresee the Niagara stop."
+      ],
+      "evidence": "step-6.json; part-b-niagara.json"
+    },
+    {
+      "where": "scripts/platform/demo.compose.json:4,8; demo-config.mjs:52; docs/backend/DEMO-RUNTIME.md:211",
+      "what": [
+        "Correction to the lead's reading. The demo's processors run ulpin-geo:demo-k3b (docker ps), but the",
+        "demo's checkout and staging name ulpin-geo:demo-s03 (created 2026-10-09T19:35Z) for the demo itself.",
+        "demo-k3b was created 2026-10-10T05:31Z, no commit label; 14 services/** commits (2 merges) in 99e0026e's",
+        "own history were committed after it (CR1 99479cbe, 0352e3ad, 22f14557, 474a9745, b51fc286, b28f9ef3,",
+        "8bbd1b4a and others), besides c7a7e720 and 22003ea3. So the reused image lags the demo's checkout too."
+      ],
+      "evidence": "docker image inspect of both tags (ids only); docker ps image column; git log since the image"
+    },
+    {
+      "where": "docs/evidence/runtime/reh2/walk.ts (our harness)",
+      "what": [
+        "Two harness slips, no product defect: the first map read looked for 'features' (the context publishes",
+        "displayFeatures), so a read-only view phase was added; the profile read parsed the manual schema where",
+        "the published answer is the manual-or-tabular union (contract flag false; the union matches)."
+      ],
+      "evidence": "part-b-nyc.json areaFeatures count 0; part-b-view-nyc.json count 1661"
+    }
+  ],
+  "needsImage": [
+    {
+      "refusal": "Niagara large GeoJSON (declares EPSG:2958): raw reader and inventory failed AREA_PROCESSING",
+      "lacks": "c7a7e720 (services/geo/geo/api.py:118, area.py resolve_geojson_crs)",
+      "alsoLikely": [
+        "22003ea3 (positions with heights): a 3D position would be refused by the image; not exercised here",
+        "CR1 99479cbe, 0352e3ad, 22f14557, 474a9745: in the demo's own history but after the image was created;",
+        "not separately exercised, since Niagara stopped before drafting"
+      ]
+    }
+  ],
+  "needsCode": [
+    {
+      "file": "apps/studio/src/features/intake/file-route.ts:6 and services/geo/geo/native_gis.py:215-217",
+      "defect": "a GeoJSON-layer zip is routed to shapefile import and refused with words that miss the cause"
+    },
+    {
+      "file": "packages/server/src/modules/areas/areas.ts:110-111",
+      "defect": "a processor 404 (unknown operation) is reported as 503 and retried as transient"
+    },
+    {
+      "file": "scripts/platform/doctor:167-170",
+      "defect": "no capability or revision check of the processor image against the serving commit"
+    }
+  ],
+  "demo": {
+    "commit": "99e0026ecc90a1b95b2a735a2418ec6433d02fe1",
+    "doctorBefore": { "exit": 0, "pass": 27 }, "doctorAfterPartA": { "exit": 0, "pass": 27 },
+    "doctorFinal": { "exit": 0, "pass": 27 },
+    "api": { "pid": 37204, "started": "2026-10-16T12:31:08.6915830Z" },
+    "dispatcher": { "pid": 44520, "started": "2026-10-16T12:31:09.6049940Z" },
+    "sameCommitPidsStartTimes": true, "health": "200 (GET /api/v1/health only)", "checkoutClean": true,
+    "evidence": ["before.json", "demo-part-a.json", "demo-final.json", "containers-after-stop.json"]
+  },
+  "exists": {
+    "folder": "E:/BhuAayam-data/runtime/ulpin-reh-02 (entries by name in step-7.json; no file opened)",
+    "volumes": ["ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data"],
+    "network": "ulpin-reh-02_default",
+    "containersAllExited": ["ulpin-reh-02-geo-1", "ulpin-reh-02-minio-1", "ulpin-reh-02-minio-init-1",
+      "ulpin-reh-02-postgres-1", "ulpin-reh-02-redis-1", "ulpin-reh-02-worker-1"],
+    "processes": "none; no listener on 21021-21026",
+    "records": "one case with the NYC member (reviewed package, 1661 features) and the failed Niagara item",
+    "scratch": "E:/BhuAayam-data/task-data/reh2 (member copy, raw exchanges, state.json, progress.jsonl)",
+    "untouched": "ulpin-reh-01 (no command named it) and the demo"
+  },
+  "restart": {
+    "from": "E:/Projects/ulpin-wt/ulpin-reh-02",
+    "start": "pnpm platform:start --profile demo --runtime ulpin-reh-02",
+    "doctor": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02",
+    "stop": "pnpm platform:stop --profile demo --runtime ulpin-reh-02",
+    "caution": "no --create; do not rerun walk.ts phases (each writes once and would add records)"
+  },
+  "forDemoRoll": [
+    "1. Schema: no file under database/ changed between 99e0026e and 54d43d0b; the additive migrate is the",
+    "   documented create/bootstrap step, and the API's structural admission check passed on reh-02.",
+    "2. Image first: build a processor image from the roll commit (services/** at 54d43d0b) and give it a",
+    "   reviewed tag; reconcile demo.compose.json/demo-config.mjs (demo-s03) with what runs (demo-k3b).",
+    "   Without it, any large GeoJSON with a crs member stops not_understood, as Niagara did.",
+    "3. Rehearse that image here before the demo: a rehearsal can only reuse demo-k3b today",
+    "   (demo-config.mjs:52), so the new image needs a lead decision on how a rehearsal names it.",
+    "4. Document runtime: build it for the roll (it built in 44 s here); its paths file is per runtime.",
+    "5. Our data: the presentation cannot pick the NYC zip whole; take its GeoJSON members (this run used",
+    "   buildings-original.geojson) or decide a zip intake route.",
+    "6. After the roll: the demo's doctor, then one large declared-CRS GeoJSON to its layout question."
+  ],
+  "checks": {
+    "scan": "check.mjs: every file here <=120 columns, JSON parses, no unrecorded 64-hex, no credential text",
+    "diffCheck": "git diff --check exit 0 before each commit",
+    "originalsUnchanged": "zip, Niagara and member SHA-256 re-read after the walk: unchanged",
+    "forbidden": "no SQL, no psql, no docker exec/build/pull/tag/rm, no key/enable, no provider call, no push"
+  },
+  "notDone": [
+    "The batch's one confirmation (register and property cards) was not sent: the brief ends at packages.",
+    "No browser UI was driven; what the Studio would show is read through the routes its pages call."
+  ]
+}

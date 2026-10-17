@@ -1,0 +1,12 @@
+{
+  "task": "KN1", "stopRule": "b", "status": "kind extension reverted; height and K5 continue",
+  "attempt": "Add optional kind and feature.sourceKey/feature.geometry/feature.name targets with geojson_geometry@1; admit six normalizer geometry types and validate by stated kind.",
+  "check": "pnpm typecheck:backend", "exit": 2,
+  "refusals": [
+    {"file":"packages/contracts/src/usp/streamed-profile.ts:57", "code":"TS7053", "reason":"MappingOperationSchema.shape.target is also the streamed-prefix target schema; its meanings map contains only building keys.", "smallestChange":"Pin the streamed-prefix operation/semantic target schema to LegacyMappingTargetSchema, not the newly widened bounded manual operation; do not widen streaming semantics."},
+    {"file":"packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts:383-387", "code":"TS2322", "reason":"legacyPlanToV2 copies operation.target into canonical MappingPlanV2 fields; feature.* is not a canonical building target.", "smallestChange":"Narrow this legacy adapter to legacy building operations, with an explicit refusal for a kind/generic layout. Never translate a road source key or geometry to a building fact."}
+  ],
+  "ownership": "Neither file is owned. No out-of-scope file changed. Stop rather than introducing misleading building targets or bypassing type safety.",
+  "runtimeConsequence": "The four non-building NYC layouts remain refused by the unchanged building-only MappingPlanSchema. No five-package intake claim will be made.",
+  "next": "The lead must assign the two compatibility guards and the bounded kind implementation together. Proposed generic names and geometry validation are recorded in step0.json."
+}

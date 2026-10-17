@@ -1,0 +1,20 @@
+TASK   KN2 — a layout states the kind of feature                    GATE GF1/GF5
+WORKS  An officer states a file's kind and identifier, omits its destination, then approves its automatically drafted/prepared package; zero-building packages are listed and confirmable.
+SEE IT node docs/evidence/gf1/kn2/run-runtime.mjs <new-receipt.json>
+INPUTS The unchanged NYC buildings, hydrography, parks, roadbed and sidewalk originals; difficult building height has no documented unit/meaning. Labelled feet and line fixtures are separate non-operational controls.
+GAPS   Recording all five remains blocked by LP1's area-neighbour pins and aggregate area cap; no full GF1/GF5 pass. Historical complete CA0 plan bytes are unavailable.
+DESIGN ingestion.ts adds optional kind and generic feature targets without defaults. registry.ts admits the normalizer's geometry types and compiles the officer-stated kind/height. streamed-profile.ts and legacyPlanToV2 stay building-only. intake-draft-worker.ts remembers kind/height but not approval. intake-destination.ts extracts the worker's exact proposal and site-area lookup; service.ts author resolves omission after source validation, stores the actual destination, and leaves explicit destination hashing/replay unchanged.
+COMMITS f080ce52 guards; 9d1af078 stated kind; b232ce97 omitted destination; fc3ea267 focused compatibility checks; 7e50cc50 API/client generation; final evidence commit carries this report.
+CHECKS Backend/Studio typechecks, isolated ingestion/area-binding/packet tests, standalone harness typecheck, API regeneration/check/refresh/client generation, Python checker and diff check pass. Exit codes and counts: checks.json. Actual HTTP steps and refusal words: runtime.json. Earlier attempts retained in attempts.json.
+NEXT   Review/integrate these commits, then integrate LP1's review-dependency and aggregate-bound fix and rerun the same five-layer walk. Do not change the officer's kind choices or infer NYC height units.
+
+## What the final walk proves
+
+- All originals are retained through public HTTP. All five layouts are authored without a destination and approved by the configured local operator. The first draft binds the unassigned case's site; later omission uses that site's same area and revision/reference pins.
+- Preparation is requested automatically, including packages with no building. There is no domain SQL setup for item membership, target creation, recipe execution or confirmations. SQL is limited to migration, owned-job observation and read-only checks; dispatch uses the existing product dispatcher.
+- The initial confirmation names all five packages and three buildings. Its first building commit succeeds; siblings refuse with the retained LP1 words. The three building jobs still reach consistent cards. Fresh individual review/confirmation records the remaining zero-building packages that fit the aggregate bound. One remains refused at the cap. Package ordering after the building is determined by package identifiers, so which later layer hits the cap can vary; nothing is removed or split to make the walk pass.
+- The labelled feet fixture matches direct HTTP import through the same normalizer, apart from path provenance. Missing/null height stays unknown in adjacent tests. NYC height is omitted deliberately.
+- The labelled road-line layout authors, approves and drafts with unknown geometry role. The same line stated as building refuses with explanatory words. The saved waiting reason asks an officer to state feature meaning and identifier.
+- The historical polygon profile fingerprint is checked against the saved CA0 receipt. Newly persisted legacy plan/recipe/approval bytes and hash round-trip unchanged; this is not recovery of a historical complete CA0 plan.
+
+Numbers, package states, timing qualifications and refusal locations are in result.json. Every attempt's own nonce-labelled temporary container was removed; no provider, GPU, demo/populated volume or other checkout was used. No unowned code was changed and no merge, rebase or push was performed.

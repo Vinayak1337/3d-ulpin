@@ -1,0 +1,176 @@
+[
+  {
+    "id": "REH7",
+    "title": "Where the slow window pages go: ulpin-reh-02 at 7a6fded0, timed through the product's routes",
+    "why": "Two Niagara window pages took 31.2 s and 34.8 s in REH6; the judges watch this map on 22 October.",
+    "needs": [
+      "docker",
+      "runtime",
+      "data-drive",
+      "local-tool"
+    ],
+    "owner": "runtime",
+    "dependsOn": [],
+    "size": "M",
+    "stopRule": [
+      "Same runner failing twice, a page not 200 twice in a row, or the demo doctor changing: stop and report."
+    ],
+    "successCriterion": [
+      "One page over 10 s reproduced with 80% or more of its seconds attributed to one named part (browser queue,",
+      "pool wait, API CPU, database), or every page under 3 s across direct and Studio runs (not reproduced)."
+    ],
+    "evidence": [
+      "docs/evidence/runtime/reh6/result.json:93-95",
+      "docs/evidence/runtime/reh6/part-b-map-wait.json:27",
+      "docs/evidence/runtime/reh6/part-b-map-wait.json:34",
+      "packages/server/src/modules/areas/area-display-window.ts:61",
+      "packages/server/src/modules/areas/area-display-window.ts:73-78",
+      "packages/server/src/modules/areas/area-display-proposals.ts:27-46",
+      "packages/server/src/infrastructure/db.ts:27"
+    ],
+    "draft": "docs/evidence/audit/au3/drafts/REH7.md"
+  },
+  {
+    "id": "DQ1",
+    "title": "A sealed set of public files nobody on the team has chosen, for the dress rehearsal",
+    "why": "The demo ingests the judges' unknown files; every public file we hold was chosen and looked at by us.",
+    "needs": [
+      "data-drive",
+      "local-tool"
+    ],
+    "owner": "none",
+    "dependsOn": [],
+    "size": "M",
+    "stopRule": [
+      "After 90 minutes of search keep what passes; a fetch failing twice is not retried a third time."
+    ],
+    "successCriterion": [
+      "4 to 6 kept files in three or more formats from new issuing authorities, each with an open licence, a receipt",
+      "and no personal data, at least one map layer; sealed manifest of path, bytes, SHA-256, format, licence only."
+    ],
+    "evidence": [
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:192",
+      "docs/next-steps/SPRINT-SELECTION.md:28",
+      "docs/api/real-sources.md:129-130",
+      "docs/api/real-sources.md:109-127"
+    ],
+    "draft": "docs/evidence/audit/au3/drafts/DQ1.md"
+  },
+  {
+    "id": "REH8",
+    "title": "Dress rehearsal on ulpin-reh-02: NYC data, then the sealed set, through the Studio to a property card",
+    "why": "No run has yet gone the whole way through the Studio from a dropped file to a card, as on 22 October.",
+    "needs": [
+      "docker",
+      "runtime",
+      "data-drive",
+      "local-tool"
+    ],
+    "owner": "runtime",
+    "dependsOn": [
+      "REH7",
+      "DQ1"
+    ],
+    "size": "L",
+    "stopRule": [
+      "The same step failing twice moves to the next file; the demo doctor changing stops everything."
+    ],
+    "successCriterion": [
+      "Both acts run to a card or to a recorded break, with per-file timings, frame figures (largest frame, frames",
+      "over 100 ms) and every officer action recorded."
+    ],
+    "evidence": [
+      "docs/next-steps/SPRINT-SELECTION.md:3",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:192",
+      "docs/backend/DEMO-RUNTIME.md:250-251",
+      "docs/evidence/runtime/reh6/report.md:36-41",
+      "services/geo/geo/spatial_ml.py:260"
+    ],
+    "draft": "docs/evidence/audit/au3/drafts/REH8.md"
+  },
+  {
+    "id": "B10",
+    "title": "Building model: B9's three regions without scale augmentation, one preregistered DEV comparison",
+    "why": "B9 is 350 roofs short of DEV recall 0.70 and lost small roofs; its two changes were never separated.",
+    "needs": [
+      "gpu",
+      "data-drive"
+    ],
+    "owner": "gpu",
+    "dependsOn": [
+      "lead:decide-b10-or-none",
+      "lead:merge-task/b9-more-regions"
+    ],
+    "size": "L",
+    "stopRule": [
+      "Non-finite loss, seconds per chip above 0.3 after 200 steps, GPU memory above 7 GiB, a rehearsal container",
+      "running, or the same failure twice: stop; no relaunch without the lead."
+    ],
+    "successCriterion": [
+      "Committed preregistration before the smoke, one run, and a DEV result by the preregistered rule (pass_dev,",
+      "beats_b9 or rejected) with size-bin recall against B3 epoch 4 and B9 epoch 3; no holdout call."
+    ],
+    "evidence": [
+      "task/b9-more-regions:docs/evidence/gf-ai/building/b3/failure-ledger.json:1 (last attempt, decision)",
+      "task/b9-more-regions:docs/evidence/gf-ai/building/b9/result.json:5",
+      "task/b9-more-regions:docs/evidence/gf-ai/building/b9/result.json:78-84",
+      "task/b9-more-regions:docs/evidence/gf-ai/building/b9/plan.json:259-270",
+      "task/b9-more-regions:scripts/ml/launch_extra_train.py:120-123",
+      "docs/STATUS.md:38"
+    ],
+    "draft": "docs/evidence/audit/au3/drafts/B10.md"
+  },
+  {
+    "id": "VA1",
+    "title": "Teacher round: header variants of the verified positive columns (fallback learner Step 1, labels only)",
+    "why": "The learner panel's student has 33 positives and no correct positive commit; T-data fired (A4e).",
+    "needs": [
+      "data-drive"
+    ],
+    "owner": "none",
+    "dependsOn": [],
+    "size": "M",
+    "stopRule": [
+      "A seed count other than 33 (32 without the footprint), or the self-check failing twice after a repair."
+    ],
+    "successCriterion": [
+      "At most 640 variant lines over 32 seeds, header text only, passing the self-check."
+    ],
+    "evidence": [
+      "docs/evidence/gf-agent/a4e/HANDOFF.md:17",
+      "docs/evidence/gf-agent/a4d/HANDOFF.md:59-71",
+      "docs/next-steps/FALLBACK-LEARNER.md:37",
+      "docs/next-steps/FALLBACK-LEARNER.md:46-51",
+      "docs/next-steps/SPRINT-SELECTION.md:60",
+      "docs/STATUS.md:40"
+    ],
+    "draft": "docs/evidence/audit/au3/drafts/VA1.md"
+  },
+  {
+    "id": "VA2",
+    "title": "Learner work: filter the variants, one Stage A retrain with them, counts only",
+    "why": "Step 1 counts only if the student then commits a correct positive field with no wrong one.",
+    "needs": [
+      "data-drive"
+    ],
+    "owner": "none",
+    "dependsOn": [
+      "VA1"
+    ],
+    "size": "M",
+    "stopRule": [
+      "The option-off reproduction of A4e differs, a services/** change would be needed, or a failure twice."
+    ],
+    "successCriterion": [
+      "A measured result by the A4e arm: supported only with at least one correct positive commit and zero wrong",
+      "commits in pooled leave-one-family-out; otherwise a recorded miss and no further attempt."
+    ],
+    "evidence": [
+      "docs/evidence/gf-agent/a4d/HANDOFF.md:41",
+      "docs/evidence/gf-agent/a4d/HANDOFF.md:72-74",
+      "docs/next-steps/FALLBACK-LEARNER.md:46-51",
+      "services/geo/geo/usp_learning/stage_a.py"
+    ],
+    "draft": "docs/evidence/audit/au3/drafts/VA2.md"
+  }
+]

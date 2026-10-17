@@ -1,0 +1,48 @@
+{
+  "task": "ZJ1",
+  "gate": "GF1",
+  "base": "2725399ab75ab85c8cc27ffed10eddc147af45e6",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers (the job authority's statements included), the real probe and real repository inputs. No database, object store, processor, dispatcher loop or served HTTP walk was run.",
+  "tests": {
+    "server": {
+      "command": "D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts packages/server/src/modules/areas/*.test.ts tests/manual-author.test.ts tests/ingestion-events.test.ts packages/server/src/modules/cases/processing.test.ts tests/usp-packet-pdf.test.ts tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts",
+      "before": { "tests": 277, "pass": 240, "fail": 15, "skipped": 22 },
+      "after": { "tests": 282, "pass": 245, "fail": 15, "skipped": 22 },
+      "failuresUnchanged": true,
+      "failureCause": "The same 15 tests fail before and after on this checkout: they read originals under E:/BhuAayam-data or other files absent here (NYC, Niagara, OCR/quote parity, memory, PDF progress fixtures).",
+      "changed": [
+        "tests/intake-zip-layers.test.ts: the three ZF1 fan-out tests now queue the job and run it through runIntakeZipLayersJob; their assertions (lineage, member hash, retain-before-enrol order, code-only refusal, README and the mixed ZIP kept out) are kept; the replay assertion now runs as a retry job that keeps nothing twice and enrols the same originals again. Its ledger also answers the job authority's statements.",
+        "tests/intake-ledger.test.ts: its in-memory ledger answers the queue's job and metadata statements."
+      ],
+      "added": [
+        "intake-ledger.test.ts: enrolling a ZIP of GeoJSON layers queues exactly one intake-zip-layers job and keeps no layer during the request; a replay and a second enrolment while queued queue none; after a failed job with an unkept layer a fresh job is queued under a new id; with every layer kept and the job done, none",
+        "intake-ledger.test.ts: a shapefile ZIP queues no job and issues no jobs statement",
+        "intake-zip-layers.test.ts: layers held only by ZIP_LAYER_LIMIT or ZIP_LAYER_SIZE queue no retry",
+        "intake-zip-layers.test.ts: a changed archive sha256 makes the claim refuse; no attempt, no retain; the job ends stale with STALE_REVISION and the ZIP's words gain the D5 sentence",
+        "intake-zip-layers.test.ts: a job failing as a whole (its transaction throws text naming a member) fences its attempt, ends failed with INTAKE_ZIP_LAYERS_FAILED, writes the D5 sentence with the code only, and enrolling again queues a fresh job that keeps the layers"
+      ]
+    },
+    "studio": { "command": "pnpm studio:test", "before": { "tests": 459, "pass": 459 }, "after": { "tests": 459, "pass": 459 } },
+    "typecheck": { "backend": "pnpm typecheck:backend exit 0 before and after", "studio": "pnpm studio:typecheck exit 0 before and after" },
+    "contract": "apps/api/scripts/openapi.ts --check reported docs/api/source-pins.json stale (on the base as well); refresh-contract.ts origin/staging repinned the touched sources; pnpm studio:api-types left schema.d.ts unchanged; check.py: 314 native operations, 356 named schemas, pins valid; --check then exit 0. Only source-pins.json changed."
+  },
+  "realInputs": {
+    "good": { "files": ["fixtures/google-uttam/01-google-building-footprints.geojson", "fixtures/google-uttam/02-osm-road-centrelines.geojson", "fixtures/google-uttam/block-boundary.geojson", "fixtures/google-uttam/README.md"], "zippedAtCheckTime": true, "jobsQueued": 1, "layersKeptByJob": 3, "keptDuringRequest": 0 },
+    "difficult": { "file": "fixtures/lake-view-complete-inputs.zip", "members": 38, "jobsQueued": 0, "layersKept": 0 }
+  },
+  "decisions": [
+    "D1 packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:22 IntakeZipLayersInputSchema (intake-zip-layers/1: jobId, caseId, caseRevision, itemId, sourceId, sourceRevision, sourceSha256, sourcePin, subject, accessSha256). :129 queueZipLayersTx inserts into jobs and calls registerUspJobInputTx (:148) as enrollDraftTx does; intake-service.ts:130 calls it in publish, the transaction that saves the probe card, after queueIntakeDraftTx. intake-service.ts no longer calls the fan-out; register returns the item at once. intake-draft.ts:31 exports shapefileZip, reused at intake-zip-layers.ts:131.",
+    "D1 recorded: a ZIP with no layer waiting (for example the mixed lake-view ZIP, no GeoJSON layer) queues no job, since its fan-out would do nothing.",
+    "D2 intake-zip-layers.ts:133-136: an advisory lock per item, then no job while one of this source's intake-zip-layers jobs is queued or running. A replay of the same request key never reaches publish (its operation row is completed), so it queues nothing. :119 waiting: a layer waits while it has no original, or carries a reason other than ZIP_LAYER_LIMIT / ZIP_LAYER_SIZE (those are final; a retry cannot clear them). :139 job id = stableUuid('intake-zip-layers/1:<itemId>:<sourceRevision>:<n>') where n is 1 + the count of this source's earlier intake-zip-layers jobs.",
+    "D2 finding fixed: intake-zip-layers.ts:217 a layer enrolment that succeeds now clears an earlier 'kept but not enrolled' reason; before, the reason stayed after a successful retry, so the officer read a stale failure and every later enrolment would have queued another retry.",
+    "D3 intake-zip-layers-worker.ts:74 runIntakeZipLayersJob copies runIntakeDraftJob: load, claim with the pin check (:25, reusing assertIntakeDraftTx: archive revision, sha256, pin, subject, access and latest family revision exact; case revision forward only), fanOutZipLayers with the dependencies register passed before (:20; register is IntakeService.register), accept, and on error fail the attempt and rethrow. :87 each layer's retain and enrolment first renews the lease, so a large ZIP does not outlast its 180-second lease.",
+    "D4 packages/server/src/modules/usp/jobs.ts:142 INTAKE_ZIP_LAYERS_INPUT_SCOPE, same shape as intake-draft. packages/server/src/modules/cases/processing.ts:355 one arm, one worker at a time, .catch(keepWorkerError(job.operation,job.id)). No table or migration: jobs.operation is free text (database/sql/01-core/core.sql:55, no CHECK on it).",
+    "D5 intake-zip-layers-worker.ts:29-30 a job that fails as a whole, claimed (fail, :40) or refused at claim (unclaimedFailure, :52), appends 'Taking the layers out of this ZIP stopped (<code>); enrol the ZIP again to retry.' to the archive item's words; the code is the AppError code or INTAKE_ZIP_LAYERS_FAILED, never a message. A STALE_REVISION ends the job stale, others failed. The next enrolment re-probes and ZF2's settlement rewrites the words afresh. Per-layer reasons stay as fanOutZipLayers writes them."
+  ],
+  "limits": [
+    "No PostgreSQL, object store, dispatcher loop or served HTTP walk was run; the job authority is exercised through an in-memory ledger.",
+    "If a lease is lost mid-run, the renew inside a layer's retain or enrolment fails and fanOutZipLayers records that layer with the conflict code; the completion then fails and the dispatcher reclaims the job (at most three attempts), and the rerun keeps nothing twice.",
+    "A job that fails after its lease expired cannot fence itself (as with intake-draft); it stays running until the dispatcher reclaims it."
+  ]
+}

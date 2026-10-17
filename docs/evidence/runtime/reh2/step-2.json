@@ -1,0 +1,15 @@
+{ "at": "2026-10-16T22:39:04.691Z", "commit": "54d43d0bed053c803245fe82f64ffb7125eebe86", "receipt": { "command": [
+"pnpm install --frozen-lockfile" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 0, "seconds": 10.686,
+"output": [ "Progress: resolved 500, reused 492, downloaded 0, added 469",
+"Progress: resolved 500, reused 492, downloaded 0, added 482",
+"Progress: resolved 500, reused 493, downloaded 0, added 490",
+"Progress: resolved 500, reused 493, downloaded 0, added 495",
+"Progress: resolved 500, reused 493, downloaded 0, added 496",
+"Progress: resolved 500, reused 493, downloaded 0, added 497",
+"Progress: resolved 500, reused 493, downloaded 0, added 498",
+"Progress: resolved 500, reused 493, downloaded 0, added 500, done", "", "dependencies:",
+"+ @ulpin/server 0.1.0 <- packages\\server", "", "devDependencies:", "+ @playwright/test 1.63.0",
+"+ @types/node 24.13.4", "+ @types/pg 8.23.1", "+ concurrently 9.2.4", "+ dotenv 17.4.2", "+ fflate 0.8.2",
+"+ jspdf 4.2.1", "+ pg 8.23.0", "+ tsx 4.23.13", "+ typescript 5.9.3", "", "Done in 10.5s" ], "error": null },
+"outputLines": 43, "state": { "runtimeEntriesByName": [], "volumes": [ "" ], "containers": [ "" ], "networks": [ "" ],
+"listeners": [] }, "servingHead": "54d43d0bed053c803245fe82f64ffb7125eebe86", "servingStatus": [ "" ] }

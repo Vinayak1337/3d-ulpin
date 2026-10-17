@@ -4,6 +4,7 @@ import { useBuildingLedger, useBuildingRegister } from '../../api/queries';
 import type { SpaceWorkflow } from '../../local/workflow';
 import { buildingModel } from '../../model/building';
 import { ledgerSpace } from '../map/ledger';
+import { DRAFT_MADE } from './draft';
 
 /**
  * What a Property Card and its verification page state about one space, read from the building's
@@ -33,7 +34,7 @@ export function useCardFacts(workflow: SpaceWorkflow | null | undefined) {
           : unknown,
       },
       { label: 'Undivided share', value: facts?.sharePct ? `${facts.sharePct.value.toFixed(2)} % of the common areas` : unknown },
-      { label: 'Assigned', value: workflow.assignedAt ? formatDate(workflow.assignedAt) : unknown },
+      { label: DRAFT_MADE, value: workflow.assignedAt ? formatDate(workflow.assignedAt) : unknown },
     ];
     // The proposed 3D ULPIN location path: parcel / structure / floor / space.
     const location = space?.record.ulpin3d ? space.record.ulpin3d.split('/').map((s) => s.replace(/-/g, ' ')) : null;

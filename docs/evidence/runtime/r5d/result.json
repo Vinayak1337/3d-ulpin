@@ -1,0 +1,293 @@
+{
+  "task": "R5d",
+  "title": ["Which cited pages of the two demo buildings have a picture, why Tower 3's plan has none, and the one",
+    "action that would make it"],
+  "gate": "GF5 (finding B2), GF1",
+  "worktree": "E:/Projects/ulpin-wt/r5, branch task/r5d-cited-page-raster, cut from staging e9dcebde",
+  "demo": {
+    "api": "http://127.0.0.1:3194", "served": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795", "changed": false,
+    "sent": "GET only: 6 building reads, 4 document-pages reads, 4 raster reads. No POST of any kind."
+  },
+  "answer": [
+    ["No request, job or upload on the demo gives page 1 of 5293cd72 a whole-page picture: the server",
+      "draws a page only on request, stores none, and refuses to draw any page with a side over 2000 pt",
+      "(this one is 2586 pt wide)."],
+    ["The one action that shows the cited words today, with no change to the server or the demo: the",
+      "Studio's cited page viewer, when the listed page has url null and the citation holds a region, sends",
+      "POST /api/v1/usp/packets/sources/5293cd72-2377-4deb-a51c-c76d11ccb429/pages/1/region with a body",
+      "under step3WhatWouldGiveItOne.requests (a read: it stores nothing and starts no job) and draws the",
+      "PNG it answers. Not sent here: the Studio does not send this route today."],
+    ["For the whole page (and for the 20 citations that hold no region) the action is a reviewed change of",
+      "one rule in the page renderer and a roll of the demo; see step3WhatWouldGiveItOne.wholePage."]
+  ],
+  "step1StillSo": {
+    "answer": ["Yes. After the roll to 18b5e74c the read for 5293cd72 page 1 still lists the page with a 2586 × 1695",
+      "pt frame, renderSupport \"unsupported\" and url null. The same holds for every cited page of both",
+      "buildings: none of the four has a picture."],
+    "readAt": "2026-10-10T16:46:33Z to 16:46:51Z",
+    "asTheStudioSendsIt": ["GET",
+      "/api/v1/sources/{sourceId}/pages?sha256={sha256}&revision={revision}&offset={page-1}&limit=1",
+      "(apps/studio/src/features/evidence/citedPage.ts:33-34)"],
+    "whereCitationsWereFound": ["Each building's canonical read: Tower 3 31 citation objects, Magnolia 61. The",
+      "register and ledger reads answered 200 and hold no cited source page."],
+    "table": [
+      {"building": "Tower 3", "source": "c59d2027", "file": "haryana-2831-site-plan.pdf", "page": 1,
+        "pagesInFile": 1, "framePt": "2585 × 3390", "renderSupport": "unsupported", "url": null, "hasPicture": "no",
+        "citations": 20, "withRegion": 4, "pageOnly": 16, "revisionInCitation": null, "revisionSent": 1,
+        "rasterRead": "422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED", "rasterMs": 2150},
+      {"building": "Tower 3", "source": "5293cd72", "file": "haryana-2831-tower3-plan1.pdf", "page": 1,
+        "pagesInFile": 1, "framePt": "2586 × 1695", "renderSupport": "unsupported", "url": null, "hasPicture": "no",
+        "citations": 11, "withRegion": 11, "pageOnly": 0, "revisionInCitation": 1, "revisionSent": 1,
+        "rasterRead": "422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED", "rasterMs": 2098},
+      {"building": "Magnolia", "source": "10946c4c", "file": "bihar-magnolia-sanctioned-layout-original.pdf",
+        "page": 1, "pagesInFile": 6, "framePt": "2384 × 1684", "renderSupport": "unsupported", "url": null,
+        "hasPicture": "no", "citations": 4, "withRegion": 0, "pageOnly": 4, "revisionInCitation": null,
+        "revisionSent": 1, "rasterRead": "422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED", "rasterMs": 2077},
+      {"building": "Magnolia", "source": "10946c4c", "file": "bihar-magnolia-sanctioned-layout-original.pdf",
+        "page": 2, "pagesInFile": 6, "framePt": "2384 × 1684", "renderSupport": "unsupported", "url": null,
+        "hasPicture": "no", "citations": 57, "withRegion": 57, "pageOnly": 0, "revisionInCitation": null,
+        "revisionSent": 1, "rasterRead": "422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED", "rasterMs": 2114}
+    ],
+    "rasterRefusalMessage": ["The selected PDF page is unavailable under this bounded profile. The original remains",
+      "retained."],
+    "notes": [
+      ["72 of the 92 citations hold a region (the largest side is 192.24 pt); 20 name the page only (16 on",
+        "the site plan, 4 on Magnolia page 1)."],
+      ["The citations of c59d2027 and 10946c4c carry no revision; revision 1 was sent and the read answered",
+        "200 with the same sha256. What the Studio sends for a citation without a revision was not traced."],
+      ["Each row's raster read was sent at the raster route directly, because the listing gave no url. Each",
+        "ran the page worker in the demo API for about 2.1 seconds and was refused; nothing was stored."]
+    ]
+  },
+  "step2Why": {
+    "whatMakesAPicture": [
+      ["A request, not a job: GET /api/v1/sources/{sourceId}/pages/{page}/raster",
+        "(apps/api/src/modules/evidence/document-pages.controller.ts:38-58) calls DocumentPagesService.raster",
+        "(packages/server/src/modules/usp/ingestion/document-pages.ts:193-198)."],
+      ["The worker: inspectPrivateDocumentPages (document-pages.ts:91-138) starts the configured Python on",
+        "scripts/usp/document-models/run_pdf_pages.py; inspect_pages (line 67) calls render_pdf_selection for",
+        "the selected page (line 120; services/geo/geo/usp_document_candidates/docling_tesseract.py:160)."],
+      ["Where it is stored: nowhere. The worker writes page.png into a private scratch folder that is",
+        "removed when the request ends (document-pages.ts:137); the answer is sent with Cache-Control",
+        "private, no-store; the service's own comment: no source, job or registry state is written",
+        "(document-pages.ts:30)."],
+      ["When it is made: on each request. Not at upload, not by a job. One page worker at a time; a second",
+        "request answers 429 DOCUMENT_PAGES_BUSY (document-pages.ts:151)."]
+    ],
+    "whenAbsent": [
+      ["The listing marks the page: run_pdf_pages.py:105-115 tries the whole-page rule for each listed page",
+        "and writes renderSupport \"unsupported\" when it refuses; document-pages.ts:189 then gives url null."],
+      ["A raster request for such a page answers 422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED",
+        "(run_pdf_pages.py:118-119; document-pages.ts:127-130)."],
+      ["The rule: MAX_PAGE_SIDE_POINTS = 2000 (docling_tesseract.py:25); _selection with no region refuses a",
+        "page whose width or height is over it (docling_tesseract.py:113-118: large frames are drawn only",
+        "through a bounded selection, never whole)."]
+    ],
+    "caseFor5293cd72Page1": ["None of the three offered cases as worded. Nothing is ever stored, so there is no",
+      "stored failure and nothing \"made and not found\". The Studio never requests the",
+      "picture, because the listing gives no url. Requested directly, it is refused by rule",
+      "every time: the frame is 2586 pt wide, over the 2000 pt whole-page limit (height 1695",
+      "pt is within it). The file is sound: 1 page, rotation 0, 1,655,334 bytes, the cited",
+      "sha256."],
+    "alreadyWritten": ["docs/backend/DEMO-RUNTIME.md:92-97 states this for this sheet and that the two cited regions",
+      "fit the region route at 3×. Finding B2 is therefore the Studio not using the region route,",
+      "not a missing raster."],
+    "servedCodeIsThisCode": "git diff 18b5e74c HEAD over every file named here: no difference."
+  },
+  "step3WhatWouldGiveItOne": {
+    "onTheDemo": ["Nothing to run. No job, upload or stored derivative produces a page picture. The region runtime",
+      "is already configured (doctor: packetRegionsConfigured true, regionRepoMatches true)."],
+    "order": [
+      ["1. GET",
+        "/api/v1/sources/5293cd72-2377-4deb-a51c-c76d11ccb429/pages?sha256=2b9f8803…&revision=1&offset=0&limit=1",
+        "(already sent by the Studio): gives frame, mediaBox, cropBox and boxConvention, copied into the",
+        "body."],
+      ["2. POST /api/v1/usp/packets/sources/5293cd72-2377-4deb-a51c-c76d11ccb429/pages/1/region with one of",
+        "the bodies below. Answer: 200 image/png, headers X-Region-Sha256 and X-Region-Provenance (base64url",
+        "JSON with the pixel-to-page transform, so the crop is placed in the frame and the cited region",
+        "outlined as today)."]
+    ],
+    "route": "POST /api/v1/usp/packets/sources/5293cd72-2377-4deb-a51c-c76d11ccb429/pages/1/region",
+    "routeSource": "apps/api/src/modules/evidence/packet-region.controller.ts:13-25; page 1 to 8",
+    "requests": [
+      {"name": "the cited caption alone, region [850, 875, 1020, 910] pt, drawn at 3×",
+        "body": {
+          "revision": 1, "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+          "purpose": "private_source_preview",
+          "selection": {
+            "frame": {"kind": "pdf_display_page_top_left_points", "rotation": 0, "width": 2586, "height": 1695},
+            "mediaBox": [0, 0, 2586, 1695], "cropBox": [0, 0, 2586, 1695],
+            "boxConvention": "pymupdf_page_rectangles/1", "coordinates": "displayed_cropbox_normalized_top_left/1",
+            "region": [0.32869296210363497, 0.5162241887905604, 0.39443155452436196, 0.5368731563421829],
+            "selectionAcknowledged": true
+          }
+        },
+        "triedOnTheCopy": {
+          "pixels": [510, 105], "canvasPixels": [7758, 5085], "pngBytes": 14730, "wallMs": 69, "cpuMs": 62
+        },
+        "reads": "2ND FLOOR PLAN"},
+      {"name": "the cited label alone, region [596, 390, 644, 409] pt, drawn at 3×",
+        "body": {
+          "revision": 1, "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+          "purpose": "private_source_preview",
+          "selection": {
+            "frame": {"kind": "pdf_display_page_top_left_points", "rotation": 0, "width": 2586, "height": 1695},
+            "mediaBox": [0, 0, 2586, 1695], "cropBox": [0, 0, 2586, 1695],
+            "boxConvention": "pymupdf_page_rectangles/1", "coordinates": "displayed_cropbox_normalized_top_left/1",
+            "region": [0.23047177107501934, 0.23008849557522124, 0.24903325599381285, 0.24129793510324485],
+            "selectionAcknowledged": true
+          }
+        },
+        "triedOnTheCopy": {
+          "pixels": [144, 57], "canvasPixels": [7758, 5085], "pngBytes": 5531, "wallMs": 65, "cpuMs": 62
+        }},
+      {"name": "one window that holds both cited regions with their surroundings: x 0 to 1991.22 pt, full height",
+        "body": {
+          "revision": 1, "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+          "purpose": "private_source_preview",
+          "selection": {
+            "frame": {"kind": "pdf_display_page_top_left_points", "rotation": 0, "width": 2586, "height": 1695},
+            "mediaBox": [0, 0, 2586, 1695], "cropBox": [0, 0, 2586, 1695],
+            "boxConvention": "pymupdf_page_rectangles/1", "coordinates": "displayed_cropbox_normalized_top_left/1",
+            "region": [0, 0, 0.77, 1], "selectionAcknowledged": true
+          }
+        },
+        "triedOnTheCopy": {
+          "pixels": [1369, 1166], "canvasPixels": [1778, 1166], "pngBytes": 1108799, "wallMs": 253, "cpuMs": 156
+        }}
+    ],
+    "regionRule": ["region is [x0/width, y0/height, x1/width, y1/height] of the listed frame, top left origin; each",
+      "side of the window at most 2000 pt and the frame at most 14,400 pt",
+      "(packages/contracts/src/packet-region.ts:5-7, 13-23); the picture is at most 1400 px a side and",
+      "1,600,000 px, at most 3×, rounded inward to whole pixels",
+      "(packages/server/src/modules/usp/packets/region-extract.ts:34-48)."],
+    "isItAWrite": ["No. It is a POST that is a read: the source is checked in a read-only transaction",
+      "(region-extract.ts:17-24), the original is read from private storage and hashed (25-32,",
+      "100-102), a worker draws the crop in a private scratch folder that is removed afterwards",
+      "(packages/server/src/modules/usp/packets/region-runtime.ts:98-102, 140), and the PNG is answered",
+      "with no-store. No job, no row, no stored derivative."],
+    "notSent": ["Sent nothing. The Studio does not send this route today (no use under apps/studio/src; only the",
+      "declaration at packages/api-client/src/schema.d.ts:2471), so it is outside this task's allowed",
+      "requests."],
+    "time": {
+      "onTheCopy": ["Drawing and PNG: caption 69 ms, label 65 ms, window 253 ms (CPU 156 ms); the whole process,",
+        "three crops and one whole page, 1449 ms wall and 1297 ms CPU, of which imports 919 ms. CPU",
+        "only, no GPU."],
+      "onTheDemo": ["Not measured, because not sent. Expect seconds, not milliseconds: each request checks the",
+        "frozen profile's pinned files three times and starts a supervised worker (a refused page",
+        "request took 2.1 s). Limits: worker 25 s, request 35 s, one at a time (429 PACKET_REGION_BUSY)."]
+    },
+    "triedOutsideTheDemo": {
+      "can": "Yes, and done once here.",
+      "how": ["The retained dataset copy of the same file (same sha256 2b9f8803…, same bytes) was drawn locally",
+        "with the project-owned interpreter (-I -B, CUDA_VISIBLE_DEVICES empty), using the product's own",
+        "pixel_transform (services/geo/geo/usp_packet_regions.py:24-50) and the render calls of",
+        "extract_region (lines 104-126), driven directly: not the supervised worker, no frozen profile, no",
+        "API. The picture hashes are therefore not claimed to equal the route's."],
+      "versions": {"pypdfium2": "5.13.0", "pdfium": "153.0.7999.0", "pymupdf": "1.25.5"},
+      "kept": "E:/BhuAayam-data/task-data/r5d/trial/ (trial.json and four PNGs, private)",
+      "theRouteItself": ["The route needs an API with a frozen region profile built for its own checkout",
+        "(DEMO-RUNTIME.md:87-90 allows a dry-run build into a temporary folder). Whether a",
+        "development API runs the route from such a profile was not tried."],
+      "whyFirst": ["If a region worker's cleanup is ever unresolved, the API refuses every later region request with",
+        "503 PACKET_REGION_CLEANUP_UNRESOLVED until it is restarted (region-runtime.ts:51-52, 113, 119)."]
+    },
+    "wholePage": {
+      "change": ["One rule: let the page listing and raster (not OCR) draw a whole page up to 14,400 pt a side at",
+        "the scale the renderer already computes (docling_tesseract.py:113-118 with",
+        "run_pdf_pages.py:105-120). The listing then says \"supported\" with a url and the Studio shows the",
+        "page with no change of its own."],
+      "forThisPage": {
+        "productRefusalNow": "unsupported_pdf_page_frame", "scale": 0.5413766434648105, "pixels": [1400, 918],
+        "withinPixelLimits": true, "pngBytes": 1057621, "wallMs": 140
+      },
+      "cost": ["A code change with its test (packages and services: another worker), then a roll of the demo with a",
+        "profile rebuild (47 seconds down in R5c). At that scale the 170 × 35 pt caption is about 92 × 19 px."],
+      "needed": ["The 20 citations that hold no region have no window to ask for; only this shows them the page",
+        "whole."]
+    },
+    "otherPages": ["The same route serves the other three cited pages: both files are within 8 pages and 16 MiB,",
+      "every frame is under 14,400 pt, and every cited region is under 2000 pt a side. Bodies for them",
+      "were not written out; they follow from each page's listing in the same way."]
+  },
+  "step4TheStudiosSentence": {
+    "now": ["The server cannot render this page",
+      "The page is listed with a 2586 × 1695 pt frame but has no raster."],
+    "source": "apps/studio/src/features/evidence/CitedPageViewer.tsx:85-90",
+    "isItTrue": [
+      "Half true. The server does refuse the whole page, but \"cannot render\" and \"has no raster\" read as",
+      "a fault or a missing file. The cause is a size rule, and the server can draw the cited region of",
+      "this very page."
+    ],
+    "truer": [
+      "This page is too large to show whole",
+      ["The sheet is 2586 × 1695 pt; the server draws whole pages up to 2000 pt a side. The cited region can",
+        "be shown on its own."]
+    ],
+    "note": ["For the Studio worker. The second sentence is true only once the viewer requests the region; until",
+      "then \"The cited region is not shown yet\" is the honest ending. Nothing under apps/studio was",
+      "changed."]
+  },
+  "checks": {
+    "doctorBefore": {
+      "at": "2026-10-10T16:45:38Z", "exit": 0, "pass": 27, "fail": 0, "gatewayEnabled": false,
+      "commit": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795", "checkoutClean": true, "api": 35160,
+      "apiStarted": "/Date(1791648988043)/", "dispatcher": 28836, "dispatcherStarted": "/Date(1791648988665)/"
+    },
+    "doctorAfter": {
+      "at": "2026-10-10T16:54:39Z", "exit": 0, "pass": 27, "fail": 0, "gatewayEnabled": false,
+      "commit": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795", "checkoutClean": true, "api": 35160,
+      "apiStarted": "/Date(1791648988043)/", "dispatcher": 28836, "dispatcherStarted": "/Date(1791648988665)/"
+    },
+    "sameCommitAndProcesses": true, "tsc": "pnpm exec tsc -p scripts/agent/tsconfig.json: exit 0",
+    "script": ["scripts/agent/r5d-pages.ts, GET only. One type annotation (const entry: Cited) was added after the",
+      "run; behaviour unchanged. It writes with \"wx\": a rerun needs a new folder."],
+    "diffCheck": "git diff --check: clean", "longLines": "no new line over 120 characters",
+    "privateReceipts": ["E:/BhuAayam-data/task-data/r5d/ (cited/, pages/, raster/, cited-pages.json, trial/,",
+      "doctor-before.txt, doctor-after.txt)"]
+  },
+  "report": [
+    "TASK   R5d: which cited pages of the two demo buildings have a picture, why Tower 3's plan has none, and",
+    "       the one action that would make it. Done; reads only; the demo is unchanged.",
+    "WORKS  What would give it one: nothing on the demo. The server draws a page only on request, stores none,",
+    "       and refuses any page with a side over 2000 pt; this one is 2586 pt wide.",
+    "       The one action: the Studio's viewer, when url is null and the citation holds a region, sends POST",
+    "       /api/v1/usp/packets/sources/{sourceId}/pages/{page}/region (a read that stores nothing; bodies under",
+    "       step3WhatWouldGiveItOne.requests) and draws the PNG. Not sent: the Studio does not send it today.",
+    "       Whole page, and the 20 citations with no region: one reviewed rule change in the page renderer plus",
+    "       a roll (this page would be 1400 × 918 px).",
+    "       1 Still so after the roll, and for all four cited pages: c59d2027 p1 no, 5293cd72 p1 no, 10946c4c p1",
+    "       no, 10946c4c p2 no. Every listing: renderSupport unsupported, url null; every raster read: 422",
+    "       DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED.",
+    "       2 Why: made on request by a page worker, never at upload or by a job, never stored. The rule is",
+    "       MAX_PAGE_SIDE_POINTS = 2000 (docling_tesseract.py:25, 113-118). For 5293cd72 p1 none of the three",
+    "       cases fits: never requested by the Studio (no url), refused by rule when requested, nothing stored",
+    "       to find or fail.",
+    "       3 Tried on a copy outside the demo: the same bytes drawn locally in 65 to 253 ms a crop; the caption",
+    "       crop reads \"2ND FLOOR PLAN\" at 510 × 105 px.",
+    "       4 The sentence is half true: the cause is a size rule, not a fault. Truer: \"This page is too large",
+    "       to show whole\" with the 2000 pt limit and the cited region shown on its own.",
+    "SEE IT docs/evidence/runtime/r5d/result.json (step1StillSo.table, step2Why, step3WhatWouldGiveItOne,",
+    "       step4TheStudiosSentence). Private: E:/BhuAayam-data/task-data/r5d/ (reads, cited-pages.json, trial/",
+    "       with four PNGs).",
+    "INPUTS Task file r5d.md; walk.json finding B2; the demo at 127.0.0.1:3194 serving 18b5e74c (14 GET reads);",
+    "       the retained dataset copy of haryana-2831-tower3-plan1.pdf (public RERA sheet, same sha256) for the",
+    "       local trial. No provider call, no GPU.",
+    "GAPS   The region route was not run on the demo, so its time there and its picture hash are unknown.",
+    "       Request bodies are written for 5293cd72 only. What the Studio sends for a citation without a",
+    "       revision was not traced. The local trial drives the render calls directly, not the supervised",
+    "       worker.",
+    "DESIGN Counted every cited page of both buildings, not only the named one, because the cause is a rule that",
+    "       applies to all four. Sent the four raster reads to see the refusal itself rather than infer it from",
+    "       url null. Put the region request first because it needs no server change and nothing stored.",
+    "COMMITS One on task/r5d-cited-page-raster: docs(runtime): R5d which cited pages of the demo buildings have a",
+    "       picture, why Tower 3's plan has none, and the one action that would make it. Not pushed.",
+    "CHECKS Doctor before 2026-10-10T16:45:38Z and after 2026-10-10T16:54:39Z: exit 0, 27 PASS, 0 FAIL, gateway",
+    "       disabled, commit 18b5e74c, api 35160, dispatcher 28836: the same. tsc exit 0. git diff --check",
+    "       clean. No new line over 120.",
+    "NEXT   Lead: choose the region request in the Studio (no server change), the whole-page rule (code and a",
+    "       roll), or both; the 20 page-only citations have no region to request. A Studio task would also",
+    "       change the sentence. The commit trailer follows the session's instruction (Claude Opus 5.5), not the",
+    "       common file's wording."
+  ]
+}

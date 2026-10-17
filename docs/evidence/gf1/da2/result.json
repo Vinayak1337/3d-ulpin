@@ -1,0 +1,394 @@
+{
+  "schemaVersion": "da2-linked-originals/1",
+  "task": "DA2",
+  "gate": "GF1 / GF2 data prerequisite",
+  "status": "acquired_inspected_document_literal_key_not_found",
+  "baseCommit": "b5155c2fcd3cfdcb0793526e8bed17bb1b85a9e0",
+  "recordedAtIst": "2026-10-11T10:15:26.961498+05:30",
+  "scope": "Unchanged NYC authority originals; memory-only reading/counts; no product conversion or runtime gate.",
+  "pack": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "expectedFeaturesFromTask": 1661,
+    "observedFeatures": 1662,
+    "finding": "Pack has 1662 retained features, all counted; no feature removed to force the stated 1661 denominator.",
+    "readmeFinding": "Root README.txt and source-info/manifest.json read; boundary file not needed."
+  },
+  "originalCount": 3,
+  "totalOriginalBytes": 13835554,
+  "downloadCapBytes": 314572800,
+  "assets": [
+    {
+      "issuer": "New York City Landmarks Preservation Commission (LPC)",
+      "originalUrl": "https://data.cityofnewyork.us/resource/gpmc-yuvp.csv?%24select=bin%2Cbbl%2Cborough%2Cdes_addres%2Cstyle_prim%2Cdate_low%2Cdate_high%2Cmat_prim%2Cbuild_type&%24where=borough%3D%27MN%27+AND+bbl+%3E%3D+%271001400000%27+AND+bbl+%3C%3D+%271002409999%27&%24limit=50000",
+      "sourcePage": "https://data.cityofnewyork.us/Housing-Development/Individual-Landmark-and-Historic-District-Building-Da/gpmc-yuvp",
+      "acquiredAtIst": "2026-10-11T10:11:10.551894+05:30",
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+      "bytes": 87352,
+      "sha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b",
+      "licence": {
+        "name": "not stated, permission unconfirmed",
+        "textUrl": null,
+        "termsUrl": "https://www.nyc.gov/home/terms-of-use.page",
+        "permission": "unconfirmed; NYC terms pages returned HTTP 403; local test only",
+        "limitations": "No licence grant observed; no permission inferred from public access or official authorship."
+      },
+      "geography": "Manhattan, New York City, New York, United States (foreign)",
+      "classification": "test_only",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "portalGeneratedExport": true,
+      "headBytes": "0",
+      "getContentLength": null,
+      "contentDisposition": null,
+      "sourceLastModified": "Tue, 03 Feb 2026 15:13:04 GMT",
+      "etag": "W/\"aW5kaWEuMjkzNDZfM182MGlIU04yeldnY0R5d1lXS3JUdlY5R3hnSFZsSQ---gzioQsDJAaWhxeX4fwpFLguqoqdcLX--gzip--gzip\"",
+      "export": {
+        "filter": "borough='MN' AND bbl >= '1001400000' AND bbl <= '1002409999'",
+        "columnSelection": [
+          "bin",
+          "bbl",
+          "borough",
+          "des_addres",
+          "style_prim",
+          "date_low",
+          "date_high",
+          "mat_prim",
+          "build_type"
+        ],
+        "limit": 50000,
+        "scope": "Authority portal export of selected rows and columns, not the full dataset",
+        "preflightRows": 753,
+        "sizeFinding": "HEAD reports 0; GET omits Content-Length; body read is capped at 300 MiB."
+      },
+      "privacyBasis": "Portal-selected identifiers/address/style/dates/material/type; name and notes fields excluded.",
+      "inspection": {
+        "columns": [
+          "bin",
+          "bbl",
+          "borough",
+          "des_addres",
+          "style_prim",
+          "date_low",
+          "date_high",
+          "mat_prim",
+          "build_type"
+        ],
+        "rows": 753,
+        "keyColumn": "bin",
+        "alternateKeyColumn": "bbl",
+        "comparison": "Strings as written; no coercion, padding, composition, trimming or normalisation.",
+        "matches": [
+          {
+            "buildingField": "bin",
+            "tableColumn": "bin",
+            "buildings": {
+              "exactlyOneRow": 612,
+              "severalRows": 33,
+              "noRows": 1017
+            },
+            "exampleKeys": {
+              "exactlyOneRow": [
+                "1001511",
+                "1001515",
+                "1001516"
+              ],
+              "severalRows": [
+                "1001550",
+                "1001562",
+                "1001596"
+              ],
+              "noRows": [
+                "1001500",
+                "1001501",
+                "1001502"
+              ]
+            },
+            "rowsMatchingNoBuilding": 60,
+            "unmatchedRowExampleKeys": [
+              "1001578",
+              "1001580",
+              "1001581"
+            ],
+            "emptyBuildingKeys": 0,
+            "emptyBuildingExampleKeys": [],
+            "repeatedBuildingKeyValues": 0,
+            "buildingsWithRepeatedKeys": 0,
+            "repeatedBuildingExampleKeys": [],
+            "emptyTableKeys": 0,
+            "repeatedTableKeyValues": 39,
+            "buildingValueTypes": [
+              "str"
+            ],
+            "tableValueTypes": [
+              "str"
+            ],
+            "leadingZeroBuildingKeys": 0,
+            "leadingZeroTableRows": 0,
+            "decimalPointBuildingKeys": 0,
+            "decimalPointTableRows": 0
+          },
+          {
+            "buildingField": "base_bbl",
+            "tableColumn": "bbl",
+            "buildings": {
+              "exactlyOneRow": 419,
+              "severalRows": 55,
+              "noRows": 1188
+            },
+            "exampleKeys": {
+              "exactlyOneRow": [
+                "1001410001",
+                "1001410015",
+                "1001410016"
+              ],
+              "severalRows": [
+                "1001430016",
+                "1001440001",
+                "1001440023"
+              ],
+              "noRows": [
+                "1001400001",
+                "1001400003",
+                "1001400004"
+              ]
+            },
+            "rowsMatchingNoBuilding": 261,
+            "unmatchedRowExampleKeys": [
+              "1001417501",
+              "1001417502",
+              "1001417503"
+            ],
+            "emptyBuildingKeys": 0,
+            "emptyBuildingExampleKeys": [],
+            "repeatedBuildingKeyValues": 118,
+            "buildingsWithRepeatedKeys": 267,
+            "repeatedBuildingExampleKeys": [
+              "1001410002",
+              "1001420025",
+              "1001440001"
+            ],
+            "emptyTableKeys": 0,
+            "repeatedTableKeyValues": 65,
+            "buildingValueTypes": [
+              "str"
+            ],
+            "tableValueTypes": [
+              "str"
+            ],
+            "leadingZeroBuildingKeys": 0,
+            "leadingZeroTableRows": 0,
+            "decimalPointBuildingKeys": 0,
+            "decimalPointTableRows": 0
+          }
+        ],
+        "formOnlyLexicalMismatchRows": 0,
+        "formOnlyLexicalMismatchBuildings": 0,
+        "formFinding": "All BINs have 7 digits and all BBLs 10, without leading zeros or decimal points.",
+        "schemaFinding": "Portal BIN type is number; BBL is text. CSV cells and both pack keys are strings.",
+        "portalNumericSchemaBinRows": 753,
+        "packStringBinValues": 1662
+      },
+      "receiptPath": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv.receipt.json",
+      "receiptSha256": "8ba4ffba6e894b3809f85427e90b476d78500ff4c6cc5497327ca1757ac94d2e",
+      "disposition": "retained_test_only"
+    },
+    {
+      "issuer": "New York City Landmarks Preservation Commission (LPC)",
+      "originalUrl": "https://s-media.nyc.gov/agencies/lpc/lp/2537.pdf",
+      "sourcePage": "https://nyclpc.maps.arcgis.com/apps/webappviewer/index.html?id=93a88691cace4067828b1eede432022b",
+      "acquiredAtIst": "2026-10-11T10:11:07.109292+05:30",
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/2537.pdf",
+      "bytes": 3676385,
+      "sha256": "2efaa36052c1481c90ace5a856f88ab4a7ae551e4233b0b454f199db29c70ea9",
+      "licence": {
+        "name": "not stated, permission unconfirmed",
+        "textUrl": null,
+        "termsUrl": "https://www.nyc.gov/home/terms-of-use.page",
+        "permission": "unconfirmed; NYC terms pages returned HTTP 403; local test only",
+        "limitations": "No licence grant observed; no permission inferred from public access or official authorship."
+      },
+      "geography": "Manhattan, New York City, New York, United States (foreign)",
+      "classification": "test_only",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "portalGeneratedExport": false,
+      "headBytes": "3676385",
+      "getContentLength": "3676385",
+      "contentDisposition": null,
+      "sourceLastModified": "Mon, 15 Sep 2014 15:41:06 GMT",
+      "etag": "\"a17d17726ea186f369cf837031c3791e:1410795666\"",
+      "privacyBasis": "Public history report; historical people/firms present; no private filing or upload.",
+      "inspection": {
+        "pages": 18,
+        "textLayer": true,
+        "pagesWithReadableText": 18,
+        "extractedTextCharacters": 41392,
+        "matchingKeyLiterals": [],
+        "namingWords": [
+          "75 Varick Street",
+          "Borough of Manhattan Tax Map Block 226, Lot 1"
+        ],
+        "pdfPage": 1,
+        "buildingKeyStatedInDocument": null
+      },
+      "linkEvidence": {
+        "webMapDataUrl": "https://www.arcgis.com/sharing/rest/content/items/a38d198df9bc469a8b452d416dd90328/data?f=json",
+        "selectedAuthorityLinkQuery": "https://services5.arcgis.com/Oos4pNA2538iVFA1/arcgis/rest/services/Ind_Landmark_Lots_POLY/FeatureServer/0/query?where=LPC_LPNumb%3D%27LP-02537%27&outFields=LPC_LPNumb%2CAddress%2CBBL%2CURL_REPORT&returnGeometry=false&f=json",
+        "reportHref": "http://s-media.nyc.gov/agencies/lpc/lp/2537.pdf",
+        "fetchScheme": "HTTPS on same authority host/path; source link uses HTTP",
+        "note": "LPC map popup links URL_REPORT / Report_URL; public service returned this report href."
+      },
+      "documentFinding": "no key literal; names the building by address and Borough of Manhattan tax map block and lot",
+      "historicalPersonsPresent": true,
+      "relatedPackBuilding": {
+        "bin": "1002934",
+        "base_bbl": "1002260001"
+      },
+      "relationshipBasis": "Pack/table keys, not PDF literals or composed keys; address citation needs officer review.",
+      "printedPage": null,
+      "receiptPath": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/2537.pdf.receipt.json",
+      "receiptSha256": "c4ad33409650c478db3b4a11c283ecf46240a435798cea7e40628581024427fe",
+      "disposition": "retained_test_only"
+    },
+    {
+      "issuer": "New York City Landmarks Preservation Commission (LPC)",
+      "originalUrl": "https://s-media.nyc.gov/agencies/lpc/lp/2362.pdf",
+      "sourcePage": "https://nyclpc.maps.arcgis.com/apps/webappviewer/index.html?id=93a88691cace4067828b1eede432022b",
+      "acquiredAtIst": "2026-10-11T10:12:28.835993+05:30",
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/2362.pdf",
+      "bytes": 10071817,
+      "sha256": "1321f5e90309c7949325e778a892ee47d47b5d69a3bdbde080681e1ed61d185c",
+      "licence": {
+        "name": "not stated, permission unconfirmed",
+        "textUrl": null,
+        "termsUrl": "https://www.nyc.gov/home/terms-of-use.page",
+        "permission": "unconfirmed; NYC terms pages returned HTTP 403; local test only",
+        "limitations": "No licence grant observed; no permission inferred from public access or official authorship."
+      },
+      "geography": "Manhattan, New York City, New York, United States (foreign)",
+      "classification": "test_only",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "portalGeneratedExport": false,
+      "headBytes": "10071817",
+      "getContentLength": "10071817",
+      "contentDisposition": null,
+      "sourceLastModified": "Mon, 15 Sep 2014 15:37:45 GMT",
+      "etag": "\"6c2430977e98c33ea00735e117cb559b:1410795465\"",
+      "privacyBasis": "Public history report; historical people/firms present; no private filing or upload.",
+      "inspection": {
+        "pages": 207,
+        "textLayer": true,
+        "pagesWithReadableText": 207,
+        "extractedTextCharacters": 590926,
+        "matchingKeyLiterals": [],
+        "namingWords": [
+          "275 Canal Street",
+          "Borough of Manhattan Tax Map Block 209, Lot 35"
+        ],
+        "pdfPage": 53,
+        "buildingKeyStatedInDocument": null
+      },
+      "linkEvidence": {
+        "webMapDataUrl": "https://www.arcgis.com/sharing/rest/content/items/a38d198df9bc469a8b452d416dd90328/data?f=json",
+        "selectedAuthorityLinkQuery": "https://services5.arcgis.com/Oos4pNA2538iVFA1/arcgis/rest/services/Historic_Districts/FeatureServer/0/query?where=LP_NUMBER%3D%27LP-02362%27&outFields=LP_NUMBER%2CAREA_NAME%2CReport_URL&returnGeometry=false&f=json",
+        "reportHref": "http://s-media.nyc.gov/agencies/lpc/lp/2362.pdf",
+        "fetchScheme": "HTTPS on same authority host/path; source link uses HTTP",
+        "note": "LPC map popup links URL_REPORT / Report_URL; public service returned this report href."
+      },
+      "documentFinding": "no key literal; names the building by address and Borough of Manhattan tax map block and lot",
+      "historicalPersonsPresent": true,
+      "relatedPackBuilding": {
+        "bin": "1002696",
+        "base_bbl": "1002090035"
+      },
+      "relationshipBasis": "Pack/table keys, not PDF literals or composed keys; address citation needs officer review.",
+      "printedPage": 48,
+      "receiptPath": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/2362.pdf.receipt.json",
+      "receiptSha256": "ea08d532b2f35f20456bf1582e88165cb82b54264c8fc976c6b4bf84a3cde6c2",
+      "disposition": "retained_test_only"
+    }
+  ],
+  "documentSearch": {
+    "outcome": "No key-literal PDF found; address/block-lot fallback, no composed key.",
+    "reportsInspected": [
+      "https://s-media.nyc.gov/agencies/lpc/lp/2537.pdf",
+      "https://s-media.nyc.gov/agencies/lpc/lp/2362.pdf"
+    ],
+    "literalSearch": "Every pack key searched across all native pages: zero literals; no OCR.",
+    "additionalCandidateNotFetched": "https://s-media.nyc.gov/agencies/lpc/lp/2591.pdf",
+    "additionalCandidateDisposition": "HEAD 15588558 bytes; stopped document search, no third PDF."
+  },
+  "excluded": [
+    {
+      "url": "https://data.cityofnewyork.us/api/views/gpmc-yuvp/rows.csv?accessType=DOWNLOAD",
+      "disposition": "excluded_full_table_not_fetched",
+      "reason": "Name/architect/owner/notes fields excluded; portal-selected export retained instead."
+    },
+    {
+      "url": "https://data.cityofnewyork.us/Housing-Development/LPC-Permit-Application-Information/dpm2-m9mq",
+      "disposition": "excluded_not_fetched",
+      "reason": "Schema lists applicant_name, owner_name and private-party addresses; no application/filing retained."
+    },
+    {
+      "url": "https://data.cityofnewyork.us/Housing-Development/Individual-Landmark-Sites/buis-pvji",
+      "disposition": "discovery_only_not_retained",
+      "reason": "Selected public site metadata read in memory to identify reports; no extra table retained."
+    }
+  ],
+  "needsOwner": [
+    {
+      "url": "https://www.nyc.gov/home/terms-of-use.page",
+      "reason": "HTTP 403; permission remains unconfirmed, owner review needed before broader use."
+    },
+    {
+      "url": "https://www.nyc.gov/site/lpc/designations/designation-reports.page",
+      "reason": "HTTP 403, not a proven login need; public LPC map links/PDFs accessible, no bypass."
+    }
+  ],
+  "gaps": [
+    "PDFs do not state literal BIN or BBL; cannot qualify an automatic exact-key document tie.",
+    "2362.pdf: 590926 native characters exceed AU4's proposed 250000 cap; kept-not-read if enforced.",
+    "CSV HEAD 0, GET size unstated; preflight 753 rows, bounded read; actual bytes below cap.",
+    "BIN portal schema numeric; CSV/pack strings have identical digit forms, no normalisation.",
+    "One table already has both keys. No Indian operational, rights or learning qualification."
+  ],
+  "leadSentence": "Walk CSV BIN/BBL; keyless PDFs require reviewed address citations, never composed keys.",
+  "safety": {
+    "originalsChanged": false,
+    "packChanged": false,
+    "conversions": 0,
+    "subsetsOrJoinsKept": 0,
+    "providerCalls": 0,
+    "uploads": 0,
+    "productChanges": 0,
+    "runtimeImports": 0,
+    "credentialsOrFormsUsed": false,
+    "heldoutOrTaskDataAccess": false
+  },
+  "checks": {
+    "immutableOriginalsAndLiteralCoverage": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python docs/evidence/gf1/da2/inspect.py",
+      "exitCode": 0
+    },
+    "contract": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "exitCode": 0,
+      "initialFailure": "Exit 1: report.md link target not yet written; report added, final check passed."
+    },
+    "pins": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts b5155c2fcd3cfdcb0793526e8bed17bb1b85a9e0",
+      "exitCode": 0,
+      "finding": "Only datasets.json source pin changed; generated OpenAPI content identical to baseline."
+    },
+    "style": {
+      "pythonLinesOver120": 0,
+      "longEvidenceLines": "Exact URL/path/ETag/command strings only; kept intact for reproducibility."
+    },
+    "localReaderRecovery": {
+      "initialFailures": ["requests module unavailable", "pdftotext default output encoding was not UTF-8"],
+      "resolution": "Standard-library urllib used; explicit pdftotext -enc UTF-8 read succeeded. No OCR or retries."
+    }
+  }
+}

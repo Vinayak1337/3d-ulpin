@@ -1,0 +1,17 @@
+{
+  "path": "/api/v1/spatial-ml/items/4a58378b-410b-493d-a461-2ea028e1c98f/footprint-drafts",
+  "body": {
+    "requestKey": "2a18b549-b372-46f5-b4fd-81c56e5e98d3",
+    "expectedRevision": 2,
+    "expectedAreaRevision": 0,
+    "georeference": "source_geotiff",
+    "selections": [],
+    "rejected": [
+      {
+        "componentId": "68440afc-30ad-5196-b1f1-73d7daa967e5",
+        "reason": "F2c UI check: reject-only command and history; not an accuracy label or registry admission."
+      }
+    ]
+  },
+  "time": "2026-10-10T09:41:29.659Z"
+}

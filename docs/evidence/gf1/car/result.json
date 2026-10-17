@@ -1,0 +1,227 @@
+{
+  "task": "CAR",
+  "branch": "task/car-card-chain-sql-on-postgres",
+  "baseline": "6f723d1f",
+  "status": "CA1 exterior SQL and CA2 scoped target SQL qualified on real PostgreSQL, with explicit upstream gaps",
+  "productChanges": [],
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "bytes": 1103282,
+    "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "use": "test_only",
+    "sourceFeatures": 1662,
+    "accepted": 1661,
+    "rejected": 1,
+    "rejection": {
+      "featureIndex": 1322,
+      "sourceKey": "751920",
+      "code": "INVALID_GEOMETRY",
+      "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]"
+    },
+    "originalHashBeforeEqualsAfter": true,
+    "repairs": "None; all real source bytes remained immutable."
+  },
+  "runtime": {
+    "receipt": "docs/evidence/gf1/car/runtime.json",
+    "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+    "bootstrap": "bootstrap.postgis followed by infrastructure/db.migrate()",
+    "container": "ulpin-car-tmp-64aeaa27aa65ea4e",
+    "start": "2026-10-10T22:58:48.018Z",
+    "finish": "2026-10-10T23:00:10.243Z",
+    "removed": true,
+    "machineContainerVolumeNetworkNamesEqual": true,
+    "volumeCreated": false,
+    "network": "Loopback-published PostgreSQL and in-process loopback HTTP; Python PROJ_NETWORK=OFF",
+    "storage": "In-memory S3-compatible PUT/GET/HEAD/DELETE stand-in; unchanged product putOriginal verified bytes",
+    "geometryProcessor": "Unchanged Python normalize_area/check_area through a loopback adapter and existing interpreter",
+    "secrets": "Generated per process, held in memory/environment only, never recorded",
+    "sqlRejections": 0,
+    "attemptReceipts": [
+      "box.json", "runtime-first.json", "runtime-second.json", "runtime-third.json", "runtime-fourth.json",
+      "runtime-fifth.json", "runtime-sixth.json", "runtime-seventh.json", "runtime.json"
+    ],
+    "allAttemptMachineNamesEqual": true,
+    "allAttemptOwnedContainersRemoved": true
+  },
+  "stepTable": [
+    {
+      "step": "0",
+      "expected": "Choose native/scaffold path before running",
+      "actual": "B: product ingestArea and commitPackage; only review envelope/history scaffolded",
+      "evidence": "step0.json, committed as 42da4c2d before all runtime trials"
+    },
+    {
+      "step": "1",
+      "expected": "Record native exteriors once, preserving reservations and evidence; one shared site revision",
+      "actual": "1661 registry records at revision 1, 1661 exact history bodies, shared site revision 1; area and site 0 to 1",
+      "invariants": "physical_exterior, empty footprint/rights, absent geometry, exact source/feature evidence and other reservation fields",
+      "wallMsIncludingReviewScaffold": 10876.95,
+      "commitCallWallMs": 7556.158
+    },
+    {
+      "step": "1b",
+      "expected": "Measure featureDocumentIds with one complete native package",
+      "actual": "One package holds 1661 accepted features from the 1662-feature original; exact product SQL explained",
+      "executionMs": 24.829,
+      "wallMs": 86.63
+    },
+    {
+      "step": "2",
+      "expected": "Honest second package with no unrecorded buildings does not increase the site revision",
+      "actual": "Product createPackageCorrection retained 1661 current buildings; commit succeeded; site stayed at revision 1",
+      "wallMsIncludingReviewScaffold": 10590.168,
+      "commitCallWallMs": 6275.842
+    },
+    {
+      "step": "3",
+      "expected": "Actual placement predicate returns no detailed row; rolled-back footprint control returns a row",
+      "actual": "0 exterior-only rows; 1 row after three exact original source coordinates; transaction rolled back",
+      "scope": "Only the guard SQL is qualified, not full officer preparation or placement authorization",
+      "wallMs": 7.669
+    },
+    {
+      "step": "4",
+      "expected": "Full-site capture refuses the large recorded site",
+      "actual": "413 USP_SCOPE_LIMIT",
+      "wallMs": 13.805
+    },
+    {
+      "step": "5",
+      "expected": "Single target closure, repeat stability, 100 pins accepted, 101 rejected",
+      "actual": "Single capture has one record, its current feature, its exact source and site; site pin revision 0",
+      "singleMembers": {"area_feature": 1, "registry_record": 1, "registry_site": 1, "source_revision": 1},
+      "fiveRepeatTimesMsSorted": [83.57, 83.841, 84.684, 85.329, 87.908],
+      "p50Ms": 84.684,
+      "maxMs": 87.908,
+      "hundredMembers": {"area_feature": 100, "registry_record": 100, "registry_site": 1, "source_revision": 1},
+      "hundredWallMs": 216.553,
+      "hundredOne": "422 USP_SELECTION",
+      "wallMs": 730.691
+    },
+    {
+      "step": "6a",
+      "expected": "A real file in a separate case under the same site does not change D1",
+      "actual": "Product ingestArea retained immutable hydrography.geojson in a genuinely separate case at the same area; D1 unchanged",
+      "sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+      "bytes": 2055,
+      "wallMs": 545.66
+    },
+    {
+      "step": "6b",
+      "expected": "Another native exterior raises the site revision but not D1",
+      "actual": "One exact source-feature derivative recorded once with exact reservation/evidence/history checks; site 1 to 2; D1 unchanged",
+      "qualification": "Separate test-only observation namespace of original feature 0, not a claim of a new real-world building",
+      "derivativeSha256": "8634d117e1115ffacbb99c50c4b6c5da4262d13c229a766384e42c4f59fe30a5",
+      "wallMsIncludingReviewScaffold": 4089.118,
+      "commitCallWallMs": 806.676
+    },
+    {
+      "step": "7",
+      "expected": "An actually stale record pin is refused",
+      "actual": "Requested revision 0 of the selected revision-1 record: 409 USP_STALE_TARGET",
+      "wallMs": 5.566
+    },
+    {
+      "step": "8",
+      "expected": "Seven exact SQL plans, plus one/ten-full-package global document-scan comparison",
+      "actual": "All seven statements accepted; lock EXPLAINs rolled back; ten real native packages measured",
+      "tenFullPacks": "Two existing full packages plus eight uncommitted native observation imports; twelve total packages including two one-feature packages",
+      "tenPackAcquisitionWallMs": 43964.704,
+      "tenPackFeatureDocumentIdsExecutionMs": 98.912,
+      "wallMs": 44174.238
+    },
+    {
+      "step": "9",
+      "expected": "Honest geometry qualification capture if a real accepted qualification receipt exists",
+      "actual": "Skipped: no accepted qualify_geometry receipt exists for these citation-only exterior inputs",
+      "qualification": "Neither qualification insertion nor the inherited @ member-ID/schema mismatch was runtime-qualified"
+    }
+  ],
+  "digest": "df5c92bc5f0a5870b51d36ed4394281398831f2b649849f7029948a068b5bb51",
+  "plans": {
+    "method": "Intercept exact product transaction statements and parameters; EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) in rollback transactions",
+    "rawEvidence": "runtime.json -> runtime.evidence.steps: 1b and 8",
+    "requiredSevenExecutionMs": {
+      "exterior.candidates": 1.604,
+      "exterior.siteLock": 0.028,
+      "exterior.recordLock": 0.729,
+      "targetRecordRows": 0.596,
+      "targetRows.features": 0.377,
+      "scopedDeclarations": 0.018,
+      "featureDocumentIds": 57.212
+    },
+    "threeSlowestRequiredPlans": [
+      {
+        "name": "featureDocumentIds",
+        "executionMs": 57.212,
+        "observation": "Seq Scan visits all four import_packages rows; two match; jsonb_array_elements executes four loops; no case/site predicate"
+      },
+      {
+        "name": "exterior.candidates",
+        "executionMs": 1.604,
+        "observation": "Physical-feature sequential scan examines 1663 rows; registry sequential scan reads 1662 rows"
+      },
+      {
+        "name": "exterior.recordLock",
+        "executionMs": 0.729,
+        "observation": "Primary-key indexed ANY lookup plus LockRows for the original 1661-record set"
+      }
+    ],
+    "globalFeatureDocumentScan": {
+      "oneFullPackageMs": 24.829,
+      "fourTotalPackagesMs": 57.212,
+      "tenFullPackagesTwelveTotalMs": 98.912,
+      "tenPackFunctionScanLoops": 12,
+      "tenPackSeqScanRowsVisited": 12,
+      "tenPackFunctionRowsReadIncludingFilterApprox": 15600,
+      "globalWork": true,
+      "note": "EXPLAIN actual row counts are rounded per-loop averages and EXISTS may short-circuit; array materialization and package detoasting still process global package bodies. Profiles are different live package states, not a controlled tenfold latency claim."
+    }
+  },
+  "scaffoldTables": [
+    {
+      "table": "import_packages",
+      "columns": ["revision", "state", "body"],
+      "effect": "Update existing native package to REVIEWED with incremented revision and exact review fingerprint/findings/coverage"
+    },
+    {
+      "table": "import_package_revisions",
+      "columns": ["package_id", "revision", "body"],
+      "effect": "Insert the same reviewed native body as revision history"
+    }
+  ],
+  "scaffoldComputation": {
+    "reviewPrerequisite": "Every attempted product reviewPackage refused USP_GEOMETRY_PAYLOAD_UNQUALIFIED before fresh native feature review",
+    "geometry": "Product check_area findings/coverage; product association query and enrichFindings participant/evidence projection",
+    "referenceProjection": "Use the already-read area reference with the exact product ST_AsGeoJSON transform SQL, avoiding repeated area-statistic reads per finding",
+    "fingerprint": "Exact product sorted effective-feature/association/reference/revision/validator fingerprint",
+    "noScaffold": "No site, registry record/history, source, feature, height, rights, parcel, project code, processor receipt or geometry qualification rows",
+    "limitations": "This qualifies commit and capture SQL, not a complete ingest/review/placement/identity/card chain"
+  },
+  "attemptLedger": [
+    {"receipt": "box.json", "result": "Disposable database/bootstrap/migration smoke passed; removed, names equal"},
+    {"receipt": "runtime-first.json", "signature": "600s timeout before migration completion", "cause": "Tracer dropped pg.Pool.query callback overload", "comparison": "Preserve callback overload; migration completed in the next run"},
+    {"receipt": "runtime-second.json", "signature": "S3 NotFound UnknownError", "cause": "Byte-map key included SDK operation query string", "comparison": "Key by pathname, support HEAD/DELETE; original retention passed next run"},
+    {"receipt": "runtime-third.json", "signature": "pg acquisition timeout, Promise.all finding index 255", "cause": "Scaffold called product enrichment concurrently for 1803 findings", "comparison": "Serial enrichment avoids pool flood, but exposed expensive repeated area statistics after commit"},
+    {"receipt": "runtime-fourth.json", "signature": "600s timeout after first commit and single-package plan", "cause": "Scaffold repeatedly re-read area statistics once live features existed", "comparison": "Cache the already-read reference and use exact product transform/projection; complete run finished in about 38s"},
+    {"receipt": "runtime-fifth.json", "result": "Commit/capture/seven-plan bounded comparison passed"},
+    {"receipt": "runtime-sixth.json", "result": "Additional exact reservation, current-feature/source and separate-case assertions passed"},
+    {"receipt": "runtime-seventh.json", "signature": "Ten-pack scaffold assertion: 2 !== 10", "cause": "Identical native imports correctly replayed existing packages", "comparison": "Separate test-only observation namespaces create actual native draft packages; ten-pack plan measured in final run"},
+    {"receipt": "runtime.json", "result": "All supported steps and ten-pack SQL comparison passed; one geometry-qualification prerequisite remains"}
+  ],
+  "checks": [
+    {"command": "node docs/evidence/gf1/car/run-runtime.mjs docs/evidence/gf1/car/runtime.json", "exit": 0, "note": "Receipt paths must be new; use another path to repeat without overwriting evidence"},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "git diff --check and evidence TypeScript/JavaScript line-length check", "exit": 0},
+    {"name": "additional product tests/OpenAPI", "result": "Not required: no product SQL repaired"}
+  ],
+  "gaps": [
+    "Actual canonical geometry qualification and its @ member-ID mismatch remain unqualified; obtain a real accepted qualify_geometry receipt and assign a separate contract decision.",
+    "All three reviews used the disclosed review-envelope scaffold, not the complete qualified native review route.",
+    "Declarations, source-only parent closure and identity aliases were empty here; their populated behavior retains CA2 fake-client coverage, not this runtime proof.",
+    "Only exact placement guard SQL ran, not officer placement authorization; no identity assignment or issued packet/card lifecycle was exercised.",
+    "The extra exterior and scale namespaces are repeat observations of retained real source features, not additional unique real-world buildings.",
+    "No timing here is a general latency SLA; report the global import_packages JSON work to the lead rather than tuning out-of-scope SQL."
+  ],
+  "next": "Lead reviews and decides integration/rehearsal; separately unblock canonical geometry qualification and decide whether global featureDocumentIds work warrants a follow-up."
+}

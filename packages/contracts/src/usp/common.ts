@@ -23,6 +23,7 @@ export const UspSnapshotScopeSchema = z.strictObject({
   stage: z.enum(['draft', 'recorded', 'retained']),
 }).readonly();
 export const UspScopeSchema = z.discriminatedUnion('kind', [UspIntakeScopeSchema, UspSnapshotScopeSchema]);
+export { RetainedDocumentFreshnessSchema, type RetainedDocumentFreshness } from '../document-freshness';
 export const UspAssetRefSchema = z.strictObject({
   assetId: CoreIdSchema, version: CorePositiveRevisionSchema, sha256: CoreSha256Schema,
 }).readonly();

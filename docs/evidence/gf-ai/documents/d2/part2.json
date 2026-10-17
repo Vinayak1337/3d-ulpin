@@ -1,0 +1,177 @@
+{
+  "task": "D2 Part 2 / AG-D1",
+  "branch": "task/d2b-storey-output-to-packet",
+  "base": "9138678c",
+  "codeCommit": "d112c286",
+  "qualification": "Offline gateway replay and service proof with SQL/storage doubles; not a live gate pass.",
+  "report": {
+    "TASK": "Adapt storey-agent facts into source-scoped document proposals and wire one replay-only caller.",
+    "WORKS": [
+      "One proposal per cited fact; typed literals, units, kinds, scopes, all citations and unknowns retained.",
+      "Uncited facts are explicit rejections with null locators; no coordinates are invented.",
+      "Recorded software control replays through the gateway, saves two quote-checked candidates, and reads decisions.",
+      "An absent quote is refused; a replay miss produces no packet or snapshot; provider dispatches remain zero."
+    ],
+    "SEE IT": [
+      "packages/server/src/modules/ai/storey-document-proposals.ts",
+      "scripts/agent/storey-proposals-replay.ts",
+      "tests/document-proposals.test.ts: four offline replay/save checks",
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-proposals.test.ts"
+    ],
+    "INPUTS": [
+      "Public A5 Tower 3 development/demo original and its retained OCR page store; neither was modified.",
+      "control-output.json is an explicitly authored software control, not a provider answer or evaluation truth.",
+      "Existing D08 original/authority fixtures and existing proposal-service protocol/storage doubles."
+    ],
+    "GAPS": [
+      "No genuine provider answer, running database, demo API, runtime operation or officer issuance was exercised.",
+      "Retained Tower 3 A5 OCR supplies G+42, not a second G+41 expression; the real-input proof has no conflict.",
+      "python -B scripts/api/check.py remains blocked by API-DOC: runtime receipt changed; owner re-pin required."
+    ]
+  },
+  "design": {
+    "placement": "AI-specific adapter; generic proposal save remains the single authority and persistence path.",
+    "facts": "Counts, expressions, labels, heights and unit counts are candidates, never registry values.",
+    "literal": "valueLiteral is explicit; numeric values are not expanded into inferred floors or converted units.",
+    "citation": "Primary quote/locator are checked on save; additional citations are retained declared metadata.",
+    "missing": "missing_citation or citation_locator_unavailable retains the typed fact with locator=null.",
+    "unavailable": "teacher_unavailable returns packet=null; caller does not invoke save.",
+    "abstention": "Abstention or a fact-free result produces no packet; null counts and empty categories stay unknown.",
+    "conflicts": "Every alternative needs a retained handle, including rejected facts; never select a winner.",
+    "conflictFailure": "STOREY_CONFLICT_NOT_REPRESENTED refuses incomplete conflicts; alternatives are not erased.",
+    "providerProvenance": "sarvam recording metadata selects STOREY_AGENT_METHOD, even when result.replayed is true.",
+    "controlProvenance": "control recording metadata selects recorded_software_control and requires a replayed result.",
+    "kindResolution": [
+      "Use TeacherRecordings.replay's integrity reader filtered explicitly by sarvam/control adapterKind.",
+      "Attribute the selected retained envelope only if exactly one filtered recorded kind matches its hash.",
+      "Replay wrappers alone are not accepted; ambiguous attribution fails closed, without guessing from replayed."
+    ],
+    "privacy": [
+      "Caller uses existing storeyPartSelection, including its MODEL_PROMPT_PRIVACY omissions by line position.",
+      "Adapter revalidates submitted partsHash and the closed citation set; omitted/unsent parts cannot be cited.",
+      "Only Git-admitted public extraction originals in demo/dev manifests can enter this caller; no holdout is read."
+    ],
+    "bounds": {
+      "cliPageStoreBytes": 8388608,
+      "cliRequestBytes": 65536,
+      "recordingFiles": 32,
+      "recordingBytesTotal": 16777216,
+      "selectedBatches": 1,
+      "agentAttempts": 1,
+      "saveCallsMaximum": 1,
+      "runtimeHeldoutEnvPaths": "Denied; recording symlinks/non-files are refused."
+    },
+    "truth": [
+      "needs_review remains a candidate state; quote_truth remains unresolved; learningLabel=false.",
+      "Decision readback is a protocol proof, not independently verified human review or learning truth.",
+      "No canonical building, level, unit, ownership, right, ground truth or registry record is created."
+    ]
+  },
+  "realControl": {
+    "kind": "recorded_software_control",
+    "output": "docs/evidence/gf-ai/documents/d2/control-output.json",
+    "gitQuoteOrigin": "docs/evidence/gf-ai/storeys/a5/candidates/haryana-2831-tower3.json",
+    "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "sourceBytes": 3782332,
+    "pageStoreDirectory": "E:/BhuAayam-data/task-data/a5/stores",
+    "pageStoreSha256": "b875d74da2638228dc7e5947ca3815e5c56706fa4f0ba0f01213eb684ab32b18",
+    "frame": {"kind": "pdf_display_page_top_left_points", "width": 2585, "height": 3390, "rotation": 0},
+    "batch": 0,
+    "positions": [
+      {"partId": "p1-l56", "page": 1, "lineIndexZeroBased": 56, "quote": "BASEMENT",
+        "box": [90.81, 824.07, 220.15, 902.21], "gitProposal": "p1"},
+      {"partId": "p1-l88", "page": 1, "lineIndexZeroBased": 88, "quote": "G+42",
+        "box": [360.59, 1129.56, 521.56, 1168.63], "gitProposal": "p6"}
+    ],
+    "good": {
+      "kept": 2, "refused": 0, "checks": ["quote_at_locator", "quote_at_locator"],
+      "conflicts": 0, "dispatches": 0, "paidLedgerAdmissions": 0, "privacyOmissions": [],
+      "decisionReadback": ["reviewed", "rejected"], "requestKeyReplayAddedOperations": 0,
+      "proof": "E:/BhuAayam-data/task-data/d2/replay-crpP1h/proof.json"
+    },
+    "difficult": {
+      "mutation": "Software control changes G+42 to G+43 in the expression and primary quote; source stays unchanged.",
+      "kept": 1, "refused": 1, "codes": ["quote_not_at_locator"],
+      "originalCitationAndTypedFactRetained": true, "dispatches": 0, "paidLedgerAdmissions": 0,
+      "proof": "E:/BhuAayam-data/task-data/d2/replay-IhyQpj/proof.json"
+    },
+    "replayMiss": {
+      "state": "teacher_unavailable", "code": "TEACHER_REPLAY_UNAVAILABLE",
+      "packet": null, "snapshot": null, "operationInserts": 0, "dispatches": 0, "paidLedgerAdmissions": 0,
+      "proof": "E:/BhuAayam-data/task-data/d2/replay-x3GCPg/proof.json"
+    },
+    "allUncited": {
+      "kept": 0, "refused": 2, "reason": "missing_citation", "locators": [null, null],
+      "pageInspections": 0, "exactReadAndHistoryPassed": true, "dispatches": 0, "paidLedgerAdmissions": 0
+    },
+    "conflictQualification": [
+      "No retained G+41 A5 line was found; do not treat a different-document truth statement as this page-store input.",
+      "The pure adapter conflict test is labelled a synthetic protocol control, not a Tower 3 observation.",
+      "It proves unresolved handles and uncited-alternative rejection, not quote presence for G+41.",
+      "Existing broader Tower 3 conflict/registry truth records were not changed."
+    ]
+  },
+  "callerFieldByField": {
+    "caseId/sourceId": "Selected source; service enforces original, access, case and source authority.",
+    "requestKey/expectedCaseRevision/source": "Existing save pins; page-store original hash/bytes must match.",
+    "batch/frames": "One existing batch; supplied original frames are checked against stored dimensions and service.",
+    "proposalId/fieldRole": "Stable fact handle and typed role; one proposal per fact, not per citation or floor.",
+    "agentFact": "Typed value/expression/scope/label kind/stated value/unit; null stays null, units are not inferred.",
+    "valueLiteral": "Explicit string used by the Part 1 number-group check; not hidden inside reasons.",
+    "agentCitations": "Preserve partId/quote/resolved-or-null locator; secondary quotes are not presence-certified.",
+    "quote/lineQuote/quoteCharacterSpan": "First citation, exact submitted part text, null span; no guessed offsets.",
+    "locator": "Retained partId-to-page/box and supplied original frame; rejected uncited facts instead retain null.",
+    "status/reasons": "needs_review/agent_candidate_requires_officer_review; unavailable/abstained has no packet.",
+    "declaredMethod/declaredObservation": "Explicit recorded kind determines method; observation hash is not invented.",
+    "rejected": "Uncited typed fact and reason; refused primary quote retains checked original and locator.",
+    "conflicts/unknowns": "Unresolved handles and explicit unknowns; malformed representation refuses saving.",
+    "saveResponse": "Use returned checked populations, not echoed input; refused facts are not selectable.",
+    "quotationVerification": "locator_checks_recorded describes checks, not truth, OCR accuracy or review.",
+    "compatibility": "Old /1 snapshots, history, request replay and decisions parse without rewriting or defaults.",
+    "readerImpact": "Rejected locator=null requires explicit agentFact; generated-client consumers must null-check it."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts staging", "exit": 0},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0,
+      "operations": 301, "namedSchemas": 342, "newOperations": 0},
+    {"command": "Focused and neighbouring document/storey/controller suite", "passed": 52, "failed": 0, "skipped": 0,
+      "files": [
+        "tests/document-proposals.test.ts",
+        "packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts",
+        "tests/document-claims.test.ts",
+        "tests/document-pages.test.ts",
+        "packages/server/src/modules/ai/document-storey-agent.test.ts",
+        "packages/server/src/modules/ai/storey-document-proposals.test.ts",
+        "apps/api/src/modules/evidence/document-pages.controller.test.ts"
+      ]},
+    {"command": "python -B scripts/api/check.py", "exit": 1,
+      "blocker": "API-DOC: runtime receipt changed", "protectedReceiptChanged": false},
+    {"command": "git diff --check and handwritten new-file line lengths <=120", "exit": 0}
+  ],
+  "failureAndRepair": [
+    "Initial script typecheck found direct zod imports unavailable in the scripts workspace.",
+    "Moved replay-input schemas into the owned server adapter using its existing zod dependency; checks then passed.",
+    "API receipt blocker is unchanged; no repeated receipt repair, runtime change or protected-file edit was attempted."
+  ],
+  "unchanged": [
+    "Part 1 result.json and HANDOFF.md",
+    "document-storey-agent.ts, scripts/agent/run-agent.ts, scripts/agent/live-proof.ts, model-gateway modules",
+    "API operation manifest, runtime receipt, runtime data, credentials, originals, holdouts and truth records"
+  ],
+  "next": [
+    "Lead reviews/integrates this branch; no merge, rebase, push or deployment was performed by this worker.",
+    "Owner re-pins the runtime receipt and runs the production caller against current accepted stored OCR authority.",
+    "Use fresh source/case pins; offline request.json has test-double authority pins and is not a live request.",
+    "Select an owner-supplied public recording directory outside runtime; there is no provider fallback."
+  ],
+  "ownerCommandNotExecuted": [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/agent/storey-proposals-replay.ts",
+    "--pages <public-A5-store.json> --request <fresh-current-public-source-pins.json>",
+    "--recordings <owner-supplied-public-recording-directory-outside-runtime>"
+  ],
+  "evidenceCommitSubject": "docs(documents): D2 part 2 evidence"
+}

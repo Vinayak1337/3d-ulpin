@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "obj-local-runtime-lock/1",
+  "frozenAt": "2026-10-04T10:38:38.487032+00:00",
+  "pythonVersion": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+  "workerInterpreter": {
+    "path": "C:\\Python313\\python.exe",
+    "bytes": 105816,
+    "sha256": "d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca"
+  },
+  "pythonDll": {
+    "path": "C:\\Python313\\python313.dll",
+    "bytes": 6123864,
+    "sha256": "41ec4fc4e5bc8b207258590238f7f050b13fdfee84c4a7b1ecff6e945d031a10"
+  },
+  "stdlib": [
+    {
+      "path": "C:\\Python313\\Lib\\json\\__init__.py",
+      "bytes": 14379,
+      "sha256": "feb17670e443e5db2723f217727dcc5d5e155c40e4e6935b16061c88542f24e7"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\json\\decoder.py",
+      "bytes": 13236,
+      "sha256": "9c1530bb0b07f7435161f1005c14fc458b973f35f6e1802e4c175494c06891b0"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\json\\encoder.py",
+      "bytes": 16592,
+      "sha256": "955cb7cc721e3881f084c2e334eb66d6a1f0fc08457b3e06cccbea218b3819fe"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\base64.py",
+      "bytes": 22241,
+      "sha256": "82a7c36fd4b58f4222e7ddd0f2fb9da39527e72da75ab04270e4734974b717b6"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\struct.py",
+      "bytes": 272,
+      "sha256": "eadbcc540c3b6496e52449e712eca3694e31e1d935af0f1e26cff0e3cc370945"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\ctypes\\__init__.py",
+      "bytes": 19374,
+      "sha256": "2e63f01ac6b8ffc1acfa4eec4c253eef8fbd65e09506d690cb3be71a2d78303a"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\subprocess.py",
+      "bytes": 91718,
+      "sha256": "970207fdd712c92f7dc14d1623d2574f7e0910ceb0b5c37652a7a0850f35a396"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\tempfile.py",
+      "bytes": 33363,
+      "sha256": "9bd059599988556e2737d974bad655943b2c11285a4342643475e214654b57c5"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\threading.py",
+      "bytes": 56901,
+      "sha256": "7f1e2d5046791b112c5c2f37a06036ae92d6892a7a54541187a0393261510778"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\pathlib\\__init__.py",
+      "bytes": 308,
+      "sha256": "62b3b842bda77ca6245f8c8657b8c72540e383fb9aa70e4c3a705947cc8611fd"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\hashlib.py",
+      "bytes": 9701,
+      "sha256": "406f36c3db109c14f737a8d99e6897d3ab8620be454abdbb3a4ce09c95713388"
+    },
+    {
+      "path": "C:\\Python313\\Lib\\re\\__init__.py",
+      "bytes": 18304,
+      "sha256": "af6b51360592d5b38a256a19e717061fa2656d80c112fac578b742b4773edd76"
+    },
+    {
+      "path": "C:\\Python313\\DLLs\\_hashlib.pyd",
+      "bytes": 69464,
+      "sha256": "1a3010b06c2fcd625dece3dd0883ca060e98b94adc062b06cb1a671cfc3b5caf"
+    }
+  ],
+  "builtinModules": {
+    "math": "built-in",
+    "_json": "built-in"
+  },
+  "code": {
+    "reader": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\services\\geo\\geo\\native_obj.py",
+      "bytes": 14817,
+      "sha256": "fd15bc86077e2010d7acb1e498d9c58544174b9d557ac4de4b151f16a5988445"
+    },
+    "cli": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\scripts\\usp\\desktop-obj-read.py",
+      "bytes": 9583,
+      "sha256": "9e68bf58947a6cc0f79f808d72cf1f166334a4e375fdd69c7d607c046907d98e"
+    },
+    "supervisor": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\scripts\\usp\\desktop-gltf-read.py",
+      "bytes": 16138,
+      "sha256": "95e9301d3178438a26333ef28ee8ca1282779fe968b889c092a8cd7b81fcb0ba"
+    },
+    "packageInit": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\services\\geo\\geo\\__init__.py",
+      "bytes": 75,
+      "sha256": "d5b6a6cb358a547ec8bcabbc6297884b774fa2ddb06b7f8039a710778b11c31a"
+    }
+  },
+  "supervisionReuse": "Readonly accepted desktop-gltf-read.py _supervise/_WindowsJob and original/output helpers; memory overridden to512MiB, total deadline45seconds; no generic containment rerun.",
+  "limits": {
+    "inputBytes": 16777216,
+    "outputBytes": 16777216,
+    "coordinateRecords": 100000,
+    "faces": 100000,
+    "faceReferences": 500000,
+    "activeProcesses": 1,
+    "jobMemoryBytes": 536870912,
+    "totalDeadlineSeconds": 45,
+    "logBytesPerStream": 65536
+  }
+}

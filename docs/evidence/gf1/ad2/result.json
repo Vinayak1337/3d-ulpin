@@ -1,0 +1,20 @@
+{
+ "task": "AD2",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "485a65da",
+ "liveRefreshMs": 5000,
+ "overlapGuard": "React Query's own behaviour, no extra guard: an interval tick calls Query.fetch with no cancelRefetch, and a fetch that is not idle returns the running read (@tanstack/query-core 5.104.0 src/query.ts:594-608; the interval in src/queryObserver.ts:529-534). apps/studio/src/api/queries.test.ts holds a read open across three intervals and sees one request, then the next one five seconds later.",
+ "workBoardRequests": 0,
+ "workBoardRequestsHow": "useWorkBoard and queryKeys.workBoard deleted; rg finds no '/api/v1/work-board' request in apps/studio/src outside the local data layer (local/routes.ts, local/handlers.ts), which is read-only for this task. BatchesPage.test.tsx renders the page and finds only the work-queue query in the cache.",
+ "batchColumns": ["batch", "next", "updated"],
+ "batchColumnsWhy": "The work-queue item (GetResponse<'/api/v1/work-queue'>['items'][number]) carries no stage and no readiness, so the page takes its no-board branch: no stage filter, no Stage or Readiness column, no count cards.",
+ "checks": {
+  "typecheck": { "command": "pnpm studio:typecheck", "exit": 0 },
+  "testBefore": { "command": "pnpm studio:test", "exit": 0, "studioFiles": 67, "studioTests": 434 },
+  "testAfter": { "command": "pnpm studio:test", "exit": 0, "studioFiles": 69, "studioTests": 439 },
+  "diffCheck": { "command": "git diff --check staging", "exit": 0 },
+  "designScan": { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging", "exit": 0, "note": "scans apps/web only" }
+ },
+ "contextFields": "docs/evidence/gf1/ad2/context-fields.md"
+}

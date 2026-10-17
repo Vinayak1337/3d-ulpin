@@ -1,0 +1,10 @@
+{
+  "rect": {"x":12,"y":68,"width":1416,"height":632},
+  "identicalApplicationIds": true,
+  "drawn": 1662,
+  "scene": {"bounds":[[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],"baseBatches":8,"padBatches":53},
+  "pixels": {"meanAbsoluteError255":0.103617,"changedFraction":0.003245},
+  "screenshot": "E:/BhuAayam-data/task-data/lv1/parity-1791666304729/final.png",
+  "qualification": "Fixed-id part replay for visual parity; the measured stream remains in lv2-after.json.",
+  "identicalBounds": true
+}

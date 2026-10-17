@@ -1,0 +1,100 @@
+{
+  "schema": "building-b6-result/1",
+  "task": "B6",
+  "gate": "GF-AI/building_mask",
+  "status": "blocked_capacity_unqualified",
+  "branch": "task/b6-resolution",
+  "staging_base": "9436cffb6889f1adb156722454b9d1f6e710001a",
+  "implementation_commit": "3b379942",
+  "preregistration_commit": "fc0d6aaaeddb170ec3f29542638774b1cd7676dd",
+  "hypothesis": "Increase direct RGB training/serving resolution to detect small roofs;Dice coefficient stays 5.",
+  "implemented": [
+    "Configurable valid patch/window grid, original positional parameters and direct single RGB resize.",
+    "Explicit batch/accumulation preserving effective batch 4; matching-smoke guard includes both settings.",
+    "B6 epoch ceiling 8; strict DEV recall patience 3, constant LR, existing finite/memory safeguards.",
+    "Optional HF non-reentrant backbone and decoder recomputation with preserved RNG.",
+    "DEV evaluator records source-mask area recall using unchanged maximum-cardinality truth matching.",
+    "All frozen transfer regions are excluded from TRAIN export, including new transfer-2."
+  ],
+  "capacity": {
+    "budget_bytes": 6442450944,
+    "valid_multiple": 24,
+    "tested_resolutions": [672, 624],
+    "selected_resolution": null,
+    "hardware_maximum_established": false,
+    "smoke_attempts": 4,
+    "qualified_50_step_smokes": 0,
+    "maximum_completed_optimizer_steps": 4,
+    "capacity_optimizer_updates_total": 4,
+    "stop_reason": "Repeated CUDA OOM in dense target-mask concatenation under enforced 6 GiB allocation cap.",
+    "largest_train_feature_count": 76,
+    "group_detr": 13,
+    "fixed_target_concat_float32_bytes": 737538048,
+    "first_attempt_defect": "Incorrectly upscaled targets; repaired by preserving original 432 supervision.",
+    "bounded_comparisons": [
+      "672 with original 432 targets; failed before optimizer step 1.",
+      "624 with same targets/backbone recomputation; failed after 4 optimizer steps.",
+      "672 with decoder plus backbone recomputation; failed before optimizer step 1."
+    ],
+    "untried": "576 and smaller compatible grids; no allocator/precision/objective tuning.",
+    "ledger": "docs/evidence/gf-ai/building/b6/capacity-plan.json",
+    "immutable_external_records": "E:/BhuAayam-data/ml/runs/b6-smoke-*/"
+  },
+  "training": {
+    "full_training_started": false,
+    "detached_training_pid": null,
+    "completed_epochs": 0,
+    "per_epoch_dev_results": [],
+    "new_dev_inference_calls": 0,
+    "new_dev_selected_model": null
+  },
+  "transfer_2": {
+    "region": "chittagong_bangladesh",
+    "status": "preregistered_prepared_not_evaluated",
+    "chips": 5229,
+    "publisher_features": 35421,
+    "empty_chips": 1282,
+    "zero_pixel_features": 9,
+    "source_bytes": 1078209732,
+    "actual_count_not_readme_claim": true,
+    "readme_features_claim": 38096,
+    "exact_original_image_overlap_with_prior_project_regions": 0,
+    "source_raster_footprints_overlapping_prior_coxs_bazar": 0,
+    "epoch4_evaluation": null,
+    "b6_evaluation": null,
+    "evaluation_commits": [],
+    "consumed_slots": 0,
+    "remaining_slots": ["epoch4_reference", "b6_dev_selected"],
+    "ledger": "docs/evidence/gf-ai/building/transfer-2-runs.jsonl",
+    "paired_evaluation_runner_status": "not_implemented; no candidate exists to freeze or evaluate",
+    "do_not_use_old_transfer_cli": "--split transfer remains bound to closed B4 Coxs Bazar, not transfer-2",
+    "new_indian_accuracy_claim": false
+  },
+  "decision": {
+    "b6_win": null,
+    "accuracy_rejection": false,
+    "candidate_qualification": "failed_capacity",
+    "retain": "rfdetr-ramp-ka-seg-medium-b3-v1, epoch4, inactive/test_only/uncalibrated",
+    "reference_dev_metrics": {"precision": 0.8544117647058823, "recall": 0.6624353906962602},
+    "reference_metrics_origin": "Existing B3/B5 receipts; not remeasured in B6.",
+    "onnx_export_reached": false,
+    "new_parity_v2_reached": false,
+    "new_registration_reached": false,
+    "karnataka_holdout_claim": "none for B6",
+    "revisit_condition": [
+      "Lead authorizes a materially different bounded memory solution or a smaller-resolution capacity plan.",
+      "Do not repeat these failed run IDs or reopen Karnataka/Coxs Bazar; preserve existing artifacts.",
+      "Qualify 50 steps including largest-label TRAIN chip before detached full training.",
+      "Freeze a finished DEV selection; implement/test paired reservation before either fresh-region call."
+    ]
+  },
+  "verification": {
+    "checks": "docs/evidence/gf-ai/building/b6/checks.json",
+    "saved_failure_and_input_integrity": "docs/evidence/gf-ai/building/b6/final-invariants.json",
+    "ml_gate_passed": false,
+    "gpu_released": true,
+    "pending_worker_process": null,
+    "pushed": false,
+    "merged_other_checkout": false
+  }
+}

@@ -1,3 +1,26 @@
+import { z } from 'zod';
+import { STREAMING_VECTOR_LIMITS } from './usp/streaming-vector';
+
+export const SourceRangeReferenceSchema = z.strictObject({
+  format: z.literal('geojson'), featureIndex: z.number().int().safe().nonnegative(),
+  byteStart: z.number().int().safe().nonnegative(), byteEnd: z.number().int().safe().positive(),
+  rawSha256: z.string().regex(/^[a-f0-9]{64}$/), readerVersion: z.literal(STREAMING_VECTOR_LIMITS.version),
+}).refine(range => range.byteEnd > range.byteStart).readonly();
+export type SourceRangeReference = z.infer<typeof SourceRangeReferenceSchema>;
+
+const nativeRecordFields = {
+  position: z.number().int().safe(), encoding: z.string().min(1).max(64),
+  idField: z.string().min(1).max(256), readerVersion: z.literal('native-gis-v2'),
+};
+export const NativeRecordReferenceSchema = z.discriminatedUnion('format', [
+  z.strictObject({ ...nativeRecordFields, format: z.literal('shapefile_zip'),
+    member: z.string().min(1).max(1024), position: nativeRecordFields.position.nonnegative(),
+    positionKind: z.literal('sequence') }).readonly(),
+  z.strictObject({ ...nativeRecordFields, format: z.literal('gpkg'), table: z.string().min(1).max(256),
+    positionKind: z.enum(['rowid', 'integer_primary_key']), positionField: z.string().min(1).max(256) }).readonly(),
+]);
+export type NativeRecordReference = z.infer<typeof NativeRecordReferenceSchema>;
+
 /** Canonical v2 physical observations. Local geometry is NOT RFC 7946 GeoJSON. */
 export type EvidenceState =
   | "unresolved"
@@ -24,6 +47,10 @@ export type AreaGeometry =
   | { type: "Polygon"; coordinates: number[][][] }
   | { type: "MultiPolygon"; coordinates: number[][][][] };
 export interface AreaReference {
+  /** Import-time position in an unchanged native original; absent on older observations. */
+  nativeRecord?: NativeRecordReference;
+  /** Exact Feature bytes in the retained GeoJSON, as framed by the stream reader at import. */
+  sourceRange?: SourceRangeReference;
   sourceCrs: string;
   analysisCrs: string;
   origin: [number, number];
@@ -58,6 +85,16 @@ export interface AreaHeight {
   claimId?: string;
   method?: "native_parse" | "human_entry" | "derived";
 }
+/** The heights a file writes as each position's third number, kept beside the outline as written. The file states
+ * no unit or reference level for them; they never fill `height` or any measurement. */
+export interface SourceHeights {
+  positions: number;
+  min: number;
+  max: number;
+  unit: null;
+  reference: null;
+  basis: "source_coordinates";
+}
 export interface NormalizedFeature {
   /** Zero-based index in the unchanged original feature collection. */
   sourceFeatureIndex?: number;
@@ -91,6 +128,7 @@ export interface NormalizedFeature {
   geometry: AreaGeometry;
   geographicGeometry: AreaGeometry;
   height: AreaHeight;
+  sourceHeights?: SourceHeights;
   worldStatus: WorldStatus;
   properties: Record<string, unknown>;
   areaM2: number | null;
@@ -247,6 +285,14 @@ export interface ImportPackage {
     inputFingerprint: string;
     findings: AreaFinding[];
     coverage: string[];
+    scope?: {
+      validator: "area-check-officer-v2";
+      marginMetres: number;
+      extent: [number, number, number, number];
+      contextCount: number;
+      unqualifiedInScope: number;
+      areaRevisionAtReview: number;
+    };
   };
   createdAt: string;
   acknowledgement?: string;
@@ -274,3 +320,41 @@ export interface AreaContext {
   packages: ImportPackage[];
   latestCheck: AreaCheck | null;
 }
+/** A display feature as the context route sends it: without the geometry and reference no reader reads. */
+export type AreaContextFeature = Omit<
+  NonNullable<AreaContext["displayFeatures"]>[number], "sourceGeometry" | "geographicGeometry" | "sourceReference"
+>;
+/** An import package as the context route lists it. */
+export interface AreaContextPackage {
+  id: string;
+  state: ImportPackage["state"];
+  quarantine: { message: string; sourceSha256: string } | null;
+}
+/** The answer of GET /api/v1/areas/{areaId}/context: one feature list and package summaries. */
+export interface AreaContextResponse extends Omit<AreaContext, "features" | "displayFeatures" | "packages"> {
+  displayFeatures: AreaContextFeature[];
+  packages: AreaContextPackage[];
+}
+const localExtent = z.tuple([z.number(), z.number(), z.number(), z.number()]);
+/** The answer of GET /api/v1/areas/{areaId}/display-summary: what an area holds to draw, in its local metres. */
+export const AreaDisplaySummarySchema = z.strictObject({
+  areaId: z.string().uuid(), areaRevision: z.number().int(), featureCount: z.number().int().nonnegative(),
+  extent: localExtent.nullable(), displayLimit: z.number().int().positive(),
+});
+export type AreaDisplaySummary = z.infer<typeof AreaDisplaySummarySchema>;
+const localRing = z.array(z.tuple([z.number(), z.number()]));
+/** One feature of a display window: its outline in local metres, the height only when the record states one, and
+ * whether it is recorded or a package's unrecorded proposal. */
+export const AreaWindowFeatureSchema = z.strictObject({
+  id: z.string().uuid(), identifier: z.string(), kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']),
+  polygons: z.array(z.array(localRing)), heightM: z.number().nullable(),
+  heightState: z.enum(['unresolved', 'estimated', 'source_supported', 'reviewed', 'unknown']),
+  displayState: z.enum(['recorded', 'unrecorded_proposal']),
+});
+export type AreaWindowFeature = z.infer<typeof AreaWindowFeatureSchema>;
+/** The answer of GET /api/v1/areas/{areaId}/display-window: one keyset page of the features meeting a window. */
+export const AreaDisplayWindowSchema = z.strictObject({
+  areaId: z.string().uuid(), areaRevision: z.number().int(), features: z.array(AreaWindowFeatureSchema),
+  next: z.string().nullable(),
+});
+export type AreaDisplayWindow = z.infer<typeof AreaDisplayWindowSchema>;

@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./usp": "./src/usp/index.ts",
-    "./gis-quarantine": "./src/gis-quarantine.ts"
+    "./gis-quarantine": "./src/gis-quarantine.ts",
+    "./canonical-scene": "./src/canonical/building-scene.ts"
   },
   "type": "module",
   "dependencies": {

@@ -2,6 +2,10 @@ import type { BaseFeatureInput, FootprintInput, MultiPolygon, StoreyInput } from
 import type { AreaFeature } from '../../api/queries';
 import type { BuildingModel } from '../../model/building';
 
+const footprintCache = new WeakMap<AreaFeature, FootprintInput | null>();
+const baseCache = new WeakMap<AreaFeature, BaseFeatureInput | null>();
+const unnamedCache = new WeakMap<BaseFeatureInput, BaseFeatureInput>();
+
 /**
  * Area context features → scene building inputs. A building with recorded storeys (its register is
  * loaded) is drawn storey by storey; others are one prism with a line at each recorded floor.
@@ -10,41 +14,72 @@ export function toFootprints(features: AreaFeature[], storeys?: Map<string, Stor
   const out: FootprintInput[] = [];
   for (const feature of features) {
     if (feature.kind !== 'building') continue;
-    const polygons = polygonsOf(feature.geometry);
-    if (!polygons.length) continue;
+    const input = footprintFor(feature);
+    if (!input) continue;
+    const levels = storeys?.get(feature.id);
+    out.push(levels ? { ...input, storeys: levels } : input);
+  }
+  return out;
+}
+
+function footprintFor(feature: AreaFeature): FootprintInput | null {
+  if (footprintCache.has(feature)) return footprintCache.get(feature)!;
+  const polygons = polygonsOf(feature.geometry);
+  let input: FootprintInput | null = null;
+  if (polygons.length) {
     const heightM = feature.height.value ?? null;
     const floorCount = feature.semantics?.floorCount;
     const slabsM = heightM && floorCount && floorCount > 1
       ? Array.from({ length: floorCount - 1 }, (_, i) => ((i + 1) * heightM) / floorCount)
       : undefined;
-    out.push({ id: feature.id, polygons, heightM, heightState: feature.height.state, slabsM, storeys: storeys?.get(feature.id) });
+    input = { id: feature.id, polygons, heightM, heightState: feature.height.state, slabsM };
   }
-  return out;
+  footprintCache.set(feature, input);
+  return input;
 }
 
 /** Parcels, roads, public land, water and utilities: the flat base map and underground envelopes. */
 /** Source surface subtypes the renderer draws distinctly; others fall back to the feature kind. */
 const SURFACES: Record<string, string> = { roadbed: 'roadbed', sidewalk: 'sidewalk', court: 'court', parks: 'park', park: 'park', greenstreet: 'greenstreet' };
 
-export function toBase(features: AreaFeature[]): BaseFeatureInput[] {
+export function toBase(features: AreaFeature[], previous?: BaseFeatureInput[]): BaseFeatureInput[] {
   const out: BaseFeatureInput[] = [];
   for (const feature of features) {
     if (feature.kind === 'building') continue;
-    const polygons = polygonsOf(feature.geometry);
-    if (!polygons.length) continue;
-    const props = (feature.properties ?? {}) as Record<string, unknown>;
-    if (feature.kind === 'utility') {
-      const extent = feature.verticalExtent;
-      const profile = (feature.utilityProfile ?? {}) as Record<string, unknown>;
-      // Depths are recorded as metres below ground; the scene's ground is 0.
-      out.push({ id: feature.id, kind: 'utility', polygons, lowerM: extent ? extent.lower : undefined, upperM: extent ? extent.upper : undefined, network: typeof profile.network === 'string' ? profile.network : undefined });
-    } else {
-      const named = (feature.kind === 'road' || feature.kind === 'public_land') && feature.name ? { name: feature.name } : {};
-      const surface = SURFACES[String(props.sourceSubtype ?? '').toLowerCase()];
-      out.push({ id: feature.id, kind: feature.kind === 'public_land' && props.land_cover === 'water' ? 'water' : feature.kind, polygons, ...named, ...(surface ? { surface } : {}) });
-    }
+    const input = baseFor(feature);
+    if (input) out.push(input);
   }
-  return dedupeNames(out);
+  const named = dedupeNames(out);
+  if (previous?.length === named.length && named.every((input, index) => input === previous[index])) return previous;
+  return named;
+}
+
+function baseFor(feature: AreaFeature): BaseFeatureInput | null {
+  if (baseCache.has(feature)) return baseCache.get(feature)!;
+  const input = convertBase(feature);
+  baseCache.set(feature, input);
+  return input;
+}
+
+function convertBase(feature: AreaFeature): BaseFeatureInput | null {
+  const polygons = polygonsOf(feature.geometry);
+  if (!polygons.length || feature.kind === 'building') return null;
+  const props = (feature.properties ?? {}) as Record<string, unknown>;
+  if (feature.kind === 'utility') {
+    const extent = feature.verticalExtent;
+    const profile = (feature.utilityProfile ?? {}) as Record<string, unknown>;
+    return {
+      id: feature.id, kind: 'utility', polygons, lowerM: extent?.lower, upperM: extent?.upper,
+      network: typeof profile.network === 'string' ? profile.network : undefined,
+    };
+  }
+  const named = (feature.kind === 'road' || feature.kind === 'public_land') && feature.name
+    ? { name: feature.name } : {};
+  const surface = SURFACES[String(props.sourceSubtype ?? '').toLowerCase()];
+  return {
+    id: feature.id, kind: feature.kind === 'public_land' && props.land_cover === 'water' ? 'water' : feature.kind,
+    polygons, ...named, ...(surface ? { surface } : {}),
+  };
 }
 
 /**
@@ -73,7 +108,16 @@ function dedupeNames(features: BaseFeatureInput[]): BaseFeatureInput[] {
       else kept.push(m);
     }
   }
-  return drop.size ? features.map((f) => (drop.has(f.id) ? { ...f, name: undefined } : f)) : features;
+  return drop.size ? features.map((f) => (drop.has(f.id) ? withoutName(f) : f)) : features;
+}
+
+function withoutName(input: BaseFeatureInput): BaseFeatureInput {
+  let unnamed = unnamedCache.get(input);
+  if (!unnamed) {
+    unnamed = { ...input, name: undefined };
+    unnamedCache.set(input, unnamed);
+  }
+  return unnamed;
 }
 
 /**
@@ -104,8 +148,38 @@ export function storeysFrom(model: BuildingModel, groundM: number | null, polygo
 }
 
 export function polygonsOf(geometry: AreaFeature['geometry']): MultiPolygon {
+  if (!geometry) return [];
   const g = geometry as { type: string; coordinates?: unknown };
   if (g.type === 'Polygon') return [g.coordinates as MultiPolygon[number]];
   if (g.type === 'MultiPolygon') return g.coordinates as MultiPolygon;
   return [];
+}
+
+/**
+ * How many of the area's recorded features the map draws, from the real counts, so a feature that is not drawn is
+ * always counted. A proposal not yet recorded is not counted.
+ */
+export function drawnCountNote(features: AreaFeature[], drawnIds: ReadonlySet<string>): string | null {
+  const recorded = features.filter((feature) => feature.revision > 0);
+  if (!recorded.length) return null;
+  const drawn = recorded.filter((feature) => drawnIds.has(feature.id)).length;
+  const total = recorded.length.toLocaleString('en-IN');
+  if (drawn === recorded.length) return `All ${total} recorded features are drawn.`;
+  return `${drawn.toLocaleString('en-IN')} of ${total} recorded features are drawn.`;
+}
+
+/**
+ * Features recorded as lines or points, or without geometry, have no area to draw; the map says how many it
+ * leaves out. Buildings without geometry are listed by name instead.
+ */
+export function undrawnNote(features: AreaFeature[]): string | null {
+  const counts = new Map<string, number>();
+  for (const feature of features) {
+    if (polygonsOf(feature.geometry).length) continue;
+    if (feature.kind === 'building' && !feature.geometry) continue;
+    counts.set(feature.kind, (counts.get(feature.kind) ?? 0) + 1);
+  }
+  if (!counts.size) return null;
+  const parts = [...counts].map(([kind, count]) => `${count} ${kind.replace('_', ' ')} ${count === 1 ? 'feature' : 'features'}`);
+  return `Not drawn: ${parts.join(', ')} recorded as lines, points or without geometry. The map draws areas only.`;
 }

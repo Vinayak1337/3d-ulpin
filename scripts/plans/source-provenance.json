@@ -1,0 +1,50 @@
+{
+  "bihar-magnolia-sanctioned-layout-original.pdf": {
+    "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "issuer": "Bihar RERA / project submitter",
+    "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+    "acquiredAt": "2026-09-25T00:38:59.574536Z",
+    "permission": {
+      "state": "unconfirmed",
+      "reason": "Source-specific redistribution and reuse licence not verified; local development evidence only"
+    },
+    "geography": "IN-BR: Magnolia Residency, Begusarai (source catalogue)",
+    "horizontalCrs": null,
+    "purpose": "test_only",
+    "catalogueRef": "docs/api/datasets.json#assets/bihar-magnolia-sanctioned-layout.pdf",
+    "sourceVersion": "drawings V5-01 and V5-02 dated 08.06.21",
+    "privacy": "May contain names, stamps or signatures. No public-service activation or reuse qualification."
+  },
+  "haryana-2831-tower3-plan1.pdf": {
+    "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "issuer": "Haryana RERA / project submitter",
+    "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=",
+    "acquiredAt": "2026-09-25T00:41:16.696207Z",
+    "permission": {
+      "state": "unconfirmed",
+      "reason": "Source-specific redistribution and reuse licence not verified; local development evidence only"
+    },
+    "geography": "IN-HR: RERA project 2831 (source catalogue)",
+    "horizontalCrs": null,
+    "purpose": "test_only",
+    "catalogueRef": "docs/api/datasets.json#assets/haryana-2831-tower3-plan1.pdf",
+    "sourceVersion": "portal upload 29-08-2024",
+    "privacy": "May contain names, stamps or signatures. No public-service activation or reuse qualification."
+  },
+  "haryana-2831-tower3-plan2.pdf": {
+    "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+    "issuer": "Haryana RERA / project submitter",
+    "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg=",
+    "acquiredAt": "2026-09-30T12:56:26.681798+00:00",
+    "permission": {
+      "state": "unconfirmed",
+      "reason": "Source-specific redistribution and reuse licence not verified; local development evidence only"
+    },
+    "geography": "IN-HR: RERA project 2831 (source catalogue)",
+    "horizontalCrs": null,
+    "purpose": "test_only",
+    "catalogueRef": "docs/evidence/usp/association-crosswalk/manifest.json#assets/haryana-2831-tower3-plan2.pdf",
+    "sourceVersion": "not_assessed; acquisition date is not a revision date",
+    "privacy": "May contain names, stamps or signatures. No public-service activation or reuse qualification."
+  }
+}

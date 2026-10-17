@@ -1,0 +1,17 @@
+{
+ "status": "proposal only; not registered or implemented",
+ "target": "apps/api/src/modules/evidence/operation-manifest.json",
+ "operation": {
+  "method": "GET",
+  "path": "/api/v1/usp/identity/records/{recordId}/reviews",
+  "operationId": "GET_api_v1_usp_identity_records_recordId_reviews",
+  "disposition": "added",
+  "batch": "K11",
+  "controller": "DecisionEvidenceController.reviews",
+  "requestSchema": "UspListIdentityReviewsSchema",
+  "responseSchema": "UspIdentityReviewListSchema",
+  "successStatus": 200,
+  "runtimeEvidence": "pending; offline protocol double only",
+  "access": "PrivateSpatialGuard; local operator; private, no-store; manifest access view/policy; read-only"
+ }
+}

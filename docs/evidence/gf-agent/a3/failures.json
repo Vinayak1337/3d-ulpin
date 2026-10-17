@@ -1,0 +1,35 @@
+{
+  "output": "E:/BhuAayam-data/task-data/a3/failures-ff42e631-e2a4-4191-8eac-951e736d3083",
+  "controls": [
+    {
+      "failure": "TEACHER_REPLAY_UNAVAILABLE",
+      "questions": 16,
+      "candidateCells": 0,
+      "providerDispatches": 0,
+      "reservations": 0,
+      "teacherAttempts": 1
+    },
+    {
+      "failure": "TEACHER_UNAVAILABLE",
+      "questions": 16,
+      "candidateCells": 0,
+      "providerDispatches": 0,
+      "reservations": 0,
+      "teacherAttempts": 1
+    },
+    {
+      "failure": "TEACHER_BUDGET_EXHAUSTED",
+      "questions": 16,
+      "candidateCells": 0,
+      "providerDispatches": 0,
+      "reservations": 0,
+      "teacherAttempts": 1
+    }
+  ],
+  "keyVariableName": "ULPIN_PROVIDER_KEY_SARVAM",
+  "keyNameSource": "packages/server/src/modules/model-gateway/runtime.ts",
+  "qualification": "Software-only replay controls; not observed live provider or PostgreSQL credit behaviour.",
+  "controlsSha256": "f5b0981a1ec4ebec0ca6cbfd29a585cef74e0330f20ab64d854878a7e6ee5a22",
+  "providerCalls": 0,
+  "registryWrites": 0
+}

@@ -1,0 +1,377 @@
+{
+  "task": "CA3",
+  "gate": "GF-T15",
+  "mode": "static audit; no product changes and no runtime qualification",
+  "auditedHead": "3e6a9ed5b028c4ff6b145fff6f28c4bf8b1f030e",
+  "branch": "task/ca3-building-identity-audit",
+  "checkoutNote": "Branch was already at auditedHead, not prompt's 944f7a22. No branch switch occurred.",
+  "designSays": "conflicting",
+  "designConclusion": {
+    "summary": [
+      "The explicit P3/1 allocation design is spaces-only. Buildings already have a different application identifier.",
+      "Broad language names building/level/unit/space identities; the sprint promises levels proposed 3D IDs.",
+      "That language does not specify a building P3 allocation rule. Do not silently equate those IDs with P3 codes.",
+      "Conflicting records this scope/terminology ambiguity, not two competing implementable building-code formats."
+    ],
+    "refs": ["D-general", "D-data", "D-levels", "D-identifiers", "D-allocation", "D-P5"],
+    "readings": [
+      {
+        "reading": "Existing canonical building/floor IDs suffice; separately reviewed P3 codes belong to spaces.",
+        "date": "H26 current scope 26 September 2026; locator addendum 24 September; P5 in the October sprint",
+        "refs": ["D-profile-date", "D-identifiers", "D-allocation", "D-location", "D-P5", "D-plan"]
+      },
+      {
+        "reading": "The broad promise might mean every recorded building and level should get a proposed code.",
+        "date": "H23 plan 24 September; H22 scope 26 September; AGENTS October; sprint 10-23 October 2026",
+        "qualification": "Possible reading, not an explicit P3 building requirement. No building code form stated.",
+        "refs": ["D-wide-date", "D-wide", "D-physical", "D-general", "D-data", "D-sprint", "D-levels"]
+      }
+    ]
+  },
+  "byKind": [
+    {
+      "kind": "building",
+      "applicationIdentity": "Yes: stable application/canonical identity distinct from official parcel ULPIN.",
+      "form": "Documents say stable application ID / existing canonical identity; H26 specifies registry UUID.",
+      "P3": "H26 allocation excludes buildings. Broad wording could be read more widely; needs clarification.",
+      "condition":
+        "Recorded/reviewed registry identity, not a mesh or inferred parcel parent; candidates keep stable IDs.",
+      "refs": ["D-data", "D-wide", "D-physical", "D-identifiers", "D-allocation", "D-selection"]
+    },
+    {
+      "kind": "level (registry kind floor)",
+      "applicationIdentity": "Yes: existing canonical identity; reviewed level schedule keeps a levelId.",
+      "form": "Canonical UUID/levelId, no independent P3 format specified for a level.",
+      "P3": "Sprint says levels get proposed 3D IDs; P5.5/H26 restrict assignment to reviewed spaces.",
+      "condition": "Source literal or reviewed schedule; a floor is not a unit and a floor label is not identity.",
+      "refs": ["D-levels", "D-H01", "D-identifiers", "D-P5", "D-standards", "D-schedule"]
+    },
+    {
+      "kind": "unit",
+      "applicationIdentity": "Yes: independent space UUID and P3 code after review, where the unit is a space target.",
+      "form": "P3-<20-symbol random payload>-<2-symbol check>; duplex retains one code with multiple components.",
+      "condition": "Reviewed independent-space target, exact scope/revision/evidence; official anchor optional.",
+      "refs": ["D-unit", "D-components", "D-identifiers", "D-format", "D-allocation", "D-P5"]
+    },
+    {
+      "kind": "space",
+      "applicationIdentity": "Yes: draft stable UUID; reviewed independent space may receive immutable P3.",
+      "form": "P3/1 as for unit; includes common, parking, utility and volume spaces, not only apartments.",
+      "condition":
+        "Officer review of existing independent-space identity and scope; no model allocation or issuance claim.",
+      "refs": ["D-identifiers", "D-allocation", "D-location", "D-review", "D-UI-words"]
+    }
+  ],
+  "designSupportingPlaces": [
+    { "point": "H00/next-steps Identify-Prove-Govern describe spaces and technical proposed IDs.",
+      "refs": ["D-H00", "D-next"] },
+    { "point": "H01 separates UUID, P3 and supplied parcel assertions and owns atomic reviewed commands.",
+      "refs": ["D-H01", "D-H01-command"] },
+    { "point": "H10 prints selected card facts, unavailable/unassessed with reasons, never official issuance.",
+      "refs": ["D-card"] },
+    { "point": "H15/H16 preserve space lineage, duplex identity and distinct physical/legal components.",
+      "refs": ["D-history", "D-unit", "D-components"] },
+    { "point":
+        "H24 positions the product as identifying spaces inside buildings; proposed code leaves state ULPIN alone.",
+      "refs": ["D-slides"] },
+    { "point": "H28/H29 qualify P3 lifecycle; H30 canonical selection; no building P3 rule there.",
+      "refs": ["D-gate", "D-task", "D-selection"] },
+    { "point":
+        "H97 expressly replaces hierarchical/ISO/largest-overlap proposals with opaque P3 and display location.",
+      "refs": ["D-old", "D-stream"] },
+    { "point":
+        "Frontend goal gives reviewed spaces P3; PLAN/P8 wire register-space identity rather than building codes.",
+      "refs": ["D-goal", "D-goal-P3", "D-plan", "D-P8"] }
+  ],
+  "code": {
+    "form": {
+      "value": "P3-<20 Crockford-alphabet symbols>-<2 check symbols>; profile P3/1",
+      "derivation": "100 random bits from randomBytes(13) shifted right 4; no site/building/level/space inputs.",
+      "check": "h=(33*h+alphabetIndex+1) mod 1021 over P3 plus payload; high/low base-32 check, not ISO 7064.",
+      "normalization": "ASCII end-space trim and ASCII uppercase; canonical grouping or unseparated form only.",
+      "refs": ["C-random", "C-encode", "D-format"]
+    },
+    "buildingPart": {
+      "answer": "No building part or building-level prefix exists in a space's P3 code. P3 is only a namespace prefix.",
+      "location":
+        "Structure number is supplied in the reviewed location, not derived from building ordinal or record ID.",
+      "locationForm": "<anchor> / <structure> / <level(s)> / <space>; mutable display, rejected as resolver identity.",
+      "structure": "S/U/A plus 01-99, or unknown ? with no number; kind R/C/P/X/U/V plus 001-999 for space.",
+      "refs": ["C-random", "C-location", "C-locator", "C-review", "C-resolve", "D-location"]
+    },
+    "everySpaceCheckInIdentityPath": [
+      { "at": "lockedRecords", "kindCheck": true,
+        "check": "Every target must exist in site, have kind space and revision >=1; applies to assign AND mutations.",
+        "refs": ["C-kind"] },
+      { "at": "validateSourceStatedIdentityTx", "kindCheck": true,
+        "check": "For sourceOnly bodies: parse SourceStatedRecord, require space, only assign/correct/cancel/retire.",
+        "additional": "Original hash/revision and own literal locator must match; location must be fully unqualified.",
+        "refs": ["C-source-only"] },
+      { "at": "ProjectLocatorPartsSchema", "kindCheck": false,
+        "check": "Requires spaceKind and levels; known spaceKind needs spaceNumber. Not a record-kind check.",
+        "refs": ["C-location"] },
+      { "at": "assignProjectCode", "kindCheck": false,
+        "check": "Any prior reserved code conflicts, but the message calls the target This space.",
+        "refs": ["C-assign"] },
+      { "at": "mutateProjectIdentity", "kindCheck": false,
+        "check": "Predecessors assigned; boundary successor assigned; messages call them continuing spaces.",
+        "refs": ["C-mutation"] },
+      { "at": "resolveProjectIdentity", "kindCheck": false,
+        "check": "Missing captured code is a 409 whose message says This space had no project code.",
+        "refs": ["C-resolve"] },
+      { "at": "listIdentityReviews", "kindCheck": false,
+        "check": "No kind restriction: recorded record in unarchived area, readable site/manifest, consistent review.",
+        "refs": ["C-list-kind", "C-list-review"] },
+      { "at": "Downstream projections", "kindCheck": true,
+        "check": "Snapshot project-p3-1 assertion and canonical source-code query currently select spaces only.",
+        "refs": ["C-target-identifiers", "C-canonical-kind"] }
+    ],
+    "buildingWouldHaveToHold": [
+      { "point": "Recorded building revision >=1 in authorized site; current exact selected snapshot member.",
+        "refs": ["C-kind", "C-members", "C-officer"] },
+      { "point": "Own body.evidence source and locator match; evidence source revision in exact snapshot.",
+        "refs": ["C-members"] },
+      { "point": "Exact unused review: same reviewer, operation, versions, scope, manifest and command hash.",
+        "refs": ["C-review-pin"] },
+      { "point":
+        "No code already reserved; same transaction, locks, idempotent receipt and post-write snapshot.",
+        "refs": ["C-allocate", "C-assign", "C-receipt", "C-DB"] },
+      { "point":
+        "A building without sourceOnly cannot omit location: assignmentLocation returns unsupported lineage.",
+        "refs": ["C-assignment-location"] },
+      { "point":
+        "No inherent spaceKind/spaceNumber/level location. Unknown tokens pass syntax, not building policy.",
+        "refs": ["C-location", "C-source-only", "D-location"] },
+      { "point":
+        "Document-import building has body.evidence, but not the child space's sourceOnly literal envelope.",
+        "refs": ["C-building-id", "C-child-id", "C-source-only"] },
+      { "point":
+        "Removing kind space alone would not define reviewed building identity or a building location profile.",
+        "refs": ["C-kind", "C-assignment-location", "C-source-only", "D-allocation"] }
+    ],
+    "lineage": {
+      "split": "One predecessor, >=2 distinct successors; all current recorded spaces; successors never reserved.",
+      "merge": ">=2 predecessors, one successor; all recorded spaces; new code, no old code transferred.",
+      "writes":
+        "Retire predecessors, allocate successors, add links/evidence, bump revisions, receipt/outbox atomically.",
+      "correction": "Update location/revision, keep code. Cancel/retire keep permanently reserved code.",
+      "boundary": "Two continuing assigned spaces keep codes; valid reviewed transferred area plus evidence link.",
+      "qualification":
+        "Design demands acyclicity; inspected mutation code has shape/non-reuse checks, no explicit DFS.",
+      "refs": ["D-allocation", "D-history", "D-boundary", "C-review", "C-shapes", "C-mutation", "C-DB"]
+    },
+    "routes": {
+      "posts": ["/usp/identity/reviews", "/usp/identity/assign", "/usp/identity/mutate", "/usp/identity/resolve"],
+      "get": "/usp/identity/records/{recordId}/reviews",
+      "schema": "UUID record IDs and pins, not kind-discriminated targets; service imposes spaces-only.",
+      "review": "Requires operation/scope/recordIds/expectedVersions/reason/evidence; location optional on wire.",
+      "assign": "scope/expectedManifestId/reviewId/requestKey/recordId/expectedRecordVersion; no client code payload.",
+      "refs": ["A-routes", "A-assign-route", "A-mutate-route", "A-resolve-route", "A-list-route",
+        "A-review-schema", "A-review-required", "A-assign-schema", "A-mutate-schema", "A-resolve-schema",
+        "C-review-schema", "C-wire", "C-kind"]
+    }
+  },
+  "registryIdentifier": {
+    "building": "<site.identifier>:B<site-wide building ordinal padded to at least 3 digits>",
+    "site": "3DU-<26 base-32 symbols encoding all 128 UUID bits>; not P3 random payload.",
+    "reserved": "On draft/area intake reservation (revision 0); source-building recording advances to revision 1.",
+    "meaning": "Existing application identity/registry identifier, not official parcel ULPIN or assigned P3.",
+    "alias": "RegistryBody.alias is separate; source building uses sourceKey there. identifier is not the alias.",
+    "sourceChildPrefix": "Source-stated child ID appends :F<parent sibling count+1> then :S<count+1> to parent ID.",
+    "genericChild": "Generic registry uses site-wide :F/:S ordinal, not necessarily building prefix.",
+    "legacy": "Case prototype identity is 3DU(caseUUID):F/:S and a floor-space path; no building P3 prefix.",
+    "shown":
+      "USP target identifiers; building table Building identifier; map inspector; server card Registry identifier.",
+    "namingCaveat":
+      "USP target still calls nonparcel registry IDs application-3d-ulpin; P3 is project-p3-1 separately.",
+    "documentNaming":
+      "H23 calls these stable application IDs; H26 says existing canonical identities, UUID primary key.",
+    "notFound": "No document found calling the exact :Bnnn field a working label or historical alias.",
+    "refs": ["C-site-code", "C-area-id", "C-building-id", "C-building-record", "C-record-fields",
+      "C-child-id", "C-child-parent", "C-generic-id", "C-legacy-id", "C-target-identifiers",
+      "U-building-id", "U-building-table", "U-inspector", "C-card-target", "D-wide", "D-identifiers"]
+  },
+  "serverCard": {
+    "precondition":
+      "Recorded selected building, exact confirmed complete executed packet plan and current authorization.",
+    "scope": "Conditional projection, not proof a footprint-only building can complete the plan/card journey.",
+    "preview": "previewPropertyCard and generatePropertyCard share prepareCardFactsTx/projectCardFactsTx.",
+    "refs": ["C-card-target", "C-executed", "C-preview", "C-generate", "F-card-block"],
+    "factsForBuildingWithoutP3": [
+      { "label": "Selected record", "value": "<plan.targetLabel> (building); revision <target revision>",
+        "state": "available", "refs": ["C-card-target"] },
+      { "label": "Registry identifier", "value": "<captured body.identifier>", "state": "available if captured",
+        "otherwise": "Unavailable: No captured identifier", "refs": ["C-card-target", "C-word-state"] },
+      { "label": "Application identity", "value": "Unavailable: No captured P3/1 identity",
+        "reasonCode": "project_identity_not_recorded", "refs": ["C-card-identity", "C-word-state"] },
+      { "label": "Recorded location", "value": "Unavailable: No captured structured location",
+        "reasonCode": "location_not_recorded", "refs": ["C-card-identity", "C-word-state"] },
+      { "label": "Parent parcel assertions", "value": "Unavailable: No selected source-backed parcel assertion",
+        "reasonCode": "selected_parcel_evidence_unavailable", "refs": ["C-card-identity", "C-word-state"] },
+      { "label": "Recorded declared share",
+        "value": "Unavailable: No included accepted applicability for this exact target and purpose",
+        "alternative": "Literal share; allocation subject; basis; technically accepted; legal status not assessed",
+        "condition": "Included accepted shared declaration and exact target applicability, non-PDF plan only.",
+        "refs": ["C-card-rest", "C-word-state"] },
+      { "label": "Geometry / frame / datum", "value": "Unavailable: Not qualified by the executed PDF region profile",
+        "textCsv": "Unavailable: Not supplied by the executed text/CSV profile",
+        "refs": ["C-card-rest", "C-word-state"] },
+      { "label": "Measurements / quantities", "value": "Unavailable: No qualified measured quantities in this profile",
+        "refs": ["C-card-rest", "C-word-state"] },
+      { "label": "Selected-space render", "value": "Unavailable: Rendering is unavailable in this profile",
+        "refs": ["C-card-rest", "C-word-state"] },
+      { "label": "Rights / title / issuance",
+        "value": "Not assessed: No ownership, title, legality or official issuance determination",
+        "refs": ["C-card-rest", "C-word-state"] }
+    ],
+    "spaceDependent": {
+      "today": "P3/location/parcel rows depend on captured projectIdentity; assignment permits only spaces.",
+      "explicitKind": "Only source-stated extra facts require body.kind space and body.body.sourceOnly.",
+      "extraRows": ["Space label (source literal)", "Floor label (source literal)", "Building (recorded name)",
+        "Source citation", "Level ordinal", "Use / classification"],
+      "otherRows": "Selected record, identifier, declared share and profile limits have no space-kind prerequisite.",
+      "refs": ["C-kind", "C-card-identity", "C-card-rest", "C-source-facts"]
+    },
+    "printedFurniture": {
+      "heading": ["Property card", "PRIVATE - Exact card revision <revision> - <stage> snapshot",
+        "Application summary. No official ULPIN issuance, title or legal approval is implied."],
+      "footer": ["Card: <id> / <revision>", "Plan: <id> / <version>", "Packet: <id>",
+        "Included entries: <count>; optional omissions: <count>", "Snapshot captured: <time>",
+        "Card expires: <time>", "Packet SHA-256 (byte consistency):", "<packet hash>",
+        "Snapshot facts are fixed; current record revisions may differ.",
+        "The detail packet remains separately authorized."],
+      "qr": ["Opens this card revision as a PDF,", "only on the machine that made it:",
+        "<exact loopback resolver URL>"],
+      "writer": "jsPDF ASCII or PDFKit Latin/Devanagari; same wording helpers; no separate image card writer.",
+      "absence": "PDF prints Unavailable: and value, not project_identity_not_recorded when value exists.",
+      "overflow": "One page/512 KiB; layout refusal, never truncation. Missing reason printed only if value is null.",
+      "refs": ["C-heading-footer", "C-QR-words", "C-word-state", "C-ASCII", "C-Unicode", "C-profile", "C-card-schema"]
+    }
+  },
+  "studioCard": {
+    "buildingDialog": "Not found: identity dialogs accept a unit/space, not a building target.",
+    "servedFlow": "UnitCardDialog lists registry cards; issue offered for canonical unit with code.",
+    "prepare": "IssueCardDialog needs RecordedUnit and assignSubject's unit pin/citation/canonical space label.",
+    "subjectRows": ["Unit", "Floor", "Citation (No citation recorded if absent)",
+      "Record revision (Not stated when unavailable)", "Application code (only when code exists)"],
+    "preview": "Rows of the card; Mode; Revision; Valid until; then every returned fact label/value in server order.",
+    "identityAbsent": "Value No captured P3/1 identity; note unavailable · project_identity_not_recorded.",
+    "differenceFromPDF":
+      "Studio factText displays machine state/reason separately; it does not prepend Unavailable:.",
+    "draft": "CardDialog is browser draft for one space: title, draft code/location, revision/hash/chain/QR.",
+    "draftRows": ["Record: Draft on this device, not a registry record", "Parcel ULPIN (Not supplied when absent)",
+      "Level", "Carpet area", "Undivided share", "Draft made", "optional restricted Party names"],
+    "draftLimits": "Unknown stays Unknown; parcel fallback selects first identifier, not a reviewed multi-parcel card.",
+    "inspector":
+      "Building map card is a different inspector: identifier/parcel subtitle, no property-card issue action.",
+    "refs": ["U-unit-gate", "U-issue", "U-assignment", "U-rows", "U-wording", "C-card-identity",
+      "U-draft", "U-draft-facts", "U-draft-render", "U-draft-words", "U-unit-facts", "U-inspector"]
+  },
+  "officialParcelIdentity": {
+    "storage": "external_identifiers scheme official_ulpin on recorded parcel; issuer/source_id/evidence/verification.",
+    "bind": "bindExternalIdentifier needs current revision, parcel kind, source in target area and locator.",
+    "authority": "Validated association is not issuance certification; legacy body.officialUlpin also readable.",
+    "reads": "Dossier IDs; canonical confirmed parcelRefs; ledger source-backed confirmed current associations.",
+    "P3Association":
+      "ProjectLocation.parcels has literalValue/role/source revision locator/issuer/validity/reviewState.",
+    "designCanPrint":
+      "Yes: zero or more sourced, reviewed authorized parcel assertions, never generated legal parents.",
+    "codeCanPrintForBuildingToday":
+      "No structured assertions without projectIdentity, even if ledger has official ULPINs.",
+    "conditionalPath":
+      "With identity: only non-PDF included exact verbatim text/CSV entries containing the parcel literal.",
+    "issuerDisplayGap":
+      "Prints issuer state, not issuer.value/name; source pins stay in plan, not parcel fact text.",
+    "reviewDisplayGap":
+      "Projection does not filter reviewed parcels; it prints each supported assertion's reviewState.",
+    "multiParcel":
+      "Design set, no single-parent overlap selection. ProjectLocation max100; no one-parcel assumption.",
+    "cardCount":
+      "Ordinary building today: 0 structured assertions. Potential identity text/CSV path: 0-100 associations.",
+    "effectiveBound": "Every assertion needs proof; card max20 entries and 4096-character fact/one-page limits.",
+    "entryQualification": "One excerpt can support multiple literals; no guaranteed printable count before layout.",
+    "PDF": "PDF card parcel count is 0 even for a space: crop authority cannot prove structured literals.",
+    "ledgerBound":
+      "Separate ledger supports up to 200 current parcels/assertions; not the property-card capacity.",
+    "refs": ["D-data", "D-identifiers", "D-card", "P-bind", "P-legacy", "P-dossier", "P-canonical",
+      "P-ledger-relations", "P-ledger", "C-assertions", "C-target-identifiers", "C-location",
+      "C-card-identity", "C-card-schema", "U-register-parcels", "U-draft-facts"]
+  },
+  "decision": {
+    "ownerQuestion":
+      "Should a recorded building with no units get its own reviewed P3 code, or use its existing building identifier?",
+    "answers": [
+      {
+        "answer": "Use the existing building identifier; assign P3 only to reviewed independent spaces.",
+        "cost": "Projection wording plus building card path; no P3 allocator or space lifecycle change.",
+        "exactBuildingCardWords": ["Registry identifier: <captured identifier>",
+          "Application identity: Identity codes are for recorded spaces only"],
+        "wordingBasis": "Existing labels and scope phrase; do not label the registry identifier assigned P3.",
+        "printAt": "card-projection.ts P3-absent branch; shared PDF writers and Studio returned PreviewFacts rows.",
+        "frozenCards": "Only newly generated cards change wording; stored bodies/bytes stay immutable.",
+        "refs": ["C-card-target", "C-card-identity", "D-architecture", "C-word-state", "C-profile", "U-rows"]
+      },
+      {
+        "answer": "Assign a building its own reviewed P3 code, separate from any unit codes.",
+        "cost": "Reviewed extension across guards, location policy, projections, Studio and focused invariants.",
+        "form": "Reuse random P3/1, not a space-code prefix or parcel ULPIN; retain building identifier.",
+        "filesAndFunctions": [
+          "usp/project-identity.ts lockedRecords/assignmentLocation: assign-kind and building location policy.",
+          "usp/source-stated-identity.ts: keep source-only space guards; define building evidence separately.",
+          "contracts/src/usp/project-identity.ts: building location without invented level/space tokens.",
+          "usp/snapshots.ts resolveRegistryTarget: expose building project-p3-1; capture join is kind-neutral.",
+          "registry/canonical-source-identity.ts and canonical-building.ts: building proposed-code projection.",
+          "usp/packets/card-projection.ts/card-wording.ts: building location and parcel evidence, not space-derived.",
+          "apps/studio/features/identity: building review/assign/issue subject, not the current unit-only subject."
+        ],
+        "mustNotChange":
+          "Space P3 format/checks/codes, source-only unknown location, review pins, lineage and receipts.",
+        "scopeCaution": "Do not widen split/merge/boundary policy automatically; building lineage needs a decision.",
+        "separateBlockers": "Recorded building lift and includable footprint evidence/card plan remain CA1/CA4 work.",
+        "refs": ["C-kind", "C-assignment-location", "C-source-only", "C-location", "C-random", "C-snapshot-P3",
+          "C-target-identifiers", "C-canonical-kind", "U-assignment", "C-card-identity", "F-card-block"]
+      }
+    ]
+  },
+  "notFound": [
+    { "what": "Explicit reviewed building P3 allocation policy, building P3 format or building-code prefix.",
+      "looked":
+        "AGENTS; standards/sprint; identity handoffs; frontend/backend plans; USP contracts and identity services." },
+    { "what": "Authoritative standalone level P3 allocation rule resolving the sprint's levels sentence.",
+      "looked": "SPRINT-SELECTION section 1 against P5.5, H26 A/C and project-identity.ts." },
+    { "what": "Document naming registry_records.identifier :Bnnn a working label or historical alias.",
+      "looked": "H01/H22/H23/H26 and next-steps identity/identifier/alias searches; RegistryBody separates alias." },
+    { "what": "Building-target property-card dialog under apps/studio/src/features/identity.",
+      "looked": "All identity card dialogs, subject builder, RegisterPage and BuildingInspector call sites." },
+    { "what":
+        "Building card print path from external_identifiers/confirmed parcels without captured projectIdentity.",
+      "looked": "card-projection, preview/generate, both PDF renderers, dossier/ledger/canonical parcel reads." },
+    { "what": "Independent issuer-name/source citation printed in the parcel fact value.",
+      "looked": "card-projection represented parcel text; issuer state only. Plan retains source pins." },
+    { "what": "Separate image property-card writer.",
+      "looked": "USP packets card-service/render/profile/Unicode modules; both writers produce PDF." }
+  ],
+  "searchCoverage": {
+    "command": "rg -il identity|project code|3d ulpin over handoffs, next-steps, backend, frontend",
+    "method":
+      "Read defining passages and surrounding headings; other hits were authority, source/mesh or session identity.",
+    "definingHandoffs": ["H00", "H01", "H10", "H15", "H16", "H22", "H23", "H24", "H26", "H28", "H29", "H30",
+      "H97", "H99", "backend-streaming-plan"],
+    "otherMatchedHandoffs": ["H02", "H11", "H12", "H13", "H14", "H19", "H20", "H21", "H25", "H27", "H90", "H98",
+      "backend-cleanup-plan", "release-plan.json", "tools governance/validation code and tests"],
+    "otherMatchedDocs": ["next-steps P6/P9/WORKERS/README/P8", "backend LIVE-PROOF", "frontend ROUTES-LIVE/DEMO_VIDEO"],
+    "excluded": ["heldout", "holdout", "evaluator", "provisional", "acquisitions", ".env"],
+    "qualification":
+      "No forbidden data opened; no database, container, network provider or application runtime started."
+  },
+  "inputs": {
+    "good": "Repository's H26 explicit independent-space specification and source-stated space allocation path.",
+    "difficult": "AU1 B-identity-spaces-only/B-packet evidence: footprint-only building with no units and no P3.",
+    "qualification": "Existing code/source evidence only; no real-data execution or runtime gate passed.",
+    "refs": ["D-allocation", "C-source-only", "F-existing-break", "F-card-block"]
+  },
+  "checks": [
+    { "command": "node docs/evidence/gf1/ca3/verify.mjs", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "splits": [
+    {
+      "split": "train",
+      "images": 3581,
+      "instances": 28328,
+      "empty_chips": 880,
+      "zero_pixel_features": 5,
+      "annotations_sha256": "a09c7021b80144baf73e862861840df3e2d1da2d8450b7ee864b59e528c468cc"
+    },
+    {
+      "split": "dev",
+      "images": 1434,
+      "instances": 13156,
+      "empty_chips": 305,
+      "zero_pixel_features": 1,
+      "annotations_sha256": "07c332c0e356164974c04ce6f463ed3be1e4a56727a73656343daf94c3a665e7"
+    },
+    {
+      "split": "holdout",
+      "images": 1273,
+      "instances": 9182,
+      "empty_chips": 355,
+      "zero_pixel_features": 0,
+      "annotations_sha256": "5bbfc109a45082aeaada5c8b03593d0a6cef4481153affa225f7ea82f8d32ef7"
+    }
+  ],
+  "source_hashes_verified": true,
+  "rgb_pixels_preserved": true,
+  "rle_roundtrip_verified": true,
+  "source_features_preserved": true
+}

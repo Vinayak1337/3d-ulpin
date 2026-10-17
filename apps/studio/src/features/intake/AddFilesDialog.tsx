@@ -1,21 +1,24 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
-import { ApiError, api, type Schemas } from '@ulpin/api-client';
+import { api, ApiError, type Schemas } from '@ulpin/api-client';
 import { Badge, Banner, Button, DataTable, Dialog, Icon, Skeleton, StatusBadge, formatCount, formatDateTime } from '@ulpin/ui';
 import { demoImportEnabled, inspectDemoFile, startDemoImport } from '../../api/demo-import';
 import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
+import { TableImportDialog } from './table/TableImportDialog';
+import { fileRoute, pickedRoute } from './file-route';
+import { IntakeDropDialog } from './IntakeDropDialog';
 
 type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { demoContents?: string };
 type Kind = 'building' | 'parcel' | 'road' | 'public_land' | 'utility';
 
 interface Picked {
   file: File;
-  state: 'inspecting' | 'ready' | 'not-gis' | 'failed';
+  state: 'inspecting' | 'ready' | 'intake' | 'not-gis' | 'failed';
   inspection?: Inspection;
   error?: string;
   /** Answered by the NYC upload profile (demo import) rather than the area import. */
@@ -31,18 +34,34 @@ interface Mapping {
   heightMeaning: string;
 }
 
+/** The unit the officer has confirmed; an unconfirmed unit stays unknown and blocks the import. */
+const heightUnitText = (unit: Mapping['heightUnit']) => ({ m: ' in metres', ft: ' in feet', '': ', unit not chosen' })[unit];
+
 const GIS = /\.(geojson|json|gpkg|zip)$/i;
+/** GIS files (and the opt-in profile's LAZ/TIFF) are inspected; tables keep their dialog; the rest join the batch. */
+const pickState = (name: string): Picked['state'] =>
+  GIS.test(name) || demoImportEnabled && /\.(laz|tif|tiff)$/i.test(name) ? 'inspecting'
+    : fileRoute(name) === 'table' ? 'not-gis' : 'intake';
+
+/** The Detected column's words for one picked file. */
+function detected(f: Picked) {
+  if (f.state === 'ready') return formatLabel(f.inspection!.format);
+  if (f.state === 'inspecting') return 'Reading…';
+  if (f.state === 'intake') return fileRoute(f.file.name) === 'original' ? 'Original · batch' : 'Map file · batch';
+  if (f.state === 'not-gis') return 'Table';
+  return <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>;
+}
+
 const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
 
 /**
- * S2 Add files. Each GIS file is profiled by the real inspect endpoint (hash, format, CRS, fields); the
- * officer confirms the mapping; Start import sends the original to the real import endpoint. Other files
- * are listed and kept for a case upload; nothing is dropped silently.
+ * S2 Add files. GeoJSON is retained/enrolled through intake. Binary GIS keeps bounded direct import,
+ * tables keep their dialog, and the opt-in NYC profile keeps its separate development transport.
  */
-export function AddFilesDialog({ onClose, batchId, buildingId, routed = false }: { onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean }) {
+export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles }: { onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean; caseId?: string; initialFiles?: File[] }) {
   if (batchId) return <SavedBatch batchId={batchId} onClose={onClose} />;
   if (buildingId) return <BuildingFiles buildingId={buildingId} onClose={onClose} routed={routed} />;
-  return <NewFiles onClose={onClose} />;
+  return <NewFiles onClose={onClose} routed={routed} openCaseId={caseId} initialFiles={initialFiles} />;
 }
 
 /**
@@ -109,13 +128,17 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
   );
 }
 
-function NewFiles({ onClose }: { onClose: () => void }) {
+function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
+  onClose: () => void; routed: boolean; openCaseId?: string; initialFiles?: File[];
+}) {
   const client = useQueryClient();
   const [files, setFiles] = useState<Picked[]>([]);
   const [step, setStep] = useState(0);
   const [mapping, setMapping] = useState<Mapping | null>(null);
   const [editing, setEditing] = useState(false);
-  const [summary, setSummary] = useState<string | null>(null);
+  const [tableFile, setTableFile] = useState<File | null>(null);
+  const [showIntake, setShowIntake] = useState(false);
+  const initialized = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -124,22 +147,38 @@ function NewFiles({ onClose }: { onClose: () => void }) {
   const fields = gis?.inspection?.fields ?? [];
   const kindField = fields.find((f) => /^(kind|type|class|category)$/i.test(f.name))?.name ?? null;
 
-  const add = async (list: FileList | null) => {
+  const add = async (list: FileList | File[] | null) => {
     if (!list?.length) return;
-    const picked = [...list].map<Picked>((file) => ({ file, state: (GIS.test(file.name) || demoImportEnabled && /\.(laz|tif|tiff)$/i.test(file.name)) ? 'inspecting' : 'not-gis' }));
+    const picked = [...list].map<Picked>((file) => ({ file, state: pickState(file.name) }));
     setFiles((current) => [...current, ...picked]);
     setStep(1);
+    let batched = picked.some((p) => p.state === 'intake');
     for (const item of picked.filter((p) => p.state === 'inspecting')) {
       const body = new FormData();
       body.set('file', item.file);
-      // The NYC upload profile answers its own files; any other file goes to the area import.
+      // The opt-in NYC profile keeps its transport; other map files use production routing.
       const demo = demoImportEnabled
         ? await inspectDemoFile(item.file).then(data => ({ data, error: undefined, response: new Response() })).catch(error => ({ data: undefined, error: { message: error.message }, response: new Response(null, { status: 400 }) }))
         : null;
+      if (!demo?.data && await pickedRoute(item.file) !== 'direct') {
+        setFiles((current) => current.map((file) => file.file === item.file ? { ...file, state: 'intake' } : file));
+        batched = true;
+        continue;
+      }
       const via: 'demo' | 'local' = demo?.data ? 'demo' : 'local';
-      const result = demo?.data ? demo : GIS.test(item.file.name)
-        ? await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData })
-        : demo!;
+      let result;
+      try {
+        result = demo?.data ? demo : GIS.test(item.file.name)
+          ? await api.POST('/api/v1/import-packages/inspect', { body: body as never,
+            bodySerializer: (b) => b as unknown as FormData })
+          : demo!;
+      } catch (error) {
+        const words = error instanceof ApiError ? error.message
+          : 'This file could not be checked: the server did not answer. Try again.';
+        setFiles((current) => current.map((file) => file.file === item.file
+          ? { ...file, state: 'failed', error: words } : file));
+        continue;
+      }
       setFiles((current) => current.map((f) => (f.file !== item.file ? f
         : result.data ? { ...f, state: 'ready', inspection: result.data, via } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
       if (result.data) {
@@ -151,10 +190,16 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           heightUnit: !height ? '' : /(_m|metre|meter)s?$/i.test(height.name) ? 'm' : /(_ft|feet|foot)$/i.test(height.name) ? 'ft' : '',
           heightMeaning: !height ? '' : /roof/i.test(height.name) ? 'Roof height above ground' : 'Building height above ground',
         });
-        if (via === 'local') setSummary(await kindSummary(item.file));
       }
     }
+    if (batched) setShowIntake(true);
   };
+
+  useEffect(() => {
+    if (initialized.current || !initialFiles?.length) return;
+    initialized.current = true;
+    void add(initialFiles);
+  }, [initialFiles]);
 
   const importFile = useMutation({
     mutationFn: async () => {
@@ -178,7 +223,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
     onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
   });
 
-  const blocked = demoUpload ? (!files.length ? 'add the NYC layer files or their ZIP' : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null) : !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
+  const blocked = demoUpload ? (!files.length ? 'add the NYC layer files or their ZIP' : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null) : !gis ? 'retain the map files, or add a GeoPackage or zipped shapefile for direct import'
     : gis.inspection?.quarantine?.accepted === 0 ? 'no source geometries were accepted'
     : !gis.inspection?.sourceCrs ? 'the file states no coordinate reference system'
       : !mapping?.idField ? 'choose the field that identifies each feature'
@@ -187,6 +232,15 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           : null;
 
   const rows = useMemo(() => files, [files]);
+  const intakeFiles = files.filter((file) => file.state === 'intake').map((file) => file.file);
+  if (showIntake && intakeFiles.length) {
+    return <IntakeDropDialog files={intakeFiles} openCaseId={openCaseId} routed={routed} onClose={onClose}
+      remainingFiles={files.filter((file) => file.state !== 'intake').map((file) => file.file)}
+      onBack={() => setShowIntake(false)} />;
+  }
+  if (tableFile) {
+    return <TableImportDialog file={tableFile} onClose={onClose} onBack={() => setTableFile(null)} />;
+  }
   return (
     <Dialog
       title="Add files"
@@ -210,7 +264,11 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           >
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
-            <span className="ul-help">GIS layers are read now. Plans, tables and documents are kept as evidence for a case upload.</span>
+            <span className="ul-help">
+              GeoJSON files and ZIPs of GeoJSON layers are kept unchanged and checked in a batch, one item per layer.
+              GeoPackage and shapefile ZIP use direct import.
+              CSV and XLSX keep their table import. Every other file is kept unchanged as an original in the batch.
+            </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
           </label>
         ) : null}
@@ -223,10 +281,20 @@ function NewFiles({ onClose }: { onClose: () => void }) {
               rowKey={(f) => `${f.file.name}-${f.file.size}-${f.file.lastModified}`}
               columns={[
                 { header: 'File', cell: (f) => <span className="ul-id">{f.file.name}</span> },
-                { header: 'Detected', cell: (f) => (f.state === 'ready' ? formatLabel(f.inspection!.format) : f.state === 'inspecting' ? 'Reading…' : f.state === 'not-gis' ? 'Document or table' : <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>) },
+                { header: 'Detected', cell: detected },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
                 { header: 'Contents', numeric: true, cell: (f) => f.via === 'demo' && f.inspection?.demoContents ? f.inspection.demoContents : (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
-                { header: 'Mapping', cell: (f) => (f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : f.state === 'not-gis' ? <Badge icon={null}>Kept as evidence</Badge> : '—') },
+                { header: 'Mapping', cell: (f) => {
+                  if (f.state === 'not-gis' && /\.(csv|xlsx)$/i.test(f.file.name)) {
+                    return <Button variant="soft" onClick={() => setTableFile(f.file)}>Import as a table</Button>;
+                  }
+                  if (f.state === 'intake') {
+                    return <Button variant="soft" onClick={() => setShowIntake(true)}>Retain files</Button>;
+                  }
+                  return f.state === 'ready' ? <Badge tone="info" icon={null}>
+                    {f.via === 'demo' ? 'Proposed' : 'Direct import'}
+                  </Badge> : 'Not imported';
+                } },
                 ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> }] : []),
               ]}
             />
@@ -241,10 +309,10 @@ function NewFiles({ onClose }: { onClose: () => void }) {
             </header>
             {!editing || step === 2 ? (
               <dl className={styles.readList}>
-                <div><dt>Each feature is</dt><dd>{kindField ? <>read from <span className="ul-id">{kindField}</span>{summary ? <span className="ul-muted"> · {summary}</span> : null}</> : KIND_LABEL[mapping.kind]}</dd></div>
+                <div><dt>Each feature is</dt><dd>{kindField ? <>read from <span className="ul-id">{kindField}</span></> : KIND_LABEL[mapping.kind]}</dd></div>
                 <div><dt>Identified by</dt><dd>{mapping.idField ? <span className="ul-id">{mapping.idField}</span> : <span className="ul-error">choose a field</span>}</dd></div>
                 <div><dt>Named by</dt><dd>{mapping.nameField ? <span className="ul-id">{mapping.nameField}</span> : <span className="ul-muted">no name</span>}</dd></div>
-                <div><dt>Height</dt><dd>{mapping.heightField ? <><span className="ul-id">{mapping.heightField}</span> in {mapping.heightUnit === 'ft' ? 'feet' : 'metres'} · {mapping.heightMeaning.toLowerCase()}</> : <span className="ul-muted">unknown (no height field)</span>}</dd></div>
+                <div><dt>Height</dt><dd>{mapping.heightField ? <><span className="ul-id">{mapping.heightField}</span>{heightUnitText(mapping.heightUnit)} · {mapping.heightMeaning.toLowerCase()}</> : <span className="ul-muted">unknown (no height field)</span>}</dd></div>
               </dl>
             ) : (
               <div className={styles.mapping}>
@@ -306,21 +374,6 @@ function NewFiles({ onClose }: { onClose: () => void }) {
 }
 
 const KIND_LABEL: Record<Kind, string> = { building: 'a building', parcel: 'a parcel', road: 'a road', public_land: 'public land', utility: 'a utility' };
-
-/** "22 buildings · 22 parcels · …" from a GeoJSON file's kind field, read in the browser. */
-async function kindSummary(file: File): Promise<string | null> {
-  if (!/\.(geo)?json$/i.test(file.name)) return null;
-  try {
-    const doc = JSON.parse(await file.text()) as { features?: { properties?: Record<string, unknown> }[] };
-    const counts = new Map<string, number>();
-    for (const f of doc.features ?? []) {
-      const k = String(f.properties?.kind ?? f.properties?.type ?? '');
-      if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
-    }
-    const word: Record<string, [string, string]> = { building: ['building', 'buildings'], parcel: ['parcel', 'parcels'], road: ['road', 'roads'], public_land: ['open land', 'open land'], utility: ['utility', 'utilities'] };
-    return [...counts].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n} ${(word[k] ?? [k, k])[n === 1 ? 0 : 1]}`).join(' · ') || null;
-  } catch { return null; }
-}
 
 const MAPPING: Record<ImportBatch['files'][number]['mapping'], { label: string; tone: 'success' | 'info' | 'neutral' }> = {
   reused: { label: 'Reused mapping', tone: 'success' }, proposed: { label: 'Proposed', tone: 'info' }, manual: { label: 'Manual', tone: 'neutral' },

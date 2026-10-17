@@ -43,3 +43,24 @@ CREATE TABLE IF NOT EXISTS usp_model_calls (
 CREATE INDEX IF NOT EXISTS usp_model_calls_principal_day ON usp_model_calls(project_id,principal_hash,created_at);
 CREATE INDEX IF NOT EXISTS usp_model_calls_exposure ON usp_model_calls(project_id,state);
 CREATE INDEX IF NOT EXISTS usp_model_calls_scope ON usp_model_calls(project_id,principal_hash,scope_hash);
+-- GK1: the owner's list of keys, one in use at a time. Additive only; every earlier row stays valid.
+-- A call row names the key that served it by the credential hash; NULL is a row from before the list.
+ALTER TABLE usp_model_calls ADD COLUMN IF NOT EXISTS credential_hash text
+  CHECK (credential_hash ~ '^[a-f0-9]{64}$');
+ALTER TABLE usp_model_budget ADD COLUMN IF NOT EXISTS reconciled_at timestamptz;
+ALTER TABLE usp_model_budget ADD COLUMN IF NOT EXISTS reconciled_reason text;
+-- One row each time the provider says a key is used up or rejected. Only the owner's script restores one.
+CREATE TABLE IF NOT EXISTS usp_model_key_marks (
+  id uuid PRIMARY KEY,
+  credential_hash text NOT NULL CHECK (credential_hash ~ '^[a-f0-9]{64}$'),
+  secret_reference text NOT NULL,
+  reason text NOT NULL CHECK (reason IN ('quota_exhausted','credential_invalid')),
+  http_status integer NOT NULL CHECK (http_status BETWEEN 400 AND 499),
+  call_id uuid NOT NULL REFERENCES usp_model_calls(id),
+  marked_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  restored_at timestamptz,
+  restored_reason text,
+  CHECK ((restored_at IS NULL) = (restored_reason IS NULL))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS usp_model_key_marks_open ON usp_model_key_marks(credential_hash)
+  WHERE restored_at IS NULL;

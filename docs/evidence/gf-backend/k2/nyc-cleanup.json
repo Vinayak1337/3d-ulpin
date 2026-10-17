@@ -1,0 +1,7 @@
+{
+  "action": "left_unchanged",
+  "reason": "development test import, not demo content",
+  "withdrawalApiAvailable": false,
+  "retainedUncommittedProposals": 62,
+  "deletionOrReset": false
+}

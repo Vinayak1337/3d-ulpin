@@ -1,0 +1,2335 @@
+{
+  "schemaVersion": "floor-adaptation-shard/1",
+  "task": "D06-PAR-FLOOR",
+  "status": "prepared_candidates_annotation_pending_not_fit_admitted",
+  "baseCommit": "6c173b0e357b1f968b204bb9e6eb8ac2ab9f805b",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005",
+  "privateManifest": {
+    "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\shard-manifest.json",
+    "bytes": 7436,
+    "sha256": "a2bcf0829e0cdb4f49ecf5dd974c5145cf9260a6079347596c351d9d2a766f3a"
+  },
+  "counts": {
+    "publisherHumanTrainPairs": 24,
+    "publisherOriginalImages": 24,
+    "publisherOriginalSvgs": 24,
+    "indianOriginalPdfs": 4,
+    "indianSourcePages": 4,
+    "indianProjects": 2,
+    "indianAnnotationPendingEntries": 4,
+    "indianAcceptedAnnotations": 0,
+    "modelDerivedLabels": 0,
+    "knownPublisherSites": null,
+    "conservativeGroups": 3,
+    "trainFitAdmitted": 0,
+    "independentFinalTestItems": 0
+  },
+  "classOntology": {
+    "0": "background",
+    "1": "outdoor",
+    "2": "wall",
+    "3": "kitchen",
+    "4": "living_room",
+    "5": "bedroom",
+    "6": "bath",
+    "7": "hallway",
+    "8": "railing",
+    "9": "storage",
+    "10": "garage",
+    "11": "other_room"
+  },
+  "subsets": {
+    "publisherHumanTrainCandidates": {
+      "count": 24,
+      "manifest": {
+        "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\publisher-train-pairs.json",
+        "bytes": 101010,
+        "sha256": "0cee5ab37b15ba1138fe8eb604dc0697d33d364976b9707e0bbcc7e6a3066445"
+      },
+      "labelState": "publisher_human_annotation_train_candidate",
+      "selection": {
+        "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\selection.json",
+        "bytes": 2448,
+        "sha256": "54f04ea5383c8becbf4084516aee237cf0678e2e68fab849139f253e602aa348"
+      },
+      "source": "CubiCasa5k1.0 Zenodo2613548, retained partial ZIP range distribution",
+      "sourceUrl": "https://zenodo.org/records/2613548",
+      "humanAnnotationOrigin": "Original publisher model.svg; deterministic 12-class raster transfer, no predictions or agent-drawn labels",
+      "datasetTerms": "CC BY-NC-SA4.0; code CC BY-NC4.0, attribution/terms retained. Development preparation is not production/commercial clearance.",
+      "upstreamCodeRevision": "c34440266665a11f4484eb06cd2e4b7d72ad76c1",
+      "groupId": "cubicasa5k-2019-anonymous-collection",
+      "overlap": "Publisher TRAIN: pretrained checkpoint overlap expected/unaudited; never independent evaluation. Train/val/test paths and existing12dev raw/RGB pixels are disjoint. Site/template identity and full grouping remain unaudited.",
+      "classPixels": [
+        48249513,
+        5036958,
+        4123124,
+        1872955,
+        2682378,
+        2474118,
+        875917,
+        1577115,
+        340593,
+        508457,
+        176064,
+        11202515
+      ],
+      "imagesWithClassPixels": {
+        "background": 24,
+        "outdoor": 19,
+        "wall": 24,
+        "kitchen": 20,
+        "living_room": 14,
+        "bedroom": 15,
+        "bath": 19,
+        "hallway": 17,
+        "railing": 20,
+        "storage": 11,
+        "garage": 1,
+        "other_room": 22
+      },
+      "fitAdmission": "pending_integrator_cross_lane_group_review",
+      "items": [
+        {
+          "id": "cubicasa5k/high_quality_architectural/6044",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 3315,
+          "height": 2344,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/6044/F1_scaled.png",
+            "bytes": 1759075,
+            "sha256": "a36966b9a794b3e1a3742a222226773855c8cd54f640ed2797a9023770e3c168",
+            "archiveMember": "cubicasa5k/high_quality_architectural/6044/F1_scaled.png",
+            "crc32": "fa4ed279",
+            "compressedBytes": 1681590
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/6044/model.svg",
+            "bytes": 70610,
+            "sha256": "355c2f48955a410689efb4e73cf6882298b80335474355c3ba9d380f16f29a0d",
+            "archiveMember": "cubicasa5k/high_quality_architectural/6044/model.svg",
+            "crc32": "f5e9edd8",
+            "compressedBytes": 8156
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/6044/room-mask.png",
+            "bytes": 10884,
+            "sha256": "a2bb6559eabfbbdc0cd19c4b7eacbc198a6530024ce5158ffccd93bd0ad11745"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 3315,
+            "height": 2344,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 3315,
+            "sourceHeight": 2344,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              3315,
+              2344
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              4.31640625,
+              0,
+              0,
+              0,
+              4.316758747697974,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/2564",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 4829,
+          "height": 4344,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/2564/F1_scaled.png",
+            "bytes": 1870704,
+            "sha256": "ca120dd93d7d6db5d6939d914204d9645e27da8fee8c8343a32021c0ff330e2c",
+            "archiveMember": "cubicasa5k/high_quality_architectural/2564/F1_scaled.png",
+            "crc32": "c9d69727",
+            "compressedBytes": 1732324
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/2564/model.svg",
+            "bytes": 167903,
+            "sha256": "02d5811ac4d2880a0f91448cea6ae62489441ae0e1bd26aa0eef8a05719695bf",
+            "archiveMember": "cubicasa5k/high_quality_architectural/2564/model.svg",
+            "crc32": "67c8751f",
+            "compressedBytes": 19400
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/2564/room-mask.png",
+            "bytes": 26535,
+            "sha256": "10711c95e6cf09d5a48382bf040a0f12aa81d70d6b3e395ce1a317d190e0f146"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 4829,
+            "height": 4344,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 4829,
+            "sourceHeight": 4344,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              4829,
+              4344
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              6.287760416666667,
+              0,
+              0,
+              0,
+              6.286541244573082,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/6165",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1033,
+          "height": 1460,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/6165/F1_scaled.png",
+            "bytes": 325442,
+            "sha256": "297f6f0e9162c8ae06306f64da02bdde23a4572040196803300c312f9e7ae7cb",
+            "archiveMember": "cubicasa5k/high_quality_architectural/6165/F1_scaled.png",
+            "crc32": "69b54db0",
+            "compressedBytes": 325167
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/6165/model.svg",
+            "bytes": 34024,
+            "sha256": "c460a28322aa99b0b3c0e6ca33066f0ef1df64bad4c7bb3d556c7952f8b06b79",
+            "archiveMember": "cubicasa5k/high_quality_architectural/6165/model.svg",
+            "crc32": "373948cb",
+            "compressedBytes": 4583
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/6165/room-mask.png",
+            "bytes": 2771,
+            "sha256": "ceb077763b97c38e7df11d7b02f92c839bec47103dd4a7139dc08b46da9066cc"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1033,
+            "height": 1460,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1033,
+            "sourceHeight": 1460,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1033,
+              1460
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.9023941068139962,
+              0,
+              0,
+              0,
+              1.9010416666666667,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/1021",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 2483,
+          "height": 1467,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/1021/F1_scaled.png",
+            "bytes": 905858,
+            "sha256": "808a0f95895263fb0837bcbcf24ded7a1c7b97031a026e99096808990029d9ca",
+            "archiveMember": "cubicasa5k/high_quality_architectural/1021/F1_scaled.png",
+            "crc32": "e34d6d10",
+            "compressedBytes": 863990
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/1021/model.svg",
+            "bytes": 98365,
+            "sha256": "2d32ebd81f50e58818bbde5ab87226dd4ea25efd4cde36c83052345c4554af41",
+            "archiveMember": "cubicasa5k/high_quality_architectural/1021/model.svg",
+            "crc32": "32af560c",
+            "compressedBytes": 12346
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/1021/room-mask.png",
+            "bytes": 7345,
+            "sha256": "4619ea9545bbe8a29acfdd183dcb62fca3ba5a81cfd58bd07b318dd458959c1f"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 2483,
+            "height": 1467,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 2483,
+            "sourceHeight": 1467,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              2483,
+              1467
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              3.2330729166666665,
+              0,
+              0,
+              0,
+              3.2312775330396475,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/5507",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 2864,
+          "height": 1313,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/5507/F1_scaled.png",
+            "bytes": 1286125,
+            "sha256": "a1016f3781b3bcd363ed26b63d65867e4223d09f587edc3c0462bcdb7744d79d",
+            "archiveMember": "cubicasa5k/high_quality_architectural/5507/F1_scaled.png",
+            "crc32": "f6810724",
+            "compressedBytes": 1241597
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/5507/model.svg",
+            "bytes": 98044,
+            "sha256": "7b729a3b28f7f61e2f6ee729951a8a625e5fafda15d19c6955215bffb0b70133",
+            "archiveMember": "cubicasa5k/high_quality_architectural/5507/model.svg",
+            "crc32": "2697de97",
+            "compressedBytes": 12468
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/5507/room-mask.png",
+            "bytes": 5671,
+            "sha256": "9afac6d588f187114f7b7c0f983f3a2df21315f73fce8a8fe6a58fd74258c0a3"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 2864,
+            "height": 1313,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 2864,
+            "sourceHeight": 1313,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              2864,
+              1313
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              3.7291666666666665,
+              0,
+              0,
+              0,
+              3.7301136363636362,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/1269",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 3361,
+          "height": 2111,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/1269/F1_scaled.png",
+            "bytes": 3070386,
+            "sha256": "73749a6bdbc22cd4235d30d6bef200fbb1b0aca87c65cb8f334bad04b4d91d52",
+            "archiveMember": "cubicasa5k/high_quality_architectural/1269/F1_scaled.png",
+            "crc32": "b1fd9eff",
+            "compressedBytes": 2925056
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/1269/model.svg",
+            "bytes": 197899,
+            "sha256": "20112cf73cdf83f8cad2525c5913fc7d64fcf5f9cefc701d3e6f1ded641f4899",
+            "archiveMember": "cubicasa5k/high_quality_architectural/1269/model.svg",
+            "crc32": "d729403e",
+            "compressedBytes": 21882
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/1269/room-mask.png",
+            "bytes": 14073,
+            "sha256": "29c36727ee6626c1744f90b2f4112b39ac8cf377334d30c529570ea43a1ef11b"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 3361,
+            "height": 2111,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 3361,
+            "sourceHeight": 2111,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              3361,
+              2111
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              4.376302083333333,
+              0,
+              0,
+              0,
+              4.3796680497925315,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/5988",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1804,
+          "height": 1346,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/5988/F1_scaled.png",
+            "bytes": 1316237,
+            "sha256": "af535368d4774cabb6f8cc52d95b8a8f15aa1c95ef230da2d562b09f7530eec9",
+            "archiveMember": "cubicasa5k/high_quality_architectural/5988/F1_scaled.png",
+            "crc32": "af379da4",
+            "compressedBytes": 1309945
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/5988/model.svg",
+            "bytes": 64366,
+            "sha256": "46946fb203c0c0f2cd53fa4b02a296356cbacd3190a2c0cbe79e8257cb866fe9",
+            "archiveMember": "cubicasa5k/high_quality_architectural/5988/model.svg",
+            "crc32": "14e57074",
+            "compressedBytes": 9359
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/5988/room-mask.png",
+            "bytes": 5051,
+            "sha256": "e042793348a798686f8803b0008a4d8496f15446a8a48633497e6dd6ca6a6883"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1804,
+            "height": 1346,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1804,
+            "sourceHeight": 1346,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1804,
+              1346
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              2.3489583333333335,
+              0,
+              0,
+              0,
+              2.349040139616056,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/2123",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1198,
+          "height": 1579,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/2123/F1_scaled.png",
+            "bytes": 288114,
+            "sha256": "c41413e50f27087235dbadaae4533c460b5a024edf9655c0009d7214a6c9c09d",
+            "archiveMember": "cubicasa5k/high_quality_architectural/2123/F1_scaled.png",
+            "crc32": "a578ba3e",
+            "compressedBytes": 274664
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/2123/model.svg",
+            "bytes": 56831,
+            "sha256": "77b5db8af3b03ed6452a02606d6d01c642f59ddf299423d350ffd810605b32c0",
+            "archiveMember": "cubicasa5k/high_quality_architectural/2123/model.svg",
+            "crc32": "085967b8",
+            "compressedBytes": 6645
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality_architectural/2123/room-mask.png",
+            "bytes": 5301,
+            "sha256": "54477cacc703aac09c4a9edc474ee3f1feb1f113b781effe8d951613a1b34677"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1198,
+            "height": 1579,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1198,
+            "sourceHeight": 1579,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1198,
+              1579
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              2.0548885077186965,
+              0,
+              0,
+              0,
+              2.0559895833333335,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/7967",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1221,
+          "height": 1244,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/7967/F1_scaled.png",
+            "bytes": 128011,
+            "sha256": "e4d80f6cde773b3f18edaa4e3617e76a4811db87cf83da711b90278452ca4b79",
+            "archiveMember": "cubicasa5k/colorful/7967/F1_scaled.png",
+            "crc32": "d8981725",
+            "compressedBytes": 119341
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/7967/model.svg",
+            "bytes": 69138,
+            "sha256": "8c3d2051c0dabf29fec9d8bc8183569c1ce6ff688b660a3fb5437f5f7fd7bbff",
+            "archiveMember": "cubicasa5k/colorful/7967/model.svg",
+            "crc32": "790a4157",
+            "compressedBytes": 8564
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/7967/room-mask.png",
+            "bytes": 5511,
+            "sha256": "8714b1aa157bfb5dbe447da212081abca6d388580970cf4a79fe5dcd563ae86d"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1221,
+            "height": 1244,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1221,
+            "sourceHeight": 1244,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1221,
+              1244
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.6193633952254642,
+              0,
+              0,
+              0,
+              1.6197916666666667,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/1957",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1775,
+          "height": 938,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/1957/F1_scaled.png",
+            "bytes": 1409851,
+            "sha256": "4bb81d1b74fd51d370cf1f0e8361ec55f7b08ae45302d600085a9f49e3af7ca5",
+            "archiveMember": "cubicasa5k/colorful/1957/F1_scaled.png",
+            "crc32": "3d116a12",
+            "compressedBytes": 1356845
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/1957/model.svg",
+            "bytes": 70030,
+            "sha256": "3245a104a0984818499e54bbb11f09d7e39c8b7bad13ba123753cd0551895aef",
+            "archiveMember": "cubicasa5k/colorful/1957/model.svg",
+            "crc32": "b334da85",
+            "compressedBytes": 8719
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/1957/room-mask.png",
+            "bytes": 3393,
+            "sha256": "b20bb9b0f2afe8e1fca8e8af7db7aaf51ab007c69a703673e7ade0bb71f90e81"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1775,
+            "height": 938,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1775,
+            "sourceHeight": 938,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1775,
+              938
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              2.3111979166666665,
+              0,
+              0,
+              0,
+              2.310344827586207,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/3836",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1604,
+          "height": 1378,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/3836/F1_scaled.png",
+            "bytes": 232442,
+            "sha256": "e97631f0e3f3636b7f7188de669f2b2fe4391c745059fba4849c348e6ce2438d",
+            "archiveMember": "cubicasa5k/colorful/3836/F1_scaled.png",
+            "crc32": "21f46acc",
+            "compressedBytes": 220151
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/3836/model.svg",
+            "bytes": 50929,
+            "sha256": "959c7325c8298ef9eb6cd86e1f8739da182f4a172e3fcb92496cb923902b83bd",
+            "archiveMember": "cubicasa5k/colorful/3836/model.svg",
+            "crc32": "0c29c92f",
+            "compressedBytes": 6164
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/3836/room-mask.png",
+            "bytes": 4273,
+            "sha256": "34f2d052e7751893cdc06333b00a4572b92d89f94ff62bef693f78e972710253"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1604,
+            "height": 1378,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1604,
+            "sourceHeight": 1378,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1604,
+              1378
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              2.0885416666666665,
+              0,
+              0,
+              0,
+              2.087878787878788,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/967",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1156,
+          "height": 915,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/967/F1_scaled.png",
+            "bytes": 769144,
+            "sha256": "27452f09747099836631e43e1e128666d96969e5834a108ed84238fa2c4e8895",
+            "archiveMember": "cubicasa5k/colorful/967/F1_scaled.png",
+            "crc32": "b8ee5899",
+            "compressedBytes": 765280
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/967/model.svg",
+            "bytes": 67459,
+            "sha256": "3d177b9f7c3fa0132adb898ea7520a2042e9e0fce706b0d68af89cabbafb65b9",
+            "archiveMember": "cubicasa5k/colorful/967/model.svg",
+            "crc32": "543af89c",
+            "compressedBytes": 8109
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/967/room-mask.png",
+            "bytes": 2954,
+            "sha256": "fbd62a05de28c0993442f81e3a7b95294f199092a01bd5f3893a7e406f0ad317"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1156,
+            "height": 915,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1156,
+            "sourceHeight": 915,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1156,
+              915
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.5052083333333333,
+              0,
+              0,
+              0,
+              1.5049342105263157,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/4058",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 872,
+          "height": 1514,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/4058/F1_scaled.png",
+            "bytes": 150210,
+            "sha256": "b4f28c9fd484cbdcb79fb9af11bbb68214929c1d3b6af26040d9a959140c33b4",
+            "archiveMember": "cubicasa5k/colorful/4058/F1_scaled.png",
+            "crc32": "6aa06c41",
+            "compressedBytes": 141769
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/4058/model.svg",
+            "bytes": 60453,
+            "sha256": "effa85a9d883ddc6dfce0ca72491f65196b3afa9a719d93bf756eaab88b65e6c",
+            "archiveMember": "cubicasa5k/colorful/4058/model.svg",
+            "crc32": "43e1e504",
+            "compressedBytes": 7014
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/4058/room-mask.png",
+            "bytes": 4299,
+            "sha256": "de0fceb4b2dbefcc9184135ebb8472ffe5d6c9826e6e0fcbe216d28bce64db3a"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 872,
+            "height": 1514,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 872,
+            "sourceHeight": 1514,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              872,
+              1514
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.9728506787330318,
+              0,
+              0,
+              0,
+              1.9713541666666667,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/9766",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 2491,
+          "height": 1750,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/9766/F1_scaled.png",
+            "bytes": 328740,
+            "sha256": "c0d4b37153dd48e37d4de41544beb3719b680b11fe3bd9b1cfe651026c273526",
+            "archiveMember": "cubicasa5k/colorful/9766/F1_scaled.png",
+            "crc32": "5e1c9523",
+            "compressedBytes": 307074
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/9766/model.svg",
+            "bytes": 94499,
+            "sha256": "d6be680310604b61dfea8f92b7eb642f6cc65880b254bdec0fb229014c6fdd88",
+            "archiveMember": "cubicasa5k/colorful/9766/model.svg",
+            "crc32": "81f2fc3e",
+            "compressedBytes": 11309
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/9766/room-mask.png",
+            "bytes": 8174,
+            "sha256": "8fc562d19a7477854266c7012c6de4c0d7c02da66cbc8ade968521f4aa95ccdd"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 2491,
+            "height": 1750,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 2491,
+            "sourceHeight": 1750,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              2491,
+              1750
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              3.2434895833333335,
+              0,
+              0,
+              0,
+              3.240740740740741,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/3854",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 813,
+          "height": 834,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/3854/F1_scaled.png",
+            "bytes": 147602,
+            "sha256": "05d5d3cf1019df75c0f373e2a286066d6bd5d2eb520ff48bf8b0a64153d84467",
+            "archiveMember": "cubicasa5k/colorful/3854/F1_scaled.png",
+            "crc32": "bee9f97e",
+            "compressedBytes": 144556
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/3854/model.svg",
+            "bytes": 31448,
+            "sha256": "c6f4198a7d40a2f63e46529385a92ac87ddd8078f560751d7a16ebfe4f9fede3",
+            "archiveMember": "cubicasa5k/colorful/3854/model.svg",
+            "crc32": "f9725f31",
+            "compressedBytes": 4119
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/3854/room-mask.png",
+            "bytes": 1850,
+            "sha256": "29cc0f204664a2254962b758e8f96dfef6050dd3cc771380143d256930db1a2f"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 813,
+            "height": 834,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 813,
+            "sourceHeight": 834,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              813,
+              834
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.0854472630173564,
+              0,
+              0,
+              0,
+              1.0859375,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/220",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1275,
+          "height": 1542,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/220/F1_scaled.png",
+            "bytes": 294003,
+            "sha256": "9f5a1db0eb5decf7f7433f3cb00c45d583f3e2f743f2cd85494d5742e5ea2a5b",
+            "archiveMember": "cubicasa5k/colorful/220/F1_scaled.png",
+            "crc32": "d7644ca9",
+            "compressedBytes": 283605
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/220/model.svg",
+            "bytes": 97186,
+            "sha256": "8eb515a4debbb9e3101c12aa2860f2c7ccf3c3bbefee93cf18b0acaa025e143a",
+            "archiveMember": "cubicasa5k/colorful/220/model.svg",
+            "crc32": "7f510d12",
+            "compressedBytes": 12049
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/colorful/220/room-mask.png",
+            "bytes": 5152,
+            "sha256": "90d7d1ee0c74a52cae4c4ccb7c875c0578a6433a5b7a9653dcbc983edac0e651"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1275,
+            "height": 1542,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1275,
+            "sourceHeight": 1542,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1275,
+              1542
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              2.0078740157480315,
+              0,
+              0,
+              0,
+              2.0078125,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/6139",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1207,
+          "height": 1028,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/6139/F1_scaled.png",
+            "bytes": 100645,
+            "sha256": "28707e8304b9e7a383b4e7f1b69893b890823085d318fe7bc96012ba188a6c56",
+            "archiveMember": "cubicasa5k/high_quality/6139/F1_scaled.png",
+            "crc32": "51ad2955",
+            "compressedBytes": 89708
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/6139/model.svg",
+            "bytes": 62418,
+            "sha256": "da17d19390c10a44c8e93c9053c970a09759b43f4515488ef4b48aac959aef17",
+            "archiveMember": "cubicasa5k/high_quality/6139/model.svg",
+            "crc32": "02463fea",
+            "compressedBytes": 7035
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/6139/room-mask.png",
+            "bytes": 3463,
+            "sha256": "e493737580030462558431724474ccd2bdfeb0d271554a0d7abed977a9c14c1e"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1207,
+            "height": 1028,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1207,
+            "sourceHeight": 1028,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1207,
+              1028
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.5716145833333333,
+              0,
+              0,
+              0,
+              1.5718654434250765,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/4673",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 957,
+          "height": 842,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/4673/F1_scaled.png",
+            "bytes": 495742,
+            "sha256": "5892ca95ac23384d7049b3757cfa2c62faf0694ab555b81f5fd8651ed0f68c36",
+            "archiveMember": "cubicasa5k/high_quality/4673/F1_scaled.png",
+            "crc32": "084cef34",
+            "compressedBytes": 494332
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/4673/model.svg",
+            "bytes": 42196,
+            "sha256": "497f75d8aadfd592988d8916523856774ae3f8e313e50aed8727c313780369ce",
+            "archiveMember": "cubicasa5k/high_quality/4673/model.svg",
+            "crc32": "087d5a04",
+            "compressedBytes": 4895
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/4673/room-mask.png",
+            "bytes": 2581,
+            "sha256": "e5ec754d6628dd842c824286c3164a0b189159ec37bd5308d745584359757b77"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 957,
+            "height": 842,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 957,
+            "sourceHeight": 842,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              957,
+              842
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.24609375,
+              0,
+              0,
+              0,
+              1.2455621301775148,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/7547",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1111,
+          "height": 1275,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/7547/F1_scaled.png",
+            "bytes": 192227,
+            "sha256": "b3e5ed1eeb233a34586ffa9f99264bb8a5fadc3cba98d19d83ea64b3463b2894",
+            "archiveMember": "cubicasa5k/high_quality/7547/F1_scaled.png",
+            "crc32": "55333d9d",
+            "compressedBytes": 182679
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/7547/model.svg",
+            "bytes": 49774,
+            "sha256": "bad84b62ac8dada5b735b4d04be7036a9650252659ecebc58a55fcbc8bb860da",
+            "archiveMember": "cubicasa5k/high_quality/7547/model.svg",
+            "crc32": "6a9eb3d2",
+            "compressedBytes": 6855
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/7547/room-mask.png",
+            "bytes": 4049,
+            "sha256": "53ef59e0bbd1046cc216638351262a5e0f48d86e3203af6600a3e40329d77451"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1111,
+            "height": 1275,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1111,
+            "sourceHeight": 1275,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1111,
+              1275
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.6606875934230194,
+              0,
+              0,
+              0,
+              1.66015625,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/7729",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1508,
+          "height": 2132,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/7729/F1_scaled.png",
+            "bytes": 1679016,
+            "sha256": "1ee1eb6efdbb67589bfc59be903f35b41e047a797e65dccc8fe18a913234efb2",
+            "archiveMember": "cubicasa5k/high_quality/7729/F1_scaled.png",
+            "crc32": "7f6de95e",
+            "compressedBytes": 1666953
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/7729/model.svg",
+            "bytes": 54357,
+            "sha256": "e06ab653153f4feb81a74dc3119b6b0715c80d31d1d62f678f655bd5a31f99d9",
+            "archiveMember": "cubicasa5k/high_quality/7729/model.svg",
+            "crc32": "74dfda88",
+            "compressedBytes": 6154
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/7729/room-mask.png",
+            "bytes": 6157,
+            "sha256": "fafb7f426151b7cc5d32e4d1dc894534d53e3c62f61c30124198300f7ec8b0ee"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1508,
+            "height": 2132,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1508,
+            "sourceHeight": 2132,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1508,
+              2132
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              2.7771639042357275,
+              0,
+              0,
+              0,
+              2.7760416666666665,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/4633",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1066,
+          "height": 798,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/4633/F1_scaled.png",
+            "bytes": 232635,
+            "sha256": "160569a915130e58e3159ca05e7fa9fbab9eb35b4216d7f1bb1cc6acae7d4f14",
+            "archiveMember": "cubicasa5k/high_quality/4633/F1_scaled.png",
+            "crc32": "edb319aa",
+            "compressedBytes": 229211
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/4633/model.svg",
+            "bytes": 43408,
+            "sha256": "58cd1d43d9fc7f546853097ce26d86f7da4e4e9dcffc8fa3a8b7ec0e1542b8ea",
+            "archiveMember": "cubicasa5k/high_quality/4633/model.svg",
+            "crc32": "4691f33a",
+            "compressedBytes": 5445
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/4633/room-mask.png",
+            "bytes": 2391,
+            "sha256": "afba7885fc581ea24eb91d38910935b9c501dd370ac190dc39845c2db410b346"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1066,
+            "height": 798,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1066,
+            "sourceHeight": 798,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1066,
+              798
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.3880208333333333,
+              0,
+              0,
+              0,
+              1.3878260869565218,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/810",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1542,
+          "height": 1074,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/810/F1_scaled.png",
+            "bytes": 95749,
+            "sha256": "98018e9243f6d3c28aa711f076befb4f807ad93d3c74fa8e820557c94c372286",
+            "archiveMember": "cubicasa5k/high_quality/810/F1_scaled.png",
+            "crc32": "dcf7d9c2",
+            "compressedBytes": 87678
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/810/model.svg",
+            "bytes": 41098,
+            "sha256": "54a11c62ca1b216773009ebf858c378896b453c2c37e2651fdb85050031f6189",
+            "archiveMember": "cubicasa5k/high_quality/810/model.svg",
+            "crc32": "33aeaf2a",
+            "compressedBytes": 5156
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/810/room-mask.png",
+            "bytes": 3444,
+            "sha256": "066161bc0fbec217c9aa336c5feaa15b5473161a5b825b7bec702d6dd8cfa9fd"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1542,
+            "height": 1074,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1542,
+            "sourceHeight": 1074,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1542,
+              1074
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              2.0078125,
+              0,
+              0,
+              0,
+              2.007476635514019,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/8718",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 2834,
+          "height": 1613,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/8718/F1_scaled.png",
+            "bytes": 288065,
+            "sha256": "a8eadec58648af2594eae0681a15663b7a30f591f63cd34f9749efa22cb68eb1",
+            "archiveMember": "cubicasa5k/high_quality/8718/F1_scaled.png",
+            "crc32": "99258816",
+            "compressedBytes": 261996
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/8718/model.svg",
+            "bytes": 134737,
+            "sha256": "07eac77bae6a3a893ef88f4c9a632e0fdd6c7197b9b8d50cef54bb4f9ccc17aa",
+            "archiveMember": "cubicasa5k/high_quality/8718/model.svg",
+            "crc32": "f61c3c3d",
+            "compressedBytes": 15578
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/8718/room-mask.png",
+            "bytes": 8447,
+            "sha256": "8d1277752daf837dc2b89e79923a32cd862788634fa487670c6d608748ba230b"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 2834,
+            "height": 1613,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 2834,
+            "sourceHeight": 1613,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              2834,
+              1613
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              3.6901041666666665,
+              0,
+              0,
+              0,
+              3.691075514874142,
+              0
+            ]
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/9209",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "width": 1043,
+          "height": 1452,
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/9209/F1_scaled.png",
+            "bytes": 441597,
+            "sha256": "3b09c74b0d9e3ee941753ca00343c3ede075a5b0af7d0911cb9357e2aae66021",
+            "archiveMember": "cubicasa5k/high_quality/9209/F1_scaled.png",
+            "crc32": "4a3569fb",
+            "compressedBytes": 435476
+          },
+          "publisherSvg": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/9209/model.svg",
+            "bytes": 34197,
+            "sha256": "8d8532e19e3368d21de5bb89c4cbbd25d1eb7d1063fd1035b15e50fdb11d05fa",
+            "archiveMember": "cubicasa5k/high_quality/9209/model.svg",
+            "crc32": "301877c9",
+            "compressedBytes": 4461
+          },
+          "sourceMask": {
+            "path": "E:/BhuAayam-data/task-data/data-floor-shard-20261005/cubicasa5k/high_quality/9209/room-mask.png",
+            "bytes": 3374,
+            "sha256": "0ac42adfb16c28b9edbe9b011b7a3d68eddff1f93d3a23d15116664c8be8f3a5"
+          },
+          "sourceFrame": {
+            "unit": "pixel",
+            "origin": "top_left",
+            "x": "right",
+            "y": "down",
+            "width": 1043,
+            "height": 1452,
+            "svgToSourcePixels": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "crop": null,
+            "rotationDegrees": 0
+          },
+          "processingFrame": {
+            "unit": "pixel",
+            "coordinateConvention": "pixel-edge",
+            "page": 1,
+            "sourceWidth": 1043,
+            "sourceHeight": 1452,
+            "region": {
+              "x": 0,
+              "y": 0,
+              "width": 1,
+              "height": 1
+            },
+            "pixelRegion": [
+              0,
+              0,
+              1043,
+              1452
+            ],
+            "orientation": "exif-normalized",
+            "pixelToSource": [
+              1.8894927536231885,
+              0,
+              0,
+              0,
+              1.890625,
+              0
+            ]
+          }
+        }
+      ]
+    },
+    "indianAnnotationPending": {
+      "count": 4,
+      "requestedMaximum": 8,
+      "manifest": {
+        "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian-annotation-ready.json",
+        "bytes": 17473,
+        "sha256": "14fca62cace38aa0478ef3cbaef43c276dab34b6c3f159ba6f2f6de73f85a9dc"
+      },
+      "labelState": "annotation_pending",
+      "projects": [
+        "in-bihar-magnolia-residency",
+        "in-haryana-rera-2831"
+      ],
+      "sourceTerms": "Retained issuing-portal originals; source-specific reuse/redistribution/ML permission unconfirmed. Local annotation preparation authorized; no fit admission.",
+      "selectionLimit": "Only four retained floor-plan source pages identified. Other Bihar pages and Haryana2079 scans are site/administrative context; omitted rather than counted as floor examples.",
+      "noAnswerLeakage": "Source pixels only. No OCR answers, model polygons/classes or predicted masks included. Null annotation lists mean unannotated, not empty truth.",
+      "items": [
+        {
+          "id": "in-bihar-magnolia-residency:f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3:p2",
+          "groupId": "in-bihar-magnolia-residency",
+          "source": {
+            "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\bihar-magnolia-sanctioned-layout-original.pdf",
+            "bytes": 2455183,
+            "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+          },
+          "page": 2,
+          "image": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\bihar-magnolia-sanctioned-layout-p02\\image.png",
+            "bytes": 974514,
+            "sha256": "015decdf95c8d97cbdb90bd548b03acc482ead6326f4934c3075a2123a10da82"
+          },
+          "frame": {
+            "coordinateConvention": "pixel_edge_top_left_x_right_y_down",
+            "unit": "pixel",
+            "sourcePageNumber": 2,
+            "sourcePageFrame": "MuPDF display-page top-left points; intrinsic PDF rotation applied",
+            "sourcePageBox": [
+              0.0,
+              0.0,
+              2384.0,
+              1684.0
+            ],
+            "mediaBox": [
+              0.0,
+              0.0,
+              2384.0,
+              1684.0
+            ],
+            "cropBox": [
+              0.0,
+              0.0,
+              2384.0,
+              1684.0
+            ],
+            "intrinsicPdfRotationDegrees": 0,
+            "extraRasterRotationDegrees": 0,
+            "selectedDisplayPageBox": [
+              0.0,
+              0.0,
+              2384.0,
+              1684.0
+            ],
+            "renderScale": 1.2225072857983819,
+            "integerPixelOrigin": [
+              0,
+              0
+            ],
+            "pixels": [
+              2915,
+              2059
+            ],
+            "pixelEdgeToDisplayPagePoints": [
+              0.817991034995698,
+              0,
+              0.0,
+              0,
+              0.817991034995698,
+              0.0
+            ],
+            "displayPagePointsToPixelEdge": [
+              1.2225072857983819,
+              0,
+              0,
+              0,
+              1.2225072857983819,
+              0
+            ],
+            "displayPageToUnrotatedMuPdfPageMatrix": [
+              1.0,
+              -0.0,
+              -0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "unrotatedMuPdfPageToDisplayPageMatrix": [
+              1.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "maximumPixelRoundTripResidual": 4.547473508864641e-13,
+            "surveyOrMetricCalibration": null
+          },
+          "scopeContext": "Villa Type5 architecture sheet, multiple planned levels; numbered villa field blank. Type-only, not a canonical unit/floor. Khata/Jamabandi conflict unresolved.",
+          "scopeContextIsLearningLabel": false,
+          "annotationEntry": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\bihar-magnolia-sanctioned-layout-p02\\annotation.json",
+            "bytes": 3513,
+            "sha256": "ccfde7ad40b5c215c2770eca12dc14bbb07892f9cc9fb45fc1ef4fe9ea9d42c7"
+          },
+          "labelState": "annotation_pending",
+          "annotations": {
+            "status": "annotation_pending",
+            "annotatorId": null,
+            "reviewerId": null,
+            "regions": null,
+            "ignoreRegions": null,
+            "nativeFloorScope": null,
+            "canonicalFloorId": null,
+            "acceptedLabelCount": 0,
+            "annotationSeconds": null
+          }
+        },
+        {
+          "id": "in-haryana-rera-2831:0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49:p1",
+          "groupId": "in-haryana-rera-2831",
+          "source": {
+            "path": "E:\\BhuAayam-data\\task-data\\ulpin-data-05\\haryana-2831-basement-01.pdf",
+            "bytes": 1711314,
+            "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49"
+          },
+          "page": 1,
+          "image": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\haryana-2831-basement-01-p01\\image.png",
+            "bytes": 4471868,
+            "sha256": "32552ef23c7dd9a6898e09a34adfc6fae1436ce227ded335f3f96a31e6caf63e"
+          },
+          "frame": {
+            "coordinateConvention": "pixel_edge_top_left_x_right_y_down",
+            "unit": "pixel",
+            "sourcePageNumber": 1,
+            "sourcePageFrame": "MuPDF display-page top-left points; intrinsic PDF rotation applied",
+            "sourcePageBox": [
+              0.0,
+              0.0,
+              2587.0,
+              1694.0
+            ],
+            "mediaBox": [
+              0.0,
+              0.0,
+              2587.0,
+              1694.0
+            ],
+            "cropBox": [
+              0.0,
+              0.0,
+              2587.0,
+              1694.0
+            ],
+            "intrinsicPdfRotationDegrees": 0,
+            "extraRasterRotationDegrees": 0,
+            "selectedDisplayPageBox": [
+              0.0,
+              0.0,
+              2587.0,
+              1694.0
+            ],
+            "renderScale": 1.1700938799885892,
+            "integerPixelOrigin": [
+              0,
+              0
+            ],
+            "pixels": [
+              3028,
+              1983
+            ],
+            "pixelEdgeToDisplayPagePoints": [
+              0.8546322795994387,
+              0,
+              0.0,
+              0,
+              0.8546322795994387,
+              0.0
+            ],
+            "displayPagePointsToPixelEdge": [
+              1.1700938799885892,
+              0,
+              0,
+              0,
+              1.1700938799885892,
+              0
+            ],
+            "displayPageToUnrotatedMuPdfPageMatrix": [
+              1.0,
+              -0.0,
+              -0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "unrotatedMuPdfPageToDisplayPageMatrix": [
+              1.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "maximumPixelRoundTripResidual": 0,
+            "surveyOrMetricCalibration": null
+          },
+          "scopeContext": "Project2831 basement drawing; multiple shared basement areas. Exact tower/floor/space scope must be annotated/reviewed, not assumed.",
+          "scopeContextIsLearningLabel": false,
+          "annotationEntry": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\haryana-2831-basement-01-p01\\annotation.json",
+            "bytes": 3372,
+            "sha256": "77f4589b482fa0956ab08f58ece2bd3cdd2ebb331594545f0e88908f9d870b7e"
+          },
+          "labelState": "annotation_pending",
+          "annotations": {
+            "status": "annotation_pending",
+            "annotatorId": null,
+            "reviewerId": null,
+            "regions": null,
+            "ignoreRegions": null,
+            "nativeFloorScope": null,
+            "canonicalFloorId": null,
+            "acceptedLabelCount": 0,
+            "annotationSeconds": null
+          }
+        },
+        {
+          "id": "in-haryana-rera-2831:2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865:p1",
+          "groupId": "in-haryana-rera-2831",
+          "source": {
+            "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\haryana-2831-tower3-plan1.pdf",
+            "bytes": 1655334,
+            "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+          },
+          "page": 1,
+          "image": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\haryana-2831-tower3-plan1-p01\\image.png",
+            "bytes": 4394271,
+            "sha256": "0107c5ffd666a4aaf851630ab697ba2216fdd3e5f5f447a78f57373754745c69"
+          },
+          "frame": {
+            "coordinateConvention": "pixel_edge_top_left_x_right_y_down",
+            "unit": "pixel",
+            "sourcePageNumber": 1,
+            "sourcePageFrame": "MuPDF display-page top-left points; intrinsic PDF rotation applied",
+            "sourcePageBox": [
+              0.0,
+              0.0,
+              2586.0,
+              1695.0
+            ],
+            "mediaBox": [
+              0.0,
+              0.0,
+              2586.0,
+              1695.0
+            ],
+            "cropBox": [
+              0.0,
+              0.0,
+              2586.0,
+              1695.0
+            ],
+            "intrinsicPdfRotationDegrees": 0,
+            "extraRasterRotationDegrees": 0,
+            "selectedDisplayPageBox": [
+              0.0,
+              0.0,
+              2586.0,
+              1695.0
+            ],
+            "renderScale": 1.169974816270626,
+            "integerPixelOrigin": [
+              0,
+              0
+            ],
+            "pixels": [
+              3026,
+              1984
+            ],
+            "pixelEdgeToDisplayPagePoints": [
+              0.8547192521524247,
+              0,
+              0.0,
+              0,
+              0.8547192521524247,
+              0.0
+            ],
+            "displayPagePointsToPixelEdge": [
+              1.169974816270626,
+              0,
+              0,
+              0,
+              1.169974816270626,
+              0
+            ],
+            "displayPageToUnrotatedMuPdfPageMatrix": [
+              1.0,
+              -0.0,
+              -0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "unrotatedMuPdfPageToDisplayPageMatrix": [
+              1.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "maximumPixelRoundTripResidual": 0,
+            "surveyOrMetricCalibration": null
+          },
+          "scopeContext": "T3-1 contains 2ND FLOOR PLAN and refuge17th/26th/35th. Common planned T3 set, exact current approved revision unresolved.",
+          "scopeContextIsLearningLabel": false,
+          "annotationEntry": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\haryana-2831-tower3-plan1-p01\\annotation.json",
+            "bytes": 3377,
+            "sha256": "1515907af7972b610608a501cfeb23eb24df5a4a6b80bed24378c9eb568fd5e4"
+          },
+          "labelState": "annotation_pending",
+          "annotations": {
+            "status": "annotation_pending",
+            "annotatorId": null,
+            "reviewerId": null,
+            "regions": null,
+            "ignoreRegions": null,
+            "nativeFloorScope": null,
+            "canonicalFloorId": null,
+            "acceptedLabelCount": 0,
+            "annotationSeconds": null
+          }
+        },
+        {
+          "id": "in-haryana-rera-2831:2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1:p1",
+          "groupId": "in-haryana-rera-2831",
+          "source": {
+            "path": "E:\\BhuAayam-data\\task-data\\association-crosswalk-20260930\\haryana-2831-tower3-plan2.pdf",
+            "bytes": 1630108,
+            "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+          },
+          "page": 1,
+          "image": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\haryana-2831-tower3-plan2-p01\\image.png",
+            "bytes": 1210732,
+            "sha256": "bf3b3755a673c72683c3ed68b08836499f3c6e721442b55e73c2443c5da273ac"
+          },
+          "frame": {
+            "coordinateConvention": "pixel_edge_top_left_x_right_y_down",
+            "unit": "pixel",
+            "sourcePageNumber": 1,
+            "sourcePageFrame": "MuPDF display-page top-left points; intrinsic PDF rotation applied",
+            "sourcePageBox": [
+              0.0,
+              0.0,
+              2586.0,
+              1694.0
+            ],
+            "mediaBox": [
+              0.0,
+              0.0,
+              2586.0,
+              1694.0
+            ],
+            "cropBox": [
+              0.0,
+              0.0,
+              2586.0,
+              1694.0
+            ],
+            "intrinsicPdfRotationDegrees": 0,
+            "extraRasterRotationDegrees": 0,
+            "selectedDisplayPageBox": [
+              1340.0,
+              90.0,
+              2490.0,
+              755.0
+            ],
+            "renderScale": 1.2156521739130435,
+            "integerPixelOrigin": [
+              1628,
+              109
+            ],
+            "pixels": [
+              1399,
+              809
+            ],
+            "pixelEdgeToDisplayPagePoints": [
+              0.8226037195994278,
+              0,
+              1339.1988555078683,
+              0,
+              0.8226037195994278,
+              89.66380543633763
+            ],
+            "displayPagePointsToPixelEdge": [
+              1.2156521739130435,
+              0,
+              -1628,
+              0,
+              1.2156521739130435,
+              -109
+            ],
+            "displayPageToUnrotatedMuPdfPageMatrix": [
+              1.0,
+              -0.0,
+              -0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "unrotatedMuPdfPageToDisplayPageMatrix": [
+              1.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "maximumPixelRoundTripResidual": 0,
+            "surveyOrMetricCalibration": null
+          },
+          "scopeContext": "Retained selected T3-2 Floor02 graphic only; caption elsewhere on source sheet names13rd/21st/30th/38th. Printed13rd retained in context, not a new floor truth/record. Exact approved revision unresolved.",
+          "scopeContextIsLearningLabel": false,
+          "annotationEntry": {
+            "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\indian\\haryana-2831-tower3-plan2-p01\\annotation.json",
+            "bytes": 3880,
+            "sha256": "c6a41f13159e1de1e5eb221f07f82c797e582fbe7fdf1ffd7afc0d99ccd1b84a"
+          },
+          "labelState": "annotation_pending",
+          "annotations": {
+            "status": "annotation_pending",
+            "annotatorId": null,
+            "reviewerId": null,
+            "regions": null,
+            "ignoreRegions": null,
+            "nativeFloorScope": null,
+            "canonicalFloorId": null,
+            "acceptedLabelCount": 0,
+            "annotationSeconds": null
+          }
+        }
+      ]
+    }
+  },
+  "crossLaneLeakage": {
+    "status": "pending_integrator_review_before_fit",
+    "knownOverlap": "CubiCasa anonymous group also contains12open development plans; Indian project/PDF groups overlap retained document observations. Distinct source filenames alone do not prove split independence.",
+    "groupRule": "Keep site/project/building/template/revision/floor relatives and PDF pages/crops together across lanes; no final split or independent-test allocation created."
+  },
+  "integrity": {
+    "path": "E:\\BhuAayam-data\\task-data\\data-floor-shard-20261005\\publisher-integrity.json",
+    "bytes": 9782,
+    "sha256": "607f7124b335418f53201adcb28fb12891fc113ad805083848b3d49153decf0a"
+  },
+  "scope": "Preparation only; 24 published-human train pairs are separate from4unlabelled Indian pages. No official facts, independent team truth, evaluation truth, fit/model promotion or release qualification.",
+  "settingsRequested": {
+    "model": "gpt-6.1-sol",
+    "speed": "default/standard1x"
+  },
+  "settingsObserved": "Actual turn model/effort/tier unexposed",
+  "permissionsObserved": {
+    "approval_policy": "never",
+    "sandbox_mode": "danger-full-access"
+  },
+  "resourceProfile": {
+    "cpuThreads": 2,
+    "jobMemoryBytes": 2147483648,
+    "modelOrGpuUsed": false,
+    "servicesStarted": 0
+  },
+  "evidenceRefs": [
+    "docs/orchestration/delivery-reset-20261004/VISION_COHORT.md",
+    "docs/orchestration/delivery-reset-20261004/SOURCE_SCOPE.md",
+    "fixtures/usp/D5/gf0-public-plans-v1/manifest.json",
+    "docs/evidence/usp/association-sources/manifest.json",
+    "docs/evidence/usp/association-crosswalk/manifest.json"
+  ]
+}

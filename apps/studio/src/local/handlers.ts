@@ -1,20 +1,16 @@
 import { http, HttpResponse, passthrough } from 'msw';
 import { LOCAL_SOURCE_HEADER } from '@ulpin/api-client';
-import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import { localRoutes } from './routes';
-import { consolidatedReport } from './consolidated';
-import { registryHtml } from '../features/register/registry';
-import { areaPackage, buildingImport, detect, inspectAreaFile, startAreaImport, startFloorsImport } from './imports';
+import { buildingImport, detect, startFloorsImport } from './imports';
 import { lake } from './sources';
-import { storyAreas, storyBoard, storyContext, storyLedger, storyQueueItems, storyRegister } from './story';
+import { storyAreas, storyBoard, storyQueueItems } from './story';
 import { publicAreas, publicBuilding, publicCode, publicMap, publicRecord, publicSearch } from './public';
 import { RequestError, decideRequest, fileRequest, getRequest, listRequests, trackRequest } from './requests';
 import { deleteArea, deleteBuilding } from './session';
 import { buildingVisible, floorsDone } from './story';
 import { residentsFor } from '../../../../scripts/demo-import/sample-registry.mjs';
-import { LOCAL_SOURCE_LABELS, derivedContexts, derivedRegister, derivedSourceFiles, documents, importBatches, ledgers, levelReviews, workBoard, workQueue } from './sources';
+import { LOCAL_SOURCE_LABELS, documents, importBatches, levelReviews, workBoard, workQueue } from './sources';
 
-const ALL_LOCAL = Object.values(LOCAL_SOURCE_LABELS).join('; ');
 const json = (body: unknown, label: string) => HttpResponse.json(body as never, { headers: { [LOCAL_SOURCE_HEADER]: label } });
 const fail = (error: unknown) => {
   if (error instanceof RequestError) return HttpResponse.json({ error: error.code, message: error.message }, { status: error.status });
@@ -22,16 +18,6 @@ const fail = (error: unknown) => {
 };
 const LOCAL = LOCAL_SOURCE_LABELS.lake;
 
-/** The consolidated registry report, from the same register, ledger and residents the Studio reads. */
-async function consolidated(buildingId: string, format: string): Promise<Response> {
-  if (!['json', 'html'].includes(format)) return HttpResponse.json({ error: { code: 'REGISTRY_REPORT_FORMAT', message: 'The consolidated profile supports json and html here.' } }, { status: 422 });
-  const get = async <T,>(path: string): Promise<T | null> => { const r = await fetch(`/api/v1/buildings/${buildingId}/${path}`); return r.ok ? (await r.json()) as T : null; };
-  const [reg, ledger, residents] = await Promise.all([get<never>('register'), get<BuildingLedger>('ledger'), get<BuildingResidents>('residents')]);
-  if (!reg) return HttpResponse.json({ error: { code: 'NOT_FOUND', message: 'Building not found.' } }, { status: 404 });
-  const report = consolidatedReport(reg, ledger, residents);
-  if (format === 'html') return new HttpResponse(registryHtml(report), { headers: { 'Content-Type': 'text/html; charset=utf-8', [LOCAL_SOURCE_HEADER]: LOCAL } });
-  return HttpResponse.json(report, { headers: { 'Content-Disposition': `attachment; filename="building-${buildingId}-registry.json"`, [LOCAL_SOURCE_HEADER]: LOCAL } });
-}
 type Json = Record<string, unknown>;
 
 /** City layers uploaded through the upload server, listed as import batches. */
@@ -51,13 +37,6 @@ async function uploadedQueueItems(): Promise<(Json & { id: string; areaId: strin
 type Params = Record<string, string | readonly string[] | undefined>;
 /** Local answers by route path. Returning undefined means "not held locally": fall through to the API. */
 const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => Response | undefined | Promise<Response | undefined>> = {
-  '/api/v1/work-queue': async (_params, url) => {
-    const q = url.searchParams.get('q')?.toLowerCase() ?? '';
-    const status = url.searchParams.get('status') ?? 'all';
-    const items = [...await uploadedQueueItems(), ...storyQueueItems(workQueue.items)].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).filter((item) => (!q || String(item.name).toLowerCase().includes(q) || String(item.id).includes(q))
-      && (status !== 'recorded' || item.currentRecorded) && (status !== 'processing' || item.jobStatus));
-    return json({ ...workQueue, total: items.length, items }, LOCAL_SOURCE_LABELS.lake);
-  },
   '/api/v1/work-board': async () => {
     const uploaded = await uploadedQueueItems();
     const board = storyBoard(workBoard as never, storyQueueItems(workQueue.items)) as { items: Json[]; counts: Json[] };
@@ -66,12 +45,6 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
       nextAction: { label: u.state === 'RECEIVED' ? 'Importing…' : 'Open the map', target: { kind: 'area', areaId: u.areaId } },
       readiness: { met: u.state === 'RECEIVED' ? 3 : 6, unknown: 0, of: 6 },
     })), ...board.items] }, LOCAL_SOURCE_LABELS.lake);
-  },
-  '/api/v1/buildings/:buildingId/ledger': ({ buildingId }) => {
-    const raw = ledgers[String(buildingId)];
-    if (raw && !buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
-    const body = raw ? storyLedger(raw) : undefined;
-    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : raw ? HttpResponse.json({ error: 'not_found' }, { status: 404 }) : undefined;
   },
   '/api/v1/buildings/:buildingId/residents': ({ buildingId }) => {
     if (String(buildingId) !== lake.register.property.id) return undefined;
@@ -85,18 +58,6 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
   '/api/v1/buildings/:buildingId/levels/:levelId/review': ({ buildingId, levelId }) => {
     const body = levelReviews[String(levelId)];
     return body && body.buildingId === buildingId ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
-  },
-  '/api/v1/import-packages/inspect': async (_p, _u, request) => {
-    const file = (await request.formData()).get('file');
-    return file instanceof File ? json(await inspectAreaFile(file), LOCAL_SOURCE_LABELS.lake) : HttpResponse.json({ error: 'file_required' }, { status: 400 });
-  },
-  '/api/v1/import-packages': async (_p, _u, request) => {
-    const file = (await request.formData()).get('file');
-    return HttpResponse.json(startAreaImport(file instanceof File ? file.name : 'survey') as never, { status: 201, headers: { [LOCAL_SOURCE_HEADER]: LOCAL_SOURCE_LABELS.lake } });
-  },
-  '/api/v1/import-packages/:packageId': ({ packageId }) => {
-    const body = areaPackage(String(packageId));
-    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
   },
   '/api/v1/buildings/:buildingId/imports/inspect': async (_p, _u, request) => {
     const files = (await request.formData()).getAll('file').filter((f): f is File => f instanceof File);
@@ -172,32 +133,6 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
     if (String(areaId) !== lake.context.area.id || !storyAreas()?.length) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
     deleteArea();
     return new HttpResponse(null, { status: 204 });
-  },
-  '/api/v1/areas': () => json(storyAreas(), ALL_LOCAL),
-  '/api/v1/areas/:areaId/context': ({ areaId }) => {
-    if (String(areaId) === lake.context.area.id) {
-      const body = storyContext(String(areaId));
-      return body ? json(body, ALL_LOCAL) : HttpResponse.json({ error: 'not_found' }, { status: 404 });
-    }
-    const body = derivedContexts[String(areaId)];
-    return body ? json(body, ALL_LOCAL) : undefined;
-  },
-  '/api/v1/buildings/:buildingId/register': async ({ buildingId }, url) => {
-    if (url.searchParams.get('profile') === 'consolidated') return consolidated(String(buildingId), url.searchParams.get('format') ?? 'json');
-    const found = derivedRegister(String(buildingId));
-    if (found?.source === 'lake' && !buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
-    return found ? json(storyRegister(String(buildingId), found.body as never), LOCAL_SOURCE_LABELS[found.source]) : undefined;
-  },
-  '/api/v1/sources/:sourceId/file': ({ sourceId }) => {
-    const file = derivedSourceFiles[String(sourceId)];
-    if (!file) return undefined;
-    return new HttpResponse(file.body, {
-      headers: {
-        'Content-Type': file.type,
-        'Content-Disposition': `inline; filename="${file.name.split('/').pop()}"`,
-        [LOCAL_SOURCE_HEADER]: ALL_LOCAL,
-      },
-    });
   },
 };
 

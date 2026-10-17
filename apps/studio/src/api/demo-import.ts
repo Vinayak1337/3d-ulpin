@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Schemas } from '@ulpin/api-client';
+import type { SceneEngine } from '@ulpin/scene';
 import type { AreaContext } from './queries';
 import { buildingCode } from '../local/codes';
 
@@ -31,6 +32,57 @@ export async function demoAreas() {
   return response.json();
 }
 
+const scenes = new Map<string, SceneEngine>();
+const sceneListeners = new Map<string, Set<(engine: SceneEngine) => void>>();
+
+/** The map owns the engine; the transport may receive a part before that map mounts. */
+export function attachDemoScene(areaId: string, engine: SceneEngine): () => void {
+  scenes.set(areaId, engine);
+  for (const listener of sceneListeners.get(areaId) ?? []) listener(engine);
+  return () => {
+    if (scenes.get(areaId) === engine) scenes.delete(areaId);
+  };
+}
+
+function waitForScene(areaId: string, signal: AbortSignal): Promise<SceneEngine | null> {
+  if (signal.aborted) return Promise.resolve(null);
+  const engine = scenes.get(areaId);
+  if (engine) return Promise.resolve(engine);
+  return new Promise((resolve) => {
+    const listeners = sceneListeners.get(areaId) ?? new Set();
+    sceneListeners.set(areaId, listeners);
+    const finish = (engine: SceneEngine | null) => {
+      listeners.delete(ready);
+      if (!listeners.size) sceneListeners.delete(areaId);
+      signal.removeEventListener('abort', cancel);
+      resolve(engine);
+    };
+    const ready = (engine: SceneEngine) => finish(engine);
+    const cancel = () => finish(null);
+    listeners.add(ready);
+    signal.addEventListener('abort', cancel, { once: true });
+  });
+}
+
+/** A part with no drawable geometry needs no frame; otherwise only the engine proves completion. */
+export async function acknowledgeDemoPart(
+  areaId: string, features: AreaContext['displayFeatures'], signal: AbortSignal,
+  acknowledge: () => void = () => { void fetch(`/api/demo/areas/${areaId}/ack`, { method: 'POST' }); },
+): Promise<void> {
+  const drawable = features.filter((feature) => {
+    const geometry = feature.geometry as { type: string; coordinates?: unknown[] } | null;
+    return (geometry?.type === 'Polygon' || geometry?.type === 'MultiPolygon') && geometry.coordinates?.length;
+  });
+  if (drawable.length) {
+    const engine = await waitForScene(areaId, signal);
+    if (!engine) return;
+    const buildings = drawable.filter((feature) => feature.kind === 'building').map((feature) => feature.id);
+    const base = drawable.filter((feature) => feature.kind !== 'building').map((feature) => feature.id);
+    if (!await engine.waitForDrawn(buildings, base, signal)) return;
+  }
+  if (!signal.aborted) acknowledge();
+}
+
 /** SSE owns the demo area cache. Reconnect starts with one atomic snapshot, then monotone deltas. */
 export function useDemoAreaStream(areaId: string | undefined) {
   const client = useQueryClient();
@@ -39,7 +91,7 @@ export function useDemoAreaStream(areaId: string | undefined) {
     const key = ['areas', areaId, 'context'];
     const stream = new EventSource(`/api/demo/areas/${areaId}/events`);
     let sequence = -1;
-    let frame = 0;
+    const drawing = new AbortController();
     const apply = (event: MessageEvent) => {
       const message = JSON.parse(event.data);
       if (message.sequence < sequence) return;
@@ -52,19 +104,18 @@ export function useDemoAreaStream(areaId: string | undefined) {
       else client.setQueryData<AreaContext>(key, (previous) => {
         if (!previous) return previous;
         return { ...previous, area: message.area ?? previous.area,
-          displayFeatures: message.features ? [...(previous.displayFeatures ?? []), ...withCodes(message.features as NonNullable<AreaContext["displayFeatures"]>)!] : previous.displayFeatures,
+          displayFeatures: message.features ? [...previous.displayFeatures, ...withCodes(message.features as AreaContext["displayFeatures"])!] : previous.displayFeatures,
           packages: [message.package] };
       });
       client.setQueryData(['import-packages', message.package.id], message.package);
-      // Let React and the existing scene apply a real chunk before accepting the next one.
-      if (event.type === 'chunk') frame = requestAnimationFrame(() => {
-        frame = requestAnimationFrame(() => { void fetch(`/api/demo/areas/${areaId}/ack`, { method: 'POST' }); });
-      });
+      if (event.type === 'chunk') {
+        void acknowledgeDemoPart(areaId!, message.features ?? [], drawing.signal);
+      }
       if (event.type === 'complete' || event.type === 'failed' || event.type === 'snapshot' && message.package.state !== 'RECEIVED') {
         stream.close(); void client.invalidateQueries({ queryKey: ['areas'], exact: true });
       }
     };
     for (const type of ['snapshot', 'metadata', 'chunk', 'complete', 'failed']) stream.addEventListener(type, apply as EventListener);
-    return () => { cancelAnimationFrame(frame); stream.close(); };
+    return () => { drawing.abort(); stream.close(); };
   }, [areaId, client]);
 }

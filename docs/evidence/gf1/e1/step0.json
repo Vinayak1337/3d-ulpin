@@ -1,0 +1,85 @@
+{
+  "task": "E1",
+  "gate": "GF1 / M2",
+  "base": "staging 3126d3ec",
+  "method": "Read from the code; CA0's docs/evidence/gf1/ca0/steps.ts is the order of calls after the draft.",
+  "chain": [
+    {"call": "reviewPackage(pkg.id, pkg.revision)", "where": "packages/server/src/modules/areas/areas.ts:1260-1319",
+     "input": "package id and its current revision", "idempotency": "none: each call raises the revision (1299)",
+     "actor": "none", "refuses": "a stale revision (1263, 1290), a changed area (1296-1297), a source workspace (1262)"},
+    {"call": "commitPackage(id, revision, acknowledgement)", "where": "areas.ts:1321-1469",
+     "input": "package id, revision, acknowledgement text", "idempotency": "state: a COMMITTED package is returned (1349)",
+     "actor": "none; only the acknowledgement text is stored (1466)",
+     "refuses": "no current review (1351-1355), area moved (1361-1362), blank acknowledgement (1363-1368), fingerprint moved (1375-1396)"},
+    {"call": "captureRegistrySnapshot(ctx, siteId, {kind:'targets', pins})", "where": "usp/snapshots.ts:275-339",
+     "input": "site id and 1-100 registry_record pins at revision", "idempotency": "none: a new manifest id each call (316-318)",
+     "actor": "ctx.principal via policy only; the manifest stores accessViewId and policyVersion",
+     "refuses": "0 or more than 100 pins (269-273), a pin absent or at another revision: 409 USP_STALE_TARGET (111-138, 297-302)"},
+    {"call": "resolveRegistryTarget(ctx, scope, pin)", "where": "snapshots.ts:428", "input": "snapshot scope and pin",
+     "idempotency": "read only", "actor": "none", "refuses": "returns unavailable states, not errors"},
+    {"call": "createPacketPlan(ctx, {input, guard:{mode:'create', requestKey}})", "where": "usp/packets/plan-service.ts:66-80",
+     "input": "target pin, scope, purpose record_evidence, format csv, recipe pack0-exact-text-csv/1, expiresAt, entries with the record's evidence pointer, inclusionReason, review direct reviewed",
+     "idempotency": "request receipt keyed by subject, site, operation, requestKey (commands.ts:29-40); same key with other input is 409",
+     "actor": "ctx.principal.subject (63)", "refuses": "expiry not within 24 hours: 422 PACKET_PLAN_EXPIRY (51-53)"},
+    {"call": "confirmPacketPlan(ctx, {planId, version, planSha256, reviewed:true, guard:{mode:'update', requestKey, expectedVersion, expectedManifestId}})",
+     "where": "plan-service.ts:127-157", "input": "the exact plan version, hash and snapshot",
+     "idempotency": "request receipt", "actor": "reviewer = ctx.principal (149-152)",
+     "refuses": "another version, snapshot or hash (137-139), a second confirmation (142-143), required context unavailable: 422 PACKET_PLAN_BLOCKED (146-147), expired plan (148)"},
+    {"call": "executePacketPlan(ctx, {planId, version, confirmationId, guard:{mode:'create', requestKey}})",
+     "where": "plan-service.ts:159-201", "input": "plan, version, the plan confirmation id",
+     "idempotency": "request receipt; a second key on an executed version is 409 (172-175)", "actor": "ctx.principal",
+     "refuses": "no or another confirmation (177-180), expiry (181), assessment drift (182-190)",
+     "writesOutsideSql": "the packet artefact through io.put (184-185) before the final transaction"},
+    {"call": "generatePropertyCard(ctx, {planId, planVersion, cardId:null, expiresAt, guard:{mode:'create', requestKey}})",
+     "where": "usp/packets/card-service.ts:222-270", "input": "executed plan version and card expiry",
+     "idempotency": "request receipt (228-234)", "actor": "creator = ctx.principal; row subject (263)",
+     "refuses": "expiry not within 24 hours: 422 CARD_EXPIRY (196-198)",
+     "writesOutsideSql": "the card PDF through io.put (255) before the final transaction"},
+    {"call": "verifyPropertyCard(ctx, {cardId, revision})", "where": "usp/packets/card-verification.ts:157-185",
+     "input": "the card id and revision named by card.resolverUrl (card-render.ts:7-12)",
+     "idempotency": "read only", "actor": "none",
+     "refuses": "access only; a failed check is result 'inconsistent', expiry and revocation are lifecycle states"}
+  ],
+  "answers": {
+    "1": {
+      "review": "reviewPackage records no person. The stored review (areas.ts:1301-1316) is areaRevision, packageRevision, inputFingerprint, findings and coverage; the policy name 'area-check-officer-v1' is only an input of the fingerprint (1311). The state becomes 'REVIEWED' (1300) with no subject, and the API serves the same function as '/prepare' (apps/api/src/modules/intake/import-packages.controller.ts:165-173). D1 holds: the run performs it as preparation.",
+      "commit": "commitPackage demands a non-blank acknowledgement (areas.ts:1363-1368; the route bounds it to 1-2000 characters, area-routes.ts:288-293), the current review at the current revision (1351-1355), the reviewed area revision (1361-1362) and the recomputed fingerprint (1375-1396). It does not count findings. It records no actor: only pkg.acknowledgement (1466). The confirmation record is therefore the only place the officer is attached to a commit."
+    },
+    "2": {
+      "input": "ctx, the site id of the record (registry_records.site_id), selection {kind:'targets', pins:[{ref:{namespace:'registry_record', id}, revision}]}",
+      "limit": "1 to 100 pins (snapshots.ts:269-273); the closure of a pin is bounded to 1000 records (140)",
+      "requestKey": "none. The run calls the exported captureRegistrySnapshotTx inside its own REPEATABLE READ transaction and writes the snapshot id into the target's artefacts in the same transaction, so a retry finds it and captures nothing new.",
+      "staleTarget": "USP_STALE_TARGET means the record is absent or no longer at the pinned revision; a retry needs the pin at the record's current revision, which only the officer may choose (D5: the run never re-pins)."
+    },
+    "3": {
+      "plan": "From the snapshot: resolveRegistryTarget gives data.evidence[0], the record's citation (sourceRevision and legacyLocator 'feature <key>'); that pointer is the one entry, required, with inclusionReason and review {kind:'direct', reviewed:true} (CA0 steps.ts packetAndCard).",
+      "confirm": "planSha256, reviewed:true and an update guard naming the version and snapshot; the reviewer is ctx.principal. The plan's own expiresAt is checked live (148). There is no reason field on confirm: the reason the run states is the entry's inclusionReason (packets.ts:14, up to 2048 characters).",
+      "executeAndCard": "execute names the plan confirmation id; the card names the executed plan version and an expiry within 24 hours.",
+      "verificationLink": "card.resolverUrl = http://127.0.0.1:<API_PORT>/api/v1/usp/property-cards/<cardId>/revisions/<revision> (card-render.ts:7-12). The run parses the id and revision back from that link and calls verifyPropertyCard, requiring result 'consistent', not expired and not revoked.",
+      "outsideSql": ["executePacketPlan: the packet object (plan-service.ts:184-185)", "generatePropertyCard: the card PDF (card-service.ts:255)"],
+      "expiryPolicy": "Both plan and card refuse an expiry more than 24 hours ahead (plan-service.ts:51-53, card-service.ts:196-198). The confirmation's expires_at is created_at + 24 hours, the most the existing policy admits; every later command states that same instant."
+    },
+    "4": {
+      "howCa0AddedIntakeDraft": "a job row with operation 'intake-draft' and a fenced input registration (intake-draft.ts:96-118, enrollDraftTx); its branch in registerUspJobInputTx (usp/jobs.ts:157-164); a single-flight worker in dispatchTick (cases/processing.ts:305-310); claim, fenced writes and acceptance through claimUspJobAttempt / assertUspJobAttemptTx / acceptUspJobAttempt (intake-draft-worker.ts).",
+      "dispatcher": "No lanes and no priority: one query, ORDER BY created_at LIMIT 12 (processing.ts:206-209), and one in-process worker per operation.",
+      "smallestHonestPriority": "The intake-run branch of dispatchTick does not run the row it was handed; it asks intake-run.ts for the next intake-run job, ordered by the target's priority_at (set by the priority route; NULL last) and then by job creation. The jobs table and its order are untouched; a target moved first is the next intake-run job any tick takes. All in owned files.",
+      "lanePrepare": "not built as a separate lane: the dispatcher has none. Preparation and the run share operation 'intake-run' and its one worker."
+    },
+    "5": {
+      "identity": "Codes are for recorded spaces only: usp/project-identity.ts:46 refuses any target whose kind is not 'space' (USP_IDENTITY_TARGET); CA3 (docs/evidence/gf1/ca3/result.json byKind building: 'H26 allocation excludes buildings') and CA0's card print 'Identity codes are for recorded spaces only'.",
+      "whenStep6": "Only for a target of kind 'space' at revision 1 or more. Targets in this task are buildings with no spaces, so the stage is passed with artefacts.identity = 'not_applicable: codes are for recorded spaces only'."
+    },
+    "6": {
+      "routes": "apps/api/src/modules/ingestion/ingestion.controller.ts (intake routes at 27-57, PrivateSpatialGuard, readJsonBody, wireResponse from ../intake/wire-schemas); the module is ingestion.module.ts.",
+      "schemas": "packages/contracts/src/usp/intake.ts (IntakeItemSchema, IntakeManifestSchema) and the event union packages/contracts/src/usp/ingestion-events.ts:17.",
+      "openapi": "apps/api/scripts/openapi.ts writes docs/api/openapi.json and is run with --check to compare; 305 operations before this task."
+    },
+    "7": {
+      "existingArea": "MappingDestinationSchema existing_area needs areaId, expectedAreaRevision, referenceFingerprint = fingerprint(area.reference || null), namespace and name (packages/contracts/src/usp/ingestion.ts:46; checked in usp/ingestion/service.ts:103-107).",
+      "readFrom": "cases.site_id of the item's case, then map_areas WHERE site_id = that site (map_areas.site_id is UNIQUE, database/sql/20-area/area.sql:3), read through getArea for revision and reference.",
+      "refusal": "the area normalizer refuses an uncovered CRS or more than 50 km (services/geo/geo/area.py:396-417); areaGeo turns that into 422 AREA_PROCESSING with the message (areas.ts:96-103). The draft job's fail() writes needs_answer with the processor's words for that code, as it does for AREA_SOURCE_DENIED."
+    }
+  },
+  "D3blocking": "No finding blocks commit: AreaFinding has no severity (packages/contracts/src/area.ts:137-157) and commitPackage reads no finding. So no finding makes a target needs_answer; the confirmation shows the counts by code.",
+  "outsideOwnedPaths": "Applying the owned migration needs its entry in database/manifest.json and one call in usp/ingestion/intake-migration.ts (the loader refuses an unlisted file, infrastructure/sql-loader.ts:36-45)."
+}
