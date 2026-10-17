@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Group, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 'three';
+import { Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Vector3 } from 'three';
 import { SceneEngine } from './engine';
 import { FLAT_THICKNESS_M, prismGeometry } from './geometry';
 import type { ImageOverlayInput, MultiPolygon } from './types';
@@ -55,5 +55,60 @@ describe('ground pictures below records', () => {
     expect(material.polygonOffsetFactor).toBe(-4);
     expect(material.polygonOffsetUnits).toBe(-4);
     expect(picture.renderOrder).toBe(0);
+  });
+});
+
+describe('the ground the area window is read from', () => {
+  const tan = Math.tan((32 * Math.PI) / 360);
+  // The area preset's direction (camera.ts), and straight down with north up the screen.
+  const AREA = new Vector3(112, 88, 134).normalize(), DOWN = new Vector3(0, 1, 1e-7).normalize();
+
+  /** An engine whose camera looks at a target on the ground from where a 900 px high canvas reads `mpp`. */
+  function posed(mpp: number, direction: Vector3, target = new Vector3(300, 0, -200)) {
+    const camera = new PerspectiveCamera(32, 1440 / 900, 0.3, 1e9);
+    const distance = (mpp * 900) / (2 * tan);
+    camera.position.copy(target).addScaledVector(direction, distance);
+    camera.lookAt(target);
+    camera.updateMatrixWorld();
+    const engine = Object.assign(Object.create(SceneEngine.prototype), {
+      camera, controls: { target }, raycaster: new Raycaster(),
+    }) as SceneEngine;
+    return { footprint: engine.viewFootprint(), distance, target: [target.x, -target.z] as const };
+  }
+
+  const size = (footprint: [number, number][]) => {
+    const xs = footprint.map(([x]) => x), ys = footprint.map(([, y]) => y);
+    return [Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)].map(Math.round);
+  };
+
+  it('reaches at most 1.5 camera distances from the target, at any pitch', () => {
+    for (const direction of [AREA, DOWN, new Vector3(0, 0.05, 1).normalize()]) {
+      const { footprint, distance, target } = posed(200 / 60, direction);
+      for (const [x, y] of footprint) {
+        expect(Math.hypot(x - target[0], y - target[1])).toBeLessThanOrEqual(distance * 1.5 + 1e-6);
+      }
+    }
+  });
+
+  it('covers the whole screen on the ground when looking down', () => {
+    const mpp = 200 / 60;
+    const { footprint, target } = posed(mpp, DOWN);
+    for (const [x, y] of footprint) {
+      expect(Math.abs(Math.abs(x - target[0]) - 720 * mpp)).toBeLessThan(0.01 * mpp);
+      expect(Math.abs(Math.abs(y - target[1]) - 450 * mpp)).toBeLessThan(0.01 * mpp);
+    }
+  });
+
+  // A scale bar reads S while S metres span at least 60 px; the widest view it reads S for is S / 60 m per px.
+  // Looking down the window is the screen; at the area preset's pitch the 1.5-distance reach bounds it.
+  it('gives these windows, east by north in metres, at the 100 m, 200 m, 500 m and 1 km scale bar', () => {
+    const windows = [100, 200, 500, 1000].map((scale) =>
+      [scale, size(posed(scale / 60, DOWN).footprint), size(posed(scale / 60, AREA).footprint)]);
+    expect(windows).toEqual([
+      [100, [2400, 1500], [5069, 5219]],
+      [200, [4800, 3000], [10138, 10437]],
+      [500, [12000, 7500], [25344, 26093]],
+      [1000, [24000, 15000], [50688, 52186]],
+    ]);
   });
 });
