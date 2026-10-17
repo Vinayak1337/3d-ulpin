@@ -76,6 +76,8 @@ const FAR_MARGIN = 1.25;
 const FOG_DEPTH = 2.4;
 // The sun's shadow map covers at most this far either side of the view's target: past it, buildings cast no shadow.
 const SHADOW_HALF_MAX = 1500;
+// The area window is read at most this many camera distances from the target; past it, only what is loaded draws.
+const VIEW_REACH = 1.5;
 // Leave most of a 16.7 ms frame for WebGL uploads, drawing and the browser. One building is atomic.
 const BUILDING_BUDGET_MS = 4;
 const BASE_BUDGET_MS = 4;
@@ -462,15 +464,24 @@ export class SceneEngine {
     this.applyCamera(false);
   }
 
-  /** The ground area in view (local east, north), for the overview map. */
+  /**
+   * The ground in view (local east, north) that the area window is read from: where the screen's corners meet the
+   * ground, each kept within VIEW_REACH camera distances of the orbit target. Looking down, every corner of a canvas up to five times as wide
+   * as it is high lies within that reach, so the window holds the whole screen.
+   */
   viewFootprint(): [number, number][] {
     const out: [number, number][] = [];
-    const reach = this.camera.position.distanceTo(this.controls.target) * 4;
+    const target = this.controls.target;
+    const distance = this.camera.position.distanceTo(target);
+    const reach = distance * VIEW_REACH;
     for (const [x, y] of [[-1, -1], [1, -1], [1, 1], [-1, 1]] as const) {
       this.raycaster.setFromCamera(new Vector2(x, y), this.camera);
       const { origin, direction } = this.raycaster.ray;
-      const t = direction.y < -1e-4 ? Math.min(-origin.y / direction.y, reach) : reach;
-      out.push([origin.x + direction.x * t, -(origin.z + direction.z * t)]);
+      // A ray that misses the ground is followed past the reach, then kept within it like any other.
+      const t = direction.y < -1e-4 ? -origin.y / direction.y : distance + reach;
+      const dx = origin.x + direction.x * t - target.x, dz = origin.z + direction.z * t - target.z;
+      const keep = Math.min(1, reach / Math.max(Math.hypot(dx, dz), 1e-9));
+      out.push([target.x + dx * keep, -(target.z + dz * keep)]);
     }
     return out;
   }

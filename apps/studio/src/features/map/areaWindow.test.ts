@@ -48,6 +48,15 @@ describe('window mode', () => {
       .toBe('Showing 2 features in view, the most drawn at once; move closer to see the rest.');
   });
 
+  it('says the view is still loading, with the count so far, until its reads end', () => {
+    const drawn = [feature('a'), feature('b', 'building', null, 'unrecorded_proposal')];
+    expect(windowLine([feature('a'), feature('b')], 41_809, false, true)).toBe('Loading buildings in view: 2 so far');
+    expect(windowLine(drawn, 41_809, false, true))
+      .toBe('Loading buildings in view: 2 so far (1 proposed, not yet confirmed)');
+    expect(windowLine(drawn, 41_809, false, false))
+      .toBe('2 buildings in view of 41,809 (1 proposed, not yet confirmed)');
+  });
+
   it('extrudes a stated height, keeps an unstated one flat and draws other kinds as base', () => {
     const { footprints, base } = windowScene([feature('a', 'building', 12), feature('b'), feature('r', 'road')]);
     expect(footprints.map((input) => [input.id, input.heightM])).toEqual([['id-a', 12], ['id-b', null]]);
@@ -171,28 +180,30 @@ describe('window reads', () => {
   it('reads once the camera settles and pages by next up to the budget', async () => {
     const read = vi.fn(async (_: Bounds, after: string | undefined, limit: number) =>
       after ? page([feature('c')].slice(0, limit), 'd') : page([feature('a'), feature('b')], 'b'));
-    const published: [string[], boolean][] = [];
+    const published: [string[], boolean, boolean][] = [];
     const reader = new WindowReader(() => [0, 0, 10, 10], read,
-      (features, cut) => published.push([features.map((item) => item.identifier), cut]), vi.fn(), 3);
+      (features, cut, loading) => published.push([features.map((item) => item.identifier), cut, loading]),
+      vi.fn(), 3);
     reader.viewChanged();
     reader.viewChanged();
     await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS - 1);
     expect(read).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     expect(read.mock.calls.map(([, after, limit]) => [after, limit])).toEqual([[undefined, 3], ['b', 1]]);
-    expect(published).toEqual([[['a', 'b'], false], [['a', 'b', 'c'], true]]);
+    expect(published).toEqual([[['a', 'b'], false, true], [['a', 'b', 'c'], true, false]]);
     reader.viewChanged();
     await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
     expect(read).toHaveBeenCalledTimes(2);
   });
 
-  it('does not cut a view that ends before the budget, nor one that ends at it with nothing pending', async () => {
+  it('does not cut a view that ends before the budget or at it, and is not loading after it', async () => {
     const read = vi.fn(async () => page([feature('a'), feature('b')], null));
-    const cuts: boolean[] = [];
-    const reader = new WindowReader(() => [0, 0, 10, 10], read, (_, cut) => cuts.push(cut), vi.fn(), 2);
+    const states: [boolean, boolean][] = [];
+    const reader = new WindowReader(() => [0, 0, 10, 10], read,
+      (_, cut, loading) => states.push([cut, loading]), vi.fn(), 2);
     reader.viewChanged();
     await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
-    expect(cuts).toEqual([false]);
+    expect(states).toEqual([[false, false]]);
     reader.dispose();
   });
 
