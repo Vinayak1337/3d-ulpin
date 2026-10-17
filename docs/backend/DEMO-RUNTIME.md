@@ -24,7 +24,8 @@ Worker worktrees must never serve the demo: lazy imports would mix unreviewed ch
    built and rehearsed: `node scripts/platform/processor-image.mjs roll`
    It refuses unless that checkout's `services/geo` is the pinned tree, the image on the engine carries the pinned
    commit and tree, and both native processes are stopped. It recreates `geo` and `worker` only; volumes are kept.
-   When the processors already run the pinned build of this checkout, skip this step.
+   When the processors already run the pinned build of this checkout, the roll recreates nothing and says so in one
+   line; skip the step.
 7. Start both native processes from that checkout:
    `pnpm platform:start --profile demo`
 8. Run `pnpm platform:doctor --profile demo` there. Record both process entry paths, PIDs and the served commit.
