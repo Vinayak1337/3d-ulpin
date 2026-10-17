@@ -1,0 +1,198 @@
+{ "at": "2026-10-17T00:14:49.558Z", "api": "http://127.0.0.1:21026", "caseId": "50f6f915-7e3f-4f11-988b-f2825b286295",
+"seconds": 5.6, "manifest": [ { "itemId": "22c9d2ea-d0ab-40f2-b2d1-3423f117423f",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/boundary-original.geojson",
+"name": "boundary-original.geojson", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "undecided", "reason": null, "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "31d5d661-d4c3-4195-b626-85459d0b9439", "parentItemId": null, "memberPath": null,
+"name": "boundary-original.geojson", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, { "itemId": "56233622-adba-4888-a0f6-e81a72fb6c41",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/buildings-original.geojson",
+"name": "buildings-original.geojson", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "undecided", "reason": null, "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "5ed9ea08-5e20-47d6-87aa-776f199e3986", "parentItemId": null, "memberPath": null,
+"name": "buildings-original.geojson", "family": "vector", "format": "geojson", "state": "planned",
+"placement": "needs_answer", "reason": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ], "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "2a282145-4514-4d72-b4f1-eeade6f57a87", "parentItemId": null, "memberPath": null,
+"name": "hydrography.geojson", "family": "vector", "format": "geojson", "state": "probed", "placement": "needs_answer",
+"reason": [ "No approved layout matches this file. An officer states what each feature is and which fie",
+"ld identifies it." ], "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "b48bdb03-a226-45ed-aba5-c9a180f4af02", "parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"memberPath": "layers/hydrography.geojson", "name": "hydrography.geojson", "family": "vector", "format": "geojson",
+"state": "probed", "placement": "undecided", "reason": null, "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "7d7967bd-6f19-419e-982c-2f38a7cce58e", "parentItemId": null, "memberPath": null,
+"name": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson", "family": "vector", "format": "geojson",
+"state": "read", "placement": "on_map",
+"reason": "42247 records read; 41809 in 21 packages. 438 not accepted by the reader.", "recordsSeen": 42247,
+"partsPlanned": 21, "partsDone": 21 }, { "itemId": "f623269e-ec40-4b30-a236-2c440f98fed5",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/parks.geojson", "name": "parks.geojson",
+"family": "vector", "format": "geojson", "state": "probed", "placement": "undecided", "reason": null, "recordsSeen": 0,
+"partsPlanned": null, "partsDone": 0 }, { "itemId": "f753ebca-8652-4a69-8b7d-9bb1eba78a11", "parentItemId": null,
+"memberPath": null, "name": "parks.geojson", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, { "itemId": "6e5e1345-84b4-4d6e-8fc9-e046184c43b3",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/roadbed.geojson",
+"name": "roadbed.geojson", "family": "vector", "format": "geojson", "state": "probed", "placement": "undecided",
+"reason": null, "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "ce0817bb-3629-422a-b8da-2810abbc83e5", "parentItemId": null, "memberPath": null, "name": "roadbed.geojson",
+"family": "vector", "format": "geojson", "state": "probed", "placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, { "itemId": "0352cc38-7dbc-4fc9-b576-e80334a4ae3b",
+"parentItemId": null, "memberPath": null, "name": "sidewalk.geojson", "family": "vector", "format": "geojson",
+"state": "probed", "placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, { "itemId": "9fe5cfbd-8cd3-4394-8af2-d3c00a5b4614",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/sidewalk.geojson",
+"name": "sidewalk.geojson", "family": "vector", "format": "geojson", "state": "probed", "placement": "undecided",
+"reason": null, "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "e450327c-8b0f-46ec-9913-503519df8b6e", "parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"memberPath": "layers/nyc-10013-dem-2017.tif", "name": "layers/nyc-10013-dem-2017.tif", "family": "raster",
+"format": "tiff", "state": "probed", "placement": "undecided", "reason": null, "recordsSeen": 0, "partsPlanned": null,
+"partsDone": 0 }, { "itemId": "afd5f55e-e806-40fd-976c-52948c6a8571",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/nyc-10013-lidar-2017.laz",
+"name": "layers/nyc-10013-lidar-2017.laz", "family": "point_cloud", "format": "laz", "state": "probed",
+"placement": "undecided", "reason": null, "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 }, {
+"itemId": "c26d6be7-7da2-4e4e-ab5d-d8d44697a9c7", "parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"memberPath": "layers/nyc-10013-ortho-2018.tif", "name": "layers/nyc-10013-ortho-2018.tif", "family": "raster",
+"format": "geotiff", "state": "probed", "placement": "undecided", "reason": null, "recordsSeen": 0,
+"partsPlanned": null, "partsDone": 0 }, { "itemId": "348ba633-2637-4b1e-8b2b-94e2cc802c45",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "manifest.json", "name": "manifest.json",
+"family": "unknown", "format": "unknown", "state": "probed", "placement": "undecided", "reason": null, "recordsSeen": 0,
+"partsPlanned": null, "partsDone": 0 }, { "itemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "parentItemId": null,
+"memberPath": null, "name": "nyc-10013-multimodal.zip", "family": "archive", "format": "zip", "state": "probed",
+"placement": "undecided", "reason": null, "recordsSeen": 0, "partsPlanned": null, "partsDone": 0 } ], "counts": {
+"preparing": 0, "ready": 41809, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0
+}, "packages": [ { "packageId": "0eb46d82-34ae-4bba-b6e3-4b6b7d6e159a",
+"areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "state": "REVIEWED", "geographicExtent": [ -79.1783391759078,
+42.96178488338975, -79.04295887624207, 43.146019578736194 ], "counts": { "preparing": 0, "ready": 2000,
+"needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 }, "reviewed": true,
+"reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true }, {
+"packageId": "130d45e5-3773-4020-a603-6688686fe2cd", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.16804155291945, 43.07017598655621, -79.07133684211028, 43.09351726131786
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "165ff612-c33b-42cd-93dc-562eaba87326", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17252867503143, 42.99962787686923, -79.02935882861952, 43.14958640368965
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "1eb14fad-4bb2-4a39-a15f-856416a8cd27", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17111275679257, 42.96632527975438, -79.04526164400923, 43.09349721069455
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "1eb1d900-fa07-44e8-a7b1-1f43597ac610", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17641114157678, 42.96172147781311, -79.02710286716741, 43.141113782509684
+], "counts": { "preparing": 0, "ready": 1809, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 1809, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "23d210cd-b3e8-49a1-9657-310a1a3384f1", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.13842138687568, 43.1040745227436, -79.06355439248972, 43.115517821728076
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "2532b1d0-b3c5-4be8-baf0-76faf4bc0e56", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17823978067716, 42.96145251871381, -79.02895479209708, 43.14957773548424
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "26577905-e12f-4435-a3fa-33434488ceff", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17600963142746, 42.960177812713596, -79.01800822736205,
+43.148773193279744 ], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0,
+"recorded": 0, "carded": 0, "stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3,
+"extentInsideNiagaraBox": true }, { "packageId": "2797f886-009b-4b42-bbd3-7a20618b7d90",
+"areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "state": "REVIEWED", "geographicExtent": [ -79.17672691315819,
+43.06990942719674, -79.06667797638356, 43.105346135159174 ], "counts": { "preparing": 0, "ready": 2000,
+"needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 }, "reviewed": true,
+"reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true }, {
+"packageId": "34aa5e96-d0bd-4f68-b080-f545b4a416b3", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17663510831684, 43.023080893488, -79.01790739930051, 43.08326845220995 ],
+"counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "37ac2353-28ce-4436-81b9-987240f884d2", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17735017152869, 42.96149650971776, -79.02467033704907, 43.148882093634356
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "41e13852-e5a4-4983-ae87-4adbccf2a2c1", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17079333172683, 43.04544866478384, -79.01917565879303, 43.0825713199227
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "6288bb5c-3e54-45ce-8445-2506dd57c8a1", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17943620291635, 43.06964579817312, -79.07088721989231, 43.09353920552453
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "795249cb-0436-4604-9e8b-1b260c9d0cf0", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17742524823028, 43.092685044730196, -79.06223683283952, 43.11685776712475
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "acbdfc0c-1435-46dc-a56d-98763844e321", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17590765523802, 42.95751226917127, -79.0177232352807, 43.07041632197621
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "b9e34500-4094-4911-b3b7-6974f165f129", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17716815261394, 43.055447163150696, -79.04598321688731, 43.10540151267598
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "d11eec7d-d657-4759-b1a0-c906d796208e", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17745384754798, 43.011240875013016, -79.04395503290019,
+43.093191611757604 ], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0,
+"recorded": 0, "carded": 0, "stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3,
+"extentInsideNiagaraBox": true }, { "packageId": "d6c749a0-c5bd-4091-9d67-cc5b94639cf4",
+"areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "state": "REVIEWED", "geographicExtent": [ -79.17745478759191,
+43.08340399463141, -79.06291559128569, 43.11674884533291 ], "counts": { "preparing": 0, "ready": 2000,
+"needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 }, "reviewed": true,
+"reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true }, {
+"packageId": "df6ac5c8-c903-44ec-b84c-7c90cb7f9151", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.17676929044052, 42.958093957465955, -79.0243245643152, 43.14984138210689
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "e7251e81-6ca6-4b83-861d-74c88daf36af", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.1791177665424, 42.976928400823724, -79.04880641195771, 43.13591004868279
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+}, { "packageId": "e9426f45-4b53-48b8-8a88-5557d01252b8", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"state": "REVIEWED", "geographicExtent": [ -79.15257371972234, 43.04871947412245, -79.05004734069144, 43.14915773028358
+], "counts": { "preparing": 0, "ready": 2000, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "reviewed": true, "reviewRefusal": null, "features": 2000, "warnings": 3, "extentInsideNiagaraBox": true
+} ], "map": { "a1c1252a-949f-42a7-a879-5ad2aaa7cc46": { "context": 422, "canonical": 422, "displayFeatures": null } },
+"niagara": { "packages": 21, "features": 41809, "everyPackageInsideBox": true, "box": [ -79.2, 42.95, -78.9, 43.2 ],
+"heights": [ "unknown" ], "samples": [ { "id": "7117844c-597d-4c47-89b2-c336d10c91f5", "kind": "building",
+"name": "Building 1", "height": { "state": "unknown", "value": null }, "sourceFeature": "1", "geometryType": "Polygon",
+"areaM2": 119.6 }, { "id": "322d228f-b10b-4dac-8185-e65c325dbec5", "kind": "building", "name": "Building 39501",
+"height": { "state": "unknown", "value": null }, "sourceFeature": "39501", "geometryType": "Polygon", "areaM2": 36.8 },
+{ "id": "16b49989-b162-4ef0-bf17-def838e173d5", "kind": "building", "name": "Building 34346", "height": {
+"state": "unknown", "value": null }, "sourceFeature": "34346", "geometryType": "Polygon", "areaM2": 145.4 } ],
+"warningsOfFirstPackage": [ [
+"The source declares `EPSG:2958`; read as `EPSG:2958`, coordinates in the order written (x,",
+" y). Original bytes keep that declaration; normalized geographic geometry uses RFC 7946 co", "ordinates." ],
+"2000 building(s) have unknown height and remain footprint-only; no analytical height was invented.", [
+"Local geometry uses metres in the retained area frame and is not RFC GeoJSON. Building-rel",
+"ative heights do not establish shared elevation or legal rights." ] ] }, "nyc": { "packages": 0,
+"why": "the buildings layer stopped at SOURCE_ALREADY_IN_AREA; part-c-nyc.json" }, "requests": [ {
+"step": "batch manifest", "route": "/api/v1/ingestion/cases/{caseId}/intake", "status": 200, "seconds": 0.042,
+"refusal": null }, { "step": "batch packages", "route": "/api/v1/ingestion/cases/{caseId}/targets", "status": 200,
+"seconds": 0.637, "refusal": null }, { "step": "area context (map)", "route": "/api/v1/areas/{areaId}/context",
+"status": 422, "seconds": 1.054, "refusal": { "code": "AREA_LIMIT",
+"message": "Choose an area with at most 2,000 display features." } }, { "step": "area canonical (map)",
+"route": "/api/v1/areas/{areaId}/canonical", "status": 422, "seconds": 1.03, "refusal": { "code": "AREA_LIMIT",
+"message": "Choose an area with at most 2,000 display features." } }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.137, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.132, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.13, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.104, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.133, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.144, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.149, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.154, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.144, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.122, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.169, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.128, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.156, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.128, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.172, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.13, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.101, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.115, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.145, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.141, "refusal": null }, { "step": "package",
+"route": "/api/v1/import-packages/{packageId}", "status": 200, "seconds": 0.137, "refusal": null } ] }

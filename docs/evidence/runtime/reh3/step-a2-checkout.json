@@ -1,0 +1,42 @@
+{ "at": "2026-10-16T23:57:03.020Z", "commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "receipt": { "command": [
+"git checkout --detach 9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02",
+"exit": 0, "seconds": 0.188, "output": [
+"Previous HEAD position was 54d43d0b docs(status): the board after LP3c to ST1c, 17 October",
+"HEAD is now at 9d6acc6b Merge ZF1: a ZIP of GeoJSON layers in a batch keeps each layer as ",
+"its own original and item" ], "error": null }, "outputLines": 3, "containersBefore": { "ulpin-demo": [
+"8fd0a1356206 ulpin-demo-geo-1 ulpin-geo:demo-k3b running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"c3d5efd8403f ulpin-demo-worker-1 ulpin-geo:demo-k3b running" ], "ulpin-reh-02": [
+"c1f8fcd635e9 ulpin-reh-02-geo-1 ulpin-geo:demo-k3b exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"48fb9d79e2fe ulpin-reh-02-worker-1 ulpin-geo:demo-k3b exited" ] }, "containersAfter": { "ulpin-demo": [
+"8fd0a1356206 ulpin-demo-geo-1 ulpin-geo:demo-k3b running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"c3d5efd8403f ulpin-demo-worker-1 ulpin-geo:demo-k3b running" ], "ulpin-reh-02": [
+"c1f8fcd635e9 ulpin-reh-02-geo-1 ulpin-geo:demo-k3b exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"48fb9d79e2fe ulpin-reh-02-worker-1 ulpin-geo:demo-k3b exited" ] }, "state": { "runtimeEntriesByName": [
+"api.process.json", "bootstrap.complete.json", "dispatcher.process.json",
+"document-ocr-934c4f99-f36c-4ab6-a2c9-a30da7717bc1-v6pzwQ", "document-runtime-paths.json", "learning", "logs", "models",
+"ocr-paths.json", "ocr-scratch", "runtime.env", "tabular-paths.json" ], "volumes": [ "ulpin-reh-02_minio-data",
+"ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ], "containers": [
+"c1f8fcd635e9 ulpin-reh-02-geo-1 ulpin-geo:demo-k3b exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"48fb9d79e2fe ulpin-reh-02-worker-1 ulpin-geo:demo-k3b exited" ], "networks": [ "ulpin-reh-02_default" ],
+"listeners": [] }, "servingHead": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1",
+"servingServicesGeo": "dd59ed7f21fc235eddb69b86188ce4b8f4db04e4", "servingStatus": [ "" ] }
