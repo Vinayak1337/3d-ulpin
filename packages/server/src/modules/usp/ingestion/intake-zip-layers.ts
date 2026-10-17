@@ -90,7 +90,7 @@ export type ZipLayerDependencies = {
 };
 
 type MemberRow = { item_id: string; member_path: string; source_id: string | null; size_bytes: string | null;
-  card: IntakeCard | null; limit_reason: string | null };
+  card: IntakeCard | null; limit_reason: string | null; state: string; family: string };
 type Kept = { member: MemberRow; sourceId: string };
 
 /** Only a GeoJSON member the probe read without refusal, not yet kept, is a layer. */
@@ -99,6 +99,11 @@ export function zipLayerMembers(card: IntakeCard | null, members: MemberRow[]): 
   const probed = new Set(card.members.filter(member => member.format === 'geojson' && !member.refusalCode)
     .map(member => member.name));
   return members.filter(member => probed.has(member.member_path) && member.card?.format === 'geojson');
+}
+
+async function membersTx(client: PoolClient, caseId: string, itemId: string): Promise<MemberRow[]> {
+  return (await client.query(`SELECT item_id,member_path,source_id,size_bytes,card,limit_reason,state,family
+    FROM usp_intake_items WHERE case_id=$1 AND parent_item_id=$2 ORDER BY member_path`, [caseId, itemId])).rows;
 }
 
 async function noteTx(client: PoolClient, caseId: string, itemId: string, reason: string) {
@@ -138,13 +143,12 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
       AND parent_item_id IS NULL`, [caseId, itemId])).rows[0];
     if (!item?.source_id || item.card?.format !== 'zip') return null;
     const { source } = await intakeSourceTx(client, caseId, item.source_id);
-    const members: MemberRow[] = (await client.query(`SELECT item_id,member_path,source_id,size_bytes,card,limit_reason
-      FROM usp_intake_items WHERE case_id=$1 AND parent_item_id=$2 ORDER BY member_path`, [caseId, itemId])).rows;
+    const members = await membersTx(client, caseId, itemId);
     const order = new Map<string, number>(item.card.members.map((member: { name: string }, at: number) =>
       [member.name, at]));
     const layers = zipLayerMembers(item.card, members)
       .sort((a, b) => order.get(a.member_path)! - order.get(b.member_path)!);
-    return { source, layers };
+    return { source, layers, card: item.card as IntakeCard };
   });
   if (!scope) return [];
   const kept: Kept[] = scope.layers.filter(member => member.source_id)
@@ -175,7 +179,72 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
       });
     }
   }
+  await dependencies.transaction(client => describeArchiveTx(client, caseId, itemId, scope.card));
   return kept.map(layer => layer.sourceId);
+}
+
+const familyWords: Record<string, [string, string]> = {
+  vector: ['map feature file', 'map feature files'], table: ['table', 'tables'], raster: ['raster', 'rasters'],
+  point_cloud: ['point cloud', 'point clouds'], model3d: ['3D model', '3D models'],
+  document: ['document', 'documents'], image: ['image', 'images'], archive: ['archive', 'archives'],
+  unknown: ['file of a kind not known', 'files of a kind not known'],
+};
+
+function count(value: number, one: string, many: string) {
+  return `${value} ${value === 1 ? one : many}`;
+}
+
+/** A member that stays inside the archive says so; a refusal or an earlier reason is left as it is. */
+export const ZIP_MEMBER_INSIDE = 'ZIP_MEMBER_INSIDE: this member stays inside the archive; only GeoJSON members '
+  + 'become their own files.';
+
+/**
+ * ZF2. The ZIP's own words after a fan-out: how many members became their own files and, by kind, which stayed
+ * inside the archive. Counts and fixed words only; member names are on the member rows, never repeated here.
+ */
+export function zipArchiveReason(card: IntakeCard | null, members: MemberRow[]): string {
+  if (!members.length) return 'ZIP_NO_LAYERS: this archive lists no members, so none became its own file.';
+  const layers = new Set(zipLayerMembers(card, members).map(member => member.item_id));
+  const own = members.filter(member => member.source_id).length;
+  const notKept = members.filter(member => !member.source_id && layers.has(member.item_id)).length;
+  const refused = members.filter(member => !member.source_id && !layers.has(member.item_id)
+    && member.state === 'probe_failed').length;
+  const inside = new Map<string, number>();
+  for (const member of members) {
+    if (member.source_id || layers.has(member.item_id) || member.state === 'probe_failed') continue;
+    const family = familyWords[member.family] ? member.family : 'unknown';
+    inside.set(family, (inside.get(family) ?? 0) + 1);
+  }
+  const words = [own
+    ? `ZIP_LAYERS: ${own} of ${count(members.length, 'member', 'members')} became ${own === 1 ? 'its' : 'their'} `
+      + `own ${own === 1 ? 'file' : 'files'}, one item each.`
+    : `ZIP_NO_LAYERS: none of the ${count(members.length, 'member', 'members')} became its own file; `
+      + 'only GeoJSON members do.'];
+  if (notKept) words.push(`${count(notKept, 'GeoJSON member was', 'GeoJSON members were')} not kept; `
+    + 'each member row says why.');
+  if (refused) words.push(`${count(refused, 'member', 'members')} could not be read inside the archive.`);
+  const stayed = [...inside.values()].reduce((sum, value) => sum + value, 0);
+  if (stayed) {
+    const kinds = Object.keys(familyWords).filter(family => inside.has(family))
+      .map(family => count(inside.get(family)!, ...familyWords[family]!));
+    words.push(`${stayed} ${stayed === 1 ? 'stays' : 'stay'} inside the archive: ${kinds.join(', ')}.`);
+  }
+  return words.join(' ');
+}
+
+async function describeArchiveTx(client: PoolClient, caseId: string, itemId: string, card: IntakeCard) {
+  const members = await membersTx(client, caseId, itemId);
+  const layers = new Set(zipLayerMembers(card, members).map(member => member.item_id));
+  for (const member of members) {
+    if (member.source_id || member.limit_reason || layers.has(member.item_id) || member.state === 'probe_failed') {
+      continue;
+    }
+    await noteTx(client, caseId, member.item_id, ZIP_MEMBER_INSIDE);
+  }
+  const changed = await client.query(`UPDATE usp_intake_items SET limit_reason=$3,updated_at=now()
+    WHERE case_id=$1 AND item_id=$2 AND limit_reason IS DISTINCT FROM $3`,
+  [caseId, itemId, zipArchiveReason(card, members)]);
+  if (changed.rowCount) await appendIntakeItemTx(client, caseId, itemId);
 }
 
 async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSourceRow, member: MemberRow,

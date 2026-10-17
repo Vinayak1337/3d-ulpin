@@ -7,7 +7,7 @@ import { zipSync } from 'fflate';
 import { ArchiveMemberLineageSchema, type IntakeCard } from '../packages/contracts/src/usp/intake';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { readZipMember } from '../packages/server/src/modules/usp/ingestion/intake-zip';
-import { fanOutZipLayers, ZIP_ARCHIVE_PROFILE } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
+import { fanOutZipLayers, ZIP_ARCHIVE_PROFILE, ZIP_MEMBER_INSIDE, zipArchiveReason } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { AppError } from '../packages/server/src/infrastructure/errors';
 
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
@@ -59,7 +59,8 @@ class Ledger {
       object_key: `sources/${this.archiveId}/${sha(bytes)}`, status: 'needs_input',
       inspection: { actor: 'zip-layer-control' } };
     this.rows.set(this.itemId, { item_id: this.itemId, case_id: this.caseId, source_id: this.archiveId,
-      parent_item_id: null, member_path: null, card });
+      parent_item_id: null, member_path: null, card, state: 'probed', family: 'archive', format: 'zip',
+      size_class: 'S', wave: 4, pinned_by_officer: false });
     // The rows registration writes for each member (intake-service childrenTx).
     for (const member of card.members) {
       const id = randomUUID();
@@ -169,8 +170,14 @@ test('each GeoJSON layer of a real ZIP becomes its own child original and item; 
       'register', 'register', 'register']);
     // Enrolling the archive again keeps nothing twice and enrols the same originals again (idempotent upstream).
     order.length = 0;
+    const events = ledger.events.length;
     assert.deepEqual(await run(), kept);
     assert.deepEqual(order, kept.map(id => `register:${id}`));
+    // ZF2: the ZIP's own item says what became its own file and what stayed; a replay publishes nothing new.
+    assert.equal(ledger.rows.get(ledger.itemId).limit_reason, 'ZIP_LAYERS: 3 of 4 members became their own files, '
+      + 'one item each. 1 stays inside the archive: 1 file of a kind not known.');
+    assert.equal(ledger.member('uttam/README.md').limit_reason, ZIP_MEMBER_INSIDE);
+    assert.equal(ledger.events.length, events);
   }));
 
 test('a layer the GeoJSON receipt refuses stays in the archive with a code; its siblings are kept', () =>
@@ -182,12 +189,33 @@ test('a layer the GeoJSON receipt refuses stays in the archive with a code; its 
     assert.equal(refused.source_id, null);
     assert.match(refused.limit_reason, /^GEOJSON_INVALID: this GeoJSON member stays inside the archive/);
     assert.doesNotMatch(refused.limit_reason, /parser text/);
+    const words = ledger.rows.get(ledger.itemId).limit_reason;
+    assert.match(words, /^ZIP_LAYERS: 2 of 4 members became their own files, one item each\. 1 GeoJSON member was not kept; each member row says why\. 1 stays inside/);
+    assert.doesNotMatch(words, /osm|road/i);
   }));
 
 test('a real mixed ZIP with ArcGIS JSON, PDFs and models keeps no layer', () => configured(async () => {
   const pack = readFileSync('fixtures/lake-view-complete-inputs.zip');
-  const { card, retained, run } = await fanOut(pack);
+  const { ledger, card, retained, run } = await fanOut(pack);
   assert.ok(card.members.length > 30);
   assert.deepEqual(await run(), []);
   assert.equal(retained.length, 0);
+  // ZF2: the ZIP says no member became its own file and, by kind, what stayed; every member row carries a reason.
+  const words = ledger.rows.get(ledger.itemId).limit_reason as string;
+  assert.match(words, new RegExp(`^ZIP_NO_LAYERS: none of the ${card.members.length} members became its own file; `
+    + 'only GeoJSON members do\\. '));
+  const stayed = [...words.matchAll(/(\d+) (?!members)[a-zA-Z0-9 ]+?(?=, |\.$)/g)];
+  assert.ok(stayed.length > 1);
+  const members = [...ledger.rows.values()].filter(row => row.parent_item_id);
+  assert.ok(members.every(row => row.limit_reason));
+  assert.ok(members.filter(row => row.limit_reason === ZIP_MEMBER_INSIDE).length > 30);
+  for (const row of members) assert.doesNotMatch(words, new RegExp(row.member_path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 }));
+
+test('an empty or all-refused ZIP still says so in fixed words', () => {
+  assert.equal(zipArchiveReason(null, []), 'ZIP_NO_LAYERS: this archive lists no members, so none became its own file.');
+  const refused = { item_id: randomUUID(), member_path: 'a/b.geojson', source_id: null, size_bytes: '1', card: null,
+    limit_reason: 'ZIP_ENCRYPTED_MEMBER', state: 'probe_failed', family: 'unknown' };
+  assert.equal(zipArchiveReason(null, [refused]), 'ZIP_NO_LAYERS: none of the 1 member became its own file; '
+    + 'only GeoJSON members do. 1 member could not be read inside the archive.');
+});

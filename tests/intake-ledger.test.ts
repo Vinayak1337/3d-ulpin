@@ -93,6 +93,12 @@ class LedgerControl {
     } else if (sql.startsWith('UPDATE usp_intake_items SET state')) {
       const row = this.rows.get(values[0]);
       if (!row.card) Object.assign(row, { state: values[1], limit_reason: values[2] });
+    } else if (sql.startsWith('UPDATE usp_intake_items SET limit_reason')) {
+      // ZF2: a fanned-out ZIP's own row and each member left inside carry fixed words.
+      const row = this.rows.get(values[1]);
+      if ((sql.includes('source_id IS NULL') && row.source_id) || row.limit_reason === values[2]) return { rows: [] };
+      row.limit_reason = values[2];
+      return { rows: [], rowCount: 1 };
     } else if (sql.startsWith('UPDATE usp_intake_items SET wave')) {
       Object.assign(this.rows.get(values[1]), { wave: values[2], pinned_by_officer: true });
     } else throw new Error(`Unexpected protocol update: ${sql}`);
@@ -240,6 +246,9 @@ test('member and sheet cards keep parent authority, idempotency and unknown shee
     const member = [...f.rows.values()].find(row => row.parent_item_id);
     assert.equal(f.rows.size, 2);
     assert.equal(member.source_id, null);
+    assert.match(member.limit_reason, /^ZIP_MEMBER_INSIDE: /);
+    assert.equal(f.rows.get(f.sourceId).limit_reason, 'ZIP_NO_LAYERS: none of the 1 member became its own file; '
+      + 'only GeoJSON members do. 1 stays inside the archive: 1 table.');
     assert.equal((await f.service.one(f.caseId, member.item_id)).sizeBytes, bytes.length);
     await f.service.pin(f.caseId, member.item_id, { wave: 1, requestKey: randomUUID() });
     await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
