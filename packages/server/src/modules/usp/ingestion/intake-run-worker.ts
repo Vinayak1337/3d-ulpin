@@ -8,7 +8,8 @@ import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { commitPackage, getPackage, reviewPackage } from '../../areas/areas';
-import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, type UspJobAttempt } from '../jobs';
+import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
+  type UspJobAttempt } from '../jobs';
 import { generatePropertyCard, readPropertyCard } from '../packets/card-service';
 import { verifyPropertyCard } from '../packets/card-verification';
 import { confirmPacketPlan, createPacketPlan, executePacketPlan } from '../packets/plan-service';
@@ -25,6 +26,7 @@ import { advanceIntakeTargetTx, holdPackageTargetsTx, prepareIntakeTargetsTx, re
 
 /** The product's own commands, in the order CA0 sent them; injectable so a check can count or refuse one. */
 export const intakeRunSteps = {
+  package: getPackage,
   review: reviewPackage, commit: commitPackage, snapshot: captureRegistrySnapshotTx, resolve: resolveRegistryTarget,
   createPlan: createPacketPlan, confirmPlan: confirmPacketPlan, executePlan: executePacketPlan,
   card: generatePropertyCard, readCard: readPropertyCard, verify: verifyPropertyCard,
@@ -34,6 +36,7 @@ type Run = { input: IntakeRunInput; attempt: UspJobAttempt; steps: IntakeRunStep
 type Carry = Run & { ctx: RequestContext; confirmation: IntakeConfirmationRow; target: IntakeTargetRow };
 const identityNotApplicable = 'not_applicable: codes are for recorded spaces only';
 const retryDelay = "interval '2 seconds'";
+const leaseLostCode = 'INTAKE_RUN_LEASE_LOST';
 
 function refuse(code: string, message: string): never {
   throw new AppError(409, code, message);
@@ -48,14 +51,25 @@ export function intakeRunRefusal(error: unknown): { code: string; message: strin
   return null;
 }
 
+/** The authority no longer holding this attempt is the infrastructure, never the product saying no. */
+function leaseLost(error: unknown): unknown {
+  if (!(error instanceof AppError) || error.status !== 409) return error;
+  return new AppError(503, leaseLostCode, 'This run lost its lease; a later attempt continues it.');
+}
+
 async function pinned<T>(run: Run, work: (client: PoolClient) => Promise<T>, repeatable = false): Promise<T> {
   return transaction(async client => {
     if (repeatable) await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     await intakeCaseTx(client, run.input.caseId);
     assertRunBinding(run.input);
-    await assertUspJobAttemptTx(client, run.attempt);
+    await assertUspJobAttemptTx(client, run.attempt).catch(error => { throw leaseLost(error); });
     return work(client);
   });
+}
+
+/** One package can take seconds, so a run of many renews the lease after each instead of outliving it. */
+async function renew(run: Run) {
+  await heartbeatUspJobAttempt(run.attempt).catch(error => { throw leaseLost(error); });
 }
 
 function reviewed(pkg: ImportPackage): boolean {
@@ -64,10 +78,10 @@ function reviewed(pkg: ImportPackage): boolean {
 
 /** Review a drafted package once, then decide each of its targets; a refused review holds them with its words. */
 async function prepare(run: Run, packageId: string) {
-  let pkg = await getPackage(packageId);
+  let pkg = await run.steps.package(packageId);
   try {
     if (!reviewed(pkg)) await run.steps.review(pkg.id, pkg.revision);
-    pkg = await getPackage(packageId);
+    pkg = await run.steps.package(packageId);
   } catch (error) {
     const refusal = intakeRunRefusal(error);
     if (!refusal) throw error;
@@ -117,7 +131,7 @@ async function queueListedTx(client: PoolClient, confirmation: IntakeConfirmatio
 
 async function commitOne(run: Run, confirmation: IntakeConfirmationRow,
   named: IntakeConfirmationRow['packages'][number]) {
-  const pkg = await getPackage(named.packageId);
+  const pkg = await run.steps.package(named.packageId);
   if (pkg.state === 'COMMITTED' && pkg.revision !== named.revision + 1) {
     refuse('INTAKE_PACKAGE_MOVED', 'The recorded package revision changed after confirmation.');
   }
@@ -140,7 +154,8 @@ async function stopPackage(run: Run, confirmation: IntakeConfirmationRow, packag
   });
 }
 
-/** A refused package stops its targets only; other named packages still commit and queue their listed targets. */
+/** A refused package stops its targets only; other named packages still commit and queue their listed targets.
+ * A lost lease stops nothing: a later attempt skips the packages already committed and goes on from the next. */
 async function commit(run: Run, confirmationId: string) {
   const confirmation = await readConfirmationRow(confirmationId);
   assertOperator(confirmation, run.input.caseId);
@@ -154,6 +169,7 @@ async function commit(run: Run, confirmationId: string) {
       await stopPackage(run, confirmation, named.packageId, refusal);
       refused ??= error;
     }
+    await renew(run);
   }
   await pinned(run, client => queueListedTx(client, confirmation));
   if (refused) throw refused;
@@ -303,7 +319,7 @@ async function carryTarget(run: Run, confirmationId: string, targetId: string) {
   if (target.readiness === 'carded') return;
   if (target.readiness !== 'recorded') refuse('INTAKE_TARGET_NOT_RECORDED', `This building is ${target.readiness}.`);
   const named = confirmation.packages.find(value => value.packageId === target.package_id);
-  const pkg = await getPackage(target.package_id);
+  const pkg = await run.steps.package(target.package_id);
   if (!named || pkg.state !== 'COMMITTED' || pkg.revision !== named.revision + 1) {
     refuse('INTAKE_PACKAGE_MOVED', 'The recorded package revision changed after confirmation.');
   }
@@ -327,8 +343,10 @@ async function finishJobTx(client: PoolClient, jobId: string, code: string) {
   await client.query("UPDATE jobs SET status='failed',error=$2,completed_at=now() WHERE id=$1", [jobId, code]);
 }
 
-/** A refusal stops what it names and ends the job; an infrastructure fault fences the attempt for a later one. */
+/** A refusal stops what it names and ends the job; an infrastructure fault fences the attempt for a later one.
+ * A lost lease is no longer this attempt's to fence: the authority's next claim follows its expiry. */
 async function fail(run: Run, error: unknown) {
+  if (error instanceof AppError && error.code === leaseLostCode) return;
   const refusal = intakeRunRefusal(error);
   await transaction(async client => {
     await intakeCaseTx(client, run.input.caseId);
