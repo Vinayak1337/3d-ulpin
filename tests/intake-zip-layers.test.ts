@@ -236,8 +236,13 @@ async function configured(action: () => Promise<void>) {
   }
 }
 
+const others = ' Not taken in: uttam/README.md (not a map layer).';
 const stopped = (code: string) =>
-  `The ZIP words. Taking the layers out of this ZIP stopped (${code}); enrol the ZIP again to retry.`;
+  `Taking the layers out of this ZIP stopped (${code}); enrol the ZIP again to retry.${others}`;
+// ZW1: the archive's words while its job is queued or running, and once it is done.
+const layerWords = (being: string) => `3 map layers in this ZIP are${being} taken in as their own files: `
+  + 'uttam/01-google-building-footprints.geojson, uttam/02-osm-road-centrelines.geojson, '
+  + `uttam/block-boundary.geojson.${others}`;
 
 test('the job keeps each GeoJSON layer of a real ZIP as its own child original and item; the README not', () =>
   configured(async () => {
@@ -245,8 +250,10 @@ test('the job keeps each GeoJSON layer of a real ZIP as its own child original a
     const { ledger, order, retained, queue, run } = await layersJob(pack);
     const jobId = (await queue())!;
     assert.equal(retained.length, 0);
+    assert.equal(ledger.rows.get(ledger.itemId).limit_reason, layerWords(' being'));
     await run(jobId);
     assert.equal(ledger.job(jobId).status, 'succeeded');
+    assert.equal(ledger.rows.get(ledger.itemId).limit_reason, layerWords(''));
     const kept = retained.map(file => file.sourceId);
     assert.deepEqual(retained.map(file => file.name),
       ['01-google-building-footprints.geojson', '02-osm-road-centrelines.geojson', 'block-boundary.geojson']);
@@ -312,6 +319,7 @@ test('a real mixed ZIP with ArcGIS JSON, PDFs and models queues no job and keeps
     assert.equal(await queue(), null);
     assert.equal(ledger.jobs.length, 0);
     assert.equal(retained.length, 0);
+    assert.equal(ledger.rows.get(ledger.itemId).limit_reason, 'The ZIP words.');
   }));
 
 test('a changed archive source makes the claim refuse; the job ends stale with the code in the ZIP\'s words', () =>
@@ -339,9 +347,11 @@ test('a job that fails as a whole writes its code only, and enrolling again queu
     assert.equal(ledger.attempts[0].state, 'fenced');
     const reason = ledger.rows.get(ledger.itemId).limit_reason;
     assert.equal(reason, stopped('INTAKE_ZIP_LAYERS_FAILED'));
-    assert.doesNotMatch(reason, /connection|README/);
+    assert.doesNotMatch(reason, /connection lost/);
     const retry = (await queue())!;
     assert.notEqual(retry, jobId);
+    assert.equal(ledger.rows.get(ledger.itemId).limit_reason, layerWords(' being'));
     await run(retry);
     assert.equal(retained.length, 3);
+    assert.equal(ledger.rows.get(ledger.itemId).limit_reason, layerWords(''));
   }));

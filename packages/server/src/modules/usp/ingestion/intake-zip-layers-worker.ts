@@ -8,9 +8,8 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { claimUspJobAttempt, heartbeatUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt,
   type UspJobAttempt } from '../jobs';
 import { assertIntakeDraftTx } from './intake-draft';
-import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
 import { IntakeService } from './intake-service';
-import { IntakeZipLayersInputSchema, fanOutZipLayers, type IntakeZipLayersInput,
+import { IntakeZipLayersInputSchema, fanOutZipLayers, zipParentStageTx, type IntakeZipLayersInput,
   type ZipLayerDependencies } from './intake-zip-layers';
 import { ManualIngestionService } from './service';
 
@@ -25,12 +24,10 @@ const defaults: ZipLayerDependencies = { transaction, read: readObjectRange,
 const pinned = (input: IntakeZipLayersInput) => (client: PoolClient) =>
   assertIntakeDraftTx(client, input).then(() => {});
 
-/** Officer words carry the code only, never an error message. */
+/** Officer words carry the code only, never an error message; the sentence replaces the in-progress one (ZW1). */
 async function stoppedTx(client: PoolClient, input: IntakeZipLayersInput, code: string) {
   const sentence = `Taking the layers out of this ZIP stopped (${code}); enrol the ZIP again to retry.`;
-  const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
-  await writeIntakeDraftTx(client, input.caseId, input.itemId,
-    { ...current, limitReason: current.limitReason ? `${current.limitReason} ${sentence}` : sentence });
+  await zipParentStageTx(client, input.caseId, input.itemId, { stopped: sentence });
   await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
     [input.jobId]);
   await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',
@@ -65,8 +62,9 @@ async function unclaimedFailure(input: IntakeZipLayersInput, error: unknown) {
 async function complete(input: IntakeZipLayersInput, attempt: UspJobAttempt, kept: string[]) {
   await acceptUspJobAttempt(attempt,
     { assetId: `intake-zip-layers:${input.itemId}`, version: 1, sha256: fingerprint(kept) },
-    async (_client, job) => {
+    async (client, job) => {
       if (fingerprint(job.payload) !== fingerprint(input)) conflict('The ZIP layer job changed.');
+      await zipParentStageTx(client, input.caseId, input.itemId, 'taken');
     }, pinned(input));
 }
 

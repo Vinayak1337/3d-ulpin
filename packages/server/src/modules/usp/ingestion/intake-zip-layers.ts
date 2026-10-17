@@ -10,7 +10,8 @@ import { fingerprint } from '../../cases/domain';
 import { originalAttempt } from '../../cases/original-attempt';
 import { appendCaseIngestionTx, appendIntakeItemTx, assertIngestionBinding } from './events';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { shapefileZip } from './intake-draft';
+import { shapefileZip, zipParentWords, type ZipLayerStage } from './intake-draft';
+import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { detectIntakeKind } from './intake-signatures';
 import { readZipMember } from './intake-zip';
@@ -121,10 +122,20 @@ function waiting(member: MemberRow): boolean {
   return !/^ZIP_LAYER_(LIMIT|SIZE):/.test(member.limit_reason);
 }
 
+/** ZW1. The archive's own words say where its layer job stands, written in the transaction that moves the job. */
+export async function zipParentStageTx(client: PoolClient, caseId: string, itemId: string, stage: ZipLayerStage) {
+  const card = (await client.query(`SELECT * FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
+    AND parent_item_id IS NULL`, [caseId, itemId])).rows[0]?.card;
+  if (card?.format !== 'zip') return;
+  const current = await readIntakeDraftTx(client, caseId, itemId);
+  await writeIntakeDraftTx(client, caseId, itemId, { ...current, limitReason: zipParentWords(card, stage) });
+}
+
 /**
  * ZJ1. Publishing a ZIP card queues its fan-out as one fenced job in the publishing transaction, never inside the
  * request. None is queued while one is queued or running, or when no layer waits. The id is stable from the item,
- * the source revision and the count of this source's earlier jobs.
+ * the source revision and the count of this source's earlier jobs. ZW1: while a job waits or runs, the archive's
+ * words say its layers are being taken in, also after a re-enrolment's settlement wrote ZF2's words again.
  */
 export async function queueZipLayersTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard,
   itemId: string): Promise<string | null> {
@@ -132,7 +143,10 @@ export async function queueZipLayersTx(client: PoolClient, source: IntakeSourceR
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-zip-layers:${itemId}`]);
   const jobs = (await client.query(`SELECT status FROM jobs WHERE source_id=$1 AND operation='intake-zip-layers'`,
     [source.id])).rows;
-  if (jobs.some(job => ['queued', 'running'].includes(job.status))) return null;
+  if (jobs.some(job => ['queued', 'running'].includes(job.status))) {
+    await zipParentStageTx(client, source.case_id, itemId, 'taking');
+    return null;
+  }
   if (!zipLayerMembers(card, await membersTx(client, source.case_id, itemId)).some(waiting)) return null;
   const scope = await intakeCaseTx(client, source.case_id);
   const input = IntakeZipLayersInputSchema.parse({ version: 'intake-zip-layers/1',
@@ -147,6 +161,7 @@ export async function queueZipLayersTx(client: PoolClient, source: IntakeSourceR
   const { registerUspJobInputTx } = await import('../jobs');
   await registerUspJobInputTx(client, input.jobId,
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
+  await zipParentStageTx(client, source.case_id, itemId, 'taking');
   return input.jobId;
 }
 
