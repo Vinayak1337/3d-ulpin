@@ -1,0 +1,124 @@
+{
+  "task": "R8",
+  "gate": "GF5",
+  "date": "2026-10-17",
+  "runs": [
+    "first: stopped before step 2, the engine down after the 03:28Z reboot (engine.json, before.json, kept as found)",
+    "second: the engine brought back by the lead; before-run2.json, steps 2-9, after.json"
+  ],
+  "target": { "from": "99e0026ecc90a1b95b2a735a2418ec6433d02fe1", "to": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1" },
+  "schemaCheck": {
+    "command": "git -C E:/Projects/ulpin-wt/demo diff --name-only 99e0026e 9d6acc6b -- database/ pnpm-lock.yaml",
+    "listed": [],
+    "result": "none: no schema step, as REH3 found"
+  },
+  "before": {
+    "file": "before-run2.json",
+    "commit": "99e0026e",
+    "checkoutClean": true,
+    "processes": "none: API and dispatcher not running since the reboot; 127.0.0.1:3194 health 000",
+    "containers": {
+      "geo": "8fd0a1356206 ulpin-geo:demo-k3b", "worker": "c3d5efd8403f ulpin-geo:demo-k3b",
+      "postgres": "df261f4d5d7a", "minio": "35134ae4d726", "redis": "0faae53a2e85", "minio-init": "ce9ecf3830f9 exited"
+    },
+    "volumes": ["ulpin-demo_minio-data", "ulpin-demo_postgres-data", "ulpin-demo_redis-data"],
+    "doctor": {
+      "exit": 1, "pass": 22,
+      "fail": [
+        "API native process ownership", "Dispatcher process ownership (liveness only)", "API /api/v1/health",
+        "DB migrations applied (API structural admission)", "API bound to the inspected ulpin-demo database"
+      ],
+      "note": "every failure is the API being down; at 99e0026e the doctor has no pinned-image check"
+    },
+    "counts": {
+      "throughRoutes": null,
+      "why": "the API was down, so no GET route answered before the roll",
+      "lastKnown": {
+        "from": "docs/evidence/runtime/r7/result.json after.health (16 October, API at 99e0026e)",
+        "sources": 38, "importPackages": 7, "physicalFeatures": 67
+      }
+    }
+  },
+  "steps": [
+    { "n": 2, "command": "stopProcesses() from the demo checkout", "exit": 0, "seconds": 1.118,
+      "result": "nothing recorded alive, nothing stopped (the API was already down)" },
+    { "n": 3, "command": "git -C E:/Projects/ulpin-wt/demo checkout --detach 9d6acc6b", "exit": 0, "seconds": 0.225 },
+    { "n": 4, "command": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 1.176 },
+    { "n": 5, "command": "node scripts/platform/demo-document-runtime.mjs build", "exit": 0, "seconds": 46.303,
+      "result": "key names and omitted digests only in the output" },
+    { "n": 6, "command": "node scripts/platform/processor-image.mjs roll", "exit": 0, "seconds": 18.655,
+      "result": "geo and worker recreated on ulpin-geo:git-22003ea3d878; volumes kept" },
+    { "n": 7, "command": "pnpm platform:start --profile demo", "exit": 0, "seconds": 25.88,
+      "result": "API pid 26692, dispatcher pid 19544; health 200 at its end" },
+    { "n": 8, "command": "pnpm platform:doctor --profile demo", "exit": 0, "seconds": 6.425,
+      "result": "28 PASS, 0 FAIL; PASS Processors run the pinned image, PASS Document runtimes" },
+    { "n": 9, "command": "node docs/evidence/runtime/r8/r8.mjs job (GET routes only)", "exit": 0,
+      "result": [
+        "47 jobs across 11 cases read through the case route; the latest chunk-mapping job",
+        "4b48f457-2671-4937-a973-f040b5fc20d5 read through its own route: 200, status completed"
+      ] }
+  ],
+  "downtime": {
+    "measuredFrom": "step 3 start, 2026-10-17T08:39:18.221Z (step 2 had nothing to stop)",
+    "firstGoodHealthAt": "2026-10-17T08:41:27.977Z",
+    "seconds": 129.8,
+    "stepsOnly": 92.2,
+    "note": "the other 37.6 s are this task's evidence reads between steps; the API had been down since the reboot"
+  },
+  "after": {
+    "file": "after.json",
+    "commit": "9d6acc6b",
+    "checkoutClean": true,
+    "processes": {
+      "api": { "pid": 26692, "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" },
+      "dispatcher": { "pid": 19544, "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" }
+    },
+    "containers": {
+      "geo": "9332e3bd69a7 ulpin-geo:git-22003ea3d878 (new)", "worker": "a5c41cce7d08 ulpin-geo:git-22003ea3d878 (new)",
+      "postgres": "df261f4d5d7a (same)", "minio": "35134ae4d726 (same)", "redis": "0faae53a2e85 (same)",
+      "minio-init": "ce9ecf3830f9 exited (same)"
+    },
+    "volumes": ["ulpin-demo_minio-data", "ulpin-demo_postgres-data", "ulpin-demo_redis-data"],
+    "images": {
+      "ulpin-geo:git-22003ea3d878": "sha256:b444427f51942b4a5a30b1a6b770d050f135ef2b3c28ecded547ae1902cc9985",
+      "ulpin-geo:demo-k3b": "sha256:f66bd7e9af672b75805bc1f839f2bec92dff2452595a31c4ddda5edd4dbd3c73 (kept)"
+    },
+    "doctor": { "exit": 0, "pass": 28, "fail": 0, "passedBeforeStillPass": "all 22",
+      "newPass": [
+        "Processors run the pinned image, built from this checkout's services/geo", "API native process ownership",
+        "Dispatcher process ownership (liveness only)", "API /api/v1/health",
+        "DB migrations applied (API structural admission)", "API bound to the inspected ulpin-demo database"
+      ] },
+    "gateway": "enabled: false, policyHash: null",
+    "counts": {
+      "health": "structurally_ready; sources 38, importPackages 7, physicalFeatures 67, activeLegacyDatasets 0",
+      "cases": 11, "areas": 4, "intakeTargetPackages": 0,
+      "comparison": "the same as R7's last known counts: none lower"
+    }
+  },
+  "findings": [
+    { "where": "before: GET routes",
+      "what": "no record counts through routes before the roll: the API had been down since the reboot",
+      "evidence": "before-run2.json counts (all null); compared instead with r7/result.json after.health" },
+    { "where": "step 5, demo-document-runtime.mjs build",
+      "what": "46.3 s here against 12.1 s in REH3; it passed, the first build after the reboot",
+      "evidence": "step-5.json receipt.seconds; reh3/result.json forDemoRoll.steps n 5" },
+    { "where": "step 9, chunk-mapping job 4b48f457 at 9d6acc6b",
+      "what": [
+        "the job reads completed with current false, reasons reader_changed and converter_changed;",
+        "whether it read so at 99e0026e is unknown (no route answered before); nothing was re-run"
+      ],
+      "evidence": "r8.mjs job output (route reply); step-9.json" },
+    { "where": "step 9",
+      "what": [
+        "no fresh dispatch was proved: that needs a new upload, and the task forbids records made for it;",
+        "the dispatcher is alive (doctor liveness) and existing jobs read through their routes"
+      ],
+      "evidence": "step-9.json; step-8.json PASS Dispatcher process ownership (liveness only)" },
+    { "where": "case jobs",
+      "what": "3 document-extraction jobs of case fef196d1 are stale (DOCUMENT_INPUT_STALE, 9 October), from before",
+      "evidence": "step-9.json statuses" }
+  ],
+  "rollback": "not used (rollback.md)",
+  "leftAs": "the demo running at 9d6acc6b on ulpin-geo:git-22003ea3d878; API 26692, dispatcher 19544"
+}
