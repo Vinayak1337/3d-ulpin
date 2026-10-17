@@ -4,7 +4,8 @@ import type {
 } from '@ulpin/contracts';
 import { transaction } from '../../infrastructure/db';
 import { AppError } from '../../infrastructure/errors';
-import { AREA_DISPLAY_LIMIT, getArea } from './areas';
+import { areaProposals, type ProposalFeature, type ProposalPackage } from './area-display-proposals';
+import { AREA_DISPLAY_LIMIT, areaDisplayPackages, getArea } from './areas';
 
 export type DisplayWindow = {
   minX: number; minY: number; maxX: number; maxY: number; after?: string; limit: number;
@@ -18,27 +19,43 @@ const MEMBERS = `f.revision>0 AND (f.area_id=$1 OR EXISTS (
 /** A geographic geometry in the area's local metres: its analysis CRS translated by its origin. */
 const LOCAL = `ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),
   -($3::double precision),-($4::double precision))`;
-const SUMMARY_SQL = `SELECT s.n feature_count,ST_XMin(s.box) min_x,ST_YMin(s.box) min_y,ST_XMax(s.box) max_x,
-  ST_YMax(s.box) max_y FROM (SELECT count(*)::integer n,ST_Extent(${LOCAL}) box FROM physical_features f
-  WHERE ${MEMBERS}) s`;
-// The window is moved into EPSG:4326 once, so the GiST index on geographic_geometry serves the filter.
+/** The area's unrecorded proposals, chosen by areaProposals and passed as parallel package and feature identifiers
+ * from parameter $n. Their rows hold no geometry until recorded, so the geometry is the one their package holds. */
+const proposed = (n: number) => `proposed AS (SELECT f.id,f.identifier,e.feature body,
+    ST_SetSRID(ST_GeomFromGeoJSON(e.feature->'geographicGeometry'),4326) geographic_geometry
+  FROM import_packages p CROSS JOIN LATERAL jsonb_array_elements(p.body->'features') e(feature)
+  JOIN unnest($${n}::uuid[],$${n + 1}::uuid[]) c(package_id,feature_id)
+    ON c.package_id=p.id AND c.feature_id=(e.feature->>'id')::uuid
+  JOIN physical_features f ON f.id=c.feature_id WHERE p.id=ANY($${n}::uuid[]))`;
+const SUMMARY_SQL = `WITH ${proposed(5)}, drawn AS (
+    SELECT f.geographic_geometry FROM physical_features f WHERE ${MEMBERS} AND f.id<>ALL($6::uuid[])
+    UNION ALL SELECT geographic_geometry FROM proposed)
+  SELECT s.n feature_count,ST_XMin(s.box) min_x,ST_YMin(s.box) min_y,ST_XMax(s.box) max_x,
+  ST_YMax(s.box) max_y FROM (SELECT count(*)::integer n,ST_Extent(${LOCAL}) box FROM drawn f) s`;
+// The window is moved into EPSG:4326 once, so the GiST index on geographic_geometry serves the recorded filter.
 const WINDOW_SQL = `WITH win AS (SELECT ST_Transform(ST_MakeEnvelope(
     $5::double precision+$3::double precision,$6::double precision+$4::double precision,
-    $7::double precision+$3::double precision,$8::double precision+$4::double precision,$2::integer),4326) g)
-  SELECT f.id,f.identifier,f.body->>'kind' kind,f.body->'height' height,
-    CASE WHEN f.area_id=$1 THEN f.body->'geometry' ELSE ST_AsGeoJSON(${LOCAL},9,0)::jsonb END geometry
-  FROM physical_features f,win WHERE ${MEMBERS} AND ST_Intersects(f.geographic_geometry,win.g)
-    AND ($9::text IS NULL OR f.identifier>$9::text)
-  ORDER BY f.identifier LIMIT $10`;
+    $7::double precision+$3::double precision,$8::double precision+$4::double precision,$2::integer),4326) g),
+  ${proposed(11)}
+  SELECT * FROM (SELECT f.id,f.identifier,f.body->>'kind' kind,f.body->'height' height,
+      CASE WHEN f.area_id=$1 THEN f.body->'geometry' ELSE ST_AsGeoJSON(${LOCAL},9,0)::jsonb END geometry,
+      'recorded' display_state
+    FROM physical_features f,win WHERE ${MEMBERS} AND f.id<>ALL($12::uuid[])
+      AND ST_Intersects(f.geographic_geometry,win.g) AND ($9::text IS NULL OR f.identifier>$9::text)
+    UNION ALL SELECT p.id,p.identifier,p.body->>'kind',p.body->'height',p.body->'geometry','unrecorded_proposal'
+    FROM proposed p,win WHERE ST_Intersects(p.geographic_geometry,win.g)
+      AND ($9::text IS NULL OR p.identifier>$9::text)) d
+  ORDER BY d.identifier LIMIT $10`;
 
 type WindowRow = {
   id: string; identifier: string; kind: AreaWindowFeature['kind']; height: AreaHeight | null;
-  geometry: AreaGeometry | null;
+  geometry: AreaGeometry | null; display_state: AreaWindowFeature['displayState'];
 };
 
-/** One bounded read-only transaction per display read, as the area's other bounded reads. */
+/** One bounded read-only transaction per display read, as the area's other bounded reads, given the area's
+ * proposals as the context read chooses them. */
 async function boundedRead<T>(
-  areaId: string, read: (client: PoolClient, frame: unknown[], area: MapArea) => Promise<T>,
+  areaId: string, read: (client: PoolClient, frame: unknown[], area: MapArea, proposals: unknown[]) => Promise<T>,
 ) {
   return transaction(async client => {
     await client.query("SET LOCAL statement_timeout='15s'");
@@ -48,14 +65,22 @@ async function boundedRead<T>(
         'This area has no reference system, so its features have no place on the map to read by window.');
     }
     const frame = [area.id, Number(area.reference.analysisCrs.split(':')[1]), ...area.reference.origin];
-    return read(client, frame, area);
+    return read(client, frame, area, await chosenProposals(client, area));
   }, undefined, 'repeatable_read_only');
+}
+
+/** The proposals the context read would draw, as parallel package and feature identifiers. */
+async function chosenProposals(client: PoolClient, area: MapArea) {
+  const packages: ProposalPackage<ProposalFeature>[] = await areaDisplayPackages(client, area.id, true);
+  const chosen = (await areaProposals(client, area, packages))
+    .flatMap(({ packageId, features }) => features.map(feature => [packageId, feature.id]));
+  return [chosen.map(([packageId]) => packageId), chosen.map(([, featureId]) => featureId)];
 }
 
 /** How many features the area holds to draw and where they lie, so a map can place itself before reading them. */
 export async function areaDisplaySummary(areaId: string): Promise<AreaDisplaySummary> {
-  return boundedRead(areaId, async (client, frame, area) => {
-    const row = (await client.query(SUMMARY_SQL, frame)).rows[0];
+  return boundedRead(areaId, async (client, frame, area, proposals) => {
+    const row = (await client.query(SUMMARY_SQL, [...frame, ...proposals])).rows[0];
     const extent = row.min_x === null ? null : [row.min_x, row.min_y, row.max_x, row.max_y] as [
       number, number, number, number,
     ];
@@ -68,10 +93,10 @@ export async function areaDisplaySummary(areaId: string): Promise<AreaDisplaySum
 
 /** One keyset page, by identifier, of the features meeting a window in the area's local metres. */
 export async function areaDisplayWindow(areaId: string, window: DisplayWindow): Promise<AreaDisplayWindow> {
-  return boundedRead(areaId, async (client, frame, area) => {
+  return boundedRead(areaId, async (client, frame, area, proposals) => {
     const { minX, minY, maxX, maxY, after, limit } = window;
     const rows = (await client.query<WindowRow>(WINDOW_SQL,
-      [...frame, minX, minY, maxX, maxY, after ?? null, limit + 1])).rows;
+      [...frame, minX, minY, maxX, maxY, after ?? null, limit + 1, ...proposals])).rows;
     const page = rows.slice(0, limit);
     return {
       areaId: area.id, areaRevision: area.revision, features: page.map(windowFeature),
@@ -85,6 +110,7 @@ function windowFeature(row: WindowRow): AreaWindowFeature {
   return {
     id: row.id, identifier: row.identifier, kind: row.kind, polygons: outline(row.geometry),
     heightM: stated ? row.height!.value : null, heightState: row.height?.state ?? 'unknown',
+    displayState: row.display_state,
   };
 }
 

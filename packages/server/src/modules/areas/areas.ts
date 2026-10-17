@@ -10,7 +10,7 @@ import {
 } from '../usp/ingestion/source-building-review';
 import type {GisGeometryDisposition} from '@ulpin/contracts';
 import {gisQuarantine} from './gis-quarantine';
-import {displayAreaProposals} from './area-display-proposals';
+import {displayAreaProposals,PROPOSAL_RULE_BODY} from './area-display-proposals';
 import { documentProfileFormats, documentLimitMiB } from "../../shared/document-formats";
 import { areaSceneAssets } from "../spatial/scene-assets";
 import { usesGeographicNeighbours } from "../../shared/neighbour-scenario-policy";
@@ -264,9 +264,8 @@ export async function areaContext(id: string, limit = AREA_FEATURE_LIMIT): Promi
   const [features, packages, checks] = await Promise.all([
     loadAreaFeatures(area, undefined, limit),
     transaction(async client => {
-      const rows = await client.query("SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30", [id]);
-      for (const row of rows.rows) await assertAreaPackageAuthority(client, row.body);
-      return {rows:rows.rows,displayFeatures:await displayAreaProposals(client,area,rows.rows.map(row=>row.body))};
+      const rows = await areaDisplayPackages(client, id);
+      return {rows,displayFeatures:await displayAreaProposals(client,area,rows,limit)};
     }),
     query(
       "SELECT body FROM area_check_runs WHERE area_id=$1 ORDER BY created_at DESC LIMIT 1",
@@ -299,7 +298,7 @@ export async function areaContext(id: string, limit = AREA_FEATURE_LIMIT): Promi
       )
     ).rows,
     sceneAssets: await areaSceneAssets(id),
-    packages: packages.rows.map((r) => r.body),
+    packages: packages.rows,
     latestCheck: latestCheck || null,
   };
 }
@@ -308,6 +307,15 @@ export async function areaFeatureContext(featureId: string): Promise<AreaContext
   const row = (await query('SELECT area_id FROM physical_features WHERE id=$1', [featureId])).rows[0];
   if (!row) notFound('Physical feature not found.');
   return areaContext(row.area_id);
+}
+/** The newest packages whose proposals an area's display reads draw, each past its document authority; with
+ * ruleOnly their features keep only the fields the proposal rule reads. */
+export async function areaDisplayPackages(client: PoolClient, id: string, ruleOnly = false): Promise<ImportPackage[]> {
+  const rows = await client.query(
+    `SELECT ${ruleOnly ? PROPOSAL_RULE_BODY : "body"} body FROM import_packages WHERE area_id=$1
+    ORDER BY created_at DESC LIMIT 30`, [id]);
+  for (const row of rows.rows) await assertAreaPackageAuthority(client, row.body);
+  return rows.rows.map(row => row.body);
 }
 async function assertAreaPackageAuthority(client: PoolClient, pkg: ImportPackage): Promise<ImportPackage> {
   if (isGeometryFreePackage(pkg)) {

@@ -4,12 +4,30 @@ import {AppError} from '../../infrastructure/errors';
 import {documentAuthorityTx} from '../usp/ingestion/document-authority';
 import {localOperatorSubject} from '../usp/principal';
 
+/** The fields of a package feature that decide whether an area displays it. */
+export type ProposalFeature=Pick<PhysicalFeature,'id'|'sourceKey'|'areaId'|'revision'|'sourceRevisionId'>;
+export type ProposalPackage<F extends ProposalFeature>=Omit<ImportPackage,'features'>&{features:F[]};
+/** A package body whose features keep only the fields of ProposalFeature, for reads that draw by window. */
+export const PROPOSAL_RULE_BODY=`body||jsonb_build_object('features',(SELECT coalesce(jsonb_agg(jsonb_build_object(
+  'id',e->'id','sourceKey',e->'sourceKey','areaId',e->'areaId','revision',e->'revision',
+  'sourceRevisionId',e->'sourceRevisionId') ORDER BY o),'[]'::jsonb) FROM jsonb_array_elements(body->'features')
+  WITH ORDINALITY x(e,o)))`;
+
 /** A separate display projection. It never supplies geometry to analytical readers
  * and never deletes a previously recorded feature when a newer source rejects it. */
-export async function displayAreaProposals(client:PoolClient,area:MapArea,packages:ImportPackage[]){
-  const seen=new Set<string>(),result:(PhysicalFeature&{displayState:'unrecorded_proposal';proposalPackageId:string})[]=[];
+export async function displayAreaProposals(client:PoolClient,area:MapArea,packages:ImportPackage[],limit:number){
+  return (await areaProposals(client,area,packages,limit)).flatMap(({packageId,features})=>features.map(feature=>
+    ({...feature,displayState:'unrecorded_proposal' as const,proposalPackageId:packageId})));
+}
+
+/** The features an area displays as unrecorded proposals, package by package, newest package first: the first
+ * package to name a source key or reject it decides it, and only an uncommitted package's unchanged features count. */
+export async function areaProposals<F extends ProposalFeature>(client:PoolClient,area:MapArea,
+  packages:ProposalPackage<F>[],limit=Infinity){
+  const seen=new Set<string>(),result:{packageId:string;features:F[]}[]=[];
   const current=(await client.query('SELECT id,revision FROM physical_features WHERE area_id=$1',[area.id])).rows;
   const revisions=new Map(current.map(row=>[row.id,row.revision]));
+  let count=0;
   for(const pkg of packages){
     if(pkg.sourceWorkspace)continue;
     for(const rejected of pkg.quarantine?.rejections??[])
@@ -32,8 +50,12 @@ export async function displayAreaProposals(client:PoolClient,area:MapArea,packag
       continue; // Older archived packages keep their existing context-read behavior.
     }
     for(const source of sources)await documentAuthorityTx(client,source);
-    for(const feature of candidates)result.push({...feature,displayState:'unrecorded_proposal',proposalPackageId:pkg.id});
-    if(result.length>2000)throw new AppError(422,'AREA_LIMIT','Choose an area with at most 2,000 display features.');
+    result.push({packageId:pkg.id,features:candidates});
+    count+=candidates.length;
+    if(count>limit){
+      const most=limit.toLocaleString('en-US');
+      throw new AppError(422,'AREA_LIMIT',`Choose an area with at most ${most} display features.`);
+    }
   }
   return result;
 }

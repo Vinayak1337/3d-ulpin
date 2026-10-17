@@ -7644,6 +7644,8 @@ export interface components {
                 heightM: number | null;
                 /** @enum {string} */
                 heightState: "unresolved" | "estimated" | "source_supported" | "reviewed" | "unknown";
+                /** @enum {string} */
+                displayState: "recorded" | "unrecorded_proposal";
             }[];
             next: string | null;
         };
