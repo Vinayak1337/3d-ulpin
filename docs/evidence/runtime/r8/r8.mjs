@@ -200,6 +200,28 @@ if (action === 'before' || action === 'after') {
     downtimeSeconds: first ? Number(((Date.parse(first) - Date.parse(from)) / 1000).toFixed(1)) : null };
   save('downtime.json', value);
   console.log(JSON.stringify(value));
+} else if (action === 'job') {
+  // Step 9 without new records: every case's jobs read through the case route, then the latest chunk-mapping job
+  // through its own route. A fresh dispatch would need a new upload; the doctor's dispatcher check is liveness only.
+  const caseIds = (await get('/api/v1/cases')).body.map(entry => entry.id);
+  const jobs = [];
+  for (const caseId of caseIds) jobs.push(...((await get(`/api/v1/cases/${caseId}`)).body?.jobs ?? []));
+  const statuses = {};
+  for (const job of jobs) {
+    const key = `${job.operation} ${job.status}`;
+    statuses[key] = (statuses[key] ?? 0) + 1;
+  }
+  const latest = jobs.filter(job => job.operation === 'chunk-mapping')
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+  const read = await get(`/api/v1/ingestion/cases/${latest.caseId}/sources/${latest.sourceId}`
+    + `/chunk-mapping/jobs/${latest.id}`);
+  const body = read.body ?? {};
+  save('step-9.json', { step: '9', at: new Date().toISOString(), cases: caseIds.length, jobs: jobs.length, statuses,
+    route: read.route, status: read.status,
+    job: { id: body.id ?? body.job?.id ?? null, status: body.status ?? body.job?.status ?? null,
+      keys: Object.keys(body) },
+    dispatcher: machine().processes.find(entry => entry.entry.endsWith('scripts/dispatcher.ts')) ?? null });
+  console.log(safe(JSON.stringify(read, null, 2)).slice(0, 2000));
 } else if (action === 'get' && label) {
   console.log(safe(JSON.stringify(await get(label), null, 2)));
 } else throw new Error('Usage: r8.mjs before|after [label] | step <n|restore> | health | get <route>');
