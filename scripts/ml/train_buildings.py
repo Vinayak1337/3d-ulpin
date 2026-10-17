@@ -17,21 +17,24 @@ import re
 import subprocess
 import sys
 import time
-from typing import Any, TextIO
+from typing import Any, Sequence, TextIO
 
 import numpy as np
 from PIL import Image
 from pycocotools import mask as mask_api
 import torch
+from torch.nn import functional
 from torch.utils.data import Dataset
 from transformers import RfDetrForInstanceSegmentation, Trainer, TrainerCallback, TrainingArguments
 
 from building_io import EVIDENCE, REPO, RUNS, configure_offline, read_json, sha, write_json
+from prepare_extra_train import closed_chip_lists, refuse_closed_region
 from rfdetr_loss import REVISION, repaired_loss, require_finite
 
 BASE = Path("E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/original")
 ROOT = Path("E:/BhuAayam-data/datasets/ramp/coco/train")
 BUDGET = 6 * 1024**3
+Chip = tuple[Path, dict[str, Any], list[dict[str, Any]]]
 
 
 def verified_train_coco() -> tuple[dict[str, Any], str]:
@@ -47,11 +50,43 @@ def verified_train_coco() -> tuple[dict[str, Any], str]:
     return coco, split["chip_ids_sha256"]
 
 
+def verified_extra_coco(root: Path) -> dict[str, Any]:
+    """Extra TRAIN-only chips: never a closed region, never a DEV, holdout or transfer chip."""
+    coco = read_json(root / "_annotations.coco.json")
+    for region in sorted({image["region"] for image in coco["images"]}):
+        refuse_closed_region(region)
+    closed = {chip_id for chip_ids in closed_chip_lists().values() for chip_id in chip_ids}
+    if any(image["source_id"] in closed for image in coco["images"]):
+        raise ValueError("Extra TRAIN chip belongs to a closed DEV, holdout or transfer list")
+    return coco
+
+
 def smoke_images(images: list[dict[str, Any]], annotations: dict[int, list]) -> list[dict[str, Any]]:
     empty = [image for image in images if not annotations[image["id"]]][:2]
     dense = [image for image in images if len(annotations[image["id"]]) >= 15][:2]
     positive = [image for image in images if annotations[image["id"]] and image not in dense][:4]
     return empty + dense + positive
+
+
+def load_chips(root: Path, coco: dict[str, Any], smoke: bool, keep_largest: bool) -> list[Chip]:
+    annotations: dict[int, list] = defaultdict(list)
+    for annotation in coco["annotations"]:
+        annotations[annotation["image_id"]].append(annotation)
+    images = coco["images"]
+    if smoke:
+        largest = max(images, key=lambda image: len(annotations[image["id"]]))
+        images = smoke_images(images, annotations)
+        if keep_largest and largest not in images:
+            images.append(largest)
+    return [(root, image, annotations[image["id"]]) for image in images]
+
+
+def chip_counts(chips: list[Chip]) -> dict[str, int]:
+    return {
+        "chips": len(chips),
+        "publisher_features": sum(len(annotations) for _, _, annotations in chips),
+        "empty_chips": sum(not annotations for _, _, annotations in chips),
+    }
 
 
 def decode_targets(annotations: list[dict[str, Any]], width: int, height: int) -> tuple[torch.Tensor, torch.Tensor]:
@@ -88,36 +123,104 @@ def augment_flips(rgb: torch.Tensor, boxes: torch.Tensor, masks: torch.Tensor) -
     return rgb, boxes, masks
 
 
+def luma(rgb: torch.Tensor) -> torch.Tensor:
+    return 0.299 * rgb[0:1] + 0.587 * rgb[1:2] + 0.114 * rgb[2:3]
+
+
+def augment_colour(rgb: torch.Tensor, limit: float) -> torch.Tensor:
+    """Brightness, then contrast, then saturation, each by a factor within 1 +- limit; labels are untouched."""
+    brightness, contrast, saturation = (random.uniform(1 - limit, 1 + limit) for _ in range(3))
+    rgb = (rgb * brightness).clamp(0, 1)
+    mean = luma(rgb).mean()
+    rgb = ((rgb - mean) * contrast + mean).clamp(0, 1)
+    grey = luma(rgb)
+    return ((rgb - grey) * saturation + grey).clamp(0, 1)
+
+
+def tile_offset(tile: int, size: int, shift: tuple[float, float]) -> tuple[int, int]:
+    """Signed left/top placement of a resized square in its tile: negative crops, positive pads."""
+    sign = 1 if size < tile else -1
+    return sign * round(shift[0] * abs(size - tile)), sign * round(shift[1] * abs(size - tile))
+
+
+def scale_to_tile(planes: torch.Tensor, factor: float, shift: tuple[float, float], mode: str) -> torch.Tensor:
+    """Resize square planes by the factor, then crop or zero-pad back to the original tile."""
+    tile = planes.shape[-1]
+    size = round(tile * factor)
+    if not planes.shape[0]:
+        return planes
+    options = {"align_corners": False, "antialias": True} if mode == "bilinear" else {}
+    resized = functional.interpolate(planes[None].float(), size=(size, size), mode=mode, **options)[0]
+    left, top = tile_offset(tile, size, shift)
+    if size >= tile:
+        return resized[:, -top : tile - top, -left : tile - left].to(planes.dtype)
+    canvas = torch.zeros_like(planes)
+    canvas[:, top : top + size, left : left + size] = resized.to(planes.dtype)
+    return canvas
+
+
+def augment_scale(
+    rgb: torch.Tensor, boxes: torch.Tensor, masks: torch.Tensor, scale_range: tuple[float, float]
+) -> tuple[torch.Tensor, ...]:
+    """Random zoom, then crop or pad to the tile; boxes and masks move with the image.
+
+    A roof whose mask had a pixel and has none left is no longer in the image, so it leaves the targets. A
+    publisher zero-pixel feature keeps its moved box and zero mask unless that box lies entirely outside the tile.
+    """
+    factor = random.uniform(*scale_range)
+    shift = (random.random(), random.random())
+    had_pixels = masks.flatten(1).amax(1) > 0
+    rgb = scale_to_tile(rgb, factor, shift, "bilinear")
+    masks = scale_to_tile(masks, factor, shift, "nearest-exact")
+    tile = masks.shape[-1]
+    size = round(tile * factor)
+    offset = torch.tensor(tile_offset(tile, size, shift) * 2, dtype=torch.float32)
+    corners = torch.cat([boxes[:, :2] - boxes[:, 2:] / 2, boxes[:, :2] + boxes[:, 2:] / 2], dim=1)
+    corners = (corners * size + offset) / tile
+    outside = (corners[:, 2:] <= 0).any(1) | (corners[:, :2] >= 1).any(1)
+    keep = torch.where(had_pixels, masks.flatten(1).amax(1) > 0, ~outside)
+    corners = corners.clamp(0, 1)
+    boxes = torch.cat([(corners[:, :2] + corners[:, 2:]) / 2, corners[:, 2:] - corners[:, :2]], dim=1)
+    return rgb, boxes[keep], masks[keep]
+
+
 class RampTrain(Dataset):
-    def __init__(self, smoke: bool = False, resolution: int = 432) -> None:
+    def __init__(
+        self,
+        smoke: bool = False,
+        resolution: int = 432,
+        extra_roots: Sequence[Path] = (),
+        scale_range: tuple[float, float] | None = None,
+        colour_jitter: float = 0.0,
+    ) -> None:
         coco, split_hash = verified_train_coco()
-        self.annotations: dict[int, list] = defaultdict(list)
-        for annotation in coco["annotations"]:
-            self.annotations[annotation["image_id"]].append(annotation)
-        self.images = coco["images"]
-        if smoke:
-            largest = max(self.images, key=lambda image: len(self.annotations[image["id"]]))
-            self.images = smoke_images(self.images, self.annotations)
-            if resolution > 432 and largest not in self.images:
-                self.images.append(largest)
+        base = load_chips(ROOT, coco, smoke, resolution > 432)
+        extras = [(root, load_chips(root, verified_extra_coco(root), smoke, True)) for root in extra_roots]
+        self.chips = base + [chip for _, chips in extras for chip in chips]
         self.resolution = resolution
         self.smoke = smoke
+        self.scale_range = scale_range
+        self.colour_jitter = colour_jitter
         self.binding = {
             "split": "train",
             "coco_sha256": sha(ROOT / "_annotations.coco.json"),
-            "chips": len(self.images),
-            "publisher_features": sum(len(self.annotations[image["id"]]) for image in self.images),
-            "empty_chips": sum(not self.annotations[image["id"]] for image in self.images),
-            "chip_ids": [image["source_id"] for image in self.images] if smoke else None,
+            **chip_counts(base),
+            "chip_ids": [image["source_id"] for _, image, _ in self.chips] if smoke else None,
             "split_chip_ids_sha256": split_hash,
         }
+        if extras:
+            self.binding["extra_train"] = [
+                {"root": str(root), "coco_sha256": sha(root / "_annotations.coco.json"), **chip_counts(chips)}
+                for root, chips in extras
+            ]
+            self.binding["total"] = chip_counts(self.chips)
 
     def __len__(self) -> int:
-        return len(self.images)
+        return len(self.chips)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
-        item = self.images[index]
-        image = Image.open(ROOT / item["file_name"]).convert("RGB")
+        root, item, annotations = self.chips[index]
+        image = Image.open(root / item["file_name"]).convert("RGB")
         if hashlib.sha256(np.asarray(image).tobytes()).hexdigest() != item["rgb_pixel_sha256"]:
             raise ValueError("TRAIN source pixels drift")
         width, height = image.size
@@ -126,10 +229,14 @@ class RampTrain(Dataset):
         resized = np.asarray(image.resize((self.resolution, self.resolution), Image.Resampling.BILINEAR)).copy()
         rgb = torch.from_numpy(resized).permute(2, 0, 1).float() / 255
         # Preserve epoch4's 432-pixel supervision; criterion samples normalized coordinates independently.
-        boxes, masks = decode_targets(self.annotations[item["id"]], width, height)
+        boxes, masks = decode_targets(annotations, width, height)
         # Keep zero-pixel publisher masks and their box/class supervision.
         if not self.smoke:
             rgb, boxes, masks = augment_flips(rgb, boxes, masks)
+        if self.colour_jitter:
+            rgb = augment_colour(rgb, self.colour_jitter)
+        if self.scale_range:
+            rgb, boxes, masks = augment_scale(rgb, boxes, masks, self.scale_range)
         mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None]
         std = torch.tensor([0.229, 0.224, 0.225])[:, None, None]
         return {
@@ -178,6 +285,14 @@ class FiniteTrainer(Trainer):
         return (result.loss, result) if return_outputs else result.loss
 
 
+def stopping_delta(recipe: dict[str, Any]) -> float:
+    """Recall patience is strict and F1 needs .001 unless the recipe states its own minimum improvement."""
+    configured = recipe.get("early_stopping_min_delta")
+    if configured is not None:
+        return configured
+    return 0.0 if recipe.get("early_stopping_metric") == "recall" else 0.001
+
+
 def restore_dev_patience(recipe: dict[str, Any]) -> tuple[float, int]:
     if not recipe.get("resume"):
         return -1.0, 0
@@ -189,9 +304,10 @@ def restore_dev_patience(recipe: dict[str, Any]) -> tuple[float, int]:
     if not any(record["epoch"] == resume_epoch for record in records):
         raise ValueError("Resume checkpoint must have its DEV score recorded")
     metric = "recall" if recipe.get("early_stopping_metric") == "recall" else "dev_f1"
-    minimum_delta = 0.0 if metric == "recall" else 0.001
+    minimum_delta = stopping_delta(recipe)
     checkpoint_recipe = read_json(Path(recipe["resume"]) / "training-config.json")
     checkpoint_recipe["early_stopping_metric"] = recipe.get("early_stopping_metric", "f1")
+    checkpoint_recipe["early_stopping_min_delta"] = recipe.get("early_stopping_min_delta")
     best, bad_epochs = restore_dev_patience(checkpoint_recipe)
     for record in records:
         if record["epoch"] > resume_epoch:
@@ -253,7 +369,7 @@ class DevEpochs(TrainerCallback):
         if self.bad_epochs >= 3:
             raise ValueError("DEV patience already exhausted; do not relaunch the same experiment")
         self.metric = recipe.get("early_stopping_metric", "f1")
-        self.minimum_delta = 0.0 if self.metric == "recall" else 0.001
+        self.minimum_delta = stopping_delta(recipe)
         self.results: list[dict[str, Any]] = []
         self.trainer: FiniteTrainer | None = None
 
@@ -352,6 +468,19 @@ class DevEpochs(TrainerCallback):
         return control
 
 
+def check_added_arguments(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    if args.init_weights and args.resume:
+        parser.error("Choose a fresh start from weights or a resume, not both")
+    if args.scale_range and not 0.5 <= args.scale_range[0] <= 1 <= args.scale_range[1] <= 2:
+        parser.error("Scale range must bracket 1 within [0.5, 2]")
+    if not 0 <= args.colour_jitter <= 0.5:
+        parser.error("Colour jitter limit must lie in [0, 0.5]")
+    if args.early_stopping_min_delta is not None and args.early_stopping_min_delta < 0:
+        parser.error("The minimum improvement cannot be negative")
+    if args.max_steps is not None and (args.max_steps < 1 or args.smoke):
+        parser.error("The timing probe needs a positive step count and is separate from --smoke")
+
+
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
@@ -367,7 +496,14 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--size-bins", action="store_true")
     parser.add_argument("--early-stopping-metric", choices=("f1", "recall"), default="f1")
     parser.add_argument("--dev-thresholds", type=float, nargs="+", default=[0.5])
+    parser.add_argument("--init-weights", type=Path, help="Start from these weights with a fresh optimizer")
+    parser.add_argument("--extra-train-root", type=Path, nargs="+", default=[], help="Extra TRAIN-only COCO roots")
+    parser.add_argument("--scale-range", type=float, nargs=2, metavar=("MIN", "MAX"), help="TRAIN zoom factors")
+    parser.add_argument("--colour-jitter", type=float, default=0.0, help="TRAIN brightness/contrast/saturation limit")
+    parser.add_argument("--early-stopping-min-delta", type=float, help="Smallest DEV improvement that resets patience")
+    parser.add_argument("--max-steps", type=int, help="Timing probe: stop after this many optimizer steps")
     args = parser.parse_args()
+    check_added_arguments(parser, args)
     if 0.5 not in args.dev_thresholds or any(not 0 < value < 1 for value in args.dev_thresholds):
         parser.error("DEV thresholds must include .5 and lie strictly between zero and one")
     if args.resolution < 432 or args.resolution % 24:
@@ -389,11 +525,37 @@ COMPARISON_NOTE = (
 )
 
 
+EXTRA_DATA_NOTE = (
+    "Versus epoch 4, the extra TRAIN regions and the scale/colour augmentation both differ and are not separated. "
+    "The chunked mask loss is CPU-proven identical to upstream in values and gradients."
+)
+
+
+def augmentation_note(args: argparse.Namespace) -> str:
+    note = "TRAIN horizontal/vertical flips only; smoke none"
+    if args.colour_jitter:
+        note += f"; then brightness/contrast/saturation factors within 1 +- {args.colour_jitter}"
+    if args.scale_range:
+        low, high = args.scale_range
+        note += f"; then zoom factor in [{low}, {high}] with random crop or black pad back to the tile"
+        note += "; a roof left with no mask pixel leaves the targets"
+    return note
+
+
+def stopping_note(args: argparse.Namespace) -> str:
+    note = f"DEV {args.early_stopping_metric} at .5, patience 3"
+    if args.early_stopping_min_delta is not None:
+        note += f", min_delta {args.early_stopping_min_delta}"
+    return note
+
+
 def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, Any]:
     return {
         "framework": "Transformers Trainer / RF-DETR segmentation",
         "base": str(BASE),
         "base_sha256": sha(BASE / "model.safetensors"),
+        "init_weights": str(args.init_weights) if args.init_weights else None,
+        "init_weights_sha256": sha(args.init_weights / "model.safetensors") if args.init_weights else None,
         "seed": 26011,
         "batch_size": args.batch_size,
         "gradient_accumulation_steps": args.accumulation,
@@ -407,14 +569,16 @@ def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, A
         "amp": "bf16",
         "max_epochs": args.max_epochs,
         "lr_scheduler": "constant",
-        "early_stopping": f"DEV {args.early_stopping_metric} at .5, patience 3",
+        "early_stopping": stopping_note(args),
         "early_stopping_metric": args.early_stopping_metric,
+        "early_stopping_min_delta": args.early_stopping_min_delta,
+        "max_steps": args.max_steps,
         "dev_thresholds": args.dev_thresholds,
         "preprocessing": f"RGB Pillow bilinear {args.resolution}; ImageNet; source tiles <=512; stride384",
-        "augmentation": "TRAIN horizontal/vertical flips only; smoke none",
+        "augmentation": augmentation_note(args),
         "zero_pixel_masks": "Retained; box/class and zero mask supervised; no relabel/drop",
         "loss_revision": REVISION,
-        "comparison_note": COMPARISON_NOTE,
+        "comparison_note": EXTRA_DATA_NOTE if args.extra_train_root else COMPARISON_NOTE,
         "data": dataset.binding,
         "resume": str(args.resume) if args.resume else None,
         "git_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
@@ -424,10 +588,12 @@ def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, A
     }
 
 
-def training_arguments(output: Path, smoke: bool, batch_size: int = 1, accumulation: int = 4) -> TrainingArguments:
+def training_arguments(
+    output: Path, smoke: bool, batch_size: int = 1, accumulation: int = 4, max_steps: int | None = None
+) -> TrainingArguments:
     return TrainingArguments(
         output_dir=str(output / "trainer"),
-        max_steps=50 if smoke else -1,
+        max_steps=50 if smoke else max_steps or -1,
         # Keep B3's Trainer default; callback independently enforces the requested B6 epoch ceiling.
         num_train_epochs=12,
         per_device_train_batch_size=batch_size,
@@ -527,13 +693,13 @@ def training_result(trainer: FiniteTrainer, callback: DevEpochs, output: Path, s
 
 def execute_training(args: argparse.Namespace, output: Path, dataset: RampTrain, recipe: dict[str, Any]) -> None:
     model, optimizer = load_model_optimizer(
-        args.resume, args.resolution, args.checkpoint_backbone, args.checkpoint_decoder
+        args.resume or args.init_weights, args.resolution, args.checkpoint_backbone, args.checkpoint_decoder
     )
     callback = DevEpochs(output, recipe, args.smoke, args.duration_minutes)
     with (output / "steps.jsonl").open("x", buffering=1) as journal:
         trainer = FiniteTrainer(
             model=model,
-            args=training_arguments(output, args.smoke, args.batch_size, args.accumulation),
+            args=training_arguments(output, args.smoke, args.batch_size, args.accumulation, args.max_steps),
             train_dataset=dataset,
             data_collator=collate,
             optimizers=(optimizer, None),
@@ -577,7 +743,7 @@ def main() -> None:
     random.seed(26011)
     np.random.seed(26011)
     torch.cuda.set_per_process_memory_fraction(0.75)
-    dataset = RampTrain(args.smoke, args.resolution)
+    dataset = RampTrain(args.smoke, args.resolution, args.extra_train_root, args.scale_range, args.colour_jitter)
     recipe = training_recipe(args, dataset)
     write_json(output / "run-config.json", recipe)
     execute_training(args, output, dataset, recipe)
