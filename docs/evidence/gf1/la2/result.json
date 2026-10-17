@@ -1,0 +1,64 @@
+{
+ "task": "LA2",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "41c5773b",
+ "defect": "REH4 (17 October), needsCode 1 and 3: display-summary and display-window counted only recorded features (revision > 0), so Niagara's 41,809 buildings in 21 reviewed, unconfirmed packages answered 0 features and extent null; area-display-proposals.ts refused at 2,000 display features while the context read allows 10,000.",
+ "decisions": {
+  "D1_oneRule": {
+   "rule": "packages/server/src/modules/areas/area-display-proposals.ts:25 areaProposals: the former body of displayAreaProposals, unchanged in its checks (source workspace skipped, rejected keys and the first package per namespace and source key, committed packages and other areas excluded, stored revision equal, source availability, documentAuthorityTx, 403 AREA_SOURCE_DENIED at :49); it answers the chosen features package by package",
+   "context": "area-display-proposals.ts:18 displayAreaProposals maps the same answer to unrecorded_proposal display features; areas.ts:268",
+   "packages": "packages/server/src/modules/areas/areas.ts:313 areaDisplayPackages: the context read's own package read (newest 30 of the area, each through assertAreaPackageAuthority), now called by areaContext (:267) and by the window reads (area-display-window.ts:74)",
+   "ruleOnlyBody": "area-display-proposals.ts:11 PROPOSAL_RULE_BODY: the window reads take each package with its features cut to the five fields the rule reads (id, sourceKey, areaId, revision, sourceRevisionId), so no package geometry crosses to the API to decide the choice",
+   "windowReads": "packages/server/src/modules/areas/area-display-window.ts:73 chosenProposals passes the choice as parallel package and feature identifiers; summary SQL :30 and window SQL :36 draw recorded members less the chosen identifiers, plus the chosen proposals, so a proposal that is also recorded is drawn once, as the context read draws it",
+   "sameTransaction": "the choice and the SQL run in one repeatable-read read-only transaction (area-display-window.ts:58), so the revisions the rule read are the rows the SQL joins"
+  },
+  "D2_geometry": {
+   "finding": "Proposal rows hold no geometry: an unrecorded feature's physical_features row is inserted with its body only (areas.ts:1003); geometry and geographic_geometry are written when its package is recorded (areas.ts:1701). A package correction rewrites the package body, not the row, so the package holds the proposal's current geometry.",
+   "path": "area-display-window.ts:24 proposed(): each chosen feature's geographicGeometry as its package holds it (the value recording writes into geographic_geometry), tested with the same ST_Intersects against the same EPSG:4326 envelope (:46); the identifier comes from the feature's own row (UNIQUE), so the keyset over recorded and proposed features stays total. Nothing is computed that the record does not hold.",
+   "recorded": "the recorded branch keeps ST_Intersects(f.geographic_geometry,win.g) on the untransformed column (:44), served by physical_geographic_gist"
+  },
+  "D3_state": {
+   "contract": "packages/contracts/src/area.ts:352 AreaWindowFeatureSchema.displayState 'recorded' | 'unrecorded_proposal'; docs/api/openapi.json, docs/api/source-pins.json, packages/api-client/src/schema.d.ts regenerated",
+   "read": "area-display-window.ts:42 and :45 set the state per branch; :113 sends it",
+   "count": "the summary's featureCount counts the union (area-display-window.ts:30)"
+  },
+  "D4_limit": {
+   "context": "areas.ts:268 passes the caller's limit (AREA_DISPLAY_LIMIT for the display route, AREA_FEATURE_LIMIT otherwise) to displayAreaProposals",
+   "words": "area-display-proposals.ts:57 'Choose an area with at most <limit> display features.' with the limit applied, the same words as the context read's own refusal",
+   "window": "the window reads call areaProposals without a limit (area-display-window.ts:75); they page"
+  },
+  "D5": "No change under apps/studio or packages/scene; no package is committed; analytical reads keep AREA_FEATURE_LIMIT 2,000."
+ },
+ "expectedPlan": {
+  "for": "Niagara: 41,809 proposals in 21 reviewed packages, area revision 0",
+  "packageRead": "Seq Scan on import_packages filtered by area_id (no area index; the table holds tens of rows), top-N sort to 30; per package one detoast of its body and one jsonb_array_elements/jsonb_agg pass building 41,809 five-field objects (about 8 to 10 MB of JSON to the API); then assertAreaPackageAuthority per package (a few primary-key reads of sources each)",
+  "rule": "one read of id and revision for the area's physical_features rows (41,809 rows; no area_id index, so a sequential scan), then one sources read and documentAuthorityTx per package with candidates (21)",
+  "window": "Append of two branches, then Sort by identifier and Limit limit+1. Recorded: Bitmap Index Scan on physical_geographic_gist for ST_Intersects(f.geographic_geometry, win.g), with membership, the cursor and f.id <> ALL(chosen) (a hashed array test on PostgreSQL 15 and later) as filters. Proposed: Index Scan on import_packages_pkey for the 21 package ids, a lateral jsonb_array_elements of each body (41,809 elements), Hash Join with the unnest of the 41,809 chosen pairs, Index Scan on physical_features_pkey per chosen feature for its identifier, then ST_GeomFromGeoJSON and ST_Intersects of each proposal's geometry against win.g with no index, because the rows hold no geometry until recorded.",
+  "summary": "the same proposed branch with ST_Transform and ST_Extent over the 41,809 geometries, plus the recorded members' sequential pass as before",
+  "expectedSeconds": "about 1 to 3 s per window page or summary for Niagara, dominated by the package bodies' expansion and the 41,809 geometry parses; inside the 15 s statement timeout. A window read does this work for every page; the Studio's paging to its 15,000 budget at 2,000 a page is up to 8 such reads.",
+  "measured": false,
+  "why": "No PostgreSQL with PostGIS may be started or queried by this task; the plan was not captured with EXPLAIN."
+ },
+ "tests": {
+  "window": "packages/server/src/modules/areas/area-display-window.test.ts: 8 tests, 3 new: the summary counts recorded features and the chosen proposals once (6: a re-proposed recorded feature once, a committed package's duplicate key, a rejected key, another area's feature and a feature whose stored revision moved all left out) with its extent; a window pages recorded and proposed features together by 2 without repeat or gap, each with its displayState, the re-proposed feature drawn as its package holds it and the moved one as recorded; a quarantined package citing an unavailable source refuses both reads 403 AREA_SOURCE_DENIED",
+  "context": "packages/server/src/modules/areas/area-display-read.test.ts: 7 tests, 1 new: the context read draws 10,000 and 2,001 proposals at AREA_DISPLAY_LIMIT, refuses 2,001 at the default bound with 'at most 2,000 display features' and 10,001 at the display bound with 'at most 10,000 display features'"
+ },
+ "checks": {
+  "typecheck:backend": {"exit": 0},
+  "studio:typecheck": {"exit": 0},
+  "studio:test": {"exit": 0, "before": 459, "after": 459},
+  "backendTests": {"exit": 0, "before": {"tests": 277, "pass": 275, "skipped": 2},
+   "after": {"tests": 281, "pass": 279, "skipped": 2}},
+  "openapi": {"generate": 0, "check": 0, "operations": 314, "namedSchemas": 356},
+  "refresh-contract": {"exit": 0},
+  "studio:api-types": {"exit": 0},
+  "scripts/api/check.py": {"exit": 0},
+  "git diff --check": {"exit": 0}
+ },
+ "gaps": [
+  "The proposal branch is not served by a spatial index: until a package is recorded its rows hold no geometry, so every window page parses all chosen proposals' geometry. An indexed path needs the database to hold proposal geometry (a schema change outside this task).",
+  "The Studio does not yet read displayState; telling a recorded footprint from a proposal on the map is the Studio owner's step.",
+  "Like the context read, the window reads draw from the area's newest 30 packages only."
+ ]
+}

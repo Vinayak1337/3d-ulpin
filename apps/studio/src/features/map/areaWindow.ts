@@ -11,7 +11,7 @@ export const WINDOW_BUDGET = 15_000;
 export const WINDOW_SETTLE_MS = 300;
 const PAGE_LIMIT = 4000;
 /** Where the map would be, when the area's summary holds nothing to draw. */
-export const WINDOW_EMPTY = 'This area has no recorded buildings to draw yet.';
+export const WINDOW_EMPTY = 'This area has no buildings recorded or proposed to draw yet.';
 
 export type Bounds = readonly [number, number, number, number];
 type ReadPage = (bounds: Bounds, after: string | undefined, limit: number, signal: AbortSignal) =>

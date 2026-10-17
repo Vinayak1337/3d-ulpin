@@ -21,15 +21,31 @@ function demoFeatures(areaId: string, counts = DEMO_COUNTS): PhysicalFeature[] {
   }) as PhysicalFeature));
 }
 
+/** Unrecorded proposals of one reviewed package, shaped like the NYC import. */
+function proposals(control: DisplayControl, count: number): PhysicalFeature[] {
+  return demoFeatures(control.area.id, [count]).map(feature => ({
+    ...feature, revision: 0, sourceKey: feature.identifier, sourceRevisionId: control.source.id,
+  }));
+}
+
 class DisplayControl {
   statements: string[] = [];
   area = { id: randomUUID(), site_id: randomUUID(), name: 'Display control', revision: 3,
     reference: { anchor: [-73.87, 40.9], sourceCrs: 'EPSG:4326', verticalReference: 'unknown',
       analysisCrs: 'EPSG:32618', origin: [0, 0] }, extent: [0, 0, 1, 1], geographic_extent: [0, 0, 1, 1] };
   features: PhysicalFeature[] = [];
+  /** One reviewed package's unrecorded proposals, their rows at revision 0, citing one available source. */
+  proposals: PhysicalFeature[] = [];
+  source = { id: randomUUID(), case_id: randomUUID(), archived: false, site_id: this.area.site_id };
 
   private rows(sql: string, values: any[]): any[] {
     if (sql.includes('FROM map_areas a')) return [{ ...this.area, feature_count: this.features.length }];
+    if (sql.includes('FROM import_packages WHERE area_id') && this.proposals.length) {
+      return [{ body: { id: randomUUID(), state: 'REVIEWED', datasetNamespace: 'display', parts: [],
+        sourceRevisionIds: [this.source.id], features: this.proposals } }];
+    }
+    if (sql.startsWith('SELECT id,revision FROM physical_features')) return this.proposals;
+    if (sql.includes('FROM sources') && this.proposals.length) return [this.source];
     if (sql.startsWith('SELECT f.body,f.area_id')) {
       return this.features.slice(0, values[4]).map(body => ({ body, area_id: this.area.id, local_geometry: null }));
     }
@@ -79,6 +95,19 @@ test('the display read refuses beyond its own bound instead of dropping features
     return true;
   });
 }));
+
+test('the display read draws up to its own bound of proposals and its refusal states the bound it used', async () =>
+  memory(async control => {
+    control.proposals = proposals(control, AREA_DISPLAY_LIMIT);
+    assert.equal((await areaContext(control.area.id, AREA_DISPLAY_LIMIT)).displayFeatures!.length, AREA_DISPLAY_LIMIT);
+    control.proposals = control.proposals.slice(0, 2001);
+    assert.equal((await areaContext(control.area.id, AREA_DISPLAY_LIMIT)).displayFeatures!.length, 2001);
+    await assert.rejects(areaContext(control.area.id), (error: any) =>
+      error.code === 'AREA_LIMIT' && error.message === 'Choose an area with at most 2,000 display features.');
+    control.proposals = proposals(control, AREA_DISPLAY_LIMIT + 1);
+    await assert.rejects(areaContext(control.area.id, AREA_DISPLAY_LIMIT), (error: any) =>
+      error.code === 'AREA_LIMIT' && error.message === 'Choose an area with at most 10,000 display features.');
+  }));
 
 test('the canonical area summarizes every recorded building without a read per building', async () =>
   memory(async control => {

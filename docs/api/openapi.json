@@ -76511,6 +76511,13 @@
                     "reviewed",
                     "unknown"
                   ]
+                },
+                "displayState": {
+                  "type": "string",
+                  "enum": [
+                    "recorded",
+                    "unrecorded_proposal"
+                  ]
                 }
               },
               "required": [
@@ -76519,7 +76526,8 @@
                 "kind",
                 "polygons",
                 "heightM",
-                "heightState"
+                "heightState",
+                "displayState"
               ],
               "additionalProperties": false
             }

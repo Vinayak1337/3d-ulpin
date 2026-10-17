@@ -1,41 +1,95 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
+import type { AreaWindowFeature } from '@ulpin/contracts';
 import { areaDisplayWindowSchema } from './area-validation';
 import { areaDisplaySummary, areaDisplayWindow } from './area-display-window';
 
-type Row = { id: string; identifier: string; kind: string; height: unknown; geometry: unknown; box: number[] };
+type Row = {
+  id: string; identifier: string; kind: string; height: unknown; geometry: unknown; box: number[]; revision: number;
+};
+type Source = { id: string; case_id: string; archived: boolean; site_id: string; sha256: string; revision: number };
+type Package = { id: string; state: string; datasetNamespace: string; sourceRevisionIds: string[]; parts: [];
+  features: Record<string, any>[]; quarantine?: object };
 
 /** A square building of side 10 m with its south-west corner at (x, y) in the area's local metres. */
-function square(identifier: string, x: number, y: number, height: number | null): Row {
+function square(identifier: string, x: number, y: number, height: number | null, revision = 1): Row {
   const ring = [[x, y], [x + 10, y], [x + 10, y + 10], [x, y + 10], [x, y]];
   return {
-    id: randomUUID(), identifier, kind: 'building', box: [x, y, x + 10, y + 10],
+    id: randomUUID(), identifier, kind: 'building', box: [x, y, x + 10, y + 10], revision,
     height: { state: height === null ? 'unknown' : 'source_supported', value: height, unit: 'm' },
     geometry: { type: 'Polygon', coordinates: [ring] },
   };
 }
 
-/** The area's display reads against an in-memory store that applies the window and cursor the SQL is given. */
+/** The area's display reads against an in-memory store that applies the window, cursor and proposals the SQL is
+ * given: recorded rows (revision above 0) less the proposed ones, and each proposal as its package holds it. */
 class WindowControl {
   statements: string[] = [];
   area = { id: randomUUID(), site_id: randomUUID(), name: 'Window control', revision: 4, extent: [0, 0, 1, 1],
     reference: { anchor: [-79.05, 43.09], sourceCrs: 'EPSG:4326', verticalReference: 'unknown',
       analysisCrs: 'EPSG:32617', origin: [0, 0] } as object | null, geographic_extent: [0, 0, 1, 1] };
   features: Row[] = [];
+  /** Newest first, as the package read orders them. */
+  packages: Package[] = [];
+  sources: Source[] = [];
+
+  /** A package of this area proposing the rows as they are given, citing a source of its own. */
+  propose(state: string, rows: (Row & { areaId?: string; sourceKey?: string })[]) {
+    const source = { id: randomUUID(), case_id: randomUUID(), archived: false, site_id: this.area.site_id,
+      sha256: 'a'.repeat(64), revision: 1 };
+    this.sources.push(source);
+    const features = rows.map(({ box, ...row }) => ({ ...row, sourceKey: row.sourceKey ?? row.identifier,
+      areaId: row.areaId ?? this.area.id, sourceRevisionId: source.id, geographicGeometry: row.geometry }));
+    const pkg: Package = { id: randomUUID(), state, datasetNamespace: 'niagara', sourceRevisionIds: [source.id],
+      parts: [], features };
+    this.packages.push(pkg);
+    return pkg;
+  }
+
+  private drawn(packageIds: string[], featureIds: string[]) {
+    const recorded = this.features.filter(row => row.revision > 0 && !featureIds.includes(row.id))
+      .map(({ revision, ...row }) => ({ ...row, display_state: 'recorded' }));
+    const proposed = featureIds.map((id, index) => {
+      const feature = this.packages.find(pkg => pkg.id === packageIds[index])!.features.find(row => row.id === id)!;
+      const ring: number[][] = feature.geometry.coordinates[0];
+      const xs = ring.map(([x]) => x), ys = ring.map(([, y]) => y);
+      return { id, identifier: this.features.find(row => row.id === id)!.identifier, kind: feature.kind,
+        height: feature.height, geometry: feature.geometry, display_state: 'unrecorded_proposal',
+        box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] };
+    });
+    return [...recorded, ...proposed];
+  }
 
   private rows(sql: string, values: any[]): any[] {
     if (sql.includes('FROM map_areas a')) return [{ ...this.area, feature_count: this.features.length }];
+    if (sql.includes('FROM import_packages WHERE area_id')) {
+      assert.match(sql, /jsonb_agg/);
+      const rule = ({ id, sourceKey, areaId, revision, sourceRevisionId }: Record<string, any>) =>
+        ({ id, sourceKey, areaId, revision, sourceRevisionId });
+      return this.packages.map(pkg => ({ body: { ...pkg, features: pkg.features.map(rule) } }));
+    }
+    if (sql.startsWith('SELECT id,revision FROM physical_features')) {
+      return this.features.map(({ id, revision }) => ({ id, revision }));
+    }
+    if (sql.includes('FROM sources')) {
+      const ids = Array.isArray(values[0]) ? values[0] : [values[0]];
+      return this.sources.filter(source => ids.includes(source.id));
+    }
+    if (sql.includes('area_site')) {
+      return [{ archived: false, site_id: this.area.site_id, area_site: this.area.site_id }];
+    }
     if (sql.includes('ST_Extent')) {
-      if (!this.features.length) return [{ feature_count: 0, min_x: null, min_y: null, max_x: null, max_y: null }];
-      const boxes = this.features.map(feature => feature.box);
-      return [{ feature_count: this.features.length, min_x: Math.min(...boxes.map(box => box[0])),
+      const drawn = this.drawn(values[4], values[5]);
+      if (!drawn.length) return [{ feature_count: 0, min_x: null, min_y: null, max_x: null, max_y: null }];
+      const boxes = drawn.map(feature => feature.box);
+      return [{ feature_count: drawn.length, min_x: Math.min(...boxes.map(box => box[0])),
         min_y: Math.min(...boxes.map(box => box[1])), max_x: Math.max(...boxes.map(box => box[2])),
         max_y: Math.max(...boxes.map(box => box[3])) }];
     }
     if (sql.includes('ST_MakeEnvelope')) {
-      const [, , , , minX, minY, maxX, maxY, after, limit] = values;
-      return this.features
+      const [, , , , minX, minY, maxX, maxY, after, limit, packageIds, featureIds] = values;
+      return this.drawn(packageIds, featureIds)
         .filter(({ box }) => box[0] <= maxX && box[2] >= minX && box[1] <= maxY && box[3] >= minY)
         .filter(feature => after === null || feature.identifier > after)
         .sort((a, b) => (a.identifier < b.identifier ? -1 : 1)).slice(0, limit)
@@ -55,9 +109,15 @@ async function memory(work: (control: WindowControl) => Promise<void>) {
   const control = new WindowControl();
   const globals = globalThis as any;
   const previousPool = globals.ulpinPool;
+  const previousSubject = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
   globals.ulpinPool = { query: control.query, connect: async () => ({ query: control.query, release() {} }) };
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'area-display-window-test';
   try { await work(control); }
-  finally { globals.ulpinPool = previousPool; }
+  finally {
+    globals.ulpinPool = previousPool;
+    if (previousSubject === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previousSubject;
+  }
 }
 
 const window = (input: Record<string, unknown>) => areaDisplayWindowSchema.parse(input);
@@ -116,3 +176,63 @@ test('an area without a reference system answers 409 for both reads', async () =
     await assert.rejects(read, (error: any) => error.status === 409 && error.code === 'AREA_REFERENCE');
   }
 }));
+
+/** Niagara's shape: recorded features beside reviewed packages not yet confirmed, newest package first. */
+function proposals(control: WindowControl) {
+  const recorded = square('r-1', 0, 0, 9), reproposed = square('r-2', 20, 0, 9), committed = square('c-1', 300, 0, 9);
+  const moved = square('m-1', 400, 0, 9, 2), other = square('o-1', 600, 0, 9, 0);
+  const [first, second, duplicate, withheld] = [square('p-1', 100, 0, 12, 0), square('p-2', 200, 0, null, 0),
+    square('d-1', 300, 0, 9, 0), square('x-1', 500, 0, 9, 0)];
+  control.features = [recorded, reproposed, committed, moved, first, second, duplicate, withheld];
+  const reviewed = control.propose('REVIEWED', [first, second, { ...square('r-2', 25, 0, 9), id: reproposed.id },
+    { ...square('m-1', 450, 0, 9), id: moved.id }, { ...other, areaId: randomUUID() }]);
+  reviewed.quarantine = { version: 'gis-quarantine/1', total: 6, accepted: 5, rejected: 1,
+    rejections: [{ featureIndex: 5, sourceKey: 'x-1', code: 'INVALID_GEOMETRY', reason: 'Ring not closed.' }],
+    sourceSha256: 'a'.repeat(64), sourceId: reviewed.sourceRevisionIds[0], sourceRevision: 1,
+    message: '5 of 6 source features accepted.', complete: false };
+  control.propose('COMMITTED', [committed]);
+  control.propose('REVIEWED', [{ ...duplicate, sourceKey: 'c-1' }, withheld]);
+}
+
+test('the summary counts recorded features and the proposals the context read draws, each once', async () =>
+  memory(async control => {
+    proposals(control);
+    assert.deepEqual(await areaDisplaySummary(control.area.id), {
+      areaId: control.area.id, areaRevision: 4, featureCount: 6, extent: [0, 0, 410, 10], displayLimit: 10000,
+    });
+  }));
+
+test('a window pages recorded features and proposals together, each once and with its display state', async () =>
+  memory(async control => {
+    proposals(control);
+    const seen: AreaWindowFeature[] = [];
+    let after: string | undefined;
+    do {
+      const page = await areaDisplayWindow(control.area.id, window({ minX: -1, minY: -1, maxX: 700, maxY: 20, limit: 2,
+        ...(after ? { after } : {}) }));
+      assert.ok(page.features.length <= 2);
+      seen.push(...page.features);
+      after = page.next ?? undefined;
+    } while (after);
+    assert.deepEqual(seen.map(feature => [feature.identifier, feature.displayState]), [['c-1', 'recorded'],
+      ['m-1', 'recorded'], ['p-1', 'unrecorded_proposal'], ['p-2', 'unrecorded_proposal'], ['r-1', 'recorded'],
+      ['r-2', 'unrecorded_proposal']]);
+    const corner = (identifier: string) => seen.find(feature => feature.identifier === identifier)!.polygons[0][0][0];
+    assert.deepEqual([corner('m-1'), corner('r-2')], [[400, 0], [25, 0]]);
+  }));
+
+test('a quarantined package whose cited source is unavailable refuses both reads with 403', async () =>
+  memory(async control => {
+    const row = square('p-1', 0, 0, 9, 0);
+    control.features = [row];
+    const pkg = control.propose('REVIEWED', [row]);
+    pkg.features[0].sourceRevisionId = randomUUID();
+    pkg.quarantine = { version: 'gis-quarantine/1', total: 2, accepted: 1, rejected: 1,
+      rejections: [{ featureIndex: 1, sourceKey: null, code: 'INVALID_GEOMETRY', reason: 'Ring not closed.' }],
+      sourceSha256: 'a'.repeat(64), sourceId: pkg.sourceRevisionIds[0], sourceRevision: 1,
+      message: '1 of 2 source features accepted.', complete: false };
+    for (const read of [areaDisplaySummary(control.area.id),
+      areaDisplayWindow(control.area.id, window({ minX: -1, minY: -1, maxX: 20, maxY: 20 }))]) {
+      await assert.rejects(read, (error: any) => error.status === 403 && error.code === 'AREA_SOURCE_DENIED');
+    }
+  }));
