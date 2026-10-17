@@ -56,7 +56,7 @@ class LedgerControl {
       return { rows: [{ state: row.state, placement: row.placement, plan_ref: row.plan_ref ?? null,
         records_seen: row.records_seen, limit_reason: row.limit_reason }] };
     }
-    if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [this.rows.get(this.sourceId)] };
+    if (/^SELECT (?:\*|card) FROM usp_intake_items/.test(sql)) return { rows: [this.rows.get(this.sourceId)] };
     if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return { rows: [this.rows.get(values[0])] };
     if (sql.startsWith('SELECT item_id,member_path')) {
       return { rows: [...this.rows.values()].filter(row => row.parent_item_id === values[1]) };
@@ -129,6 +129,7 @@ function fixture() {
   let budgetOnce = false;
   let mutate: (() => void) | null = null;
   let cardOverride: Awaited<ReturnType<typeof probeOriginal>> | null = null;
+  let probed = Buffer.from('key,value\n1,2\n');
   const service = new IntakeService({
     transaction: async action => action(client), read: async () => Buffer.alloc(18),
     probe: async () => {
@@ -139,13 +140,13 @@ function fixture() {
       }
       mutate?.();
       if (cardOverride) return structuredClone(cardOverride);
-      const bytes = Buffer.from('key,value\n1,2\n');
-      return probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, control.source.name);
+      return probeOriginal(async (start, end) => probed.subarray(start, end), probed.length, control.source.name);
     },
   });
   return { service, ...control, probes: () => probes, exhaustOnce: () => { budgetOnce = true; },
     duringProbe: (action: () => void) => { mutate = action; },
-    useCard: (card: Awaited<ReturnType<typeof probeOriginal>>) => { cardOverride = card; } };
+    useCard: (card: Awaited<ReturnType<typeof probeOriginal>>) => { cardOverride = card; },
+    useBytes: (bytes: Buffer) => { probed = bytes; } };
 }
 
 async function configured(action: () => Promise<void>) {
@@ -434,5 +435,24 @@ test('enrolling a shapefile ZIP queues no layer job', async () => {
     await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
     assert.equal(f.jobs.length, 0);
     assert.ok(!f.queries.some(sql => sql.includes('jobs')));
+  });
+});
+
+test('a probed PDF and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
+  await configured(async () => {
+    for (const [bytes, expected] of [
+      [Buffer.from('%PDF-1.7\n%%EOF\n'), 'Kept as a PDF document (18 bytes). No reader in a batch takes this '
+        + 'kind of file yet, so it is not on the map; the original is kept with its SHA-256.'],
+      [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Kept (18 bytes); its kind was not recognised from its first and '
+        + 'last bytes.'],
+    ] as const) {
+      const f = fixture();
+      f.useBytes(bytes);
+      const first = await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+      assert.deepEqual([first.state, first.placement, first.limitReason], ['probed', 'not_understood', expected]);
+      const again = await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+      assert.deepEqual([again.state, again.placement, again.limitReason], ['probed', 'not_understood', expected]);
+      assert.equal(f.jobs.length, 0);
+    }
   });
 });
