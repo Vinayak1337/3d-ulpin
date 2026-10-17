@@ -1,0 +1,27 @@
+{ "at": "2026-10-17T18:15:21.787Z", "started": {
+"command": "%LOCALAPPDATA%/Programs/DockerDesktop/Docker Desktop.exe (once)", "atLocal": "2026-10-17 23:40:44 +05:30" },
+"waited": "docker ps polled about 3.5 minutes: the engine pipe dockerDesktopLinuxEngine never appeared", "engine": {
+"command": [ "docker ps" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 1, "seconds": 0.155, "output": [
+"failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if",
+" the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine:",
+" The system cannot find the file specified." ], "error": null }, "dockerProcessesAtThisRead": [], "backendLog": {
+"file": "%LOCALAPPDATA%/Docker/log/host/com.docker.backend.exe.log", "crashLines": [ { "line": 2053, "text": [
+"[2026-10-17T18:10:46.823127400Z][com.docker.backend.exe] backend cancelling with error: st",
+"arting services: initializing Ingest server: listening on unix://%USERPROFILE%/AppData/Loc",
+"al/Docker/run/sailor-ingest.sock: rename %USERPROFILE%/AppData/Local/Docker/run/sailor-ing",
+"est.sock %USERPROFILE%/AppData/Local/Docker/run/sailor-inges" ] }, { "line": 2127, "text": [
+"[2026-10-17T18:10:48.365650000Z][com.docker.backend.exe] backend crashed, dumping error to",
+" file and reporting to user: starting services: initializing Ingest server: listening on u",
+"nix://%USERPROFILE%/AppData/Local/Docker/run/sailor-ingest.sock: rename %USERPROFILE%/AppD",
+"ata/Local/Docker/run/sailor-ingest.sock %USERPROFILE%/AppDat" ] }, { "line": 2136, "text": [
+"[2026-10-17T18:10:48.863636100Z][com.docker.backend.exe.ipc] (5feb8a5c) 4929417f-ErrorRepo",
+"rtAPI S->C Docker-Desktop/4.91.0 (Windows; x64; GUI) GET /error (0s): {\"actions\":[\"Quit\",\"",
+"Reset to factory defaults\"],\"allowDiagnostics\":true,\"error\":\"starting services: initializi",
+"ng Ingest server: listening on unix://%USERPROFILE%/AppData/" ] }, { "line": 2148, "text": [
+"[2026-10-17T18:14:45.722741100Z][com.docker.backend.exe.ipc] (5feb8a5c) 4929417f-ErrorRepo",
+"rtAPI S<-C Docker-Desktop/4.91.0 (Windows; x64; GUI) bind: {\"action\":\"Quit\"}" ] }, { "line": 2164,
+"text": "[2026-10-17T18:14:46.965512600Z][com.docker.backend.exe] marlin stopped" } ] }, "dialog": {
+"title": "An unexpected error occurred", "actions": [ "Quit", "Reset to factory defaults" ],
+"clickedByThisRun": "nothing",
+"closed": "Quit was chosen at 18:14:45Z (23:44:45 IST), not by this run; Reset was not chosen (crash lines)" },
+"stopRule": "The task: if Docker crashes on stale sockets or offers Reset to factory defaults, never Reset; stop." }
