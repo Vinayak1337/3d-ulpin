@@ -1,7 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import type { PoolClient } from 'pg';
+import { zipSync } from 'fflate';
 import { IntakeService } from '../packages/server/src/modules/usp/ingestion/intake-service';
 import { IntakeProbeBudget, probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { IntakeManifestSchema, IntakeItemSchema } from '../packages/contracts/src/usp/intake';
@@ -22,6 +24,7 @@ class LedgerControl {
   readonly operations = new Map<string, any>();
   readonly queries: string[] = [];
   readonly events: unknown[] = [];
+  readonly jobs: any[] = [];
   private eventSequence = 0;
 
   async query(sql: string, values: any[] = []): Promise<{ rows: any[] }> {
@@ -40,6 +43,7 @@ class LedgerControl {
       return { rows: [] };
     }
     if (sql.includes('usp_outbox')) return this.outbox(sql, values);
+    if (/jobs|usp_job_metadata|^SELECT pg_advisory/.test(sql)) return this.job(sql, values);
     if (sql.startsWith('INSERT INTO usp_intake_items')) return this.insert(sql, values);
     if (sql.startsWith('UPDATE usp_intake_items')) return this.update(sql, values);
     if (sql.startsWith('SELECT item_id AS')) {
@@ -68,6 +72,16 @@ class LedgerControl {
   private outbox(sql: string, values: any[]) {
     if (sql.startsWith('UPDATE usp_outbox_streams')) return { rows: [{ sequence: String(++this.eventSequence) }] };
     if (sql.startsWith('INSERT INTO usp_outbox(')) this.events.push(values[2]);
+    return { rows: [] };
+  }
+
+  private job(sql: string, values: any[]) {
+    if (sql.startsWith('SELECT status FROM jobs')) return { rows: this.jobs.filter(job => job.source_id === values[0]) };
+    if (sql.startsWith('SELECT * FROM jobs')) return { rows: this.jobs.filter(job => job.id === values[0]) };
+    if (sql.startsWith('INSERT INTO jobs')) {
+      this.jobs.push({ id: values[0], case_id: values[1], source_id: values[2], operation: 'intake-zip-layers',
+        status: 'queued', case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
+    }
     return { rows: [] };
   }
 
@@ -360,5 +374,54 @@ test('the manifest names a large item\'s streamed profile job from its one item 
     assert.ok(reads[0].startsWith('SELECT i.*'));
     delete large.streamed_profile_job_id;
     assert.equal((await f.service.one(f.caseId, f.sourceId)).streamedProfileJobId, null);
+  });
+});
+
+// Real public layers kept in the repository (OSM / Google Open Buildings, test_only); zipped here, never committed.
+async function layerZipCard() {
+  const pack = zipSync(Object.fromEntries(['01-google-building-footprints.geojson', 'block-boundary.geojson',
+    'README.md'].map(name => [`uttam/${name}`, readFileSync(`fixtures/google-uttam/${name}`)])));
+  return probeOriginal(async (start, end) => pack.subarray(start, end), pack.length, 'layers.zip');
+}
+
+test('enrolling a ZIP of GeoJSON layers queues one layer job and keeps no layer during the request', async () => {
+  await configured(async () => {
+    const f = fixture();
+    f.useCard(await layerZipCard());
+    const input = { sourceId: f.sourceId, requestKey: randomUUID() };
+    const item = await f.service.register(f.caseId, input);
+    assert.equal(f.jobs.length, 1);
+    assert.deepEqual([f.jobs[0].operation, f.jobs[0].payload.version, f.jobs[0].payload.itemId,
+      f.jobs[0].payload.caseRevision], ['intake-zip-layers', 'intake-zip-layers/1', item.itemId, 12]);
+    const members = [...f.rows.values()].filter(row => row.parent_item_id);
+    assert.equal(members.length, 3);
+    assert.ok(members.every(row => row.source_id === null));
+    assert.ok(!f.queries.some(sql => sql.includes('INSERT INTO sources') || sql.includes('UPDATE cases')));
+    // A replay, and a second enrolment while the job is queued, queue none.
+    await f.service.register(f.caseId, input);
+    await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
+    assert.equal(f.jobs.length, 1);
+    // After a failed job with an unkept layer, enrolling again queues a fresh job under a new id.
+    f.jobs[0].status = 'failed';
+    await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
+    assert.equal(f.jobs.length, 2);
+    assert.notEqual(f.jobs[1].id, f.jobs[0].id);
+    // Once every layer is kept and enrolled, a finished job leaves nothing to retry.
+    f.jobs[1].status = 'succeeded';
+    for (const row of members) if (row.format === 'geojson') row.source_id = randomUUID();
+    await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
+    assert.equal(f.jobs.length, 2);
+  });
+});
+
+test('enrolling a shapefile ZIP queues no layer job', async () => {
+  await configured(async () => {
+    const f = fixture();
+    const card = await layerZipCard();
+    f.useCard({ ...card, members: [...card.members, { name: 'uttam/roads.shp', sizeBytes: 100,
+      compressedBytes: 100, family: 'vector', format: 'shapefile', refusalCode: null, companions: [], card: null }] });
+    await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+    assert.equal(f.jobs.length, 0);
+    assert.ok(!f.queries.some(sql => sql.includes('jobs')));
   });
 });

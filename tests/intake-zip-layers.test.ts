@@ -7,7 +7,8 @@ import { zipSync } from 'fflate';
 import { ArchiveMemberLineageSchema, type IntakeCard } from '../packages/contracts/src/usp/intake';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { readZipMember } from '../packages/server/src/modules/usp/ingestion/intake-zip';
-import { fanOutZipLayers, ZIP_ARCHIVE_PROFILE } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
+import { queueZipLayersTx, ZIP_ARCHIVE_PROFILE } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
+import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
 import { AppError } from '../packages/server/src/infrastructure/errors';
 
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
@@ -43,7 +44,8 @@ test('a member that is missing, too large or damaged is refused by code', async 
   assert.match(await refused('a.geojson', size, damaged), /^ZIP_MEMBER_INTEGRITY$/);
 });
 
-// In-memory ledger for the fan-out's own statements; no database, object store, processor or runtime is opened.
+// In-memory ledger for the job's own statements and the job authority's; no database, object store, processor or
+// runtime is opened.
 class Ledger {
   readonly caseId = randomUUID();
   readonly archiveId = randomUUID();
@@ -51,6 +53,9 @@ class Ledger {
   revision = 7;
   readonly rows = new Map<string, any>();
   readonly events: unknown[] = [];
+  readonly jobs: any[] = [];
+  readonly metadata = new Map<string, any>();
+  readonly attempts: any[] = [];
   archive: any;
 
   constructor(readonly bytes: Uint8Array, readonly card: IntakeCard) {
@@ -58,8 +63,11 @@ class Ledger {
       name: 'layers.zip', profile: ZIP_ARCHIVE_PROFILE, bytes: bytes.length, sha256: sha(bytes),
       object_key: `sources/${this.archiveId}/${sha(bytes)}`, status: 'needs_input',
       inspection: { actor: 'zip-layer-control' } };
+    // The archive's own item as ZF2 settles it: read, undecided, its words its reason.
     this.rows.set(this.itemId, { item_id: this.itemId, case_id: this.caseId, source_id: this.archiveId,
-      parent_item_id: null, member_path: null, card });
+      parent_item_id: null, member_path: null, card, state: 'read', placement: 'undecided', plan_ref: null,
+      records_seen: '0', limit_reason: 'The ZIP words.', family: 'archive', format: 'zip', size_class: 'S', wave: 4,
+      pinned_by_officer: false });
     // The rows registration writes for each member (intake-service childrenTx).
     for (const member of card.members) {
       const id = randomUUID();
@@ -71,24 +79,95 @@ class Ledger {
   }
 
   member(path: string) { return [...this.rows.values()].find(row => row.member_path === path); }
+  job(id: string) { return this.jobs.find(job => job.id === id); }
 
   async query(sql: string, values: any[] = []): Promise<{ rows: any[]; rowCount?: number }> {
-    if (sql.startsWith('SELECT id,revision,archived FROM cases')) {
-      return { rows: [{ id: this.caseId, revision: this.revision, archived: false }] };
+    const rows = this.jobQuery(sql, values) ?? this.itemQuery(sql, values);
+    if (!rows) throw new Error(`Unexpected ledger SQL: ${sql}`);
+    return 'rows' in rows ? rows : { rows, rowCount: rows.length };
+  }
+
+  private jobQuery(sql: string, values: any[]): any[] | null {
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql) || sql.startsWith('SELECT pg_advisory')) return [];
+    if (sql.startsWith('SELECT id FROM cases')) return [{ id: this.caseId }];
+    if (sql.startsWith('SELECT max(revision)')) return [{ revision: this.archive.revision }];
+    if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) {
+      return this.jobs.filter(job => job.source_id === values[0]);
     }
-    if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: this.revision }] };
-    if (sql.startsWith('SELECT * FROM sources')) return { rows: values[1] === this.archiveId ? [this.archive] : [] };
+    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')) {
+      return this.jobs.filter(job => job.id === values[0]);
+    }
+    if (sql.startsWith('INSERT INTO jobs')) {
+      this.jobs.push({ id: values[0], case_id: values[1], source_id: values[2], operation: 'intake-zip-layers',
+        status: 'queued', case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
+      return [];
+    }
+    if (sql.startsWith('UPDATE jobs SET status=$2')) {
+      Object.assign(this.job(values[0]), { status: values[1], error: values[2] });
+      return [];
+    }
+    if (sql.startsWith('UPDATE jobs SET status=')) {
+      this.job(values[0]).status = /status='(\w+)'/.exec(sql)![1];
+      return [];
+    }
+    if (sql.startsWith('INSERT INTO usp_job_metadata')) {
+      this.metadata.set(values[0], { job_id: values[0], input_manifest_id: values[1], input_sha256: values[2],
+        scope: values[3], logical_state: 'queued', version: 1 });
+      return [];
+    }
+    if (sql.includes('FROM usp_job_metadata')) return this.metadata.has(values[0]) ? [this.metadata.get(values[0])] : [];
+    if (sql.startsWith('UPDATE usp_job_metadata')) {
+      this.metadata.get(values[0]).logical_state = /logical_state='(\w+)'/.exec(sql)![1];
+      return [];
+    }
+    const attempts = this.attempts.filter(attempt => attempt.job_id === values[0]);
+    const latest = attempts.at(-1);
+    if (sql.startsWith('SELECT * FROM usp_job_attempts')) return latest ? [latest] : [];
+    if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) {
+      return attempts.filter(attempt => attempt.state === 'active' && attempt.lease_until > new Date());
+    }
+    if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+      const lease_until = new Date(Date.now() + 180_000);
+      this.attempts.push({ job_id: values[0], number: values[1], fence: values[2], owner: values[3],
+        input_sha256: values[4], state: 'active', lease_until });
+      return [{ lease_until }];
+    }
+    if (sql.startsWith('UPDATE usp_job_attempts SET lease_until')) {
+      return latest?.state === 'active' && latest.fence === values[2] ? [{ lease_until: latest.lease_until }] : [];
+    }
+    if (sql.startsWith('UPDATE usp_job_attempts SET state=')) {
+      latest.state = /state='(\w+)'/.exec(sql)![1];
+      return [];
+    }
+    return null;
+  }
+
+  private itemQuery(sql: string, values: any[]): any[] | { rows: any[]; rowCount: number } | null {
+    if (sql.startsWith('SELECT id,revision,archived FROM cases')) {
+      return [{ id: this.caseId, revision: this.revision, archived: false }];
+    }
+    if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: this.revision }];
+    if (sql.startsWith('SELECT * FROM sources')) return values[1] === this.archiveId ? [this.archive] : [];
+    if (sql.startsWith('SELECT * FROM usp_intake_items WHERE source_id')) {
+      return [...this.rows.values()].filter(row => row.source_id === values[0] && !row.parent_item_id);
+    }
     if (sql.startsWith('SELECT * FROM usp_intake_items')) {
       const row = this.rows.get(values[1]);
-      return { rows: row && !row.parent_item_id ? [row] : [] };
+      return row && !row.parent_item_id ? [row] : [];
     }
     if (sql.startsWith('SELECT item_id,member_path')) {
-      return { rows: [...this.rows.values()].filter(row => row.parent_item_id === values[1]) };
+      return [...this.rows.values()].filter(row => row.parent_item_id === values[1]);
     }
     if (sql.startsWith('SELECT item_id AS')) {
       const row = this.rows.get(values[1]);
-      return { rows: [{ itemId: row.item_id, state: row.state, family: row.family, format: row.format,
-        sizeClass: row.size_class, wave: row.wave, pinnedByOfficer: row.pinned_by_officer }] };
+      return [{ itemId: row.item_id, state: row.state, family: row.family, format: row.format,
+        sizeClass: row.size_class, wave: row.wave, pinnedByOfficer: row.pinned_by_officer }];
+    }
+    if (sql.startsWith('SELECT state,placement,plan_ref')) return [this.rows.get(values[1])];
+    if (sql.startsWith('UPDATE usp_intake_items SET state=$3')) {
+      Object.assign(this.rows.get(values[1]), { state: values[2], placement: values[3], plan_ref: values[4],
+        records_seen: String(values[5]), limit_reason: values[6] });
+      return [];
     }
     if (sql.startsWith('UPDATE usp_intake_items SET source_id')) {
       const row = this.rows.get(values[1]);
@@ -98,40 +177,53 @@ class Ledger {
     }
     if (sql.startsWith('UPDATE usp_intake_items SET limit_reason')) {
       const row = this.rows.get(values[1]);
-      if ((sql.includes('source_id IS NULL') && row.source_id) || row.limit_reason === values[2]) {
+      const next = sql.includes('limit_reason=NULL') ? null : values[2];
+      if ((sql.includes('source_id IS NULL') && row.source_id) || row.limit_reason === next) {
         return { rows: [], rowCount: 0 };
       }
-      row.limit_reason = values[2];
+      row.limit_reason = next;
       return { rows: [], rowCount: 1 };
     }
-    if (sql.startsWith('UPDATE usp_outbox_streams')) return { rows: [{ sequence: String(this.events.length + 1) }] };
-    if (sql.startsWith('INSERT INTO usp_outbox(')) { this.events.push(values[2]); return { rows: [] }; }
-    if (sql.includes('usp_outbox')) return { rows: [] };
-    throw new Error(`Unexpected ledger SQL: ${sql}`);
+    if (sql.startsWith('UPDATE usp_outbox_streams')) return [{ sequence: String(this.events.length + 1) }];
+    if (sql.startsWith('INSERT INTO usp_outbox(')) { this.events.push(values[2]); return []; }
+    if (sql.includes('usp_outbox')) return [];
+    return null;
   }
 }
 
-async function fanOut(pack: Uint8Array, options: { failRetain?: (name: string) => AppError | null } = {}) {
+async function layersJob(pack: Uint8Array, options: { failRetain?: (name: string) => AppError | null } = {}) {
   const card = await probeOriginal(reader(pack), pack.length, 'layers.zip');
   const ledger = new Ledger(pack, card);
   const client = { query: ledger.query.bind(ledger) } as unknown as PoolClient;
   const order: string[] = [];
-  const retained: { name: string; bytes: Uint8Array; lineage: unknown; input: any }[] = [];
+  const retained: { name: string; bytes: Uint8Array; lineage: unknown; input: any; sourceId: string }[] = [];
   const dependencies = {
-    transaction: (async (action: (client: PoolClient) => Promise<unknown>) => action(client)) as never,
     read: async (_key: string, start: number, end: number) => pack.subarray(start, end),
     retain: async (_caseId: string, input: any, file: { name: string; bytes: Uint8Array }, lineage: unknown) => {
       const refusal = options.failRetain?.(file.name);
       if (refusal) throw refusal;
       order.push(`retain:${file.name}`);
-      retained.push({ ...file, lineage, input });
+      const sourceId = randomUUID();
+      retained.push({ ...file, lineage, input, sourceId });
       ledger.revision++;
-      return { source: { sourceId: randomUUID() } } as never;
+      return { source: { sourceId } } as never;
     },
     register: async (_caseId: string, input: any) => { order.push(`register:${input.sourceId}`); return {}; },
   };
-  const run = () => fanOutZipLayers(ledger.caseId, ledger.itemId, dependencies);
-  return { ledger, card, order, retained, run };
+  // What the enrol request now does: queue the job in the transaction that publishes the probe card.
+  const queue = () => queueZipLayersTx(client, ledger.archive, card, ledger.itemId);
+  // What the dispatcher does: run the job; its own transactions reach the ledger through the shared pool.
+  const run = async (jobId: string, overrides: Record<string, unknown> = {}) => {
+    const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
+    const previous = globals.ulpinPool;
+    globals.ulpinPool = { query: client.query, connect: async () => ({ query: client.query, release: () => {} }) };
+    try { await runIntakeZipLayersJob(jobId, { ...dependencies, ...overrides } as never); }
+    finally {
+      if (previous === undefined) delete globals.ulpinPool;
+      else globals.ulpinPool = previous;
+    }
+  };
+  return { ledger, card, order, retained, queue, run };
 }
 
 async function configured(action: () => Promise<void>) {
@@ -144,12 +236,18 @@ async function configured(action: () => Promise<void>) {
   }
 }
 
-test('each GeoJSON layer of a real ZIP becomes its own child original and item; the README does not', () =>
+const stopped = (code: string) =>
+  `The ZIP words. Taking the layers out of this ZIP stopped (${code}); enrol the ZIP again to retry.`;
+
+test('the job keeps each GeoJSON layer of a real ZIP as its own child original and item; the README not', () =>
   configured(async () => {
     const pack = zipSync(real);
-    const { ledger, order, retained, run } = await fanOut(pack);
-    const kept = await run();
-    assert.equal(kept.length, 3);
+    const { ledger, order, retained, queue, run } = await layersJob(pack);
+    const jobId = (await queue())!;
+    assert.equal(retained.length, 0);
+    await run(jobId);
+    assert.equal(ledger.job(jobId).status, 'succeeded');
+    const kept = retained.map(file => file.sourceId);
     assert.deepEqual(retained.map(file => file.name),
       ['01-google-building-footprints.geojson', '02-osm-road-centrelines.geojson', 'block-boundary.geojson']);
     for (const [ordinal, file] of retained.entries()) {
@@ -167,27 +265,83 @@ test('each GeoJSON layer of a real ZIP becomes its own child original and item; 
     // Every layer is kept before any is enrolled, so no layer's draft associates the case first.
     assert.deepEqual(order.map(step => step.split(':')[0]), ['retain', 'retain', 'retain',
       'register', 'register', 'register']);
-    // Enrolling the archive again keeps nothing twice and enrols the same originals again (idempotent upstream).
+    // Every layer kept and enrolled: enrolling the archive again queues nothing.
+    assert.equal(await queue(), null);
+    // A failed enrolment is retried by a fresh job, which keeps nothing twice and enrols the same originals again.
+    ledger.member('uttam/block-boundary.geojson').limit_reason = 'ZIP_LAYER_UNAVAILABLE: kept but not enrolled.';
     order.length = 0;
-    assert.deepEqual(await run(), kept);
+    const retry = (await queue())!;
+    assert.notEqual(retry, jobId);
+    await run(retry);
     assert.deepEqual(order, kept.map(id => `register:${id}`));
+    assert.equal(ledger.member('uttam/block-boundary.geojson').limit_reason, null);
+    assert.equal(await queue(), null);
   }));
 
 test('a layer the GeoJSON receipt refuses stays in the archive with a code; its siblings are kept', () =>
   configured(async () => {
-    const { ledger, run } = await fanOut(zipSync(real), { failRetain: name => name.startsWith('02-')
-      ? new AppError(422, 'GEOJSON_INVALID', 'parser text that must not be stored') : null });
-    assert.equal((await run()).length, 2);
+    const { ledger, retained, queue, run } = await layersJob(zipSync(real), { failRetain: name =>
+      name.startsWith('02-') ? new AppError(422, 'GEOJSON_INVALID', 'parser text that must not be stored') : null });
+    const jobId = (await queue())!;
+    await run(jobId);
+    assert.equal(retained.length, 2);
     const refused = ledger.member('uttam/02-osm-road-centrelines.geojson');
     assert.equal(refused.source_id, null);
     assert.match(refused.limit_reason, /^GEOJSON_INVALID: this GeoJSON member stays inside the archive/);
     assert.doesNotMatch(refused.limit_reason, /parser text/);
+    // The job itself succeeded; the refused layer still waits, so enrolling again queues the retry ZF1 promised.
+    assert.equal(ledger.job(jobId).status, 'succeeded');
+    assert.notEqual(await queue(), null);
   }));
 
-test('a real mixed ZIP with ArcGIS JSON, PDFs and models keeps no layer', () => configured(async () => {
-  const pack = readFileSync('fixtures/lake-view-complete-inputs.zip');
-  const { card, retained, run } = await fanOut(pack);
-  assert.ok(card.members.length > 30);
-  assert.deepEqual(await run(), []);
-  assert.equal(retained.length, 0);
+test('layers held back by the layer limit or size queue no retry', () => configured(async () => {
+  const { ledger, queue, run } = await layersJob(zipSync(real));
+  await run((await queue())!);
+  Object.assign(ledger.member('uttam/01-google-building-footprints.geojson'),
+    { source_id: null, limit_reason: 'ZIP_LAYER_SIZE: kept inside the archive.' });
+  Object.assign(ledger.member('uttam/block-boundary.geojson'),
+    { source_id: null, limit_reason: 'ZIP_LAYER_LIMIT: kept inside the archive.' });
+  assert.equal(await queue(), null);
 }));
+
+test('a real mixed ZIP with ArcGIS JSON, PDFs and models queues no job and keeps no layer', () =>
+  configured(async () => {
+    const pack = readFileSync('fixtures/lake-view-complete-inputs.zip');
+    const { card, ledger, retained, queue } = await layersJob(pack);
+    assert.ok(card.members.length > 30);
+    assert.equal(await queue(), null);
+    assert.equal(ledger.jobs.length, 0);
+    assert.equal(retained.length, 0);
+  }));
+
+test('a changed archive source makes the claim refuse; the job ends stale with the code in the ZIP\'s words', () =>
+  configured(async () => {
+    const { ledger, retained, queue, run } = await layersJob(zipSync(real));
+    const jobId = (await queue())!;
+    ledger.archive.sha256 = 'b'.repeat(64);
+    await run(jobId);
+    assert.equal(retained.length, 0);
+    assert.equal(ledger.attempts.length, 0);
+    assert.deepEqual([ledger.job(jobId).status, ledger.job(jobId).error], ['stale', 'STALE_REVISION']);
+    assert.equal(ledger.rows.get(ledger.itemId).limit_reason, stopped('STALE_REVISION'));
+  }));
+
+test('a job that fails as a whole writes its code only, and enrolling again queues a fresh job', () =>
+  configured(async () => {
+    const { ledger, retained, queue, run } = await layersJob(zipSync(real));
+    const jobId = (await queue())!;
+    // A second enrolment while the job is queued queues none.
+    assert.equal(await queue(), null);
+    const lost = async () => { throw new Error('connection lost near uttam/README.md'); };
+    await assert.rejects(run(jobId, { transaction: lost }), /connection lost/);
+    assert.equal(retained.length, 0);
+    assert.deepEqual([ledger.job(jobId).status, ledger.job(jobId).error], ['failed', 'INTAKE_ZIP_LAYERS_FAILED']);
+    assert.equal(ledger.attempts[0].state, 'fenced');
+    const reason = ledger.rows.get(ledger.itemId).limit_reason;
+    assert.equal(reason, stopped('INTAKE_ZIP_LAYERS_FAILED'));
+    assert.doesNotMatch(reason, /connection|README/);
+    const retry = (await queue())!;
+    assert.notEqual(retry, jobId);
+    await run(retry);
+    assert.equal(retained.length, 3);
+  }));

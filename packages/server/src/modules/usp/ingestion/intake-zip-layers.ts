@@ -9,7 +9,8 @@ import { putOriginal, readObjectRange, sha256 } from '../../../infrastructure/st
 import { fingerprint } from '../../cases/domain';
 import { originalAttempt } from '../../cases/original-attempt';
 import { appendCaseIngestionTx, appendIntakeItemTx, assertIngestionBinding } from './events';
-import { intakeCaseTx, intakeSourceTx, type IntakeSourceRow } from './intake-context';
+import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
+import { shapefileZip } from './intake-draft';
 import { stableUuid } from './intake-run';
 import { detectIntakeKind } from './intake-signatures';
 import { readZipMember } from './intake-zip';
@@ -17,6 +18,14 @@ import { lockUnassignedSourceCase } from './service';
 
 export const ZIP_ARCHIVE_PROFILE = 'zip-manual-v1';
 const uuid = z.string().uuid();
+const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
+export const IntakeZipLayersInputSchema = z.strictObject({
+  version: z.literal('intake-zip-layers/1'), jobId: uuid, caseId: uuid,
+  caseRevision: z.number().int().nonnegative(), itemId: uuid, sourceId: uuid,
+  sourceRevision: z.number().int().positive(), sourceSha256: hex64, sourcePin: hex64,
+  subject: z.string().min(1).max(256), accessSha256: hex64,
+});
+export type IntakeZipLayersInput = z.infer<typeof IntakeZipLayersInputSchema>;
 // A member read may page a large archive's directory and up to 17 one-MiB ranges.
 const MEMBER_READ_MS = 60_000;
 
@@ -101,6 +110,46 @@ export function zipLayerMembers(card: IntakeCard | null, members: MemberRow[]): 
   return members.filter(member => probed.has(member.member_path) && member.card?.format === 'geojson');
 }
 
+async function membersTx(client: PoolClient, caseId: string, itemId: string): Promise<MemberRow[]> {
+  return (await client.query(`SELECT item_id,member_path,source_id,size_bytes,card,limit_reason
+    FROM usp_intake_items WHERE case_id=$1 AND parent_item_id=$2 ORDER BY member_path`, [caseId, itemId])).rows;
+}
+
+/** A layer waits while it has no original or a reason a retry can clear; the limit and size reasons are final. */
+function waiting(member: MemberRow): boolean {
+  if (!member.limit_reason) return !member.source_id;
+  return !/^ZIP_LAYER_(LIMIT|SIZE):/.test(member.limit_reason);
+}
+
+/**
+ * ZJ1. Publishing a ZIP card queues its fan-out as one fenced job in the publishing transaction, never inside the
+ * request. None is queued while one is queued or running, or when no layer waits. The id is stable from the item,
+ * the source revision and the count of this source's earlier jobs.
+ */
+export async function queueZipLayersTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard,
+  itemId: string): Promise<string | null> {
+  if (card.format !== 'zip' || shapefileZip(card)) return null;
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-zip-layers:${itemId}`]);
+  const jobs = (await client.query(`SELECT status FROM jobs WHERE source_id=$1 AND operation='intake-zip-layers'`,
+    [source.id])).rows;
+  if (jobs.some(job => ['queued', 'running'].includes(job.status))) return null;
+  if (!zipLayerMembers(card, await membersTx(client, source.case_id, itemId)).some(waiting)) return null;
+  const scope = await intakeCaseTx(client, source.case_id);
+  const input = IntakeZipLayersInputSchema.parse({ version: 'intake-zip-layers/1',
+    jobId: stableUuid(`intake-zip-layers/1:${itemId}:${source.revision}:${jobs.length + 1}`),
+    caseId: source.case_id, caseRevision: scope.current.revision, itemId, sourceId: source.id,
+    sourceRevision: source.revision, sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding),
+    subject: scope.binding.subject, accessSha256: scope.binding.access });
+  const digest = fingerprint(input);
+  await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
+    VALUES($1,$2,$3,'intake-zip-layers',$4,$5,$6)`,
+  [input.jobId, input.caseId, input.sourceId, input.caseRevision, digest, input]);
+  const { registerUspJobInputTx } = await import('../jobs');
+  await registerUspJobInputTx(client, input.jobId,
+    { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
+  return input.jobId;
+}
+
 async function noteTx(client: PoolClient, caseId: string, itemId: string, reason: string) {
   const changed = await client.query(`UPDATE usp_intake_items SET limit_reason=$3,updated_at=now()
     WHERE case_id=$1 AND item_id=$2 AND source_id IS NULL AND limit_reason IS DISTINCT FROM $3`,
@@ -138,8 +187,7 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
       AND parent_item_id IS NULL`, [caseId, itemId])).rows[0];
     if (!item?.source_id || item.card?.format !== 'zip') return null;
     const { source } = await intakeSourceTx(client, caseId, item.source_id);
-    const members: MemberRow[] = (await client.query(`SELECT item_id,member_path,source_id,size_bytes,card,limit_reason
-      FROM usp_intake_items WHERE case_id=$1 AND parent_item_id=$2 ORDER BY member_path`, [caseId, itemId])).rows;
+    const members = await membersTx(client, caseId, itemId);
     const order = new Map<string, number>(item.card.members.map((member: { name: string }, at: number) =>
       [member.name, at]));
     const layers = zipLayerMembers(item.card, members)
@@ -164,6 +212,12 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
     try {
       await dependencies.register(caseId, { sourceId: layer.sourceId,
         requestKey: stableUuid(`zip-layer/1:${itemId}:${layer.member.member_path}:${layer.sourceId}`) });
+      // An enrolment that now succeeds clears an earlier one's reason, so enrolling again finds nothing to retry.
+      await dependencies.transaction(async client => {
+        const cleared = await client.query(`UPDATE usp_intake_items SET limit_reason=NULL,updated_at=now()
+          WHERE case_id=$1 AND item_id=$2 AND limit_reason IS NOT NULL`, [caseId, layer.member.item_id]);
+        if (cleared.rowCount) await appendIntakeItemTx(client, caseId, layer.member.item_id);
+      });
     } catch (error) {
       // The child original stays kept and named; enrolling the archive again enrols it.
       await dependencies.transaction(async client => {

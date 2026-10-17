@@ -17,6 +17,7 @@ import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
 import {runIntakeDraftJob} from '../usp/ingestion/intake-draft-worker';
 import {runIntakeLargeJob} from '../usp/ingestion/intake-large-worker';
+import {runIntakeZipLayersJob} from '../usp/ingestion/intake-zip-layers-worker';
 import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
@@ -37,6 +38,7 @@ let chunkMappingWorker:Promise<void>|undefined;
 let streamedProfileWorker:Promise<void>|undefined;
 let intakeDraftWorker:Promise<void>|undefined;
 let intakeLargeWorker:Promise<void>|undefined;
+let intakeZipLayersWorker:Promise<void>|undefined;
 let intakeRunWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
@@ -348,6 +350,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
           // The fenced attempt and the stored step rows own recovery.
           .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{intakeLargeWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-zip-layers'){
+        if(!intakeZipLayersWorker)intakeZipLayersWorker=runIntakeZipLayersJob(job.id)
+          // The fenced attempt and the member rows own recovery; a rerun keeps nothing twice.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakeZipLayersWorker=undefined;});
         return;
       }
       if(job.operation==='intake-run'){

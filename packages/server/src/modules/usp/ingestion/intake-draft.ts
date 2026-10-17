@@ -28,7 +28,7 @@ export function intakeDraftKey(itemId: string, revision: number, phase: string):
   return stableUuid(`intake-draft/1:${itemId}:${revision}:${phase}`);
 }
 
-const shapefileZip = (card: IntakeCard | null) =>
+export const shapefileZip = (card: IntakeCard | null) =>
   card?.format === 'zip' && card.members.some(member => member.format === 'shapefile');
 
 /** Names entries within `budget` characters (limit_reason holds 2000); the rest are counted, never cut. */

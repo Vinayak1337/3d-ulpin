@@ -12,8 +12,7 @@ import { registerIntakeItemTx, intakeItem, saveIntakeCardTx, citeIntakeReceipt }
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
 import { queueIntakeDraftTx } from './intake-draft';
-import { fanOutZipLayers, type ZipLayerDependencies } from './intake-zip-layers';
-import { ManualIngestionService } from './service';
+import { queueZipLayersTx } from './intake-zip-layers';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -22,11 +21,7 @@ const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_i
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
-const manual = new ManualIngestionService();
-const defaults = { transaction, read: readObjectRange, probe: probeOriginal,
-  fanOut: (caseId: string, itemId: string, dependencies: ZipLayerDependencies) =>
-    fanOutZipLayers(caseId, itemId, dependencies) as Promise<unknown>,
-  retain: manual.retain.bind(manual) as ZipLayerDependencies['retain'] };
+const defaults = { transaction, read: readObjectRange, probe: probeOriginal };
 
 async function itemContextTx(client: PoolClient, caseId: string, itemId: string) {
   const row = (await client.query(`${itemSelect} WHERE i.case_id=$1 AND i.item_id=$2`, [caseId, itemId])).rows[0]
@@ -94,10 +89,6 @@ export class IntakeService {
     const key = `intake-register:${request.requestKey}`;
     const initial = await this.prepare(caseId, request, key);
     if (!initial.completed) await this.publish(caseId, key, initial, await this.probe(initial.ctx.source));
-    // ZF1: a ZIP's GeoJSON layers become their own originals and items; enrolling it again retries what failed.
-    await this.dependencies.fanOut(caseId, initial.itemId, { transaction: this.dependencies.transaction,
-      read: this.dependencies.read, retain: this.dependencies.retain,
-      register: (layerCase, raw) => this.register(layerCase, raw) });
     return this.one(caseId, initial.itemId);
   }
 
@@ -135,6 +126,8 @@ export class IntakeService {
         await childrenTx(client, caseId, initial.itemId, probed.card);
         await notifyTx(client, fresh.source);
         await queueIntakeDraftTx(client, fresh.source, probed.card);
+        // ZJ1: a ZIP's layers are taken out by a dispatcher job; enrolling it again queues a retry when one waits.
+        await queueZipLayersTx(client, fresh.source, probed.card, initial.itemId);
       } else {
         await client.query(`UPDATE usp_intake_items SET state=CASE WHEN card IS NULL THEN $2 ELSE state END,
           limit_reason=CASE WHEN card IS NULL THEN $3 ELSE limit_reason END,updated_at=now() WHERE item_id=$1`,
