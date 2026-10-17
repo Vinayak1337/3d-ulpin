@@ -1,0 +1,61 @@
+{ "at": "2026-10-17T18:24:39.267Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}",
+"route": "/studio/areas/:areaId", "browser": "Chromium 153.0.8010.12 headless", "viewport": "1440x900",
+"loadSeconds": 7.9, "canvasBox": { "x": 12, "y": 68, "width": 1416, "height": 820 }, "open": { "label": "opened",
+"at": "2026-10-17T18:24:51.194Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [
+"12,000 buildings in view of 41,809 (12,000 proposed, not yet confirmed)" ], "key": { "shown": true, "open": true,
+"text": [ "Key Buildings Recorded Proposed, not yet confirmed" ] }, "scale": [ "EPSG:2958 N 2 km" ], "banners": [],
+"canvas": { "sampled": 267723, "mostCommonColour": [ 180, 180, 180 ], "clearShare": 0, "drawnPixels": 4379,
+"drawnShare": 0.016, "flatClearCells": 0, "largestFlatClearBlock": null }, "screenshot": "map-1.png", "readsSoFar": 8,
+"reads": [ { "path": "/api/v1/workspace-capabilities", "status": 200, "seconds": 0.008 }, { "path": "/api/v1/areas",
+"status": 200, "seconds": 0.226 }, { "path": "/api/v1/areas/{areaId}/context", "status": 422, "seconds": 1.26 }, {
+"path": "/api/v1/areas/{areaId}/display-summary", "failed": "net::ERR_ABORTED" }, {
+"path": "/api/v1/areas/{areaId}/display-summary", "status": 200, "seconds": 2.004 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 4000, "next": "set", "seconds": 1.794 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 4000, "next": "set", "seconds": 2.295 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 4000, "next": "set", "seconds": 2.283 } ],
+"windowReads": { "count": 3, "statuses": [ 200 ], "seconds": [ 1.794, 2.295, 2.283 ], "features": [ 4000, 4000, 4000 ],
+"lastNext": "set" } }, "zoomed": { "label": "after 8 wheel ticks in over the canvas centre",
+"at": "2026-10-17T18:25:05.106Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}", "statusLines": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "key": { "shown": true, "open": true, "text": [
+"Key Buildings Recorded Proposed, not yet confirmed" ] }, "scale": [ "EPSG:2958 N 1 km" ], "banners": [], "canvas": {
+"sampled": 262599, "mostCommonColour": [ 180, 180, 180 ], "clearShare": 0, "drawnPixels": 602, "drawnShare": 0.002,
+"flatClearCells": 0, "largestFlatClearBlock": null }, "screenshot": "map-2.png", "readsSoFar": 9, "reads": [ {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 3000, "next": "set", "seconds": 2.048 } ],
+"windowReads": { "count": 1, "statuses": [ 200 ], "seconds": [ 2.048 ], "features": [ 3000 ], "lastNext": "set" } },
+"pick": { "rounds": [ { "round": 1, "drawnPixels": 602, "densest": { "x": 934, "y": 264, "near": 121 }, "clicks": 40,
+"statusAfterZoom": [ [ "Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "scaleAfterZoom": [ "EPSG:2958 N 500 m" ] }, { "round": 2, "drawnPixels": 2429,
+"densest": { "x": 958, "y": 138, "near": 230 }, "clicks": 40, "statusAfterZoom": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "scaleAfterZoom": [ "EPSG:2958 N 200 m" ] }, { "round": 3, "drawnPixels": 1554,
+"densest": { "x": 944, "y": 568, "near": 307 }, "clicks": 10, "pickedAt": [ 950, 568 ] } ] }, "picked": {
+"label": "after picking a building", "at": "2026-10-17T18:26:24.829Z",
+"url": "http://127.0.0.1:5188/studio/areas/{areaId}?feature=5489ccc9-2b34-4007-a53d-a3e7124cc32d", "statusLines": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "key": { "shown": true, "open": true, "text": [
+"Key Buildings Recorded Proposed, not yet confirmed" ] }, "scale": [ "EPSG:2958 N 20 m" ], "banners": [], "canvas": {
+"sampled": 227780, "mostCommonColour": [ 180, 180, 180 ], "clearShare": 0, "drawnPixels": 14984, "drawnShare": 0.066,
+"flatClearCells": 0, "largestFlatClearBlock": null }, "screenshot": "map-3.png", "readsSoFar": 13, "inspector": true,
+"reads": [ { "path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 4000, "next": "set",
+"seconds": 1.958 }, { "path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 4000, "next": "set",
+"seconds": 2.395 }, { "path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 4000, "next": "set",
+"seconds": 2.536 }, { "path": "/api/v1/areas/{areaId}/display-window", "status": 200, "features": 3000, "next": "set",
+"seconds": 2.253 } ], "windowReads": { "count": 4, "statuses": [ 200 ], "seconds": [ 1.958, 2.395, 2.536, 2.253 ],
+"features": [ 4000, 4000, 4000, 3000 ], "lastNext": "set" }, "inspectorText": [ [
+"Niagara Falls Building Footprints 2018 1330698285055863645 Building Identifier 3DU-51R4JJN",
+"54Z8AKTGYATTANAFK26:B10638 A reviewed proposal, not yet confirmed by an officer. This area",
+" is drawn by the part in view, so only the identifier and kind are shown here. Open regist", "er" ] ],
+"inspectorBox": { "x": 1060, "y": 84, "width": 352, "height": 372 },
+"registerHref": "/studio/properties/5489ccc9-2b34-4007-a53d-a3e7124cc32d/register" }, "register": {
+"url": "http://127.0.0.1:5188/studio/properties/5489ccc9-2b34-4007-a53d-a3e7124cc32d/register", "banners": [], "text": [
+"Building 10742", "No register is recorded for this building", [
+"The server holds this building as a candidate from its sources. Nothing of it is recorded ",
+"in the registry, so there is no register to open." ], "Open record", "Open area map" ], "reads": [ {
+"path": "/api/v1/areas/{areaId}/display-window", "failed": "net::ERR_ABORTED" }, {
+"path": "/api/v1/buildings/5489ccc9-2b34-4007-a53d-a3e7124cc32d/register", "status": 404, "seconds": 0.011 }, {
+"path": "/api/v1/buildings/5489ccc9-2b34-4007-a53d-a3e7124cc32d/canonical", "failed": "net::ERR_ABORTED" }, {
+"path": "/api/v1/buildings/5489ccc9-2b34-4007-a53d-a3e7124cc32d/canonical", "status": 200, "seconds": 1.692 } ],
+"screenshot": "map-4.png" }, "windowReads": { "count": 9, "statuses": [ 200, "failed" ], "seconds": [ 1.794, 2.295,
+2.283, 2.048, 1.958, 2.395, 2.536, 2.253, null ], "features": [ 4000, 4000, 4000, 3000, 4000, 4000, 4000, 3000, null ],
+"lastNext": null }, "pageErrors": [] }
