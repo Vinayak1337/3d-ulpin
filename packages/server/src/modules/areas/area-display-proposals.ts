@@ -7,11 +7,15 @@ import {localOperatorSubject} from '../usp/principal';
 /** The fields of a package feature that decide whether an area displays it. */
 export type ProposalFeature=Pick<PhysicalFeature,'id'|'sourceKey'|'areaId'|'revision'|'sourceRevisionId'>;
 export type ProposalPackage<F extends ProposalFeature>=Omit<ImportPackage,'features'>&{features:F[]};
-/** A package body whose features keep only the fields of ProposalFeature, for reads that draw by window. */
-export const PROPOSAL_RULE_BODY=`body||jsonb_build_object('features',(SELECT coalesce(jsonb_agg(jsonb_build_object(
-  'id',e->'id','sourceKey',e->'sourceKey','areaId',e->'areaId','revision',e->'revision',
+/** A condition on a package feature e that a rule read keeps, with its parameters from $2. */
+export type RuleCondition={sql:string;values:unknown[]};
+/** A package body whose features keep only the fields of ProposalFeature, for reads that draw by window, and only
+ * the features the condition keeps. Every package naming a feature names it by the same identifier, so a condition
+ * on the identifier alone leaves the rule's answer for the features it keeps unchanged. */
+export const proposalRuleBody=(kept='true')=>`body||jsonb_build_object('features',(SELECT coalesce(jsonb_agg(
+  jsonb_build_object('id',e->'id','sourceKey',e->'sourceKey','areaId',e->'areaId','revision',e->'revision',
   'sourceRevisionId',e->'sourceRevisionId') ORDER BY o),'[]'::jsonb) FROM jsonb_array_elements(body->'features')
-  WITH ORDINALITY x(e,o)))`;
+  WITH ORDINALITY x(e,o) WHERE ${kept}))`;
 
 /** A separate display projection. It never supplies geometry to analytical readers
  * and never deletes a previously recorded feature when a newer source rejects it. */
