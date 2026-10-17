@@ -1,0 +1,25 @@
+{
+  "task": "LA6",
+  "gate": "GF1",
+  "base": "2ddefbbb",
+  "design": {
+    "ground": "the plane covers the old square (10 x the buildings' span, centred on the buildings) united with the framed plan square (target +- reach, reach = fitted distance + framed diagonal) grown by the fog's far distance; the old square is kept, so more buildings never shrink it",
+    "frame_tracking": "every framed pose (all modes, flights keep the union of old and new until they land) stores its plan square; the ground refits when the pose settles and when buildings arrive",
+    "shadow": "bound: half-width at most 1500 m around the view target (SHADOW_HALF_MAX), and still within 0.75 x the buildings' span as before; buildings outside it cast no shadow",
+    "fog": "for a large frame the fog now ends at the camera's far plane (was 2.4 reaches, past the far plane), so the clip edge of the ground is fully fogged; small scenes unchanged"
+  },
+  "tests_added": [
+    "13 km by 22 km frame with a 410 m cluster loaded: ground covers the frame plus fog far on every side; shadow stays at 0.75 x span",
+    "shadow camera stays at 1500 m for a 13 km by 22 km area loaded, also after the per-frame refit from 20 km up",
+    "small scene: ground position/scale and shadow frustum exactly as before; ground never shrinks when a wider frame or more buildings arrive"
+  ],
+  "counts": {
+    "scene_tests": { "before": 49, "after": 52 },
+    "studio_test_total": { "after": 532, "note": "api-client 2, scene 52, ui 7, studio 471" }
+  },
+  "gaps": [
+    "mid-size frames (reach under 16 km) still take their fog from the buildings' span, so the framed area can be fogged beyond 3.4 spans of the loaded cluster",
+    "the ground follows the framed pose, not later panning: panned further than the fog distance from the frame, the buildings' square still applies",
+    "no browser run: the stray box in reh5/map-3b.png was not re-shot"
+  ]
+}
