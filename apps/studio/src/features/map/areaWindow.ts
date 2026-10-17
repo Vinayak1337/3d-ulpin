@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiError } from '@ulpin/api-client';
 import type { BaseFeatureInput, FootprintInput, MultiPolygon, SceneEngine } from '@ulpin/scene';
 import {
-  readAreaWindow, useAreaDisplaySummary, type AreaDisplayWindow, type AreaWindowFeature,
+  readAreaWindow, useAreaDisplaySummary, type AreaDisplaySummary, type AreaDisplayWindow, type AreaWindowFeature,
 } from '../../api/queries';
 
 /** At most this many features are drawn at once; beyond it the officer moves closer. */
@@ -10,6 +10,8 @@ export const WINDOW_BUDGET = 15_000;
 /** The camera must be still this long before the view is read. */
 export const WINDOW_SETTLE_MS = 300;
 const PAGE_LIMIT = 4000;
+/** Where the map would be, when the area's summary holds nothing to draw. */
+export const WINDOW_EMPTY = 'This area has no recorded buildings to draw yet.';
 
 export type Bounds = readonly [number, number, number, number];
 type ReadPage = (bounds: Bounds, after: string | undefined, limit: number, signal: AbortSignal) =>
@@ -19,6 +21,11 @@ type ReadPage = (bounds: Bounds, after: string | undefined, limit: number, signa
 export function isAreaLimit(error: unknown): boolean {
   if (!(error instanceof ApiError) || error.status !== 422) return false;
   return (error.body as { error?: { code?: unknown } } | null)?.error?.code === 'AREA_LIMIT';
+}
+
+/** The summary counts no feature, or has no extent to place one in: there is nothing to draw. */
+export function windowEmpty(summary: AreaDisplaySummary | undefined): boolean {
+  return summary !== undefined && (summary.featureCount === 0 || !summary.extent);
 }
 
 /** The ground the camera sees, clipped to the area's extent; null when the two do not meet. */
@@ -107,15 +114,22 @@ export class WindowReader {
 
 const NONE: AreaWindowFeature[] = [];
 
+/** Frames the area's whole extent, then reads the view the camera settles on. */
+export function showWindow(engine: Pick<SceneEngine, 'fitPlanBox'>, extent: Bounds, reader: WindowReader): void {
+  engine.fitPlanBox(...extent);
+  reader.viewChanged();
+}
+
 /**
- * Window mode for an area beyond the display limit: the map centres on the area's extent and draws the features
- * of the camera's ground view. `onView` is called on every rendered frame.
+ * Window mode for an area beyond the display limit: the map fits the area's extent and draws the features of the
+ * camera's ground view; `empty` when the summary holds nothing to draw. `onView` is called on every rendered frame.
  */
 export function useAreaWindow(areaId: string, engine: SceneEngine | null, active: boolean) {
   const summary = useAreaDisplaySummary(active ? areaId : undefined);
   const [features, setFeatures] = useState<AreaWindowFeature[]>(NONE);
   const [error, setError] = useState<unknown>(null);
-  const extent = (summary.data?.extent ?? null) as Bounds | null;
+  const empty = windowEmpty(summary.data);
+  const extent = (empty ? null : summary.data?.extent ?? null) as Bounds | null;
   const extentKey = extent?.join();
   const reader = useMemo(() => {
     if (!engine || !extent) return null;
@@ -129,8 +143,7 @@ export function useAreaWindow(areaId: string, engine: SceneEngine | null, active
   }, [areaId, engine, extentKey]);
   useEffect(() => {
     if (!reader || !engine || !extent) return;
-    engine.panTo((extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2);
-    reader.viewChanged();
+    showWindow(engine, extent, reader);
     return () => reader.dispose();
     // A new reader comes with every new engine or extent, so it alone starts the read.
   }, [reader]);
@@ -138,7 +151,7 @@ export function useAreaWindow(areaId: string, engine: SceneEngine | null, active
   const scene = useMemo(() => windowScene(features), [features]);
   const total = summary.data?.featureCount;
   return {
-    ...scene, features, onView,
+    ...scene, features, onView, empty,
     error: (summary.error ?? error) as Error | null,
     line: total === undefined || !extent ? null : windowLine(features, total),
   };

@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { Pick, SceneEngine, SceneState } from '@ulpin/scene';
 import { Banner, DescriptionList, Icon } from '@ulpin/ui';
-import { useAreas } from '../../api/queries';
+import { useAreas, type AreaWindowFeature } from '../../api/queries';
 import { useSelection } from '../../state/useSelection';
 import { CopyableId } from '../identity/CopyableId';
-import { useAreaWindow } from './areaWindow';
+import { WINDOW_EMPTY, useAreaWindow } from './areaWindow';
 import { InspectorShell } from './inspector/InspectorShell';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { useMapView } from './useMapView';
@@ -18,7 +19,8 @@ const KIND_LABEL: Record<string, string> = {
 
 /**
  * An area with more features than one display read carries: the map draws the features of the camera's view,
- * read by window, and a selected footprint shows the identifier and kind the window states.
+ * read by window. A selected footprint shows the identifier and kind the window states; a building links to its
+ * register.
  */
 export function WindowedArea({ areaId }: { areaId: string }) {
   const area = useAreas().data?.find((item) => item.id === areaId);
@@ -66,6 +68,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
               <Banner tone="danger">The buildings in view could not be read. {windowed.error.message}</Banner>
             </div>
           ) : null}
+          {windowed.empty ? <WindowEmpty /> : null}
           {windowed.line ? (
             <div className={styles.leftStack}>
               <span />
@@ -76,20 +79,44 @@ export function WindowedArea({ areaId }: { areaId: string }) {
             <div className={styles.inspectorColumn} key={selected.id}>
               <button type="button" className={styles.closeInspector} aria-label="Close feature details"
                 onClick={() => dispatch({ type: 'selectBuilding', id: null })}><Icon icon={X} size={20} /></button>
-              <InspectorShell title={KIND_LABEL[selected.kind] ?? selected.kind} rekey={selected.id}
-                crumbs={[{ label: name, onSelect: () => dispatch({ type: 'selectBuilding', id: null }) }]}>
-                <DescriptionList items={[
-                  { label: 'Identifier', value: <CopyableId id={selected.identifier} name="identifier" /> },
-                ]} />
-                <p>This area is drawn by the part in view, so only the identifier and kind are shown here.</p>
-              </InspectorShell>
+              <WindowedInspector feature={selected} areaName={name}
+                onClose={() => dispatch({ type: 'selectBuilding', id: null })} />
             </div>
           ) : null}
-          <div className={styles.readout}>
-            <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={reference?.sourceCrs} />
-          </div>
+          {windowed.empty ? null : (
+            <div className={styles.readout}>
+              <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={reference?.sourceCrs} />
+            </div>
+          )}
         </div>
       </section>
     </div>
+  );
+}
+
+/** Where the map would be: the area's summary holds nothing to draw. */
+export function WindowEmpty() {
+  return (
+    <div className={styles.noGeometry}>
+      <div className={`ul-float ${styles.emptyCard}`}><span>{WINDOW_EMPTY}</span></div>
+    </div>
+  );
+}
+
+/** A picked footprint: the identifier and kind the window states, and a building's register by its id. */
+export function WindowedInspector({ feature, areaName, onClose }: {
+  feature: AreaWindowFeature; areaName: string; onClose: () => void;
+}) {
+  const register = feature.kind === 'building'
+    ? <Link to={`/studio/properties/${feature.id}/register`} className="ul-btn ul-btn--primary">Open register</Link>
+    : undefined;
+  return (
+    <InspectorShell title={KIND_LABEL[feature.kind] ?? feature.kind} rekey={feature.id}
+      crumbs={[{ label: areaName, onSelect: onClose }]} actions={register}>
+      <DescriptionList items={[
+        { label: 'Identifier', value: <CopyableId id={feature.identifier} name="identifier" /> },
+      ]} />
+      <p>This area is drawn by the part in view, so only the identifier and kind are shown here.</p>
+    </InspectorShell>
   );
 }

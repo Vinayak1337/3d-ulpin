@@ -17,6 +17,7 @@ import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { drawnCountNote, polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
 import { isAreaLimit, useAreaWindow } from './areaWindow';
+import { WindowEmpty } from './WindowedArea';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { attachDemoScene, isDemoId } from '../../api/demo-import';
@@ -456,6 +457,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 </div>
               </div>
             ) : null}
+            {windowed.empty ? <WindowEmpty /> : null}
             {noFloors ? (
               <div className={styles.emptyOverlay}>
                 <div className={`ul-float ${styles.emptyCard}`}>
@@ -528,7 +530,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             )}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
-            {nothingToDraw ? null : (
+            {nothingToDraw || windowed.empty ? null : (
               <div className={styles.readout}>
                 <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} />
               </div>

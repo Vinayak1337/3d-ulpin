@@ -1,9 +1,16 @@
+import { createElement, type ReactElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import type { AreaDisplayWindow, AreaWindowFeature } from '../../api/queries';
+import type { SceneEngine } from '@ulpin/scene';
+import { queryKeys, type AreaDisplaySummary, type AreaDisplayWindow, type AreaWindowFeature } from '../../api/queries';
 import {
-  WINDOW_SETTLE_MS, WindowReader, isAreaLimit, viewBounds, windowLine, windowScene, type Bounds,
+  WINDOW_EMPTY, WINDOW_SETTLE_MS, WindowReader, isAreaLimit, showWindow, useAreaWindow, viewBounds, windowEmpty,
+  windowLine, windowScene, type Bounds,
 } from './areaWindow';
+import { WindowedArea, WindowedInspector } from './WindowedArea';
 
 function feature(identifier: string, kind: AreaWindowFeature['kind'] = 'building', heightM: number | null = null) {
   return {
@@ -43,6 +50,70 @@ describe('window mode', () => {
   });
 });
 
+// Shape-only summaries: the counts and boxes below are structural placeholders, not records.
+const summary = (featureCount: number, extent: Bounds | null) =>
+  ({ areaId: 'a', areaRevision: 0, featureCount, extent }) as AreaDisplaySummary;
+
+/** The markup of a tree with the area list and, when given, the area's summary already read. */
+function render(element: ReactElement, read?: AreaDisplaySummary) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  client.setQueryData(queryKeys.areas, []);
+  if (read) client.setQueryData(queryKeys.areaDisplaySummary('a'), read);
+  return renderToStaticMarkup(createElement(QueryClientProvider, { client },
+    createElement(MemoryRouter, null, element)));
+}
+
+// The scale and north readout's box, by its module class.
+const READOUT = /class="_readout_/;
+
+function WindowProbe({ active }: { active: boolean }) {
+  const { empty, line, error } = useAreaWindow('a', null, active);
+  return `${empty} ${line} ${error}`;
+}
+
+describe('nothing to draw', () => {
+  it('is said for no feature counted or no extent, and not for a summary not yet read', () => {
+    expect(windowEmpty(undefined)).toBe(false);
+    expect(windowEmpty(summary(0, [0, 0, 10, 10]))).toBe(true);
+    expect(windowEmpty(summary(5, null))).toBe(true);
+    expect(windowEmpty(summary(5, [0, 0, 10, 10]))).toBe(false);
+  });
+
+  it('puts one sentence where the map would be, with no banner, line or readout', () => {
+    for (const read of [summary(0, null), summary(0, [0, 0, 10, 10]), summary(5, null)]) {
+      const markup = render(createElement(WindowedArea, { areaId: 'a' }), read);
+      expect(markup).toContain(WINDOW_EMPTY);
+      expect(markup).not.toContain('could not be read');
+      expect(markup).not.toContain('role="status"');
+      expect(markup).not.toMatch(READOUT);
+    }
+    const drawable = render(createElement(WindowedArea, { areaId: 'a' }), summary(5, [0, 0, 10, 10]));
+    expect(drawable).not.toContain(WINDOW_EMPTY);
+    expect(drawable).toMatch(READOUT);
+  });
+
+  it('leaves an area under the limit as it was: no summary read, nothing said', () => {
+    expect(render(createElement(WindowProbe, { active: false }), summary(0, null))).toBe('false null null');
+    expect(render(createElement(WindowProbe, { active: true }), summary(0, null))).toBe('true null null');
+  });
+});
+
+describe('a picked footprint', () => {
+  const inspector = (kind: AreaWindowFeature['kind']) =>
+    render(createElement(WindowedInspector, { feature: feature('B-1', kind), areaName: 'Area', onClose() {} }));
+
+  it('offers a building its register by id', () => {
+    const markup = inspector('building');
+    expect(markup).toContain('href="/studio/properties/id-B-1/register"');
+    expect(markup).toContain('>Open register</a>');
+    expect(markup).toContain('B-1');
+  });
+
+  it('offers no register for a feature that is not a building', () => {
+    expect(inspector('road')).not.toContain('/register');
+  });
+});
+
 describe('window reads', () => {
   beforeEach(() => { vi.useFakeTimers(); });
   afterEach(() => { vi.useRealTimers(); });
@@ -66,6 +137,18 @@ describe('window reads', () => {
     reader.viewChanged();
     await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
     expect(read).toHaveBeenCalledTimes(2);
+  });
+
+  it('fits the whole extent, never only centres on it, then reads the settled view', async () => {
+    const engine = { fitPlanBox: vi.fn(), panTo: vi.fn() };
+    const read = vi.fn(async () => page([], null));
+    const reader = new WindowReader(() => [0, 0, 10, 10], read, vi.fn(), vi.fn());
+    showWindow(engine as unknown as SceneEngine, [-2000, 500, 3000, 2500], reader);
+    expect(engine.fitPlanBox).toHaveBeenCalledWith(-2000, 500, 3000, 2500);
+    expect(engine.panTo).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
+    expect(read).toHaveBeenCalledOnce();
+    reader.dispose();
   });
 
   it('aborts a read the camera has moved on from and never publishes it', async () => {
