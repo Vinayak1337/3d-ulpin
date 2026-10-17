@@ -1,11 +1,14 @@
-export type FileRoute = 'intake' | 'direct' | 'table' | 'unsupported';
+export type FileRoute = 'intake' | 'direct' | 'table' | 'original';
 
-/** A successful opt-in development profile is handled before this production routing decision. */
+/**
+ * A successful opt-in development profile is handled before this production routing decision. CD1: a file of any
+ * other kind is never refused for its kind; it joins the batch as an original kept through the uploads route.
+ */
 export function fileRoute(name: string): FileRoute {
   if (/\.(geojson|json)$/i.test(name)) return 'intake';
   if (/\.(gpkg|zip)$/i.test(name)) return 'direct';
   if (/\.(csv|xlsx)$/i.test(name)) return 'table';
-  return 'unsupported';
+  return 'original';
 }
 
 /** Member names from a ZIP's central directory, read from its tail only; null when it cannot be read here. */

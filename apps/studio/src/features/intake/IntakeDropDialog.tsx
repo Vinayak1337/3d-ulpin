@@ -3,8 +3,8 @@ import { Banner, Button, DataTable, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../api/queries';
 import { SourceCaseFields } from './table/TableImportFields';
 import { useRetainBatch } from './useRetainBatch';
-import type { FileOutcome } from './retain-batch';
-import { LARGE_UPLOAD_MINIMUM, uploadWords } from './upload-model';
+import { viaUpload, type FileOutcome } from './retain-batch';
+import { uploadWords } from './upload-model';
 import styles from './Batch.module.css';
 
 export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, onClose, routed }: {
@@ -18,7 +18,7 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
   const { rows, pending, error, retain, created, clearCreated, retryUpload, cancelUpload } = useRetainBatch(
     files, remainingFiles, mode, caseId, name, onClose, routed);
   const blocked = mode === 'existing' ? !caseId.trim() : !name.trim();
-  return <Dialog title="Retain map files" onClose={pending ? () => undefined : onClose} footer={(
+  return <Dialog title="Retain files" onClose={pending ? () => undefined : onClose} footer={(
     <><Button variant="ghost" disabled={pending} onClick={onBack}>Back to files</Button>
       <Button variant="primary" disabled={blocked || pending} onClick={() => void retain()}>
         {pending ? 'Retaining files…' : 'Retain files and open batch'}
@@ -34,7 +34,7 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
             setMode(value);
           }} locked={created} />
       </fieldset>
-      {files.some(file => file.size >= LARGE_UPLOAD_MINIMUM) ?
+      {files.some(viaUpload) ?
         <p className="ul-help">Keep this page open until the upload finishes.</p> : null}
       <DropOutcomes rows={rows} />
       {rows.some(row => row.upload?.phase === 'stopped') ? <div className="ul-row">
@@ -42,7 +42,7 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
         <Button variant="soft" onClick={() => void cancelUpload()}>Cancel upload</Button>
       </div> : null}
       {remainingFiles.length ? <p className="ul-help">
-        Other files stay separate. Continue with them from the batch after these map files are retained.
+        Other files stay separate. Continue with them from the batch after these files are retained.
       </p> : null}
       {error ? <Banner tone="danger">{error}</Banner> : null}
     </div>

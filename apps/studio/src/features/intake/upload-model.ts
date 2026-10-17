@@ -14,7 +14,8 @@ export interface UploadProgress {
   words?: string;
 }
 
-// Published POST uploads bytes.minimum (ingestion.ts:231,233 after PV1), not a second bounded-retain maximum.
+// The bounded map routes (/sources, /intake/archives) take at most 16 MiB; a larger map file switches to POST uploads,
+// which since CD1 takes any original of 1 byte or more.
 export const LARGE_UPLOAD_MINIMUM = 16 * 1024 * 1024 + 1;
 
 export function uploadPlan(size: number, limits: UploadLimits) {

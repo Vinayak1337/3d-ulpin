@@ -371123,7 +371123,7 @@
               },
               "bytes": {
                 "type": "integer",
-                "minimum": 16777217,
+                "minimum": 1,
                 "maximum": 134217728
               }
             },
@@ -371242,7 +371242,7 @@
               },
               "bytes": {
                 "type": "integer",
-                "minimum": 16777217,
+                "minimum": 1,
                 "maximum": 7516192768
               }
             },

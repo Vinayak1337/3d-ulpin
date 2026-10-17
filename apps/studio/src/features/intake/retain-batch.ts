@@ -51,6 +51,11 @@ async function retainMap(caseId: string, file: File) {
   return profile.source.sourceId;
 }
 
+/** A small GeoJSON or ZIP keeps its bounded route; every other original, of any size, is kept through /uploads. */
+export function viaUpload(file: File) {
+  return file.size >= LARGE_UPLOAD_MINIMUM || !/\.(geojson|json|zip)$/i.test(file.name);
+}
+
 interface RetainOptions {
   acquiredAt: string;
   active: (command: ReturnType<typeof createUploadCommand> | null) => void;
@@ -58,7 +63,7 @@ interface RetainOptions {
 
 async function retainOriginal(caseId: string, file: File, progress: (upload: UploadProgress) => void,
   options?: RetainOptions) {
-  if (file.size < LARGE_UPLOAD_MINIMUM) return retainMap(caseId, file);
+  if (!viaUpload(file)) return retainMap(caseId, file);
   const command = createUploadCommand({ file, acquiredAt: options?.acquiredAt ?? new Date().toISOString(),
     transport: uploadTransport(caseId), publish: progress });
   options?.active(command);

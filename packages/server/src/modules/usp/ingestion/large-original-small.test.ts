@@ -1,0 +1,118 @@
+import assert from 'node:assert/strict';
+import { createHash, randomUUID } from 'node:crypto';
+import type { Readable } from 'node:stream';
+import test from 'node:test';
+import type { Pool } from 'pg';
+import { LargeOriginalService, largeOriginalStorage } from './large-original';
+
+process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'large-original-small-protocol';
+const caseId = '10000000-0000-4000-8000-000000000003';
+const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+type Row = Record<string, any>;
+
+/** Only the statements one v1 byte receipt sends, over one unassigned case; anything else fails the test. */
+function memoryPool() {
+  const db = { case: { id: caseId, revision: 0 }, uploads: [] as Row[], parts: [] as Row[], sources: [] as Row[] };
+  let sequence = 0;
+  const result = (rows: Row[]) => ({ rows, rowCount: rows.length });
+  const run = async (sql: string, values: any[] = []) => {
+    const upload = () => db.uploads.filter(row => row.id === values[0]);
+    const part = () => db.parts.filter(row => row.upload_id === values[0] && row.part_number === values[1]);
+    if (/^(BEGIN|START|COMMIT|ROLLBACK|SET)|pg_advisory_xact_lock|INSERT INTO usp_outbox/.test(sql)) return result([]);
+    if (/FROM (registry_case_feature_mappings|import_packages)/.test(sql)) return result([]);
+    if (sql.includes('FROM cases WHERE id=$1')) return result([db.case]);
+    if (sql.startsWith('UPDATE cases SET revision=revision+1')) { db.case.revision++; return result([]); }
+    if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return result(db.sources);
+    if (sql.startsWith('SELECT id FROM sources')) return result([]);
+    if (sql.startsWith('INSERT INTO sources')) { db.sources.push({ id: values[0], object_key: values[6] }); return result([]); }
+    if (sql.startsWith('UPDATE usp_outbox_streams')) return result([{ sequence: String(++sequence) }]);
+    if (sql.includes('FROM usp_source_uploads WHERE case_id=$1 AND operator_subject')) return result([]);
+    if (sql.includes('count(*) FILTER')) return result([{ v1_receipts: db.uploads.length, v2_receipts: 0, v1_active: 0,
+      v2_active: 0, case_active: 0, operator_active: 0, v1_reserved: '0', v2_reserved: '0' }]);
+    if (sql.startsWith('INSERT INTO usp_source_uploads')) {
+      const row = { id: values[0], case_id: values[1], operator_subject: values[2], request_key: values[3],
+        request_hash: values[4], revision: 1, case_revision: values[5], state: 'receiving', source_id: values[6],
+        original_bytes: String(values[7]), body: values[8], expires_at: values[9], lease_token: null,
+        lease_expires_at: null, finalize_attempts: 0 };
+      db.uploads.push(row);
+      return result([row]);
+    }
+    if (sql.startsWith('SELECT * FROM usp_source_uploads WHERE id=$1')) return result(upload());
+    if (sql.startsWith('UPDATE usp_source_uploads SET')) {
+      Object.assign(upload()[0]!, { revision: values[1], case_revision: values[2], state: values[3], body: values[4],
+        lease_token: values[5], lease_expires_at: values[6], finalize_attempts: values[7] });
+      return result([]);
+    }
+    if (sql.startsWith('SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 ORDER BY')
+      || sql.startsWith('SELECT object_key FROM usp_source_upload_parts'))
+      return result(db.parts.filter(row => row.upload_id === values[0]));
+    if (sql.startsWith('SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 AND part_number=$2')) return result(part());
+    if (sql.includes("state='writing' AND lease_token=$3")) {
+      const rows = part().filter(row => row.state === 'writing' && row.lease_token === values[2]);
+      if (sql.startsWith('UPDATE')) rows.forEach(row => Object.assign(row, { state: 'received', lease_token: null }));
+      return result(rows);
+    }
+    if (sql.startsWith('SELECT 1 FROM usp_source_upload_parts') || sql.startsWith('SELECT part_number')) return result([]);
+    if (sql.startsWith('INSERT INTO usp_source_upload_parts')) {
+      db.parts.push({ upload_id: values[0], part_number: values[1], request_key: values[2], sha256: values[3],
+        bytes: values[4], object_key: values[5], state: 'writing', attempts: 1, lease_token: values[6],
+        lease_expires_at: values[7] });
+      return result([]);
+    }
+    throw new Error(`Statement outside this protocol: ${sql.slice(0, 80)}`);
+  };
+  const pool = { query: run, connect: async () => ({ query: run, release: () => undefined }) };
+  return { db, pool: pool as unknown as Pool };
+}
+
+function memoryStorage() {
+  const objects = new Map<string, Uint8Array>();
+  const missing = Object.assign(new Error('missing'), { $metadata: { httpStatusCode: 404 } });
+  const storage: typeof largeOriginalStorage = { ...largeOriginalStorage,
+    assertLargeOriginalStorageProfile: async () => undefined,
+    putPartObject: async (key: string, bytes: Uint8Array) => { objects.set(key, bytes); },
+    readPartObject: async (key: string) => objects.get(key)!,
+    putOriginalStream: async (key: string, body: Readable) => {
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of body) chunks.push(chunk);
+      objects.set(key, Buffer.concat(chunks));
+    },
+    verifyObjectStream: async (key: string) => {
+      const bytes = objects.get(key);
+      if (!bytes) throw missing;
+      return { etag: 'memory-etag', sha256: sha(bytes), bytes: bytes.length };
+    },
+    sealUploadObject: async () => undefined, abortOriginalAssemblies: async () => undefined,
+  } as never;
+  return { objects, storage };
+}
+
+test('a 3 KB PDF is admitted, received as one part and retained as an original of its exact bytes', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const prior = globals.ulpinPool;
+  const { db, pool } = memoryPool();
+  const { objects, storage } = memoryStorage();
+  globals.ulpinPool = pool;
+  try {
+    const bytes = new Uint8Array(3 * 1024).map((_, index) => index % 251);
+    const service = new LargeOriginalService(storage);
+    const created = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+      filename: 'plan.pdf', mediaType: 'application/octet-stream', sha256: sha(bytes), bytes: bytes.length,
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-17T00:00:00.000Z' } });
+    assert.equal(created.partCount, 1);
+    const guard = { expectedRevision: created.revision, expectedCaseRevision: 0 };
+    const claim = await service.claimPart(caseId, created.id,
+      { ...guard, requestKey: randomUUID(), partNumber: 1, sha256: sha(bytes) });
+    const received = await service.receivePart(claim, bytes);
+    assert.equal(received.receivedBytes, bytes.length);
+    const final = await service.finalize(caseId, created.id, { requestKey: randomUUID(),
+      expectedRevision: received.revision, expectedCaseRevision: 0, sha256: sha(bytes) });
+    assert.equal(final?.state, 'retained');
+    assert.deepEqual(final?.source && { sha256: final.source.sha256, bytes: final.source.bytes },
+      { sha256: sha(bytes), bytes: bytes.length });
+    assert.equal(db.sources.length, 1);
+    assert.deepEqual(new Uint8Array(objects.get(db.sources[0]!.object_key)!), bytes);
+  } finally {
+    globals.ulpinPool = prior;
+  }
+});

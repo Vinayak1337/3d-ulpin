@@ -181,7 +181,7 @@
     "packages/contracts/src/usp/ifc-ingestion.ts": "3cd4dc43edf36d9c76b4edbf376b7052758905c167b9f924216646427c05b28a",
     "packages/contracts/src/usp/index.ts": "bb6bcf7b50c81bb366939c8cdb1a95de945e727b256151bc74488c01665d7df4",
     "packages/contracts/src/usp/ingestion-events.ts": "8be96a72013a864215070d8daf70b67da8a5a4dbda82ebb2d72490a902cfc8c2",
-    "packages/contracts/src/usp/ingestion.ts": "df877a3d6f804c5a16fd48c5fd3366e594173c7860e57e6583d12d82eae96437",
+    "packages/contracts/src/usp/ingestion.ts": "f7372af69865fea766ca2556e5fd5744c157dcf3302ef79926357bed93900e6c",
     "packages/contracts/src/usp/intake.ts": "755b8614d14784305eb9ec221202fe4a249ffff495e6b762775b723814186c5d",
     "packages/contracts/src/usp/kml-ingestion.ts": "8f1f9697dc021842d7901273b5c410b14279d1ea255b7e6b71b0f6affe8f595f",
     "packages/contracts/src/usp/obj-ingestion.ts": "b8b868cee00e42c2d58ba91b0d6eb5b74bd0376f4c6710b18a3c3a08ce21cb2b",

@@ -1,0 +1,49 @@
+{
+  "task": "CD1",
+  "gate": "GF1",
+  "gap": "AU2 G01",
+  "branch": "task/cd1-any-file-door",
+  "base": "f4916b09",
+  "runtime": "none: code and tests only (no Docker, no database, no provider call)",
+  "decisions": {
+    "D1": "LargeUploadCreateSchema bytes minimum is 1 on large-original/1 and large-original/2 (was 16 MiB + 1); the server enforces it only through that schema. The /sources and /intake/archives routes are unchanged.",
+    "D2": "fileRoute answers 'original' (was 'unsupported') for any kind other than GeoJSON/JSON, GPKG/ZIP, CSV/XLSX; AddFilesDialog puts such files straight into the batch, and retainBatch keeps every file that is not a small GeoJSON or ZIP through /uploads with provenance origin not_stated.",
+    "D3": "intake-draft.ts, intake-ledger.ts and batch-model.ts untouched; batch-model.test.ts holds the fileRoute unit test and was updated for the renamed route.",
+    "kept": "LARGE_UPLOAD_MINIMUM stays 16 MiB + 1 as the Studio switch for map files, the first size the bounded map routes refuse. configuredV2Capacity keeps its 3 x (16 MiB + 1) floor: it is an operator storage-capacity floor for large-original/2, not a per-upload minimum, and v2 is only chosen above 128 MiB."
+  },
+  "lifetimeCaps": {
+    "limits": { "maxUploadReceipts": 128, "maxReservedOriginalBytes": 536870912, "profile": "large-original/1" },
+    "demoDropOfTenSmallFiles": "Ten small non-map files (for example PDF, TIFF, LAZ, IFC, KML, DXF, JPEG) spend 10 of the 128 lifetime receipts and their exact byte total of the 512 MiB reservation (under 10 MiB if each is under 1 MiB). Small GeoJSON and ZIP files keep their own routes and spend none; CSV/XLSX keep the table import and spend none. Receipts are counted across all cases and never return, so about 12 such demo drops use up the receipt cap first.",
+    "active": "Files are retained one after another, so maxActivePerCase 2 and maxActiveGlobal 4 are not reached by one drop."
+  },
+  "tests": {
+    "studio": [
+      "retain-batch.test.ts: a 3 KB PDF and a 40 KB TIFF go upload-limits, case, POST /uploads, PUT part 1, finalize, intake items; a small GeoJSON in the same batch keeps POST /sources",
+      "batch-model.test.ts: plan.pdf, ortho.tif, cloud.laz, model.ifc and a name with no extension route to 'original'",
+      "upload.test.ts: the published /uploads minimum is 1 on both profiles; the map switch stays 16 MiB + 1"
+    ],
+    "server": [
+      "large-original-provenance.test.ts: 1 byte, 3 KB PDF and 40 KB TIFF are admitted on both profiles; 0 bytes is refused",
+      "large-original-small.test.ts: a 3 KB PDF goes create, claimPart, receivePart, finalize through LargeOriginalService over an in-memory pool and storage and is retained with its exact SHA-256 and bytes; fails on the old contract",
+      "tests/large-original.test.ts: the refused-size case is now 0 bytes (was 16 MiB)"
+    ]
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0 },
+    { "command": "pnpm studio:test", "before": { "exit": 0, "studioTests": 471, "files": 73 },
+      "after": { "exit": 0, "studioTests": 472, "files": 73 } },
+    { "command": "backend tests (task file command)",
+      "before": { "exit": 1, "tests": 332, "passed": 295, "failed": 15, "skipped": 22 },
+      "after": { "exit": 1, "tests": 334, "passed": 297, "failed": 15, "skipped": 22 },
+      "note": "the same 15 tests fail before and after: they read the absent data drive (E:/BhuAayam-data) or need the absent Python/interpreter" },
+    { "command": "pnpm exec tsx --test tests/large-original.test.ts", "after": { "exit": 0, "passed": 4 } },
+    { "command": "apps/api/scripts/openapi.ts --check", "before": 0, "afterContractChange": "1 (stale)",
+      "afterRefresh": 0 },
+    { "command": "scripts/api/refresh-contract.ts origin/staging", "exit": 0,
+      "repinned": ["packages/contracts/src/usp/ingestion.ts"] },
+    { "command": "pnpm studio:api-types", "exit": 0, "note": "schema.d.ts unchanged: the minimum is not in the types" },
+    { "command": "python scripts/api/check.py", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 }
+  ]
+}
