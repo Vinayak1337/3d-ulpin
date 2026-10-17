@@ -71,11 +71,18 @@ test('the register of a recorded building reads the same after the document read
   }));
 
 test('the ledger of a recorded building reads the same after a later import advanced the case revision',
-  () => recorded(async (f, buildingId, read) => {
+  () => recorded(async (f, buildingId) => {
     const before = await buildingLedger(buildingId);
     assert.equal(before.sources.length, 2);
     retainOriginal(f);
     f.caseRow.revision += 1;
+    assert.deepEqual(await buildingLedger(buildingId), before);
+  }));
+
+test('the ledger of a recorded building states a reading whose case context moved on, its citation unchanged',
+  () => recorded(async (f, buildingId, read) => {
+    const before = await buildingLedger(buildingId);
+    f.caseRow.context = { note: 'edited after the reading' };
     const after = await buildingLedger(buildingId);
     const note = `The document reading retained beside source ${read.source.id} is no longer current `
       + '(case_advanced); the recorded citation is unchanged.';
