@@ -10,6 +10,9 @@ export type WorkStatusFilter = 'all' | 'processing' | 'recorded';
 export type Area = GetResponse<'/api/v1/areas'>[number];
 export type AreaContext = GetResponse<'/api/v1/areas/{areaId}/context'>;
 export type AreaFeature = AreaContext['displayFeatures'][number];
+export type AreaDisplaySummary = GetResponse<'/api/v1/areas/{areaId}/display-summary'>;
+export type AreaDisplayWindow = GetResponse<'/api/v1/areas/{areaId}/display-window'>;
+export type AreaWindowFeature = AreaDisplayWindow['features'][number];
 export type Capabilities = GetResponse<'/api/v1/workspace-capabilities'>;
 /** The JSON form of the register (the endpoint also serves CSV and HTML exports). */
 export type BuildingRegister = Extract<GetResponse<'/api/v1/buildings/{buildingId}/register'>, { register: unknown }>;
@@ -104,6 +107,7 @@ export const queryKeys = {
   areas: ['areas'] as const,
   areaContext: (areaId: string) => ['areas', areaId, 'context'] as const,
   areaCanonical: (areaId: string) => ['areas', areaId, 'canonical'] as const,
+  areaDisplaySummary: (areaId: string) => ['areas', areaId, 'display-summary'] as const,
   buildingCanonical: (buildingId: string) => ['buildings', buildingId, 'canonical'] as const,
   buildingSnapshots: (buildingId: string) => ['buildings', buildingId, 'snapshots'] as const,
   unitCards: (buildingId: string, spaceId: string) => ['buildings', buildingId, 'units', spaceId, 'cards'] as const,
@@ -252,6 +256,28 @@ export const areaCanonicalQuery = (areaId: string | undefined, live: boolean) =>
 /** The canonical area record in local metres: what the scene draws. Locally uploaded areas have none. */
 export function useAreaCanonical(areaId: string | undefined, live = false) {
   return useQuery(areaCanonicalQuery(areaId, live));
+}
+
+/** How many features an area beyond the display limit holds and their extent in local metres. */
+export function useAreaDisplaySummary(areaId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.areaDisplaySummary(areaId ?? ''),
+    enabled: Boolean(areaId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/areas/{areaId}/display-summary', {
+      params: { path: { areaId: areaId! } }, signal,
+    })),
+    staleTime: 60_000,
+  });
+}
+
+/** One keyset page of the features meeting a window of the area, in its local metres. */
+export async function readAreaWindow(
+  areaId: string, [minX, minY, maxX, maxY]: readonly [number, number, number, number], after: string | undefined,
+  limit: number, signal: AbortSignal,
+): Promise<AreaDisplayWindow> {
+  return unwrap(await api.GET('/api/v1/areas/{areaId}/display-window', {
+    params: { path: { areaId }, query: { minX, minY, maxX, maxY, after, limit } }, signal,
+  }));
 }
 
 /** The canonical record of one building: state, gaps, levels and spaces. */

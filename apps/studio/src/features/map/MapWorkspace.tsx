@@ -16,6 +16,7 @@ import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { drawnCountNote, polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
+import { isAreaLimit, useAreaWindow } from './areaWindow';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { attachDemoScene, isDemoId } from '../../api/demo-import';
@@ -118,7 +119,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
 
   const drawn = useCanonicalFootprints(context.area.id, feature?.id, features, Boolean(packageId));
-  const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour, drawn.footprints);
+  // The canonical read refused the area as too large: its buildings are read by the part in view instead.
+  const windowMode = isAreaLimit(drawn.error);
+  const windowed = useAreaWindow(context.area.id, engine, windowMode);
+  const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour,
+    windowMode ? windowed.footprints : drawn.footprints);
   const [mapView, setMapView] = useMapView();
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);
@@ -160,7 +165,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     mapView.look === 'enhanced' ? 'Enhanced view' : null,
     ...visibleOverlays.map((o) => o.caption),
     ...(retainedShown ? imageryAttribution(drawn.area?.imagery ?? []) : []),
-    drawn.pending ? null : drawnCountNote(features, sceneIds),
+    windowMode ? windowed.line : drawn.pending ? null : drawnCountNote(features, sceneIds),
     undrawnNote(features),
     ...(overlayQuery.data?.warnings ?? []),
   ].filter(Boolean);
@@ -246,7 +251,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
 
-  const onView = useCallback(() => setTick((t) => (t + 1) % 1_000_000), []);
+  const { onView: readView } = windowed;
+  const onView = useCallback(() => { setTick((t) => (t + 1) % 1_000_000); readView(); }, [readView]);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
   const chooseColour = (c: Exclude<typeof colour, never>) => {
     patch({ colourBy: c });
@@ -424,7 +430,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             ) : null}
             <CandidateBanner className={styles.banner} areaId={context.area.id} buildingId={feature?.id ?? null} />
-            {drawn.error ? (
+            {drawn.error && !windowMode ? (
               <div className={styles.banner}>
                 <Banner tone="danger">The canonical record of this area could not be read, so its buildings are not drawn. {drawn.error.message}</Banner>
               </div>

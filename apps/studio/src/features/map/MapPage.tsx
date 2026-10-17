@@ -4,6 +4,8 @@ import { Button, EmptyState, Icon, Skeleton } from '@ulpin/ui';
 import { useAreaContext, useAreas } from '../../api/queries';
 import { readLastArea } from '../../app/lastArea';
 import { MapWorkspace } from './MapWorkspace';
+import { isAreaLimit } from './areaWindow';
+import { WindowedArea } from './WindowedArea';
 import styles from './MapPage.module.css';
 
 /** /studio/map: open the last area, else the first area, else an honest Empty state. */
@@ -39,6 +41,8 @@ export function MapPage() {
   const [params] = useSearchParams();
   const context = useAreaContext(areaId, params.has('package'));
   if (context.isPending) return <MapSkeleton />;
+  // An area with more features than one display read carries is drawn by the part in view.
+  if (areaId && isAreaLimit(context.error)) return <WindowedArea key={areaId} areaId={areaId} />;
   if (context.error || !context.data) {
     return (
       <div className={styles.emptyPage}>
