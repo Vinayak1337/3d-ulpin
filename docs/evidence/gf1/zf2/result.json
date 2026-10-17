@@ -1,0 +1,61 @@
+{
+  "task": "ZF2",
+  "gate": "GF1",
+  "base": "410247e4",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers and real repository inputs (no database, object store, processor or served HTTP walk). The task text reached this session cut off at step 3 of Start; scope, paths and checks below are the worker's reading of the title and of REH3's finding on the NYC pack, and are recorded as decisions.",
+  "finding": "REH3 (docs/evidence/runtime/reh3/result.json): after ZF1's fan-out of nyc-10013-multimodal.zip the archive item stayed probed / undecided with no reason, and the DEM, ortho, LiDAR and manifest.json member rows said nothing; the Studio counted all of them as unsettled, so the batch stream never rested.",
+  "tests": {
+    "server": {
+      "command": "npx tsx --test tests/intake-probe.test.ts tests/intake-ledger.test.ts tests/intake-storage.test.ts tests/source-intake.test.ts tests/t089-intake-routing.test.ts tests/intake-zip-layers.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+      "before": { "pass": 167, "fail": 1 },
+      "after": { "pass": 168, "fail": 1 },
+      "failuresUnchanged": true,
+      "failureCause": "intake-package-cuts.test.ts 'real NYC reader preserves global indexes and spans through deterministic cuts' fails on the base too (its original is not in this checkout).",
+      "changed": "tests/intake-ledger.test.ts: its in-memory ledger answers the reason write (an unknown update threw before); the member test now also asserts the archive's and the member's words."
+    },
+    "api": {
+      "command": "npx tsx --tsconfig apps/api/tsconfig.json --test tests/intake-api.test.ts tests/nest-intake.test.ts",
+      "before": { "pass": 3, "fail": 0 },
+      "after": { "pass": 3, "fail": 0 }
+    },
+    "studio": {
+      "command": "cd apps/studio && npx vitest run src/features/intake",
+      "before": { "tests": 110, "pass": 110 },
+      "after": { "tests": 111, "pass": 111 }
+    },
+    "typecheck": { "backend": "pnpm typecheck:backend: 0 errors", "studio": "pnpm studio:typecheck: 0 errors" },
+    "contract": "python3 scripts/api/check.py: 312 native operations, pins and manifests valid. Only docs/api/source-pins.json moved (intake-zip-layers.ts repinned with npx tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts origin/staging); no schema or route changed, openapi.json and schema.d.ts unchanged.",
+    "added": [
+      "tests/intake-zip-layers.test.ts: good real input (three Uttam Nagar GeoJSON layers and a README, zipped at test time): the ZIP's item reads 'ZIP_LAYERS: 3 of 4 members became their own files, one item each. 1 stays inside the archive: 1 file of a kind not known.'; the README row reads ZIP_MEMBER_INSIDE; a replay publishes no new event",
+      "tests/intake-zip-layers.test.ts: a refused layer: the ZIP's words count '1 GeoJSON member was not kept; each member row says why.' and never name the member",
+      "tests/intake-zip-layers.test.ts: difficult real input fixtures/lake-view-complete-inputs.zip: every member row carries a reason, and the ZIP's words name no member path",
+      "tests/intake-zip-layers.test.ts: an empty and an all-refused archive keep fixed words",
+      "apps/studio batch-model.test.ts: every ZIP routes to the batch except one with a .shp member (any case, any folder); PDF/TIFF, GeoPackage-in-ZIP and unreadable bytes go to the batch",
+      "apps/studio batch-model.test.ts: a ZIP's own row and a member row left inside settle once they carry a reason; a dropped file's reason does not settle it"
+    ]
+  },
+  "realInputs": {
+    "good": { "files": ["fixtures/google-uttam/01-google-building-footprints.geojson", "fixtures/google-uttam/02-osm-road-centrelines.geojson", "fixtures/google-uttam/block-boundary.geojson", "fixtures/google-uttam/README.md"], "archiveWords": "ZIP_LAYERS: 3 of 4 members became their own files, one item each. 1 stays inside the archive: 1 file of a kind not known." },
+    "difficult": { "file": "fixtures/lake-view-complete-inputs.zip", "members": 38, "archiveWords": "ZIP_NO_LAYERS: none of the 38 members became its own file; only GeoJSON members do. 38 stay inside the archive: 1 table, 10 3D models, 6 documents, 15 images, 6 files of a kind not known." }
+  },
+  "uiDesignCheck": {
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging",
+    "exit": 0,
+    "note": "The scan covers apps/web only ('No candidates'). Studio diff read by hand: one help sentence changed in AddFilesDialog (sentence case, no tokens, CSS or controls); the tray's existing Reason column shows the new words. No blocking or design-system findings."
+  },
+  "decisions": [
+    "The ZIP's own item carries its words in limitReason, written at the end of every fan-out (enrolment and each re-enrolment) and published only when they change. Codes ZIP_LAYERS (one or more members became their own files) and ZIP_NO_LAYERS (none did).",
+    "The words are counts and fixed words only: how many members became their own files; how many GeoJSON members were not kept (their rows say why); how many the probe could not read; and how many stay inside, by kind (map feature file, table, raster, point cloud, 3D model, document, image, archive, kind not known). Member names stay on the member rows and are never repeated in the ZIP's words.",
+    "Each member that stays inside and has no reason yet gets ZIP_MEMBER_INSIDE: 'this member stays inside the archive; only GeoJSON members become their own files.' A probe refusal code or a ZF1 layer reason is never overwritten.",
+    "State and placement are unchanged (probed / undecided); no new enum value, so the contract did not change. 'Attached to a record' would claim something that is not true.",
+    "Studio: a ZIP's own row with a reason, and a member row without its own original that has a reason, count as settled. Nothing reads them further, so the batch stream can rest.",
+    "Studio: every ZIP goes to the batch unless its directory lists a .shp member, which keeps the bounded direct import. A GeoPackage inside a ZIP goes to the batch (direct import takes a .gpkg file, not a ZIP of one). A ZIP whose directory the Studio cannot read also goes to the batch: the archive route refuses non-ZIP bytes with ARCHIVE_FORMAT, and the server probe records a coded reason for the rest.",
+    "A ZIP above 16 MiB goes through /uploads as before and fans out on enrolment in the same way."
+  ],
+  "limits": [
+    "No PostgreSQL, object store, processor or served HTTP walk was run.",
+    "A shapefile ZIP whose directory the Studio cannot read (ZIP64, or a directory above 1 MiB) now goes to the batch instead of direct import; direct import is bounded at 16 MiB, so such a ZIP is above that bound anyway.",
+    "XLSX sheet rows (also member rows) are unchanged and still count as unsettled with no reason; that predates ZF1."
+  ]
+}
