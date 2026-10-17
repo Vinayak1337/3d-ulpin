@@ -21,11 +21,14 @@ export async function displayAreaProposals(client:PoolClient,area:MapArea,packag
 }
 
 /** The features an area displays as unrecorded proposals, package by package, newest package first: the first
- * package to name a source key or reject it decides it, and only an uncommitted package's unchanged features count. */
+ * package to name a source key or reject it decides it, and only an uncommitted package's unchanged features count.
+ * Given only, the same rule for that one feature: every package still decides its source keys in order, but only
+ * that feature's revision is read and only the package proposing it has its sources checked. */
 export async function areaProposals<F extends ProposalFeature>(client:PoolClient,area:MapArea,
-  packages:ProposalPackage<F>[],limit=Infinity){
+  packages:ProposalPackage<F>[],limit=Infinity,only?:string){
   const seen=new Set<string>(),result:{packageId:string;features:F[]}[]=[];
-  const current=(await client.query('SELECT id,revision FROM physical_features WHERE area_id=$1',[area.id])).rows;
+  const current=(await client.query(`SELECT id,revision FROM physical_features WHERE area_id=$1${only?' AND id=$2':''}`,
+    only?[area.id,only]:[area.id])).rows;
   const revisions=new Map(current.map(row=>[row.id,row.revision]));
   let count=0;
   for(const pkg of packages){
