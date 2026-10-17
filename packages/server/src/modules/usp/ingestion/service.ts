@@ -175,7 +175,7 @@ export async function carriedApprovalTx(client: PoolClient, receipt: MappingRece
   if (carried && (carried.layoutHash !== layoutHash(receipt.plan)
     || !await pressHeldTx(client, receipt.plan.caseId, carried)))
     throw new AppError(409, 'RECIPE_APPROVAL',
-      'The layout approval this file was drafted with is no longer current; approve this file’s layout.');
+      'The layout approval this file was drafted with is no longer current; approve this file\'s layout.');
   return carried;
 }
 

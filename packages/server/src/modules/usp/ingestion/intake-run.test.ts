@@ -7,7 +7,8 @@ import { IntakeConfirmSchema, type PropertyCardVerification } from '@ulpin/contr
 import { AppError } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { ingestionBinding } from './events';
-import { confirmIntake, intakeConfirmationReason, packageDifference } from './intake-confirmations';
+import { cardTargetDifference, confirmIntake, intakeConfirmationReason, isCardsOnly,
+  packageDifference } from './intake-confirmations';
 import { IntakeRunInputSchema, intakeRunKey } from './intake-run';
 import { assertIntakeCardVerified, intakeCardVerificationPin, intakeRunRefusal, intakeRunSteps,
   intakeTargetCitation, runIntakeRunJob, type IntakeRunSteps } from './intake-run-worker';
@@ -21,6 +22,16 @@ const pkg = { id, state: 'REVIEWED', revision: 2,
 test('one reason identifies the actual confirmation, with no invented justification', () => {
   assert.equal(intakeConfirmationReason(id, new Date('2026-01-01T01:00:00Z')),
     `Confirmed by the officer in intake confirmation ${id} on 2026-01-01.`);
+});
+
+test('a cards-only confirmation states its kind in its reason, which marks it and nothing else', () => {
+  const at = new Date('2026-01-01T01:00:00Z');
+  const reason = intakeConfirmationReason(id, at, true);
+  assert.equal(reason, `Confirmed by the officer in intake confirmation ${id} on 2026-01-01 to card buildings `
+    + 'already recorded.');
+  assert(isCardsOnly({ confirmation_id: id, created_at: at, reason }));
+  assert(!isCardsOnly({ confirmation_id: id, created_at: at, reason: intakeConfirmationReason(id, at) }));
+  assert(!isCardsOnly({ confirmation_id: other, created_at: at, reason }));
 });
 
 test('keys distinguish confirmation, target and step but not attempt or job id', () => {
@@ -65,6 +76,82 @@ test('a confirmation still refuses a package whose intake item belongs to anothe
   }
 });
 
+test('a cards-only confirmation refuses, in words, a carded, stopped, listed or unrecorded building', () => {
+  const pin = { ...named, revision: 1 };
+  const recorded = { readiness: 'recorded', confirmation_id: null, pin };
+  assert.equal(cardTargetDifference(other, recorded), null);
+  assert.equal(cardTargetDifference(other, { ...recorded, readiness: 'carded' }),
+    `Target ${other} is carded; only a recorded building with no card can be named.`);
+  assert.equal(cardTargetDifference(other, { ...recorded, readiness: 'stopped' }),
+    `Target ${other} is stopped; only a recorded building with no card can be named.`);
+  assert.equal(cardTargetDifference(other, { ...recorded, readiness: 'ready', pin: null }),
+    `Target ${other} belongs to a package no confirmation of this case has recorded.`);
+  assert.equal(cardTargetDifference(other, { ...recorded, confirmation_id: id }),
+    `Target ${other} is already listed in confirmation ${id}.`);
+  assert.equal(cardTargetDifference(other, undefined), `Target ${other} is not in this case.`);
+});
+
+/** confirmIntake on a store that answers the cards-only checks and records what it was asked to write. */
+async function confirmCards(targets: { target_id: string; readiness: string; confirmation_id: string | null;
+  pin: typeof named | null }[]) {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const written: { sql: string; values: unknown[] }[] = [];
+  const stored = new Error('stored');
+  const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
+    if (sql.startsWith('SELECT id,revision,archived')) return { rows: [{ id: other, revision: 0, archived: false }] };
+    if (sql.startsWith('SELECT confirmation_id,input_sha256')) return { rows: [] };
+    if (sql.startsWith('SELECT t.target_id,t.readiness')) {
+      assert.match(sql, /c\.case_id=\$1/);
+      assert.match(sql, /COMMITTED/);
+      assert.deepEqual(values, [other, targets.map(row => row.target_id)]);
+      return { rows: targets };
+    }
+    if (sql.startsWith('INSERT INTO usp_intake_confirmations') || sql.startsWith('UPDATE usp_intake_targets')) {
+      written.push({ sql, values });
+      return { rows: sql.startsWith('UPDATE') ? targets.map(row => ({ target_id: row.target_id,
+        readiness: values[2], stage: 3 })) : [] };
+    }
+    if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: 0 }] };
+    if (sql.startsWith('UPDATE usp_outbox_streams')) return { rows: [{ sequence: '1' }] };
+    if (sql.startsWith('INSERT INTO usp_outbox')) return { rows: [] };
+    if (sql.startsWith('SELECT id FROM jobs')) return { rows: [{ id }] };
+    if (sql.startsWith('SELECT * FROM usp_intake_confirmations')) throw stored;
+    throw new Error(`Unexpected query: ${sql}`);
+  } } as unknown as PoolClient;
+  globals.ulpinPool = { connect: async () => client } as unknown as Pool;
+  try {
+    const input = { requestKey: id, packages: [], targets: targets.map(row => row.target_id),
+      acknowledgement: 'Cards for recorded buildings.' };
+    await confirmIntake(other, input).catch(error => { if (error !== stored) throw error; });
+    return written;
+  } finally {
+    globals.ulpinPool = previous;
+  }
+}
+
+test('a cards-only confirmation stores the recording pins and keeps its buildings recorded, in order', async () => {
+  const pin = { ...named, revision: 1 };
+  const ids = ['10000000-0000-4000-8000-000000000033', '10000000-0000-4000-8000-000000000031'];
+  const [insert, update] = await confirmCards(ids.map(target_id => ({ target_id, readiness: 'recorded',
+    confirmation_id: null, pin })));
+  assert.deepEqual(JSON.parse(insert.values[6] as string), [pin]);
+  assert.deepEqual(insert.values[7], ids);
+  assert.match(insert.values[8] as string, / to card buildings already recorded\.$/);
+  assert.deepEqual(update.values.slice(1), [ids, 'recorded', 'Listed for a card; it is carded in the order listed.']);
+});
+
+test('a cards-only confirmation naming one refused building stores nothing', async () => {
+  const target = { target_id: other, readiness: 'carded', confirmation_id: id, pin: named };
+  await assert.rejects(confirmCards([target]), { code: 'INTAKE_CONFIRMATION_STALE',
+    message: `Target ${other} is carded; only a recorded building with no card can be named.` });
+  await assert.rejects(confirmCards([{ ...target, readiness: 'ready', pin: null }]),
+    { code: 'INTAKE_CONFIRMATION_STALE',
+      message: `Target ${other} belongs to a package no confirmation of this case has recorded.` });
+});
+
 test('the stored list is bounded and cannot contain commands to resolve conflicts or assume facts', () => {
   const input = { requestKey: id, acknowledgement: 'Protocol acknowledgement', packages: [named], targets: [other] };
   assert(IntakeConfirmSchema.safeParse(input).success);
@@ -73,6 +160,8 @@ test('the stored list is bounded and cannot contain commands to resolve conflict
   }
   assert(!IntakeConfirmSchema.safeParse({ ...input, targets: Array(101).fill(other) }).success);
   assert(!IntakeConfirmSchema.safeParse({ ...input, targets: [other, other] }).success);
+  assert(IntakeConfirmSchema.safeParse({ ...input, packages: [] }).success);
+  assert(!IntakeConfirmSchema.safeParse({ ...input, packages: [], targets: [] }).success);
 });
 
 test('the stored acknowledgement preserves the officer words so a whitespace change is a different input', () => {
@@ -126,10 +215,28 @@ test('verification reads the exact revision from the saved card link, not a fabr
     { code: 'INTAKE_CARD_LINK' });
 });
 
-type Target = { target_id: string; package_id: string; readiness: string; blocked_by?: string; reason?: string };
+type Target = { target_id: string; package_id: string; readiness: string; blocked_by?: string; reason?: string;
+  confirmation_id?: string; locator?: string; artefacts?: Record<string, unknown> };
+const locator = 'feature fixture-key';
+const made = { id, revision: 1 };
 
-/** One confirmation of three packages, one listed building each, on a store that answers the run's own SQL. */
-function commitRun(loseLeaseAtRenewal = 0) {
+/** The carry steps answer as the product does when every step succeeds, each naming the fixture's one artefact. */
+const cardSteps = {
+  snapshot: async () => ({ id, digest: 'd'.repeat(64) }),
+  resolve: async () => ({ state: 'available', data: { evidence: [{ legacyLocator: locator }] } }),
+  createPlan: async () => ({ planId: id, version: 1, planSha256: 'c'.repeat(64), entries: [{ state: 'included' }] }),
+  confirmPlan: async () => ({ confirmationId: id }),
+  executePlan: async () => ({ packet: { packetId: id } }),
+  card: async () => ({ cardId: made.id, revision: made.revision }),
+  readCard: async () => ({ card: { resolverUrl: `http://127.0.0.1:3000/api/v1/usp/property-cards/${id}/revisions/1` }
+  }),
+  verify: async () => ({ report: { snapshot: { state: 'same_revision' }, result: 'consistent',
+    lifecycle: { expired: false, revocation: null, superseded: null } } }),
+} as unknown as Partial<IntakeRunSteps>;
+
+/** One confirmation of three packages, one listed building each, on a store that answers the run's own SQL.
+ * A cards-only one lists the three recorded buildings in the order given, and its packages are already recorded. */
+function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null) {
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
   const caseId = '10000000-0000-4000-8000-000000000003';
   const binding = ingestionBinding(caseId);
@@ -137,13 +244,18 @@ function commitRun(loseLeaseAtRenewal = 0) {
   const input = IntakeRunInputSchema.parse({ version: 'intake-run/1', jobId: '10000000-0000-4000-8000-000000000004',
     caseId, caseRevision: 0, subject: binding.subject, accessSha256: binding.access, phase: 'commit', confirmationId });
   const ids = [1, 2, 3].map(n => `10000000-0000-4000-8000-00000000001${n}`);
+  const targetIds = [1, 2, 3].map(n => `10000000-0000-4000-8000-00000000002${n}`);
+  const createdAt = new Date();
   const confirmation = { confirmation_id: confirmationId, case_id: caseId, subject: binding.subject,
     acknowledgement: 'Fixture physical observations only.', expires_at: new Date(Date.now() + 3600_000),
-    packages: ids.map(packageId => ({ ...named, packageId })), targets: [] };
+    packages: ids.map(packageId => ({ ...named, packageId })), targets: cardsOnly?.map(n => targetIds[n - 1]) ?? [],
+    created_at: createdAt, reason: intakeConfirmationReason(confirmationId, createdAt, Boolean(cardsOnly)) };
   const store = { status: 'queued', logical: 'queued', error: null as string | null, renewals: 0,
     attempts: [] as { number: number; fence: number; owner: string; state: string; lease_until: Date }[],
     targets: ids.map(id => ({ target_id: `target:${id}`, package_id: id, readiness: 'confirmed' })) as Target[],
-    committed: [] as string[] };
+    committed: [] as string[], carded: [] as string[] };
+  if (cardsOnly) store.targets = ids.map((id, index) => ({ target_id: targetIds[index], package_id: id,
+    readiness: 'recorded', confirmation_id: confirmationId, locator, artefacts: { record: made } }));
   const attempt = (number: unknown) => store.attempts.find(row => row.number === number);
   const answers: [string, (values: unknown[], sql: string) => unknown[]][] = [
     ['SELECT * FROM jobs', () => [{ id: input.jobId, status: store.status, payload: input }]],
@@ -192,8 +304,20 @@ function commitRun(loseLeaseAtRenewal = 0) {
         { readiness: 'stopped', blocked_by: code, reason: message });
       return [];
     }],
+    ['SELECT * FROM usp_intake_targets WHERE target_id=$1', ([id]) =>
+      [structuredClone(store.targets.find(row => row.target_id === id))]],
+    ['SET TRANSACTION ISOLATION LEVEL', () => []],
+    ['SELECT site_id FROM registry_records', () => [{ site_id: caseId }]],
+    ['SELECT body FROM usp_snapshots', () => [{ body: { scope: { kind: 'targets', pins: [] } } }]],
+    ['UPDATE usp_intake_targets SET stage=', ([id, stage, readiness, reason, artefacts]) => {
+      const row = store.targets.find(value => value.target_id === id)!;
+      Object.assign(row, { readiness, reason, artefacts: { ...row.artefacts, ...artefacts as object } });
+      if (readiness === 'carded') store.carded.push(id as string);
+      return [{ case_id: caseId, target_id: id, readiness, stage }];
+    }],
     ['UPDATE usp_outbox_streams', () => [{ sequence: '1' }]],
     ['INSERT INTO usp_outbox', () => []],
+    ['SELECT revision FROM cases', () => [{ revision: 0 }]],
   ];
   const ask = async (sql: string, values: unknown[] = []) => {
     if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
@@ -202,8 +326,8 @@ function commitRun(loseLeaseAtRenewal = 0) {
     assert(answer, `Unexpected query: ${text}`);
     return { rows: answer[1](values, text) };
   };
-  const steps: IntakeRunSteps = { ...intakeRunSteps,
-    package: (async (id: string) => ({ ...pkg, id, ...(store.committed.includes(id)
+  const steps: IntakeRunSteps = { ...intakeRunSteps, ...cardSteps,
+    package: (async (id: string) => ({ ...pkg, id, ...(cardsOnly || store.committed.includes(id)
       ? { state: 'COMMITTED', revision: named.revision + 1 } : {}) })) as IntakeRunSteps['package'],
     commit: (async (id: string) => { store.committed.push(id); }) as unknown as IntakeRunSteps['commit'] };
   const run = async (change: Partial<IntakeRunSteps> = {}) => {
@@ -216,7 +340,7 @@ function commitRun(loseLeaseAtRenewal = 0) {
       globals.ulpinPool = previous;
     }
   };
-  return { ids, store, run };
+  return { ids, targetIds, store, run };
 }
 
 test('a confirmation run renews its lease after each committed package', async () => {
@@ -256,4 +380,39 @@ test('a package refused by its own checks still stops its building in its own wo
     blocked_by: refusal.code, reason: refusal.message });
   assert.deepEqual([store.targets[0].readiness, store.targets[2].readiness], ['recorded', 'recorded']);
   assert.deepEqual([store.status, store.error, store.attempts[0].state], ['failed', refusal.code, 'fenced']);
+});
+
+test('a cards-only confirmation of three recorded buildings makes three cards in its order and commits nothing',
+  async () => {
+    const { targetIds, store, run } = commitRun(0, [3, 1, 2]);
+    await run();
+    assert.deepEqual(store.carded, [targetIds[2], targetIds[0], targetIds[1]]);
+    assert.deepEqual(store.committed, []);
+    assert.equal(store.renewals, 3);
+    assert.deepEqual(store.targets.map(row => row.readiness), ['carded', 'carded', 'carded']);
+    assert.equal(store.status, 'succeeded');
+  });
+
+test('a cards-only run that loses its lease after card 2 makes only card 3 on its retry', async () => {
+  const { targetIds, store, run } = commitRun(2, [1, 2, 3]);
+  await assert.rejects(run(), { status: 503, code: 'INTAKE_RUN_LEASE_LOST' });
+  assert.deepEqual(store.carded, targetIds.slice(0, 2));
+  await run();
+  assert.deepEqual(store.carded, targetIds);
+  assert.deepEqual([store.committed, store.status, store.attempts.length], [[], 'succeeded', 2]);
+});
+
+test('a cards-only building refused at a step stops in its own words; the others are still carded', async () => {
+  const { targetIds, store, run } = commitRun(0, [1, 2, 3]);
+  const refusal = new AppError(409, 'USP_STALE_TARGET', 'The card target changed after it was pinned.');
+  let calls = 0;
+  const resolve = async () => {
+    if (++calls === 2) throw refusal;
+    return { state: 'available', data: { evidence: [{ legacyLocator: locator }] } };
+  };
+  await assert.rejects(run({ resolve: resolve as unknown as IntakeRunSteps['resolve'] }), refusal);
+  assert.deepEqual(store.carded, [targetIds[0], targetIds[2]]);
+  assert.deepEqual([store.targets[1].readiness, store.targets[1].blocked_by, store.targets[1].reason],
+    ['stopped', refusal.code, refusal.message]);
+  assert.deepEqual([store.renewals, store.committed, store.status, store.error], [3, [], 'failed', refusal.code]);
 });

@@ -1,5 +1,5 @@
 import { api, unwrap, ApiError } from '@ulpin/api-client';
-import { chooseReady, confirmablePackages, INTAKE_TARGET_LIMITS,
+import { chooseReady, confirmablePackages, INTAKE_TARGET_LIMITS, nextRecorded,
   type Confirmation, type ConfirmBody, type Readiness, type Target, type TargetPage } from './model';
 
 export async function readTargets(caseId: string, readiness?: Readiness, cursor?: string): Promise<TargetPage> {
@@ -14,6 +14,16 @@ export async function readFirstReady(caseId: string): Promise<Target[]> {
   while (page.nextCursor && choice.length < INTAKE_TARGET_LIMITS.confirmationTargets) {
     page = await readTargets(caseId, 'ready', page.nextCursor);
     choice = chooseReady([...choice, ...page.items], confirmablePackages(page));
+  }
+  return choice;
+}
+
+export async function readNextRecorded(caseId: string): Promise<Target[]> {
+  let page = await readTargets(caseId, 'recorded');
+  let choice = nextRecorded(page.items);
+  while (page.nextCursor && choice.length < INTAKE_TARGET_LIMITS.confirmationTargets) {
+    page = await readTargets(caseId, 'recorded', page.nextCursor);
+    choice = nextRecorded([...choice, ...page.items]);
   }
   return choice;
 }

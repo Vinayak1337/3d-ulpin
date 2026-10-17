@@ -3480,7 +3480,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Store one officer confirmation of exact reviewed packages and at most 100 ready targets, then enqueue */
+        /** Store one officer confirmation of exact reviewed packages and at most 100 ready targets, or of at most 100 recorded targets with no card and no package (cards only), then enqueue */
         post: operations["POST_api_v1_ingestion_cases_caseId_confirmations"];
         delete?: never;
         options?: never;
@@ -65890,6 +65890,7 @@ export interface components {
             /** Format: uuid */
             requestKey: string;
             acknowledgement: string;
+            /** @description The packages to record. Empty only for a cards-only confirmation: its targets are recorded buildings with no card, of packages an earlier confirmation of this case recorded; it stores their pins as that confirmation named them, records nothing and cards the targets in the order listed. */
             packages: {
                 /** Format: uuid */
                 packageId: string;

@@ -49,6 +49,29 @@ export function confirmationWords(chosen: number): string {
     + 'Every other ready building of these packages will be recorded without a card.';
 }
 
+/** A cards-only confirmation records nothing and cards its buildings in the order listed. */
+export function cardsOnlyWords(chosen: number): string {
+  return `These ${chosen} recorded buildings will each get a snapshot, an evidence plan and packet, and a property `
+    + 'card made and verified, in the order listed, without another press. Nothing is recorded again.';
+}
+
+export function noCardWords(counts: TargetPage['counts']): string {
+  return `${counts.recorded} recorded buildings have no card yet.`;
+}
+
+export function hasRecordedPackage(page: TargetPage): boolean {
+  return page.packages.some(pkg => pkg.state === 'COMMITTED');
+}
+
+type CardTarget = Pick<Target, 'targetId' | 'readiness'> & Partial<Pick<Target, 'confirmationId'>>;
+
+/** Recorded buildings no confirmation lists yet, in the order the batch stores them, at most one confirmation's. */
+export function nextRecorded<T extends CardTarget>(targets: readonly T[]): T[] {
+  const unique = new Map(targets.filter(target => target.readiness === 'recorded' && !target.confirmationId)
+    .map(target => [target.targetId, target]));
+  return [...unique.values()].slice(0, INTAKE_TARGET_LIMITS.confirmationTargets);
+}
+
 export function confirmingPackageWords(pkg: Package): string {
   if (hasNoBuildings(pkg)) return 'No building in this package; its features will be recorded.';
   return `${pkg.counts.ready} ready buildings will be recorded.`;
@@ -70,8 +93,11 @@ export function chooseReady<T extends ChoiceTarget>(targets: readonly T[], packa
   return [...unique.values()].slice(0, INTAKE_TARGET_LIMITS.confirmationTargets);
 }
 
-export function confirmBody(page: TargetPage, choice: readonly ChoiceTarget[], acknowledgement: string,
-  requestKey: string): ConfirmBody {
+export function confirmBody(page: TargetPage, choice: readonly (ChoiceTarget & CardTarget)[],
+  acknowledgement: string, requestKey: string, cardsOnly = false): ConfirmBody {
+  if (cardsOnly) {
+    return { requestKey, acknowledgement, packages: [], targets: nextRecorded(choice).map(target => target.targetId) };
+  }
   const packages = confirmablePackages(page);
   return {
     requestKey, acknowledgement,

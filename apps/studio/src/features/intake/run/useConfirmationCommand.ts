@@ -11,9 +11,9 @@ export function useConfirmationCommand(caseId: string, stored: (confirmation: Co
   const [uncertain, setUncertain] = useState(false);
   const [error, setError] = useState('');
   const [preview, setPreview] = useState<TargetPage | null>(null);
-  const press = async (page: TargetPage, choice: readonly Target[], acknowledgement: string) => {
+  const press = async (page: TargetPage, choice: readonly Target[], acknowledgement: string, cardsOnly = false) => {
     if (inFlight.current) return;
-    const body = pending.current ?? confirmBody(page, choice, acknowledgement, crypto.randomUUID());
+    const body = pending.current ?? confirmBody(page, choice, acknowledgement, crypto.randomUUID(), cardsOnly);
     if (!pending.current) setPreview(page);
     pending.current = body;
     inFlight.current = true;

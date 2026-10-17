@@ -45,7 +45,8 @@ export class IntakeRunController {
   @Post('cases/:caseId/confirmations')
   @HttpCode(202) @param('caseId')
   @ApiOperation({ operationId: 'POST_api_v1_ingestion_cases_caseId_confirmations',
-    summary: 'Store one officer confirmation of exact reviewed packages and at most 100 ready targets, then enqueue' })
+    summary: 'Store one officer confirmation of exact reviewed packages and at most 100 ready targets, or of '
+      + 'at most 100 recorded targets with no card and no package (cards only), then enqueue' })
   @jsonBody(IntakeConfirmSchema) @wireResponse(202, IntakeConfirmationSchema)
   async confirm(@Param('caseId') caseId: string, @Req() request: Request) {
     return confirmIntake(caseId, await readJsonBody(request, bodyLimit));
