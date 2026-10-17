@@ -35,3 +35,12 @@ test('an absent or unrecognized stored plan never makes the item read throw', ()
     assert.equal(intakeItem({ ...row, plan_ref }).plan, null);
   }
 });
+
+test('a resting item names the area that already holds its bytes; nothing else names one', () => {
+  const rested = intakeItem({ ...row, state: 'read', placement: 'undecided', plan_ref: { existingAreaId: id } });
+  assert.equal(rested.existingAreaId, id);
+  assert.equal(rested.plan, null);
+  for (const plan_ref of [null, { existingAreaId: 'not-an-id' }, { recipeId: id }]) {
+    assert.equal('existingAreaId' in intakeItem({ ...row, plan_ref }), false);
+  }
+});

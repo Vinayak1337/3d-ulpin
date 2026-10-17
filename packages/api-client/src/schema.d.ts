@@ -64619,6 +64619,11 @@ export interface components {
             recordsSeen: number;
             limitReason: string | null;
             pinnedByOfficer: boolean;
+            /**
+             * Format: uuid
+             * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
+             */
+            existingAreaId?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -64833,6 +64838,11 @@ export interface components {
                 recordsSeen: number;
                 limitReason: string | null;
                 pinnedByOfficer: boolean;
+                /**
+                 * Format: uuid
+                 * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
+                 */
+                existingAreaId?: string | null;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */

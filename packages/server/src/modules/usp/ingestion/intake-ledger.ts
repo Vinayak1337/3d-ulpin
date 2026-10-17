@@ -25,6 +25,11 @@ function intakePlan(value: unknown) {
   return plan.success ? plan.data : null;
 }
 
+function existingArea(value: unknown) {
+  const areaId = (value as { existingAreaId?: unknown } | null)?.existingAreaId;
+  return Boolean(areaId) && IntakeItemSchema.shape.existingAreaId.safeParse(areaId).success;
+}
+
 export function intakeItem(row: any) {
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
@@ -35,6 +40,7 @@ export function intakeItem(row: any) {
     plan: intakePlan(row.plan_ref), streamedProfileJobId: row.streamed_profile_job_id ?? null,
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
     limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
+    ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}),
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
 }
