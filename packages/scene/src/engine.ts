@@ -466,8 +466,8 @@ export class SceneEngine {
 
   /**
    * The ground in view (local east, north) that the area window is read from: where the screen's corners meet the
-   * ground, each kept within VIEW_REACH camera distances of the orbit target. Looking down, every corner of a canvas up to five times as wide
-   * as it is high lies within that reach, so the window holds the whole screen.
+   * ground, each kept within VIEW_REACH camera distances of the orbit target. Looking down, every corner of a canvas
+   * up to five times as wide as it is high lies within that reach, so the window holds the whole screen.
    */
   viewFootprint(): [number, number][] {
     const out: [number, number][] = [];
