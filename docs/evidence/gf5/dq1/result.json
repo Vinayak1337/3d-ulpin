@@ -1,0 +1,372 @@
+{
+  "task": "DQ1",
+  "gate": "GF5",
+  "date": "2026-10-18",
+  "summary": [
+    "5 files kept from one foreign issuing portal (Singapore, data.gov.sg), 4 formats, 203,127,006 b",
+    "ytes; no Indian file passed the rules"
+  ],
+  "licence": {
+    "name": "Singapore Open Data Licence version 1.0",
+    "url": "https://data.gov.sg/open-data-licence",
+    "note": [
+      "an open government licence stated by the publisher for its datasets; it is not one of the four ",
+      "names listed in the task, flagged for the lead"
+    ]
+  },
+  "india_first": {
+    "minutes_spent": "about 20",
+    "finding": "no Indian issuing authority offered an open-licensed file without login, form or stated purpose"
+  },
+  "candidates": [
+    {
+      "candidate": "data.gov.in resource pages (OGD Platform India), e.g. a watershed-boundary shapefile resource",
+      "kept": false,
+      "reason": [
+        "page is a script-driven app whose download needs login and a stated download purpose; no public",
+        " file URL; no login or purpose given"
+      ]
+    },
+    {
+      "candidate": "smartcities.data.gov.in ward-boundary resources (Dehradun, Pimpri-Chinchwad)",
+      "kept": false,
+      "reason": [
+        "same OGD platform: download behind login and purpose dialog; also Pimpri-Chinchwad is a likely ",
+        "repeat of recorded Indian publishers"
+      ]
+    },
+    {
+      "candidate": "Survey of India Nakshe / Digital Product Show",
+      "kept": false,
+      "reason": "login with an ID number required; already recorded as not reachable"
+    },
+    {
+      "candidate": "indoregis.mp.gov.in (Indore GIS)",
+      "kept": false,
+      "reason": "landing page only; no downloadable file or stated licence found"
+    },
+    {
+      "candidate": "Telangana, Karnataka, Bhuvan, OpenCity, Pune, Surat, GMDA, RERA portals",
+      "kept": false,
+      "reason": "publishers already in real-sources.md or datasets.json"
+    },
+    {
+      "candidate": "DataMeet, bharatlas, OpenCity mirrors, GitHub boundary repositories",
+      "kept": false,
+      "reason": "not issuing authorities (mirror, aggregator or community)"
+    },
+    {
+      "candidate": "about 20 guessed Indian state open-data hostnames",
+      "kept": false,
+      "reason": "did not resolve or returned 404"
+    },
+    {
+      "candidate": "Singapore: HDB Property Information (CSV)",
+      "kept": true,
+      "reason": "issuing agency, new publisher, open licence, no personal columns"
+    },
+    {
+      "candidate": "Singapore: HDB Existing Building (GeoJSON)",
+      "kept": true,
+      "reason": "building layer from the issuing agency; same publisher as the CSV"
+    },
+    {
+      "candidate": "Singapore: SLA Cadastral Land Parcel (GeoJSON)",
+      "kept": true,
+      "reason": "parcel layer from the land authority; the large file"
+    },
+    {
+      "candidate": "Singapore: BCA Listing of Building Energy Performance Data 2019 (XLSX)",
+      "kept": true,
+      "reason": "building-keyed table from the building authority; only building names and street addresses"
+    },
+    {
+      "candidate": "Singapore: HDB footnotes for annual-report price ranges (PDF)",
+      "kept": true,
+      "reason": "native-text PDF, five pages, public notes only"
+    },
+    {
+      "candidate": "Singapore: BCA MCST information (XLSX)",
+      "kept": false,
+      "reason": "fetch answered HTTP 429; not retried (stop rule); not needed for the count; never screened"
+    }
+  ],
+  "fetches": [
+    {
+      "url": [
+        "https://api-production.data.gov.sg/v2/public/api/datasets/d_17f5382f26140b1fdae0ba2ef6239d2f/me",
+        "tadata"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:39:40+05:30"
+    },
+    {
+      "url": [
+        "https://api-open.data.gov.sg/v1/public/api/datasets/d_17f5382f26140b1fdae0ba2ef6239d2f/poll-dow",
+        "nload"
+      ],
+      "http_status": 201,
+      "at_ist": "2026-10-18T13:39:40+05:30"
+    },
+    {
+      "url": [
+        "https://s3.ap-southeast-1.amazonaws.com/table-downloads-ingest.data.gov.sg/d_17f5382f26140b1fda",
+        "e0ba2ef6239d2f/5a6bf7f336c6eeedd7435161ebdf27694eea35a33a64e60f83de4b47504b72c6.csv?<signed-que",
+        "ry-omitted>"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:39:41+05:30",
+      "bytes": 948464
+    },
+    {
+      "url": [
+        "https://api-production.data.gov.sg/v2/public/api/datasets/d_16b157c52ed637edd6ba1232e026258d/me",
+        "tadata"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:39:48+05:30"
+    },
+    {
+      "url": [
+        "https://api-open.data.gov.sg/v1/public/api/datasets/d_16b157c52ed637edd6ba1232e026258d/poll-dow",
+        "nload"
+      ],
+      "http_status": 201,
+      "at_ist": "2026-10-18T13:39:48+05:30"
+    },
+    {
+      "url": [
+        "https://s3.ap-southeast-1.amazonaws.com/blobs.data.gov.sg/d_16b157c52ed637edd6ba1232e026258d.ge",
+        "ojson?<signed-query-omitted>"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:39:51+05:30",
+      "bytes": 57012074
+    },
+    {
+      "url": [
+        "https://api-production.data.gov.sg/v2/public/api/datasets/d_e7395d743076a2bcc487b0d12b9bf33b/me",
+        "tadata"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:39:52+05:30"
+    },
+    {
+      "url": [
+        "https://api-open.data.gov.sg/v1/public/api/datasets/d_e7395d743076a2bcc487b0d12b9bf33b/poll-dow",
+        "nload"
+      ],
+      "http_status": 201,
+      "at_ist": "2026-10-18T13:39:52+05:30"
+    },
+    {
+      "url": [
+        "https://s3.ap-southeast-1.amazonaws.com/blobs.data.gov.sg/d_e7395d743076a2bcc487b0d12b9bf33b.ge",
+        "ojson?<signed-query-omitted>"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:40:02+05:30",
+      "bytes": 144816566
+    },
+    {
+      "url": [
+        "https://api-production.data.gov.sg/v2/public/api/datasets/d_58ef51877ac0e3018292f6de814af5f7/me",
+        "tadata"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:40:03+05:30"
+    },
+    {
+      "url": [
+        "https://api-open.data.gov.sg/v1/public/api/datasets/d_58ef51877ac0e3018292f6de814af5f7/poll-dow",
+        "nload"
+      ],
+      "http_status": 201,
+      "at_ist": "2026-10-18T13:40:03+05:30"
+    },
+    {
+      "url": [
+        "https://s3.ap-southeast-1.amazonaws.com/blobs.data.gov.sg/d_58ef51877ac0e3018292f6de814af5f7.xl",
+        "sx?<signed-query-omitted>"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:40:03+05:30",
+      "bytes": 98040
+    },
+    {
+      "url": [
+        "https://api-production.data.gov.sg/v2/public/api/datasets/d_6f3c2c819680fb139b66869d7aa4bd6e/me",
+        "tadata"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:40:04+05:30"
+    },
+    {
+      "url": [
+        "https://api-open.data.gov.sg/v1/public/api/datasets/d_6f3c2c819680fb139b66869d7aa4bd6e/poll-dow",
+        "nload"
+      ],
+      "http_status": 201,
+      "at_ist": "2026-10-18T13:40:04+05:30"
+    },
+    {
+      "url": [
+        "https://s3.ap-southeast-1.amazonaws.com/blobs.data.gov.sg/d_6f3c2c819680fb139b66869d7aa4bd6e.pd",
+        "f?<signed-query-omitted>"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:40:05+05:30",
+      "bytes": 251862
+    },
+    {
+      "url": [
+        "https://api-production.data.gov.sg/v2/public/api/datasets/d_f988c57e16e99ad3a649aa04572efd1c/me",
+        "tadata"
+      ],
+      "http_status": 200,
+      "at_ist": "2026-10-18T13:40:05+05:30"
+    },
+    {
+      "url": [
+        "https://api-open.data.gov.sg/v1/public/api/datasets/d_f988c57e16e99ad3a649aa04572efd1c/poll-dow",
+        "nload"
+      ],
+      "http_status": 429,
+      "at_ist": "2026-10-18T13:40:05+05:30"
+    }
+  ],
+  "screening": [
+    {
+      "path": [
+        "E:/BhuAayam-data/datasets/unseen-dq1-20261018/housing-and-development-board/hdb-property-inform",
+        "ation.csv"
+      ],
+      "format": "CSV",
+      "read": "header row and every data row",
+      "columns": [
+        "blk_no",
+        "street",
+        "max_floor_lvl",
+        "year_completed",
+        "residential",
+        "commercial",
+        "market_hawker",
+        "miscellaneous",
+        "multistorey_carpark",
+        "precinct_pavilion",
+        "bldg_contract_town",
+        "total_dwelling_units",
+        "1room_sold",
+        "2room_sold",
+        "3room_sold",
+        "4room_sold",
+        "5room_sold",
+        "exec_sold",
+        "multigen_sold",
+        "studio_apartment_sold",
+        "1room_rental",
+        "2room_rental",
+        "3room_rental",
+        "other_room_rental"
+      ],
+      "personal_data": "none found",
+      "checks": [
+        "email, phone and ID-number patterns over every value: no match; text columns hold block numbers",
+        ", street names, flags and counts"
+      ]
+    },
+    {
+      "path": [
+        "E:/BhuAayam-data/datasets/unseen-dq1-20261018/housing-and-development-board/hdb-existing-buildi",
+        "ng.geojson"
+      ],
+      "format": "GeoJSON",
+      "read": "every feature property",
+      "columns": [
+        "OBJECTID",
+        "BLK_NO",
+        "ST_COD",
+        "ENTITYID",
+        "POSTAL_COD",
+        "INC_CRC",
+        "FMEL_UPD_D",
+        "SHAPE.AREA",
+        "SHAPE.LEN"
+      ],
+      "personal_data": "none found",
+      "checks": [
+        "patterns over every value; the phone pattern matched only long numeric area and length values, ",
+        "which are not phone numbers; postal codes are building postcodes"
+      ]
+    },
+    {
+      "path": [
+        "E:/BhuAayam-data/datasets/unseen-dq1-20261018/housing-and-development-board/hdb-annual-report-p",
+        "rice-range-footnotes.pdf"
+      ],
+      "format": "PDF",
+      "read": "full text extracted",
+      "columns": [],
+      "personal_data": "none found",
+      "checks": [
+        "native text layer present; email, phone and ID-number patterns: no match; text is price-range f",
+        "ootnotes"
+      ]
+    },
+    {
+      "path": [
+        "E:/BhuAayam-data/datasets/unseen-dq1-20261018/singapore-land-authority/sla-cadastral-land-parce",
+        "l.geojson"
+      ],
+      "format": "GeoJSON",
+      "read": "every feature property",
+      "columns": [
+        "OBJECTID_1",
+        "LOT_KEY",
+        "INC_CRC",
+        "FMEL_UPD_D",
+        "SHAPE_1.AREA",
+        "SHAPE_1.LEN"
+      ],
+      "personal_data": "none found",
+      "checks": [
+        "patterns over every value; numeric identifier and length values matched the phone pattern by sh",
+        "ape only; no names or owner fields exist"
+      ]
+    },
+    {
+      "path": [
+        "E:/BhuAayam-data/datasets/unseen-dq1-20261018/building-and-construction-authority/bca-building-",
+        "energy-performance-2019.xlsx"
+      ],
+      "format": "XLSX",
+      "read": "header cells and every shared string",
+      "columns": [
+        "buildingname",
+        "buildingaddress",
+        "buildingtype",
+        "greenmarkstatus",
+        "greenmarkrating",
+        "greenmarkyearaward",
+        "buildingsize",
+        "grossfloorarea",
+        "2018energyuseintensity",
+        "2019energyusintensity",
+        "voluntarydisclosure"
+      ],
+      "personal_data": "none found",
+      "checks": [
+        "email, phone and ID-number patterns over every string: no match; names are of commercial or pub",
+        "lic buildings with street addresses"
+      ]
+    }
+  ],
+  "excluded": {
+    "files": 0,
+    "note": "no file was dropped for personal data; nothing under excluded/"
+  },
+  "tags": "Singapore files are foreign test_only in their own geography; no H23/H28 tag applies",
+  "sealed": "no kept file was uploaded, imported, profiled or sent to any provider",
+  "hashes_recomputed_from_disk": "see sealed-manifest.json; recomputed in the checks",
+  "reading_note": "strings longer than 95 characters are split into arrays; join the items with no separator"
+}

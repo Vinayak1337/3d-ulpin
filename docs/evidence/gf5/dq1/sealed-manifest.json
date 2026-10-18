@@ -1,0 +1,42 @@
+{
+  "task": "DQ1",
+  "sealed": true,
+  "root": "E:/BhuAayam-data/datasets/unseen-dq1-20261018",
+  "files": [
+    {
+      "path": "housing-and-development-board/hdb-property-information.csv",
+      "bytes": 948464,
+      "sha256": "d528ea2d6fc3f57ab4c8199ed15ea5eaac0109fe659e09ef91910dfe417af2eb",
+      "format": "CSV",
+      "licence": "Singapore Open Data Licence v1.0, https://data.gov.sg/open-data-licence"
+    },
+    {
+      "path": "housing-and-development-board/hdb-existing-building.geojson",
+      "bytes": 57012074,
+      "sha256": "7c987511548de3a82da403cabca02702031e02ade8703a9e401417883dfeb702",
+      "format": "GeoJSON",
+      "licence": "Singapore Open Data Licence v1.0, https://data.gov.sg/open-data-licence"
+    },
+    {
+      "path": "housing-and-development-board/hdb-annual-report-price-range-footnotes.pdf",
+      "bytes": 251862,
+      "sha256": "ba31fe7c7f370adc498dc005a797864edd6948428afb72406d464f3be23f0dbe",
+      "format": "PDF",
+      "licence": "Singapore Open Data Licence v1.0, https://data.gov.sg/open-data-licence"
+    },
+    {
+      "path": "singapore-land-authority/sla-cadastral-land-parcel.geojson",
+      "bytes": 144816566,
+      "sha256": "cb72392b844708658340c11a30f8d0dc362433783e8577f9330300fd35d52ae9",
+      "format": "GeoJSON",
+      "licence": "Singapore Open Data Licence v1.0, https://data.gov.sg/open-data-licence"
+    },
+    {
+      "path": "building-and-construction-authority/bca-building-energy-performance-2019.xlsx",
+      "bytes": 98040,
+      "sha256": "8e3d5efb9950940a425e9380e5979378ef00db8705d216d5c9113dbdd29a8571",
+      "format": "XLSX",
+      "licence": "Singapore Open Data Licence v1.0, https://data.gov.sg/open-data-licence"
+    }
+  ]
+}

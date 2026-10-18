@@ -1,5 +1,31 @@
 # Official source index and retained dataset catalogue
 
+## DQ1 sealed rehearsal set - 18 October 2026 IST
+
+- **Publisher family:** Singapore government agencies through the [data.gov.sg portal](https://data.gov.sg/),
+  five unchanged files fetched without login or form, 203,127,006 bytes in all; foreign `test_only` in its own
+  geography, no H23/H28 tag. Kept under `E:/BhuAayam-data/datasets/unseen-dq1-20261018/`, each with a sibling receipt.
+  Licence: [Singapore Open Data Licence v1.0](https://data.gov.sg/open-data-licence), stated by the portal
+  for its datasets (use, copy, modify and distribute, commercially or not; no rights over personal data).
+- **Housing & Development Board:** [HDB Property Information][dq1-hdb-prop]
+  (CSV, 948,464 bytes); [HDB Existing Building][dq1-hdb-bldg]
+  (GeoJSON, 57,012,074 bytes); [price-range footnotes][dq1-hdb-pdf]
+  (native-text PDF, 251,862 bytes).
+- **Singapore Land Authority:** [SLA Cadastral Land Parcel][dq1-sla-parcel]
+  (GeoJSON, 144,816,566 bytes), the large file; the publisher calls the boundaries approximate.
+- **Building and Construction Authority:** [Building Energy Performance Data 2019][dq1-bca-energy]
+  (XLSX, 98,040 bytes).
+- **Sealed for REH8; not profiled or imported.** Hashes in the
+  [sealed manifest](../evidence/gf5/dq1/sealed-manifest.json); candidates, fetches and the personal-data
+  screening in [result.json](../evidence/gf5/dq1/result.json). No Indian file qualified: the OGD platform
+  download needs login and a stated purpose. One extra fetch answered HTTP 429 and was not retried.
+
+[dq1-hdb-prop]: https://data.gov.sg/datasets/d_17f5382f26140b1fdae0ba2ef6239d2f/view
+[dq1-hdb-bldg]: https://data.gov.sg/datasets/d_16b157c52ed637edd6ba1232e026258d/view
+[dq1-hdb-pdf]: https://data.gov.sg/datasets/d_6f3c2c819680fb139b66869d7aa4bd6e/view
+[dq1-sla-parcel]: https://data.gov.sg/datasets/d_e7395d743076a2bcc487b0d12b9bf33b/view
+[dq1-bca-energy]: https://data.gov.sg/datasets/d_58ef51877ac0e3018292f6de814af5f7/view
+
 ## DA6 large NYC CRS84 original — 11 October 2026 IST
 
 - **Dataset `5zhs-2jue`, BUILDING:** NYC Office of Technology and Innovation (OTI),
