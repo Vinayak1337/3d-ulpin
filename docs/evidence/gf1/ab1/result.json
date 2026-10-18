@@ -1,0 +1,17 @@
+{
+  "task": "AB1",
+  "gate": "GF1",
+  "base": "8eeba26f",
+  "change": {
+    "routes": ["display-window", "display-summary"],
+    "signal": "response close before the response is finished",
+    "read_path": "transaction(..., {deadlineAt: now+15000, signal}, 'repeatable_read_only') in boundedRead; no signal keeps the old path",
+    "db_ts": "deadline transaction sends a cancel request (process id and secret key, one-shot connection from the pool's own settings) before destroying the connection; a COMMIT is never cancelled"
+  },
+  "tests": {
+    "abort_mid_statement": "rejects under 500 ms, one cancel sent, connection destroyed once, no SQL after the abort (fake pool)",
+    "normal_read": "same body with and without a signal, connection returned undestroyed, later abort cancels nothing",
+    "controller": "close before send: read aborted, nothing answered, one log line {event, route, reason}; sent response unchanged; other errors pass through"
+  },
+  "not_measured": "Not run against a live Postgres: no database was available in this task (verify-area and verify-officer need DATABASE_URL). The pool idle count and the REH7 timings (2.2 to 2.7 s after six abandoned reads) are for the runtime owner to re-measure."
+}
