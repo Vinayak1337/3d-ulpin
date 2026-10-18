@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Box3, Group, MeshBasicMaterial, PerspectiveCamera, Vector2 } from 'three';
 import { SceneEngine } from './engine';
+import { padGeometry } from './look';
 import type { FootprintInput } from './types';
+
+// The real pad builder, counted: bulk removal must rebuild each touched pad batch once.
+vi.mock('./look', async (importOriginal) => {
+  const look = await importOriginal<typeof import('./look')>();
+  return { ...look, padGeometry: vi.fn(look.padGeometry) };
+});
 
 // Exercise real geometry builders with the renderer boundary replaced, as in engine.test.ts.
 function engineFixture() {
@@ -29,6 +36,13 @@ function building(id: string): FootprintInput {
   return {
     id, heightM: 12, heightState: 'source_supported',
     polygons: [[[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]],
+  };
+}
+
+function square(id: string, x: number, y: number, size = 10): FootprintInput {
+  return {
+    id, heightM: 12, heightState: 'source_supported',
+    polygons: [[[[x, y], [x + size, y], [x + size, y + size], [x, y + size], [x, y]]]],
   };
 }
 
@@ -230,4 +244,130 @@ describe('whole-list incremental building reconciliation', () => {
     expect(engine.buildDressing).not.toHaveBeenCalled();
     expect(engine.requestRender).not.toHaveBeenCalled();
   });
+});
+
+describe('bulk removal when a view replaces the drawn buildings', () => {
+  // Three pad batches of ten squares each; a frozen clock lets each drain take its whole queue as one batch.
+  const batches = ['a', 'b', 'c'].map((prefix, row) =>
+    Array.from({ length: 10 }, (_, i) => square(`${prefix}${i}`, i * 20, row * 20)));
+
+  function batchedEngine() {
+    const engine = engineFixture();
+    engine.plateFor = null;
+    let shown: FootprintInput[] = [];
+    for (const batch of batches) {
+      shown = [...shown, ...batch];
+      engine.setBuildings(shown);
+      draw(engine);
+    }
+    return { engine, all: shown };
+  }
+
+  function snapshot(engine: ReturnType<typeof engineFixture>) {
+    const pads = engine.dressing.children as any[];
+    return {
+      children: engine.buildings.children.map((child: any) => [child.type, child.userData.entry?.id, child.parent === engine.buildings,
+        Array.from(child.geometry.getAttribute('position').array)]),
+      entries: [...engine.entries.keys()], inputs: [...engine.buildingInputs.entries()],
+      buildingEntries: [...engine.buildingEntries.keys()], bounds: [...engine.buildingBounds.entries()],
+      storeys: [...engine.storeyBuildings.keys()], footprints: [...engine.footprintPolygons.entries()],
+      renderChanges: [...engine.renderChanges.entries()], pendingPads: [...engine.pendingPads.keys()],
+      pads: [...engine.pads.entries()].map(([id, pad]) => [id, pads.indexOf(pad)]),
+      padBatches: [...engine.padBatches.entries()].map(([pad, inputs]) => [pads.indexOf(pad), [...inputs.keys()]]),
+      padGeometry: pads.map((pad) => Array.from(pad.geometry.getAttribute('position').array)),
+      plateFor: engine.plateFor, dressingDirty: engine.dressingDirty,
+    };
+  }
+
+  it('rebuilds each touched pad batch once and leaves the scene as removing one by one does', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(0);
+    const bulk = batchedEngine();
+    const single = batchedEngine();
+    // Keep a0-a4 and the c row; drop a5-a9 and the whole b row; change c0.
+    const target = [...bulk.all.slice(0, 5), { ...bulk.all[20]!, heightM: 15 }, ...bulk.all.slice(21)];
+    for (const engine of [bulk.engine, single.engine]) engine.plateFor = 'b3';
+    const gone = bulk.all.filter((input) => !target.some((kept) => kept.id === input.id));
+    let remaining = single.all;
+    for (const input of gone) {
+      remaining = remaining.filter((kept) => kept.id !== input.id);
+      single.engine.setBuildings(remaining);
+    }
+    single.engine.setBuildings(target);
+    vi.mocked(padGeometry).mockClear();
+    bulk.engine.setBuildings(target);
+    // Batch a keeps five inputs and batch c keeps nine: one rebuild each. Batch b empties and is
+    // dropped without a rebuild. The changed c0 then flushes as one new batch.
+    expect(padGeometry).toHaveBeenCalledTimes(3);
+    expect(snapshot(bulk.engine)).toEqual(snapshot(single.engine));
+    expect(bulk.engine.plateFor).toBeNull();
+    expect(bulk.engine.padBatches.size).toBe(3);
+  });
+
+  it('re-adds removed ids on a later view', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(0);
+    const { engine, all } = batchedEngine();
+    const before = snapshot(engine);
+    engine.setBuildings(all.slice(25));
+    expect(engine.buildings.children).toHaveLength(10);
+    engine.setBuildings(all);
+    draw(engine);
+    const after = snapshot(engine);
+    expect(new Set(after.entries)).toEqual(new Set(before.entries));
+    expect(after.children).toHaveLength(before.children.length);
+    expect(after.pads.map(([id]) => id).sort()).toEqual(before.pads.map(([id]) => id).sort());
+    expect(engine.drawnBuildings().count).toBe(30);
+    expect(all.every((input) => engine.drawnBuildings().has(input.id))).toBe(true);
+  });
+
+  it('drops a batch whose remaining footprints draw no pad, then removes them cleanly', () => {
+    const engine = engineFixture();
+    // A two-point ring builds a building but no pad.
+    const sliver: FootprintInput = { ...building('z'), polygons: [[[[0, 0], [1, 0], [0, 0]]]] };
+    engine.setBuildings([building('a'), sliver]);
+    draw(engine);
+    expect(engine.pads.get('z')).toBe(engine.pads.get('a'));
+    engine.setBuildings([sliver]);
+    expect(engine.padBatches.size).toBe(0);
+    expect(engine.pads.size).toBe(0);
+    expect(() => engine.setBuildings([])).not.toThrow();
+    expect(engine.buildings.children).toHaveLength(0);
+  });
+
+  // Timing only (SCENE_TIMING=1): replace 15,000 synthetic test-only squares drawn in 40-building pad batches.
+  // The package has no Node types; Vitest runs in Node, where `process` exists.
+  const timing = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.SCENE_TIMING;
+  it.runIf(timing)('times replacing 15,000 drawn buildings', () => {
+    const wallClock = performance.now.bind(performance);
+    const grid = (prefix: string) => Array.from({ length: 15_000 }, (_, i) =>
+      square(`${prefix}${i}`, (i % 123) * 20, Math.floor(i / 123) * 20));
+    const drawn = grid('old');
+    const result: Record<string, unknown> = { buildings: drawn.length };
+    for (const [name, next] of [
+      ['replace_all', grid('new')],
+      ['keep_every_other', drawn.filter((_, i) => i % 2 === 0)],
+    ] as const) {
+      const engine = engineFixture();
+      engine.plateFor = null;
+      let clock = 0;
+      const now = vi.spyOn(performance, 'now').mockImplementation(() => clock);
+      const original = engine.addBuilding.bind(engine);
+      vi.spyOn(engine, 'addBuilding').mockImplementation((...args: unknown[]) => {
+        clock += 0.1;
+        return original(...args);
+      });
+      engine.setBuildings(drawn);
+      while (engine.buildingQueue.size) draw(engine);
+      now.mockRestore();
+      const batches = engine.padBatches.size;
+      vi.mocked(padGeometry).mockClear();
+      const started = wallClock();
+      engine.setBuildings(next);
+      const ms = wallClock() - started;
+      result[name] = {
+        removed: drawn.length - engine.buildingInputs.size, padBatches: batches,
+        padGeometryCalls: vi.mocked(padGeometry).mock.calls.length, ms: Math.round(ms),
+      };
+    }
+    console.log(`SCENE_TIMING ${JSON.stringify(result)}`);
+  }, 1_800_000);
 });
