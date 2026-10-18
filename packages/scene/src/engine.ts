@@ -701,24 +701,21 @@ export class SceneEngine {
   setBuildings(inputs: FootprintInput[], { growNew = false } = {}): void {
     if (this.disposed) return;
     const wanted = new Map(inputs.map((input) => [input.id, input]));
-    let removed = false;
-    for (const id of this.buildingInputs.keys()) {
-      if (wanted.has(id)) continue;
-      this.removeBuilding(id);
-      removed = true;
-    }
+    const stale = [...this.buildingInputs.keys()].filter((id) => !wanted.has(id));
     this.updateArrivalBounds(wanted);
     const queue = new Map<string, { input: FootprintInput; growNew: boolean }>();
+    const changed: FootprintInput[] = [];
     for (const input of wanted.values()) {
       const previous = this.buildingInputs.get(input.id);
       if (!previous) {
         queue.set(input.id, { input, growNew: this.buildingQueue.get(input.id)?.growNew ?? growNew });
       } else if (!sameInput(previous, input)) {
-        this.removeBuilding(input.id);
-        this.addBuilding(input);
-        removed = true;
+        changed.push(input);
       }
     }
+    const removed = stale.length + changed.length > 0;
+    this.removeBuildings([...stale, ...changed.map((input) => input.id)]);
+    for (const input of changed) this.addBuilding(input);
     this.buildingQueue = queue;
     if (removed) {
       this.flushBuildingPads();
@@ -1040,23 +1037,39 @@ export class SceneEngine {
     return entries;
   }
 
-  private removeBuilding(id: string) {
-    for (const entry of this.buildingEntries.get(id) ?? []) {
-      for (const object of [...entry.meshes, ...entry.edges]) {
-        this.buildings.remove(object);
-        object.geometry.dispose();
+  /**
+   * Removes buildings in one pass: their objects leave the group together and each pad batch they
+   * touched is rebuilt once from the inputs it still holds, or dropped when empty.
+   */
+  private removeBuildings(ids: readonly string[]) {
+    const objects = new Set<Object3D>();
+    const touched = new Set<Mesh>();
+    for (const id of ids) {
+      for (const entry of this.buildingEntries.get(id) ?? []) {
+        for (const object of [...entry.meshes, ...entry.edges]) {
+          objects.add(object);
+          object.geometry.dispose();
+        }
+        this.entries.delete(entry.id);
       }
-      this.entries.delete(entry.id);
+      this.pendingPads.delete(id);
+      const pad = this.pads.get(id);
+      if (pad) {
+        this.padBatches.get(pad)!.delete(id);
+        this.pads.delete(id);
+        touched.add(pad);
+      }
+      this.buildingEntries.delete(id);
+      this.buildingInputs.delete(id);
+      this.buildingBounds.delete(id);
+      this.storeyBuildings.delete(id);
+      this.footprintPolygons.delete(id);
+      this.renderChanges.set(id, false);
+      if (this.plateFor === id) this.plateFor = null;
+      this.dressingDirty = true;
     }
-    this.removeBuildingPad(id);
-    this.buildingEntries.delete(id);
-    this.buildingInputs.delete(id);
-    this.buildingBounds.delete(id);
-    this.storeyBuildings.delete(id);
-    this.footprintPolygons.delete(id);
-    this.renderChanges.set(id, false);
-    if (this.plateFor === id) this.plateFor = null;
-    this.dressingDirty = true;
+    removeChildren(this.buildings, objects);
+    for (const pad of touched) this.rebuildPad(pad);
   }
 
   private flushBuildingPads() {
@@ -1074,17 +1087,14 @@ export class SceneEngine {
     this.dressing.add(pad);
   }
 
-  private removeBuildingPad(id: string) {
-    this.pendingPads.delete(id);
-    const pad = this.pads.get(id);
-    if (!pad) return;
+  private rebuildPad(pad: Mesh) {
     const inputs = this.padBatches.get(pad)!;
-    inputs.delete(id);
-    this.pads.delete(id);
     pad.geometry.dispose();
     const replacement = inputs.size ? padGeometry([...inputs.values()], 2.2, 0.004) : null;
     if (replacement) pad.geometry = replacement;
     else {
+      // Inputs whose footprints draw no pad may remain; they no longer point at the dropped mesh.
+      for (const id of inputs.keys()) this.pads.delete(id);
       this.dressing.remove(pad);
       this.padBatches.delete(pad);
     }
@@ -2208,6 +2218,20 @@ function disposeObject(object: Object3D) {
 function disposeGroup(group: Group) {
   for (const child of [...group.children]) disposeObject(child);
   group.clear();
+}
+
+/** `parent.remove(...objects)` with one pass over the children instead of a search and splice per object. */
+function removeChildren(parent: Object3D, objects: ReadonlySet<Object3D>) {
+  if (!objects.size) return;
+  const kept: Object3D[] = [];
+  const gone: Object3D[] = [];
+  for (const child of parent.children) (objects.has(child) ? gone : kept).push(child);
+  parent.children = kept;
+  for (const child of gone) {
+    child.parent = null;
+    child.dispatchEvent({ type: 'removed' });
+    parent.dispatchEvent({ type: 'childremoved', child });
+  }
 }
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
