@@ -9672,6 +9672,44 @@
         "Product manual profile refuses RECORD_LIMIT; independent streamed column hash matches DA4, not a profile.",
         "No existing original changed, conversion, import, upload, provider call or runtime gate."
       ]
+    },
+    {
+      "id": "dq1-singapore-sealed-rehearsal-set-20261018",
+      "classification": "test_only",
+      "originKind": "foreign_authority_issuing_portal_original_files",
+      "issuer": "Housing & Development Board; Singapore Land Authority; Building & Construction Authority (Singapore)",
+      "geography": "Singapore; foreign development and rehearsal only",
+      "manifest": "docs/evidence/gf5/dq1/sealed-manifest.json",
+      "guide": "docs/evidence/gf5/dq1/result.json",
+      "sourceCount": 5,
+      "sourceFamilies": 3,
+      "totalOriginalBytes": 203127006,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/unseen-dq1-20261018",
+        "itemsPointer": "/files",
+        "formats": [
+          "GeoJSON",
+          "CSV",
+          "XLSX",
+          "PDF"
+        ],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "confirmed",
+        "reference": "https://data.gov.sg/open-data-licence",
+        "limitations": "Singapore Open Data Licence v1.0 stated by the portal; attribution notice required; test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Sealed for dress rehearsal REH8: not profiled, imported, uploaded or sent to any provider.",
+        "Fetched from data.gov.sg without login or form; receipts sit beside each original.",
+        "Screened for personal data (none found); nothing dropped; no excluded bytes.",
+        "No Indian file passed the rules; no H23/H28 tag applies; foreign test_only.",
+        "Not evidence for rights, ownership, accuracy, learning or any runtime gate."
+      ]
     }
   ],
   "offlineLearningCorpus": {
