@@ -119,7 +119,9 @@ export function WindowEmpty() {
   );
 }
 
-/** A picked footprint: the identifier and kind the window states, and a building's register by its id. */
+/** A picked footprint: the identifier and kind the window states, and a building's register by its id. A proposal
+ * links the batch of the case the window names for it, where its one officer confirmation is made; with no case
+ * named, it says only that it is not yet confirmed. */
 export function WindowedInspector({ feature, areaName, onClose }: {
   feature: AreaWindowFeature; areaName: string; onClose: () => void;
 }) {
@@ -132,8 +134,13 @@ export function WindowedInspector({ feature, areaName, onClose }: {
       <DescriptionList items={[
         { label: 'Identifier', value: <CopyableId id={feature.identifier} name="identifier" /> },
       ]} />
-      {feature.displayState === 'unrecorded_proposal'
-        ? <p>A reviewed proposal, not yet confirmed by an officer.</p> : null}
+      {feature.displayState === 'unrecorded_proposal' ? (
+        <p>
+          Proposed in a batch, not yet confirmed.{' '}
+          {feature.caseId
+            ? <Link to={`/studio/work/cases/${feature.caseId}/intake`}>Open batch to confirm</Link> : null}
+        </p>
+      ) : null}
       <p>This area is drawn by the part in view, so only the identifier and kind are shown here.</p>
     </InspectorShell>
   );
