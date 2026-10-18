@@ -1,0 +1,625 @@
+{
+  "task": "VA1 Part 1",
+  "gate": "GF-AGENT",
+  "rule": [
+    "verified lines of T1, T1b, T1c and T1d whose target is not unknown",
+    "joined on (profileHash, sourceField) as A4b/A4d; a later round wins a repeated key"
+  ],
+  "teacherMethodOfRounds": "model:claude-opus-5-5@dev-2026-10",
+  "verifierRuns": [
+    {
+      "round": "t1",
+      "command": [
+        "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+        "claude-opus-5-5",
+        "E:/BhuAayam-data/task-data/t1/labels/teacher-labels.jsonl",
+        "E:/BhuAayam-data/task-data/t1/profiles/profiles.jsonl",
+        "E:/BhuAayam-data/task-data/va1/verified/t1"
+      ],
+      "env": {
+        "ULPIN_T1_ROOT": "E:/BhuAayam-data/task-data/va1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe"
+      },
+      "exitCode": 0,
+      "accepted": 45,
+      "rejected": 0,
+      "examples": 411,
+      "verifiedExamples": 398
+    },
+    {
+      "round": "t1b",
+      "command": [
+        "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+        "claude-opus-5-5",
+        "E:/BhuAayam-data/task-data/t1b/labels/teacher-labels-v2.jsonl",
+        "E:/BhuAayam-data/task-data/t1b/profiles/profiles.jsonl",
+        "E:/BhuAayam-data/task-data/va1/verified/t1b"
+      ],
+      "env": {
+        "ULPIN_T1_ROOT": "E:/BhuAayam-data/task-data/va1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe"
+      },
+      "exitCode": 0,
+      "accepted": 5,
+      "rejected": 0,
+      "examples": 193,
+      "verifiedExamples": 193
+    },
+    {
+      "round": "t1c",
+      "command": [
+        "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+        "claude-opus-5-5",
+        "E:/BhuAayam-data/task-data/t1c/labels/teacher-labels-v1.jsonl",
+        "E:/BhuAayam-data/task-data/d1f/profiles/profiles.jsonl",
+        "E:/BhuAayam-data/task-data/va1/verified/t1c"
+      ],
+      "env": {
+        "ULPIN_T1_ROOT": "E:/BhuAayam-data/task-data/va1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe"
+      },
+      "exitCode": 0,
+      "accepted": 6,
+      "rejected": 0,
+      "examples": 198,
+      "verifiedExamples": 196
+    },
+    {
+      "round": "t1d",
+      "command": [
+        "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+        "claude-opus-5-5",
+        "E:/BhuAayam-data/task-data/t1d/labels/teacher-labels-v1.jsonl",
+        "E:/BhuAayam-data/task-data/a5a/profiles/profiles.jsonl",
+        "E:/BhuAayam-data/task-data/va1/verified/t1d"
+      ],
+      "env": {
+        "ULPIN_T1_ROOT": "E:/BhuAayam-data/task-data/va1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe"
+      },
+      "exitCode": 0,
+      "accepted": 3,
+      "rejected": 0,
+      "examples": 21,
+      "verifiedExamples": 18
+    }
+  ],
+  "verifiedExamplesAfterJoin": 805,
+  "verifiedPositives": 33,
+  "leftOut": [
+    {
+      "seedProfileId": "bfeaff59a94583d91387e84c522103c3b822593eef84c17f5dd70a40572108a7",
+      "round": "t1b",
+      "family": "mi-d24",
+      "split": "dev",
+      "target": "building.footprint",
+      "header": "geometry",
+      "neighbourHeaders": [
+        "type",
+        "properties"
+      ],
+      "declaredUnit": null,
+      "inferredType": "object",
+      "reason": "value is geometry and its source CRS is unverified"
+    }
+  ],
+  "seedCount": 32,
+  "countByTarget": {
+    "building.addressLiteral": 8,
+    "building.heightM": 1,
+    "building.name": 8,
+    "building.sourceKey": 4,
+    "building.storeyCount": 2,
+    "building.storeyLabel": 3,
+    "document.registrationNo": 4,
+    "unit.type": 2
+  },
+  "distinctFamiliesByTarget": {
+    "building.addressLiteral": 6,
+    "building.heightM": 1,
+    "building.name": 5,
+    "building.sourceKey": 4,
+    "building.storeyCount": 2,
+    "building.storeyLabel": 1,
+    "document.registrationNo": 2,
+    "unit.type": 1
+  },
+  "seeds": [
+    {
+      "seedProfileId": "4e85a4072fc7a022f928b651408981f9e816bab1ef50c2e23433c24c32408e8e",
+      "round": "t1",
+      "family": "mi-d02",
+      "split": "dev",
+      "target": "building.name",
+      "header": "Name of Building",
+      "neighbourHeaders": [
+        "Sanctioned No of Floor",
+        "Type of Apartment"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "0892015a17c692de54df37f2b93a224f024acef7b5912804f2d77cbfa45b2ee8",
+      "round": "t1",
+      "family": "mi-d02",
+      "split": "dev",
+      "target": "building.storeyLabel",
+      "header": "Sanctioned No of Floor",
+      "neighbourHeaders": [
+        "Name of Building",
+        "Type of Apartment",
+        "No of Apartment"
+      ],
+      "declaredUnit": null,
+      "inferredType": "number"
+    },
+    {
+      "seedProfileId": "eaefeea3bb52234d6778bea7f2243a8ceb0d4d7315b7fb6a361a13f4f37fd324",
+      "round": "t1",
+      "family": "mi-d02",
+      "split": "dev",
+      "target": "building.name",
+      "header": "Name of Building",
+      "neighbourHeaders": [
+        "Sanctioned No of Floor",
+        "Type of Apartment"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "2ee704b50005ff6cb76e1e740e16e5bba1ea17c85de69470eb73a3d6f19d5aee",
+      "round": "t1",
+      "family": "mi-d02",
+      "split": "dev",
+      "target": "building.storeyLabel",
+      "header": "Sanctioned No of Floor",
+      "neighbourHeaders": [
+        "Name of Building",
+        "Type of Apartment",
+        "No of Apartment"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "b15055fc6845a92edda4ee861d8a21f246e079d18f9d3f715c0bd8f54ea9b49c",
+      "round": "t1",
+      "family": "mi-d02",
+      "split": "dev",
+      "target": "building.name",
+      "header": "Name of Building",
+      "neighbourHeaders": [
+        "Sanctioned No of Floor",
+        "Type of Apartment"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "02e37e7707109d1f9d5f08cb9c2b9dd9b171acbe67b56ef47050760635a1916e",
+      "round": "t1",
+      "family": "mi-d02",
+      "split": "dev",
+      "target": "building.storeyLabel",
+      "header": "Sanctioned No of Floor",
+      "neighbourHeaders": [
+        "Name of Building",
+        "Type of Apartment",
+        "No of Apartment"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "4ae6590af30bda36d17b9d87e80b31aa31a59d314481e8c15b4a65abcc18c47c",
+      "round": "t1",
+      "family": "mi-d03",
+      "split": "dev",
+      "target": "document.registrationNo",
+      "header": "Registration No.",
+      "neighbourHeaders": [
+        "Project Name",
+        "Promoter Name",
+        "Project Address"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "7e907ede578852c32b0d2d390a88fa8afefa3fde59b40000d4936ce22597f404",
+      "round": "t1",
+      "family": "mi-d03",
+      "split": "dev",
+      "target": "document.registrationNo",
+      "header": "Registration No.",
+      "neighbourHeaders": [
+        "Project Name",
+        "Promoter Name",
+        "Project Address"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "846d928c4d07e718d26597b80fe5c5bc697d752607c8fc289a09bb086f583858",
+      "round": "t1b",
+      "family": "mi-d22",
+      "split": "dev",
+      "target": "document.registrationNo",
+      "header": "reraNo",
+      "neighbourHeaders": [
+        "cityAndRural",
+        "schemeCode",
+        "schemeName",
+        "schemeType"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "17a3b733e7c6cb1c61ca3b033aab8fefea0a20c7bf9aeb8b45d4541534d352e8",
+      "round": "t1b",
+      "family": "mi-d22",
+      "split": "dev",
+      "target": "unit.type",
+      "header": "purposeOfUnit",
+      "neighbourHeaders": [
+        "subRegisterDesignation",
+        "suRegisterOfficePlace",
+        "plinthArea",
+        "uds"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "6c85bcd7d127c17a45eaf0e6e335b34858ea054ae1424f4bbda1a8655bf66a28",
+      "round": "t1b",
+      "family": "mi-d22",
+      "split": "dev",
+      "target": "document.registrationNo",
+      "header": "reraNo",
+      "neighbourHeaders": [
+        "cityAndRural",
+        "schemeCode",
+        "schemeName",
+        "schemeType"
+      ],
+      "declaredUnit": null,
+      "inferredType": "mixed"
+    },
+    {
+      "seedProfileId": "2db036552fa15e93f80b7ee18217ebf154373681d963cc79e04eabec62be24fd",
+      "round": "t1b",
+      "family": "mi-d22",
+      "split": "dev",
+      "target": "unit.type",
+      "header": "purposeOfUnit",
+      "neighbourHeaders": [
+        "subRegisterDesignation",
+        "suRegisterOfficePlace",
+        "plinthArea",
+        "uds"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "5494a35c768a97efd1ad777477dc6ecd44a22913ccf365c0dc70674abe356980",
+      "round": "t1b",
+      "family": "mi-d23",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "address",
+      "neighbourHeaders": [
+        "name",
+        "class",
+        "longitude"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "18ed8546174ed47c1ec6fa9916b90d3039ced18810a14a68fa516dbd74f22862",
+      "round": "t1b",
+      "family": "mi-d23",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "address",
+      "neighbourHeaders": [
+        "name",
+        "class",
+        "longitude"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "6b25b48d5a333dab554767d02ad57934b459de89e944d261526b998c8468fe33",
+      "round": "t1c",
+      "family": "opf-d02",
+      "split": "dev",
+      "target": "building.sourceKey",
+      "header": "OSEBuildingID",
+      "neighbourHeaders": [
+        "DataYear",
+        "BuildingName"
+      ],
+      "declaredUnit": null,
+      "inferredType": "number"
+    },
+    {
+      "seedProfileId": "17af281bfd9764cdaecc8bb248f8488832fa11412fce555bce9cb065c22a35b1",
+      "round": "t1c",
+      "family": "opf-d02",
+      "split": "dev",
+      "target": "building.name",
+      "header": "BuildingName",
+      "neighbourHeaders": [
+        "OSEBuildingID",
+        "DataYear",
+        "BuildingType",
+        "TaxParcelIdentificationNumber"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "4435651345e4a99cbe71a9bade27142e7f5336aaf3ad71f8b5b71cdfc665f778",
+      "round": "t1c",
+      "family": "opf-d02",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "Address",
+      "neighbourHeaders": [
+        "BuildingType",
+        "TaxParcelIdentificationNumber",
+        "City",
+        "State"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "b4fe879b13ee3c6c2f4255256d49a00c299411ed80685be54bd459eb0c0ca1e1",
+      "round": "t1c",
+      "family": "opf-d02",
+      "split": "dev",
+      "target": "building.storeyCount",
+      "header": "NumberofFloors",
+      "neighbourHeaders": [
+        "CouncilDistrictCode",
+        "YearBuilt",
+        "NumberofBuildings",
+        "PropertyGFATotal"
+      ],
+      "declaredUnit": null,
+      "inferredType": "number"
+    },
+    {
+      "seedProfileId": "5e2f1065da63ff166c911be1323296b15c9418fd89a4f1b5a6322b3bb1ad8ece",
+      "round": "t1c",
+      "family": "opf-d03",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "ADDRESS",
+      "neighbourHeaders": [
+        "HOUSE #",
+        "STREET",
+        "CITY",
+        "STATE"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "79860cdbfb10e078b2eed8abfe58722bb0a8872aa5c83d782bef0fd998c307f6",
+      "round": "t1c",
+      "family": "opf-d03",
+      "split": "dev",
+      "target": "building.sourceKey",
+      "header": "BIN",
+      "neighbourHeaders": [
+        "STATE",
+        "ZIP CODE",
+        "BLOCK",
+        "LOT"
+      ],
+      "declaredUnit": null,
+      "inferredType": "number"
+    },
+    {
+      "seedProfileId": "107cd915b284a13557951688efa8dd500bf457d7fcabc6b1e7498db61f632e8a",
+      "round": "t1c",
+      "family": "opf-d04",
+      "split": "dev",
+      "target": "building.name",
+      "header": "Building Name",
+      "neighbourHeaders": [
+        "unique_identifier",
+        "Parcel Number",
+        "Building Address",
+        "Postal Code"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "3aa33bc86d7afc791457a1e33dc31107a5a2056485c2d23b622f84e636eaed80",
+      "round": "t1c",
+      "family": "opf-d04",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "Building Address",
+      "neighbourHeaders": [
+        "Parcel Number",
+        "Building Name",
+        "Postal Code",
+        "Floor Area"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "8b7b08c3fd37f2f3d8abbfd28afbf74db1ce98024d9ef4ebfa939726dfd3fe73",
+      "round": "t1c",
+      "family": "opf-d04",
+      "split": "dev",
+      "target": "building.name",
+      "header": "Building Name",
+      "neighbourHeaders": [
+        "Parcel Number",
+        "unique_identifier",
+        "Building Address",
+        "Postal Code"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "4db8a277759c26abde10e66936642c8b904426eb55e23e046ebacced6399242d",
+      "round": "t1c",
+      "family": "opf-d04",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "Building Address",
+      "neighbourHeaders": [
+        "unique_identifier",
+        "Building Name",
+        "Postal Code",
+        "Floor Area"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "9a1028c82abd4e37a4f98d31eb9674ef954bd376ad5445d1c9d9f77cb6010ab3",
+      "round": "t1c",
+      "family": "opf-d05",
+      "split": "dev",
+      "target": "building.name",
+      "header": "Property Name",
+      "neighbourHeaders": [
+        "Year Ending",
+        "Street Address"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "e20509af4e725236551cc9934faffff97ea5f4f098e92382b9f370155ec64ce8",
+      "round": "t1c",
+      "family": "opf-d05",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "Street Address",
+      "neighbourHeaders": [
+        "Property Name",
+        "Year Ending",
+        "City",
+        "State"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "809dc92bd0cb1fb541fe698845795afe32e09b8e24205b526ded51017b03ce15",
+      "round": "t1c",
+      "family": "opf-d05",
+      "split": "dev",
+      "target": "building.sourceKey",
+      "header": "Kansas City Building Reporting ID",
+      "neighbourHeaders": [
+        "eGRID Subregion",
+        "eGRID Output Emissions Rate (kgCO2e/MBtu)",
+        "Natural Gas Use (kBtu)",
+        "District Steam Use (kBtu)"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "33b89ea356bcce948c75f939ad463fa8e45dd9b3ab98f753f3d022e5993c8c8b",
+      "round": "t1c",
+      "family": "opf-d06",
+      "split": "dev",
+      "target": "building.addressLiteral",
+      "header": "Building Address",
+      "neighbourHeaders": [
+        "Construction Completion Year",
+        "Name of Historic Resource"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "9d67a078a5cf1e0e38056296a5dc0e05a00f174b50f945e188a8210772e50795",
+      "round": "t1c",
+      "family": "opf-d06",
+      "split": "dev",
+      "target": "building.name",
+      "header": "Name of Historic Resource",
+      "neighbourHeaders": [
+        "Building Address",
+        "Construction Completion Year",
+        "Neighbourhood",
+        "Warning Type 1"
+      ],
+      "declaredUnit": null,
+      "inferredType": "text"
+    },
+    {
+      "seedProfileId": "01e6859d1cb17faf40266c50bcd80ee09299e3a3b94a24f8a4916eeed0556ea9",
+      "round": "t1d",
+      "family": "opf-d07",
+      "split": "dev",
+      "target": "building.storeyCount",
+      "header": "NUMBER OF FLOORS",
+      "neighbourHeaders": [
+        "YEAR BUILT",
+        "AREA IN SQUARE FEET",
+        "HEIGHT (FEET)",
+        "GROUND ELEVATION (FEET)"
+      ],
+      "declaredUnit": null,
+      "inferredType": "number"
+    },
+    {
+      "seedProfileId": "e0b1a2b30af96179550595245f7ddac6f549d658379e7610f08c16128ba6e0c6",
+      "round": "t1d",
+      "family": "opf-d07",
+      "split": "dev",
+      "target": "building.heightM",
+      "header": "HEIGHT (FEET)",
+      "neighbourHeaders": [
+        "AREA IN SQUARE FEET",
+        "NUMBER OF FLOORS",
+        "GROUND ELEVATION (FEET)",
+        "ROOFTOP ELEVATION (FEET)"
+      ],
+      "declaredUnit": "ft",
+      "inferredType": "number"
+    },
+    {
+      "seedProfileId": "5cb5d47ce1b3077e93fb2a23f9e55eb933cea9b74a9a9d2455199dcf58ebb7fc",
+      "round": "t1d",
+      "family": "opf-d08",
+      "split": "dev",
+      "target": "building.sourceKey",
+      "header": "StructureID",
+      "neighbourHeaders": [
+        "Shape.STArea()",
+        "Shape.STLength()",
+        "GlobalID"
+      ],
+      "declaredUnit": null,
+      "inferredType": "number"
+    }
+  ]
+}
