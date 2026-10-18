@@ -32,8 +32,8 @@ import type {RegistryDocumentDependencies} from '@ulpin/server/modules/registry/
 // This prevents history substitution and partial disclosure after a concrete access/target change.
 const serverRequire=createRequire(new URL('../../../../../packages/server/package.json',import.meta.url)),
   {S3Client}=serverRequire('@aws-sdk/client-s3'),id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`,
-  root='E:/BhuAayam-data/task-data/gltf-api-20261004-run01',
-  priorRoot='E:/BhuAayam-data/task-data/gltf-reference-link-20261004-run01',
+  root='E:/BhuAayam-data/task-data/gltf-api-20261018-run01',
+  priorRoot='E:/BhuAayam-data/task-data/gltf-reference-link-20261018-run01',
   originals='E:/BhuAayam-data/task-data/desktop-gltf-native/originals',
   documentPath='E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/epsg7415-accepted-result.json';
 const receipts:any[]=[];
