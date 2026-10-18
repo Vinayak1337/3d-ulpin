@@ -6,7 +6,8 @@ import type { PoolClient } from 'pg';
 import { zipSync } from 'fflate';
 import { ArchiveMemberLineageSchema, type IntakeCard } from '../packages/contracts/src/usp/intake';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
-import { readZipMember } from '../packages/server/src/modules/usp/ingestion/intake-zip';
+import { locateZipMember, readZipMember, streamZipMember }
+  from '../packages/server/src/modules/usp/ingestion/intake-zip';
 import { queueZipLayersTx, ZIP_ARCHIVE_PROFILE } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
 import { AppError } from '../packages/server/src/infrastructure/errors';
@@ -56,6 +57,7 @@ class Ledger {
   readonly jobs: any[] = [];
   readonly metadata = new Map<string, any>();
   readonly attempts: any[] = [];
+  readonly inspections = new Map<string, unknown>();
   archive: any;
 
   constructor(readonly bytes: Uint8Array, readonly card: IntakeCard) {
@@ -148,6 +150,7 @@ class Ledger {
     }
     if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: this.revision }];
     if (sql.startsWith('SELECT * FROM sources')) return values[1] === this.archiveId ? [this.archive] : [];
+    if (sql.startsWith('UPDATE sources SET inspection')) { this.inspections.set(values[0], values[1]); return []; }
     if (sql.startsWith('SELECT * FROM usp_intake_items WHERE source_id')) {
       return [...this.rows.values()].filter(row => row.source_id === values[0] && !row.parent_item_id);
     }
@@ -354,4 +357,124 @@ test('a job that fails as a whole writes its code only, and enrolling again queu
     await run(retry);
     assert.equal(retained.length, 3);
     assert.equal(ledger.rows.get(ledger.itemId).limit_reason, layerWords(''));
+  }));
+
+test('a member streamed in ranges yields the bytes the whole read does; a damaged one stops by code', async () => {
+  for (const level of [0, 6] as const) {
+    const pack = zipSync(Object.fromEntries(Object.entries(real).map(([name, bytes]) => [name, [bytes, { level }]])));
+    for (const name of Object.keys(real)) {
+      const chunks: Uint8Array[] = [];
+      const located = await locateZipMember(reader(pack), pack.length, name);
+      for await (const chunk of streamZipMember(reader(pack), located)) chunks.push(chunk);
+      assert.equal(sha(Buffer.concat(chunks)), sha(real[name as keyof typeof real]));
+    }
+  }
+  const damaged = Buffer.from(zipSync({ 'a.geojson': real['uttam/block-boundary.geojson'] }));
+  damaged[60] ^= 0xff;
+  const located = await locateZipMember(reader(damaged), damaged.length, 'a.geojson');
+  await assert.rejects(async () => { for await (const _ of streamZipMember(reader(damaged), located)); },
+    /^Error: ZIP_MEMBER_INTEGRITY$/);
+});
+
+// ZL1. A 20 MiB GeoJSON layer made in the test by repeating one real Google Open Buildings feature (test_only).
+const feature = JSON.stringify(JSON.parse(real['uttam/01-google-building-footprints.geojson'].toString()).features[0]);
+const large = Buffer.from(`{"type":"FeatureCollection","features":[${
+  Array(Math.ceil(20 * 1024 * 1024 / (feature.length + 1))).fill(feature).join(',')}]}`);
+const largePath = 'uttam/large-buildings.geojson';
+// Stored: a repeated feature deflates past the probe's ratio bound, which would refuse the member as a layer.
+const largePack = () => zipSync({ ...real, [largePath]: [large, { level: 0 }] });
+
+/** The /uploads byte receipt in memory: it hashes each part it is handed and keeps none. */
+function receipts(ledger: Ledger, refusal?: AppError) {
+  const log = { created: [] as any[], parts: [] as number[], sourceId: randomUUID(), hash: createHash('sha256') };
+  const status = (revision: number) => ({ id: randomUUID(), revision, currentCaseRevision: ledger.revision });
+  const service = {
+    create: async (_caseId: string, input: any) => {
+      if (refusal) throw refusal;
+      log.created.push(input);
+      return status(1);
+    },
+    claimPart: async (_caseId: string, _id: string, input: any) => input,
+    receivePart: async (claim: any, bytes: Uint8Array) => {
+      assert.equal(sha(bytes), claim.sha256);
+      log.parts.push(bytes.length);
+      log.hash.update(bytes);
+      return status(claim.expectedRevision + 1);
+    },
+    failPart: async () => {},
+    finalize: async () => {
+      ledger.revision++;
+      return { source: { sourceId: log.sourceId } };
+    },
+    abort: async () => {},
+  };
+  return { service, log };
+}
+
+test('a GeoJSON layer over 16 MiB is streamed out as its own large original, named and enrolled', () =>
+  configured(async () => {
+    const pack = largePack();
+    const { ledger, order, retained, queue, run } = await layersJob(pack);
+    const { service, log } = receipts(ledger);
+    let widest = 0;
+    const read = async (_key: string, start: number, end: number) => {
+      widest = Math.max(widest, end - start);
+      return pack.subarray(start, end);
+    };
+    const jobId = (await queue())!;
+    await run(jobId, { large: service, read });
+    assert.equal(ledger.job(jobId).status, 'succeeded');
+    // The small layers keep today's path; the large one goes through the receipt, never the whole-member retain.
+    assert.deepEqual(retained.map(file => file.name),
+      ['01-google-building-footprints.geojson', '02-osm-road-centrelines.geojson', 'block-boundary.geojson']);
+    assert.deepEqual(log.created.map(input => [input.filename, input.bytes, input.sha256, input.mediaType]),
+      [['large-buildings.geojson', large.length, sha(large), 'application/octet-stream']]);
+    assert.equal(log.hash.digest('hex'), sha(large));
+    // Peak held bytes, measured as the widest buffer the copy asks for or hands on: 1 MiB reads, 8 MiB parts.
+    assert.ok(large.length > 20 * 1024 * 1024);
+    assert.deepEqual(log.parts, [8 * 1024 * 1024, 8 * 1024 * 1024, large.length - 16 * 1024 * 1024]);
+    assert.equal(widest, 1024 * 1024);
+    const member = ledger.member(largePath);
+    assert.deepEqual([member.source_id, member.limit_reason], [log.sourceId, null]);
+    const lineage = ledger.inspections.get(log.sourceId) as Record<string, unknown>;
+    assert.deepEqual({ ...lineage, crc32: 0 }, { version: 'zip-layer/1', parentSourceId: ledger.archiveId,
+      parentSourceRevision: 1, parentSha256: sha(pack), parentItemId: ledger.itemId, memberPath: largePath,
+      ordinal: 4, memberBytes: large.length, compressedBytes: large.length, crc32: 0, memberSha256: sha(large) });
+    // Kept before any is enrolled; the large child is enrolled like any dropped file, which queues its large read.
+    assert.deepEqual(order.slice(-4), [...retained.map(file => `register:${file.sourceId}`),
+      `register:${log.sourceId}`]);
+    assert.match(ledger.rows.get(ledger.itemId).limit_reason, /^4 map layers in this ZIP are taken in .*large-build/);
+    assert.equal(await queue(), null);
+  }));
+
+test('a large layer whose CRC-32 does not match keeps nothing and says so', () => configured(async () => {
+  // The member's CRC-32 in its central directory entry (16 bytes into the entry, whose name starts at byte 46).
+  const damaged = Buffer.from(largePack());
+  damaged[damaged.lastIndexOf(largePath) - 46 + 16] ^= 0xff;
+  const { ledger, retained, queue, run } = await layersJob(damaged);
+  const { service, log } = receipts(ledger);
+  await run((await queue())!, { large: service });
+  assert.deepEqual([log.created.length, retained.length], [0, 3]);
+  const member = ledger.member(largePath);
+  assert.equal(member.source_id, null);
+  assert.match(member.limit_reason, /^ZIP_MEMBER_INTEGRITY: this GeoJSON member stays inside the archive/);
+}));
+
+test('a layer above the large ceiling or past a full receipt allowance stays in the ZIP in words', () =>
+  configured(async () => {
+    const above = await layersJob(largePack());
+    const unused = receipts(above.ledger);
+    above.ledger.member(largePath).size_bytes = String(128 * 1024 * 1024 + 1);
+    await above.run((await above.queue())!, { large: unused.service });
+    assert.equal(unused.log.created.length, 0);
+    assert.equal(above.ledger.member(largePath).limit_reason, 'ZIP_LAYER_SIZE: this GeoJSON member of 134217729 '
+      + 'bytes is kept inside the archive; members above 134217728 bytes are not kept as their own original.');
+    assert.equal(await above.queue(), null);
+    const full = await layersJob(largePack());
+    const refused = receipts(full.ledger, new AppError(429, 'UPLOAD_QUOTA', 'receipt text'));
+    await full.run((await full.queue())!, { large: refused.service });
+    assert.equal(full.ledger.member(largePath).limit_reason, `UPLOAD_QUOTA: this GeoJSON member of ${large.length} `
+      + 'bytes stays inside the archive; the large-original receipt allowance is full, so it was not kept as its '
+      + 'own original. Enrol the archive again to retry once a receipt is free.');
+    assert.notEqual(await full.queue(), null);
   }));
