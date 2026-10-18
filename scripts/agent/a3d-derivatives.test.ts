@@ -35,6 +35,7 @@ test('both recorded TNHB development CSV derivatives retain exact JSON-original 
     assert.equal(sha256(bytes), derivative.sha256);
     assert.equal(bytes.length, derivative.bytes);
     const inventory = inspectTabularSource(bytes, selection);
+    assert('derivativeOf' in inventory.tabular, 'the development-asset admission must carry derivativeOf');
     assert.deepEqual(inventory.tabular.derivativeOf,
       { originalSha256: derivative.originalSha256, version: 'json-table-csv/1' });
     assert.equal(inventory.records, derivative.rows);
