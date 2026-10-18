@@ -29,7 +29,7 @@ import type {SourceFusionSelection} from '../packages/contracts/src/source-fusio
 // checks prevent unauthorized/stale native citations reaching canonical commit.
 // Original/native/document bytes and historical supervision are retained real inputs; site-bound result/input/accepted-attempt envelopes, target, SQL,
 // storage, review and tool inventory are labelled controls, not real matching. Accepted LF reader/tool pins and exact native bytes remain unchanged.
-const root='E:/BhuAayam-data/task-data/gltf-api-20261004-run01',
+const root='E:/BhuAayam-data/task-data/gltf-api-20261018-run01',
   originals='E:/BhuAayam-data/task-data/desktop-gltf-native/originals',
   documentPath='E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/epsg7415-accepted-result.json';
 const samples={
