@@ -303,3 +303,75 @@ test('a window over 35 packages draws the proposals of the oldest', async () => 
   const rule = control.statements.find(sql => sql.includes('FROM import_packages WHERE area_id'))!;
   assert.doesNotMatch(rule, /LIMIT/);
 }));
+
+/** The store behind a pool whose connections record how they are released and cancelled, so a read the client
+ * abandons can be seen to stop the statement and to give its connection back. `slow` holds the window statement
+ * open until a cancel arrives, as a long statement would run in Postgres. */
+async function pooled(work: (control: WindowControl, pool: PooledRecord) => Promise<void>) {
+  return memory(async control => {
+    const globals = globalThis as any;
+    const record: PooledRecord = { slow: false, started: undefined as unknown as Promise<void>, released: [],
+      cancelled: [], afterAbort: [] };
+    let startedNow = () => {};
+    record.started = new Promise<void>(resolve => { startedNow = resolve; });
+    class Canceller {
+      connection = { on() {} };
+      cancel(client: any, query: unknown) { record.cancelled.push({ client, query }); client.unblock?.(); }
+    }
+    const connect = async () => {
+      const client: any = {
+        activeQuery: null, unblock: undefined, on() {}, once() {}, removeListener() {},
+        release: (destroy?: boolean) => { record.released.push(destroy === true); },
+        query: async (sql: string, values?: any[]) => {
+          record.afterAbort.push(sql);
+          if (sql === 'BEGIN' || sql.startsWith('BEGIN ') || sql === 'ROLLBACK' || sql === 'COMMIT') return { rows: [] };
+          if (sql.startsWith('SELECT set_config')) return { rows: [{ deadline_live: true }] };
+          if (record.slow && sql.startsWith('WITH win')) {
+            client.activeQuery = {};
+            startedNow();
+            await new Promise<void>(resolve => { client.unblock = resolve; });
+            client.activeQuery = null;
+            throw Object.assign(new Error('canceling statement'), { code: '57014' });
+          }
+          return control.query(sql, values);
+        },
+      };
+      return client;
+    };
+    globals.ulpinPool = { ...globals.ulpinPool, connect, Client: Canceller, options: {} };
+    await work(control, record);
+  });
+}
+type PooledRecord = { slow: boolean; started: Promise<void>; released: boolean[];
+  cancelled: { client: any; query: unknown }[]; afterAbort: string[] };
+
+test('a window read the client abandons mid-statement is cancelled and its connection destroyed, not kept', async () =>
+  pooled(async (control, record) => {
+    control.features = [square('b-1', 0, 0, 9)];
+    record.slow = true;
+    const gone = new AbortController();
+    const read = areaDisplayWindow(control.area.id, window({ minX: -1, minY: -1, maxX: 40, maxY: 20 }), gone.signal);
+    const settled = assert.rejects(read);
+    await record.started;
+    const issued = record.afterAbort.length, at = Date.now();
+    gone.abort();
+    await settled;
+    assert.ok(Date.now() - at < 500, 'the abandoned read rejects promptly');
+    assert.equal(record.cancelled.length, 1, 'the running statement is cancelled in Postgres');
+    assert.deepEqual(record.released, [true], 'the connection is destroyed once, never returned idle');
+    assert.equal(record.afterAbort.length, issued, 'no further SQL runs after the abort');
+  }));
+
+test('a read that finishes keeps its body, returns its connection and ignores a later abort', async () =>
+  pooled(async (control, record) => {
+    control.features = [square('b-1', 0, 0, 9), square('b-2', 20, 0, null)];
+    const edges = window({ minX: -1, minY: -1, maxX: 40, maxY: 20 });
+    const plain = await areaDisplayWindow(control.area.id, edges);
+    const gone = new AbortController();
+    const bounded = await areaDisplayWindow(control.area.id, edges, gone.signal);
+    gone.abort();
+    assert.deepEqual(bounded, plain);
+    assert.equal((await areaDisplaySummary(control.area.id, gone.signal).catch(error => error)).name, 'AbortError');
+    assert.equal(record.cancelled.length, 0, 'an abort after the response cancels nothing');
+    assert.deepEqual(record.released, [false, false], 'both finished reads returned their connection');
+  }));

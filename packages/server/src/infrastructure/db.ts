@@ -82,10 +82,23 @@ async function deadlineTransaction<T>(action:(client:PoolClient)=>Promise<T>,opt
     pendingReject:((error:unknown)=>void)|undefined,actionReject:((error:unknown)=>void)|undefined;
   const timeout=()=>new AppError(504,'DB_DEADLINE','The absolute database deadline expired.');
   const destroy=()=>{if(raw&&!released){released=true;destroyed=true;raw.release(true);}};
+  /** Closing the socket does not stop a busy backend: send the cancel request (process id and secret key, so a
+   * recycled process id is never hit) on a one-shot connection of the pool's own settings. A COMMIT is never cancelled. */
+  const cancelRunning=()=>{
+    const query=(raw as unknown as {activeQuery?:unknown}|undefined)?.activeQuery;
+    if(!raw||released||commitSent||!query)return;
+    try{
+      const owner=pool() as unknown as {Client:new(options:unknown)=>{
+        connection?:{on?:(event:string,listener:()=>void)=>void};cancel:(client:unknown,query:unknown)=>void};options:unknown};
+      const canceller=new owner.Client(owner.options);
+      canceller.connection?.on?.('error',()=>{});
+      canceller.cancel(raw,query);
+    }catch{/* the destroyed connection and the server-side statement timeout still bound the work */}
+  };
   const abort=(reason:unknown)=>{
     if(aborted)return;
     aborted=commitSent?new DbCommitOutcomeUnknown():reason;
-    destroy();pendingReject?.(aborted);actionReject?.(aborted);
+    cancelRunning();destroy();pendingReject?.(aborted);actionReject?.(aborted);
   };
   const check=()=>{
     if(!aborted&&options.signal?.aborted)abort(options.signal.reason??timeout());

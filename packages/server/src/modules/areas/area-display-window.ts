@@ -64,12 +64,16 @@ type WindowRow = {
   geometry: AreaGeometry | null; display_state: AreaWindowFeature['displayState'];
 };
 
+const READ_TIMEOUT_MS = 15000;
+
 /** One bounded read-only transaction per display read, as the area's other bounded reads, given the area's
- * proposals as the context read chooses them; with a window, only those the window can draw. */
+ * proposals as the context read chooses them; with a window, only those the window can draw. A signal that
+ * fires (the client closed the request) cancels the running statement and frees the pooled connection. */
 async function boundedRead<T>(
   areaId: string, read: (client: PoolClient, frame: unknown[], area: MapArea, proposals: unknown[]) => Promise<T>,
-  box?: number[],
+  box?: number[], signal?: AbortSignal,
 ) {
+  const deadline = signal && { deadlineAt: Date.now() + READ_TIMEOUT_MS, signal };
   return transaction(async client => {
     await client.query("SET LOCAL statement_timeout='15s'");
     const area = await getArea(areaId, client);
@@ -80,7 +84,7 @@ async function boundedRead<T>(
     const frame = [area.id, Number(area.reference.analysisCrs.split(':')[1]), ...area.reference.origin];
     const kept = box && { sql: DRAWABLE, values: [...frame.slice(1), ...box] };
     return read(client, frame, area, await chosenProposals(client, area, kept));
-  }, undefined, 'repeatable_read_only');
+  }, deadline, 'repeatable_read_only');
 }
 
 /** The proposals the context read would draw, as parallel package and feature identifiers. */
@@ -92,7 +96,7 @@ async function chosenProposals(client: PoolClient, area: MapArea, kept?: RuleCon
 }
 
 /** How many features the area holds to draw and where they lie, so a map can place itself before reading them. */
-export async function areaDisplaySummary(areaId: string): Promise<AreaDisplaySummary> {
+export async function areaDisplaySummary(areaId: string, signal?: AbortSignal): Promise<AreaDisplaySummary> {
   return boundedRead(areaId, async (client, frame, area, proposals) => {
     const row = (await client.query(SUMMARY_SQL, [...frame, ...proposals])).rows[0];
     const extent = row.min_x === null ? null : [row.min_x, row.min_y, row.max_x, row.max_y] as [
@@ -102,11 +106,13 @@ export async function areaDisplaySummary(areaId: string): Promise<AreaDisplaySum
       areaId: area.id, areaRevision: area.revision, featureCount: row.feature_count, extent,
       displayLimit: AREA_DISPLAY_LIMIT,
     };
-  });
+  }, undefined, signal);
 }
 
 /** One keyset page, by identifier, of the features meeting a window in the area's local metres. */
-export async function areaDisplayWindow(areaId: string, window: DisplayWindow): Promise<AreaDisplayWindow> {
+export async function areaDisplayWindow(
+  areaId: string, window: DisplayWindow, signal?: AbortSignal,
+): Promise<AreaDisplayWindow> {
   return boundedRead(areaId, async (client, frame, area, proposals) => {
     const { minX, minY, maxX, maxY, after, limit } = window;
     const rows = (await client.query<WindowRow>(WINDOW_SQL,
@@ -116,7 +122,7 @@ export async function areaDisplayWindow(areaId: string, window: DisplayWindow): 
       areaId: area.id, areaRevision: area.revision, features: page.map(windowFeature),
       next: rows.length > limit ? page[page.length - 1].identifier : null,
     };
-  }, [window.minX, window.minY, window.maxX, window.maxY]);
+  }, [window.minX, window.minY, window.maxX, window.maxY], signal);
 }
 
 function windowFeature(row: WindowRow): AreaWindowFeature {

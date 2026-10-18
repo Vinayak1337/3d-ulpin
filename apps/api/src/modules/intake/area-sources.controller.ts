@@ -1,6 +1,6 @@
-import { Controller, Get, HttpCode, Inject, Param, Post, Query, Req } from '@nestjs/common';
+import { Controller, Get, HttpCode, Inject, Param, Post, Query, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
@@ -18,6 +18,25 @@ import {
   importPackage, jsonBody, mapArea, multipartBody, resolvedIdentifier, retiredBranchResponse, sourceCase,
   sourceCatalog, wireResponse,
 } from './wire-schemas';
+
+/** A map read the client closes before the response is sent stops on the server: its signal cancels the running
+ * statement and frees the pooled connection. The closed socket gets nothing; one line says which route and why. */
+export async function untilClientCloses<T>(
+  route: string, response: Response, read: (signal: AbortSignal) => Promise<T>,
+): Promise<T | undefined> {
+  const gone = new AbortController();
+  const closed = () => { if (!response.writableFinished) gone.abort(); };
+  response.once('close', closed);
+  try {
+    return await read(gone.signal);
+  } catch (error) {
+    if (!gone.signal.aborted) throw error;
+    console.warn(JSON.stringify({event: 'area-read-abandoned', route, reason: 'client_closed'}));
+    return undefined;
+  } finally {
+    response.off('close', closed);
+  }
+}
 
 @ApiTags('intake-areas')
 @Controller('api/v1')
@@ -100,8 +119,9 @@ export class AreaSourcesController {
   })
   @ApiParam({name: 'areaId', schema: {type: 'string', format: 'uuid'}})
   @wireResponse(200, areaDisplaySummary)
-  displaySummary(@Param('areaId') areaId: string) {
-    return this.areas.displaySummary(areaIdSchema.parse(areaId));
+  displaySummary(@Param('areaId') areaId: string, @Res({passthrough: true}) response: Response) {
+    const id = areaIdSchema.parse(areaId);
+    return untilClientCloses('display-summary', response, signal => this.areas.displaySummary(id, signal));
   }
 
   @Get('areas/:areaId/display-window')
@@ -119,8 +139,12 @@ export class AreaSourcesController {
   @ApiQuery({name: 'limit', required: false,
     schema: {type: 'integer', minimum: 1, maximum: 4000, default: 2000}})
   @wireResponse(200, areaDisplayWindow)
-  displayWindow(@Param('areaId') areaId: string, @Query() window: Record<string, string>) {
-    return this.areas.displayWindow(areaIdSchema.parse(areaId), areaDisplayWindowSchema.parse(window));
+  displayWindow(
+    @Param('areaId') areaId: string, @Query() window: Record<string, string>,
+    @Res({passthrough: true}) response: Response,
+  ) {
+    const id = areaIdSchema.parse(areaId), bounds = areaDisplayWindowSchema.parse(window);
+    return untilClientCloses('display-window', response, signal => this.areas.displayWindow(id, bounds, signal));
   }
 
   @Post('areas/:areaId/scenario')
