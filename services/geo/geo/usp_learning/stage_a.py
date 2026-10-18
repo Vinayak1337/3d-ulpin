@@ -24,6 +24,7 @@ N_FEATURES = 32768
 SEED = 17
 DEFAULT_CALIBRATION_MODE = "cross_fit"
 DEFAULT_CLASS_BALANCE = False
+VARIANT_HEADER_DROP = "variant header equals another family's real header"
 Row = dict[str, Any]
 
 
@@ -48,6 +49,12 @@ def canonical_targets() -> list[str]:
 
 def normalized_header(header: str) -> str:
     return unicodedata.normalize("NFKC", header).lower()
+
+
+def folded_header(header: str) -> str:
+    """NFKC, lower case, whitespace and Unicode punctuation removed (the VA2 near-duplicate key)."""
+    return "".join(character for character in normalized_header(header)
+                   if not character.isspace() and not unicodedata.category(character).startswith("P"))
 
 
 def header_word_tokens(profile: Row) -> list[str]:
@@ -167,12 +174,40 @@ def load_examples(path: Path) -> list[Row]:
             raise ValueError("STAGE_A_TRAINING_SPLIT_DENIED")
         officer = example.get("labelKind") == "officer" and example["method"].startswith("reviewer:")
         teacher = example.get("labelKind") == "pseudo_label" and example["method"].startswith("model:")
-        if not (officer or teacher):
+        # A header variant names its seed on the example and the link; the link family is the seed family.
+        variant = (example.get("labelKind") == "synthetic_variant" and example["method"].startswith("model:")
+                   and link.get("labelKind") == "synthetic_variant" and link["split"] == "dev"
+                   and re.fullmatch(r"[a-f0-9]{64}", str(example.get("seedProfileId"))) is not None
+                   and link.get("seedProfileId") == example["seedProfileId"])
+        if not (officer or teacher or variant):
             raise ValueError("STAGE_A_LABEL_AUTHORITY_DENIED")
-        result.append({**link, "target": example["target"], "method": example["method"],
-                       "labelKind": example["labelKind"], "labelFileSha256": sha256_file(path),
-                       "exampleSha256": object_hash(example)})
+        row = {**link, "target": example["target"], "method": example["method"],
+               "labelKind": example["labelKind"], "labelFileSha256": sha256_file(path),
+               "exampleSha256": object_hash(example)}
+        result.append({**row, "synthetic": True} if variant else row)
     return result
+
+
+def fit_only_variants(rows: list[Row]) -> tuple[list[Row], Row | None]:
+    """Check each variant's seed, then drop variants whose header is a real positive header of another family."""
+    variants = [row for row in rows if row.get("synthetic")]
+    if not variants:
+        return rows, None
+    real = {row["profileId"]: row for row in rows if not row.get("synthetic")}
+    for row in variants:
+        seed = real.get(row["seedProfileId"])
+        if seed is None or seed["family"] != row["family"] or seed["target"] != row["target"]:
+            raise ValueError("STAGE_A_VARIANT_SEED_UNKNOWN")
+    families: dict[str, set[str]] = {}
+    for row in real.values():
+        if row["target"] != "unknown":
+            families.setdefault(folded_header(row["header"]), set()).add(row["family"])
+    dropped = {id(row) for row in variants if families.get(folded_header(row["header"]), set()) - {row["family"]}}
+    return [row for row in rows if id(row) not in dropped], {
+        "loaded": len(variants), "droppedByReason": {VARIANT_HEADER_DROP: len(dropped)},
+        "fitOnly": len(variants) - len(dropped),
+        "policy": "Fit only: never tested, scored, thresholded or calibrated; a fold never fits the variants "
+                  "of the family it tests."}
 
 
 def preferred_examples(examples: list[Row]) -> list[Row]:
@@ -180,6 +215,8 @@ def preferred_examples(examples: list[Row]) -> list[Row]:
     for example in examples:
         key = (example["profileHash"], example["sourceField"])
         previous = preferred.get(key)
+        if previous is not None and example.get("synthetic") and not previous.get("synthetic"):
+            continue
         if previous is None or previous["labelKind"] != "officer" or example["labelKind"] == "officer":
             preferred[key] = example
     return list(preferred.values())
@@ -335,8 +372,9 @@ def commit_counts(scores: list[Row], threshold: float | None) -> Row:
 
 
 def cross_fit_fold(rows: list[Row], family: str, class_balance: bool, out: Path) -> tuple[np.ndarray, list[Row]]:
+    # A variant carries its seed family, so it leaves the fit set with that family and is never tested.
     fitting = [row for row in rows if row["family"] != family]
-    testing = [row for row in rows if row["family"] == family]
+    testing = [row for row in rows if row["family"] == family and not row.get("synthetic")]
     model = fit_rows(fitting, class_balance)
     probabilities = model.predict_proba(vectorizer().transform([feature_text(row) for row in testing]))
     scores = [{"profileId": row["profileId"], "family": family, "expectedTarget": row["target"],
@@ -346,13 +384,16 @@ def cross_fit_fold(rows: list[Row], family: str, class_balance: bool, out: Path)
     manifest = {"excludedFamily": family, "fitExamples": len(fitting),
                 "fitFamilies": sorted({row["family"] for row in fitting}), "classBalance": class_balance,
                 "testIds": [row["profileId"] for row in testing], "fitIds": [row["profileId"] for row in fitting]}
+    variants = sum(bool(row.get("synthetic")) for row in fitting)
+    if variants:
+        manifest["fitVariants"] = variants
     save_model(model, out / "model.npz", manifest)
     write_json(out / "manifest.json", manifest)
     return probabilities, scores
 
 
 def cross_fit_metrics(rows: list[Row], class_balance: bool, out: Path) -> tuple[Row, list[Row]]:
-    families = sorted({row["family"] for row in rows if row["split"] == "dev"})
+    families = sorted({row["family"] for row in rows if row["split"] == "dev" and not row.get("synthetic")})
     if len(families) < 2:
         raise ValueError("STAGE_A_CROSS_FIT_FAMILIES_REQUIRED")
     distributions = []
@@ -372,36 +413,40 @@ def cross_fit_metrics(rows: list[Row], class_balance: bool, out: Path) -> tuple[
     return metrics, scores
 
 
-def train_cross_fit(rows: list[Row], out: Path, class_balance: bool) -> Row:
+def train_cross_fit(rows: list[Row], out: Path, class_balance: bool, variants: Row | None = None) -> Row:
     metrics, scores = cross_fit_metrics(rows, class_balance, out)
     model = fit_rows(rows, class_balance)
     destination = out / "v1"
     destination.mkdir(parents=True, exist_ok=False)
-    calibration = [row for row in rows if row["split"] == "dev"]
+    calibration = [row for row in rows if row["split"] == "dev" and not row.get("synthetic")]
     manifest = version_manifest(1, rows, calibration, metrics)
     manifest["calibrationFamily"] = None
     manifest["qualification"] = "Pseudo-label fit; threshold uses development out-of-family predictions, not accuracy."
     manifest["crossFitScoresSha256"] = sha256_file(out / "cross-fit-scores.json")
     manifest["partialFitCalls"] = len(training_batches(rows))
+    if variants:
+        manifest["variants"] = variants
     save_model(model, destination / "model.npz", manifest)
     write_json(destination / "manifest.json", manifest)
     write_json(destination / "metrics.json", {**metrics, "fitExamples": len(rows),
                                               "fitFamilies": len({row["family"] for row in rows})})
-    return {"model": str(destination), "fitExamples": len(rows), "calibration": metrics,
-            "pooledScoreCount": len(scores)}
+    result = {"model": str(destination), "fitExamples": len(rows), "calibration": metrics,
+              "pooledScoreCount": len(scores)}
+    return {**result, "variants": variants} if variants else result
 
 
 def train(examples_paths: list[Path], out: Path, resume: Path | None = None,
           calibration_mode: str = DEFAULT_CALIBRATION_MODE, class_balance: bool = DEFAULT_CLASS_BALANCE) -> Row:
     external_output(out)
     rows = preferred_examples([example for path in examples_paths for example in load_examples(path)])
+    rows, variants = fit_only_variants(rows)
     if calibration_mode == "cross_fit":
         if resume:
             raise ValueError("STAGE_A_CROSS_FIT_REQUIRES_FRESH_REBUILD")
-        return train_cross_fit(rows, out, class_balance)
+        return train_cross_fit(rows, out, class_balance, variants)
     if calibration_mode != "single_family" or class_balance:
         raise ValueError("STAGE_A_CALIBRATION_MODE_INVALID")
-    calibration = [row for row in rows if row["family"] == CALIBRATION_FAMILY]
+    calibration = [row for row in rows if row["family"] == CALIBRATION_FAMILY and not row.get("synthetic")]
     fitting = [row for row in rows if row["family"] != CALIBRATION_FAMILY]
     if not fitting:
         raise ValueError("STAGE_A_NO_VERIFIED_FIT_EXAMPLES")

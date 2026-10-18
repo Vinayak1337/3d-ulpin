@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { saveNew, type PreparedColumn, type TableInventory } from './t1-profiles';
 import { digest, stableHash, sourceTables } from './t1-sources';
 import { EXAMPLES, python, readLines, safeHeldOutCounts, targetCounts, verifiedRecords } from './measure-a4b';
@@ -28,13 +29,25 @@ type Baseline = { fitExamples: number; fitTargetCounts: Record<string, number>; 
   arms: { arm: string; model: string; threshold: number | null; pooledFields: number;
     wrongCommitted: number; correctPositiveCommitted: number; unknownCommitted: number;
     abstained: number; perTargetPositives: ArmMetrics['perTarget'] }[] };
-type Trained = { model: string; fitExamples: number; calibration: ArmMetrics };
+type Trained = { model: string; fitExamples: number; calibration: ArmMetrics; variants?: { fitOnly: number } };
 
 const ROOT = 'E:/BhuAayam-data/task-data/a4d';
-const RUN = join(ROOT, 'measurements/completed-v1');
+
+/** `--variants <file>` adds fit-only examples to the one fit and writes every new output under vt1/. */
+export function runLayout(argv: string[]) {
+  const index = argv.indexOf('--variants');
+  const variants = index === -1 ? null : argv[index + 1];
+  assert(index === -1 || (variants && !variants.startsWith('--')), 'A4D_VARIANTS_PATH_REQUIRED');
+  const root = variants ? 'E:/BhuAayam-data/task-data/vt1' : ROOT;
+  return { variants, run: join(root, 'measurements/completed-v1'), input: join(root, 'inputs/completed-v1'),
+    modelRoot: join(root, 'learner/one-arm-v1'), heldOut: join(root, 'heldout/completed-v1') };
+}
+
+const LAYOUT = runLayout(process.argv);
+const RUN = LAYOUT.run;
 const RESULT = join(RUN, 'result.json');
-const INPUT = join(ROOT, 'inputs/completed-v1');
-const MODEL_ROOT = join(ROOT, 'learner/one-arm-v1');
+const INPUT = LAYOUT.input;
+const MODEL_ROOT = LAYOUT.modelRoot;
 const PROFILE_ROOTS = { t1c: 'd1f', t1d: 'a5a' };
 const SIX_TARGETS = ['document.registrationNo', 'building.name', 'building.storeyLabel',
   'unit.type', 'building.addressLiteral', 'building.footprint'];
@@ -210,7 +223,8 @@ function trainOnce(records: RecordLabel[], check: boolean): Trained {
   saveNew(join(INPUT, 'pseudo-labels.jsonl'), records.map(record => record.example), true);
   saveNew(join(INPUT, 'profile-links.jsonl'), records.map(record => record.link), true);
   const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', ['-B', '-m', 'geo.usp_learning.stage_a',
-    'train', '--examples', join(INPUT, 'pseudo-labels.jsonl'), '--out', MODEL_ROOT,
+    'train', '--examples', join(INPUT, 'pseudo-labels.jsonl'), ...(LAYOUT.variants ? [LAYOUT.variants] : []),
+    '--out', MODEL_ROOT,
     '--calibration-mode', 'cross_fit', '--no-class-balance'], {
     encoding: 'utf8', timeout: 600000, maxBuffer: 8 * 1024 * 1024,
     env: { ...process.env, PYTHONPATH: resolve('services/geo'), PYTHONDONTWRITEBYTECODE: '1' },
@@ -220,7 +234,8 @@ function trainOnce(records: RecordLabel[], check: boolean): Trained {
     throw new Error('A4D_ONE_ARM_FAILED; stop without another fit; inspect development fit-failure.json.');
   }
   const fit = JSON.parse(run.stdout) as Trained;
-  assert.equal(fit.fitExamples, records.length);
+  assert(!LAYOUT.variants || fit.variants, 'A4D_VARIANTS_NOT_LOADED');
+  assert.equal(fit.fitExamples, records.length + (fit.variants?.fitOnly ?? 0));
   saveNew(receipt, fit);
   return fit;
 }
@@ -248,8 +263,8 @@ function fitRow(fit: Trained, records: RecordLabel[]) {
 function heldOutReceipt(model: string, check: boolean) {
   const path = join(RUN, 'heldout-counts.json');
   if (check) return json(path); // No held-out working file is reopened by a lead-readable check.
-  assert(!existsSync(join(ROOT, 'heldout/completed-v1')), 'A4D_HELDOUT_ALREADY_STARTED_NO_REPEAT');
-  const counts = safeHeldOutCounts(model, join(ROOT, 'heldout/completed-v1'));
+  assert(!existsSync(LAYOUT.heldOut), 'A4D_HELDOUT_ALREADY_STARTED_NO_REPEAT');
+  const counts = safeHeldOutCounts(model, LAYOUT.heldOut);
   const result = {
     scorable: { n: counts.n, total: { count: counts.total, n: counts.n },
       committed: { count: counts.committed, n: counts.n }, correct: { count: counts.committedCorrect, n: counts.n },
@@ -292,13 +307,16 @@ function measure(check: boolean) {
   const pool = [...new Set(records.filter(record => record.link.split === 'pool')
     .map(record => record.link.family))].sort();
   const result = {
-    task: 'A4d', gates: ['GF-AGENT', 'FP-LEARN-TEST'], status: 'completed_one_arm_no_accuracy_claim',
-    rounds, baseline, a4d,
+    task: LAYOUT.variants ? 'VT1' : 'A4d', gates: ['GF-AGENT', 'FP-LEARN-TEST'],
+    status: 'completed_one_arm_no_accuracy_claim', rounds, baseline, a4d,
+    ...(LAYOUT.variants ? { variants: { path: LAYOUT.variants, sha256: digest(LAYOUT.variants), ...fit.variants } }
+      : {}),
     families: { dev, pool, foldCount: dev.length, poolPolicy: 'Remain in every fit; never folded.' },
     verifiedPositiveCounts: positiveCounts(records),
     fallbackTriggers: fallbackTriggers(records, a4d.correctPositiveCommitted),
     heldOut: heldOutReceipt(fit.model, check), freshFits: 1, heldOutRuns: 1, tuningAfterMeasurements: false,
-    rule: { calibrationMode: 'cross_fit', classBalance: false, variants: 0, featuresChanged: false },
+    rule: { calibrationMode: 'cross_fit', classBalance: false, variants: fit.variants?.fitOnly ?? 0,
+      featuresChanged: false },
     inputsSha256: digest(join(INPUT, 'pseudo-labels.jsonl')), linksSha256: digest(join(INPUT, 'profile-links.jsonl')),
     labelsChanged: false, labelsProduced: 0, providerCalls: 0, runtimeChanged: false, gpuUsed: false,
     qualification: 'Pseudo-label agreement only. Zero pooled wrong commits is by threshold construction.',
@@ -322,4 +340,4 @@ function main() {
     heldOut: result.heldOut, fallbackTriggers: result.fallbackTriggers }));
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) main();
