@@ -1,0 +1,159 @@
+{
+  "task": "VA1",
+  "gate": "GF-AGENT",
+  "role": "development teacher: variants only; no verification, training or evaluation",
+  "method": "model:claude-opus-5-5@dev-2026-10",
+  "labelKind": "synthetic_variant",
+  "use": [
+    "training material only; never evaluation, calibration or held-out",
+    "each variant stays in the fold of its seed family"
+  ],
+  "seeds": {
+    "path": "docs/evidence/gf-agent/va1/seeds.json",
+    "count": 32,
+    "verifiedPositives": 33,
+    "leftOut": "building.footprint (1)"
+  },
+  "variants": {
+    "path": "E:/BhuAayam-data/task-data/va1/variants-v1.jsonl",
+    "sha256": "58e5102d20c96d7fe1b3e6d36e46f8bc3188edc553a94c972632a2cc97dcd141",
+    "bytes": 196717,
+    "lines": 476,
+    "cap": {
+      "perSeed": 20,
+      "total": 640
+    },
+    "lineShape": "{ seedProfileId, target, headerVariant, neighbourVariants, style, labelKind, method }",
+    "neighbourVariants": "object keyed by the seed neighbour headers in order; at most 3 spellings each"
+  },
+  "countsByTarget": {
+    "building.addressLiteral": 120,
+    "building.heightM": 20,
+    "building.name": 105,
+    "building.sourceKey": 75,
+    "building.storeyCount": 39,
+    "building.storeyLabel": 38,
+    "document.registrationNo": 54,
+    "unit.type": 25
+  },
+  "countsByStyle": {
+    "abbreviation": 94,
+    "bilingual": 8,
+    "code_identifier": 81,
+    "devanagari": 38,
+    "english_plain": 126,
+    "portal": 56,
+    "spreadsheet": 44,
+    "transliteration": 29
+  },
+  "countsByGeography": {
+    "indian (mi-*)": 176,
+    "foreign (opf-*)": 300
+  },
+  "countsBySeed": {
+    "4e85a4072fc7a022f928b651408981f9e816bab1ef50c2e23433c24c32408e8e": 11,
+    "0892015a17c692de54df37f2b93a224f024acef7b5912804f2d77cbfa45b2ee8": 13,
+    "eaefeea3bb52234d6778bea7f2243a8ceb0d4d7315b7fb6a361a13f4f37fd324": 10,
+    "2ee704b50005ff6cb76e1e740e16e5bba1ea17c85de69470eb73a3d6f19d5aee": 13,
+    "b15055fc6845a92edda4ee861d8a21f246e079d18f9d3f715c0bd8f54ea9b49c": 10,
+    "02e37e7707109d1f9d5f08cb9c2b9dd9b171acbe67b56ef47050760635a1916e": 12,
+    "4ae6590af30bda36d17b9d87e80b31aa31a59d314481e8c15b4a65abcc18c47c": 14,
+    "7e907ede578852c32b0d2d390a88fa8afefa3fde59b40000d4936ce22597f404": 14,
+    "846d928c4d07e718d26597b80fe5c5bc697d752607c8fc289a09bb086f583858": 13,
+    "17a3b733e7c6cb1c61ca3b033aab8fefea0a20c7bf9aeb8b45d4541534d352e8": 13,
+    "6c85bcd7d127c17a45eaf0e6e335b34858ea054ae1424f4bbda1a8655bf66a28": 13,
+    "2db036552fa15e93f80b7ee18217ebf154373681d963cc79e04eabec62be24fd": 12,
+    "5494a35c768a97efd1ad777477dc6ecd44a22913ccf365c0dc70674abe356980": 14,
+    "18ed8546174ed47c1ec6fa9916b90d3039ced18810a14a68fa516dbd74f22862": 14,
+    "6b25b48d5a333dab554767d02ad57934b459de89e944d261526b998c8468fe33": 17,
+    "17af281bfd9764cdaecc8bb248f8488832fa11412fce555bce9cb065c22a35b1": 17,
+    "4435651345e4a99cbe71a9bade27142e7f5336aaf3ad71f8b5b71cdfc665f778": 20,
+    "b4fe879b13ee3c6c2f4255256d49a00c299411ed80685be54bd459eb0c0ca1e1": 19,
+    "5e2f1065da63ff166c911be1323296b15c9418fd89a4f1b5a6322b3bb1ad8ece": 20,
+    "79860cdbfb10e078b2eed8abfe58722bb0a8872aa5c83d782bef0fd998c307f6": 19,
+    "107cd915b284a13557951688efa8dd500bf457d7fcabc6b1e7498db61f632e8a": 10,
+    "3aa33bc86d7afc791457a1e33dc31107a5a2056485c2d23b622f84e636eaed80": 10,
+    "8b7b08c3fd37f2f3d8abbfd28afbf74db1ce98024d9ef4ebfa939726dfd3fe73": 9,
+    "4db8a277759c26abde10e66936642c8b904426eb55e23e046ebacced6399242d": 9,
+    "9a1028c82abd4e37a4f98d31eb9674ef954bd376ad5445d1c9d9f77cb6010ab3": 19,
+    "e20509af4e725236551cc9934faffff97ea5f4f098e92382b9f370155ec64ce8": 19,
+    "809dc92bd0cb1fb541fe698845795afe32e09b8e24205b526ded51017b03ce15": 19,
+    "33b89ea356bcce948c75f939ad463fa8e45dd9b3ab98f753f3d022e5993c8c8b": 14,
+    "9d67a078a5cf1e0e38056296a5dc0e05a00f174b50f945e188a8210772e50795": 19,
+    "01e6859d1cb17faf40266c50bcd80ee09299e3a3b94a24f8a4916eeed0556ea9": 20,
+    "e0b1a2b30af96179550595245f7ddac6f549d658379e7610f08c16128ba6e0c6": 20,
+    "5cb5d47ce1b3077e93fb2a23f9e55eb933cea9b74a9a9d2455199dcf58ebb7fc": 20
+  },
+  "rules": [
+    "header text only: no cell value, no new column meaning, no header of a different target",
+    "seeds sharing one header in one family split one pool, so no spelling repeats in that group",
+    "foreign seeds (opf-*) get English spellings only; Devanagari and transliteration go to Indian seeds",
+    "building.heightM variants keep the seed unit, feet, in a token the profiler reads (ft, feet, foot)",
+    "building.storeyCount may name count; every other target names no unit",
+    "building.storeyLabel variants keep the sanctioned/approved qualifier of the seed header"
+  ],
+  "scripts": {
+    "build-seeds.py": {
+      "path": "E:/BhuAayam-data/task-data/va1/build-seeds.py",
+      "sha256": "6da8bdc89dadaf26425f1fcf3ccf75419c6320241822763f2453612822c5c62c"
+    },
+    "author-variants.py": {
+      "path": "E:/BhuAayam-data/task-data/va1/author-variants.py",
+      "sha256": "9b11257cd893c3d22ee4558985c8e0579c34065bd642579d900822af598bb225"
+    },
+    "check-variants.py": {
+      "path": "E:/BhuAayam-data/task-data/va1/check-variants.py",
+      "sha256": "26c2e7bf1eec820eb2da7dbd0ea9da6ce5db224acfa9562f5cc53ac96366ea10"
+    }
+  },
+  "checks": [
+    {
+      "attempt": 1,
+      "command": "python -B E:/BhuAayam-data/task-data/va1/check-variants.py",
+      "exitCode": 1,
+      "signature": [
+        "22 header spellings equal after case and whitespace folding",
+        "(camelCase or upper case of a spaced form; one equal to its seed header OSEBuildingID)",
+        "neighbour spellings that folded back to their own header"
+      ],
+      "kept": "E:/BhuAayam-data/task-data/va1/author-variants.attempt1.py"
+    },
+    {
+      "attempt": 2,
+      "repair": "removed the 22 colliding spellings; reworded 12 neighbour spellings",
+      "command": "python -B E:/BhuAayam-data/task-data/va1/check-variants.py",
+      "exitCode": 0
+    },
+    {
+      "command": "negative controls: seed-header fold, 6-digit run, wrong target, metre unit on heightM, duplicate",
+      "exitCodes": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "files": "temporary, removed"
+    }
+  ],
+  "gaps": {
+    "building.heightM": "1 seed, 1 foreign family, feet only; 20 variants cannot add a second source family",
+    "unit.type": "2 seeds from 1 family (mi-d22); 25 variants",
+    "building.storeyLabel": "3 seeds from 1 family (mi-d02); the seed header names a sanctioned floor count",
+    "building.storeyCount": "2 seeds, both foreign; no Hindi spellings",
+    "building.sourceKey": "4 seeds, all foreign; no Hindi spellings",
+    "document.registrationNo": "4 seeds from 2 families",
+    "building.use": "0 seeds: both T1c use fields fail MAPPING_ENUM_UNRECOGNISED",
+    "building.footprint": "left out by rule"
+  },
+  "boundaries": {
+    "heldOutOpened": false,
+    "providerCalls": 0,
+    "docker": false,
+    "gpu": false,
+    "training": false,
+    "existingLabelsOrProfilesChanged": 0,
+    "verifierOutputs": "E:/BhuAayam-data/task-data/va1/verified/<round> (new)"
+  },
+  "next": "VA2 in a separate session: re-sample values, verifier dry-run, near-duplicate filter, one Stage A retrain"
+}
