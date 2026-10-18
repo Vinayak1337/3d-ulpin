@@ -21,7 +21,7 @@ import {sha256} from '../packages/server/src/infrastructure/storage';
 
 // No enrollment, native execution, network, persisted SQL or real tool admission.
 // Reuse exact accepted GLTF-02 originals/results/artifacts and document result.
-const root=process.env.ULPIN_GLTF_FUSION_TEST_ROOT??'E:/BhuAayam-data/task-data/gltf-api-20261004-run01';
+const root=process.env.ULPIN_GLTF_FUSION_TEST_ROOT??'E:/BhuAayam-data/task-data/gltf-api-20261018-run01';
 const documentRoot=process.env.ULPIN_REFERENCE_DOCUMENT_TEST_ROOT??'E:/BhuAayam-data/task-data/desktop-reference-document-enrollment';
 const budget=():FusionBudget=>({deadlineAt:Date.now()+30000,signal:new AbortController().signal,reservedBytes:0});
 const ctx=()=>localRequestContext('fusion-gltf-protocol-control');
