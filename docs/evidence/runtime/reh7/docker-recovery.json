@@ -1,0 +1,30 @@
+{ "at": "2026-10-18T08:04:56.828Z", "bootedLocal": "2026-10-18 13:30:17 +05:30",
+"dockerProcessesBefore": "none (tasklist: only the Windows service wslservice.exe)", "renamedAside": [
+"%LOCALAPPDATA%/Docker/run -> run-stale-reh7-20261018",
+"%LOCALAPPDATA%/docker-secrets-engine -> docker-secrets-engine.saved-reh7-20261018" ], "staleEntriesByName": [
+"dockerEthernetVfkit", "dockerInference", "sailor-ingest.sock", "userAnalyticsOtlpHttp.sock" ], "started": {
+"command": "%LOCALAPPDATA%/Programs/DockerDesktop/Docker Desktop.exe (once)", "atUtc": "2026-10-18T08:04:29Z" },
+"engineAnsweredWithinSeconds": 2, "resetChosen": false, "engine": { "command": [
+"docker ps --format \"{{.Names}} {{.State}}\"" ], "from": "E:/Projects/ulpin-wt/k2/docs/evidence/runtime/reh7",
+"exit": 0, "seconds": 0.179, "output": [ "ulpin-demo-worker-1 running", "ulpin-demo-geo-1 running",
+"ulpin-demo-redis-1 running", "ulpin-demo-postgres-1 running", "ulpin-demo-minio-1 running" ], "error": null },
+"volumes": [ "[omitted non-source digest]", "docsetu-benchmark-20261002-db", "ulpin-demo_minio-data",
+"ulpin-demo_postgres-data", "ulpin-demo_redis-data", "ulpin-raster-worker-20260929_minio-data",
+"ulpin-raster-worker-20260929_postgres-data", "ulpin-raster-worker-20260929_redis-data", "ulpin-reh-01_minio-data",
+"ulpin-reh-01_postgres-data", "ulpin-reh-01_redis-data", "ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data",
+"ulpin-reh-02_redis-data", "ulpin-repo_minio-data", "ulpin-repo_postgres-data", "ulpin-repo_redis-data",
+"ulpin-usptest-8cd5555d8faac51d_minio-data", "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+"ulpin-usptest-8cd5555d8faac51d_redis-data", "ulpin-usptest-b050544f3d2cb99e_minio-data",
+"ulpin-usptest-b050544f3d2cb99e_postgres-data", "ulpin-usptest-b050544f3d2cb99e_redis-data" ], "containers": {
+"ulpin-demo": [ "9332e3bd69a7 ulpin-demo-geo-1 ulpin-geo:git-22003ea3d878 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"a5c41cce7d08 ulpin-demo-worker-1 ulpin-geo:git-22003ea3d878 running" ], "ulpin-reh-02": [
+"7ba3472c65be ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"3a76b477e6fb ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ] } }
