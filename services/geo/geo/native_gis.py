@@ -710,10 +710,22 @@ _KML_RATIO = 100
 # here as the characters captured for one open Placemark (or one container name) across all its captures.
 PLACEMARK_BOUND = 1024 * 1024
 TOO_LARGE = "placemark_too_large"
+# KML2. Expat holds a start tag (or any other open token) whole until it closes: bytes fed past the last event are
+# bounded, and the file is fed in chunks of at most _KML_CHUNK so the bound is checked often.
+TAG_BOUND = 1024 * 1024
+TAG_TOO_LARGE = "tag_too_large"
+_KML_CHUNK = 64 * 1024
+_NOT_KML = "is not a KML 2.2 document: its root is not kml in the KML namespace"
+_TAG_WORDS = ("A KML tag is larger than 1 MiB before it closes; the file was not read further. "
+              "The original is kept with its SHA-256.")
 
 
 class _KmlStop(Exception):
-    """The root is not a KML document; nothing further is read."""
+    """Nothing further is read: the root is not a KML document, or (KML2) a tag is past TAG_BOUND."""
+
+    def __init__(self, code: str = "not_kml", reason: str = _NOT_KML):
+        super().__init__(code)
+        self.code, self.reason = code, reason
 
 
 class _Placemark:
@@ -997,11 +1009,23 @@ def _kml_parse(blocks, reader: _KmlReader):
     parser.buffer_text = True
     parser.SetParamEntityParsing(expat.XML_PARAM_ENTITY_PARSING_NEVER)
     parser.StartDoctypeDeclHandler = parser.EntityDeclHandler = parser.ExternalEntityRefHandler = deny
-    parser.StartElementHandler, parser.EndElementHandler = reader.start, reader.end
-    parser.CharacterDataHandler = reader.characters
+    seen = fed = 0
+
+    def marked(handler):
+        def event(*arguments):
+            nonlocal seen
+            seen = parser.CurrentByteIndex
+            handler(*arguments)
+        return event
+
+    parser.StartElementHandler, parser.EndElementHandler = marked(reader.start), marked(reader.end)
+    parser.CharacterDataHandler = marked(reader.characters)
     try:
         for block in blocks:
             parser.Parse(block, False)
+            fed += len(block)
+            if fed - seen > TAG_BOUND:
+                raise _KmlStop(TAG_TOO_LARGE, _TAG_WORDS)
         parser.Parse(b"", True)
     except expat.ExpatError:
         raise InputError("The KML is not well-formed XML.") from None
@@ -1009,7 +1033,7 @@ def _kml_parse(blocks, reader: _KmlReader):
 
 def _file_blocks(path: Path):
     with path.open("rb") as source:
-        while block := source.read(1024 * 1024):
+        while block := source.read(_KML_CHUNK):
             yield block
 
 
@@ -1034,7 +1058,7 @@ def _kmz_blocks(archive: zipfile.ZipFile, entry: zipfile.ZipInfo):
         raise InputError("The KMZ's KML member expands beyond the conversion's bound.")
     count = 0
     with archive.open(entry) as stream:
-        while block := stream.read(1024 * 1024):
+        while block := stream.read(_KML_CHUNK):
             count += len(block)
             if count > limit:
                 raise InputError("The KMZ's KML member expands beyond its stated size.")
@@ -1059,10 +1083,9 @@ def convert_kml_file(path: Path, fmt: str, folder: Path, source_sha256: str) -> 
         try:
             _kml_parse(_kmz_blocks(archive, entry) if archive is not None else _file_blocks(path), reader)
             return reader.finish(), reader.not_read
-        except _KmlStop:
+        except _KmlStop as stop:
             reader.abandon()
-            return [{"layer": WHOLE_FILE, "ordinal": 0, "state": "not_converted",
-                     "reason": "is not a KML 2.2 document: its root is not kml in the KML namespace"}], {}
+            return [{"layer": WHOLE_FILE, "ordinal": 0, "state": "not_converted", "reason": stop.reason}], {}
         except BaseException:
             reader.abandon()
             raise
