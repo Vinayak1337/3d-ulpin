@@ -11,7 +11,10 @@
       "recorded by confirmation <id>.' The check runs in confirmIntake's transaction after the package rows are",
       "locked FOR UPDATE (and the case row), after today's per-package checks, so a recorded package still says",
       "'already recorded'. A run that failed (refused) or was cancelled frees its packages; the same requestKey",
-      "replay returns before any package check, unchanged."
+      "replay returns before any package check, unchanged.",
+      "Retrying confirmation A takes the case lock, then each of A's package rows FOR UPDATE in A's order (the",
+      "confirm path's order), and is refused with the same code and words while another confirmation's run that",
+      "is queued or running names one of A's packages; A itself is left out of that query."
     ],
     "read": [
       "Each package on the target page carries recordingConfirmationId (optional, null when none), from the same",
@@ -28,6 +31,9 @@
       "intake-run.test.ts: confirmation A of three packages is queued; a second confirmation naming package 2 is",
       "refused with the exact words; A's run then stops package 2 (its commit refused) and the job ends failed;",
       "the same second confirmation is then stored naming package 2.",
+      "intake-run.test.ts: A stops package 2, B is stored naming it; retrying A is refused with B's words and",
+      "resumes nothing; B's run ends; retrying A then resumes package 2's building and queues its commit; the",
+      "retry locked the case, then A's three packages in order, then asked the query leaving A out.",
       "intake-targets.test.ts: a page of three packages marks the one being recorded and the others null; the",
       "query takes the case and the page's ids, open commit jobs only, unrecorded packages only, no body."
     ],
@@ -44,7 +50,7 @@
     { "command": "pnpm studio:test", "exit": 0,
       "counts": "studio 79 files 502 tests; scene 58 passed 1 skipped; ui 7; api-client 2" },
     { "command": "template backend test command plus apps/api/.../intake-run.controller.test.ts", "exit": 0,
-      "counts": "419 tests, 417 pass, 0 fail, 2 skipped" },
+      "counts": "420 tests, 418 pass, 0 fail, 2 skipped" },
     { "command": "apps/api/scripts/openapi.ts --check", "exit": 0,
       "note": "after scripts/api/refresh-contract.ts 133991bf and pnpm studio:api-types" },
     { "command": "python scripts/api/check.py", "exit": 0 },

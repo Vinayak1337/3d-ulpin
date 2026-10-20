@@ -65,13 +65,14 @@ async function assertPackagesTx(client: PoolClient, caseId: string, input: Intak
     const difference = packageDifference(named, row?.body);
     if (difference) stale(difference);
   }
-  if (input.packages.length) await assertNotRecordingTx(client, caseId, input);
+  if (input.packages.length) await assertNotRecordingTx(client, caseId, input.packages);
 }
 
-/** Under the same package locks: a package another confirmation's open run is recording cannot be named again. */
-async function assertNotRecordingTx(client: PoolClient, caseId: string, input: IntakeConfirm) {
-  const recording = await recordingConfirmationsTx(client, caseId, input.packages.map(named => named.packageId));
-  const pending = input.packages.find(named => recording.has(named.packageId));
+/** Under the package locks: a package another confirmation's open run is recording cannot be named again. */
+async function assertNotRecordingTx(client: PoolClient, caseId: string, packages: IntakeConfirm['packages'],
+  except: string | null = null) {
+  const recording = await recordingConfirmationsTx(client, caseId, packages.map(named => named.packageId), except);
+  const pending = packages.find(named => recording.has(named.packageId));
   if (pending) {
     throw new AppError(409, 'INTAKE_CONFIRMATION_PENDING', `Package ${pending.packageId} is already being recorded `
       + `by confirmation ${recording.get(pending.packageId)}.`);
@@ -234,6 +235,15 @@ async function resumeTx(client: PoolClient, row: IntakeConfirmationRow) {
   return stopped.length;
 }
 
+/** As the confirm path does, after the case lock: each package row in the order named, then the same refusal when
+ * another confirmation's open run is recording one of them, so a retry never starts a second recording. */
+async function assertRetryFreeTx(client: PoolClient, row: IntakeConfirmationRow) {
+  for (const named of row.packages) {
+    await client.query('SELECT id FROM import_packages WHERE id=$1 FOR UPDATE', [named.packageId]);
+  }
+  await assertNotRecordingTx(client, row.case_id, row.packages, row.confirmation_id);
+}
+
 /** Re-enqueue the stopped targets with the same keys; nothing done is repeated. */
 export async function retryIntakeConfirmation(caseIdValue: string, confirmationIdValue: string) {
   const caseId = uuid.parse(caseIdValue);
@@ -248,6 +258,7 @@ export async function retryIntakeConfirmation(caseIdValue: string, confirmationI
     if (row.expires_at.getTime() <= Date.now()) {
       throw new AppError(409, 'INTAKE_CONFIRMATION_EXPIRED', 'This confirmation has expired; confirm again.');
     }
+    await assertRetryFreeTx(client, row);
     await resumeTx(client, row);
   });
   return readIntakeConfirmation(caseId, confirmationId);

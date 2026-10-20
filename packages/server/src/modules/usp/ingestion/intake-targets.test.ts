@@ -169,7 +169,7 @@ test('a package a confirmation is recording says so on the page; the others say 
     assert.equal(page.counts.ready, 6);
     const asked = fixture.calls.filter(call => call.sql.startsWith('SELECT DISTINCT ON (p.id)'));
     assert.equal(asked.length, 1);
-    assert.deepEqual(asked[0].values, [id, fixture.packages.map(row => row.id)]);
+    assert.deepEqual(asked[0].values, [id, fixture.packages.map(row => row.id), null]);
     assert.match(asked[0].sql, /j\.status IN \('queued','running'\) AND j\.payload->>'phase'='commit'/);
     assert.match(asked[0].sql, /p\.state<>'COMMITTED'/);
     assert(!/p\.body/.test(asked[0].sql));

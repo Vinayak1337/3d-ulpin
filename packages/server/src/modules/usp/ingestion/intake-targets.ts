@@ -259,16 +259,18 @@ async function packageOrderTx(client: PoolClient, caseId: string, ids: string[])
 }
 
 /** For each unrecorded package, the stored confirmation of the case naming it whose commit run is still queued or
- * running. A run that failed or was cancelled frees its packages; one that recorded them left them COMMITTED. */
-export async function recordingConfirmationsTx(client: PoolClient, caseId: string,
-  packageIds: string[]): Promise<Map<string, string>> {
+ * running, other than `except`. A run that failed or was cancelled frees its packages; one that recorded them left
+ * them COMMITTED. */
+export async function recordingConfirmationsTx(client: PoolClient, caseId: string, packageIds: string[],
+  except: string | null = null): Promise<Map<string, string>> {
   const rows = (await client.query(`SELECT DISTINCT ON (p.id) p.id AS package_id,c.confirmation_id
     FROM usp_intake_confirmations c CROSS JOIN LATERAL jsonb_array_elements(c.packages) AS named
     JOIN import_packages p ON p.id::text=named->>'packageId' AND p.state<>'COMMITTED'
-    WHERE c.case_id=$1 AND p.id=ANY($2::uuid[]) AND EXISTS (SELECT 1 FROM jobs j WHERE j.case_id=c.case_id
+    WHERE c.case_id=$1 AND p.id=ANY($2::uuid[]) AND c.confirmation_id IS DISTINCT FROM $3::uuid
+      AND EXISTS (SELECT 1 FROM jobs j WHERE j.case_id=c.case_id
       AND j.operation='intake-run' AND j.status IN ('queued','running') AND j.payload->>'phase'='commit'
       AND j.payload->>'confirmationId'=c.confirmation_id::text)
-    ORDER BY p.id,c.created_at,c.confirmation_id`, [caseId, packageIds])).rows;
+    ORDER BY p.id,c.created_at,c.confirmation_id`, [caseId, packageIds, except])).rows;
   return new Map(rows.map(row => [row.package_id as string, row.confirmation_id as string]));
 }
 
