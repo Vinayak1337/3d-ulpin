@@ -16,7 +16,7 @@ import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { detectIntakeKind } from './intake-signatures';
 import { locateZipMember, readZipMember, streamZipMember } from './intake-zip';
-import type { LargeOriginalService } from './large-original';
+import { LargeLayerLineageSchema, type LargeOriginalService } from './large-original';
 import { lockUnassignedSourceCase } from './service';
 
 export const ZIP_ARCHIVE_PROFILE = 'zip-manual-v1';
@@ -31,9 +31,6 @@ export const IntakeZipLayersInputSchema = z.strictObject({
 export type IntakeZipLayersInput = z.infer<typeof IntakeZipLayersInputSchema>;
 // A member read may page a large archive's directory and up to 17 one-MiB ranges.
 const MEMBER_READ_MS = 60_000;
-// ZL1. A large layer's record is the same zip-layer/1 lineage, bounded by the large GeoJSON reader's ceiling.
-const LargeLayerLineageSchema = ArchiveMemberLineageSchema.extend({
-  memberBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes) });
 
 function archiveReceipt(row: IntakeSourceRow) {
   return IntakeArchiveReceiptSchema.parse({ sourceId: row.id, sourceRevision: row.revision, sha256: row.sha256,
@@ -307,7 +304,8 @@ async function linkTx(client: PoolClient, caseId: string, member: MemberRow, sou
  * ZL1. A GeoJSON layer above the member bound and within the large reader's ceiling is streamed out of the archive
  * twice: once to hash it and check its size and CRC-32, then in byte parts through the receipt /uploads uses, which
  * checks the hash again before it retains the large original. No pass holds more than one part. A size or CRC
- * mismatch keeps nothing. The child names its archive member, as a small layer does, before it is enrolled.
+ * mismatch keeps nothing. ZL2: the child's lineage is written by finalize in the transaction that creates it, so a
+ * crash keeps either both or neither; the member item is then linked to it before it is enrolled.
  */
 async function keepLargeLayer(caseId: string, parentItemId: string, archive: IntakeSourceRow, member: MemberRow,
   dependencies: ZipLayerDependencies): Promise<string> {
@@ -328,12 +326,8 @@ async function keepLargeLayer(caseId: string, parentItemId: string, archive: Int
     memberPath: member.member_path, ordinal: located.ordinal, memberBytes: entry.size,
     compressedBytes: entry.compressed, crc32: entry.crc, memberSha256: file.sha256 });
   const sourceId = await fenced(caseId, dependencies, revision =>
-    receiveLargeLayer(caseId, revision, file, byteParts(stream()), dependencies));
-  await dependencies.transaction(async client => {
-    await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('archiveMember',$2::jsonb)
-      WHERE id=$1 AND profile='large-original-v1'`, [sourceId, lineage]);
-    await linkTx(client, caseId, member, sourceId);
-  });
+    receiveLargeLayer(caseId, revision, file, lineage, byteParts(stream()), dependencies));
+  await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
 }
 
@@ -357,10 +351,13 @@ async function* byteParts(chunks: AsyncIterable<Uint8Array>) {
   if (filled) yield part.subarray(0, filled);
 }
 
-/** One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A failed receipt is aborted. */
+/**
+ * One byte receipt, driven as /uploads drives it: admit, store each part, finalize with the member's lineage.
+ * A failed receipt is aborted.
+ */
 async function receiveLargeLayer(caseId: string, revision: number,
-  file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
-  dependencies: ZipLayerDependencies): Promise<string> {
+  file: { name: string; bytes: number; sha256: string }, lineage: ArchiveMemberLineage,
+  parts: AsyncIterable<Uint8Array>, dependencies: ZipLayerDependencies): Promise<string> {
   let status = await dependencies.large.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: revision,
     filename: file.name, mediaType: 'application/octet-stream', sha256: file.sha256, bytes: file.bytes,
     provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } });
@@ -377,7 +374,8 @@ async function receiveLargeLayer(caseId: string, revision: number,
       }
     }
     const receipt = await dependencies.large.finalize(caseId, status.id, { requestKey: randomUUID(),
-      expectedRevision: status.revision, expectedCaseRevision: status.currentCaseRevision, sha256: file.sha256 });
+      expectedRevision: status.revision, expectedCaseRevision: status.currentCaseRevision, sha256: file.sha256 },
+    lineage);
     if (!receipt?.source) throw new Error('ZIP_LAYER_UNAVAILABLE');
     return receipt.source.sourceId;
   } catch (error) {

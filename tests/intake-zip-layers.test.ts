@@ -57,6 +57,7 @@ class Ledger {
   readonly jobs: any[] = [];
   readonly metadata = new Map<string, any>();
   readonly attempts: any[] = [];
+  /** ZL2. The lineage each finalize wrote with its source, keyed by the source it created. */
   readonly inspections = new Map<string, unknown>();
   archive: any;
 
@@ -150,7 +151,6 @@ class Ledger {
     }
     if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: this.revision }];
     if (sql.startsWith('SELECT * FROM sources')) return values[1] === this.archiveId ? [this.archive] : [];
-    if (sql.startsWith('UPDATE sources SET inspection')) { this.inspections.set(values[0], values[1]); return []; }
     if (sql.startsWith('SELECT * FROM usp_intake_items WHERE source_id')) {
       return [...this.rows.values()].filter(row => row.source_id === values[0] && !row.parent_item_id);
     }
@@ -388,9 +388,13 @@ const largePath = 'uttam/large-buildings.geojson';
 // Stored: a repeated feature deflates past the probe's ratio bound, which would refuse the member as a layer.
 const largePack = () => zipSync({ ...real, [largePath]: [large, { level: 0 }] });
 
-/** The /uploads byte receipt in memory: it hashes each part it is handed and keeps none. */
-function receipts(ledger: Ledger, refusal?: AppError) {
-  const log = { created: [] as any[], parts: [] as number[], sourceId: randomUUID(), hash: createHash('sha256') };
+/**
+ * The /uploads byte receipt in memory: it hashes each part it is handed and keeps none. Its finalize writes the
+ * lineage with the source, or, given a crash, fails once and keeps neither, as a rolled-back transaction does.
+ */
+function receipts(ledger: Ledger, refusal?: AppError, crash?: AppError) {
+  const log = { created: [] as any[], parts: [] as number[], sourceId: randomUUID(), hash: createHash('sha256'),
+    aborted: 0 };
   const status = (revision: number) => ({ id: randomUUID(), revision, currentCaseRevision: ledger.revision });
   const service = {
     create: async (_caseId: string, input: any) => {
@@ -406,11 +410,17 @@ function receipts(ledger: Ledger, refusal?: AppError) {
       return status(claim.expectedRevision + 1);
     },
     failPart: async () => {},
-    finalize: async () => {
+    finalize: async (_caseId: string, _id: string, _input: unknown, lineage: unknown) => {
+      if (crash) {
+        const error = crash;
+        crash = undefined;
+        throw error;
+      }
       ledger.revision++;
+      ledger.inspections.set(log.sourceId, lineage);
       return { source: { sourceId: log.sourceId } };
     },
-    abort: async () => {},
+    abort: async () => { log.aborted++; },
   };
   return { service, log };
 }
@@ -481,4 +491,21 @@ test('a layer above the large ceiling or past a full receipt allowance stays in 
       + 'bytes stays inside the archive; the large-original receipt allowance is full, so it was not kept as its '
       + 'own original. Enrol the archive again to retry once a receipt is free.');
     assert.notEqual(await full.queue(), null);
+  }));
+
+test('a large layer whose finalize fails keeps no lineage and no link; enrolling again keeps it once', () =>
+  configured(async () => {
+    const { ledger, queue, run } = await layersJob(largePack());
+    const { service, log } = receipts(ledger, undefined,
+      new AppError(503, 'FINALIZATION_INTERRUPTED', 'receipt text'));
+    await run((await queue())!, { large: service });
+    const member = ledger.member(largePath);
+    assert.deepEqual([member.source_id, ledger.inspections.size, log.aborted], [null, 0, 1]);
+    assert.match(member.limit_reason, /^FINALIZATION_INTERRUPTED: this GeoJSON member stays inside the archive/);
+    await run((await queue())!, { large: service });
+    assert.deepEqual([member.source_id, member.limit_reason, log.created.length, log.aborted],
+      [log.sourceId, null, 2, 1]);
+    assert.deepEqual([...ledger.inspections.keys()], [log.sourceId]);
+    assert.equal((ledger.inspections.get(log.sourceId) as { memberPath: string }).memberPath, largePath);
+    assert.equal(await queue(), null);
   }));

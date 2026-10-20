@@ -1,0 +1,37 @@
+{
+  "task": "ZL2",
+  "gate": "GF1",
+  "base": "6d038782",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers and an in-memory pool whose BEGIN/ROLLBACK keep and restore the rows. No database, object store, dispatcher loop or served HTTP walk was run.",
+  "defect": "ZL1 limit 1: a large ZIP layer's zip-layer/1 lineage was merged into sources.inspection.archiveMember in a transaction after finalize; a crash between the two kept the child without its lineage and the member unlinked, and enrolling the archive again kept the member a second time.",
+  "decisions": [
+    "D1 large-original.ts: finalize takes an optional fourth argument, archiveMember, validated by LargeLayerLineageSchema (the zip-layer/1 schema ZL1 used, now exported beside finalize; memberBytes bounded by STREAMING_VECTOR_LIMITS.sourceBytes) before any statement, and writes it into the new source's inspection.archiveMember inside the transaction that inserts the source. A lineage given for a large-original/2 receipt is refused ARCHIVE_MEMBER_PROFILE before any change, because v2 publishes in its storage job. The /uploads controller passes three arguments, so its inspection and behaviour are unchanged; the HTTP finalize schema and the published contract are unchanged.",
+    "D2 intake-zip-layers.ts: keepLargeLayer passes the lineage to receiveLargeLayer, which passes it to finalize; the separate UPDATE sources is gone; linking the member item stays a transaction of its own. A finalize that fails leaves the receipt aborted (or expiring as today) and the member unlinked with its words, so enrolling again opens one new receipt and keeps the member once.",
+    "D3 no contract field, no schema step; pins moved for the two source files only."
+  ],
+  "tests": {
+    "server": {
+      "command": "D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts packages/server/src/modules/areas/*.test.ts packages/server/src/modules/officer/*.test.ts tests/manual-author.test.ts tests/ingestion-events.test.ts packages/server/src/modules/cases/processing.test.ts tests/usp-packet-pdf.test.ts tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts",
+      "before": { "tests": 367, "pass": 365, "fail": 0, "skipped": 2, "note": "derived: the base run was not repeated; the only change inside this command is one added test in tests/intake-zip-layers.test.ts" },
+      "after": { "tests": 368, "pass": 366, "fail": 0, "skipped": 2 }
+    },
+    "largeOriginal": {
+      "command": "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/large-original.test.ts",
+      "after": { "tests": 5, "pass": 5, "fail": 0 }
+    },
+    "changed": [
+      "tests/large-original.test.ts: a v1 receipt through LargeOriginalService over a transactional in-memory pool; a lineage above the large ceiling is refused by the schema; a publishing transaction that fails after its source insert leaves no source, no lineage, the case revision unchanged and the receipt receiving with FINALIZATION_INTERRUPTED; finalizing again stores one source whose inspection.archiveMember equals the lineage.",
+      "tests/intake-zip-layers.test.ts: the receipt stand-in's finalize records the lineage it is handed (the ledger no longer answers UPDATE sources SET inspection, so a separate update would fail the test); a finalize that fails once leaves the member unlinked with FINALIZATION_INTERRUPTED words, no lineage and the receipt aborted; enrolling again keeps it once (two receipts opened, one source, its lineage) and queues nothing further."
+    ],
+    "typecheckBackend": { "command": "pnpm typecheck:backend", "after": 0 },
+    "studioTypecheck": { "command": "pnpm studio:typecheck", "after": 0 },
+    "studioTest": { "command": "pnpm studio:test", "after": "546 passed, 1 skipped (studio 479, scene 58 + 1 skipped, ui 7, api-client 2); Studio unchanged" },
+    "openapi": { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeRefresh": "1: docs/api/source-pins.json stale", "after": 0, "regenerated": "scripts/api/refresh-contract.ts 6d038782 repinned intake-zip-layers.ts and large-original.ts; pnpm studio:api-types produced no change; scripts/api/check.py exit 0 (314 operations, 356 schemas)" },
+    "diffCheck": { "command": "git diff --check", "after": 0 }
+  },
+  "limits": [
+    "Linking the member item is still its own transaction after finalize (D2). A crash after finalize commits and before the link keeps the child with its lineage but leaves the member unlinked, and enrolling again would keep the member a second time; the child can now be found by its inspection.archiveMember, which a later re-enrolment could use to link instead of keeping again.",
+    "The rollback is proved on an in-memory pool, not PostgreSQL."
+  ]
+}
