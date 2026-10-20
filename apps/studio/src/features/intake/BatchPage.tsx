@@ -22,7 +22,7 @@ import { runKey } from './run/useTargets';
 import type { BatchLocationState } from './retain-batch';
 import { useSourceCase } from './table/queries';
 import { UnfinishedUploads } from './UnfinishedUploads';
-import { keepWaiting, readWaiting, sizeWords, type WaitingFile } from './upload-model';
+import { keepWaiting, readWaiting, sizeWords, type UploadEntry, type WaitingFile } from './upload-model';
 import { useBatchStream } from './useBatchStream';
 import styles from './Batch.module.css';
 
@@ -46,6 +46,9 @@ function useBatchFacts(caseId: string) {
   return { caseId, manifest, sourceCase, packages, items, stream, refresh };
 }
 
+const NO_FILES: File[] = [];
+const NO_ITEMS: IntakeItem[] = [];
+
 function IntakeBatch({ caseId }: { caseId: string }) {
   const batch = useBatchFacts(caseId);
   const { items, sourceCase, stream, refresh } = batch;
@@ -53,8 +56,10 @@ function IntakeBatch({ caseId }: { caseId: string }) {
   const [adding, setAdding] = useState(false);
   const location = useLocation();
   const state = location.state as BatchLocationState | null;
-  const remainingFiles = state?.remainingFiles ?? [];
-  const waiting = useWaitingFiles(caseId, state);
+  const [left, setLeft] = useState<{ key: string; files: File[] } | null>(null);
+  // D3. The drop's files not yet routed: the navigation's, until the dialog continuing them reports fewer.
+  const remainingFiles = left?.key === location.key ? left.files : state?.remainingFiles ?? NO_FILES;
+  const waiting = useWaitingFiles(caseId, state, remainingFiles, batch.manifest.data?.items ?? NO_ITEMS);
   const current = items.find((item) => item.itemId === selected?.itemId) ?? (items.length === 1 ? items[0] : null);
   return <div className={styles.page}>
     <Link to="/studio/work">Batches</Link>
@@ -70,24 +75,32 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       {stream.error || 'Live updates are disconnected.'} The batch is checked no more than once every five seconds.
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
     </Banner> : null}
-    <UnfinishedUploads caseId={caseId} refresh={refresh} />
+    <UnfinishedUploads caseId={caseId} refresh={refresh} settled={waiting.settle} />
     <FilesNotAdded state={state} />
     <WaitingFiles files={waiting.files} dismiss={waiting.dismiss} />
-    {current?.sourceId && (current.plan || needsLayoutAnswer(current)) ?
-      <LayoutQuestion key={current.itemId} caseId={caseId}
-        item={current} refresh={refresh} /> : null}
-    {current && isIfcItem(current) ?
-      <IfcStructure key={current.itemId} caseId={caseId} sourceId={current.sourceId} name={current.name} /> : null}
-    {isPageImage(current) ? <PageImageQuestion key={current.itemId} caseId={caseId} item={current}
-      refresh={refresh} /> : null}
-    {current ? <BatchTableSection key={current.itemId} caseId={caseId} item={current} items={items} /> : null}
+    {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh} />
+      : null}
     {items.length ? <EvidenceByKey caseId={caseId} items={items} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
     </section>
     {adding ? <AddFilesDialog caseId={caseId} initialFiles={remainingFiles}
+      onRemaining={remainingFiles.length ? (files) => setLeft({ key: location.key, files }) : undefined}
       onClose={() => setAdding(false)} /> : null}
   </div>;
+}
+
+/** D1. The chosen item's sections, keyed once by the item: a new item starts every section afresh. */
+function ItemDetail({ caseId, item, items, refresh }: {
+  caseId: string; item: IntakeItem; items: IntakeItem[]; refresh: () => void;
+}) {
+  return <>
+    {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
+      <LayoutQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
+    {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}
+    {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
+    <BatchTableSection caseId={caseId} item={item} items={items} />
+  </>;
 }
 
 function BatchRecords({ batch, choose }: {
@@ -121,22 +134,52 @@ function FilesNotAdded({ state }: { state: BatchLocationState | null }) {
 
 const session = () => sessionStorage;
 
-/** D3. Navigation state is lost on a reload: its files are kept as words under the case id and read back without it. */
-function useWaitingFiles(caseId: string, state: BatchLocationState | null) {
+type ItemFacts = Pick<IntakeItem, 'name' | 'sizeBytes'>;
+
+/** D2. A waiting file is done once an item of its name and size is in the batch: picked again and finished. */
+export function stillWaiting(files: WaitingFile[], items: readonly ItemFacts[]): WaitingFile[] {
+  return files.filter((file) => !items.some((item) => item.name === file.name
+    && (item.sizeBytes == null || item.sizeBytes === file.sizeBytes)));
+}
+
+/**
+ * D3 (N04). Navigation state is lost on a reload: its files are kept as words under the case id and read back
+ * without it. D2: a file leaves the words once it is in the batch or its unfinished upload settles.
+ */
+function useWaitingFiles(caseId: string, state: BatchLocationState | null, remainingFiles: File[],
+  items: readonly ItemFacts[]) {
   const [files, setFiles] = useState(() => state ? [] : readWaiting(session, caseId));
   useEffect(() => {
-    if (state) keepWaiting(session, caseId, waitingFiles(state));
-  }, [caseId, state]);
-  return { files, dismiss: () => {
-    keepWaiting(session, caseId, []);
-    setFiles([]);
-  } };
+    if (state) keepWaiting(session, caseId, waitingFiles({ ...state, remainingFiles }));
+  }, [caseId, state, remainingFiles]);
+  const keep = (done: (file: WaitingFile) => boolean) => {
+    const rest = (list: WaitingFile[]) => list.filter((file) => !done(file));
+    keepWaiting(session, caseId, rest(readWaiting(session, caseId)));
+    setFiles(rest);
+  };
+  useEffect(() => {
+    const finished = (file: WaitingFile) => !stillWaiting([file], items).length;
+    if (files.some(finished) || readWaiting(session, caseId).some(finished)) keep(finished);
+  }, [caseId, files, items]);
+  return {
+    files,
+    dismiss: () => keep(() => true),
+    settle: (entry: UploadEntry) => keep((file) => file.name === entry.filename && file.sizeBytes === entry.bytes),
+  };
 }
 
 export function waitingFiles(state: BatchLocationState): WaitingFile[] {
   const notAdded = state.outcomes?.filter((row) => row.state !== 'enrolled') ?? [];
   return [...notAdded.map((row) => ({ name: row.name, sizeBytes: row.sizeBytes, words: row.message ?? null })),
     ...(state.remainingFiles ?? []).map((file) => ({ name: file.name, sizeBytes: file.size, words: null }))];
+}
+
+/** D1. A stable key from the file's words; a second file of the same name and size is counted. */
+function fileKey(files: WaitingFile[], index: number) {
+  const file = files[index]!;
+  const same = files.slice(0, index)
+    .filter((other) => other.name === file.name && other.sizeBytes === file.sizeBytes);
+  return `${file.name}:${file.sizeBytes}:${same.length}`;
 }
 
 export function WaitingFiles({ files, dismiss }: { files: WaitingFile[]; dismiss: () => void }) {
@@ -146,7 +189,9 @@ export function WaitingFiles({ files, dismiss }: { files: WaitingFile[]; dismiss
     <p>These files were waiting when the page reloaded: {files.map((file) => file.name).join(', ')}. Pick them again
       to add them.</p>
     {explained.length ? <ul>
-      {explained.map((file, index) => <li key={index}>{file.name}, {sizeWords(file.sizeBytes)}: {file.words}</li>)}
+      {explained.map((file, index) => <li key={fileKey(explained, index)}>
+        {file.name}, {sizeWords(file.sizeBytes)}: {file.words}
+      </li>)}
     </ul> : null}
     <span className="ul-row"><Button variant="soft" onClick={dismiss}>Dismiss</Button></span>
   </section>;

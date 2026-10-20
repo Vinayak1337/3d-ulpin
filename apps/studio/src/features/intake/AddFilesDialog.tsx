@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
 import type { Schemas } from '@ulpin/api-client';
@@ -10,6 +10,7 @@ import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImpor
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 import { TableImportDialog } from './table/TableImportDialog';
+import { tablePath, type Opened } from './table/useFollowTable';
 import { batchOrder, batchRouteWords, dropState, routeWords, tablesJoin } from './file-route';
 import { IntakeDropDialog } from './IntakeDropDialog';
 
@@ -36,10 +37,14 @@ const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
  * dropped alone keeps its dialog, and the opt-in NYC profile keeps its separate development transport. TJ1: a table
  * dropped on the batch page, or with a file that makes a batch, joins that batch as its own item.
  */
-export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles }: { onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean; caseId?: string; initialFiles?: File[] }) {
+export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles, onRemaining }: {
+  onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean; caseId?: string;
+  initialFiles?: File[]; onRemaining?: (files: File[]) => void;
+}) {
   if (batchId) return <SavedBatch batchId={batchId} onClose={onClose} />;
   if (buildingId) return <BuildingFiles buildingId={buildingId} onClose={onClose} routed={routed} />;
-  return <NewFiles onClose={onClose} routed={routed} openCaseId={caseId} initialFiles={initialFiles} />;
+  return <NewFiles onClose={onClose} routed={routed} openCaseId={caseId} initialFiles={initialFiles}
+    onRemaining={onRemaining} />;
 }
 
 /** G10. A PDF is kept in a batch and read there by the server's page reader; the name only routes the drop. */
@@ -120,13 +125,19 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
   );
 }
 
-function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
+/**
+ * D3. A drop's files stay listed with their route words until each is routed: kept in the batch, imported as a
+ * table or removed. `onRemaining` hears which files of the drop are still to route after a table import or a removal.
+ */
+function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
   onClose: () => void; routed: boolean; openCaseId?: string; initialFiles?: File[];
+  onRemaining?: (files: File[]) => void;
 }) {
   const client = useQueryClient();
   const [files, setFiles] = useState<Picked[]>([]);
   const [step, setStep] = useState(0);
   const [tableFile, setTableFile] = useState<File | null>(null);
+  const [imported, setImported] = useState<{ file: File; opened: Opened }[]>([]);
   const [showIntake, setShowIntake] = useState(false);
   const initialized = useRef(false);
   const input = useRef<HTMLInputElement>(null);
@@ -170,14 +181,28 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
     : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null;
 
   const rows = useMemo(() => files, [files]);
-  const intakeFiles = batchOrder(files.filter((file) => file.state === 'intake').map((file) => file.file));
+  const tableOf = (file: File) => imported.find((row) => row.file === file)?.opened;
+  const unrouted = files.filter((file) => !tableOf(file.file));
+  const intakeFiles = batchOrder(unrouted.filter((file) => file.state === 'intake').map((file) => file.file));
+  const nextFile = intakeFiles[0] ?? unrouted.find((file) => file.state === 'not-gis')?.file;
+  const remove = (picked: Picked) => {
+    setFiles((current) => current.filter((x) => x !== picked));
+    onRemaining?.(unrouted.filter((x) => x !== picked).map((x) => x.file));
+  };
   if (showIntake && intakeFiles.length) {
     return <IntakeDropDialog files={intakeFiles} openCaseId={openCaseId} routed={routed} onClose={onClose}
-      remainingFiles={files.filter((file) => file.state !== 'intake').map((file) => file.file)}
+      remainingFiles={unrouted.filter((file) => file.state !== 'intake').map((file) => file.file)}
       onBack={() => setShowIntake(false)} />;
   }
   if (tableFile) {
-    return <TableImportDialog file={tableFile} onClose={onClose} onBack={() => setTableFile(null)} />;
+    // With other files of the drop still to route, the read table returns here instead of opening its page.
+    const others = unrouted.filter((file) => file.file !== tableFile).map((file) => file.file);
+    return <TableImportDialog file={tableFile} onClose={onClose} onBack={() => setTableFile(null)}
+      onImported={others.length ? (opened) => {
+        setImported((current) => [...current, { file: tableFile, opened }]);
+        setTableFile(null);
+        onRemaining?.(others);
+      } : undefined} />;
   }
   return (
     <Dialog
@@ -186,6 +211,8 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
       footer={(
         <>
           <Button variant="ghost" onClick={onClose}>Close</Button>
+          {imported.length && nextFile ? <Button variant="soft" onClick={() => intakeFiles.length
+            ? setShowIntake(true) : setTableFile(nextFile)}>Continue with other files</Button> : null}
           {step < 2
             ? <Button variant="primary" disabled={Boolean(blocked)} onClick={() => setStep(2)} title={blocked ?? undefined}>Continue</Button>
             : <Button variant="primary" disabled={Boolean(blocked) || importFile.isPending} onClick={() => importFile.mutate()}>Start import</Button>}
@@ -212,6 +239,10 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
           </label>
         ) : null}
 
+        {imported.length && unrouted.length ? <p role="status">
+          {imported.map((row) => row.file.name).join(', ')} imported as a table. The other files still wait for
+          their route below.
+        </p> : null}
         {files.length ? (
           <div className="ul-panel">
             <DataTable
@@ -226,6 +257,8 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
                   f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—'
                     : `${formatCount(f.inspection.featureCount)} features`) },
                 { header: 'Mapping', cell: (f) => {
+                  const opened = tableOf(f.file);
+                  if (opened) return <Link to={tablePath(opened)}>Imported as a table · open the table</Link>;
                   if (f.state === 'not-gis') {
                     return <Button variant="soft" onClick={() => setTableFile(f.file)}>Import as a table</Button>;
                   }
@@ -234,7 +267,8 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
                   }
                   return f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : '—';
                 } },
-                ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> }] : []),
+                ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash}
+                  aria-label={`Remove ${f.file.name}`} onClick={() => remove(f)} /> }] : []),
               ]}
             />
           </div>
