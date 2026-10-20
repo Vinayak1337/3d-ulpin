@@ -27,12 +27,24 @@ function assertRecipePins(plan: TabularMappingPlan, profile: TabularSourceProfil
 /** Existing manual author/approve commands use this verifier; it grants no approval or registry authority. */
 export function validateTabularRecipe(plan: TabularMappingPlan, profile: TabularSourceProfile, bytes: Uint8Array) {
   assertRecipePins(plan, profile);
+  const table = readTabularSource(bytes, profile.tabular.selection);
+  return { table, dry: dryRunTabularRecipe(plan, profile, table) };
+}
+
+/** G13: a table read as a stream is checked on its first window; every window is mapped after approval. */
+export function validateStreamedTabularRecipe(plan: TabularMappingPlan, profile: TabularSourceProfile,
+  table: { headers: string[]; rows: (string | undefined)[][] }) {
+  assertRecipePins(plan, profile);
+  return dryRunTabularRecipe(plan, profile, table);
+}
+
+function dryRunTabularRecipe(plan: TabularMappingPlan, profile: TabularSourceProfile,
+  table: { headers: string[]; rows: unknown[][] }) {
   const context = mappingContextFromColumnProfile(profile.profile, profile.tabular.selection);
   const checked = validateMappingPlanV2(plan.mapping, context);
   if (!checked.success) {
     throw new AppError(422, 'MAPPING_PLAN_INVALID', 'The officer plan failed canonical verification.');
   }
-  const table = readTabularSource(bytes, profile.tabular.selection);
   const rows = table.rows.map(row => Object.fromEntries(table.headers.map((header, index) =>
     [`${index + 1}|${header}`, row[index]])));
   const dry = executeMappingPlanV2(checked.plan, rows, { ...context, sourceRef: `source:${profile.source.sourceId}` });
@@ -42,7 +54,7 @@ export function validateTabularRecipe(plan: TabularMappingPlan, profile: Tabular
       throw new AppError(422, 'MAPPING_DRY_RUN', 'A selected field exceeds the existing ten-percent issue bound.');
     }
   }
-  return { table, dry };
+  return dry;
 }
 
 /** Stable method token; the full configured subject stays in the server approval receipt. */

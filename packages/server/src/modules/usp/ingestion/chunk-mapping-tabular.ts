@@ -1,16 +1,20 @@
 import type { PoolClient } from 'pg';
-import { ChunkMappingPayloadSchema, TabularRawRowSchema, type ChunkMappingInput,
-  type ChunkMappingPayload, type StreamingVectorPayload, type TabularPin } from '@ulpin/contracts/usp';
+import { ChunkMappingPayloadSchema, STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TabularRawRowSchema,
+  type ChunkMappingInput, type ChunkMappingPayload, type StreamingVectorPayload, type TableMappedCell,
+  type TabularMappingPlan, type TabularPin, type TabularSourceProfile } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
+import { sha256 } from '../../../infrastructure/storage';
 import { localRequestContext } from '../principal';
 import { assertUspJobAttemptTx, type UspJobAttempt } from '../jobs';
 import { appendCaseIngestionTx } from './events';
 import { assertChunkMappingInputTx } from './chunk-mapping';
 import { TabularChunkMapper, mappingQuestions, type TabularChunkDraft } from './chunk-mapping-agent';
 import { tabularLearningPaths, activeTabularLearner, learnApprovedTabularTx } from './chunk-mapping-learning';
-import { manualTeacherPlan, type TeacherDataPolicy } from './mapping-teacher';
+import { manualTeacherPlan, mappingContextFromColumnProfile, type TeacherDataPolicy } from './mapping-teacher';
+import { executeMappingPlanV2, MappingPlanValidationError } from './mapping-executor';
+import { readTableWindowTx, type StoredWindow } from './table-windows';
 
 type Stored = { payload: ChunkMappingPayload; bytes: number; hash: string; key: string };
 type Store = (payload: ChunkMappingPayload) => Promise<Stored>;
@@ -18,7 +22,7 @@ type Store = (payload: ChunkMappingPayload) => Promise<Stored>;
 /** Slot, watermark and SSE metric enter the existing transaction together under the current attempt fence. */
 export async function publishTabularMappingTx(
   client: PoolClient, input: ChunkMappingInput, attempt: UspJobAttempt, stored: Stored,
-  firstIndex: number, rawHash: string,
+  firstIndex: number, rawHash: string, windowed = false,
 ) {
   await assertChunkMappingInputTx(client, input);
   await assertUspJobAttemptTx(client, attempt);
@@ -26,8 +30,12 @@ export async function publishTabularMappingTx(
     [input.jobId])).rows[0];
   if (!state || state.state !== 'running' || state.next_publish_index !== stored.payload.chunkIndex ||
       state.records !== firstIndex) conflict('The tabular mapping watermark changed.');
-  const raw = (await client.query('SELECT result_sha256,published FROM usp_streaming_vector_slots ' +
-    'WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR SHARE',
+  // G13: a streamed table's proposal is drawn from its first window, which stands in for the raw slot.
+  const raw = (await client.query(windowed
+    ? 'SELECT window_sha256 AS result_sha256,true AS published FROM usp_table_windows WHERE job_id=$1 ' +
+      'AND source_revision=$2 AND window_index=$3 FOR SHARE'
+    : 'SELECT result_sha256,published FROM usp_streaming_vector_slots ' +
+      'WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR SHARE',
   [input.rawJobId, input.sourceRevision, stored.payload.chunkIndex])).rows[0];
   if (!raw?.published || raw.result_sha256 !== rawHash) conflict('The raw tabular chunk changed.');
   const mapping = stored.payload.mapping!;
@@ -104,7 +112,7 @@ export function tabularTeacherPolicy(pin: TabularPin) {
 
 export async function acceptTabularDataSlot(
   input: ChunkMappingInput, attempt: UspJobAttempt, raw: StreamingVectorPayload, rawHash: string,
-  mapper: TabularChunkMapper, store: Store,
+  mapper: TabularChunkMapper, store: Store, windowed = false,
 ) {
   if (!raw.records.length || raw.records.some(record => record.disposition !== 'accepted')) {
     throw new AppError(422, 'MAPPING_TABULAR_RAW_REFUSED', 'The raw reader refused a complete tabular record.');
@@ -135,5 +143,110 @@ export async function acceptTabularDataSlot(
   const payload = tabularPayload(input, raw, rawHash, draft, items);
   const stored = await store(payload);
   await transaction(client => publishTabularMappingTx(client, input, attempt, stored,
-    raw.records[0].featureIndex, rawHash));
+    raw.records[0].featureIndex, rawHash, windowed));
+}
+
+type WindowOutcome = { status: 'mapped'; rows: { record: number; cells: TableMappedCell[] }[] }
+  | { status: 'failed'; issueCode: string; issue: string };
+
+/** G13: the approved recipe applied to one stored window, every record in order. A window that cannot be mapped
+ * keeps its reason; it is reported and counted, never skipped. */
+export function mapTableWindow(plan: TabularMappingPlan, profile: TabularSourceProfile, window: StoredWindow,
+  sourceId: string): WindowOutcome {
+  const failed = (issueCode: string, issue: string): WindowOutcome =>
+    ({ status: 'failed', issueCode, issue: issue.slice(0, 500) });
+  if (window.rows.some(row => row.cells.length !== profile.headers.length)) {
+    return failed('TABLE_WINDOW_LAYOUT', `Window ${window.index} differs from the table's header layout.`);
+  }
+  try {
+    const context = mappingContextFromColumnProfile(profile.profile, profile.tabular.selection);
+    const rows = window.rows.map(row => Object.fromEntries(profile.headers.map((header, index) =>
+      [`${index + 1}|${header}`, row.cells[index] ?? undefined])));
+    const result = executeMappingPlanV2(plan.mapping, rows,
+      { ...context, sourceRef: `source:${sourceId}`, rowOffset: window.firstRecord });
+    return { status: 'mapped', rows: result.rows.map((row, offset) => ({ record: window.rows[offset]!.record,
+      cells: row.fields.map(cell => ({ value: cell.value, state: cell.state, sourceField: cell.sourceField,
+        target: cell.target, ...(cell.unit ? { unit: cell.unit } : {}),
+        ...(cell.issueCode ? { issueCode: cell.issueCode } : {}) })) })) };
+  } catch (error) {
+    if (error instanceof MappingPlanValidationError) {
+      return failed('MAPPING_PLAN_INVALID', 'The approved recipe failed canonical verification on this window.');
+    }
+    if (error instanceof AppError && error.status < 500) return failed(error.code, error.message);
+    throw error;
+  }
+}
+
+/** One window's mapping, its watermark and its event enter one transaction under the current attempt fence. */
+export async function publishTableWindowTx(client: PoolClient, input: ChunkMappingInput, attempt: UspJobAttempt,
+  window: StoredWindow, outcome: WindowOutcome) {
+  const state = (await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',
+    [input.jobId])).rows[0];
+  if (!state || state.state !== 'running' || state.next_publish_index !== window.index ||
+      state.records !== window.firstRecord) conflict('The table mapping watermark changed.');
+  const raw = (await client.query('SELECT window_sha256 FROM usp_table_windows WHERE job_id=$1 ' +
+    'AND window_index=$2 FOR SHARE', [input.rawJobId, window.index])).rows[0];
+  if (raw?.window_sha256 !== window.sha256) conflict('The raw table window changed.');
+  const records = window.rows.length, mapped = outcome.status === 'mapped';
+  const body = mapped ? JSON.stringify(outcome.rows) : null;
+  const hash = sha256(JSON.stringify({ jobId: input.jobId, window: window.index, sha256: window.sha256,
+    status: outcome.status, body, issueCode: mapped ? null : outcome.issueCode }));
+  await client.query(`INSERT INTO usp_table_window_mappings(job_id,raw_job_id,window_index,window_sha256,
+    first_record,records,status,rows,issue_code,issue,result_sha256,attempt,fence)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+  [input.jobId, input.rawJobId, window.index, window.sha256, window.firstRecord, records, outcome.status, body,
+    mapped ? null : outcome.issueCode, mapped ? null : outcome.issue, hash, attempt.number, attempt.fence]);
+  // As for a small table, a mapped record is a draft to review (unresolved); a failed window's records are set aside.
+  await client.query(`UPDATE usp_chunk_mapping_imports SET next_publish_index=next_publish_index+1,
+    records=records+$2,unresolved=unresolved+$3,quarantined=quarantined+$4,updated_at=now() WHERE job_id=$1`,
+  [input.jobId, records, mapped ? records : 0, mapped ? 0 : records]);
+  await appendCaseIngestionTx(client, input.caseId, { kind: 'chunk-mapping.window', sourceId: input.sourceId,
+    sourceRevision: input.sourceRevision, jobId: input.jobId, rawJobId: input.rawJobId, window: window.index,
+    status: outcome.status, records, issueCode: mapped ? null : outcome.issueCode }, input.subject);
+}
+
+/** The approved recipe on one window: read and checked under the fence, mapped outside it, then published.
+ * Returns false while the raw job has not yet written that window. */
+export async function acceptTableWindow(input: ChunkMappingInput, attempt: UspJobAttempt, index: number) {
+  const prepared = await transaction(async client => {
+    const { approved } = await assertChunkMappingInputTx(client, input);
+    await assertUspJobAttemptTx(client, attempt);
+    if (input.route !== 'approved_recipe' || approved?.receipt.plan.version !== 'manual-tabular/1' ||
+        approved.profile.version !== 'manual-tabular/1') conflict('An approved table recipe is required.');
+    const window = await readTableWindowTx(client, input.rawJobId, index);
+    return window && { window, plan: approved.receipt.plan, profile: approved.profile };
+  });
+  if (!prepared) return false;
+  const outcome = mapTableWindow(prepared.plan, prepared.profile, prepared.window, input.sourceId);
+  await transaction(async client => {
+    await assertChunkMappingInputTx(client, input);
+    await assertUspJobAttemptTx(client, attempt);
+    await publishTableWindowTx(client, input, attempt, prepared.window, outcome);
+  });
+  return true;
+}
+
+/** Before a recipe exists, the first records of window 0 are mapped once as the proposal the officer reviews.
+ * Returns false while the raw job has not yet written window 0. */
+export async function proposeFromTableWindow(input: ChunkMappingInput, attempt: UspJobAttempt,
+  mapper: TabularChunkMapper, store: Store) {
+  const read = await transaction(async client => {
+    const { profile } = await assertChunkMappingInputTx(client, input);
+    await assertUspJobAttemptTx(client, attempt);
+    if (profile?.version !== 'manual-tabular/1') conflict('The table profile is not current.');
+    const window = await readTableWindowTx(client, input.rawJobId, 0);
+    return window && { window, headers: profile.headers };
+  });
+  if (!read) return false;
+  const { window, headers } = read;
+  const take = Math.max(1, Math.min(TABULAR_LIMITS.chunkRows, Math.floor(TABULAR_LIMITS.columns / headers.length)));
+  const raw = { version: STREAMING_VECTOR_LIMITS.version, jobId: input.rawJobId, sourceId: input.sourceId,
+    sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256, chunkIndex: 0,
+    records: window.rows.slice(0, take).map(row => ({ featureIndex: row.record, byteStart: row.byteStart,
+      byteEnd: row.byteEnd, rawSha256: row.sha256, disposition: 'accepted' as const, issueCode: null,
+      feature: { headers, sheet: input.tabular!.selection.sheet, sourceRow: row.sourceRow,
+        cells: row.cells.map(cell => cell === null ? { state: 'absent' as const }
+          : { state: 'literal' as const, value: cell }) } })) } as unknown as StreamingVectorPayload;
+  await acceptTabularDataSlot(input, attempt, raw, window.sha256, mapper, store, true);
+  return true;
 }
