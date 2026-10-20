@@ -1,0 +1,51 @@
+{
+  "task": "xw1",
+  "gap": "G13 follow-on: a workbook (XLSX) above 16 MiB is read sheet by sheet in row windows, like a large CSV",
+  "base": "fb3b6318",
+  "change": [
+    {
+      "path": "scripts/agent/read_workbook_windows.py (new, sibling of read_workbook_cells.py)",
+      "why": "D1 reader: the selected sheet of an XLSX file is read from a file path with zipfile member streams and ElementTree iterparse (elem cleared, never loaded whole), one JSON line per window of rows on stdout. A sibling, not a new mode: the whole-read script's contract (base64 on stdin, one JSON document, 20 MB expanded cap) stays byte for byte, and the window reader's contract (file path, sheet and header rows, JSON lines, refusal line with a code) differs. It imports the workbook structure checks of services/geo/geo/native_workbook.py (relationships, targets, cell references, rich text) instead of copying them."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/tabular-stream.ts",
+      "why": "readWorkbookWindows beside readTabularWindows: spool the original stream to a private temporary file while hashing and counting it, spawn the reader once, take one window line at a time (stdout is read only after the window is written, so the reader cannot run ahead more than one window), map a refusal code to officer words. readTableWindows chooses CSV or workbook by the selection; profileTabularStream counts a null cell as absent."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/table-windows.ts",
+      "why": "isWindowedTable admits an XLSX case original above 16 MiB; windowRows stores a workbook row with sheet, member SHA-256 and cell marks, without a byte range."
+    },
+    {
+      "path": "packages/contracts/src/usp/table-windows.ts",
+      "why": "Optional row fields sheet, memberSha256 and marks; byteStart/byteEnd/sha256 become optional with a refine: a row cites either its bytes (CSV, unchanged) or its sheet row (workbook). TableFromOriginalSchema admits an xlsx selection."
+    },
+    {
+      "path": "packages/contracts/src/usp/ingestion.ts",
+      "why": "TabularPinSchema: a case-original XLSX pin may state up to TABULAR_STREAM_LIMITS.bytes; the development pin keeps 16 MiB."
+    },
+    {
+      "path": "apps/studio/src/features/intake/table/retain.ts, TableImportDialog.tsx",
+      "why": "streamedImport admits .xlsx at 16 MiB + 1 byte; the help line names the file kind. Sheet and header rows stay typed by the officer."
+    },
+    {
+      "path": "tests/fixtures/xlsx-control.ts (new)",
+      "why": "test_only workbook generator shared by tabular-stream.test.ts and table-windows.test.ts: a deflated ZIP written in memory with shared strings, an inline string, formulas with and without a cached value, an empty string and a missing cell."
+    },
+    {
+      "path": "docs/api/openapi.json, docs/api/source-pins.json, packages/api-client/src/schema.d.ts",
+      "why": "generated after the contract change"
+    }
+  ],
+  "reuse": [
+    "G13 window store (usp_table_windows, writeTableWindowTx), mapping per window and keyset paging, unchanged",
+    "TABULAR_STREAM_LIMITS for rows, window rows, window bytes, record bytes and windows",
+    "INTAKE_PROBE_LIMITS.compressionRatio (100) for the member ratio check",
+    "native_workbook.py structure checks and expat DTD guard pattern"
+  ],
+  "seamsOutside": [
+    "Three one-line call sites pass the pinned selection to readTableWindows instead of calling the CSV reader: streaming-vector-worker.ts (raw job), service.ts firstWindow (recipe dry run) and tabular-source.ts inspectTabularStream (format check). No other change there.",
+    "usp_table_windows.byte_start/byte_end/window_sha256 are NOT NULL (G13 SQL, not owned): a workbook window stores the sheet member's stored byte range in the original and the SHA-256 of the window line as read. No SQL change.",
+    "chunk-mapping-tabular.ts (not owned) maps a window's cells as text: a cell marked formula_cached keeps its cached text there, where the whole read treats it as unknown. Reported, not changed."
+  ],
+  "runtime": "none: no Docker, GPU or provider. Python tests and the memory measurement run with E:/BhuAayam-data/ml/venv-k3a-geo (Python 3.13.7)."
+}

@@ -1,0 +1,60 @@
+{
+  "task": "xw1",
+  "branch": "task/xw1-workbook-windows",
+  "base": "fb3b6318",
+  "state": "complete: a case-original XLSX above 16 MiB -> streamed profile of one sheet -> raw windows -> G13 per-window mapping -> keyset rows page; a workbook within 16 MiB keeps the whole read unchanged",
+  "built": [
+    "D1 scripts/agent/read_workbook_windows.py (sibling of read_workbook_cells.py, whose stdin/base64 whole-read contract stays byte for byte): opens the original by path with zipfile, reads the selected sheet member as a stream with ElementTree iterparse (each row and the parsed part of the tree cleared), writes JSON lines: sheet head (member, member SHA-256, stored byte range, headers), one window line per 10,000 rows, an end line with counts, or a refusal line with a code and exit 2. Cells: shared strings resolved, inline strings kept, numbers as the stored text, missing cell null, empty string \"\". A formula with a cached value keeps the cached text and is marked formula_cached; without one it is null and marked formula_uncached; cached errors and unknown storage types are marked too. Structure checks (relationships, targets, cell references, rich text, macros, embedded objects) are imported from services/geo/geo/native_workbook.py; every XML part passes the same expat guard (no DOCTYPE or entity).",
+    "Shared strings are read once in one guarded streamed pass, bounded at 1,000,000 strings and 64 Mi characters (WORKBOOK_SHARED_STRINGS_LIMIT, refused in words). Bound set from measurement: 100,000 strings of 34 characters peak at 43 MiB working set, 1,000,000 at 120 MiB; 1,000,001 refused.",
+    "D2: ZIP checks stay (at most 512 members; each member's declared size against 7 GiB and its stored ratio against 100, the sheet's expanded bytes counted while read). Rows, window rows, window bytes, record bytes and windows are TABULAR_STREAM_LIMITS, passed as arguments. TabularPin: a case-original XLSX may state up to TABULAR_STREAM_LIMITS.bytes; readTabularSource still refuses anything above 16 MiB and is unchanged.",
+    "D3 contracts (table-windows.ts): a window row cites either its byte range and SHA-256 (CSV, unchanged) or its sheet, physical row and the sheet member's SHA-256 with optional cell marks (workbook), never both (refine on TableWindowRowSchema and TableRowsPage rows). usp_table_windows' NOT NULL byte_start/byte_end/window_sha256 hold the sheet member's stored range and the SHA-256 of the window line as read; no SQL change.",
+    "D4 tabular-stream.ts readWorkbookWindows: copies the original stream to a private temporary file (0600, removed in finally) while hashing and counting it, spawns the reader once, takes one line at a time (the next line is read only after onWindow resolves), checks the end counts and the exit code; refusal codes map to officer words (413 for size codes, 422 otherwise); an unreadable line or a stopped reader is TABULAR_NATIVE_READER. readTableWindows chooses CSV or workbook by the pinned selection; the raw job (streaming-vector-worker), the recipe dry run (service firstWindow) and inspectTabularStream call it. isWindowedTable admits any case-original table above 16 MiB. Limitations list the formula, empty-element and merged-range notes.",
+    "D5 Studio: streamedImport admits .xlsx at 16 MiB + 1 byte as G13 does for .csv; the help line says the named sheet is read as a stream and formulas are not calculated. Sheet and header rows stay typed by the officer."
+  ],
+  "measured": {
+    "python_generated_test_only": {
+      "bytes": 17408563,
+      "records": 160000,
+      "windows": 16,
+      "elapsedSeconds": 5.28,
+      "peakWorkingSetMiB": 45.0,
+      "how": "peak working set of the reader's own process (GetProcessMemoryInfo at exit; a venv python.exe is a launcher), E:/BhuAayam-data/ml/venv-k3a-geo Python 3.13.7, pytest 8.3.5",
+      "shape": "deflated level 1, sheet 'Register' with a merged title row, shared-string headers in row 2, per record a shared string, a number, a formula with a cached value, a formula without one, an inline string with spaces, an empty shared string every 5th row, a missing cell every 7th, an inline digest"
+    },
+    "node_generated_test_only": {
+      "bytes": 17844108,
+      "records": 180000,
+      "windows": 18,
+      "readElapsedMs": 10157,
+      "e2eElapsedMs": 30303,
+      "path": "tableFromOriginal (S3 object stream, fake pool) -> profile -> readTableWindows + writeTableWindowTx -> replayed first window matches -> validateStreamedTabularRecipe -> mapTableWindow x18 -> TableRowsService page across a window boundary, validated against docs/api/openapi.json",
+      "counts_note_column": "written 123,428, empty 36,000, absent 20,572 (absent never 0 or empty)"
+    },
+    "real_good_workbook": {
+      "file": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/original.xlsx",
+      "dataset": "mi-d19-01 (docs/api/datasets.json), RBI table 18, licence unconfirmed, used locally only",
+      "sha256": "fc3f75eafdb7b954348ac182d1db3c3a558fc08aecf072d6a3807735d15e38a2",
+      "selection": "sheet T_18, header row 2",
+      "parity": "headers, source rows and every unmarked cell equal the whole read (readTabularSource / read_workbook_cells.py); marked formula cells keep cached text where the whole read keeps none"
+    },
+    "refusals": "WORKBOOK_SHEET_MISSING (sheet name case differs), NATIVE_WORKBOOK_INVALID (DOCTYPE with an entity; a CSV given as a workbook), TABULAR_HEADER_REQUIRED (pinned header row absent), TABULAR_STREAM_ROWS at the first row past the bound after the windows before it, ZIP_RATIO_LIMIT; a caller that stops after one window stops the reader and the temporary copy is removed"
+  },
+  "notDone": [
+    "chunk-mapping-tabular.ts (not owned) maps a window's cells as text: a formula_cached cell's cached text is mapped as a value there, where the small whole read treats it as unknown. The marks are stored on each row so a later change can treat them as unknown.",
+    "Studio's table rows page does not show cell marks yet.",
+    "The temporary copy is written under os.tmpdir(); a 7 GiB workbook needs that much free space there.",
+    "No stateful runtime run: routes and jobs exercised against a fake pool and mocked object store, not PostgreSQL or MinIO.",
+    "Shared strings above 1,000,000 or 64 Mi characters are refused, not read."
+  ],
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": "0 (480 tests, 74 files)",
+    "backend template command (includes table-windows.test.ts and tabular-stream.test.ts)": "0 (380 tests, 378 pass, 2 skipped, 0 fail; the 2 skips are existing job-backlog tests)",
+    "python scripts/agent/test_read_workbook_windows.py (venv-k3a-geo)": "0 (3 passed)",
+    "openapi --check": "0 after refresh-contract fb3b6318, studio:api-types and scripts/api/check.py (316 operations, 358 schemas)",
+    "ui-design-check scan": "0 (scan covers apps/web only); Studio change reviewed by hand: one help paragraph with ul-help, words read from the file name and size only, no sample values",
+    "git diff --check": 0,
+    "added lines over 120 characters": 0
+  }
+}
