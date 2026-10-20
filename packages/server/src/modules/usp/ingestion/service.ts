@@ -19,7 +19,8 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
-import { authoredIntakeDestination, caseScopedDestination, intakeDestination } from './intake-destination';
+import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
+  from './intake-destination';
 import { assertAreaRowLive } from '../../areas/area-retire';
 import { appendCaseIngestionTx } from './events';
 import { inspectTabularSource, assertTabularPin } from './tabular-source';
@@ -322,6 +323,7 @@ export class ManualIngestionService {
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(!duplicate)return undefined;
+      await refuseRetiredFileAreaTx(client,caseId,hash);
       const retained=await source(client,caseId,duplicate.id);
       if(tabular)assertTabularPin(tabular.tabular,retained);
       const result=profile(retained,scope);
@@ -347,6 +349,7 @@ export class ManualIngestionService {
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(duplicate) {
+        await refuseRetiredFileAreaTx(client,caseId,hash);
         if(tabular)assertTabularPin(tabular.tabular,duplicate);
         const result=profile(await source(client,caseId,duplicate.id),scope);
         await remember(client,caseId,key,digest,result);return result;

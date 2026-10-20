@@ -10,24 +10,46 @@
     "result": "3 tests, 3 pass"
   },
   "findings": [
-    {"drop": "second, recipe path (16 MiB and under)", "gets": "no new source and no new area",
-      "why": "retainSource folds the same bytes in the same case into the existing source row (service.ts lines 321-327 and 346-351, SELECT ... WHERE case_id=$1 AND sha256=$2 AND profile=$3). That source's recipe is already executed, so the draft worker returns it and authorTx would refuse 'already executed'. The officer sees the old source whose area is retired. Read from code; needs a database to run."},
-    {"drop": "second, large path (new source row per upload)", "gets": "409 AREA_RETIRED",
-      "why": "intakeCaseArea joins the case's site to map_areas without archived_at and getArea reads archived areas, so the case still offers retired A as existing_area; caseScopedDestination scopes the namespace to :case:C but keeps areaId A; destination()/ingestArea refuse with assertAreaRowLive. Proved in test 1."},
-    {"drop": "second, if the destination were new_area", "gets": "403 AREA_SOURCE_DENIED",
-      "why": "Case C's site_id is A's site from the first placement; bindRetainedCaseTx (areas.ts) refuses a case of another site. map_areas.site_id is unique, so a fresh area in case C needs case C rebound to a new site. Proved in test 2."},
-    {"drop": "third (if the second had made area B with file:<sha>:case:C)", "gets": "409 STALE_REVISION (namespace collision with retired B's seed_key)",
-      "why": "Every holder is retired, so caseScopedDestination returns the same :case:C namespace B holds; destination() finds B by seed_key and refuses, and ingestArea would find B by seed and refuse AREA_RETIRED. This is the collision D1's :g<n> suffix answers. Proved in test 3."}
+    {
+      "drop": "second, recipe path (16 MiB and under)",
+      "gets": "no new source and no new area",
+      "why": "retainSource folds the same bytes in the same case into the existing source row (service.ts lines 321-327 and 346-351, SELECT ... WHERE case_id=$1 AND sha256=$2 AND profile=$3). That source's recipe is already executed, so the draft worker returns it and authorTx would refuse 'already executed'. The officer sees the old source whose area is retired. Read from code; needs a database to run."
+    },
+    {
+      "drop": "second, large path (new source row per upload)",
+      "gets": "409 AREA_RETIRED",
+      "why": "intakeCaseArea joins the case's site to map_areas without archived_at and getArea reads archived areas, so the case still offers retired A as existing_area; caseScopedDestination scopes the namespace to :case:C but keeps areaId A; destination()/ingestArea refuse with assertAreaRowLive. Proved in test 1."
+    },
+    {
+      "drop": "second, if the destination were new_area",
+      "gets": "403 AREA_SOURCE_DENIED",
+      "why": "Case C's site_id is A's site from the first placement; bindRetainedCaseTx (areas.ts) refuses a case of another site. map_areas.site_id is unique, so a fresh area in case C needs case C rebound to a new site. Proved in test 2."
+    },
+    {
+      "drop": "third (if the second had made area B with file:<sha>:case:C)",
+      "gets": "409 STALE_REVISION (namespace collision with retired B's seed_key)",
+      "why": "Every holder is retired, so caseScopedDestination returns the same :case:C namespace B holds; destination() finds B by seed_key and refuses, and ingestArea would find B by seed and refuse AREA_RETIRED. This is the collision D1's :g<n> suffix answers. Proved in test 3."
+    }
   ],
   "conclusion": "The namespace collision (D1) is real but is the third blocker, not the first. A same-case redrop never reaches a fresh area because (1) the recipe path's same-bytes retain dedupe returns the old source, (2) intakeCaseArea offers the retired area, and (3) a case is bound to one site and a site has one area. D1's generation suffix alone would be unreachable code.",
   "changesIfDecided": [
-    {"path": "packages/server/src/modules/usp/ingestion/intake-destination.ts", "owned": true,
-      "change": "intakeCaseArea ignores a retired area (AND a.archived_at IS NULL); caseScopedDestination adds :g<n> (n = 2, 3, ...) when every holder of the namespace (plain or :case:<caseId>) is retired, reading existing seed_keys and feature-link namespaces."},
-    {"path": "packages/server/src/modules/usp/ingestion/service.ts (retainSource duplicate lookup, both transactions)", "owned": false,
-      "change": "a same-bytes source whose executed recipe's area is retired is not a duplicate, so the drop gets its own source row (D2)."},
-    {"path": "packages/server/src/modules/areas/areas.ts (bindRetainedCaseTx)", "owned": false,
-      "change": "a case whose bound site's area is retired may be rebound to the new area's site."}
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-destination.ts",
+      "owned": true,
+      "change": "intakeCaseArea ignores a retired area (AND a.archived_at IS NULL); caseScopedDestination adds :g<n> (n = 2, 3, ...) when every holder of the namespace (plain or :case:<caseId>) is retired, reading existing seed_keys and feature-link namespaces."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/service.ts (retainSource duplicate lookup, both transactions)",
+      "owned": false,
+      "change": "a same-bytes source whose executed recipe's area is retired is not a duplicate, so the drop gets its own source row (D2)."
+    },
+    {
+      "path": "packages/server/src/modules/areas/areas.ts (bindRetainedCaseTx)",
+      "owned": false,
+      "change": "a case whose bound site's area is retired may be rebound to the new area's site."
+    }
   ],
   "decisionNeeded": "Rebinding case C to a new site moves the case's older sources off retired A's site: package-authority (case.site_id must equal the area's site) and display proposals would then treat A's own sources as foreign, so a later restore of A would not show or accept them. That edits what a retired area relies on, which D2 rules out. Options: (a) rebind and accept that a restore of A needs its case again; (b) a same-case redrop after retire opens a new intake case automatically, so G20's :case:<caseId> rule already gives a fresh area and D1 is not needed; (c) record the case-site binding per source instead of per case (schema change, not additive to cases).",
-  "runtimeNeeded": false
+  "runtimeNeeded": false,
+  "leadDecision": "None of (a), (b), (c): a new batch already gives the same file its own area (G20). A same-batch redrop after retirement makes no new area; it rests in officer words and changes nothing. No site rebind, no :g<n>, bindRetainedCaseTx untouched. Delivered in result.json."
 }

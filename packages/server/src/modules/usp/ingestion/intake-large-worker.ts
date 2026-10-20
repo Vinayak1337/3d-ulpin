@@ -9,7 +9,7 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
 import { ChunkMappingService } from './chunk-mapping';
-import { caseScopedDestination, intakeCaseArea, intakeDestination } from './intake-destination';
+import { caseScopedDestination, intakeCaseArea, intakeDestination, retiredFileAreaWords } from './intake-destination';
 import { assertIntakeDraftTx } from './intake-draft';
 import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
@@ -247,6 +247,12 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
     return current;
   });
   if (state.key !== input.stateKey || intakeLargeAtRest(state.item)) return complete(input, attempt, false);
+  // G20B: this file's area in this batch is retired, so the row rests in words and nothing more is prepared.
+  const retired = await retiredFileAreaWords(input.caseId, input.sourceSha256);
+  if (retired) {
+    await pinned(input, attempt, client => stopItemTx(client, input, retired));
+    return complete(input, attempt, false);
+  }
   const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
   if (phase === 'start' || phase === 'read' && !state.store.profile) await startReaders(input, attempt, state);
   if (phase === 'map' && !state.store.mapping) await startMapping(input, attempt, state);

@@ -1,3 +1,4 @@
+import type { PoolClient } from 'pg';
 import type { MapArea } from '@ulpin/contracts';
 import type { MappingDestination } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
@@ -32,6 +33,29 @@ export async function caseScopedDestination<T extends { namespace: string; name:
   const holders = await lookup(HOLDERS, [`${value.namespace}:${value.name}`, value.namespace, caseId]);
   if (!holders.length || holders.some(holder => holder.own)) return value;
   return { ...value, namespace: `${value.namespace}:case:${caseId}` };
+}
+
+type NameLookup = (sql: string, values: string[]) => Promise<{ name: string } | undefined>;
+
+/** The case's retired area that holds an import of these bytes: the area this file made in this batch. */
+const RETIRED_FILE_AREA = `SELECT a.name FROM cases c JOIN map_areas a ON a.site_id=c.site_id
+  WHERE c.id=$1 AND a.archived_at IS NOT NULL
+    AND EXISTS (SELECT 1 FROM import_packages p WHERE p.area_id=a.id AND p.body->>'sourceHash'=$2)`;
+
+/** G20B. A drop of a file whose area in this batch is retired rests in these words and changes nothing; a new
+ * batch gives the file its own area (G20). Null while the file has no retired area in this batch. */
+export async function retiredFileAreaWords(caseId: string, sha256: string, lookup: NameLookup =
+  async (sql, values) => (await query<{ name: string }>(sql, values)).rows[0]): Promise<string | null> {
+  const area = await lookup(RETIRED_FILE_AREA, [caseId, sha256]);
+  return area ? `The area this file made in this batch (${area.name}) is retired; nothing new is prepared from it `
+    + 'here. Start a new batch to read this file again.' : null;
+}
+
+/** The recipe path's same-bytes duplicate is refused in those words instead of resting on the old source. */
+export async function refuseRetiredFileAreaTx(client: PoolClient, caseId: string, sha256: string): Promise<void> {
+  const words = await retiredFileAreaWords(caseId, sha256,
+    async (sql, values) => (await client.query<{ name: string }>(sql, values)).rows[0]);
+  if (words) throw new AppError(409, 'AREA_RETIRED', words);
 }
 
 export async function intakeCaseArea(caseId: string, lookup: AreaLookup = async (sql, values) =>
