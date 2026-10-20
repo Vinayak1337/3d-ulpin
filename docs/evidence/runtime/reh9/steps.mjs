@@ -22,6 +22,15 @@ const commands = {
   'b3-document-runtime': `node scripts/platform/demo-document-runtime.mjs build --runtime ${runtime}`,
   'b4-start': `pnpm platform:start --profile demo --runtime ${runtime}`,
   'b4-doctor': `pnpm platform:doctor --profile demo --runtime ${runtime}`,
+  // The resume after PR1 (staging 4e8d5986 merged): new receipts from b5 on, the same commands.
+  'b5-stop': `pnpm platform:stop --profile demo --runtime ${runtime}`,
+  'b5-checkout': `git checkout --detach ${commit}`,
+  'b5-install': 'pnpm install --frozen-lockfile',
+  'b6-roll': `node scripts/platform/processor-image.mjs roll --runtime ${runtime}`,
+  'b6-migrate': `node ${evidence}/migrate.mjs ${serving} ${runtime}`,
+  'b6-document-runtime': `node scripts/platform/demo-document-runtime.mjs build --runtime ${runtime}`,
+  'b7-start': `pnpm platform:start --profile demo --runtime ${runtime}`,
+  'b7-doctor': `pnpm platform:doctor --profile demo --runtime ${runtime}`,
   'end-stop': `pnpm platform:stop --profile demo --runtime ${runtime}`,
 };
 
@@ -38,19 +47,19 @@ if (step === 'demo') {
   assert(selected, 'Unknown step');
   const containersBefore = { 'ulpin-demo': containers('ulpin-demo'), [runtime]: containers(runtime) };
   const receipt = run(selected, serving, 1800000);
-  const whole = step === 'b4-doctor' || step === 'b3-migrate';
+  const whole = /-(doctor|migrate)$/.test(step);
   const value = { at: new Date().toISOString(), commit, receipt: whole ? receipt : tail(receipt, 25),
     outputLines: receipt.output.length, containersBefore,
     containersAfter: { 'ulpin-demo': containers('ulpin-demo'), [runtime]: containers(runtime) }, state: inventory() };
-  if (step === 'b4-start' || step === 'b4-doctor') value.gpu = gpu();
-  if (step.startsWith('b1')) {
+  if (/-(start|doctor)$/.test(step)) value.gpu = gpu();
+  if (/-(checkout|install)$/.test(step)) {
     value.servingHead = run('git rev-parse HEAD', serving).output[0];
     value.servingServicesGeo = run('git rev-parse HEAD:services/geo', serving).output[0];
     value.pinServicesTree = pin.servicesTree;
     value.servicesTreeIsPin = value.servingServicesGeo === pin.servicesTree;
     value.servingStatus = run('git status --short', serving).output;
   }
-  if (step === 'b2-build' || step === 'b3-roll') value.images = [image(oldImage), image(pinnedImage)];
+  if (/-(build|roll)$/.test(step)) value.images = [image(oldImage), image(pinnedImage)];
   save(`step-${step}.json`, value);
   console.log(safe(JSON.stringify(value, null, 2)));
   process.exitCode = receipt.exit ?? 1;
