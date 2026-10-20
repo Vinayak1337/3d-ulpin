@@ -1,0 +1,22 @@
+{
+  "task": "g23s",
+  "gap": "G23 (Studio side)",
+  "branch": "task/g23s-page-image-question",
+  "base": "3552bfb9",
+  "plan": [
+    { "file": "packages/server/src/modules/usp/ingestion/intake-service.ts",
+      "change": "one read method pageImagePreview(caseId, itemId): the same case and item access checks as one(), the key taken from the item's stored pageImage.preview, 404 when none, the stored bytes read whole and their sha256 checked against preview.sha256 (409 on a mismatch). The object read joins the service's injectable dependencies so the test needs no store." },
+    { "file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+      "change": "GET cases/:caseId/intake/items/:itemId/page-image-preview: image/png bytes, private no-store, nosniff, X-Content-SHA256; the pattern of the existing binary reads (projected-vector geometry, document image raster)." },
+    { "file": "apps/api/src/modules/ingestion/operation-manifest.json",
+      "change": "register the GET (responseSchema image/png, transportProfile private-bounded-read, batch G23S)." },
+    { "file": "docs/api/openapi.json, packages/api-client/src/schema.d.ts, docs/api/source-pins.json",
+      "change": "regenerated the usual way (refresh-contract, studio:api-types)." },
+    { "file": "apps/studio/src/features/intake/PageImageQuestion.tsx (new), page-image-model.ts (new), batch-queries.ts, IntakeTray.tsx, BatchPage.tsx",
+      "change": "a batch item with pageImage: the preview (or the previewLimit words), the item's words, four answer buttons (plan, elevation, photo, something else) in a labelled group with aria-pressed; choosing posts page-image-label with a fresh requestKey and shows the returned item; the answer reads 'candidate label, not reviewed'. Alt text from format and stated size. Tray gets a 'View page image' step." },
+    { "file": "tests beside them", "change": "backend: packages/server/src/modules/usp/ingestion/intake-page-image-preview.test.ts (404 without preview, 409 on hash mismatch, bytes on match); Studio: page-image-question.test.tsx (render with and without preview, posts an answer against the contract)." }
+  ],
+  "reuse": ["IntakeService itemContextTx / intakeCaseTx / assertIngestionBinding (access check)", "intakeItem() parse of plan_ref.pageImage",
+    "storage.readObject", "wire-schemas binary", "api-client parseAs blob (citedRegion pattern)", "retry-command request-key pattern"],
+  "seamsOutsideOwnedPaths": "docs/api/source-pins.json changes with the contract refresh (generated). No runtime, Docker, GPU or provider call."
+}

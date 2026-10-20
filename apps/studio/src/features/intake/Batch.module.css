@@ -58,10 +58,27 @@
   min-width: 18rem;
 }
 
+.preview {
+  max-width: 100%;
+  height: auto;
+  justify-self: start;
+  border: 1px solid var(--ui-border-strong);
+}
+
 .question > button {
   justify-self: start;
 }
 
 .question p {
   overflow-wrap: anywhere;
+}
+
+.answer {
+  display: grid;
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+
+.answer > button {
+  justify-self: start;
 }

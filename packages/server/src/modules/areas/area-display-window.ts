@@ -8,6 +8,7 @@ import {
   areaProposals, type ProposalFeature, type ProposalPackage, type RuleCondition,
 } from './area-display-proposals';
 import { AREA_DISPLAY_LIMIT, areaDisplayPackages, getArea } from './areas';
+import { assertLiveArea } from './area-retire';
 
 export type DisplayWindow = {
   minX: number; minY: number; maxX: number; maxY: number; after?: string; limit: number;
@@ -22,10 +23,10 @@ const MEMBERS = `f.revision>0 AND (f.area_id=$1 OR EXISTS (
 const LOCAL = `ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),
   -($3::double precision),-($4::double precision))`;
 /** The area's unrecorded proposals, chosen by areaProposals and passed as parallel package and feature identifiers
- * from parameter $n, as their packages hold them, each with the case of its package. A draft row's outline is its
- * package's, so it is taken from the row; a correction of a recorded feature, or a draft written before rows held
- * outlines, is read from its package. */
-const proposed = (n: number) => `proposed AS (SELECT f.id,f.identifier,e.feature body,p.case_id,
+ * from parameter $n, as their packages hold them, each with its package and that package's case. A draft row's
+ * outline is its package's, so it is taken from the row; a correction of a recorded feature, or a draft written
+ * before rows held outlines, is read from its package. */
+const proposed = (n: number) => `proposed AS (SELECT f.id,f.identifier,e.feature body,p.case_id,p.id package_id,
     coalesce(CASE WHEN f.revision=0 THEN f.geographic_geometry END,
       ST_SetSRID(ST_GeomFromGeoJSON(e.feature->'geographicGeometry'),4326)) geographic_geometry
   FROM import_packages p CROSS JOIN LATERAL jsonb_array_elements(p.body->'features') e(feature)
@@ -52,11 +53,11 @@ const WINDOW_SQL = `WITH win AS (SELECT ${ENVELOPE} g),
   ${proposed(11)}
   SELECT * FROM (SELECT f.id,f.identifier,f.body->>'kind' kind,f.body->'height' height,
       CASE WHEN f.area_id=$1 THEN f.body->'geometry' ELSE ST_AsGeoJSON(${LOCAL},9,0)::jsonb END geometry,
-      'recorded' display_state,NULL::uuid case_id
+      'recorded' display_state,NULL::uuid case_id,NULL::uuid package_id
     FROM physical_features f,win WHERE ${MEMBERS} AND f.id<>ALL($12::uuid[])
       AND ST_Intersects(f.geographic_geometry,win.g) AND ($9::text IS NULL OR f.identifier>$9::text)
     UNION ALL SELECT p.id,p.identifier,p.body->>'kind',p.body->'height',p.body->'geometry','unrecorded_proposal',
-      p.case_id
+      p.case_id,p.package_id
     FROM proposed p,win WHERE ST_Intersects(p.geographic_geometry,win.g)
       AND ($9::text IS NULL OR p.identifier>$9::text)) d
   ORDER BY d.identifier LIMIT $10`;
@@ -64,6 +65,7 @@ const WINDOW_SQL = `WITH win AS (SELECT ${ENVELOPE} g),
 type WindowRow = {
   id: string; identifier: string; kind: AreaWindowFeature['kind']; height: AreaHeight | null;
   geometry: AreaGeometry | null; display_state: AreaWindowFeature['displayState']; case_id: string | null;
+  package_id: string | null;
 };
 
 const READ_TIMEOUT_MS = 15000;
@@ -78,6 +80,7 @@ async function boundedRead<T>(
   const deadline = signal && { deadlineAt: Date.now() + READ_TIMEOUT_MS, signal };
   return transaction(async client => {
     await client.query("SET LOCAL statement_timeout='15s'");
+    await assertLiveArea(areaId, client);
     const area = await getArea(areaId, client);
     if (!area.reference) {
       throw new AppError(409, 'AREA_REFERENCE',
@@ -133,6 +136,7 @@ function windowFeature(row: WindowRow): AreaWindowFeature {
     id: row.id, identifier: row.identifier, kind: row.kind, polygons: outline(row.geometry),
     heightM: stated ? row.height!.value : null, heightState: row.height?.state ?? 'unknown',
     displayState: row.display_state, ...(row.case_id === null ? {} : { caseId: row.case_id }),
+    ...(row.package_id === null ? {} : { packageId: row.package_id }),
   };
 }
 

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { basename, join } from 'node:path';
+import type { Readable } from 'node:stream';
 import { TABULAR_LIMITS, TabularPinSchema, type TabularSelection, type TabularPin } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
@@ -8,6 +9,7 @@ import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { decodeColumnText, readColumnCsv } from './column-profile';
 import { profileTabularChunk } from './chunk-mapping-agent';
+import { profileTabularStream } from './tabular-stream';
 
 type Part = { text: string; locator: { sheet: string; row: number; column: number; cellState: string } };
 export type TabularTable = { headers: string[]; rows: unknown[][]; sourceRows: number[];
@@ -192,6 +194,25 @@ export function inspectTabularSource(
   return { tabular, headers: table.headers, records: table.rows.length, profile,
     schemaFingerprint: fingerprint({ selection, headers: table.headers, layout: profile.layoutFingerprint }),
     limitations: admissionLimitations(admitted) };
+}
+
+/** A case original's CSV above 16 MiB, read from its retained object as a stream against its byte receipt. */
+export async function inspectTabularStream(body: Readable, receipt: { sha256: string; bytes: number },
+  selection: TabularSelection, provenance: TabularProvenance = {}) {
+  const admitted = admitTabularSource(receipt.sha256, receipt.bytes, provenance);
+  if (admitted.kind !== 'case_original' || selection.format !== 'csv') {
+    throw new AppError(422, 'TABULAR_FORMAT', 'Only a case original CSV is read as a stream.');
+  }
+  const read = await profileTabularStream(body, selection);
+  if (read.bytes !== receipt.bytes || read.sha256 !== receipt.sha256) {
+    throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The original differs from its byte receipt.');
+  }
+  const tabular = admittedPin(admitted, selection, read.bytes);
+  return { tabular, headers: read.headers, records: read.records, profile: read.profile,
+    streamCounts: read.streamCounts,
+    schemaFingerprint: fingerprint({ selection, headers: read.headers, layout: read.profile.layoutFingerprint }),
+    limitations: [...admissionLimitations(admitted),
+      `Read as a stream in ${read.windows} windows; the profile shows the first 100 records.`] };
 }
 
 function admissionLimitations(admitted: TabularAdmission): string[] {

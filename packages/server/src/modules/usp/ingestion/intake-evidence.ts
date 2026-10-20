@@ -7,7 +7,7 @@ import { INTAKE_EVIDENCE_LIMITS, INTAKE_EVIDENCE_VERSION, IntakeEvidenceCandidat
   IntakeEvidencePageSchema, IntakeKeyProfileInputSchema, IntakeKeyProfileSchema, type DocumentResult,
   type IntakeEvidenceAnchor, type IntakeEvidenceCandidate, type IntakeEvidenceConfirm,
   type IntakeEvidenceCoverage, type IntakeEvidenceKey, type IntakeEvidenceLocator, type IntakeKeyProfileInput,
-  type IntakeTableRowLocator } from '@ulpin/contracts/usp';
+  type IntakeTableRowLocator, type TableWindowRow } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
@@ -98,6 +98,22 @@ export function tableAssertions(table: TabularTable, columnIndex: number, kind: 
   const coverage: IntakeEvidenceCoverage = { state: 'closed', read, eligible: assertions.length,
     keyless: read - assertions.length, unread: 0, failed: 0 };
   return { assertions, coverage };
+}
+
+/** The key cell of each record of one stored window, read as tableAssertions reads a whole table: a null cell is
+ * absent and any other cell is literal as written, so the same row gives the same cells and row hash. */
+export function windowAssertions(rows: TableWindowRow[], columnIndex: number, kind: KeyKind,
+  locate: (row: TableWindowRow, cells: unknown[], literal: string) => IntakeTableRowLocator) {
+  const assertions: EvidenceAssertion[] = [];
+  for (const row of rows) {
+    if (columnIndex >= row.cells.length) {
+      throw new AppError(422, 'INTAKE_EVIDENCE_COLUMN', 'The key column is outside this table\'s header row.');
+    }
+    const cells = row.cells.map(value => value === null ? { state: 'absent' } : { state: 'literal', value });
+    const literal = keyLiteral(row.cells[columnIndex], kind);
+    if (literal !== null) assertions.push({ literal, evidence: locate(row, cells, literal) });
+  }
+  return assertions;
 }
 
 const word = (value: string | undefined) => value !== undefined && wordCharacter.test(value);

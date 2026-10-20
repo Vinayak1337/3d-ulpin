@@ -1,0 +1,58 @@
+{
+  "task": "AU4-B2B",
+  "base": "b2f1bb37",
+  "branch": "task/au4-b2b-windowed-evidence",
+  "built": {
+    "D1": "intake-evidence-worker.ts: a table source whose newest raw streaming job stored windows (latestTableJobTx, the lookup TableRowsService.page now calls) is read window by window with readTableWindowTx; windowAssertions (intake-evidence.ts) gives each row's key cell as tableAssertions does; the locator cites the source row plus an optional window field (window index, record number, byte range, SHA-256 of that range); rawJobId is the raw streaming job, rawInputSha256 its input, rawResultSha256 the stored window's SHA-256 and acceptedFence the window's fence. A whole-file row omits the field and keeps its locator unchanged",
+    "D2": "closed only when the raw job is completed (or completed_with_rejections), no window failed and rows read equal the job's records; a running, queued, failed or stale raw job gives partial with read and eligible/keyless over the rows read, unread null, failed null unless a window failed; a stored window that does not read back (TABLE_WINDOW_INTEGRITY or a shape error) counts its records as failed",
+    "D3": "closeEvidence unchanged; a partial reading proposes only keys a building holds, because the candidate contract refuses no_match on unread coverage (closeEvidence would otherwise throw and stop the reading)",
+    "D4": "one window held at a time; at most 50,000 key cells per reading (WINDOW_ASSERTIONS, five full windows); windows past the bound stay unread and the coverage stays partial"
+  },
+  "realInputs": {
+    "buildings": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "classification": "test_only"
+    },
+    "register": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+      "sha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b",
+      "classification": "test_only",
+      "cut": "readTabularWindows (G13) and windowRows give one stored window of 753 records; regrouped test_only into 8 windows of 100 records, each window hash the SHA-256 of exactly its byte range"
+    }
+  },
+  "results": {
+    "finishedRawJob": {
+      "coverage": {"state": "closed", "read": 753, "eligible": 753, "keyless": 0, "unread": 0, "failed": 0},
+      "outcomes": {"matched": 612, "conflicting": 81, "no_match": 60},
+      "sameAsWholeRead": "for 1 window and for 8 windows: identical candidate ids, outcomes, conflict groups, source rows and row hashes; each cited byte range hashes to its stated SHA-256 and holds the key literal"
+    },
+    "runningRawJob": {
+      "coverage": {"state": "partial", "read": 300, "eligible": 300, "keyless": 0, "unread": null, "failed": null},
+      "note": "no no_match candidate; only keys a building holds are proposed. A failed raw job gives the same coverage"
+    },
+    "failedWindow": {
+      "coverage": {"state": "partial", "read": 653, "eligible": 653, "keyless": 0, "unread": 0, "failed": 100},
+      "note": "test_only: window 1 stored with its rows reversed fails its own record check and counts as failed"
+    },
+    "noStoredWindow": "the windowed reading returns nothing and the existing path applies (a table over 16 MiB with no window stays partial, read 0)"
+  },
+  "notBuilt": [
+    "a reading of a running raw job is not queued again when the raw job finishes; the source stays partial until the next reading under the profile",
+    "no runtime run: no database or Docker; the worker's windowed reading runs on the real register through a fake client that answers its statements"
+  ],
+  "seamsOutsideOwnedPaths": [
+    "packages/server/src/modules/usp/ingestion/table-windows.ts: one export, latestTableJobTx, the raw job lookup TableRowsService.page used inline; page now calls it"
+  ],
+  "checks": {
+    "pnpm typecheck:backend": 0,
+    "pnpm studio:typecheck": 0,
+    "pnpm studio:test": {"exit": 0, "studio": "498 passed", "scene": "58 passed, 1 skipped", "ui": "7 passed",
+      "api-client": "2 passed"},
+    "backend test command (template list; includes intake-evidence.test.ts and table-windows.test.ts)": {"exit": 0,
+      "tests": 421, "pass": 419, "skipped": 2, "fail": 0},
+    "openapi --check": 0,
+    "scripts/api/refresh-contract.ts b2f1bb37 + pnpm studio:api-types + scripts/api/check.py": 0,
+    "git diff --check": 0
+  }
+}

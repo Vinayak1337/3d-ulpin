@@ -27,8 +27,9 @@ function memoryPool() {
     if (sql.startsWith('INSERT INTO sources')) { db.sources.push({ id: values[0], object_key: values[6] }); return result([]); }
     if (sql.startsWith('UPDATE usp_outbox_streams')) return result([{ sequence: String(++sequence) }]);
     if (sql.includes('FROM usp_source_uploads WHERE case_id=$1 AND operator_subject')) return result([]);
-    if (sql.includes('count(*) FILTER')) return result([{ v1_receipts: db.uploads.length, v2_receipts: 0, v1_active: 0,
-      v2_active: 0, case_active: 0, operator_active: 0, v1_reserved: '0', v2_reserved: '0' }]);
+    if (sql.includes('count(*) FILTER')) return result([{ held: 0, case_held: 0, operator_held: 0, held_bytes: '0',
+      case_bytes: '0', frees_at: null, case_frees_at: null, operator_frees_at: null, v1_held_bytes: '0',
+      v2_held_bytes: '0', retained_bytes: '0', leftover_bytes: '0' }]);
     if (sql.startsWith('INSERT INTO usp_source_uploads')) {
       const row = { id: values[0], case_id: values[1], operator_subject: values[2], request_key: values[3],
         request_hash: values[4], revision: 1, case_revision: values[5], state: 'receiving', source_id: values[6],

@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
+import { ZodError } from 'zod';
 import { DocumentInputSchema, TABULAR_LIMITS, type DocumentInput, type DocumentResult,
-  type IntakeEvidenceCandidate, type IntakeEvidenceCoverage, type IntakeKeyProfileInput } from '@ulpin/contracts/usp';
+  type IntakeEvidenceCandidate, type IntakeEvidenceCoverage, type IntakeKeyProfileInput,
+  type TabularSelection } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObject, sha256 } from '../../../infrastructure/storage';
@@ -9,9 +11,10 @@ import { fingerprint } from '../../cases/domain';
 import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
 import { assertDocumentAcceptedResultTx, readDocumentResult } from './documents';
 import { IntakeEvidenceInputSchema, NOT_READ, assertIntakeEvidenceInputTx, closeEvidence, documentAssertions,
-  evidenceAnchorsTx, stopIntakeEvidenceTx, tableAssertions, writeIntakeEvidenceTx, type EvidenceAssertion,
-  type IntakeEvidenceInput } from './intake-evidence';
+  evidenceAnchorsTx, stopIntakeEvidenceTx, tableAssertions, windowAssertions, writeIntakeEvidenceTx,
+  type EvidenceAssertion, type IntakeEvidenceInput } from './intake-evidence';
 import type { IntakeSourceRow } from './intake-context';
+import { latestTableJobTx, readTableWindowTx } from './table-windows';
 import { admitTabularSource, readTabularSource, type TabularTable } from './tabular-source';
 
 type TableSpec = IntakeKeyProfileInput['tables'][number];
@@ -23,6 +26,13 @@ type Extraction = { id: string; status: string; payload: unknown; result_ref: { 
 // A document is read from its accepted extraction; a reading waits this long for one before it stops partial.
 const EXTRACTION_WAIT_MS = 30 * 60_000;
 const EXTRACTION_POLL = "interval '20 seconds'";
+// D4: a streamed table proposes at most this many key cells per reading; windows past the bound stay unread.
+const WINDOW_ASSERTIONS = 50_000;
+const FINISHED = ['completed', 'completed_with_rejections'];
+type RawTable = { id: string; state: string; records: number; input_sha256: string };
+type StoredWindowRow = { window_index: number; records: number; fence: number };
+type StoredTable = { raw: RawTable; windows: StoredWindowRow[] };
+type WindowedSpec = { spec: TableSpec; kind: IntakeKeyProfileInput['kind']; headers: string[] };
 
 const pinned = (input: IntakeEvidenceInput) => (client: PoolClient) =>
   assertIntakeEvidenceInputTx(client, input).then(() => {});
@@ -35,22 +45,30 @@ async function retained(source: Retained) {
   return bytes;
 }
 
-/** D4: a table the profile does not name is read like the named table whose header row it repeats exactly. */
-async function lateTableSpec(caseId: string, profile: IntakeKeyProfileInput, bytes: Uint8Array) {
+/** D4: a table the profile does not name is read like the named table whose header row it repeats exactly.
+ * `lateHeaders` gives the late table's header row under a named selection, or null when it cannot be read so. */
+async function lateTableSpec(caseId: string, profile: IntakeKeyProfileInput,
+  lateHeaders: (selection: TabularSelection) => string[] | null) {
   for (const named of profile.tables) {
     const source = (await query<Retained>(`SELECT s.object_key,s.sha256,s.bytes FROM usp_intake_items i
       JOIN sources s ON s.id=i.source_id WHERE i.case_id=$1 AND i.item_id=$2`, [caseId, named.itemId])).rows[0];
     if (!source || Number(source.bytes) > TABULAR_LIMITS.bytes) continue;
     const headers = readTabularSource(await retained(source), named.selection).headers;
-    let late: string[] | null = null;
-    try {
-      late = readTabularSource(bytes, named.selection).headers;
-    } catch (error) {
-      if (!(error instanceof AppError)) throw error;
-    }
+    const late = lateHeaders(named.selection);
     if (late && fingerprint(late) === fingerprint(headers)) return named;
   }
   return null;
+}
+
+function wholeHeaders(bytes: Uint8Array) {
+  return (selection: TabularSelection) => {
+    try {
+      return readTabularSource(bytes, selection).headers;
+    } catch (error) {
+      if (!(error instanceof AppError)) throw error;
+      return null;
+    }
+  };
 }
 
 /** One physical row per assertion; the row hash pins every cell as read, unknown cells by their state alone. */
@@ -65,14 +83,87 @@ function readTable(input: IntakeEvidenceInput, attempt: UspJobAttempt, spec: Tab
     columnHeader: table.headers[spec.columnIndex], cell: { state: 'literal', value: literal } }));
 }
 
+/** A stored window that no longer reads back as written counts as failed; any other error stops the reading. */
+function unreadable(error: unknown): null {
+  if (error instanceof ZodError || error instanceof AppError && error.code === 'TABLE_WINDOW_INTEGRITY') return null;
+  throw error;
+}
+
+/** D2: closed only when every window of a finished raw job was read. Otherwise what was not read stays unknown
+ * while the raw job is unfinished, and a window that did not read back counts as failed, never as absent. */
+function windowCoverage(raw: RawTable, read: number, eligible: number, failed: number): IntakeEvidenceCoverage {
+  const finished = FINISHED.includes(raw.state);
+  if (finished && !failed && read === raw.records) {
+    return { state: 'closed', read, eligible, keyless: read - eligible, unread: 0, failed: 0 };
+  }
+  return { state: 'partial', read, eligible, keyless: read - eligible,
+    unread: finished ? raw.records - read - failed : null, failed: finished || failed ? failed : null };
+}
+
+/** D1: each stored window of the raw job, one at a time; a row's locator cites its window, byte range and hash.
+ * A streamed row's raw result is its stored window, pinned by the window's SHA-256 and fence. */
+async function readWindows(input: IntakeEvidenceInput, { spec, kind, headers }: WindowedSpec,
+  { raw, windows }: StoredTable, literals: ReadonlySet<string>): Promise<Reading> {
+  const assertions: EvidenceAssertion[] = [];
+  let read = 0, failed = 0;
+  for (const stored of windows) {
+    if (assertions.length + stored.records > WINDOW_ASSERTIONS) break;
+    const window = await transaction(client => readTableWindowTx(client, raw.id, stored.window_index))
+      .catch(unreadable);
+    if (!window) {
+      failed += stored.records;
+      continue;
+    }
+    assertions.push(...windowAssertions(window.rows, spec.columnIndex, kind, (row, cells, literal) => ({
+      kind: 'table_row', itemId: input.itemId, caseId: input.caseId, sourceId: input.sourceId,
+      sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256, rawJobId: raw.id,
+      rawInputSha256: raw.input_sha256, rawResultSha256: window.sha256, acceptedFence: stored.fence,
+      selection: spec.selection, sourceRow: row.sourceRow, rowSha256: fingerprint(cells), columnIndex: spec.columnIndex,
+      columnHeader: headers[spec.columnIndex], cell: { state: 'literal', value: literal },
+      window: { index: window.index, record: row.record, byteStart: row.byteStart, byteEnd: row.byteEnd,
+        sha256: row.sha256 } })));
+    read += window.rows.length;
+  }
+  const coverage = windowCoverage(raw, read, assertions.length, failed);
+  // Unread coverage is never absence: a partial reading proposes only the keys a building holds.
+  return { coverage, assertions: coverage.state === 'closed' ? assertions
+    : assertions.filter(assertion => literals.has(assertion.literal)) };
+}
+
+/** A table whose newest raw streaming job stored windows is read from them, never whole; null when it has none.
+ * The raw job's state is read before its windows, so a finished state always sees every window. */
+export async function windowedTableReading(input: IntakeEvidenceInput, profile: IntakeKeyProfileInput,
+  source: IntakeSourceRow, literals: ReadonlySet<string>): Promise<Reading | null> {
+  const stored = await transaction(async (client): Promise<StoredTable | null> => {
+    const job = await latestTableJobTx(client, input.caseId, input.sourceId, input.sourceRevision);
+    if (!job) return null;
+    const raw = (await client.query(`SELECT job_id AS id,state,records,input_sha256
+      FROM usp_streaming_vector_imports WHERE job_id=$1`, [job.id])).rows[0];
+    const windows = (await client.query(`SELECT window_index,records,fence FROM usp_table_windows
+      WHERE job_id=$1 ORDER BY window_index`, [job.id])).rows;
+    return { raw, windows };
+  });
+  if (!stored) return null;
+  admitTabularSource(source.sha256, Number(source.bytes), source.inspection?.tabularProvenance);
+  const manual = source.inspection?.manualProfile, streamed = fingerprint(manual?.tabular?.selection ?? null);
+  const headers: string[] = manual?.headers ?? [];
+  const spec = profile.tables.find(table => table.itemId === input.itemId)
+    ?? await lateTableSpec(input.caseId, profile, selection => fingerprint(selection) === streamed ? headers : null);
+  // The windows hold the table as its stream read it; a profile naming another selection reads nothing here.
+  if (!spec || fingerprint(spec.selection) !== streamed) return { assertions: [], coverage: NOT_READ };
+  return readWindows(input, { spec, kind: profile.kind, headers }, stored, literals);
+}
+
 async function tableReading(input: IntakeEvidenceInput, attempt: UspJobAttempt, profile: IntakeKeyProfileInput,
-  source: IntakeSourceRow): Promise<Reading> {
-  // A table over the in-memory bound is read through the streamed table window, which this reading does not own.
+  source: IntakeSourceRow, literals: ReadonlySet<string>): Promise<Reading> {
+  const windowed = await windowedTableReading(input, profile, source, literals);
+  if (windowed) return windowed;
+  // A table over the in-memory bound whose stream has stored no window yet is not read.
   if (Number(source.bytes) > TABULAR_LIMITS.bytes) return { assertions: [], coverage: NOT_READ };
   const bytes = await retained(source);
   admitTabularSource(source.sha256, bytes.length, source.inspection?.tabularProvenance);
   const spec = profile.tables.find(table => table.itemId === input.itemId)
-    ?? await lateTableSpec(input.caseId, profile, bytes);
+    ?? await lateTableSpec(input.caseId, profile, wholeHeaders(bytes));
   if (!spec) return { assertions: [], coverage: NOT_READ };
   return readTable(input, attempt, spec, readTabularSource(bytes, spec.selection), profile.kind);
 }
@@ -160,10 +251,11 @@ async function read(input: IntakeEvidenceInput, attempt: UspJobAttempt, family: 
     const pins = await assertIntakeEvidenceInputTx(client, input);
     return { ...pins, anchors: await evidenceAnchorsTx(client, input.caseId, pins.profile.profile) };
   });
+  const literals = new Set(anchors.map(anchor => anchor.literal));
   // With no building holding the key, nothing can be matched and absence is not shown: the source stays unread.
   const reading: Reading = !anchors.length ? { assertions: [], coverage: NOT_READ }
-    : family === 'table' ? await tableReading(input, attempt, profile.profile, source)
-      : await documentReading(input, await latestExtraction(input), new Set(anchors.map(anchor => anchor.literal)));
+    : family === 'table' ? await tableReading(input, attempt, profile.profile, source, literals)
+      : await documentReading(input, await latestExtraction(input), literals);
   const candidates = closeEvidence({ caseId: input.caseId, anchors, assertions: reading.assertions,
     coverage: reading.coverage, createdAt: new Date().toISOString(), key: { profileId: input.profileId,
       profileSha256: input.profileSha256, namespace: profile.profile.namespace, kind: profile.profile.kind } });

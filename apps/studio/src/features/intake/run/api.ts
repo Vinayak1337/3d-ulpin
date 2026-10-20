@@ -1,18 +1,22 @@
 import { api, unwrap, ApiError } from '@ulpin/api-client';
+import { isNotFound } from '../../identity/registryCard';
 import { chooseReady, confirmablePackages, INTAKE_TARGET_LIMITS, nextRecorded,
   type Confirmation, type ConfirmBody, type Readiness, type Target, type TargetPage } from './model';
 
-export async function readTargets(caseId: string, readiness?: Readiness, cursor?: string): Promise<TargetPage> {
+export async function readTargets(caseId: string, readiness?: Readiness, cursor?: string,
+  packageCursor?: string): Promise<TargetPage> {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/targets', {
-    params: { path: { caseId }, query: { ...(readiness ? { readiness } : {}), ...(cursor ? { cursor } : {}) } },
+    params: { path: { caseId }, query: { ...(readiness ? { readiness } : {}), ...(cursor ? { cursor } : {}),
+      ...(packageCursor ? { packageCursor } : {}) } },
   })) as TargetPage;
 }
 
-export async function readFirstReady(caseId: string): Promise<Target[]> {
-  let page = await readTargets(caseId, 'ready');
+/** The first ready buildings of the packages on the officer's current package page. */
+export async function readFirstReady(caseId: string, packageCursor?: string): Promise<Target[]> {
+  let page = await readTargets(caseId, 'ready', undefined, packageCursor);
   let choice = chooseReady(page.items, confirmablePackages(page));
   while (page.nextCursor && choice.length < INTAKE_TARGET_LIMITS.confirmationTargets) {
-    page = await readTargets(caseId, 'ready', page.nextCursor);
+    page = await readTargets(caseId, 'ready', page.nextCursor, packageCursor);
     choice = chooseReady([...choice, ...page.items], confirmablePackages(page));
   }
   return choice;
@@ -26,6 +30,18 @@ export async function readNextRecorded(caseId: string): Promise<Target[]> {
     choice = nextRecorded([...choice, ...page.items]);
   }
   return choice;
+}
+
+/** The intake target naming one building, or null when the server holds none. */
+export async function readTargetByFeature(featureId: string, packageId?: string): Promise<Target | null> {
+  try {
+    return unwrap(await api.GET('/api/v1/ingestion/intake/targets/by-feature', {
+      params: { query: { featureId, ...(packageId ? { packageId } : {}) } },
+    })) as Target;
+  } catch (failure) {
+    if (isNotFound(failure)) return null;
+    throw failure;
+  }
 }
 
 export async function readConfirmation(caseId: string, confirmationId: string): Promise<Confirmation> {

@@ -1,12 +1,17 @@
 import { Button, DataTable } from '@ulpin/ui';
 import { Link } from 'react-router';
+import { useOpenEvidence } from '../evidence/EvidenceContext';
 import type { Package } from './run/model';
 import { needsLayoutAnswer } from './question-model';
+import { isPageImage } from './page-image-model';
 import { canRetryStopped } from './retry-command';
 import { StoppedRetry } from './StoppedRetry';
+import { useSourceCase } from './table/queries';
+import { LayerCrsAnswers } from './LayerCrsAnswer';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
-  stateWords, packagePath, partProgressWords } from './batch-model';
+  stateWords, packagePath, partProgressWords, opensPages } from './batch-model';
 import type { IntakeItem } from './batch-model';
+import { isIfcItem } from './ifc/structure-model';
 import styles from './Batch.module.css';
 
 export function IntakeTray({ caseId, items, packages, choose, refresh }: {
@@ -49,6 +54,22 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
     {item.existingAreaId ? <Link to={`/studio/areas/${item.existingAreaId}`}>Open that area</Link> : null}
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
+    {isIfcItem(item) ? <Button variant="soft" onClick={() => choose(item)}>View structure</Button> : null}
+    {isPageImage(item) ? <Button variant="soft" onClick={() => choose(item)}
+      aria-label={`View page image: ${item.name}`}>View page image</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
+    {opensPages(item) ? <ReviewPages caseId={caseId} item={item} /> : null}
+    {item.layerCrs?.length ? <LayerCrsAnswers caseId={caseId} item={item} refresh={refresh} /> : null}
   </div>;
+}
+
+/** G10. The read PDF opens at its first page in the page viewer, pinned to the original revision the batch read. */
+function ReviewPages({ caseId, item }: { caseId: string; item: IntakeItem }) {
+  const open = useOpenEvidence();
+  const source = useSourceCase(caseId).data?.sources.find((row) => row.id === item.sourceId);
+  if (!source) return null;
+  return <Button variant="soft" onClick={() => open({ sourceId: source.id, label: item.name,
+    locator: { kind: 'page', page: 1, text: 'Page 1' }, pin: { revision: source.revision, sha256: source.sha256 } })}>
+    Review pages
+  </Button>;
 }

@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { SourcePathSchema, TabularSelectionSchema } from './ingestion';
+import { SourcePathSchema, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
+import { RasterPixelWindowSchema } from './raster-window';
+import { PointBatchSelectionSchema } from './point-batch';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -59,6 +61,14 @@ export const IntakeCardSchema = z.strictObject({ ...fields, members: z.array(Int
 export const IntakeRegisterSchema = z.strictObject({ sourceId: z.string().uuid(), requestKey: z.string().uuid() });
 export const IntakePinSchema = z.strictObject({ wave: z.number().int().min(1).max(4), requestKey: z.string().uuid() });
 export const IntakeLargeRetrySchema = z.strictObject({ requestKey: z.string().uuid() });
+/** CR1: the EPSG code an officer states for a GeoPackage or shapefile layer whose file states no system. */
+export const IntakeLayerCrsSchema = z.strictObject({
+  requestKey: z.string().uuid(), layer: z.string().min(1).max(256),
+  crs: z.string().regex(/^EPSG:[1-9][0-9]{0,8}$/, 'Write the code as EPSG:<number>, for example EPSG:32643.'),
+});
+export const IntakeLayerCrsAnswerSchema = z.strictObject({
+  crs: IntakeLayerCrsSchema.shape.crs, state: z.literal('officer_stated'), statedAt: z.string().datetime(),
+});
 export const IntakeLargeRetryResultSchema = z.strictObject({
   itemId: z.string().uuid(), jobId: z.string().uuid(),
   retry: z.number().int().positive().describe('How many officer retries this item has, this one included.'),
@@ -83,6 +93,33 @@ export const ArchiveMemberLineageSchema = z.strictObject({
   memberSha256: hash,
 });
 export type ArchiveMemberLineage = z.infer<typeof ArchiveMemberLineageSchema>;
+/** G23. A page image (JPEG, PNG, TIFF without georeference) in a batch: its first, native read and no more. */
+export const INTAKE_PAGE_IMAGE_LIMITS = Object.freeze({ originalBytes: 128 * 1024 ** 2, headBytes: 1024 ** 2,
+  inputPixels: 250_000_000, previewSide: 1024, previewBytes: 8 * 1024 ** 2 });
+export const IntakePageImageLabelSchema = z.enum(['plan', 'elevation', 'photo', 'other']);
+const orientation = z.number().int().min(1).max(8);
+export const IntakePageImageReadSchema = z.strictObject({
+  version: z.literal('page-image-read/1'), format: z.enum(['jpeg', 'png', 'tiff']),
+  width: count, height: count, bands: count, bitDepth: count,
+  orientation: orientation.nullable().describe('The EXIF orientation as stated; null when none is stated.'),
+  captureTime: z.string().min(1).max(64).nullable().describe('EXIF DateTimeOriginal exactly as stated, or null.'),
+  locationStated: z.boolean().describe('Whether its EXIF states a GPS position; the position is not read here.'),
+  dpi: z.strictObject({ x: z.number().finite().positive(), y: z.number().finite().positive(),
+    statedIn: z.enum(['jfif', 'exif', 'png_phys', 'tiff']) }).nullable(),
+  preview: z.strictObject({ key: text, sha256: hash, bytes: z.number().int().positive(),
+    width: z.number().int().positive().max(INTAKE_PAGE_IMAGE_LIMITS.previewSide),
+    height: z.number().int().positive().max(INTAKE_PAGE_IMAGE_LIMITS.previewSide), mediaType: z.literal('image/png'),
+    orientationApplied: orientation.nullable(),
+    original: z.strictObject({ sourceId: z.string().uuid(), sourceRevision: z.number().int().positive(),
+      sha256: hash }) }).nullable(),
+  previewLimit: z.string().min(1).max(500).nullable().describe('Why no preview was made; null when one was.'),
+  label: z.strictObject({ value: IntakePageImageLabelSchema, state: z.literal('candidate'),
+    answeredAt: z.string().datetime() }).nullable().describe('The officer\'s answer to what it shows, unreviewed.'),
+});
+export const IntakePageImageAnswerSchema = z.strictObject({ requestKey: z.string().uuid(),
+  label: IntakePageImageLabelSchema });
+export type IntakePageImageRead = z.infer<typeof IntakePageImageReadSchema>;
+export type IntakePageImageLabel = z.infer<typeof IntakePageImageLabelSchema>;
 export const IntakeItemPlanSchema = z.strictObject({
   recipeId: z.string().uuid(), recipeRevision: z.number().int().positive(),
   recipeState: z.enum(['proposed', 'approved', 'executed']),
@@ -111,6 +148,14 @@ export const IntakeItemSchema = z.strictObject({
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
   existingAreaId: z.string().uuid().nullable().optional().describe(
     'The area whose source already holds this file\'s exact bytes; present only when the item rests for that reason.'),
+  pageImage: IntakePageImageReadSchema.optional().describe(
+    'G23. A page image\'s first read and the officer\'s candidate label; present only once a page image is read.'),
+  layerCrs: z.array(z.strictObject({ layer: IntakeLayerCrsSchema.shape.layer,
+    answer: IntakeLayerCrsAnswerSchema.nullable() })).max(100).optional().describe(
+    'GeoPackage or shapefile ZIP: each layer whose file states no coordinate system, with the officer\'s answer '
+    + 'or null while none is given; present only when there is such a layer.'),
+  ifcJobId: z.string().uuid().optional().describe(
+    'An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });
@@ -149,8 +194,14 @@ export const IntakeTargetSchema = z.strictObject({
 const tally = z.number().int().nonnegative();
 export const IntakeTargetCountsSchema = z.strictObject({ preparing: tally, ready: tally, needs_answer: tally, held: tally,
   confirmed: tally, recorded: tally, carded: tally, stopped: tally });
+const packageCursor = z.string().regex(/^[A-Za-z0-9_-]{1,512}$/);
 export const IntakeTargetQuerySchema = z.strictObject({
   readiness: IntakeTargetReadinessSchema.optional(), cursor: uuid.optional(),
+  packageCursor: packageCursor.optional(),
+});
+export const IntakeTargetByFeatureQuerySchema = z.strictObject({
+  featureId: uuid, packageId: uuid.optional()
+    .describe('The package proposing the feature; without it, the packages that recorded the feature are read.'),
 });
 export const IntakeRunControlSchema = z.strictObject({});
 export const IntakeTargetPackageSchema = z.strictObject({
@@ -159,12 +210,20 @@ export const IntakeTargetPackageSchema = z.strictObject({
   reviewFingerprint: hash.nullable(), findingCounts: z.record(code, tally).nullable(),
   reviewRefusal: z.strictObject({ code, message: z.string().min(1).max(2000) }).nullable().optional()
     .describe('Current review refusal; emitted as null before review or after it passes. Older pages may omit it.'),
+  recordingConfirmationId: uuid.nullable().optional()
+    .describe('The stored confirmation whose run is recording this package now; it cannot be named again until '
+      + 'that run ends. Null when none. Older pages may omit it.'),
   counts: IntakeTargetCountsSchema,
 });
 export const IntakeTargetPageSchema = z.strictObject({
   caseId: uuid, items: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.page),
   counts: IntakeTargetCountsSchema, nextCursor: uuid.nullable(),
   packages: z.array(IntakeTargetPackageSchema).max(100), packagesTruncated: z.boolean(),
+  packagesNextCursor: packageCursor.nullable().optional()
+    .describe('Opaque cursor of the next package page: unrecorded packages first, then recorded; null on the last.'),
+  packagesTotal: tally.optional().describe('Every package of the batch, listed on this page or not.'),
+  packagesUnrecorded: tally.optional().describe('Packages of the batch not yet recorded, listed or not.'),
+  packagesUnrecordedAfter: tally.optional().describe('Packages not yet recorded that later package pages list.'),
 });
 export const IntakeConfirmedPackageSchema = z.strictObject({
   packageId: uuid, revision: z.number().int().positive(), reviewFingerprint: hash,
@@ -246,6 +305,12 @@ export const IntakeTableRowLocatorSchema = z.strictObject({
   rawResultSha256: hash, acceptedFence: z.number().int().positive(), selection: TabularSelectionSchema,
   sourceRow: z.number().int().positive(), rowSha256: hash, columnIndex, columnHeader: z.string().max(400),
   cell: z.strictObject({ state: z.literal('literal'), value: literal }),
+  window: z.strictObject({ index: z.number().int().nonnegative().max(TABULAR_STREAM_LIMITS.windows - 1),
+    record: z.number().int().nonnegative().max(TABULAR_STREAM_LIMITS.rows - 1),
+    byteStart: z.number().int().nonnegative(), byteEnd: z.number().int().nonnegative(), sha256: hash })
+    .refine(row => row.byteEnd >= row.byteStart, 'A record ends where it starts or later.').optional()
+    .describe('A row of a streamed table, read from its stored window: the window, the record number (the first '
+      + 'is 0), its byte range in the unchanged original and that range\'s SHA-256. A whole-file row omits it.'),
 });
 /** One native text part of a retained document; the quote is an exact character span of the part's text. */
 export const IntakeDocumentPartLocatorSchema = z.strictObject({
@@ -376,3 +441,49 @@ export type IntakeKeyProfile = z.infer<typeof IntakeKeyProfileSchema>;
 export type IntakeEvidenceSource = z.infer<typeof IntakeEvidenceSourceSchema>;
 export type IntakeEvidencePage = z.infer<typeof IntakeEvidencePageSchema>;
 export type IntakeEvidenceConfirmation = z.infer<typeof IntakeEvidenceConfirmationSchema>;
+
+/** SB1: an orthophoto, terrain raster or point cloud of a batch read in parts by its existing reader; display only. */
+export const INTAKE_SURFACE_VERSION = 'intake-surface/1' as const;
+export const INTAKE_SURFACE_LIMITS = Object.freeze({ windowSide: 256, batchPoints: 8192, page: 64 });
+export const IntakeSurfaceOperationSchema = z.enum(['raster-window', 'point-batch']);
+export const IntakeSurfaceLocatorSchema = z.discriminatedUnion('operation', [
+  z.strictObject({ operation: z.literal('raster-window'), window: RasterPixelWindowSchema.nullable() }),
+  z.strictObject({ operation: z.literal('point-batch'), batch: PointBatchSelectionSchema.nullable() }),
+]).describe('The part asked of the original; a null window or batch is the reader\'s first part.');
+export const IntakeSurfacePartSchema = z.strictObject({
+  partIndex: z.number().int().nonnegative(), state: z.enum(['planned', 'queued', 'published', 'quarantined']),
+  locator: IntakeSurfaceLocatorSchema, partKey: hash, jobId: uuid.nullable(), resultSha256: hash.nullable(),
+  issueCode: z.string().max(128).nullable(),
+});
+export const IntakeSurfacePartPageSchema = z.strictObject({
+  caseId: uuid, itemId: uuid, operation: IntakeSurfaceOperationSchema,
+  partsPlanned: z.number().int().positive().nullable(), parts: z.array(IntakeSurfacePartSchema),
+  next: z.number().int().nonnegative().nullable(),
+});
+export const IntakeSurfacePartsQuerySchema = z.strictObject({ after: z.coerce.number().int().min(-1).optional() });
+const xy = z.tuple([z.number().finite(), z.number().finite()]);
+const corners = z.tuple([xy, xy, xy, xy]);
+export const IntakeSurfaceDisplaySchema = z.strictObject({
+  version: z.literal(INTAKE_SURFACE_VERSION), caseId: uuid, itemId: uuid, partIndex: z.number().int().nonnegative(),
+  jobId: uuid, original: z.strictObject({ sourceId: uuid, sourceRevision: z.number().int().positive(),
+    sha256: hash, bytes: z.number().int().positive() }),
+  locator: IntakeSurfaceLocatorSchema, read: IntakeSurfaceLocatorSchema.describe('The exact part the reader read.'),
+  resultSha256: hash, artifact: z.strictObject({ sha256: hash, bytes: z.number().int().positive(),
+    mediaType: z.enum(['image/tiff', 'application/vnd.las.point-records']), path: z.string().min(1).max(512) }),
+  sourceCrs: z.strictObject({ state: z.enum(['stated', 'not_stated']), authority: z.string().max(100).nullable() }),
+  verticalReference: z.strictObject({ status: z.enum(['known', 'unknown']), name: z.string().max(500).nullable() }),
+  sourceCorners: corners.describe('In the source\'s own coordinate system and units: a window\'s corners from its '
+    + 'affine (upper left, upper right, lower right, lower left), or the XY extent of a batch\'s native records.'),
+  placement: z.discriminatedUnion('state', [
+    z.strictObject({ state: z.literal('placed'), areaId: uuid, areaRevision: z.number().int().nonnegative(),
+      analysisCrs: z.string().max(64), origin: xy, operation: z.string().max(200), corners }),
+    z.strictObject({ state: z.literal('not_placed'),
+      reason: z.enum(['no_batch_area', 'no_area_reference', 'no_area_extent', 'no_stated_crs',
+        'transform_unavailable', 'outside_area']),
+      words: z.string().max(500) }),
+  ]),
+  use: z.literal('display_only'),
+});
+export type IntakeSurfaceLocator = z.infer<typeof IntakeSurfaceLocatorSchema>;
+export type IntakeSurfacePart = z.infer<typeof IntakeSurfacePartSchema>;
+export type IntakeSurfaceDisplay = z.infer<typeof IntakeSurfaceDisplaySchema>;

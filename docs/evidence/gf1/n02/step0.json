@@ -1,0 +1,47 @@
+{
+  "task": "N02",
+  "gate": "GF1",
+  "base": "ecbf8b93",
+  "branch": "task/n02-target-packages-paged",
+  "gap": "packageFactsTx lists the first 100 packages of a case by id, recorded or not.",
+  "changes": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-targets.ts",
+      "why": [
+        "Order the case's packages from the state column and published part rows, never the body:",
+        "unrecorded first, then the file's part order, then id; page 100 after an opaque keyset cursor;",
+        "project facts for that page only; report total, unrecorded, unrecorded after, next cursor."
+      ]
+    },
+    {
+      "path": "packages/contracts/src/usp/intake.ts",
+      "why": ["Additive optional fields: query packageCursor; page packagesNextCursor, packagesTotal,",
+        "packagesUnrecorded, packagesUnrecordedAfter."]
+    },
+    {
+      "path": "apps/api/src/modules/ingestion/intake-run.controller.ts",
+      "why": ["Admit packageCursor once and pass it to the read."]
+    },
+    {
+      "path": "apps/studio/src/features/intake/run/",
+      "why": [
+        "Hold a package cursor beside the summary read; the confirmation offers 'Next 100 packages'",
+        "while unrecorded packages follow, with words from the read; choosing ready buildings reads",
+        "the same package page."
+      ]
+    },
+    {
+      "path": "tests beside them, generated API files, docs/evidence/gf1/n02/",
+      "why": ["Server paging test (250 packages, 120 recorded), Studio press test, regenerated contract."]
+    }
+  ],
+  "reuse": [
+    "countsTx unchanged supplies the case's packages and anchors",
+    "the existing projection SQL of review facts, limited to the page ids",
+    "strictQuery for the route's query",
+    "confirmBody and confirmablePackages unchanged: a confirmation names the listed page's packages"
+  ],
+  "unchanged": ["counts by readiness", "the target page and its cursor", "100 packages per confirmation"],
+  "seamsOutsideOwnedPaths": [],
+  "runtimeDockerGpuProvider": "none"
+}

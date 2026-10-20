@@ -119,6 +119,19 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_uploads",
+      "batch": "N04",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": null,
+      "responseSchema": "LargeUploadListSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}",
       "operationId": "GET_api_v1_ingestion_cases_caseId_uploads_uploadId",
       "batch": "INGEST-06",
@@ -776,6 +789,71 @@
       "batch": "LP3d"
     },
     {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-label",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_label",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakePageImageAnswerSchema",
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "G23"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "image/png; X-Content-SHA256 of the item's kept preview",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending",
+      "batch": "G23S"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layer-crs",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_layer_crs",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeLayerCrsSchema",
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "CR1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeSurfacePartsQuerySchema query",
+      "responseSchema": "IntakeSurfacePartPageSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "SB1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "IntakeSurfaceDisplaySchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "SB1"
+    },
+    {
       "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/targets",
       "operationId": "GET_api_v1_ingestion_cases_caseId_targets",
@@ -787,6 +865,19 @@
       "transportProfile": "none",
       "runtimeEvidence": "docs/evidence/gf1/e1/runtime.json",
       "batch": "E1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/intake/targets/by-feature",
+      "operationId": "GET_api_v1_ingestion_intake_targets_by_feature",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": "IntakeTargetByFeatureQuerySchema query",
+      "responseSchema": "IntakeTargetSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "G04M"
     },
     {
       "method": "POST",
@@ -881,6 +972,32 @@
       "transportProfile": "json",
       "runtimeEvidence": "pending",
       "batch": "TB1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_table",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "TableFromOriginalSchema",
+      "responseSchema": "TableProfileJobSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "G13"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/rows",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_rows",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "TableRowsPageSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "G13"
     }
   ]
 }

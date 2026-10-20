@@ -1,0 +1,72 @@
+{
+  "task": "G04M",
+  "gap": "G04 (AU5, partly): a recorded building picked on the area map gets its property card from the inspector",
+  "base": "ecbf8b93",
+  "branch": "task/g04m-map-card",
+  "findings": [
+    "The map links a proposal to its batch by caseId only in the windowed read (MB2); a recorded feature on the map carries no case or package, a proposal carries proposalPackageId.",
+    "No read finds an intake target by feature, so D3's one read is added.",
+    "usp_intake_targets has no index on feature_id; physical_feature_revisions(feature_id,revision) is the primary key and names the package that recorded each revision, and UNIQUE(package_id,locator) indexes targets by package. The read resolves the packages that way (or takes the proposal's packageId), so no schema step is needed.",
+    "There is no building-level card dialog in the Studio: a carded target's card is shown by ArtefactLinks (card PDF, verification, record). The inspector opens a small dialog that reuses ArtefactLinks."
+  ],
+  "changes": [
+    {
+      "path": "packages/contracts/src/usp/intake.ts",
+      "why": "IntakeTargetByFeatureQuerySchema: featureId, optional packageId (a proposal's package)."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-targets.ts",
+      "why": "readIntakeTargetByFeature: one statement, the target furthest along; case access as the target page (intakeCaseTx); 404 when none."
+    },
+    {
+      "path": "apps/api/src/modules/ingestion/intake-run.controller.ts",
+      "why": "GET /api/v1/ingestion/intake/targets/by-feature with a strict query."
+    },
+    {
+      "path": "apps/api/src/modules/ingestion/operation-manifest.json",
+      "why": "The new operation."
+    },
+    {
+      "path": "docs/api/openapi.json, packages/api-client/src/schema.d.ts, docs/api/source-pins.json",
+      "why": "Generated contract refresh."
+    },
+    {
+      "path": "apps/studio/src/features/intake/run/useConfirmationCommand.ts, model.ts, api.ts",
+      "why": "pressCards(targets, acknowledgement) beside press (same requestKey reuse and outcome handling; press unchanged); cardsBody shared by confirmBody; readTargetByFeature; cardsOnlyWords says one building in the singular."
+    },
+    {
+      "path": "apps/studio/src/features/map/inspector/BuildingCard.tsx (new) and cardState.ts (new)",
+      "why": "The inspector's card section: make / open / readiness words with batch link / nothing."
+    },
+    {
+      "path": "apps/studio/src/features/map/inspector/BuildingInspector.tsx",
+      "why": "An optional card slot in the overview."
+    },
+    {
+      "path": "apps/studio/src/features/map/MapWorkspace.tsx",
+      "why": "Inspector wiring only: passes the card section for the picked building."
+    },
+    {
+      "path": "apps/studio/src/features/map/WindowedArea.tsx",
+      "why": "Inspector wiring only (added on review): the windowed inspector of a building gets the same card section, by feature id; the window read names no package, so none is passed."
+    }
+  ],
+  "reuse": [
+    "cards-only confirmation (intake-confirmations.ts) unchanged",
+    "useConfirmationCommand",
+    "useRunStream (the case's one subscription)",
+    "readinessWords/readinessLabels/cardsOnlyWords",
+    "ArtefactLinks",
+    "intakeCaseTx",
+    "intakeTargetView",
+    "strictQuery"
+  ],
+  "seamsOutsideOwnedPaths": [
+    "None after review: WindowedArea.tsx inspector wiring was assigned to this task."
+  ],
+  "needsRuntimeDockerGpuProvider": false,
+  "byFeatureIndexes": {
+    "physical_feature_revisions": "Filtered by feature_id. Served by the primary key PRIMARY KEY(feature_id,revision) (database/sql/20-area/area.sql:39-43; implicit index physical_feature_revisions_pkey), whose leading column is feature_id.",
+    "usp_intake_targets": "Filtered by package_id=ANY(...) and feature_id. package_id is served by UNIQUE(package_id,locator) (database/sql/95-ingestion/intake-targets.sql:37; implicit index usp_intake_targets_package_id_locator_key), leading column package_id. feature_id itself has no index on usp_intake_targets: it is filtered within each package's rows (at most 2000 targets per drafted package). No index was added."
+  }
+}

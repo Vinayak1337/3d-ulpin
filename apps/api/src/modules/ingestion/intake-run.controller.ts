@@ -3,12 +3,13 @@ import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { IntakeConfirmSchema, IntakeConfirmationSchema, IntakeEvidenceConfirmSchema,
-  IntakeEvidenceConfirmationSchema, IntakeRunControlSchema, IntakeTargetPageSchema, IntakeTargetQuerySchema,
-  IntakeTargetReadinessSchema, IntakeTargetSchema } from '@ulpin/contracts/usp';
+  IntakeEvidenceConfirmationSchema, IntakeRunControlSchema, IntakeTargetByFeatureQuerySchema, IntakeTargetPageSchema,
+  IntakeTargetQuerySchema, IntakeTargetReadinessSchema, IntakeTargetSchema } from '@ulpin/contracts/usp';
 import { confirmIntake, readIntakeConfirmation, retryIntakeConfirmation }
   from '@ulpin/server/modules/usp/ingestion/intake-confirmations';
 import { confirmIntakeEvidence } from '@ulpin/server/modules/usp/ingestion/intake-evidence';
-import { listIntakeTargets, prioritizeIntakeTarget } from '@ulpin/server/modules/usp/ingestion/intake-targets';
+import { listIntakeTargets, prioritizeIntakeTarget, readIntakeTargetByFeature }
+  from '@ulpin/server/modules/usp/ingestion/intake-targets';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, readJsonBody } from '../../common/body';
 import { jsonBody, wireResponse } from '../intake/wire-schemas';
@@ -28,8 +29,13 @@ export function strictQuery<T extends z.ZodType>(originalUrl: string, schema: T,
 }
 
 export function intakeTargetQuery(originalUrl: string) {
-  return strictQuery(originalUrl, IntakeTargetQuerySchema, ['readiness', 'cursor'], 'INTAKE_TARGET_QUERY',
-    'Use one optional readiness and cursor, and no other query fields.');
+  return strictQuery(originalUrl, IntakeTargetQuerySchema, ['readiness', 'cursor', 'packageCursor'],
+    'INTAKE_TARGET_QUERY', 'Use one optional readiness, cursor and packageCursor, and no other query fields.');
+}
+
+export function intakeTargetByFeatureQuery(originalUrl: string) {
+  return strictQuery(originalUrl, IntakeTargetByFeatureQuerySchema, ['featureId', 'packageId'],
+    'INTAKE_TARGET_QUERY', 'Use one featureId and at most one packageId, and no other query fields.');
 }
 
 @ApiTags('private intake run')
@@ -40,12 +46,26 @@ export class IntakeRunController {
   @param('caseId')
   @ApiQuery({ name: 'readiness', required: false, enum: IntakeTargetReadinessSchema.options })
   @ApiQuery({ name: 'cursor', required: false, schema: { type: 'string', format: 'uuid' } })
+  @ApiQuery({ name: 'packageCursor', required: false,
+    schema: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,512}$' } })
   @ApiOperation({ operationId: 'GET_api_v1_ingestion_cases_caseId_targets',
     summary: 'Read a bounded target page and grouped readiness counts for the retained batch' })
   @wireResponse(200, IntakeTargetPageSchema)
   targets(@Param('caseId') caseId: string, @Req() request: Request) {
     const query = intakeTargetQuery(request.originalUrl);
-    return listIntakeTargets(caseId, query.readiness, query.cursor);
+    return listIntakeTargets(caseId, query.readiness, query.cursor, query.packageCursor);
+  }
+
+  @Get('intake/targets/by-feature')
+  @ApiQuery({ name: 'featureId', required: true, schema: { type: 'string', format: 'uuid' } })
+  @ApiQuery({ name: 'packageId', required: false, schema: { type: 'string', format: 'uuid' } })
+  @ApiOperation({ operationId: 'GET_api_v1_ingestion_intake_targets_by_feature',
+    summary: 'Read the intake target of one building, in the package proposing it or the packages that recorded '
+      + 'it, with the case access of the target page; 404 when no target names it' })
+  @wireResponse(200, IntakeTargetSchema)
+  targetByFeature(@Req() request: Request) {
+    const query = intakeTargetByFeatureQuery(request.originalUrl);
+    return readIntakeTargetByFeature(query.featureId, query.packageId);
   }
 
   @Post('cases/:caseId/confirmations')

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {LegacyMappingTargetSchema} from '../canonical/targets';
 import { ColumnProfileDocumentSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
-import { StreamingVectorInputSchema, StreamingVectorRequestSchema,
+import { STREAMING_VECTOR_LIMITS, StreamingVectorInputSchema, StreamingVectorRequestSchema,
   StreamingVectorStatusSchema } from './streaming-vector';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
@@ -94,10 +94,11 @@ function boundedCollectionMetadata(value: Record<string, unknown>): boolean {
 /** Server-written only after semantic EOF and whole-original verification. Not registry admission. */
 export const StreamedMapOriginalReceiptSchema = z.strictObject({
   version: z.literal('streamed-map-original/1'), coverage: z.literal('sealed'), unknownRemainder: z.literal(false),
-  sourceId: id, sourceRevision: revision, sourceBytes: z.number().int().positive().max(128 * 1024 * 1024),
+  sourceId: id, sourceRevision: revision,
+  sourceBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes),
   sourceSha256: hash, readerVersion: z.literal('geojson-stream/2'), rawJobId: id,
-  framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(4096),
-  features: z.number().int().min(1).max(409600), accepted: z.number().int().nonnegative(),
+  framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.chunks),
+  features: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.features), accepted: z.number().int().nonnegative(),
   quarantined: z.number().int().nonnegative(),
   /** Each set-aside record counted under its reader issue code; present only when something was set aside. */
   quarantinedByCode: z.record(z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/), z.number().int().positive())
@@ -123,6 +124,9 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
 export type StreamedMapOriginalReceipt = z.infer<typeof StreamedMapOriginalReceiptSchema>;
 
 export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256, chunkRows: 16 });
+/** A CSV above TABULAR_LIMITS.bytes is read as a stream in row windows; its byte ceiling is large-original/2's. */
+export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows: 1_000_000, windowRows: 10_000,
+  recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
 export const TabularSelectionSchema = z.strictObject({
   format: z.enum(['csv', 'xlsx']), sheet: z.string().min(1).max(150), table: z.null(),
   headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),
@@ -140,21 +144,27 @@ const DevelopmentTabularPinSchema = z.strictObject({
   developmentAssetId: z.string().min(1).max(150), developmentFamily: z.string().regex(/^mi-d\d+$/),
   derivativeOf: z.strictObject({ originalSha256: hash, version: z.literal('json-table-csv/1') }).optional(),
 });
-const TabularProvenanceSchema = z.strictObject({
+export const TabularProvenanceSchema = z.strictObject({
   issuer: z.string().min(1).max(500).refine(value => Boolean(value.trim())).nullable(),
   origin: z.literal('officer_supplied'), licence: z.enum(['unconfirmed', 'open', 'restricted']),
   containsPersonalData: z.enum(['unknown', 'yes', 'no']),
 });
+/** Only a case original's CSV is read as a stream; a workbook and a development asset keep the 16 MiB bound. */
 export const TabularPinSchema = z.union([DevelopmentTabularPinSchema, z.strictObject({
-  selection: TabularSelectionSchema, sourceBytes: z.number().int().positive().max(TABULAR_LIMITS.bytes),
+  selection: TabularSelectionSchema, sourceBytes: z.number().int().positive().max(TABULAR_STREAM_LIMITS.bytes),
   admission: TabularProvenanceSchema.extend({ kind: z.literal('case_original') }),
-})]);
+}).refine(pin => pin.selection.format === 'csv' || pin.sourceBytes <= TABULAR_LIMITS.bytes,
+  'A workbook is read whole within 16 MiB.')]);
+/** Counts over every record the stream read, per header position; an empty cell is never counted as a value. */
+const TabularStreamCountsSchema = z.strictObject({ written: z.number().int().nonnegative(),
+  empty: z.number().int().nonnegative(), absent: z.number().int().nonnegative() });
 export const TabularSourceProfileSchema = z.strictObject({
   version: z.literal('manual-tabular/1'), source: SourcePinSchema, tabular: TabularPinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
   headers: z.array(z.string().max(400)).min(1).max(TABULAR_LIMITS.columns),
-  records: z.number().int().positive().max(TABULAR_LIMITS.rows), profile: ColumnProfileDocumentSchema,
+  records: z.number().int().positive().max(TABULAR_STREAM_LIMITS.rows), profile: ColumnProfileDocumentSchema,
   limitations: z.array(z.string()),
+  streamCounts: z.array(TabularStreamCountsSchema).min(1).max(TABULAR_LIMITS.columns).optional(),
 });
 export const AnySourceProfileSchema = z.union([SourceProfileSchema, TabularSourceProfileSchema]);
 export const AnyRetainSourceSchema = z.union([RetainGisSchema, z.strictObject({ ...RetainGisSchema.shape,
@@ -187,7 +197,9 @@ export const AnyStreamingRequestSchema = z.union([StreamingVectorRequestSchema,
     framing: z.literal('tabular'), tabular: TabularPinSchema })]);
 export const AnyStreamingInputSchema = z.union([StreamingVectorInputSchema,
   StreamingVectorInputSchema.omit({ framing: true }).extend({
-    framing: z.literal('tabular'), tabular: TabularPinSchema })]);
+    framing: z.literal('tabular'), tabular: TabularPinSchema,
+    // G13: a case-original CSV is read in windows up to the table's own byte ceiling; GIS keeps STREAMING_VECTOR_LIMITS.sourceBytes.
+    sourceBytes: z.number().int().positive().max(TABULAR_STREAM_LIMITS.bytes) })]);
 export const AnyStreamingStatusSchema = StreamingVectorStatusSchema.omit({ framing: true }).extend({
   framing: z.enum(['feature-collection', 'geojson-seq-rs', 'tabular']), tabular: TabularPinSchema.optional(),
 });
@@ -206,11 +218,13 @@ export const TabularRawRowSchema = z.strictObject({ headers: z.array(z.string().
   sheet: z.string().min(1).max(150), sourceRow: z.number().int().positive(),
 });
 
-/** Byte receipt is independent of semantic parsing/conversion admission. */
+/** Byte receipt is independent of semantic parsing/conversion admission. The active limits count open receipts
+ * (not finalized, aborted or expired); maxReservedOriginalBytes bounds the bytes open receipts reserve runtime-wide
+ * and, per case, the retained and open originals together. */
 export const LARGE_ORIGINAL_LIMITS = {
   version: 'large-original/1', partBytes: 8 * 1024 * 1024, maxOriginalBytes: 128 * 1024 * 1024,
   maxParts: 16, maxActivePerCase: 2, maxActivePerOperator: 2, maxActiveGlobal: 4,
-  maxUploadReceipts: 128, maxZeroPayloadFenceObjectsPerReceipt: 17,
+  maxZeroPayloadFenceObjectsPerReceipt: 17,
   maxReservedOriginalBytes: 512 * 1024 * 1024, maxStoredBytesIncludingTemporaryCopies: 1024 * 1024 * 1024,
   uploadLifetimeSeconds: 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 30,
   leaseSeconds: 180, finalizationSeconds: 120, cleanupSeconds: 120, maxFinalizationAttempts: 3, maxPartAttempts: 3,
@@ -220,7 +234,7 @@ export const LARGE_ORIGINAL_LIMITS = {
 /** Opt-in transport capacity. One source can require parts, an open MPU and a sealed original at once. */
 export const LARGE_ORIGINAL_V2_LIMITS = {
   version: 'large-original/2', partBytes: LARGE_ORIGINAL_LIMITS.partBytes,
-  maxOriginalBytes: 7 * 1024 ** 3, maxParts: 896, maxActiveGlobal: 1, maxUploadReceipts: 8,
+  maxOriginalBytes: 7 * 1024 ** 3, maxParts: 896, maxActiveGlobal: 1,
   maxReservedOriginalBytes: 7 * 1024 ** 3,
   maxStoredBytesIncludingTemporaryCopies: 22 * 1024 ** 3,
   uploadLifetimeSeconds: 7 * 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 60,
@@ -272,8 +286,15 @@ export const LargeUploadStatusSchema = z.strictObject({
   cleanupPending: z.boolean(), lastError: z.string().nullable(),
   finalization: z.strictObject({jobId:id,phase:z.enum(['queued','assembling','verifying','cleaning','complete']),completedParts:z.number().int().nonnegative()}).optional(),
 });
+/** N04. This operator's receipts in one case that hold an upload slot, newest first: what resume and cancel need. */
+export const LargeUploadListSchema = z.strictObject({uploads: z.array(z.strictObject({
+  id, filename: z.string(), bytes: z.number().int().positive(), sha256: hash,
+  profile: z.enum(['large-original/1','large-original/2']), state: z.enum(['receiving','finalizing','aborting']),
+  receivedParts: z.number().int().nonnegative(), partCount: revision, expiresAt: z.string().datetime(),
+  revision, currentCaseRevision: caseRevision})).max(20)});
 export type LargeUploadCreate = z.infer<typeof LargeUploadCreateSchema>;
 export type LargeUploadGuard = z.infer<typeof LargeUploadGuardSchema>;
 export type LargeUploadPart = z.infer<typeof LargeUploadPartSchema>;
 export type LargeUploadStatus = z.infer<typeof LargeUploadStatusSchema>;
+export type LargeUploadList = z.infer<typeof LargeUploadListSchema>;
 export type LargeOriginalEvidence = z.infer<typeof LargeOriginalEvidenceSchema>;

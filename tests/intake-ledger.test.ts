@@ -79,9 +79,14 @@ class LedgerControl {
 
   private job(sql: string, values: any[]) {
     if (sql.startsWith('SELECT status FROM jobs')) return { rows: this.jobs.filter(job => job.source_id === values[0]) };
+    if (sql.startsWith('SELECT id,status FROM jobs')) {
+      return { rows: this.jobs.filter(job => job.source_id === values[0]
+        && job.operation === 'intake-native-derivative') };
+    }
     if (sql.startsWith('SELECT * FROM jobs')) return { rows: this.jobs.filter(job => job.id === values[0]) };
     if (sql.startsWith('INSERT INTO jobs')) {
-      this.jobs.push({ id: values[0], case_id: values[1], source_id: values[2], operation: 'intake-zip-layers',
+      const operation = /VALUES\(\$1,\$2,\$3,'([a-z-]+)'/.exec(sql)![1];
+      this.jobs.push({ id: values[0], case_id: values[1], source_id: values[2], operation,
         status: 'queued', case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
     }
     return { rows: [] };
@@ -428,23 +433,22 @@ test('enrolling a ZIP of GeoJSON layers queues one layer job and keeps no layer 
   });
 });
 
-test('enrolling a shapefile ZIP queues no layer job', async () => {
+test('enrolling a shapefile ZIP queues its conversion job, not a layer job', async () => {
   await configured(async () => {
     const f = fixture();
     const card = await layerZipCard();
     f.useCard({ ...card, members: [...card.members, { name: 'uttam/roads.shp', sizeBytes: 100,
       compressedBytes: 100, family: 'vector', format: 'shapefile', refusalCode: null, companions: [], card: null }] });
     await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
-    assert.equal(f.jobs.length, 0);
-    assert.ok(!f.queries.some(sql => sql.includes('jobs')));
+    assert.deepEqual(f.jobs.map(job => job.operation), ['intake-native-derivative']);
   });
 });
 
-test('a probed PDF and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
+test('a probed GLB and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
   await configured(async () => {
     for (const [bytes, expected] of [
-      [Buffer.from('%PDF-1.7\n%%EOF\n'), 'Kept as a PDF document (18 bytes). No reader in a batch takes this '
-        + 'kind of file yet, so it is not on the map; the original is kept with its SHA-256.'],
+      [Buffer.from('glTF\x02\0\0\0\x0c\0\0\0', 'latin1'), 'Kept as a GLB 3D model (18 bytes). No reader in a '
+        + 'batch takes this kind of file yet, so it is not on the map; the original is kept with its SHA-256.'],
       [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Kept (18 bytes); its kind was not recognised from its first and '
         + 'last bytes.'],
     ] as const) {

@@ -1,10 +1,23 @@
 import { useState } from 'react';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
+import { uploadWords, type UploadProgress } from '../upload-model';
+import { streamedImport } from './retain';
 import { TableRefusal } from './Progress';
 import { useRetainTable } from './useRetainTable';
 import { TableSelectionFields, SourceCaseFields } from './TableImportFields';
+import type { TableJob } from './types';
 import styles from './Table.module.css';
+
+/** TP1: words for the server job reading a large CSV while the dialog follows it. */
+function jobWords(job: TableJob) {
+  if (job.status === 'queued') return 'The CSV is kept unchanged. Its reading as a table is queued on the server.';
+  if (job.status === 'running') {
+    return 'The server is reading the CSV as a stream. A large table takes minutes; the reading continues on the ' +
+      'server if this dialog closes.';
+  }
+  return job.status === 'succeeded' ? 'The table is read. Opening its table page.' : null;
+}
 
 export function TableImportDialog({ file, onClose, onBack }: {
   file: File; onClose: () => void; onBack: () => void;
@@ -15,10 +28,12 @@ export function TableImportDialog({ file, onClose, onBack }: {
   const [mode, setMode] = useState<'existing' | 'create'>('existing');
   const [sheet, setSheet] = useState('');
   const [rows, setRows] = useState('');
-  const { retain, created, clearCreated } = useRetainTable(file, caseId, name, mode, sheet, rows);
+  const { retain, created, clearCreated, upload, retryUpload, job } = useRetainTable(file, caseId, name, mode, sheet,
+    rows);
   const blocked = mode === 'create' ? !name.trim() : !caseId;
   return <ImportDialogBody file={file} onClose={onClose} onBack={onBack} pending={retain.isPending}
-    blocked={blocked} submit={() => retain.mutate()} error={retain.error}>
+    blocked={blocked} submit={() => retain.mutate()} error={retain.error}
+    upload={retain.isPending ? upload : null} retryUpload={retryUpload} job={retain.isPending ? job : null}>
     <SourceCaseFields cases={cases} caseId={caseId} setCaseId={setCaseId} name={name} setName={setName}
       mode={mode} setMode={(value) => {
         clearCreated();
@@ -28,10 +43,13 @@ export function TableImportDialog({ file, onClose, onBack }: {
   </ImportDialogBody>;
 }
 
-function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, error, children }: {
+function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, error, upload, retryUpload, job,
+  children }: {
   file: File; onClose: () => void; onBack: () => void; pending: boolean; blocked: boolean;
-  submit: () => void; error: Error | null; children: React.ReactNode;
+  submit: () => void; error: Error | null; upload: UploadProgress | null; retryUpload: () => void;
+  job: TableJob | null; children: React.ReactNode;
 }) {
+  const reading = job ? jobWords(job) : null;
   return (
     <Dialog title="Import as a table" onClose={onClose} footer={(
       <><Button variant="ghost" onClick={onBack} disabled={pending}>Back to files</Button>
@@ -45,7 +63,14 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
           Only exact public D8 development originals are admitted. Other files will be refused by the server.
           Tables create mapped draft rows, not buildings; nothing enters the registry or appears on the map.
         </Banner>
+        {streamedImport(file) ? <p className="ul-help">
+          This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to
+          1,000,000 records.
+        </p> : null}
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>
+        {upload ? <p role="status">{uploadWords(upload)}</p> : null}
+        {upload?.phase === 'stopped' ? <div><Button onClick={retryUpload}>Retry upload</Button></div> : null}
+        {reading ? <p role="status">{reading}</p> : null}
         {error ? <TableRefusal error={error} /> : null}
       </div>
     </Dialog>

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { IntakeFamilySchema, IntakeSizeClassSchema, IntakeStateSchema, IntakeTargetReadinessSchema } from './intake';
+import { STREAMING_VECTOR_LIMITS } from './streaming-vector';
 
 const id = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -8,7 +9,7 @@ export const CASE_INGESTION_VERSION = 'case-ingestion/1' as const;
 /** SSE IDs encode a case/access binding and the durable bigint sequence as canonical decimal. */
 export const CaseIngestionCursorSchema = z.string().max(97).regex(/^(0|[1-9]\d*)$/);
 export const MappingChunkMetricsSchema = z.strictObject({ kind: z.literal('mapping.chunk'), jobId: id,
-  chunkIndex: z.number().int().nonnegative().max(4096), layout: z.enum(['new', 'memory']),
+  chunkIndex: z.number().int().nonnegative().max(STREAMING_VECTOR_LIMITS.chunks), layout: z.enum(['new', 'memory']),
   teacherCalls: z.number().int().min(0).max(2), memoryHits: z.number().int().min(0).max(1),
   studentFields: z.number().int().min(0).max(256), teacherFields: z.number().int().min(0).max(256),
   unansweredFields: z.number().int().min(0).max(256).optional(),
@@ -57,12 +58,21 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind:z.literal('streaming-vector.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','completed_with_rejections','failed','stale'])}),
   z.strictObject({kind:z.literal('streaming-vector.chunk'),sourceId:id,sourceRevision:revision,jobId:id,
-    chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
+    chunkIndex:z.number().int().nonnegative().max(STREAMING_VECTOR_LIMITS.chunks),
+    status:z.enum(['ready','quarantined']),resultSha256:hash,
     records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
+  // G13: a streamed table's window of up to 10,000 records, written by the raw job and mapped by the recipe.
+  z.strictObject({kind:z.literal('streaming-vector.window'),sourceId:id,sourceRevision:revision,jobId:id,
+    window:z.number().int().nonnegative().max(4095),firstRecord:z.number().int().nonnegative(),
+    records:z.number().int().positive().max(10000),sha256:hash}),
+  z.strictObject({kind:z.literal('chunk-mapping.window'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
+    window:z.number().int().nonnegative().max(4095),status:z.enum(['mapped','failed']),
+    records:z.number().int().positive().max(10000),issueCode:z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/).nullable()}),
   z.strictObject({kind:z.literal('chunk-mapping.changed'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
     status:z.enum(['queued','running','needs_input','disabled','unavailable','completed','completed_with_rejections','failed','stale'])}),
   z.strictObject({kind:z.literal('chunk-mapping.chunk'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
-    chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
+    chunkIndex:z.number().int().nonnegative().max(STREAMING_VECTOR_LIMITS.chunks),
+    status:z.enum(['ready','quarantined']),resultSha256:hash,
     records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
   MappingChunkMetricsSchema,
   z.strictObject({kind:z.literal('streamed-profile.changed'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,

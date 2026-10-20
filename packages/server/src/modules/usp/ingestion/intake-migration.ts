@@ -6,4 +6,5 @@ export async function migrateIntakeLedgerTx(client: PoolClient) {
   await client.query(sql('ingestion.intake.schema'));
   await client.query(sql('ingestion.intake.targets'));
   await client.query(sql('ingestion.intake.evidence'));
+  await client.query(sql('ingestion.table.windows'));
 }

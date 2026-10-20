@@ -19,6 +19,7 @@ import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './e
 import {assertStreamingInputTx,streamingReadContextTx} from './streaming-vector';
 import {compareSourcePins,compareWorkspacePins} from './source-pin';
 import {manualProfileForLockedSourceTx,tabularProfileForLockedSourceTx} from './service';
+import {isTableSource} from './table-windows';
 import {validateMappingPlanV2} from './mapping-plan-v2';
 import {mappingContextFromColumnProfile} from './mapping-teacher';
 import {officerMappingMethod} from './tabular-recipe';
@@ -41,6 +42,7 @@ const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/co
   'packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts',
   'packages/server/src/modules/usp/ingestion/tabular-recipe.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts',
+  'packages/server/src/modules/usp/ingestion/table-windows.ts','database/sql/95-ingestion/table-windows.sql',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts',
   'packages/server/src/modules/usp/ingestion/mapping-teacher.ts',
   'packages/server/src/modules/usp/ingestion/mapping-memory.ts','services/geo/geo/usp_learning/stage_a.py',
@@ -61,7 +63,7 @@ async function rawContextTx(client:PoolClient,rawJobId:string){
 }
 async function manualProfileTx(client:PoolClient,caseId:string,revision:number,source:any)
   :Promise<SourceProfile|TabularSourceProfile|null>{
-  if(source.profile==='tabular-manual-v1')return tabularProfileForLockedSourceTx(client,caseId,revision,source);
+  if(isTableSource(source))return tabularProfileForLockedSourceTx(client,caseId,revision,source);
   return source.profile==='geojson-manual-v1'?manualProfileForLockedSourceTx(client,caseId,revision,source):null;
 }
 async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,subject:string,

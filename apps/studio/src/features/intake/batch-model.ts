@@ -22,9 +22,13 @@ export function packagePath(item: Pick<IntakeItem, 'plan'>, packages: readonly P
   return pkg ? `/studio/areas/${pkg.areaId}?package=${pkg.packageId}` : null;
 }
 
-export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned' | 'partsDone' | 'recordsSeen'>) {
+export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned' | 'partsDone' | 'recordsSeen'>
+  & Partial<Pick<IntakeItem, 'family'>>) {
   if (item.partsPlanned !== null) return `${countWords(item.partsDone)} of ${countWords(item.partsPlanned)} parts`;
-  if (item.state === 'reading') return `Reading: ${countWords(item.recordsSeen)} records so far`;
+  // A document is read page by page; its words are the item's reason, not a record count.
+  if (item.state === 'reading' && item.family !== 'document') {
+    return `Reading: ${countWords(item.recordsSeen)} records so far`;
+  }
   return null;
 }
 
@@ -42,6 +46,11 @@ export function stateWords(state: IntakeItem['state']) {
 
 export function placementWords(placement: IntakeItem['placement']) {
   return placements[placement];
+}
+
+/** G10. A PDF the batch's page reader has read opens in the page viewer; an encrypted one has no pages to show. */
+export function opensPages(item: IntakeItem) {
+  return item.format === 'pdf' && item.state === 'read' && item.placement !== 'needs_answer' && Boolean(item.sourceId);
 }
 
 export function isSettled(item: IntakeItem) {

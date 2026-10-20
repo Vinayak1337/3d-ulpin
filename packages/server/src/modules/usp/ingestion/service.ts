@@ -7,11 +7,12 @@ import {
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
+  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, streamingReadMs, type TableProfileJob,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { putOriginal, readObject, sha256 } from '../../../infrastructure/storage';
+import { openObjectStream, putOriginal, readObject, sha256 } from '../../../infrastructure/storage';
 import { inspectGisBytes } from '../../cases/gis-inspection';
 import { originalAttempt } from '../../cases/original-attempt';
 import { fingerprint } from '../../cases/domain';
@@ -19,10 +20,14 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
-import { authoredIntakeDestination, intakeDestination } from './intake-destination';
+import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
+  from './intake-destination';
+import { assertAreaRowLive } from '../../areas/area-retire';
 import { appendCaseIngestionTx } from './events';
-import { inspectTabularSource, assertTabularPin } from './tabular-source';
-import { validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
+import { inspectTabularSource, inspectTabularStream, assertTabularPin } from './tabular-source';
+import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
+import { readTabularWindows } from './tabular-stream';
+import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 
 const uuid = z.string().uuid();
@@ -46,7 +51,8 @@ async function remember(client: PoolClient, caseId: string, key: string, digest:
 async function source(client: PoolClient, caseId: string, sourceId: string) {
   const row = (await client.query('SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR SHARE', [sourceId,caseId])).rows[0];
   if (!row) notFound('Retained source not found in this workspace.');
-  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile) || !row.inspection?.manualProfile)
+  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile) && !isTableSource(row)
+    || !row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','Retain a supported original through the manual receipt operation.');
   if(row.inspection.actor!==localOperatorSubject()){
     throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
@@ -72,7 +78,7 @@ export async function manualProfileForLockedSourceTx(client:PoolClient,caseId:st
 export async function tabularProfileForLockedSourceTx(
   client: PoolClient, caseId: string, caseRevision: number, row: any,
 ) {
-  if (row.case_id !== caseId || row.profile !== 'tabular-manual-v1') {
+  if (row.case_id !== caseId || !isTableSource(row)) {
     throw new AppError(422, 'UNSUPPORTED_PROFILE', 'No tabular receipt.');
   }
   assertTabularPin(row.inspection.manualProfile.tabular, row);
@@ -88,6 +94,13 @@ async function validate(client: PoolClient,
   const row = await source(client,plan.caseId,plan.source.sourceId), current = profile(row,scope);
   if (fingerprint(current.source) !== fingerprint(plan.source) || !compareWorkspacePins(current, plan).current)
     conflict('Source bytes, schema, revision or workspace changed; inspect and author a current recipe.');
+  if (plan.version==='manual-tabular/1' && Number(row.bytes) > TABULAR_LIMITS.bytes) {
+    // G13: a streamed table is never read whole here; the raw job checks its bytes and hash on every read.
+    if (current.version!=='manual-tabular/1') conflict('The recipe and receipt formats differ.');
+    assertTabularPin(plan.tabular,row);
+    validateStreamedTabularRecipe(plan,current,await firstWindow(row));
+    return {row,bytes:new Uint8Array(),mapping:undefined};
+  }
   const bytes = await readObject(row.object_key);
   if (bytes.length !== Number(row.bytes) || sha256(bytes) !== row.sha256)
     throw new AppError(422,'SOURCE_INTEGRITY','The retained original failed its byte/hash check.');
@@ -99,19 +112,40 @@ async function validate(client: PoolClient,
   if(current.version!=='manual-geojson/1')conflict('The recipe and receipt formats differ.');
   return {row,bytes,mapping:compileMapping(plan,current)};
 }
+/** This file's own namespace: its bytes, or its bytes scoped to the case that received them again. */
+const fileNamespace = (namespace: string, sha256: string) =>
+  namespace === `file:${sha256}` || namespace.startsWith(`file:${sha256}:case:`);
+
+/** The first window of a streamed table, for the recipe's dry run; the rest of the original is not read. */
+async function firstWindow(row: any) {
+  const object = await openObjectStream(row.object_key, Number(row.bytes), STREAMING_VECTOR_LIMITS.readMs,
+    row.inspection?.largeOriginal?.objectEtag);
+  let first: { headers: string[]; rows: (string | undefined)[][] } | null = null;
+  const enough = new Error('first window read');
+  try {
+    await readTabularWindows(object.body, async (window, headers) => {
+      first = { headers, rows: window.rows.map(item => headers.map((_, column) => item.cells[column])) };
+      throw enough;
+    });
+  } catch (error) { if (error !== enough) throw error; }
+  finally { object.body.destroy(); }
+  return first!;
+}
 export async function destination(client: PoolClient, value: MappingDestination, executing = false,
   sourceSha256?: string) {
   // Match ingestArea's seed-lock -> area-lock order before any lock upgrade.
   if (executing) await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`${value.namespace}:${value.name}`]);
   if (value.kind === 'existing_area') {
-    await client.query(executing ? 'SELECT id FROM map_areas WHERE id=$1 FOR UPDATE' : 'SELECT id FROM map_areas WHERE id=$1 FOR SHARE',[value.areaId]);
+    const row = (await client.query(executing ? 'SELECT id,archived_at FROM map_areas WHERE id=$1 FOR UPDATE'
+      : 'SELECT id,archived_at FROM map_areas WHERE id=$1 FOR SHARE', [value.areaId])).rows[0];
+    if (row) assertAreaRowLive(row);
     const area = await getArea(value.areaId,client);
     if (area.revision !== value.expectedAreaRevision || fingerprint(area.reference || null) !== value.referenceFingerprint)
       conflict('The destination revision or reference changed; author a current recipe.');
   } else {
-    const existing = (await client.query('SELECT id,name FROM map_areas WHERE seed_key=$1',
+    const existing = (await client.query('SELECT id,name,archived_at FROM map_areas WHERE seed_key=$1',
       [`${value.namespace}:${value.name}`])).rows[0];
-    if (existing && sourceSha256 && value.namespace === `file:${sourceSha256}`)
+    if (existing && !existing.archived_at && sourceSha256 && fileNamespace(value.namespace, sourceSha256))
       throw new AppError(409, 'SOURCE_ALREADY_IN_AREA',
         `This file is already the source of the area “${existing.name}”. Open that area; nothing new is prepared from a second copy.`,
         { areaId: existing.id });
@@ -264,8 +298,9 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
   await lockSourceCaseDestinationTx(client,caseId);
   const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
   const validated=await validate(client,input.plan,scope);
-  const actualDestination=input.destination===undefined
-    ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination;
+  const actualDestination=await caseScopedDestination(caseId,input.destination===undefined
+    ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination,
+  async(sql,values)=>(await client.query(sql,values)).rows);
   if(actualDestination)await destination(client,actualDestination,false,validated.row.sha256);
   const priorRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',
     [sourceId])).rows[0];
@@ -292,6 +327,56 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
   }
   return receipt;
 }
+type TableInventory=ReturnType<typeof inspectTabularSource>|Awaited<ReturnType<typeof inspectTabularStream>>;
+/** G13: the original kept through the large upload, before it becomes a table; refusals that need no read. */
+async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,actor:string,lock:'SHARE'|'UPDATE'){
+  const row=(await client.query(`SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR ${lock}`,
+    [sourceId,caseId])).rows[0]??notFound('Retained source not found in this workspace.');
+  if(row.profile!=='large-original-v1')throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
+    'Only an original kept through the large upload is made a table here.');
+  if(row.inspection?.largeOriginal?.operatorSubject!==actor)
+    throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
+  if(row.inspection?.manualProfile)conflict('This original is already a table; open its table page.');
+  const latest=(await client.query('SELECT max(revision)::int revision FROM sources WHERE case_id=$1 ' +
+    'AND family_id=$2',[caseId,row.family_id])).rows[0].revision;
+  if(latest!==row.revision)conflict('This source revision has been superseded.');
+  return row;
+}
+/** TP1: an original of at most 16 MiB is read whole from its object and checked against its byte receipt. */
+async function wholeOriginal(row:any):Promise<Uint8Array>{
+  const bytes=Number(row.bytes),parts:Buffer[]=[];
+  const object=await openObjectStream(row.object_key,bytes,streamingReadMs(bytes),
+    row.inspection?.largeOriginal?.objectEtag);
+  try{
+    for await(const part of object.body)parts.push(Buffer.from(part as Uint8Array));
+  }finally{object.body.destroy();}
+  const whole=Buffer.concat(parts);
+  if(whole.length!==bytes||sha256(whole)!==row.sha256)
+    throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original differs from its byte receipt.');
+  return whole;
+}
+/** TP1: the accepting step of the whole read and of the stream job: the table receipt on the same source row and
+ * the source event. The whole read keeps the workspace revision its request pinned; the job (null) pins only its
+ * source, still the latest revision of its family, unchanged and with no table receipt, so other files dropped in
+ * the same workspace while it reads do not stop it. */
+export async function attachTableTx(client:PoolClient,target:{caseId:string;sourceId:string;actor:string;
+  expectedWorkspaceRevision:number|null;read:{sha256:string;revision:number;object_key:string}},
+inventory:TableInventory):Promise<AnySourceProfile>{
+  const {caseId,sourceId,actor,read}=target,scope=await workspace(client,caseId);
+  if(target.expectedWorkspaceRevision!==null&&scope.revision!==target.expectedWorkspaceRevision)
+    conflict('The source workspace changed; refresh first.');
+  const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
+  if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
+    conflict('The original changed while it was read.');
+  const tabularProvenance='admission' in inventory.tabular?inventory.tabular.admission:null;
+  await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',[sourceId,
+    JSON.stringify({manualProfile:{version:'manual-tabular/1',...inventory},tabularProvenance,actor})]);
+  await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
+  const fresh=await workspace(client,caseId),result=profile(await source(client,caseId,sourceId),fresh);
+  await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:row.revision,
+    status:'needs_input'},actor);
+  return result;
+}
 export class ManualIngestionService {
   /** `lineage` is set only by the ZIP layer fan-out: the member's archive pins, kept beside the receipt. */
   async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array},
@@ -315,6 +400,7 @@ export class ManualIngestionService {
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(!duplicate)return undefined;
+      await refuseRetiredFileAreaTx(client,caseId,hash);
       const retained=await source(client,caseId,duplicate.id);
       if(tabular)assertTabularPin(tabular.tabular,retained);
       const result=profile(retained,scope);
@@ -340,6 +426,7 @@ export class ManualIngestionService {
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(duplicate) {
+        await refuseRetiredFileAreaTx(client,caseId,hash);
         if(tabular)assertTabularPin(tabular.tabular,duplicate);
         const result=profile(await source(client,caseId,duplicate.id),scope);
         await remember(client,caseId,key,digest,result);return result;
@@ -369,6 +456,42 @@ export class ManualIngestionService {
       await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:revision,status:'needs_input'},actor);
       return result;
     }));
+  }
+  /** G13: an original retained through the large upload becomes a table source. Its row keeps its bytes, object and
+   * identity; the table receipt is added beside the upload receipt. TP1: up to 16 MiB, a CSV or workbook is read
+   * whole here; a CSV above that is read as a stream by one queued job, and the request answers that job. A replay
+   * of the same request answers the same job as it stands. */
+  async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown):Promise<AnySourceProfile|TableProfileJob>{
+    const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=TableFromOriginalSchema.parse(value);
+    const actor=localOperatorSubject(),digest=fingerprint({input,sourceId,actor});
+    const key=`table-original:${input.requestKey}`;
+    const {queueTableProfileTx,tableProfileJobTx}=await import('./table-profile-worker');
+    type Admitted={job:TableProfileJob}|{profile:AnySourceProfile}|{row:any};
+    const admitted=await transaction(async (client):Promise<Admitted>=>{
+      const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+      if(replay)return replay.jobId?{job:await tableProfileJobTx(client,replay.jobId)}:{profile:replay};
+      if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
+      const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
+      if(Number(row.bytes)<=TABULAR_LIMITS.bytes)return {row};
+      if(input.selection.format!=='csv')throw new AppError(413,'TABLE_ORIGINAL_WORKBOOK_SIZE',
+        `This workbook is more than ${TABULAR_LIMITS.bytes/1024**2} MiB; a workbook is read up to `+
+        `${TABULAR_LIMITS.bytes/1024**2} MiB for now.`);
+      const jobId=await queueTableProfileTx(client,row,scope.revision,input,actor);
+      await remember(client,caseId,key,digest,{jobId});
+      return {job:await tableProfileJobTx(client,jobId)};
+    });
+    if('job' in admitted)return admitted.job;
+    if('profile' in admitted)return admitted.profile;
+    const read=admitted.row,inventory=inspectTabularSource(await wholeOriginal(read),input.selection,input);
+    return transaction(async client=>{
+      await workspace(client,caseId);
+      const replay=await operation(client,caseId,key,digest);
+      if(replay)return replay as AnySourceProfile;
+      const result=await attachTableTx(client,{caseId,sourceId,actor,read,
+        expectedWorkspaceRevision:input.expectedWorkspaceRevision},inventory);
+      await remember(client,caseId,key,digest,result);
+      return result;
+    });
   }
   async inspect(caseIdValue:string,sourceIdValue:string):Promise<SourceProfile> {
     return SourceProfileSchema.parse(await this.inspectAny(caseIdValue,sourceIdValue));

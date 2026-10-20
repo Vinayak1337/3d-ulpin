@@ -15,6 +15,7 @@ import {originalAttempt} from '../../cases/original-attempt';
 import {compareSourcePins} from './source-pin';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {retainedLargeOriginal} from './raster-window';
 import {readPointObject,pointReadDeadline,pointReadLive} from './point-batch-object';
 
 const uuid=z.uuid();
@@ -22,15 +23,23 @@ export const pointReaderSha=()=>sha256(readFileSync(join(settings.repositoryRoot
 export const pointResultKey=(jobId:string,hash:string)=>`point-batches/${jobId}/${hash}.json`;
 export const pointArtifactKey=(jobId:string,hash:string)=>`point-batches/${jobId}/${hash}.bin`;
 
+function pointReceipt(source:Record<string,any>){
+  const receipt=PointOriginalSchema.safeParse(source.inspection?.pointOriginal);
+  return receipt.success?{success:true as const,data:{...receipt.data,key:`sources/${source.id}/${source.sha256}`}}
+    :receipt;
+}
 export async function pointSourceTx(client:PoolClient,caseId:string,sourceId:string,lock=false){
   const binding=ingestionBinding(caseId);
   const current=(await client.query(`SELECT id,revision,archived,frame,context,site_id FROM cases WHERE id=$1${lock?' FOR SHARE':''}`,[caseId])).rows[0]??notFound('Source case not found.');
   if(current.archived)throw new AppError(403,'POINT_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('Point source not found in this case.');
-  const original=PointOriginalSchema.safeParse(source.inspection?.pointOriginal);
-  if(source.profile!=='laz-point-v1'||!original.success||original.data.subject!==binding.subject)
+  const original=source.profile==='large-original-v1'?retainedLargeOriginal(source,POINT_BATCH_LIMITS.originalBytes)
+    :pointReceipt(source);
+  if(!['laz-point-v1','large-original-v1'].includes(source.profile)||!original.success
+    ||original.data.subject!==binding.subject)
     throw new AppError(403,'POINT_DENIED','This retained point is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)
+    ||source.object_key!==original.data.key)
     throw new AppError(422,'POINT_SOURCE_INTEGRITY','The point receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -49,13 +58,17 @@ export async function assertPointInputTx(client:PoolClient,input:PointBatchInput
     conflict('The point original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }
-async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof pointSourceTx>>,batch:PointBatchInput['batch']){
+/** A batch part passes its stable job id; a retained replay of that id is the same job (SB1). */
+export async function enqueuePointBatchTx(client:PoolClient,ctx:Awaited<ReturnType<typeof pointSourceTx>>,
+  batch:PointBatchInput['batch'],stableJobId?:string){
   if(!ctx.latest)conflict('This point source has a newer retained revision.');
+  if(stableJobId&&(await client.query("SELECT 1 FROM jobs WHERE id=$1 AND source_id=$2 AND operation='point-batch'",
+    [stableJobId,ctx.source.id])).rowCount)return stableJobId;
   const jobs=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE source_id=$1 AND operation='point-batch'",[ctx.source.id])).rows[0].n);
   if(jobs>=POINT_BATCH_LIMITS.jobsPerSource)throw new AppError(429,'POINT_HISTORY_LIMIT','The bounded batch history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='point-batch' AND status IN ('queued','running')")).rows[0].n);
   if(active>=POINT_BATCH_LIMITS.active)throw new AppError(429,'POINT_WORKER_BUSY','The bounded point workers are occupied.');
-  const jobId=randomUUID(),input=pointInput(ctx,jobId,batch),inputHash=fingerprint(input);
+  const jobId=stableJobId??randomUUID(),input=pointInput(ctx,jobId,batch),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'point-batch',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);
@@ -140,7 +153,7 @@ export class PointBatchService{
         [sourceId,caseId,file.name,file.bytes.length,hash,key,{profile:'laz-point-v1',status:'needs_input',issues:[],
           summary:'Unchanged LAZ/COPC bytes retained; a bounded native first batch is queued.',pointOriginal:original}]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
-      const ctx=await pointSourceTx(client,caseId,sourceId),jobId=await enqueueTx(client,ctx,null);
+      const ctx=await pointSourceTx(client,caseId,sourceId),jobId=await enqueuePointBatchTx(client,ctx,null);
       const receipt=PointRetainReceiptSchema.parse({version:POINT_BATCH_VERSION,caseId,caseRevision:ctx.current.revision,
         sourceId,sourceRevision:1,sourceSha256:hash,bytes:file.bytes.length,jobId});
       await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'point-retain',$3,$4)",[caseId,operationKey,digest,receipt]);
@@ -157,7 +170,8 @@ export class PointBatchService{
       if(prior){if(prior.payload_hash!==digest)conflict('This request key names a different point batch.');return prior.result;}
       if(!ctx.latest||ctx.current.revision!==request.expectedCaseRevision||ctx.source.revision!==request.expectedSourceRevision||ctx.source.sha256!==request.sourceSha256)
         conflict('Pin the current case and retained point before requesting a batch.');
-      const jobId=await enqueueTx(client,ctx,request.batch),receipt={version:POINT_BATCH_VERSION,caseId,sourceId,jobId};
+      const jobId=await enqueuePointBatchTx(client,ctx,request.batch);
+      const receipt={version:POINT_BATCH_VERSION,caseId,sourceId,jobId};
       await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'point-batch',$3,$4)",[caseId,key,digest,receipt]);
       return receipt;
     });

@@ -8,7 +8,7 @@ import { AppError } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { ingestionBinding } from './events';
 import { cardTargetDifference, confirmIntake, intakeConfirmationReason, isCardsOnly,
-  packageDifference } from './intake-confirmations';
+  packageDifference, retryIntakeConfirmation } from './intake-confirmations';
 import { IntakeRunInputSchema, intakeRunKey } from './intake-run';
 import { assertIntakeCardVerified, intakeCardVerificationPin, intakeRunRefusal, intakeRunSteps,
   intakeTargetCitation, runIntakeRunJob, type IntakeRunSteps } from './intake-run-worker';
@@ -342,7 +342,7 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null) {
       globals.ulpinPool = previous;
     }
   };
-  return { ids, targetIds, store, run };
+  return { caseId, confirmationId, confirmation, ids, targetIds, store, run };
 }
 
 test('a confirmation run renews its lease after each committed package', async () => {
@@ -434,3 +434,157 @@ test('a building with confirmed evidence is pinned at its cited revision; the ot
   assert.deepEqual(pins, [1, 2, 1]);
   assert.deepEqual([store.carded, store.status], [targetIds, 'succeeded']);
 });
+
+type OpenRun = ReturnType<typeof commitRun>;
+type Stored = { confirmationId: string; packages: string[]; status: () => string };
+
+/** The recording query answered from stored confirmations, oldest first: the one naming each asked package whose
+ * job is queued or running, never `except` and never a recorded package. */
+function recordingRows(values: unknown[], open: OpenRun, others: Stored[]) {
+  const [caseId, packageIds, except] = values as [string, string[], string | null];
+  const stored = [{ confirmationId: open.confirmationId, packages: open.ids, status: () => open.store.status },
+    ...others];
+  return packageIds.flatMap(id => {
+    const by = caseId === open.caseId && !open.store.committed.includes(id) ? stored.find(row =>
+      row.confirmationId !== except && row.packages.includes(id) && ['queued', 'running'].includes(row.status()))
+      : undefined;
+    return by ? [{ package_id: id, confirmation_id: by.confirmationId }] : [];
+  });
+}
+
+/** confirmIntake naming one package and one ready building of it, in the case of `open`'s confirmation, on a store
+ * where that confirmation is the only other: it names its packages while its run's job is queued or running. */
+async function confirmBeside(open: OpenRun, packageId: string) {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const stored: unknown[][] = [];
+  const done = new Error('stored');
+  const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
+    if (sql.startsWith('SELECT id,revision,archived')) {
+      return { rows: [{ id: open.caseId, revision: 0, archived: false }] };
+    }
+    if (sql.startsWith('SELECT confirmation_id,input_sha256')) return { rows: [] };
+    if (sql.startsWith('SELECT p.body FROM import_packages')) return { rows: [{ body: { ...pkg, id: values[0] } }] };
+    if (sql.startsWith('SELECT DISTINCT ON (p.id)')) return { rows: recordingRows(values, open, []) };
+    if (sql.startsWith('SELECT target_id,package_id,readiness')) {
+      return { rows: [{ target_id: other, package_id: packageId, readiness: 'ready' }] };
+    }
+    if (sql.startsWith('INSERT INTO usp_intake_confirmations')) {
+      stored.push(values);
+      return { rows: [] };
+    }
+    if (sql.startsWith('UPDATE usp_intake_targets')) {
+      return { rows: [{ target_id: other, readiness: 'confirmed', stage: 2 }] };
+    }
+    if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: 0 }] };
+    if (sql.startsWith('UPDATE usp_outbox_streams')) return { rows: [{ sequence: '1' }] };
+    if (sql.startsWith('INSERT INTO usp_outbox')) return { rows: [] };
+    if (sql.startsWith('SELECT id FROM jobs')) return { rows: [{ id }] };
+    if (sql.startsWith('SELECT * FROM usp_intake_confirmations')) throw done;
+    throw new Error(`Unexpected query: ${sql}`);
+  } } as unknown as PoolClient;
+  globals.ulpinPool = { connect: async () => client } as unknown as Pool;
+  try {
+    await confirmIntake(open.caseId, { requestKey: other, packages: [{ ...named, packageId }], targets: [other],
+      acknowledgement: 'Record this package.' }).catch(error => { if (error !== done) throw error; });
+    return stored;
+  } finally {
+    globals.ulpinPool = previous;
+  }
+}
+
+test('a package a running confirmation names cannot be confirmed again; once that run stops, it can', async () => {
+  const open = commitRun();
+  const [, refused] = open.ids;
+  await assert.rejects(confirmBeside(open, refused), { status: 409, code: 'INTAKE_CONFIRMATION_PENDING',
+    message: `Package ${refused} is already being recorded by confirmation ${open.confirmationId}.` });
+  const refusal = new AppError(422, 'PACKAGE_REVIEW_REQUIRED', 'The package needs a current review.');
+  const commit = async (id: string) => {
+    if (id === refused) throw refusal;
+    open.store.committed.push(id);
+  };
+  await assert.rejects(open.run({ commit: commit as unknown as IntakeRunSteps['commit'] }), refusal);
+  assert.deepEqual([open.store.status, open.store.targets[1].readiness], ['failed', 'stopped']);
+  const [stored] = await confirmBeside(open, refused);
+  assert.deepEqual(JSON.parse(stored[6] as string), [{ ...named, packageId: refused }]);
+});
+
+/** retryIntakeConfirmation of `open`'s confirmation beside the `others`; it says whether the commit was queued again,
+ * and keeps the case lock, every package lock and the recording query it was asked, in order. */
+async function retryBeside(open: OpenRun, others: Stored[]) {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const asked: { sql: string; values: unknown[] }[] = [];
+  let requeued = false;
+  const done = new Error('read');
+  const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
+    if (sql.startsWith('SELECT id,revision,archived')) {
+      if (sql.endsWith('FOR UPDATE')) asked.push({ sql, values });
+      return { rows: [{ id: open.caseId, revision: 0, archived: false }] };
+    }
+    if (sql.startsWith('SELECT * FROM usp_intake_confirmations')) {
+      if (!sql.endsWith('FOR UPDATE')) throw done;
+      return { rows: [open.confirmation] };
+    }
+    if (sql.startsWith('SELECT id FROM import_packages')) {
+      asked.push({ sql, values });
+      return { rows: [{ id: values[0] }] };
+    }
+    if (sql.startsWith('SELECT DISTINCT ON (p.id)')) {
+      asked.push({ sql, values });
+      return { rows: recordingRows(values, open, others) };
+    }
+    if (sql.startsWith('UPDATE usp_intake_targets SET readiness=CASE')) {
+      const stopped = open.store.targets.filter(row => row.readiness === 'stopped');
+      for (const row of stopped) row.readiness = 'confirmed';
+      // The run's fixture names its targets by package; the event carries each one's own id.
+      return { rows: stopped.map(row => ({ target_id: open.targetIds[open.store.targets.indexOf(row)],
+        readiness: 'confirmed', stage: 2 })) };
+    }
+    if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: 0 }] };
+    if (sql.startsWith('UPDATE usp_outbox_streams')) return { rows: [{ sequence: '1' }] };
+    if (sql.startsWith('INSERT INTO usp_outbox')) return { rows: [] };
+    if (sql.startsWith('SELECT id FROM jobs')) {
+      requeued = true;
+      return { rows: [{ id }] };
+    }
+    throw new Error(`Unexpected query: ${sql}`);
+  } } as unknown as PoolClient;
+  globals.ulpinPool = { connect: async () => client } as unknown as Pool;
+  try {
+    await retryIntakeConfirmation(open.caseId, open.confirmationId)
+      .catch(error => { if (error !== done) throw error; });
+    return { requeued, asked };
+  } finally {
+    globals.ulpinPool = previous;
+  }
+}
+
+test('a stopped confirmation is not retried while another open run records its package; once that ends, it is',
+  async () => {
+    const open = commitRun();
+    const [, taken] = open.ids;
+    const commit = async (id: string) => {
+      if (id === taken) throw new AppError(422, 'PACKAGE_REVIEW_REQUIRED', 'The package needs a current review.');
+      open.store.committed.push(id);
+    };
+    await assert.rejects(open.run({ commit: commit as unknown as IntakeRunSteps['commit'] }));
+    assert.deepEqual([open.store.status, open.store.targets[1].readiness], ['failed', 'stopped']);
+    const [storedB] = await confirmBeside(open, taken);
+    let status = 'queued';
+    const b: Stored = { confirmationId: storedB[0] as string, packages: [taken], status: () => status };
+    await assert.rejects(retryBeside(open, [b]), { status: 409, code: 'INTAKE_CONFIRMATION_PENDING',
+      message: `Package ${taken} is already being recorded by confirmation ${b.confirmationId}.` });
+    assert.equal(open.store.targets[1].readiness, 'stopped');
+    status = 'failed';
+    const retried = await retryBeside(open, [b]);
+    assert.deepEqual([retried.requeued, open.store.targets[1].readiness], [true, 'confirmed']);
+    assert.deepEqual(retried.asked.map(call => /FROM (\w+)/.exec(call.sql)![1]),
+      ['cases', ...open.ids.map(() => 'import_packages'), 'usp_intake_confirmations']);
+    assert.match(retried.asked[0].sql, /FOR UPDATE$/);
+    assert.deepEqual(retried.asked.slice(1, 4).map(call => call.values[0]), open.ids);
+    assert.deepEqual(retried.asked.at(-1)!.values, [open.caseId, open.ids, open.confirmationId]);
+  });
+

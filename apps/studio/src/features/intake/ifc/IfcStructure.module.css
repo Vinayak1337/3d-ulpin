@@ -1,0 +1,48 @@
+.panel {
+  padding: var(--ui-space-4);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius-12);
+  background: var(--ui-surface);
+  display: grid;
+  gap: var(--ui-space-3);
+  min-width: 0;
+}
+
+.tree {
+  display: grid;
+  gap: var(--ui-space-3);
+  min-width: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--ui-space-4);
+  border-left: 1px solid var(--ui-divider);
+  display: grid;
+  gap: var(--ui-space-2);
+}
+
+.tree > .list {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.line {
+  display: grid;
+  gap: var(--ui-space-1);
+  overflow-wrap: anywhere;
+}
+
+.name {
+  font-weight: 600;
+  color: var(--ui-ink);
+}
+
+.group summary {
+  cursor: pointer;
+  display: list-item;
+  min-height: calc(var(--ui-control-height) + var(--ui-space-1));
+  padding: var(--ui-space-2) 0;
+  color: var(--ui-ink-soft);
+}

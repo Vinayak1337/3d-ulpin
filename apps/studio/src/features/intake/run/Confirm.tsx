@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef } from 'react';
 import { Button, Panel } from '@ulpin/ui';
 import { PackageDetails } from './Packages';
-import { cardsOnlyWords, confirmablePackages, confirmationWords, INTAKE_TARGET_LIMITS, type Target,
-  type TargetPage } from './model';
+import { cardsOnlyWords, confirmablePackages, confirmationWords, INTAKE_TARGET_LIMITS, PACKAGE_PAGE,
+  remainingPackagesWords, type Target, type TargetPage } from './model';
 import styles from './Run.module.css';
 
 interface Props {
@@ -17,6 +17,10 @@ interface Props {
   uncertain: boolean;
   stale: boolean;
   error: string;
+  /** Moves to the next page of packages; absent where the confirmation cannot move. */
+  next?: () => void;
+  /** Returns to the first page of packages; absent on the first page. */
+  first?: () => void;
 }
 
 export function Confirm(props: Props) {
@@ -29,6 +33,7 @@ export function Confirm(props: Props) {
     {cards ? <CardsList cards={cards} close={props.closeCards} locked={locked} /> : <>
       <p>{confirmationWords(props.choice.length)}</p>
       {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} confirming />)}
+      <PackagePages page={props.page} next={props.next} first={props.first} locked={locked} />
     </>}
     <p>{cards ? '' : 'Recording cannot be undone. '}If a building stops, completed steps are kept. A card proves
       what the record cites, not ownership or a right. Buildings do not receive a space identity.</p>
@@ -47,10 +52,27 @@ export function Confirm(props: Props) {
       {pressLabel(props.busy, props.uncertain, Boolean(cards))}
     </Button>
     {!allowed && !props.uncertain ? <p className="ul-help">Type your acknowledgement before confirming.
-      {cards ? '' : ' Only packages with a current review and ready buildings or no buildings can be recorded.'}
+      {cards ? '' : ' Only packages with a current review, not being recorded, and with ready buildings or no '
+        + 'buildings can be recorded.'}
     </p> : null}
     {props.stale ? <p className="ul-help">The current batch could not be read. Refresh it before confirming.</p> : null}
   </Panel>;
+}
+
+/** While packages not yet recorded follow the listed ones, the officer takes the next page for another press. */
+export function PackagePages({ page, next, first, locked }: {
+  page: TargetPage; next?: () => void; first?: () => void; locked: boolean;
+}) {
+  const after = page.packagesUnrecordedAfter ?? 0;
+  const more = Boolean(next && page.packagesNextCursor && after > 0);
+  if (!more && !first) return null;
+  return <div className={styles.stack}>
+    {more ? <p role="status">{remainingPackagesWords(page.packages.length, after)}</p> : null}
+    <div className={styles.controls}>
+      {more ? <Button disabled={locked} onClick={next}>Next {PACKAGE_PAGE} packages</Button> : null}
+      {first ? <Button disabled={locked} onClick={first}>Back to the first packages</Button> : null}
+    </div>
+  </div>;
 }
 
 /** The recorded buildings a cards-only confirmation names, in the order their cards are made. */

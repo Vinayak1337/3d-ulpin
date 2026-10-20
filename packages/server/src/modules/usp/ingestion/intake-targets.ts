@@ -215,9 +215,68 @@ async function countsTx(client: PoolClient, caseId: string) {
   return { counts, packages };
 }
 
+const packagePage = 100;
+/** A package's place: unrecorded (0) before recorded (1), then the file's own part order, then id. */
+const PackageKeySchema = z.tuple([z.union([z.literal(0), z.literal(1)]), z.guid().nullable(),
+  z.number().int().nonnegative().nullable(), z.guid()]);
+type PackageKey = z.infer<typeof PackageKeySchema>;
+
+function packageCursor(key: PackageKey): string {
+  return Buffer.from(JSON.stringify(key)).toString('base64url');
+}
+
+function readPackageCursor(value: string): PackageKey {
+  try {
+    return PackageKeySchema.parse(JSON.parse(Buffer.from(value, 'base64url').toString('utf8')));
+  } catch {
+    throw new AppError(422, 'INTAKE_TARGET_QUERY', 'Use a package cursor that an earlier target read returned.');
+  }
+}
+
+/** A missing part place sorts after every stated one. */
+function comparePackageKeys(left: PackageKey, right: PackageKey): number {
+  for (let index = 0; index < left.length; index++) {
+    const [a, b] = [left[index], right[index]];
+    if (a === b) continue;
+    if (a === null || b === null) return a === null ? 1 : -1;
+    return a < b ? -1 : 1;
+  }
+  return 0;
+}
+
+/** Every package's place, from its state column and its first published part; never its body. */
+async function packageOrderTx(client: PoolClient, caseId: string, ids: string[]): Promise<PackageKey[]> {
+  const rows = (await client.query(`SELECT p.id,p.state='COMMITTED' AS recorded,o.item_id,o.part_index
+    FROM import_packages p LEFT JOIN (
+      SELECT DISTINCT ON (part.result_ref->>'packageId') part.result_ref->>'packageId' AS package_id,
+        part.item_id,part.part_index
+      FROM usp_intake_parts part JOIN usp_intake_items i ON i.item_id=part.item_id
+      WHERE i.case_id=$2 AND part.state='published' AND part.result_ref ? 'packageId'
+      ORDER BY part.result_ref->>'packageId',part.item_id,part.part_index
+    ) o ON o.package_id=p.id::text WHERE p.id=ANY($1::uuid[])`, [ids, caseId])).rows;
+  return rows.map((row): PackageKey => [row.recorded ? 1 : 0, row.item_id ?? null, row.part_index ?? null, row.id])
+    .sort(comparePackageKeys);
+}
+
+/** For each unrecorded package, the stored confirmation of the case naming it whose commit run is still queued or
+ * running, other than `except`. A run that failed or was cancelled frees its packages; one that recorded them left
+ * them COMMITTED. */
+export async function recordingConfirmationsTx(client: PoolClient, caseId: string, packageIds: string[],
+  except: string | null = null): Promise<Map<string, string>> {
+  const rows = (await client.query(`SELECT DISTINCT ON (p.id) p.id AS package_id,c.confirmation_id
+    FROM usp_intake_confirmations c CROSS JOIN LATERAL jsonb_array_elements(c.packages) AS named
+    JOIN import_packages p ON p.id::text=named->>'packageId' AND p.state<>'COMMITTED'
+    WHERE c.case_id=$1 AND p.id=ANY($2::uuid[]) AND c.confirmation_id IS DISTINCT FROM $3::uuid
+      AND EXISTS (SELECT 1 FROM jobs j WHERE j.case_id=c.case_id
+      AND j.operation='intake-run' AND j.status IN ('queued','running') AND j.payload->>'phase'='commit'
+      AND j.payload->>'confirmationId'=c.confirmation_id::text)
+    ORDER BY p.id,c.created_at,c.confirmation_id`, [caseId, packageIds, except])).rows;
+  return new Map(rows.map(row => [row.package_id as string, row.confirmation_id as string]));
+}
+
 /** Project review metadata in SQL: never return the body or any package features. */
-async function packageFactsTx(client: PoolClient, packages: Map<string, PackageCounts>) {
-  const ids = [...packages.keys()].slice(0, 101);
+async function packageFactsTx(client: PoolClient, caseId: string, ids: string[],
+  packages: Map<string, PackageCounts>) {
   const rows = (await client.query(`WITH packages AS (
     SELECT p.id,p.body->>'areaId' AS area_id,(p.body->>'revision')::int AS revision,
       p.body->>'state' AS state,CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision'
@@ -226,28 +285,45 @@ async function packageFactsTx(client: PoolClient, packages: Map<string, PackageC
         'code',i.review_refusal_code,'message',i.review_refusal_message) END AS review_refusal
     FROM import_packages p LEFT JOIN usp_intake_items i ON i.item_id=ANY($2::uuid[])
       AND i.plan_ref->>'packageId'=p.id::text
-    WHERE p.id=ANY($1::uuid[]) ORDER BY p.id LIMIT 101
+    WHERE p.id=ANY($1::uuid[])
   ) SELECT id,area_id,revision,state,review_refusal,review->>'inputFingerprint' AS review_fingerprint,
     CASE WHEN review IS NULL THEN NULL ELSE COALESCE((
       SELECT jsonb_object_agg(code,count) FROM (
         SELECT finding->>'code' AS code,count(*)::int AS count
         FROM jsonb_array_elements(review->'findings') AS finding GROUP BY finding->>'code'
       ) AS findings
-    ),'{}'::jsonb) END AS finding_counts FROM packages ORDER BY id`,
+    ),'{}'::jsonb) END AS finding_counts FROM packages`,
   [ids, ids.map(id => packages.get(id)!.anchorItemId)])).rows;
-  return { packages: rows.slice(0, 100).map(row => ({ packageId: row.id, areaId: row.area_id,
-    anchorItemId: packages.get(row.id)!.anchorItemId, revision: row.revision, state: row.state,
+  const place = new Map(ids.map((id, index) => [id, index]));
+  const recording = await recordingConfirmationsTx(client, caseId, ids);
+  return rows.sort((a, b) => place.get(a.id)! - place.get(b.id)!).map(row => ({ packageId: row.id,
+    areaId: row.area_id, anchorItemId: packages.get(row.id)!.anchorItemId, revision: row.revision, state: row.state,
     reviewFingerprint: row.review_fingerprint, findingCounts: row.finding_counts,
-    reviewRefusal: row.review_refusal ?? null,
-    counts: packages.get(row.id)!.counts })), packagesTruncated: packages.size > 100 };
+    reviewRefusal: row.review_refusal ?? null, recordingConfirmationId: recording.get(row.id) ?? null,
+    counts: packages.get(row.id)!.counts }));
 }
 
-/** A page of a case's targets in id order, and its counts by readiness. */
+/** One page of at most 100 packages after the cursor, unrecorded first, and how many the batch has. */
+async function packagePageTx(client: PoolClient, caseId: string, packages: Map<string, PackageCounts>,
+  cursor: PackageKey | null) {
+  const order = await packageOrderTx(client, caseId, [...packages.keys()]);
+  const after = cursor ? order.filter(key => comparePackageKeys(key, cursor) > 0) : order;
+  const page = after.slice(0, packagePage);
+  const unrecorded = (keys: PackageKey[]) => keys.filter(key => key[0] === 0).length;
+  return { packages: await packageFactsTx(client, caseId, page.map(key => key[3]), packages),
+    packagesTruncated: page.length < order.length,
+    packagesNextCursor: after.length > page.length ? packageCursor(page.at(-1)!) : null,
+    packagesTotal: order.length, packagesUnrecorded: unrecorded(order),
+    packagesUnrecordedAfter: unrecorded(after.slice(packagePage)) };
+}
+
+/** A page of a case's targets in id order, its counts by readiness, and one page of its packages. */
 export async function listIntakeTargets(caseIdValue: string, readiness: string | undefined,
-  cursorValue: string | undefined) {
+  cursorValue: string | undefined, packageCursorValue?: string) {
   const caseId = uuid.parse(caseIdValue);
   const filter = readiness === undefined ? null : IntakeTargetReadinessSchema.parse(readiness);
   const cursor = cursorValue === undefined ? null : uuid.parse(cursorValue);
+  const packageKey = packageCursorValue === undefined ? null : readPackageCursor(packageCursorValue);
   return transaction(async client => {
     await intakeCaseTx(client, caseId);
     const rows = (await client.query(`SELECT * FROM usp_intake_targets WHERE case_id=$1
@@ -255,9 +331,26 @@ export async function listIntakeTargets(caseIdValue: string, readiness: string |
       ORDER BY target_id LIMIT $4`, [caseId, filter, cursor, INTAKE_TARGET_LIMITS.page + 1])).rows;
     const page = rows.slice(0, INTAKE_TARGET_LIMITS.page);
     const summary = await countsTx(client, caseId);
-    const packages = await packageFactsTx(client, summary.packages);
+    const packages = await packagePageTx(client, caseId, summary.packages, packageKey);
     return IntakeTargetPageSchema.parse({ caseId, items: page.map(intakeTargetView), counts: summary.counts,
       ...packages, nextCursor: rows.length > page.length ? page.at(-1).target_id : null });
+  });
+}
+
+/** The intake target of a building picked on the map: in the package proposing it, else in the packages that
+ * recorded it; when several name it, the one furthest along. Read with the case access of the target page. */
+export async function readIntakeTargetByFeature(featureIdValue: string,
+  packageIdValue: string | undefined): Promise<IntakeTarget> {
+  const featureId = uuid.parse(featureIdValue);
+  const packageId = packageIdValue === undefined ? null : uuid.parse(packageIdValue);
+  return transaction(async client => {
+    const row = (await client.query(`SELECT * FROM usp_intake_targets WHERE feature_id=$1
+      AND package_id=ANY(CASE WHEN $2::uuid IS NULL THEN ARRAY(SELECT package_id FROM physical_feature_revisions
+        WHERE feature_id=$1) ELSE ARRAY[$2::uuid] END)
+      ORDER BY stage DESC,updated_at DESC,target_id LIMIT 1`, [featureId, packageId])).rows[0]
+      ?? notFound('No intake target names this building.');
+    await intakeCaseTx(client, row.case_id);
+    return intakeTargetView(row);
   });
 }
 

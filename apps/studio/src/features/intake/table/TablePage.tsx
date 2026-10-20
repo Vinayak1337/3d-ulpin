@@ -8,6 +8,7 @@ import { RecipeReview } from './RecipeReview';
 import { SourceHeader } from './SourceHeader';
 import { StaleNotice } from './StaleNotice';
 import { StartJobs } from './StartJobs';
+import { TableRows } from './TableRows';
 import { useTableData } from './useTableData';
 import type { ChunkMapping, MappingJob, Metrics, TableProfile } from './types';
 import styles from './Table.module.css';
@@ -18,7 +19,8 @@ export function TablePage() {
 }
 
 function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string }) {
-  const { profile, sourceCase, stream, jobs, mappings, errors, freshness } = useTableData(caseId, sourceId);
+  const { profile, sourceCase, stream, jobs, mappings, errors, freshness, windowed } =
+    useTableData(caseId, sourceId);
   const { state, fallback, reconnect } = stream;
   if (profile.isPending) return <div className={styles.page}><Skeleton /><Skeleton /><Skeleton /></div>;
   if (profile.error) return <div className={styles.page}><TableRefusal error={profile.error} /></div>;
@@ -42,6 +44,7 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
       {errors.filter(Boolean).map((error, index) => <TableRefusal key={index} error={error} />)}
       <MappingContent profile={profile.data} mappings={mappings} metrics={state.metrics} stale={Boolean(stale)}
         jobId={state.mappingJobId} job={jobs.mapping.data} onApproved={stream.followApproved} />
+      {windowed ? <TableRows caseId={caseId} sourceId={sourceId} /> : null}
     </div>
   );
 }

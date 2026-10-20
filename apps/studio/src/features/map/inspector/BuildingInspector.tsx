@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { FilePlus, Stack, Trash, WarningOctagon } from '@phosphor-icons/react';
 import type { NormalizedBuilding } from '@ulpin/contracts/canonical-scene';
@@ -34,9 +34,11 @@ export function levelSummary(model: BuildingModel): string {
   return parts.join(' · ');
 }
 
-export function BuildingInspector({ feature, canonical, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles, onDelete }: {
+export function BuildingInspector({ feature, canonical, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles, onDelete, card }: {
   feature: AreaFeature; canonical: NormalizedBuilding | undefined; register: BuildingRegister | undefined; model: BuildingModel | null; ledger: BuildingLedger | null | undefined;
   registerPending: boolean; crumbs: Crumb[]; exploring: boolean; onExplore: () => void; onFindings: (findingId?: string) => void; onAddFiles?: () => void; onDelete?: () => void;
+  /** The property card section of a building an intake target names (the map's inspector only). */
+  card?: ReactNode;
 }) {
   const [tab, setTab] = useState<Tab>('overview');
   const openEvidence = useOpenEvidence();
@@ -119,6 +121,7 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
             <ReadinessMeter task={ledger.readiness.task} dimensions={ledger.readiness.dimensions.map((d) => ({ name: d.name, value: d.value ?? 'unknown', label: d.label }))} />
           ) : <p className={styles.note}>Geometry and height come from the source. They do not establish ownership, floors or rights.</p>}
           {canonical?.gaps.length ? <ul className={styles.gaps} aria-label="Gaps in this record">{canonical.gaps.map((gap) => <li key={gap}>{gap}</li>)}</ul> : null}
+          {card}
           {onDelete ? <Button variant="ghost" icon={Trash} className={styles.delete} onClick={onDelete} aria-label={`Delete ${feature.name}`}>Delete building</Button> : null}
         </>
       ) : tab === 'rights' && ledger ? (

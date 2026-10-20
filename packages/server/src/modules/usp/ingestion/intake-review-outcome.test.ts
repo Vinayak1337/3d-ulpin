@@ -60,10 +60,13 @@ function projection(sql: string, buildings: boolean, item: Item, target: Target)
   if (sql.startsWith('SELECT p.id AS package_id')) return { rows: [{ package_id: packageId,
     anchor_item_id: caseId }] };
   if (sql.startsWith('SELECT package_id,min')) return { rows: [] };
+  if (sql.startsWith('SELECT p.id,p.state')) return { rows: [{ id: packageId, recorded: false, item_id: null,
+    part_index: null }] };
   if (sql.startsWith('WITH packages AS')) return { rows: [{ id: packageId, area_id: caseId,
     revision: 1, state: 'READY_FOR_REVIEW', review_fingerprint: null, finding_counts: null,
     review_refusal: item.review_refusal_code ? { code: item.review_refusal_code,
       message: item.review_refusal_message } : null }] };
+  if (sql.startsWith('SELECT DISTINCT ON (p.id)')) return { rows: [] };
   if (/^(BEGIN|COMMIT|ROLLBACK|INSERT INTO usp_outbox|UPDATE usp_outbox_streams)/.test(sql)) {
     return { rows: [{ sequence: '1' }] };
   }
@@ -112,7 +115,7 @@ for (const buildings of [false, true]) {
     const projections = control.calls.filter(call => call.sql.startsWith('WITH packages AS'));
     assert.equal(projections.length, 3);
     assert(projections.every(call => !/features|SELECT p\.body\b|FROM jobs/.test(call.sql)));
-    assert(projections.every(call => /LIMIT 101/.test(call.sql)));
+    assert(projections.every(call => call.values[0].length <= 100));
   });
 }
 

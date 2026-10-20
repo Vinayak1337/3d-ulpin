@@ -172,6 +172,16 @@ export interface MapArea {
   geographicExtent: [number, number, number, number] | null;
   administrativeUnits: AdministrativeUnit[];
 }
+/** An officer's retire or restore of an area. Nothing is deleted; each change is one event. */
+export interface AreaRetirement {
+  areaId: string;
+  state: "retired" | "active";
+  areaRevision: number;
+  eventId: string;
+  actor: string;
+  reason: string;
+  at: string;
+}
 export interface AreaFinding {
   id: string;
   category: "geometric" | "coverage" | "rule" | "document";
@@ -344,12 +354,13 @@ export const AreaDisplaySummarySchema = z.strictObject({
 export type AreaDisplaySummary = z.infer<typeof AreaDisplaySummarySchema>;
 const localRing = z.array(z.tuple([z.number(), z.number()]));
 /** One feature of a display window: its outline in local metres, the height only when the record states one, and
- * whether it is recorded or a package's unrecorded proposal; a proposal names the case holding its package. */
+ * whether it is recorded or a package's unrecorded proposal; a proposal names its package and the case holding it. */
 export const AreaWindowFeatureSchema = z.strictObject({
   id: z.string().uuid(), identifier: z.string(), kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']),
   polygons: z.array(z.array(localRing)), heightM: z.number().nullable(),
   heightState: z.enum(['unresolved', 'estimated', 'source_supported', 'reviewed', 'unknown']),
   displayState: z.enum(['recorded', 'unrecorded_proposal']), caseId: z.string().uuid().optional(),
+  packageId: z.string().uuid().optional(),
 });
 export type AreaWindowFeature = z.infer<typeof AreaWindowFeatureSchema>;
 /** The answer of GET /api/v1/areas/{areaId}/display-window: one keyset page of the features meeting a window. */

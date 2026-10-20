@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { FilePlus, SlidersHorizontal, Trash, X } from '@phosphor-icons/react';
+import { Archive, FilePlus, SlidersHorizontal, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
 import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
@@ -12,6 +12,7 @@ import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
+import { RetireAreaDialog } from '../manage/RetireAreaDialog';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { drawnCountNote, polygonsOf, undrawnNote } from './footprints';
@@ -38,6 +39,7 @@ import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
+import { BuildingCard } from './inspector/BuildingCard';
 import { BuildingInspector } from './inspector/BuildingInspector';
 import { FindingsInspector } from './inspector/FindingsInspector';
 import { SpaceInspector } from './inspector/SpaceInspector';
@@ -59,7 +61,6 @@ const WIDE_WINDOW = '(min-width: 1000px)';
 const NO_LOADED_OVERLAYS: LoadedOverlay[] = [];
 const NO_IMAGES: RetainedImages['overlays'] = [];
 const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
-const canDeleteArea = isServed('DELETE', '/api/v1/areas/:areaId');
 
 export function MapWorkspace({ context }: { context: AreaContext }) {
   const features = context.displayFeatures;
@@ -79,7 +80,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  const [dialog, setDialog] = useState<'card' | 'files' | 'delete-building' | 'delete-area' | null>(null);
+  const [dialog, setDialog] = useState<'card' | 'files' | 'delete-building' | 'retire-area' | null>(null);
   const navigate = useNavigate();
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
@@ -382,7 +383,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
       <BuildingInspector feature={feature} canonical={canonical} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
         exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={canDeleteBuilding ? () => setDialog('delete-building') : undefined}
         onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
-        onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
+        onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })}
+        card={<BuildingCard featureId={feature.id} packageId={feature.proposalPackageId} name={feature.name} />} />
     );
   } else inspector = null;
 
@@ -505,7 +507,10 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                   onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
                   viewFooter={<>
                     <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
-                    {!feature && canDeleteArea ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+                    {!feature && !isDemoId(context.area.id) ? (
+                      <Button variant="ghost" icon={Archive} className={styles.retireArea}
+                        onClick={() => setDialog('retire-area')}>Retire area</Button>
+                    ) : null}
                   </>}
                 />
               </details>
@@ -547,9 +552,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
         <DeleteDialog target={{ kind: 'building', id: feature.id, name: feature.name, detail: `${feature.name} and its register (floors, units, findings and history) are deleted from ${context.area.name}.` }}
           onClose={() => setDialog(null)} onDeleted={() => { setDialog(null); dispatch({ type: 'selectBuilding', id: null }); setNotice(`${feature.name} deleted`); }} />
       ) : null}
-      {dialog === 'delete-area' ? (
-        <DeleteDialog target={{ kind: 'area', id: context.area.id, name: context.area.name, detail: `${context.area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.` }}
-          onClose={() => setDialog(null)} onDeleted={() => navigate('/studio/map', { replace: true })} />
+      {dialog === 'retire-area' ? (
+        <RetireAreaDialog target={{ id: context.area.id, name: context.area.name, revision: context.area.revision }}
+          onClose={() => setDialog(null)} onRetired={() => navigate('/studio/map', { replace: true })} />
       ) : null}
       {dialog === 'card' && space && feature ? (
         <UnitCardDialog buildingId={feature.id} workflow={spaceWorkflow.data} space={space} level={level}

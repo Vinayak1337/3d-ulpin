@@ -69,6 +69,8 @@ function fixture(){
     }else if(sql.startsWith('INSERT INTO usp_outbox_streams')){}
     else if(sql.startsWith('UPDATE usp_outbox_streams'))rows=[{sequence:String(events.length+1)}];
     else if(sql.startsWith('INSERT INTO usp_outbox'))events.push(args[2]);
+    // A job of the dedicated route has no batch intake part (SB1).
+    else if(sql.includes('FROM usp_intake_parts'))rows=[];
     else assert.fail('unexpected SQL '+sql);
     return {rows:structuredClone(rows),rowCount:rows.length};
   };

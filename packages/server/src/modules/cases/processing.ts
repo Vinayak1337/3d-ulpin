@@ -18,10 +18,14 @@ import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
 import {runIntakeDraftJob} from '../usp/ingestion/intake-draft-worker';
 import {runIntakeLargeJob} from '../usp/ingestion/intake-large-worker';
 import {runIntakeZipLayersJob} from '../usp/ingestion/intake-zip-layers-worker';
+import {runIntakePageImageJob} from '../usp/ingestion/intake-page-image-worker';
+import {runIntakeNativeDerivativeJob} from '../usp/ingestion/intake-native-derivative-worker';
 import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
+import {runTableProfileJob} from '../usp/ingestion/table-profile-worker';
 import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
+import {admitIntakeSurfaceParts} from '../usp/ingestion/intake-surface';
 import {runIFCJob} from '../usp/ingestion/ifc-worker';
 import {runDXFJob} from '../usp/ingestion/dxf-worker';
 import {runKMLJob} from '../usp/ingestion/kml-worker';
@@ -40,7 +44,10 @@ let streamedProfileWorker:Promise<void>|undefined;
 let intakeDraftWorker:Promise<void>|undefined;
 let intakeLargeWorker:Promise<void>|undefined;
 let intakeZipLayersWorker:Promise<void>|undefined;
+let intakePageImageWorker:Promise<void>|undefined;
+let intakeNativeDerivativeWorker:Promise<void>|undefined;
 let intakeEvidenceWorker:Promise<void>|undefined;
+let tableProfileWorker:Promise<void>|undefined;
 let intakeRunWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
@@ -230,6 +237,8 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
       FROM jobs WHERE status IN ('queued','running') AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now()) ranked
     ORDER BY operation_rank, created_at LIMIT 12`,
   );
+  // SB1: a kept TIFF or LAZ of a batch admits its next planned part within its reader's own caps, one per file.
+  await admitIntakeSurfaceParts().catch(keepWorkerError('intake-surface', 'admission'));
   await Promise.all(
     pending.rows.map(async (job) => {
       if(job.operation==='packet-pdf'){
@@ -361,11 +370,32 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
           .finally(()=>{intakeZipLayersWorker=undefined;});
         return;
       }
+      if(job.operation==='intake-page-image'){
+        if(!intakePageImageWorker)intakePageImageWorker=runIntakePageImageJob(job.id)
+          // The fenced attempt owns retry; a rerun stores the same content-addressed preview.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakePageImageWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-native-derivative'){
+        if(!intakeNativeDerivativeWorker)intakeNativeDerivativeWorker=runIntakeNativeDerivativeJob(job.id)
+          // The fenced attempt and each child's lineage own recovery; a rerun keeps no layer twice.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakeNativeDerivativeWorker=undefined;});
+        return;
+      }
       if(job.operation==='intake-evidence'){
         if(!intakeEvidenceWorker)intakeEvidenceWorker=runIntakeEvidenceJob(job.id)
           // The fenced attempt and the reading's coverage row own recovery; a rerun replaces its candidates.
           .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{intakeEvidenceWorker=undefined;});
+        return;
+      }
+      if(job.operation==='table-profile'){
+        if(!tableProfileWorker)tableProfileWorker=runTableProfileJob(job.id)
+          // The fenced attempt owns retry; the accepting transaction attaches the table receipt once.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{tableProfileWorker=undefined;});
         return;
       }
       if(job.operation==='intake-run'){

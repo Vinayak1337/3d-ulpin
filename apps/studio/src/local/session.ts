@@ -29,11 +29,6 @@ export function resetSession() {
   try { localStorage.removeItem(KEY); localStorage.removeItem('bhuaayam.requests'); } catch { /* nothing stored */ }
 }
 
-/** Deleting the area removes everything its import brought in: the area, its buildings and their floors. */
-export function deleteArea() {
-  writeSession({ ...EMPTY });
-}
-
 export function deleteBuilding(id: string) {
   const s = readSession();
   if (!s.deletedBuildings.includes(id)) writeSession({ deletedBuildings: [...s.deletedBuildings, id] });

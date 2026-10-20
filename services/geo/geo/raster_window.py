@@ -23,7 +23,7 @@ MAX_SOURCE_PIXELS = 100_000_000
 MAX_WINDOW_SIDE = 256
 MAX_WINDOW_RAW_BYTES = 2 * 1024 * 1024
 MAX_OUTPUT_BYTES = 4 * 1024 * 1024
-KEY = re.compile(r"^sources/([0-9a-f-]{36})/([0-9a-f]{64})$")
+KEY = re.compile(r"^(?:sources|large-originals)/([0-9a-f-]{36})/([0-9a-f]{64})$")
 HASH = re.compile(r"^[0-9a-f]{64}$")
 
 
