@@ -1,7 +1,7 @@
 // The demo project, or a named rehearsal beside it. Existing linked/repository/worker projects are never
 // operated on, and an action for one runtime name reads, starts and stops that runtime only.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -9,7 +9,9 @@ import {
 } from './demo-config.mjs';
 import { dockerRuntime, engine, imageLabels, inventory, startProblems, root } from './runtime.mjs';
 import { imageProblems, readPin } from './processor-image-pin.mjs';
-import { launchProcesses, stopProcesses, waitForApi } from './processes.mjs';
+import {
+  clearStoppedOnPurpose, guardOpsDir, launchProcesses, stopProcesses, waitForApi,
+} from './processes.mjs';
 import { gatewayReport } from './demo-gateway.mjs';
 import { gatewayStateText } from './demo-gateway-state.mjs';
 
@@ -66,31 +68,12 @@ const localEngine = {
   stop: (runtime, ids) => execute('docker', ['--context', runtime.context, 'stop', '--timeout', '20', ...ids], {}),
 };
 
-/** The Docker guard's ops folder; ULPIN_DOCKER_GUARD_OPS_DIR stands in for it in tests. */
-export const guardOpsDir = () => process.env.ULPIN_DOCKER_GUARD_OPS_DIR || 'E:/BhuAayam-data/ops/docker-guard';
-export const stoppedOnPurposeFile = (opsDir = guardOpsDir()) => join(opsDir, 'demo-stopped-on-purpose.json');
-
-/**
- * While this marker exists the Docker guard does not start the demo. Only the demo runtime itself writes or
- * removes it; a rehearsal does neither.
- */
-export function markStoppedOnPurpose(definition, opsDir = guardOpsDir()) {
-  if (definition.rehearsal) return;
-  mkdirSync(opsDir, { recursive: true });
-  writeFileSync(stoppedOnPurposeFile(opsDir), JSON.stringify({ stoppedAt: new Date().toISOString() }) + '\n');
-}
-
-export function clearStoppedOnPurpose(definition, opsDir = guardOpsDir()) {
-  if (!definition.rehearsal) rmSync(stoppedOnPurposeFile(opsDir), { force: true });
-}
-
 /** Stops the named runtime's recorded processes and the containers labelled with its project; no other's. */
 export async function stopRuntime(name = demoRuntime, docker = localEngine, opsDir = guardOpsDir()) {
   const definition = definedRuntime(name);
-  // Stop owned native processes even if Desktop is down or configuration is missing.
-  await stopProcesses(definition);
-  // From here the API is down on purpose, even if the container step below fails.
-  markStoppedOnPurpose(definition, opsDir);
+  // Stop owned native processes even if Desktop is down or configuration is missing. For the demo this first
+  // writes the stopped-on-purpose marker that keeps the Docker guard from starting it again.
+  await stopProcesses(definition, opsDir);
   try {
     const runtime = docker.connect();
     const ids = docker.containers(runtime, definition.project)

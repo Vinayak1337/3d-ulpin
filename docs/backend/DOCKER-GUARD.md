@@ -40,9 +40,10 @@ or a runtime folder; a test checks the script's text for these and for the two c
 - Opt out: create the empty file `E:/BhuAayam-data/ops/docker-guard/no-demo-start`. The guard still checks health
   but starts nothing. `paused` stops this too, also for a hand-run `-Recover`. `-DryRun` records `planned` and never
   runs pnpm. Test switches: `-PnpmExe`, `-DemoCheckout`, `-HealthUrl`.
-- Stopped on purpose: `pnpm platform:stop --profile demo` (the demo itself, not a rehearsal) writes
-  `demo-stopped-on-purpose.json` (`{"stoppedAt": ...}`) in the ops folder and the next demo start removes it; while
-  it exists every mode records `stopped_on_purpose` and starts nothing, though the engine is still recovered.
+- Stopped on purpose: every stop of the demo's native processes (`stopProcesses()` in `processes.mjs`, used by
+  `pnpm platform:stop --profile demo` and roll-out step 2; never a rehearsal) first writes
+  `demo-stopped-on-purpose.json` (`{"stoppedAt": ...}`) in the ops folder, and a demo start removes it once the API
+  answers. While it exists every mode records `stopped_on_purpose` and starts nothing; the engine is still recovered.
 - Child output goes only to `demo-start-<yyyy-MM-dd>.log` in the ops folder. A command that outlives its timeout is
   left running and recorded as timed out; doctor is not run after a start that timed out.
 - The run's JSON line carries a `demo` object: `apiStatus` (the health status code, `null` when nothing answered),
