@@ -1,0 +1,34 @@
+{
+  "gate": "gf1",
+  "task": "tj1",
+  "title": "A register CSV dropped into a batch stays in that batch and is read as a table there",
+  "date": "2026-10-21",
+  "base": "d33558e7",
+  "kind": "code_and_tests",
+  "runtime": "not run; no Docker, database or browser in this task",
+  "decisions": {
+    "D1": "A CSV or XLSX dropped on the batch page, or in one drop with a file that makes a batch, joins that batch as its own item (kept through /uploads) and is kept before the drop's map files. A table dropped alone with no batch keeps the N01 table import.",
+    "D2": "The words 'cannot be attached to a site' are the Studio's own refusal in readSourceCase; the server has no site rule. The N01 import keeps it. N01B's Read as a table now reads the batch case through readBatchCase, which refuses only an archived case. On the server, the package rule of workspace() still refuses a case linked to a recorded property for every caller, and a package case for every caller except a table read (tableFromOriginal, attachTableTx, and the profile read of a table) of a source the case keeps as an intake item.",
+    "D3": "The evidence-by-key declare form reads the table profile of each kept CSV or workbook of the batch while a key is declared; a read table is offered with the headers and selection of its read, so a read workbook is offered too. An unread CSV keeps its card headers; an unread workbook is not offered."
+  },
+  "checks": {
+    "studio_typecheck": { "exit": 0 },
+    "backend_typecheck": { "exit": 0 },
+    "studio_test": { "exit": 0, "files": 90, "passed": 572, "skipped": 2 },
+    "backend_ingestion_set": { "exit": 0, "tests": 334, "passed": 333, "skipped": 1, "failed": 0 },
+    "related_root_tests": { "exit": 0, "tests": 47, "passed": 45, "skipped": 2, "failed": 0,
+      "files": ["tests/manual-author.test.ts", "tests/table-later-receipt.test.ts",
+        "tests/intake-upload-provenance.test.ts", "tests/tabular-admission.test.ts",
+        "tests/manual-plan-later-receipt.test.ts", "tests/registry-cityjson-draft.test.ts"] },
+    "openapi_check": { "exit": 0 },
+    "git_diff_check": { "exit": 0 }
+  },
+  "tests_added": [
+    "apps/studio/src/features/intake/file-route.test.ts: a table on the batch page joins the batch; a table dropped with footprints stays their batch item, kept first; a lone table keeps its import",
+    "apps/studio/src/features/intake/BatchTableSection.test.tsx: Read as a table in a site-bound batch case (fake client); an archived case refuses",
+    "apps/studio/src/features/intake/table/retain.test.ts: the N01 import still refuses a site-bound case; the batch read accepts it",
+    "apps/studio/src/features/intake/evidence/evidence.test.tsx: a read CSV and a read workbook are offered with their read headers and selection; the declare body validates against the published contract",
+    "packages/server/src/modules/usp/ingestion/table-batch-case.test.ts: a packaged, site-bound batch case reads its kept table and reads it back (fake pool); a packaged case without the item, a property case, and a non-table source still refuse"
+  ],
+  "data": "test_only generated two-row CSV and published fixture responses; no real record, identifier or geometry"
+}

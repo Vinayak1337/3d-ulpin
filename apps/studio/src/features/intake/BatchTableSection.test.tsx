@@ -117,6 +117,24 @@ it('a CSV item reads as a table in one request with a fresh key and the workspac
   expect(tablePath(opened)).toBe(`/studio/work/cases/${caseId}/tables/${sourceId}`);
 });
 
+it('TJ1: a CSV item reads in its batch case once the batch is bound to a site; an archived case refuses', async () => {
+  const bodies: TableFromOriginalBody[] = [];
+  let detail: Record<string, unknown> = { id: caseId, revision: 9, siteId: id(8), archived: false };
+  vi.stubGlobal('fetch', async (request: Request) => {
+    if (request.method === 'GET') return Response.json({ case: detail });
+    expect(new URL(request.url).pathname).toBe(`/api/v1/ingestion/cases/${caseId}/sources/${sourceId}/table`);
+    bodies.push(await request.json());
+    return Response.json(profile, { status: 201 });
+  });
+  const opened = await reader().send('', '');
+  expect(bodies).toHaveLength(1);
+  expect(bodies[0]).toMatchObject({ expectedWorkspaceRevision: 9 });
+  expect(tablePath(opened)).toBe(`/studio/work/cases/${caseId}/tables/${sourceId}`);
+  detail = { ...detail, archived: true };
+  await expect(reader().send('', '')).rejects.toThrow('This batch case is archived');
+  expect(bodies).toHaveLength(1);
+});
+
 it('a large CSV item gets its job, is followed with the same request until it succeeds, then opens', async () => {
   vi.useFakeTimers({ toFake: ['setTimeout'] });
   // test_only: job answers built to the 202 contract; no large CSV is generated here.

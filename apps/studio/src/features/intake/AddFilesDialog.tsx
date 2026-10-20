@@ -10,7 +10,7 @@ import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImpor
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 import { TableImportDialog } from './table/TableImportDialog';
-import { dropState, routeWords } from './file-route';
+import { batchOrder, batchRouteWords, dropState, routeWords, tablesJoin } from './file-route';
 import { IntakeDropDialog } from './IntakeDropDialog';
 
 type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { demoContents?: string };
@@ -26,14 +26,15 @@ interface Picked {
 function detected(f: Picked) {
   if (f.state === 'ready') return formatLabel(f.inspection!.format);
   if (f.state === 'inspecting') return 'Reading…';
-  return routeWords(f.file.name);
+  return f.state === 'intake' ? batchRouteWords(f.file.name) : routeWords(f.file.name);
 }
 
 const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
 
 /**
- * S2 Add files. N01: every file of one drop joins the batch of one case, a GeoPackage and any ZIP included; tables
- * keep their dialog, and the opt-in NYC profile keeps its separate development transport.
+ * S2 Add files. N01: every file of one drop joins the batch of one case, a GeoPackage and any ZIP included; a table
+ * dropped alone keeps its dialog, and the opt-in NYC profile keeps its separate development transport. TJ1: a table
+ * dropped on the batch page, or with a file that makes a batch, joins that batch as its own item.
  */
 export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles }: { onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean; caseId?: string; initialFiles?: File[] }) {
   if (batchId) return <SavedBatch batchId={batchId} onClose={onClose} />;
@@ -136,7 +137,8 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
 
   const add = async (list: FileList | File[] | null) => {
     if (!list?.length) return;
-    const picked = [...list].map<Picked>((file) => ({ file, state: dropState(file.name, demoImportEnabled) }));
+    const picked = [...list].map<Picked>((file) => ({ file,
+      state: dropState(file.name, demoImportEnabled, Boolean(openCaseId)) }));
     setFiles((current) => [...current, ...picked]);
     setStep(1);
     let batched = picked.some((p) => p.state === 'intake');
@@ -147,7 +149,10 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
         : inspection ? { ...file, state: 'ready', inspection } : { ...file, state: 'intake' }));
       batched ||= !inspection;
     }
-    if (batched) setShowIntake(true);
+    if (!batched) return;
+    // TJ1: a table of a drop that makes a batch is kept in that batch, not moved to a case of its own.
+    setFiles((current) => tablesJoin(current, picked.map((p) => p.file)));
+    setShowIntake(true);
   };
 
   useEffect(() => {
@@ -165,7 +170,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
     : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null;
 
   const rows = useMemo(() => files, [files]);
-  const intakeFiles = files.filter((file) => file.state === 'intake').map((file) => file.file);
+  const intakeFiles = batchOrder(files.filter((file) => file.state === 'intake').map((file) => file.file));
   if (showIntake && intakeFiles.length) {
     return <IntakeDropDialog files={intakeFiles} openCaseId={openCaseId} routed={routed} onClose={onClose}
       remainingFiles={files.filter((file) => file.state !== 'intake').map((file) => file.file)}
@@ -199,8 +204,9 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
             <span className="ul-heading">Drop files here, or choose files</span>
             <span className="ul-help">
               GeoJSON, GeoPackage and ZIP files are kept unchanged and checked in one batch, one item per layer;
-              the batch converts a GeoPackage or a shapefile set into layers. CSV and XLSX keep their table import.
-              Every other file is kept unchanged as an original in the batch.
+              the batch converts a GeoPackage or a shapefile set into layers. A CSV or XLSX dropped alone keeps its
+              table import; dropped with other files, it is kept in their batch and read there as a table. Every
+              other file is kept unchanged as an original in the batch.
             </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
           </label>

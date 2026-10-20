@@ -6,7 +6,7 @@ import { Button, Skeleton } from '@ulpin/ui';
 import type { IntakeItem } from './batch-model';
 import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
-import { formatSelection, readSourceCase, type TableFromOriginalBody } from './table/retain';
+import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
 import { TableSelectionFields } from './table/TableImportFields';
 import { jobWords, tablePath, useFollowTable, type Opened } from './table/useFollowTable';
 import styles from './Batch.module.css';
@@ -36,7 +36,7 @@ export function createItemTableRead(caseId: string, source: ItemTableSource, fol
     const selection = formatSelection(source.format, sheet, rows);
     if (JSON.stringify(body?.selection) !== JSON.stringify(selection)) body = null;
     try {
-      body ??= { requestKey: crypto.randomUUID(), expectedWorkspaceRevision: (await readSourceCase(caseId)).revision,
+      body ??= { requestKey: crypto.randomUUID(), expectedWorkspaceRevision: (await readBatchCase(caseId)).revision,
         selection };
       return await follow(caseId, source.sourceId, body, () => { body = null; });
     } catch (error) {

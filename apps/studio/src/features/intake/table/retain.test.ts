@@ -1,6 +1,29 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
-import { retainForm, streamedImport, tableSelection } from './retain';
+import { readBatchCase, readSourceCase, retainForm, streamedImport, tableSelection } from './retain';
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('the case a table is read in', () => {
+  const caseId = '10000000-0000-4000-8000-000000000001';
+  const answer = (fields: Record<string, unknown>) => vi.stubGlobal('fetch', async () =>
+    Response.json({ case: { id: caseId, revision: 2, siteId: null, archived: false, ...fields } }));
+
+  it('N01 unchanged: the table import of a lone drop refuses a case already bound to a site', async () => {
+    answer({ siteId: '10000000-0000-4000-8000-000000000002' });
+    await expect(readSourceCase(caseId)).rejects.toThrow('This table cannot be attached to a site.');
+    answer({});
+    expect((await readSourceCase(caseId)).revision).toBe(2);
+  });
+
+  it('TJ1: a table the batch keeps is read in its batch case, bound to a site or not; never an archived one',
+    async () => {
+      answer({ siteId: '10000000-0000-4000-8000-000000000002' });
+      expect((await readBatchCase(caseId)).revision).toBe(2);
+      answer({ archived: true });
+      await expect(readBatchCase(caseId)).rejects.toThrow('archived');
+    });
+});
 
 // Form serialization only; these empty File handles carry no fabricated source records.
 const csv = new File([], 'mi-d10-02.csv', { type: 'text/csv' });

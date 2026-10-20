@@ -1,11 +1,14 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import { INTAKE_EVIDENCE_LIMITS } from '../../../../../../packages/contracts/src/usp/intake';
+import type { IntakeItem } from '../batch-model';
 import { readTargets } from '../run/api';
+import { tableKey } from '../table/queries';
 import { INTAKE_TARGET_LIMITS, PACKAGE_PAGE, type Package } from '../run/model';
 import { singleMatch, type ConfirmBody, type ConfirmInput, type EvidenceConfirmation,
   type FileMatches } from './confirm-model';
-import type { Candidate, EvidencePage, KeyProfile, KeyProfileBody, KeyProfileInput, Outcome } from './model';
+import type { Candidate, EvidencePage, KeyProfile, KeyProfileBody, KeyProfileInput, Outcome, ReadTable,
+  Selection } from './model';
 
 /**
  * Under the batch's own key: every refresh the batch takes from its live updates (or its five-second check while
@@ -110,4 +113,29 @@ export async function readPackagePins(caseId: string, packageIds: readonly strin
     cursor = page.packagesNextCursor;
   }
   return found;
+}
+
+/**
+ * TJ1, D3: the table profile of each kept CSV or workbook of the batch, under the key N01B's table section reads it
+ * by. The server refuses a source not read as a table yet; it stays out of the map, never as empty headers. Read
+ * only while a key is being declared.
+ */
+export function useReadTables(caseId: string, items: readonly IntakeItem[], enabled: boolean) {
+  const sources = [...new Set(items.filter((item) => item.family === 'table' && item.sourceId
+    && (item.format === 'csv' || item.format === 'xlsx')).map((item) => item.sourceId!))];
+  return useQueries({ queries: sources.map((sourceId) => ({ queryKey: [...tableKey(caseId, sourceId), 'profile'],
+    retry: false, enabled, queryFn: async () => unwrap(await api.GET(
+      '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile', { params: { path: { caseId, sourceId } } })),
+  })), combine: (results) => readTables(sources, results.map((result) => result.data)) });
+}
+
+/** The read tables by source: a table profile states its headers and the selection it was read with. */
+export function readTables(sources: readonly string[], profiles: readonly unknown[]) {
+  const read = new Map<string, ReadTable>();
+  for (const [index, profile] of profiles.entries()) {
+    const table = profile as { version?: string; headers?: string[]; tabular?: { selection?: Selection } } | undefined;
+    if (table?.version !== 'manual-tabular/1' || !table.headers || !table.tabular?.selection) continue;
+    read.set(sources[index]!, { headers: table.headers, selection: table.tabular.selection });
+  }
+  return read;
 }
