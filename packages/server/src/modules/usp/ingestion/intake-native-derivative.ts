@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { STREAMING_VECTOR_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard } from '@ulpin/contracts/usp';
 import type { transaction } from '../../../infrastructure/db';
 import { AppError } from '../../../infrastructure/errors';
 import type { readObjectRange } from '../../../infrastructure/storage';
@@ -242,8 +242,10 @@ async function keepDerivative(caseId: string, layer: ConvertedLayer,
   lineage: z.infer<typeof NativeDerivativeLineageSchema>, dependencies: NativeDerivativeDependencies) {
   const prior = await dependencies.transaction(client => keptChildTx(client, caseId, layer, lineage));
   if (prior) return prior;
-  const deadline = Date.now() + STREAMING_VECTOR_LIMITS.readMs;
-  const signal = AbortSignal.timeout(STREAMING_VECTOR_LIMITS.readMs);
+  // The copy's deadline grows with the layer's size, as the large reader's does.
+  const readMs = streamingReadMs(layer.geojson.bytes);
+  const deadline = Date.now() + readMs;
+  const signal = AbortSignal.timeout(readMs);
   const { objectKey, bytes, sha256 } = layer.geojson;
   async function* ranges() {
     for (let start = 0; start < bytes; start += 1024 * 1024) {
