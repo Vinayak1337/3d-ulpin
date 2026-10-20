@@ -373839,6 +373839,44 @@
                             "value"
                           ],
                           "additionalProperties": false
+                        },
+                        "window": {
+                          "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                          "type": "object",
+                          "properties": {
+                            "index": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 4095
+                            },
+                            "record": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 999999
+                            },
+                            "byteStart": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "byteEnd": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "index",
+                            "record",
+                            "byteStart",
+                            "byteEnd",
+                            "sha256"
+                          ],
+                          "additionalProperties": false
                         }
                       },
                       "required": [
@@ -376065,6 +376103,44 @@
                                         "value"
                                       ],
                                       "additionalProperties": false
+                                    },
+                                    "window": {
+                                      "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                                      "type": "object",
+                                      "properties": {
+                                        "index": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 4095
+                                        },
+                                        "record": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 999999
+                                        },
+                                        "byteStart": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "byteEnd": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "sha256": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{64}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "index",
+                                        "record",
+                                        "byteStart",
+                                        "byteEnd",
+                                        "sha256"
+                                      ],
+                                      "additionalProperties": false
                                     }
                                   },
                                   "required": [
@@ -376697,6 +376773,44 @@
                                           "required": [
                                             "state",
                                             "value"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "window": {
+                                          "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                                          "type": "object",
+                                          "properties": {
+                                            "index": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 4095
+                                            },
+                                            "record": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 999999
+                                            },
+                                            "byteStart": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "byteEnd": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "sha256": {
+                                              "type": "string",
+                                              "pattern": "^[a-f0-9]{64}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "index",
+                                            "record",
+                                            "byteStart",
+                                            "byteEnd",
+                                            "sha256"
                                           ],
                                           "additionalProperties": false
                                         }

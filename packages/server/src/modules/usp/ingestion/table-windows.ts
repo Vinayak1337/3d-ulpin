@@ -94,6 +94,14 @@ async function sliceTx(client: PoolClient, rawJobId: string, mappingJobId: strin
     mapped: mapped?.[offset]?.cells ?? null }));
 }
 
+/** The newest raw streaming job of a source revision that has stored at least one window. */
+export async function latestTableJobTx(client: PoolClient, caseId: string, sourceId: string, revision: number) {
+  return (await client.query(`SELECT j.id FROM jobs j JOIN usp_streaming_vector_imports i ON i.job_id=j.id
+    WHERE j.case_id=$1 AND j.source_id=$2 AND j.operation='streaming-vector' AND i.source_revision=$3
+    AND EXISTS(SELECT 1 FROM usp_table_windows w WHERE w.job_id=j.id)
+    ORDER BY j.created_at DESC,j.id DESC LIMIT 1`, [caseId, sourceId, revision])).rows[0];
+}
+
 /** Keyset page by record number. Mapped cells come from the newest mapping job that read the same raw job. */
 export class TableRowsService {
   async page(caseValue: string, sourceValue: string, queryValue: unknown) {
@@ -106,10 +114,7 @@ export class TableRowsService {
       const profile = source.inspection?.manualProfile;
       if (profile?.version !== 'manual-tabular/1' || source.inspection?.actor !== subject)
         throw new AppError(403, 'SOURCE_OPERATOR', 'This table belongs to another local context or is not a table.');
-      const raw = (await client.query(`SELECT j.id FROM jobs j JOIN usp_streaming_vector_imports i ON i.job_id=j.id
-        WHERE j.case_id=$1 AND j.source_id=$2 AND j.operation='streaming-vector' AND i.source_revision=$3
-        AND EXISTS(SELECT 1 FROM usp_table_windows w WHERE w.job_id=j.id)
-        ORDER BY j.created_at DESC,j.id DESC LIMIT 1`, [caseId, sourceId, source.revision])).rows[0];
+      const raw = await latestTableJobTx(client, caseId, sourceId, source.revision);
       const mapping = raw ? (await client.query(`SELECT job_id FROM usp_chunk_mapping_imports WHERE raw_job_id=$1
         AND EXISTS(SELECT 1 FROM usp_table_window_mappings m WHERE m.job_id=usp_chunk_mapping_imports.job_id)
         ORDER BY created_at DESC,job_id DESC LIMIT 1`, [raw.id])).rows[0] : undefined;

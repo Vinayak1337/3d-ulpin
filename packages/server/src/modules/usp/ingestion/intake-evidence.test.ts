@@ -1,16 +1,25 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { test } from 'node:test';
+import { Readable } from 'node:stream';
+import { afterEach, beforeEach, test } from 'node:test';
+import type { Pool } from 'pg';
 import type { DocumentResult, IntakeEvidenceAnchor, IntakeEvidenceCandidate, IntakeEvidenceConfirm,
-  IntakeEvidenceCoverage, IntakeEvidenceLocator, TabularSelection } from '@ulpin/contracts/usp';
+  IntakeEvidenceCoverage, IntakeEvidenceLocator, IntakeKeyProfileInput, TableWindowRow,
+  TabularSelection } from '@ulpin/contracts/usp';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { closeEvidence, documentAssertions, evidenceAnchor, evidenceConfirmationIssue, evidenceLinkManifest,
-  keyLiteral, newerSources, partLiterals, tableAssertions, type EvidenceState } from './intake-evidence';
+  keyLiteral, newerSources, partLiterals, tableAssertions, type EvidenceState,
+  type IntakeEvidenceInput } from './intake-evidence';
+import { windowedTableReading } from './intake-evidence-worker';
+import type { IntakeSourceRow } from './intake-context';
 import { stableUuid } from './intake-run';
+import { windowRows } from './table-windows';
 import { readTabularSource } from './tabular-source';
+import { readTabularWindows } from './tabular-stream';
 
 type Part = DocumentResult['native']['parts'][number];
+type TableRowLocator = Extract<IntakeEvidenceLocator, { kind: 'table_row' }>;
 // Real public NYC inputs (test_only, foreign geography): DOITT building footprints and the LPC landmark register
 // for the same blocks, which share the building identification number (BIN) as written.
 const buildingsPath = 'E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson';
@@ -167,3 +176,115 @@ test('a confirmation holds every pin; a stale pin or an unnamed newer source ref
   assert.deepEqual(newerSources(input, [ids('register'), ids('late')]), [ids('late')],
     'a stored confirmation is unchanged; the read names the source read after it');
 });
+
+type StoredWindow = { window_index: number; first_record: number; records: number; fence: number;
+  window_sha256: string; rows: unknown[] };
+type RawState = { state: string; records: number; windows: StoredWindow[] };
+const globals = globalThis as unknown as { ulpinPool?: Pool };
+const rawJobId = ids('raw-stream');
+let savedPool: Pool | undefined;
+beforeEach(() => { savedPool = globals.ulpinPool; });
+afterEach(() => { globals.ulpinPool = savedPool; });
+
+/** The register as G13's reader stores it. The reader closes a window at 10,000 records, so the register is one
+ * window; regrouped (test_only) into windows of `size` records, each window's SHA-256 stays the hash of exactly its
+ * byte range of the original, as the reader defines it. */
+async function storedWindows(bytes: Buffer, size: number): Promise<StoredWindow[]> {
+  const rows: TableWindowRow[] = [];
+  await readTabularWindows(Readable.from([bytes]), async (window, headers) => {
+    rows.push(...windowRows(window, headers));
+  });
+  const windows: StoredWindow[] = [];
+  for (let first = 0; first < rows.length; first += size) {
+    const part = rows.slice(first, first + size);
+    windows.push({ window_index: windows.length, first_record: first, records: part.length, fence: 1,
+      window_sha256: sha256(bytes.subarray(part[0].byteStart, part.at(-1)!.byteEnd)), rows: part });
+  }
+  return windows;
+}
+
+/** The statements the windowed reading issues, answered from one raw job's stored windows. */
+function installRawJob(raw: RawState) {
+  const answer = (text: string, args: unknown[] = []) => {
+    const sql = text.replace(/\s+/g, ' ').trim();
+    if (sql.startsWith('BEGIN') || sql === 'COMMIT' || sql === 'ROLLBACK') return [];
+    if (sql.startsWith('SELECT j.id FROM jobs j')) return raw.windows.length ? [{ id: rawJobId }] : [];
+    if (sql.startsWith('SELECT job_id AS id,state,records,input_sha256 FROM usp_streaming_vector_imports'))
+      return [{ id: rawJobId, state: raw.state, records: raw.records, input_sha256: fingerprint('test_only:raw') }];
+    if (sql.startsWith('SELECT window_index,records,fence FROM usp_table_windows'))
+      return raw.windows.map(({ window_index, records, fence }) => ({ window_index, records, fence }));
+    if (sql.startsWith('SELECT window_index,first_record,records,window_sha256,rows FROM usp_table_windows'))
+      return raw.windows.filter(window => window.window_index === args[1]).map(window => structuredClone(window));
+    throw new Error(`Unexpected statement: ${sql.slice(0, 120)}`);
+  };
+  const query = async (text: string, args?: unknown[]) => {
+    const rows = answer(text, args);
+    return { rows, rowCount: rows.length };
+  };
+  globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) } as never;
+}
+
+function streamedRegister(bytes: Buffer, literals: ReadonlySet<string>) {
+  const itemId = ids('register'), headers = readTabularSource(bytes, csv).headers;
+  const input = { itemId, caseId, sourceId: ids(`source:${itemId}`), sourceRevision: 1,
+    sourceSha256: sha256(bytes) } as IntakeEvidenceInput;
+  const profile = { kind: 'integer', tables: [{ itemId, selection: csv, columnIndex: headers.indexOf('bin') }] };
+  const source = { sha256: sha256(bytes), bytes: bytes.length,
+    inspection: { manualProfile: { headers, tabular: { selection: csv } } } };
+  return (raw: RawState) => {
+    installRawJob(raw);
+    return windowedTableReading(input, profile as IntakeKeyProfileInput, source as unknown as IntakeSourceRow,
+      literals);
+  };
+}
+
+test('the register read from its stored windows gives the outcomes, ids and row hashes of the whole read',
+  { skip }, async () => {
+    const bytes = readFileSync(registerPath), anchors = anchorsOf(readFileSync(buildingsPath));
+    const whole = new Map(close(registerReading(bytes), anchors).map(candidate => [candidate.candidateId, candidate]));
+    const read = streamedRegister(bytes, new Set(anchors.map(anchor => anchor.literal)));
+    for (const size of [10_000, 100]) {
+      const windows = await storedWindows(bytes, size);
+      assert.equal(windows.length, size === 100 ? 8 : 1);
+      const reading = (await read({ state: 'completed', records: 753, windows }))!;
+      assert.deepEqual(reading.coverage, { state: 'closed', read: 753, eligible: 753, keyless: 0, unread: 0,
+        failed: 0 });
+      const candidates = close(reading, anchors);
+      assert.deepEqual(tally(candidates), { matched: 612, conflicting: 81, no_match: 60 });
+      assert.equal(candidates.length, whole.size);
+      for (const candidate of candidates) {
+        const same = whole.get(candidate.candidateId)!;
+        assert.equal(candidate.outcome, same.outcome);
+        assert.equal(candidate.conflictGroup, same.conflictGroup);
+        const [streamed, wholeRow] = [candidate.evidence, same.evidence] as TableRowLocator[];
+        assert.equal(streamed.rowSha256, wholeRow.rowSha256);
+        assert.equal(streamed.sourceRow, wholeRow.sourceRow);
+        assert.equal('window' in wholeRow, false, 'a whole-file row keeps its locator');
+        const cited = bytes.subarray(streamed.window!.byteStart, streamed.window!.byteEnd);
+        assert.equal(sha256(cited), streamed.window!.sha256);
+        assert.ok(cited.toString('utf8').includes(streamed.cell.value));
+      }
+    }
+  });
+
+test('a raw job still running or failed leaves the rest unknown; a window that does not read back is failed',
+  { skip }, async () => {
+    const bytes = readFileSync(registerPath), anchors = anchorsOf(readFileSync(buildingsPath));
+    const read = streamedRegister(bytes, new Set(anchors.map(anchor => anchor.literal)));
+    const windows = await storedWindows(bytes, 100);
+    const running = (await read({ state: 'running', records: 300, windows: windows.slice(0, 3) }))!;
+    assert.deepEqual(running.coverage, { state: 'partial', read: 300, eligible: 300, keyless: 0, unread: null,
+      failed: null });
+    const seen = tally(close(running, anchors));
+    assert.equal(seen.no_match, undefined, 'unread coverage is never absence');
+    assert.ok(seen.matched > 0 && running.assertions.length < 300, 'only the keys a building holds are proposed');
+    const failed = await read({ state: 'failed', records: 300, windows: windows.slice(0, 3) });
+    assert.deepEqual(failed!.coverage, running.coverage);
+    // test_only: a stored window whose record numbers no longer run on from its first record.
+    const broken = windows.map(window => window.window_index !== 1 ? window
+      : { ...window, rows: [...window.rows].reverse() });
+    const finished = await read({ state: 'completed', records: 753, windows: broken });
+    assert.deepEqual(finished!.coverage, { state: 'partial', read: 653, eligible: 653, keyless: 0, unread: 0,
+      failed: 100 });
+    assert.equal(await read({ state: 'running', records: 0, windows: [] }), null, 'no stored window: not read here');
+  });

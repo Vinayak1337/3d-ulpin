@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SourcePathSchema, TabularSelectionSchema } from './ingestion';
+import { SourcePathSchema, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -286,6 +286,12 @@ export const IntakeTableRowLocatorSchema = z.strictObject({
   rawResultSha256: hash, acceptedFence: z.number().int().positive(), selection: TabularSelectionSchema,
   sourceRow: z.number().int().positive(), rowSha256: hash, columnIndex, columnHeader: z.string().max(400),
   cell: z.strictObject({ state: z.literal('literal'), value: literal }),
+  window: z.strictObject({ index: z.number().int().nonnegative().max(TABULAR_STREAM_LIMITS.windows - 1),
+    record: z.number().int().nonnegative().max(TABULAR_STREAM_LIMITS.rows - 1),
+    byteStart: z.number().int().nonnegative(), byteEnd: z.number().int().nonnegative(), sha256: hash })
+    .refine(row => row.byteEnd >= row.byteStart, 'A record ends where it starts or later.').optional()
+    .describe('A row of a streamed table, read from its stored window: the window, the record number (the first '
+      + 'is 0), its byte range in the unchanged original and that range\'s SHA-256. A whole-file row omits it.'),
 });
 /** One native text part of a retained document; the quote is an exact character span of the part's text. */
 export const IntakeDocumentPartLocatorSchema = z.strictObject({

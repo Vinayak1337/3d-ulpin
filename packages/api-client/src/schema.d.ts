@@ -66403,6 +66403,14 @@ export interface components {
                         state: "literal";
                         value: string;
                     };
+                    /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it. */
+                    window?: {
+                        index: number;
+                        record: number;
+                        byteStart: number;
+                        byteEnd: number;
+                        sha256: string;
+                    };
                 } | {
                     /** @enum {string} */
                     kind: "document_part";
@@ -66908,6 +66916,14 @@ export interface components {
                             state: "literal";
                             value: string;
                         };
+                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it. */
+                        window?: {
+                            index: number;
+                            record: number;
+                            byteStart: number;
+                            byteEnd: number;
+                            sha256: string;
+                        };
                     } | {
                         /** @enum {string} */
                         kind: "document_part";
@@ -67043,6 +67059,14 @@ export interface components {
                                 /** @enum {string} */
                                 state: "literal";
                                 value: string;
+                            };
+                            /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it. */
+                            window?: {
+                                index: number;
+                                record: number;
+                                byteStart: number;
+                                byteEnd: number;
+                                sha256: string;
                             };
                         } | {
                             /** @enum {string} */
