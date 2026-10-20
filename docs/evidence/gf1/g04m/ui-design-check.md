@@ -1,9 +1,11 @@
 # UI design check: G04M
 
-Change: `git diff ecbf8b93` under `apps/studio/src/features/map/` (`MapWorkspace.tsx`, `inspector/BuildingInspector.tsx`,
+Change: `git diff ecbf8b93` under `apps/studio/src/features/map/` (`MapWorkspace.tsx`, `WindowedArea.tsx`,
+`inspector/BuildingInspector.tsx`,
 `inspector/BuildingCard.tsx`, `inspector/cardState.ts`, `inspector/Inspector.module.css`) and
 `apps/studio/src/features/intake/run/` (`api.ts`, `model.ts`, `useConfirmationCommand.ts`). A building picked on the
-area map shows a "Property card" section in the inspector's overview when an intake target names it.
+area map, or in an area drawn by window, shows a "Property card" section in its inspector when an intake target
+names it.
 
 ## Blocking
 
@@ -33,6 +35,8 @@ None.
   trap, Escape, focus returned to the opener).
 - One inspector per selection: the section sits inside the existing `BuildingInspector` overview; the dialog opens
   over the map only when the officer asks or when the card this inspector watched being made is made.
+- Windowed inspector (`WindowedArea.tsx`): the same section follows the window's identifier and kind lines, inside
+  the existing `InspectorShell` body; its one primary action stays `Open register`; a non-building shows no section.
 - Desktop, light only: no theme or responsive code touched. Text wraps inside the panel at 200 % zoom
   (`overflow-wrap: anywhere` on the section's paragraphs).
 

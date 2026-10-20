@@ -12,6 +12,8 @@ import { cardsOnlyWords, confirmBody, readinessLabels, readinessWords, type Conf
 import { useConfirmationCommand } from '../../intake/run/useConfirmationCommand';
 import { BuildingCard, BuildingCardDialog, TargetCard, buildingTargetKey } from './BuildingCard';
 import { cardState, followCard, type CardState } from './cardState';
+import { WindowedInspector } from '../WindowedArea';
+import type { AreaWindowFeature } from '../../../api/queries';
 
 // Captured from the run of 11 October (E3B): a ready building, and the same building carded and verified.
 const { choiceIds: _, ...page } = capturedTargets;
@@ -125,4 +127,19 @@ it('a building no target names shows nothing; a server without the read is an er
   client.setQueryData(buildingTargetKey(ready.featureId), null);
   expect(shown(<BuildingCard featureId={ready.featureId} name="763933" />, client)).toBe('');
   expect(cardState(null)).toBe('none');
+});
+
+it('a recorded building picked in a windowed area offers the same press, read by its feature alone', () => {
+  const client = new QueryClient();
+  client.setQueryData(buildingTargetKey(recorded.featureId), recorded);
+  const feature: AreaWindowFeature = { id: recorded.featureId, identifier: '763933', kind: 'building',
+    polygons: [], heightM: null, heightState: 'unknown', displayState: 'recorded' };
+  const markup = shown(<WindowedInspector feature={feature} areaName="Area" onClose={() => {}} />, client);
+  expect(markup).toContain('>Open register</a>');
+  expect(markup).toContain(cardsOnlyWords(1));
+  expect(markup).toContain('Your acknowledgement');
+  expect(markup).toContain('Make the property card');
+  const parcel = shown(<WindowedInspector feature={{ ...feature, kind: 'parcel' }} areaName="Area"
+    onClose={() => {}} />, client);
+  expect(parcel).not.toContain('Property card');
 });

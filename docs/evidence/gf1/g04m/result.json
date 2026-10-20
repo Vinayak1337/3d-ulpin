@@ -11,7 +11,7 @@
     "D3": "No target lookup by feature existed, so one read is added: GET /api/v1/ingestion/intake/targets/by-feature?featureId[&packageId]. The map holds no package for a recorded building (a proposal carries proposalPackageId), so packageId is optional: with it the target is read in that package; without it in the packages that recorded the feature, read through physical_feature_revisions (primary key on feature_id) and UNIQUE(package_id,locator) on targets, so no index or schema step. Several targets: the furthest stage, then the latest. Case access is intakeCaseTx on the target's case, as the target page; none is 404 NOT_FOUND.",
     "cardDialog": "The Studio has no building-level card dialog (UnitCardDialog is per unit and asks the snapshot's unit cards). The dialog opened here is the shared Dialog with the run's own ArtefactLinks: card PDF of the exact revision, verification page, record.",
     "words": "cardsOnlyWords(1) now reads in the singular ('This recorded building will get ...'); every other count reads as before.",
-    "scope": "The map's BuildingInspector only (MapWorkspace passes the section; RegisterPage and WorkspacePage are unchanged). WindowedArea, which draws areas over one display read (the NYC area), uses WindowedInspector and is not changed here."
+    "scope": "The map's BuildingInspector (MapWorkspace passes the section) and the windowed inspector of WindowedArea (areas drawn by window, such as NYC). RegisterPage and WorkspacePage are unchanged. The window read names a proposal's case but not its package (AreaWindowFeatureSchema has caseId only), so the windowed inspector passes the feature id alone: a proposal there finds a target only through a package that recorded the building, else shows nothing new and keeps MB2's 'Open batch to confirm' line."
   },
   "changed": [
     "packages/contracts/src/usp/intake.ts",
@@ -28,6 +28,7 @@
     "apps/studio/src/features/intake/run/useConfirmationCommand.ts",
     "apps/studio/src/features/map/MapWorkspace.tsx",
     "apps/studio/src/features/map/inspector/BuildingInspector.tsx",
+    "apps/studio/src/features/map/WindowedArea.tsx",
     "apps/studio/src/features/map/inspector/BuildingCard.tsx",
     "apps/studio/src/features/map/inspector/cardState.ts",
     "apps/studio/src/features/map/inspector/Inspector.module.css",
@@ -35,18 +36,22 @@
   ],
   "tests": {
     "inputs": "The captured E3B run of 11 October (docs/evidence/gf1/e3b/targets.json, confirmation.json): a ready building (good: not recorded) and the same building carded and verified (difficult: full artefacts). The recorded-no-card and listed states are that carded target with its later artefacts removed, stated in the test.",
-    "studio": "BuildingCard.test.tsx: recorded without card (words, disabled press until typed; pressCards posts {packages: [], targets: [this]} equal to the batch page's confirmBody cards-only body; stored once; reads follow listed -> carded and followCard opens; the dialog shows the card PDF, verification and 'Card consistent'); carded (offers 'Open the property card', no dialog until asked); not recorded (ready label and words, batch link, no press); not a target (404 NOT_FOUND -> null -> nothing; a server without the route is an error, not none; query carries featureId and packageId).",
+    "studio": "BuildingCard.test.tsx: recorded without card (words, disabled press until typed; pressCards posts {packages: [], targets: [this]} equal to the batch page's confirmBody cards-only body; stored once; reads follow listed -> carded and followCard opens; the dialog shows the card PDF, verification and 'Card consistent'); carded (offers 'Open the property card', no dialog until asked); not recorded (ready label and words, batch link, no press); not a target (404 NOT_FOUND -> null -> nothing; a server without the route is an error, not none; query carries featureId and packageId). Windowed: a recorded building picked in a windowed area (WindowedInspector, feature id of the captured target) shows the cards-only words, the acknowledgement and 'Make the property card' beside 'Open register'; a parcel shows no card section.",
     "server": "intake-targets.test.ts: recorded read uses physical_feature_revisions with [featureId, null], orders by stage, checks the target's case; a proposal read passes the packageId; none -> 404; archived case -> INGESTION_CASE_ARCHIVED; a malformed featureId is refused before any statement. intake-run.controller.test.ts: strict query (one featureId, at most one packageId, no other field) and the published IntakeTargetSchema response."
   },
   "checks": {
     "typecheck:backend": "exit 0",
     "studio:typecheck": "exit 0",
-    "studio:test": "exit 0; studio 79 files, 502 passed; scene 58 passed, 1 skipped; ui 7; api-client 2",
+    "studio:test": "exit 0; studio 79 files, 503 passed; scene 58 passed, 1 skipped; ui 7; api-client 2",
     "backend tests": "exit 0; template set plus intake-run.controller.test.ts: 419 tests, 417 pass, 0 fail, 2 skipped",
     "openapi --check": "exit 0 after scripts/api/refresh-contract.ts ecbf8b93 and pnpm studio:api-types",
     "scripts/api/check.py": "exit 0 (323 operations, 365 named schemas). In this worktree three committed runtime receipts check out with CRLF and fail their hash; with their committed bytes the check passes; those files are not changed by this task",
     "git diff --check": "exit 0",
     "ui-design-check scan": "exit 0, no candidates (scan reads apps/web only); Studio lines checked by hand, report in ui-design-check.md"
   },
-  "notRun": "No runtime, Docker, database or provider call: the SQL is checked by statement and parameters against an in-memory client, not against PostGIS, and the Studio was not opened in a browser. The run itself (cards-only confirmation to card) is the existing worker, unchanged."
+  "notRun": "No runtime, Docker, database or provider call: the SQL is checked by statement and parameters against an in-memory client, not against PostGIS, and the Studio was not opened in a browser. The run itself (cards-only confirmation to card) is the existing worker, unchanged.",
+  "byFeatureIndexes": {
+    "physical_feature_revisions": "Filtered by feature_id. Served by the primary key PRIMARY KEY(feature_id,revision) (database/sql/20-area/area.sql:39-43; implicit index physical_feature_revisions_pkey), whose leading column is feature_id.",
+    "usp_intake_targets": "Filtered by package_id=ANY(...) and feature_id. package_id is served by UNIQUE(package_id,locator) (database/sql/95-ingestion/intake-targets.sql:37; implicit index usp_intake_targets_package_id_locator_key), leading column package_id. feature_id itself has no index on usp_intake_targets: it is filtered within each package's rows (at most 2000 targets per drafted package). No index was added."
+  }
 }
