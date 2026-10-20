@@ -1,0 +1,37 @@
+{
+ "task": "G17",
+ "gap": "AU2 G17: lifetime caps counted across the runtime",
+ "base": "6d038782",
+ "works": "Upload caps count only open receipts and the bytes they reserve; finished, aborted and expired receipts free their slot. A case keeps its own retained-bytes ceiling. Streaming import history is bounded per case, not per runtime. Every 429 names its limit and when a slot frees.",
+ "limits": {
+  "openReceipts": "Same numbers as before: large-original/1 at most 4 open on the service, 2 per operator subject, 2 per case; large-original/2 at most 1 open. Open = receiving, finalizing or aborting, and before expiry, under a live worker lease, or (v2, not receiving) with a storage job queued to finish it.",
+  "openBytes": "Bytes reserved by open receipts runtime-wide <= maxReservedOriginalBytes (512 MiB v1, 7 GiB v2). Per operator subject shares the same number, so the runtime-wide sum bounds both.",
+  "retainedPerCase": "D2: retained plus open originals of the request's profile in the case, plus the request, <= maxReservedOriginalBytes of that profile (512 MiB v1, 7 GiB v2): the reserved-original limit the contract already stated.",
+  "configuredStorage": "When ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES is set: retained originals once + leftover bytes of receipts without a slot (their parts until cleanup, and an original a failed finalization may have assembled) + 2x open v1 + 3x open v2 + the request at its factor. Before it tripled every original ever reserved, retained ones included.",
+  "removed": "maxUploadReceipts (128 v1, 8 v2 ever) from LARGE_ORIGINAL_LIMITS and LARGE_ORIGINAL_V2_LIMITS; regenerated docs/api/openapi.json, source-pins.json and packages/api-client schema.d.ts.",
+  "streaming": "STREAMING_HISTORY_CAPACITY: 128 imports per case (operations primary key starts with case_id). The large GeoJSON intake path (intake-large-worker.ts) enqueues through this reader, so it did spend the runtime-wide 128, which settles the gap's open note. 2 running imports unchanged."
+ },
+ "expiry": "D3: nothing sweeps expired receipts (no reader of usp_source_uploads.expires_at outside large-original.ts), so the check skips them; their leftover part bytes still count against configured storage.",
+ "refusal": {
+  "code": "UPLOAD_QUOTA (unchanged; intake-zip-layers.ts reads only the code)",
+  "details": "{limit: open_receipts | open_receipts_operator | open_receipts_case | open_bytes | case_retained_bytes | storage_capacity, freesAt: ISO time of the earliest expiry of an open receipt in that scope, or null}",
+  "words": "Limit numbers only, in MiB/GiB; no filename, hash or size of the file.",
+  "bugFound": "A 7 GiB ceiling written as 7516192768 bytes is masked as [redacted phone] by redactDerivative in the 429 body; sizes are now words and a regression test checks it."
+ },
+ "inputs": {
+  "good": "NWIC district GeoJSON ZIP size (71238839 bytes, datasets.json) with 200 such originals retained in other cases: admitted for v1, and for v2 under the 22 GiB configured storage.",
+  "difficult": "The same original into a case that already retains seven of it: refused case_retained_bytes, freesAt null; 4 open v1 receipts: refused open_receipts with the earliest expiry as freesAt.",
+  "synthetic": "none"
+ },
+ "checks": {
+  "typecheck:backend": 0,
+  "studio:typecheck": 0,
+  "studio:test": "0; 479 studio + 7 ui tests passed",
+  "backend tests": "0; 375 tests, 373 pass, 0 fail, 2 skipped (rerun after the MiB/GiB wording change: same counts)",
+  "focused": "large-original.test.ts, large-original-small.test.ts, intake-zip-layers.test.ts: 21 pass after the wording change",
+  "openapi --check": "0 after scripts/api/refresh-contract.ts 6d038782 and pnpm studio:api-types",
+  "scripts/api/check.py": 0,
+  "git diff --check": 0
+ },
+ "notRun": "The quota SQL was not executed against PostgreSQL: no runtime here (D5). The lead should run one create against the demo-shaped database before the roll: an expired receiving receipt, a retained one and an open one, then read held/case_bytes/leftover_bytes."
+}

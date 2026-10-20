@@ -66862,8 +66862,6 @@ export interface components {
                 /** @enum {number} */
                 maxActiveGlobal: 4;
                 /** @enum {number} */
-                maxUploadReceipts: 128;
-                /** @enum {number} */
                 maxZeroPayloadFenceObjectsPerReceipt: 17;
                 /** @enum {number} */
                 maxReservedOriginalBytes: 536870912;
@@ -66906,8 +66904,6 @@ export interface components {
                     maxParts: 896;
                     /** @enum {number} */
                     maxActiveGlobal: 1;
-                    /** @enum {number} */
-                    maxUploadReceipts: 8;
                     /** @enum {number} */
                     maxReservedOriginalBytes: 7516192768;
                     /** @enum {number} */

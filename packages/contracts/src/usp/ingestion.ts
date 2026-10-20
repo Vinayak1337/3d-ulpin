@@ -207,11 +207,13 @@ export const TabularRawRowSchema = z.strictObject({ headers: z.array(z.string().
   sheet: z.string().min(1).max(150), sourceRow: z.number().int().positive(),
 });
 
-/** Byte receipt is independent of semantic parsing/conversion admission. */
+/** Byte receipt is independent of semantic parsing/conversion admission. The active limits count open receipts
+ * (not finalized, aborted or expired); maxReservedOriginalBytes bounds the bytes open receipts reserve runtime-wide
+ * and, per case, the retained and open originals together. */
 export const LARGE_ORIGINAL_LIMITS = {
   version: 'large-original/1', partBytes: 8 * 1024 * 1024, maxOriginalBytes: 128 * 1024 * 1024,
   maxParts: 16, maxActivePerCase: 2, maxActivePerOperator: 2, maxActiveGlobal: 4,
-  maxUploadReceipts: 128, maxZeroPayloadFenceObjectsPerReceipt: 17,
+  maxZeroPayloadFenceObjectsPerReceipt: 17,
   maxReservedOriginalBytes: 512 * 1024 * 1024, maxStoredBytesIncludingTemporaryCopies: 1024 * 1024 * 1024,
   uploadLifetimeSeconds: 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 30,
   leaseSeconds: 180, finalizationSeconds: 120, cleanupSeconds: 120, maxFinalizationAttempts: 3, maxPartAttempts: 3,
@@ -221,7 +223,7 @@ export const LARGE_ORIGINAL_LIMITS = {
 /** Opt-in transport capacity. One source can require parts, an open MPU and a sealed original at once. */
 export const LARGE_ORIGINAL_V2_LIMITS = {
   version: 'large-original/2', partBytes: LARGE_ORIGINAL_LIMITS.partBytes,
-  maxOriginalBytes: 7 * 1024 ** 3, maxParts: 896, maxActiveGlobal: 1, maxUploadReceipts: 8,
+  maxOriginalBytes: 7 * 1024 ** 3, maxParts: 896, maxActiveGlobal: 1,
   maxReservedOriginalBytes: 7 * 1024 ** 3,
   maxStoredBytesIncludingTemporaryCopies: 22 * 1024 ** 3,
   uploadLifetimeSeconds: 7 * 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 60,
