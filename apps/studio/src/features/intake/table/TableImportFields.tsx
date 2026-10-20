@@ -35,18 +35,26 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
   );
 }
 
-export function TableSelectionFields({ file, sheet, setSheet, rows, setRows }: {
-  file: File; sheet: string; setSheet: (value: string) => void;
+/** `sheets` are the sheet names a kept file's card states; without them the officer types the name. */
+export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, setRows }: {
+  format: 'csv' | 'xlsx'; sheets?: readonly string[]; sheet: string; setSheet: (value: string) => void;
   rows: string; setRows: (value: string) => void;
 }) {
-  if (/\.csv$/i.test(file.name)) return <p className="ul-help">CSV · sheet csv · header row 1</p>;
+  if (format === 'csv') return <p className="ul-help">CSV · sheet csv · header row 1</p>;
   return (
     <div className={styles.fields}>
       <label className="ul-field">
         <span className="ul-label">Exact sheet name</span>
         <input className="ul-input" aria-label="Exact sheet name" value={sheet} required
+          list={sheets?.length ? 'table-stated-sheets' : undefined}
           onChange={(event) => setSheet(event.target.value)} />
-        <span className="ul-help">The API cannot list sheets. Enter the name from the workbook.</span>
+        {sheets?.length ? <datalist id="table-stated-sheets">
+          {sheets.map((name) => <option key={name} value={name} />)}
+        </datalist> : null}
+        <span className="ul-help">
+          {sheets?.length ? `The file's card states ${sheets.length === 1 ? 'this sheet' : 'these sheets'}: ` +
+            `${sheets.join(', ')}.` : 'The API cannot list sheets. Enter the name from the workbook.'}
+        </span>
       </label>
       <label className="ul-field">
         <span className="ul-label">Header row numbers</span>

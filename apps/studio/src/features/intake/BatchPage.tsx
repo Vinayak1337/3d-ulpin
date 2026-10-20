@@ -4,6 +4,7 @@ import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from './AddFilesDialog';
+import { BatchTableSection } from './BatchTableSection';
 import { DropOutcomes } from './IntakeDropDialog';
 import { IntakeTray } from './IntakeTray';
 import { IfcStructure } from './ifc/IfcStructure';
@@ -73,6 +74,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       <IfcStructure key={current.itemId} caseId={caseId} sourceId={current.sourceId} name={current.name} /> : null}
     {isPageImage(current) ? <PageImageQuestion key={current.itemId} caseId={caseId} item={current}
       refresh={refresh} /> : null}
+    {current ? <BatchTableSection key={current.itemId} caseId={caseId} item={current} items={items} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
     </section>
