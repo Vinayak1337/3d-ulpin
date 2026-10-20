@@ -15,6 +15,9 @@ export function intakeIfcJobId(itemId: string, source: IntakeSourceRow): string 
   return stableUuid(`intake-ifc/1:${itemId}:${source.id}:${source.revision}:${source.sha256}`);
 }
 
+/** Sizes in officer words are MiB: a long digit run can be masked as a phone number by the words redaction. */
+const mib = (bytes: number) => bytes / 1024 ** 2;
+
 /**
  * The publishing transaction queues one native IFC reading and the item carries its job while it waits or runs.
  * Above the reader's byte limit nothing is queued: the item rests kept, its words naming the limit.
@@ -28,9 +31,9 @@ export async function queueIntakeIfcTx(client: PoolClient, source: IntakeSourceR
   if (item.plan_ref) return null;
   if (Number(source.bytes) > IFC_LIMITS.originalBytes) {
     await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
-      planRef: null, recordsSeen: 0, limitReason: `This IFC has ${Number(source.bytes)} bytes, above the `
-        + `${IFC_LIMITS.originalBytes}-byte limit of the IFC reader, so the building, storeys and spaces it states `
-        + 'are not read. The original is kept with its SHA-256.' });
+      planRef: null, recordsSeen: 0, limitReason: `This IFC has ${mib(Number(source.bytes)).toFixed(1)} MiB, above `
+        + `the ${mib(IFC_LIMITS.originalBytes)} MiB limit of the IFC reader, so the building, storeys and spaces it `
+        + 'states are not read. The original is kept with its SHA-256.' });
     return null;
   }
   const queued = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='ifc-native'", [jobId])).rows[0];

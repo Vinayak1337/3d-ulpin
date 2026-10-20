@@ -111,12 +111,12 @@ test('an enrolled batch IFC queues one native IFC job and the item carries it; a
 
 test('an IFC above the reader byte limit queues nothing and its item says why', { skip: !present }, async () => {
   // test_only: the receipt states a size above IFC_LIMITS.originalBytes; no file of that size is read or kept.
-  const f = await batch(IFC_LIMITS.originalBytes + 1);
+  const f = await batch(40_000_000);
   assert.equal(await queueIntakeDraftTx(f.client, f.source as any, f.card), null);
   assert.equal(f.jobs.size, 0);
   assert.deepEqual([f.item.state, f.item.placement, f.item.plan_ref], ['probed', 'not_understood', null]);
-  assert.match(f.item.limit_reason!, new RegExp(`${IFC_LIMITS.originalBytes + 1} bytes, above the `
-    + `${IFC_LIMITS.originalBytes}-byte limit of the IFC reader`));
+  assert.match(f.item.limit_reason!, /^This IFC has 38\.1 MiB, above the 32 MiB limit of the IFC reader, /);
+  assert.doesNotMatch(f.item.limit_reason!, /\d{5}/);
   assert.equal(intakeItem(f.item).ifcJobId, undefined);
 });
 
