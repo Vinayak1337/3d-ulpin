@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
-import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,AnyStreamingInputSchema,
+import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,AnyStreamingInputSchema,streamingReadMs,
   StreamingVectorPayloadSchema,type AnyStreamingInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
@@ -48,12 +48,41 @@ export async function publishStreamingPrefixTx(client:PoolClient,input:AnyStream
   }
 }
 
-async function storeChunk(input:AnyStreamingInput,index:number,records:StreamingVectorRecord[]){
+/** The exact payload bytes one part is stored as; a part over the payload budget is refused. */
+export function encodeChunk(input:AnyStreamingInput,index:number,records:StreamingVectorRecord[]){
   const payload=StreamingVectorPayloadSchema.parse({version:limits.version,jobId:input.jobId,sourceId:input.sourceId,
     sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,chunkIndex:index,records});
   const bytes=Buffer.from(JSON.stringify(payload));
   if(bytes.length>limits.chunkBytes)throw new AppError(413,'STREAMING_CHUNK_BUDGET','A complete draft chunk exceeds the payload budget.');
-  const hash=sha256(bytes),key=`streaming-vectors/${input.jobId}/${index}/${hash}.json`;
+  return {bytes,hash:sha256(bytes)};
+}
+
+/** Holds one part at a time: it closes at its record count, or before a record would pass the payload budget. */
+export class StreamingPartWriter{
+  private pending:StreamingVectorRecord[]=[];
+  private pendingBytes=0;
+  index=0;
+  constructor(private readonly write:(index:number,records:StreamingVectorRecord[])=>Promise<void>){}
+  /** A record too large for any part is kept as quarantined without its feature. */
+  async add(record:StreamingVectorRecord,countLimit:number){
+    let recordBytes=Buffer.byteLength(JSON.stringify(record));
+    if(recordBytes>limits.chunkBytes-2048){
+      record.feature=null;record.disposition='quarantined';record.issueCode='DRAFT_UNIT_BUDGET';
+      recordBytes=Buffer.byteLength(JSON.stringify(record));
+    }
+    const full=this.pending.length>=countLimit||this.pendingBytes+recordBytes+2048>limits.chunkBytes;
+    if(this.pending.length&&full)await this.flush();
+    this.pending.push(record);this.pendingBytes+=recordBytes;
+    if(this.pending.length>=countLimit)await this.flush();
+  }
+  async flush(){
+    if(!this.pending.length)return;
+    await this.write(this.index,this.pending);this.index++;this.pending=[];this.pendingBytes=0;
+  }
+}
+
+async function storeChunk(input:AnyStreamingInput,index:number,records:StreamingVectorRecord[]){
+  const {bytes,hash}=encodeChunk(input,index,records),key=`streaming-vectors/${input.jobId}/${index}/${hash}.json`;
   try{await putOriginal(key,bytes,'application/json');}
   catch(error){
     // A restart after object PUT and before SQL acceptance reuses the exact immutable bytes.
@@ -215,22 +244,21 @@ export async function runStreamingVectorJob(jobId:string){
     await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);
   });
-  let nextIndex=0,nextFeatureIndex=0,pending:StreamingVectorRecord[]=[],pendingBytes=0,lastHeartbeat=Date.now(),lastProgress=0;
+  let nextFeatureIndex=0,lastHeartbeat=Date.now(),lastProgress=0;
   const setAside:Record<string,number>={};
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertStreamingInputTx(client,input).then(()=>{}));lastHeartbeat=Date.now();
     await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",[jobId]);
   };
-  const flush=async()=>{
-    if(!pending.length)return;
-    await pulse();const slot=await storeChunk(input,nextIndex,pending);
+  const parts=new StreamingPartWriter(async(index,records)=>{
+    await pulse();const slot=await storeChunk(input,index,records);
     // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
     const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
-    await acceptSlot(input,attempt,slot,progress);nextIndex++;pending=[];pendingBytes=0;
-  };
+    await acceptSlot(input,attempt,slot,progress);
+  });
   try{
     const etag=(await query('SELECT inspection FROM sources WHERE id=$1',[input.sourceId])).rows[0]?.inspection?.largeOriginal?.objectEtag;
-    const object=await openObjectStream(input.objectKey,input.sourceBytes,limits.readMs,etag);
+    const object=await openObjectStream(input.objectKey,input.sourceBytes,streamingReadMs(input.sourceBytes),etag);
     let result;
     try{
       const consume=async(item:SourceFeature)=>{
@@ -242,11 +270,7 @@ export async function runStreamingVectorJob(jobId:string){
         }
         const width=input.framing==='tabular'?(item.feature as {headers:string[]}).headers.length:1;
         const countLimit=input.framing==='tabular'?tabularChunkRows(width):limits.chunkFeatures;
-        let recordBytes=Buffer.byteLength(JSON.stringify(record));
-        if(recordBytes>limits.chunkBytes-2048){record.feature=null;record.disposition='quarantined';record.issueCode='DRAFT_UNIT_BUDGET';recordBytes=Buffer.byteLength(JSON.stringify(record));}
-        if(pending.length&&(pending.length>=countLimit||pendingBytes+recordBytes+2048>limits.chunkBytes))await flush();
-        tallySetAside(setAside,record);pending.push(record);pendingBytes+=recordBytes;
-        if(pending.length>=countLimit)await flush();
+        await parts.add(record,countLimit);tallySetAside(setAside,record);
       };
       result=input.framing==='tabular'?await readStreamingTabular(object.body,input.tabular,consume)
         :await readStreamingFeatures(object.body,input.framing,consume);
@@ -254,7 +278,7 @@ export async function runStreamingVectorJob(jobId:string){
     if(result.bytes!==input.sourceBytes||result.sha256!==input.sourceSha256)
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');
     if(!result.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
-    await flush();
+    await parts.flush();const nextIndex=parts.index;
     const reference=input.framing==='feature-collection'?await resolveStreamedReference(result.metadata):undefined;
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
@@ -285,9 +309,9 @@ export async function runStreamingVectorJob(jobId:string){
     try{
       if(kind==='final'){
         // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
-        await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex,false,words);
-      }else if(kind==='stale')await terminal(input,attempt,'STREAMING_CONTEXT_STALE',nextIndex,nextFeatureIndex,true);
-      else if(attempt.number>=3)await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
+        await parts.flush();await terminal(input,attempt,code,parts.index,nextFeatureIndex,false,words);
+      }else if(kind==='stale')await terminal(input,attempt,'STREAMING_CONTEXT_STALE',parts.index,nextFeatureIndex,true);
+      else if(attempt.number>=3)await terminal(input,attempt,code,parts.index,nextFeatureIndex);
       else await retry(input,attempt,code);
     }catch(failure){
       // A newer fence owns this job; it alone may change durable state.

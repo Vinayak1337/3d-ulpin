@@ -136,7 +136,9 @@ export class StreamingVectorService{
       if(prior){if(prior.payload_hash!==digest)conflict('The import request key names different inputs.');return statusTx(client,caseId,sourceId,prior.result.jobId);}
       if(!ctx.latest||ctx.current.revision!==request.expectedCaseRevision||ctx.source.revision!==request.expectedSourceRevision||ctx.source.sha256!==request.sourceSha256)
         conflict('The source/case revision changed before streaming admission.');
-      if(Number(ctx.source.bytes)>limits.sourceBytes||Number(ctx.source.bytes)<=0)throw new AppError(413,'STREAMING_SOURCE_BUDGET','This reader profile supports retained originals up to 128 MiB.');
+      if(Number(ctx.source.bytes)>limits.sourceBytes||Number(ctx.source.bytes)<=0)
+        throw new AppError(413,'STREAMING_SOURCE_BUDGET',
+          `This reader profile supports retained originals up to ${limits.sourceBytes/1024**2} MiB.`);
       if(request.framing==='tabular')assertTabularPin(request.tabular,ctx.source);
       else if(ctx.source.profile==='tabular-manual-v1')conflict('Pin tabular framing for this source.');
       if(ctx.source.profile==='geojson-manual-v1'&&request.framing!=='feature-collection')throw new AppError(422,'STREAMING_FRAMING','The manual GeoJSON receipt is a FeatureCollection.');

@@ -2,7 +2,7 @@ import {Controller,Get,HttpCode,Inject,Param,Post,Req,UseGuards} from '@nestjs/c
 import {ApiOperation,ApiParam,ApiTags} from '@nestjs/swagger';
 import type {Request} from 'express';
 import {z} from 'zod';
-import {AnyStreamingRequestSchema,AnyStreamingStatusSchema,
+import {AnyStreamingRequestSchema,AnyStreamingStatusSchema,STREAMING_VECTOR_LIMITS,
   StreamingVectorChunkResponseSchema} from '@ulpin/contracts/usp';
 import {StreamingVectorService} from '@ulpin/server/modules/usp/ingestion/streaming-vector';
 import {AppError} from '@ulpin/server/infrastructure/errors';
@@ -34,13 +34,14 @@ export class StreamingVectorController{
     noQuery(request);return this.streaming.status(caseId,sourceId,jobId);
   }
   @Get('jobs/:jobId/chunks/:chunkIndex') @param('caseId') @param('sourceId') @param('jobId')
-  @ApiParam({name:'chunkIndex',schema:{type:'integer',minimum:0,maximum:4096}})
+  @ApiParam({name:'chunkIndex',schema:{type:'integer',minimum:0,maximum:STREAMING_VECTOR_LIMITS.chunks}})
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId_chunks_chunkIndex',
     summary:'Read one integrity-verified private raw chunk, including obsolete pinned results'})
   @wireResponse(200,StreamingVectorChunkResponseSchema)
   chunk(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
     @Param('chunkIndex')chunkIndex:string,@Req()request:Request){
-    noQuery(request);const index=z.string().regex(/^(0|[1-9]\d*)$/).transform(Number).pipe(z.number().int().min(0).max(4096)).parse(chunkIndex);
+    noQuery(request);const index=z.string().regex(/^(0|[1-9]\d*)$/).transform(Number)
+      .pipe(z.number().int().min(0).max(STREAMING_VECTOR_LIMITS.chunks)).parse(chunkIndex);
     return this.streaming.chunk(caseId,sourceId,jobId,index);
   }
 }

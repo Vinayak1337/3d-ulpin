@@ -1,0 +1,62 @@
+{
+  "task": "G16",
+  "gate": "GF1",
+  "base": "6d038782d019e8e24a8df9930fee3e1d48d7d8e5",
+  "branch": "task/g16-large-geojson-ceilings",
+  "ceilings": {
+    "sourceOfTruth": "packages/contracts/src/usp/streaming-vector.ts STREAMING_VECTOR_LIMITS",
+    "sourceBytes": {"before": 134217728, "after": 1073741824},
+    "parts": {"before": 4096, "after": 5000},
+    "featuresPerPart": 100,
+    "features": {"before": 409600, "after": 500000},
+    "derivedFromIt": ["StreamedMapOriginalReceiptSchema sourceBytes, parts, features", "ingestion event chunkIndex (3)",
+      "STREAMED_PROFILE_LIMITS.generations = parts + 1", "streamed prefix plan throughRawChunkIndex",
+      "CHUNK_MAPPING_LIMITS.chunks", "streaming-vector chunk route bound", "STREAMING_SOURCE_BUDGET and STREAMING_INDEX words",
+      "SQL part-count checks on six tables (new step ingestion.streaming-vector.capacity: 5000 / 5001)"],
+    "unchangedBecauseAlreadyEnough": {"largeOriginalV2": "7 GiB, 896 parts of 8 MiB: a 1 GiB original is 128 parts",
+      "v2Reservation": "7 GiB (G17 owns quota code; nothing changed there)"},
+    "scratchReservation": "none on this path; stagedBytes is read by no code"
+  },
+  "deadlineRule": {
+    "rule": "streamingReadMs(bytes) = readMs (10 min) x max(1, ceil(bytes / 128 MiB))",
+    "examples": {"1 B..128 MiB": "10 min (unchanged)", "128 MiB + 1 B": "20 min", "1 GiB": "80 min"},
+    "appliesTo": "the streaming-vector worker's whole-object read (openObjectStream timeout)",
+    "notScaled": "chunk-mapping and streamed-profile waits are per published chunk and reset after each one"
+  },
+  "readerSpeedFix": {
+    "finding": "the reader awaited a promise for every byte of every feature; on this PC the base reader took 212.96 s for the 43,263,076-byte NYC file (about 0.2 MB/s), so even a 128 MiB file would pass its 10-minute deadline and 1 GiB would need about 85 minutes before any database work",
+    "change": "Cursor.value takes a byte already in the current chunk without a wait; only an exhausted chunk awaits the next one. Offsets, hash, bounds and error codes are unchanged",
+    "realInputs": [
+      {"name": "DA6 NYC buildings (good)", "bytes": 43263076,
+        "sha256": "0d4dd71eb16d0e5a6f87e7702402098a9f4235aa85dc2461c0154c4f187c4489", "features": 48686, "parts": 487,
+        "quarantined": 0, "baseReaderSeconds": 212.96, "newReaderSeconds": 18.63, "baseSha256Same": true,
+        "newPeakHeapMiB": 233.8, "newPeakRssMiB": 408.9},
+      {"name": "Niagara Falls footprints, declares EPSG:2958 (difficult)", "bytes": 26660992,
+        "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521", "features": 42247, "parts": 423,
+        "quarantined": {"UNREPRESENTABLE_NUMBER": 435}, "newReaderSeconds": 8.97,
+        "note": "measured while the backend suite ran; the 435 set-aside numbers are the reader's existing rule"}
+    ],
+    "measuredWith": "reader + sourceRecord + part writer + encodeChunk, no database, no object storage (a scratch harness, not committed)"
+  },
+  "memoryProof": {
+    "test": "packages/server/src/modules/usp/ingestion/streaming-vector-scale.test.ts",
+    "input": "test_only FeatureCollection of 500,000 closed squares generated as a stream inside the test; never written to disk",
+    "result": {"features": 500000, "parts": 5000, "sourceBytes": 80388954, "storedPartBytes": 176144532, "seconds": 29.2,
+      "baseHeapMiB": 51.5, "retainedHeapAfterGcEvery500PartsMiB": [53.8, 53.9, 53.9, 53.9, 53.9, 53.9, 53.9, 53.9, 53.9, 53.9],
+      "retainedGrowthMiB": 0.1, "peakHeapMiB": 252.7, "peakRssMiB": 414.9},
+    "reading": "after collection the heap is flat from the first 500 parts to the last; the peak is collector headroom, reached already in the first tenth of the run (first run: 364.5 MiB in the first tenth, 368.3 MiB overall, with the base reader's per-byte waits)",
+    "asserts": ["500,000 features in exactly 5000 parts", "retained heap growth < 8 MiB", "retained heap < base + 16 MiB"]
+  },
+  "checks": {
+    "typecheck:backend": 0, "studio:typecheck": 0, "studio:test": "0 (74 files, 479 tests; packages/ui 7)",
+    "backendTests": "0 (373 tests: 371 pass, 2 skipped, 0 fail)",
+    "openapiCheck": "0 after refresh-contract 6d038782 and studio:api-types", "scripts/api/check.py": 0,
+    "verify_extraction.py": "1, a failure present at the base: step ingestion.intake.targets has task E1 (not in the allow list) and an 8-character acceptedBase; with only that bypassed in a scratch copy the new step passes (57 named migration queries)",
+    "gitDiffCheck": 0
+  },
+  "notProved": [
+    "the SQL widening has not been run on PostgreSQL (no runtime in this task)",
+    "no end-to-end run on a real file near 1 GB: none is on the data drive; the worker's per-feature PostGIS topology check and the 5000 part writes are not measured here",
+    "ZIP layers (ZL2) now admit members up to 1 GiB through the same constant, but their copy deadline still uses the base readMs; streamingReadMs(bytes) is there for them"
+  ]
+}

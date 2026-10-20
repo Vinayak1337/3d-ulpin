@@ -489,11 +489,11 @@ test('a layer above the large ceiling or past a full receipt allowance stays in 
   configured(async () => {
     const above = await layersJob(largePack());
     const unused = receipts(above.ledger);
-    above.ledger.member(largePath).size_bytes = String(128 * 1024 * 1024 + 1);
+    above.ledger.member(largePath).size_bytes = String(1024 * 1024 * 1024 + 1);
     await above.run((await above.queue())!, { large: unused.service });
     assert.equal(unused.log.created.length, 0);
-    assert.equal(above.ledger.member(largePath).limit_reason, 'ZIP_LAYER_SIZE: this GeoJSON member of 134217729 '
-      + 'bytes is kept inside the archive; members above 134217728 bytes are not kept as their own original.');
+    assert.equal(above.ledger.member(largePath).limit_reason, 'ZIP_LAYER_SIZE: this GeoJSON member of 1073741825 '
+      + 'bytes is kept inside the archive; members above 1073741824 bytes are not kept as their own original.');
     assert.equal(await above.queue(), null);
     const full = await layersJob(largePack());
     const refused = receipts(full.ledger, new AppError(429, 'UPLOAD_QUOTA', 'receipt text'));

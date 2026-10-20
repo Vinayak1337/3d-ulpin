@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {LegacyMappingTargetSchema} from '../canonical/targets';
 import { ColumnProfileDocumentSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
-import { StreamingVectorInputSchema, StreamingVectorRequestSchema,
+import { STREAMING_VECTOR_LIMITS, StreamingVectorInputSchema, StreamingVectorRequestSchema,
   StreamingVectorStatusSchema } from './streaming-vector';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
@@ -94,10 +94,11 @@ function boundedCollectionMetadata(value: Record<string, unknown>): boolean {
 /** Server-written only after semantic EOF and whole-original verification. Not registry admission. */
 export const StreamedMapOriginalReceiptSchema = z.strictObject({
   version: z.literal('streamed-map-original/1'), coverage: z.literal('sealed'), unknownRemainder: z.literal(false),
-  sourceId: id, sourceRevision: revision, sourceBytes: z.number().int().positive().max(128 * 1024 * 1024),
+  sourceId: id, sourceRevision: revision,
+  sourceBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes),
   sourceSha256: hash, readerVersion: z.literal('geojson-stream/2'), rawJobId: id,
-  framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(4096),
-  features: z.number().int().min(1).max(409600), accepted: z.number().int().nonnegative(),
+  framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.chunks),
+  features: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.features), accepted: z.number().int().nonnegative(),
   quarantined: z.number().int().nonnegative(),
   /** Each set-aside record counted under its reader issue code; present only when something was set aside. */
   quarantinedByCode: z.record(z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/), z.number().int().positive())
