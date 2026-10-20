@@ -41,9 +41,10 @@ export function useTableJobs(caseId: string, sourceId: string, rawJobId: string,
   return { raw, mapping };
 }
 
-/** G13: a CSV above 16 MiB is read as a stream in windows; its records are paged from the server. */
+/** G13, XW1: as the server's isWindowedTable, a case original's CSV or workbook sheet above 16 MiB is read as a
+ * stream in windows; its records are paged from the server. A development asset stays within 16 MiB. */
 export const streamedTable = (profile?: Pick<TableProfile, 'tabular'>) =>
-  Boolean(profile && profile.tabular.selection.format === 'csv' && profile.tabular.sourceBytes > 16 * 1024 * 1024);
+  Boolean(profile && 'admission' in profile.tabular && profile.tabular.sourceBytes > 16 * 1024 * 1024);
 export const TABLE_PAGE_ROWS = 100;
 
 export function useTableRows(caseId: string, sourceId: string, after: number) {
