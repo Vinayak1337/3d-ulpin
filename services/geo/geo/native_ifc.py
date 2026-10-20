@@ -3,17 +3,22 @@
 Call through desktop-ifc-read.py for the mandatory external native-process bounds.
 The lexical index only supplies original-byte locators and integrity checks; IFC
 schema interpretation and every decoded attribute come from IfcOpenShell.
+The pass 1 structure scan is separate: it streams the STEP statements and keeps
+only spatial-structure entities, their relations and the project length unit.
 """
 from __future__ import annotations
 
 from collections import Counter
 from dataclasses import asdict, dataclass
 import hashlib
+import io
 import json
 import math
 import re
 from pathlib import Path
 import tempfile
+import time
+from typing import NamedTuple
 
 PARSER_VERSION = "0.8.5"
 
@@ -28,11 +33,17 @@ class Limits:
     seconds: float = 60
     threads: int = 2
     depth: int = 64
+    # Pass 1 structure scan; IFC_LIMITS states the same entity, byte, time and output ceilings.
+    structure_entities: int = 10_000
+    structure_bytes: int = 32 * 1024**2
+    structure_statement_bytes: int = 4 * 1024**2
+    structure_output_bytes: int = 48 * 1024
+    structure_seconds: float = 20
 
     def __post_init__(self):
         if any(not math.isfinite(v) or v <= 0 for v in asdict(self).values()):
             raise ValueError("Limits must be positive and finite.")
-        if any(type(v) is not int for k, v in asdict(self).items() if k != "seconds"):
+        if any(type(v) is not int for k, v in asdict(self).items() if not k.endswith("seconds")):
             raise ValueError("Count/byte limits must be integers.")
         if "DEFAULT_LIMITS" in globals() and any(v > asdict(DEFAULT_LIMITS)[k] for k, v in asdict(self).items()):
             raise ValueError("Lane limits may only be reduced.")
@@ -148,6 +159,282 @@ def check_cycles(graph, limits: Limits, kind: str):
                     fail("DEPTH_LIMIT", f"IFC {kind} exceeds traversal depth.", "limit")
                 active.add(child)
                 stack.append((child, iter(graph.get(child, ()))))
+
+
+SPATIAL_TYPES = {"IfcProject": None, "IfcSite": None, "IfcBuilding": "building",
+                 "IfcBuildingStorey": "level", "IfcSpace": "space"}
+# Every IfcNamedUnit subtype is kept, so a project length unit is either read or truly absent.
+NAMED_UNITS = ("IfcSIUnit", "IfcConversionBasedUnit", "IfcConversionBasedUnitWithOffset", "IfcContextDependentUnit")
+# Attribute counts and the GlobalId, Name, LongName indexes are the same in IFC2X3 and IFC4.
+ARITY = {"IfcProject": 9, "IfcSite": 14, "IfcBuilding": 12, "IfcBuildingStorey": 10, "IfcSpace": 11,
+         "IfcRelAggregates": 6, "IfcRelContainedInSpatialStructure": 6, "IfcUnitAssignment": 1,
+         "IfcSIUnit": 4, "IfcConversionBasedUnit": 4, "IfcConversionBasedUnitWithOffset": 5,
+         "IfcContextDependentUnit": 3}
+STRUCTURE_TYPES = {name.upper(): name for name in ARITY}
+NAMED = {"IfcProject": (0, 2, 5), "IfcSite": (0, 2, 7), "IfcBuilding": (0, 2, 7), "IfcBuildingStorey": (0, 2, 7),
+         "IfcSpace": (0, 2, 7)}
+STATEMENT_SPECIAL = re.compile(rb"['/;]")
+HEAD_SPECIAL = re.compile(rb"['/;(]")
+STATEMENT_HEAD = re.compile(rb"\s*#([0-9]+)\s*=\s*([A-Za-z][A-Za-z0-9_]*)\s*\(\Z")
+STEP_VALUE = re.compile(rb"""\s*(?:'(?P<string>(?:[^']|'')*)'|\#(?P<ref>[0-9]+)|\.(?P<enum>[A-Za-z0-9_]+)\.
+    |(?P<number>[-+]?[0-9]+(?:\.[0-9]*)?(?:[Ee][-+]?[0-9]+)?)|(?P<null>\$)|(?P<derived>\*)
+    |(?P<typed>[A-Za-z][A-Za-z0-9_]*)\s*\(|(?P<open>\())""", re.X)
+STEP_AFTER = re.compile(rb"\s*([,)])")
+STEP_CLOSE = re.compile(rb"\s*\)")
+STEP_ESCAPE = re.compile(r"\\X2\\((?:[0-9A-F]{4})+)\\X0\\|\\X4\\((?:[0-9A-F]{8})+)\\X0\\"
+                         r"|\\X\\([0-9A-F]{2})|\\S\\(.)|\\P[A-I]\\|\\\\")
+
+
+class Ref(NamedTuple):
+    step_id: int
+
+
+class Enum(NamedTuple):
+    name: str
+
+
+class Number(NamedTuple):
+    value: float
+    literal: str
+
+
+class Typed(NamedTuple):
+    name: str
+    value: object
+
+
+DERIVED = object()
+
+
+def step_string(raw: bytes):
+    """Decode a STEP string by ISO 10303-21 escapes; other bytes as UTF-8, else Latin-1."""
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        text = raw.decode("latin-1")
+
+    def escape(match):
+        if match[1]:
+            return bytes.fromhex(match[1]).decode("utf-16-be")
+        if match[2]:
+            return bytes.fromhex(match[2]).decode("utf-32-be")
+        if match[3]:
+            return chr(int(match[3], 16))
+        if match[4]:
+            return chr(ord(match[4]) + 128)
+        return "\\" if match[0] == "\\\\" else ""
+    try:
+        return STEP_ESCAPE.sub(escape, text.replace("''", "'"))
+    except (UnicodeDecodeError, ValueError):
+        fail("STRUCTURE_SYNTAX", "Undecodable STEP string escape.", "unsupported")
+
+
+def step_arguments(body: bytes, limits: Limits):
+    """Parse one statement's parenthesised attribute list into plain values."""
+    stack, names, pos = [], [], 0
+
+    def close():
+        items, name = stack.pop(), names.pop()
+        if name is None:
+            return items
+        if len(items) != 1:
+            fail("STRUCTURE_SYNTAX", "A typed STEP value holds one value.", "unsupported")
+        return Typed(name.decode("ascii").upper(), items[0])
+    while True:
+        match = STEP_VALUE.match(body, pos)
+        if match is None or (not stack and match["open"] is None):
+            fail("STRUCTURE_SYNTAX", "Unreadable STEP attribute list.", "unsupported")
+        pos = match.end()
+        if match["open"] is not None or match["typed"] is not None:
+            if len(stack) >= limits.depth:
+                fail("DEPTH_LIMIT", "STEP aggregate exceeds the nesting limit.", "limit")
+            stack.append([])
+            names.append(match["typed"])
+            empty = STEP_CLOSE.match(body, pos)
+            if not empty:
+                continue
+            pos, value = empty.end(), close()
+        elif match["string"] is not None:
+            value = step_string(match["string"])
+        elif match["ref"] is not None:
+            value = Ref(int(match["ref"]))
+        elif match["enum"] is not None:
+            value = Enum(match["enum"].decode("ascii").upper())
+        elif match["number"] is not None:
+            literal = match["number"].decode("ascii")
+            value = Number(float(literal) if re.search(r"[.Ee]", literal) else int(literal), literal)
+        else:
+            value = None if match["null"] is not None else DERIVED
+        while True:
+            if not stack:
+                if body[pos:].strip():
+                    fail("STRUCTURE_SYNTAX", "Trailing bytes after a STEP attribute list.", "unsupported")
+                return value
+            stack[-1].append(value)
+            after = STEP_AFTER.match(body, pos)
+            if after is None:
+                fail("STRUCTURE_SYNTAX", "Unreadable STEP attribute list.", "unsupported")
+            pos = after.end()
+            if after[1] == b",":
+                break
+            value = close()
+
+
+def step_statements(stream, limits: Limits, chunk=1 << 16):
+    """Yield (step id, type, attribute list bytes) for structure statements, in file order.
+
+    The stream is read in chunks; skipped statements are dropped as they are read,
+    and only one kept statement is held at a time. Strings and comments are passed
+    by their delimiters, and comments inside kept statements are removed.
+    """
+    started, buf, pos, start, wanted, total = time.monotonic(), bytearray(), 0, 0, None, 0
+    step_id = entity = body_start = None
+    while True:
+        match = (HEAD_SPECIAL if wanted is None else STATEMENT_SPECIAL).search(buf, pos)
+        found = match.start() if match else None
+        if found is not None and buf[found] == 39:
+            close = found + 1
+            while (close := buf.find(b"'", close)) >= 0 and buf[close+1:close+2] == b"'":
+                close += 2
+            if close >= 0 and close + 1 < len(buf):
+                pos = close + 1
+                continue
+            found = None
+        elif found is not None and buf[found] == 47:
+            if found + 1 >= len(buf):
+                found = None
+            elif buf[found+1] != 42:
+                pos = found + 1
+                continue
+            elif (close := buf.find(b"*/", found + 2)) >= 0:
+                if wanted is False:
+                    pos = close + 2
+                else:
+                    del buf[found:close+2]
+                    pos = found
+                continue
+            else:
+                found = None
+        elif found is not None and buf[found] == 40:
+            head = STATEMENT_HEAD.match(buf, start, found + 1)
+            entity = head and STRUCTURE_TYPES.get(head[2].decode("ascii").upper())
+            wanted, step_id, body_start, pos = entity is not None, head and int(head[1]), found, found + 1
+            continue
+        elif found is not None:
+            if wanted:
+                yield step_id, entity, bytes(buf[body_start:found])
+            if time.monotonic() - started > limits.structure_seconds:
+                fail("STRUCTURE_TIME_LIMIT", "The structure scan exceeded its time ceiling.", "limit")
+            del buf[:found+1]
+            pos, start, wanted = 0, 0, None
+            continue
+        if wanted is False:
+            del buf[:len(buf) if match is None else match.start()]
+            pos, start = 0, 0
+        if len(buf) - start > limits.structure_statement_bytes:
+            fail("STRUCTURE_STATEMENT_LIMIT", "A structure statement exceeds its byte ceiling.", "limit")
+        data = stream.read(chunk)
+        if not data:
+            if wanted is not None or buf[start:].strip():
+                fail("STRUCTURE_SYNTAX", "The IFC ends inside a STEP statement.", "unsupported")
+            return
+        total += len(data)
+        if total > limits.structure_bytes:
+            fail("STRUCTURE_INPUT_LIMIT", "The IFC exceeds the structure scan byte ceiling.", "limit")
+        buf.extend(data)
+
+
+def stated_elevation(value):
+    value = value.value if isinstance(value, Typed) else value
+    if value is None:
+        return {"state": "absent"}
+    if not isinstance(value, Number) or not math.isfinite(value.value) or len(value.literal) > 64:
+        fail("STRUCTURE_SYNTAX", "Storey elevation is not a stated number.", "unsupported")
+    return {"state": "supplied", "value": value.value, "literal": value.literal}
+
+
+def stated_text(value):
+    value = value.value if isinstance(value, Typed) else value
+    if value is not None and not isinstance(value, str):
+        fail("STRUCTURE_SYNTAX", "A structure label is not a STEP string.", "unsupported")
+    return value
+
+
+def stated_enum(value):
+    if value is not None and not isinstance(value, Enum):
+        fail("STRUCTURE_SYNTAX", "A unit prefix or name is not a STEP enumeration.", "unsupported")
+    return value and value.name
+
+
+def length_unit(projects, assignments, units):
+    """The project's stated length unit, copied as stated; never converted or assumed."""
+    stated = set()
+    for project in projects:
+        assignment = assignments.get(project["unitsStepId"])
+        stated.update(ref for ref in (assignment or ()) if ref in units)
+    if not stated:
+        return {"state": "absent"}
+    if len(stated) > 1:
+        return {"state": "conflicting", "stepIds": sorted(stated)}
+    return {"state": "supplied", **units[stated.pop()]}
+
+
+def scan_structure(stream, limits: Limits = DEFAULT_LIMITS):
+    """Pass 1: building, storeys and spaces with their relations, read as stated; no geometry."""
+    nodes, relations, projects, assignments, units, kept = {}, [], [], {}, {}, 0
+    for step_id, entity, body in step_statements(stream, limits):
+        kept += 1
+        if kept > limits.structure_entities:
+            fail("STRUCTURE_ENTITY_LIMIT", "The IFC holds more structure entities than the scan keeps.", "limit")
+        values = step_arguments(body, limits)
+        if len(values) != ARITY[entity]:
+            fail("STRUCTURE_SYNTAX", "A structure entity has an unexpected attribute count.", "unsupported")
+        if entity in NAMED:
+            global_id, name, long_name = (stated_text(values[i]) for i in NAMED[entity])
+            node = {"stepId": step_id, "entityType": entity, "candidate": SPATIAL_TYPES[entity],
+                    "globalId": global_id, "name": name, "longName": long_name,
+                    "parentStepIds": set(), "relationStepIds": set()}
+            if entity == "IfcBuildingStorey":
+                node["elevation"] = stated_elevation(values[9])
+            if entity == "IfcProject":
+                projects.append({"unitsStepId": values[8].step_id if isinstance(values[8], Ref) else None})
+            nodes[step_id] = node
+        elif entity == "IfcUnitAssignment":
+            listed = values[0] if isinstance(values[0], list) else []
+            assignments[step_id] = [v.step_id for v in listed if isinstance(v, Ref)]
+        elif entity in NAMED_UNITS:
+            if values[1] == Enum("LENGTHUNIT"):
+                si = entity == "IfcSIUnit"
+                units[step_id] = {"stepId": step_id, "entityType": entity,
+                                  "prefix": stated_enum(values[2]) if si else None,
+                                  "name": stated_enum(values[3]) if si else stated_text(values[2])}
+        else:
+            contained = entity == "IfcRelContainedInSpatialStructure"
+            parent, children = (values[5], values[4]) if contained else (values[4], values[5])
+            if isinstance(parent, Ref) and isinstance(children, list):
+                relations.append((step_id, parent.step_id, [v.step_id for v in children if isinstance(v, Ref)]))
+    for step_id, parent, children in relations:
+        if parent in nodes:
+            for child in children:
+                if child in nodes:
+                    nodes[child]["parentStepIds"].add(parent)
+                    nodes[child]["relationStepIds"].add(step_id)
+    for node in nodes.values():
+        node["parentStepIds"], node["relationStepIds"] = sorted(node["parentStepIds"]), sorted(node["relationStepIds"])
+    structure = {"state": "read", "lengthUnit": length_unit(projects, assignments, units),
+                 "nodes": [nodes[k] for k in sorted(nodes)]}
+    size = len(json.dumps(structure, ensure_ascii=True, allow_nan=False, separators=(",", ":")))
+    if size > limits.structure_output_bytes:
+        fail("STRUCTURE_OUTPUT_LIMIT", "The structure exceeds its bounded output.", "limit")
+    return structure
+
+
+def structure_or_reason(raw: bytes, limits: Limits):
+    """A file above a structure ceiling keeps its metadata and states why the structure was not read."""
+    try:
+        return scan_structure(io.BytesIO(raw), limits)
+    except IFCError as error:
+        return {"state": "not_read", "code": error.code, "reason": str(error)}
 
 
 def extract(raw: bytes, limits: Limits = DEFAULT_LIMITS):
@@ -321,6 +608,7 @@ def extract(raw: bytes, limits: Limits = DEFAULT_LIMITS):
         "counts": {"sourceEntities": len(entities), "projectedRecords": len(projected),
                    "sourceEntityTypes": dict(sorted(Counter(e.is_a() for e in entities.values()).items()))},
         "records": [projected[k] for k in sorted(projected)],
+        "structure": structure_or_reason(raw, limits),
         "projectUnits": [{"projectStepId": p.id(), "unitAssignmentStepId": p.UnitsInContext.id() if p.UnitsInContext else None,
                           "state": "supplied" if p.UnitsInContext else "null"} for p in model.by_type("IfcProject")],
         "georeference": {"state": "supplied_unqualified" if any(e.is_a() == "IfcMapConversion" for e in geo) else "missing_or_unqualified",
