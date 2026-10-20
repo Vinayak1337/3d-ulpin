@@ -2707,6 +2707,44 @@
         "path": "packages/server/src/modules/usp/ingestion/intake-migration.ts",
         "function": "migrateIntakeLedgerTx"
       }
+    },
+    {
+      "id": "area.retire",
+      "source": {
+        "path": "database/sql/20-area/area-retire.sql",
+        "function": "migrateAreas",
+        "kind": "authored-sql",
+        "task": "G20",
+        "acceptedBase": "6d038782d019e8e24a8df9930fee3e1d48d7d8e5"
+      },
+      "file": "sql/20-area/area-retire.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 57,
+      "sha256": "a561f63d5b9306a8747f8e597ca113702f63cf1c6d07decc3b972b0b3defe248",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "9065450fb4db1b563cb3e4d633b242f92a0b151cbadc068ce4200e266c1224b8"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "29c47ea704222206a7c479fb65f3d42069000d771b9925bf1fd9b1ad9c5c1e61"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "3556f44f94b29b4832e9117d5237df0321360798727bc2e0d5a912ed6a28ef2f"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/areas/area-db.ts",
+        "function": "migrateAreas"
+      }
     }
   ],
   "plannedButAbsent": []

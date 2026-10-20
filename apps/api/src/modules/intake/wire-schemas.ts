@@ -251,6 +251,10 @@ export const areaContextResponse = areaContext.omit({features: true, displayFeat
 });
 export const areaDisplaySummary = AreaDisplaySummarySchema;
 export const areaDisplayWindow = AreaDisplayWindowSchema;
+export const areaRetirement = z.object({
+  areaId: uuid, state: z.enum(['retired', 'active']), areaRevision: z.number().int().nonnegative(),
+  eventId: uuid, actor: z.string(), reason: z.string(), at: z.string(),
+});
 export const gisInspection = z.object({
   quarantine:GisQuarantineSchema.optional(),
   format: z.enum(['geojson', 'arcgis', 'gpkg', 'shapefile_zip']), sourceSha256: z.string(),

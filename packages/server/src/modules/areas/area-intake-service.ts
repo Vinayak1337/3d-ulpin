@@ -15,6 +15,7 @@ import {
 } from './areas';
 import { areaScenarioRetired } from './area-scenario';
 import { areaDisplaySummary, areaDisplayWindow } from './area-display-window';
+import { assertLiveArea, restoreArea, retireArea } from './area-retire';
 import type { z } from 'zod';
 import type {
   acquisitionImportSchema, areaImportMetadataSchema, copyCaseDocumentsSchema,
@@ -48,10 +49,15 @@ export class AreaIntakeService {
   catalog() { return SOURCE_CATALOG; }
   listAreas = listAreas;
   /** The HTTP context read is the area screen's display read: bounded to the display limit. */
-  async context(id: string) { return areaContextResponse(await areaContext(id, AREA_DISPLAY_LIMIT)); }
+  async context(id: string) {
+    await assertLiveArea(id);
+    return areaContextResponse(await areaContext(id, AREA_DISPLAY_LIMIT));
+  }
   /** An area beyond the display limit is drawn from its summary and one window of the map at a time. */
   displaySummary = areaDisplaySummary;
   displayWindow = areaDisplayWindow;
+  retire = retireArea;
+  restore = restoreArea;
   retiredScenario = areaScenarioRetired;
   resolve = resolveAreaIdentifier;
   bindIdentifier(input: z.output<typeof externalIdentifierSchema>) { return bindExternalIdentifier(input); }

@@ -6,7 +6,7 @@ import { lake } from './sources';
 import { storyAreas, storyBoard, storyQueueItems } from './story';
 import { publicAreas, publicBuilding, publicCode, publicMap, publicRecord, publicSearch } from './public';
 import { RequestError, decideRequest, fileRequest, getRequest, listRequests, trackRequest } from './requests';
-import { deleteArea, deleteBuilding } from './session';
+import { deleteBuilding } from './session';
 import { buildingVisible, floorsDone } from './story';
 import { residentsFor } from '../../../../scripts/demo-import/sample-registry.mjs';
 import { LOCAL_SOURCE_LABELS, documents, importBatches, levelReviews, workBoard, workQueue } from './sources';
@@ -127,11 +127,6 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
   '/api/v1/buildings/:buildingId': ({ buildingId }) => {
     if (!buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
     deleteBuilding(String(buildingId));
-    return new HttpResponse(null, { status: 204 });
-  },
-  '/api/v1/areas/:areaId': ({ areaId }) => {
-    if (String(areaId) !== lake.context.area.id || !storyAreas()?.length) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
-    deleteArea();
     return new HttpResponse(null, { status: 204 });
   },
 };
