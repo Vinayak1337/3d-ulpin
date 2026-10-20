@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { ArchiveMemberLineageSchema, IntakeArchiveReceiptSchema, IntakeArchiveRetainSchema, LARGE_ORIGINAL_LIMITS,
-  STREAMING_VECTOR_LIMITS, ZIP_LAYER_LIMITS, type AnySourceProfile, type ArchiveMemberLineage,
+  STREAMING_VECTOR_LIMITS, ZIP_LAYER_LIMITS, streamingReadMs, type AnySourceProfile, type ArchiveMemberLineage,
   type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
@@ -329,8 +329,10 @@ async function keepLargeLayer(caseId: string, parentItemId: string, archive: Int
   dependencies: ZipLayerDependencies): Promise<string> {
   if (Number(member.size_bytes) > STREAMING_VECTOR_LIMITS.sourceBytes) throw new Error('ZIP_LAYER_SIZE');
   const size = Number(archive.bytes);
-  const deadline = Date.now() + STREAMING_VECTOR_LIMITS.readMs;
-  const signal = AbortSignal.timeout(STREAMING_VECTOR_LIMITS.readMs);
+  // Both passes over the member share one deadline that grows with its size, as the large reader's does.
+  const readMs = streamingReadMs(Number(member.size_bytes));
+  const deadline = Date.now() + readMs;
+  const signal = AbortSignal.timeout(readMs);
   const read = (start: number, end: number) =>
     dependencies.read(archive.object_key, start, end, size, deadline, signal);
   const located = await locateZipMember(read, size, member.member_path);

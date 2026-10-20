@@ -2695,7 +2695,7 @@
         "function": "migrateIntakeLedgerTx",
         "kind": "authored-sql",
         "task": "E1",
-        "acceptedBase": "3126d3ec"
+        "acceptedBase": "3126d3eca99f11412144e50bd46189aa55c01269"
       },
       "file": "sql/95-ingestion/intake-targets.sql",
       "loadTiming": "migration-command",
@@ -2745,7 +2745,7 @@
         "function": "migrateIntakeLedgerTx",
         "kind": "authored-sql",
         "task": "TB1",
-        "acceptedBase": "7231538c"
+        "acceptedBase": "7231538c78fce3ed18a2034fd8dd500877dea1ff"
       },
       "file": "sql/95-ingestion/intake-evidence.sql",
       "loadTiming": "migration-command",

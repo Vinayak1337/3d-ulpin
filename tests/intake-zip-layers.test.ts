@@ -504,6 +504,25 @@ test('a layer above the large ceiling or past a full receipt allowance stays in 
     assert.notEqual(await full.queue(), null);
   }));
 
+test('a large layer of 600 MiB is copied under a 50-minute deadline, as the large reader reads it', () =>
+  configured(async () => {
+    const pack = largePack();
+    const { ledger, queue, run } = await layersJob(pack);
+    const { service, log } = receipts(ledger);
+    ledger.member(largePath).size_bytes = String(600 * 1024 * 1024);
+    let longest = 0;
+    const read = async (_key: string, start: number, end: number, _size: number, deadline: number) => {
+      const left = deadline - Date.now();
+      longest = Math.max(longest, left);
+      // The small layers keep their one-minute member read; the large copy stops at its first read.
+      if (left > 60_000) throw new Error('ZIP_LAYER_UNAVAILABLE');
+      return pack.subarray(start, end);
+    };
+    await run((await queue())!, { large: service, read });
+    assert.equal(log.created.length, 0);
+    assert.ok(longest <= 50 * 60 * 1000 && longest > 50 * 60 * 1000 - 5000, `deadline ${longest} ms`);
+  }));
+
 test('a large layer whose finalize fails keeps no lineage and no link; enrolling again keeps it once', () =>
   configured(async () => {
     const { ledger, queue, run } = await layersJob(largePack());
