@@ -365662,7 +365662,7 @@
                         "type": "integer",
                         "minimum": 0,
                         "exclusiveMinimum": true,
-                        "maximum": 16777216
+                        "maximum": 7516192768
                       },
                       "admission": {
                         "type": "object",
@@ -365748,7 +365748,7 @@
                 "type": "integer",
                 "minimum": 0,
                 "exclusiveMinimum": true,
-                "maximum": 2000
+                "maximum": 1000000
               },
               "profile": {
                 "type": "object",
@@ -365926,6 +365926,37 @@
                 "type": "array",
                 "items": {
                   "type": "string"
+                }
+              },
+              "streamCounts": {
+                "minItems": 1,
+                "maxItems": 256,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "written": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "empty": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "absent": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "written",
+                    "empty",
+                    "absent"
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -366416,7 +366447,7 @@
                             "type": "integer",
                             "minimum": 0,
                             "exclusiveMinimum": true,
-                            "maximum": 16777216
+                            "maximum": 7516192768
                           },
                           "admission": {
                             "type": "object",
@@ -367447,7 +367478,7 @@
                             "type": "integer",
                             "minimum": 0,
                             "exclusiveMinimum": true,
-                            "maximum": 16777216
+                            "maximum": 7516192768
                           },
                           "admission": {
                             "type": "object",
@@ -368486,7 +368517,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 16777216
+                              "maximum": 7516192768
                             },
                             "admission": {
                               "type": "object",
@@ -388264,7 +388295,7 @@
                         "type": "integer",
                         "minimum": 0,
                         "exclusiveMinimum": true,
-                        "maximum": 16777216
+                        "maximum": 7516192768
                       },
                       "admission": {
                         "type": "object",
@@ -388724,7 +388755,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 16777216
+                    "maximum": 7516192768
                   },
                   "admission": {
                     "type": "object",
@@ -389244,7 +389275,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 16777216
+                    "maximum": 7516192768
                   },
                   "admission": {
                     "type": "object",
@@ -389574,7 +389605,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 16777216
+                    "maximum": 7516192768
                   },
                   "admission": {
                     "type": "object",
@@ -390536,7 +390567,7 @@
                         "type": "integer",
                         "minimum": 0,
                         "exclusiveMinimum": true,
-                        "maximum": 16777216
+                        "maximum": 7516192768
                       },
                       "admission": {
                         "type": "object",

@@ -28,6 +28,7 @@ const readerFiles=[
   'packages/server/src/modules/usp/ingestion/streaming-vector.ts',
   'database/sql/95-ingestion/streaming-vector.sql',
   'packages/contracts/src/usp/ingestion.ts','packages/server/src/modules/usp/ingestion/tabular-source.ts',
+  'packages/server/src/modules/usp/ingestion/tabular-stream.ts',
   'packages/server/src/modules/usp/ingestion/column-profile.ts','scripts/agent/read_workbook_cells.py',
   'services/geo/geo/native_workbook.py','fixtures/usp/D8-messy-india/manifest.json',
   'fixtures/usp/D8-messy-india/dev/d1c/derivatives.json','scripts/agent/flatten-json-table.py',

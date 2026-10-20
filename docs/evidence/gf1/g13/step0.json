@@ -1,0 +1,19 @@
+{
+  "task": "g13",
+  "gap": "G13 (AU2): tables buffered whole, 2,000 rows and 16 MiB",
+  "base": "6d038782",
+  "change": [
+    {"path": "packages/contracts/src/usp/ingestion.ts", "why": "TABULAR_STREAM_LIMITS beside TABULAR_LIMITS (1,000,000 rows, windows of 10,000 rows, 1 MiB record bound, byte ceiling of the large-original path); a CSV pin and a tabular profile may state the streamed size and row count. TABULAR_LIMITS is unchanged, so the small path and XLSX keep their bounds."},
+    {"path": "packages/server/src/modules/usp/ingestion/tabular-stream.ts (new)", "why": "byte-level CSV reader over a Readable: row windows of 10,000, each row with its logical row number and byte range in the original, cells exactly as written (no trim, no coercion, empty stays empty, a short row's missing cells absent), SHA-256 and byte count of the whole stream, ceiling 1,000,000 rows; and the profile built from the stream (headers, records, per-column literal/empty/absent counts, first samples, the existing layout profile of the first 100 rows)."},
+    {"path": "packages/server/src/modules/usp/ingestion/tabular-source.ts", "why": "inspectTabularStream: admission and pin for a large CSV read from its object stream, same shape as inspectTabularSource."},
+    {"path": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts", "why": "readStreamingTabular: a CSV pinned above 16 MiB is read through the window reader (never buffered); each row keeps its byte range. The small path is unchanged."}
+  ],
+  "reuse": ["profileTabularChunk (layout profile)", "admitTabularSource / TabularPinSchema (one admission authority)", "openObjectStream via the existing streaming-vector worker", "large-original upload (8 MiB parts, 7 GiB) as the byte ceiling"],
+  "notChanged": ["STREAMING_VECTOR_LIMITS and usp_streaming_vector_slots (G16 owns them; SQL caps a raw job at 4,096 slots of 100 records)", "batch evidence contracts (TB1)", "key matching (AU4-B2)", "ZIP layers", "quotas"],
+  "seamsOutside": [
+    "packages/server/src/modules/usp/ingestion/service.ts and apps/api ingestion controller: a route that gives a large-original CSV its tabular profile (calls inspectTabularStream) is outside the owned paths.",
+    "Raw slots: the streaming-vector job writes rows into usp_streaming_vector_slots (records <= 100, chunk_index <= 4096 by SQL CHECK), so a raw job holds at most 409,600 rows and 128 MiB until G16 or a schema step adds tabular window storage beside it.",
+    "Studio keyset paging (D4) needs a server rows route (apps/api, not owned)."
+  ],
+  "runtime": "none: reader, profile and memory proof run on streams in node tests; no Docker, GPU or provider."
+}

@@ -65078,6 +65078,11 @@ export interface components {
                 sampleShortfall: boolean;
             };
             limitations: string[];
+            streamCounts?: {
+                written: number;
+                empty: number;
+                absent: number;
+            }[];
         };
         POST_ingestion_cases_caseId_sources_sourceId_recipes_Request_application_json: {
             /** Format: uuid */

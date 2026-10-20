@@ -3,6 +3,7 @@ import type {Readable} from 'node:stream';
 import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,
   type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {readTabularSource,admitTabularSource} from './tabular-source';
+import {readTabularWindows} from './tabular-stream';
 import {fingerprint} from '../../cases/domain';
 import {AppError} from '../../../infrastructure/errors';
 
@@ -166,8 +167,25 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
   return {features:index,metadata,bytes:cursor.offset,sha256:cursor.digest()};
 }
 
+/** A CSV pinned above 16 MiB is read in row windows, never whole; each row cites its own byte range. */
+async function readStreamedTabular(body:Readable,pin:TabularPin,onFeature:(item:SourceFeature)=>Promise<void>){
+  const read=await readTabularWindows(body,async(window,headers)=>{
+    for(const row of window.rows){
+      const cells=headers.map((_,column)=>row.cells[column]===undefined?{state:'absent'}
+        :{state:'literal',value:row.cells[column]});
+      await onFeature({index:row.index,start:row.byteStart,end:row.byteEnd,raw:Buffer.alloc(0),
+        rawSha256:row.rawSha256,feature:{cells,headers,sheet:pin.selection.sheet,sourceRow:row.sourceRow},
+        valueIssueCode:null});
+    }
+  });
+  if(read.bytes!==pin.sourceBytes)
+    throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original differs from its tabular pin.');
+  return {features:read.records,metadata:{},bytes:read.bytes,sha256:read.sha256};
+}
+
 /** Tabular records retain whole-original byte/hash coverage plus physical sheet/row locators, not fake GIS. */
 export async function readStreamingTabular(body:Readable,pin:TabularPin,onFeature:(item:SourceFeature)=>Promise<void>){
+  if(pin.selection.format==='csv'&&pin.sourceBytes>TABULAR_LIMITS.bytes)return readStreamedTabular(body,pin,onFeature);
   const chunks:Buffer[]=[];let length=0;
   for await(const value of body){
     const chunk=Buffer.from(value);length+=chunk.length;
