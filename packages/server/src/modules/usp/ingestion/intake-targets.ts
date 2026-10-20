@@ -261,6 +261,23 @@ export async function listIntakeTargets(caseIdValue: string, readiness: string |
   });
 }
 
+/** The intake target of a building picked on the map: in the package proposing it, else in the packages that
+ * recorded it; when several name it, the one furthest along. Read with the case access of the target page. */
+export async function readIntakeTargetByFeature(featureIdValue: string,
+  packageIdValue: string | undefined): Promise<IntakeTarget> {
+  const featureId = uuid.parse(featureIdValue);
+  const packageId = packageIdValue === undefined ? null : uuid.parse(packageIdValue);
+  return transaction(async client => {
+    const row = (await client.query(`SELECT * FROM usp_intake_targets WHERE feature_id=$1
+      AND package_id=ANY(CASE WHEN $2::uuid IS NULL THEN ARRAY(SELECT package_id FROM physical_feature_revisions
+        WHERE feature_id=$1) ELSE ARRAY[$2::uuid] END)
+      ORDER BY stage DESC,updated_at DESC,target_id LIMIT 1`, [featureId, packageId])).rows[0]
+      ?? notFound('No intake target names this building.');
+    await intakeCaseTx(client, row.case_id);
+    return intakeTargetView(row);
+  });
+}
+
 /** A waiting target an officer opened is taken first by the run; nothing else about it changes. */
 export async function prioritizeIntakeTarget(caseIdValue: string, targetIdValue: string): Promise<IntakeTarget> {
   const caseId = uuid.parse(caseIdValue);
