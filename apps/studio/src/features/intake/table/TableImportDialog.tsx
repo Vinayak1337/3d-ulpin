@@ -2,22 +2,13 @@ import { useState } from 'react';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
 import { uploadWords, type UploadProgress } from '../upload-model';
-import { streamedImport } from './retain';
+import { streamedImport, tableFormat } from './retain';
 import { TableRefusal } from './Progress';
+import { jobWords } from './useFollowTable';
 import { useRetainTable } from './useRetainTable';
 import { TableSelectionFields, SourceCaseFields } from './TableImportFields';
 import type { TableJob } from './types';
 import styles from './Table.module.css';
-
-/** TP1: words for the server job reading a large CSV while the dialog follows it. */
-function jobWords(job: TableJob) {
-  if (job.status === 'queued') return 'The CSV is kept unchanged. Its reading as a table is queued on the server.';
-  if (job.status === 'running') {
-    return 'The server is reading the CSV as a stream. A large table takes minutes; the reading continues on the ' +
-      'server if this dialog closes.';
-  }
-  return job.status === 'succeeded' ? 'The table is read. Opening its table page.' : null;
-}
 
 export function TableImportDialog({ file, onClose, onBack }: {
   file: File; onClose: () => void; onBack: () => void;
@@ -39,7 +30,8 @@ export function TableImportDialog({ file, onClose, onBack }: {
         clearCreated();
         setMode(value);
       }} locked={created} />
-    <TableSelectionFields file={file} sheet={sheet} setSheet={setSheet} rows={rows} setRows={setRows} />
+    <TableSelectionFields format={tableFormat(file)} sheet={sheet} setSheet={setSheet} rows={rows}
+      setRows={setRows} />
   </ImportDialogBody>;
 }
 
