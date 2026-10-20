@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SourcePathSchema, TabularSelectionSchema } from './ingestion';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -191,3 +192,167 @@ export type IntakeTargetArtefacts = z.infer<typeof IntakeTargetArtefactsSchema>;
 export type IntakeTarget = z.infer<typeof IntakeTargetSchema>;
 export type IntakeConfirm = z.infer<typeof IntakeConfirmSchema>;
 export type IntakeConfirmation = z.infer<typeof IntakeConfirmationSchema>;
+
+/**
+ * AU4-B1: a table row or a document part of a batch, proposed as evidence for a building of the same case.
+ * Exact literal keys only: no lowercasing, trimming, transliteration, punctuation stripping or number coercion.
+ * Every candidate stays a candidate; coverage is null until a reader states it, and unread is never absence.
+ * Nothing here records, matches or cites, and no field states a right, ownership or issuance.
+ */
+export const EXACT_KEY_PROFILE_VERSION = 'exact-key/1' as const;
+export const INTAKE_EVIDENCE_VERSION = 'intake-evidence/1' as const;
+export const INTAKE_EVIDENCE_LIMITS = Object.freeze({
+  literalChars: 1024, quoteChars: 4096, tables: 16, documents: 16, page: 200, targets: 16, decisions: 100,
+  sources: 100,
+});
+const literal = z.string().min(1).max(INTAKE_EVIDENCE_LIMITS.literalChars);
+const integerLiteral = /^-?(?:0|[1-9][0-9]*)$/;
+const words = (max: number) => z.string().min(1).max(max)
+  .refine(value => value.trim().length > 0, 'Use non-blank words.');
+const once = <T>(values: T[], key: (value: T) => string) => new Set(values.map(key)).size === values.length;
+const columnIndex = z.number().int().min(0).max(INTAKE_PROBE_LIMITS.columns - 1);
+const keyPath = SourcePathSchema.refine(path => path !== '/features/*/geometry', 'A key is never the geometry.');
+export const IntakeKeyKindSchema = z.enum(['text', 'integer']);
+export const IntakeKeyProfileInputSchema = z.strictObject({
+  requestKey: uuid, version: z.literal(EXACT_KEY_PROFILE_VERSION),
+  namespace: words(150).describe('The identifier namespace in the officer\'s words; never an official ULPIN.'),
+  kind: IntakeKeyKindSchema,
+  map: z.strictObject({ anchorItemId: uuid, sourcePath: keyPath }),
+  tables: z.array(z.strictObject({ itemId: uuid, selection: TabularSelectionSchema, columnIndex }))
+    .max(INTAKE_EVIDENCE_LIMITS.tables).refine(rows => once(rows, row => row.itemId), 'Name each table once.'),
+  documents: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.documents)
+    .refine(ids => new Set(ids).size === ids.length, 'Name each document once.'),
+}).refine(input => input.tables.length + input.documents.length > 0, 'Name at least one table column or document.');
+export const IntakeKeyProfileSchema = z.strictObject({
+  profileId: uuid, caseId: uuid, profileSha256: hash, input: IntakeKeyProfileInputSchema,
+  subject: z.string().min(1).max(256), createdAt: at,
+});
+export const IntakeEvidenceKeySchema = z.strictObject({
+  profileId: uuid, profileSha256: hash, namespace: words(150), kind: IntakeKeyKindSchema, literal,
+});
+/** The map side: the literal read from the chosen field of one drafted building, with its package pins. */
+export const IntakeEvidenceAnchorSchema = z.strictObject({
+  targetId: uuid, anchorItemId: uuid, packageId: uuid, packageRevision: z.number().int().positive(),
+  featureId: uuid, locator: text, sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hash,
+  sourcePath: keyPath, literal,
+});
+/** One physical row of a retained table as the raw tabular job read it; the key cell is a literal as read. */
+export const IntakeTableRowLocatorSchema = z.strictObject({
+  kind: z.literal('table_row'), itemId: uuid, caseId: uuid, sourceId: uuid,
+  sourceRevision: z.number().int().positive(), sourceSha256: hash, rawJobId: uuid, rawInputSha256: hash,
+  rawResultSha256: hash, acceptedFence: z.number().int().positive(), selection: TabularSelectionSchema,
+  sourceRow: z.number().int().positive(), rowSha256: hash, columnIndex, columnHeader: z.string().max(400),
+  cell: z.strictObject({ state: z.literal('literal'), value: literal }),
+});
+/** One native text part of a retained document; the quote is an exact character span of the part's text. */
+export const IntakeDocumentPartLocatorSchema = z.strictObject({
+  kind: z.literal('document_part'), itemId: uuid, caseId: uuid, caseRevision: z.number().int().nonnegative(),
+  sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hash, jobId: uuid,
+  resultSha256: hash, inputSha256: hash, readerSha256: hash, acceptedFence: z.number().int().positive(),
+  partId: uuid, partSha256: hash, page: z.number().int().positive().nullable(),
+  quote: z.string().min(1).max(INTAKE_EVIDENCE_LIMITS.quoteChars),
+  quoteStart: z.number().int().nonnegative(), quoteEnd: z.number().int().positive(),
+}).refine(part => part.quoteEnd - part.quoteStart === part.quote.length,
+  'The quote must be the exact character span it names.');
+export const IntakeEvidenceLocatorSchema = z.discriminatedUnion('kind', [
+  IntakeTableRowLocatorSchema, IntakeDocumentPartLocatorSchema,
+]);
+export const IntakeEvidenceOutcomeSchema = z.enum(['matched', 'no_match', 'several', 'conflicting']);
+/** Each count is null while unknown, never 0. A closed reading states every count and leaves nothing unread. */
+export const IntakeEvidenceCoverageSchema = z.strictObject({
+  state: z.enum(['reading', 'partial', 'closed']), read: count, eligible: count, keyless: count,
+  unread: count, failed: count,
+}).refine(value => value.state !== 'closed'
+  || ([value.read, value.eligible, value.keyless, value.failed].every(n => n !== null) && value.unread === 0),
+'Closed coverage states every count and leaves nothing unread.');
+export const IntakeEvidenceSourceSchema = z.strictObject({
+  itemId: uuid, profileId: uuid, family: z.enum(['table', 'document']), jobId: uuid.nullable(),
+  resultSha256: hash.nullable(), coverage: IntakeEvidenceCoverageSchema.nullable(),
+}).refine(source => source.coverage?.state !== 'closed' || (source.jobId !== null && source.resultSha256 !== null),
+  'Closed coverage names the job and result that read it.');
+type EvidenceKey = z.infer<typeof IntakeEvidenceKeySchema>;
+type EvidenceLocator = z.infer<typeof IntakeEvidenceLocatorSchema>;
+function keyIssue(key: EvidenceKey, evidence: EvidenceLocator, anchors: { literal: string }[]) {
+  if (key.kind === 'integer' && !integerLiteral.test(key.literal)) return 'An integer key is its digits as written.';
+  const held = evidence.kind === 'table_row' ? evidence.cell.value === key.literal
+    : evidence.quote.includes(key.literal);
+  if (!held || anchors.some(anchor => anchor.literal !== key.literal))
+    return 'Each side must hold the exact key literal as read; no normalised or invented key.';
+  return null;
+}
+const outcomeFits = { matched: (n: number) => n === 1, no_match: (n: number) => n === 0,
+  several: (n: number) => n > 1, conflicting: (n: number) => n > 0 };
+export const IntakeEvidenceCandidateSchema = z.strictObject({
+  version: z.literal(INTAKE_EVIDENCE_VERSION), candidateId: uuid, caseId: uuid, candidateSha256: hash,
+  key: IntakeEvidenceKeySchema, evidence: IntakeEvidenceLocatorSchema, outcome: IntakeEvidenceOutcomeSchema,
+  anchors: z.array(IntakeEvidenceAnchorSchema).max(INTAKE_EVIDENCE_LIMITS.targets)
+    .refine(rows => once(rows, row => row.targetId), 'Name each building once.'),
+  conflictGroup: uuid.nullable(), sourceCoverage: IntakeEvidenceCoverageSchema.nullable(),
+  state: z.literal('candidate'), qualification: z.literal('not_assessed'), createdAt: at,
+}).superRefine((candidate, ctx) => {
+  const message = keyIssue(candidate.key, candidate.evidence, candidate.anchors);
+  if (message) ctx.addIssue({ code: 'custom', path: ['key'], message });
+  if (!outcomeFits[candidate.outcome](candidate.anchors.length))
+    ctx.addIssue({ code: 'custom', path: ['anchors'], message: 'The buildings named do not fit the outcome.' });
+  if ((candidate.outcome === 'conflicting') !== (candidate.conflictGroup !== null))
+    ctx.addIssue({ code: 'custom', path: ['conflictGroup'], message: 'Only a conflict names its group.' });
+  if (candidate.outcome === 'no_match' && candidate.sourceCoverage?.state !== 'closed')
+    ctx.addIssue({ code: 'custom', path: ['sourceCoverage'], message: 'Unread coverage is never absence.' });
+});
+export const IntakeEvidenceQuerySchema = z.strictObject({
+  outcome: IntakeEvidenceOutcomeSchema.optional(), cursor: uuid.optional(),
+});
+export const IntakeEvidencePageSchema = z.strictObject({
+  caseId: uuid, profiles: z.array(IntakeKeyProfileSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
+  sources: z.array(IntakeEvidenceSourceSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
+  candidates: z.array(IntakeEvidenceCandidateSchema).max(INTAKE_EVIDENCE_LIMITS.page),
+  counts: z.strictObject({ matched: tally, no_match: tally, several: tally, conflicting: tally })
+    .describe('Stored candidates by outcome, each counted once; not a reading total (see sources).'),
+  nextCursor: uuid.nullable(),
+});
+const sourcePin = z.strictObject({
+  itemId: uuid, sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hash,
+  bytes: z.number().int().nonnegative(),
+});
+const candidatePin = { candidateId: uuid, candidateSha256: hash };
+const decision = z.discriminatedUnion('decision', [
+  z.strictObject({ decision: z.literal('accept'), ...candidatePin, targetId: uuid,
+    evidence: IntakeEvidenceLocatorSchema }),
+  z.strictObject({ decision: z.literal('reject'), ...candidatePin, reason: words(500) }),
+]);
+/** Every pin one officer confirmation of batch evidence names; nothing here authorises a right or an issuance. */
+export const IntakeEvidenceConfirmSchema = z.strictObject({
+  requestKey: uuid, acknowledgement: words(500), profileId: uuid, profileSha256: hash,
+  included: z.array(sourcePin.extend({ jobId: uuid, resultSha256: hash, coverage: IntakeEvidenceCoverageSchema }))
+    .min(1).max(INTAKE_EVIDENCE_LIMITS.sources),
+  excluded: z.array(sourcePin.extend({ reason: words(500) })).max(INTAKE_EVIDENCE_LIMITS.sources),
+  targets: z.array(z.strictObject({ targetId: uuid, packageId: uuid, packageRevision: z.number().int().positive(),
+    reviewFingerprint: hash })).min(1).max(INTAKE_TARGET_LIMITS.confirmationTargets),
+  additions: z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('citations'), linkManifestSha256: hash,
+      decisions: z.array(decision).min(1).max(INTAKE_EVIDENCE_LIMITS.decisions) }),
+    z.strictObject({ kind: z.literal('no_additions') }),
+  ]),
+}).superRefine((input, ctx) => {
+  const issue = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
+  if (!once([...input.included, ...input.excluded], source => source.itemId))
+    issue('excluded', 'Include or exclude each source once.');
+  if (input.included.some(source => source.coverage.state !== 'closed'))
+    issue('included', 'Confirm only sources whose reading closed.');
+  if (!once(input.targets, target => target.targetId)) issue('targets', 'Name each building once.');
+  if (input.additions.kind === 'no_additions') return;
+  const named = new Set(input.targets.map(target => target.targetId));
+  const rows = input.additions.decisions;
+  if (!once(rows, row => row.candidateId)) issue('additions', 'Decide each candidate once.');
+  if (rows.some(row => row.decision === 'accept' && !named.has(row.targetId)))
+    issue('additions', 'Accept a citation only for a building this confirmation names.');
+});
+export const IntakeEvidenceConfirmationSchema = z.strictObject({
+  confirmationId: uuid, caseId: uuid, inputSha256: hash, input: IntakeEvidenceConfirmSchema,
+  subject: z.string().min(1).max(256), expiresAt: at, createdAt: at,
+});
+export type IntakeKeyProfileInput = z.infer<typeof IntakeKeyProfileInputSchema>;
+export type IntakeTableRowLocator = z.infer<typeof IntakeTableRowLocatorSchema>;
+export type IntakeEvidenceCoverage = z.infer<typeof IntakeEvidenceCoverageSchema>;
+export type IntakeEvidenceCandidate = z.infer<typeof IntakeEvidenceCandidateSchema>;
+export type IntakeEvidenceConfirm = z.infer<typeof IntakeEvidenceConfirmSchema>;

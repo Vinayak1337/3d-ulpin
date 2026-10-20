@@ -128,7 +128,7 @@ export const TabularSelectionSchema = z.strictObject({
   headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),
 }).superRefine((value, ctx) => {
   if (new Set(value.headerRows).size !== value.headerRows.length ||
-      value.headerRows.some((row, index) => index > 0 && row <= value.headerRows[index - 1])) {
+      value.headerRows.some((row, index) => index > 0 && row <= value.headerRows[index - 1]!)) {
     ctx.addIssue({ code: 'custom', message: 'Header rows must be ordered, distinct physical source rows.' });
   }
   if (value.format === 'csv' && (value.sheet !== 'csv' || value.headerRows.length !== 1 || value.headerRows[0] !== 1)) {
