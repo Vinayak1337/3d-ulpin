@@ -16,6 +16,7 @@ import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from 
  * SH2. A GeoPackage, or a ZIP its card names a shapefile set in, is converted by the native reader, window by
  * window, into one GeoJSON derivative per layer. Each derivative is retained as its own large original that names
  * the original it came from, and enrolled like any dropped file, so the large GeoJSON path reads it unchanged.
+ * KML1: a KML or KMZ takes the same path, one layer per Document or Folder holding Placemarks.
  */
 export const NATIVE_DERIVATIVE_CONVERSION = 'native_gis_to_geojson@1';
 const uuid = z.string().uuid();
@@ -34,8 +35,10 @@ const stored = z.strictObject({
 const layerName = z.string().min(1).max(256);
 // CR1: a system the file states, or the code an officer stated for a layer whose file states none.
 const crsSource = z.enum(['stated', 'officer_stated']);
+// KML1: the words saying where a stated system comes from when the format, not the file, states it.
+const crsBasis = z.string().min(1).max(200).optional();
 const ConvertedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
-  state: z.literal('converted'), crs: z.string().regex(/^EPSG:\d{1,9}$/), crsSource,
+  state: z.literal('converted'), crs: z.string().regex(/^EPSG:\d{1,9}$/), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), geojson: stored,
   sidecar: stored });
 const reason = z.string().min(1).max(300);
@@ -48,6 +51,9 @@ export const NativeConversionSchema = z.strictObject({
   conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION), readerVersion: z.string().min(1).max(64), sourceId: uuid,
   sourceSha256: hex64, layers: z.array(z.discriminatedUnion('state',
     [ConvertedLayerSchema, StoppedLayerSchema, UnstatedLayerSchema])).min(1).max(100),
+  // KML1: how many of each element the original keeps that the reader neither fetches nor reads.
+  notRead: z.partialRecord(z.enum(['NetworkLink', 'GroundOverlay', 'PhotoOverlay', 'ScreenOverlay']),
+    z.number().int().positive()).optional(),
 });
 export type NativeConversion = z.infer<typeof NativeConversionSchema>;
 type ConvertedLayer = z.infer<typeof ConvertedLayerSchema>;
@@ -57,12 +63,15 @@ type StoppedLayer = z.infer<typeof StoppedLayerSchema> | z.infer<typeof Unstated
 export const NativeDerivativeLineageSchema = z.strictObject({
   version: z.literal('native-derivative/1'), conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION),
   readerVersion: z.string().min(1).max(64), originalSourceId: uuid, originalSourceRevision: z.number().int().positive(),
-  originalSha256: hex64, originalItemId: uuid, format: z.enum(['gpkg', 'shapefile_zip']), layer: layerName,
-  ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, features: z.number().int().nonnegative(),
-  notWritten: z.number().int().nonnegative(), sidecar: stored,
+  originalSha256: hex64, originalItemId: uuid, format: z.enum(['gpkg', 'shapefile_zip', 'kml', 'kmz']),
+  layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
+  features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
 });
 
-const kind = (format: 'gpkg' | 'shapefile_zip') => format === 'gpkg' ? 'GeoPackage' : 'shapefile ZIP';
+type NativeFormat = NonNullable<ReturnType<typeof nativeDerivativeFormat>>;
+const kinds: Record<NativeFormat, string> = { gpkg: 'GeoPackage', shapefile_zip: 'shapefile ZIP', kml: 'KML',
+  kmz: 'KMZ' };
+const kind = (format: NativeFormat) => kinds[format];
 
 /**
  * Publishing the card queues one fenced conversion job in the publishing transaction. None is queued while one
@@ -113,7 +122,7 @@ export async function stateLayerCrsTx(client: PoolClient, source: IntakeSourceRo
   const item = (await client.query(`SELECT * FROM usp_intake_items WHERE item_id=$1 AND source_id=$2
     AND parent_item_id IS NULL FOR UPDATE`, [itemId, source.id])).rows[0];
   if (!item || !nativeDerivativeFormat(item.card)) throw new AppError(409, 'INTAKE_LAYER_CRS_NOT_NATIVE',
-    'Only a layer of a GeoPackage or shapefile ZIP takes a coordinate system answer.');
+    'Only a layer of a GeoPackage, shapefile ZIP, KML or KMZ takes a coordinate system answer.');
   const stored = nativeLayersRef(item.plan_ref);
   if (stored.answers.some(entry => entry.layer === answer.layer)) throw new AppError(409, 'INTAKE_LAYER_CRS_ANSWERED',
     'The officer already stated this layer\'s coordinate system.');
@@ -133,7 +142,7 @@ export async function stateLayerCrsTx(client: PoolClient, source: IntakeSourceRo
 export type NativeDerivativeDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: typeof readObjectRange;
   convert: (request: { sourceId: string; objectKey: string; sha256: string; bytes: number;
-    format: 'gpkg' | 'shapefile_zip'; layerCrs?: Record<string, string> }) => Promise<unknown>;
+    format: NativeFormat; layerCrs?: Record<string, string> }) => Promise<unknown>;
 };
 
 type Outcome = { layer: string; sourceId: string | null; code: string | null };
@@ -142,7 +151,7 @@ type Outcome = { layer: string; sourceId: string | null; code: string | null };
  * Officer words name each layer and what became of it; a layer with no stated system asks the officer. The layers
  * stating none and the officer's answers are kept beside the item.
  */
-export function nativeParentState(format: 'gpkg' | 'shapefile_zip', conversion: NativeConversion,
+export function nativeParentState(format: NativeFormat, conversion: NativeConversion,
   outcomes: Outcome[], answers: NativeLayersRef['answers'] = []): IntakeDraftState {
   const officer = new Map<string, string>();
   for (const layer of conversion.layers) {
@@ -167,8 +176,20 @@ export function nativeParentState(format: 'gpkg' | 'shapefile_zip', conversion: 
     + `${listWords(unstated, 500)}.`);
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
+  sentences.push(...basisWords(conversion));
   const placement = unstated.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
   return { state: 'read', placement, planRef, recordsSeen: 0, limitReason: sentences.join(' ') };
+}
+
+/** KML1. Where a system the format states comes from, and what the original keeps that is not fetched or read. */
+function basisWords(conversion: NativeConversion): string[] {
+  const words: string[] = [];
+  const [basis] = conversion.layers.flatMap(layer => layer.state === 'converted' && layer.crsBasis
+    ? [layer.crsBasis] : []);
+  if (basis) words.push(`Coordinate system: ${basis}.`);
+  const kept = Object.entries(conversion.notRead ?? {}).map(([element, count]) => `${element} (${count})`);
+  if (kept.length) words.push(`Kept in the original but not fetched or read: ${kept.join(', ')}.`);
+  return words;
 }
 
 function failureCode(error: unknown): string {
@@ -207,7 +228,8 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       conversion: conversion.conversion, readerVersion: conversion.readerVersion, originalSourceId: source.id,
       originalSourceRevision: source.revision, originalSha256: source.sha256, originalItemId: itemId, format,
       layer: layer.layer, ordinal: layer.ordinal, crs: layer.crs, crsSource: layer.crsSource,
-      features: layer.features, notWritten: layer.notWritten, sidecar: layer.sidecar });
+      ...(layer.crsBasis ? { crsBasis: layer.crsBasis } : {}), features: layer.features,
+      notWritten: layer.notWritten, sidecar: layer.sidecar });
     try {
       outcomes.push({ layer: layer.layer, sourceId: await keepDerivative(caseId, layer, lineage, dependencies),
         code: null });

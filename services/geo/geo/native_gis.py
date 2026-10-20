@@ -14,6 +14,7 @@ import struct
 import tempfile
 import time
 import zipfile
+import zlib
 from pathlib import Path, PurePosixPath
 
 from pyproj import CRS
@@ -567,15 +568,19 @@ def _gpkg_layer(connection, layer: str, ordinal: int, folder: Path, source_sha25
             **derivative.close()}
 
 
+def _unsafe_member(entry: zipfile.ZipInfo) -> bool:
+    member = PurePosixPath(entry.filename)
+    return member.is_absolute() or ".." in member.parts or "\\" in entry.filename \
+        or stat.S_ISLNK(entry.external_attr >> 16) or bool(entry.flag_bits & 1)
+
+
 def _shapefile_layers(path: Path, folder: Path, source_sha256: str, answers: dict) -> list[dict]:
     import shapefile
     try:
         with zipfile.ZipFile(path) as archive:
             names = {}
             for entry in archive.infolist():
-                member = PurePosixPath(entry.filename)
-                if member.is_absolute() or ".." in member.parts or "\\" in entry.filename \
-                        or stat.S_ISLNK(entry.external_attr >> 16) or entry.flag_bits & 1:
+                if _unsafe_member(entry):
                     raise InputError("The shapefile ZIP holds an unsafe path, a link or an encrypted member.")
                 if not entry.is_dir():
                     names[entry.filename.lower()] = entry
@@ -657,6 +662,385 @@ def _shapefile_record(reader, position: int, fields: list, derivative: _Derivati
         derivative.feature(position, properties, geometry)
 
 
+# KML1. A KML, or a KMZ's document member, is read as a stream of XML events. Each Document or Folder holding
+# Placemarks becomes one GeoJSON derivative (the whole file when the file has none); only the open Placemark is held.
+# Names and ExtendedData are written as written; a coordinate's third value is kept as written, never measured.
+KML_READER = "native-kml-stream/1"
+KML_FORMATS = ("kml", "kmz")
+KML_CRS = "EPSG:4326"
+KML_CRS_BASIS = "the KML 2.2 specification states longitude and latitude on WGS 84 (EPSG:4326)"
+WHOLE_FILE = "whole file"
+_KML_NOT_READ = ("NetworkLink", "GroundOverlay", "PhotoOverlay", "ScreenOverlay")
+_KML_GEOMETRIES = ("Point", "LineString", "LinearRing", "Polygon", "MultiGeometry")
+_KML_BOUNDARIES = ("outerBoundaryIs", "innerBoundaryIs")
+_KML_RATIO = 100
+# The large GeoJSON path's record bound (STREAMING_VECTOR_LIMITS.featureBytes, projected_vector.FEATURE_BYTES), held
+# here as the characters captured for one open Placemark (or one container name) across all its captures.
+PLACEMARK_BOUND = 1024 * 1024
+TOO_LARGE = "placemark_too_large"
+
+
+class _KmlStop(Exception):
+    """The root is not a KML document; nothing further is read."""
+
+
+class _Placemark:
+    def __init__(self, position: int, depth: int):
+        self.position, self.depth = position, depth
+        self.properties, self.modes, self.geometries, self.frames = [], [], [], []
+        self.dimensions, self.data, self.reason = set(), None, None
+        self.held = 0
+
+    def refuse(self, reason: str):
+        self.reason = self.reason or reason
+
+    def drop(self):
+        """Past the bound: what the Placemark holds is let go and only its refusal remains."""
+        self.properties, self.modes, self.geometries, self.frames = [], [], [], []
+        self.dimensions, self.data, self.reason = set(), None, TOO_LARGE
+
+
+def _kml_tuples(text: str) -> tuple[list | None, str | None]:
+    from .native_kml import NUMBER
+    tuples = []
+    for token in text.split():
+        parts = token.split(",")
+        if len(parts) not in (2, 3) or not all(NUMBER.fullmatch(part) for part in parts):
+            return None, "coordinates_syntax"
+        values = [float(part) for part in parts]
+        if not all(math.isfinite(value) for value in values):
+            return None, "coordinates_syntax"
+        if not (-180 <= values[0] <= 180 and -90 <= values[1] <= 90):
+            return None, "coordinates_range"
+        tuples.append(values)
+    return tuples, None
+
+
+def _kml_geometry(frame: dict) -> tuple[dict | None, str | None]:
+    """One closed KML geometry as GeoJSON; a LinearRing standing alone is the closed line it draws."""
+    kind = frame["kind"]
+    if kind == "MultiGeometry":
+        parts = frame["parts"]
+        if not parts:
+            return None, "geometry_empty"
+        kinds = {part["type"] for part in parts}
+        if len(kinds) == 1 and parts[0]["type"] in ("Point", "LineString", "Polygon"):
+            return {"type": "Multi" + parts[0]["type"], "coordinates": [part["coordinates"] for part in parts]}, None
+        return {"type": "GeometryCollection", "geometries": parts}, None
+    if kind == "Polygon":
+        outer = [ring for role, ring in frame["rings"] if role == "outerBoundaryIs"]
+        if len(outer) != 1:
+            return None, "polygon_outer_boundary"
+        return {"type": "Polygon", "coordinates": outer + [
+            ring for role, ring in frame["rings"] if role == "innerBoundaryIs"]}, None
+    if not frame["coordinates"]:
+        return None, "coordinates_absent"
+    if kind == "Point":
+        if len(frame["coordinates"]) != 1:
+            return None, "coordinates_count"
+        return {"type": "Point", "coordinates": frame["coordinates"][0]}, None
+    return {"type": "LineString", "coordinates": frame["coordinates"]}, None
+
+
+class _KmlReader:
+    """Expat handlers: open elements, open containers, and the one open Placemark with its geometry frames."""
+
+    def __init__(self, folder: Path, header: dict):
+        from .native_kml import GX, KML_NAMESPACES
+        self.gx, self.namespaces = GX, KML_NAMESPACES
+        self.folder, self.header, self.namespace = folder, header, None
+        self.stack, self.containers, self.layers, self.used = [], [], [], set()
+        self.whole, self.placemark, self.capture, self.placemarks = None, None, None, 0
+        self.numbers = dict.fromkeys(("Document", "Folder"), 0)
+        self.not_read = {}
+
+    def start(self, name: str, attributes: dict):
+        namespace, _, local = name.rpartition("|")
+        depth = len(self.stack)
+        if not depth:
+            if namespace not in self.namespaces or local != "kml":
+                raise _KmlStop()
+            self.namespace = namespace
+        native = namespace == self.namespace
+        holds = native and depth and self.stack[-1][2] and local in ("Document", "Folder")
+        self.stack.append((namespace, local, not depth or holds))
+        if native and local in _KML_NOT_READ:
+            self.not_read[local] = self.not_read.get(local, 0) + 1
+        if holds:
+            self.numbers[local] += 1
+            self.containers.append({"kind": local, "number": self.numbers[local], "depth": depth,
+                                    "name": None, "layer": None})
+        elif native and local == "Placemark" and self.stack[-2][2] and self.placemark is None:
+            self.placemark = _Placemark(self.placemarks, depth)
+            self.placemarks += 1
+        elif self.placemark is not None:
+            self._within(namespace, local, attributes, depth)
+        elif native and local == "name" and self.containers and depth == self.containers[-1]["depth"] + 1:
+            self.capture = {"depth": depth, "target": "container", "parts": [], "held": 0}
+
+    def _within(self, namespace: str, local: str, attributes: dict, depth: int):
+        mark, parent = self.placemark, self.stack[-2][1]
+        if mark.reason == TOO_LARGE:
+            return
+        frame = mark.frames[-1] if mark.frames and mark.frames[-1]["depth"] == depth - 1 else None
+        native = namespace == self.namespace
+        if native and local == "name" and depth == mark.depth + 1:
+            self._capture(depth, "name")
+        elif native and local == "Data" and parent == "ExtendedData":
+            mark.data = [attributes.get("name"), None]
+        elif native and local == "value" and parent == "Data" and mark.data is not None:
+            self._capture(depth, "value")
+        elif native and local == "SimpleData" and parent == "SchemaData":
+            self._capture(depth, "simple", attributes.get("name"))
+        elif native and local in _KML_GEOMETRIES:
+            self._frame(local, parent, frame, depth)
+        elif native and local == "coordinates" and frame and frame["kind"] not in ("Polygon", "MultiGeometry"):
+            self._capture(depth, "coordinates")
+        elif local == "altitudeMode" and (native or namespace == self.gx) and frame:
+            self._capture(depth, "mode")
+        elif (native and local == "Model" or namespace == self.gx and local in ("Track", "MultiTrack")) \
+                and (depth == mark.depth + 1 or parent == "MultiGeometry"):
+            mark.refuse(f"geometry_not_read:{local}")
+
+    def _capture(self, depth: int, target: str, key=None):
+        self.capture = {"depth": depth, "target": target, "key": key, "parts": [], "held": 0}
+
+    def _frame(self, kind: str, parent: str, frame: dict | None, depth: int):
+        mark = self.placemark
+        enclosing = mark.frames[-1] if mark.frames and mark.frames[-1]["depth"] == depth - 2 else None
+        role = parent if parent in _KML_BOUNDARIES and kind == "LinearRing" and enclosing \
+            and enclosing["kind"] == "Polygon" else None
+        if role or depth == mark.depth + 1 or frame and frame["kind"] == "MultiGeometry":
+            mark.frames.append({"kind": kind, "depth": depth, "role": role, "coordinates": None,
+                                "rings": [], "parts": []})
+
+    def characters(self, text: str):
+        capture = self.capture
+        if capture is None or capture["parts"] is None:
+            return
+        capture["held"] += len(text)
+        mark = None if capture["target"] == "container" else self.placemark
+        if mark is not None:
+            mark.held += len(text)
+        if (mark.held if mark is not None else capture["held"]) <= PLACEMARK_BOUND:
+            capture["parts"].append(text)
+        elif mark is not None:
+            mark.drop()
+            self.capture = None
+        else:
+            # A container name past the bound is left unread; the layer takes its ordinal name.
+            capture["parts"] = None
+
+    def end(self, name: str):
+        self.stack.pop()
+        depth = len(self.stack)
+        if self.capture is not None and self.capture["depth"] == depth:
+            self._captured(self.capture)
+            self.capture = None
+        mark = self.placemark
+        if mark is None:
+            if self.containers and self.containers[-1]["depth"] == depth:
+                self.containers.pop()
+        elif depth == mark.depth:
+            self._write(mark)
+            self.placemark = None
+        elif mark.frames and mark.frames[-1]["depth"] == depth:
+            self._closed(mark, mark.frames.pop())
+        elif mark.data is not None and name.endswith("|Data") and self.stack[-1][1] == "ExtendedData":
+            mark.properties.append(tuple(mark.data))
+            mark.data = None
+
+    def _captured(self, capture: dict):
+        text, target, mark = "".join(capture["parts"] or ()), capture["target"], self.placemark
+        if target == "container":
+            self.containers[-1]["name"] = text if capture["parts"] is not None else None
+        elif target == "name":
+            mark.properties.append(("name", text))
+        elif target == "value":
+            mark.data[1] = text
+        elif target == "simple":
+            mark.properties.append((capture["key"], text))
+        elif target == "mode":
+            mark.modes.append(text.strip())
+        else:
+            frame = mark.frames[-1]
+            tuples, reason = _kml_tuples(text)
+            if frame["coordinates"] is not None:
+                reason = reason or "coordinates_repeated"
+            if reason:
+                mark.refuse(reason)
+                return
+            frame["coordinates"] = tuples
+            mark.dimensions.update(len(values) for values in tuples)
+
+    def _closed(self, mark: _Placemark, frame: dict):
+        if frame["role"]:
+            if not frame["coordinates"]:
+                mark.refuse("coordinates_absent")
+            else:
+                mark.frames[-1]["rings"].append((frame["role"], frame["coordinates"]))
+            return
+        geometry, reason = _kml_geometry(frame)
+        if reason:
+            mark.refuse(reason)
+        elif mark.frames:
+            mark.frames[-1]["parts"].append(geometry)
+        else:
+            mark.geometries.append(geometry)
+
+    def _write(self, mark: _Placemark):
+        layer = self._layer()
+        properties = {}
+        for key, value in mark.properties:
+            if not isinstance(key, str) or not key:
+                mark.refuse("attribute_unnamed")
+            elif key in properties:
+                mark.refuse(f"attribute_repeated:{key}")
+            properties[key] = value
+        if mark.modes:
+            # As written beside the outline; a reference level is never assumed from it.
+            modes = list(dict.fromkeys(mark.modes))
+            if "altitudeMode" in properties:
+                mark.refuse("attribute_repeated:altitudeMode")
+            properties["altitudeMode"] = modes[0] if len(modes) == 1 else modes
+        if len(mark.dimensions) > 1:
+            mark.refuse("coordinates_mixed_height")
+        if len(mark.geometries) > 1:
+            mark.refuse("geometry_repeated")
+        if mark.reason:
+            layer["derivative"].refuse(mark.position, mark.reason)
+            return
+        layer["derivative"].feature(mark.position, properties, mark.geometries[0] if mark.geometries else None)
+        layer["geometries"] += bool(mark.geometries)
+
+    def _layer(self) -> dict:
+        container = self.containers[-1] if self.containers else None
+        if container is None and self.whole is None:
+            self.whole = self._open(WHOLE_FILE)
+        elif container is not None and container["layer"] is None:
+            stated = (container["name"] or "").strip()
+            container["layer"] = self._open(stated if 1 <= len(stated) <= 240
+                                            else f"{container['kind']} {container['number']}")
+        return self.whole if container is None else container["layer"]
+
+    def _open(self, base: str) -> dict:
+        if len(self.layers) >= MAX_LAYERS:
+            raise InputError(f"A KML must hold Placemarks in at most {MAX_LAYERS} Documents or Folders "
+                             "to be converted.")
+        name, repeat = base, 1
+        while name in self.used:
+            repeat += 1
+            name = f"{base} ({repeat})"
+        self.used.add(name)
+        ordinal = len(self.layers)
+        derivative = _Derivative(self.folder, ordinal, {**self.header, "layer": name}, KML_CRS)
+        self.layers.append({"layer": name, "ordinal": ordinal, "derivative": derivative, "geometries": 0})
+        return self.layers[-1]
+
+    def abandon(self):
+        for layer in self.layers:
+            layer["derivative"].abandon()
+
+    def finish(self) -> list[dict]:
+        results = []
+        for layer in self.layers:
+            stopped = {"layer": layer["layer"], "ordinal": layer["ordinal"], "state": "not_converted"}
+            if not layer["geometries"]:
+                layer["derivative"].abandon()
+                results.append({**stopped, "reason": "holds no Placemark whose geometry could be written"})
+                continue
+            results.append({**stopped, "state": "converted", "crs": KML_CRS, "crsSource": "stated",
+                            "crsBasis": KML_CRS_BASIS, **layer["derivative"].close()})
+        return results or [{"layer": WHOLE_FILE, "ordinal": 0, "state": "not_converted",
+                            "reason": "holds no Placemark"}]
+
+
+def _kml_parse(blocks, reader: _KmlReader):
+    from xml.parsers import expat
+
+    def deny(*_):
+        raise InputError("A KML with a document type, entity declarations or external references is not read.")
+
+    parser = expat.ParserCreate(namespace_separator="|")
+    parser.buffer_text = True
+    parser.SetParamEntityParsing(expat.XML_PARAM_ENTITY_PARSING_NEVER)
+    parser.StartDoctypeDeclHandler = parser.EntityDeclHandler = parser.ExternalEntityRefHandler = deny
+    parser.StartElementHandler, parser.EndElementHandler = reader.start, reader.end
+    parser.CharacterDataHandler = reader.characters
+    try:
+        for block in blocks:
+            parser.Parse(block, False)
+        parser.Parse(b"", True)
+    except expat.ExpatError:
+        raise InputError("The KML is not well-formed XML.") from None
+
+
+def _file_blocks(path: Path):
+    with path.open("rb") as source:
+        while block := source.read(1024 * 1024):
+            yield block
+
+
+def _kmz_document(archive: zipfile.ZipFile) -> tuple[zipfile.ZipInfo | None, str | None]:
+    """The KMZ's root doc.kml, else its only .kml member, or the words saying why none is the document."""
+    entries = archive.infolist()
+    if any(_unsafe_member(entry) for entry in entries):
+        raise InputError("The KMZ holds an unsafe path, a link or an encrypted member.")
+    documents = [entry for entry in entries if not entry.is_dir() and entry.filename.lower().endswith(".kml")]
+    chosen = [entry for entry in documents if entry.filename.lower() == "doc.kml"] or documents
+    if len(chosen) == 1:
+        return chosen[0], None
+    if not documents:
+        return None, "holds no .kml member"
+    return None, f"holds {len(documents)} .kml members and none is doc.kml at its root"
+
+
+def _kmz_blocks(archive: zipfile.ZipFile, entry: zipfile.ZipInfo):
+    """The member read as a stream, never past its stated size, the SH2 source bound or a 1:100 expansion."""
+    limit = min(entry.file_size, MAX_SOURCE_BYTES, max(1, entry.compress_size) * _KML_RATIO)
+    if entry.file_size > limit:
+        raise InputError("The KMZ's KML member expands beyond the conversion's bound.")
+    count = 0
+    with archive.open(entry) as stream:
+        while block := stream.read(1024 * 1024):
+            count += len(block)
+            if count > limit:
+                raise InputError("The KMZ's KML member expands beyond its stated size.")
+            yield block
+
+
+def convert_kml_file(path: Path, fmt: str, folder: Path, source_sha256: str) -> tuple[list[dict], dict]:
+    """KML1. Every layer of one KML or KMZ on scratch disk, converted or stopped with words, and the count of each
+    kind of element kept in the original but not fetched or read."""
+    header = {"version": "native-gis-locators/1", "conversion": CONVERSION, "readerVersion": KML_READER,
+              "originalSha256": source_sha256, "format": fmt, "positionKind": "placemark_sequence",
+              "crs": KML_CRS, "crsBasis": KML_CRS_BASIS}
+    archive = None
+    try:
+        if fmt == "kmz":
+            archive = zipfile.ZipFile(path)
+            entry, words = _kmz_document(archive)
+            if entry is None:
+                return [{"layer": WHOLE_FILE, "ordinal": 0, "state": "not_converted", "reason": words}], {}
+            header["member"] = entry.filename
+        reader = _KmlReader(folder, header)
+        try:
+            _kml_parse(_kmz_blocks(archive, entry) if archive is not None else _file_blocks(path), reader)
+            return reader.finish(), reader.not_read
+        except _KmlStop:
+            reader.abandon()
+            return [{"layer": WHOLE_FILE, "ordinal": 0, "state": "not_converted",
+                     "reason": "is not a KML 2.2 document: its root is not kml in the KML namespace"}], {}
+        except BaseException:
+            reader.abandon()
+            raise
+    except (zipfile.BadZipFile, zlib.error, NotImplementedError, EOFError):
+        raise InputError("The KMZ could not be read.") from None
+    finally:
+        if archive is not None:
+            archive.close()
+
+
 def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str,
                         answers: dict | None = None) -> list[dict]:
     """Every layer of one original on scratch disk, each converted or stopped with words naming why. `answers` maps
@@ -691,7 +1075,8 @@ def _s3():
 
 def convert_native(data: dict, s3=None) -> dict:
     """SH2. Copies a retained original from object storage to scratch disk (size and SHA-256 checked), converts
-    each layer and stores each derivative and its sidecar under content-addressed keys for the caller to retain."""
+    each layer and stores each derivative and its sidecar under content-addressed keys for the caller to retain.
+    KML1: a KML or KMZ is read by its streamed reader and the result counts what it kept but did not read."""
     from . import settings
     if not isinstance(data, dict) or set(data) - {"layerCrs"} != {"sourceId", "objectKey", "sha256", "bytes", "format"}:
         raise InputError("Conversion requires the retained original's exact pins and its format.")
@@ -720,12 +1105,14 @@ def convert_native(data: dict, s3=None) -> dict:
             body.close()
         if count != size or hashed.hexdigest() != digest:
             raise InputError("The retained original's size or SHA-256 differs from its receipt.")
-        layers = convert_native_file(original, fmt, folder, digest, answers)
+        kml = fmt in KML_FORMATS
+        layers, not_read = convert_kml_file(original, fmt, folder, digest) if kml \
+            else (convert_native_file(original, fmt, folder, digest, answers), {})
         for layer in (layer for layer in layers if layer["state"] == "converted"):
             for name, kind in (("geojson", "application/geo+json"), ("sidecar", "application/x-ndjson")):
                 entry = layer[name]
                 entry["objectKey"] = f"native-derivatives/{digest}/{layer['ordinal']}/{name}-{entry['sha256']}"
                 client.upload_file(entry.pop("path"), settings.S3_BUCKET, entry["objectKey"],
                                    ExtraArgs={"ContentType": kind, "Metadata": {"sha256": entry["sha256"]}})
-    return {"conversion": CONVERSION, "readerVersion": WINDOW_READER, "sourceId": source_id,
-            "sourceSha256": digest, "layers": layers}
+    return {"conversion": CONVERSION, "readerVersion": KML_READER if kml else WINDOW_READER, "sourceId": source_id,
+            "sourceSha256": digest, "layers": layers, **({"notRead": not_read} if not_read else {})}
