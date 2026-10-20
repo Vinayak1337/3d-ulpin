@@ -6,6 +6,7 @@ import {z} from 'zod';
 import {RASTER_WINDOW_VERSION,RASTER_WINDOW_LIMITS,RasterRetainSchema,RasterWindowRequestSchema,
   RasterOriginalSchema,RasterWindowInputSchema,RasterWindowResultSchema,RasterWindowStatusSchema,RasterRetainReceiptSchema,
   type RasterWindowInput,type RasterWindowResult} from '@ulpin/contracts/usp';
+import {LargeOriginalEvidenceSchema} from '@ulpin/contracts/usp';
 import {transaction,type DbDeadline} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
@@ -22,15 +23,31 @@ export const rasterReaderSha=()=>sha256(readFileSync(join(settings.repositoryRoo
 export const rasterResultKey=(jobId:string,hash:string)=>`raster-windows/${jobId}/${hash}.json`;
 export const rasterArtifactKey=(jobId:string,hash:string)=>`raster-windows/${jobId}/${hash}.tif`;
 
+/** SB1: a batch keeps a dropped TIFF or LAZ through the part upload. Its verified receipt is the same authority
+ * (operator, hash, bytes, own key) and is read natively only within the reader's byte bound. */
+export function retainedLargeOriginal(source:Record<string,any>,maxBytes:number){
+  const evidence=LargeOriginalEvidenceSchema.safeParse(source.inspection?.largeOriginal);
+  if(!evidence.success||evidence.data.verifiedBytes>maxBytes)return {success:false as const};
+  return {success:true as const,data:{subject:evidence.data.operatorSubject,sha256:evidence.data.verifiedSha256,
+    bytes:evidence.data.verifiedBytes,key:`large-originals/${source.id}/${source.sha256}`}};
+}
+function rasterReceipt(source:Record<string,any>){
+  const receipt=RasterOriginalSchema.safeParse(source.inspection?.rasterOriginal);
+  return receipt.success?{success:true as const,data:{...receipt.data,key:`sources/${source.id}/${source.sha256}`}}
+    :receipt;
+}
 export async function rasterSourceTx(client:PoolClient,caseId:string,sourceId:string,lock=false){
   const binding=ingestionBinding(caseId);
   const current=(await client.query(`SELECT id,revision,archived,frame,context,site_id FROM cases WHERE id=$1${lock?' FOR SHARE':''}`,[caseId])).rows[0]??notFound('Source case not found.');
   if(current.archived)throw new AppError(403,'RASTER_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('Raster source not found in this case.');
-  const original=RasterOriginalSchema.safeParse(source.inspection?.rasterOriginal);
-  if(source.profile!=='geotiff-raster-v1'||!original.success||original.data.subject!==binding.subject)
+  const original=source.profile==='large-original-v1'?retainedLargeOriginal(source,RASTER_WINDOW_LIMITS.originalBytes)
+    :rasterReceipt(source);
+  if(!['geotiff-raster-v1','large-original-v1'].includes(source.profile)||!original.success
+    ||original.data.subject!==binding.subject)
     throw new AppError(403,'RASTER_DENIED','This retained raster is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)
+    ||source.object_key!==original.data.key)
     throw new AppError(422,'RASTER_SOURCE_INTEGRITY','The raster receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -49,13 +66,17 @@ export async function assertRasterInputTx(client:PoolClient,input:RasterWindowIn
     conflict('The raster original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }
-async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof rasterSourceTx>>,window:RasterWindowInput['window']){
+/** A batch part passes its stable job id; a retained replay of that id is the same job (SB1). */
+export async function enqueueRasterWindowTx(client:PoolClient,ctx:Awaited<ReturnType<typeof rasterSourceTx>>,
+  window:RasterWindowInput['window'],stableJobId?:string){
   if(!ctx.latest)conflict('This raster source has a newer retained revision.');
+  if(stableJobId&&(await client.query("SELECT 1 FROM jobs WHERE id=$1 AND source_id=$2 AND operation='raster-window'",
+    [stableJobId,ctx.source.id])).rowCount)return stableJobId;
   const jobs=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE source_id=$1 AND operation='raster-window'",[ctx.source.id])).rows[0].n);
   if(jobs>=RASTER_WINDOW_LIMITS.jobsPerSource)throw new AppError(429,'RASTER_HISTORY_LIMIT','The bounded window history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='raster-window' AND status IN ('queued','running')")).rows[0].n);
   if(active>=RASTER_WINDOW_LIMITS.active)throw new AppError(429,'RASTER_WORKER_BUSY','The bounded raster workers are occupied.');
-  const jobId=randomUUID(),input=rasterInput(ctx,jobId,window),inputHash=fingerprint(input);
+  const jobId=stableJobId??randomUUID(),input=rasterInput(ctx,jobId,window),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'raster-window',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);
@@ -141,7 +162,7 @@ export class RasterWindowService{
         [sourceId,caseId,file.name,file.bytes.length,hash,key,{profile:'geotiff-raster-v1',status:'needs_input',issues:[],
           summary:'Unchanged GeoTIFF bytes retained; a bounded native first window is queued.',rasterOriginal:original}]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
-      const ctx=await rasterSourceTx(client,caseId,sourceId),jobId=await enqueueTx(client,ctx,null);
+      const ctx=await rasterSourceTx(client,caseId,sourceId),jobId=await enqueueRasterWindowTx(client,ctx,null);
       const receipt=RasterRetainReceiptSchema.parse({version:RASTER_WINDOW_VERSION,caseId,caseRevision:ctx.current.revision,
         sourceId,sourceRevision:1,sourceSha256:hash,bytes:file.bytes.length,jobId});
       await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'raster-retain',$3,$4)",[caseId,operationKey,digest,receipt]);
@@ -158,7 +179,8 @@ export class RasterWindowService{
       if(prior){if(prior.payload_hash!==digest)conflict('This request key names a different pixel window.');return prior.result;}
       if(!ctx.latest||ctx.current.revision!==request.expectedCaseRevision||ctx.source.revision!==request.expectedSourceRevision||ctx.source.sha256!==request.sourceSha256)
         conflict('Pin the current case and retained raster before requesting a window.');
-      const jobId=await enqueueTx(client,ctx,request.window),receipt={version:RASTER_WINDOW_VERSION,caseId,sourceId,jobId};
+      const jobId=await enqueueRasterWindowTx(client,ctx,request.window);
+      const receipt={version:RASTER_WINDOW_VERSION,caseId,sourceId,jobId};
       await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'raster-window',$3,$4)",[caseId,key,digest,receipt]);
       return receipt;
     });

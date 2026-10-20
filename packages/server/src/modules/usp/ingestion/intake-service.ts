@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
-  IntakePageImageAnswerSchema, type IntakeCard } from '@ulpin/contracts/usp';
+  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
@@ -17,6 +17,7 @@ import { queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
 import { labelPageImageTx } from './intake-page-image';
 import { queueLateIntakeEvidenceTx } from './intake-evidence';
+import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -143,7 +144,10 @@ export class IntakeService {
         await saveIntakeCardTx(client, initial.itemId, citeIntakeReceipt(probed.card, fresh.source));
         await childrenTx(client, caseId, initial.itemId, probed.card);
         await notifyTx(client, fresh.source);
-        await queueIntakeDraftTx(client, fresh.source, probed.card);
+        // SB1: a kept TIFF or LAZ is read in parts by its existing reader; every other item takes the vector queue.
+        if (!await queueIntakeSurfaceTx(client, fresh.source, probed.card)) {
+          await queueIntakeDraftTx(client, fresh.source, probed.card);
+        }
         // ZJ1: a ZIP's layers are taken out by a dispatcher job; enrolling it again queues a retry when one waits.
         await queueZipLayersTx(client, fresh.source, probed.card, initial.itemId);
         // AU4-B2 (D4): a table or document kept after a key profile exists is read under it.
@@ -197,6 +201,32 @@ export class IntakeService {
       const { row } = await itemContextTx(client, caseId, itemId);
       assertIngestionBinding(scope.binding);
       return intakeItem(row);
+    });
+  }
+
+  /** SB1: a kept surface's parts in order, under the item's original source authority. */
+  async parts(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const { after } = IntakeSurfacePartsQuerySchema.parse(raw);
+    return this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId);
+      await itemContextTx(client, caseId, itemId);
+      assertIngestionBinding(scope.binding);
+      return surfacePartsTx(client, caseId, itemId, after);
+    });
+  }
+
+  /** SB1 (D5): one accepted part placed in the batch's local frame, its reader's accepted fence checked again. */
+  async display(caseValue: string, itemValue: string, partValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const partIndex = z.coerce.number().int().nonnegative().parse(partValue);
+    return this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId);
+      await itemContextTx(client, caseId, itemId);
+      assertIngestionBinding(scope.binding);
+      return surfacePartDisplayTx(client, caseId, itemId, partIndex);
     });
   }
 

@@ -9,6 +9,7 @@ import {appendCaseIngestionTx} from './events';
 import {assertRasterInputTx,assertRasterJobRow,rasterArtifactKey,rasterResultKey,readRasterResult} from './raster-window';
 import {readRasterObject} from './raster-window-object';
 import {nativeRasterWindow,rasterPublicationLive} from './raster-publication';
+import {acceptIntakeSurfacePartTx,failIntakeSurfacePartTx} from './intake-surface';
 
 type Dependencies={request:typeof fetch;put:typeof putOriginal;read:typeof readRasterObject};
 const defaults:Dependencies={request:fetch,put:putOriginal,read:readRasterObject};
@@ -52,6 +53,7 @@ export async function failRasterWindowJob(jobId:string,code:string,attempt?:UspJ
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[jobId]);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,stale?'stale':'failed',code]);
+    await failIntakeSurfacePartTx(client,jobId,code);
     const parsed=RasterWindowInputSchema.safeParse(job.payload);
     if(parsed.success){try{await assertRasterInputTx(client,parsed.data);
       await appendCaseIngestionTx(client,parsed.data.caseId,{kind:'raster-window.changed',sourceId:parsed.data.sourceId,
@@ -126,6 +128,7 @@ async function executeRasterWindowJob(jobId:string,deps:Dependencies,bounds:DbDe
     },beforeLocks,async client=>{
       await appendCaseIngestionTx(client,input.caseId,{kind:'raster-window.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
+      await acceptIntakeSurfacePartTx(client,{operation:'raster-window',jobId,resultSha256:hash,value:result});
     },bounds);
   }catch(error){await terminal(error,owned);}
 }

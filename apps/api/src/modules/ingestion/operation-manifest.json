@@ -816,6 +816,32 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeSurfacePartsQuerySchema query",
+      "responseSchema": "IntakeSurfacePartPageSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "SB1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "IntakeSurfaceDisplaySchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "SB1"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/targets",
       "operationId": "GET_api_v1_ingestion_cases_caseId_targets",
       "disposition": "added",

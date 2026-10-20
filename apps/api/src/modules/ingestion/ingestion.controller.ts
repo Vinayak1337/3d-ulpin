@@ -11,6 +11,8 @@ import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-servic
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
   IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema,
   IntakeLayerCrsSchema } from '@ulpin/contracts/usp';
+import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
+  IntakeSurfaceDisplaySchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
   IntakeKeyProfileInputSchema, IntakeKeyProfileSchema } from '@ulpin/contracts/usp';
 import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake-zip-layers';
@@ -76,6 +78,26 @@ export class IngestionController {
     summary:'Read one holdings card under its original source authority'})
   @wireResponse(200,IntakeItemSchema)
   intakeItem(@Param('caseId') caseId:string,@Param('itemId') itemId:string){return this.intake.one(caseId,itemId);}
+
+  @Get('cases/:caseId/intake/items/:itemId/parts')
+  @param('caseId') @param('itemId') @ApiQuery({name:'after',required:false,schema:{type:'integer',minimum:-1}})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts',
+    summary:'Read the parts of a kept orthophoto, terrain raster or point cloud in order, a page at a time'})
+  @wireResponse(200,IntakeSurfacePartPageSchema)
+  intakeParts(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.parts(caseId,itemId,strictQuery(request.originalUrl,IntakeSurfacePartsQuerySchema,['after'],
+      'INTAKE_PARTS_QUERY','Use one optional after, and no other query fields.'));
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/parts/:partIndex/display')
+  @param('caseId') @param('itemId') @ApiParam({name:'partIndex',schema:{type:'integer',minimum:0}})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display',
+    summary:'Read the corners of one accepted part in the batch frame and its private artifact; display only'})
+  @wireResponse(200,IntakeSurfaceDisplaySchema)
+  intakePartDisplay(@Param('caseId') caseId:string,@Param('itemId') itemId:string,
+    @Param('partIndex') partIndex:string){
+    return this.intake.display(caseId,itemId,partIndex);
+  }
 
   @Post('cases/:caseId/intake/items/:itemId/pin')
   @HttpCode(200) @param('caseId') @param('itemId')

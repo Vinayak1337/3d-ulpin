@@ -24,6 +24,7 @@ import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
 import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
+import {admitIntakeSurfaceParts} from '../usp/ingestion/intake-surface';
 import {runIFCJob} from '../usp/ingestion/ifc-worker';
 import {runDXFJob} from '../usp/ingestion/dxf-worker';
 import {runKMLJob} from '../usp/ingestion/kml-worker';
@@ -234,6 +235,8 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
       FROM jobs WHERE status IN ('queued','running') AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now()) ranked
     ORDER BY operation_rank, created_at LIMIT 12`,
   );
+  // SB1: a kept TIFF or LAZ of a batch admits its next planned part within its reader's own caps, one per file.
+  await admitIntakeSurfaceParts().catch(keepWorkerError('intake-surface', 'admission'));
   await Promise.all(
     pending.rows.map(async (job) => {
       if(job.operation==='packet-pdf'){

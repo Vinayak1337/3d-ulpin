@@ -19,7 +19,9 @@ async function selection(): Promise<string> {
     if (previous === undefined) delete globals.ulpinPool;
     else globals.ulpinPool = previous;
   }
-  assert.equal(sent.length, 1);
+  // The selection, then the kept surfaces' part admission (SB1).
+  assert.equal(sent.length, 2);
+  assert.match(sent[1], /FROM usp_intake_items i\s+WHERE i.plan_ref->>'version'=\$1/);
   return sent[0];
 }
 
@@ -36,7 +38,9 @@ async function warnedFor(thrown: unknown): Promise<string[]> {
   const previous = globals.ulpinPool;
   const warned: string[] = [];
   const warn = console.warn;
-  globals.ulpinPool = { query: async () => ({ rows: [{ id: 'pdf-1', operation: 'packet-pdf' }], rowCount: 1 }) };
+  // Only the job selection holds the packet; the surface admission finds no kept part.
+  globals.ulpinPool = { query: async (sql: string) => sql.includes('FROM jobs')
+    ? { rows: [{ id: 'pdf-1', operation: 'packet-pdf' }], rowCount: 1 } : { rows: [], rowCount: 0 } };
   console.warn = (...line: unknown[]) => { warned.push(line.map(String).join(' ')); };
   try {
     let finished!: () => void;
