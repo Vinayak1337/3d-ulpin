@@ -1,10 +1,13 @@
 import { spawn } from 'node:child_process';
-import { closeSync, existsSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import {
+  closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeFileSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { command, root } from './runtime.mjs';
 import { definedRuntime, demoRuntime, freePort, safeEnvironment } from './demo-config.mjs';
 const labels = ['api', 'dispatcher'];
-// Every function takes the runtime it acts for and reads or writes that runtime's folder only.
+// Every function takes the runtime it acts for and reads or writes that runtime's folder only; the demo's
+// stopped-on-purpose marker in the Docker guard's ops folder is the one exception.
 const recordFile = (runtime, label) => join(runtime.dir, `${label}.process.json`);
 const delay = ms => new Promise(ok => setTimeout(ok, ms));
 export function processInfo(pid) {
@@ -69,9 +72,28 @@ export async function launchProcesses(env, name = demoRuntime) {
     writeFileSync(recordFile(runtime, label), JSON.stringify(record) + '\n', { mode: 0o600 });
   }
 }
-/** Stops the two processes recorded in this runtime's folder and no other; the records themselves stay. */
-export async function stopProcesses(name = demoRuntime) {
+/** The Docker guard's ops folder; ULPIN_DOCKER_GUARD_OPS_DIR stands in for it in tests. */
+export const guardOpsDir = () => process.env.ULPIN_DOCKER_GUARD_OPS_DIR || 'E:/BhuAayam-data/ops/docker-guard';
+export const stoppedOnPurposeFile = (opsDir = guardOpsDir()) => join(opsDir, 'demo-stopped-on-purpose.json');
+/**
+ * While this marker exists the Docker guard does not start the demo. Only the demo runtime writes or removes it;
+ * a rehearsal does neither. A demo start removes it once the API answers.
+ */
+function markStoppedOnPurpose(runtime, opsDir) {
+  if (runtime.rehearsal) return;
+  mkdirSync(opsDir, { recursive: true });
+  writeFileSync(stoppedOnPurposeFile(opsDir), JSON.stringify({ stoppedAt: new Date().toISOString() }) + '\n');
+}
+export function clearStoppedOnPurpose(name = demoRuntime, opsDir = guardOpsDir()) {
+  if (!definedRuntime(name).rehearsal) rmSync(stoppedOnPurposeFile(opsDir), { force: true });
+}
+/**
+ * Stops the two processes recorded in this runtime's folder and no other; the records themselves stay. For the demo
+ * the stopped-on-purpose marker is written first, so a stop that fails partway still leaves it.
+ */
+export async function stopProcesses(name = demoRuntime, opsDir = guardOpsDir()) {
   const runtime = definedRuntime(name);
+  markStoppedOnPurpose(runtime, opsDir);
   for (const label of labels) {
     const record = ownedProcess(label, runtime);
     if (record) process.kill(record.pid, 'SIGTERM');

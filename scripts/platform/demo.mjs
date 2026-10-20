@@ -9,7 +9,9 @@ import {
 } from './demo-config.mjs';
 import { dockerRuntime, engine, imageLabels, inventory, startProblems, root } from './runtime.mjs';
 import { imageProblems, readPin } from './processor-image-pin.mjs';
-import { launchProcesses, stopProcesses, waitForApi } from './processes.mjs';
+import {
+  clearStoppedOnPurpose, guardOpsDir, launchProcesses, stopProcesses, waitForApi,
+} from './processes.mjs';
 import { gatewayReport } from './demo-gateway.mjs';
 import { gatewayStateText } from './demo-gateway-state.mjs';
 
@@ -67,10 +69,11 @@ const localEngine = {
 };
 
 /** Stops the named runtime's recorded processes and the containers labelled with its project; no other's. */
-export async function stopRuntime(name = demoRuntime, docker = localEngine) {
+export async function stopRuntime(name = demoRuntime, docker = localEngine, opsDir = guardOpsDir()) {
   const definition = definedRuntime(name);
-  // Stop owned native processes even if Desktop is down or configuration is missing.
-  await stopProcesses(definition);
+  // Stop owned native processes even if Desktop is down or configuration is missing. For the demo this first
+  // writes the stopped-on-purpose marker that keeps the Docker guard from starting it again.
+  await stopProcesses(definition, opsDir);
   try {
     const runtime = docker.connect();
     const ids = docker.containers(runtime, definition.project)
@@ -157,6 +160,7 @@ async function startRuntime(definition, create) {
   } else resume(definition, runtime, compose);
   await launchProcesses(env, definition);
   await waitForApi(env, definition);
+  clearStoppedOnPurpose(definition);
   const gateway = gatewayStateText(gatewayReport(env));
   console.log(`${definition.name} running: http://127.0.0.1:${env.API_PORT}/api/v1/health (${gateway}).`);
   const named = definition.rehearsal ? ['--runtime', definition.name] : [];

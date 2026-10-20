@@ -20,8 +20,38 @@ Each `-Recover`, `-Prestart` and `-Watch` run appends one JSON line to
 `E:/BhuAayam-data/ops/docker-guard/<yyyy-MM-dd>.jsonl`; `state.json` there holds the watch count and the last running
 containers. Output names folders as `{root}\...`, never an environment value. Test switches: `-Root`, `-DockerExe`,
 `-DesktopExe`, `-OpsDir`, `-RecheckSeconds`, `-WaitSeconds`, `-Stamp`, and `-DryRun`, which never stops or starts a
-process and renames folders only under a `-Root` other than the real one; such a root is refused without `-DryRun`.
+process and renames folders only under a `-Root` other than the real one. Under such a root no Docker process is
+ever stopped or started, and the run is refused without `-DryRun` or a stand-in `-PnpmExe`.
 Tests: `node --test scripts/platform/docker-guard.test.mjs`.
+
+## Demo start
+
+The demo's containers come back with the engine, but its two native processes (the API on port 3194 and the
+dispatcher) do not. So when `-Recover` ends `recovered`, or `-Prestart` ends `engine_back` or `engine_answers`, the
+guard asks `GET http://127.0.0.1:3194/api/v1/health` (5 s). If that does not answer 200, it runs
+`pnpm platform:start --profile demo` (300 s) and then `pnpm platform:doctor --profile demo` (180 s) in the demo's
+serving checkout `E:/Projects/ulpin-wt/demo`. Start resumes the existing project only. `-Watch` does the same while
+the engine answers but the health check has failed on two runs in a row, at most twice in six hours (`apiFailures`
+and `demoStarts` in `state.json`). A `-Recover` run inside `-Watch` leaves the demo to those two watch runs.
+
+The guard never adds `--create` or `--runtime`, never stops, downs, resets or prunes anything, and never reads `.env`
+or a runtime folder; a test checks the script's text for these and for the two commands above.
+
+- Opt out: create the empty file `E:/BhuAayam-data/ops/docker-guard/no-demo-start`. The guard still checks health
+  but starts nothing. `paused` stops this too, also for a hand-run `-Recover`. `-DryRun` records `planned` and never
+  runs pnpm. Test switches: `-PnpmExe`, `-DemoCheckout`, `-HealthUrl`.
+- Stopped on purpose: every stop of the demo's native processes (`stopProcesses()` in `processes.mjs`, used by
+  `pnpm platform:stop --profile demo` and roll-out step 2; never a rehearsal) first writes
+  `demo-stopped-on-purpose.json` (`{"stoppedAt": ...}`) in the ops folder, and a demo start removes it once the API
+  answers. While it exists every mode records `stopped_on_purpose` and starts nothing; the engine is still recovered.
+- Child output goes only to `demo-start-<yyyy-MM-dd>.log` in the ops folder. A command that outlives its timeout is
+  left running and recorded as timed out; doctor is not run after a start that timed out.
+- The run's JSON line carries a `demo` object: `apiStatus` (the health status code, `null` when nothing answered),
+  `outcome`, `log`, `start.exitCode`, and `doctor.exitCode`, `doctor.lastLine` (the `Doctor: ...` summary),
+  `doctor.pass` and `doctor.fail` (counts of PASS and FAIL lines). It never carries other output lines. `outcome` is
+  `api_answers` (nothing to do), `api_silent_waiting` (watch, first failure), `start_limit_reached`, `opted_out`,
+  `paused`, `planned`, `pnpm_missing`, `checkout_missing`, `start_timed_out`, `start_failed`, `doctor_failed` or
+  `started` (both exited 0). The run's exit code is the Docker outcome's; read `demo.outcome` for the demo.
 
 ## Install, pause, undo
 
@@ -32,7 +62,7 @@ Tests: `node --test scripts/platform/docker-guard.test.mjs`.
 - `-Status` lists both tasks and reads Docker Desktop's own `AutoStart` value (that key only, never changed). The
   logon task starts Docker itself; with AutoStart on, Docker may start before the stale sockets are cleared.
 - Pause: create the empty file `E:/BhuAayam-data/ops/docker-guard/paused`. `-Watch` and `-Prestart` then do nothing;
-  a hand-run `-Recover` still acts. Delete the file to resume.
+  a hand-run `-Recover` still acts, without the demo start. Delete the file to resume.
 - Undo: `docker-guard-install.ps1 -Uninstall` removes both tasks. Renamed folders stay as they are: Docker Desktop
   makes fresh `run` and `docker-secrets-engine` folders, and the aside copies are only kept for reading.
 

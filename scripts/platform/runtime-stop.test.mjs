@@ -3,13 +3,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { demoFile, runtimeDefinition } from './demo-config.mjs';
 import { composeArguments, parseArguments, stopRuntime } from './demo.mjs';
-import { ownedProcess, processInfo, stopProcesses } from './processes.mjs';
+import {
+  clearStoppedOnPurpose, ownedProcess, processInfo, stopProcesses, stoppedOnPurposeFile,
+} from './processes.mjs';
 import { root } from './runtime.mjs';
 
 const labels = ['api', 'dispatcher'];
@@ -80,6 +82,50 @@ test('a record of another runtime found in a runtime\'s folder is refused, and n
   assert.equal(labels.every(label => ownedProcess(label, first)), true);
   await stopProcesses(first);
   assert.deepEqual(labels.map(label => ownedProcess(label, first)), [null, null]);
+});
+
+test('stopProcesses for the demo writes the stopped-on-purpose marker first; a rehearsal writes none', async t => {
+  const folder = mkdtempSync(join(tmpdir(), 'runtime-stop-'));
+  t.after(() => rmSync(folder, { recursive: true, force: true }));
+  // A made-up demo runtime folder with no process records: nothing real is read or stopped.
+  const demo = runtimeDefinition('ulpin-demo', folder);
+  const ops = join(folder, 'ops', 'docker-guard');
+  assert.equal(stoppedOnPurposeFile(ops), join(ops, 'demo-stopped-on-purpose.json'));
+  await stopProcesses(demo, ops);
+  const marker = JSON.parse(readFileSync(stoppedOnPurposeFile(ops), 'utf8'));
+  assert.deepEqual(Object.keys(marker), ['stoppedAt']);
+  assert.equal(new Date(marker.stoppedAt).toISOString(), marker.stoppedAt);
+
+  // A stop refused partway (a record of another project) still leaves the marker, written before stopping.
+  const refusedOps = join(folder, 'refused-ops');
+  mkdirSync(demo.dir, { recursive: true });
+  writeFileSync(join(demo.dir, 'api.process.json'), JSON.stringify({ project: 'ulpin-reh-01', label: 'api' }));
+  await assert.rejects(stopProcesses(demo, refusedOps), /Unexpected process ownership record/);
+  assert.deepEqual(readdirSync(refusedOps), ['demo-stopped-on-purpose.json']);
+
+  const rehearsal = runtimeDefinition('ulpin-reh-01', folder);
+  const rehearsalOps = join(folder, 'rehearsal-ops');
+  await stopProcesses(rehearsal, rehearsalOps);
+  assert.equal(existsSync(rehearsalOps), false);
+  const docker = { connect: () => ({ context: 'made-up-context' }), containers: () => [], stop: () => {} };
+  t.mock.method(console, 'log', () => {});
+  await stopRuntime(rehearsal, docker, rehearsalOps);
+  assert.equal(existsSync(rehearsalOps), false);
+});
+
+test('a demo start removes the stopped-on-purpose marker once the API answers; a rehearsal leaves it', t => {
+  const folder = mkdtempSync(join(tmpdir(), 'runtime-stop-'));
+  t.after(() => rmSync(folder, { recursive: true, force: true }));
+  const ops = join(folder, 'ops');
+  mkdirSync(ops);
+  writeFileSync(stoppedOnPurposeFile(ops), '{"stoppedAt":"2026-10-21T03:00:00.000Z"}\n');
+  clearStoppedOnPurpose(runtimeDefinition('ulpin-reh-01', folder), ops);
+  assert.deepEqual(readdirSync(ops), ['demo-stopped-on-purpose.json']);
+  clearStoppedOnPurpose(runtimeDefinition('ulpin-demo', folder), ops);
+  assert.deepEqual(readdirSync(ops), []);
+  clearStoppedOnPurpose(runtimeDefinition('ulpin-demo', folder), ops);
+  const source = readFileSync(fileURLToPath(new URL('./demo.mjs', import.meta.url)), 'utf8');
+  assert.match(source, /await waitForApi\(env, definition\);\r?\n\s+clearStoppedOnPurpose\(definition\);/);
 });
 
 test('the command line names one runtime, defaults to ulpin-demo and refuses anything else before acting', () => {
