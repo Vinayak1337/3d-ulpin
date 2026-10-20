@@ -67532,12 +67532,17 @@ export interface components {
             bundleCompleteness: "single_original_only_archive_dependencies_not_assessed";
             cleanupPending: boolean;
             lastError: string | null;
+            /** Format: date-time */
+            leaseExpiresAt: string | null;
             finalization?: {
                 /** Format: uuid */
                 jobId: string;
                 /** @enum {string} */
                 phase: "queued" | "assembling" | "verifying" | "cleaning" | "complete";
                 completedParts: number;
+                /** @enum {string} */
+                jobStatus?: "queued" | "running" | "succeeded" | "failed" | "stale" | "cancelled";
+                jobError?: string | null;
             };
         };
         GET_ingestion_cases_caseId_uploads_Response_200_application_json: {

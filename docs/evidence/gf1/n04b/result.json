@@ -2,44 +2,47 @@
   "task": "N04B",
   "branch": "task/n04b-finish-again",
   "base": "8ed253c2",
-  "outcome": "stopped_at_d3",
-  "what": "A resumed receipt in 'finalizing' is still followed by status only. Studio cannot tell from the status when a finish is no longer held, so it was not changed (lead decision D3). Server and contract unchanged.",
-  "statusFieldsRead": {
-    "version": "present: large-original/1 or large-original/2",
-    "state": "present",
-    "expiresAt": "present, but it is the receipt lifetime (24 hours for v1, 7 days for v2), not the finalization lease",
-    "parts[].leaseExpiresAt": "present, but it is each part's writing lease; the finalize lease is on the receipt row",
-    "lastError": "present; a v1 crash during finalize leaves it unchanged, because failure() never runs",
-    "finalization": "v2 only: jobId, phase (queued|assembling|verifying|cleaning|complete), completedParts; no job status, job error or lease"
+  "outcome": "built",
+  "history": "The first pass stopped at D3: the receipt status carried no finalization lease (v1) and no storage job outcome (v2). The lead then assigned the additive contract and status fields to this task.",
+  "what": "A resumed receipt left 'finalizing' by a crash is finalized once more when its status shows the finish is no longer held: v1 when leaseExpiresAt has passed, v2 when finalization.jobStatus is failed, stale or cancelled. The request uses the receipt's guard, a new request key and the same SHA-256; at most one extra finalize per resume; the server's rules decide it.",
+  "server": {
+    "contract": "LargeUploadStatusSchema: top-level leaseExpiresAt (ISO datetime, nullable); finalization.jobStatus (queued|running|succeeded|failed|stale|cancelled) and finalization.jobError (nullable), both optional",
+    "status": "leaseExpiresAt from usp_source_uploads.lease_expires_at; for v2 with body.storageJobId, one primary-key read: SELECT status,error FROM jobs WHERE id=$1 AND operation='large-original-storage'; omitted when the row is absent",
+    "rulesChanged": "none: finalize, abort and cleanup unchanged"
   },
-  "realInputs": "none used: no code changed",
+  "studio": {
+    "finishAgain": "runUpload: a resumed receipt opened in 'finalizing' is followed by status; when finishReleased(receipt) holds, the words 'The last finish was interrupted; finishing the upload again.' are shown and finalize is sent once; following continues on its answer",
+    "refusal": "the existing guarded wait: the server's words in the stopped line, with the existing Cancel upload",
+    "words": "upload-model.ts uploadWords shows the verifying words when set; the verifying phase clears earlier words (one line outside the owned files, needed to show D2's words)"
+  },
+  "inputs": {
+    "note": "The interrupted finish is a server state, reached here through a fake pool and a fake transport. The Studio cases use a test_only 16 MiB + 1 byte file of zeros made in the test. The existing real-file resume tests (Niagara 4 parts, NYC 6 parts) still pass through the changed path.",
+    "cases": [
+      "server: v1 receipt with an expired lease states leaseExpiresAt and reads no job; v1 without a lease states null",
+      "server: v2 receipt states jobStatus 'failed' and jobError from one jobs read; a missing job row omits them; a v2 receipt with no job id reads no job",
+      "studio: v1 expired lease, one more finalize with {requestKey, expectedRevision 12, expectedCaseRevision 3, sha256}, ends retained, D2 words shown",
+      "studio: v1 live lease, followed by status only, no finalize",
+      "studio: v2 job failed while finalizing, one more finalize; a second failed status does not send another",
+      "studio: a refused finish again shows the server's words; Cancel upload aborts once"
+    ]
+  },
   "checks": {
+    "pnpm typecheck:backend": 0,
+    "pnpm studio:typecheck": 0,
+    "pnpm studio:test": {"exit": 0, "studio": "85 files, 535 passed, 2 skipped"},
+    "backendSet": {"exit": 0, "includes": "ingestion/*.test.ts (large-original*.test.ts, new large-original-status.test.ts)",
+      "tests": 468, "pass": 465, "skipped": 3, "fail": 0},
+    "refresh-contract.ts 8ed253c2": 0,
+    "pnpm studio:api-types": 0,
+    "openapi.ts --check": 0,
+    "scripts/api/check.py": 0,
     "git diff --check": 0,
-    "studio:typecheck": "not run: no Studio file changed",
-    "studio:test": "not run: no Studio file changed"
+    "studioReview": "by hand: no new control; the D2 words appear in the existing status line; Cancel upload unchanged"
   },
   "gaps": [
     {
-      "what": "v1: the receipt status has no finalization lease expiry. finalize sets usp_source_uploads.lease_expires_at (lease(), 180 seconds) and re-finalizes only after it passes, but status() never publishes that column, so Studio cannot see when a 'finalizing' v1 receipt is no longer held.",
-      "missingField": "LargeUploadStatusSchema: a top-level leaseExpiresAt (ISO datetime, nullable) read from usp_source_uploads.lease_expires_at",
-      "where": [
-        "packages/contracts/src/usp/ingestion.ts:276",
-        "packages/server/src/modules/usp/ingestion/large-original.ts:48",
-        "packages/server/src/modules/usp/ingestion/large-original.ts:297",
-        "packages/server/src/modules/usp/ingestion/large-original.ts:312"
-      ],
-      "state": "open"
-    },
-    {
-      "what": "v2: the status never says, while state is 'finalizing', that the storage job ended without a result. A terminal job failure (failV2Job, FINALIZATION_ATTEMPTS, SOURCE_CONTEXT_CHANGED) moves the receipt back to 'receiving' with lastError, which the existing follow already ends on and shows in the server's words. A crash leaves 'finalizing' with the job 'running' or 'queued'; finalization carries only jobId, phase and completedParts, so the job's own status and error and the receipt lease are not visible.",
-      "missingField": "LargeUploadStatusSchema.finalization: the job status (queued|running|failed|succeeded) and its error from jobs where id = body.storageJobId, or the same top-level leaseExpiresAt as v1",
-      "where": [
-        "packages/contracts/src/usp/ingestion.ts:287",
-        "packages/server/src/modules/usp/ingestion/large-original.ts:60",
-        "packages/server/src/modules/usp/ingestion/large-original.ts:575"
-      ],
-      "state": "open"
+      "what": "Studio compares leaseExpiresAt with its own clock. If the browser clock runs ahead of the server, the extra finalize can arrive while the lease is still live; the server answers busy, Studio shows those words, and Try again or Cancel upload stays with the officer.",
+      "state": "accepted"
     }
-  ],
-  "next": "Once the status carries leaseExpiresAt (v1) and the job status (v2), the Studio change is small: in runUpload's status follow, when a resumed 'finalizing' receipt shows an expired lease or a failed job, send finalize once with uploadGuard(receipt, key()) and the same sha256, show 'The last finish was interrupted; finishing the upload again.', and keep following; a refusal shows the server's words and the existing Cancel upload."
+  ]
 }
