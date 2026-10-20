@@ -1,0 +1,86 @@
+{
+  "task": "xw1m",
+  "branch": "task/xw1m-cell-marks",
+  "base": "origin/staging 7ee868b1",
+  "state": "complete for the rows page; a windowed workbook does not yet reach the rows page (see gaps)",
+  "decision": [
+    "D1 applies. The rows read (GET .../sources/{sourceId}/rows, TableRowsPageSchema) already carries each",
+    "workbook row's optional marks [{column, mark}] from the stored window row (XW1): in the contract,",
+    "docs/api/openapi.json and packages/api-client/src/schema.d.ts. D2 does not apply: no contract, OpenAPI or",
+    "generated-type change."
+  ],
+  "works": [
+    "TableRows.tsx: a written cell the workbook reader marked shows the mark's words in the cell and a title.",
+    "formula_cached: 'Formula (its stored result is not used)'; formula_uncached: 'Formula with no stored result'.",
+    "no_value: 'No value'; error: 'Error value in the workbook'; unsupported: 'Not read'.",
+    "A marked cell's stored text (a formula's cached text, an error's text) is not shown.",
+    "Mapped fields: a mapped cell with issueCode TABULAR_CELL_UNAVAILABLE (the mapped cell has no mark) shows",
+    "'Not read from the workbook (formula, error or no value)' in place of 'Unknown', with the same title;",
+    "its state word (unknown) stays shown.",
+    "D3: a row without marks (every CSV row) renders as before: value as written, 'Empty', 'Absent', no title.",
+    "Unknown never becomes 0.",
+    "Words, not colour: the mark is text, in the muted style 'Empty' and 'Absent' already use.",
+    "Keyboard: no new interactive element; the table stays in its focusable scroll region (tabIndex 0)."
+  ],
+  "tests": {
+    "file": "apps/studio/src/features/intake/table/TableRows.test.tsx",
+    "count": 7,
+    "cases": [
+      "one per mark (5): the marked cell is exactly a span with the mark's words as text and title",
+      "unmarked workbook cells stay as written; a mapped TABULAR_CELL_UNAVAILABLE cell shows the fallback words",
+      "a CSV record is unchanged: values, Empty, Absent, no title attribute and no mark words"
+    ],
+    "fixture": [
+      "test_only protocol control in the shape of tests/fixtures/xlsx-control.ts's Register sheet;",
+      "each page is validated against the rows response schema in docs/api/openapi.json before rendering"
+    ],
+    "mutation_check": "against the unchanged component the 6 mark tests fail and the CSV test passes"
+  },
+  "gaps": [
+    "A windowed workbook never renders the rows page: table/queries.ts streamedTable() is true only for",
+    "selection.format === 'csv' above 16 MiB, while the server's isWindowedTable() does not look at the format.",
+    "That file is outside this task's paths. Smallest fix: drop the format test, with a test for an xlsx profile.",
+    "No hand review in a running Studio: the task allows no runtime and the page needs a live API with windows.",
+    "Reviewed in code and through the rendered-markup tests instead.",
+    "ui-design-check's scan covers apps/web only (0 added lines there); the Studio change was checked by hand:",
+    "no new tokens or colours, sentence-case words, values read from the record, unknown kept distinct."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0 },
+    {
+      "command": "pnpm studio:test",
+      "before": 1,
+      "after": 0,
+      "counts_before": [
+        "studio 86 files: 541 passed, 1 failed, 2 skipped; scene 59 passed, 1 skipped; ui 7; api-client 2",
+        "the failure: upload.test.ts timed out at 5000 ms while the other baseline checks ran in parallel"
+      ],
+      "counts_after": "studio 87 files: 549 passed, 0 failed, 2 skipped; scene 59 passed, 1 skipped; ui 7; api-client 2"
+    },
+    {
+      "command": "backend tests: usp/ingestion/*.test.ts, areas/*.test.ts, ingestion-events, intake-ledger",
+      "before": 1,
+      "after": 0,
+      "counts_before": [
+        "384 tests: 382 pass, 1 fail, 1 skipped",
+        "the failure: tabular-stream.test.ts:196 scratch-directory count, while other checks ran in parallel"
+      ],
+      "counts_after": "384 tests: 383 pass, 0 fail, 1 skipped",
+      "skipped": "TP1 real workbook: ULPIN_PROFILE_PYTHON names no geo-compatible interpreter (before and after)",
+      "data_drive": "E:/BhuAayam-data is present on this box; no test failed or skipped for lack of it"
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0,
+      "after": 0,
+      "counts": "328 operations, 371 named schemas; no stale pins, so no refresh or regeneration"
+    },
+    {
+      "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging",
+      "after": 0,
+      "counts": "no candidates"
+    },
+    { "command": "git diff --check", "after": 0 }
+  ]
+}
