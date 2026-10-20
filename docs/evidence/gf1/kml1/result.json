@@ -41,7 +41,29 @@
       "A layer with no Placemark whose geometry could be written is not converted; a file with none rests",
       "not_understood in words. A root other than kml in a KML 2.2 namespace is not converted, in words."
     ],
-    "D4": "SH2's bounds apply unchanged (128 MiB original, 128 MiB per derivative, 100 layers)."
+    "D4": "SH2's bounds apply unchanged (128 MiB original, 128 MiB per derivative, 100 layers).",
+    "D5_placemark_bound": [
+      "Review fix: one open Placemark holds at most PLACEMARK_BOUND = 1 MiB of captured characters, counted",
+      "across all its captures (name, Data value, SimpleData, altitudeMode, coordinates). The number is the",
+      "large GeoJSON path's record bound: STREAMING_VECTOR_LIMITS.featureBytes (packages/contracts) and its",
+      "Python twin projected_vector.FEATURE_BYTES. Past it the reader stops appending, drops what the",
+      "Placemark holds (properties, frames, geometries) and ignores the rest of it; the sidecar names it",
+      "with reason placemark_too_large and reading goes on at the next Placemark. A container name past the",
+      "same bound is left unread and the layer takes its ordinal name ('Folder n')."
+    ]
+  },
+  "peakMemory": {
+    "how": "tracemalloc around convert_kml_file (Python-traced allocations, expat's buffer included)",
+    "test": "test_a_placemark_past_the_record_bound_is_refused_and_the_next_one_is_read asserts peak < 8 MiB",
+    "measured": [
+      {"secondPlacemark": "4 MiB coordinates", "bound": "1 MiB", "peakBytes": 5443361,
+       "result": "First and Third written, Second refused placemark_too_large"},
+      {"secondPlacemark": "16 MiB coordinates", "bound": "1 MiB", "peakBytes": 5290039,
+       "result": "the same; the peak does not grow with the Placemark"},
+      {"secondPlacemark": "4 MiB coordinates", "bound": "none (bound patched out, measurement only)",
+       "peakBytes": 95961967, "result": "all three written; the reader held the whole Placemark"}
+    ],
+    "note": "The peak is the 1 MiB read block, expat's input buffer and the bounded capture."
   },
   "changedOutsideOwnedPaths": [
     "packages/server/src/modules/usp/ingestion/intake-draft.ts: nativeDerivativeFormat returns kml/kmz; the",
@@ -53,7 +75,9 @@
     "Geometry is written as written: a LineString of one position or an unclosed ring is left to the large",
     "reader's own checks. A standalone LinearRing is written as the closed LineString it draws.",
     "Placemarks with no geometry are written with null geometry in a layer that has others.",
-    "The walk to a package on a running stack was not run here."
+    "The walk to a package on a running stack was not run here.",
+    "Expat itself holds one whole start tag before handing it over, so a single attribute value of",
+    "hundreds of MiB is held by the parser; text content is bounded as D5 says."
   ],
   "realInputs": [
     {
@@ -81,7 +105,7 @@
     {"command": "backend test command (template) incl. intake-native-derivative.test.ts", "exit": 0,
      "counts": "417 tests, 415 pass, 0 fail, 2 skipped (pre-existing skips)"},
     {"command": "venv-k3a-geo pytest tests/test_native_conversion.py test_native_adapters.py test_native_record_citation.py",
-     "exit": 0, "counts": "39 passed (17 in test_native_conversion.py, 6 of them KML1)"},
+     "exit": 0, "counts": "40 passed (18 in test_native_conversion.py, 7 of them KML1)"},
     {"command": "apps/api/scripts/openapi.ts --check", "exit": 0, "note": "after scripts/api/refresh-contract.ts ecbf8b93"},
     {"command": "python scripts/api/check.py", "exit": 1,
      "note": "API-DOC: runtime receipt changed. Pre-existing: three receipts under docs/evidence/usp are checked out with CRLF in this worktree; each matches its pinned SHA-256 with LF; none is touched here."},

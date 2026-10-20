@@ -400,3 +400,31 @@ def test_a_kmz_is_read_from_storage_and_its_not_read_elements_are_counted():
     assert result["readerVersion"] == "native-kml-stream/1"
     assert result["notRead"] == {"NetworkLink": 1, "GroundOverlay": 1}
     assert all(layer["geojson"]["objectKey"] in storage.uploads for layer in result["layers"])
+
+
+def test_a_placemark_past_the_record_bound_is_refused_and_the_next_one_is_read(tmp_path):
+    """test_only, generated here: the second Placemark's coordinates run to 4 MiB, past PLACEMARK_BOUND."""
+    import tracemalloc
+    from geo.native_gis import PLACEMARK_BOUND
+    long = "77.1,28.6 " * (4 * PLACEMARK_BOUND // 10)
+    path = text_file(tmp_path, "long.kml", (
+        '<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Folder><name>Plots</name>'
+        '<Placemark><name>First</name><Point><coordinates>77.1,28.6</coordinates></Point></Placemark>'
+        f'<Placemark><name>Second</name><LineString><coordinates>{long}</coordinates></LineString>'
+        '<ExtendedData><Data name="after"><value>dropped</value></Data></ExtendedData></Placemark>'
+        '<Placemark><name>Third</name><Point><coordinates>77.2,28.6</coordinates></Point></Placemark>'
+        '</Folder></Document></kml>'))
+    tracemalloc.start()
+    try:
+        [layer], _ = kml(path, "kml", tmp_path)
+        peak = tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+    assert (layer["layer"], layer["features"], layer["notWritten"]) == ("Plots", 2, 1)
+    collection, sidecar = written(layer)
+    assert [feature["properties"]["name"] for feature in collection["features"]] == ["First", "Third"]
+    assert sidecar[1:] == [{"feature": 0, "position": 0},
+                           {"feature": None, "position": 1, "reason": "placemark_too_large"},
+                           {"feature": 1, "position": 2}]
+    # The 1 MiB read block, expat's buffer and the bounded capture; unbounded, this file peaks near 96 MB.
+    assert peak < 8 * PLACEMARK_BOUND

@@ -674,6 +674,10 @@ _KML_NOT_READ = ("NetworkLink", "GroundOverlay", "PhotoOverlay", "ScreenOverlay"
 _KML_GEOMETRIES = ("Point", "LineString", "LinearRing", "Polygon", "MultiGeometry")
 _KML_BOUNDARIES = ("outerBoundaryIs", "innerBoundaryIs")
 _KML_RATIO = 100
+# The large GeoJSON path's record bound (STREAMING_VECTOR_LIMITS.featureBytes, projected_vector.FEATURE_BYTES), held
+# here as the characters captured for one open Placemark (or one container name) across all its captures.
+PLACEMARK_BOUND = 1024 * 1024
+TOO_LARGE = "placemark_too_large"
 
 
 class _KmlStop(Exception):
@@ -685,9 +689,15 @@ class _Placemark:
         self.position, self.depth = position, depth
         self.properties, self.modes, self.geometries, self.frames = [], [], [], []
         self.dimensions, self.data, self.reason = set(), None, None
+        self.held = 0
 
     def refuse(self, reason: str):
         self.reason = self.reason or reason
+
+    def drop(self):
+        """Past the bound: what the Placemark holds is let go and only its refusal remains."""
+        self.properties, self.modes, self.geometries, self.frames = [], [], [], []
+        self.dimensions, self.data, self.reason = set(), None, TOO_LARGE
 
 
 def _kml_tuples(text: str) -> tuple[list | None, str | None]:
@@ -766,10 +776,12 @@ class _KmlReader:
         elif self.placemark is not None:
             self._within(namespace, local, attributes, depth)
         elif native and local == "name" and self.containers and depth == self.containers[-1]["depth"] + 1:
-            self.capture = {"depth": depth, "target": "container", "parts": []}
+            self.capture = {"depth": depth, "target": "container", "parts": [], "held": 0}
 
     def _within(self, namespace: str, local: str, attributes: dict, depth: int):
         mark, parent = self.placemark, self.stack[-2][1]
+        if mark.reason == TOO_LARGE:
+            return
         frame = mark.frames[-1] if mark.frames and mark.frames[-1]["depth"] == depth - 1 else None
         native = namespace == self.namespace
         if native and local == "name" and depth == mark.depth + 1:
@@ -791,7 +803,7 @@ class _KmlReader:
             mark.refuse(f"geometry_not_read:{local}")
 
     def _capture(self, depth: int, target: str, key=None):
-        self.capture = {"depth": depth, "target": target, "key": key, "parts": []}
+        self.capture = {"depth": depth, "target": target, "key": key, "parts": [], "held": 0}
 
     def _frame(self, kind: str, parent: str, frame: dict | None, depth: int):
         mark = self.placemark
@@ -803,8 +815,21 @@ class _KmlReader:
                                 "rings": [], "parts": []})
 
     def characters(self, text: str):
-        if self.capture is not None:
-            self.capture["parts"].append(text)
+        capture = self.capture
+        if capture is None or capture["parts"] is None:
+            return
+        capture["held"] += len(text)
+        mark = None if capture["target"] == "container" else self.placemark
+        if mark is not None:
+            mark.held += len(text)
+        if (mark.held if mark is not None else capture["held"]) <= PLACEMARK_BOUND:
+            capture["parts"].append(text)
+        elif mark is not None:
+            mark.drop()
+            self.capture = None
+        else:
+            # A container name past the bound is left unread; the layer takes its ordinal name.
+            capture["parts"] = None
 
     def end(self, name: str):
         self.stack.pop()
@@ -826,9 +851,9 @@ class _KmlReader:
             mark.data = None
 
     def _captured(self, capture: dict):
-        text, target, mark = "".join(capture["parts"]), capture["target"], self.placemark
+        text, target, mark = "".join(capture["parts"] or ()), capture["target"], self.placemark
         if target == "container":
-            self.containers[-1]["name"] = text
+            self.containers[-1]["name"] = text if capture["parts"] is not None else None
         elif target == "name":
             mark.properties.append(("name", text))
         elif target == "value":
