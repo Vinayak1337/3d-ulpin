@@ -1,0 +1,74 @@
+{
+ "schemaVersion": "r9-demo-roll/1",
+ "task": "R9",
+ "gate": "GF5",
+ "date": "2026-10-21",
+ "approval": "owner, 21 October about 03:15: full permission; Sarvam approved",
+ "rehearsedBy": "REH9 on ulpin-reh-02 (docs/evidence/runtime/reh9/result.json): the roll, four schema steps, pin",
+ "from": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1",
+ "to": "8d6e19fa91e1d08fa61d02946500b2f5227dd393",
+ "before": "before.json: 9d6acc6b, doctor 28 PASS 0 FAIL, API 10540 and dispatcher 22820, gateway enabled",
+ "guardOptOut": [
+  "E:/BhuAayam-data/ops/docker-guard/no-demo-start created 22:16:10Z, before step 2 (the old checkout writes no",
+  "stopped-on-purpose marker); removed 22:19:19Z, after the step-8 doctor passed"
+ ],
+ "steps": [
+  { "step": "2 stop (old checkout's stopProcesses)", "exit": 0, "seconds": 1.255, "receipt": "step-2.json" },
+  { "step": "3 checkout --detach 8d6e19fa", "exit": 0, "seconds": 0.379, "receipt": "step-3.json" },
+  { "step": "4 pnpm install --frozen-lockfile", "exit": 0, "seconds": 0.877, "receipt": "step-4.json" },
+  { "step": "schema: migrate.mjs (REH9's, for ulpin-demo)", "exit": 0, "seconds": 5.614,
+    "receipt": "step-schema.json" },
+  { "step": "5 demo-document-runtime.mjs build", "exit": 0, "seconds": 48.773, "receipt": "step-5.json" },
+  { "step": "6 processor-image.mjs roll", "exit": 0, "seconds": 19.408, "receipt": "step-6.json" },
+  { "step": "7 platform:start --profile demo", "exit": 0, "seconds": 18.207, "receipt": "step-7.json" },
+  { "step": "8 platform:doctor --profile demo", "exit": 0, "seconds": 7.273, "receipt": "step-8.json" }
+ ],
+ "schema": {
+  "how": [
+   "pnpm db:migrate then scripts/platform/demo-schema.ts from the demo checkout at 8d6e19fa, both native processes",
+   "stopped, storage running, settings by readDemo(ulpin-demo); the API's own databaseReadiness() read before and",
+   "after in a READ ONLY transaction"
+  ],
+  "missingBefore": {
+   "relations": [
+    "public.map_area_events", "public.usp_intake_evidence_candidates", "public.usp_intake_evidence_confirmations",
+    "public.usp_intake_evidence_coverage", "public.usp_intake_key_profiles", "public.usp_table_window_mappings",
+    "public.usp_table_windows"
+   ],
+   "columns": [ "public.map_areas.archived_by" ],
+   "migrations": []
+  },
+  "missingAfter": { "relations": [], "columns": [], "migrations": [], "invalidIndexes": 0 },
+  "statusBeforeAfter": "schema_missing -> structurally_ready",
+  "unvalidatedConstraints": "6 before and 6 after (unchanged)",
+  "rowsBeforeAfter": "sources 38, import packages 7, physical features 67, active legacy datasets 0; unchanged"
+ },
+ "processorImage": {
+  "image": "ulpin-geo:git-a40b60238728",
+  "onEngineBefore": true,
+  "labels": { "revision": "a40b6023872819367ab4b3db43afbb7ffba892b0",
+   "servicesGeoTree": "eab382a5cdd44dd62df5789d46df12dc3937640d" },
+  "built": "by REH9; not built, pulled or tagged here",
+  "recreated": "geo 9332e3bd69a7 -> 48f99001b2a7, worker a5c41cce7d08 -> 3e74d385c3f7; volumes kept",
+  "oldImageKept": "ulpin-geo:git-22003ea3d878 still on the engine"
+ },
+ "downtime": {
+  "measured": "downtime.json: /health once a second from before step 2",
+  "stopStartedAt": "2026-10-20T22:16:18.644Z",
+  "firstGood200At": "2026-10-20T22:18:33.336Z",
+  "seconds": 134.7
+ },
+ "after": {
+  "file": "after.json",
+  "servedCommit": "8d6e19fa91e1d08fa61d02946500b2f5227dd393, checkout clean, services/geo eab382a5",
+  "processes": "API 33352 (apps/api/src/main.ts), dispatcher 33728 (scripts/dispatcher.ts), started 22:18:28Z",
+  "doctor": "28 PASS, 0 FAIL, including Document runtimes, Model gateway state and Processors run the pinned image",
+  "gateway": "status and key-marks identical to before: enabled true, efb90b3a..., 11 named, 11 present; _01 in_use",
+  "counts": "cases 11 = 11, areas 4 = 4, sources 38 = 38, import packages 7 = 7, physical features 67 = 67",
+  "containers": "only geo and worker new; postgres, minio, minio-init, redis the same ids",
+  "volumes": "ulpin-demo_minio-data, ulpin-demo_postgres-data, ulpin-demo_redis-data, unchanged"
+ },
+ "rollback": "rollback.md (not used)",
+ "liveRun": "docs/evidence/gf-ai/gateway/lp5/result.json",
+ "notIncluded": "no key, no env value, no connection string; digests other than the policy hash and images omitted"
+}
