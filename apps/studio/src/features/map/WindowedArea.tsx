@@ -11,6 +11,8 @@ import { WINDOW_EMPTY, useAreaWindow } from './areaWindow';
 import { InspectorShell } from './inspector/InspectorShell';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { useMapView } from './useMapView';
+import { SurfaceKey } from './surface/SurfaceKey';
+import { useSurfaceLayer } from './surface/useSurfaceLayer';
 import styles from './MapWorkspace.module.css';
 
 const KIND_LABEL: Record<string, string> = {
@@ -31,6 +33,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   const { selection, dispatch } = useSelection();
   const [mapView] = useMapView();
   const windowed = useAreaWindow(areaId, engine, true);
+  const surface = useSurfaceLayer(area?.siteId, engine);
   const selected = windowed.features.find((feature) => feature.id === selection.buildingId) ?? null;
   const sceneState = useMemo<SceneState>(() => ({
     mode: 'area', buildingId: selected?.id ?? null, levelId: null, spaceId: null, tool: 'select', finding: null,
@@ -69,10 +72,11 @@ export function WindowedArea({ areaId }: { areaId: string }) {
             </div>
           ) : null}
           {windowed.empty ? <WindowEmpty /> : null}
-          {windowed.line ? (
+          {windowed.line || surface.lines.length ? (
             <div className={styles.leftStack}>
-              <WindowKey />
-              <p className={styles.viewNote} role="status">{windowed.line}</p>
+              {windowed.line ? <WindowKey /> : null}
+              <SurfaceKey className={styles.mapTools} lines={surface.lines} onShow={surface.show} />
+              {windowed.line ? <p className={styles.viewNote} role="status">{windowed.line}</p> : null}
             </div>
           ) : null}
           {selected ? (

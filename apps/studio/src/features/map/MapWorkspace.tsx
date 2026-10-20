@@ -37,6 +37,7 @@ import {
 import { noFloorsState } from './floorState';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
+import { useSurfaceLayer } from './surface/useSurfaceLayer';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
 import { BuildingInspector } from './inspector/BuildingInspector';
@@ -126,6 +127,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour,
     windowMode ? windowed.footprints : drawn.footprints);
   const [mapView, setMapView] = useMapView();
+  const surface = useSurfaceLayer(context.area.siteId, engine);
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);
   const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
@@ -186,6 +188,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ...(listedPictures.length && !loadedOverlays.some((o) => o.layer === 'imagery') ? [{
       key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, hint: picturesNotLoaded,
     }] : []),
+    ...surface.lines.map((s) => ({ key: `surface:${s.itemId}`, label: s.label, checked: s.checked, hint: s.line })),
   ];
   useEffect(() => {
     if (!engine || !focusOverlay || !overlayInputs.some((o) => o.id === focusOverlay)) return;
@@ -195,6 +198,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const onLayer = (key: string, on: boolean) => {
     if (key === 'look') setMapView({ look: on ? 'enhanced' : 'plain' });
     else if (key === 'labels') setMapView({ labels: on });
+    else if (key.startsWith('surface:')) surface.show(key.slice(8), on);
     else if (key.startsWith('overlay:')) {
       setMapView({ overlays: { ...mapView.overlays, [key.slice(8)]: on } });
       if (on) setFocusOverlay(loadedOverlays.find((o) => o.layer === key.slice(8))?.input.id ?? null);

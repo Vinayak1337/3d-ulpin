@@ -225,7 +225,7 @@ describe('whole-list incremental building reconciliation', () => {
       resizeObserver: { disconnect: vi.fn() }, tilesets: new Set(), scene: new Group(),
       spaceMaterials: new Map(), sky: { dispose: vi.fn() }, controls: { dispose: vi.fn() },
       renderer: { dispose: vi.fn(), domElement: { removeEventListener: vi.fn(), remove: vi.fn() } },
-      setOverlays: vi.fn(),
+      setOverlays: vi.fn(), setSurfaceParts: vi.fn(),
     });
     engine.setBuildings([building('a')]);
     const waiting = engine.waitForDrawn(['a']);

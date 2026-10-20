@@ -88,6 +88,20 @@ export interface ComparisonOverlayInput {
 
 export type OverlayInput = ImageOverlayInput | PointOverlayInput | ComparisonOverlayInput;
 
+/**
+ * One read part of a kept orthophoto, terrain raster or point cloud, for display only: its outline at the placed
+ * corners, with its picture draped on them or its points laid flat. Never picked, measured or written back.
+ */
+export interface SurfacePartInput {
+  id: string;
+  /** Placed corners in local metres: SW, SE, NE, NW. */
+  corners: [LocalXY, LocalXY, LocalXY, LocalXY];
+  /** The part's picture, first row along the NW–NE edge; absent when only the outline is drawn. */
+  image?: HTMLCanvasElement;
+  /** Flat points (east, north, 0) with one colour each; absent when only the outline is drawn. */
+  points?: { positions: Float32Array; colors: Float32Array; sizeM: number };
+}
+
 /** Base-map layers the viewer can switch off. Buildings and the selection always stay. */
 export interface SceneLayers {
   parcels: boolean;
