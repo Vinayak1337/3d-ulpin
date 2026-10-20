@@ -136,13 +136,45 @@ function tiffGeoKeys(card: IntakeCard, head: Buffer, at: number, little: boolean
   if (codes.size > 1) card.crs.state = 'conflicting';
 }
 
-export function probeTiff(card: IntakeCard, bytes: Uint8Array) {
+// ModelPixelScale, ModelTiepoint, ModelTransformation, GeoKeyDirectory: any one places the image on the ground.
+const TIFF_GEOREFERENCE = new Set([33550, 33922, 34264, 34735]);
+
+/** The first IFD's entry offsets, or null when it lies outside these bytes. */
+function tiffEntries(bytes: Buffer, offset: number, little: boolean): number[] | null {
+  if (offset < 0 || offset + 2 > bytes.length) return null;
+  const entries = little ? bytes.readUInt16LE(offset) : bytes.readUInt16BE(offset);
+  if (offset + 2 + entries * 12 > bytes.length) return null;
+  return Array.from({ length: entries }, (_, index) => offset + 2 + index * 12);
+}
+
+/** G23. A first IFD found in the tail: a TIFF without any georeference tag is a page image (D1, D4). */
+function tiffTailImage(card: IntakeCard, tail: Buffer, offset: number, little: boolean): boolean {
+  const entries = tiffEntries(tail, offset, little);
+  const tag = (at: number) => little ? tail.readUInt16LE(at) : tail.readUInt16BE(at);
+  if (!entries || entries.some(at => TIFF_GEOREFERENCE.has(tag(at)))) return false;
+  card.family = 'image';
+  card.depth = 'structure';
+  card.raster = { width: null, height: null, tiled: false };
+  for (const at of entries) {
+    if (tag(at) === 256) card.raster.width = tiffScalar(tail, at, little);
+    if (tag(at) === 257) card.raster.height = tiffScalar(tail, at, little);
+    if (tag(at) === 277) card.counts.bands = tiffScalar(tail, at, little);
+    if (tag(at) === 322 || tag(at) === 324) card.raster.tiled = true;
+  }
+  card.limits.push('First TIFF IFD read from the tail; no georeference tag, so it is read as a page image.');
+  return true;
+}
+
+export function probeTiff(card: IntakeCard, bytes: Uint8Array, tail: Uint8Array = new Uint8Array(),
+  size = bytes.length) {
   const head = Buffer.from(bytes);
   if (head.length < 8) return;
   const little = head[0] === 73;
   const short = (at: number) => little ? head.readUInt16LE(at) : head.readUInt16BE(at);
   const offset = little ? head.readUInt32LE(4) : head.readUInt32BE(4);
   if (offset + 2 > head.length || offset < 8) {
+    const tailStart = size - tail.length;
+    if (offset >= tailStart && tiffTailImage(card, Buffer.from(tail), offset - tailStart, little)) return;
     card.limits.push('First TIFF IFD outside the head; indexed raster reader needed.');
     return;
   }
@@ -153,6 +185,7 @@ export function probeTiff(card: IntakeCard, bytes: Uint8Array) {
   }
   card.depth = 'structure';
   card.raster = { width: null, height: null, tiled: false };
+  let georeferenced = false;
   for (let index = 0; index < entries; index++) {
     const at = offset + 2 + index * 12;
     const tag = short(at);
@@ -161,10 +194,13 @@ export function probeTiff(card: IntakeCard, bytes: Uint8Array) {
     if (tag === 257) card.raster.height = value;
     if (tag === 277) card.counts.bands = value;
     if (tag === 322 || tag === 324) card.raster.tiled = true;
+    if (TIFF_GEOREFERENCE.has(tag)) georeferenced = true;
     if (tag === 34735) {
       card.format = 'geotiff';
       tiffGeoKeys(card, head, at, little);
     }
   }
+  // G23 (D1, D4): a TIFF with no georeference tag is a page image; one with any keeps its raster route.
+  if (!georeferenced) card.family = 'image';
   card.limits.push('First TIFF IFD only; CRS code, transform, COG qualification/overviews need native raster reader.');
 }

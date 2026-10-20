@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema,
-  type IntakeCard } from '@ulpin/contracts/usp';
+  IntakePageImageAnswerSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObjectRange } from '../../../infrastructure/storage';
@@ -13,6 +13,7 @@ import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from '.
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
 import { queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
+import { labelPageImageTx } from './intake-page-image';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -195,6 +196,24 @@ export class IntakeService {
       await appendIntakeItemTx(client, caseId, itemId);
       await rememberTx(client, caseId, key, digest, { itemId });
       await notifyTx(client, source);
+      assertIngestionBinding(scope.binding);
+    });
+    return this.one(caseId, itemId);
+  }
+
+  /** G23. The officer's answer to what a read page image shows, kept as a candidate label; one stored request. */
+  async labelPageImage(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakePageImageAnswerSchema.parse(raw);
+    await this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId, true);
+      await itemContextTx(client, caseId, itemId);
+      const key = `intake-page-image-label:${request.requestKey}`;
+      const digest = fingerprint({ request, itemId, access: scope.binding.access });
+      if (await priorTx(client, caseId, key, digest)) return;
+      await labelPageImageTx(client, caseId, itemId, request.label, new Date().toISOString());
+      await rememberTx(client, caseId, key, digest, { itemId });
       assertIngestionBinding(scope.binding);
     });
     return this.one(caseId, itemId);

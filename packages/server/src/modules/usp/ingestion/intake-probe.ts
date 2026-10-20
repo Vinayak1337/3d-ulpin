@@ -48,7 +48,7 @@ function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8
   if (card.format === 'dbf') probeDbf(card, head);
   if (card.format === 'pdf') probePdf(card, head, tail);
   if (card.format === 'las' || card.format === 'laz') probeLas(card, head);
-  if (card.format === 'tiff') probeTiff(card, head);
+  if (card.format === 'tiff') probeTiff(card, head, tail, size);
   if (card.format === 'parquet') probeParquet(card, tail);
   if (card.format === 'glb' && head.length >= 8) card.formatVersion = String(Buffer.from(head).readUInt32LE(4));
   if (card.depth === 'signature' && card.format !== 'zip') {

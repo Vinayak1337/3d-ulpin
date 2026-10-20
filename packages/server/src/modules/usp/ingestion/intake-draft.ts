@@ -7,7 +7,9 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { writeIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
 import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
+import { queuePageImageTx } from './intake-page-image';
 import { stableUuid } from './intake-run';
+import { pageImageFormat } from './page-image-read';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -153,6 +155,7 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
   if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
+  if (publishedCard && pageImageFormat(publishedCard)) return readPageImageTx(client, source, publishedCard);
   if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
   // Nonvector readers keep their own behavior. Unsupported vectors receive a reason, never another reader.
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
@@ -203,6 +206,13 @@ async function settleKeptTx(client: PoolClient, source: IntakeSourceRow, card: I
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
     planRef: null, recordsSeen: 0, limitReason: keptWords(card, Number(source.bytes)) });
   return null;
+}
+
+/** G23. A page image goes to its own first read instead of resting kept only; a placed or answered item stands. */
+async function readPageImageTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard): Promise<string | null> {
+  const item = await draftItemTx(client, source.id);
+  if (!item || item.parent_item_id || !['probed', 'reading', 'read'].includes(item.state)) return null;
+  return queuePageImageTx(client, source, card, item);
 }
 
 async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow) {

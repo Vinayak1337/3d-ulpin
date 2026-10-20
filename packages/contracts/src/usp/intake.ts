@@ -83,6 +83,33 @@ export const ArchiveMemberLineageSchema = z.strictObject({
   memberSha256: hash,
 });
 export type ArchiveMemberLineage = z.infer<typeof ArchiveMemberLineageSchema>;
+/** G23. A page image (JPEG, PNG, TIFF without georeference) in a batch: its first, native read and no more. */
+export const INTAKE_PAGE_IMAGE_LIMITS = Object.freeze({ originalBytes: 128 * 1024 ** 2, headBytes: 1024 ** 2,
+  inputPixels: 250_000_000, previewSide: 1024, previewBytes: 8 * 1024 ** 2 });
+export const IntakePageImageLabelSchema = z.enum(['plan', 'elevation', 'photo', 'other']);
+const orientation = z.number().int().min(1).max(8);
+export const IntakePageImageReadSchema = z.strictObject({
+  version: z.literal('page-image-read/1'), format: z.enum(['jpeg', 'png', 'tiff']),
+  width: count, height: count, bands: count, bitDepth: count,
+  orientation: orientation.nullable().describe('The EXIF orientation as stated; null when none is stated.'),
+  captureTime: z.string().min(1).max(64).nullable().describe('EXIF DateTimeOriginal exactly as stated, or null.'),
+  locationStated: z.boolean().describe('Whether its EXIF states a GPS position; the position is not read here.'),
+  dpi: z.strictObject({ x: z.number().finite().positive(), y: z.number().finite().positive(),
+    statedIn: z.enum(['jfif', 'exif', 'png_phys', 'tiff']) }).nullable(),
+  preview: z.strictObject({ key: text, sha256: hash, bytes: z.number().int().positive(),
+    width: z.number().int().positive().max(INTAKE_PAGE_IMAGE_LIMITS.previewSide),
+    height: z.number().int().positive().max(INTAKE_PAGE_IMAGE_LIMITS.previewSide), mediaType: z.literal('image/png'),
+    orientationApplied: orientation.nullable(),
+    original: z.strictObject({ sourceId: z.string().uuid(), sourceRevision: z.number().int().positive(),
+      sha256: hash }) }).nullable(),
+  previewLimit: z.string().min(1).max(500).nullable().describe('Why no preview was made; null when one was.'),
+  label: z.strictObject({ value: IntakePageImageLabelSchema, state: z.literal('candidate'),
+    answeredAt: z.string().datetime() }).nullable().describe('The officer\'s answer to what it shows, unreviewed.'),
+});
+export const IntakePageImageAnswerSchema = z.strictObject({ requestKey: z.string().uuid(),
+  label: IntakePageImageLabelSchema });
+export type IntakePageImageRead = z.infer<typeof IntakePageImageReadSchema>;
+export type IntakePageImageLabel = z.infer<typeof IntakePageImageLabelSchema>;
 export const IntakeItemPlanSchema = z.strictObject({
   recipeId: z.string().uuid(), recipeRevision: z.number().int().positive(),
   recipeState: z.enum(['proposed', 'approved', 'executed']),
@@ -111,6 +138,8 @@ export const IntakeItemSchema = z.strictObject({
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
   existingAreaId: z.string().uuid().nullable().optional().describe(
     'The area whose source already holds this file\'s exact bytes; present only when the item rests for that reason.'),
+  pageImage: IntakePageImageReadSchema.optional().describe(
+    'G23. A page image\'s first read and the officer\'s candidate label; present only once a page image is read.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });

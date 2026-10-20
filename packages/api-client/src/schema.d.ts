@@ -3318,6 +3318,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-label": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Say what a read page image shows (plan, elevation, photo, other); kept as an unreviewed candidate label */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_label"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry": {
         parameters: {
             query?: never;
@@ -64830,6 +64847,56 @@ export interface components {
              * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
              */
             existingAreaId?: string | null;
+            /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
+            pageImage?: {
+                /** @enum {string} */
+                version: "page-image-read/1";
+                /** @enum {string} */
+                format: "jpeg" | "png" | "tiff";
+                width: number | null;
+                height: number | null;
+                bands: number | null;
+                bitDepth: number | null;
+                /** @description The EXIF orientation as stated; null when none is stated. */
+                orientation: number | null;
+                /** @description EXIF DateTimeOriginal exactly as stated, or null. */
+                captureTime: string | null;
+                /** @description Whether its EXIF states a GPS position; the position is not read here. */
+                locationStated: boolean;
+                dpi: {
+                    x: number;
+                    y: number;
+                    /** @enum {string} */
+                    statedIn: "jfif" | "exif" | "png_phys" | "tiff";
+                } | null;
+                preview: {
+                    key: string;
+                    sha256: string;
+                    bytes: number;
+                    width: number;
+                    height: number;
+                    /** @enum {string} */
+                    mediaType: "image/png";
+                    orientationApplied: number | null;
+                    original: {
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sha256: string;
+                    };
+                } | null;
+                /** @description Why no preview was made; null when one was. */
+                previewLimit: string | null;
+                /** @description The officer's answer to what it shows, unreviewed. */
+                label: {
+                    /** @enum {string} */
+                    value: "plan" | "elevation" | "photo" | "other";
+                    /** @enum {string} */
+                    state: "candidate";
+                    /** Format: date-time */
+                    answeredAt: string;
+                } | null;
+            };
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -65049,6 +65116,56 @@ export interface components {
                  * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
                  */
                 existingAreaId?: string | null;
+                /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
+                pageImage?: {
+                    /** @enum {string} */
+                    version: "page-image-read/1";
+                    /** @enum {string} */
+                    format: "jpeg" | "png" | "tiff";
+                    width: number | null;
+                    height: number | null;
+                    bands: number | null;
+                    bitDepth: number | null;
+                    /** @description The EXIF orientation as stated; null when none is stated. */
+                    orientation: number | null;
+                    /** @description EXIF DateTimeOriginal exactly as stated, or null. */
+                    captureTime: string | null;
+                    /** @description Whether its EXIF states a GPS position; the position is not read here. */
+                    locationStated: boolean;
+                    dpi: {
+                        x: number;
+                        y: number;
+                        /** @enum {string} */
+                        statedIn: "jfif" | "exif" | "png_phys" | "tiff";
+                    } | null;
+                    preview: {
+                        key: string;
+                        sha256: string;
+                        bytes: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        mediaType: "image/png";
+                        orientationApplied: number | null;
+                        original: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sha256: string;
+                        };
+                    } | null;
+                    /** @description Why no preview was made; null when one was. */
+                    previewLimit: string | null;
+                    /** @description The officer's answer to what it shows, unreviewed. */
+                    label: {
+                        /** @enum {string} */
+                        value: "plan" | "elevation" | "photo" | "other";
+                        /** @enum {string} */
+                        state: "candidate";
+                        /** Format: date-time */
+                        answeredAt: string;
+                    } | null;
+                };
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -65059,6 +65176,12 @@ export interface components {
             wave: number;
             /** Format: uuid */
             requestKey: string;
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_page_image_label_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            /** @enum {string} */
+            label: "plan" | "elevation" | "photo" | "other";
         };
         POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json: {
             /** Format: uuid */
@@ -92210,6 +92333,123 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_pin_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_label: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_page_image_label_Request_application_json"];
             };
         };
         responses: {

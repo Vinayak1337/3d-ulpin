@@ -7,7 +7,7 @@ import { AnyAuthorMappingSchema, MappingDecisionSchema,
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
-  IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema } from '@ulpin/contracts/usp';
+  IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
   IntakeKeyProfileInputSchema, IntakeKeyProfileSchema } from '@ulpin/contracts/usp';
 import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake-zip-layers';
@@ -79,6 +79,15 @@ export class IngestionController {
   @jsonBody(IntakePinSchema) @wireResponse(200,IntakeItemSchema)
   async pinIntake(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
     return this.intake.pin(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Post('cases/:caseId/intake/items/:itemId/page-image-label')
+  @HttpCode(200) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_label',
+    summary:'Say what a read page image shows (plan, elevation, photo, other); kept as an unreviewed candidate label'})
+  @jsonBody(IntakePageImageAnswerSchema) @wireResponse(200,IntakeItemSchema)
+  async labelPageImage(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.labelPageImage(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 
   @Post('cases/:caseId/intake/items/:itemId/retry')

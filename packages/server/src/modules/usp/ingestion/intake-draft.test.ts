@@ -12,6 +12,7 @@ import type { MapArea } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { registerUspJobInputTx } from '../jobs';
 import { fingerprint } from '../../cases/domain';
+import { IntakePageImageInputSchema, labelPageImageTx, settlePageImageTx } from './intake-page-image';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'ca0-protocol-operator';
 const caseId = '10000000-0000-4000-8000-000000000001';
@@ -79,6 +80,7 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
   if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 0 }];
+  if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
     return jobs.filter(job => ['queued', 'running'].includes(job.status));
   if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
@@ -88,7 +90,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
 function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { tray, jobs, state } = fixture;
   if (sql.startsWith('INSERT INTO jobs')) {
-    jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2], operation: 'intake-draft',
+    jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2],
+      operation: /VALUES\(\$1,\$2,\$3,'([a-z-]+)'/.exec(sql)![1],
       case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
     return [];
   }
@@ -537,4 +540,36 @@ test('contained-source lookup examines only the 50 newest, not a usable 51st rec
   const result = await lookupIntakeMemory(next, binding.subject, async (_sql, values) => values.length === 2 ? []
     : [...Array.from({ length: 50 }, () => unusable), { body: remembered, manual_profile: storedInventory() }]);
   assert.equal(result, null);
+});
+
+test('G23: a page image enrols its own first read once, says it is being read, then asks what it shows', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.inspection = {};
+  fixture.tray.family = 'image';
+  fixture.tray.card = { format: 'jpeg', family: 'image', crs: { state: 'absent' } } as DraftItem['card'];
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.jobs.length, 1);
+  assert.equal(fixture.jobs[0].id, jobId);
+  assert.equal(IntakePageImageInputSchema.parse(fixture.jobs[0].payload).sourceSha256, hash);
+  assert.deepEqual({ ...fixture.state.projection }, { state: 'reading', placement: 'undecided', plan_ref: null,
+    records_seen: 0, limit_reason: 'This page image is being read: its size, bands, orientation and a preview.' });
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(fixture.jobs.length, 1, 'No second read is queued while one waits.');
+  const read = { version: 'page-image-read/1' as const, format: 'jpeg' as const, width: 4032, height: 3024,
+    bands: 3, bitDepth: 8, orientation: null, captureTime: null, locationStated: false, dpi: null, preview: null,
+    previewLimit: 'it could not be decoded for a preview', label: null };
+  await settlePageImageTx(fixture.client, caseId, sourceId, read);
+  assert.equal(fixture.state.projection.state, 'read');
+  assert.equal(fixture.state.projection.placement, 'needs_answer');
+  assert.match(fixture.state.projection.limit_reason, /^A 4,032 x 3,024 JPEG image, no location stated\. /);
+  const labelled = await labelPageImageTx(fixture.client, caseId, sourceId, 'plan', '2026-10-21T00:00:00.000Z');
+  assert.deepEqual(labelled.label, { value: 'plan', state: 'candidate', answeredAt: '2026-10-21T00:00:00.000Z' });
+  assert.equal(fixture.state.projection.placement, 'undecided');
+  assert.deepEqual(fixture.state.projection.plan_ref.pageImage, labelled);
+  // A later probe keeps the read: nothing is queued again and the answered words stand.
+  fixture.tray.plan_ref = fixture.state.projection.plan_ref;
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(fixture.jobs.length, 1);
+  assert.match(fixture.state.projection.limit_reason, /The officer said it shows a plan; this is a candidate label/);
 });
