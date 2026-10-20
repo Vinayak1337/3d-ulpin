@@ -11,10 +11,14 @@
     "apps/studio/src/features/intake/batch-model.test.ts": "The two old route tests (direct for .gpkg and shapefile ZIP) moved out and were replaced by file-route.test.ts."
   },
   "dropWords": {
-    "geojson/json/gpkg": "Map file · joins the batch",
+    "geojson/json/gpkg/kml/kmz": "Map file · joins the batch",
     "zip": "ZIP · the batch reads what it holds",
+    "shp/dbf/shx/prj": "Shapefile part · kept in the batch",
     "pdf/doc/docx": "Document · joins the batch",
-    "png/jpg/jpeg/tif/tiff/webp": "Image · joins the batch",
+    "tif/tiff": "Image or raster · joins the batch",
+    "png/jpg/jpeg/webp": "Image · joins the batch",
+    "laz/las": "Point cloud · joins the batch",
+    "ifc": "Building model · joins the batch",
     "csv/xlsx": "Table · opens the table import",
     "other": "Original · kept in the batch"
   },

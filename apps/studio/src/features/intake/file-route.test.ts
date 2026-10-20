@@ -31,5 +31,11 @@ it('words what will happen to each file, never "Not imported" for a kind the bat
     'ZIP · the batch reads what it holds', 'Document · joins the batch', 'Original · kept in the batch',
     'Table · opens the table import', 'Table · opens the table import',
   ]);
-  expect(routeWords('site.JPG')).toBe('Image · joins the batch');
+  expect(['site.JPG', 'ortho.tif', 'dem.TIFF', 'cloud.laz', 'cloud.LAS', 'tower.ifc', 'wards.kml', 'wards.kmz',
+    'roads.shp', 'roads.DBF', 'roads.shx', 'roads.prj'].map(routeWords)).toEqual([
+    'Image · joins the batch', 'Image or raster · joins the batch', 'Image or raster · joins the batch',
+    'Point cloud · joins the batch', 'Point cloud · joins the batch', 'Building model · joins the batch',
+    'Map file · joins the batch', 'Map file · joins the batch', 'Shapefile part · kept in the batch',
+    'Shapefile part · kept in the batch', 'Shapefile part · kept in the batch', 'Shapefile part · kept in the batch',
+  ]);
 });
