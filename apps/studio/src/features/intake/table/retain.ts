@@ -1,6 +1,6 @@
 import { api, unwrap } from '@ulpin/api-client';
 import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
-import type { RetainBody, Selection, TableProfile } from './types';
+import type { RetainBody, Selection, TableJob, TableProfile } from './types';
 
 export function tableSelection(file: File, sheet: string, rows: string): Selection {
   if (/\.csv$/i.test(file.name)) return { format: 'csv', sheet: 'csv', table: null, headerRows: [1] };
@@ -33,18 +33,21 @@ export async function retainTable(caseId: string, body: FormData): Promise<Table
 }
 
 /** G13, XW1: a CSV or XLSX above 16 MiB is kept through the uploads route, then read on the server as a stream
- * into a table (one sheet of a workbook, with the sheet and header rows the officer typed). */
+ * into a table by a job (TP1); a workbook's one sheet is read with the sheet and header rows the officer typed. */
 export function streamedImport(file: File) {
   return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }
 
+/** A kept original up to 16 MiB answers its table profile; a larger CSV or workbook answers its read job. Sending
+ * the same body again answers the same job as it stands. */
 export async function tableFromOriginal(caseId: string, sourceId: string, body: TableFromOriginalBody)
-  : Promise<TableProfile> {
+  : Promise<TableProfile | TableJob> {
   const result = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table', {
     params: { path: { caseId, sourceId } }, body: body as never,
   }));
+  if (result.version === 'table-profile/1') return result as TableJob;
   if (result.version !== 'manual-tabular/1') throw new Error('The server did not return a table profile.');
   return result as TableProfile;
 }

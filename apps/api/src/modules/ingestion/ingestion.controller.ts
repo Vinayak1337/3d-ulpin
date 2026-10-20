@@ -4,7 +4,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AnyAuthorMappingSchema, MappingDecisionSchema,
   AnyMappingReceiptSchema, AnySourceProfileSchema, StreamedMappingReceiptSchema, TableFromOriginalSchema,
-  TableRowsPageSchema, TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
+  TableProfileJobSchema, TableRowsPageSchema, TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 import { TableRowsService } from '@ulpin/server/modules/usp/ingestion/table-windows';
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
@@ -198,12 +198,18 @@ export class IngestionController {
   }
 
   @Post('cases/:caseId/sources/:sourceId/table')
-  @HttpCode(201) @param('caseId') @param('sourceId')
+  @HttpCode(202) @param('caseId') @param('sourceId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_table',
-    summary:'Read a CSV kept as a large original as a stream and make it a table source; its bytes stay unchanged'})
-  @jsonBody(TableFromOriginalSchema) @wireResponse(201,AnySourceProfileSchema)
-  async tableFromOriginal(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Req() request:Request){
-    return this.ingestion.tableFromOriginal(caseId,sourceId,await readJsonBody(request,JSON_BODY_LIMIT));
+    summary:'Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV, or one sheet of a '+
+      'larger workbook, is read as a stream by a queued job (202), and a replay answers that job as it stands; '+
+      'its bytes stay unchanged'})
+  @jsonBody(TableFromOriginalSchema) @wireResponse(202,TableProfileJobSchema)
+  @ApiResponse({status:201,schema:z.toJSONSchema(AnySourceProfileSchema,{target:'openapi-3.0'}) as never})
+  async tableFromOriginal(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Req() request:Request,
+    @Res({passthrough:true}) response:Response){
+    const result=await this.ingestion.tableFromOriginal(caseId,sourceId,await readJsonBody(request,JSON_BODY_LIMIT));
+    if(result.version!=='table-profile/1')response.status(201);
+    return result;
   }
 
   @Get('cases/:caseId/sources/:sourceId/rows')

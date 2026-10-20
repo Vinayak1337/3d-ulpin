@@ -11,7 +11,7 @@ import { localOperatorSubject } from '../principal';
 import { appendCaseIngestionTx } from './events';
 import { intakeCaseTx } from './intake-context';
 import { queueIntakeRunTx } from './intake-run';
-import { intakeTargetView, type IntakeTargetRow } from './intake-targets';
+import { intakeTargetView, recordingConfirmationsTx, type IntakeTargetRow } from './intake-targets';
 
 /** The most the packet plan and card policy admit (plan-service.ts:51-53, card-service.ts:196-198). */
 export const INTAKE_CONFIRMATION_VALIDITY_MS = 24 * 60 * 60 * 1000;
@@ -64,6 +64,18 @@ async function assertPackagesTx(client: PoolClient, caseId: string, input: Intak
     [named.packageId, caseId])).rows[0];
     const difference = packageDifference(named, row?.body);
     if (difference) stale(difference);
+  }
+  if (input.packages.length) await assertNotRecordingTx(client, caseId, input.packages);
+}
+
+/** Under the package locks: a package another confirmation's open run is recording cannot be named again. */
+async function assertNotRecordingTx(client: PoolClient, caseId: string, packages: IntakeConfirm['packages'],
+  except: string | null = null) {
+  const recording = await recordingConfirmationsTx(client, caseId, packages.map(named => named.packageId), except);
+  const pending = packages.find(named => recording.has(named.packageId));
+  if (pending) {
+    throw new AppError(409, 'INTAKE_CONFIRMATION_PENDING', `Package ${pending.packageId} is already being recorded `
+      + `by confirmation ${recording.get(pending.packageId)}.`);
   }
 }
 
@@ -223,6 +235,15 @@ async function resumeTx(client: PoolClient, row: IntakeConfirmationRow) {
   return stopped.length;
 }
 
+/** As the confirm path does, after the case lock: each package row in the order named, then the same refusal when
+ * another confirmation's open run is recording one of them, so a retry never starts a second recording. */
+async function assertRetryFreeTx(client: PoolClient, row: IntakeConfirmationRow) {
+  for (const named of row.packages) {
+    await client.query('SELECT id FROM import_packages WHERE id=$1 FOR UPDATE', [named.packageId]);
+  }
+  await assertNotRecordingTx(client, row.case_id, row.packages, row.confirmation_id);
+}
+
 /** Re-enqueue the stopped targets with the same keys; nothing done is repeated. */
 export async function retryIntakeConfirmation(caseIdValue: string, confirmationIdValue: string) {
   const caseId = uuid.parse(caseIdValue);
@@ -237,6 +258,7 @@ export async function retryIntakeConfirmation(caseIdValue: string, confirmationI
     if (row.expires_at.getTime() <= Date.now()) {
       throw new AppError(409, 'INTAKE_CONFIRMATION_EXPIRED', 'This confirmation has expired; confirm again.');
     }
+    await assertRetryFreeTx(client, row);
     await resumeTx(client, row);
   });
   return readIntakeConfirmation(caseId, confirmationId);

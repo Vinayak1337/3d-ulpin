@@ -9,12 +9,21 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const record = z.number().int().nonnegative().max(limits.rows - 1);
 const issue = z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
 
-/** A large original already retained (large-original/1), a CSV or one sheet of a workbook, is read as a stream and
- * becomes a table source. */
+/** An original already retained (large-original/1) becomes a table source: up to 16 MiB it is read whole; a CSV or
+ * one sheet of a workbook above that is read as a stream by a job. */
 export const TableFromOriginalSchema = z.strictObject({
   requestKey: id, expectedWorkspaceRevision: z.number().int().nonnegative(),
   selection: TabularSelectionSchema,
   ...TabularProvenanceSchema.partial().shape,
+});
+
+/** TP1. The job that reads a large CSV or workbook sheet as a stream, in the shared job status words; a stop keeps
+ * the reader's code and its officer words. */
+export const TableProfileJobSchema = z.strictObject({
+  version: z.literal('table-profile/1'), jobId: id, caseId: id, sourceId: id,
+  sourceRevision: z.number().int().positive(),
+  status: z.enum(['queued', 'running', 'succeeded', 'failed', 'cancelled', 'stale']),
+  issueCode: z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(), message: z.string().min(1).max(600).nullable(),
 });
 
 /** How a workbook cell's text was read, by its position in `cells`; nothing is calculated. A formula's cached text
@@ -70,5 +79,6 @@ export const TableRowsPageSchema = z.strictObject({
 
 export type TableWindowRow = z.infer<typeof TableWindowRowSchema>;
 export type TableCellMark = z.infer<typeof TableCellMarkSchema>;
+export type TableProfileJob = z.infer<typeof TableProfileJobSchema>;
 export type TableMappedCell = z.infer<typeof TableMappedCellSchema>;
 export type TableRowsPage = z.infer<typeof TableRowsPageSchema>;

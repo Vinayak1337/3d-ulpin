@@ -5,12 +5,13 @@ import json
 import shutil
 import sqlite3
 import struct
+import tempfile
 from pathlib import Path
 
 import pytest
 from shapely.geometry import shape
 
-from geo.native_gis import WINDOW, _gpkg, _shapefile, convert_native, convert_native_file
+from geo.native_gis import WINDOW, _gpkg, _shapefile, convert_kml_file, convert_native, convert_native_file
 from geo.validation import InputError
 
 DATA = Path("E:/BhuAayam-data/datasets/map-formats")
@@ -267,3 +268,163 @@ def test_the_intake_routes_check_resolves_a_known_code_to_itself_and_refuses_an_
     for code in ("EPSG:999999", "EPSG:4979"):
         with pytest.raises(InputError):
             resolve_geojson_crs(named(code))
+
+
+# KML1. Google's libkml samples (test_only, as datasets.json records them) and a test_only KML written below.
+KML_DATA = Path("E:/BhuAayam-data/task-data/desktop-kml-native/originals")
+KML_SAMPLES = KML_DATA / "kmlsamples.kml"
+MULTI_KMZ = KML_DATA / "multikml-doc.kmz"
+WARD = """<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+<Document><name>Ward 12</name>
+  <Style id="s"><PolyStyle><color>ff0000ff</color></PolyStyle></Style>
+  <NetworkLink><name>Live tiles</name><Link><href>https://example.invalid/tiles.kml</href></Link></NetworkLink>
+  <Folder><name>Buildings</name>
+    <Placemark><name>Block A</name><styleUrl>#s</styleUrl>
+      <ExtendedData><Data name="storeys"><value>4</value></Data>
+        <SchemaData schemaUrl="#b"><SimpleData name="use">residential</SimpleData></SchemaData></ExtendedData>
+      <Polygon><altitudeMode>relativeToGround</altitudeMode>
+        <outerBoundaryIs><LinearRing><coordinates>77.1,28.6,12 77.2,28.6,12 77.2,28.7,12 77.1,28.6,12</coordinates>
+        </LinearRing></outerBoundaryIs>
+        <innerBoundaryIs><LinearRing><coordinates>77.12,28.61,12 77.13,28.61,12 77.13,28.62,12 77.12,28.61,12
+        </coordinates></LinearRing></innerBoundaryIs></Polygon></Placemark>
+    <Placemark><name>Mixed</name><LineString><coordinates>77.1,28.6 77.2,28.6,5</coordinates></LineString>
+    </Placemark>
+    <Placemark><name>Twice</name><ExtendedData><Data name="name"><value>other</value></Data></ExtendedData>
+      <Point><coordinates>77.1,28.6</coordinates></Point></Placemark>
+  </Folder>
+  <Folder><name>Buildings</name>
+    <Placemark><name>Gate</name><MultiGeometry><Point><coordinates>77.3,28.6</coordinates></Point>
+      <Point><coordinates>77.31,28.6</coordinates></Point></MultiGeometry></Placemark>
+    <Placemark><name>Note</name></Placemark>
+  </Folder>
+  <GroundOverlay><Icon><href>plan.png</href></Icon></GroundOverlay>
+</Document></kml>"""
+
+
+def kml(path: Path, fmt: str, tmp_path: Path) -> tuple[list[dict], dict]:
+    out = Path(tempfile.mkdtemp(dir=tmp_path))
+    return convert_kml_file(path, fmt, out, sha(path))
+
+
+def text_file(tmp_path: Path, name: str, text: str) -> Path:
+    path = tmp_path / name
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+@pytest.mark.skipif(not KML_SAMPLES.exists(), reason="the libkml samples")
+def test_each_kml_folder_holding_placemarks_is_its_own_layer_with_heights_and_modes_as_written(tmp_path):
+    layers, not_read = kml(KML_SAMPLES, "kml", tmp_path)
+    assert [(layer["layer"], layer["state"], layer.get("features")) for layer in layers] == [
+        ("Placemarks", "converted", 3), ("Highlighted Icon", "converted", 1),
+        ("Styles and Markup", "not_converted", None), ("Paths", "converted", 6),
+        ("Google Campus", "converted", 4), ("Extruded Polygon", "converted", 1),
+        ("Absolute and Relative", "converted", 4)]
+    assert layers[2]["reason"] == "holds no Placemark whose geometry could be written"
+    assert not_read == {"GroundOverlay": 1, "ScreenOverlay": 7}
+    collection, sidecar = written(layers[4])
+    assert collection["crs"] == {"type": "name", "properties": {"name": "EPSG:4326"}}
+    assert (sidecar[0]["crs"], sidecar[0]["positionKind"]) == ("EPSG:4326", "placemark_sequence")
+    assert "KML 2.2 specification" in layers[4]["crsBasis"] and layers[4]["crsSource"] == "stated"
+    building = collection["features"][0]
+    assert building["properties"] == {"name": "Building 40", "altitudeMode": "relativeToGround"}
+    assert building["geometry"]["coordinates"][0][0] == [-122.0848938459612, 37.42257124044786, 17.0]
+    assert sidecar[1] == {"feature": 0, "position": 11}
+
+
+@pytest.mark.skipif(not MULTI_KMZ.exists(), reason="the libkml samples")
+def test_a_kmz_with_no_root_doc_kml_and_several_kml_members_is_not_converted_with_words(tmp_path):
+    assert kml(MULTI_KMZ, "kmz", tmp_path) == ([{"layer": "whole file", "ordinal": 0, "state": "not_converted",
+                                                 "reason": "holds 4 .kml members and none is doc.kml at its root"}], {})
+
+
+def test_names_and_extended_data_are_properties_and_a_refused_placemark_is_named_in_the_sidecar(tmp_path):
+    layers, not_read = kml(text_file(tmp_path, "ward.kml", WARD), "kml", tmp_path)
+    assert not_read == {"NetworkLink": 1, "GroundOverlay": 1}
+    assert [(layer["layer"], layer["features"], layer["notWritten"]) for layer in layers] == [
+        ("Buildings", 1, 2), ("Buildings (2)", 2, 0)]
+    collection, sidecar = written(layers[0])
+    [block] = collection["features"]
+    assert block["properties"] == {"name": "Block A", "storeys": "4", "use": "residential",
+                                   "altitudeMode": "relativeToGround"}
+    assert block["geometry"]["type"] == "Polygon" and len(block["geometry"]["coordinates"]) == 2
+    assert block["geometry"]["coordinates"][0][0] == [77.1, 28.6, 12.0]
+    assert sidecar[1:] == [{"feature": 0, "position": 0},
+                           {"feature": None, "position": 1, "reason": "coordinates_mixed_height"},
+                           {"feature": None, "position": 2, "reason": "attribute_repeated:name"}]
+    gate, note = written(layers[1])[0]["features"]
+    assert gate["geometry"] == {"type": "MultiPoint", "coordinates": [[77.3, 28.6], [77.31, 28.6]]}
+    assert (note["properties"], note["geometry"]) == ({"name": "Note"}, None)
+
+
+def test_a_kmz_reads_its_doc_kml_as_a_stream_and_writes_what_the_kml_writes(tmp_path):
+    import zipfile
+    path = tmp_path / "ward.kmz"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("files/plan.png", b"\x89PNG\r\n\x1a\n")
+        archive.writestr("doc.kml", WARD)
+        archive.writestr("files/other.kml", "<kml/>")
+    layers, not_read = kml(path, "kmz", tmp_path)
+    plain, _ = kml(text_file(tmp_path, "ward.kml", WARD), "kml", tmp_path)
+    assert [layer["geojson"]["sha256"] for layer in layers] == [layer["geojson"]["sha256"] for layer in plain]
+    assert not_read == {"NetworkLink": 1, "GroundOverlay": 1}
+    assert written(layers[0])[1][0]["member"] == "doc.kml"
+
+
+def test_no_placemark_a_root_other_than_kml_and_a_document_type_are_not_converted(tmp_path):
+    links = text_file(tmp_path, "links.kml", '<kml xmlns="http://www.opengis.net/kml/2.2"><Document><NetworkLink>'
+                      '<Link><href>a.kml</href></Link></NetworkLink></Document></kml>')
+    assert kml(links, "kml", tmp_path) == ([{"layer": "whole file", "ordinal": 0, "state": "not_converted",
+                                             "reason": "holds no Placemark"}], {"NetworkLink": 1})
+    fragment = text_file(tmp_path, "fragment.kml", "<Placemark><name>a</name></Placemark>")
+    [stopped], _ = kml(fragment, "kml", tmp_path)
+    assert stopped["reason"] == "is not a KML 2.2 document: its root is not kml in the KML namespace"
+    typed = text_file(tmp_path, "typed.kml", '<?xml version="1.0"?><!DOCTYPE kml [<!ENTITY e "x">]><kml/>')
+    with pytest.raises(InputError, match="document type"):
+        kml(typed, "kml", tmp_path)
+
+
+def test_a_kmz_is_read_from_storage_and_its_not_read_elements_are_counted():
+    import zipfile
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("doc.kml", WARD)
+    raw = buffer.getvalue()
+    digest = hashlib.sha256(raw).hexdigest()
+    source = "10000000-0000-4000-8000-000000000002"
+    key = f"sources/{source}/{digest}"
+    storage = Storage({key: raw})
+    result = convert_native({"sourceId": source, "objectKey": key, "sha256": digest, "bytes": len(raw),
+                             "format": "kmz"}, storage)
+    assert result["readerVersion"] == "native-kml-stream/1"
+    assert result["notRead"] == {"NetworkLink": 1, "GroundOverlay": 1}
+    assert all(layer["geojson"]["objectKey"] in storage.uploads for layer in result["layers"])
+
+
+def test_a_placemark_past_the_record_bound_is_refused_and_the_next_one_is_read(tmp_path):
+    """test_only, generated here: the second Placemark's coordinates run to 4 MiB, past PLACEMARK_BOUND."""
+    import tracemalloc
+    from geo.native_gis import PLACEMARK_BOUND
+    long = "77.1,28.6 " * (4 * PLACEMARK_BOUND // 10)
+    path = text_file(tmp_path, "long.kml", (
+        '<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Folder><name>Plots</name>'
+        '<Placemark><name>First</name><Point><coordinates>77.1,28.6</coordinates></Point></Placemark>'
+        f'<Placemark><name>Second</name><LineString><coordinates>{long}</coordinates></LineString>'
+        '<ExtendedData><Data name="after"><value>dropped</value></Data></ExtendedData></Placemark>'
+        '<Placemark><name>Third</name><Point><coordinates>77.2,28.6</coordinates></Point></Placemark>'
+        '</Folder></Document></kml>'))
+    tracemalloc.start()
+    try:
+        [layer], _ = kml(path, "kml", tmp_path)
+        peak = tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+    assert (layer["layer"], layer["features"], layer["notWritten"]) == ("Plots", 2, 1)
+    collection, sidecar = written(layer)
+    assert [feature["properties"]["name"] for feature in collection["features"]] == ["First", "Third"]
+    assert sidecar[1:] == [{"feature": 0, "position": 0},
+                           {"feature": None, "position": 1, "reason": "placemark_too_large"},
+                           {"feature": 1, "position": 2}]
+    # The 1 MiB read block, expat's buffer and the bounded capture; unbounded, this file peaks near 96 MB.
+    assert peak < 8 * PLACEMARK_BOUND

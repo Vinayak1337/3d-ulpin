@@ -54,6 +54,8 @@ export function confirmationWords(chosen: number): string {
 
 /** A cards-only confirmation records nothing and cards its buildings in the order listed. */
 export function cardsOnlyWords(chosen: number): string {
+  if (chosen === 1) return 'This recorded building will get a snapshot, an evidence plan and packet, and a property '
+    + 'card made and verified, without another press. Nothing is recorded again.';
   return `These ${chosen} recorded buildings will each get a snapshot, an evidence plan and packet, and a property `
     + 'card made and verified, in the order listed, without another press. Nothing is recorded again.';
 }
@@ -79,6 +81,16 @@ export function nextRecorded<T extends CardTarget>(targets: readonly T[]): T[] {
   return [...unique.values()].slice(0, INTAKE_TARGET_LIMITS.confirmationTargets);
 }
 
+/** Another stored confirmation's run is recording this package; it is named again only after that run ends. */
+export function isBeingRecorded(pkg: Pick<Package, 'recordingConfirmationId'>): boolean {
+  return Boolean(pkg.recordingConfirmationId);
+}
+
+/** The packages of the page another confirmation's run is recording. */
+export function beingRecorded(packages: readonly Package[]): ReadonlySet<string> {
+  return new Set(packages.filter(isBeingRecorded).map(pkg => pkg.packageId));
+}
+
 export function confirmingPackageWords(pkg: Package): string {
   if (hasNoBuildings(pkg)) return 'No building in this package; its features will be recorded.';
   return `${pkg.counts.ready} ready buildings will be recorded.`;
@@ -86,25 +98,28 @@ export function confirmingPackageWords(pkg: Package): string {
 
 export function confirmablePackages(page: TargetPage): Package[] {
   return page.packages.filter(pkg => !pkg.reviewRefusal && pkg.state !== 'COMMITTED' && pkg.reviewFingerprint
-    && (pkg.counts.ready > 0 || hasNoBuildings(pkg)));
+    && !isBeingRecorded(pkg) && (pkg.counts.ready > 0 || hasNoBuildings(pkg)));
 }
 
 type ChoiceTarget = Pick<Target, 'targetId' | 'packageId' | 'readiness'>;
 
 export function chooseReady<T extends ChoiceTarget>(targets: readonly T[], packages: readonly Package[]): T[] {
   const permitted = new Set(packages.filter(pkg => !pkg.reviewRefusal
-    && pkg.reviewFingerprint && pkg.state !== 'COMMITTED')
+    && pkg.reviewFingerprint && pkg.state !== 'COMMITTED' && !isBeingRecorded(pkg))
     .map(pkg => pkg.packageId));
   const unique = new Map(targets.filter(target => target.readiness === 'ready' && permitted.has(target.packageId))
     .map(target => [target.targetId, target]));
   return [...unique.values()].slice(0, INTAKE_TARGET_LIMITS.confirmationTargets);
 }
 
+/** A cards-only confirmation: no package, the recorded buildings with no card it names, in order. */
+export function cardsBody(choice: readonly CardTarget[], acknowledgement: string, requestKey: string): ConfirmBody {
+  return { requestKey, acknowledgement, packages: [], targets: nextRecorded(choice).map(target => target.targetId) };
+}
+
 export function confirmBody(page: TargetPage, choice: readonly (ChoiceTarget & CardTarget)[],
   acknowledgement: string, requestKey: string, cardsOnly = false): ConfirmBody {
-  if (cardsOnly) {
-    return { requestKey, acknowledgement, packages: [], targets: nextRecorded(choice).map(target => target.targetId) };
-  }
+  if (cardsOnly) return cardsBody(choice, acknowledgement, requestKey);
   const packages = confirmablePackages(page);
   return {
     requestKey, acknowledgement,

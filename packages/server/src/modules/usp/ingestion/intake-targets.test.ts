@@ -3,7 +3,8 @@ import test from 'node:test';
 import type { ImportPackage, PhysicalFeature } from '@ulpin/contracts';
 import type { Pool, PoolClient } from 'pg';
 import { IntakeConfirmedPackageSchema } from '@ulpin/contracts/usp';
-import { createIntakeTargetsTx, intakeTargetReadiness, listIntakeTargets, targetLocator } from './intake-targets';
+import { createIntakeTargetsTx, intakeTargetReadiness, listIntakeTargets, readIntakeTargetByFeature,
+  targetLocator } from './intake-targets';
 import { packageDifference } from './intake-confirmations';
 import { appendIntakeTargetsTx } from './events';
 
@@ -38,8 +39,10 @@ test('derived footprints and packages that are not reviewable are held, not reso
 
 type PackagePlace = { recorded: boolean; part: number | null };
 
+/** A store answering the target read's own SQL; `recording` maps a package to the confirmation whose run records it. */
 function packagePageProtocol(size: number, zeroTargets = false,
-  place: (index: number) => PackagePlace = () => ({ recorded: false, part: null })) {
+  place: (index: number) => PackagePlace = () => ({ recorded: false, part: null }),
+  recording: Record<string, string> = {}) {
   const packages = Array.from({ length: size }, (_, index) => ({
     id: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
     area_id: sourceId, revision: 2, state: place(index).recorded ? 'COMMITTED' : 'REVIEWED',
@@ -62,6 +65,9 @@ function packagePageProtocol(size: number, zeroTargets = false,
     if (sql.startsWith('WITH packages AS')) {
       return { rows: packages.filter(row => (values[0] as string[]).includes(row.id)) };
     }
+    if (sql.startsWith('SELECT DISTINCT ON (p.id)')) return { rows: (values[1] as string[])
+      .filter(packageId => recording[packageId]).map(packageId => ({ package_id: packageId,
+        confirmation_id: recording[packageId] })) };
     assert(['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql), sql);
     return { rows: [] };
   } } as unknown as PoolClient;
@@ -151,6 +157,28 @@ test('250 packages, 120 recorded: unrecorded first in file part order, then reco
   }
 });
 
+test('a package a confirmation is recording says so on the page; the others say none', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const confirmationId = '10000000-0000-4000-8000-000000000900';
+  const fixture = packagePageProtocol(3, false, undefined,
+    { '10000000-0000-4000-8000-000000000002': confirmationId });
+  globals.ulpinPool = fixture.pool;
+  try {
+    const page = await listIntakeTargets(id, undefined, undefined);
+    assert.deepEqual(page.packages.map(row => row.recordingConfirmationId), [null, confirmationId, null]);
+    assert.equal(page.counts.ready, 6);
+    const asked = fixture.calls.filter(call => call.sql.startsWith('SELECT DISTINCT ON (p.id)'));
+    assert.equal(asked.length, 1);
+    assert.deepEqual(asked[0].values, [id, fixture.packages.map(row => row.id), null]);
+    assert.match(asked[0].sql, /j\.status IN \('queued','running'\) AND j\.payload->>'phase'='commit'/);
+    assert.match(asked[0].sql, /p\.state<>'COMMITTED'/);
+    assert(!/p\.body/.test(asked[0].sql));
+  } finally {
+    globals.ulpinPool = previous;
+  }
+});
+
 test('a drafted item with no building is listed as a confirmable package with zero counts', async () => {
   const globals = globalThis as unknown as { ulpinPool?: Pool };
   const previous = globals.ulpinPool;
@@ -207,4 +235,65 @@ test('bulk target events allocate contiguous sequences without replacing target 
     { kind: 'intake.target', targetId: id, readiness: 'ready', stage: 2 },
     { kind: 'intake.target', targetId: sourceId, readiness: 'ready', stage: 2 },
   ]);
+});
+
+function byFeatureProtocol(targets: Record<string, unknown>[], archived = false) {
+  const calls: { sql: string; values: unknown[] }[] = [];
+  const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
+    calls.push({ sql, values });
+    if (sql.startsWith('SELECT * FROM usp_intake_targets WHERE feature_id')) return { rows: targets };
+    if (sql.startsWith('SELECT id,revision,archived')) return { rows: [{ id: values[0], revision: 0, archived }] };
+    assert(['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql), sql);
+    return { rows: [] };
+  } } as unknown as PoolClient;
+  return { calls, pool: { connect: async () => client } as unknown as Pool };
+}
+
+async function withPool<T>(pool: Pool, run: () => Promise<T>) {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  globals.ulpinPool = pool;
+  try {
+    return await run();
+  } finally {
+    globals.ulpinPool = previous;
+  }
+}
+
+test('a building picked on the map finds its target in the packages that recorded it, with case access', async () => {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
+  const caseId = '10000000-0000-4000-8000-000000000003';
+  const row = { target_id: sourceId, case_id: caseId, anchor_item_id: id, package_id: id, feature_id: id,
+    locator: 'feature protocol-key', kind: 'building', stage: 3, readiness: 'recorded', blocked_by: [],
+    reason: 'Recorded with its package; not listed for a card.', confirmation_id: null, priority_at: null,
+    artefacts: { record: { id, revision: 1 } }, updated_at: new Date('2026-10-21T00:00:00Z') };
+  const recorded = byFeatureProtocol([row]);
+  const target = await withPool(recorded.pool, () => readIntakeTargetByFeature(id, undefined));
+  assert.equal(target.targetId, sourceId);
+  assert.equal(target.readiness, 'recorded');
+  assert.equal(target.confirmationId, null);
+  const read = recorded.calls.find(call => call.sql.startsWith('SELECT * FROM usp_intake_targets'))!;
+  assert.deepEqual(read.values, [id, null]);
+  assert.match(read.sql, /physical_feature_revisions/);
+  assert.match(read.sql, /ORDER BY stage DESC/);
+  assert.deepEqual(recorded.calls.find(call => call.sql.startsWith('SELECT id,revision,archived'))!.values, [caseId]);
+
+  const proposed = byFeatureProtocol([{ ...row, stage: 2, readiness: 'ready', artefacts: {} }]);
+  assert.equal((await withPool(proposed.pool, () => readIntakeTargetByFeature(id, sourceId))).readiness, 'ready');
+  assert.deepEqual(proposed.calls.find(call => call.sql.startsWith('SELECT * FROM usp_intake_targets'))!.values,
+    [id, sourceId]);
+});
+
+test('no target is a 404, an archived case refuses, and a malformed id is refused before any read', async () => {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
+  await assert.rejects(withPool(byFeatureProtocol([]).pool, () => readIntakeTargetByFeature(id, undefined)),
+    (error: { status?: number }) => error.status === 404);
+  const row = { target_id: sourceId, case_id: id, anchor_item_id: id, package_id: id, feature_id: id,
+    locator: 'feature k', kind: 'building', stage: 8, readiness: 'carded', blocked_by: [], reason: null,
+    confirmation_id: id, priority_at: null, artefacts: {}, updated_at: new Date() };
+  await assert.rejects(withPool(byFeatureProtocol([row], true).pool, () => readIntakeTargetByFeature(id, undefined)),
+    (error: { code?: string }) => error.code === 'INGESTION_CASE_ARCHIVED');
+  const untouched = byFeatureProtocol([]);
+  await assert.rejects(withPool(untouched.pool, () => readIntakeTargetByFeature('building-101', undefined)));
+  assert.equal(untouched.calls.length, 0);
 });

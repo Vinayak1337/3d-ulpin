@@ -183,6 +183,15 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
       ||inputSha256!==fingerprint(input))
       throw new AppError(422,'INTAKE_LARGE_INPUT_SCOPE','Large-file steps must pin their retained source and intake revision.');
+  } else if(job.operation==='table-profile'){
+    const {TableProfileInputSchema}=await import('./ingestion/table-profile-worker');
+    const input=TableProfileInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
+      ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
+      ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
+      ||inputSha256!==fingerprint(input))
+      throw new AppError(422,'TABLE_PROFILE_INPUT_SCOPE',
+        'Table reads must pin their kept original and intake revision.');
   } else if(job.operation==='intake-run'){
     const {IntakeRunInputSchema,intakeRunSubject}=await import('./ingestion/intake-run');
     const input=IntakeRunInputSchema.parse(job.payload);

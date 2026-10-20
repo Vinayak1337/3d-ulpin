@@ -8,6 +8,7 @@ import { useAreas, type AreaWindowFeature } from '../../api/queries';
 import { useSelection } from '../../state/useSelection';
 import { CopyableId } from '../identity/CopyableId';
 import { WINDOW_EMPTY, useAreaWindow } from './areaWindow';
+import { BuildingCard } from './inspector/BuildingCard';
 import { InspectorShell } from './inspector/InspectorShell';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { useMapView } from './useMapView';
@@ -121,7 +122,8 @@ export function WindowEmpty() {
 
 /** A picked footprint: the identifier and kind the window states, and a building's register by its id. A proposal
  * links the batch of the case the window names for it, where its one officer confirmation is made; with no case
- * named, it says only that it is not yet confirmed. */
+ * named, it says only that it is not yet confirmed. A building an intake target names gets its property card section;
+ * the window names no package, so a target is found in the packages that recorded the building. */
 export function WindowedInspector({ feature, areaName, onClose }: {
   feature: AreaWindowFeature; areaName: string; onClose: () => void;
 }) {
@@ -142,6 +144,7 @@ export function WindowedInspector({ feature, areaName, onClose }: {
         </p>
       ) : null}
       <p>This area is drawn by the part in view, so only the identifier and kind are shown here.</p>
+      {feature.kind === 'building' ? <BuildingCard featureId={feature.id} name={feature.identifier} /> : null}
     </InspectorShell>
   );
 }

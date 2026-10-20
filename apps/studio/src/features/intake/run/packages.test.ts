@@ -6,7 +6,10 @@ import { IntakeConfirmSchema } from '../../../../../../packages/contracts/src/us
 import captured from '../../../../../../docs/evidence/gf1/e3b/targets.json';
 import { readTargets } from './api';
 import { Confirm, PackagePages } from './Confirm';
-import { confirmBody, remainingPackagesWords, type Package, type TargetPage } from './model';
+import { PackageDetails } from './Packages';
+import { TargetList } from './TargetList';
+import { beingRecorded, chooseReady, confirmablePackages, confirmBody, remainingPackagesWords, type Package,
+  type TargetPage } from './model';
 
 const { choiceIds: _, ...sample } = captured;
 const base = sample as TargetPage;
@@ -79,4 +82,34 @@ it('the confirmation offers the next packages only while unrecorded ones follow,
     .toMatch(/<button[^>]*disabled=""[^>]*>Next 100 packages/);
   expect(renderToStaticMarkup(createElement(Confirm, { ...props, page: base, next: () => {} })))
     .not.toContain('Next 100 packages');
+});
+
+it('a package a confirmation is recording is shown "Being recorded" and its buildings are not offered', () => {
+  const recording = uuid(800);
+  const page = { ...base, packages: [{ ...base.packages[0]!, recordingConfirmationId: recording }] };
+  const details = renderToStaticMarkup(createElement(PackageDetails, { pkg: page.packages[0]! }));
+  expect(details).toContain('Being recorded by confirmation');
+  expect(details).toContain(recording);
+  expect(confirmablePackages(page)).toEqual([]);
+  expect(chooseReady(page.items, page.packages)).toEqual([]);
+  expect(confirmBody(page, page.items, 'Record these.', uuid(900))).toMatchObject({ packages: [], targets: [] });
+  const list = renderToStaticMarkup(createElement(TargetList, { targets: page.items, choice: [], filter: '',
+    setFilter: () => {}, toggle: () => {}, selectable: target => chooseReady([target], page.packages).length === 1,
+    recording: beingRecorded(page.packages), onOpen: () => {}, showMore: () => {}, hasMore: false, loading: false,
+    locked: false }));
+  expect(list.match(/<input type="checkbox"[^>]*disabled=""/g)).toHaveLength(page.items.length);
+  expect(list.match(/Being recorded with its package; it cannot be chosen now\./g)).toHaveLength(page.items.length);
+});
+
+it('a recording package leaves the counts and "Next 100 packages" as they were, and is not named', () => {
+  const page = read(0);
+  page.packages = page.packages.map((row, index) => index === 4 ? { ...row, recordingConfirmationId: uuid(800) } : row);
+  const props = { page, choice: [], cards: null, closeCards: () => {}, acknowledgement: 'Yes.',
+    setAcknowledgement: () => {}, press: () => {}, busy: false, uncertain: false, stale: false, error: '' };
+  const html = renderToStaticMarkup(createElement(Confirm, { ...props, next: () => {} }));
+  expect(html).toContain(remainingPackagesWords(100, 150));
+  expect(html).toContain('Next 100 packages');
+  const named = confirmBody(page, [], 'Record these.', uuid(900)).packages.map(row => row.packageId);
+  expect(named).toEqual(page.packages.filter((_row, index) => index !== 4).map(row => row.packageId));
+  expect(page.packages[4]!.counts).toEqual(base.packages[0]!.counts);
 });

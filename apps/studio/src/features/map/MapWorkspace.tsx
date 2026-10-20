@@ -39,6 +39,7 @@ import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
+import { BuildingCard } from './inspector/BuildingCard';
 import { BuildingInspector } from './inspector/BuildingInspector';
 import { FindingsInspector } from './inspector/FindingsInspector';
 import { SpaceInspector } from './inspector/SpaceInspector';
@@ -382,7 +383,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
       <BuildingInspector feature={feature} canonical={canonical} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
         exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={canDeleteBuilding ? () => setDialog('delete-building') : undefined}
         onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
-        onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
+        onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })}
+        card={<BuildingCard featureId={feature.id} packageId={feature.proposalPackageId} name={feature.name} />} />
     );
   } else inspector = null;
 

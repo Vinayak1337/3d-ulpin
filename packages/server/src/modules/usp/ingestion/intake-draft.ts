@@ -36,8 +36,9 @@ export const shapefileZip = (card: IntakeCard | null) =>
   card?.format === 'zip' && card.members.some(member => member.format === 'shapefile');
 
 /** SH2. The native format a batch card is converted from into GeoJSON layers, or null for any other card. */
-export function nativeDerivativeFormat(card: IntakeCard | null): 'gpkg' | 'shapefile_zip' | null {
+export function nativeDerivativeFormat(card: IntakeCard | null): 'gpkg' | 'shapefile_zip' | 'kml' | 'kmz' | null {
   if (card?.format === 'geopackage') return 'gpkg';
+  if (card?.format === 'kml' || card?.format === 'kmz') return card.format;
   return shapefileZip(card) ? 'shapefile_zip' : null;
 }
 
@@ -115,9 +116,6 @@ export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): stri
       + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
       + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
   if (item.card?.format === 'zip') return zipParentWords(item.card);
-  if (format === 'kml' || format === 'kmz')
-    return 'This KML/KMZ has a native-inspection route at POST /api/v1/ingestion/cases/:caseId/kml '
-      + 'within 16 MiB; no area-import adapter or intake recipe drafts its map package or card.';
   if (Number(source.bytes) > 16 * 1024 * 1024) {
     if (format === 'geojson' || source.profile === 'geojson-manual-v1')
       return `This GeoJSON original has ${Number(source.bytes)} bytes, above the 16777216-byte intake drafting `

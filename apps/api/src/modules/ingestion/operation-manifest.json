@@ -854,6 +854,19 @@
       "batch": "E1"
     },
     {
+      "method": "GET",
+      "path": "/api/v1/ingestion/intake/targets/by-feature",
+      "operationId": "GET_api_v1_ingestion_intake_targets_by_feature",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": "IntakeTargetByFeatureQuerySchema query",
+      "responseSchema": "IntakeTargetSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "G04M"
+    },
+    {
       "method": "POST",
       "path": "/api/v1/ingestion/cases/{caseId}/confirmations",
       "operationId": "POST_api_v1_ingestion_cases_caseId_confirmations",
@@ -954,8 +967,8 @@
       "disposition": "added",
       "nativeController": "ingestion",
       "requestSchema": "TableFromOriginalSchema",
-      "responseSchema": "AnySourceProfileSchema",
-      "responseStatus": 201,
+      "responseSchema": "TableProfileJobSchema",
+      "responseStatus": 202,
       "transportProfile": "json",
       "runtimeEvidence": "pending",
       "batch": "G13"
