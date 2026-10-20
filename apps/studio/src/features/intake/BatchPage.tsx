@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
@@ -19,6 +19,8 @@ import { IntakeRunPanel } from './run';
 import { runKey } from './run/useTargets';
 import type { BatchLocationState } from './retain-batch';
 import { useSourceCase } from './table/queries';
+import { UnfinishedUploads } from './UnfinishedUploads';
+import { keepWaiting, readWaiting, sizeWords, type WaitingFile } from './upload-model';
 import { useBatchStream } from './useBatchStream';
 import styles from './Batch.module.css';
 
@@ -50,6 +52,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
   const location = useLocation();
   const state = location.state as BatchLocationState | null;
   const remainingFiles = state?.remainingFiles ?? [];
+  const waiting = useWaitingFiles(caseId, state);
   const current = items.find((item) => item.itemId === selected?.itemId) ?? (items.length === 1 ? items[0] : null);
   return <div className={styles.page}>
     <Link to="/studio/work">Batches</Link>
@@ -65,7 +68,9 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       {stream.error || 'Live updates are disconnected.'} The batch is checked no more than once every five seconds.
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
     </Banner> : null}
+    <UnfinishedUploads caseId={caseId} refresh={refresh} />
     <FilesNotAdded state={state} />
+    <WaitingFiles files={waiting.files} dismiss={waiting.dismiss} />
     {current?.sourceId && (current.plan || needsLayoutAnswer(current)) ?
       <LayoutQuestion key={current.itemId} caseId={caseId}
         item={current} refresh={refresh} /> : null}
@@ -107,5 +112,38 @@ function FilesNotAdded({ state }: { state: BatchLocationState | null }) {
     <h2 className="ul-heading">Files not confirmed in the batch</h2>
     <p className="ul-help">These are this upload's responses, not files confirmed in the batch.</p>
     <DropOutcomes rows={rows} />
+  </section>;
+}
+
+const session = () => sessionStorage;
+
+/** D3. Navigation state is lost on a reload: its files are kept as words under the case id and read back without it. */
+function useWaitingFiles(caseId: string, state: BatchLocationState | null) {
+  const [files, setFiles] = useState(() => state ? [] : readWaiting(session, caseId));
+  useEffect(() => {
+    if (state) keepWaiting(session, caseId, waitingFiles(state));
+  }, [caseId, state]);
+  return { files, dismiss: () => {
+    keepWaiting(session, caseId, []);
+    setFiles([]);
+  } };
+}
+
+export function waitingFiles(state: BatchLocationState): WaitingFile[] {
+  const notAdded = state.outcomes?.filter((row) => row.state !== 'enrolled') ?? [];
+  return [...notAdded.map((row) => ({ name: row.name, sizeBytes: row.sizeBytes, words: row.message ?? null })),
+    ...(state.remainingFiles ?? []).map((file) => ({ name: file.name, sizeBytes: file.size, words: null }))];
+}
+
+export function WaitingFiles({ files, dismiss }: { files: WaitingFile[]; dismiss: () => void }) {
+  if (!files.length) return null;
+  const explained = files.filter((file) => file.words);
+  return <section className={styles.stack} aria-label="Files waiting before the reload">
+    <p>These files were waiting when the page reloaded: {files.map((file) => file.name).join(', ')}. Pick them again
+      to add them.</p>
+    {explained.length ? <ul>
+      {explained.map((file, index) => <li key={index}>{file.name}, {sizeWords(file.sizeBytes)}: {file.words}</li>)}
+    </ul> : null}
+    <span className="ul-row"><Button variant="soft" onClick={dismiss}>Dismiss</Button></span>
   </section>;
 }

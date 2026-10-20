@@ -5,7 +5,7 @@ import { z } from 'zod';
 import {
   LARGE_ORIGINAL_LIMITS as limits, LARGE_ORIGINAL_V2_LIMITS as v2Limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
   LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard, type LargeUploadCreate, type LargeOriginalEvidence,
-  ArchiveMemberLineageSchema, STREAMING_VECTOR_LIMITS,
+  ArchiveMemberLineageSchema, STREAMING_VECTOR_LIMITS, LargeUploadListSchema,
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -102,6 +102,16 @@ async function queueV2JobTx(client:PoolClient,upload:Upload){
  * Finalized, aborted and expired receipts hold none; nothing sweeps expired ones, so the check skips them. */
 const heldReceipt=`u.state IN('receiving','finalizing','aborting') AND (u.expires_at>now() OR u.lease_expires_at>now()
   OR u.state<>'receiving' AND u.body->'input'->>'profile'='large-original/2')`;
+/** N04. This operator's receipts in one case that hold a slot, newest first, with their received part count. */
+const listSql=`SELECT u.*,(SELECT count(*) FROM usp_source_upload_parts p
+    WHERE p.upload_id=u.id AND p.state='received')::int received_parts
+  FROM usp_source_uploads u WHERE u.case_id=$1 AND u.operator_subject=$2 AND ${heldReceipt}
+  ORDER BY u.created_at DESC LIMIT 20`;
+const listed=(upload:Upload,currentCaseRevision:number)=>({id:upload.id,filename:upload.body.input.filename,
+  bytes:Number(upload.original_bytes),sha256:upload.body.input.sha256,
+  profile:v2(upload)?v2Limits.version:limits.version,state:upload.state,receivedParts:Number(upload.received_parts),
+  partCount:Math.ceil(Number(upload.original_bytes)/limits.partBytes),expiresAt:iso(upload.expires_at),
+  revision:upload.revision,currentCaseRevision});
 /** What a receipt without a slot may still keep on disk: its parts until cleanup, and an original assembled by a
  * finalization attempt that was not published. */
 const leftoverBytes=`CASE WHEN u.state<>'aborted' AND (u.body->>'cleanupPending')::boolean THEN
@@ -202,6 +212,14 @@ export class LargeOriginalService {
   async read(caseIdValue:string,idValue:string){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue);
     return transaction(async client=>{const current=await caseRow(client,caseId);return status(client,await load(client,caseId,id),current.revision);});
+  }
+  async list(caseIdValue:string){
+    const caseId=uuid.parse(caseIdValue);
+    return transaction(async client=>{
+      const current=await caseRow(client,caseId);
+      const rows=(await client.query(listSql,[caseId,localOperatorSubject()])).rows;
+      return LargeUploadListSchema.parse({uploads:rows.map(row=>listed(row,current.revision))});
+    });
   }
   async claimPart(caseIdValue:string,idValue:string,value:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadPartSchema.parse(value);

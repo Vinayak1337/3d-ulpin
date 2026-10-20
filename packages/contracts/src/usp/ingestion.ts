@@ -286,8 +286,15 @@ export const LargeUploadStatusSchema = z.strictObject({
   cleanupPending: z.boolean(), lastError: z.string().nullable(),
   finalization: z.strictObject({jobId:id,phase:z.enum(['queued','assembling','verifying','cleaning','complete']),completedParts:z.number().int().nonnegative()}).optional(),
 });
+/** N04. This operator's receipts in one case that hold an upload slot, newest first: what resume and cancel need. */
+export const LargeUploadListSchema = z.strictObject({uploads: z.array(z.strictObject({
+  id, filename: z.string(), bytes: z.number().int().positive(), sha256: hash,
+  profile: z.enum(['large-original/1','large-original/2']), state: z.enum(['receiving','finalizing','aborting']),
+  receivedParts: z.number().int().nonnegative(), partCount: revision, expiresAt: z.string().datetime(),
+  revision, currentCaseRevision: caseRevision})).max(20)});
 export type LargeUploadCreate = z.infer<typeof LargeUploadCreateSchema>;
 export type LargeUploadGuard = z.infer<typeof LargeUploadGuardSchema>;
 export type LargeUploadPart = z.infer<typeof LargeUploadPartSchema>;
 export type LargeUploadStatus = z.infer<typeof LargeUploadStatusSchema>;
+export type LargeUploadList = z.infer<typeof LargeUploadListSchema>;
 export type LargeOriginalEvidence = z.infer<typeof LargeOriginalEvidenceSchema>;

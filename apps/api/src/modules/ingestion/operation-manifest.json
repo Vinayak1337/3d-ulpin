@@ -119,6 +119,19 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/uploads",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_uploads",
+      "batch": "N04",
+      "disposition": "added",
+      "nativeController": "large-original",
+      "requestSchema": null,
+      "responseSchema": "LargeUploadListSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}",
       "operationId": "GET_api_v1_ingestion_cases_caseId_uploads_uploadId",
       "batch": "INGEST-06",
