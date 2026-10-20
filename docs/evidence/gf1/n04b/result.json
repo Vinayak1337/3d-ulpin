@@ -1,0 +1,45 @@
+{
+  "task": "N04B",
+  "branch": "task/n04b-finish-again",
+  "base": "8ed253c2",
+  "outcome": "stopped_at_d3",
+  "what": "A resumed receipt in 'finalizing' is still followed by status only. Studio cannot tell from the status when a finish is no longer held, so it was not changed (lead decision D3). Server and contract unchanged.",
+  "statusFieldsRead": {
+    "version": "present: large-original/1 or large-original/2",
+    "state": "present",
+    "expiresAt": "present, but it is the receipt lifetime (24 hours for v1, 7 days for v2), not the finalization lease",
+    "parts[].leaseExpiresAt": "present, but it is each part's writing lease; the finalize lease is on the receipt row",
+    "lastError": "present; a v1 crash during finalize leaves it unchanged, because failure() never runs",
+    "finalization": "v2 only: jobId, phase (queued|assembling|verifying|cleaning|complete), completedParts; no job status, job error or lease"
+  },
+  "realInputs": "none used: no code changed",
+  "checks": {
+    "git diff --check": 0,
+    "studio:typecheck": "not run: no Studio file changed",
+    "studio:test": "not run: no Studio file changed"
+  },
+  "gaps": [
+    {
+      "what": "v1: the receipt status has no finalization lease expiry. finalize sets usp_source_uploads.lease_expires_at (lease(), 180 seconds) and re-finalizes only after it passes, but status() never publishes that column, so Studio cannot see when a 'finalizing' v1 receipt is no longer held.",
+      "missingField": "LargeUploadStatusSchema: a top-level leaseExpiresAt (ISO datetime, nullable) read from usp_source_uploads.lease_expires_at",
+      "where": [
+        "packages/contracts/src/usp/ingestion.ts:276",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:48",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:297",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:312"
+      ],
+      "state": "open"
+    },
+    {
+      "what": "v2: the status never says, while state is 'finalizing', that the storage job ended without a result. A terminal job failure (failV2Job, FINALIZATION_ATTEMPTS, SOURCE_CONTEXT_CHANGED) moves the receipt back to 'receiving' with lastError, which the existing follow already ends on and shows in the server's words. A crash leaves 'finalizing' with the job 'running' or 'queued'; finalization carries only jobId, phase and completedParts, so the job's own status and error and the receipt lease are not visible.",
+      "missingField": "LargeUploadStatusSchema.finalization: the job status (queued|running|failed|succeeded) and its error from jobs where id = body.storageJobId, or the same top-level leaseExpiresAt as v1",
+      "where": [
+        "packages/contracts/src/usp/ingestion.ts:287",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:60",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:575"
+      ],
+      "state": "open"
+    }
+  ],
+  "next": "Once the status carries leaseExpiresAt (v1) and the job status (v2), the Studio change is small: in runUpload's status follow, when a resumed 'finalizing' receipt shows an expired lease or a failed job, send finalize once with uploadGuard(receipt, key()) and the same sha256, show 'The last finish was interrupted; finishing the upload again.', and keep following; a refusal shows the server's words and the existing Cancel upload."
+}
