@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Raycaster, Vector3 } from 'three';
+import { Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Points, Raycaster, Vector3 } from 'three';
 import { SceneEngine } from './engine';
 import { FLAT_THICKNESS_M, prismGeometry } from './geometry';
-import type { ImageOverlayInput, MultiPolygon } from './types';
+import type { ImageOverlayInput, MultiPolygon, SurfacePartInput } from './types';
 
 function imageMesh(role?: 'ground'): Mesh {
   // Exercise the engine's actual overlay builder without a browser/WebGL renderer.
@@ -110,5 +110,34 @@ describe('the ground the area window is read from', () => {
       [500, [12000, 7500], [25344, 26093]],
       [1000, [24000, 15000], [50688, 52186]],
     ]);
+  });
+});
+
+describe('the read parts of a kept surface', () => {
+  function surfaceEngine() {
+    const surface = new Group();
+    const engine = Object.assign(Object.create(SceneEngine.prototype), {
+      surface, surfaceParts: new Map(), options: { palette: { selected: '#1f6feb' } }, requestRender: vi.fn(),
+    }) as SceneEngine;
+    return { engine, surface };
+  }
+  const square: SurfacePartInput['corners'] = [[0, 0], [10, 0], [10, 10], [0, 10]];
+
+  it('adds and removes parts by id and keeps a part drawn while its input is the same', () => {
+    const { engine, surface } = surfaceEngine();
+    const a: SurfacePartInput = { id: 'i:0', corners: square, image: {} as HTMLCanvasElement };
+    const b: SurfacePartInput = { id: 'i:1', corners: square,
+      points: { positions: Float32Array.of(2, 3, 0), colors: Float32Array.of(1, 0, 0), sizeM: 0.6 } };
+    engine.setSurfaceParts([a]);
+    const first = surface.children[0]!;
+    expect(first.children.map((child) => child.type)).toEqual(['LineLoop', 'Mesh']);
+    engine.setSurfaceParts([a, b]);
+    expect(surface.children).toHaveLength(2);
+    expect(surface.children[0]).toBe(first);
+    const points = surface.children[1]!.children[1] as Points;
+    expect(Array.from(points.geometry.getAttribute('position').array)).toEqual([2, Math.fround(0.05), -3]); // flat
+    engine.setSurfaceParts([b]);
+    expect(surface.children.map((group) => group.userData.surface)).toEqual(['i:1']);
+    expect(new Raycaster(new Vector3(5, 10, -5), new Vector3(0, -1, 0)).intersectObject(surface, true)).toEqual([]);
   });
 });
