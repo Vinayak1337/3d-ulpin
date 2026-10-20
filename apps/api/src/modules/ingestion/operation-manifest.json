@@ -842,6 +842,45 @@
       "maxBodyBytes": 32768,
       "runtimeEvidence": "docs/evidence/gf1/e1/controls-runtime.json",
       "batch": "E1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/evidence",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_evidence",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeEvidenceQuerySchema query",
+      "responseSchema": "IntakeEvidencePageSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "TB1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/evidence/key-profiles",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_evidence_key_profiles",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeKeyProfileInputSchema",
+      "responseSchema": "IntakeKeyProfileSchema",
+      "responseStatus": 201,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "TB1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/evidence/confirmations",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_evidence_confirmations",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": "IntakeEvidenceConfirmSchema",
+      "responseSchema": "IntakeEvidenceConfirmationSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "TB1"
     }
   ]
 }

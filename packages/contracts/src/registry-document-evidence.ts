@@ -17,6 +17,7 @@ import {PacketImageRegionSelectionSchema,PacketImageRegionWorkerSchema} from './
 import {RegistrySurveyReferenceFieldsSchema,RegistrySurveyFragmentSchema} from './registry-survey-reference';
 import {RegistryGltfReferenceFieldsSchema,RegistryGltfFragmentSchema} from './registry-gltf-reference';
 import {RegistryObjReferenceFieldsSchema,RegistryObjFragmentSchema} from './registry-obj-reference';
+import {IntakeEvidenceKeySchema,IntakeTableRowLocatorSchema} from './usp/intake';
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/),revision=z.number().int().positive();
 const citationBase={id:hash,document:DocumentAssociationSourceSchema,
@@ -145,6 +146,15 @@ export const RegistryImageRegionCitationSchema=z.strictObject({
   applicability:z.literal('explicit_officer_inclusion; effective_after_canonical_commit'),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
+/** AU4-B1: one table row a batch evidence confirmation accepted for a recorded building. Not yet in the union
+ * below: the citation authority that writes and checks it (AU4-B3) adds it there. A document part keeps the
+ * native citation above. */
+export const RegistryTableRowCitationSchema=z.strictObject({version:z.literal('registry-table-row-citation/1'),id:hash,
+  row:IntakeTableRowLocatorSchema,key:IntakeEvidenceKeySchema,
+  confirmation:z.strictObject({confirmationId:z.uuid(),candidateId:z.uuid(),candidateSha256:hash}),
+  target:citationBase.target,selection:citationBase.selection,
+  associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
+}).refine(citation=>citation.row.cell.value===citation.key.literal,'The cited cell must hold the exact key literal.');
 export const RegistryDocumentCitationSchema=z.discriminatedUnion('version',[
   RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryImageRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,RegistryCityGMLCitationSchema,RegistryGeoParquetCitationSchema,RegistryRasterCitationSchema,RegistryPointCitationSchema,RegistrySurveyCitationSchema,RegistryGltfCitationSchema,RegistryObjCitationSchema]);
 export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSchema).max(25)
@@ -203,6 +213,7 @@ export type RegistryDocumentCitation=z.infer<typeof RegistryDocumentCitationSche
 export type RegistryNativeDocumentCitation=z.infer<typeof RegistryNativeDocumentCitationSchema>;
 export type RegistrySurveyCitation=z.infer<typeof RegistrySurveyCitationSchema>;
 export type RegistryObjCitation=z.infer<typeof RegistryObjCitationSchema>;
+export type RegistryTableRowCitation=z.infer<typeof RegistryTableRowCitationSchema>;
 export type RegistryGltfCitation=z.infer<typeof RegistryGltfCitationSchema>;
 export type RegistryOcrDocumentCitation=z.infer<typeof RegistryOcrDocumentCitationSchema>;
 export type RegistryIFCCitation=z.infer<typeof RegistryIFCCitationSchema>;

@@ -2707,6 +2707,56 @@
         "path": "packages/server/src/modules/usp/ingestion/intake-migration.ts",
         "function": "migrateIntakeLedgerTx"
       }
+    },
+    {
+      "id": "ingestion.intake.evidence",
+      "source": {
+        "path": "database/sql/95-ingestion/intake-evidence.sql",
+        "function": "migrateIntakeLedgerTx",
+        "kind": "authored-sql",
+        "task": "TB1",
+        "acceptedBase": "7231538c"
+      },
+      "file": "sql/95-ingestion/intake-evidence.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 57,
+      "sha256": "66a35a2bb0fd571e941aa7bcbab065269ce65d2d67ffad617621f3988aeeaad2",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "4cc267d534e319a71d86a93dfe755a1a56ef3694b62435e0538f41a5be4d6d12"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "7c19d7b04f9528a51e944be6a1e20c97b34387196f9d1c6421394ec8aa4fd8ed"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "323af78647bd16f2116911adf67791e1fe42552a725130d15de629bfa1da8cbb"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "75d0a5ae40ed2ab9717870910538b512acc5fbf0c00527df50af5538d592d89c"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "2a2841fa15cb74f78ec86666d87a8e2d76436fd000cb1ca29604628d5089ee98"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "7daeacc39261caa41bf44f787f546ca1dee255171ecac1dc330dc4163e0047d9"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/intake-migration.ts",
+        "function": "migrateIntakeLedgerTx"
+      }
     }
   ],
   "plannedButAbsent": []

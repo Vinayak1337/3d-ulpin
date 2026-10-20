@@ -1,29 +1,40 @@
 import { Controller, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { IntakeConfirmSchema, IntakeConfirmationSchema, IntakeRunControlSchema,
-  IntakeTargetPageSchema, IntakeTargetQuerySchema, IntakeTargetReadinessSchema,
-  IntakeTargetSchema } from '@ulpin/contracts/usp';
+import { z } from 'zod';
+import { IntakeConfirmSchema, IntakeConfirmationSchema, IntakeEvidenceConfirmSchema,
+  IntakeEvidenceConfirmationSchema, IntakeRunControlSchema, IntakeTargetPageSchema, IntakeTargetQuerySchema,
+  IntakeTargetReadinessSchema, IntakeTargetSchema } from '@ulpin/contracts/usp';
 import { confirmIntake, readIntakeConfirmation, retryIntakeConfirmation }
   from '@ulpin/server/modules/usp/ingestion/intake-confirmations';
 import { listIntakeTargets, prioritizeIntakeTarget } from '@ulpin/server/modules/usp/ingestion/intake-targets';
 import { AppError } from '@ulpin/server/infrastructure/errors';
-import { readJsonBody } from '../../common/body';
+import { JSON_BODY_LIMIT, readJsonBody } from '../../common/body';
 import { jsonBody, wireResponse } from '../intake/wire-schemas';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 
 const bodyLimit = 32 * 1024;
 const param = (name: string) => ApiParam({ name, schema: { type: 'string', format: 'uuid' } });
 
-export function intakeTargetQuery(originalUrl: string) {
+/** Each allowed field at most once and no other field, so an ignored or repeated field cannot change a read. */
+export function strictQuery<T extends z.ZodType>(originalUrl: string, schema: T, fields: string[],
+  code: string, message: string): z.infer<T> {
   const params = new URL(originalUrl, 'http://127.0.0.1').searchParams;
   for (const key of params.keys()) {
-    if (!['readiness', 'cursor'].includes(key) || params.getAll(key).length !== 1) {
-      throw new AppError(422, 'INTAKE_TARGET_QUERY',
-        'Use one optional readiness and cursor, and no other query fields.');
-    }
+    if (!fields.includes(key) || params.getAll(key).length !== 1) throw new AppError(422, code, message);
   }
-  return IntakeTargetQuerySchema.parse(Object.fromEntries(params));
+  return schema.parse(Object.fromEntries(params));
+}
+
+export function intakeTargetQuery(originalUrl: string) {
+  return strictQuery(originalUrl, IntakeTargetQuerySchema, ['readiness', 'cursor'], 'INTAKE_TARGET_QUERY',
+    'Use one optional readiness and cursor, and no other query fields.');
+}
+
+/** AU4-B1 publishes these contracts and stored shapes only; the steps that store and read them come next. */
+export function intakeEvidenceNotBuilt(step: string): never {
+  throw new AppError(501, 'INTAKE_EVIDENCE_NOT_BUILT',
+    `${step} is not built yet: the exact-key evidence pass comes in a later step. Nothing was stored or read.`);
 }
 
 @ApiTags('private intake run')
@@ -80,5 +91,17 @@ export class IntakeRunController {
   async priority(@Param('caseId') caseId: string, @Param('targetId') targetId: string, @Req() request: Request) {
     IntakeRunControlSchema.parse(await readJsonBody(request, bodyLimit));
     return prioritizeIntakeTarget(caseId, targetId);
+  }
+
+  @Post('cases/:caseId/intake/evidence/confirmations')
+  @HttpCode(202) @param('caseId')
+  @ApiOperation({ operationId: 'POST_api_v1_ingestion_cases_caseId_intake_evidence_confirmations',
+    summary: 'Confirm exact-key table rows and document parts as cited candidates for named buildings, with every '
+      + 'source, coverage, candidate and package pin; answers 501 until the citation step is built' })
+  @jsonBody(IntakeEvidenceConfirmSchema) @wireResponse(202, IntakeEvidenceConfirmationSchema, [501])
+  async confirmEvidence(@Param('caseId') caseId: string, @Req() request: Request) {
+    z.uuid().parse(caseId);
+    IntakeEvidenceConfirmSchema.parse(await readJsonBody(request, JSON_BODY_LIMIT));
+    return intakeEvidenceNotBuilt('Confirming batch evidence');
   }
 }
