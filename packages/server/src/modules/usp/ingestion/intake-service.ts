@@ -13,6 +13,7 @@ import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from '.
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
 import { queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
+import { queueLateIntakeEvidenceTx } from './intake-evidence';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -128,6 +129,8 @@ export class IntakeService {
         await queueIntakeDraftTx(client, fresh.source, probed.card);
         // ZJ1: a ZIP's layers are taken out by a dispatcher job; enrolling it again queues a retry when one waits.
         await queueZipLayersTx(client, fresh.source, probed.card, initial.itemId);
+        // AU4-B2 (D4): a table or document kept after a key profile exists is read under it.
+        await queueLateIntakeEvidenceTx(client, caseId, initial.itemId);
       } else {
         await client.query(`UPDATE usp_intake_items SET state=CASE WHEN card IS NULL THEN $2 ELSE state END,
           limit_reason=CASE WHEN card IS NULL THEN $3 ELSE limit_reason END,updated_at=now() WHERE item_id=$1`,

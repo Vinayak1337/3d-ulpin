@@ -21,8 +21,6 @@ class IntakeEvidenceTestModule {}
 const id = '10000000-0000-4000-8000-000000000001';
 const hash = 'a'.repeat(64);
 const body = (value: unknown) => Object.assign(Readable.from([Buffer.from(JSON.stringify(value))]), { headers: {} });
-const notBuilt = (error: unknown) => error instanceof AppError && error.status === 501
-  && error.code === 'INTAKE_EVIDENCE_NOT_BUILT' && /Nothing was stored or read/.test(error.message);
 const profile = { requestKey: id, version: 'exact-key/1', namespace: 'Survey building number', kind: 'text',
   map: { anchorItemId: id, sourcePath: '/features/*/properties/BIN' },
   tables: [{ itemId: id, selection: { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }, columnIndex: 0 }],
@@ -33,11 +31,15 @@ const confirm = { requestKey: id, acknowledgement: 'I checked each row against i
     resultSha256: hash, coverage: { state: 'closed', read: 2, eligible: 2, keyless: 0, unread: 0, failed: 0 } }],
   targets: [{ targetId: id, packageId: id, packageRevision: 1, reviewFingerprint: hash }] };
 
-test('the three batch-evidence routes publish their contracts and a 501, and check input before refusing',
+// Each refusal here comes before any store is opened: no database runs in this test.
+const refused = (error: unknown) => error instanceof z.ZodError
+  || error instanceof AppError && [422].includes(error.status);
+
+test('the three batch-evidence routes publish their contracts and refuse bad input before reading or storing',
   async () => {
     const app = await NestFactory.create(IntakeEvidenceTestModule, { logger: false, abortOnError: false });
     try {
-      const doc = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('AU4-B1 evidence').build());
+      const doc = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('AU4-B2 evidence').build());
       const base = '/api/v1/ingestion/cases/{caseId}/intake/evidence';
       const routes = [
         [base, 'get', 200, IntakeEvidencePageSchema],
@@ -48,25 +50,25 @@ test('the three batch-evidence routes publish their contracts and a 501, and che
         const operation = doc.paths[path]![method] as any;
         assert.deepEqual(operation.responses[status].content['application/json'].schema,
           z.toJSONSchema(schema, { target: 'openapi-3.0' }));
-        assert(operation.responses[501], `${path} names its 501 refusal`);
+        assert.equal(operation.responses[501], undefined, `${path} no longer answers 501`);
       }
+      assert.match(doc.paths[`${base}/confirmations`]!.post!.summary!, /nothing is written to the registry/);
       const ingestion = app.get(IngestionController);
       const run = app.get(IntakeRunController);
       const url = `/api/v1/ingestion/cases/${id}/intake/evidence`;
-      assert.throws(() => ingestion.intakeEvidence(id, { originalUrl: `${url}?outcome=matched` } as any), notBuilt);
       for (const query of ['outcome=matched&outcome=no_match', 'subject=other', 'outcome=absent', 'cursor=0']) {
-        assert.throws(() => ingestion.intakeEvidence(id, { originalUrl: `${url}?${query}` } as any),
-          error => !notBuilt(error));
+        assert.throws(() => ingestion.intakeEvidence(id, { originalUrl: `${url}?${query}` } as any), refused);
       }
-      await assert.rejects(ingestion.keyProfile(id, body(profile) as any), notBuilt);
-      await assert.rejects(run.confirmEvidence(id, body(confirm) as any), notBuilt);
+      await assert.rejects(ingestion.intakeEvidence('not-a-case', { originalUrl: url } as any), refused);
       for (const [call, value] of [
         [ingestion.keyProfile.bind(ingestion), { ...profile, kind: 'number' }],
         [ingestion.keyProfile.bind(ingestion), { ...profile, rights: 'owner' }],
+        [ingestion.keyProfile.bind(ingestion), { ...profile, map: { ...profile.map, sourcePath: '/features/*/id' } }],
         [run.confirmEvidence.bind(run), { ...confirm, targets: [] }],
         [run.confirmEvidence.bind(run), { ...confirm, rights: 'owner' }],
-      ] as const) await assert.rejects(call(id, body(value) as any), error => !notBuilt(error));
-      await assert.rejects(ingestion.keyProfile('not-a-case', body(profile) as any), error => !notBuilt(error));
+      ] as const) await assert.rejects(call(id, body(value) as any), refused);
+      await assert.rejects(ingestion.keyProfile('not-a-case', body(profile) as any), refused);
+      await assert.rejects(run.confirmEvidence('not-a-case', body(confirm) as any), refused);
     } finally {
       await app.close();
     }

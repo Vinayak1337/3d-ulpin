@@ -302,8 +302,15 @@ export const IntakeEvidenceCandidateSchema = z.strictObject({
 export const IntakeEvidenceQuerySchema = z.strictObject({
   outcome: IntakeEvidenceOutcomeSchema.optional(), cursor: uuid.optional(),
 });
+/** AU4-B2: a stored evidence confirmation as the read lists it. It is never changed by a later source. */
+export const IntakeEvidenceConfirmationStateSchema = z.strictObject({
+  confirmationId: uuid, profileId: uuid, additions: z.enum(['citations', 'no_additions']), createdAt: at,
+  expiresAt: at, newerSources: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.sources)
+    .describe('Sources read under the profile after it that the confirmation neither includes nor excludes.'),
+});
 export const IntakeEvidencePageSchema = z.strictObject({
   caseId: uuid, profiles: z.array(IntakeKeyProfileSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
+  confirmations: z.array(IntakeEvidenceConfirmationStateSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
   sources: z.array(IntakeEvidenceSourceSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
   candidates: z.array(IntakeEvidenceCandidateSchema).max(INTAKE_EVIDENCE_LIMITS.page),
   counts: z.strictObject({ matched: tally, no_match: tally, several: tally, conflicting: tally })
@@ -350,9 +357,18 @@ export const IntakeEvidenceConfirmSchema = z.strictObject({
 export const IntakeEvidenceConfirmationSchema = z.strictObject({
   confirmationId: uuid, caseId: uuid, inputSha256: hash, input: IntakeEvidenceConfirmSchema,
   subject: z.string().min(1).max(256), expiresAt: at, createdAt: at,
+  registryWritten: z.literal(false).describe('AU4-B2 stores the confirmation only; the citation step writes later.'),
+  note: z.string().min(1).max(500),
 });
 export type IntakeKeyProfileInput = z.infer<typeof IntakeKeyProfileInputSchema>;
 export type IntakeTableRowLocator = z.infer<typeof IntakeTableRowLocatorSchema>;
 export type IntakeEvidenceCoverage = z.infer<typeof IntakeEvidenceCoverageSchema>;
 export type IntakeEvidenceCandidate = z.infer<typeof IntakeEvidenceCandidateSchema>;
 export type IntakeEvidenceConfirm = z.infer<typeof IntakeEvidenceConfirmSchema>;
+export type IntakeEvidenceAnchor = z.infer<typeof IntakeEvidenceAnchorSchema>;
+export type IntakeEvidenceLocator = z.infer<typeof IntakeEvidenceLocatorSchema>;
+export type IntakeEvidenceKey = z.infer<typeof IntakeEvidenceKeySchema>;
+export type IntakeKeyProfile = z.infer<typeof IntakeKeyProfileSchema>;
+export type IntakeEvidenceSource = z.infer<typeof IntakeEvidenceSourceSchema>;
+export type IntakeEvidencePage = z.infer<typeof IntakeEvidencePageSchema>;
+export type IntakeEvidenceConfirmation = z.infer<typeof IntakeEvidenceConfirmationSchema>;
