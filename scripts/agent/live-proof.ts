@@ -2,8 +2,10 @@
 //   --plan      prints the ordered calls with their size and cost at a tariff; sends nothing.
 //   --dry-run   walks the same sequence through a replay gateway that cannot dispatch.
 //   --live      the same walk behind an explicit gateway state; for the runtime owner only.
+//   --report    prints each step's tokens, cost and diagnostics from a receipt; reads it and nothing else.
 // Usage: tsx scripts/agent/live-proof.ts --plan|--dry-run|--live [--tariff <policy.json>]
 //        [--out <dir>] [--recordings <dir>] [--learner <dir>] [--gateway-state <status.txt>]
+//        tsx scripts/agent/live-proof.ts --report <receipt dir or receipt.json>
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { userInfo } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -22,7 +24,8 @@ import {
 import {
   hash, ModelGatewayConfigSchema, type GatewayConfig,
 } from '../../packages/server/src/modules/model-gateway/config';
-import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
+import { ModelGateway, type GatewayCallEvent } from '../../packages/server/src/modules/model-gateway/gateway';
+import type { Admission } from '../../packages/server/src/modules/model-gateway/ledger';
 import { cost, reservation } from '../../packages/server/src/modules/model-gateway/pricing';
 import { TeacherRecordings } from '../../packages/server/src/modules/model-gateway/recordings';
 import {
@@ -503,6 +506,8 @@ const TOKEN_METHOD = {
 
 const STOP_RULES = [
   'Every call is one attempt with no repair call. The proof never picks a key: only the gateway moves a list on.',
+  "Before each paid step, and before a step is attempted again, the run waits until the gateway's pace has passed "
+    + 'since its last send, so that the run itself never meets MODEL_COOLDOWN.',
   'When the gateway answers that it moved a key on (MODEL_QUOTA_EXHAUSTED or MODEL_CREDENTIAL_INVALID, marked '
     + 'retryable, the call closed at zero), the step is recorded as key_moved_on and attempted once more as a new '
     + 'call. After a second such answer on one step it is attempted again only while the report of key states '
@@ -568,16 +573,48 @@ const printable = (steps: PlannedStep[]) => steps.map(({ exec, ...step }) => ({ 
 
 type Ask = { inputHash: string; replayKey: string | null };
 type Supply = () => Promise<ModelGateway | undefined>;
+/** The run's own time: the system clock live, a fake one in tests. */
+export type Clock = { now: () => number; sleep: (ms: number) => Promise<void> };
+const systemClock: Clock = { now: () => Date.now(), sleep: ms => new Promise(resolve => setTimeout(resolve, ms)) };
+/** A gateway event as the run saw it, stamped by the run's clock when it arrived. */
+type SeenEvent = GatewayCallEvent & { at: number };
 type Drivers = {
   mode: 'dry_run' | 'live'; subject: string; outDir: string; learnerModelPath?: string;
   teacher: Supply; replay: Supply;
-  asks: Ask[]; replayedKinds: Map<string, string>; recordings: TeacherRecordings | null;
+  asks: Ask[]; replayedKinds: Map<string, string>;
   /** The report of key states: one entry per key of the policy, with its mark. */
   keyStates: () => Promise<{ state: string }[]>;
-  /** Waited before a step is attempted again, so that the gateway's pace does not refuse the new call. */
+  /** The gateway's pace: no call is sent sooner than this after the previous send. */
   paceMs: number;
   extraAttemptsAtMost: number;
+  clock: Clock;
+  /** Every dispatch and settlement of the gateways this run was handed, in order. */
+  events: SeenEvent[];
 };
+
+/** Watch a gateway the run was handed: its sends and settlements land in the run's events. */
+function watched(drivers: Pick<Drivers, 'clock' | 'events'>, supply: Supply): Supply {
+  return async () => {
+    const gateway = await supply();
+    if (gateway) gateway.observer = event => drivers.events.push({ ...event, at: drivers.clock.now() });
+    return gateway;
+  };
+}
+
+/** When the gateway last sent a call for this run, by the run's clock; null before the first send. */
+function lastSendAt(events: SeenEvent[]): number | null {
+  return events.filter(event => event.kind === 'dispatched').at(-1)?.at ?? null;
+}
+
+/**
+ * Waits until the gateway's pace since the last send has passed, so that the run's own speed never meets
+ * MODEL_COOLDOWN. The send is stamped after the ledger's dispatch committed, so the wait is never short of it.
+ */
+export async function waitForPace(lastSend: number | null, paceMs: number, clock: Clock): Promise<number> {
+  const wait = lastSend === null ? 0 : lastSend + paceMs - clock.now();
+  if (wait > 0) await clock.sleep(wait);
+  return Math.max(0, wait);
+}
 
 /** A gateway whose only adapter is the replay store: it has no key, no transport and no paid ledger. */
 function dryRunDrivers(
@@ -601,8 +638,8 @@ function dryRunDrivers(
   const gateway = new ModelGateway(tariff.policy, ledger, adapter);
   const supply = async () => gateway;
   return { mode: 'dry_run', subject: 'local-os:s1-dry-run', outDir, teacher: supply,
-    replay: supply, asks, replayedKinds, recordings: null, ledger, keyStates: async () => [], paceMs: 0,
-    extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy) };
+    replay: supply, asks, replayedKinds, ledger, keyStates: async () => [], paceMs: 0,
+    extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy), clock: systemClock, events: [] };
 }
 
 function proofContext(subject: string): RequestContext {
@@ -672,15 +709,16 @@ function runReplay(step: PlannedStep, steps: PlannedStep[], drivers: Drivers, st
   return runExec(first, first.exec as Exec, drivers, fresh, drivers.replay);
 }
 
-async function liveNumbers(step: PlannedStep, drivers: Drivers, tariff: Tariff) {
-  const empty = { httpStatus: null, inputTokens: null, outputTokens: null, actualMicroInr: null, responseHash: null };
-  const recorded = step.request && drivers.recordings
-    ? await drivers.recordings.replay(step.request.replayKey, ['sarvam']) : undefined;
-  if (!recorded?.response.usage) return { ...empty, ledgerCallId: null };
-  const { usage, httpStatus, responseHash } = recorded.response;
+/** The step's paid call as the gateway settled it: its receipt and diagnostics, never its text. */
+function liveNumbers(events: SeenEvent[]) {
+  const settled = events.filter(event => event.kind === 'settled');
+  const last = settled.at(-1);
   return {
-    httpStatus, inputTokens: usage.promptTokens, outputTokens: usage.completionTokens, responseHash,
-    actualMicroInr: cost(usage, tariff.policy.price).toString(), ledgerCallId: null,
+    httpStatus: last?.receipt.httpStatus ?? null, inputTokens: last?.receipt.inputTokens ?? null,
+    outputTokens: last?.receipt.outputTokens ?? null, actualMicroInr: last?.receipt.actualMicroInr ?? null,
+    responseHash: last?.receipt.responseHash ?? null, ledgerCallId: last?.callId ?? null,
+    semanticError: last?.receipt.semanticError ?? null, priceVersion: last?.priceVersion ?? null,
+    diagnostics: last?.diagnostics ?? null, settledCalls: settled.length,
   };
 }
 
@@ -734,16 +772,19 @@ async function attemptStep(
     }
     state.extraAttempts++;
     if (step.exec.kind === 'mapping') state.mappers.delete(step.exec.file);
-    if (drivers.paceMs) await new Promise(resolve => setTimeout(resolve, drivers.paceMs));
+    await waitForPace(lastSendAt(drivers.events), drivers.paceMs, drivers.clock);
   }
 }
 
-async function runStep(step: PlannedStep, steps: PlannedStep[], drivers: Drivers, state: RunState, tariff: Tariff) {
+async function runStep(step: PlannedStep, steps: PlannedStep[], drivers: Drivers, state: RunState) {
   const asksBefore = drivers.asks.length;
   const refusedByCap = step.capAdmission && !step.capAdmission.admitted ? step.capAdmission.code : null;
   if (refusedByCap && !state.stopped) state.stopped = `${step.id}: ${refusedByCap}`;
   const afterStop = Boolean(state.stopped);
   const gateway = afterStop ? drivers.replay : drivers.teacher;
+  const paceWaitMs = step.provider === 'call' && !afterStop
+    ? await waitForPace(lastSendAt(drivers.events), drivers.paceMs, drivers.clock) : 0;
+  const eventsBefore = drivers.events.length;
   const { outcome, attempts, keyMoves, gatewayCode } = await attemptStep(step, steps, drivers, state, gateway);
   const asked = drivers.asks.slice(asksBefore);
   const stops = drivers.mode === 'live' && step.provider === 'call' && outcome.code && STOP_CODES.has(outcome.code);
@@ -758,10 +799,10 @@ async function runStep(step: PlannedStep, steps: PlannedStep[], drivers: Drivers
     gatewayAsks: drivers.mode === 'dry_run' ? asked.length : null,
     requestMatchesPlan: step.request && asked.length
       ? asked.slice(0, attempts).every(ask => ask.inputHash === step.request!.requestHash) : null,
-    attempts, keyMoves, gatewayCode,
+    attempts, keyMoves, gatewayCode, paceWaitMs,
     providerCalls: drivers.mode === 'dry_run' ? 0 : keyMoves.length + lastCalls,
     endState: endState(step, outcome, drivers), code: outcome.code, replayed: outcome.replayed, detail: outcome.detail,
-    live: await liveNumbers(step, drivers, tariff),
+    live: liveNumbers(drivers.events.slice(eventsBefore)),
   };
 }
 
@@ -772,7 +813,7 @@ async function runSequence(tariff: Tariff, drivers: Drivers) {
   const receipts = [];
   for (const step of steps) {
     if (state.halted) break;
-    receipts.push(await runStep(step, steps, drivers, state, tariff));
+    receipts.push(await runStep(step, steps, drivers, state));
   }
   const notRun = steps.slice(receipts.length).map(step => ({ step: step.step, id: step.id, endState: 'not_run' }));
   return { steps, receipts, notRun, stopped: state.stopped, storey: state.storey };
@@ -884,7 +925,51 @@ export async function keyMoveWalk(tariff: Tariff, outDir: string, scenario: KeyS
   };
 }
 
-const KEY_MOVE_NOTE = 'software only: a key list of made-up names in front of the same steps. A refused ask is '
+/** A software ledger on the run's clock that refuses an admission inside the pace, as the gateway's ledger does. */
+class PacedControlLedger extends ControlLedger {
+  private sentAt: number | null = null;
+  cooldowns = 0;
+  constructor(private readonly clock: Clock, private readonly paceMs: number) {
+    super();
+  }
+  override async reserve(input: Admission) {
+    if (this.sentAt !== null && this.clock.now() < this.sentAt + this.paceMs) {
+      this.cooldowns++;
+      throw new AppError(429, 'MODEL_COOLDOWN', 'The shared provider bucket is cooling down.');
+    }
+    return super.reserve(input);
+  }
+  override async dispatch(id: string) {
+    await super.dispatch(id);
+    this.sentAt = this.clock.now();
+  }
+}
+
+/** What a software provider answers to every paid step: the control abstention, measured as Sarvam's would be. */
+const SOFTWARE_ANSWER = new ControlAdapter(async () => ({
+  output: CONTROL_ABSTAINS, responseHash: hash(CONTROL_ABSTAINS), httpStatus: 200,
+  usage: { promptTokens: 1000, completionTokens: 100 },
+  diagnostics: { finishReason: 'stop', contentChars: JSON.stringify(CONTROL_ABSTAINS).length, reasoningChars: 0,
+    reasoningTokens: null },
+}));
+
+/**
+ * The same steps on a clock the caller holds, against a software ledger that keeps the gateway's pace. Paid steps
+ * are answered by a software provider through a real gateway. With `waits` false the run does not wait for the
+ * pace, to show what the wait prevents. Nothing can leave: no key, no transport.
+ */
+export async function paceWalk(tariff: Tariff, outDir: string, clock: Clock, waits = true) {
+  const base = dryRunDrivers(tariff, outDir, join(outDir, 'recordings'));
+  const ledger = new PacedControlLedger(clock, tariff.policy.paceMs);
+  const gateway = new ModelGateway(tariff.policy, ledger, SOFTWARE_ANSWER);
+  const drivers: Drivers = { ...base, paceMs: waits ? tariff.policy.paceMs : 0, clock, events: [] };
+  drivers.teacher = watched(drivers, async () => gateway);
+  const walked = await withoutNetwork(() => runSequence(tariff, drivers));
+  return { receipts: walked.value.receipts, cooldowns: ledger.cooldowns, dispatched: ledger.dispatched,
+    settled: ledger.settled, fetchAttempts: walked.fetchAttempts() };
+}
+
+const KEY_MOVE_NOTE ='software only: a key list of made-up names in front of the same steps. A refused ask is '
   + 'answered by a software provider through a real gateway, so the code is the one gateway.ts throws; the ledger '
   + 'here is a software ledger that marks a key as the real one does. No key is read and nothing is sent.';
 
@@ -958,12 +1043,13 @@ function liveDrivers(tariff: Tariff, outDir: string, learnerModelPath?: string):
     return gateway;
   };
   const os = userInfo();
+  const seen = { clock: systemClock, events: [] as SeenEvent[] };
   return {
     mode: 'live', subject: `local-os:${os.uid}:${os.username}`, outDir, learnerModelPath,
-    teacher, replay: () => mappingTeacherGatewayRuntime('replay'), asks: [],
-    replayedKinds: new Map(), recordings: new TeacherRecordings(),
+    teacher: watched(seen, teacher), replay: () => mappingTeacherGatewayRuntime('replay'), asks: [],
+    replayedKinds: new Map(),
     keyStates: async () => (await ownerKeyLedger()).keyStates(), paceMs: tariff.policy.paceMs,
-    extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy),
+    extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy), ...seen,
   };
 }
 
@@ -1032,12 +1118,57 @@ async function wideTableProof(tariff: Tariff, dry: boolean) {
   return { note: 'development probes only, outside the unchanged ten-call sequence; no live expansion', tables };
 }
 
+type ReceiptStep = {
+  step: number; id: string; endState: string; code: string | null; gatewayCode?: string | null;
+  afterStop?: boolean; paceWaitMs?: number; providerCalls?: number;
+  live?: { httpStatus: number | null; inputTokens: number | null; outputTokens: number | null;
+    actualMicroInr: string | null; ledgerCallId?: string | null; semanticError?: string | null;
+    diagnostics?: unknown };
+};
+
+/**
+ * Per step, the numbers and diagnostics a receipt holds for its paid call, and their totals, so that nobody needs
+ * SQL to read tokens and cost. It reads the receipt only; a receipt from before SV2 has no diagnostics (null).
+ */
+export function receiptReport(receipt: { mode: string; generatedAt?: string; stopped?: string | null;
+  receipts: ReceiptStep[]; notRun?: unknown[] }) {
+  const steps = receipt.receipts.map(entry => {
+    const live = entry.live;
+    const micro = live?.actualMicroInr ?? null;
+    return {
+      step: entry.step, id: entry.id, endState: entry.endState, code: entry.code,
+      gatewayCode: entry.gatewayCode ?? null, afterStop: entry.afterStop ?? null,
+      paceWaitMs: entry.paceWaitMs ?? null, providerCalls: entry.providerCalls ?? null,
+      httpStatus: live?.httpStatus ?? null, inputTokens: live?.inputTokens ?? null,
+      outputTokens: live?.outputTokens ?? null, actualMicroInr: micro, rupees: micro ? rupees(BigInt(micro)) : null,
+      semanticError: live?.semanticError ?? null, ledgerCallId: live?.ledgerCallId ?? null,
+      diagnostics: live?.diagnostics ?? null,
+    };
+  });
+  const paid = steps.filter(step => step.actualMicroInr !== null);
+  const sum = (pick: (step: (typeof steps)[number]) => number | null) =>
+    paid.reduce((total, step) => total + (pick(step) ?? 0), 0);
+  const microInr = paid.reduce((total, step) => total + BigInt(step.actualMicroInr!), 0n);
+  return {
+    mode: receipt.mode, generatedAt: receipt.generatedAt ?? null, stopped: receipt.stopped ?? null,
+    notRun: receipt.notRun?.length ?? 0, steps,
+    totals: { settledCalls: paid.length, inputTokens: sum(step => step.inputTokens),
+      outputTokens: sum(step => step.outputTokens), actualMicroInr: microInr.toString(), rupees: rupees(microInr) },
+  };
+}
+
 function option(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
   return index > 0 ? process.argv[index + 1] : undefined;
 }
 
 async function main() {
+  const report = option('--report');
+  if (report) {
+    const path = existsSync(join(report, 'receipt.json')) ? join(report, 'receipt.json') : report;
+    console.log(JSON.stringify(receiptReport(JSON.parse(readFileSync(path, 'utf8'))), null, 1));
+    return;
+  }
   const tariff = readTariff(option('--tariff'));
   const stamp = new Date().toISOString().replace(/[-:.]/g, '');
   const mode = ['--plan', '--dry-run', '--live'].find(flag => process.argv.includes(flag));

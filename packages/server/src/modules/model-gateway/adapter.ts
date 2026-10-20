@@ -16,10 +16,15 @@ export type ProviderRequest = {
   /** The key the ledger chose for this call. Only a key list reads it; one key is always itself. */
   credentialHash?: string;
 };
+/** One answer measured without its text: the provider's finish reason, lengths and a token count only. */
+export type AnswerDiagnostics = { finishReason: string | null; contentChars: number; reasoningChars: number;
+  reasoningTokens: number | null };
 export type ProviderResult = { output: unknown; responseHash: string; usage?: Usage;
   httpStatus: number; semanticError?: 'invalid_output' | 'truncated_output';
   /** Sanitized response envelope; visible reasoning/credentials are never retained. */
   rawResponse?: unknown;
+  /** Absent when the adapter does not measure its answers (control, replay of an older recording). */
+  diagnostics?: AnswerDiagnostics;
 };
 export type FailureKind = 'quota_exhausted' | 'rate_limited' | 'credential_invalid' | 'capability_denied'
   | 'input_rejected' | 'outcome_unknown';
@@ -117,9 +122,29 @@ export async function boundedProviderJson(response: Response): Promise<{body:unk
  */
 export const REASONING_EFFORT = null;
 
+/** A finish reason is kept only as a short token; anything else from the provider is not kept. */
+const FINISH_REASON = /^[A-Za-z0-9_.-]{1,64}$/;
+/** Separate reasoning fields a chat completion may carry beside message.content; only their length is read. */
+const REASONING_FIELDS = ['reasoning_content', 'reasoning'] as const;
+
+/** Why an answer ran long or came back empty, without its text: SV2 reads these on every Sarvam answer. */
+export function answerDiagnostics(choice: any, usage: any): AnswerDiagnostics {
+  const content = choice?.message?.content;
+  const reasoning = REASONING_FIELDS.map(field => choice?.message?.[field]).find(value => typeof value === 'string');
+  const reasoningTokens = usage?.completion_tokens_details?.reasoning_tokens;
+  return {
+    finishReason: typeof choice?.finish_reason === 'string' && FINISH_REASON.test(choice.finish_reason)
+      ? choice.finish_reason : null,
+    contentChars: typeof content === 'string' ? content.length : 0,
+    reasoningChars: typeof reasoning === 'string' ? reasoning.length : 0,
+    reasoningTokens: Number.isSafeInteger(reasoningTokens) && reasoningTokens >= 0 ? reasoningTokens : null,
+  };
+}
+
 /** Protocol reference: https://docs.sarvam.ai/api-reference/chat/chat-completions-v1.
  * Fixed destination, redirect-deny, no SDK retries/tools, nonstreamed, reasoning off, n=1.
- * Only message.content is the answer; reasoning_content, if a response carries it, is neither parsed nor kept.
+ * Only message.content is the answer; reasoning_content, if a response carries it, is neither parsed nor kept:
+ * only its length is measured, in the answer's diagnostics.
  * Configuration does not establish hosting residency or processor permission qualification.
  */
 export class SarvamAdapter implements ProviderAdapter {
@@ -169,6 +194,7 @@ export class SarvamAdapter implements ProviderAdapter {
     return {
       output: output ?? { invalidResponse: true }, responseHash: parsedResponse.responseHash,
       httpStatus: response.status, usage, semanticError, rawResponse,
+      diagnostics: answerDiagnostics(choice, upstream?.usage),
     };
   }
 }

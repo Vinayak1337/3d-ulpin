@@ -113,6 +113,10 @@ class FakeLedgerDb {
       return row ? [Object.assign(row, { state: 'settled', actual_micro_inr: '0', receipt: v[1],
         settlement_hash: v[2], error_kind: v[3] })] : [];
     }],
+    ['UPDATE usp_model_calls SET diagnostics=$2', v => {
+      const row = this.calls.find(call => call.id === v[0] && call.diagnostics == null);
+      if (row) row.diagnostics = v[1];
+    }],
     ["UPDATE usp_model_calls SET state='settled',actual_micro_inr=$2", v => {
       const row = this.calls.find(call => call.id === v[0])!;
       return [Object.assign(row, { state: 'settled', actual_micro_inr: v[1], output: JSON.parse(v[2]),

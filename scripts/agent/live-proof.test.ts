@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import {
-  assertLiveStart, buildPlan, dryRun, keyMoveWalk, parseGatewayStatus, readTariff, recordSoftwareControl,
-  PROPOSAL_LABEL, PROPOSED_POLICY, type KeyScenario,
+  assertLiveStart, buildPlan, dryRun, keyMoveWalk, paceWalk, parseGatewayStatus, readTariff, receiptReport,
+  recordSoftwareControl, waitForPace, PROPOSAL_LABEL, PROPOSED_POLICY, type Clock, type KeyScenario,
 } from './live-proof';
 
 const scratch = () => mkdtempSync(join(tmpdir(), 's1-live-proof-'));
@@ -201,4 +201,78 @@ test('live: refuses to start without an explicit enabled gateway state that carr
     [{ ...status(true, tariff.policyHash), mappingTeacherAdapter: 'replay' }, tariff],
   ];
   for (const [state, given] of refusals) assert.throws(() => assertLiveStart(state, given), /LIVE_PROOF_REFUSED/);
+});
+
+/** A clock that moves only when the run sleeps, so a test sees every wait the run makes. */
+function fakeClock(start = 0): Clock & { sleeps: number[]; time: number } {
+  const clock = { time: start, sleeps: [] as number[], now: () => clock.time,
+    sleep: async (ms: number) => { clock.sleeps.push(ms); clock.time += ms; } };
+  return clock;
+}
+
+test('pace: the wait is the pace since the last send, none before the first send or once it has passed', async () => {
+  const clock = fakeClock(10_000);
+  assert.equal(await waitForPace(null, 1500, clock), 0);
+  assert.equal(await waitForPace(9_400, 1500, clock), 900);
+  assert.equal(clock.time, 10_900);
+  assert.equal(await waitForPace(9_400, 1500, clock), 0);
+  assert.equal(await waitForPace(8_000, 1500, clock), 0);
+  assert.deepEqual(clock.sleeps, [900]);
+});
+
+test('pace: the run waits before each paid step and never meets MODEL_COOLDOWN; without the wait it does', async () => {
+  const tariff = readTariff();
+  const planned = buildPlan(tariff).steps.filter(step => step.request);
+  const clock = fakeClock();
+  const paced = await paceWalk(tariff, scratch(), clock);
+  assert.deepEqual([paced.cooldowns, paced.dispatched, paced.settled, paced.fetchAttempts],
+    [0, planned.length, planned.length, 0]);
+  const paid = paced.receipts.filter(receipt => receipt.live.settledCalls === 1);
+  assert.equal(paid.length, planned.length);
+  assert(paced.receipts.every(receipt => receipt.gatewayCode !== 'MODEL_COOLDOWN'));
+  // The fake clock moves only when the run sleeps: every paid step after the first waits the whole pace.
+  assert.deepEqual(paid.map(receipt => receipt.paceWaitMs), [0, ...paid.slice(1).map(() => PROPOSED_POLICY.paceMs)]);
+  assert.equal(clock.sleeps.length, planned.length - 1);
+
+  const hurried = await paceWalk(tariff, scratch(), fakeClock(), false);
+  assert(hurried.cooldowns > 0);
+  assert(hurried.receipts.some(receipt => receipt.gatewayCode === 'MODEL_COOLDOWN'));
+});
+
+test('receipt: each paid step carries the settled tokens, micro-INR and diagnostics; report sums them', async () => {
+  const tariff = readTariff();
+  const { receipts } = await paceWalk(tariff, scratch(), fakeClock());
+  const storey = receipts.find(receipt => receipt.live.settledCalls && receipt.id.startsWith('storey-'))!;
+  const mapping = receipts.find(receipt => receipt.live.settledCalls && receipt.id.startsWith('curve-'))!;
+  assert.deepEqual([storey.live.inputTokens, storey.live.outputTokens, storey.live.httpStatus], [1000, 100, 200]);
+  assert.match(storey.live.ledgerCallId!, /^[0-9a-f-]{36}$/);
+  assert.deepEqual(storey.live.diagnostics, { finishReason: 'stop', contentChars: storey.live.diagnostics!.contentChars,
+    reasoningChars: 0, reasoningTokens: null, validationIssues: [] });
+  // The software answer is a storey abstention: as a mapping plan it fails the teacher schema, by path and code only.
+  const issues = mapping.live.diagnostics!.validationIssues!;
+  assert(issues.length > 0 && issues.every(issue => Object.keys(issue).join() === 'path,code'));
+  assert(!JSON.stringify(mapping.live.diagnostics).includes('software control'));
+
+  const report = receiptReport({ mode: 'dry_run', receipts });
+  const paid = receipts.filter(receipt => receipt.live.settledCalls);
+  assert.equal(report.totals.settledCalls, paid.length);
+  assert.equal(report.totals.inputTokens, 1000 * paid.length);
+  assert.equal(report.totals.actualMicroInr,
+    paid.reduce((sum, receipt) => sum + BigInt(receipt.live.actualMicroInr!), 0n).toString());
+  const line = report.steps.find(step => step.id === storey.id)!;
+  assert.deepEqual([line.inputTokens, line.actualMicroInr, line.diagnostics],
+    [1000, storey.live.actualMicroInr, storey.live.diagnostics]);
+});
+
+test('report: a receipt from before SV2 reads with null diagnostics', () => {
+  const report = receiptReport({ mode: 'live', stopped: 'step 11', notRun: [], receipts: [
+    { step: 1, id: 'storey-a', endState: 'teacher_unavailable', code: 'TEACHER_INVALID_OUTPUT', live: {
+      httpStatus: 200, inputTokens: 652, outputTokens: 2048, actualMicroInr: '132660' } },
+    { step: 2, id: 'replay-of-storey-a', endState: 'teacher_unavailable', code: 'TEACHER_REPLAY_UNAVAILABLE', live: {
+      httpStatus: null, inputTokens: null, outputTokens: null, actualMicroInr: null } },
+  ] });
+  assert.deepEqual(report.totals, { settledCalls: 1, inputTokens: 652, outputTokens: 2048, actualMicroInr: '132660',
+    rupees: '₹0.14' });
+  const [paid, replay] = report.steps;
+  assert.deepEqual([paid.diagnostics, paid.rupees, replay.rupees], [null, '₹0.14', null]);
 });

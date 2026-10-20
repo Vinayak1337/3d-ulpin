@@ -64,3 +64,6 @@ CREATE TABLE IF NOT EXISTS usp_model_key_marks (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS usp_model_key_marks_open ON usp_model_key_marks(credential_hash)
   WHERE restored_at IS NULL;
+-- SV2: why an answer ran long or failed validation, without its text: finish reason, lengths, reasoning tokens
+-- and the validator's {path, code} pairs. Additive only; NULL is a row from before SV2 or a call with no answer.
+ALTER TABLE usp_model_calls ADD COLUMN IF NOT EXISTS diagnostics jsonb;

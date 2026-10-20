@@ -5,7 +5,8 @@ import { z } from 'zod';
 import { AppError } from '../../infrastructure/errors';
 import { hash, providerKeyReferences, type GatewayConfig } from './config';
 import { checkedAmount, reservation } from './pricing';
-import { citedKeyRefusal, type CitedKeyRefusal, type KeyRefusalKind, type ProviderFailure } from './adapter';
+import { citedKeyRefusal, type AnswerDiagnostics, type CitedKeyRefusal, type KeyRefusalKind,
+  type ProviderFailure } from './adapter';
 
 export type Transact = <T>(action: (client: PoolClient) => Promise<T>) => Promise<T>;
 export type Admission = { principalHash: string; invocationKey: string; attempt: number;
@@ -22,6 +23,18 @@ const callSchema = z.object({id:z.string().uuid(),input_hash:z.string(),scope_ha
   output:z.unknown().nullable(),receipt:receiptSchema.nullable(),settlement_hash:z.string().nullable(),
   credential_hash:z.string().nullable().optional(),error_kind:z.string().nullable().optional()});
 export type Call = z.infer<typeof callSchema>;
+/** A validator's finding, by where and what kind: never a value or a message that could quote the answer. */
+export type ValidationIssue = { path: string; code: string };
+/** Null answer fields: the adapter measured nothing. Null issues: the answer was not validated. */
+export type CallDiagnostics = { [K in keyof AnswerDiagnostics]: AnswerDiagnostics[K] | null }
+  & { validationIssues: ValidationIssue[] | null };
+const count = z.number().int().nonnegative().safe().nullable();
+const diagnosticsSchema = z.strictObject({
+  finishReason: z.string().regex(/^[A-Za-z0-9_.-]{1,64}$/).nullable(), contentChars: count, reasoningChars: count,
+  reasoningTokens: count,
+  validationIssues: z.array(z.strictObject({ path: z.string().regex(/^[A-Za-z0-9_.*]{0,256}$/),
+    code: z.string().regex(/^[A-Za-z0-9_]{1,64}$/) })).max(20).nullable(),
+});
 export type KeyState = { reference: string; state: 'in_use' | 'waiting' | 'used_up';
   reason?: KeyRefusalKind; markedAt?: string };
 const deny = (code: string, message: string, status = 503): never => { throw new AppError(status, code, message); };
@@ -238,6 +251,14 @@ export class PgModelCallLedger {
         if (mark) return { reference, state: 'used_up', reason: mark.reason, markedAt: mark.markedAt.toISOString() };
         return { reference, state: index === inUse ? 'in_use' : 'waiting' };
       });
+    });
+  }
+  /** Written once beside the call's receipt, outside its settlement hash; it never changes what a call cost. */
+  async recordDiagnostics(id: string, diagnostics: CallDiagnostics): Promise<void> {
+    const checked = diagnosticsSchema.parse(diagnostics);
+    await this.transact(async client => {
+      await client.query(`UPDATE usp_model_calls SET diagnostics=$2
+        WHERE id=$1 AND config_hash=$3 AND diagnostics IS NULL`, [id, checked, this.configHash]);
     });
   }
   async settle(id: string, actual: bigint, output: unknown, receipt: CallReceipt): Promise<Call> {
