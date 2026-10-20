@@ -108351,7 +108351,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 16384
+                          "maximum": 65536
                         },
                         "ifc": {
                           "type": "object",
@@ -123604,7 +123604,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 16384
+                          "maximum": 65536
                         },
                         "ifc": {
                           "type": "object",
@@ -133492,7 +133492,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 16384
+                          "maximum": 65536
                         },
                         "ifc": {
                           "type": "object",
@@ -221644,7 +221644,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 16384
+                          "maximum": 65536
                         },
                         "ifc": {
                           "type": "object",
@@ -305224,6 +305224,267 @@
                               "enum": [
                                 "not_assessed"
                               ]
+                            },
+                            "structure": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "read"
+                                      ]
+                                    },
+                                    "lengthUnit": {
+                                      "oneOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "absent"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "state"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "conflicting"
+                                              ]
+                                            },
+                                            "stepIds": {
+                                              "minItems": 2,
+                                              "maxItems": 10000,
+                                              "type": "array",
+                                              "items": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true,
+                                                "maximum": 9007199254740991
+                                              }
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "stepIds"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "supplied"
+                                              ]
+                                            },
+                                            "stepId": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "entityType": {
+                                              "type": "string",
+                                              "enum": [
+                                                "IfcSIUnit",
+                                                "IfcConversionBasedUnit",
+                                                "IfcConversionBasedUnitWithOffset",
+                                                "IfcContextDependentUnit"
+                                              ]
+                                            },
+                                            "prefix": {
+                                              "nullable": true,
+                                              "type": "string",
+                                              "maxLength": 49152
+                                            },
+                                            "name": {
+                                              "nullable": true,
+                                              "type": "string",
+                                              "maxLength": 49152
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "stepId",
+                                            "entityType",
+                                            "prefix",
+                                            "name"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    },
+                                    "nodes": {
+                                      "maxItems": 10000,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "stepId": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "entityType": {
+                                            "type": "string",
+                                            "enum": [
+                                              "IfcProject",
+                                              "IfcSite",
+                                              "IfcBuilding",
+                                              "IfcBuildingStorey",
+                                              "IfcSpace"
+                                            ]
+                                          },
+                                          "candidate": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "enum": [
+                                              "building",
+                                              "level",
+                                              "space"
+                                            ]
+                                          },
+                                          "globalId": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "name": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "longName": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "parentStepIds": {
+                                            "maxItems": 10000,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            }
+                                          },
+                                          "relationStepIds": {
+                                            "maxItems": 10000,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            }
+                                          },
+                                          "elevation": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "absent"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "state"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supplied"
+                                                    ]
+                                                  },
+                                                  "value": {
+                                                    "type": "number"
+                                                  },
+                                                  "literal": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 64
+                                                  }
+                                                },
+                                                "required": [
+                                                  "state",
+                                                  "value",
+                                                  "literal"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "stepId",
+                                          "entityType",
+                                          "candidate",
+                                          "globalId",
+                                          "name",
+                                          "longName",
+                                          "parentStepIds",
+                                          "relationStepIds"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "lengthUnit",
+                                    "nodes"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "not_read"
+                                      ]
+                                    },
+                                    "code": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z_]{1,60}$"
+                                    },
+                                    "reason": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 300
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "code",
+                                    "reason"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
                             }
                           },
                           "required": [
@@ -315700,6 +315961,267 @@
                                   "type": "string",
                                   "enum": [
                                     "not_assessed"
+                                  ]
+                                },
+                                "structure": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "state": {
+                                          "type": "string",
+                                          "enum": [
+                                            "read"
+                                          ]
+                                        },
+                                        "lengthUnit": {
+                                          "oneOf": [
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "state": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "absent"
+                                                  ]
+                                                }
+                                              },
+                                              "required": [
+                                                "state"
+                                              ],
+                                              "additionalProperties": false
+                                            },
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "state": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "conflicting"
+                                                  ]
+                                                },
+                                                "stepIds": {
+                                                  "minItems": 2,
+                                                  "maxItems": 10000,
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "exclusiveMinimum": true,
+                                                    "maximum": 9007199254740991
+                                                  }
+                                                }
+                                              },
+                                              "required": [
+                                                "state",
+                                                "stepIds"
+                                              ],
+                                              "additionalProperties": false
+                                            },
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "state": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "supplied"
+                                                  ]
+                                                },
+                                                "stepId": {
+                                                  "type": "integer",
+                                                  "minimum": 0,
+                                                  "exclusiveMinimum": true,
+                                                  "maximum": 9007199254740991
+                                                },
+                                                "entityType": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "IfcSIUnit",
+                                                    "IfcConversionBasedUnit",
+                                                    "IfcConversionBasedUnitWithOffset",
+                                                    "IfcContextDependentUnit"
+                                                  ]
+                                                },
+                                                "prefix": {
+                                                  "nullable": true,
+                                                  "type": "string",
+                                                  "maxLength": 49152
+                                                },
+                                                "name": {
+                                                  "nullable": true,
+                                                  "type": "string",
+                                                  "maxLength": 49152
+                                                }
+                                              },
+                                              "required": [
+                                                "state",
+                                                "stepId",
+                                                "entityType",
+                                                "prefix",
+                                                "name"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          ]
+                                        },
+                                        "nodes": {
+                                          "maxItems": 10000,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "stepId": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true,
+                                                "maximum": 9007199254740991
+                                              },
+                                              "entityType": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "IfcProject",
+                                                  "IfcSite",
+                                                  "IfcBuilding",
+                                                  "IfcBuildingStorey",
+                                                  "IfcSpace"
+                                                ]
+                                              },
+                                              "candidate": {
+                                                "nullable": true,
+                                                "type": "string",
+                                                "enum": [
+                                                  "building",
+                                                  "level",
+                                                  "space"
+                                                ]
+                                              },
+                                              "globalId": {
+                                                "nullable": true,
+                                                "type": "string",
+                                                "maxLength": 49152
+                                              },
+                                              "name": {
+                                                "nullable": true,
+                                                "type": "string",
+                                                "maxLength": 49152
+                                              },
+                                              "longName": {
+                                                "nullable": true,
+                                                "type": "string",
+                                                "maxLength": 49152
+                                              },
+                                              "parentStepIds": {
+                                                "maxItems": 10000,
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "integer",
+                                                  "minimum": 0,
+                                                  "exclusiveMinimum": true,
+                                                  "maximum": 9007199254740991
+                                                }
+                                              },
+                                              "relationStepIds": {
+                                                "maxItems": 10000,
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "integer",
+                                                  "minimum": 0,
+                                                  "exclusiveMinimum": true,
+                                                  "maximum": 9007199254740991
+                                                }
+                                              },
+                                              "elevation": {
+                                                "oneOf": [
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "state": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                          "absent"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "state"
+                                                    ],
+                                                    "additionalProperties": false
+                                                  },
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "state": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                          "supplied"
+                                                        ]
+                                                      },
+                                                      "value": {
+                                                        "type": "number"
+                                                      },
+                                                      "literal": {
+                                                        "type": "string",
+                                                        "minLength": 1,
+                                                        "maxLength": 64
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "state",
+                                                      "value",
+                                                      "literal"
+                                                    ],
+                                                    "additionalProperties": false
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "stepId",
+                                              "entityType",
+                                              "candidate",
+                                              "globalId",
+                                              "name",
+                                              "longName",
+                                              "parentStepIds",
+                                              "relationStepIds"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "state",
+                                        "lengthUnit",
+                                        "nodes"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "state": {
+                                          "type": "string",
+                                          "enum": [
+                                            "not_read"
+                                          ]
+                                        },
+                                        "code": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z_]{1,60}$"
+                                        },
+                                        "reason": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 300
+                                        }
+                                      },
+                                      "required": [
+                                        "state",
+                                        "code",
+                                        "reason"
+                                      ],
+                                      "additionalProperties": false
+                                    }
                                   ]
                                 }
                               },
@@ -384252,6 +384774,267 @@
                               "enum": [
                                 "not_assessed"
                               ]
+                            },
+                            "structure": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "read"
+                                      ]
+                                    },
+                                    "lengthUnit": {
+                                      "oneOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "absent"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "state"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "conflicting"
+                                              ]
+                                            },
+                                            "stepIds": {
+                                              "minItems": 2,
+                                              "maxItems": 10000,
+                                              "type": "array",
+                                              "items": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true,
+                                                "maximum": 9007199254740991
+                                              }
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "stepIds"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "supplied"
+                                              ]
+                                            },
+                                            "stepId": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "entityType": {
+                                              "type": "string",
+                                              "enum": [
+                                                "IfcSIUnit",
+                                                "IfcConversionBasedUnit",
+                                                "IfcConversionBasedUnitWithOffset",
+                                                "IfcContextDependentUnit"
+                                              ]
+                                            },
+                                            "prefix": {
+                                              "nullable": true,
+                                              "type": "string",
+                                              "maxLength": 49152
+                                            },
+                                            "name": {
+                                              "nullable": true,
+                                              "type": "string",
+                                              "maxLength": 49152
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "stepId",
+                                            "entityType",
+                                            "prefix",
+                                            "name"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    },
+                                    "nodes": {
+                                      "maxItems": 10000,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "stepId": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "entityType": {
+                                            "type": "string",
+                                            "enum": [
+                                              "IfcProject",
+                                              "IfcSite",
+                                              "IfcBuilding",
+                                              "IfcBuildingStorey",
+                                              "IfcSpace"
+                                            ]
+                                          },
+                                          "candidate": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "enum": [
+                                              "building",
+                                              "level",
+                                              "space"
+                                            ]
+                                          },
+                                          "globalId": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "name": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "longName": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "parentStepIds": {
+                                            "maxItems": 10000,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            }
+                                          },
+                                          "relationStepIds": {
+                                            "maxItems": 10000,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            }
+                                          },
+                                          "elevation": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "absent"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "state"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supplied"
+                                                    ]
+                                                  },
+                                                  "value": {
+                                                    "type": "number"
+                                                  },
+                                                  "literal": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 64
+                                                  }
+                                                },
+                                                "required": [
+                                                  "state",
+                                                  "value",
+                                                  "literal"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "stepId",
+                                          "entityType",
+                                          "candidate",
+                                          "globalId",
+                                          "name",
+                                          "longName",
+                                          "parentStepIds",
+                                          "relationStepIds"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "lengthUnit",
+                                    "nodes"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "not_read"
+                                      ]
+                                    },
+                                    "code": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z_]{1,60}$"
+                                    },
+                                    "reason": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 300
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "code",
+                                    "reason"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
                             }
                           },
                           "required": [
@@ -386048,6 +386831,267 @@
                               "type": "string",
                               "enum": [
                                 "not_assessed"
+                              ]
+                            },
+                            "structure": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "read"
+                                      ]
+                                    },
+                                    "lengthUnit": {
+                                      "oneOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "absent"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "state"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "conflicting"
+                                              ]
+                                            },
+                                            "stepIds": {
+                                              "minItems": 2,
+                                              "maxItems": 10000,
+                                              "type": "array",
+                                              "items": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true,
+                                                "maximum": 9007199254740991
+                                              }
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "stepIds"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "supplied"
+                                              ]
+                                            },
+                                            "stepId": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "entityType": {
+                                              "type": "string",
+                                              "enum": [
+                                                "IfcSIUnit",
+                                                "IfcConversionBasedUnit",
+                                                "IfcConversionBasedUnitWithOffset",
+                                                "IfcContextDependentUnit"
+                                              ]
+                                            },
+                                            "prefix": {
+                                              "nullable": true,
+                                              "type": "string",
+                                              "maxLength": 49152
+                                            },
+                                            "name": {
+                                              "nullable": true,
+                                              "type": "string",
+                                              "maxLength": 49152
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "stepId",
+                                            "entityType",
+                                            "prefix",
+                                            "name"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    },
+                                    "nodes": {
+                                      "maxItems": 10000,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "stepId": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "entityType": {
+                                            "type": "string",
+                                            "enum": [
+                                              "IfcProject",
+                                              "IfcSite",
+                                              "IfcBuilding",
+                                              "IfcBuildingStorey",
+                                              "IfcSpace"
+                                            ]
+                                          },
+                                          "candidate": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "enum": [
+                                              "building",
+                                              "level",
+                                              "space"
+                                            ]
+                                          },
+                                          "globalId": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "name": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "longName": {
+                                            "nullable": true,
+                                            "type": "string",
+                                            "maxLength": 49152
+                                          },
+                                          "parentStepIds": {
+                                            "maxItems": 10000,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            }
+                                          },
+                                          "relationStepIds": {
+                                            "maxItems": 10000,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "exclusiveMinimum": true,
+                                              "maximum": 9007199254740991
+                                            }
+                                          },
+                                          "elevation": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "absent"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "state"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "state": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "supplied"
+                                                    ]
+                                                  },
+                                                  "value": {
+                                                    "type": "number"
+                                                  },
+                                                  "literal": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 64
+                                                  }
+                                                },
+                                                "required": [
+                                                  "state",
+                                                  "value",
+                                                  "literal"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "stepId",
+                                          "entityType",
+                                          "candidate",
+                                          "globalId",
+                                          "name",
+                                          "longName",
+                                          "parentStepIds",
+                                          "relationStepIds"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "lengthUnit",
+                                    "nodes"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "not_read"
+                                      ]
+                                    },
+                                    "code": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z_]{1,60}$"
+                                    },
+                                    "reason": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 300
+                                    }
+                                  },
+                                  "required": [
+                                    "state",
+                                    "code",
+                                    "reason"
+                                  ],
+                                  "additionalProperties": false
+                                }
                               ]
                             }
                           },
@@ -395245,6 +396289,267 @@
                     "type": "string",
                     "enum": [
                       "not_assessed"
+                    ]
+                  },
+                  "structure": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "read"
+                            ]
+                          },
+                          "lengthUnit": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "absent"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "state"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "conflicting"
+                                    ]
+                                  },
+                                  "stepIds": {
+                                    "minItems": 2,
+                                    "maxItems": 10000,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 9007199254740991
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "state",
+                                  "stepIds"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "supplied"
+                                    ]
+                                  },
+                                  "stepId": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "entityType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "IfcSIUnit",
+                                      "IfcConversionBasedUnit",
+                                      "IfcConversionBasedUnitWithOffset",
+                                      "IfcContextDependentUnit"
+                                    ]
+                                  },
+                                  "prefix": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "maxLength": 49152
+                                  },
+                                  "name": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "maxLength": 49152
+                                  }
+                                },
+                                "required": [
+                                  "state",
+                                  "stepId",
+                                  "entityType",
+                                  "prefix",
+                                  "name"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          "nodes": {
+                            "maxItems": 10000,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "stepId": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "entityType": {
+                                  "type": "string",
+                                  "enum": [
+                                    "IfcProject",
+                                    "IfcSite",
+                                    "IfcBuilding",
+                                    "IfcBuildingStorey",
+                                    "IfcSpace"
+                                  ]
+                                },
+                                "candidate": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "enum": [
+                                    "building",
+                                    "level",
+                                    "space"
+                                  ]
+                                },
+                                "globalId": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 49152
+                                },
+                                "name": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 49152
+                                },
+                                "longName": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "maxLength": 49152
+                                },
+                                "parentStepIds": {
+                                  "maxItems": 10000,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "relationStepIds": {
+                                  "maxItems": 10000,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "elevation": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "state": {
+                                          "type": "string",
+                                          "enum": [
+                                            "absent"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "state"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "state": {
+                                          "type": "string",
+                                          "enum": [
+                                            "supplied"
+                                          ]
+                                        },
+                                        "value": {
+                                          "type": "number"
+                                        },
+                                        "literal": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 64
+                                        }
+                                      },
+                                      "required": [
+                                        "state",
+                                        "value",
+                                        "literal"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "stepId",
+                                "entityType",
+                                "candidate",
+                                "globalId",
+                                "name",
+                                "longName",
+                                "parentStepIds",
+                                "relationStepIds"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "state",
+                          "lengthUnit",
+                          "nodes"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "not_read"
+                            ]
+                          },
+                          "code": {
+                            "type": "string",
+                            "pattern": "^[A-Z_]{1,60}$"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 300
+                          }
+                        },
+                        "required": [
+                          "state",
+                          "code",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      }
                     ]
                   }
                 },

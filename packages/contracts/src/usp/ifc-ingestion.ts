@@ -2,8 +2,10 @@ import {z} from 'zod';
 
 export const IFC_VERSION='ifc-native/1' as const;
 export const IFC_LIMITS=Object.freeze({originalBytes:32*1024*1024,artifactBytes:16*1024*1024,
-  resultBytes:16*1024,statusBytes:16*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
-  active:2,workerMs:150_000,requestMs:45_000,readMs:60_000});
+  resultBytes:64*1024,statusBytes:64*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
+  active:2,workerMs:150_000,requestMs:45_000,readMs:60_000,
+  // Pass 1 structure scan; services/geo/geo/native_ifc.py Limits states the same ceilings.
+  structureEntities:10_000,structureBytes:32*1024*1024,structureMs:20_000,structureOutputBytes:48*1024});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative(),positive=z.number().int().positive();
 export const IFCLineageSchema=z.strictObject({issuer:z.string().min(1).max(300).nullable(),
   originalUrl:z.url().max(2048).nullable(),acquiredAt:z.iso.datetime().nullable(),
@@ -22,12 +24,48 @@ export const IFCInputSchema=z.strictObject({version:z.literal(IFC_VERSION),jobId
   sourceSha256:hash,sourceBytes:positive.max(IFC_LIMITS.originalBytes),objectKey:z.string().min(1).max(512),
   subject:z.string().min(1).max(256),accessSha256:hash,readerSha256:hash,tools:IFCToolPinsSchema.nullable(),
   selection:z.literal('complete_bounded_source')});
+const stepIds=z.array(positive).max(IFC_LIMITS.structureEntities),
+  stated=z.string().max(IFC_LIMITS.structureOutputBytes);
+const candidateOf={IfcProject:null,IfcSite:null,IfcBuilding:'building',IfcBuildingStorey:'level',
+  IfcSpace:'space'} as const;
+/** A storey states its elevation or says it is absent; nothing is converted or inferred. */
+const IFCElevationSchema=z.discriminatedUnion('state',[z.strictObject({state:z.literal('absent')}),
+  z.strictObject({state:z.literal('supplied'),value:z.number(),literal:z.string().min(1).max(64)})]);
+export const IFCStructureNodeSchema=z.strictObject({stepId:positive,
+  entityType:z.enum(['IfcProject','IfcSite','IfcBuilding','IfcBuildingStorey','IfcSpace']),
+  candidate:z.enum(['building','level','space']).nullable(),globalId:stated.nullable(),name:stated.nullable(),
+  longName:stated.nullable(),parentStepIds:stepIds,relationStepIds:stepIds,elevation:IFCElevationSchema.optional()})
+  .refine(v=>v.candidate===candidateOf[v.entityType]
+    &&(v.entityType==='IfcBuildingStorey')===(v.elevation!==undefined),
+  'A building is a building candidate, a storey a level candidate with its stated elevation, a space a space one.');
+const IFCLengthUnitSchema=z.discriminatedUnion('state',[z.strictObject({state:z.literal('absent')}),
+  z.strictObject({state:z.literal('conflicting'),stepIds:stepIds.min(2)}),
+  z.strictObject({state:z.literal('supplied'),stepId:positive,
+    entityType:z.enum(['IfcSIUnit','IfcConversionBasedUnit','IfcConversionBasedUnitWithOffset',
+      'IfcContextDependentUnit']),
+    prefix:stated.nullable(),name:stated.nullable()})]);
+/** Pass 1: spatial structure as stated in the IFC, with STEP ids as locators. Candidates only; no geometry. */
+export const IFCStructureSchema=z.discriminatedUnion('state',[
+  z.strictObject({state:z.literal('read'),lengthUnit:IFCLengthUnitSchema,
+    nodes:z.array(IFCStructureNodeSchema).max(IFC_LIMITS.structureEntities)}),
+  z.strictObject({state:z.literal('not_read'),code:z.string().regex(/^[A-Z_]{1,60}$/),
+    reason:z.string().min(1).max(300)})])
+  .superRefine((v,ctx)=>{
+    if(v.state!=='read')return;
+    const ids=new Set(v.nodes.map(node=>node.stepId));
+    if(ids.size!==v.nodes.length||v.nodes.some(node=>node.parentStepIds.some(id=>!ids.has(id))))
+      ctx.addIssue({code:'custom',message:'Structure nodes are unique and their parents are scanned nodes.'});
+    if(new TextEncoder().encode(JSON.stringify(v)).length>IFC_LIMITS.structureOutputBytes)
+      ctx.addIssue({code:'custom',message:'The structure exceeds its bounded output.'});
+  });
 export const IFCSummarySchema=z.strictObject({schemaVersion:z.literal('ulpin-native-ifc/1'),sourceSha256:hash,
   sourceBytes:positive.max(IFC_LIMITS.originalBytes),schema:z.enum(['IFC2X3','IFC4']),entityCount:rev.max(100000),
   recordCount:rev.max(10000),buildingCount:rev.max(10000),storeyCount:rev.max(10000),spaceCount:rev.max(10000),
   georeferenceState:z.enum(['supplied_unqualified','missing_or_unqualified']),inspectionFrame:z.literal('source_local'),
   metadataOnly:z.literal(true),geometry:z.literal('unsupported'),globalPlacement:z.literal('not_qualified'),
-  unitConversionApplied:z.literal(false),storeysAreLegalUnits:z.literal(false),rights:z.literal('not_assessed')});
+  unitConversionApplied:z.literal(false),storeysAreLegalUnits:z.literal(false),rights:z.literal('not_assessed'),
+  /** Absent only for a native result read before the structure scan existed. */
+  structure:IFCStructureSchema.optional()});
 export const IFCArtifactSchema=z.strictObject({key:z.string().min(1).max(512),sha256:hash,
   bytes:positive.max(IFC_LIMITS.artifactBytes),mediaType:z.literal('application/json'),profile:z.literal('ulpin-native-ifc/1')});
 export const IFCResultSchema=z.strictObject({version:z.literal(IFC_VERSION),input:IFCInputSchema,

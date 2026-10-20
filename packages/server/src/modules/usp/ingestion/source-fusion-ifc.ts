@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {IFCSummarySchema,type IFCResult} from '@ulpin/contracts/usp';
+import {IFCStructureSchema,IFCSummarySchema,type IFCResult} from '@ulpin/contracts/usp';
 import {SourceFusionIFCRecordSchema,SourceFusionIFCMetadataSchema,SourceFusionLiteralObjectSchema,SourceFusionLiteralJsonSchema,
   type SourceFusionContext,type SourceFusionSelection,type SourceFusionJsonValue} from '../../../../../contracts/src/source-fusion';
 import {AppError} from '../../../infrastructure/errors';
@@ -17,7 +17,8 @@ const supportTypes=new Set([...referenceTypes,'IfcUnitAssignment','IfcSIUnit','I
 const nativeSchema=z.object({schemaVersion:z.literal('ulpin-native-ifc/1'),status:z.literal('available'),scope:z.literal('source_native_metadata'),
   source:SourceFusionLiteralObjectSchema,parser:SourceFusionLiteralObjectSchema,
   counts:z.object({sourceEntities:z.number().int().nonnegative().max(100000),projectedRecords:z.number().int().nonnegative().max(10000)}),
-  records:z.array(SourceFusionIFCRecordSchema).max(10000),projectUnits:z.array(SourceFusionLiteralJsonSchema).max(10000),
+  records:z.array(SourceFusionIFCRecordSchema).max(10000),structure:IFCStructureSchema.optional(),
+  projectUnits:z.array(SourceFusionLiteralJsonSchema).max(10000),
   georeference:SourceFusionLiteralObjectSchema,semantics:SourceFusionLiteralObjectSchema,findings:z.array(SourceFusionLiteralJsonSchema).max(10000)});
 type Record=z.infer<typeof SourceFusionIFCRecordSchema>;
 function refs(value:SourceFusionJsonValue):{stepId:number;entityType:string}[]{
@@ -47,6 +48,7 @@ export function fusionIFCMetadataProjection(stepIds:number[],raw:unknown,summary
     summary.sourceSha256!==native.source.sha256||summary.sourceBytes!==native.source.bytes||summary.schema!==native.source.schema||
     summary.entityCount!==native.counts.sourceEntities||summary.recordCount!==native.counts.projectedRecords||
     summary.buildingCount!==count('IfcBuilding')||summary.storeyCount!==count('IfcBuildingStorey')||summary.spaceCount!==count('IfcSpace')||
+    fingerprint(summary.structure??null)!==fingerprint(native.structure??null)||
     summary.georeferenceState!==native.georeference.state||native.georeference.globalTransformApplied!==false||
     native.georeference.inspectionFrame!=='source_local'||native.semantics.unitConversionApplied!==false||
     native.semantics.storeysAreLegalUnits!==false||native.semantics.rights!=='not_assessed')return fail();

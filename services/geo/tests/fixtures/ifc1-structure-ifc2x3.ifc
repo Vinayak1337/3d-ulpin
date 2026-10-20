@@ -1,0 +1,26 @@
+ISO-10303-21;
+HEADER;
+/* test_only: hand-written for the IFC1 structure scan tests; not a source record. */
+FILE_DESCRIPTION(('ViewDefinition [test-only; a building with two storeys and three spaces]'),'2;1');
+FILE_NAME('ifc1-structure-ifc2x3.ifc','2026-10-18T00:00:00',(''),(''),'hand-written test fixture','none','');
+FILE_SCHEMA(('IFC2X3'));
+ENDSEC;
+DATA;
+#1=IFCPROJECT('0Kq2fRvcL1xBtS0Gx3Zs01',$,'Test project; not a record',$,$,$,$,$,#2);
+#2=IFCUNITASSIGNMENT((#3));
+#3=IFCCONVERSIONBASEDUNIT(#4,.LENGTHUNIT.,'FOOT',#5);
+#4=IFCDIMENSIONALEXPONENTS(1,0,0,0,0,0,0);
+#5=IFCMEASUREWITHUNIT(IFCLENGTHMEASURE(0.3048),#6);
+#6=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);
+#7=IFCBUILDING('0Kq2fRvcL1xBtS0Gx3Zs03',$,'Test building',$,$,$,$,$,.ELEMENT.,$,$,$);
+#8=IFCBUILDINGSTOREY('0Kq2fRvcL1xBtS0Gx3Zs04',$,'Ground',$,$,$,$,$,.ELEMENT.,-1.5E0);
+#9=IFCBUILDINGSTOREY('0Kq2fRvcL1xBtS0Gx3Zs05',$,'First',$,$,$,$,$,.ELEMENT.,$);
+#10=IFCSPACE('0Kq2fRvcL1xBtS0Gx3Zs06',$,'G.01',$,$,$,$,$,.ELEMENT.,.INTERNAL.,$);
+#11=IFCSPACE('0Kq2fRvcL1xBtS0Gx3Zs07',$,'G.02',$,$,$,$,$,.ELEMENT.,.INTERNAL.,$);
+#12=IFCSPACE('0Kq2fRvcL1xBtS0Gx3Zs08',$,'1.01',$,$,$,$,$,.ELEMENT.,.INTERNAL.,$);
+#13=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs09',$,$,$,#1,(#7));
+#14=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs11',$,$,$,#7,(#8,#9));
+#15=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs12',$,$,$,#8,(#10,#11));
+#16=IFCRELCONTAINEDINSPATIALSTRUCTURE('0Kq2fRvcL1xBtS0Gx3Zs13',$,$,$,(#12),#9);
+ENDSEC;
+END-ISO-10303-21;

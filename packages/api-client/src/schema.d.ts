@@ -52064,6 +52064,52 @@ export interface components {
                         storeysAreLegalUnits: false;
                         /** @enum {string} */
                         rights: "not_assessed";
+                        structure?: {
+                            /** @enum {string} */
+                            state: "read";
+                            lengthUnit: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "conflicting";
+                                stepIds: number[];
+                            } | {
+                                /** @enum {string} */
+                                state: "supplied";
+                                stepId: number;
+                                /** @enum {string} */
+                                entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                prefix: string | null;
+                                name: string | null;
+                            };
+                            nodes: {
+                                stepId: number;
+                                /** @enum {string} */
+                                entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                /** @enum {string|null} */
+                                candidate: "building" | "level" | "space" | null;
+                                globalId: string | null;
+                                name: string | null;
+                                longName: string | null;
+                                parentStepIds: number[];
+                                relationStepIds: number[];
+                                elevation?: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    value: number;
+                                    literal: string;
+                                };
+                            }[];
+                        } | {
+                            /** @enum {string} */
+                            state: "not_read";
+                            code: string;
+                            reason: string;
+                        };
                     };
                     artifactSha256: string;
                     artifactBytes: number;
@@ -54321,6 +54367,52 @@ export interface components {
                             storeysAreLegalUnits: false;
                             /** @enum {string} */
                             rights: "not_assessed";
+                            structure?: {
+                                /** @enum {string} */
+                                state: "read";
+                                lengthUnit: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "conflicting";
+                                    stepIds: number[];
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                    prefix: string | null;
+                                    name: string | null;
+                                };
+                                nodes: {
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                    /** @enum {string|null} */
+                                    candidate: "building" | "level" | "space" | null;
+                                    globalId: string | null;
+                                    name: string | null;
+                                    longName: string | null;
+                                    parentStepIds: number[];
+                                    relationStepIds: number[];
+                                    elevation?: {
+                                        /** @enum {string} */
+                                        state: "absent";
+                                    } | {
+                                        /** @enum {string} */
+                                        state: "supplied";
+                                        value: number;
+                                        literal: string;
+                                    };
+                                }[];
+                            } | {
+                                /** @enum {string} */
+                                state: "not_read";
+                                code: string;
+                                reason: string;
+                            };
                         };
                         artifactSha256: string;
                         artifactBytes: number;
@@ -68610,6 +68702,52 @@ export interface components {
                             storeysAreLegalUnits: false;
                             /** @enum {string} */
                             rights: "not_assessed";
+                            structure?: {
+                                /** @enum {string} */
+                                state: "read";
+                                lengthUnit: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "conflicting";
+                                    stepIds: number[];
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                    prefix: string | null;
+                                    name: string | null;
+                                };
+                                nodes: {
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                    /** @enum {string|null} */
+                                    candidate: "building" | "level" | "space" | null;
+                                    globalId: string | null;
+                                    name: string | null;
+                                    longName: string | null;
+                                    parentStepIds: number[];
+                                    relationStepIds: number[];
+                                    elevation?: {
+                                        /** @enum {string} */
+                                        state: "absent";
+                                    } | {
+                                        /** @enum {string} */
+                                        state: "supplied";
+                                        value: number;
+                                        literal: string;
+                                    };
+                                }[];
+                            } | {
+                                /** @enum {string} */
+                                state: "not_read";
+                                code: string;
+                                reason: string;
+                            };
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -68986,6 +69124,52 @@ export interface components {
                             storeysAreLegalUnits: false;
                             /** @enum {string} */
                             rights: "not_assessed";
+                            structure?: {
+                                /** @enum {string} */
+                                state: "read";
+                                lengthUnit: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "conflicting";
+                                    stepIds: number[];
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                    prefix: string | null;
+                                    name: string | null;
+                                };
+                                nodes: {
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                    /** @enum {string|null} */
+                                    candidate: "building" | "level" | "space" | null;
+                                    globalId: string | null;
+                                    name: string | null;
+                                    longName: string | null;
+                                    parentStepIds: number[];
+                                    relationStepIds: number[];
+                                    elevation?: {
+                                        /** @enum {string} */
+                                        state: "absent";
+                                    } | {
+                                        /** @enum {string} */
+                                        state: "supplied";
+                                        value: number;
+                                        literal: string;
+                                    };
+                                }[];
+                            } | {
+                                /** @enum {string} */
+                                state: "not_read";
+                                code: string;
+                                reason: string;
+                            };
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -70806,6 +70990,52 @@ export interface components {
                     storeysAreLegalUnits: false;
                     /** @enum {string} */
                     rights: "not_assessed";
+                    structure?: {
+                        /** @enum {string} */
+                        state: "read";
+                        lengthUnit: {
+                            /** @enum {string} */
+                            state: "absent";
+                        } | {
+                            /** @enum {string} */
+                            state: "conflicting";
+                            stepIds: number[];
+                        } | {
+                            /** @enum {string} */
+                            state: "supplied";
+                            stepId: number;
+                            /** @enum {string} */
+                            entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                            prefix: string | null;
+                            name: string | null;
+                        };
+                        nodes: {
+                            stepId: number;
+                            /** @enum {string} */
+                            entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                            /** @enum {string|null} */
+                            candidate: "building" | "level" | "space" | null;
+                            globalId: string | null;
+                            name: string | null;
+                            longName: string | null;
+                            parentStepIds: number[];
+                            relationStepIds: number[];
+                            elevation?: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "supplied";
+                                value: number;
+                                literal: string;
+                            };
+                        }[];
+                    } | {
+                        /** @enum {string} */
+                        state: "not_read";
+                        code: string;
+                        reason: string;
+                    };
                 };
                 artifact: {
                     key: string;
