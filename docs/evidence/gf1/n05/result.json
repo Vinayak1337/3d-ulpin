@@ -1,0 +1,94 @@
+{
+  "task": "N05",
+  "gate": "GF1",
+  "baseCommit": "bb449b47",
+  "complete": true,
+  "state": "loose_parts_converted_as_one_shapefile_on_the_SH2_path",
+  "summary": [
+    "A shapefile dropped as loose parts is read as one shapefile. Publishing any part (.shp, .shx, .dbf, .prj,",
+    ".cpg by name; the .shp, .shx and .dbf also by the format their bytes probe as) finds the live parts of its",
+    "stem in the batch. Once .shp, .shx and .dbf are all present, one SH2 intake-native-derivative job is queued",
+    "on the .shp item; convert-native copies each part from object storage, checks its size and SHA-256, and",
+    "reads them with the existing shapefile reader. The derivative is kept, enrolled and read on the large",
+    "GeoJSON path unchanged. Originals stay as dropped; no ZIP is made."
+  ],
+  "decisions": {
+    "D1": "Each part stays its own retained original and item; the set is assembled in the geo service's scratch folder from the parts' object keys.",
+    "D2": [
+      "A set is the case's root items with a card whose source is the latest revision of its family and whose",
+      "name, folder path kept, is <stem>.<ext> compared without case. A .shp must probe as shapefile, a .shx as",
+      "shapefile-index (the probe's own name for it) and a .dbf as dbf; a .prj or .cpg may be any bytes. Two",
+      "parts of one extension rest every part probed / not_understood: 'Shapefile part: <stem> has more than one",
+      ".dbf (<names>), so its parts are not read together as one shapefile.'"
+    ],
+    "D3": [
+      "intake-service publish calls queueShapefileSetTx before the draft queue; it takes the file only when its",
+      "stem holds a .shp or .shx, so a lone .dbf (or a .dbf before its .shp arrives) keeps today's table path.",
+      "Short of a part, every part rests probed / undecided: 'Shapefile part: waiting for .shx of roads.'",
+      "Whole: the other parts rest read / undecided 'Read with <stem>.shp as one shapefile.' and the .shp item's",
+      "job id is stableUuid of 'shapefile_set:<shp item>:<sorted member SHA-256s>:<attempt>'. Any order gives the",
+      "same id; publishing a part again finds the queued job. nativeDerivativeFormat(card, name) gives",
+      "shapefile_set for a shapefile card named .shp."
+    ],
+    "D4": [
+      "convert-native accepts format shapefile_set with layer and members (extension, sourceId, objectKey,",
+      "sha256, bytes). It checks one .shp, .shx and .dbf, at most one .prj and .cpg, the .shp equal to the",
+      "request's pins and the total within the source bound; copies each into one folder under the base name",
+      "'layer' (the user's stem never becomes a path) checking size and SHA-256; and reads them through the",
+      "shapefile ZIP reader's shared body (CRS from .prj or CR1's officer answer, .cpg encoding, windows)."
+    ],
+    "D5": [
+      "Job input, convert request and lineage gain an additive members array (sourceId, sourceRevision, sha256,",
+      "extension), present only for shapefile_set (lineage refine enforces both ways). The sidecar header names",
+      "each part's extension and SHA-256. The parent's words add 'Read as one shapefile from its parts: ...'.",
+      "A job whose pinned members are no longer the live set (a part added, replaced or doubled) converts and",
+      "writes nothing; the publish that changed the set queued its own job."
+    ]
+  },
+  "inputs": {
+    "good": {
+      "original": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip",
+      "use": "SH2's real shapefile ZIP, unpacked in the test into Council_Buildings.shp/.shx/.dbf/.prj/.cpg",
+      "probeFormats": ["shapefile", "shapefile-index", "dbf", "unknown", "unknown"],
+      "jobsQueued": 1,
+      "features": 88,
+      "featuresEqualZip": true,
+      "orders": ["prj, cpg, dbf, shp, shx (dbf first among the required parts)", "shx, cpg, shp, prj, dbf: same job id"]
+    },
+    "difficult_test_only": [
+      "two .dbf under one stem (blocks.dbf, Blocks.DBF): every part refused in words, no job",
+      "a set short of its .shx: .shp and .dbf wait in words, no job",
+      "no .prj: the layer asks the officer (crs_unstated); CR1's answer converts it as officer_stated",
+      "a part's SHA-256 differs at copy: refused 'The retained original's size or SHA-256 differs from its receipt.'",
+      "a set request short of its .shx, with two .dbf, or with a .shp other than the named original: refused",
+      "a file named .shx whose bytes are not a shapefile index: keeps its own path"
+    ],
+    "unchanged": "a lone .dbf is not taken by the set path and gets no draft words (today's table path)"
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm studio:test", "exit": 0, "files": 78, "tests": 498},
+    {"command": "backend set from gap-template plus intake-shapefile-set.test.ts (in the ingestion glob)",
+      "exit": 0, "tests": 421, "pass": 419, "skipped": 2, "fail": 0},
+    {"command": "tsx apps/api/scripts/openapi.ts --check", "exit": 0,
+      "note": "after scripts/api/refresh-contract.ts bb449b47 repinned four source hashes; no route or schema changed"},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "python scripts/api/check.py", "exit": 0},
+    {"command": "git diff --check", "exit": 0},
+    {"cwd": "services/geo", "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "args": "-B -m pytest tests/test_native_conversion.py -o addopts= -q", "exit": 0, "passed": 21},
+    {"cwd": "services/geo", "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "args": "-B -m pytest tests/test_native_conversion.py tests/test_native_kml.py tests/test_native_archive.py tests/test_native_adapters.py tests/test_gis_inspection.py -o addopts= -q",
+      "exit": 1, "passed": 102, "failed": 7,
+      "note": "the 7 are test_native_kml.py: the venv lacks defusedxml; the same 7 fail on the base commit"}
+  ],
+  "gaps": [
+    "SB1's queueIntakeSurfaceTx hook is not on this base; staging wraps queueIntakeDraftTx, so the hook line conflicts at merge (keep both: set first, then SB1 only when not a part)",
+    "a .dbf published before its .shp may have been queued for late evidence under an officer key profile (AU4-B2); its words become the set's once the .shp arrives, but that evidence job is not withdrawn",
+    "Studio's N01 words 'Shapefile part · kept in the batch' could name the waiting or read-with words; not changed (Studio not owned)",
+    "docs/evidence/audit/au5/recount.json is not on this base; the N05 entry was not re-read",
+    "the geo venv lacks defusedxml, so test_native_kml.py cannot run there"
+  ],
+  "runtimeUsed": false
+}

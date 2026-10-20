@@ -35,10 +35,16 @@ export function intakeDraftKey(itemId: string, revision: number, phase: string):
 export const shapefileZip = (card: IntakeCard | null) =>
   card?.format === 'zip' && card.members.some(member => member.format === 'shapefile');
 
-/** SH2. The native format a batch card is converted from into GeoJSON layers, or null for any other card. */
-export function nativeDerivativeFormat(card: IntakeCard | null): 'gpkg' | 'shapefile_zip' | 'kml' | 'kmz' | null {
+export type NativeDerivativeFormat = 'gpkg' | 'shapefile_zip' | 'shapefile_set' | 'kml' | 'kmz';
+
+/**
+ * SH2. The native format a batch card is converted from into GeoJSON layers, or null for any other card. N05: with
+ * its original's name, a shapefile card named .shp is the parent of the loose shapefile set of its stem.
+ */
+export function nativeDerivativeFormat(card: IntakeCard | null, name = ''): NativeDerivativeFormat | null {
   if (card?.format === 'geopackage') return 'gpkg';
   if (card?.format === 'kml' || card?.format === 'kmz') return card.format;
+  if (card?.format === 'shapefile' && /\.shp$/i.test(name)) return 'shapefile_set';
   return shapefileZip(card) ? 'shapefile_zip' : null;
 }
 
@@ -112,9 +118,8 @@ export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): stri
   const format = item.card?.format;
   const count = source.inspection?.manualProfile?.featureCount;
   if (format === 'shapefile' || format === 'shapefile_zip')
-    return 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
-      + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
-      + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
+    return 'Shapefile geometry in a batch is read from a .shp dropped with its .shx and .dbf of the same name, '
+      + 'or from a ZIP holding them; this file was not read as one of those parts.';
   if (item.card?.format === 'zip') return zipParentWords(item.card);
   if (Number(source.bytes) > 16 * 1024 * 1024) {
     if (format === 'geojson' || source.profile === 'geojson-manual-v1')

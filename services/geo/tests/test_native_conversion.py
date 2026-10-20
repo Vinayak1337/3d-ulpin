@@ -271,6 +271,77 @@ def test_the_intake_routes_check_resolves_a_known_code_to_itself_and_refuses_an_
 
 
 # KML1. Google's libkml samples (test_only, as datasets.json records them) and a test_only KML written below.
+def loose_parts(left_out=()) -> dict:
+    """N05. The real Tweed shapefile ZIP unpacked into loose parts by extension (test_only); none is changed."""
+    import zipfile
+    with zipfile.ZipFile(TWEED_ZIP) as archive:
+        return {entry.filename.rsplit(".", 1)[1].lower(): archive.read(entry) for entry in archive.infolist()
+                if entry.filename.rsplit(".", 1)[1].lower() not in left_out}
+
+
+def set_request(parts: dict) -> tuple[dict, dict]:
+    """Each part retained as its own original under its own source ID; the request names the .shp and every part."""
+    members, objects = [], {}
+    for index, (extension, raw) in enumerate(sorted(parts.items())):
+        source, digest = f"10000000-0000-4000-8000-00000000002{index}", hashlib.sha256(raw).hexdigest()
+        objects[f"large-originals/{source}/{digest}"] = raw
+        members.append({"extension": extension, "sourceId": source, "objectKey": f"large-originals/{source}/{digest}",
+                        "sha256": digest, "bytes": len(raw)})
+    [shp] = (member for member in members if member["extension"] == "shp")
+    pins = {name: shp[name] for name in ("sourceId", "objectKey", "sha256", "bytes")}
+    return {**pins, "format": "shapefile_set", "layer": "Council_Buildings", "members": members}, objects
+
+
+def stored_layer(storage: Storage, layer: dict) -> tuple[dict, list[dict]]:
+    sidecar = storage.uploads[layer["sidecar"]["objectKey"]][0].decode("utf-8").splitlines()
+    return json.loads(storage.uploads[layer["geojson"]["objectKey"]][0]), [json.loads(line) for line in sidecar]
+
+
+def test_loose_parts_are_read_as_one_shapefile_with_the_features_of_the_zip_of_the_same_parts(tmp_path):
+    request, objects = set_request(loose_parts())
+    storage = Storage(objects)
+    result = convert_native(request, storage)
+    assert (result["sourceId"], result["sourceSha256"]) == (request["sourceId"], request["sha256"])
+    [layer] = result["layers"]
+    assert (layer["state"], layer["layer"], layer["crs"], layer["crsSource"], layer["features"]) == \
+        ("converted", "Council_Buildings", "EPSG:28356", "stated", 88)
+    collection, sidecar = stored_layer(storage, layer)
+    [zipped] = convert(TWEED_ZIP, "shapefile_zip", tmp_path)
+    expected, zipped_sidecar = written(zipped)
+    assert collection == expected and sidecar[1:] == zipped_sidecar[1:]
+    assert (sidecar[0]["format"], sidecar[0]["member"], sidecar[0]["originalSha256"]) == \
+        ("shapefile_set", "Council_Buildings.dbf", request["sha256"])
+    assert sidecar[0]["parts"] == [{"extension": member["extension"], "sha256": member["sha256"]}
+                                   for member in request["members"]]
+
+
+def test_a_set_without_prj_asks_the_officer_and_converts_as_the_officer_stated_it():
+    request, objects = set_request(loose_parts(left_out=("prj",)))
+    [asked] = convert_native(request, Storage(objects))["layers"]
+    assert (asked["state"], asked["statesCrs"], asked["reason"]) == \
+        ("crs_unstated", False, "states no coordinate reference system (no .prj)")
+    [answered] = convert_native({**request, "layerCrs": {"Council_Buildings": "EPSG:28356"}},
+                                Storage(objects))["layers"]
+    assert (answered["state"], answered["crs"], answered["crsSource"], answered["features"]) == \
+        ("converted", "EPSG:28356", "officer_stated", 88)
+
+
+def test_a_part_whose_bytes_differ_from_its_pins_or_a_set_short_of_a_part_is_refused():
+    request, objects = set_request(loose_parts())
+    [dbf] = (member for member in request["members"] if member["extension"] == "dbf")
+    changed = bytearray(objects[dbf["objectKey"]])
+    changed[-2] ^= 1
+    with pytest.raises(InputError, match="SHA-256 differs"):
+        convert_native(request, Storage({**objects, dbf["objectKey"]: bytes(changed)}))
+    short = [member for member in request["members"] if member["extension"] != "shx"]
+    with pytest.raises(InputError, match="needs its .shp, .shx and .dbf"):
+        convert_native({**request, "members": short}, Storage(objects))
+    with pytest.raises(InputError, match="at most one"):
+        convert_native({**request, "members": [*request["members"], dbf]}, Storage(objects))
+    with pytest.raises(InputError, match="exact pins"):
+        convert_native({**request, "format": "shapefile_zip"}, Storage(objects))
+
+
 KML_DATA = Path("E:/BhuAayam-data/task-data/desktop-kml-native/originals")
 KML_SAMPLES = KML_DATA / "kmlsamples.kml"
 MULTI_KMZ = KML_DATA / "multikml-doc.kmz"

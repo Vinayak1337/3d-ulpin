@@ -17,15 +17,22 @@ import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from 
  * window, into one GeoJSON derivative per layer. Each derivative is retained as its own large original that names
  * the original it came from, and enrolled like any dropped file, so the large GeoJSON path reads it unchanged.
  * KML1: a KML or KMZ takes the same path, one layer per Document or Folder holding Placemarks.
+ * N05: a shapefile dropped as loose parts takes it too, its .shp item the parent of every part of its stem.
  */
 export const NATIVE_DERIVATIVE_CONVERSION = 'native_gis_to_geojson@1';
 const uuid = z.string().uuid();
 const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
+const SET_PARTS = ['shp', 'shx', 'dbf', 'prj', 'cpg'] as const;
+type SetExtension = typeof SET_PARTS[number];
+// N05: each part of a loose shapefile set, pinned by its own retained original; present only for `shapefile_set`.
+const SetMembersSchema = z.array(z.strictObject({ sourceId: uuid, sourceRevision: z.number().int().positive(),
+  sha256: hex64, extension: z.enum(SET_PARTS) })).min(3).max(SET_PARTS.length);
+type SetMember = z.infer<typeof SetMembersSchema>[number];
 export const IntakeNativeDerivativeInputSchema = z.strictObject({
   version: z.literal('intake-native-derivative/1'), jobId: uuid, caseId: uuid,
   caseRevision: z.number().int().nonnegative(), itemId: uuid, sourceId: uuid,
   sourceRevision: z.number().int().positive(), sourceSha256: hex64, sourcePin: hex64,
-  subject: z.string().min(1).max(256), accessSha256: hex64,
+  subject: z.string().min(1).max(256), accessSha256: hex64, members: SetMembersSchema.optional(),
 });
 export type IntakeNativeDerivativeInput = z.infer<typeof IntakeNativeDerivativeInputSchema>;
 
@@ -63,39 +70,143 @@ type StoppedLayer = z.infer<typeof StoppedLayerSchema> | z.infer<typeof Unstated
 export const NativeDerivativeLineageSchema = z.strictObject({
   version: z.literal('native-derivative/1'), conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION),
   readerVersion: z.string().min(1).max(64), originalSourceId: uuid, originalSourceRevision: z.number().int().positive(),
-  originalSha256: hex64, originalItemId: uuid, format: z.enum(['gpkg', 'shapefile_zip', 'kml', 'kmz']),
+  originalSha256: hex64, originalItemId: uuid,
+  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz']),
   layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
-});
+  members: SetMembersSchema.optional(),
+}).refine(lineage => (lineage.format === 'shapefile_set') === Boolean(lineage.members),
+  'Only a shapefile set names its members, and it names every one.');
 
 type NativeFormat = NonNullable<ReturnType<typeof nativeDerivativeFormat>>;
-const kinds: Record<NativeFormat, string> = { gpkg: 'GeoPackage', shapefile_zip: 'shapefile ZIP', kml: 'KML',
-  kmz: 'KMZ' };
+const kinds: Record<NativeFormat, string> = { gpkg: 'GeoPackage', shapefile_zip: 'shapefile ZIP',
+  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ' };
 const kind = (format: NativeFormat) => kinds[format];
+
+type SetPart = { item_id: string; card: IntakeCard; plan_ref: Record<string, unknown> | null; source_id: string;
+  name: string; revision: number; sha256: string; object_key: string; bytes: string | number;
+  extension: SetExtension };
+// The card each part's bytes must carry for its name to be believed; a .prj or .cpg is text of any kind.
+const partFormats: Partial<Record<SetExtension, string>> = { shp: 'shapefile', shx: 'shapefile-index', dbf: 'dbf' };
+const REQUIRED: SetExtension[] = ['shp', 'shx', 'dbf'];
+
+/** N05. A part's stem (its name, folder path kept, without the extension) and extension; null for any other file. */
+function partName(name: string): { stem: string; extension: SetExtension } | null {
+  const match = /^(.+)\.([^./\\]+)$/.exec(name);
+  const extension = match?.[2].toLowerCase() as SetExtension | undefined;
+  return match && extension && SET_PARTS.includes(extension) ? { stem: match[1], extension } : null;
+}
+
+const fileName = (name: string) => name.split(/[/\\]/).pop()!;
+
+/**
+ * N05. The batch's live parts of one stem, compared without case: root items of the case with a card, each the
+ * latest revision of its original, whose bytes agree with their name. In extension order.
+ */
+async function stemPartsTx(client: PoolClient, caseId: string, stem: string): Promise<SetPart[]> {
+  const rows = (await client.query(`SELECT i.item_id,i.card,i.plan_ref,s.id source_id,s.name,s.revision,s.sha256,
+    s.object_key,s.bytes FROM usp_intake_items i JOIN sources s ON s.id=i.source_id
+    WHERE i.case_id=$1 AND i.parent_item_id IS NULL AND i.card IS NOT NULL AND lower(s.name)=ANY($2::text[])
+    AND s.revision=(SELECT max(f.revision) FROM sources f WHERE f.case_id=s.case_id AND f.family_id=s.family_id)
+    ORDER BY s.name,i.item_id`, [caseId, SET_PARTS.map(extension => `${stem}.${extension}`.toLowerCase())])).rows;
+  return rows.flatMap(row => {
+    const extension = partName(row.name)!.extension;
+    const format = partFormats[extension];
+    return !format || row.card.format === format ? [{ ...row, extension }] : [];
+  }).sort((a, b) => SET_PARTS.indexOf(a.extension) - SET_PARTS.indexOf(b.extension));
+}
+
+/** The extensions a stem holds more than one of, and the required ones it lacks. */
+function setGaps(parts: SetPart[]) {
+  const held = (extension: SetExtension) => parts.filter(part => part.extension === extension).length;
+  return { twice: SET_PARTS.filter(extension => held(extension) > 1),
+    missing: REQUIRED.filter(extension => !held(extension)) };
+}
+
+/** N05. The whole live set the .shp original is the parent of, in extension order; null while it is not whole. */
+async function wholeSetTx(client: PoolClient, source: IntakeSourceRow): Promise<SetPart[] | null> {
+  const parts = await stemPartsTx(client, source.case_id, partName(source.name)!.stem);
+  const { twice, missing } = setGaps(parts);
+  return !twice.length && !missing.length && parts[0].source_id === source.id ? parts : null;
+}
+
+const memberPins = (parts: SetPart[]): SetMember[] => parts.map(part => ({ sourceId: part.source_id,
+  sourceRevision: part.revision, sha256: part.sha256, extension: part.extension }));
+
+const dotted = (extensions: SetExtension[]) => extensions.map(extension => `.${extension}`).join(' and ');
+
+async function restPartTx(client: PoolClient, caseId: string, part: SetPart,
+  state: Pick<IntakeDraftState, 'state' | 'placement' | 'limitReason'>) {
+  await writeIntakeDraftTx(client, caseId, part.item_id, { ...state, planRef: part.plan_ref, recordsSeen: 0 });
+}
+
+/**
+ * N05. A published loose part (named .shp, .shx, .dbf, .prj or .cpg) of a stem holding a .shp or .shx is read only
+ * with its set. A stem holding two parts of one extension rests every part in words naming them; one short of its
+ * .shp, .shx or .dbf rests every part waiting; a whole set queues SH2's conversion on its .shp item, and every other
+ * part rests read with it. False for any other file, a lone .dbf included, which keeps its own path.
+ */
+export async function queueShapefileSetTx(client: PoolClient, source: IntakeSourceRow,
+  card: IntakeCard): Promise<boolean> {
+  const named = partName(source.name);
+  const format = named && partFormats[named.extension];
+  if (!named || (format && card.format !== format)) return false;
+  const parts = await stemPartsTx(client, source.case_id, named.stem);
+  if (!parts.some(part => part.extension === 'shp' || part.extension === 'shx')) return false;
+  const stem = fileName(named.stem);
+  const { twice, missing } = setGaps(parts);
+  if (twice.length) {
+    const doubled = parts.filter(part => twice.includes(part.extension)).map(part => fileName(part.name));
+    const limitReason = `Shapefile part: ${stem} has more than one ${dotted(twice)} (${listWords(doubled, 1500)}), `
+      + 'so its parts are not read together as one shapefile.';
+    for (const part of parts) await restPartTx(client, source.case_id, part,
+      { state: 'probed', placement: 'not_understood', limitReason });
+    return true;
+  }
+  if (missing.length) {
+    for (const part of parts) await restPartTx(client, source.case_id, part, { state: 'probed',
+      placement: 'undecided', limitReason: `Shapefile part: waiting for ${dotted(missing)} of ${stem}.` });
+    return true;
+  }
+  const [shp, ...others] = parts;
+  for (const part of others) await restPartTx(client, source.case_id, part, { state: 'read', placement: 'undecided',
+    limitReason: `Read with ${fileName(shp.name)} as one shapefile.` });
+  const { source: parent } = await intakeSourceTx(client, source.case_id, shp.source_id);
+  await queueNativeDerivativeTx(client, parent, shp.card);
+  return true;
+}
 
 /**
  * Publishing the card queues one fenced conversion job in the publishing transaction. None is queued while one
  * waits or runs, or once one finished; a failed job is queued again by enrolling the file again. An officer's
- * coordinate system answer (`answered`) queues it again after one finished.
+ * coordinate system answer (`answered`) queues it again after one finished. N05: a shapefile set's job is counted
+ * among those of the same members, its id taken from the .shp item and the members' sorted SHA-256s, so parts
+ * published in any order queue the same job; none is queued while the set is not whole.
  */
 export async function queueNativeDerivativeTx(client: PoolClient, source: IntakeSourceRow,
   card: IntakeCard, answered = false): Promise<string | null> {
-  const format = nativeDerivativeFormat(card);
+  const format = nativeDerivativeFormat(card, source.name);
   const item = (await client.query(`SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL
     FOR UPDATE`, [source.id])).rows[0];
   if (!format || !item) return null;
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
     [`intake-native-derivative:${item.item_id}`]);
-  const jobs = (await client.query(`SELECT id,status FROM jobs WHERE source_id=$1
-    AND operation='intake-native-derivative' ORDER BY created_at`, [source.id])).rows;
+  const parts = format === 'shapefile_set' ? await wholeSetTx(client, source) : undefined;
+  if (parts === null) return null;
+  const members = parts && memberPins(parts);
+  const jobs = (await client.query(`SELECT id,status,payload FROM jobs WHERE source_id=$1
+    AND operation='intake-native-derivative' ORDER BY created_at`, [source.id])).rows
+    .filter(job => fingerprint(job.payload?.members ?? null) === fingerprint(members ?? null));
   const open = jobs.find(job => ['queued', 'running', ...(answered ? [] : ['completed'])].includes(job.status));
   if (open) return open.status === 'completed' ? null : open.id;
   const scope = await intakeCaseTx(client, source.case_id);
+  const key = members ? `shapefile_set:${item.item_id}:${members.map(member => member.sha256).sort().join(',')}`
+    : `${item.item_id}:${source.revision}`;
   const input = IntakeNativeDerivativeInputSchema.parse({ version: 'intake-native-derivative/1',
-    jobId: stableUuid(`intake-native-derivative/1:${item.item_id}:${source.revision}:${jobs.length + 1}`),
+    jobId: stableUuid(`intake-native-derivative/1:${key}:${jobs.length + 1}`),
     caseId: source.case_id, caseRevision: scope.current.revision, itemId: item.item_id, sourceId: source.id,
     sourceRevision: source.revision, sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding),
-    subject: scope.binding.subject, accessSha256: scope.binding.access });
+    subject: scope.binding.subject, accessSha256: scope.binding.access, ...(members ? { members } : {}) });
   const digest = fingerprint(input);
   await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
     VALUES($1,$2,$3,'intake-native-derivative',$4,$5,$6)`,
@@ -121,8 +232,9 @@ export async function stateLayerCrsTx(client: PoolClient, source: IntakeSourceRo
   answer: { layer: string; crs: string }) {
   const item = (await client.query(`SELECT * FROM usp_intake_items WHERE item_id=$1 AND source_id=$2
     AND parent_item_id IS NULL FOR UPDATE`, [itemId, source.id])).rows[0];
-  if (!item || !nativeDerivativeFormat(item.card)) throw new AppError(409, 'INTAKE_LAYER_CRS_NOT_NATIVE',
-    'Only a layer of a GeoPackage, shapefile ZIP, KML or KMZ takes a coordinate system answer.');
+  if (!item || !nativeDerivativeFormat(item.card, source.name)) throw new AppError(409,
+    'INTAKE_LAYER_CRS_NOT_NATIVE',
+    'Only a layer of a GeoPackage, shapefile ZIP or set, KML or KMZ takes a coordinate system answer.');
   const stored = nativeLayersRef(item.plan_ref);
   if (stored.answers.some(entry => entry.layer === answer.layer)) throw new AppError(409, 'INTAKE_LAYER_CRS_ANSWERED',
     'The officer already stated this layer\'s coordinate system.');
@@ -142,17 +254,18 @@ export async function stateLayerCrsTx(client: PoolClient, source: IntakeSourceRo
 export type NativeDerivativeDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: typeof readObjectRange;
   convert: (request: { sourceId: string; objectKey: string; sha256: string; bytes: number;
-    format: NativeFormat; layerCrs?: Record<string, string> }) => Promise<unknown>;
+    format: NativeFormat; layerCrs?: Record<string, string>; layer?: string; members?: { extension: SetExtension;
+      sourceId: string; objectKey: string; sha256: string; bytes: number }[] }) => Promise<unknown>;
 };
 
 type Outcome = { layer: string; sourceId: string | null; code: string | null };
 
 /**
  * Officer words name each layer and what became of it; a layer with no stated system asks the officer. The layers
- * stating none and the officer's answers are kept beside the item.
+ * stating none and the officer's answers are kept beside the item. N05: a shapefile set's words name its parts.
  */
 export function nativeParentState(format: NativeFormat, conversion: NativeConversion,
-  outcomes: Outcome[], answers: NativeLayersRef['answers'] = []): IntakeDraftState {
+  outcomes: Outcome[], answers: NativeLayersRef['answers'] = [], parts: string[] = []): IntakeDraftState {
   const officer = new Map<string, string>();
   for (const layer of conversion.layers) {
     if (layer.state === 'converted' && layer.crsSource === 'officer_stated') officer.set(layer.layer, layer.crs);
@@ -176,6 +289,7 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
     + `${listWords(unstated, 500)}.`);
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
+  if (parts.length) sentences.push(`Read as one shapefile from its parts: ${listWords(parts, 300)}.`);
   sentences.push(...basisWords(conversion));
   const placement = unstated.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
   return { state: 'read', placement, planRef, recordsSeen: 0, limitReason: sentences.join(' ') };
@@ -199,26 +313,43 @@ function failureCode(error: unknown): string {
 }
 
 /**
+ * N05. A shapefile set's parts while they are still the whole live set the job pinned (when it pinned one), each
+ * original's access checked; null once a part was added, replaced or doubled, as that publish queued its own job.
+ */
+async function pinnedSetTx(client: PoolClient, source: IntakeSourceRow, pinned?: SetMember[]) {
+  const parts = await wholeSetTx(client, source);
+  if (!parts || (pinned && fingerprint(memberPins(parts)) !== fingerprint(pinned))) return null;
+  for (const part of parts) await intakeSourceTx(client, source.case_id, part.source_id);
+  return parts;
+}
+
+/**
  * Converts the item's original, retains each converted layer's GeoJSON as a large-original child named by its
  * lineage (one already kept by an earlier attempt is reused), enrols every child, then writes the item's words.
+ * N05: a shapefile set is converted from the parts its job pinned; a job whose set changed writes nothing.
  */
 export async function convertNativeLayers(caseValue: string, itemValue: string,
-  dependencies: NativeDerivativeDependencies): Promise<string[]> {
+  dependencies: NativeDerivativeDependencies, pinned?: SetMember[]): Promise<string[]> {
   const caseId = uuid.parse(caseValue), itemId = uuid.parse(itemValue);
   const scope = await dependencies.transaction(async client => {
     const item = (await client.query(`SELECT * FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
       AND parent_item_id IS NULL`, [caseId, itemId])).rows[0];
-    const format = nativeDerivativeFormat(item?.card ?? null);
-    if (!item?.source_id || !format) return null;
-    return { format, source: (await intakeSourceTx(client, caseId, item.source_id)).source,
-      answers: nativeLayersRef(item.plan_ref).answers };
+    if (!item?.source_id || !item.card) return null;
+    const { source } = await intakeSourceTx(client, caseId, item.source_id);
+    const format = nativeDerivativeFormat(item.card, source.name);
+    const parts = format === 'shapefile_set' ? await pinnedSetTx(client, source, pinned) : undefined;
+    if (!format || parts === null) return null;
+    return { format, source, parts, answers: nativeLayersRef(item.plan_ref).answers };
   });
   if (!scope) return [];
-  const { format, source, answers } = scope;
+  const { format, source, parts, answers } = scope;
   const layerCrs = Object.fromEntries(answers.map(answer => [answer.layer, answer.crs]));
+  const set = parts && { layer: fileName(partName(source.name)!.stem), members: parts.map(part => ({
+    extension: part.extension, sourceId: part.source_id, objectKey: part.object_key, sha256: part.sha256,
+    bytes: Number(part.bytes) })) };
   const conversion = NativeConversionSchema.parse(await dependencies.convert({ sourceId: source.id,
     objectKey: source.object_key, sha256: source.sha256, bytes: Number(source.bytes), format,
-    ...(answers.length ? { layerCrs } : {}) }));
+    ...(answers.length ? { layerCrs } : {}), ...set }));
   if (conversion.sourceId !== source.id || conversion.sourceSha256 !== source.sha256)
     throw new AppError(422, 'NATIVE_DERIVATIVE_PINS', 'The conversion names a different original.');
   const outcomes: Outcome[] = [];
@@ -229,7 +360,7 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       originalSourceRevision: source.revision, originalSha256: source.sha256, originalItemId: itemId, format,
       layer: layer.layer, ordinal: layer.ordinal, crs: layer.crs, crsSource: layer.crsSource,
       ...(layer.crsBasis ? { crsBasis: layer.crsBasis } : {}), features: layer.features,
-      notWritten: layer.notWritten, sidecar: layer.sidecar });
+      notWritten: layer.notWritten, sidecar: layer.sidecar, ...(parts ? { members: memberPins(parts) } : {}) });
     try {
       outcomes.push({ layer: layer.layer, sourceId: await keepDerivative(caseId, layer, lineage, dependencies),
         code: null });
@@ -246,8 +377,11 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       outcome.code = failureCode(error);
     }
   }
-  await dependencies.transaction(client => writeIntakeDraftTx(client, caseId, itemId,
-    nativeParentState(format, conversion, outcomes, answers)));
+  await dependencies.transaction(async client => {
+    if (parts && !await pinnedSetTx(client, source, memberPins(parts))) return;
+    await writeIntakeDraftTx(client, caseId, itemId, nativeParentState(format, conversion, outcomes, answers,
+      parts?.map(part => fileName(part.name))));
+  });
   return outcomes.flatMap(outcome => outcome.sourceId ? [outcome.sourceId] : []);
 }
 

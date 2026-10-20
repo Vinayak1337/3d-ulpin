@@ -144,14 +144,17 @@ export class IntakeService {
         await saveIntakeCardTx(client, initial.itemId, citeIntakeReceipt(probed.card, fresh.source));
         await childrenTx(client, caseId, initial.itemId, probed.card);
         await notifyTx(client, fresh.source);
+        // N05: a loose shapefile part waits for its stem's .shp, .shx and .dbf, or queues their one conversion.
+        const { queueShapefileSetTx } = await import('./intake-native-derivative');
+        const shapefilePart = await queueShapefileSetTx(client, fresh.source, probed.card);
         // SB1: a kept TIFF or LAZ is read in parts by its existing reader; every other item takes the vector queue.
-        if (!await queueIntakeSurfaceTx(client, fresh.source, probed.card)) {
+        if (!shapefilePart && !await queueIntakeSurfaceTx(client, fresh.source, probed.card)) {
           await queueIntakeDraftTx(client, fresh.source, probed.card);
         }
         // ZJ1: a ZIP's layers are taken out by a dispatcher job; enrolling it again queues a retry when one waits.
         await queueZipLayersTx(client, fresh.source, probed.card, initial.itemId);
         // AU4-B2 (D4): a table or document kept after a key profile exists is read under it.
-        await queueLateIntakeEvidenceTx(client, caseId, initial.itemId, probed.card.family);
+        if (!shapefilePart) await queueLateIntakeEvidenceTx(client, caseId, initial.itemId, probed.card.family);
       } else {
         await client.query(`UPDATE usp_intake_items SET state=CASE WHEN card IS NULL THEN $2 ELSE state END,
           limit_reason=CASE WHEN card IS NULL THEN $3 ELSE limit_reason END,updated_at=now() WHERE item_id=$1`,
