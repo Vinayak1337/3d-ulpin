@@ -38451,6 +38451,458 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table": {
+      "post": {
+        "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_table",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_ingestion_cases_caseId_sources_sourceId_table_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_sources_Response_201_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read a CSV kept as a large original as a stream and make it a table source; its bytes stay unchanged",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "G13",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/rows": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_rows",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          },
+          {
+            "name": "after",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 999999
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "One page of a streamed table by record number, each row with its locator and any mapped cells",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "G13",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "none",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes": {
       "post": {
         "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_recipes",
@@ -43201,6 +43653,131 @@
                             "resultSha256",
                             "records",
                             "sourceComplete"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "streaming-vector.window"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "window": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 4095
+                            },
+                            "firstRecord": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "records": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 10000
+                            },
+                            "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "sourceId",
+                            "sourceRevision",
+                            "jobId",
+                            "window",
+                            "firstRecord",
+                            "records",
+                            "sha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "chunk-mapping.window"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "rawJobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "window": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 4095
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "mapped",
+                                "failed"
+                              ]
+                            },
+                            "records": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 10000
+                            },
+                            "issueCode": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "sourceId",
+                            "sourceRevision",
+                            "jobId",
+                            "rawJobId",
+                            "window",
+                            "status",
+                            "records",
+                            "issueCode"
                           ],
                           "additionalProperties": false
                         },
@@ -365975,6 +366552,405 @@
             "additionalProperties": false
           }
         ]
+      },
+      "POST_ingestion_cases_caseId_sources_sourceId_table_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expectedWorkspaceRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "selection": {
+            "type": "object",
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": [
+                  "csv",
+                  "xlsx"
+                ]
+              },
+              "sheet": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 150
+              },
+              "table": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "headerRows": {
+                "minItems": 1,
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2000
+                }
+              }
+            },
+            "required": [
+              "format",
+              "sheet",
+              "table",
+              "headerRows"
+            ],
+            "additionalProperties": false
+          },
+          "issuer": {
+            "nullable": true,
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "officer_supplied"
+            ]
+          },
+          "licence": {
+            "type": "string",
+            "enum": [
+              "unconfirmed",
+              "open",
+              "restricted"
+            ]
+          },
+          "containsPersonalData": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "yes",
+              "no"
+            ]
+          }
+        },
+        "required": [
+          "requestKey",
+          "expectedWorkspaceRevision",
+          "selection"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "headers": {
+            "minItems": 1,
+            "maxItems": 256,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 400
+            }
+          },
+          "records": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 1000000
+          },
+          "rawJobId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "mappingJobId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "windows": {
+            "type": "object",
+            "properties": {
+              "written": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4096
+              },
+              "mapped": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4096
+              },
+              "failed": {
+                "maxItems": 4096,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "window": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "firstRecord": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 999999
+                    },
+                    "lastRecord": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 999999
+                    },
+                    "issueCode": {
+                      "type": "string",
+                      "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "required": [
+                    "window",
+                    "firstRecord",
+                    "lastRecord",
+                    "issueCode",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "written",
+              "mapped",
+              "failed"
+            ],
+            "additionalProperties": false
+          },
+          "after": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 9007199254740991
+          },
+          "next": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999999
+          },
+          "rows": {
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "record": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 999999
+                },
+                "sourceRow": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 9007199254740991
+                },
+                "byteStart": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "byteEnd": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "cells": {
+                  "minItems": 1,
+                  "maxItems": 256,
+                  "type": "array",
+                  "items": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "window": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "mapped": {
+                  "nullable": true,
+                  "maxItems": 256,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": {}
+                          },
+                          {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              null
+                            ]
+                          }
+                        ]
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "unknown",
+                          "absent",
+                          "null",
+                          "withheld",
+                          "conflicting",
+                          "estimated",
+                          "candidate",
+                          "source_supported",
+                          "reviewed",
+                          "needs_input"
+                        ]
+                      },
+                      "unit": {
+                        "type": "string",
+                        "enum": [
+                          "m2",
+                          "m",
+                          "count"
+                        ]
+                      },
+                      "issueCode": {
+                        "type": "string",
+                        "pattern": "^[A-Z][A-Z0-9_]*$"
+                      },
+                      "sourceField": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "target": {
+                        "type": "string",
+                        "enum": [
+                          "building.sourceKey",
+                          "building.name",
+                          "building.addressLiteral",
+                          "building.use",
+                          "building.storeyLabel",
+                          "building.storeyCount",
+                          "building.heightM",
+                          "building.footprint",
+                          "parcel.khasra",
+                          "parcel.plot",
+                          "parcel.survey",
+                          "parcel.ulpinAnchor",
+                          "parcel.area",
+                          "unit.unitNo",
+                          "unit.floorLabel",
+                          "unit.type",
+                          "unit.carpetArea",
+                          "unit.builtUpArea",
+                          "unit.balconyArea",
+                          "level.label",
+                          "level.kind",
+                          "level.lowerM",
+                          "level.upperM",
+                          "space.name",
+                          "space.kind",
+                          "space.area",
+                          "document.registrationNo",
+                          "document.sanctionNo",
+                          "document.date",
+                          "document.issuer",
+                          "document.status",
+                          "building.parentSourceKey",
+                          "unit.parentSourceKey",
+                          "level.parentSourceKey",
+                          "space.parentSourceKey",
+                          "unknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "state",
+                      "sourceField",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "record",
+                "sourceRow",
+                "byteStart",
+                "byteEnd",
+                "sha256",
+                "cells",
+                "window",
+                "mapped"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "caseId",
+          "sourceId",
+          "sourceRevision",
+          "sourceSha256",
+          "headers",
+          "records",
+          "rawJobId",
+          "mappingJobId",
+          "windows",
+          "after",
+          "next",
+          "rows"
+        ],
+        "additionalProperties": false
       },
       "POST_ingestion_cases_caseId_sources_sourceId_recipes_Request_application_json": {
         "anyOf": [

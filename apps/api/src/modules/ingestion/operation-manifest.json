@@ -842,6 +842,32 @@
       "maxBodyBytes": 32768,
       "runtimeEvidence": "docs/evidence/gf1/e1/controls-runtime.json",
       "batch": "E1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_table",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "TableFromOriginalSchema",
+      "responseSchema": "AnySourceProfileSchema",
+      "responseStatus": 201,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "G13"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/rows",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_rows",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "TableRowsPageSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "G13"
     }
   ]
 }

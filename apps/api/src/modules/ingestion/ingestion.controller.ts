@@ -1,9 +1,11 @@
-import { Controller, Get, HttpCode, Inject, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, Inject, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { AnyAuthorMappingSchema, MappingDecisionSchema,
-  AnyMappingReceiptSchema, AnySourceProfileSchema, StreamedMappingReceiptSchema } from '@ulpin/contracts/usp';
+  AnyMappingReceiptSchema, AnySourceProfileSchema, StreamedMappingReceiptSchema, TableFromOriginalSchema,
+  TableRowsPageSchema, TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
+import { TableRowsService } from '@ulpin/server/modules/usp/ingestion/table-windows';
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
@@ -27,6 +29,7 @@ export class IngestionController {
 
   private readonly intake = new IntakeService();
   private readonly archives = new IntakeArchiveService();
+  private readonly tableRows = new TableRowsService();
 
   @Post('cases/:caseId/intake/items')
   @HttpCode(201) @param('caseId')
@@ -133,6 +136,27 @@ export class IngestionController {
   @wireResponse(200,AnySourceProfileSchema)
   inspect(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string){
     return this.ingestion.inspectAny(caseId,sourceId);
+  }
+
+  @Post('cases/:caseId/sources/:sourceId/table')
+  @HttpCode(201) @param('caseId') @param('sourceId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_table',
+    summary:'Read a CSV kept as a large original as a stream and make it a table source; its bytes stay unchanged'})
+  @jsonBody(TableFromOriginalSchema) @wireResponse(201,AnySourceProfileSchema)
+  async tableFromOriginal(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Req() request:Request){
+    return this.ingestion.tableFromOriginal(caseId,sourceId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Get('cases/:caseId/sources/:sourceId/rows')
+  @param('caseId') @param('sourceId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_rows',
+    summary:'One page of a streamed table by record number, each row with its locator and any mapped cells'})
+  @ApiQuery({name:'after',required:false,schema:{type:'integer',minimum:-1,maximum:TABULAR_STREAM_LIMITS.rows - 1}})
+  @ApiQuery({name:'limit',required:false,schema:{type:'integer',minimum:1,maximum:TABULAR_STREAM_LIMITS.pageRows}})
+  @wireResponse(200,TableRowsPageSchema)
+  rows(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,
+    @Query('after') after?:string,@Query('limit') limit?:string){
+    return this.tableRows.page(caseId,sourceId,{...(after===undefined?{}:{after}),...(limit===undefined?{}:{limit})});
   }
 
   @Post('cases/:caseId/sources/:sourceId/recipes')
