@@ -7,7 +7,7 @@ import {
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
-  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema,
+  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, streamingReadMs,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
@@ -432,7 +432,7 @@ export class ManualIngestionService {
     });
     if('replay' in pinned)return pinned.replay as AnySourceProfile;
     const {row:read}=pinned;
-    const object=await openObjectStream(read.object_key,Number(read.bytes),STREAMING_VECTOR_LIMITS.readMs,
+    const object=await openObjectStream(read.object_key,Number(read.bytes),streamingReadMs(Number(read.bytes)),
       read.inspection?.largeOriginal?.objectEtag);
     let inventory:Awaited<ReturnType<typeof inspectTabularStream>>;
     try{
