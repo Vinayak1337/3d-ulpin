@@ -49,7 +49,7 @@ async function drop(files: File[], onRemaining = vi.fn()) {
   return { root, onRemaining, unmount: () => act(async () => view.unmount()) };
 }
 
-it('D3: after the first table import of a multi-file drop, the other files still continue from the dialog', async () => {
+it('D3: after the first table import of a multi-file drop, the other files continue from the dialog', async () => {
   const levels = new File(['level,area\n1,120\n'], 'levels.csv');
   const units = new File(['unit,level\nA,1\n'], 'units.csv');
   const dialog = await drop([levels, units]);

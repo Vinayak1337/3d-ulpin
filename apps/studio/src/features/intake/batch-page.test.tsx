@@ -10,7 +10,8 @@ import { uploadsKey } from './UnfinishedUploads';
 import type { UploadEntry, WaitingFile } from './upload-model';
 
 // The page's own sections render as they are; the panels that read the server for themselves are named stand-ins.
-const facts = vi.hoisted(() => ({ items: [] as unknown[], uploads: [] as unknown[], storage: new Map<string, string>() }));
+const facts = vi.hoisted(() => ({ items: [] as unknown[], uploads: [] as unknown[],
+  storage: new Map<string, string>() }));
 vi.mock('./batch-queries', async (original) => ({
   ...await original<typeof import('./batch-queries')>(),
   useIntakeManifest: (caseId: string) => useQuery({ queryKey: ['intake', caseId], retry: false,
