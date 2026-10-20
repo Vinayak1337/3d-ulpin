@@ -321,3 +321,23 @@ test('Watch: one silent API waits, the second starts the demo, at most twice in 
   assert.equal(state.demoStarts.length, 2);
   assert.equal(state.apiFailures, 2);
 });
+
+test('a demo stopped on purpose is never started by Watch or Prestart; the engine is still looked after', () => {
+  const fake = demoRoot({});
+  mkdirSync(fake.ops);
+  writeFileSync(join(fake.ops, 'demo-stopped-on-purpose.json'), '{"stoppedAt":"2026-10-21T03:00:00.000Z"}\n');
+  for (let run = 0; run < 3; run++) {
+    const watch = guard(fake, 'Watch');
+    assert.equal(watch.json.outcome, 'engine_answers');
+    assert.deepEqual(watch.json.demo, { apiStatus: null, outcome: 'stopped_on_purpose' });
+  }
+  const prestart = guard(fake, 'Prestart');
+  assert.deepEqual(prestart.json.demo, { apiStatus: null, outcome: 'stopped_on_purpose' });
+  assert.deepEqual(pnpmCalls(fake), []);
+  assert.equal(JSON.parse(readFileSync(join(fake.ops, 'state.json'), 'utf8')).demoStarts.length, 0);
+  assert.equal(existsSync(join(fake.ops, 'demo-stopped-on-purpose.json')), true);
+
+  setEngine(fake.root, false);
+  assert.equal(guard(fake, 'Watch', '-DryRun').json.outcome, 'engine_silent_waiting');
+  assert.equal(guard(fake, 'Watch', '-DryRun').json.outcome, 'dry_run');
+});

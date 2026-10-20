@@ -314,9 +314,13 @@ function Invoke-DemoPnpm([string]$PnpmPath, [string]$Arguments, [int]$Seconds) {
   @{ step = $step; lines = @($text -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
 }
 
+# demo.mjs writes this marker when the demo is stopped on purpose and removes it when the demo starts.
+function Test-StoppedOnPurpose { Test-Path -LiteralPath (Join-Path $OpsDir 'demo-stopped-on-purpose.json') }
+
 # Starts the demo's two native processes and runs its doctor. Only the exit codes, the doctor's last line and its
 # PASS and FAIL counts are recorded.
 function Start-Demo($Demo) {
+  if (Test-StoppedOnPurpose) { $Demo.outcome = 'stopped_on_purpose'; return $Demo }
   if (Test-Path -LiteralPath (Join-Path $OpsDir 'no-demo-start')) { $Demo.outcome = 'opted_out'; return $Demo }
   if ($DryRun) { $Demo.outcome = 'planned'; return $Demo }
   $pnpm = Get-Command $PnpmExe -CommandType Application -ErrorAction SilentlyContinue |
@@ -350,6 +354,7 @@ function Invoke-DemoAfterEngine {
 function Invoke-WatchDemo($State) {
   $demo = [ordered]@{ apiStatus = (Get-ApiStatus); outcome = $null }
   if ($demo.apiStatus -eq 200) { $State.apiFailures = 0; $demo.outcome = 'api_answers'; return $demo }
+  if (Test-StoppedOnPurpose) { $State.apiFailures = 0; $demo.outcome = 'stopped_on_purpose'; return $demo }
   $State.apiFailures = [int]$State.apiFailures + 1
   $demo.apiFailures = $State.apiFailures
   if ($State.apiFailures -lt $WatchApiFailuresToStart) { $demo.outcome = 'api_silent_waiting'; return $demo }

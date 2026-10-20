@@ -6,19 +6,32 @@
   "files": [
     "scripts/platform/docker-guard.ps1",
     "scripts/platform/docker-guard.test.mjs",
+    "scripts/platform/demo.mjs",
+    "scripts/platform/runtime-stop.test.mjs",
     "docs/backend/DOCKER-GUARD.md"
   ],
   "tests": {
     "command": "node --test scripts/platform/docker-guard.test.mjs",
     "before": {"exit": 0, "pass": 6, "fail": 0},
-    "after": {"exit": 0, "pass": 9, "fail": 0},
+    "after": {"exit": 0, "pass": 10, "fail": 0},
+    "stoppedOnPurpose": {
+      "command": "node --test scripts/platform/docker-guard.test.mjs scripts/platform/runtime-stop.test.mjs",
+      "exit": 0, "pass": 17, "fail": 0
+    },
+    "allPlatform": {
+      "command": "node --test scripts/platform/*.test.mjs",
+      "tests": 91, "pass": 84, "fail": 5, "skipped": 2,
+      "failNote": "5 demo-gateway tests: no node_modules in this worktree, so tsx is absent and the check fails closed"
+    },
     "cases": [
       "health 200 (stand-in node http server): Prestart records api_answers, no pnpm call",
       "health 503: one platform:start then one platform:doctor, both --profile demo in the demo checkout",
       "health 503: doctor exit 1, lastLine, pass 2, fail 1 recorded; child output only in the demo log",
       "no-demo-start present: opted_out, no pnpm call; -DryRun: planned, no pnpm call",
       "Watch, closed health port: wait, start, wait, start, wait, start_limit_reached; two starts in state",
-      "never list adds --create, platform:stop, --runtime, .env; only start and doctor --profile demo appear"
+      "never list adds --create, platform:stop, --runtime, .env; only start and doctor --profile demo appear",
+      "marker present: Watch (3 runs) and Prestart record stopped_on_purpose, no pnpm call; engine still recovered",
+      "demo.mjs: a demo stop writes {stoppedAt} only; start clears it after the API answers; rehearsal writes none"
     ],
     "harness": "real script under PowerShell 5.1, made-up root, stand-in docker and pnpm .cmd files",
     "harnessNote": "under a made-up root no Docker process is stopped or started"

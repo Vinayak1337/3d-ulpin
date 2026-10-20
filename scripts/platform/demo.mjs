@@ -1,7 +1,7 @@
 // The demo project, or a named rehearsal beside it. Existing linked/repository/worker projects are never
 // operated on, and an action for one runtime name reads, starts and stops that runtime only.
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -66,11 +66,31 @@ const localEngine = {
   stop: (runtime, ids) => execute('docker', ['--context', runtime.context, 'stop', '--timeout', '20', ...ids], {}),
 };
 
+/** The Docker guard's ops folder; ULPIN_DOCKER_GUARD_OPS_DIR stands in for it in tests. */
+export const guardOpsDir = () => process.env.ULPIN_DOCKER_GUARD_OPS_DIR || 'E:/BhuAayam-data/ops/docker-guard';
+export const stoppedOnPurposeFile = (opsDir = guardOpsDir()) => join(opsDir, 'demo-stopped-on-purpose.json');
+
+/**
+ * While this marker exists the Docker guard does not start the demo. Only the demo runtime itself writes or
+ * removes it; a rehearsal does neither.
+ */
+export function markStoppedOnPurpose(definition, opsDir = guardOpsDir()) {
+  if (definition.rehearsal) return;
+  mkdirSync(opsDir, { recursive: true });
+  writeFileSync(stoppedOnPurposeFile(opsDir), JSON.stringify({ stoppedAt: new Date().toISOString() }) + '\n');
+}
+
+export function clearStoppedOnPurpose(definition, opsDir = guardOpsDir()) {
+  if (!definition.rehearsal) rmSync(stoppedOnPurposeFile(opsDir), { force: true });
+}
+
 /** Stops the named runtime's recorded processes and the containers labelled with its project; no other's. */
-export async function stopRuntime(name = demoRuntime, docker = localEngine) {
+export async function stopRuntime(name = demoRuntime, docker = localEngine, opsDir = guardOpsDir()) {
   const definition = definedRuntime(name);
   // Stop owned native processes even if Desktop is down or configuration is missing.
   await stopProcesses(definition);
+  // From here the API is down on purpose, even if the container step below fails.
+  markStoppedOnPurpose(definition, opsDir);
   try {
     const runtime = docker.connect();
     const ids = docker.containers(runtime, definition.project)
@@ -157,6 +177,7 @@ async function startRuntime(definition, create) {
   } else resume(definition, runtime, compose);
   await launchProcesses(env, definition);
   await waitForApi(env, definition);
+  clearStoppedOnPurpose(definition);
   const gateway = gatewayStateText(gatewayReport(env));
   console.log(`${definition.name} running: http://127.0.0.1:${env.API_PORT}/api/v1/health (${gateway}).`);
   const named = definition.rehearsal ? ['--runtime', definition.name] : [];

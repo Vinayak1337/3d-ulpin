@@ -3,12 +3,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { demoFile, runtimeDefinition } from './demo-config.mjs';
-import { composeArguments, parseArguments, stopRuntime } from './demo.mjs';
+import {
+  clearStoppedOnPurpose, composeArguments, parseArguments, stopRuntime, stoppedOnPurposeFile,
+} from './demo.mjs';
 import { ownedProcess, processInfo, stopProcesses } from './processes.mjs';
 import { root } from './runtime.mjs';
 
@@ -81,6 +83,36 @@ test('a record of another runtime found in a runtime\'s folder is refused, and n
   await stopProcesses(first);
   assert.deepEqual(labels.map(label => ownedProcess(label, first)), [null, null]);
 });
+
+test('a demo stop writes the stopped-on-purpose marker and a demo start removes it; a rehearsal does neither',
+  async t => {
+    const folder = mkdtempSync(join(tmpdir(), 'runtime-stop-'));
+    t.after(() => rmSync(folder, { recursive: true, force: true }));
+    const docker = { connect: () => ({ context: 'made-up-context' }), containers: () => [], stop: () => {} };
+    t.mock.method(console, 'log', () => {});
+    // A made-up demo runtime folder with no process records: nothing real is read or stopped.
+    const demo = runtimeDefinition('ulpin-demo', folder);
+    const ops = join(folder, 'ops', 'docker-guard');
+    assert.equal(stoppedOnPurposeFile(ops), join(ops, 'demo-stopped-on-purpose.json'));
+    await stopRuntime(demo, docker, ops);
+    const marker = JSON.parse(readFileSync(stoppedOnPurposeFile(ops), 'utf8'));
+    assert.deepEqual(Object.keys(marker), ['stoppedAt']);
+    assert.equal(new Date(marker.stoppedAt).toISOString(), marker.stoppedAt);
+
+    const rehearsal = runtimeDefinition('ulpin-reh-01', folder);
+    clearStoppedOnPurpose(rehearsal, ops);
+    assert.deepEqual(readdirSync(ops), ['demo-stopped-on-purpose.json']);
+    clearStoppedOnPurpose(demo, ops);
+    assert.deepEqual(readdirSync(ops), []);
+    clearStoppedOnPurpose(demo, ops);
+    // A start removes it once the API answers.
+    const source = readFileSync(fileURLToPath(new URL('./demo.mjs', import.meta.url)), 'utf8');
+    assert.match(source, /await waitForApi\(env, definition\);\r?\n\s+clearStoppedOnPurpose\(definition\);/);
+
+    const rehearsalOps = join(folder, 'rehearsal-ops');
+    await stopRuntime(rehearsal, docker, rehearsalOps);
+    assert.equal(existsSync(rehearsalOps), false);
+  });
 
 test('the command line names one runtime, defaults to ulpin-demo and refuses anything else before acting', () => {
   assert.deepEqual(parseArguments(['stop']), { action: 'stop', create: false, runtime: runtimeDefinition() });
