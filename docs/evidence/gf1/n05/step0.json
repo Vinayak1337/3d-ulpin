@@ -1,0 +1,54 @@
+{
+  "task": "N05 loose shapefile parts dropped in one batch are read together as one shapefile",
+  "base": "bb449b47",
+  "changes": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts",
+      "why": "queueShapefileSetTx: a published part (.shp, .shx, .dbf, .prj, .cpg by name, bytes agreeing for the first three) finds its stem's live parts (same case, latest source revision, same name minus extension, case-insensitive, folder path included); a duplicate extension rests every part with words naming it; a missing .shp, .shx or .dbf rests every part waiting; a full set queues SH2's job on the .shp item with an id from the .shp item and the sorted member SHA-256s, and the other parts rest read with the .shp. The job input, convert request and lineage gain an additive members array (shapefile_set only); a job whose members are no longer the live set writes nothing"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+      "why": "nativeDerivativeFormat gains shapefile_set (a shapefile card whose original is named .shp); the shapefile draft-limit words no longer point at a bounded API route"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-service.ts",
+      "why": "one hook before the draft queue: a shapefile part of a stem holding a .shp or .shx takes the set path and is neither drafted nor read as a table; a lone .dbf keeps today's table path"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-native-derivative-worker.ts",
+      "why": "one argument: the job's pinned members passed to convertNativeLayers"
+    },
+    {
+      "path": "services/geo/geo/native_gis.py",
+      "why": "convert-native takes format shapefile_set with each member's source id, object key, bytes and SHA-256; members are copied byte for byte into one scratch folder under one base name, each SHA-256 checked, then read by the existing shapefile layer reader, refactored so the ZIP path and the set path share its CRS, encoding and window logic"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-shapefile-set.test.ts, services/geo/tests/test_native_conversion.py",
+      "why": "real Tweed shapefile ZIP unpacked into loose parts in the test (good: .dbf, .shp, .shx order, one job, same features as the ZIP); test_only parts for two .dbf, missing .shx, no .prj, SHA-256 mismatch; a lone .dbf still a table"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-draft.test.ts, intake-native-derivative.test.ts",
+      "why": "their fakes match the job query, which now also reads payload (members)"
+    },
+    {
+      "path": "docs/api/source-pins.json",
+      "why": "refresh-contract repinned the four changed source hashes; no route or schema changed"
+    }
+  ],
+  "reuse": [
+    "SH2 intake-native-derivative job, queue, convert, keep and enrol path",
+    "CR1 per-layer officer CRS answer",
+    "the existing shapefile layer reader and _Derivative writer",
+    "convert-native route"
+  ],
+  "seamsOutsideOwned": [
+    "intake-native-derivative-worker.ts (one argument)"
+  ],
+  "notTouched": [
+    "Studio",
+    "KML paths",
+    "processing.ts",
+    "SB1 (not on this base; the hook sits beside where SB1's goes)"
+  ],
+  "runtimeNeeded": false
+}

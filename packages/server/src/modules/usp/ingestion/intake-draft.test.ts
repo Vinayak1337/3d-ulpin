@@ -83,7 +83,7 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
     return jobs.filter(job => ['queued', 'running'].includes(job.status));
-  if (sql.startsWith('SELECT id,status FROM jobs WHERE source_id'))
+  if (sql.startsWith('SELECT id,status,payload FROM jobs WHERE source_id'))
     return jobs.filter(job => job.operation === 'intake-native-derivative');
   if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
     return jobs.filter(row => row.id === values[0]);
