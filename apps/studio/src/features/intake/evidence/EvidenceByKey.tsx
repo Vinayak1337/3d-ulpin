@@ -12,10 +12,10 @@ import batch from '../Batch.module.css';
 
 /** The batch section "Evidence by key": declare a key, then read what each source matched. */
 export function EvidenceByKey({ caseId, items }: { caseId: string; items: readonly IntakeItem[] }) {
-  const targets = useBatchPackages(caseId);
+  const targetPage = useBatchPackages(caseId);
   const client = useQueryClient();
   const [declaring, setDeclaring] = useState(false);
-  const choices: DeclareChoices = { anchors: anchorItems(items, targets.data?.packages ?? []),
+  const choices: DeclareChoices = { anchors: anchorItems(items, targetPage.data?.packages ?? []),
     tables: tableChoices(items), documents: documentChoices(items) };
   return <section className={batch.question} aria-labelledby="evidence-by-key">
     <h2 className="ul-heading" id="evidence-by-key">Evidence by key</h2>
@@ -23,7 +23,7 @@ export function EvidenceByKey({ caseId, items }: { caseId: string; items: readon
       setDeclaring(false);
       void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
     }} /> : <DeclareStart drafted={choices.anchors.length > 0} declare={() => setDeclaring(true)} />}
-    <EvidenceSection caseId={caseId} items={items} targets={targets.data?.items ?? []} />
+    <EvidenceSection caseId={caseId} items={items} targets={targetPage.data?.items ?? []} />
   </section>;
 }
 

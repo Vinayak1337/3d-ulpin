@@ -4,11 +4,11 @@ import type { Package, Target } from '../run/model';
 
 export type EvidencePage = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake/evidence'>;
 export type Candidate = EvidencePage['candidates'][number];
-export type EvidenceSource = EvidencePage['sources'][number];
+type EvidenceSource = EvidencePage['sources'][number];
 export type KeyProfile = EvidencePage['profiles'][number];
 export type Coverage = NonNullable<EvidenceSource['coverage']>;
 export type Outcome = Candidate['outcome'];
-export type KeyKind = KeyProfile['input']['kind'];
+type KeyKind = KeyProfile['input']['kind'];
 export type KeyProfileBody =
   Schemas['POST_ingestion_cases_caseId_intake_evidence_key_profiles_Request_application_json'];
 export type KeyProfileInput = Omit<KeyProfileBody, 'requestKey'>;
@@ -36,7 +36,7 @@ const csvSelection: Selection = { format: 'csv', sheet: 'csv', table: null, head
 const pointer = (name: string) => name.replaceAll('~', '~0').replaceAll('/', '~1');
 
 /** A count read from the server; a null count is unknown and never 0. */
-export function knownWords(value: number | null) {
+function knownWords(value: number | null) {
   return value === null ? 'not known yet' : value.toLocaleString('en-IN');
 }
 
