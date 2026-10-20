@@ -1,0 +1,19 @@
+{
+  "task": "CR1 layer CRS answer",
+  "base": "fc7a063c",
+  "note": "docs/evidence/gf1/cr1/ already holds the earlier GeoJSON CRS task's evidence; this task writes under layer-crs/ and leaves those files unchanged.",
+  "existingPin": "IntakePinSchema carries only {wave, requestKey}; it has no coordinate system answer, so one new route is added (D1).",
+  "changes": [
+    {"path": "packages/contracts/src/usp/intake.ts", "why": "IntakeLayerCrsSchema request {requestKey, layer, crs}; optional IntakeItem.layerCrs naming each answerable layer and its officer answer"},
+    {"path": "services/geo/geo/native_gis.py", "why": "convert_native takes an optional layerCrs map; a layer whose file states no CRS is written under the officer's EPSG code (pyproj must build it, 2D horizontal), crsSource officer_stated; a stated layer is never overridden; crs_unstated layers say whether the file states anything"},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts", "why": "answers kept in plan_ref.nativeLayers beside the item; answer transaction (409 for a layer that is not unstated, already answered, or while converting); requeue with the next ordinal; lineage gains crsSource; words name officer-stated layers"},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-service.ts", "why": "one service method layerCrs: resolve the code through the geo service's resolve-geojson-crs (unknown code refused 422), idempotent by requestKey via the existing operations ledger"},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-ledger.ts", "why": "project plan_ref.nativeLayers onto IntakeItem.layerCrs (read only)"},
+    {"path": "apps/api/src/modules/ingestion/ingestion.controller.ts", "why": "POST cases/:caseId/intake/items/:itemId/layer-crs"},
+    {"path": "apps/studio/src/features/intake/", "why": "LayerCrsAnswer form per unstated layer in the tray's Next step"},
+    {"path": "docs/api/openapi.json, packages/api-client/src/schema.d.ts", "why": "generated"}
+  ],
+  "reuse": ["operations ledger (priorTx/rememberTx) for idempotency", "resolve-geojson-crs geo operation for code validation", "queueNativeDerivativeTx job keying (next ordinal)", "keptChildTx lineage lookup so kept layers are not kept twice"],
+  "seamsOutsideOwned": ["intake-ledger.ts intakeItem projection (one optional field)", "intake-service.ts (the one service method)"],
+  "runtimeNeeded": false
+}

@@ -4,6 +4,7 @@ import type { Package } from './run/model';
 import { needsLayoutAnswer } from './question-model';
 import { canRetryStopped } from './retry-command';
 import { StoppedRetry } from './StoppedRetry';
+import { LayerCrsAnswers } from './LayerCrsAnswer';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
   stateWords, packagePath, partProgressWords } from './batch-model';
 import type { IntakeItem } from './batch-model';
@@ -50,5 +51,6 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
+    {item.layerCrs?.length ? <LayerCrsAnswers caseId={caseId} item={item} refresh={refresh} /> : null}
   </div>;
 }

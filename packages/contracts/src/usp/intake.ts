@@ -58,6 +58,14 @@ export const IntakeCardSchema = z.strictObject({ ...fields, members: z.array(Int
 export const IntakeRegisterSchema = z.strictObject({ sourceId: z.string().uuid(), requestKey: z.string().uuid() });
 export const IntakePinSchema = z.strictObject({ wave: z.number().int().min(1).max(4), requestKey: z.string().uuid() });
 export const IntakeLargeRetrySchema = z.strictObject({ requestKey: z.string().uuid() });
+/** CR1: the EPSG code an officer states for a GeoPackage or shapefile layer whose file states no system. */
+export const IntakeLayerCrsSchema = z.strictObject({
+  requestKey: z.string().uuid(), layer: z.string().min(1).max(256),
+  crs: z.string().regex(/^EPSG:[1-9][0-9]{0,8}$/, 'Write the code as EPSG:<number>, for example EPSG:32643.'),
+});
+export const IntakeLayerCrsAnswerSchema = z.strictObject({
+  crs: IntakeLayerCrsSchema.shape.crs, state: z.literal('officer_stated'), statedAt: z.string().datetime(),
+});
 export const IntakeLargeRetryResultSchema = z.strictObject({
   itemId: z.string().uuid(), jobId: z.string().uuid(),
   retry: z.number().int().positive().describe('How many officer retries this item has, this one included.'),
@@ -110,6 +118,10 @@ export const IntakeItemSchema = z.strictObject({
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
   existingAreaId: z.string().uuid().nullable().optional().describe(
     'The area whose source already holds this file\'s exact bytes; present only when the item rests for that reason.'),
+  layerCrs: z.array(z.strictObject({ layer: IntakeLayerCrsSchema.shape.layer,
+    answer: IntakeLayerCrsAnswerSchema.nullable() })).max(100).optional().describe(
+    'GeoPackage or shapefile ZIP: each layer whose file states no coordinate system, with the officer\'s answer '
+    + 'or null while none is given; present only when there is such a layer.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });

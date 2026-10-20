@@ -6,6 +6,7 @@ import type { Schemas } from '@ulpin/api-client';
 import { readTargets } from './run/api';
 import { runKey } from './run/useTargets';
 import type { RetryResult } from './retry-command';
+import type { LayerCrsBody } from './layer-crs-command';
 
 export const recipeKey = (caseId: string) => ['batch-recipes', caseId];
 
@@ -45,5 +46,11 @@ export function useIntakeManifest(caseId: string) {
 export async function retryStoppedItem(caseId: string, itemId: string, requestKey: string): Promise<RetryResult> {
   return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry', {
     params: { path: { caseId, itemId } }, body: { requestKey },
+  }));
+}
+
+export async function stateLayerCrs(caseId: string, itemId: string, body: LayerCrsBody) {
+  return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layer-crs', {
+    params: { path: { caseId, itemId } }, body,
   }));
 }

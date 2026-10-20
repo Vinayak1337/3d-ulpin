@@ -3335,6 +3335,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layer-crs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** State the EPSG code of a GeoPackage or shapefile layer whose file states none, and convert it again */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_layer_crs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/conversions": {
         parameters: {
             query?: never;
@@ -64687,6 +64704,17 @@ export interface components {
              * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
              */
             existingAreaId?: string | null;
+            /** @description GeoPackage or shapefile ZIP: each layer whose file states no coordinate system, with the officer's answer or null while none is given; present only when there is such a layer. */
+            layerCrs?: {
+                layer: string;
+                answer: {
+                    crs: string;
+                    /** @enum {string} */
+                    state: "officer_stated";
+                    /** Format: date-time */
+                    statedAt: string;
+                } | null;
+            }[];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -64906,6 +64934,17 @@ export interface components {
                  * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
                  */
                 existingAreaId?: string | null;
+                /** @description GeoPackage or shapefile ZIP: each layer whose file states no coordinate system, with the officer's answer or null while none is given; present only when there is such a layer. */
+                layerCrs?: {
+                    layer: string;
+                    answer: {
+                        crs: string;
+                        /** @enum {string} */
+                        state: "officer_stated";
+                        /** Format: date-time */
+                        statedAt: string;
+                    } | null;
+                }[];
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -64924,6 +64963,12 @@ export interface components {
             jobId: string;
             /** @description How many officer retries this item has, this one included. */
             retry: number;
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_layer_crs_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            layer: string;
+            crs: string;
         };
         GET_ingestion_conversions_Response_200_application_json: {
             /** @enum {string} */
@@ -91532,6 +91577,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_items_itemId_layer_crs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_layer_crs_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_Response_201_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

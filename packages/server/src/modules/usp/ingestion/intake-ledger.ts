@@ -1,5 +1,7 @@
 import type { PoolClient } from 'pg';
-import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, type IntakeCard } from '@ulpin/contracts/usp';
+import { z } from 'zod';
+import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, IntakeLayerCrsSchema,
+  IntakeLayerCrsAnswerSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
 import { intakeSizeClass, intakeWave } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
@@ -30,6 +32,28 @@ function existingArea(value: unknown) {
   return Boolean(areaId) && IntakeItemSchema.shape.existingAreaId.safeParse(areaId).success;
 }
 
+const layer = IntakeLayerCrsSchema.shape.layer;
+/** CR1. Beside a GeoPackage or shapefile ZIP's item: its layers stating no system, and the officer's answers. */
+export const NativeLayersRefSchema = z.strictObject({ unstated: z.array(layer).max(100),
+  answers: z.array(IntakeLayerCrsAnswerSchema.extend({ layer })).max(100) });
+export type NativeLayersRef = z.infer<typeof NativeLayersRefSchema>;
+
+export function nativeLayersRef(value: unknown): NativeLayersRef {
+  const stored = NativeLayersRefSchema.safeParse((value as { nativeLayers?: unknown } | null)?.nativeLayers);
+  return stored.success ? stored.data : { unstated: [], answers: [] };
+}
+
+/** Each layer asked about, in the order the conversion named it, with its answer once given. */
+function layerCrs(value: unknown) {
+  const { unstated, answers } = nativeLayersRef(value);
+  const layers = [...new Set([...unstated, ...answers.map(answer => answer.layer)])];
+  if (!layers.length) return {};
+  return { layerCrs: layers.map(name => {
+    const answer = answers.find(entry => entry.layer === name);
+    return { layer: name, answer: answer ? { crs: answer.crs, state: answer.state, statedAt: answer.statedAt } : null };
+  }) };
+}
+
 export function intakeItem(row: any) {
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
@@ -41,6 +65,7 @@ export function intakeItem(row: any) {
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
     limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
     ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}),
+    ...layerCrs(row.plan_ref),
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
 }

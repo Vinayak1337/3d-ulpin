@@ -65,3 +65,13 @@
 .question p {
   overflow-wrap: anywhere;
 }
+
+.answer {
+  display: grid;
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+
+.answer > button {
+  justify-self: start;
+}

@@ -7,7 +7,7 @@ import { AnyAuthorMappingSchema, MappingDecisionSchema,
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
-  IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema } from '@ulpin/contracts/usp';
+  IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakeLayerCrsSchema } from '@ulpin/contracts/usp';
 import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake-zip-layers';
 import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake-large';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
@@ -85,6 +85,15 @@ export class IngestionController {
   @jsonBody(IntakeLargeRetrySchema) @wireResponse(200,IntakeLargeRetryResultSchema)
   async retryIntake(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
     return retryIntakeLargeItem(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Post('cases/:caseId/intake/items/:itemId/layer-crs')
+  @HttpCode(200) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_layer_crs',
+    summary:'State the EPSG code of a GeoPackage or shapefile layer whose file states none, and convert it again'})
+  @jsonBody(IntakeLayerCrsSchema) @wireResponse(200,IntakeItemSchema)
+  async layerCrs(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.layerCrs(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 
   @Get('conversions')

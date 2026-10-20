@@ -7,7 +7,8 @@ import type { readObjectRange } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { listWords, nativeDerivativeFormat } from './intake-draft';
-import { writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
+import { nativeLayersRef, readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState,
+  type NativeLayersRef } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
 
@@ -31,26 +32,33 @@ const stored = z.strictObject({
   objectKey: z.string().regex(/^native-derivatives\/[a-f0-9]{64}\/\d+\/[a-z]+-[a-f0-9]{64}$/),
   bytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes), sha256: hex64 });
 const layerName = z.string().min(1).max(256);
+// CR1: a system the file states, or the code an officer stated for a layer whose file states none.
+const crsSource = z.enum(['stated', 'officer_stated']);
 const ConvertedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
-  state: z.literal('converted'), crs: z.string().regex(/^EPSG:\d{1,9}$/), features: z.number().int().nonnegative(),
-  notWritten: z.number().int().nonnegative(), geojson: stored, sidecar: stored });
+  state: z.literal('converted'), crs: z.string().regex(/^EPSG:\d{1,9}$/), crsSource,
+  features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), geojson: stored,
+  sidecar: stored });
+const reason = z.string().min(1).max(300);
 const StoppedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
-  state: z.enum(['not_converted', 'crs_unstated']), reason: z.string().min(1).max(300) });
+  state: z.literal('not_converted'), reason });
+// `statesCrs`: the file states a system that does not resolve; only a layer stating none takes an officer answer.
+const UnstatedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
+  state: z.literal('crs_unstated'), statesCrs: z.boolean(), reason });
 export const NativeConversionSchema = z.strictObject({
   conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION), readerVersion: z.string().min(1).max(64), sourceId: uuid,
-  sourceSha256: hex64, layers: z.array(z.discriminatedUnion('state', [ConvertedLayerSchema, StoppedLayerSchema]))
-    .min(1).max(100),
+  sourceSha256: hex64, layers: z.array(z.discriminatedUnion('state',
+    [ConvertedLayerSchema, StoppedLayerSchema, UnstatedLayerSchema])).min(1).max(100),
 });
 export type NativeConversion = z.infer<typeof NativeConversionSchema>;
 type ConvertedLayer = z.infer<typeof ConvertedLayerSchema>;
-type StoppedLayer = z.infer<typeof StoppedLayerSchema>;
+type StoppedLayer = z.infer<typeof StoppedLayerSchema> | z.infer<typeof UnstatedLayerSchema>;
 
 /** The lineage a derivative child keeps beside its receipt: its original, layer, conversion and locator sidecar. */
 export const NativeDerivativeLineageSchema = z.strictObject({
   version: z.literal('native-derivative/1'), conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION),
   readerVersion: z.string().min(1).max(64), originalSourceId: uuid, originalSourceRevision: z.number().int().positive(),
   originalSha256: hex64, originalItemId: uuid, format: z.enum(['gpkg', 'shapefile_zip']), layer: layerName,
-  ordinal: z.number().int().nonnegative(), crs: z.string(), features: z.number().int().nonnegative(),
+  ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, features: z.number().int().nonnegative(),
   notWritten: z.number().int().nonnegative(), sidecar: stored,
 });
 
@@ -58,10 +66,11 @@ const kind = (format: 'gpkg' | 'shapefile_zip') => format === 'gpkg' ? 'GeoPacka
 
 /**
  * Publishing the card queues one fenced conversion job in the publishing transaction. None is queued while one
- * waits or runs, or once one finished; a failed job is queued again by enrolling the file again.
+ * waits or runs, or once one finished; a failed job is queued again by enrolling the file again. An officer's
+ * coordinate system answer (`answered`) queues it again after one finished.
  */
 export async function queueNativeDerivativeTx(client: PoolClient, source: IntakeSourceRow,
-  card: IntakeCard): Promise<string | null> {
+  card: IntakeCard, answered = false): Promise<string | null> {
   const format = nativeDerivativeFormat(card);
   const item = (await client.query(`SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL
     FOR UPDATE`, [source.id])).rows[0];
@@ -70,7 +79,7 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
     [`intake-native-derivative:${item.item_id}`]);
   const jobs = (await client.query(`SELECT id,status FROM jobs WHERE source_id=$1
     AND operation='intake-native-derivative' ORDER BY created_at`, [source.id])).rows;
-  const open = jobs.find(job => ['queued', 'running', 'completed'].includes(job.status));
+  const open = jobs.find(job => ['queued', 'running', ...(answered ? [] : ['completed'])].includes(job.status));
   if (open) return open.status === 'completed' ? null : open.id;
   const scope = await intakeCaseTx(client, source.case_id);
   const input = IntakeNativeDerivativeInputSchema.parse({ version: 'intake-native-derivative/1',
@@ -85,29 +94,71 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
   const { registerUspJobInputTx } = await import('../jobs');
   await registerUspJobInputTx(client, input.jobId,
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
+  // The layers asked about and the officer's answers stay beside the item while it is read again.
+  const nativeLayers = nativeLayersRef(item.plan_ref);
+  const planRef = nativeLayers.unstated.length || nativeLayers.answers.length ? { nativeLayers } : null;
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
-    planRef: null, recordsSeen: 0, limitReason: `The layers of this ${kind(format)} are being converted to GeoJSON, `
-      + 'each to be taken in as its own file.' });
+    planRef, recordsSeen: 0, limitReason: `The layers of this ${kind(format)} are being converted `
+      + 'to GeoJSON, each to be taken in as its own file.' });
   return input.jobId;
+}
+
+/**
+ * CR1. Keeps the officer's EPSG code for a layer the last conversion found stating no system, beside the item, and
+ * queues the conversion again. The caller holds the case and has checked the code with the geo service. A system
+ * the file states is never replaced; each layer takes one answer; none is taken while a conversion runs.
+ */
+export async function stateLayerCrsTx(client: PoolClient, source: IntakeSourceRow, itemId: string,
+  answer: { layer: string; crs: string }) {
+  const item = (await client.query(`SELECT * FROM usp_intake_items WHERE item_id=$1 AND source_id=$2
+    AND parent_item_id IS NULL FOR UPDATE`, [itemId, source.id])).rows[0];
+  if (!item || !nativeDerivativeFormat(item.card)) throw new AppError(409, 'INTAKE_LAYER_CRS_NOT_NATIVE',
+    'Only a layer of a GeoPackage or shapefile ZIP takes a coordinate system answer.');
+  const stored = nativeLayersRef(item.plan_ref);
+  if (stored.answers.some(entry => entry.layer === answer.layer)) throw new AppError(409, 'INTAKE_LAYER_CRS_ANSWERED',
+    'The officer already stated this layer\'s coordinate system.');
+  if (!stored.unstated.includes(answer.layer)) throw new AppError(409, 'INTAKE_LAYER_CRS_STATED',
+    'The last conversion found no layer of this name whose file states no coordinate system; '
+      + 'a system the file states is never replaced.');
+  if ((await client.query(`SELECT 1 FROM jobs WHERE source_id=$1 AND operation='intake-native-derivative'
+    AND status='running' LIMIT 1`, [source.id])).rowCount) throw new AppError(409, 'INTAKE_LAYER_CRS_CONVERTING',
+    'The layers of this file are being converted; state the coordinate system once that ends.');
+  const nativeLayers: NativeLayersRef = { ...stored, answers: [...stored.answers,
+    { layer: answer.layer, crs: answer.crs, state: 'officer_stated', statedAt: new Date().toISOString() }] };
+  const current = await readIntakeDraftTx(client, item.case_id, itemId);
+  await writeIntakeDraftTx(client, item.case_id, itemId, { ...current, planRef: { nativeLayers } });
+  await queueNativeDerivativeTx(client, source, item.card, true);
 }
 
 export type NativeDerivativeDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: typeof readObjectRange;
   convert: (request: { sourceId: string; objectKey: string; sha256: string; bytes: number;
-    format: 'gpkg' | 'shapefile_zip' }) => Promise<unknown>;
+    format: 'gpkg' | 'shapefile_zip'; layerCrs?: Record<string, string> }) => Promise<unknown>;
 };
 
 type Outcome = { layer: string; sourceId: string | null; code: string | null };
 
-/** Officer words name each layer and what became of it; a layer with no stated system asks the officer. */
+/**
+ * Officer words name each layer and what became of it; a layer with no stated system asks the officer. The layers
+ * stating none and the officer's answers are kept beside the item.
+ */
 export function nativeParentState(format: 'gpkg' | 'shapefile_zip', conversion: NativeConversion,
-  outcomes: Outcome[]): IntakeDraftState {
-  const taken = outcomes.filter(outcome => outcome.sourceId && !outcome.code).map(outcome => outcome.layer);
+  outcomes: Outcome[], answers: NativeLayersRef['answers'] = []): IntakeDraftState {
+  const officer = new Map<string, string>();
+  for (const layer of conversion.layers) {
+    if (layer.state === 'converted' && layer.crsSource === 'officer_stated') officer.set(layer.layer, layer.crs);
+  }
+  const named = (layer: string) =>
+    officer.has(layer) ? `${layer} (${officer.get(layer)}, stated by the officer)` : layer;
+  const taken = outcomes.filter(outcome => outcome.sourceId && !outcome.code).map(outcome => named(outcome.layer));
   const failed = outcomes.filter(outcome => outcome.code)
     .map(outcome => `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
   const stopped = (state: StoppedLayer['state']) => conversion.layers
     .filter((layer): layer is StoppedLayer => layer.state === state).map(layer => `${layer.layer} (${layer.reason})`);
   const unstated = stopped('crs_unstated'), refused = stopped('not_converted');
+  const asked = conversion.layers.flatMap(layer =>
+    layer.state === 'crs_unstated' && !layer.statesCrs ? [layer.layer] : []);
+  const planRef = asked.length || answers.length ? { nativeLayers: { unstated: asked, answers } } : null;
   const sentences = [];
   if (taken.length) sentences.push(`${taken.length === 1 ? '1 layer' : `${taken.length} layers`} of this `
     + `${kind(format)} ${taken.length === 1 ? 'is' : 'are'} converted to GeoJSON and taken in as `
@@ -117,7 +168,7 @@ export function nativeParentState(format: 'gpkg' | 'shapefile_zip', conversion: 
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
   const placement = unstated.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
-  return { state: 'read', placement, planRef: null, recordsSeen: 0, limitReason: sentences.join(' ') };
+  return { state: 'read', placement, planRef, recordsSeen: 0, limitReason: sentences.join(' ') };
 }
 
 function failureCode(error: unknown): string {
@@ -138,12 +189,15 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       AND parent_item_id IS NULL`, [caseId, itemId])).rows[0];
     const format = nativeDerivativeFormat(item?.card ?? null);
     if (!item?.source_id || !format) return null;
-    return { format, source: (await intakeSourceTx(client, caseId, item.source_id)).source };
+    return { format, source: (await intakeSourceTx(client, caseId, item.source_id)).source,
+      answers: nativeLayersRef(item.plan_ref).answers };
   });
   if (!scope) return [];
-  const { format, source } = scope;
+  const { format, source, answers } = scope;
+  const layerCrs = Object.fromEntries(answers.map(answer => [answer.layer, answer.crs]));
   const conversion = NativeConversionSchema.parse(await dependencies.convert({ sourceId: source.id,
-    objectKey: source.object_key, sha256: source.sha256, bytes: Number(source.bytes), format }));
+    objectKey: source.object_key, sha256: source.sha256, bytes: Number(source.bytes), format,
+    ...(answers.length ? { layerCrs } : {}) }));
   if (conversion.sourceId !== source.id || conversion.sourceSha256 !== source.sha256)
     throw new AppError(422, 'NATIVE_DERIVATIVE_PINS', 'The conversion names a different original.');
   const outcomes: Outcome[] = [];
@@ -152,8 +206,8 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
     const lineage = NativeDerivativeLineageSchema.parse({ version: 'native-derivative/1',
       conversion: conversion.conversion, readerVersion: conversion.readerVersion, originalSourceId: source.id,
       originalSourceRevision: source.revision, originalSha256: source.sha256, originalItemId: itemId, format,
-      layer: layer.layer, ordinal: layer.ordinal, crs: layer.crs, features: layer.features,
-      notWritten: layer.notWritten, sidecar: layer.sidecar });
+      layer: layer.layer, ordinal: layer.ordinal, crs: layer.crs, crsSource: layer.crsSource,
+      features: layer.features, notWritten: layer.notWritten, sidecar: layer.sidecar });
     try {
       outcomes.push({ layer: layer.layer, sourceId: await keepDerivative(caseId, layer, lineage, dependencies),
         code: null });
@@ -171,7 +225,7 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
     }
   }
   await dependencies.transaction(client => writeIntakeDraftTx(client, caseId, itemId,
-    nativeParentState(format, conversion, outcomes)));
+    nativeParentState(format, conversion, outcomes, answers)));
   return outcomes.flatMap(outcome => outcome.sourceId ? [outcome.sourceId] : []);
 }
 

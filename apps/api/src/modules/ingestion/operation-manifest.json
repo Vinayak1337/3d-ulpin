@@ -776,6 +776,19 @@
       "batch": "LP3d"
     },
     {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layer-crs",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_layer_crs",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeLayerCrsSchema",
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "CR1"
+    },
+    {
       "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/targets",
       "operationId": "GET_api_v1_ingestion_cases_caseId_targets",

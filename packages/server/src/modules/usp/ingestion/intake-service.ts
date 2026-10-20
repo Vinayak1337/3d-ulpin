@@ -1,12 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema,
+import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
   type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObjectRange } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
+import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
+import { areaGeo } from '../../areas/areas';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, saveIntakeCardTx, citeIntakeReceipt } from './intake-ledger';
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
@@ -21,7 +23,21 @@ const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_i
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
-const defaults = { transaction, read: readObjectRange, probe: probeOriginal };
+const defaults = { transaction, read: readObjectRange, probe: probeOriginal,
+  resolve: (collection: Record<string, unknown>) =>
+    areaGeo<{ authority: string }>('resolve-geojson-crs', { collection }) };
+
+/** CR1. The geo service decides whether it knows a code (pyproj builds it as a 2D system); none is ever guessed. */
+async function knownCrs(crs: string, resolve: typeof defaults.resolve) {
+  let authority: string | null = null;
+  try {
+    authority = (await resolve({ crs: { type: 'name', properties: { name: crs } } })).authority;
+  } catch (error) {
+    if (!(error instanceof AppError) || error.status !== 422) throw error;
+  }
+  if (authority !== crs) throw new AppError(422, 'INTAKE_LAYER_CRS_UNKNOWN',
+    `${crs} is not a two-dimensional coordinate reference system the geo service knows; state one it knows.`);
+}
 
 async function itemContextTx(client: PoolClient, caseId: string, itemId: string) {
   const row = (await client.query(`${itemSelect} WHERE i.case_id=$1 AND i.item_id=$2`, [caseId, itemId])).rows[0]
@@ -195,6 +211,27 @@ export class IntakeService {
       await appendIntakeItemTx(client, caseId, itemId);
       await rememberTx(client, caseId, key, digest, { itemId });
       await notifyTx(client, source);
+      assertIngestionBinding(scope.binding);
+    });
+    return this.one(caseId, itemId);
+  }
+
+  /** CR1. The officer states the EPSG code of a layer whose file states none; the conversion is queued again. */
+  async layerCrs(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakeLayerCrsSchema.parse(raw);
+    await knownCrs(request.crs, this.dependencies.resolve);
+    await this.dependencies.transaction(async client => {
+      await lockSourceCaseDestinationTx(client, caseId);
+      const scope = await intakeCaseTx(client, caseId, true);
+      const { source } = await itemContextTx(client, caseId, itemId);
+      const key = `intake-layer-crs:${request.requestKey}`;
+      const digest = fingerprint({ request, itemId, access: scope.binding.access });
+      if (await priorTx(client, caseId, key, digest)) return;
+      const { stateLayerCrsTx } = await import('./intake-native-derivative');
+      await stateLayerCrsTx(client, source, itemId, request);
+      await rememberTx(client, caseId, key, digest, { itemId });
       assertIngestionBinding(scope.binding);
     });
     return this.one(caseId, itemId);
