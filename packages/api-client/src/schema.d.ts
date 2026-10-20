@@ -66955,6 +66955,8 @@ export interface components {
                 expiresAt: string;
                 /** @description Sources read under the profile after it that the confirmation neither includes nor excludes. */
                 newerSources: string[];
+                /** @description The candidates the confirmation accepted, in the order of its stored decisions. */
+                accepted?: string[];
             }[];
             sources: {
                 /** Format: uuid */
@@ -67109,7 +67111,7 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
-            /** @description Stored candidates by outcome, each counted once; not a reading total (see sources). */
+            /** @description Stored candidates of the whole case by outcome, each counted once; the outcome, profile and item filters narrow the page, never these counts. Not a reading total (see sources). */
             counts: {
                 matched: number;
                 no_match: number;
@@ -95315,6 +95317,10 @@ export interface operations {
     GET_api_v1_ingestion_cases_caseId_intake_evidence: {
         parameters: {
             query?: {
+                /** @description Only the candidates of this table or document; the counts stay case-wide. */
+                itemId?: string;
+                /** @description Only the candidates read under this key profile; the counts stay case-wide. */
+                profileId?: string;
                 cursor?: string;
                 outcome?: "matched" | "no_match" | "several" | "conflicting";
             };

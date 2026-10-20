@@ -8,9 +8,9 @@ import type { IntakeItem } from '../batch-model';
 import type { Package, Target, TargetPage } from '../run/model';
 import { runKey } from '../run/useTargets';
 import { createEvidenceConfirmation, evidenceKey, readPackagePins } from './api';
-import { blankDraft, ConfirmEvidenceForm, pressConfirm, rereadAfterRefusal, type ConfirmDraft,
-  type ConfirmRead } from './ConfirmEvidence';
-import { acceptFile, decidable, setAccept, setReject, type ConfirmBody,
+import { blankDraft, ConfirmEvidenceForm, pressAcceptFile, pressConfirm, rereadAfterRefusal, type ConfirmDraft,
+  type ConfirmRead, type FileAccepts } from './ConfirmEvidence';
+import { acceptedIds, acceptFile, confirmedOf, decidable, setAccept, setReject, type ConfirmBody,
   type EvidenceConfirmation } from './confirm-model';
 import type { Candidate, EvidencePage, KeyProfile } from './model';
 
@@ -122,9 +122,32 @@ const note = 'Stored with every pin it names. Nothing was written to the registr
   + 'rows and parts to recorded buildings under this confirmation.';
 const stored = (body: ConfirmBody): EvidenceConfirmation => ({ confirmationId: id(80), caseId, inputSha256: sha('0'),
   input: body, subject: 'local-officer', expiresAt: at, createdAt: at, registryWritten: false, note });
+const idle: FileAccepts = { reading: null, words: {}, error: null, accept: vi.fn() };
 const form = (draft: ConfirmDraft, extra: Partial<Parameters<typeof ConfirmEvidenceForm>[0]> = {}) =>
   renderToStaticMarkup(<ConfirmEvidenceForm profile={profile} read={read} draft={draft} change={vi.fn()}
-    pending={false} submit={vi.fn()} close={vi.fn()} result={null} error={null} {...extra} />);
+    pending={false} submit={vi.fn()} close={vi.fn()} result={null} error={null} files={idle} {...extra} />);
+/** The candidates of the page shown, read as one file's matches. */
+const pageFile = (itemId: string) => ({ itemId, matches: decidable(page, profile), more: false });
+const acceptRegister = () => acceptFile({}, pageFile(register.itemId)).choices;
+
+type Reply = { status: number; body: unknown };
+/** A fake server: each evidence read and each confirmation is answered by the given functions. */
+function stubEvidence(readPage: (query: URLSearchParams) => EvidencePage, confirm: (body: ConfirmBody) => Reply) {
+  const reads: Record<string, string>[] = [], bodies: ConfirmBody[] = [];
+  vi.stubGlobal('fetch', async (request: Request) => {
+    const url = new URL(request.url);
+    if (request.method === 'GET') {
+      expect(url.pathname).toBe(`/api/v1/ingestion/cases/${caseId}/intake/evidence`);
+      reads.push(Object.fromEntries(url.searchParams));
+      return Response.json(readPage(url.searchParams));
+    }
+    const body = await request.json() as ConfirmBody;
+    bodies.push(body);
+    const reply = confirm(body);
+    return Response.json(reply.body, { status: reply.status });
+  });
+  return { reads, bodies };
+}
 const ready: ConfirmDraft = { ...blankDraft, acknowledgement: 'I checked each row against its building.',
   exclusions: { [late.itemId]: 'Its reading is still open; I confirm it later.' } };
 
@@ -133,10 +156,11 @@ it('accepts every exact single match of a file in one press; each stays unselect
     expect(validate(schemas.page, page)).toEqual([]);
     const candidates = decidable(page, profile);
     expect(candidates).toEqual([first, second, conflicting, several]);
-    const all = acceptFile({}, candidates, register.itemId);
+    const all = acceptRegister();
     expect(Object.keys(all)).toEqual([first.candidateId, second.candidateId]);
     expect(Object.values(all).every((choice) => choice.decision === 'accept')).toBe(true);
-    expect(acceptFile({}, candidates, letter.itemId)).toEqual({});
+    expect(acceptFile({}, pageFile(letter.itemId))).toEqual({ choices: {},
+      words: 'This file has no exact single match under this key.' });
     const one = setAccept(all, first, false);
     expect(Object.keys(one)).toEqual([second.candidateId]);
     const html = form({ ...blankDraft, choices: one });
@@ -175,7 +199,7 @@ const targetsReadPins = (read11?: Package) => {
 
 it('sends closed sources with every pin, named buildings with fingerprints and the decisions, but no manifest hash',
   async () => {
-    const choices = setReject(acceptFile({}, decidable(page, profile), register.itemId), several,
+    const choices = setReject(acceptRegister(), several,
       'The letter names two houses; it is not one building.');
     const bodies = stubServer([(body) => ({ status: 202, body: stored(body) })]);
     const readTargets = targetsRead();
@@ -250,7 +274,7 @@ it('a refusal shows the server\'s words and code and reads the evidence again; t
     const bodies = stubServer([...refusals.map((error) => () => ({ status: 409, body: { error } })),
       () => new TypeError('Network response was lost.'), (body) => ({ status: 202, body: stored(body) })]);
     const send = createEvidenceConfirmation(caseId);
-    const draft = { ...ready, choices: acceptFile({}, decidable(page, profile), register.itemId) };
+    const draft = { ...ready, choices: acceptRegister() };
     const client = { invalidateQueries: vi.fn(async () => undefined) };
     for (const refusal of refusals) {
       const error = await pressConfirm(caseId, profile, read, draft, send, targetsReadPins())
@@ -274,4 +298,84 @@ it('a refusal shows the server\'s words and code and reads the evidence again; t
     client.invalidateQueries.mockClear();
     rereadAfterRefusal(client, caseId, new ApiError(500, '/api', null));
     expect(client.invalidateQueries).not.toHaveBeenCalled();
+  });
+
+it('a file on one page is accepted as before: one read names the key, the file and the matched outcome', async () => {
+  const { reads } = stubEvidence(() => ({ ...page, candidates: [first, second] }), () => ({ status: 500, body: {} }));
+  const press = await pressAcceptFile(caseId, profile, register.itemId, {}, new Set());
+  expect(press).toEqual({ choices: acceptRegister(), words: null });
+  expect(reads).toEqual([{ outcome: 'matched', profileId: profile.profileId, itemId: register.itemId }]);
+  // Every file read under the key has the button, as a match may sit on a later page.
+  expect(form(blankDraft).match(/>Accept every exact single match of this file<\/button>/g)).toHaveLength(3);
+});
+
+it('accepts a file\'s matches over every page, 100 at a time; the next press continues after a stored confirmation',
+  async () => {
+    const many = Array.from({ length: 250 }, (_, n) => candidate(1000 + n, 'matched', `H-${n}`,
+      row(n + 2, `H-${n}`), [anchor(20, `H-${n}`)]));
+    const cut = many[199]!.candidateId;
+    const pages: EvidencePage[] = [{ ...page, candidates: many.slice(0, 200), nextCursor: cut },
+      { ...page, candidates: many.slice(200), nextCursor: null }];
+    for (const one of pages) expect(validate(schemas.page, one)).toEqual([]);
+    const { reads, bodies } = stubEvidence((query) => pages[query.get('cursor') === cut ? 1 : 0]!,
+      (body) => ({ status: 202, body: stored(body) }));
+    const ids = (from: number, to: number) => many.slice(from, to).map((match) => match.candidateId);
+    const words = 'This file has 250 exact single matches; one confirmation takes 100. Confirm these, then accept '
+      + 'the next 100.';
+    const confirmed = new Set<string>();
+
+    const once = await pressAcceptFile(caseId, profile, register.itemId, {}, confirmed);
+    expect(Object.keys(once.choices)).toEqual(ids(0, 100));
+    expect(once.words).toBe(words);
+    const filter = { outcome: 'matched', profileId: profile.profileId, itemId: register.itemId };
+    expect(reads).toEqual([filter, { ...filter, cursor: cut }]);
+    const html = form({ ...ready, choices: once.choices }, { files: { ...idle, words: { [register.itemId]: words } } });
+    expect(html).toContain(`<p class="ul-help" role="status">${words}</p>`);
+    expect(html).toContain('Your decisions: 100 accepted, 0 rejected');
+
+    const send = createEvidenceConfirmation(caseId);
+    const result = await pressConfirm(caseId, profile, read, { ...ready, choices: once.choices }, send,
+      targetsReadPins());
+    if (!('confirmation' in result)) throw new Error(result.missing);
+    expect(validate(schemas.confirm, bodies[0])).toEqual([]);
+    expect(bodies[0]!.additions.kind === 'citations' && bodies[0]!.additions.decisions.length).toBe(100);
+    for (const candidateId of acceptedIds(result.confirmation)) confirmed.add(candidateId);
+
+    const next = await pressAcceptFile(caseId, profile, register.itemId, {}, confirmed);
+    expect(Object.keys(next.choices)).toEqual(ids(100, 200));
+    expect(next.words).toBe(`${words} 100 were confirmed already here and are not offered again.`);
+    for (const candidateId of ids(100, 200)) confirmed.add(candidateId);
+    const last = await pressAcceptFile(caseId, profile, register.itemId, {}, confirmed);
+    expect(Object.keys(last.choices)).toEqual(ids(200, 250));
+    expect(last.words).toBe('200 were confirmed already here and are not offered again.');
+    // Decisions already made on other candidates leave less room in the same confirmation.
+    const shared = await pressAcceptFile(caseId, profile, register.itemId,
+      setReject({}, several, 'Two houses.'), new Set());
+    expect(Object.keys(shared.choices)).toHaveLength(100);
+    expect(shared.words).toBe(`${words} 1 other decision is already made, so 99 are selected.`);
+  });
+
+it('after a reload the stored confirmations the read lists for the key are not offered again; the press continues',
+  async () => {
+    const many = Array.from({ length: 250 }, (_, n) => candidate(3000 + n, 'matched', `R-${n}`,
+      row(n + 2, `R-${n}`), [anchor(20, `R-${n}`)]));
+    const ids = (from: number, to: number) => many.slice(from, to).map((match) => match.candidateId);
+    const state = (n: number, profileId: string, accepted: string[]) => ({ confirmationId: id(n), profileId,
+      additions: 'citations' as const, createdAt: at, expiresAt: at, newerSources: [], accepted });
+    // As read after a reload: this key's confirmation of the first 100, and another key's that names the next ten.
+    const reloaded: EvidencePage = { ...page, candidates: many.slice(0, 200), nextCursor: many[199]!.candidateId,
+      confirmations: [state(81, profile.profileId, ids(0, 100)), state(82, id(32), ids(100, 110)),
+        { ...state(83, profile.profileId, []), additions: 'no_additions' }] };
+    expect(validate(schemas.page, reloaded)).toEqual([]);
+    stubEvidence((query) => query.get('cursor') ? { ...reloaded, candidates: many.slice(200), nextCursor: null }
+      : reloaded, () => ({ status: 500, body: {} }));
+    const confirmed = confirmedOf(reloaded, profile);
+    expect([...confirmed]).toEqual(ids(0, 100));
+    const next = await pressAcceptFile(caseId, profile, register.itemId, {}, confirmed);
+    expect(Object.keys(next.choices)).toEqual(ids(100, 200));
+    expect(next.words).toContain('100 were confirmed already here and are not offered again.');
+    // A confirmation stored since the read is merged with the read's own.
+    const since = await pressAcceptFile(caseId, profile, register.itemId, {},
+      confirmedOf(reloaded, profile, ids(100, 200)));
+    expect(Object.keys(since.choices)).toEqual(ids(200, 250));
   });

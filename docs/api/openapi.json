@@ -41255,6 +41255,26 @@
         "operationId": "GET_api_v1_ingestion_cases_caseId_intake_evidence",
         "parameters": [
           {
+            "name": "itemId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Only the candidates of this table or document; the counts stay case-wide."
+          },
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Only the candidates read under this key profile; the counts stay case-wide."
+          },
+          {
             "name": "cursor",
             "required": false,
             "in": "query",
@@ -377146,6 +377166,16 @@
                     "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                   },
                   "description": "Sources read under the profile after it that the confirmation neither includes nor excludes."
+                },
+                "accepted": {
+                  "description": "The candidates the confirmation accepted, in the order of its stored decisions.",
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
                 }
               },
               "required": [
@@ -377890,7 +377920,7 @@
               "conflicting"
             ],
             "additionalProperties": false,
-            "description": "Stored candidates by outcome, each counted once; not a reading total (see sources)."
+            "description": "Stored candidates of the whole case by outcome, each counted once; the outcome, profile and item filters narrow the page, never these counts. Not a reading total (see sources)."
           },
           "nextCursor": {
             "nullable": true,

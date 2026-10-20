@@ -487,6 +487,12 @@ export const EVIDENCE_RECEIPT_KIND = 'intake-evidence-citations';
 export const evidenceReceiptKey = (confirmationId: string, targetId: string) =>
   `${EVIDENCE_RECEIPT_KIND}:${confirmationId}:${targetId}`;
 
+/** EVS3: the candidates a confirmation accepts, as its stored decisions name them. */
+export function acceptedCandidates(pins: IntakeEvidenceConfirm): string[] {
+  const decisions = pins.additions.kind === 'citations' ? pins.additions.decisions : [];
+  return decisions.flatMap(decision => decision.decision === 'accept' ? [decision.candidateId] : []);
+}
+
 /** The buildings a confirmation accepts a candidate for, each once. */
 export function acceptedTargets(pins: IntakeEvidenceConfirm): string[] {
   const decisions = pins.additions.kind === 'citations' ? pins.additions.decisions : [];
@@ -528,11 +534,14 @@ export function evidenceSourceView(row: SourceCoverageRow) {
     sourceRevision: row.source_revision, sourceSha256: row.source_sha256, bytes: Number(row.source_bytes) };
 }
 
-/** Profiles, coverage and stored confirmations of the case, and one page of candidates with counts by outcome. */
-export async function readIntakeEvidence(caseValue: string, query: { outcome?: string; cursor?: string }) {
+/** Profiles, coverage and stored confirmations of the case, and one page of candidates with counts by outcome.
+ * EVS3: the page may be narrowed to one key profile and one table or document; the counts stay case-wide. */
+export async function readIntakeEvidence(caseValue: string,
+  query: { outcome?: string; cursor?: string; profileId?: string; itemId?: string }) {
   const caseId = uuid.parse(caseValue);
   const outcome = query.outcome === undefined ? null : IntakeEvidenceOutcomeSchema.parse(query.outcome);
-  const cursor = query.cursor === undefined ? null : uuid.parse(query.cursor);
+  const [cursor, profileId, itemId] = [query.cursor, query.profileId, query.itemId]
+    .map(value => value === undefined ? null : uuid.parse(value));
   const limit = INTAKE_EVIDENCE_LIMITS.sources;
   return transaction(async client => {
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
@@ -547,8 +556,9 @@ export async function readIntakeEvidence(caseValue: string, query: { outcome?: s
     const confirmations: ConfirmationRow[] = (await client.query(`SELECT * FROM usp_intake_evidence_confirmations
       WHERE case_id=$1 ORDER BY created_at,confirmation_id LIMIT $2`, [caseId, limit])).rows;
     const rows = (await client.query(`SELECT candidate FROM usp_intake_evidence_candidates WHERE case_id=$1
-      AND ($2::text IS NULL OR outcome=$2) AND ($3::uuid IS NULL OR candidate_id>$3) ORDER BY candidate_id LIMIT $4`,
-    [caseId, outcome, cursor, INTAKE_EVIDENCE_LIMITS.page + 1])).rows;
+      AND ($2::text IS NULL OR outcome=$2) AND ($3::uuid IS NULL OR candidate_id>$3)
+      AND ($4::uuid IS NULL OR profile_id=$4) AND ($5::uuid IS NULL OR item_id=$5) ORDER BY candidate_id LIMIT $6`,
+    [caseId, outcome, cursor, profileId, itemId, INTAKE_EVIDENCE_LIMITS.page + 1])).rows;
     const tallies = (await client.query(`SELECT outcome,count(*)::int n FROM usp_intake_evidence_candidates
       WHERE case_id=$1 GROUP BY outcome`, [caseId])).rows;
     const page = rows.slice(0, INTAKE_EVIDENCE_LIMITS.page).map(row => row.candidate as IntakeEvidenceCandidate);
@@ -558,7 +568,8 @@ export async function readIntakeEvidence(caseValue: string, query: { outcome?: s
       confirmations: confirmations.map(row => ({ confirmationId: row.confirmation_id, profileId: row.profile_id,
         additions: row.additions, createdAt: new Date(row.created_at).toISOString(),
         expiresAt: new Date(row.expires_at).toISOString(), newerSources: newerSources(row.pins,
-          sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)) })),
+          sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)),
+        accepted: acceptedCandidates(row.pins) })),
       sources: sources.map(evidenceSourceView),
       candidates: page, counts, nextCursor: rows.length > page.length ? page.at(-1)!.candidateId : null });
   });

@@ -379,12 +379,16 @@ export const IntakeEvidenceCandidateSchema = z.strictObject({
 });
 export const IntakeEvidenceQuerySchema = z.strictObject({
   outcome: IntakeEvidenceOutcomeSchema.optional(), cursor: uuid.optional(),
+  profileId: uuid.optional().describe('Only the candidates read under this key profile.'),
+  itemId: uuid.optional().describe('Only the candidates of this table or document.'),
 });
 /** AU4-B2: a stored evidence confirmation as the read lists it. It is never changed by a later source. */
 export const IntakeEvidenceConfirmationStateSchema = z.strictObject({
   confirmationId: uuid, profileId: uuid, additions: z.enum(['citations', 'no_additions']), createdAt: at,
   expiresAt: at, newerSources: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.sources)
     .describe('Sources read under the profile after it that the confirmation neither includes nor excludes.'),
+  accepted: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.decisions).optional()
+    .describe('The candidates the confirmation accepted, in the order of its stored decisions.'),
 });
 export const IntakeEvidencePageSchema = z.strictObject({
   caseId: uuid, profiles: z.array(IntakeKeyProfileSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
@@ -392,7 +396,8 @@ export const IntakeEvidencePageSchema = z.strictObject({
   sources: z.array(IntakeEvidenceSourceSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
   candidates: z.array(IntakeEvidenceCandidateSchema).max(INTAKE_EVIDENCE_LIMITS.page),
   counts: z.strictObject({ matched: tally, no_match: tally, several: tally, conflicting: tally })
-    .describe('Stored candidates by outcome, each counted once; not a reading total (see sources).'),
+    .describe('Stored candidates of the whole case by outcome, each counted once; the outcome, profile and item '
+      + 'filters narrow the page, never these counts. Not a reading total (see sources).'),
   nextCursor: uuid.nullable(),
 });
 const sourcePin = z.strictObject({
