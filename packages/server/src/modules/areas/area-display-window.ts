@@ -8,6 +8,7 @@ import {
   areaProposals, type ProposalFeature, type ProposalPackage, type RuleCondition,
 } from './area-display-proposals';
 import { AREA_DISPLAY_LIMIT, areaDisplayPackages, getArea } from './areas';
+import { assertLiveArea } from './area-retire';
 
 export type DisplayWindow = {
   minX: number; minY: number; maxX: number; maxY: number; after?: string; limit: number;
@@ -78,6 +79,7 @@ async function boundedRead<T>(
   const deadline = signal && { deadlineAt: Date.now() + READ_TIMEOUT_MS, signal };
   return transaction(async client => {
     await client.query("SET LOCAL statement_timeout='15s'");
+    await assertLiveArea(areaId, client);
     const area = await getArea(areaId, client);
     if (!area.reference) {
       throw new AppError(409, 'AREA_REFERENCE',

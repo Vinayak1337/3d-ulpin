@@ -98,10 +98,6 @@ export const ROUTES: RouteEntry[] = [
     method: 'DELETE', path: '/api/v1/buildings/:buildingId', mode: 'local', draft: true,
     reason: 'Removes a building and its register from the area; the public map follows.',
   },
-  {
-    method: 'DELETE', path: '/api/v1/areas/:areaId', mode: 'local', draft: true,
-    reason: 'Removes an imported area with its buildings; the public map follows.',
-  },
   { method: 'POST', path: '/api/v1/import-packages/inspect', mode: 'live' },
   { method: 'POST', path: '/api/v1/import-packages', mode: 'live' },
   { method: 'GET', path: '/api/v1/import-packages/:packageId', mode: 'live' },
@@ -119,6 +115,7 @@ export const ROUTES: RouteEntry[] = [
   },
   { method: 'GET', path: '/api/v1/areas', mode: 'live' },
   { method: 'GET', path: '/api/v1/areas/:areaId/context', mode: 'live' },
+  { method: 'POST', path: '/api/v1/areas/:areaId/retire', mode: 'live' },
   { method: 'GET', path: '/api/v1/buildings/:buildingId/register', mode: 'live' },
   { method: 'GET', path: '/api/v1/areas/:areaId/canonical', mode: 'live' },
   { method: 'GET', path: '/api/v1/buildings/:buildingId/canonical', mode: 'live' },

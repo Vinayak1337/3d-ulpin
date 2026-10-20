@@ -1,0 +1,26 @@
+{
+  "task": "G20",
+  "gap": "AU2 G20: an area can only be deleted through a local draft route; the same file twice is refused runtime-wide.",
+  "base": "6d038782",
+  "changes": [
+    {"path": "database/sql/20-area/area-retire.sql", "why": "Additive: map_areas.archived_by (who) and map_area_events (retired/restored, who, when, reason, area revision). archived_at and archive_reason already exist and every area read already filters on archived_at."},
+    {"path": "database/manifest.json", "why": "Authored step area.retire, order 57, run by migrateAreas after area.schema."},
+    {"path": "packages/server/src/modules/areas/area-db.ts", "why": "migrateAreas runs area.retire after area.schema."},
+    {"path": "packages/server/src/modules/areas/area-retire.ts", "why": "retireArea/restoreArea under the area row lock, pinned to the area revision; assertLiveArea for the context and window reads."},
+    {"path": "packages/server/src/modules/areas/area-intake-service.ts", "why": "retire/restore; context, display summary and display window refuse a retired area."},
+    {"path": "packages/server/src/modules/areas/area-validation.ts", "why": "areaRetirementSchema (expectedRevision, reason)."},
+    {"path": "packages/contracts/src/area.ts", "why": "AreaRetirement receipt type."},
+    {"path": "apps/api/src/modules/intake/area-sources.controller.ts, wire-schemas.ts, operation-manifest.json", "why": "POST /api/v1/areas/{areaId}/retire and /restore."},
+    {"path": "packages/server/src/modules/usp/ingestion/service.ts", "why": "destination(): SOURCE_ALREADY_IN_AREA only for a live area; a retired existing_area is refused; authorTx scopes a byte namespace held by another case's area (or a retired one) to this case."},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-destination.ts", "why": "caseScopedDestination: one rule for the recipe path and the large path."},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-large-worker.ts", "why": "largeDestination uses the same case-scoped namespace (otherwise a large file in a new case would bind to and update the other case's area). Seam outside the named owned paths, not owned by G17/ZL2/SH2; only largeDestination/foldContext lines."},
+    {"path": "apps/studio: local/routes.ts, local/handlers.ts, local/session.ts, api/queries.ts, features/manage/RetireAreaDialog.tsx, DeleteDialog.tsx, features/map/MapWorkspace.tsx, features/register/RequestsPage.tsx", "why": "The local DELETE area route goes; a Retire action with a confirm dialog that names what stays calls the live route."},
+    {"path": "docs/api/openapi.json, docs/api/source-pins.json, packages/api-client/src/schema.d.ts", "why": "Regenerated."}
+  ],
+  "reuse": ["map_areas.archived_at/archive_reason and the existing archived_at filters in listAreas, resolver, officer and USP reads", "localOperatorSubject for who", "the one manual-mapping destination check and intakeDestination", "wireResponse/jsonBody decorators"],
+  "gaps": [
+    {"what": "D2 'reuse the stored object (no second copy)'", "why": "sources.object_key is UNIQUE (01-core/core.sql) and every reader opens row.object_key; two source rows cannot name one object without dropping that constraint, which is not additive. A new case's retain keeps its own stored copy as today. Needs a lead decision (e.g. a content-addressed original table read through one resolver)."}
+  ],
+  "notes": ["Features are retired through their area: every feature/record read already joins map_areas.archived_at; no per-feature column.", "scripts/db/verify_extraction.py already fails at base (task E1 is not in its authored list); area.retire with task G20 would need the same one-word addition there; not changed here."],
+  "runtimeNeeded": false
+}

@@ -1,0 +1,33 @@
+{
+  "task": "G20",
+  "gate": "GF1",
+  "base": "6d038782",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory pools (no database opened), real originals' SHA-256 (NYC buildings layer, 26.7 MB Niagara footprints) and the regenerated contract. No served HTTP walk, migration run or object store was used.",
+  "defect": "AU2 G20: an area could only be deleted through a local draft route (Studio local/routes.ts), and the same file twice was refused runtime-wide with SOURCE_ALREADY_IN_AREA.",
+  "decisions": [
+    "D1 retire, never delete: POST /api/v1/areas/{areaId}/retire and /restore (expectedRevision + reason) lock the area row, pin its revision, set or clear archived_at, archive_reason and the new archived_by, and write one map_area_events row (retired | restored, actor, reason, time). No DELETE is issued; originals, sources, packages, review history and receipts stay.",
+    "D1 reads: listAreas, the resolver, officer and USP reads already drop archived areas; the area context, display summary and display windows now answer 404 AREA_RETIRED; an import into a retired area and an existing_area destination on one answer 409 AREA_RETIRED. Features leave with their area (every feature read joins map_areas.archived_at).",
+    "D1 Studio: the area page (map view footer) and the register's area list show Retire area with a confirm dialog that requires a reason and names what stays; the local DELETE /api/v1/areas/:areaId draft route, its handler and session helper are removed. DeleteDialog is building-only.",
+    "D2 same bytes in a new case: caseScopedDestination gives a file:<sha256> namespace the suffix :case:<caseId> when no live area of this case holds it (by seed key or feature links), on both the recipe path (authorTx) and the large path (largeDestination). The new case gets its own source row and area; the existing area is untouched. Within one case the refusal stays; a retired area never refuses."
+  ],
+  "gaps": [
+    "D2 'reuse the stored object (no second copy)' is not delivered: sources.object_key is UNIQUE (database/sql/01-core) and every reader opens row.object_key, so a second source row sharing one object needs a non-additive schema change or a blob indirection. A new case's retain still stores its own copy. Lead decision needed.",
+    "scripts/db/verify_extraction.py already fails at base 6d038782 (ingestion.intake.targets: task E1 missing from its accepted task list); the new area.retire step (task G20) would need the same list entry. The script is outside this task's paths."
+  ],
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm studio:test", "exit": 0, "studio": "75 files, 481 tests passed", "scene": "58 passed, 1 skipped",
+      "ui": "7 passed", "apiClient": "2 passed"},
+    {"command": "backend test command from the gap template (ingestion, areas, officer, manual-author, ingestion-events, processing, usp-packet-pdf, intake-ledger, intake-zip-layers, large-original; new: area-retire.test.ts, same-bytes-new-case.test.ts)",
+      "exit": 0, "tests": 377, "pass": 375, "fail": 0, "skipped": 2},
+    {"command": "apps/api/scripts/openapi.ts --check", "exit": 0, "note": "stale before refresh-contract.ts 6d038782; fresh after"},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "python scripts/api/check.py", "exit": 0, "result": "316 native operations (132 baseline + 184 added), 358 named schemas"},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 6d038782", "exit": 0,
+      "report": "No candidates (the scan covers apps/web). Manual review of RetireAreaDialog, MapWorkspace and RequestsPage: --ui-* tokens only, one danger action per dialog, sentence case, icon with text label, textarea labelled, no sample values. Blocking: none. Design system: none."},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "python scripts/db/verify_extraction.py", "exit": 1, "note": "fails at base for E1, see gaps"}
+  ]
+}

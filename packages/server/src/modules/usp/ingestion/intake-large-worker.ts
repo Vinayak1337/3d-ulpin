@@ -9,7 +9,7 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
 import { ChunkMappingService } from './chunk-mapping';
-import { intakeCaseArea, intakeDestination } from './intake-destination';
+import { caseScopedDestination, intakeCaseArea, intakeDestination } from './intake-destination';
 import { assertIntakeDraftTx } from './intake-draft';
 import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
@@ -96,18 +96,21 @@ async function startMapping(input: IntakeLargeInput, attempt: UspJobAttempt, sta
     profileHash: plan.profileHash });
 }
 
-/** The GIS suggestion's rule for a retained original that has none: its file name and its bytes' namespace. The
- * area's revision is left out so a replayed cut keeps its import signature while earlier cuts move the area. */
-function largeDestination(name: string, sha256: string, area: MapArea | null): ProvedAreaPartInput['destination'] {
+/** The GIS suggestion's rule for a retained original that has none: its file name and its bytes' namespace, scoped
+ * to the case as the recipe path scopes it. The area's revision is left out so a replayed cut keeps its import
+ * signature while earlier cuts move the area. */
+async function largeDestination(input: IntakeLargeInput, name: string, area: MapArea | null)
+  : Promise<ProvedAreaPartInput['destination']> {
   const title = name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 150) || 'GIS source';
-  const destination = intakeDestination({ suggestedTitle: title, suggestedNamespace: `file:${sha256}` }, area);
+  const destination = await caseScopedDestination(input.caseId,
+    intakeDestination({ suggestedTitle: title, suggestedNamespace: `file:${input.sourceSha256}` }, area));
   return { namespace: destination.namespace, name: destination.name,
     ...(destination.kind === 'existing_area' ? { areaId: destination.areaId } : {}) };
 }
 
 /** Resume after the last stored cut: its end locator, the next index and the held count through its end. */
 async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Promise<Fold> {
-  const destination = largeDestination(await sourceName(input), input.sourceSha256, await intakeCaseArea(input.caseId));
+  const destination = await largeDestination(input, await sourceName(input), await intakeCaseArea(input.caseId));
   return pinned(input, attempt, async (client, state) => {
     const { reader: raw, mapping, recipe } = state.store;
     await publishTx(client, input, state);

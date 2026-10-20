@@ -48,6 +48,7 @@ import { localOperatorSubject } from "../usp/principal";
 import { assertPackageDocumentAuthority } from "./package-authority";
 import type { ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
 import { assertProvedPartBounds } from "../usp/ingestion/intake-package-cuts";
+import { assertAreaRowLive } from "./area-retire";
 
 export type Mapping = {
   idField?: string;
@@ -739,6 +740,7 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
             )
           ).rows[0];
       if (input.requireNewArea && areaRow) conflict("The destination was created before execution; pin its current area explicitly.");
+      if (areaRow) assertAreaRowLive(areaRow);
       if (
         areaRow &&
         input.expectedAreaRevision !== undefined &&
