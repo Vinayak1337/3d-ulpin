@@ -549,7 +549,7 @@
     "packages/server/src/modules/usp/ingestion/sufficiency.ts": "15eb4af422f31d42d3154f5ca4f779aa9f0fa9f665e10970cc2fcf65710d5aa3",
     "packages/server/src/modules/usp/ingestion/survey-report-parser.ts": "5d065214aa4be8a947b8d6535c585a4b9fe6c539d79a4b470fda4dd64dc2be84",
     "packages/server/src/modules/usp/ingestion/survey-report.ts": "dc74c815907fff73b0106b65c126f59550634435438fe211361914fa08b02d2f",
-    "packages/server/src/modules/usp/ingestion/table-profile-worker.ts": "294fbfe16b00361c73c18098d94d20e59393f6b5d261a4e972eb6642cbb3d9e5",
+    "packages/server/src/modules/usp/ingestion/table-profile-worker.ts": "10630691e7ba8c08dd4da5a55476885ff8da15ad3f55313fe13cc8969ba056af",
     "packages/server/src/modules/usp/ingestion/table-windows.ts": "c51e79b755570a092cc967383d4d7f3757807e8383908ac19835171bd94560ad",
     "packages/server/src/modules/usp/ingestion/tabular-recipe.ts": "7b4330d89eb445c5fedbf8f7d803904e72ab1989bec1943f1afa30fc5e179619",
     "packages/server/src/modules/usp/ingestion/tabular-source.ts": "baf063dbaa910ff8120aac47be5204bb9dc0d61acdc7aa0bde23934ce83e51d2",

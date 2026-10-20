@@ -1,0 +1,39 @@
+{
+  "task": "TPB",
+  "gate": "GF1",
+  "base": "4e8d5986",
+  "status": "delivered_unit",
+  "qualification": "Proved on TP1's in-memory ledger (the job authority's statements included) with generated test_only tables. No database, object store, dispatcher loop or served HTTP walk was run.",
+  "defect": "The table-profile/1 payload did not state the size of the original it reads, so G22S's workbookScratchMiB reserves the 8 GiB maximum for every workbook read.",
+  "decisions": [
+    "D1 table-profile-worker.ts: TableProfileInputSchema gains an optional top-level sourceBytes (positive safe integer). queueTableProfileTx sets it to Number(row.bytes) from the source row tableFromOriginal already loaded under its row lock, before the payload is fingerprinted, so it is part of input_fingerprint and usp_job_metadata.input_sha256.",
+    "D1 the job id stays stableUuid('table-profile/1:<sourceId>:<sourceRevision>:<requestKey>'); it never hashed the payload, so it is unchanged.",
+    "D1 a payload queued before TPB has no sourceBytes; the strict schema parses it without adding the key, so its fingerprint, registerUspJobInputTx's scope check and the accept-time payload comparison are unchanged and the job runs; the dispatcher reserves the largest workbook's scratch for it, as before.",
+    "D2 the worker's read, the request path, the public contract and the dispatcher are unchanged."
+  ],
+  "tests": {
+    "server": {
+      "command": "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/*.test.ts",
+      "after": { "exit": 0, "tests": 307, "pass": 306, "fail": 0, "skipped": 1 },
+      "skippedCause": "TP1's real-workbook test needs ULPIN_PROFILE_PYTHON; it was skipped before this change too.",
+      "added": [
+        "table-windows.test.ts 'TPB: a new table read names the bytes of its original in the payload it fingerprints': the queued payload's sourceBytes equals the original's byte count and the job row's input_fingerprint and the metadata's input_sha256 are the fingerprint of that payload.",
+        "table-windows.test.ts 'TPB: a table read queued before its payload named the bytes still parses and runs': the queued job's payload is rewritten without sourceBytes and refingerprinted as TP1 queued it; it parses without a key added, runs, attaches the 200,000-record receipt and answers succeeded."
+      ],
+      "unchanged": "TP1's four job tests, the two kept-table tests and XW1's generated workbook above 16 MiB pass unchanged."
+    },
+    "typecheckBackend": { "command": "pnpm typecheck:backend", "after": 0 },
+    "openapi": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": "1 after the code change: docs/api/source-pins.json stale (openapi.json matched)",
+      "after": 0,
+      "regenerated": "scripts/api/refresh-contract.ts origin/staging repinned table-profile-worker.ts only; openapi.json unchanged (328 operations, 371 schemas); pnpm studio:api-types exit 0, no content change",
+      "checkPy": "scripts/api/check.py exit 0 with docs/evidence/usp/cityjson-validation-runtime.json in its committed LF bytes; on this Windows CRLF checkout of that untouched file it exits 1 'runtime receipt changed', independent of this change"
+    },
+    "diffCheck": { "command": "git diff --check", "after": 0 }
+  },
+  "limits": [
+    "G22S's workbookScratchMiB, which reads sourceBytes, is on origin/task/g22s-scratch-admission and not yet in staging; until it lands nothing reads the field.",
+    "The worker does not compare sourceBytes with the source row it reads; sourceSha256, sourceRevision and objectKey already pin the original."
+  ]
+}

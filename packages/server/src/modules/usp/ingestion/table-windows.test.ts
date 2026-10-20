@@ -13,11 +13,12 @@ import { createContractValidator } from '../../../../../../apps/studio/src/local
 import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
 import { settings } from '../../../infrastructure/config';
 import { transaction } from '../../../infrastructure/db';
+import { fingerprint } from '../../cases/domain';
 import type { UspJobAttempt } from '../jobs';
 import { mapTableWindow, publishTableWindowTx } from './chunk-mapping-tabular';
 import { manualTeacherPlan } from './mapping-teacher';
 import { ManualIngestionService } from './service';
-import { runTableProfileJob } from './table-profile-worker';
+import { TableProfileInputSchema, runTableProfileJob } from './table-profile-worker';
 import { TableRowsService, readTableWindowTx, writeTableWindowTx } from './table-windows';
 import { officerMappingMethod, validateStreamedTabularRecipe } from './tabular-recipe';
 import { readTableWindows, readTabularWindows } from './tabular-stream';
@@ -403,6 +404,34 @@ test('TP1: a new revision of the same source while the job reads makes the job s
     ['stale', 'STALE_REVISION', 'This source revision has been superseded.']);
   assert.equal(store.source.inspection.manualProfile, undefined);
   assert.equal(store.caseRevision, 1);
+});
+
+test('TPB: a new table read names the bytes of its original in the payload it fingerprints', async () => {
+  const bytes = generatedCsv(200_000), store = new Store(bytes);
+  store.install();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await new ManualIngestionService().tableFromOriginal(store.caseId, store.sourceId, request));
+  const [job] = store.jobs, payload = TableProfileInputSchema.parse(job!.payload);
+  assert.deepEqual([payload.sourceBytes, job!.input_fingerprint], [bytes.length, fingerprint(payload)]);
+  assert.equal(store.metadata.get(queued.jobId)!.input_sha256, fingerprint(payload));
+});
+
+test('TPB: a table read queued before its payload named the bytes still parses and runs', async () => {
+  const store = new Store(generatedCsv(200_000));
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  // The job as TP1 queued it: the same payload without sourceBytes, fingerprinted as it was.
+  const [job] = store.jobs, { sourceBytes: _bytes, ...legacy } = job!.payload;
+  const digest = fingerprint(legacy);
+  Object.assign(job!, { payload: legacy, input_fingerprint: digest });
+  store.metadata.get(queued.jobId)!.input_sha256 = digest;
+  assert.deepEqual(TableProfileInputSchema.parse(legacy), legacy, 'parsed without a field added');
+  await runTableProfileJob(queued.jobId);
+  assert.equal(store.source.inspection.manualProfile.records, 200_000);
+  assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,
+    'succeeded');
 });
 
 /** A real table kept through the batch (large-original/1) becomes a table in the request, with no job. */
