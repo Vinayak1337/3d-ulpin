@@ -285,7 +285,7 @@ async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSo
 const layerName = (member: MemberRow) => member.member_path.split('/').filter(Boolean).pop() ?? member.member_path;
 
 /** The case revision is the retain's fence; a sibling's retain moves it, so read it again and retry twice. */
-async function fenced<T>(caseId: string, dependencies: ZipLayerDependencies,
+export async function fenced<T>(caseId: string, dependencies: Pick<ZipLayerDependencies, 'transaction'>,
   retain: (revision: number) => Promise<T>): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     const revision = await dependencies.transaction(async client =>
@@ -338,7 +338,7 @@ async function keepLargeLayer(caseId: string, parentItemId: string, archive: Int
 }
 
 /** Regroups a member's chunks into the receipt's byte parts; only the part being filled is held. */
-async function* byteParts(chunks: AsyncIterable<Uint8Array>) {
+export async function* byteParts(chunks: AsyncIterable<Uint8Array>) {
   let part = Buffer.allocUnsafe(LARGE_ORIGINAL_LIMITS.partBytes);
   let filled = 0;
   for await (const chunk of chunks) {
@@ -358,9 +358,9 @@ async function* byteParts(chunks: AsyncIterable<Uint8Array>) {
 }
 
 /** One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A failed receipt is aborted. */
-async function receiveLargeLayer(caseId: string, revision: number,
+export async function receiveLargeLayer(caseId: string, revision: number,
   file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
-  dependencies: ZipLayerDependencies): Promise<string> {
+  dependencies: Pick<ZipLayerDependencies, 'large'>): Promise<string> {
   let status = await dependencies.large.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: revision,
     filename: file.name, mediaType: 'application/octet-stream', sha256: file.sha256, bytes: file.bytes,
     provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } });

@@ -1,90 +1,155 @@
 {
-  "task": "SH1",
+  "task": "SH2",
   "gate": "GF1",
   "gap": "G11",
-  "baseCommit": "7231538c",
-  "complete": false,
-  "state": "stopped_at_seam",
-  "codeChanged": false,
+  "baseCommit": "0c7ee396",
+  "complete": true,
+  "state": "converted_and_taken_on_the_large_path",
   "summary": [
-    "A GeoPackage or shapefile ZIP cannot reach parts and a package through the batch's large path",
-    "without changing seams outside SH1's owned paths. Per the task file, the work stopped and the",
-    "seams are named here; no code was written."
+    "A GeoPackage, or a ZIP whose card names a shapefile set, is no longer refused in a batch. Publishing its",
+    "card queues one fenced job, intake-native-derivative. The geo service reads the original from object",
+    "storage onto scratch disk (hash and size checked), reads each layer in windows of 1,000 features (keyset",
+    "by row id for a GeoPackage, record position for a shapefile) and streams one GeoJSON FeatureCollection",
+    "per layer plus a hashed locator sidecar. Each derivative is kept as its own large-original-v1 child",
+    "through the receipt /uploads uses, named by its lineage, and enrolled like a dropped file, so the large",
+    "GeoJSON path reads it unchanged (D3; largeStateKey needed no change). The CB1 small direct import is",
+    "unchanged."
   ],
-  "seams": [
+  "decisions": {
+    "D1": [
+      "Geometry and attributes are written as decoded: no reprojection, rounding, renamed or added",
+      "attributes; Z is kept. The stated CRS is written as crs:{type:'name',properties:{name:'EPSG:n'}}.",
+      "A GeoPackage row or shapefile record that cannot be decoded (bad header, measure values, a CRS",
+      "other than the layer's, a binary, non-finite or unsafe-integer attribute) is not written; the",
+      "sidecar lists it with its position and reason."
+    ],
+    "D1_deviation_no_crs": [
+      "A layer with no stated CRS is not written at all, rather than written with none. The large reader",
+      "reads a FeatureCollection without a crs member as RFC 7946 EPSG:4326, so a derivative without one",
+      "would be a guessed system. Instead the original's item rests at needs_answer, its words naming",
+      "the layer: 'Not converted until its coordinate reference system is stated: <layer> (states no",
+      "coordinate reference system)'. Stated layers of the same file are still kept and enrolled."
+    ],
+    "D2": [
+      "Each child keeps inspection.nativeDerivative: version native-derivative/1, conversion",
+      "native_gis_to_geojson@1, readerVersion native-gis-window/1, original source id, revision, SHA-256",
+      "and item id, format, layer, ordinal, CRS, features, notWritten and the sidecar's key, bytes and",
+      "SHA-256. The sidecar (JSON lines) starts with a header naming the conversion, reader, original",
+      "hash, layer and position kind (row id field, or .dbf member and record sequence), then one line",
+      "per source row in order: {feature:n, position:p} or {feature:null, position:p, reason}."
+    ],
+    "D3": "A two-layer GeoPackage gives two children; each takes the large GeoJSON path unchanged.",
+    "D4": "No stop was needed: the large path took the derivative with no change to intake-large.ts."
+  },
+  "changedOutsideOwnedPaths": [
+    "services/geo/geo/api.py: two lines registering the convert-native area operation.",
+    "packages/server/src/modules/cases/processing.ts: the dispatcher branch for intake-native-derivative.",
+    "packages/server/src/modules/usp/jobs.ts: the job-scope check for intake-native-derivative.",
+    "intake-zip-layers.ts: fenced, byteParts and receiveLargeLayer exported for reuse; no behaviour change.",
+    "docs/api/source-pins.json repinned; docs/api/openapi.json and the api-client types regenerated, no change.",
+    "tests/intake-ledger.test.ts: the fixture records each job's operation; a shapefile ZIP expects its conversion job."
+  ],
+  "limits": [
+    "Each child's lineage is merged after its receipt finalises, in its own transaction (as ZL1 does); a",
+    "crash between them leaves a child without lineage that a rerun does not find and keeps again.",
+    "Derivative and sidecar objects stay under native-derivatives/<original sha>/ in object storage.",
+    "A shapefile layer with Z or M values is not converted (named in the original's words).",
+    "An original over 128 MiB, or a derivative that would pass 128 MiB, is refused by the converter, so the",
+    "original rests not understood (NATIVE_DERIVATIVE_FILE); the large reader's own ceiling is the same.",
+    "The conversion is one synchronous call to the geo service bounded at the large reader's read time;",
+    "the job renews its lease every minute meanwhile.",
+    "The proof stops at kept, enrolled children whose bytes the large reader reads in parts; the walk to a",
+    "package (layout approval, mapping, officer confirmation) on a running stack was not run here."
+  ],
+  "realInputs": [
     {
-      "path": "packages/server/src/modules/usp/ingestion/intake-large.ts",
-      "where": "largeStateKey (~249-255)",
-      "why": [
-        "Returns null unless item.card.format is 'geojson' and the source is large-original-v1, so no",
-        "large step job is ever queued for a GeoPackage or shapefile ZIP item. The task file marks this",
-        "file read-only."
-      ]
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg",
+      "label": "test_only",
+      "origin": "Tweed Shire Council building outlines (CB1), licence as received; 88 polygons, EPSG:28356"
     },
     {
-      "path": "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
-      "where": "startReaders (~76-83), foldContext (~129), rawFeatures (~156-170)",
-      "why": [
-        "The reader is always enqueued with framing 'feature-collection'; the part carries readerVersion",
-        "'geojson-stream/2'; each packaged feature is sliced from the original by its GeoJSON byte range.",
-        "A GeoPackage row or a .dbf record has no such span. Not an owned path."
-      ]
-    },
-    {
-      "path": "packages/server/src/modules/usp/ingestion/proved-area-part.ts",
-      "where": "ProvedAreaPartInput, provePartFeature (~17-50)",
-      "why": [
-        "A package proves each feature by re-parsing its raw GeoJSON bytes (SourceRangeReference format",
-        "'geojson'). A native record needs a decoded-record proof (re-read by row id or record position,",
-        "as CB1 cites it). Not an owned path."
-      ]
-    },
-    {
-      "path": "packages/server/src/modules/usp/ingestion/streaming-vector.ts and streaming-vector-worker.ts",
-      "where": "enqueue (~139-143), runStreamingVectorJob (~232-276)",
-      "why": [
-        "The reader opens one object stream and parses GeoJSON or a workbook; it has no native GIS",
-        "framing, refuses a large original that is not octet-stream JSON bytes, and writes the streamed-",
-        "map receipt only for 'feature-collection'. Not an owned path."
-      ]
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip",
+      "label": "test_only",
+      "origin": "the same outlines as a shapefile ZIP (CB1); 88 records with .prj"
     },
     {
       "path": [
-        "packages/contracts/src/usp/streaming-vector.ts, ingestion.ts, chunk-mapping.ts, streamed-",
-        "profile.ts"
+        "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+        "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson"
       ],
-      "where": [
-        "StreamingVectorFramingSchema; StreamedMapOriginalReceiptSchema (~95-110: readerVersion literal",
-        "'geojson-stream/2', framing literal 'feature-collection'); record byteStart/byteEnd/rawSha256"
-      ],
-      "why": [
-        "Parts, profile and mapping records require GeoJSON byte locators; a native window needs a record",
-        "locator (layer, row id or record position) instead. Not an owned path."
-      ]
-    },
-    {
-      "path": "services/geo/geo/native_gis.py (owned) and its transport",
-      "where": "_raw (~28-38), _gpkg (~93-192)",
-      "why": [
-        "The native reader takes the whole original as base64 of at most 16 MiB and reads at most 2,000",
-        "features in one call. A windowed read (keyset by row id, about 1,000 a window) needs the",
-        "original on scratch disk or read from object storage, as point_batch.py and projected_vector.py",
-        "do. This part is owned, but without the seams above it would be unwired code."
+      "label": "test_only",
+      "origin": [
+        "Niagara Falls 2018 building footprints (DA5), attributed reuse; the first 2,500 written unchanged",
+        "into a GeoPackage table in the test (EPSG:2958, Z kept)"
       ]
     }
   ],
-  "proposedSplit": [
-    [
-      "One owner for the large-path seam: a native-GIS framing in contracts and the streaming reader,",
-      "records located by layer and row id or record position, a decoded-record part proof beside the",
-      "GeoJSON byte proof, and largeStateKey and the worker accepting a GeoPackage or shapefile-ZIP",
-      "card."
+  "tests": {
+    "python": [
+      "services/geo/tests/test_native_conversion.py (7): 2,500 Niagara polygons written whole across three",
+      "windows with Z and EPSG:2958; a three-layer GeoPackage gives Copy and Council_Buildings converted and",
+      "Unstated crs_unstated; the sidecar's line for feature n names the row (OBJECTID and Building_Name",
+      "checked for all 87 written rows) and lists the refused row 3 with reason geometry_header; derivative",
+      "geometry equals the native reader's decode; the shapefile ZIP's 88 features equal the native decode",
+      "with record positions 0..87; no .prj gives crs_unstated; the original is read from storage, checked",
+      "by hash and size, and each derivative stored under its own hash."
     ],
-    [
-      "Then SH1 as written: the windowed native reader in native_gis.py, the intake-draft recipe for",
-      "these cards, and the tests (more than 2,000 polygons through the batch, a shapefile ZIP, a two-",
-      "layer GeoPackage, a layer with no CRS)."
+    "typescript": [
+      "intake-native-derivative.test.ts (3): the real conversion of a GeoPackage with 2,500 Niagara outlines,",
+      "the Tweed layer and a Tweed layer with no CRS keeps two children with lineage and enrols both; the",
+      "original rests at needs_answer naming 'unstated'; the footprints child's card probes as GeoJSON with",
+      "a stated CRS and the large reader reads 2,500 accepted features in 25 parts of 100 under EPSG:2958; a",
+      "rerun keeps nothing twice; a conversion naming another original keeps nothing; the words name every",
+      "layer taken, refused or failed.",
+      "intake-draft.test.ts: a GeoPackage and a shapefile ZIP each queue one conversion job; a re-queue",
+      "returns the same job, a completed job queues none, a failed one queues a new job."
     ]
-  ],
-  "smallDirectImport": "Unchanged; no file was edited."
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:test",
+      "exit": 0,
+      "counts": "ui 7/7, studio 479/479 (74 files)"
+    },
+    {
+      "command": "sh1-local backend suite (ingestion, areas, officer, events, processing, ledger, zip layers)",
+      "exit": 0,
+      "counts": "370 tests, 368 pass, 0 fail, 2 skipped"
+    },
+    {
+      "command": "lv0 python -m pytest tests/test_native_conversion.py tests/test_native_record_citation.py",
+      "exit": 0,
+      "counts": "14 passed"
+    },
+    {
+      "command": "refresh-contract.ts HEAD; openapi.ts --check",
+      "exit": 0,
+      "counts": "314 operations, 356 named schemas; source-pins repinned"
+    },
+    {
+      "command": "pnpm studio:api-types",
+      "exit": 0,
+      "counts": "no content change"
+    },
+    {
+      "command": "python scripts/api/check.py",
+      "exit": 1,
+      "note": [
+        "'runtime receipt changed' on three receipts this change does not touch; their committed blobs hash",
+        "correctly, the worktree copies differ by CRLF checkout only"
+      ]
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ]
 }

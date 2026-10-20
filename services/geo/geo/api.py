@@ -105,6 +105,7 @@ def registry_operation(operation: str, data: dict[str, Any]) -> dict:
 def area_operation(operation: str, data: dict[str, Any]) -> dict:
     from .area import check_area, extract_document, normalize_area, resolve_geojson_crs
     from .gis_inspection import inspect_gis
+    from .native_gis import convert_native
     from .archive_member_inspection import inspect_archive_member
     from .image_derivative import crop_image
     from .officer import resolve_profile_request
@@ -112,6 +113,7 @@ def area_operation(operation: str, data: dict[str, Any]) -> dict:
     from .geometry import build_prisms
     operations = {
         'build-prisms': build_prisms,
+        'convert-native': convert_native,
         'inspect-archive-member': inspect_archive_member,
         'inspect-gis': inspect_gis,
         'normalize': normalize_area,

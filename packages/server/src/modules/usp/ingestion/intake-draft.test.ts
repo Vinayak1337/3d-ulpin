@@ -81,6 +81,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 0 }];
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
     return jobs.filter(job => ['queued', 'running'].includes(job.status));
+  if (sql.startsWith('SELECT id,status FROM jobs WHERE source_id'))
+    return jobs.filter(job => job.operation === 'intake-native-derivative');
   if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
     return jobs.filter(row => row.id === values[0]);
   return null;
@@ -88,7 +90,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
 function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { tray, jobs, state } = fixture;
   if (sql.startsWith('INSERT INTO jobs')) {
-    jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2], operation: 'intake-draft',
+    jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2],
+      operation: /VALUES\(\$1,\$2,\$3,'([a-z-]+)'/.exec(sql)![1],
       case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
     return [];
   }
@@ -191,36 +194,33 @@ for (const [name, modify] of [
     assert(intakeDraftLimit(item(), src));
   });
 }
-test('a GeoPackage refusal names its direct route, bounds and missing recipe/citation support', async () => {
-  const fixture = protocol();
-  fixture.src.profile = 'large-original-v1';
-  fixture.src.inspection = {};
-  fixture.tray.card = { format: 'geopackage', family: 'vector', crs: { state: 'absent' } } as DraftItem['card'];
-  const expected = 'This GeoPackage can be imported through POST /api/v1/import-packages with format=gpkg '
-    + 'and one selected layer within 16 MiB and 2000 features; intake recipe drafting and '
-    + 'decoded binary-record citations for its card are not built.';
-  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
-  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
-  assert.equal(fixture.state.projection.limit_reason, expected);
-  assert.equal(fixture.jobs.length, 0);
-});
-
-test('a grouped shapefile ZIP names the existing selected-set import without claiming intake fan-out', async () => {
-  const fixture = protocol();
-  fixture.src.profile = 'large-original-v1';
-  fixture.src.inspection = {};
-  fixture.tray.family = 'archive';
-  fixture.tray.card = {
-    format: 'zip', family: 'archive', members: [{ format: 'shapefile' }],
-  } as DraftItem['card'];
-  const expected = 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
-    + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
-    + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
-  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
-  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
-  assert.equal(fixture.state.events, 0, 'Archive roots have no automatic draft transition today.');
-  assert.equal(fixture.jobs.length, 0);
-});
+// SH2: a GeoPackage, or a ZIP its card names a shapefile set in, is converted by its own job, at any size.
+for (const [name, format, card] of [
+  ['GeoPackage', 'GeoPackage', { format: 'geopackage', family: 'vector', crs: { state: 'stated' } }],
+  ['shapefile ZIP', 'shapefile ZIP', { format: 'zip', family: 'archive', members: [{ format: 'shapefile' }] }],
+] as const) {
+  test(`a ${name} queues one conversion job and says its layers are being converted`, async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.bytes = 40 * 1024 * 1024;
+    fixture.src.inspection = {};
+    fixture.tray.family = card.family;
+    fixture.tray.card = card as unknown as DraftItem['card'];
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.deepEqual(fixture.jobs.map(job => [job.id, job.operation, job.payload.version]),
+      [[jobId, 'intake-native-derivative', 'intake-native-derivative/1']]);
+    assert.deepEqual(fixture.state.projection, { state: 'reading', placement: 'undecided', plan_ref: null,
+      records_seen: 0, limit_reason: `The layers of this ${format} are being converted to GeoJSON, each to be `
+        + 'taken in as its own file.' });
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), jobId);
+    fixture.jobs[0].status = 'completed';
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+    fixture.jobs[0].status = 'failed';
+    const again = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(fixture.jobs.length, 2);
+    assert.notEqual(again, jobId, 'A failed conversion is queued again under a new id.');
+  });
+}
 
 function zipFixture(members: { name: string; format: string; refusalCode?: string }[]) {
   const fixture = protocol();

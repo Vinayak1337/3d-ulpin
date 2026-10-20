@@ -31,8 +31,14 @@ export function intakeDraftKey(itemId: string, revision: number, phase: string):
 export const shapefileZip = (card: IntakeCard | null) =>
   card?.format === 'zip' && card.members.some(member => member.format === 'shapefile');
 
+/** SH2. The native format a batch card is converted from into GeoJSON layers, or null for any other card. */
+export function nativeDerivativeFormat(card: IntakeCard | null): 'gpkg' | 'shapefile_zip' | null {
+  if (card?.format === 'geopackage') return 'gpkg';
+  return shapefileZip(card) ? 'shapefile_zip' : null;
+}
+
 /** Names entries within `budget` characters (limit_reason holds 2000); the rest are counted, never cut. */
-function listWords(entries: string[], budget: number): string {
+export function listWords(entries: string[], budget: number): string {
   let shown = 0;
   for (let used = 0; shown < entries.length && used + entries[shown].length + 2 <= budget; shown++) {
     used += entries[shown].length + 2;
@@ -100,11 +106,7 @@ function keptWords(card: IntakeCard, bytes: number): string {
 export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): string | null {
   const format = item.card?.format;
   const count = source.inspection?.manualProfile?.featureCount;
-  if (format === 'geopackage' || format === 'gpkg')
-    return 'This GeoPackage can be imported through POST /api/v1/import-packages with format=gpkg '
-      + 'and one selected layer within 16 MiB and 2000 features; intake recipe drafting and '
-      + 'decoded binary-record citations for its card are not built.';
-  if (format === 'shapefile' || format === 'shapefile_zip' || shapefileZip(item.card))
+  if (format === 'shapefile' || format === 'shapefile_zip')
     return 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
       + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
       + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
@@ -154,6 +156,11 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   publishedCard?: IntakeCard): Promise<string | null> {
   if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
   if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
+  if (nativeDerivativeFormat(publishedCard ?? null)) {
+    // SH2: converted into GeoJSON layers by its own job; each layer then takes the large GeoJSON path.
+    const { queueNativeDerivativeTx } = await import('./intake-native-derivative');
+    return queueNativeDerivativeTx(client, source, publishedCard!);
+  }
   // Nonvector readers keep their own behavior. Unsupported vectors receive a reason, never another reader.
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
   const item = await draftItemTx(client, source.id);
