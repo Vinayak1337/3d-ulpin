@@ -3,7 +3,7 @@
   "gate": "GF1",
   "base": "30e3fb79",
   "branch": "task/g22-lanes-and-memory",
-  "what": "dispatchTick picks probe-lane jobs first, then each (lane, source or case) group's oldest job before any group's second, in one SQL with LIMIT 12 and the usp:% exclusion; an in-process reservation admits a picked job only when its lane is under its concurrency and its stated MiB fits the unreserved budget; a job over the whole budget starts only when nothing else is held; the reservation is released in the same finally that clears each single-worker guard",
+  "what": "dispatchTick picks probe-lane jobs first, then each (lane, source or case) group's oldest job before any group's second, in one SQL with LIMIT 12 and the usp:% exclusion; an in-process reservation admits a picked job only when its lane is under its concurrency and its stated MiB fits the unreserved budget; a job over the whole budget starts only when nothing else is held; the reservation is released in the same finally that clears each single-worker guard. Review fixes: (1) at the start of each tick the dispatcher reads from the jobs table every job handed to the processor (any operation this process does not run itself) that is running, or queued after it was sent, and counts it as holding its lane slot and MiB, for every dispatcher process; in-process jobs keep the in-memory reservation, and a job is never counted twice. (2) head-of-line: a job refused for memory is recorded with its first refusal time; once it has waited more than DISPATCH_HEAD_OF_LINE_MS (120,000 ms), no newer job outside the probe lane is admitted until it starts; records of jobs that are no longer queued or running are dropped each tick",
   "budget": "settings.dispatchMemoryMib (DISPATCH_MEMORY_MIB, a whole number of MiB) or floor(os.totalmem() / 2) in MiB",
   "lanes": [
     {
@@ -288,34 +288,51 @@
       "every operation processing.ts names has a lane row",
       "a 1 GiB raster part and a 954 MiB page image on a 1536 MiB budget: the second waits, then starts after the first is released",
       "a job over the whole budget waits while a probe runs, then runs alone and nothing joins it",
-      "gpu: a second inference job waits while one runs; another lane still starts",
       "an unknown operation is lane other at 512 MiB and is admitted",
       "through dispatchTick: one queued job starts on the first tick even with a 1 MiB budget, and its reservation is released",
-      "through dispatchTick on a 1000 MiB budget: a packet PDF (931 MiB) runs, an unknown operation waits that tick, and is dispatched the tick after the PDF ends"
+      "through dispatchTick on a 1000 MiB budget: a packet PDF (931 MiB) runs, an unknown operation waits that tick, and is dispatched the tick after the PDF ends",
+      "gpu: a second inference job waits while one runs here or while the processor holds one; another lane still starts; a job both held here and read from the processor rows is counted once",
+      "head-of-line with fake time: a big raster job refused at 100 s; small jobs still start until 120 s have passed; after that a newer small job is refused, a probe still starts, and the big job starts once the held jobs are released; the small job starts after it",
+      "a refused job that is no longer queued or running blocks nothing",
+      "through dispatchTick: with a spatial-inference job running in the jobs table, a queued dataset-spatial-inference job is not sent; once the first has left 'running', it is sent on the next tick"
     ],
     "postgresOnly": [
       "211 point parts of one file, a second file, a vector job, an unknown operation, one table job and one probe: probe first, the table in the first 12 (expected order written out)",
       "one file with 15 jobs still offers 12"
     ],
     "postgresOnlyRun": false,
-    "mutationCheck": "removing the memory rule fails three of the tests above"
+    "mutationCheck": "removing the memory rule fails three tests; removing the head-of-line check fails its test; leaving out the processor holdings fails two tests",
+    "postgresOnlyNote": "the two pick-order tests skip without ULPIN_DISPATCH_TEST_DATABASE_URL; no database was available in this task"
   },
   "realInputs": "none: the change is scheduling only; the MiB numbers are taken from the measured real-file runs cited per row",
   "checks": {
     "typecheck:backend": 0,
     "studio:typecheck": 0,
     "studio:test": "0 (78 files, 498 tests; packages/ui 2 files, 7 tests)",
-    "backendTests": "0 (440 tests: 438 pass, 2 skipped (the PostgreSQL-only selection tests), 0 fail)",
-    "openapiCheck": "1 at the base and after the change (source-pins stale); 0 after refresh-contract 30e3fb79 and studio:api-types",
+    "backendTests": "0 (443 tests: 441 pass, 2 skipped (the PostgreSQL-only pick-order tests), 0 fail; includes tests/usp-packet-pdf.test.ts)",
+    "openapiCheck": "1 before the pins were refreshed; 0 after refresh-contract 30e3fb79 and studio:api-types",
     "scripts/api/check.py": 0,
     "gitDiffCheck": 0,
     "ui-design-check": "not run: no Studio change"
   },
   "notProved": [
-    "the selection SQL has not run on PostgreSQL here (no runtime in this task); its two meaning tests skip without ULPIN_DISPATCH_TEST_DATABASE_URL",
-    "jobs sent to the processor (inspect, build, projected-vector, spatial-inference, dataset-spatial-inference and any unknown operation) hold their reservation only for the tick that dispatches them; after that they run in the processor, whose own queue paces them, so the gpu lane limit holds per dispatch, not for the inference run itself",
+    "the pick-order SQL and the two new SELECTs have not run on PostgreSQL here (no runtime in this task); the pick-order meaning tests skip without ULPIN_DISPATCH_TEST_DATABASE_URL",
+    "a processor job left 'running' or sent-and-queued holds its lane and MiB until the existing two-minute rules fail it",
     "most MiB values are lane defaults, not measurements (marked per row); raster, point and model3d have no measured peak in the repo",
-    "a job over the budget, or a large one, can be delayed by a steady stream of small jobs: a refused job holds nothing, by rule D3, and nothing ages it",
+    "head-of-line records are kept in this process only; a dispatcher restart starts their 120 s again, and another dispatcher process does not see them",
+    "jobs older than the waiting job may still start ahead of it; it waits only for them and for what is held",
     "no scratch-disk reservation; jobs carry no wave, so waves are not ordered here"
-  ]
+  ],
+  "processorJobs": {
+    "operations": "inspect, build, projected-vector, spatial-inference, dataset-spatial-inference, and any operation the lane table does not name (all go to the processor)",
+    "held": "status 'running', or status 'queued' with dispatched_at set",
+    "whyQueuedToo": "spatial-inference and dataset-spatial-inference stay 'queued' after they are sent until the processor reports them running (spatial-ml.ts, dataset-ml.ts); counting only 'running' would let a second inference job be sent in the next tick",
+    "effect": "the processor gets one inference job at a time from all dispatchers; a batch of chips is sent one after another, each in the tick after the previous one ends"
+  },
+  "headOfLine": {
+    "constant": "DISPATCH_HEAD_OF_LINE_MS = 120000",
+    "newer": "created_at later than the refused job",
+    "exempt": "probe lane",
+    "memoryOnly": "only a refusal for memory is recorded, not a full lane"
+  }
 }

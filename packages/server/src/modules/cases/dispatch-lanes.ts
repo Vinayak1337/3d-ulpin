@@ -4,6 +4,7 @@ import { totalmem } from 'node:os';
 export type DispatchLane = 'probe' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d' | 'link' | 'gpu'
   | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
+type OperationRow = { lane: DispatchLane; mib?: number; processor?: true };
 
 /**
  * Each lane's concurrency in one dispatcher process, and the worst-case memory in MiB of a job whose operation states
@@ -30,15 +31,18 @@ export const DISPATCH_LANES: Readonly<Record<DispatchLane, { concurrency: number
   other: { concurrency: 2, mib: 512 },
 });
 
-/** Every operation the dispatcher tick can see, its lane, and its own worst-case MiB where one is known. */
-export const DISPATCH_OPERATIONS: Readonly<Record<string, { lane: DispatchLane; mib?: number }>> = Object.freeze({
-  inspect: { lane: 'probe' },
+/**
+ * Every operation the dispatcher tick can see, its lane, its own worst-case MiB where one is known, and whether the
+ * tick hands it to the processor (as it does any operation not named here) rather than running it in this process.
+ */
+export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Object.freeze({
+  inspect: { lane: 'probe', processor: true },
   // docs/evidence/gf1/g16/result.json memoryProof: peakRssMiB 414.9 for 500,000 features in 5000 parts.
   'streaming-vector': { lane: 'vector', mib: 415 },
   // docs/evidence/gf1/lp3a/parts-result.json: peakRssKiB 435,232 cutting the 43 MB NYC GeoJSON into 487 parts.
   'intake-large': { lane: 'vector', mib: 426 },
   'streamed-profile': { lane: 'vector' },
-  'projected-vector': { lane: 'vector' },
+  'projected-vector': { lane: 'vector', processor: true },
   'kml-native': { lane: 'vector' },
   'geoparquet-native': { lane: 'vector' },
   'private-mvt': { lane: 'vector' },
@@ -52,7 +56,7 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, { lane: DispatchLane; 
   'intake-page-image': { lane: 'document', mib: 954 },
   'raster-window': { lane: 'raster' },
   'point-batch': { lane: 'point' },
-  build: { lane: 'model3d' },
+  build: { lane: 'model3d', processor: true },
   'ifc-native': { lane: 'model3d' },
   'dxf-native': { lane: 'model3d' },
   'citygml-native': { lane: 'model3d' },
@@ -62,8 +66,8 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, { lane: DispatchLane; 
   'cityjson-validation': { lane: 'model3d' },
   'intake-evidence': { lane: 'link' },
   'intake-run': { lane: 'link' },
-  'spatial-inference': { lane: 'gpu' },
-  'dataset-spatial-inference': { lane: 'gpu' },
+  'spatial-inference': { lane: 'gpu', processor: true },
+  'dataset-spatial-inference': { lane: 'gpu', processor: true },
   // The draft's slow path is the gateway teacher's proposal.
   'intake-draft': { lane: 'teacher' },
   'intake-zip-layers': { lane: 'other' },
@@ -74,6 +78,11 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, { lane: DispatchLane; 
 export function dispatchLaneParameters(): [string[], DispatchLane[]] {
   const rows = Object.entries(DISPATCH_OPERATIONS);
   return [rows.map(([operation]) => operation), rows.map(([, row]) => row.lane)];
+}
+
+/** The operations this process runs itself; every other one runs in the processor once it is sent. */
+export function dispatchInProcessOperations(): string[] {
+  return Object.entries(DISPATCH_OPERATIONS).filter(([, row]) => !row.processor).map(([operation]) => operation);
 }
 
 export function dispatchCost(operation: string): Cost {
@@ -87,31 +96,60 @@ export function dispatchMemoryBudgetMiB(stated: number | undefined): number {
   return stated ?? Math.floor(totalmem() / 2 / 1024 ** 2);
 }
 
-/** The jobs this process runs, each holding its lane slot and its stated memory until its own finally releases it. */
+/** How long a job refused for memory waits before no newer job outside the probe lane may start ahead of it. */
+export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
+
+/** A job as the tick reads it: any operation, created at a database time. */
+export type DispatchJob = { id: string; operation: string; created_at: Date | string };
+const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
+
+/**
+ * The jobs this process runs, each holding its lane slot and its stated memory until its own finally releases it,
+ * and the jobs refused for memory, each with the time of its first refusal.
+ */
 export class DispatchReservations {
   private readonly held = new Map<string, Cost>();
+  private readonly refused = new Map<string, { since: number; created: number }>();
 
   /**
-   * Reserves only when the job's lane is under its concurrency and its memory fits what is unreserved; a job larger
-   * than the whole budget fits when nothing else runs. A refused job holds nothing, and a job already held is not
-   * started twice.
+   * Reserves only when the job's lane is under its concurrency and its memory fits what is unreserved, counting this
+   * process's jobs and the processor's jobs `elsewhere`; a job larger than the whole budget fits when nothing else is
+   * held. A refused job holds nothing, a job already held is not started twice, and a job outside the probe lane
+   * waits behind an older job refused for memory more than DISPATCH_HEAD_OF_LINE_MS ago.
    */
-  admit(jobId: string, operation: string, budgetMiB: number): boolean {
-    if (this.held.has(jobId)) return false;
-    const cost = dispatchCost(operation);
-    let reserved = 0;
-    let inLane = 0;
-    for (const held of this.held.values()) {
-      reserved += held.mib;
-      if (held.lane === cost.lane) inLane++;
+  admit(job: DispatchJob, budgetMiB: number, elsewhere: readonly DispatchJob[], now: number): boolean {
+    if (this.held.has(job.id)) return false;
+    const cost = dispatchCost(job.operation);
+    if (cost.lane !== 'probe' && this.behindRefused(job, now)) return false;
+    const outside = elsewhere.filter(other => other.id !== job.id && !this.held.has(other.id));
+    const holding = [...this.held.values(), ...outside.map(other => dispatchCost(other.operation))];
+    if (holding.filter(other => other.lane === cost.lane).length >= DISPATCH_LANES[cost.lane].concurrency) return false;
+    if (holding.length > 0 && holding.reduce((sum, other) => sum + other.mib, 0) + cost.mib > budgetMiB) {
+      if (!this.refused.has(job.id)) this.refused.set(job.id, { since: now, created: createdAt(job) });
+      return false;
     }
-    if (inLane >= DISPATCH_LANES[cost.lane].concurrency) return false;
-    if (this.held.size > 0 && reserved + cost.mib > budgetMiB) return false;
-    this.held.set(jobId, cost);
+    this.refused.delete(job.id);
+    this.held.set(job.id, cost);
     return true;
   }
 
   release(jobId: string): void {
     this.held.delete(jobId);
+  }
+
+  refusedJobIds(): string[] {
+    return [...this.refused.keys()];
+  }
+
+  /** Forgets every refused job that is no longer waiting, so a finished or cancelled job blocks nothing. */
+  keepRefused(waiting: Iterable<string>): void {
+    const still = new Set(waiting);
+    for (const jobId of this.refused.keys()) if (!still.has(jobId)) this.refused.delete(jobId);
+  }
+
+  private behindRefused(job: DispatchJob, now: number): boolean {
+    const created = createdAt(job);
+    return [...this.refused].some(([jobId, refusal]) => jobId !== job.id
+      && now - refusal.since > DISPATCH_HEAD_OF_LINE_MS && created > refusal.created);
   }
 }

@@ -3,18 +3,19 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { Client } from 'pg';
 import { AppError } from '../../infrastructure/errors';
-import { DISPATCH_OPERATIONS, DispatchReservations, dispatchCost } from './dispatch-lanes';
+import { DISPATCH_HEAD_OF_LINE_MS, DISPATCH_OPERATIONS, DispatchReservations, dispatchCost } from './dispatch-lanes';
 import { dispatchTick } from './processing';
 
 type Sent = { sql: string; values: unknown[] };
-/** Runs `run` on a pool whose job selection holds `rows`; every other statement finds nothing. */
-async function withPool<T>(rows: object[], run: (sent: Sent[]) => Promise<T>): Promise<T> {
+/** Runs `run` on a pool that answers each statement with `answer`'s rows. */
+async function withPool<T>(answer: (sql: string) => object[], run: (sent: Sent[]) => Promise<T>): Promise<T> {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
   const previous = globals.ulpinPool;
   const sent: Sent[] = [];
   globals.ulpinPool = { query: async (sql: string, values: unknown[] = []) => {
     sent.push({ sql, values });
-    return sql.includes('AS file_rank') ? { rows, rowCount: rows.length } : { rows: [], rowCount: 0 };
+    const rows = answer(sql);
+    return { rows, rowCount: rows.length };
   } };
   try {
     return await run(sent);
@@ -26,13 +27,17 @@ async function withPool<T>(rows: object[], run: (sent: Sent[]) => Promise<T>): P
 
 /** The selection dispatchTick sends and its lane columns, captured from a pool that holds no jobs. */
 async function selection(): Promise<Sent> {
-  const sent = await withPool([], async sent => {
+  const sent = await withPool(() => [], async sent => {
     assert.equal(await dispatchTick(), 0);
     return sent;
   });
-  // The selection, then the kept surfaces' part admission (SB1).
-  assert.equal(sent.length, 2);
-  assert.match(sent[1].sql, /FROM usp_intake_items i\s+WHERE i.plan_ref->>'version'=\$1/);
+  // The selection, the jobs the processor holds, then the kept surfaces' part admission (SB1).
+  assert.equal(sent.length, 3);
+  assert.match(sent[1].sql.replace(/\s+/g, ' '),
+    /AND NOT operation=ANY\(\$1::text\[\]\) AND \(status='running' OR \(status='queued' AND dispatched_at IS NOT NULL/);
+  const inProcess = sent[1].values[0] as string[];
+  assert.ok(inProcess.includes('point-batch') && !inProcess.includes('spatial-inference'));
+  assert.match(sent[2].sql, /FROM usp_intake_items i\s+WHERE i.plan_ref->>'version'=\$1/);
   return sent[0];
 }
 
@@ -92,65 +97,115 @@ test('a background worker\'s error is kept in the log by its code, never its mes
   assert.deepEqual(await warnedFor('SECRET_MARKER_TEXT'), [line('unknown')]);
 });
 
+/** A job created `seconds` after a fixed start, as the tick reads it. */
+const job = (id: string, operation: string, seconds = 0) =>
+  ({ id, operation, created_at: new Date(Date.UTC(2026, 9, 21) + seconds * 1000) });
+const at = (seconds: number) => Date.UTC(2026, 9, 22) + seconds * 1000;
+
 test('a 1 GiB raster part and a 954 MiB page image on a 1.5 GiB budget start one after the other', () => {
   const held = new DispatchReservations();
-  assert.ok(held.admit('raster', 'raster-window', 1536));
-  assert.equal(held.admit('page', 'intake-page-image', 1536), false);
+  assert.ok(held.admit(job('raster', 'raster-window'), 1536, [], at(0)));
+  assert.equal(held.admit(job('page', 'intake-page-image'), 1536, [], at(0)), false);
   held.release('raster');
-  assert.ok(held.admit('page', 'intake-page-image', 1536));
+  assert.ok(held.admit(job('page', 'intake-page-image'), 1536, [], at(1)));
 });
 
 test('a job over the whole budget runs alone, and nothing joins it', () => {
   const held = new DispatchReservations();
-  assert.ok(held.admit('probe', 'inspect', 512));
-  assert.equal(held.admit('raster', 'raster-window', 512), false);
+  assert.ok(held.admit(job('probe', 'inspect'), 512, [], at(0)));
+  assert.equal(held.admit(job('raster', 'raster-window'), 512, [], at(0)), false);
   held.release('probe');
-  assert.ok(held.admit('raster', 'raster-window', 512));
-  assert.equal(held.admit('probe', 'inspect', 512), false);
+  assert.ok(held.admit(job('raster', 'raster-window'), 512, [], at(1)));
+  assert.equal(held.admit(job('probe', 'inspect'), 512, [], at(1)), false);
 });
 
-test('the gpu lane never runs two jobs at once', () => {
+test('the gpu lane never runs two jobs at once, counting a job the processor holds', () => {
   const held = new DispatchReservations();
-  assert.ok(held.admit('chip', 'spatial-inference', 1_000_000));
-  assert.equal(held.admit('dataset', 'dataset-spatial-inference', 1_000_000), false);
-  assert.ok(held.admit('table', 'chunk-mapping', 1_000_000));
+  const big = 1_000_000;
+  assert.ok(held.admit(job('chip', 'spatial-inference'), big, [], at(0)));
+  assert.equal(held.admit(job('dataset', 'dataset-spatial-inference'), big, [], at(0)), false);
+  assert.ok(held.admit(job('table', 'chunk-mapping'), big, [], at(0)));
   held.release('chip');
-  assert.ok(held.admit('dataset', 'dataset-spatial-inference', 1_000_000));
+  const processor = [job('elsewhere', 'spatial-inference')];
+  assert.equal(held.admit(job('dataset', 'dataset-spatial-inference'), big, processor, at(1)), false);
+  assert.ok(held.admit(job('dataset', 'dataset-spatial-inference'), big, [], at(2)));
+  // A job both held here and read from the processor's rows is counted once.
+  held.release('table');
+  assert.ok(held.admit(job('raster', 'raster-window'), 2000, [job('dataset', 'dataset-spatial-inference')], at(3)));
 });
 
 test('an operation no lane names is other, never dropped', () => {
   assert.deepEqual(dispatchCost('mystery-operation'), { lane: 'other', mib: 512 });
-  assert.ok(new DispatchReservations().admit('odd', 'mystery-operation', 1));
+  assert.ok(new DispatchReservations().admit(job('odd', 'mystery-operation'), 1, [], at(0)));
 });
 
-/** One dispatcher tick over `rows` with DISPATCH_MEMORY_MIB at `budget`, a fake packet-pdf runner, and no processor. */
-async function tickWith(rows: object[], budget: string, packetPdf: (jobId: string) => Promise<void>): Promise<Sent[]> {
-  const stated = process.env.DISPATCH_MEMORY_MIB;
+test('a big job refused for memory stops newer jobs after the head-of-line wait, then starts when the rest drains',
+  () => {
+    const held = new DispatchReservations();
+    const budget = 1100;
+    const wait = DISPATCH_HEAD_OF_LINE_MS / 1000;
+    assert.ok(held.admit(job('small-1', 'kml-native', 0), budget, [], at(0)));
+    assert.equal(held.admit(job('big', 'raster-window', 10), budget, [], at(100)), false);
+    assert.ok(held.admit(job('small-2', 'geoparquet-native', 20), budget, [], at(100)));
+    held.release('small-1');
+    assert.ok(held.admit(job('small-3', 'kml-native', 150), budget, [], at(100 + wait)));
+    assert.equal(held.admit(job('big', 'raster-window', 10), budget, [], at(100 + wait)), false);
+    assert.equal(held.admit(job('small-4', 'geoparquet-native', 200), budget, [], at(101 + wait)), false);
+    assert.ok(held.admit(job('probe', 'inspect', 210), budget, [], at(101 + wait)));
+    assert.equal(held.admit(job('big', 'raster-window', 10), budget, [], at(102 + wait)), false);
+    for (const id of ['small-2', 'small-3', 'probe']) held.release(id);
+    assert.equal(held.admit(job('small-4', 'geoparquet-native', 200), budget, [], at(103 + wait)), false);
+    assert.ok(held.admit(job('big', 'raster-window', 10), budget, [], at(103 + wait)));
+    assert.deepEqual(held.refusedJobIds(), []);
+    held.release('big');
+    assert.ok(held.admit(job('small-4', 'geoparquet-native', 200), budget, [], at(104 + wait)));
+  });
+
+test('a refused job that no longer waits blocks nothing', () => {
+  const held = new DispatchReservations();
+  assert.ok(held.admit(job('small-1', 'kml-native', 0), 1100, [], at(0)));
+  assert.equal(held.admit(job('big', 'raster-window', 10), 1100, [], at(0)), false);
+  held.keepRefused([]);
+  assert.ok(held.admit(job('small-2', 'geoparquet-native', 20), 1100, [], at(1000)));
+});
+
+type Tick = { rows: object[]; budget: string; packetPdf?: (jobId: string) => Promise<void>; elsewhere?: object[] };
+/** One dispatcher tick with fake jobs and DISPATCH_MEMORY_MIB at `budget`; returns the jobs sent to the processor. */
+async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = [] }: Tick): Promise<string[]> {
+  const saved = ['DISPATCH_MEMORY_MIB', 'GEO_URL', 'GEO_SERVICE_TOKEN'].map(name => [name, process.env[name]] as const);
   const fetching = globalThis.fetch;
-  process.env.DISPATCH_MEMORY_MIB = budget;
-  globalThis.fetch = async () => { throw new Error('no processor in this test'); };
+  const sentToProcessor: string[] = [];
+  Object.assign(process.env, { DISPATCH_MEMORY_MIB: budget, GEO_URL: 'http://processor.test',
+    GEO_SERVICE_TOKEN: 'test-only' });
+  globalThis.fetch = async (_url, init) => {
+    sentToProcessor.push(JSON.parse(String(init?.body)).jobId);
+    throw new Error('no processor in this test');
+  };
   try {
-    return await withPool(rows, async sent => {
+    await withPool(sql => sql.includes('AS file_rank') ? rows
+      : sql.includes('dispatched_at IS NOT NULL') ? elsewhere : [], async () => {
       assert.equal(await dispatchTick({ packetPdf }), rows.length);
-      return sent;
     });
+    return sentToProcessor;
   } finally {
     globalThis.fetch = fetching;
-    if (stated === undefined) delete process.env.DISPATCH_MEMORY_MIB;
-    else process.env.DISPATCH_MEMORY_MIB = stated;
+    for (const [name, value] of saved) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
   }
 }
 const settle = () => new Promise(resolve => setImmediate(resolve));
-const touched = (sent: Sent[], jobId: string) => sent.some(({ values }) => values[0] === jobId);
-const pdf = { id: 'pdf-1', operation: 'packet-pdf', attempts: 0 };
-const odd = { id: 'odd-1', operation: 'mystery-operation', attempts: 0, dispatched_at: null };
+const pdf = { ...job('pdf-1', 'packet-pdf'), attempts: 0 };
+const odd = { ...job('odd-1', 'mystery-operation', 5), attempts: 0, dispatched_at: null };
 
 test('a single queued job starts on the first tick, even over the budget', async () => {
   const started: string[] = [];
-  await tickWith([pdf], '1', async jobId => { started.push(jobId); });
+  const packetPdf = async (jobId: string) => { started.push(jobId); };
+  await tickWith({ rows: [pdf], budget: '1', packetPdf });
   await settle();
   assert.deepEqual(started, ['pdf-1']);
-  await tickWith([pdf], '1', async jobId => { started.push(jobId); });
+  await tickWith({ rows: [pdf], budget: '1', packetPdf });
   await settle();
   assert.deepEqual(started, ['pdf-1', 'pdf-1']);
 });
@@ -158,12 +213,17 @@ test('a single queued job starts on the first tick, even over the budget', async
 test('a job that does not fit waits until the running job ends, and an unknown operation then runs', async () => {
   let finish!: () => void;
   const running = new Promise<void>(resolve => { finish = resolve; });
-  const first = await tickWith([pdf, odd], '1000', () => running);
-  assert.equal(touched(first, 'odd-1'), false);
+  assert.deepEqual(await tickWith({ rows: [pdf, odd], budget: '1000', packetPdf: () => running }), []);
   finish();
   await settle();
-  const second = await tickWith([odd], '1000', async () => {});
-  assert.ok(touched(second, 'odd-1'));
+  assert.deepEqual(await tickWith({ rows: [odd], budget: '1000' }), ['odd-1']);
+});
+
+test('an inference job the processor runs keeps a second one from being sent until it has succeeded', async () => {
+  const second = { ...job('chip-2', 'dataset-spatial-inference', 5), attempts: 0, dispatched_at: null };
+  const elsewhere = [job('chip-1', 'spatial-inference')];
+  assert.deepEqual(await tickWith({ rows: [second], budget: '100000', elsewhere }), []);
+  assert.deepEqual(await tickWith({ rows: [second], budget: '100000' }), ['chip-2']);
 });
 
 // The selection's meaning needs PostgreSQL; a temporary jobs table shadows any real one for this session only.

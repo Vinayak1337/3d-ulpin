@@ -36,7 +36,8 @@ import {runGeoParquetJob} from '../usp/ingestion/geoparquet-worker';
 import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
 import type {runPacketPdfJob} from '../usp/packets/pdf-worker';
-import {DispatchReservations,dispatchLaneParameters,dispatchMemoryBudgetMiB} from './dispatch-lanes';
+import {DispatchReservations,dispatchInProcessOperations,dispatchLaneParameters,dispatchMemoryBudgetMiB,
+  type DispatchJob} from './dispatch-lanes';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
@@ -243,9 +244,20 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
     ) ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12`,
     dispatchLaneParameters(),
   );
-  // G22. A job starts only while its lane has room and its memory fits; a refused one waits for a later tick.
-  const budget=dispatchMemoryBudgetMiB(settings.dispatchMemoryMib);
-  const admit=(job:QueryResultRow)=>reservations.admit(job.id,job.operation,budget);
+  // G22. A job sent to the processor holds its lane and memory, for every dispatcher, until it leaves the queue there.
+  const elsewhere=(await query<DispatchJob>(
+    `SELECT id::text AS id, operation, created_at FROM jobs WHERE operation NOT LIKE 'usp:%'
+      AND NOT operation=ANY($1::text[]) AND (status='running' OR (status='queued' AND dispatched_at IS NOT NULL))`,
+    [dispatchInProcessOperations()],
+  )).rows;
+  const refused=reservations.refusedJobIds();
+  if(refused.length)reservations.keepRefused((await query<{id:string}>(
+    "SELECT id::text AS id FROM jobs WHERE id::text=ANY($1::text[]) AND status IN ('queued','running')",[refused],
+  )).rows.map(job=>job.id));
+  // A job starts only while its lane has room and its memory fits; a refused one waits for a later tick.
+  const budget=dispatchMemoryBudgetMiB(settings.dispatchMemoryMib),now=Date.now();
+  const admit=(job:QueryResultRow)=>reservations.admit({id:job.id,operation:job.operation,created_at:job.created_at},
+    budget,elsewhere,now);
   // SB1: a kept TIFF or LAZ of a batch admits its next planned part within its reader's own caps, one per file.
   await admitIntakeSurfaceParts().catch(keepWorkerError('intake-surface', 'admission'));
   await Promise.all(
