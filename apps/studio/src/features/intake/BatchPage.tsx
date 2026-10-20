@@ -6,6 +6,7 @@ import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from './AddFilesDialog';
 import { BatchTableSection } from './BatchTableSection';
 import { DropOutcomes } from './IntakeDropDialog';
+import { EvidenceByKey } from './evidence/EvidenceByKey';
 import { IntakeTray } from './IntakeTray';
 import { IfcStructure } from './ifc/IfcStructure';
 import { isIfcItem } from './ifc/structure-model';
@@ -80,6 +81,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     {isPageImage(current) ? <PageImageQuestion key={current.itemId} caseId={caseId} item={current}
       refresh={refresh} /> : null}
     {current ? <BatchTableSection key={current.itemId} caseId={caseId} item={current} items={items} /> : null}
+    {items.length ? <EvidenceByKey caseId={caseId} items={items} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
     </section>
