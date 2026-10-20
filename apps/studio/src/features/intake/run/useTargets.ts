@@ -11,6 +11,10 @@ export function useTargets(caseId: string, filter: Readiness | '') {
   const first = useQuery({ queryKey: filter ? [...runKey(caseId), 'list', filter] : [...runKey(caseId), 'summary'],
     retry: false,
     queryFn: () => readTargets(caseId, filter || undefined) });
+  const [packageCursor, setPackageCursor] = useState<string | null>(null);
+  const later = useQuery({ queryKey: [...runKey(caseId), 'packages', packageCursor], retry: false,
+    enabled: packageCursor !== null, queryFn: () => readTargets(caseId, undefined, undefined, packageCursor!) });
+  const packagePage = packageCursor === null ? summary : later;
   const generation = useRef(0);
   const [extra, setExtra] = useState<Target[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -37,5 +41,7 @@ export function useTargets(caseId: string, filter: Readiness | '') {
       setBusy(false);
     }
   };
-  return { summary, first, targets: [...(first.data?.items ?? []), ...extra], cursor, busy, error, showMore };
+  const nextPackages = () => setPackageCursor(packagePage.data?.packagesNextCursor ?? packageCursor);
+  return { summary, first, targets: [...(first.data?.items ?? []), ...extra], cursor, busy, error, showMore,
+    packagePage, packageCursor, nextPackages, firstPackages: () => setPackageCursor(null) };
 }

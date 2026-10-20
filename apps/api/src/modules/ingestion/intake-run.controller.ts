@@ -28,8 +28,8 @@ export function strictQuery<T extends z.ZodType>(originalUrl: string, schema: T,
 }
 
 export function intakeTargetQuery(originalUrl: string) {
-  return strictQuery(originalUrl, IntakeTargetQuerySchema, ['readiness', 'cursor'], 'INTAKE_TARGET_QUERY',
-    'Use one optional readiness and cursor, and no other query fields.');
+  return strictQuery(originalUrl, IntakeTargetQuerySchema, ['readiness', 'cursor', 'packageCursor'],
+    'INTAKE_TARGET_QUERY', 'Use one optional readiness, cursor and packageCursor, and no other query fields.');
 }
 
 @ApiTags('private intake run')
@@ -40,12 +40,14 @@ export class IntakeRunController {
   @param('caseId')
   @ApiQuery({ name: 'readiness', required: false, enum: IntakeTargetReadinessSchema.options })
   @ApiQuery({ name: 'cursor', required: false, schema: { type: 'string', format: 'uuid' } })
+  @ApiQuery({ name: 'packageCursor', required: false,
+    schema: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,512}$' } })
   @ApiOperation({ operationId: 'GET_api_v1_ingestion_cases_caseId_targets',
     summary: 'Read a bounded target page and grouped readiness counts for the retained batch' })
   @wireResponse(200, IntakeTargetPageSchema)
   targets(@Param('caseId') caseId: string, @Req() request: Request) {
     const query = intakeTargetQuery(request.originalUrl);
-    return listIntakeTargets(caseId, query.readiness, query.cursor);
+    return listIntakeTargets(caseId, query.readiness, query.cursor, query.packageCursor);
   }
 
   @Post('cases/:caseId/confirmations')

@@ -36,11 +36,14 @@ test('derived footprints and packages that are not reviewable are held, not reso
   assert.equal(intakeTargetReadiness({ featureId: sourceId }, pkg, review).readiness, 'held');
 });
 
-function packagePageProtocol(size: number, zeroTargets = false) {
+type PackagePlace = { recorded: boolean; part: number | null };
+
+function packagePageProtocol(size: number, zeroTargets = false,
+  place: (index: number) => PackagePlace = () => ({ recorded: false, part: null })) {
   const packages = Array.from({ length: size }, (_, index) => ({
     id: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-    area_id: sourceId, revision: 2, state: 'REVIEWED', review_fingerprint: 'a'.repeat(64),
-    finding_counts: { BOUNDARY_CONTACT: 1 },
+    area_id: sourceId, revision: 2, state: place(index).recorded ? 'COMMITTED' : 'REVIEWED',
+    review_fingerprint: 'a'.repeat(64), finding_counts: { BOUNDARY_CONTACT: 1 },
   }));
   const calls: { sql: string; values: unknown[] }[] = [];
   const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
@@ -53,7 +56,12 @@ function packagePageProtocol(size: number, zeroTargets = false) {
     if (sql.startsWith('SELECT package_id,min')) return { rows: zeroTargets ? [] : packages.map(row => ({
       package_id: row.id, anchor_item_id: id, readiness: 'ready', count: 2,
     })) };
-    if (sql.startsWith('WITH packages AS')) return { rows: packages.slice(0, 101) };
+    if (sql.startsWith('SELECT p.id,p.state')) return { rows: packages.map((row, index) => ({ id: row.id,
+      recorded: place(index).recorded, item_id: place(index).part === null ? null : sourceId,
+      part_index: place(index).part })).reverse() };
+    if (sql.startsWith('WITH packages AS')) {
+      return { rows: packages.filter(row => (values[0] as string[]).includes(row.id)) };
+    }
     assert(['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql), sql);
     return { rows: [] };
   } } as unknown as PoolClient;
@@ -99,6 +107,45 @@ test('a case with more than 100 packages publishes the first 100 without refusin
     assert.equal(page.packagesTruncated, true);
     assert.deepEqual(page.packages.map(row => row.packageId), fixture.packages.slice(0, 100).map(row => row.id));
     assert.equal(page.counts.ready, 202);
+  } finally {
+    globals.ulpinPool = previous;
+  }
+});
+
+test('250 packages, 120 recorded: unrecorded first in file part order, then recorded, 100 a page', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  // Every third package of the first 180 is unrecorded, and so is every one from 180; parts run backwards by id.
+  const fixture = packagePageProtocol(250, false, index => ({ recorded: index < 180 && index % 3 !== 0,
+    part: index < 240 ? 249 - index : null }));
+  globals.ulpinPool = fixture.pool;
+  try {
+    const ids = fixture.packages.map(row => row.id);
+    const unrecorded = ids.filter((_, index) => index >= 180 || index % 3 === 0);
+    const filed = (rows: string[]) => [...rows.filter(id => ids.indexOf(id) < 240).reverse(),
+      ...rows.filter(id => ids.indexOf(id) >= 240)];
+    const expected = [...filed(unrecorded), ...filed(ids.filter(id => !unrecorded.includes(id)))];
+    assert.equal(unrecorded.length, 130);
+    const pages = [await listIntakeTargets(id, undefined, undefined)];
+    while (pages.at(-1)!.packagesNextCursor) {
+      pages.push(await listIntakeTargets(id, undefined, undefined, pages.at(-1)!.packagesNextCursor!));
+    }
+    assert.deepEqual(pages.map(page => page.packages.length), [100, 100, 50]);
+    assert.deepEqual(pages.flatMap(page => page.packages.map(row => row.packageId)), expected);
+    assert(pages[0].packages.every(row => row.state !== 'COMMITTED'));
+    assert.deepEqual(pages[1].packages.map(row => row.state !== 'COMMITTED'),
+      [...Array(30).fill(true), ...Array(70).fill(false)]);
+    assert.deepEqual(pages.map(page => [page.packagesTotal, page.packagesUnrecorded, page.packagesUnrecordedAfter,
+      page.packagesTruncated]), [[250, 130, 30, true], [250, 130, 0, true], [250, 130, 0, true]]);
+    assert.equal(pages[2].packagesNextCursor, null);
+    const again = await listIntakeTargets(id, 'ready', undefined, pages[0].packagesNextCursor!);
+    assert.deepEqual(again.packages, pages[1].packages);
+    assert.equal(again.packagesNextCursor, pages[1].packagesNextCursor);
+    assert.deepEqual(pages.map(page => page.counts.ready), [500, 500, 500]);
+    const reads = fixture.calls.filter(call => /^(WITH packages AS|SELECT p\.id,p\.state)/.test(call.sql));
+    assert(reads.every(call => !/features|SELECT p\.body\b/.test(call.sql)));
+    await assert.rejects(listIntakeTargets(id, undefined, undefined, 'bm90LWEta2V5'),
+      (error: { code?: string }) => error.code === 'INTAKE_TARGET_QUERY');
   } finally {
     globals.ulpinPool = previous;
   }

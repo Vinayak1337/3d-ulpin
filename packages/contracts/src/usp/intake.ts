@@ -191,8 +191,10 @@ export const IntakeTargetSchema = z.strictObject({
 const tally = z.number().int().nonnegative();
 export const IntakeTargetCountsSchema = z.strictObject({ preparing: tally, ready: tally, needs_answer: tally, held: tally,
   confirmed: tally, recorded: tally, carded: tally, stopped: tally });
+const packageCursor = z.string().regex(/^[A-Za-z0-9_-]{1,512}$/);
 export const IntakeTargetQuerySchema = z.strictObject({
   readiness: IntakeTargetReadinessSchema.optional(), cursor: uuid.optional(),
+  packageCursor: packageCursor.optional(),
 });
 export const IntakeRunControlSchema = z.strictObject({});
 export const IntakeTargetPackageSchema = z.strictObject({
@@ -207,6 +209,11 @@ export const IntakeTargetPageSchema = z.strictObject({
   caseId: uuid, items: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.page),
   counts: IntakeTargetCountsSchema, nextCursor: uuid.nullable(),
   packages: z.array(IntakeTargetPackageSchema).max(100), packagesTruncated: z.boolean(),
+  packagesNextCursor: packageCursor.nullable().optional()
+    .describe('Opaque cursor of the next package page: unrecorded packages first, then recorded; null on the last.'),
+  packagesTotal: tally.optional().describe('Every package of the batch, listed on this page or not.'),
+  packagesUnrecorded: tally.optional().describe('Packages of the batch not yet recorded, listed or not.'),
+  packagesUnrecordedAfter: tally.optional().describe('Packages not yet recorded that later package pages list.'),
 });
 export const IntakeConfirmedPackageSchema = z.strictObject({
   packageId: uuid, revision: z.number().int().positive(), reviewFingerprint: hash,
