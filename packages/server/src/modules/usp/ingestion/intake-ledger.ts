@@ -72,6 +72,8 @@ export function intakeItem(row: any) {
     limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
     ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}), ...pageImage(row.plan_ref),
     ...layerCrs(row.plan_ref),
+    ...(IntakeItemSchema.shape.ifcJobId.unwrap().safeParse(row.plan_ref?.ifcJobId).success
+      ? { ifcJobId: row.plan_ref.ifcJobId } : {}),
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
 }

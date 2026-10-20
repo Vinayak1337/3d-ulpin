@@ -152,6 +152,8 @@ export const IntakeItemSchema = z.strictObject({
     answer: IntakeLayerCrsAnswerSchema.nullable() })).max(100).optional().describe(
     'GeoPackage or shapefile ZIP: each layer whose file states no coordinate system, with the officer\'s answer '
     + 'or null while none is given; present only when there is such a layer.'),
+  ifcJobId: z.string().uuid().optional().describe(
+    'An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });
