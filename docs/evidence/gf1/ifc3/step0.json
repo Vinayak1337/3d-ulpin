@@ -1,0 +1,24 @@
+{
+  "task": "IFC3",
+  "gate": "GF1",
+  "gap": "found by IFC2: a batch IFC is never read by the native IFC reader",
+  "base": "7d23f742",
+  "found": {
+    "probe": "intake-signatures.ts names an ISO-10303-21 file whose FILE_SCHEMA starts with IFC as format 'ifc', family 'model3d'; the publishing transaction (IntakeService.publish) saves that card, then calls queueIntakeDraftTx, which today rests the item as a kept file (keptOnly).",
+    "batch_source": "Studio keeps every non-GeoJSON/ZIP original through /uploads, so a batch IFC is profile large-original-v1 with inspection.largeOriginal (operatorSubject, verifiedSha256, verifiedBytes) at large-originals/<id>/<sha256>.",
+    "ifc_authority": "ifcSourceTx accepts only profile ifc-native-v1 with ifcOriginal; boundedIFCObject caps any key outside sources/ at the artifact limit; the dispatcher runs one IFC worker at a time (processing.ts)."
+  },
+  "change": [
+    "ifc.ts: ifcSourceTx also accepts a large-original-v1 source whose receipt, bytes, key and probed intake card say IFC, at most IFC_LIMITS.originalBytes; boundedIFCObject treats large-originals/ keys as originals; enqueueTx keeps its admission checks and calls a new exported insertIFCJobTx (pinned job insert, job input registration, ifc-native.changed event) so POST .../ifc behaves as before",
+    "intake-ifc.ts (new): batchIfc predicate; queueIntakeIfcTx queues one ifc-native job with a stable id per item and source revision (replay finds it), writes the item reading with plan_ref {ifcJobId}; over IFC_LIMITS.originalBytes queues nothing and rests the item not_understood with words naming the limit; settleIntakeIfcTx writes read with words from the result summary or the stop code",
+    "intake-draft.ts: one hook line before the kept-file branch",
+    "ifc-worker.ts: settleIntakeIfcTx at acceptance and in failIFCJob",
+    "intake-ledger.ts: intakeItem exposes plan_ref.ifcJobId as ifcJobId",
+    "packages/contracts/src/usp/intake.ts: optional ifcJobId on IntakeItemSchema; regenerated openapi, source pins and api-client types",
+    "apps/studio/src/features/intake/ifc/useIfcStructure.ts: jobId from the manifest item when present, else the case-detail lookup",
+    "tests: packages/server/src/modules/usp/ingestion/intake-ifc.test.ts on the real IFC2X3 sample"
+  ],
+  "reuse": "the ifc-native job, IFCInputSchema, IFC_LIMITS, ifc-worker, IFC status route, writeIntakeDraftTx, stableUuid, useIntakeManifest",
+  "decision_for_lead": "The batch door applies the byte limit and the IFC input pins but not the explicit-request admission check IFC_LIMITS.active (2 queued or running): the dispatcher already runs one IFC worker at a time, and a batch of three IFCs would otherwise leave the third unread with no automatic retry.",
+  "seams_outside": "none; no runtime, Docker, GPU or provider call"
+}

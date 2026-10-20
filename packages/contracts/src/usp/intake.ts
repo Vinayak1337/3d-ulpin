@@ -110,6 +110,8 @@ export const IntakeItemSchema = z.strictObject({
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
   existingAreaId: z.string().uuid().nullable().optional().describe(
     'The area whose source already holds this file\'s exact bytes; present only when the item rests for that reason.'),
+  ifcJobId: z.string().uuid().optional().describe(
+    'An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });

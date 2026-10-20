@@ -306,7 +306,6 @@ for (const [format, family, bytes, expected] of [
   ['pdf', 'document', 3355443, `Kept as a PDF document (3.2 MB).${kept}`],
   ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
   ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
-  ['ifc', 'model3d', 421888, `Kept as an IFC 3D model (412 KB).${kept}`],
   ['unknown', 'unknown', 421888, 'Kept (412 KB); its kind was not recognised from its first and last bytes.'],
 ] as const) {
   test(`a probed ${format} no batch reader takes rests not understood in words naming what the probe saw`,

@@ -7,6 +7,7 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { writeIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
 import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
+import { batchIfc, queueIntakeIfcTx } from './intake-ifc';
 import { stableUuid } from './intake-run';
 
 const uuid = z.string().uuid();
@@ -153,6 +154,7 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
   if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
+  if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
   if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
   // Nonvector readers keep their own behavior. Unsupported vectors receive a reason, never another reader.
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;

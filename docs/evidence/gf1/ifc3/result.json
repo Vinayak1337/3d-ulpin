@@ -1,0 +1,32 @@
+{
+  "task": "IFC3",
+  "gate": "GF1",
+  "gap": "found by IFC2: an IFC dropped in a batch is kept and enrolled but never read by the native IFC reader",
+  "base": "7d23f742",
+  "change": {
+    "one_door": "intake-draft.ts queueIntakeDraftTx: one hook line before the kept-file branch; when the published card says format ifc and the source is a batch large original, intake-ifc.ts queueIntakeIfcTx runs in the publishing transaction. Studio still routes .ifc through /uploads; no new endpoint",
+    "job": "the existing ifc-native job: ifc.ts insertIFCJobTx (split out of enqueueTx) writes the pinned IFCInput, registers its job input and publishes ifc-native.changed; POST .../ifc keeps its request key, revision pins, history and active-worker admission and then calls the same insert",
+    "authority": "ifcSourceTx also takes a large-original-v1 source whose largeOriginal receipt names the current operator, whose verified sha256 and bytes equal the source row, whose key is large-originals/<id>/<sha256>, whose size is within IFC_LIMITS.originalBytes and whose probed intake card says ifc; the original, its profile and its receipt are not rewritten. boundedIFCObject treats large-originals/ keys as originals (32 MiB cap)",
+    "item": "the item goes reading/undecided with plan_ref {ifcJobId}; IntakeItemSchema gains optional ifcJobId (OpenAPI, source pins and api-client regenerated)",
+    "end": "ifc-worker.ts calls settleIntakeIfcTx in the acceptance transaction (read/undecided, 'The file states 1 building, 1 storey and 2 spaces; they are candidates.' from the result summary; a not_read structure gives its code and reason) and in failIFCJob (read/not_understood, 'The IFC reading stopped (CODE) ...' or 'went out of date ...' for IFC_INPUT_STALE)",
+    "limit": "above IFC_LIMITS.originalBytes nothing is queued; the item rests probed/not_understood: 'This IFC has N bytes, above the 33554432-byte limit of the IFC reader, so the building, storeys and spaces it states are not read. The original is kept with its SHA-256.'",
+    "replay": "the job id is stableUuid('intake-ifc/1:<item>:<source>:<revision>:<sha256>'); a replayed enrolment returns the same job and writes nothing",
+    "studio": "useIfcStructure takes the jobId from the manifest item's ifcJobId when present (the manifest is refreshed by the batch stream), else the case-detail lookup it had"
+  },
+  "decision_for_lead": "The batch door does not apply IFC_LIMITS.active (2 queued or running), which stays on POST .../ifc: the dispatcher runs one IFC worker at a time and queued jobs wait, while a refusal would leave the third IFC of a batch unread with no automatic retry. The per-source history limit is not checked either: the batch queues at most one job per item and source revision.",
+  "real_inputs": {
+    "good": "E:/BhuAayam-data/task-data/desktop-ifc-native/originals/ifc2x3-building-architecture.ifc (public buildingSMART sample, test_only, outside Git; 92542 bytes, sha256 c4db65ba...5885): probed by probeOriginal to format ifc / model3d, enrolled as a large original; one ifc-native job queued with the source's sha256, bytes and key pinned; a replay queued none and published no event; its retained native counts (docs/evidence/gf1/ifc2/real-structures.json) give the item words 'The file states 1 building, 1 storey and 2 spaces; they are candidates.'",
+    "difficult": "the same sample with a receipt stating IFC_LIMITS.originalBytes + 1 bytes (test_only: a stated size, no such file is read or kept; no real IFC above 32 MiB is on the data drive): no job, item not_understood with the limit words; a card that is not ifc or a receipt of another operator is refused IFC_DENIED; failIFCJob with IFC_TIMEOUT writes the stopped words"
+  },
+  "checks": {
+    "typecheck_backend": 0,
+    "studio_typecheck": 0,
+    "studio_test": "0; studio 486 passed (75 files), ui 7 passed",
+    "backend_tests": "0; template set plus intake-ifc.test.ts and tests/ifc-authority.test.ts (POST .../ifc unchanged): 388 tests, 385 pass, 3 skipped, 0 fail. intake-draft.test.ts drops its ifc row from the kept-file cases, since a batch IFC now has a reader",
+    "openapi_check": "first 1 (stale after the contract field); after scripts/api/refresh-contract.ts 7d23f742 and pnpm studio:api-types: 0",
+    "check_py": "1: 'runtime receipt changed', the same on the unchanged base 7d23f742 in this worktree (CRLF checkout of recorded receipts, as IFC2 reported); no file of this change involved",
+    "diff_check": 0
+  },
+  "ui_design_check": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 7d23f742: exit 0, no candidates. The Studio change is the data hook only; no screen, copy, token or layout changed.",
+  "not_measured": "No runtime job was run (no Docker or database in this task): the batch enrolment, the queued worker on the pinned IFC tools and the live tray words were not seen on a stack."
+}

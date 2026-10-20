@@ -11,6 +11,7 @@ import {assertIFCTools} from './ifc-config';
 import {processIFC} from './ifc-processor';
 import {assertIFCInputTx,assertIFCJobRow,ifcResultKey,ifcArtifactKey,readIFCResult,boundedIFCObject} from './ifc';
 import {appendCaseIngestionTx} from './events';
+import {settleIntakeIfcTx} from './intake-ifc';
 
 export function ifcFailureCode(error:unknown){
   if(error instanceof AppError){
@@ -41,6 +42,7 @@ export async function failIFCJob(jobId:string,caseId:string,code:string,attempt?
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     const status=code==='IFC_INPUT_STALE'?'stale':'failed';
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,status,code]);
+    await settleIntakeIfcTx(client,caseId,jobId,{status,code});
     // Do not publish a private event using a revoked or unavailable binding.
     const parsed=IFCInputSchema.safeParse(job.payload);
     if(parsed.success){
@@ -129,6 +131,7 @@ async function executeIFCJob(jobId:string,deadline:DbDeadline,controller:AbortCo
     },beforeLocks,async client=>{
       await appendCaseIngestionTx(client,input.caseId,{kind:'ifc-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
+      await settleIntakeIfcTx(client,input.caseId,jobId,{summary:result.summary});
     },deadline);
   }catch(error){await terminal(error instanceof DbCommitOutcomeUnknown?error:controller.signal.aborted?controller.signal.reason:error,owned);}
   finally{stopped=true;if(monitorTimer)clearTimeout(monitorTimer);controller.abort();await checking;}

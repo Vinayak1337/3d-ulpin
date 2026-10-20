@@ -64779,6 +64779,11 @@ export interface components {
              * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
              */
             existingAreaId?: string | null;
+            /**
+             * Format: uuid
+             * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
+             */
+            ifcJobId?: string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -64998,6 +65003,11 @@ export interface components {
                  * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
                  */
                 existingAreaId?: string | null;
+                /**
+                 * Format: uuid
+                 * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
+                 */
+                ifcJobId?: string;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
