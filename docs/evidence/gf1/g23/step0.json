@@ -1,0 +1,61 @@
+{
+  "task": "g23",
+  "gap": "G23",
+  "branch": "task/g23-page-images-in-batch",
+  "base": "6d038782",
+  "plan": [
+    {
+      "file": "packages/server/src/modules/usp/ingestion/page-image-read.ts",
+      "change": "new: pass 1 reader. Native header facts from the bytes (JPEG SOF/JFIF/Exif, PNG IHDR/pHYs/eXIf, TIFF IFD0 + Exif IFD): pixel size, bands, bit depth, EXIF orientation, capture time as stated, DPI as stated, georeference tags. One bounded preview (longest side 1024 px, orientation applied) through libvips (sharp): JPEG shrink-on-load, sequential line decoding, a stated pixel bound. The officer's sentence."
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/intake-page-image.ts",
+      "change": "new: the job input, its enrolment from the batch, the settled item (state read, placement needs_answer, sentence in limit_reason, read facts and preview pointer under plan_ref.pageImage) and the officer's answer (plan, elevation, photo, other) kept as a candidate label."
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/intake-page-image-worker.ts",
+      "change": "new: the fenced job: read the pinned original within its byte bound, read it, store the preview derivative content-addressed beside its original's key, accept."
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+      "change": "owned: a page image (JPEG, PNG, TIFF without georeference) goes to its reader instead of resting as kept-only."
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/intake-headers.ts, intake-probe.ts",
+      "change": "seam: a TIFF whose first IFD has no georeference tag is family image (D1); its IFD is also read from the tail when the offset lands there. A TIFF with any georeference tag keeps its raster route (D4)."
+    },
+    {
+      "file": "packages/server/src/modules/usp/jobs.ts, packages/server/src/modules/cases/processing.ts",
+      "change": "seam: register and dispatch the operation intake-page-image (one job authority)."
+    },
+    {
+      "file": "packages/contracts/src/usp/intake.ts",
+      "change": "seam: new schemas beside the others (page image read, label request); IntakeItem gains an optional pageImage view. No existing schema field changes."
+    },
+    {
+      "file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+      "change": "seam: POST .../intake/items/:itemId/page-image-label records the officer's answer."
+    },
+    {
+      "file": "packages/server/package.json, pnpm-lock.yaml",
+      "change": "seam: sharp 0.35.4 as a direct dependency (already resolved in the lockfile through next; win32-x64 and linux binaries listed)."
+    },
+    {
+      "file": "docs/api/openapi.json, packages/api-client/src/schema.d.ts, docs/api/source-pins.json",
+      "change": "regenerated contract."
+    }
+  ],
+  "reuse": [
+    "usp_intake_items row and writeIntakeDraftTx tray transitions; plan_ref already carries non-recipe item facts (existingAreaId)",
+    "jobs + claimUspJobAttempt/acceptUspJobAttempt fenced attempts, as intake-zip-layers",
+    "assertIntakeDraftTx source pins",
+    "readObjectBounded for the original; putPartObject for the content-addressed preview"
+  ],
+  "notReused": "document-images.ts gated Python worker: PNG/JPEG only, 16 MiB, Windows-configured runtime, no TIFF, no bit depth or capture time; changing its contract belongs to the document recipe (G10).",
+  "outOfScope": ["PDF (G10)", "evidence contracts (TB1)", "ZIP layers", "quotas", "OCR, geometry, georeference", "Studio question UI"],
+  "needsRuntime": "no: tests run the reader and the pure item words; no Docker, GPU or provider call",
+  "inputs": {
+    "good": "CubiCasa5K F1_scaled.png plan raster (test_only, CC-BY-NC-SA-4.0, datasets.json p2-cubicasa5k-test100-20261011)",
+    "difficult": "libjpeg-turbo testorig.jpg (datasets.json retained-document-image-jpeg-20261001); RAMP GeoTIFF chip (stays raster); synthetic test_only JPEG with EXIF orientation 6 and capture time and an untagged TIFF, generated in the test"
+  }
+}

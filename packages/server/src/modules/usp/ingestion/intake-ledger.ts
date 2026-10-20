@@ -1,5 +1,6 @@
 import type { PoolClient } from 'pg';
-import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, type IntakeCard } from '@ulpin/contracts/usp';
+import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, IntakePageImageReadSchema,
+  type IntakeCard } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
 import { intakeSizeClass, intakeWave } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
@@ -30,6 +31,12 @@ function existingArea(value: unknown) {
   return Boolean(areaId) && IntakeItemSchema.shape.existingAreaId.safeParse(areaId).success;
 }
 
+/** G23. A page image's read, kept beside the item's other facts. */
+function pageImage(value: unknown) {
+  const parsed = IntakePageImageReadSchema.safeParse((value as { pageImage?: unknown } | null)?.pageImage);
+  return parsed.success ? { pageImage: parsed.data } : {};
+}
+
 export function intakeItem(row: any) {
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
@@ -40,7 +47,7 @@ export function intakeItem(row: any) {
     plan: intakePlan(row.plan_ref), streamedProfileJobId: row.streamed_profile_job_id ?? null,
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
     limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
-    ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}),
+    ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}), ...pageImage(row.plan_ref),
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
 }

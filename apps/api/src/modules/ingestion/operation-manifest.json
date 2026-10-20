@@ -776,6 +776,19 @@
       "batch": "LP3d"
     },
     {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-label",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_label",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakePageImageAnswerSchema",
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "G23"
+    },
+    {
       "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/targets",
       "operationId": "GET_api_v1_ingestion_cases_caseId_targets",
