@@ -1,0 +1,81 @@
+{
+  "task": "SF1",
+  "gate": "gf1",
+  "gap": "REH9 (21 October, at 6bd05844, case 6650f974): the NYC orthophoto TIFF and the LAZ were read part by part, but every part rested with 'Read but not placed: the batch area has no extent yet.' while the batch's NYC footprints were drafted, recorded and carded.",
+  "branch": "task/sf1-surface-area-extent",
+  "base": "d33558e7",
+  "status": "built_not_runtime_proven",
+  "cause": [
+    "The batch area's extent (map_areas.extent) has one writer: the recording step, packages/server/src/modules/areas/areas.ts:1756 in commitPackage, which merges the recorded package's extent into the area. A drafted footprint package binds the batch's site and area (reference, no extent) but writes no extent, so a part read between drafting and recording is settled against an area with no extent (intake-surface.ts frameTx, the no_area_extent words).",
+    "A surface item is settled only on its own part events: queueIntakeSurfaceTx, admitSurfaceItemTx, quarantineTx, currentAgainTx, acceptIntakeSurfacePartTx and failIntakeSurfacePartTx (intake-surface.ts:99, 191, 199, 210, 223, 351, 362 at the base). The dispatcher tick (admitIntakeSurfaceParts, intake-surface.ts:241-258 at the base) picks an item only when it has a planned part or a published part whose job pins another case context (frame, context, site), access or reader. The area's extent and the batch's drafted packages are in none of those pins, so when the recording step later wrote the extent, an item whose parts were all read was never settled again and kept its words (SB2's re-read never fires: the context pin did not move).",
+    "Studio (apps/studio/src/features/map/surface/parts.ts SurfaceParts.sync and ask) asks each published part's display read once; a not_placed answer stays in 'asked', and an item is paged again only when its partsDone or state moves. A placement change alone is not seen without a reload. Outside this task's paths; see next."
+  ],
+  "design": {
+    "D1": "No new writer: map_areas.extent stays written only by the recording step (areas.ts commitPackage), so an unreviewed draft never changes the area for anything else. intake-surface.ts batchAreaTx reads, in the same statement, the bounds of the batch's own drafted footprint packages in that area: import_packages of the case and area, not COMMITTED (those are already in the recorded extent), not a source workspace, not quarantined, with a four-number body.extent (the package extent in the area's local frame that commitPackage merges). No package gives null, never a zero box. frameTx places a part against the recorded extent widened by those bounds; with neither, today's no_area_extent words (D3). Nothing is taken from the raster or point cloud itself.",
+    "D1 provenance": "Area extents keep no provenance column, so it is carried in words: the item's words say 'Placed against the extent of this batch's drafted footprints; the area has no recorded extent yet.' (or '... the area's recorded extent, widened by this batch's drafted footprints.' when drafts reach beyond it), and the display read's placement.operation ends '; area extent from the batch's drafted footprints'. Drafts inside the recorded extent change nothing and are not named.",
+    "D2": "settleSurfaceItemTx keeps the key of what it settled against in plan_ref.placedOn: md5 of the area id, reference, recorded extent and drafted bounds. The dispatcher tick's existing statement adds one column, moved: the item has a header and its placedOn differs from the same key computed now. A moved item is settled again in its own transaction (and admitted only when it also has a part to read), so its words and placement follow; no part is read again, no job is made, every earlier read is kept. An unchanged settlement writes nothing, so a replayed tick sends its one statement. An item with no area keeps placedOn null and is never picked for this. Items settled before this change carry no placedOn and are settled once at the first tick, which places the REH9 items once their area has an extent.",
+    "D3": "A batch with no footprints (no recorded extent, no drafted package) keeps 'Read but not placed: the batch area has no extent yet.' and waiting_for_anchor; the tick leaves it. The surface stays display only.",
+    "sql": "No schema change. Reads import_packages (indexed by case_id) and map_areas only."
+  },
+  "files": [
+    "packages/server/src/modules/usp/ingestion/intake-surface.ts",
+    "packages/server/src/modules/usp/ingestion/intake-surface.test.ts",
+    "docs/api/source-pins.json (repinned intake-surface.ts only; openapi.json and the client types unchanged)"
+  ],
+  "realInputs": {
+    "orthophoto": {
+      "path": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-ortho-2018.tif",
+      "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716",
+      "bytes": 1036134,
+      "crs": "EPSG:3857 (AU3 reader record)",
+      "affineFromOwnTags": [0.5971642834779395, 0, -8239147.278859148, 0, -0.5971642834779395, 4971005.697498152],
+      "windows": 9
+    },
+    "footprints": {
+      "path": "E:/BhuAayam-data/task-data/nyc-zcta-10013/buildings-original.geojson",
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "bytes": 1103282,
+      "features": 1662,
+      "boundsEpsg3857": [-8239227.384929516, 4970199.718817466, -8237023.247852141, 4972434.437586553]
+    },
+    "lidar": "nyc-10013-lidar-2017.laz first accepted batch as AU3 recorded it (EPSG:6347, extent 583402.5958, 4507755.5254, 583659.1058, 4508041.3854)",
+    "result": "Orthophoto first window read with the batch area bound and no extent: waiting_for_anchor with the no-extent words. The footprints' bounds appear as a drafted package; the item is settled again and is on_map with the drafted-footprints words, and all 9 windows' placements are 'placed' with corners equal to their own affine corners minus the area origin.",
+    "limit": "The fake has no PostGIS: the area's analysis CRS in the real-data test is the orthophoto's own EPSG:3857 (test_only) so the placement statement's transform is the identity, and footprint bounds are projected by the spherical Mercator formula. The runtime uses ST_Transform as before."
+  },
+  "tests": {
+    "file": "packages/server/src/modules/usp/ingestion/intake-surface.test.ts",
+    "new": [
+      "SF1: footprints drafted after the parts were read place them at the next tick, without reading again (display read: not_placed no_area_extent before; placed with corners [[-97,141],[159,141],[159,-144],[-97,-144]] after; no new job; replayed tick sends one statement; once recorded the words no longer name the drafts)",
+      "SF1: a part read after the footprints are drafted is placed at once (also: drafts inside the recorded extent are not named; drafts beyond it are)",
+      "SF1: a batch with no footprints keeps today's words, and the tick leaves it",
+      "SF1 real NYC: the orthophoto read before its footprints are drafted is placed once they are"
+    ],
+    "reproducedBeforeFix": "With the fakes and the base intake-surface.ts: the three placement tests failed (placement waiting_for_anchor, expected on_map); the no-footprints test passed (19 tests, 16 pass, 3 fail).",
+    "afterFix": "19 tests, 19 pass, 0 skipped"
+  },
+  "checks": [
+    { "command": "pnpm install --frozen-lockfile", "exit": 0 },
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0,
+      "counts": "studio 566 passed, 2 skipped; scene 59 passed, 1 skipped; ui 7 passed; api-client 2 passed" },
+    { "command": "backend set ($D/*.test.ts, areas/*.test.ts, tests/ingestion-events.test.ts, tests/intake-ledger.test.ts)",
+      "exit": 0, "counts": "407 tests, 406 pass, 0 fail, 1 skipped" },
+    { "command": "tsx --test intake-surface.test.ts tests/raster-publication.test.ts tests/point-publication.test.ts",
+      "exit": 0, "counts": "30 tests, 30 pass" },
+    { "command": "tsx apps/api/scripts/openapi.ts --check", "exit": 1, "note": "source-pins.json stale for intake-surface.ts" },
+    { "command": "tsx scripts/api/refresh-contract.ts d33558e7; pnpm studio:api-types", "exit": 0,
+      "note": "repinned intake-surface.ts only; openapi.json and schema.d.ts unchanged in content" },
+    { "command": "tsx apps/api/scripts/openapi.ts --check", "exit": 0 },
+    { "command": "python scripts/api/check.py", "exit": 1,
+      "note": "the known CRLF failure only: docs/evidence/usp/cityjson-validation-runtime.json matches its pinned SHA-256 once its working-copy CRLF is read as LF" },
+    { "command": "git diff --check", "exit": 0 }
+  ],
+  "notRun": "No Docker or runtime (task rule). Runtime proof is the next rehearsal of the REH9 drop.",
+  "gaps": [
+    "Studio does not ask a part's display read again after it answered not_placed: SurfaceParts.sync pages an item only when partsDone or state moves, and ask() skips parts already in 'asked'. After this change the item's placement and words move (an intake.item event is published), but a Studio page already open keeps the earlier not_placed answers until reloaded."
+  ],
+  "next": [
+    "Studio (apps/studio/src/features/map/surface/parts.ts): treat a change of the item's placement or limitReason as a move in sync(), and on a move clear notPlaced parts from 'asked' so their display reads are asked again. Then rehearse the REH9 drop and confirm the ortho and LAZ parts are drawn once the footprints are drafted."
+  ]
+}

@@ -7,7 +7,7 @@ import { INTAKE_SURFACE_VERSION, type PointBatchResult, type RasterWindowResult 
 import { probeOriginal } from './intake-probe';
 import { fingerprint } from '../../cases/domain';
 import { acceptIntakeSurfacePartTx, admitIntakeSurfaceParts, failIntakeSurfacePartTx, pointRecordsExtent,
-  queueIntakeSurfaceTx, surfacePartDisplayTx, surfacePartPlacementTx, surfacePlan, surfaceReader }
+  queueIntakeSurfaceTx, settleSurfaceItemTx, surfacePartDisplayTx, surfacePartPlacementTx, surfacePlan, surfaceReader }
   from './intake-surface';
 import type { IntakeSourceRow } from './intake-context';
 
@@ -82,21 +82,26 @@ const caseId = '30000000-0000-4000-8000-000000000001';
 const itemId = '30000000-0000-4000-8000-000000000002';
 const jobId = '30000000-0000-4000-8000-000000000003';
 
-type Area = { id: string; revision: number; reference: { analysisCrs: string; origin: number[] }; extent: number[] };
+type Area = { id: string; revision: number; reference: { analysisCrs: string; origin: number[] };
+  extent: number[] | null; drafted?: number[] | null };
+
+/** The area statement's answer: the stored area, its batch's drafted bounds and the key of both (SF1). */
+const areaRow = (area: Area | null) => area && { ...area, drafted: area.drafted ?? null,
+  key: fingerprint([area.id, area.reference, area.extent, area.drafted ?? null]) };
 
 /**
  * An item with its first point part queued; the statements the acceptance writes, each counted. With an area, the
  * placement statement is answered as PostGIS would for a source already in the area's CRS: minus the origin, then
  * each part's envelope against the area's local extent.
  */
-function ledger(area: Area | null = null) {
+function ledger(area: Area | null = null, operation: 'point-batch' | 'raster-window' = 'point-batch') {
   const item: Record<string, any> = { item_id: itemId, case_id: caseId, state: 'reading', placement: 'undecided',
-    plan_ref: { version: INTAKE_SURFACE_VERSION, operation: 'point-batch', header: null }, records_seen: 0,
+    plan_ref: { version: INTAKE_SURFACE_VERSION, operation, header: null }, records_seen: 0,
     limit_reason: null, parts_planned: null, parts_done: 0, family: 'point_cloud', format: 'laz',
     size_class: 'M', wave: 2, pinned_by_officer: false, parent_item_id: null };
   const parts = new Map<number, Record<string, any>>([[0, { item_id: itemId, part_index: 0, state: 'queued',
-    job_id: jobId, locator: { operation: 'point-batch', batch: null, partKey: 'a'.repeat(64) }, counts: null,
-    result_ref: null }]]);
+    job_id: jobId, locator: { operation, ...operation === 'point-batch' ? { batch: null } : { window: null },
+      partKey: 'a'.repeat(64) }, counts: null, result_ref: null }]]);
   const count = { writes: 0, events: 0 };
   const one = (row: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
   const client = { query: async (sql: string, values: any[] = []) => {
@@ -121,7 +126,7 @@ function ledger(area: Area | null = null) {
     }
     if (sql.startsWith('SELECT state,counts,issue_code,result_ref FROM usp_intake_parts'))
       return { rows: [...parts.values()].sort((a, b) => a.part_index - b.part_index), rowCount: parts.size };
-    if (sql.startsWith('SELECT a.id,a.revision,a.reference,a.extent FROM cases')) return one(area);
+    if (sql.startsWith('SELECT a.id,a.revision,a.reference,a.extent')) return one(areaRow(area));
     if (sql.startsWith('SELECT count(DISTINCT auth_srid)')) return one({ n: new Set([values[0], values[1]]).size });
     if (sql.startsWith('SELECT c.part,array_agg')) return { rows: localParts(values), rowCount: 1 };
     if (sql.startsWith('SELECT case_id,plan_ref FROM usp_intake_items') || sql.startsWith('SELECT state,placement')
@@ -281,18 +286,20 @@ const older = 'This part was read under an older batch context, so it is not sho
 const laz = recorded.find(file => file.file === 'nyc-10013-lidar-2017.laz')!;
 
 /** The LAZ's batch n as the reader would accept it; the first batch has its recorded extent, the others none. */
-function lazBatch(n: number) {
+function lazBatch(n: number, points?: number) {
   const value = lazFirstBatch();
   return { operation: 'point-batch' as const, extent: n ? null : lazBox,
-    value: { ...value, metadata: { ...value.metadata, batch: { start: n * 8192, count: 8192 } } } };
+    value: { ...value, metadata: { ...value.metadata, sourcePointCount: points ?? value.metadata.sourcePointCount,
+      batch: { start: n * 8192, count: 8192 } } } };
 }
 
 /**
  * One kept LAZ of a batch behind a fake pool, with its part rows and reader jobs. Each statement of the tick, the
  * reader's source check and enqueue, the acceptance and the tray is answered as the database would answer it.
  */
-function batch() {
+function batch(points?: number) {
   const db = { drafting: false, jobs: new Map<string, Record<string, any>>(), statements: [] as string[],
+    recorded: [-200, -200, 200, 200] as number[] | null, drafted: null as number[] | null,
     current: { id: caseId, revision: 3, archived: false, frame: null as unknown, context: null,
       site_id: null as string | null } };
   const source = { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, profile: 'large-original-v1',
@@ -315,8 +322,9 @@ function batch() {
     return [caseContextSha256, accessSha256, readerSha256];
   };
   const elsewhere = (part: Record<string, any>, now: string[]) => pins(part.job_id).some((v, n) => v !== now[n]);
-  const area = { id: '30000000-0000-4000-8000-000000000004', revision: 2,
-    reference: { analysisCrs: 'EPSG:6347', origin: [583500, 4507900] }, extent: [-200, -200, 200, 200] };
+  const area = () => db.current.site_id ? areaRow({ id: '30000000-0000-4000-8000-000000000004', revision: 2,
+    reference: { analysisCrs: 'EPSG:6347', origin: [583500, 4507900] }, extent: db.recorded, drafted: db.drafted })
+    : null;
   const byJob = (jobId: string) => sorted().find(part => part.job_id === jobId);
   const answer = (sql: string, values: any[]) => {
     if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql) || sql.startsWith('SELECT pg_advisory_xact_lock')
@@ -327,6 +335,7 @@ function batch() {
       return one({ item_id: itemId, case_id: caseId, operation: 'point-batch',
         planned: sorted().some(part => part.state === 'planned'),
         case_now: [db.current.frame, db.current.context, db.current.site_id, db.current.archived],
+        moved: Boolean(item.plan_ref.header) && (item.plan_ref.placedOn ?? null) !== (area()?.key ?? null),
         pins: published.length ? [...new Set(published.map(part => JSON.stringify(pins(part.job_id))))]
           .map(pin => JSON.parse(pin)) : null });
     }
@@ -354,6 +363,15 @@ function batch() {
     if (sql.startsWith('SELECT * FROM jobs WHERE id=$1') || sql.startsWith('SELECT status,error FROM jobs'))
       return one(db.jobs.get(values[0]));
     if (sql.startsWith('SELECT * FROM usp_job_metadata')) return one(null);
+    // The display read's capture: the job, its metadata and the accepted attempt, as the reader accepted them.
+    if (sql.startsWith('SELECT j.*,m.result_ref')) {
+      const job = db.jobs.get(values[0]), digest = job && fingerprint(job.payload);
+      const sha = createHash('sha256').update(values[0]).digest('hex');
+      return one(job && { ...job, input_manifest_id: sourceId, input_sha256: digest, logical_state: job.status,
+        scope: { kind: 'intake', workspaceId: caseId, version: job.case_revision + 1 }, accepted_fence: 1,
+        result_ref: { assetId: `point:${job.id}`, version: 1, sha256: sha }, attempt_state: 'accepted',
+        attempt_fence: 1, attempt_input_sha256: digest, completion_sha256: sha });
+    }
     if (sql.startsWith('SELECT revision FROM cases')) return one({ revision: db.current.revision });
     if (sql.startsWith('UPDATE usp_outbox_streams')) return one({ sequence: String(db.statements.length) });
     if (sql.startsWith('UPDATE usp_intake_parts p')) {
@@ -371,7 +389,7 @@ function batch() {
       return one({});
     }
     if (sql.startsWith('SELECT state,counts,issue_code,result_ref')) return { rows: sorted(), rowCount: parts.size };
-    if (sql.startsWith('SELECT a.id,a.revision')) return one(db.current.site_id ? area : null);
+    if (sql.startsWith('SELECT a.id,a.revision')) return one(area());
     if (sql.startsWith('SELECT count(DISTINCT auth_srid)')) return one({ n: new Set([values[0], values[1]]).size });
     if (sql.startsWith('SELECT c.part,array_agg')) return { rows: localParts(values), rowCount: 1 };
     if (sql.startsWith('UPDATE usp_intake_items SET parts_planned')) {
@@ -436,7 +454,7 @@ function batch() {
   const accept = async (n: number) => {
     const jobId = parts.get(n)!.job_id;
     db.jobs.get(jobId)!.status = 'succeeded';
-    await acceptIntakeSurfacePartTx(client, { ...lazBatch(n), jobId,
+    await acceptIntakeSurfacePartTx(client, { ...lazBatch(n, points), jobId,
       resultSha256: createHash('sha256').update(jobId).digest('hex') } as never);
   };
   /** Three parts are read before the batch has an area. */
@@ -557,4 +575,161 @@ test('a failed read again rests quarantined with the reader\'s words and is not 
   }
   assert.deepEqual([parts.get(0)!.state, parts.get(0)!.job_id], ['quarantined', failed]);
   assert.equal(db.jobs.get(old[0])!.status, 'succeeded');
+});
+
+const notYet = 'Read but not placed: the batch area has no extent yet.';
+const fromDrafts = 'Placed against the extent of this batch\'s drafted footprints; '
+  + 'the area has no recorded extent yet.';
+
+test('SF1: footprints drafted after the parts were read place them at the next tick, without reading again',
+  async () => {
+    // The real LAZ's first two batches, as if the file held only those, so every part is read before the drafts.
+    const { db, item, parts, client, tick, accept } = batch(2 * 8192);
+    db.current.site_id = siteId;
+    db.recorded = null;
+    for (const n of [0, 1]) {
+      await tick();
+      await accept(n);
+    }
+    assert.deepEqual([item.state, item.placement], ['read', 'waiting_for_anchor']);
+    assert.match(item.limit_reason, new RegExp(`^Read 2 of 2 batches .*${notYet}`));
+    const before = await surfacePartDisplayTx(client, caseId, itemId, 0);
+    assert.deepEqual(before.placement, { state: 'not_placed', reason: 'no_area_extent', words: notYet });
+    const jobs = [...db.jobs.keys()], results = [0, 1].map(n => parts.get(n)!.result_ref);
+    // The footprint file is drafted: its packages' bounds in the area's local frame.
+    db.drafted = [-150, -150, 150, 150];
+    await tick();
+    assert.deepEqual([item.state, item.placement], ['read', 'on_map']);
+    assert.match(item.limit_reason, new RegExp(`^Read 2 of 2 batches \\(16384 points, EPSG:6347\\)\\. ${fromDrafts}`));
+    assert.doesNotMatch(item.limit_reason, /not placed/);
+    // Nothing is read again and every earlier read is kept as it was.
+    assert.deepEqual([...db.jobs.keys()], jobs);
+    assert.deepEqual([0, 1].map(n => parts.get(n)!.result_ref), results);
+    const display = await surfacePartDisplayTx(client, caseId, itemId, 0);
+    assert.equal(display.placement.state, 'placed');
+    if (display.placement.state !== 'placed') return;
+    assert.deepEqual(display.placement.corners.map(c => c.map(v => Math.round(v))),
+      [[-97, 141], [159, 141], [159, -144], [-97, -144]]);
+    assert.match(display.placement.operation, /; area extent from the batch's drafted footprints$/);
+    // Settled against that area, a replayed tick sends its one statement and writes nothing.
+    assert.equal((await tick()).length, 1);
+    // Once recorded, the extent is the area's own and the words no longer name the drafts.
+    db.recorded = [-150, -150, 150, 150];
+    db.drafted = null;
+    await tick();
+    assert.equal(item.placement, 'on_map');
+    assert.doesNotMatch(item.limit_reason, /drafted/);
+    assert.equal((await tick()).length, 1);
+  });
+
+test('SF1: a part read after the footprints are drafted is placed at once', async () => {
+  const { client, item } = ledger({ ...area([0, 0, 0, 0]), extent: null, drafted: [-200, -200, 200, 200] });
+  await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value: lazFirstBatch(), extent: lazBox });
+  assert.equal(item.placement, 'on_map');
+  assert.match(item.limit_reason, new RegExp(fromDrafts));
+  // Drafts inside the recorded extent widen nothing, and the words stay today's.
+  const recorded = ledger({ ...area([-300, -300, 300, 300]), drafted: [-200, -200, 200, 200] });
+  await acceptIntakeSurfacePartTx(recorded.client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value: lazFirstBatch(), extent: lazBox });
+  assert.equal(recorded.item.placement, 'on_map');
+  assert.doesNotMatch(recorded.item.limit_reason, /drafted/);
+  // Drafts beyond it are named.
+  const widened = ledger({ ...area([5000, 5000, 6000, 6000]), drafted: [-200, -200, 200, 200] });
+  await acceptIntakeSurfacePartTx(widened.client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value: lazFirstBatch(), extent: lazBox });
+  assert.equal(widened.item.placement, 'on_map');
+  assert.match(widened.item.limit_reason,
+    /Placed against the area's recorded extent, widened by this batch's drafted footprints\./);
+});
+
+test('SF1: a batch with no footprints keeps today\'s words, and the tick leaves it', async () => {
+  const { db, item, client, tick, accept } = batch(2 * 8192);
+  db.current.site_id = siteId;
+  db.recorded = null;
+  for (const n of [0, 1]) {
+    await tick();
+    await accept(n);
+  }
+  const words = item.limit_reason;
+  assert.match(words, new RegExp(notYet));
+  assert.equal(item.placement, 'waiting_for_anchor');
+  assert.equal((await tick()).length, 1);
+  assert.equal(item.limit_reason, words);
+  const display = await surfacePartDisplayTx(client, caseId, itemId, 0);
+  assert.deepEqual(display.placement, { state: 'not_placed', reason: 'no_area_extent', words: notYet });
+});
+
+/** A classic GeoTIFF's affine from its own model pixel scale and tie point (tags 33550 and 33922). */
+function geoTransform(bytes: Buffer) {
+  const le = bytes.toString('latin1', 0, 2) === 'II';
+  const u16 = (at: number) => le ? bytes.readUInt16LE(at) : bytes.readUInt16BE(at);
+  const u32 = (at: number) => le ? bytes.readUInt32LE(at) : bytes.readUInt32BE(at);
+  const f64 = (at: number) => le ? bytes.readDoubleLE(at) : bytes.readDoubleBE(at);
+  assert.equal(u16(2), 42, 'a classic TIFF');
+  const ifd = u32(4), tags = new Map<number, number[]>();
+  for (let n = 0; n < u16(ifd); n++) {
+    const at = ifd + 2 + n * 12;
+    if (u16(at + 2) === 12) tags.set(u16(at), Array.from({ length: u32(at + 4) }, (_, k) => f64(u32(at + 8) + 8 * k)));
+  }
+  const [sx, sy] = tags.get(33550)!, [i, j, , x, y] = tags.get(33922)!;
+  return [sx, 0, x - i * sx, 0, -sy, y + j * sy];
+}
+
+/** The EPSG:3857 bounds of every coordinate of a GeoJSON in longitude and latitude (spherical Mercator). */
+function mercatorBounds(geojson: unknown) {
+  const box = [Infinity, Infinity, -Infinity, -Infinity], r = 6378137;
+  const walk = (value: unknown): void => {
+    if (!Array.isArray(value)) {
+      if (value && typeof value === 'object') Object.values(value).forEach(walk);
+      return;
+    }
+    if (typeof value[0] !== 'number') return value.forEach(walk);
+    const x = r * value[0] * Math.PI / 180, y = r * Math.log(Math.tan(Math.PI / 4 + value[1] * Math.PI / 360));
+    box.splice(0, 4, Math.min(box[0], x), Math.min(box[1], y), Math.max(box[2], x), Math.max(box[3], y));
+  };
+  walk((geojson as { features: unknown }).features);
+  return box;
+}
+
+test('SF1 real NYC: the orthophoto read before its footprints are drafted is placed once they are', async t => {
+  const buildings = 'E:/BhuAayam-data/task-data/nyc-zcta-10013/buildings-original.geojson';
+  if (!existsSync(pack) || !existsSync(buildings)) return t.skip('The NYC pack is not on this machine.');
+  const ortho = recorded.find(file => file.file === 'nyc-10013-ortho-2018.tif')!;
+  const bytes = readFileSync(`${pack}/${ortho.file}`);
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), ortho.sha256);
+  const [a, b, c, d, e, f] = geoTransform(bytes);
+  // The footprints' bounds in the area frame. The fake has no PostGIS, so the area's analysis CRS is the
+  // orthophoto's own (test_only) and the placement statement's transform is the identity.
+  const box = mercatorBounds(JSON.parse(readFileSync(buildings, 'utf8')));
+  const origin = [Math.round((box[0] + box[2]) / 2), Math.round((box[1] + box[3]) / 2)];
+  const held: Area = { id: '30000000-0000-4000-8000-000000000008', revision: 1,
+    reference: { analysisCrs: 'EPSG:3857', origin }, extent: null, drafted: null };
+  const { client, item, parts } = ledger(held, 'raster-window');
+  const windows = surfacePlan({ operation: 'raster-window', value: { metadata: { sourceWidth: 768,
+    sourceHeight: 768 } } as unknown as RasterWindowResult }).map(part => (part as { window: any }).window);
+  const transform = (w: { x: number; y: number }) => [a, b, c + a * w.x + b * w.y, d, e, f + d * w.x + e * w.y];
+  await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId, resultSha256: 'e'.repeat(64),
+    value: { input: { sourceSha256: ortho.sha256 }, artifact: { sha256: ortho.reader.artifactSha256,
+      bytes: ortho.reader.artifactBytes, mediaType: 'image/tiff' }, metadata: { sourceWidth: 768, sourceHeight: 768,
+      sourceBands: 4, sourceCrsWkt: 'stated', sourceCrsAuthority: ortho.reader.crs, verticalReference: null,
+      verticalReferenceStatus: 'unknown', window: windows[0], windowTransform: transform(windows[0]) } } as never });
+  assert.equal(parts.size, 9);
+  assert.equal(item.placement, 'waiting_for_anchor');
+  assert.match(item.limit_reason, new RegExp(`^Read 1 of 9 windows \\(768 × 768 pixels, 4 bands, EPSG:3857\\)\\. `
+    + notYet));
+  // The footprint file is drafted; the tick settles the item again (the same call it makes).
+  held.drafted = [box[0] - origin[0], box[1] - origin[1], box[2] - origin[0], box[3] - origin[1]];
+  await settleSurfaceItemTx(client, itemId);
+  assert.equal(item.placement, 'on_map');
+  assert.match(item.limit_reason, new RegExp(fromDrafts));
+  for (const window of windows) {
+    const [wa, wb, wc, wd, we, wf] = transform(window), { width: w, height: h } = window;
+    const at = (col: number, row: number) => [wa * col + wb * row + wc, wd * col + we * row + wf];
+    const corners = [at(0, 0), at(w, 0), at(w, h), at(0, h)];
+    const placed = await surfacePartPlacementTx(client, caseId, item.plan_ref.header, corners);
+    assert.equal(placed.state, 'placed', JSON.stringify(window));
+    if (placed.state !== 'placed') return;
+    assert.deepEqual(placed.corners, corners.map(([x, y]) => [x - origin[0], y - origin[1]]));
+  }
 });
