@@ -16,10 +16,12 @@ import { inspectTabularStream } from './tabular-source';
 const uuid = z.string().uuid();
 const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
 /** TP1. A CSV or workbook (XW1) above 16 MiB kept as a large original, pinned with the request that asked for its
- * table. */
+ * table. TPB: `sourceBytes` is the original's byte count, from which the dispatcher reserves a workbook's scratch; a
+ * job queued before it carries none and still runs, with the largest workbook's scratch reserved. */
 export const TableProfileInputSchema = z.strictObject({
   version: z.literal('table-profile/1'), jobId: uuid, caseId: uuid, caseRevision: z.number().int().nonnegative(),
   sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hex64,
+  sourceBytes: z.number().int().positive().optional(),
   objectKey: z.string().min(1).max(512), subject: z.string().min(1).max(256), request: TableFromOriginalSchema,
 });
 export type TableProfileInput = z.infer<typeof TableProfileInputSchema>;
@@ -36,7 +38,7 @@ export async function queueTableProfileTx(client: PoolClient, row: any, caseRevi
   const input = TableProfileInputSchema.parse({ version: 'table-profile/1',
     jobId: stableUuid(`table-profile/1:${row.id}:${row.revision}:${request.requestKey}`), caseId: row.case_id,
     caseRevision, sourceId: row.id, sourceRevision: row.revision, sourceSha256: row.sha256,
-    objectKey: row.object_key, subject, request });
+    sourceBytes: Number(row.bytes), objectKey: row.object_key, subject, request });
   const digest = fingerprint(input);
   await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
     VALUES($1,$2,$3,'table-profile',$4,$5,$6)`,
