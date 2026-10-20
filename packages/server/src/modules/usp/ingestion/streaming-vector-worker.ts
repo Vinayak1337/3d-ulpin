@@ -15,6 +15,8 @@ import {validateStreamingTopology} from './streaming-vector-validation';
 import {resolveStreamedReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
 import {queueIntakeLargeTx,writeIntakeLargeReadTx} from './intake-large';
 import {AREA_PROCESSOR_OPERATION} from '../../areas/areas';
+import {readTabularWindows} from './tabular-stream';
+import {isWindowedTable,writeTableWindowTx} from './table-windows';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
@@ -256,6 +258,18 @@ export async function runStreamingVectorJob(jobId:string){
     const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
     await acceptSlot(input,attempt,slot,progress);
   });
+  // G13: a window is written by its own transaction; the part index follows the windows so the seal counts them.
+  const readWindows=async(body:Parameters<typeof readTabularWindows>[0])=>{
+    const read=await readTabularWindows(body,async(window,headers)=>{
+      await pulse();
+      await transaction(async client=>{
+        await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
+        await writeTableWindowTx(client,input,attempt,window,headers);
+      });
+      parts.index=window.index+1;nextFeatureIndex=window.rows.at(-1)!.index+1;
+    });
+    return {features:read.records,metadata:{},bytes:read.bytes,sha256:read.sha256};
+  };
   try{
     const etag=(await query('SELECT inspection FROM sources WHERE id=$1',[input.sourceId])).rows[0]?.inspection?.largeOriginal?.objectEtag;
     const object=await openObjectStream(input.objectKey,input.sourceBytes,streamingReadMs(input.sourceBytes),etag);
@@ -272,7 +286,9 @@ export async function runStreamingVectorJob(jobId:string){
         const countLimit=input.framing==='tabular'?tabularChunkRows(width):limits.chunkFeatures;
         await parts.add(record,countLimit);tallySetAside(setAside,record);
       };
-      result=input.framing==='tabular'?await readStreamingTabular(object.body,input.tabular,consume)
+      // G13: a large CSV's records go to the window table, one row per window; no slot holds them.
+      result=isWindowedTable(input)?await readWindows(object.body)
+        :input.framing==='tabular'?await readStreamingTabular(object.body,input.tabular,consume)
         :await readStreamingFeatures(object.body,input.framing,consume);
     }finally{object.body.destroy();}
     if(result.bytes!==input.sourceBytes||result.sha256!==input.sourceSha256)

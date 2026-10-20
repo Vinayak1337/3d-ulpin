@@ -1,4 +1,5 @@
 import { api, unwrap } from '@ulpin/api-client';
+import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
 import type { RetainBody, Selection, TableProfile } from './types';
 
 export function tableSelection(file: File, sheet: string, rows: string): Selection {
@@ -28,6 +29,22 @@ export async function retainTable(caseId: string, body: FormData): Promise<Table
   }));
   if (result.version !== 'manual-tabular/1') throw new Error('The server did not retain a tabular profile.');
   // Readable<T> drops selection.table:null, although it is present on the wire.
+  return result as TableProfile;
+}
+
+/** G13: a CSV above 16 MiB is kept through the uploads route, then read on the server as a stream into a table. */
+export function streamedImport(file: File) {
+  return /\.csv$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
+}
+
+export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }
+
+export async function tableFromOriginal(caseId: string, sourceId: string, body: TableFromOriginalBody)
+  : Promise<TableProfile> {
+  const result = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table', {
+    params: { path: { caseId, sourceId } }, body: body as never,
+  }));
+  if (result.version !== 'manual-tabular/1') throw new Error('The server did not return a table profile.');
   return result as TableProfile;
 }
 

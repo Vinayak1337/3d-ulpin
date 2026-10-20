@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
-import {STREAMING_VECTOR_LIMITS as limits,StreamingVectorRequestSchema,StreamingVectorInputSchema,
+import {STREAMING_VECTOR_LIMITS as limits,TABULAR_STREAM_LIMITS,StreamingVectorRequestSchema,StreamingVectorInputSchema,
   StreamingVectorSlotSchema,StreamingVectorPayloadSchema,StreamingVectorChunkResponseSchema,
   AnyStreamingInputSchema,AnyStreamingRequestSchema,AnyStreamingStatusSchema,RetainedResultFreshnessSchema,
   type AnyStreamingInput} from '@ulpin/contracts/usp';
@@ -16,6 +16,7 @@ import {localOperatorSubject} from '../principal';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
 import {assertTabularPin} from './tabular-source';
+import {isWindowedTable} from './table-windows';
 import {compareSourcePins} from './source-pin';
 
 const uuid=z.string().uuid();
@@ -28,6 +29,8 @@ const readerFiles=[
   'packages/server/src/modules/usp/ingestion/streaming-vector.ts',
   'database/sql/95-ingestion/streaming-vector.sql',
   'packages/contracts/src/usp/ingestion.ts','packages/server/src/modules/usp/ingestion/tabular-source.ts',
+  'packages/server/src/modules/usp/ingestion/tabular-stream.ts',
+  'packages/server/src/modules/usp/ingestion/table-windows.ts','database/sql/95-ingestion/table-windows.sql',
   'packages/server/src/modules/usp/ingestion/column-profile.ts','scripts/agent/read_workbook_cells.py',
   'services/geo/geo/native_workbook.py','fixtures/usp/D8-messy-india/manifest.json',
   'fixtures/usp/D8-messy-india/dev/d1c/derivatives.json','scripts/agent/flatten-json-table.py',
@@ -136,13 +139,17 @@ export class StreamingVectorService{
       if(prior){if(prior.payload_hash!==digest)conflict('The import request key names different inputs.');return statusTx(client,caseId,sourceId,prior.result.jobId);}
       if(!ctx.latest||ctx.current.revision!==request.expectedCaseRevision||ctx.source.revision!==request.expectedSourceRevision||ctx.source.sha256!==request.sourceSha256)
         conflict('The source/case revision changed before streaming admission.');
-      if(Number(ctx.source.bytes)>limits.sourceBytes||Number(ctx.source.bytes)<=0)
+      // G13: a large CSV is read in windows to the table ceiling; any other source keeps the reader's own bound.
+      const windowed=isWindowedTable({...request,sourceBytes:Number(ctx.source.bytes)});
+      if(windowed&&Number(ctx.source.bytes)>TABULAR_STREAM_LIMITS.bytes)throw new AppError(413,'TABULAR_SOURCE_BUDGET',
+        `A table is read as a stream up to ${Number((TABULAR_STREAM_LIMITS.bytes/1024**3).toFixed(3))} GiB.`);
+      if((!windowed&&Number(ctx.source.bytes)>limits.sourceBytes)||Number(ctx.source.bytes)<=0)
         throw new AppError(413,'STREAMING_SOURCE_BUDGET',
           `This reader profile supports retained originals up to ${limits.sourceBytes/1024**2} MiB.`);
       if(request.framing==='tabular')assertTabularPin(request.tabular,ctx.source);
       else if(ctx.source.profile==='tabular-manual-v1')conflict('Pin tabular framing for this source.');
       if(ctx.source.profile==='geojson-manual-v1'&&request.framing!=='feature-collection')throw new AppError(422,'STREAMING_FRAMING','The manual GeoJSON receipt is a FeatureCollection.');
-      if(ctx.source.profile==='large-original-v1'&&ctx.source.mime_type!=='application/octet-stream')throw new AppError(422,'STREAMING_FRAMING','This retained source is not declared as JSON bytes.');
+      if(ctx.source.profile==='large-original-v1'&&!windowed&&ctx.source.mime_type!=='application/octet-stream')throw new AppError(422,'STREAMING_FRAMING','This retained source is not declared as JSON bytes.');
       const active=Number((await client.query("SELECT count(*)::int n FROM usp_streaming_vector_imports WHERE state IN ('queued','running')")).rows[0].n);
       if(active>=2)throw new AppError(429,'STREAMING_CAPACITY','2 streaming imports are running on this service, '
         +'its limit; a slot frees when one of them finishes.',{limit:'running_imports',freesAt:null});

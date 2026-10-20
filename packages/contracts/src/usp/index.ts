@@ -21,6 +21,7 @@ export * from './document-claims';
 export * from './document-proposals';
 export * from './streaming-vector';
 export * from './chunk-mapping';
+export * from './table-windows';
 export * from './streamed-profile';
 export * from './raster-window';
 export * from './point-batch';

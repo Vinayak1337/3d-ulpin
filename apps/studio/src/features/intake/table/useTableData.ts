@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useSearchParams } from 'react-router';
-import { tableKey, useMappedChunks, useSourceCase, useTableJobs, useTableProfile } from './queries';
+import { streamedTable, tableKey, useMappedChunks, useSourceCase, useTableJobs, useTableProfile } from './queries';
 import { useTableStream } from './useTableStream';
 
 export function useTableData(caseId: string, sourceId: string) {
@@ -12,7 +12,8 @@ export function useTableData(caseId: string, sourceId: string) {
   const stream = useTableStream(caseId, sourceId, params.get('rawJobId') ?? '', params.get('mappingJobId') ?? '');
   const { state, fallback } = stream;
   const jobs = useTableJobs(caseId, sourceId, state.rawJobId, state.mappingJobId, fallback);
-  const chunks = useMappedChunks(caseId, sourceId, jobs.mapping.data);
+  const windowed = profile.data?.version === 'manual-tabular/1' && streamedTable(profile.data);
+  const chunks = useMappedChunks(caseId, sourceId, jobs.mapping.data, windowed);
   const client = useQueryClient();
   useEffect(() => {
     if (state.refresh) {
@@ -36,5 +37,5 @@ export function useTableData(caseId: string, sourceId: string) {
   const mappings = chunks.flatMap((chunk) => chunk.data?.payload?.mapping ? [chunk.data.payload.mapping] : []);
   const errors = [sourceCase.error, jobs.raw.error, jobs.mapping.error, ...chunks.map((chunk) => chunk.error)];
   const freshness = [jobs.raw.data, jobs.mapping.data, ...chunks.map((chunk) => chunk.data)];
-  return { profile, sourceCase, stream, jobs, mappings, errors, freshness };
+  return { profile, sourceCase, stream, jobs, mappings, errors, freshness, windowed };
 }

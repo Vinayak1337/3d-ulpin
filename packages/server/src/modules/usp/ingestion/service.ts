@@ -7,11 +7,12 @@ import {
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
+  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { putOriginal, readObject, sha256 } from '../../../infrastructure/storage';
+import { openObjectStream, putOriginal, readObject, sha256 } from '../../../infrastructure/storage';
 import { inspectGisBytes } from '../../cases/gis-inspection';
 import { originalAttempt } from '../../cases/original-attempt';
 import { fingerprint } from '../../cases/domain';
@@ -22,8 +23,10 @@ import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
 import { authoredIntakeDestination, caseScopedDestination, intakeDestination } from './intake-destination';
 import { assertAreaRowLive } from '../../areas/area-retire';
 import { appendCaseIngestionTx } from './events';
-import { inspectTabularSource, assertTabularPin } from './tabular-source';
-import { validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
+import { inspectTabularSource, inspectTabularStream, assertTabularPin } from './tabular-source';
+import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
+import { readTabularWindows } from './tabular-stream';
+import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 
 const uuid = z.string().uuid();
@@ -47,7 +50,8 @@ async function remember(client: PoolClient, caseId: string, key: string, digest:
 async function source(client: PoolClient, caseId: string, sourceId: string) {
   const row = (await client.query('SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR SHARE', [sourceId,caseId])).rows[0];
   if (!row) notFound('Retained source not found in this workspace.');
-  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile) || !row.inspection?.manualProfile)
+  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile) && !isTableSource(row)
+    || !row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','Retain a supported original through the manual receipt operation.');
   if(row.inspection.actor!==localOperatorSubject()){
     throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
@@ -73,7 +77,7 @@ export async function manualProfileForLockedSourceTx(client:PoolClient,caseId:st
 export async function tabularProfileForLockedSourceTx(
   client: PoolClient, caseId: string, caseRevision: number, row: any,
 ) {
-  if (row.case_id !== caseId || row.profile !== 'tabular-manual-v1') {
+  if (row.case_id !== caseId || !isTableSource(row)) {
     throw new AppError(422, 'UNSUPPORTED_PROFILE', 'No tabular receipt.');
   }
   assertTabularPin(row.inspection.manualProfile.tabular, row);
@@ -89,6 +93,13 @@ async function validate(client: PoolClient,
   const row = await source(client,plan.caseId,plan.source.sourceId), current = profile(row,scope);
   if (fingerprint(current.source) !== fingerprint(plan.source) || !compareWorkspacePins(current, plan).current)
     conflict('Source bytes, schema, revision or workspace changed; inspect and author a current recipe.');
+  if (plan.version==='manual-tabular/1' && Number(row.bytes) > TABULAR_LIMITS.bytes) {
+    // G13: a streamed table is never read whole here; the raw job checks its bytes and hash on every read.
+    if (current.version!=='manual-tabular/1') conflict('The recipe and receipt formats differ.');
+    assertTabularPin(plan.tabular,row);
+    validateStreamedTabularRecipe(plan,current,await firstWindow(row));
+    return {row,bytes:new Uint8Array(),mapping:undefined};
+  }
   const bytes = await readObject(row.object_key);
   if (bytes.length !== Number(row.bytes) || sha256(bytes) !== row.sha256)
     throw new AppError(422,'SOURCE_INTEGRITY','The retained original failed its byte/hash check.');
@@ -103,6 +114,22 @@ async function validate(client: PoolClient,
 /** This file's own namespace: its bytes, or its bytes scoped to the case that received them again. */
 const fileNamespace = (namespace: string, sha256: string) =>
   namespace === `file:${sha256}` || namespace.startsWith(`file:${sha256}:case:`);
+
+/** The first window of a streamed table, for the recipe's dry run; the rest of the original is not read. */
+async function firstWindow(row: any) {
+  const object = await openObjectStream(row.object_key, Number(row.bytes), STREAMING_VECTOR_LIMITS.readMs,
+    row.inspection?.largeOriginal?.objectEtag);
+  let first: { headers: string[]; rows: (string | undefined)[][] } | null = null;
+  const enough = new Error('first window read');
+  try {
+    await readTabularWindows(object.body, async (window, headers) => {
+      first = { headers, rows: window.rows.map(item => headers.map((_, column) => item.cells[column])) };
+      throw enough;
+    });
+  } catch (error) { if (error !== enough) throw error; }
+  finally { object.body.destroy(); }
+  return first!;
+}
 export async function destination(client: PoolClient, value: MappingDestination, executing = false,
   sourceSha256?: string) {
   // Match ingestArea's seed-lock -> area-lock order before any lock upgrade.
@@ -376,6 +403,59 @@ export class ManualIngestionService {
       await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:revision,status:'needs_input'},actor);
       return result;
     }));
+  }
+  /** G13: a CSV already retained as a large original is read as a stream and becomes a table source. Its row
+   * keeps its bytes, object and identity; the table receipt is added beside the upload receipt. */
+  async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown):Promise<AnySourceProfile> {
+    const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=TableFromOriginalSchema.parse(value);
+    const actor=localOperatorSubject(),digest=fingerprint({input,sourceId,actor});
+    const key=`table-original:${input.requestKey}`;
+    const original=async(client:PoolClient,lock:'SHARE'|'UPDATE')=>{
+      const row=(await client.query(`SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR ${lock}`,
+        [sourceId,caseId])).rows[0]??notFound('Retained source not found in this workspace.');
+      if(row.profile!=='large-original-v1')throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
+        'Only an original kept through the large upload is read as a stream here.');
+      if(row.inspection?.largeOriginal?.operatorSubject!==actor)
+        throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
+      if(row.inspection?.manualProfile)conflict('This original is already a table; open its table page.');
+      if(Number(row.bytes)<=TABULAR_LIMITS.bytes)throw new AppError(422,'TABLE_ORIGINAL_SMALL',
+        'A table up to 16 MiB is read whole; import it as a table from Add files.');
+      const latest=(await client.query('SELECT max(revision)::int revision FROM sources WHERE case_id=$1 ' +
+        'AND family_id=$2',[caseId,row.family_id])).rows[0].revision;
+      if(latest!==row.revision)conflict('This source revision has been superseded.');
+      return row;
+    };
+    const pinned=await transaction(async client=>{
+      await workspace(client,caseId);
+      const replay=await operation(client,caseId,key,digest);
+      return replay?{replay}:{row:await original(client,'SHARE')};
+    });
+    if('replay' in pinned)return pinned.replay as AnySourceProfile;
+    const {row:read}=pinned;
+    const object=await openObjectStream(read.object_key,Number(read.bytes),STREAMING_VECTOR_LIMITS.readMs,
+      read.inspection?.largeOriginal?.objectEtag);
+    let inventory:Awaited<ReturnType<typeof inspectTabularStream>>;
+    try{
+      inventory=await inspectTabularStream(object.body,{sha256:read.sha256,bytes:Number(read.bytes)},
+        input.selection,input);
+    }finally{object.body.destroy();}
+    return transaction(async client=>{
+      const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+      if(replay)return replay as AnySourceProfile;
+      if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
+      const row=await original(client,'UPDATE');
+      if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
+        conflict('The original changed while it was read.');
+      const tabularProvenance='admission' in inventory.tabular?inventory.tabular.admission:null;
+      await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',[sourceId,
+        JSON.stringify({manualProfile:{version:'manual-tabular/1',...inventory},tabularProvenance,actor})]);
+      await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
+      const fresh=await workspace(client,caseId),result=profile(await source(client,caseId,sourceId),fresh);
+      await remember(client,caseId,key,digest,result);
+      await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:row.revision,
+        status:'needs_input'},actor);
+      return result;
+    });
   }
   async inspect(caseIdValue:string,sourceIdValue:string):Promise<SourceProfile> {
     return SourceProfileSchema.parse(await this.inspectAny(caseIdValue,sourceIdValue));

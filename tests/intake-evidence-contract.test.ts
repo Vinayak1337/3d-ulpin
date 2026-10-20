@@ -134,7 +134,9 @@ test('the evidence SQL runs after the targets SQL and only creates what is absen
   await migrateIntakeLedgerTx(client);
   const calls = query.mock.calls.map(call => call.arguments[0]);
   assert.deepEqual(calls.slice(first.length), first);
-  assert.deepEqual(first, [sql('ingestion.intake.schema'), sql('ingestion.intake.targets'), text]);
+  // A later additive step (G13's table windows) may follow; evidence still runs right after targets.
+  assert.deepEqual(first.slice(0, 3), [sql('ingestion.intake.schema'), sql('ingestion.intake.targets'), text]);
   const manifest = JSON.parse(readFileSync('database/manifest.json', 'utf8'));
-  assert.equal(manifest.steps.at(-1).id, 'ingestion.intake.evidence');
+  const ids = manifest.steps.map((step: { id: string }) => step.id);
+  assert.equal(ids.indexOf('ingestion.intake.evidence'), ids.indexOf('ingestion.intake.targets') + 1);
 });
