@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { dropState, fileRoute, routeWords } from './file-route';
+import { batchOrder, batchRouteWords, dropState, fileRoute, routeWords, tablesJoin } from './file-route';
 
 // One drop of mixed kinds. The route is chosen from the name alone; no file's bytes are read for it.
 const drop = ['buildings.geojson', 'wards.gpkg', 'parcels-shapefile.zip', 'layers.zip', 'plan.pdf', 'scan.bin',
@@ -38,4 +38,27 @@ it('words what will happen to each file, never "Not imported" for a kind the bat
     'Map file · joins the batch', 'Map file · joins the batch',
     ...Array(5).fill('Shapefile part · read with its other parts as one shapefile'),
   ]);
+});
+
+it('TJ1: on the batch page a CSV or XLSX joins the batch; dropped alone with no batch it keeps its import', () => {
+  expect(['register.csv', 'floors.XLSX', 'buildings.geojson'].map(name => dropState(name, false, true)))
+    .toEqual(['intake', 'intake', 'intake']);
+  expect(dropState('register.csv', false)).toBe('not-gis');
+  expect(batchRouteWords('register.csv')).toBe('Table · kept in the batch, then read there as a table');
+  expect(batchRouteWords('plan.pdf')).toBe(routeWords('plan.pdf'));
+});
+
+it('TJ1: a table dropped with footprints stays an item of their batch, kept before the footprints', () => {
+  // File handles only; no bytes are read for the route.
+  const [footprints, register, earlier] = ['footprints.geojson', 'register.csv', 'earlier.csv']
+    .map(name => new File([], name));
+  const drop = [footprints!, register!];
+  const picked = [{ file: earlier!, state: dropState('earlier.csv', false) },
+    ...drop.map(file => ({ file, state: dropState(file.name, false) }))];
+  expect(picked.map(file => file.state)).toEqual(['not-gis', 'intake', 'not-gis']);
+  const joined = tablesJoin(picked, drop);
+  expect(joined.map(file => file.state), 'a file of an earlier drop keeps its state')
+    .toEqual(['not-gis', 'intake', 'intake']);
+  expect(batchOrder(joined.filter(file => file.state === 'intake').map(file => file.file)).map(file => file.name))
+    .toEqual(['register.csv', 'footprints.geojson']);
 });

@@ -65,10 +65,21 @@ export async function createSourceCase(name: string) {
   return unwrap(await api.POST('/api/v1/cases', { body: { name: name.trim() } }));
 }
 
+/** N01: the table import keeps a new original in a case it is chosen for, so that case must not be a site's yet. */
 export async function readSourceCase(caseId: string) {
   const detail = unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } }));
   if (detail.case.siteId || detail.case.archived) {
     throw new Error('Choose an active, unassigned source case. This table cannot be attached to a site.');
   }
+  return detail.case;
+}
+
+/**
+ * TJ1: a table the batch already keeps is read in the batch case, even once its buildings have bound it to a site.
+ * Nothing is attached: the read adds a table receipt to that kept original and makes mapped draft rows only.
+ */
+export async function readBatchCase(caseId: string) {
+  const detail = unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } }));
+  if (detail.case.archived) throw new Error('This batch case is archived; its table cannot be read here.');
   return detail.case;
 }

@@ -32,11 +32,22 @@ import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 
 const uuid = z.string().uuid();
-async function workspace(client: PoolClient, caseId: string) {
+/**
+ * TJ1: `batchTable` names a source whose kept original is read as a table, or whose table is read back. The package
+ * rule keeps a case that a manual recipe made into a package, or a recorded property's case, in that context; no
+ * recipe, receipt or retained original is added to it here. A batch's own streamed drafts are packages of the batch
+ * case too, so a table the batch keeps as one of its items is still read in it: the read only adds a table receipt
+ * to that source and makes mapped draft rows, never a package, registry record or site change. A property link
+ * still refuses every caller, the table read included.
+ */
+async function workspace(client: PoolClient, caseId: string, batchTable?: string) {
   const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
   if (!row) notFound('Source workspace not found.');
-  if ((await client.query('SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1', [caseId])).rowCount
-    || (await client.query('SELECT id FROM import_packages WHERE case_id=$1', [caseId])).rowCount)
+  const property = (await client.query('SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1',
+    [caseId])).rowCount;
+  if (property || (await client.query('SELECT id FROM import_packages WHERE case_id=$1', [caseId])).rowCount
+    && !(batchTable && (await client.query('SELECT 1 FROM usp_intake_items WHERE case_id=$1 AND source_id=$2',
+      [caseId, batchTable])).rowCount))
     conflict('This source case is now associated with a package or property; reopen its current context.');
   const sources = (await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id', [caseId])).rows;
   return {revision: row.revision as number, fingerprint: fingerprint({caseId, revision: row.revision, sources})};
@@ -363,7 +374,7 @@ async function wholeOriginal(row:any):Promise<Uint8Array>{
 export async function attachTableTx(client:PoolClient,target:{caseId:string;sourceId:string;actor:string;
   expectedWorkspaceRevision:number|null;read:{sha256:string;revision:number;object_key:string}},
 inventory:TableInventory):Promise<AnySourceProfile>{
-  const {caseId,sourceId,actor,read}=target,scope=await workspace(client,caseId);
+  const {caseId,sourceId,actor,read}=target,scope=await workspace(client,caseId,sourceId);
   if(target.expectedWorkspaceRevision!==null&&scope.revision!==target.expectedWorkspaceRevision)
     conflict('The source workspace changed; refresh first.');
   const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
@@ -373,7 +384,7 @@ inventory:TableInventory):Promise<AnySourceProfile>{
   await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',[sourceId,
     JSON.stringify({manualProfile:{version:'manual-tabular/1',...inventory},tabularProvenance,actor})]);
   await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
-  const fresh=await workspace(client,caseId),result=profile(await source(client,caseId,sourceId),fresh);
+  const fresh=await workspace(client,caseId,sourceId),result=profile(await source(client,caseId,sourceId),fresh);
   await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:row.revision,
     status:'needs_input'},actor);
   return result;
@@ -469,7 +480,7 @@ export class ManualIngestionService {
     const {queueTableProfileTx,tableProfileJobTx}=await import('./table-profile-worker');
     type Admitted={job:TableProfileJob}|{profile:AnySourceProfile}|{row:any};
     const admitted=await transaction(async (client):Promise<Admitted>=>{
-      const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+      const scope=await workspace(client,caseId,sourceId),replay=await operation(client,caseId,key,digest);
       if(replay)return replay.jobId?{job:await tableProfileJobTx(client,replay.jobId)}:{profile:replay};
       if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
       const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
@@ -482,7 +493,7 @@ export class ManualIngestionService {
     if('profile' in admitted)return admitted.profile;
     const read=admitted.row,inventory=inspectTabularSource(await wholeOriginal(read),input.selection,input);
     return transaction(async client=>{
-      await workspace(client,caseId);
+      await workspace(client,caseId,sourceId);
       const replay=await operation(client,caseId,key,digest);
       if(replay)return replay as AnySourceProfile;
       const result=await attachTableTx(client,{caseId,sourceId,actor,read,
@@ -497,8 +508,10 @@ export class ManualIngestionService {
   async inspectAny(caseIdValue:string,sourceIdValue:string):Promise<AnySourceProfile> {
     const caseId=uuid.parse(caseIdValue),sourceId=uuid.parse(sourceIdValue);localOperatorSubject();
     return transaction(async client=>{
-      const scope=await workspace(client,caseId);
-      return profile(await source(client,caseId,sourceId),scope);
+      const scope=await workspace(client,caseId,sourceId),row=await source(client,caseId,sourceId);
+      // TJ1: only a table is read back in its batch case past the package rule; any other source keeps it.
+      if(!isTableSource(row))await workspace(client,caseId);
+      return profile(row,scope);
     });
   }
   async author(caseIdValue:string,sourceIdValue:string,value:unknown):Promise<AnyMappingReceipt> {

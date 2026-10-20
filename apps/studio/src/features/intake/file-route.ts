@@ -10,10 +10,35 @@ export function fileRoute(name: string): FileRoute {
   return /\.(csv|xlsx)$/i.test(name) ? 'table' : 'intake';
 }
 
-/** A dropped file's first state: only the opt-in profile reads map files and LAZ/TIFF here; the rest are routed. */
-export function dropState(name: string, profile: boolean): 'inspecting' | 'intake' | 'not-gis' {
+/**
+ * A dropped file's first state: only the opt-in profile reads map files and LAZ/TIFF here; the rest are routed.
+ * TJ1: dropped into a batch (`inBatch`, the batch page), a CSV or XLSX joins it as its own item, read there.
+ */
+export function dropState(name: string, profile: boolean, inBatch = false): 'inspecting' | 'intake' | 'not-gis' {
   if (profile && /\.(geojson|json|gpkg|zip|laz|tif|tiff)$/i.test(name)) return 'inspecting';
-  return fileRoute(name) === 'table' ? 'not-gis' : 'intake';
+  return fileRoute(name) === 'table' && !inBatch ? 'not-gis' : 'intake';
+}
+
+type DropState = ReturnType<typeof dropState> | 'ready';
+
+/** TJ1: once one drop makes a batch, its tables join that batch too; a file of an earlier drop keeps its state. */
+export function tablesJoin<T extends { file: File; state: DropState }>(files: readonly T[], drop: readonly File[]) {
+  return files.map((file): T => file.state === 'not-gis' && drop.includes(file.file)
+    ? { ...file, state: 'intake' } : file);
+}
+
+/**
+ * TJ1: the files of one drop in the order the batch keeps them. A table first: it is kept before a map file of the
+ * same drop starts drafting, so the register and its buildings are items of one batch case.
+ */
+export function batchOrder(files: readonly File[]): File[] {
+  return [...files.filter(file => fileRoute(file.name) === 'table'),
+    ...files.filter(file => fileRoute(file.name) !== 'table')];
+}
+
+/** TJ1: the words of a file that joins a batch; a table is read there. */
+export function batchRouteWords(name: string): string {
+  return fileRoute(name) === 'table' ? 'Table · kept in the batch, then read there as a table' : routeWords(name);
 }
 
 /** What will happen to one dropped file, in words from its route. */

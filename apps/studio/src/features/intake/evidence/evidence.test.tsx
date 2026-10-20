@@ -5,7 +5,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createContractValidator } from '../../../local/contract';
 import type { IntakeItem } from '../batch-model';
 import type { Package, Target } from '../run/model';
-import { createDeclaration, evidenceKey } from './api';
+import { createDeclaration, evidenceKey, readTables } from './api';
 import { DeclareKeyForm, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead, type Paging } from './EvidenceRead';
 import { anchorItems, blankDeclaration, documentChoices, keyPaths, profileInput, tableChoices, type Candidate,
@@ -71,7 +71,7 @@ it('offers drafted map items, their card fields, kept CSVs with a header row and
   expect(anchorItems(items, packages)).toEqual([map]);
   expect(keyPaths(map)).toEqual(['/features/*/properties/house no', '/features/*/properties/a~1b~0c']);
   expect(tableChoices(items)).toEqual([{ itemId: register.itemId, name: 'register.csv',
-    headers: ['Serial', 'House no'] }]);
+    headers: ['Serial', 'House no'], selection: { format: 'csv', sheet: 'csv', table: null, headerRows: [1] } }]);
   expect(documentChoices(items)).toEqual([letter]);
   const choices: DeclareChoices = { anchors: [map], tables: tableChoices(items), documents: [letter] };
   const html = renderToStaticMarkup(<DeclareKeyForm choices={choices} declaration={declared} change={vi.fn()}
@@ -80,6 +80,32 @@ it('offers drafted map items, their card fields, kept CSVs with a header row and
   expect(html).not.toContain('/features/*/id');
   expect(html).toContain('<option value="1" selected="">House no</option>');
   expect(html).toContain('never taken as an official ULPIN');
+});
+
+it('TJ1: a table read in the batch is offered with the headers and selection of its read', () => {
+  // The table profile the server answered for the real mi-d10-02.csv (docs/evidence/gf1/ui/f3a).
+  const answered = JSON.parse(readFileSync(resolve(root, 'docs/evidence/gf1/ui/f3a/table-responses.json'), 'utf8'))
+    .files[0].profile;
+  const sheet = { format: 'xlsx' as const, sheet: 'Sheet1', table: null, headerRows: [2] };
+  const workbookProfile = { ...answered, headers: ['Plot', 'Holder'],
+    tabular: { ...answered.tabular, selection: sheet } };
+  const read = readTables([register.sourceId!, workbook.sourceId!, letter.sourceId!],
+    [answered, workbookProfile, undefined]);
+  expect([...read.keys()], 'a source not read as a table is left out').toEqual([register.sourceId, workbook.sourceId]);
+  expect(read.get(register.sourceId!)).toEqual({ headers: answered.headers, selection: answered.tabular.selection });
+  const tables = tableChoices(items, read);
+  expect(tables).toEqual([
+    { itemId: register.itemId, name: 'register.csv', headers: answered.headers, selection: answered.tabular.selection },
+    { itemId: workbook.itemId, name: 'register.xlsx', headers: ['Plot', 'Holder'], selection: sheet },
+  ]);
+  const input = profileInput({ ...declared, columns: { [workbook.itemId]: '1' }, documents: [] }, tables);
+  expect(input).toMatchObject({ tables: [{ itemId: workbook.itemId, selection: sheet, columnIndex: 1 }] });
+  expect(validate(schemas.declare, { ...input as KeyProfileInput, requestKey: id(40) })).toEqual([]);
+  const html = renderToStaticMarkup(<DeclareKeyForm choices={{ anchors: [map], tables, documents: [] }}
+    declaration={declared} change={vi.fn()} pending={false} submit={vi.fn()} cancel={vi.fn()} missing={null}
+    error={null} />);
+  expect(html).toContain('<span class="ul-label">register.xlsx</span>');
+  expect(html).toContain('<option value="1">Holder</option>');
 });
 
 it('states what is missing before any request', () => {

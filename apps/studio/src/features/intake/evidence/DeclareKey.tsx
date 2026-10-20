@@ -20,7 +20,7 @@ export function DeclareKey({ caseId, choices, done, cancel }: {
   const press = useMutation({ mutationFn: send, onSuccess: done });
   const [missing, setMissing] = useState<string | null>(null);
   const submit = () => {
-    const input = profileInput(declaration);
+    const input = profileInput(declaration, choices.tables);
     setMissing(typeof input === 'string' ? input : null);
     if (typeof input !== 'string') press.mutate(input);
   };
@@ -108,7 +108,9 @@ function TableFields({ tables, declaration, change }: {
 }) {
   return <fieldset className={styles.group}>
     <legend className="ul-label">Tables: the column holding the key</legend>
-    {tables.length ? null : <p className="ul-help">No kept CSV of this batch lists its header row on its card.</p>}
+    {tables.length ? null : <p className="ul-help">
+      No kept table of this batch states its header row yet. Read a kept CSV or workbook as a table first.
+    </p>}
     {tables.map((table) => <label key={table.itemId} className="ul-field">
       <span className="ul-label">{table.name}</span>
       <select className="ul-input" value={declaration.columns[table.itemId] ?? ''}

@@ -4,7 +4,7 @@ import { Banner, Button, Skeleton } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
 import { useBatchPackages } from '../batch-queries';
 import type { Target } from '../run/model';
-import { evidenceKey, useEvidencePage } from './api';
+import { evidenceKey, useEvidencePage, useReadTables } from './api';
 import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
 import { acceptedIds, confirmedOf } from './confirm-model';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
@@ -18,8 +18,9 @@ export function EvidenceByKey({ caseId, items }: { caseId: string; items: readon
   const targetPage = useBatchPackages(caseId);
   const client = useQueryClient();
   const [declaring, setDeclaring] = useState(false);
+  const read = useReadTables(caseId, items, declaring);
   const choices: DeclareChoices = { anchors: anchorItems(items, targetPage.data?.packages ?? []),
-    tables: tableChoices(items), documents: documentChoices(items) };
+    tables: tableChoices(items, read), documents: documentChoices(items) };
   return <section className={batch.question} aria-labelledby="evidence-by-key">
     <h2 className="ul-heading" id="evidence-by-key">Evidence by key</h2>
     {declaring ? <DeclareKey caseId={caseId} choices={choices} cancel={() => setDeclaring(false)} done={() => {

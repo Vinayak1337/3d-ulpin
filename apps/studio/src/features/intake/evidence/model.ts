@@ -12,10 +12,15 @@ type KeyKind = KeyProfile['input']['kind'];
 export type KeyProfileBody =
   Schemas['POST_ingestion_cases_caseId_intake_evidence_key_profiles_Request_application_json'];
 export type KeyProfileInput = Omit<KeyProfileBody, 'requestKey'>;
-type Selection = KeyProfileInput['tables'][number]['selection'];
+export type Selection = KeyProfileInput['tables'][number]['selection'];
 
-/** A kept CSV of the batch whose card lists its header row; its columns are the card's headers, in order. */
-export interface TableChoice { itemId: string; name: string; headers: string[] }
+/**
+ * A kept table of the batch whose header row is known, its columns in order: the headers its read table states, or
+ * for a CSV not read yet, the headers its card lists. The selection is the one those headers were read with.
+ */
+export interface TableChoice { itemId: string; name: string; headers: string[]; selection: Selection }
+/** TJ1: a kept CSV or workbook the batch read as a table (N01B), as its table profile states it. */
+export interface ReadTable { headers: string[]; selection: Selection }
 /** What the officer has chosen so far; an empty string is not chosen yet. */
 export interface Declaration {
   namespace: string; kind: KeyKind; anchorItemId: string; sourcePath: string;
@@ -63,21 +68,33 @@ export function keyPaths(item: IntakeItem | undefined): string[] {
     .map(column => `/features/*/properties/${pointer(column.name)}`);
 }
 
-/** The card states a CSV's header row (its first record); a workbook card states sheets but no header row. */
-export function tableChoices(items: readonly IntakeItem[]): TableChoice[] {
-  return items.filter(item => item.family === 'table' && item.format === 'csv' && item.sourceId
-    && item.card?.columns.length)
-    .map(item => ({ itemId: item.itemId, name: item.name, headers: item.card!.columns.map(column => column.name) }));
+/**
+ * TJ1: a table the batch read (by its source) offers the headers and selection of that read. Otherwise the card
+ * states a CSV's header row (its first record); a workbook card states sheets but no header row, so an unread
+ * workbook is not offered.
+ */
+export function tableChoices(items: readonly IntakeItem[],
+  read: ReadonlyMap<string, ReadTable> = new Map()): TableChoice[] {
+  return items.flatMap((item): TableChoice[] => {
+    if (item.family !== 'table' || !item.sourceId || item.format !== 'csv' && item.format !== 'xlsx') return [];
+    const table = read.get(item.sourceId), named = { itemId: item.itemId, name: item.name };
+    if (table?.headers.length && table.selection.format === item.format) return [{ ...named, ...table }];
+    if (item.format !== 'csv' || !item.card?.columns.length) return [];
+    return [{ ...named, headers: item.card.columns.map(column => column.name), selection: csvSelection }];
+  });
 }
 
 export function documentChoices(items: readonly IntakeItem[]) {
   return items.filter(item => item.family === 'document' && item.sourceId);
 }
 
-/** The profile as the server takes it, or the words saying what is still missing. */
-export function profileInput(declaration: Declaration): KeyProfileInput | string {
+/** The profile as the server takes it, or the words saying what is still missing. Each table column is read with
+ * the selection of its choice. */
+export function profileInput(declaration: Declaration, choices: readonly TableChoice[] = []): KeyProfileInput | string {
   const tables = Object.entries(declaration.columns).filter(([, column]) => column !== '')
-    .map(([itemId, column]) => ({ itemId, selection: csvSelection, columnIndex: Number(column) }));
+    .map(([itemId, column]) => ({ itemId,
+      selection: choices.find(choice => choice.itemId === itemId)?.selection ?? csvSelection,
+      columnIndex: Number(column) }));
   if (!declaration.namespace.trim()) return 'Name the key in your own words.';
   if (!declaration.anchorItemId || !declaration.sourcePath) return 'Choose the map item and its key field.';
   if (!tables.length && !declaration.documents.length) return 'Choose at least one table column or document.';
