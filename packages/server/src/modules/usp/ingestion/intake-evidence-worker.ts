@@ -160,8 +160,10 @@ async function read(input: IntakeEvidenceInput, attempt: UspJobAttempt, family: 
     const pins = await assertIntakeEvidenceInputTx(client, input);
     return { ...pins, anchors: await evidenceAnchorsTx(client, input.caseId, pins.profile.profile) };
   });
-  const reading = family === 'table' ? await tableReading(input, attempt, profile.profile, source)
-    : await documentReading(input, await latestExtraction(input), new Set(anchors.map(anchor => anchor.literal)));
+  // With no building holding the key, nothing can be matched and absence is not shown: the source stays unread.
+  const reading: Reading = !anchors.length ? { assertions: [], coverage: NOT_READ }
+    : family === 'table' ? await tableReading(input, attempt, profile.profile, source)
+      : await documentReading(input, await latestExtraction(input), new Set(anchors.map(anchor => anchor.literal)));
   const candidates = closeEvidence({ caseId: input.caseId, anchors, assertions: reading.assertions,
     coverage: reading.coverage, createdAt: new Date().toISOString(), key: { profileId: input.profileId,
       profileSha256: input.profileSha256, namespace: profile.profile.namespace, kind: profile.profile.kind } });

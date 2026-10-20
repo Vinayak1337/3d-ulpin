@@ -190,22 +190,23 @@ export function keyProfileSha256(input: IntakeKeyProfileInput) {
   return fingerprint(profile);
 }
 
-async function itemTx(client: PoolClient, caseId: string, itemId: string, family: string) {
+/** A layer taken out of a ZIP keeps no source of its own; only a table or document read here must have one. */
+async function itemTx(client: PoolClient, caseId: string, itemId: string, family: string, retained = true) {
   const item = (await client.query(`SELECT item_id,family,format,source_id FROM usp_intake_items
     WHERE case_id=$1 AND item_id=$2`, [caseId, itemId])).rows[0] ?? notFound('Intake item not found in this case.');
-  if (item.family !== family || !item.source_id) {
+  if (item.family !== family || retained && !item.source_id) {
     throw new AppError(422, 'INTAKE_EVIDENCE_ITEM', `Item ${itemId} is not a retained ${family} of this batch.`);
   }
-  await intakeSourceTx(client, caseId, item.source_id);
+  if (retained) await intakeSourceTx(client, caseId, item.source_id);
   return item;
 }
 
 async function assertProfileItemsTx(client: PoolClient, caseId: string, input: IntakeKeyProfileInput) {
-  await itemTx(client, caseId, input.map.anchorItemId, 'vector');
-  const targets = (await client.query(`SELECT count(*)::int n FROM usp_intake_targets
-    WHERE case_id=$1 AND anchor_item_id=$2`, [caseId, input.map.anchorItemId])).rows[0];
-  if (!Number(targets?.n)) throw new AppError(409, 'INTAKE_EVIDENCE_ANCHOR_NOT_DRAFTED',
-    'The map item has no drafted buildings yet; declare the key once its buildings are drafted.');
+  await itemTx(client, caseId, input.map.anchorItemId, 'vector', false);
+  // A drafted building keeps only its mapped fields; a key no building keeps would make every row look unmatched.
+  if (!(await evidenceAnchorsTx(client, caseId, input)).length) throw new AppError(409,
+    'INTAKE_EVIDENCE_ANCHOR_NOT_DRAFTED', 'No drafted building of the map item holds this field as written yet; '
+      + 'declare the key once its buildings are drafted with the field mapped.');
   for (const table of input.tables) {
     const item = await itemTx(client, caseId, table.itemId, 'table');
     if (item.format !== table.selection.format) throw new AppError(422, 'INTAKE_EVIDENCE_ITEM',
@@ -243,7 +244,8 @@ export async function queueIntakeEvidenceTx(client: PoolClient, caseId: string,
 }
 
 /** D4: a table or document kept after a profile exists is read under every profile of its case. */
-export async function queueLateIntakeEvidenceTx(client: PoolClient, caseId: string, itemId: string) {
+export async function queueLateIntakeEvidenceTx(client: PoolClient, caseId: string, itemId: string, family: string) {
+  if (!['table', 'document'].includes(family)) return;
   const profiles = (await client.query(`SELECT profile_id,profile_sha256 FROM usp_intake_key_profiles
     WHERE case_id=$1 ORDER BY created_at,profile_id LIMIT $2`, [caseId, INTAKE_EVIDENCE_LIMITS.sources])).rows;
   for (const profile of profiles) await queueIntakeEvidenceTx(client, caseId, profile, itemId);
@@ -280,7 +282,7 @@ export async function declareIntakeKeyProfile(caseValue: string, raw: unknown) {
 /** The reading's pins hold: the profile, the item's retained source and the private access it was queued under. */
 export async function assertIntakeEvidenceInputTx(client: PoolClient, input: IntakeEvidenceInput) {
   const { source, binding } = await intakeSourceTx(client, input.caseId, input.sourceId);
-  const profile = (await client.query(`SELECT profile_sha256 FROM usp_intake_key_profiles
+  const profile: ProfileRow | undefined = (await client.query(`SELECT * FROM usp_intake_key_profiles
     WHERE case_id=$1 AND profile_id=$2`, [input.caseId, input.profileId])).rows[0];
   const item = (await client.query('SELECT source_id FROM usp_intake_items WHERE case_id=$1 AND item_id=$2',
     [input.caseId, input.itemId])).rows[0];
@@ -289,8 +291,7 @@ export async function assertIntakeEvidenceInputTx(client: PoolClient, input: Int
     || binding.subject !== input.subject || binding.access !== input.accessSha256) {
     conflict('This evidence reading no longer matches its key profile or retained source.');
   }
-  return { profile: (await client.query('SELECT * FROM usp_intake_key_profiles WHERE profile_id=$1',
-    [input.profileId])).rows[0] as ProfileRow, source };
+  return { profile: profile!, source };
 }
 
 /** The map side of a profile: every drafted building of its anchor item whose field holds a key as written. */

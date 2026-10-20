@@ -43,6 +43,8 @@ class LedgerControl {
       return { rows: [] };
     }
     if (sql.includes('usp_outbox')) return this.outbox(sql, values);
+    // No exact key is declared in these cases, so a kept table or document queues no evidence reading.
+    if (sql.includes('FROM usp_intake_key_profiles')) return { rows: [] };
     if (/jobs|usp_job_metadata|^SELECT pg_advisory/.test(sql)) return this.job(sql, values);
     if (sql.startsWith('INSERT INTO usp_intake_items')) return this.insert(sql, values);
     if (sql.startsWith('UPDATE usp_intake_items')) return this.update(sql, values);

@@ -3461,7 +3461,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read exact-key profiles, source coverage and candidate table rows and document parts for the batch; answers 501 until the evidence pass is built */
+        /** Read exact-key profiles, source coverage, stored evidence confirmations and a page of candidate table rows and document parts for the batch, with counts by outcome */
         get: operations["GET_api_v1_ingestion_cases_caseId_intake_evidence"];
         put?: never;
         post?: never;
@@ -3480,7 +3480,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Declare which map field and table columns or documents carry one exact literal key; answers 501 until the evidence pass is built */
+        /** Declare which map field and table columns or documents carry one exact literal key, and queue every named source to be read under it */
         post: operations["POST_api_v1_ingestion_cases_caseId_intake_evidence_key_profiles"];
         delete?: never;
         options?: never;
@@ -3582,7 +3582,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Confirm exact-key table rows and document parts as cited candidates for named buildings, with every source, coverage, candidate and package pin; answers 501 until the citation step is built */
+        /** Confirm exact-key table rows and document parts as cited candidates for named buildings, with every source, coverage, candidate and package pin; a stale pin is refused. It is stored only: nothing is written to the registry until the citation step */
         post: operations["POST_api_v1_ingestion_cases_caseId_intake_evidence_confirmations"];
         delete?: never;
         options?: never;
@@ -65966,6 +65966,20 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
+            confirmations: {
+                /** Format: uuid */
+                confirmationId: string;
+                /** Format: uuid */
+                profileId: string;
+                /** @enum {string} */
+                additions: "citations" | "no_additions";
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+                /** @description Sources read under the profile after it that the confirmation neither includes nor excludes. */
+                newerSources: string[];
+            }[];
             sources: {
                 /** Format: uuid */
                 itemId: string;
@@ -66721,6 +66735,12 @@ export interface components {
             expiresAt: string;
             /** Format: date-time */
             createdAt: string;
+            /**
+             * @description AU4-B2 stores the confirmation only; the citation step writes later.
+             * @enum {boolean}
+             */
+            registryWritten: false;
+            note: string;
         };
         GET_ingestion_upload_limits_Response_200_application_json: {
             limits: {
@@ -93337,17 +93357,6 @@ export interface operations {
                 };
             };
             /** @description Rejected or unavailable operation */
-            501: {
-                headers: {
-                    /** @description Server request identifier. */
-                    "X-Request-Id"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
-                };
-            };
-            /** @description Rejected or unavailable operation */
             503: {
                 headers: {
                     /** @description Server request identifier. */
@@ -93454,17 +93463,6 @@ export interface operations {
             };
             /** @description Rejected or unavailable operation */
             422: {
-                headers: {
-                    /** @description Server request identifier. */
-                    "X-Request-Id"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
-                };
-            };
-            /** @description Rejected or unavailable operation */
-            501: {
                 headers: {
                     /** @description Server request identifier. */
                     "X-Request-Id"?: string;
@@ -94159,17 +94157,6 @@ export interface operations {
             };
             /** @description Rejected or unavailable operation */
             422: {
-                headers: {
-                    /** @description Server request identifier. */
-                    "X-Request-Id"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
-                };
-            };
-            /** @description Rejected or unavailable operation */
-            501: {
                 headers: {
                     /** @description Server request identifier. */
                     "X-Request-Id"?: string;
