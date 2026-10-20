@@ -2,17 +2,20 @@ import { ApiError } from '@ulpin/api-client';
 import { hashFile } from './hash-file';
 import type { PartRequest, UploadTransport } from './upload-api';
 import { uploadGuard, uploadPlan } from './upload-model';
-import type { UploadCreate, UploadGuard, UploadProgress, UploadReceipt } from './upload-model';
+import type { UploadCreate, UploadEntry, UploadGuard, UploadProgress, UploadReceipt } from './upload-model';
 
-interface Options {
+export const NOT_THE_FILE = 'This is not the file this upload was started with.';
+
+/** A fresh upload states when its file was acquired; a resume continues the receipt it names, as admitted. */
+type Start = { acquiredAt: string; resume?: undefined } | { resume: UploadEntry; acquiredAt?: undefined };
+type Options = Start & {
   file: File;
-  acquiredAt: string;
   transport: UploadTransport;
   publish: (progress: UploadProgress) => void;
   hash?: typeof hashFile;
   key?: () => string;
   pause?: () => Promise<void>;
-}
+};
 interface Control {
   receipt: UploadReceipt | null;
   cancelled: boolean;
@@ -51,28 +54,33 @@ function publish(context: Context, update: Partial<UploadProgress>) {
 }
 
 async function runUpload(context: Context): Promise<string | null> {
-  const { file, transport, state } = context;
+  const { file, transport, state, resume } = context;
+  if (resume && (file.name !== resume.filename || file.size !== resume.bytes)) throw new Error(NOT_THE_FILE);
   const limits = await transport.limits();
   const plan = uploadPlan(file.size, limits);
   publish(context, { parts: plan.parts });
   const sha256 = await context.hash(file, plan.partBytes, doneBytes => publish(context, { doneBytes }));
   if (state.cancelled) return null;
-  const body: UploadCreate = { requestKey: context.key(), expectedCaseRevision: await transport.revision(),
-    filename: file.name, mediaType: 'application/octet-stream', sha256, bytes: file.size, profile: plan.profile,
-    provenance: { origin: 'not_stated', acquiredAt: context.acquiredAt } };
-  state.receipt = await guarded(context, () => transport.create(body));
+  state.receipt = await openReceipt(context, sha256, plan.profile);
   if (!state.receipt) return null;
   publish(context, { phase: 'uploading', doneBytes: state.receipt.receivedBytes });
+  const stored = new Map(state.receipt.parts.map(part => [part.partNumber, part]));
   for (let number = 1; number <= plan.parts && !state.cancelled; number++) {
+    const prior = stored.get(number);
+    if (prior?.state === 'received') continue;
     const bytes = file.slice((number - 1) * plan.partBytes, number * plan.partBytes);
     const partHash = await context.hash(bytes, plan.partBytes, () => {});
-    const part = partRequest(context, number, bytes, partHash);
+    // A part the server already bound keeps its request key; the server refuses any other binding.
+    const part = partRequest(context, number, bytes, partHash, prior?.requestKey);
     await sendPart(context, part, limits.limits.maxPartAttempts);
   }
   if (state.cancelled) return null;
   publish(context, { phase: 'verifying' });
-  const finalize = { ...uploadGuard(state.receipt!, context.key()), sha256 };
-  state.receipt = await guarded(context, () => transport.finalize(state.receipt!, finalize));
+  // A resumed receipt already finalizing is followed by its status only; a second finalize would queue it again.
+  if (state.receipt!.state === 'receiving') {
+    const finalize = { ...uploadGuard(state.receipt!, context.key()), sha256 };
+    state.receipt = await guarded(context, () => transport.finalize(state.receipt!, finalize));
+  }
   while (state.receipt?.state === 'finalizing' && !state.cancelled) {
     await context.pause();
     state.receipt = await guarded(context, () => transport.status(state.receipt!));
@@ -83,9 +91,24 @@ async function runUpload(context: Context): Promise<string | null> {
   return state.receipt.source.sourceId;
 }
 
-function partRequest(context: Context, number: number, bytes: Blob, hash: string): PartRequest {
+/** A resume names its receipt only after name, size and SHA-256 match the file; a mismatch sends nothing. */
+async function openReceipt(context: Context, sha256: string, profile: UploadCreate['profile']) {
+  const { file, transport } = context;
+  if (context.resume) {
+    const { resume } = context;
+    if (sha256 !== resume.sha256) throw new Error(NOT_THE_FILE);
+    return guarded(context, () => transport.status(resume));
+  }
+  const body: UploadCreate = { requestKey: context.key(), expectedCaseRevision: await transport.revision(),
+    filename: file.name, mediaType: 'application/octet-stream', sha256, bytes: file.size, profile,
+    provenance: { origin: 'not_stated', acquiredAt: context.acquiredAt } };
+  return guarded(context, () => transport.create(body));
+}
+
+function partRequest(context: Context, number: number, bytes: Blob, hash: string,
+  requestKey = context.key()): PartRequest {
   const receipt = context.state.receipt!;
-  return { number, bytes, headers: { 'X-Request-Key': context.key(), 'X-Part-Sha256': hash,
+  return { number, bytes, headers: { 'X-Request-Key': requestKey, 'X-Part-Sha256': hash,
     'X-Upload-Revision': receipt.revision, 'X-Case-Revision': receipt.currentCaseRevision } };
 }
 
@@ -154,4 +177,10 @@ async function cancelUpload(context: Context) {
   publish(context, { phase: 'cancelled' });
   state.waiting?.();
   state.waiting = null;
+}
+
+/** N04. Cancels a listed receipt with its own guard; a changed revision is refused by the server, in its words. */
+export function abortReceipt(transport: UploadTransport, entry: UploadEntry,
+  key: () => string = () => crypto.randomUUID()) {
+  return transport.abort(entry, uploadGuard(entry, key()));
 }
