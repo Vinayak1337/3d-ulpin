@@ -57,7 +57,10 @@ class Ledger {
   readonly jobs: any[] = [];
   readonly metadata = new Map<string, any>();
   readonly attempts: any[] = [];
+  /** ZL2. The lineage each retain or finalize wrote with its source, keyed by the source it created. */
   readonly inspections = new Map<string, unknown>();
+  /** ZL2. The member item whose next link fails once, as a stop between the retain and the link would. */
+  linkFault: string | null = null;
   archive: any;
 
   constructor(readonly bytes: Uint8Array, readonly card: IntakeCard) {
@@ -150,7 +153,10 @@ class Ledger {
     }
     if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: this.revision }];
     if (sql.startsWith('SELECT * FROM sources')) return values[1] === this.archiveId ? [this.archive] : [];
-    if (sql.startsWith('UPDATE sources SET inspection')) { this.inspections.set(values[0], values[1]); return []; }
+    if (sql.startsWith(`SELECT id FROM sources WHERE case_id=$1 AND inspection->'archiveMember' @>`)) {
+      return [...this.inspections].filter(([, lineage]) => Object.entries(values[1])
+        .every(([key, value]) => (lineage as Record<string, unknown>)[key] === value)).map(([id]) => ({ id }));
+    }
     if (sql.startsWith('SELECT * FROM usp_intake_items WHERE source_id')) {
       return [...this.rows.values()].filter(row => row.source_id === values[0] && !row.parent_item_id);
     }
@@ -173,6 +179,10 @@ class Ledger {
       return [];
     }
     if (sql.startsWith('UPDATE usp_intake_items SET source_id')) {
+      if (values[1] === this.linkFault) {
+        this.linkFault = null;
+        throw new Error('ZIP_LAYER_UNAVAILABLE');
+      }
       const row = this.rows.get(values[1]);
       if (row.source_id) return { rows: [], rowCount: 0 };
       Object.assign(row, { source_id: values[2], limit_reason: null });
@@ -208,6 +218,7 @@ async function layersJob(pack: Uint8Array, options: { failRetain?: (name: string
       order.push(`retain:${file.name}`);
       const sourceId = randomUUID();
       retained.push({ ...file, lineage, input, sourceId });
+      ledger.inspections.set(sourceId, lineage);
       ledger.revision++;
       return { source: { sourceId } } as never;
     },
@@ -388,9 +399,13 @@ const largePath = 'uttam/large-buildings.geojson';
 // Stored: a repeated feature deflates past the probe's ratio bound, which would refuse the member as a layer.
 const largePack = () => zipSync({ ...real, [largePath]: [large, { level: 0 }] });
 
-/** The /uploads byte receipt in memory: it hashes each part it is handed and keeps none. */
-function receipts(ledger: Ledger, refusal?: AppError) {
-  const log = { created: [] as any[], parts: [] as number[], sourceId: randomUUID(), hash: createHash('sha256') };
+/**
+ * The /uploads byte receipt in memory: it hashes each part it is handed and keeps none. Its finalize writes the
+ * lineage with the source, or, given a crash, fails once and keeps neither, as a rolled-back transaction does.
+ */
+function receipts(ledger: Ledger, refusal?: AppError, crash?: AppError) {
+  const log = { created: [] as any[], parts: [] as number[], sourceId: randomUUID(), hash: createHash('sha256'),
+    aborted: 0 };
   const status = (revision: number) => ({ id: randomUUID(), revision, currentCaseRevision: ledger.revision });
   const service = {
     create: async (_caseId: string, input: any) => {
@@ -406,11 +421,17 @@ function receipts(ledger: Ledger, refusal?: AppError) {
       return status(claim.expectedRevision + 1);
     },
     failPart: async () => {},
-    finalize: async () => {
+    finalize: async (_caseId: string, _id: string, _input: unknown, lineage: unknown) => {
+      if (crash) {
+        const error = crash;
+        crash = undefined;
+        throw error;
+      }
       ledger.revision++;
+      ledger.inspections.set(log.sourceId, lineage);
       return { source: { sourceId: log.sourceId } };
     },
-    abort: async () => {},
+    abort: async () => { log.aborted++; },
   };
   return { service, log };
 }
@@ -481,4 +502,40 @@ test('a layer above the large ceiling or past a full receipt allowance stays in 
       + 'bytes stays inside the archive; the large-original receipt allowance is full, so it was not kept as its '
       + 'own original. Enrol the archive again to retry once a receipt is free.');
     assert.notEqual(await full.queue(), null);
+  }));
+
+test('a large layer whose finalize fails keeps no lineage and no link; enrolling again keeps it once', () =>
+  configured(async () => {
+    const { ledger, queue, run } = await layersJob(largePack());
+    const { service, log } = receipts(ledger, undefined,
+      new AppError(503, 'FINALIZATION_INTERRUPTED', 'receipt text'));
+    await run((await queue())!, { large: service });
+    const member = ledger.member(largePath);
+    assert.deepEqual([member.source_id, ledger.inspections.has(log.sourceId), log.aborted], [null, false, 1]);
+    assert.match(member.limit_reason, /^FINALIZATION_INTERRUPTED: this GeoJSON member stays inside the archive/);
+    await run((await queue())!, { large: service });
+    assert.deepEqual([member.source_id, member.limit_reason, log.created.length, log.aborted],
+      [log.sourceId, null, 2, 1]);
+    assert.equal((ledger.inspections.get(log.sourceId) as { memberPath: string }).memberPath, largePath);
+    assert.equal(await queue(), null);
+  }));
+
+test('a large layer kept but not linked is linked to that child on the next enrolment; nothing new is kept', () =>
+  configured(async () => {
+    const { ledger, order, retained, queue, run } = await layersJob(largePack());
+    const { service, log } = receipts(ledger);
+    const member = ledger.member(largePath);
+    ledger.linkFault = member.item_id;
+    await run((await queue())!, { large: service });
+    assert.deepEqual([member.source_id, ledger.inspections.has(log.sourceId), log.created.length],
+      [null, true, 1]);
+    assert.match(member.limit_reason, /^ZIP_LAYER_UNAVAILABLE: this GeoJSON member stays inside the archive/);
+    let reads = 0;
+    const read = async () => { reads++; throw new Error('ZIP_LAYER_UNAVAILABLE'); };
+    await run((await queue())!, { large: service, read });
+    // Found by its lineage and linked before any byte is read; no second receipt, no second small retain.
+    assert.deepEqual([member.source_id, member.limit_reason, log.created.length, retained.length, reads],
+      [log.sourceId, null, 1, 3, 0]);
+    assert.equal(order.at(-1), `register:${log.sourceId}`);
+    assert.equal(await queue(), null);
   }));
