@@ -232,7 +232,8 @@ async function queueBatchPdfTx(client: PoolClient, source: IntakeSourceRow): Pro
   if (bytes > DOCUMENT_LIMITS.originalBytes) {
     await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
       planRef: null, recordsSeen: 0, limitReason: `Kept as a PDF document (${sizeWords(bytes)}). The page reader `
-        + 'in a batch reads a PDF of at most 16 MB, so this one is not read; the original is kept with its SHA-256.' });
+        + `in a batch reads a PDF of at most ${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so this one is not read; `
+        + 'the original is kept with its SHA-256.' });
     return null;
   }
   const { jobId, status } = await queueBatchDocumentTx(client, item.case_id, source.id);
@@ -269,8 +270,9 @@ export function batchPdfSettlement(native: DocumentResult['native']): PdfItemSta
   if (native.status === 'encrypted') return { state: 'read', placement: 'needs_answer', limitReason: 'This PDF is '
     + 'encrypted, so no page was read. Add an unlocked copy to the batch; no password is kept.' };
   if (native.status === 'tool_error') return { state: 'failed_part', placement: 'not_understood',
-    limitReason: native.code === 'NATIVE_READER_BYTE_LIMIT' ? 'The page reader reads a PDF of at most 10 MB, so '
-      + 'this one is not read; the original is kept with its SHA-256.' : pdfStopped };
+    limitReason: native.code === 'NATIVE_READER_BYTE_LIMIT' ? 'The page reader reads a PDF of at most '
+      + `${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, so this one is not read; the original is kept with its SHA-256.`
+      : pdfStopped };
   if (native.status === 'unsupported') return { state: 'read', placement: 'not_understood',
     limitReason: 'The page reader could not take this file as a PDF; the original is kept with its SHA-256.' };
   const textPages = ascending(native.parts.flatMap(part => part.locator.page ?? []));
