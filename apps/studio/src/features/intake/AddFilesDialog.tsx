@@ -64,9 +64,12 @@ export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, c
   return <NewFiles onClose={onClose} routed={routed} openCaseId={caseId} initialFiles={initialFiles} />;
 }
 
+/** G10. A PDF is kept in a batch and read there by the server's page reader; the name only routes the drop. */
+const isPdf = (file: File) => /\.pdf$/i.test(file.name);
+
 /**
- * Add files to one building: plans, level schedules, unit inventories and deeds. Each file is recognised,
- * then Start import records the building's levels and units, which appear on the map as they are read.
+ * Add files to one building: plans, level schedules, unit inventories and deeds. A PDF goes to a batch, where the
+ * server reads its pages; each other file is recognised, then Start import records the building's levels and units.
  */
 function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; onClose: () => void; routed: boolean }) {
   const register = useBuildingRegister(buildingId).data;
@@ -75,9 +78,13 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
   const [files, setFiles] = useState<File[]>([]);
   const [found, setFound] = useState<FileDetection[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [pdfs, setPdfs] = useState<File[]>([]);
   const add = async (list: FileList | null) => {
-    if (!list?.length) return;
-    const next = [...files, ...list];
+    const picked = [...list ?? []];
+    if (picked.some(isPdf)) setPdfs((prior) => [...prior, ...picked.filter(isPdf)]);
+    const others = picked.filter((file) => !isPdf(file));
+    if (!others.length) return;
+    const next = [...files, ...others];
     setFiles(next);
     try { setFound(await detectBuildingFiles(buildingId, next)); } catch (e) { setError((e as Error).message); }
   };
@@ -92,6 +99,10 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
     onError: (e) => setError((e as Error).message),
   });
   const step = !files.length ? 0 : 1;
+  if (pdfs.length) {
+    return <IntakeDropDialog files={pdfs} remainingFiles={files} routed={routed} onClose={onClose}
+      onBack={() => setPdfs([])} />;
+  }
   return (
     <Dialog
       title={`Add files · ${register?.property.name ?? 'building'}`}
@@ -108,7 +119,10 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
         <label className={styles.drop} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); void add(event.dataTransfer.files); }}>
           <Icon icon={FileArrowUp} size={32} />
           <span className="ul-heading">Drop plans, level schedules, unit inventories or deeds</span>
-          <span className="ul-help">PDF, CSV and Excel. Floors and units are read from them and appear on the map.</span>
+          <span className="ul-help">
+            CSV and Excel are read here and their floors and units appear on the map. A PDF is kept in a batch, where
+            its pages are read and what they name waits for your review.
+          </span>
           <input type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
         </label>
         {found.length ? (

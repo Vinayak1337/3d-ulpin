@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
-import { countWords, crsWords, fieldWords, isSettled, placementWords, stateWords, trayItems } from './batch-model';
+import { countWords, crsWords, fieldWords, isSettled, opensPages, partProgressWords, placementWords, stateWords,
+  trayItems } from './batch-model';
 import { fileRoute, zipMemberNames, zipRoute } from './file-route';
 import { zip } from '../register/workbook';
 import { intakeRefreshFrame, silenceDelay } from './batch-events';
@@ -66,4 +67,14 @@ it('refreshes on case intake notifications and waits five quiet seconds', () => 
   expect(silenceDelay(1000, 1000)).toBe(5000);
   expect(silenceDelay(1000, 5999)).toBe(1);
   expect(silenceDelay(1000, 6000)).toBe(0);
+});
+
+it('a PDF being read says nothing of records, and only a read, unlocked PDF opens its pages', () => {
+  const pdf = { itemId: 'pdf', sourceId: 'source', family: 'document', format: 'pdf', state: 'reading',
+    placement: 'undecided', partsPlanned: null, partsDone: 0, recordsSeen: 0 } as IntakeItem;
+  expect(partProgressWords(pdf)).toBeNull();
+  expect(opensPages(pdf)).toBe(false);
+  expect(opensPages({ ...pdf, state: 'read' })).toBe(true);
+  expect(opensPages({ ...pdf, state: 'read', placement: 'needs_answer' })).toBe(false);
+  expect(opensPages({ ...pdf, state: 'read', format: 'docx' })).toBe(false);
 });

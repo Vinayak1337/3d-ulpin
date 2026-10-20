@@ -438,11 +438,11 @@ test('enrolling a shapefile ZIP queues no layer job', async () => {
   });
 });
 
-test('a probed PDF and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
+test('a probed GLB and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
   await configured(async () => {
     for (const [bytes, expected] of [
-      [Buffer.from('%PDF-1.7\n%%EOF\n'), 'Kept as a PDF document (18 bytes). No reader in a batch takes this '
-        + 'kind of file yet, so it is not on the map; the original is kept with its SHA-256.'],
+      [Buffer.from('glTF\x02\0\0\0\x0c\0\0\0', 'latin1'), 'Kept as a GLB 3D model (18 bytes). No reader in a '
+        + 'batch takes this kind of file yet, so it is not on the map; the original is kept with its SHA-256.'],
       [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Kept (18 bytes); its kind was not recognised from its first and '
         + 'last bytes.'],
     ] as const) {
