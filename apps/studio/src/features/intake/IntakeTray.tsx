@@ -7,6 +7,7 @@ import { isPageImage } from './page-image-model';
 import { canRetryStopped } from './retry-command';
 import { StoppedRetry } from './StoppedRetry';
 import { useSourceCase } from './table/queries';
+import { LayerCrsAnswers } from './LayerCrsAnswer';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
   stateWords, packagePath, partProgressWords, opensPages } from './batch-model';
 import type { IntakeItem } from './batch-model';
@@ -58,6 +59,7 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
       aria-label={`View page image: ${item.name}`}>View page image</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
     {opensPages(item) ? <ReviewPages caseId={caseId} item={item} /> : null}
+    {item.layerCrs?.length ? <LayerCrsAnswers caseId={caseId} item={item} refresh={refresh} /> : null}
   </div>;
 }
 

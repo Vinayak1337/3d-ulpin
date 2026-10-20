@@ -149,7 +149,8 @@ def test_a_shapefile_zip_is_written_with_record_positions_and_matches_the_native
         assert collection["features"][index]["properties"] == native["features"][index]["attributes"]
 
 
-def test_a_shapefile_set_without_prj_is_not_written(tmp_path):
+def noprj_zip(tmp_path: Path) -> Path:
+    """A test_only copy of the real Tweed shapefile ZIP with its .prj left out; the original is not touched."""
     import zipfile
     source = zipfile.ZipFile(TWEED_ZIP)
     target = tmp_path / "noprj.zip"
@@ -157,8 +158,13 @@ def test_a_shapefile_set_without_prj_is_not_written(tmp_path):
         for entry in source.infolist():
             if not entry.filename.lower().endswith(".prj"):
                 archive.writestr(entry.filename, source.read(entry))
-    [layer] = convert(target, "shapefile_zip", tmp_path)
+    return target
+
+
+def test_a_shapefile_set_without_prj_is_not_written(tmp_path):
+    [layer] = convert(noprj_zip(tmp_path), "shapefile_zip", tmp_path)
     assert (layer["state"], layer["reason"]) == ("crs_unstated", "states no coordinate reference system (no .prj)")
+    assert layer["statesCrs"] is False
 
 
 class Storage:
@@ -195,3 +201,69 @@ def test_the_original_is_read_from_storage_checked_and_each_derivative_stored_by
         convert_native({**request, "bytes": len(raw) - 1}, Storage({key: raw}))
     with pytest.raises(InputError):
         convert_native({**request, "objectKey": f"sources/{source}/{'0' * 64}"}, storage)
+
+
+def test_an_officer_stated_crs_converts_a_shapefile_set_without_prj_as_the_officer_stated_it(tmp_path):
+    path = noprj_zip(tmp_path)
+    out = tmp_path / "answered"
+    out.mkdir()
+    [layer] = convert_native_file(path, "shapefile_zip", out, sha(path), {"Council_Buildings": "EPSG:28356"})
+    assert (layer["state"], layer["crs"], layer["crsSource"], layer["features"]) == \
+        ("converted", "EPSG:28356", "officer_stated", 88)
+    collection, sidecar = written(layer)
+    assert collection["crs"] == {"type": "name", "properties": {"name": "EPSG:28356"}}
+    assert (sidecar[0]["crs"], sidecar[0]["crsSource"]) == ("EPSG:28356", "officer_stated")
+    [stated] = convert(TWEED_ZIP, "shapefile_zip", tmp_path)
+    assert stated["crsSource"] == "stated" and "crsSource" not in written(stated)[1][0]
+    # Only the CRS member differs: every feature is written exactly as the file with its .prj gives it.
+    assert collection["features"] == written(stated)[0]["features"]
+
+
+def test_an_unknown_code_is_refused_and_a_stated_crs_is_never_replaced(tmp_path):
+    path = copy(tmp_path, "answered.gpkg")
+    with sqlite3.connect(path) as db:
+        db.execute('CREATE TABLE "Unstated" AS SELECT * FROM "Council_Buildings"')
+        # Removing the CRS: the column and every geometry header name the undefined system -1.
+        db.create_function("undefined", 1, lambda blob: blob[:4] + struct.pack("<i", -1) + blob[8:])
+        db.execute("UPDATE Unstated SET Shape=undefined(Shape)")
+        db.execute("INSERT INTO gpkg_contents(table_name,data_type,identifier,srs_id) "
+                   "VALUES('Unstated','features','Unstated',-1)")
+        db.execute("INSERT INTO gpkg_geometry_columns SELECT 'Unstated',column_name,geometry_type_name,-1,z,m "
+                   "FROM gpkg_geometry_columns WHERE table_name='Council_Buildings'")
+    out = tmp_path / "out"
+    out.mkdir()
+    layers = convert_native_file(path, "gpkg", out, sha(path),
+                                 {"Council_Buildings": "EPSG:4326", "Unstated": "EPSG:28356"})
+    assert [(layer["state"], layer["crs"], layer["crsSource"], layer["features"]) for layer in layers] == [
+        ("converted", "EPSG:28356", "stated", 88), ("converted", "EPSG:28356", "officer_stated", 88)]
+    assert [feature["geometry"] for feature in written(layers[1])[0]["features"]] == \
+        [feature["geometry"] for feature in written(layers[0])[0]["features"]]
+    unknown = tmp_path / "unknown"
+    unknown.mkdir()
+    [_, refused] = convert_native_file(path, "gpkg", unknown, sha(path), {"Unstated": "EPSG:999999"})
+    assert refused == {"layer": "Unstated", "ordinal": 1, "state": "not_converted",
+                       "reason": "the officer's stated EPSG:999999 is not a two-dimensional EPSG system the reader "
+                                 "knows"}
+    asked = tmp_path / "asked"
+    asked.mkdir()
+    [_, unstated] = convert_native_file(path, "gpkg", asked, sha(path))
+    assert (unstated["state"], unstated["statesCrs"]) == ("crs_unstated", False)
+
+
+def test_answers_must_name_layers_with_epsg_codes():
+    request = {"sourceId": "10000000-0000-4000-8000-000000000001", "objectKey": "x", "sha256": "0" * 64,
+               "bytes": 1, "format": "gpkg"}
+    for answers in ({"Unstated": "28356"}, {"Unstated": "EPSG:0"}, ["EPSG:28356"], {"": "EPSG:28356"}):
+        with pytest.raises(InputError, match="layerCrs"):
+            convert_native({**request, "layerCrs": answers}, Storage({}))
+
+
+def test_the_intake_routes_check_resolves_a_known_code_to_itself_and_refuses_an_unknown_one():
+    from geo.area import resolve_geojson_crs
+
+    def named(code):
+        return {"collection": {"crs": {"type": "name", "properties": {"name": code}}}}
+    assert resolve_geojson_crs(named("EPSG:28356"))["authority"] == "EPSG:28356"
+    for code in ("EPSG:999999", "EPSG:4979"):
+        with pytest.raises(InputError):
+            resolve_geojson_crs(named(code))

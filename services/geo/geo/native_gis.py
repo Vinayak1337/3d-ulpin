@@ -359,6 +359,8 @@ MAX_LAYERS = 100
 SAFE_INTEGER = 9007199254740991
 _ENVELOPE_BYTES = {0: 0, 1: 32, 2: 48, 3: 48, 4: 64}
 _SOURCE_KEY = re.compile(r"^(sources|large-originals)/([0-9a-f-]{36})/([0-9a-f]{64})$")
+_OFFICER_CODE = re.compile(r"EPSG:([1-9][0-9]{0,8})")
+_STATES_NONE = "states no coordinate reference system"
 
 
 def _json(value) -> str:
@@ -458,7 +460,7 @@ def _gpkg_crs(connection: sqlite3.Connection, srs_id) -> tuple[str | None, str |
                              "WHERE srs_id=?", (srs_id,)).fetchone()
     if srs is None or srs_id in (0, -1) or str(srs[0]).upper() == "NONE" \
             or str(srs[2] or "").strip().lower() in ("", "undefined"):
-        return None, "states no coordinate reference system"
+        return None, _STATES_NONE
     try:
         epsg = int(srs[1]) if str(srs[0]).upper() == "EPSG" and int(srs[1]) > 0 else _epsg(srs[2])
         if not CRS.from_wkt(srs[2]).equals(CRS.from_epsg(epsg)):
@@ -468,7 +470,28 @@ def _gpkg_crs(connection: sqlite3.Connection, srs_id) -> tuple[str | None, str |
     return f"EPSG:{epsg}", None
 
 
-def _gpkg_layers(path: Path, folder: Path, source_sha256: str) -> list[dict]:
+def _officer_crs(stopped: dict, words: str, answers: dict) -> str | dict:
+    """CR1. A layer whose file states no CRS takes the officer's EPSG code if pyproj builds it as a two-dimensional
+    horizontal system; without an answer it rests asking for one. The file's own statement is never replaced."""
+    code = answers.get(stopped["layer"])
+    if code is None:
+        return {**stopped, "state": "crs_unstated", "statesCrs": False, "reason": words}
+    try:
+        reference = CRS.from_epsg(int(_OFFICER_CODE.fullmatch(code).group(1)))
+        if reference.is_compound or len(reference.axis_info) != 2 \
+                or not (reference.is_projected or reference.is_geographic):
+            raise ValueError()
+    except (CRSError, ValueError, AttributeError):
+        return {**stopped,
+                "reason": f"the officer's stated {code} is not a two-dimensional EPSG system the reader knows"}
+    return code
+
+
+def _crs_fields(crs: str, officer: bool) -> dict:
+    return {"crs": crs, "crsSource": "officer_stated"} if officer else {}
+
+
+def _gpkg_layers(path: Path, folder: Path, source_sha256: str, answers: dict) -> list[dict]:
     connection = sqlite3.connect(path.as_uri() + "?mode=ro&immutable=1", uri=True)
     try:
         connection.execute("PRAGMA query_only=ON")
@@ -478,14 +501,15 @@ def _gpkg_layers(path: Path, folder: Path, source_sha256: str) -> list[dict]:
             (MAX_LAYERS + 1,))]
         if not 1 <= len(names) <= MAX_LAYERS:
             raise InputError(f"A GeoPackage must hold 1 to {MAX_LAYERS} feature layers to be converted.")
-        return [_gpkg_layer(connection, name, ordinal, folder, source_sha256) for ordinal, name in enumerate(names)]
+        return [_gpkg_layer(connection, name, ordinal, folder, source_sha256, answers)
+                for ordinal, name in enumerate(names)]
     except sqlite3.Error:
         raise InputError("The GeoPackage schema could not be read.") from None
     finally:
         connection.close()
 
 
-def _gpkg_layer(connection, layer: str, ordinal: int, folder: Path, source_sha256: str) -> dict:
+def _gpkg_layer(connection, layer: str, ordinal: int, folder: Path, source_sha256: str, answers: dict) -> dict:
     stopped = {"layer": layer, "ordinal": ordinal, "state": "not_converted"}
     table = connection.execute("SELECT type,sql FROM sqlite_master WHERE name=?", (layer,)).fetchone()
     if table is None or table[0] != "table" or "VIRTUAL TABLE" in table[1].upper():
@@ -498,8 +522,12 @@ def _gpkg_layer(connection, layer: str, ordinal: int, folder: Path, source_sha25
     if measured == 1:
         return {**stopped, "reason": "stores measure (M) values on every geometry"}
     crs, words = _gpkg_crs(connection, srs_id)
-    if crs is None:
-        return {**stopped, "state": "crs_unstated", "reason": words}
+    if crs is None and words != _STATES_NONE:
+        return {**stopped, "state": "crs_unstated", "statesCrs": True, "reason": words}
+    officer = crs is None
+    crs = _officer_crs(stopped, words, answers) if officer else crs
+    if isinstance(crs, dict):
+        return crs
     columns = connection.execute(f"PRAGMA table_info({_quote(layer)})").fetchall()
     try:
         position, kind = _gpkg_position(connection, layer, columns)
@@ -508,7 +536,7 @@ def _gpkg_layer(connection, layer: str, ordinal: int, folder: Path, source_sha25
     fields = [entry[1] for entry in columns if entry[1] != column]
     header = {"version": "native-gis-locators/1", "conversion": CONVERSION, "readerVersion": WINDOW_READER,
               "originalSha256": source_sha256, "format": "gpkg", "layer": layer, "positionKind": kind,
-              "positionField": position}
+              "positionField": position, **_crs_fields(crs, officer)}
     derivative = _Derivative(folder, ordinal, header, crs)
     try:
         select = ",".join(_quote(name) for name in [position, column] + fields)
@@ -535,10 +563,11 @@ def _gpkg_layer(connection, layer: str, ordinal: int, folder: Path, source_sha25
     except BaseException:
         derivative.abandon()
         raise
-    return {**stopped, "state": "converted", "crs": crs, **derivative.close()}
+    return {**stopped, "state": "converted", "crs": crs, "crsSource": "officer_stated" if officer else "stated",
+            **derivative.close()}
 
 
-def _shapefile_layers(path: Path, folder: Path, source_sha256: str) -> list[dict]:
+def _shapefile_layers(path: Path, folder: Path, source_sha256: str, answers: dict) -> list[dict]:
     import shapefile
     try:
         with zipfile.ZipFile(path) as archive:
@@ -553,24 +582,28 @@ def _shapefile_layers(path: Path, folder: Path, source_sha256: str) -> list[dict
             layers = sorted(name[:-4] for name in names if name.endswith(".shp"))
             if not 1 <= len(layers) <= MAX_LAYERS:
                 raise InputError(f"A shapefile ZIP must hold 1 to {MAX_LAYERS} .shp sets to be converted.")
-            return [_shapefile_layer(archive, names, layer, ordinal, folder, source_sha256, shapefile)
+            return [_shapefile_layer(archive, names, layer, ordinal, folder, source_sha256, shapefile, answers)
                     for ordinal, layer in enumerate(layers)]
     except zipfile.BadZipFile:
         raise InputError("The shapefile ZIP could not be opened.") from None
 
 
 def _shapefile_layer(archive, names: dict, layer: str, ordinal: int, folder: Path, source_sha256: str,
-                     shapefile) -> dict:
+                     shapefile, answers: dict) -> dict:
     stopped = {"layer": names[layer + ".shp"].filename[:-4], "ordinal": ordinal, "state": "not_converted"}
     if any(layer + suffix not in names for suffix in (".shx", ".dbf")):
         return {**stopped, "reason": "lacks its .shx or .dbf companion"}
-    if layer + ".prj" not in names:
-        return {**stopped, "state": "crs_unstated", "reason": "states no coordinate reference system (no .prj)"}
-    try:
-        crs = f"EPSG:{_epsg(archive.read(names[layer + '.prj']).decode('utf-8-sig'))}"
-    except (InputError, UnicodeError):
-        return {**stopped, "state": "crs_unstated",
-                "reason": "states a coordinate reference system that does not resolve to one EPSG code"}
+    officer = layer + ".prj" not in names
+    if officer:
+        crs = _officer_crs(stopped, f"{_STATES_NONE} (no .prj)", answers)
+        if isinstance(crs, dict):
+            return crs
+    else:
+        try:
+            crs = f"EPSG:{_epsg(archive.read(names[layer + '.prj']).decode('utf-8-sig'))}"
+        except (InputError, UnicodeError):
+            return {**stopped, "state": "crs_unstated", "statesCrs": True,
+                    "reason": "states a coordinate reference system that does not resolve to one EPSG code"}
     encoding = archive.read(names[layer + ".cpg"]).decode("ascii").strip() if layer + ".cpg" in names else "utf-8"
     encoding = {"65001": "utf-8", "1252": "cp1252"}.get(encoding, encoding)
     scratch = folder / f"shapefile-{ordinal}"
@@ -581,7 +614,8 @@ def _shapefile_layer(archive, names: dict, layer: str, ordinal: int, folder: Pat
                 target.write(block)
     header = {"version": "native-gis-locators/1", "conversion": CONVERSION, "readerVersion": WINDOW_READER,
               "originalSha256": source_sha256, "format": "shapefile_zip", "layer": stopped["layer"],
-              "member": names[layer + ".dbf"].filename, "positionKind": "sequence", "encoding": encoding}
+              "member": names[layer + ".dbf"].filename, "positionKind": "sequence", "encoding": encoding,
+              **_crs_fields(crs, officer)}
     try:
         reader = shapefile.Reader(str(scratch / "layer"), encoding=encoding)
     except (shapefile.ShapefileException, LookupError, OSError):
@@ -602,7 +636,8 @@ def _shapefile_layer(archive, names: dict, layer: str, ordinal: int, folder: Pat
         except BaseException:
             derivative.abandon()
             raise
-    return {**stopped, "state": "converted", "crs": crs, **derivative.close()}
+    return {**stopped, "state": "converted", "crs": crs, "crsSource": "officer_stated" if officer else "stated",
+            **derivative.close()}
 
 
 def _shapefile_record(reader, position: int, fields: list, derivative: _Derivative):
@@ -622,16 +657,27 @@ def _shapefile_record(reader, position: int, fields: list, derivative: _Derivati
         derivative.feature(position, properties, geometry)
 
 
-def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str) -> list[dict]:
-    """Every layer of one original on scratch disk, each converted or stopped with words naming why."""
+def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str,
+                        answers: dict | None = None) -> list[dict]:
+    """Every layer of one original on scratch disk, each converted or stopped with words naming why. `answers` maps
+    a layer whose file states no CRS to the EPSG code an officer stated for it (CR1)."""
     if fmt == "gpkg":
         with path.open("rb") as head:
             if head.read(16) != b"SQLite format 3\x00":
                 raise InputError("A GeoPackage must be a SQLite GeoPackage file.")
-        return _gpkg_layers(path, folder, source_sha256)
+        return _gpkg_layers(path, folder, source_sha256, answers or {})
     if fmt == "shapefile_zip":
-        return _shapefile_layers(path, folder, source_sha256)
+        return _shapefile_layers(path, folder, source_sha256, answers or {})
     raise InputError("Only a GeoPackage or a shapefile ZIP is converted.")
+
+
+def _answers(value) -> dict:
+    """CR1. The officer's answers: layer name to EPSG code, each in the exact form the intake route stores."""
+    if not isinstance(value, dict) or len(value) > MAX_LAYERS or not all(
+            isinstance(layer, str) and 1 <= len(layer) <= 256 and isinstance(code, str)
+            and _OFFICER_CODE.fullmatch(code) for layer, code in value.items()):
+        raise InputError(f"layerCrs maps at most {MAX_LAYERS} layer names to EPSG:<code> answers.")
+    return value
 
 
 def _s3():
@@ -647,8 +693,9 @@ def convert_native(data: dict, s3=None) -> dict:
     """SH2. Copies a retained original from object storage to scratch disk (size and SHA-256 checked), converts
     each layer and stores each derivative and its sidecar under content-addressed keys for the caller to retain."""
     from . import settings
-    if not isinstance(data, dict) or set(data) != {"sourceId", "objectKey", "sha256", "bytes", "format"}:
+    if not isinstance(data, dict) or set(data) - {"layerCrs"} != {"sourceId", "objectKey", "sha256", "bytes", "format"}:
         raise InputError("Conversion requires the retained original's exact pins and its format.")
+    answers = _answers(data.get("layerCrs", {}))
     source_id, key, digest, size, fmt = (data[name] for name in ("sourceId", "objectKey", "sha256", "bytes", "format"))
     match = _SOURCE_KEY.fullmatch(key) if isinstance(key, str) else None
     if not match or match.group(2) != source_id or match.group(3) != digest:
@@ -673,7 +720,7 @@ def convert_native(data: dict, s3=None) -> dict:
             body.close()
         if count != size or hashed.hexdigest() != digest:
             raise InputError("The retained original's size or SHA-256 differs from its receipt.")
-        layers = convert_native_file(original, fmt, folder, digest)
+        layers = convert_native_file(original, fmt, folder, digest, answers)
         for layer in (layer for layer in layers if layer["state"] == "converted"):
             for name, kind in (("geojson", "application/geo+json"), ("sidecar", "application/x-ndjson")):
                 entry = layer[name]

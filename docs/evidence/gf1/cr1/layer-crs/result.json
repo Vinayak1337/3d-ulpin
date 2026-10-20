@@ -1,0 +1,62 @@
+{
+  "task": "CR1 layer CRS answer",
+  "gate": "GF1",
+  "base": "fc7a063c",
+  "branch": "task/cr1-layer-crs-answer",
+  "status": "officer_stated_layer_crs_converts_unstated_layer_unit_and_real_input_checked",
+  "runtimeNeeded": false,
+  "providerCalls": 0,
+  "realInput": {
+    "kind": "test_only generated copies; no original is edited",
+    "geopackage": "the SH2 Niagara GeoPackage built by the test, with a layer 'unstated' copied from the Tweed Council_Buildings layer whose gpkg_geometry_columns srs_id and every geometry blob's srs_id are rewritten to -1",
+    "shapefileZip": "the Tweed shapefile ZIP rebuilt by the test without its .prj",
+    "officerCode": "EPSG:28356 (the system the source layer states)"
+  },
+  "works": {
+    "unstatedLayerAsked": "with no answer the layer rests crs_unstated with statesCrs false; the item is needs_answer and plan_ref.nativeLayers.unstated names it",
+    "answerConverts": "the answer EPSG:28356 converts the layer: 88 features, crs member EPSG:28356, sidecar header crsSource officer_stated, features equal to the conversion of the copy that states the system",
+    "lineage": "the kept child's lineage records crs EPSG:28356 and crsSource officer_stated; its probe card reads the crs as stated",
+    "requeue": "the answer queues the conversion again as the next job after the completed one; the two layers kept before are found again by their lineage and only the answered layer is kept anew (3 children)",
+    "itemWords": "3 layers of this GeoPackage are converted to GeoJSON and taken in as their own files: buildings, footprints, unstated (EPSG:28356, stated by the officer).",
+    "refusals": {
+      "INTAKE_LAYER_CRS_STATED": "a layer whose file states a system (409); the reader also ignores an answer for it",
+      "INTAKE_LAYER_CRS_ANSWERED": "a second answer for one layer (409)",
+      "INTAKE_LAYER_CRS_CONVERTING": "an answer while a conversion runs (409)",
+      "INTAKE_LAYER_CRS_UNKNOWN": "a code the geo service's resolve-geojson-crs refuses (422) or resolves to another authority; checked before any transaction",
+      "reader": "EPSG:999999 and a malformed layerCrs map are refused with words; EPSG:4979 (3D) is refused by resolve-geojson-crs"
+    },
+    "idempotent": "the route is keyed intake-layer-crs:<requestKey> in the operations ledger; Studio keeps the key until the outcome is known",
+    "studio": "the batch tray's next step shows one form per unstated layer (EPSG code field, hint, Submit) and an answered layer as '<layer>: <code>, stated by the officer', read from item.layerCrs"
+  },
+  "uiDesignCheck": {
+    "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs fc7a063c, exit 0, 0 candidates (the scan covers apps/web only; Studio was read by hand)",
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": [
+      "only --ui-* tokens in Batch.module.css; no literal colours, fonts, radii or shadows",
+      "the form uses ul-field, ul-label, ul-input, ul-help and ul-error; the hint is linked by aria-describedby; errors use role alert",
+      "Submit is a soft Button, so the view keeps a single primary action; its aria-label names the layer",
+      "every value shown comes from item.layerCrs; the placeholder EPSG:32643 is a format example, never a record value",
+      "light, desktop only; no theme or mobile code"
+    ]
+  },
+  "notDone": {
+    "streamingReadMs": "the coordinator's request to use streamingReadMs(layer.geojson.bytes) in keepDerivative was skipped: the export does not exist on base fc7a063c",
+    "rereadAllLayers": "on requeue the geo service reads every layer again; the kept ones are only found again by lineage, not skipped by the reader",
+    "runtime": "no live Docker or geo-service run; the geo resolve call is stubbed in the server test and exercised directly in the Python test"
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm studio:test", "exit": 0, "counts": "studio 75 files, 483 tests passed; scene 58 passed, 1 skipped; ui 7; api-client 2"},
+    {"command": "template backend test command (includes intake-native-derivative.test.ts)", "exit": 0,
+      "counts": "376 tests, 374 passed, 2 skipped, 0 failed"},
+    {"command": "intake-native-derivative.test.ts alone after the last test edit", "exit": 0, "counts": "5 passed"},
+    {"command": "apps/api/scripts/openapi.ts --check", "exit": 0},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0,
+      "counts": "315 native operations, 357 named schemas"},
+    {"command": "venv-k3a-geo python -B -m pytest -q -p no:cacheprovider tests/test_native_conversion.py (services/geo)",
+      "exit": 0, "counts": "11 passed"},
+    {"command": "git diff --check", "exit": 0}
+  ]
+}

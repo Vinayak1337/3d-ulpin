@@ -7,6 +7,7 @@ import { readTargets } from './run/api';
 import { runKey } from './run/useTargets';
 import type { RetryResult } from './retry-command';
 import type { PageImageBody } from './page-image-model';
+import type { LayerCrsBody } from './layer-crs-command';
 
 export const recipeKey = (caseId: string) => ['batch-recipes', caseId];
 
@@ -64,4 +65,10 @@ export async function readPageImagePreview(caseId: string, itemId: string, bytes
   if (!result.response.ok || !result.data) throw new ApiError(result.response.status, PREVIEW, result.error);
   if (result.data.size !== bytes) throw new Error('The preview differs from the size kept on this file.');
   return result.data;
+}
+
+export async function stateLayerCrs(caseId: string, itemId: string, body: LayerCrsBody) {
+  return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layer-crs', {
+    params: { path: { caseId, itemId } }, body,
+  }));
 }
