@@ -7869,6 +7869,8 @@ export interface components {
                 displayState: "recorded" | "unrecorded_proposal";
                 /** Format: uuid */
                 caseId?: string;
+                /** Format: uuid */
+                packageId?: string;
             }[];
             next: string | null;
         };

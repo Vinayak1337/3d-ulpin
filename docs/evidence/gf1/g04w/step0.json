@@ -1,0 +1,16 @@
+{
+  "task": "G04W",
+  "gap": "The area window names a proposal's case but not its package, so the windowed inspector finds a proposal's intake target only after a package has recorded the building (G04M GAPS).",
+  "base": "3f9e9d33",
+  "branch": "task/g04w-window-package",
+  "changes": {
+    "packages/server/src/modules/areas/area-display-window.ts": "The proposed CTE selects p.id package_id beside p.case_id; the window's recorded arm selects NULL::uuid package_id and its proposal arm p.package_id; windowFeature sets packageId only when the row has one. The summary statement selects nothing new, and the limit and keyset are unchanged.",
+    "packages/contracts/src/area.ts": "AreaWindowFeatureSchema gains packageId: uuid, optional (additive).",
+    "apps/studio/src/features/map/WindowedArea.tsx": "WindowedInspector passes feature.packageId to BuildingCard, as MapWorkspace passes proposalPackageId.",
+    "packages/server/src/modules/areas/area-display-window.test.ts": "The in-memory store answers package_id; a proposal row carries its package id and a recorded row does not.",
+    "apps/studio/src/features/map/inspector/BuildingCard.test.tsx": "A windowed proposal's inspector reads by feature with its package id.",
+    "docs/api/openapi.json, packages/api-client/src/schema.d.ts": "Regenerated for the new optional field."
+  },
+  "reuse": "The package row the proposed CTE already joins (import_packages p); the existing by-feature target read (GET /api/v1/ingestion/intake/targets/by-feature?featureId&packageId) and BuildingCard's packageId prop from G04M. No new route, index or schema step.",
+  "seamsOutsideOwnedPaths": "None. No runtime, Docker, GPU or provider call."
+}

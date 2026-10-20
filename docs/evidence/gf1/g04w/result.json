@@ -1,0 +1,34 @@
+{
+  "task": "G04W",
+  "branch": "task/g04w-window-package",
+  "base": "3f9e9d33",
+  "decisions": {
+    "D1": "AreaWindowFeatureSchema has an optional packageId (uuid). The window read's proposed CTE selects p.id package_id from the package row it already joins; the recorded arm selects NULL::uuid package_id and the proposal arm p.package_id; windowFeature sets packageId only when the row has one, so a recorded row omits it. Additive: the window's limit (at most 4000 rows), keyset and the summary statement's selected columns are unchanged.",
+    "D2": "WindowedInspector passes feature.packageId to BuildingCard, as MapWorkspace passes proposalPackageId; the by-feature target read then asks in that package. A recorded building passes none and is read through the packages that recorded it, as in G04M."
+  },
+  "changed": [
+    "packages/server/src/modules/areas/area-display-window.ts",
+    "packages/server/src/modules/areas/area-display-window.test.ts",
+    "packages/contracts/src/area.ts",
+    "apps/studio/src/features/map/WindowedArea.tsx",
+    "apps/studio/src/features/map/inspector/BuildingCard.test.tsx",
+    "docs/api/openapi.json",
+    "docs/api/source-pins.json",
+    "packages/api-client/src/schema.d.ts"
+  ],
+  "tests": {
+    "server": "area-display-window.test.ts: a proposal from a draft outline and one from a package body each carry their own package id and that package's case; the recorded row carries neither key; the statement selects p.id package_id in the CTE, NULL::uuid package_id on the recorded arm and p.package_id on the proposal arm.",
+    "studio": "BuildingCard.test.tsx: a proposal picked in a windowed area (WindowedInspector, captured E3B target's feature, package and case) creates one query keyed by feature and package; fetching it sends GET /api/v1/ingestion/intake/targets/by-feature with {featureId, packageId}; the inspector then shows the target's readiness words beside 'Open batch to confirm'. Without the WindowedArea change this test fails on the query key."
+  },
+  "inputs": "The Studio test uses the captured E3B run (docs/evidence/gf1/e3b/targets.json); the server test uses the in-memory window store of area-display-window.test.ts. No runtime, Docker, GPU or provider call.",
+  "checks": {
+    "pnpm typecheck:backend": 0,
+    "pnpm studio:typecheck": 0,
+    "pnpm studio:test": { "exit": 0, "studio": "81 files, 508 passed", "scene": "58 passed, 1 skipped", "ui": "7 passed", "api-client": "2 passed" },
+    "backend set (ingestion, areas, officer, listed tests)": { "exit": 0, "tests": 441, "pass": 439, "fail": 0, "skipped": 2 },
+    "openapi.ts --check": "1 before refresh (stale); refresh-contract.ts 3f9e9d33 exit 0, studio:api-types exit 0, check.py exit 0; openapi.ts --check exit 0 after",
+    "git diff --check": 0,
+    "ui-design-check scan": 0
+  },
+  "gaps": []
+}
