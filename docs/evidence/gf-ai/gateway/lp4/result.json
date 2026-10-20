@@ -1,0 +1,589 @@
+{
+ "schemaVersion": "lp4-live-proof/1",
+ "task": "LP4",
+ "date": "2026-10-21",
+ "claim": "The first live Sarvam run on the demo, under the owner-confirmed policy: ten paid calls admitted, dispatched and settled in the PostgreSQL ledger with HTTP 200, usage and actual cost. Every answer was cut off at the output-token limit, so no structured answer was produced and no recording was kept.",
+ "approval": "owner, 21 October about 03:15: full permission; Sarvam approved",
+ "servedCommit": "9d6acc6b (demo serving checkout; not changed)",
+ "policy": {
+  "file": "E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.owner-confirmed-20261010.json (outside Git)",
+  "fileSha256": "2f6160ea02c81c6aeaca780f93ef9ed0f3afbeb73f89484e2d360ec2a485dbf3",
+  "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+  "maxOutputTokens": 2048,
+  "paceMs": 1500
+ },
+ "plan": {
+  "command": "pnpm exec tsx scripts/agent/live-proof.ts --plan --tariff <policy> --out E:/BhuAayam-data/task-data/s1/lp4-plan",
+  "fileSha256": "c9d1633c148e111afefbf3942ebaca7c2e52031b8b2d740f7de4a8bdb396a65a",
+  "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+  "policyHashMatchesExpected": true,
+  "steps": 15,
+  "calls": 10,
+  "estimateMicroInr": "1136475",
+  "atMostMicroInr": "7741440",
+  "keyMoves": {
+   "keysInPolicy": 11,
+   "extraAttemptsAtMost": 11
+  }
+ },
+ "dryRun": {
+  "command": "pnpm exec tsx scripts/agent/live-proof.ts --dry-run --tariff <policy> --out E:/BhuAayam-data/task-data/s1/lp4-dry-run",
+  "fileSha256": "a1847e54fbb4143ec24015b29959e9591689ad81d0ce6d3aa679a2f64bc374c8",
+  "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+  "summary": {
+   "steps": 15,
+   "gatewayAsks": 11,
+   "providerDispatches": 0,
+   "ledgerReservations": 0,
+   "fetchAttempts": 0,
+   "requestsMatchingPlan": 10,
+   "endStates": {
+    "needs_input": 6,
+    "teacher_unavailable": 9
+   }
+  },
+  "stopped": null
+ },
+ "gatewayStatusBefore": {
+  "command": "node scripts/platform/demo-gateway.mjs status",
+  "lines": [
+   "enabled: true",
+   "policyHash: efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+   "providerKeyPresent: true",
+   "mappingTeacherAdapter: sarvam",
+   "dailyCapPresent: true",
+   "providerKeysNamed: 11",
+   "providerKeysPresent: 11"
+  ],
+  "fiveFactsAsRequired": true,
+  "keyCounts": "11 and 11"
+ },
+ "keyMarksBefore": "ULPIN_PROVIDER_KEY_SARVAM_01 in_use; _02 to _11 waiting",
+ "live": {
+  "command": "pnpm exec tsx scripts/agent/live-proof.ts --live --tariff <policy> --gateway-state <status.txt> --out E:/BhuAayam-data/task-data/s1/lp4-live",
+  "environment": "the demo profile settings given the way demo-gateway.mjs gives its ledger child: readDemo(ulpin-demo), safeEnvironment(), the isolated-env.cjs preload that refuses the checkout .env, --import tsx, working directory the demo checkout; output passed through redact(); the launcher stays outside Git",
+  "runs": 1,
+  "reconciliationRequired": false,
+  "receiptFile": "E:/BhuAayam-data/task-data/s1/lp4-live/receipt.json",
+  "receiptSha256": "e3fcbcfdd024f0798724f92f334d72d52ebe1b8aaacc57792dfcd85b147d07af",
+  "agentFiles": 8,
+  "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+  "stopped": null,
+  "notRun": [],
+  "receiptLiveNumbers": "null in every step: the receipt reads usage from a recording, and the gateway keeps no recording of a response that failed validation. The numbers under ledger are the usp_model_calls rows of the demo PostgreSQL, matched by request hash.",
+  "steps": [
+   {
+    "step": "storey-cf152f32-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "ML-D3",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "cb2ae3e69cce49140f2ba157588240d05b764145c55a780024b3e73542f3429b",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 648,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "132600"
+    },
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "replay-of-storey-cf152f32-batch1",
+    "boxes": [
+     "AG-S2"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_REPLAY_UNAVAILABLE",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": "MODEL_REPLAY_UNAVAILABLE",
+    "capAdmitted": null,
+    "requestHash": null,
+    "ledger": null,
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "curve-file1-chunk1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-L2",
+     "AG-E2"
+    ],
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "1ddd396c48b4de996bcdf71cfcfb9b63b9dc8b308d0a7cc63c95a591aa5e7f7c",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "INGEST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 3458,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "174750"
+    },
+    "detail": {
+     "layout": "new",
+     "memoryHits": 0,
+     "studentFields": 0,
+     "teacherFields": 16,
+     "unansweredFields": 0,
+     "needsInput": 16,
+     "candidateCells": 0
+    }
+   },
+   {
+    "step": "curve-file1-chunk2",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": null,
+    "requestHash": null,
+    "ledger": null,
+    "detail": {
+     "layout": "memory",
+     "memoryHits": 1,
+     "studentFields": 0,
+     "teacherFields": 0,
+     "unansweredFields": 0,
+     "needsInput": 16,
+     "candidateCells": 0
+    }
+   },
+   {
+    "step": "curve-file1-chunk3",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": null,
+    "requestHash": null,
+    "ledger": null,
+    "detail": {
+     "layout": "memory",
+     "memoryHits": 1,
+     "studentFields": 0,
+     "teacherFields": 0,
+     "unansweredFields": 0,
+     "needsInput": 16,
+     "candidateCells": 0
+    }
+   },
+   {
+    "step": "curve-file2-chunk1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-L2",
+     "AG-E2"
+    ],
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "b9718e7deb1d7c117fbf2721e1dd0f90a0790b8c8f442e6c5469a1064a49b34e",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "INGEST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 3550,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "176130"
+    },
+    "detail": {
+     "layout": "new",
+     "memoryHits": 0,
+     "studentFields": 0,
+     "teacherFields": 16,
+     "unansweredFields": 0,
+     "needsInput": 16,
+     "candidateCells": 0
+    }
+   },
+   {
+    "step": "curve-file2-chunk2",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": null,
+    "requestHash": null,
+    "ledger": null,
+    "detail": {
+     "layout": "memory",
+     "memoryHits": 1,
+     "studentFields": 0,
+     "teacherFields": 0,
+     "unansweredFields": 0,
+     "needsInput": 16,
+     "candidateCells": 0
+    }
+   },
+   {
+    "step": "curve-file2-chunk3",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": null,
+    "requestHash": null,
+    "ledger": null,
+    "detail": {
+     "layout": "memory",
+     "memoryHits": 1,
+     "studentFields": 0,
+     "teacherFields": 0,
+     "unansweredFields": 0,
+     "needsInput": 16,
+     "candidateCells": 0
+    }
+   },
+   {
+    "step": "storey-0f793ce7-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "ML-D3",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "a547500e44dbb82bda1b559611a4c3dd8fc51e0e8ce17127e6682111caccfbf4",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 576,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "131520"
+    },
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "storey-b6f0178b-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "ML-D3",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "c89943ccf8a244d23be940d5f32fff73ff6e6ba1633323b775f701b32d22728f",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 1897,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "151335"
+    },
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "storey-2aadce88-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "902e09567dffac48566f34992eb77067ffdd55a825e03223b0012a53096abb87",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 658,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "132750"
+    },
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "storey-2b9f8803-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "fbf108ca332f473905b234006b0df1c40bd288fd6a6a34ae9febc8e8f17c1ecd",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 727,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "133785"
+    },
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "storey-f8a55dc2-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "15969aa5a06aa10ee1fb645cbf43abe3eb27e2633d1b24646355b1ece445cdd6",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 883,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "136125"
+    },
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "storey-26c2d310-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "b78f955517ed7dfb7b9d75b13c7c869e62c4195f0f13f7888d4e7a3726599286",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 1428,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "144300"
+    },
+    "detail": {
+     "abstain": null
+    }
+   },
+   {
+    "step": "storey-f0dc0d56-batch1",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "attempts": 1,
+    "replayed": false,
+    "afterStop": false,
+    "keyMoves": [],
+    "gatewayCode": null,
+    "capAdmitted": true,
+    "requestHash": "533e83b397a6b8062dcf0f18ec04134f88a97c5d11b15945015c440557b8ce90",
+    "ledger": {
+     "matchedByRequestHash": true,
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 1214,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "141090"
+    },
+    "detail": {
+     "abstain": null
+    }
+   }
+  ],
+  "ledger": {
+   "table": "usp_model_calls",
+   "rows": 10,
+   "rowsMatchingPlannedRequestHashes": 10,
+   "settled": 10,
+   "httpStatus200": 10,
+   "truncatedOutput": 10,
+   "consumers": {
+    "ASSIST": 8,
+    "INGEST": 2
+   },
+   "inputTokens": 15039,
+   "outputTokens": 20480,
+   "reservePerCallMicroInr": "774144",
+   "poolBlocked": false
+  },
+  "spent": {
+   "actualMicroInr": "1454385",
+   "rupees": "Rs 1.45",
+   "check": "15039 input tokens x Rs 15/M + 20480 output tokens x Rs 60/M = 1454385 micro-INR",
+   "estimateMicroInr": "1136475",
+   "atMostMicroInr": "7741440",
+   "shareOfTotalCap": "1.45%",
+   "shareOfDailyCap": "5.82%",
+   "callsOfPersonDailyCap": "10 of 150"
+  }
+ },
+ "keyMarksAfter": {
+  "command": "node scripts/platform/demo-gateway.mjs key-marks",
+  "lines": [
+   "ULPIN_PROVIDER_KEY_SARVAM_01 in_use",
+   "ULPIN_PROVIDER_KEY_SARVAM_02 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_03 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_04 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_05 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_06 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_07 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_08 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_09 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_10 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_11 waiting"
+  ]
+ },
+ "gatewayAfter": "left on: enabled true, the same policy hash (the owner wants it on)",
+ "finding": {
+  "signature": "finish_reason length on all 10 calls: completion tokens equal maxOutputTokens 2048 while prompts were 576 to 3550 tokens; the adapter sends reasoning_effort low and a strict json_schema",
+  "likelyCause": "sarvam-105b spends the output budget on reasoning before the JSON answer (not measured: the adapter keeps no reasoning text)",
+  "estimateError": "the plan estimates output as half the maximum (1024 tokens); every call used the full 2048, so the spend was Rs 1.45 against the Rs 1.14 estimate, under the Rs 7.75 bound"
+ },
+ "boxes": {
+  "closed": [],
+  "evidenceAdded": {
+   "AG-S1": "PostgreSQL admission, dispatch and settlement of 10 live calls with HTTP 200, usage and actual micro-INR under the cap checks; not closed: no structured response passed validation (truncated_output)",
+   "AG-E2": "a paid network-call curve [1,0,0] and [1,0,0] over the two mi-d10 files (chunks 2 and 3 reuse memory); not closed: both teacher plans ended TEACHER_INVALID_PLAN, 16 fields needs_input each, no committed field"
+  },
+  "notClosed": {
+   "AG-S2": "the replay step ended TEACHER_REPLAY_UNAVAILABLE (MODEL_REPLAY_UNAVAILABLE): no answer was recorded because it failed validation",
+   "ML-D1": "no valid storey answer to score (8 storey calls, all TEACHER_INVALID_OUTPUT)",
+   "ML-D3": "no registry-scorable agent answer",
+   "ML-L2": "no committed field; precision has no n",
+   "AG-D1": "no recorded answer, and the agent-to-proposal adapter is another task"
+  }
+ },
+ "refusals": [],
+ "notIncluded": "no key, no env value, no prompt or answer text, no contact lines, no principal or credential hash"
+}
