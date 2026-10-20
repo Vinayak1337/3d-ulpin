@@ -2,6 +2,8 @@
 # unclean shutdown ("rename ...sock ...sock.stale: The file cannot be accessed by the system").
 # It stops only Docker's own processes, renames two socket folders aside together and starts Docker Desktop once.
 # It never deletes anything, never touches volumes, WSL or Docker's own configuration, and the aside copies stay.
+# Once the engine is back and the demo API's health does not answer 200, it starts the demo's API and dispatcher:
+# pnpm platform:start --profile demo, then pnpm platform:doctor --profile demo, in the demo's serving checkout.
 # Output names folders relative to the root and never prints environment values, command lines or credentials.
 # Usage and the never list: docs/backend/DOCKER-GUARD.md
 param(
@@ -14,6 +16,9 @@ param(
   [string]$DesktopExe = (Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\Docker Desktop.exe'),
   [string]$OpsDir = 'E:\BhuAayam-data\ops\docker-guard',
   [switch]$DryRun,
+  [string]$PnpmExe = 'pnpm',
+  [string]$DemoCheckout = 'E:\Projects\ulpin-wt\demo',
+  [string]$HealthUrl = 'http://127.0.0.1:3194/api/v1/health',
   [int]$RecheckSeconds = 5,
   [int]$WaitSeconds = 180,
   [string]$Stamp = (Get-Date -Format 'yyyyMMdd-HHmmss')
@@ -25,6 +30,12 @@ $StartingSeconds = 120
 $WatchFailuresToRecover = 2
 $RecoverLimit = 3
 $RecoverLimitHours = 6
+$HealthSeconds = 5
+$DemoStartSeconds = 300
+$DoctorSeconds = 180
+$WatchApiFailuresToStart = 2
+$DemoStartLimit = 2
+$DemoStartLimitHours = 6
 $RunDir = Join-Path $Root 'Docker\run'
 $SecretsDir = Join-Path $Root 'docker-secrets-engine'
 $Utf8 = New-Object System.Text.UTF8Encoding($false)
@@ -34,6 +45,8 @@ function Get-FullPath([string]$Path) { [IO.Path]::GetFullPath($Path).TrimEnd('\'
 $RootIsDefault = (Get-FullPath $Root) -eq (Get-FullPath $env:LOCALAPPDATA)
 # A dry run never stops or starts a process; it renames folders only under a -Root other than the real one.
 $RenameForReal = -not ($DryRun -and $RootIsDefault)
+# Docker processes are stopped or started only by a run that is not dry and uses the real root.
+$DockerForReal = -not $DryRun -and $RootIsDefault
 
 function Hide-Root([string]$Text) {
   if (-not $Text) { return $Text }
@@ -139,13 +152,16 @@ function Get-RunningDemoNames {
 
 function Read-State {
   $path = Join-Path $OpsDir 'state.json'
-  $state = [ordered]@{ failures = 0; lastRunning = @(); lastRunningAt = $null; recoveries = @() }
+  $state = [ordered]@{
+    failures = 0; lastRunning = @(); lastRunningAt = $null; recoveries = @(); apiFailures = 0; demoStarts = @()
+  }
   if (Test-Path -LiteralPath $path) {
     try { $saved = [IO.File]::ReadAllText($path) | ConvertFrom-Json } catch { $saved = $null }
     foreach ($key in @($state.Keys)) { if ($null -ne $saved.$key) { $state[$key] = $saved.$key } }
   }
   $state.lastRunning = @($state.lastRunning)
   $state.recoveries = @($state.recoveries)
+  $state.demoStarts = @($state.demoStarts)
   $state
 }
 
@@ -161,7 +177,7 @@ function Write-RunLine($Run) {
 function Stop-DockerProcesses {
   $found = @(Get-DockerProcesses)
   $result = [ordered]@{ found = $found; stopped = @(); failed = @(); remaining = @() }
-  if ($DryRun) { $result.planned = $true; return $result }
+  if (-not $DockerForReal) { $result.planned = $true; return $result }
   foreach ($entry in $found) {
     try {
       Stop-Process -Id $entry.id -Force -ErrorAction Stop
@@ -213,7 +229,7 @@ function Move-SocketFoldersAside {
 }
 
 function Start-Desktop {
-  if ($DryRun) { return 'planned' }
+  if (-not $DockerForReal) { return 'planned' }
   if (-not (Test-Path -LiteralPath $DesktopExe)) { return 'desktop_exe_missing' }
   Start-Process -FilePath $DesktopExe
   'started'
@@ -251,6 +267,99 @@ function Complete-Rename($Run) {
   if ($rename.ok) { return $null }
   if ($rename.putBack) { return Set-Outcome $Run 'rename_failed_put_back' 4 }
   Set-Outcome $Run 'rename_failed_not_put_back' 5
+}
+
+# The demo API's health status code, or $null when nothing answers within the timeout.
+function Get-ApiStatus {
+  $response = $null
+  try {
+    $request = [Net.WebRequest]::Create($HealthUrl)
+    $request.Proxy = $null
+    $request.Timeout = $HealthSeconds * 1000
+    $request.ReadWriteTimeout = $HealthSeconds * 1000
+    $response = $request.GetResponse()
+    [int]$response.StatusCode
+  } catch {
+    $failure = $_.Exception
+    while ($failure -and -not ($failure -is [Net.WebException])) { $failure = $failure.InnerException }
+    if ($failure -and $failure.Response) { $response = $failure.Response; [int]$response.StatusCode } else { $null }
+  } finally {
+    if ($response) { $response.Close() }
+  }
+}
+
+function Get-DemoLogPath { Join-Path $OpsDir ('demo-start-' + (Get-Date -Format 'yyyy-MM-dd') + '.log') }
+
+# Runs one pnpm command in the demo checkout; its output goes only to the demo log, never to the run line.
+# A command that outlives its timeout is left running and recorded as timed out.
+function Invoke-DemoPnpm([string]$PnpmPath, [string]$Arguments, [int]$Seconds) {
+  $log = Get-DemoLogPath
+  [IO.File]::AppendAllText($log, "== $((Get-Date).ToString('o')) pnpm $Arguments`r`n", $Utf8)
+  $offset = ([IO.FileInfo]$log).Length
+  $info = New-Object System.Diagnostics.ProcessStartInfo
+  $info.FileName = Join-Path $env:SystemRoot 'System32\cmd.exe'
+  $info.Arguments = "/d /s /c `"`"$PnpmPath`" $Arguments >> `"$log`" 2>&1`""
+  $info.WorkingDirectory = $DemoCheckout
+  $info.UseShellExecute = $false
+  $info.CreateNoWindow = $true
+  $process = [System.Diagnostics.Process]::Start($info)
+  $step = [ordered]@{ exitCode = $null; timedOut = $false }
+  if (-not $process.WaitForExit($Seconds * 1000)) { $step.timedOut = $true; return @{ step = $step; lines = @() } }
+  $step.exitCode = $process.ExitCode
+  $stream = New-Object IO.FileStream($log, 'Open', 'Read', 'ReadWrite')
+  try {
+    [void]$stream.Seek($offset, 'Begin')
+    $text = (New-Object IO.StreamReader($stream, $Utf8)).ReadToEnd()
+  } finally { $stream.Dispose() }
+  @{ step = $step; lines = @($text -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
+}
+
+# Starts the demo's two native processes and runs its doctor. Only the exit codes, the doctor's last line and its
+# PASS and FAIL counts are recorded.
+function Start-Demo($Demo) {
+  if (Test-Path -LiteralPath (Join-Path $OpsDir 'no-demo-start')) { $Demo.outcome = 'opted_out'; return $Demo }
+  if ($DryRun) { $Demo.outcome = 'planned'; return $Demo }
+  $pnpm = Get-Command $PnpmExe -CommandType Application -ErrorAction SilentlyContinue |
+    Where-Object { @('.cmd', '.bat', '.exe') -contains $_.Extension } | Select-Object -First 1
+  if (-not $pnpm) { $Demo.outcome = 'pnpm_missing'; return $Demo }
+  if (-not [IO.Directory]::Exists($DemoCheckout)) { $Demo.outcome = 'checkout_missing'; return $Demo }
+  $Demo.log = [IO.Path]::GetFileName((Get-DemoLogPath))
+  $start = Invoke-DemoPnpm $pnpm.Source 'platform:start --profile demo' $DemoStartSeconds
+  $Demo.start = $start.step
+  if ($start.step.timedOut) { $Demo.outcome = 'start_timed_out'; return $Demo }
+  $doctor = Invoke-DemoPnpm $pnpm.Source 'platform:doctor --profile demo' $DoctorSeconds
+  $Demo.doctor = $doctor.step
+  $last = @($doctor.lines | Select-Object -Last 1)
+  if ($last.Count -gt 0) { $Demo.doctor.lastLine = $last[0].Substring(0, [Math]::Min(200, $last[0].Length)) }
+  $Demo.doctor.pass = @($doctor.lines | Where-Object { $_ -like 'PASS *' }).Count
+  $Demo.doctor.fail = @($doctor.lines | Where-Object { $_ -like 'FAIL *' }).Count
+  $Demo.outcome = if ($start.step.exitCode -ne 0) { 'start_failed' }
+    elseif ($doctor.step.timedOut -or $doctor.step.exitCode -ne 0) { 'doctor_failed' } else { 'started' }
+  $Demo
+}
+
+# After -Recover or -Prestart brings the engine back: start the demo unless its API already answers.
+function Invoke-DemoAfterEngine {
+  $demo = [ordered]@{ apiStatus = (Get-ApiStatus); outcome = $null }
+  if ($demo.apiStatus -eq 200) { $demo.outcome = 'api_answers'; return $demo }
+  if ($paused) { $demo.outcome = 'paused'; return $demo }
+  Start-Demo $demo
+}
+
+# -Watch, engine answering: start the demo after two failed health checks in a row, at most twice in six hours.
+function Invoke-WatchDemo($State) {
+  $demo = [ordered]@{ apiStatus = (Get-ApiStatus); outcome = $null }
+  if ($demo.apiStatus -eq 200) { $State.apiFailures = 0; $demo.outcome = 'api_answers'; return $demo }
+  $State.apiFailures = [int]$State.apiFailures + 1
+  $demo.apiFailures = $State.apiFailures
+  if ($State.apiFailures -lt $WatchApiFailuresToStart) { $demo.outcome = 'api_silent_waiting'; return $demo }
+  $since = (Get-Date).AddHours(-$DemoStartLimitHours)
+  $recent = @($State.demoStarts | Where-Object { [DateTime]::Parse($_) -gt $since })
+  if ($recent.Count -ge $DemoStartLimit) { $demo.outcome = 'start_limit_reached'; return $demo }
+  $demo = Start-Demo $demo
+  $State.apiFailures = 0
+  if ($demo.Contains('start')) { $State.demoStarts = @($recent) + (Get-Date).ToString('o') }
+  $demo
 }
 
 function Invoke-Recovery($State) {
@@ -295,6 +404,7 @@ function Invoke-Watch($State) {
     $State.failures = 0
     $running = Get-RunningDemoNames
     if ($null -ne $running) { $State.lastRunning = $running; $State.lastRunningAt = (Get-Date).ToString('o') }
+    $run.demo = Invoke-WatchDemo $State
     return Set-Outcome $run 'engine_answers' 0
   }
   $starting = @(Get-DockerProcesses | Where-Object {
@@ -336,8 +446,9 @@ if ($mode -eq 'Check') {
   if ($engine.answers) { exit 0 } else { exit 3 }
 }
 
-if (-not $RootIsDefault -and -not $DryRun) {
-  $refusal = 'a -Root other than the real one needs -DryRun'
+# Under such a root no Docker process is ever stopped or started; a stand-in -PnpmExe lets a test run the demo start.
+if (-not $RootIsDefault -and -not $DryRun -and -not $PSBoundParameters.ContainsKey('PnpmExe')) {
+  $refusal = 'a -Root other than the real one needs -DryRun or a stand-in -PnpmExe'
   Write-Json ([ordered]@{ mode = $mode.ToLower(); ok = $false; error = $refusal })
   exit 2
 }
@@ -359,6 +470,10 @@ try {
     'Recover' { Invoke-Recovery $state }
     'Prestart' { Invoke-Prestart }
     'Watch' { Invoke-Watch $state }
+  }
+  $engineBack = @{ Recover = @('recovered'); Prestart = @('engine_back', 'engine_answers') }
+  if ($engineBack.Contains($mode) -and $engineBack[$mode] -contains $result.outcome) {
+    $result.demo = Invoke-DemoAfterEngine
   }
   $line = [ordered]@{ mode = $mode.ToLower(); at = (Get-Date).ToString('o'); dryRun = [bool]$DryRun }
   foreach ($key in $result.Keys) { $line[$key] = $result[$key] }

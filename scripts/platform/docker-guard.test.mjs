@@ -3,7 +3,8 @@
 // -DryRun, so no process is stopped or started; only folders inside the made-up root are renamed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { createServer } from 'node:http';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -22,6 +23,23 @@ const stubDocker = [
   'exit /b 0',
   ''
 ].join('\r\n');
+// The stand-in pnpm records its working folder and arguments; its doctor prints two PASS lines and one FAIL line.
+const stubPnpm = [
+  '@echo off',
+  '>>"%~dp0pnpm-calls.txt" echo %CD% %*',
+  'if "%1"=="platform:doctor" goto doctor',
+  'echo started API and dispatcher',
+  'exit /b 0',
+  ':doctor',
+  'echo PASS Postgres answers',
+  'echo FAIL Dispatcher liveness',
+  'echo PASS API health',
+  'echo Doctor: 1 failure(s); runtime NOT qualified.',
+  'exit /b 1',
+  ''
+].join('\r\n');
+// Port 0 is never served, so this health check gets no answer at once.
+const closedHealthUrl = 'http://127.0.0.1:0/api/v1/health';
 const psLines = [
   { Names: 'ulpin-demo-postgres-1', State: 'running', Status: 'Up 2 minutes (healthy)' },
   { Names: 'ulpin-demo-minio-init-1', State: 'exited', Status: 'Exited (0) 3 days ago' },
@@ -48,23 +66,72 @@ function madeUpRoot({ engine }) {
   ].join('\n'));
   writeFileSync(join(bin, 'docker.cmd'), stubDocker);
   writeFileSync(join(bin, 'ps.txt'), psLines);
+  writeFileSync(join(bin, 'pnpm.cmd'), stubPnpm);
+  mkdirSync(join(root, 'demo'));
   setEngine(root, engine);
   return { root, run, secrets, ops: join(root, 'ops') };
+}
+
+/** A made-up root whose demo start runs the stand-in pnpm (no -DryRun needed; Docker is never acted on). */
+function demoRoot({ healthUrl }) {
+  const fake = madeUpRoot({ engine: true });
+  return { ...fake, healthUrl, pnpm: join(fake.root, 'bin', 'pnpm.cmd'), checkout: join(fake.root, 'demo') };
+}
+
+function pnpmCalls(fake) {
+  const file = join(fake.root, 'bin', 'pnpm-calls.txt');
+  return existsSync(file) ? readFileSync(file, 'utf8').trim().split(/\r?\n/) : [];
+}
+
+/** A stand-in health endpoint in this process; set `status` to change its answer. */
+async function healthServer() {
+  const server = createServer((request, response) => {
+    response.writeHead(request.url === '/api/v1/health' ? server.status : 404).end('{}');
+  });
+  server.status = 200;
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  server.url = `http://127.0.0.1:${server.address().port}/api/v1/health`;
+  return server;
 }
 
 function setEngine(root, up) {
   writeFileSync(join(root, 'bin', 'engine.txt'), up ? '0' : '1');
 }
 
-function guard(fake, mode, ...extra) {
-  const args = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, `-${mode}`,
+function guardArgs(fake, mode, extra) {
+  const pnpm = fake.pnpm ? ['-PnpmExe', fake.pnpm] : [];
+  return ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, `-${mode}`,
     '-Root', fake.root, '-DockerExe', join(fake.root, 'bin', 'docker.cmd'),
     '-DesktopExe', join(fake.root, 'bin', 'desktop.cmd'), '-OpsDir', fake.ops,
-    '-RecheckSeconds', '0', '-WaitSeconds', '0', '-Stamp', stamp, ...extra];
-  const result = spawnSync('powershell.exe', args, { encoding: 'utf8', windowsHide: true, timeout: 120000 });
-  assert.equal(result.stderr, '', result.stderr);
-  const lines = result.stdout.trim().split(/\r?\n/);
-  return { status: result.status, json: JSON.parse(lines.at(-1)) };
+    '-RecheckSeconds', '0', '-WaitSeconds', '0', '-Stamp', stamp,
+    '-HealthUrl', fake.healthUrl ?? closedHealthUrl, '-DemoCheckout', join(fake.root, 'demo'), ...pnpm, ...extra];
+}
+
+function parsed(status, stdout, stderr) {
+  assert.equal(stderr, '', stderr);
+  const lines = stdout.trim().split(/\r?\n/);
+  return { status, json: JSON.parse(lines.at(-1)) };
+}
+
+function guard(fake, mode, ...extra) {
+  const options = { encoding: 'utf8', windowsHide: true, timeout: 120000 };
+  const result = spawnSync('powershell.exe', guardArgs(fake, mode, extra), options);
+  return parsed(result.status, result.stdout, result.stderr);
+}
+
+/** As guard, but leaves the event loop free so the stand-in health server in this process can answer. */
+function guardAsync(fake, mode, ...extra) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('powershell.exe', guardArgs(fake, mode, extra), { windowsHide: true });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', chunk => { stdout += chunk; });
+    child.stderr.on('data', chunk => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', status => {
+      try { resolve(parsed(status, stdout, stderr)); } catch (error) { reject(error); }
+    });
+  });
 }
 
 function runLines(fake) {
@@ -174,13 +241,83 @@ test('the never list: no reset, prune, volume or WSL removal, deletion or Docker
   const never = [
     /\breset\b/i, /factory/i, /--unregister/i, /--shutdown/i, /\bprune\b/i, /volume\s+rm/i, /compose\s+down/i,
     /\bdown\s+-v\b/i, /rm\s+-rf/i, /Remove-Item/i, /\.vhdx/i, /settings-store|settings\.json|daemon\.json/i,
-    /::Delete\(/i, /\b(rmdir|rd)\s+\/s/i, /\bdel\s/i, /Clear-Content|Set-Content|Out-File|Add-Content/i
+    /::Delete\(/i, /\b(rmdir|rd)\s+\/s/i, /\bdel\s/i, /Clear-Content|Set-Content|Out-File|Add-Content/i,
+    /--create/i, /platform:stop/i, /--runtime/i, /\.env\b/i
   ];
   const text = readFileSync(script, 'utf8');
   for (const pattern of never) assert.doesNotMatch(text, pattern);
+  const commands = new Set(text.match(/platform:\w+(?: [-\w]+)*/g));
+  assert.deepEqual([...commands].sort(), ['platform:doctor --profile demo', 'platform:start --profile demo']);
   const install = readFileSync(installer, 'utf8');
   for (const pattern of never.filter(pattern => !/unregister|settings/.test(pattern.source))) {
     assert.doesNotMatch(install, pattern);
   }
   assert.doesNotMatch(install, /WriteAll|ConvertTo-Json[^\n]*settings|Register-ScheduledTask[^\n]*-RunLevel Highest/i);
+});
+
+test('demo start: an answering API starts nothing; a silent one is started once in the demo checkout', async () => {
+  const server = await healthServer();
+  try {
+    const fake = demoRoot({ healthUrl: server.url });
+    const answering = await guardAsync(fake, 'Prestart');
+    assert.equal(answering.json.outcome, 'engine_answers', JSON.stringify(answering.json));
+    assert.deepEqual(answering.json.demo, { apiStatus: 200, outcome: 'api_answers' });
+    assert.deepEqual(pnpmCalls(fake), []);
+
+    server.status = 503;
+    const silent = await guardAsync(fake, 'Prestart');
+    assert.equal(silent.status, 0);
+    assert.deepEqual(pnpmCalls(fake), [
+      `${fake.checkout} platform:start --profile demo`, `${fake.checkout} platform:doctor --profile demo`
+    ]);
+    const { demo } = silent.json;
+    assert.equal(demo.apiStatus, 503);
+    assert.equal(demo.outcome, 'doctor_failed');
+    assert.deepEqual(demo.start, { exitCode: 0, timedOut: false });
+    assert.deepEqual(demo.doctor, {
+      exitCode: 1, timedOut: false, lastLine: 'Doctor: 1 failure(s); runtime NOT qualified.', pass: 2, fail: 1
+    });
+    const log = readFileSync(join(fake.ops, demo.log), 'utf8');
+    assert.match(log, /started API and dispatcher/);
+    assert.match(log, /PASS Postgres answers/);
+    const line = JSON.stringify(runLines(fake).at(-1));
+    assert.equal(line.includes('started API'), false);
+    assert.equal(line.includes('PASS Postgres'), false);
+    assert.equal(line.includes(fake.root.replaceAll('\\', '\\\\')), false);
+  } finally {
+    server.close();
+  }
+});
+
+test('demo start: no-demo-start stops only the demo start, and -DryRun plans it without pnpm', () => {
+  const optedOut = demoRoot({});
+  mkdirSync(optedOut.ops);
+  writeFileSync(join(optedOut.ops, 'no-demo-start'), '');
+  const skipped = guard(optedOut, 'Prestart');
+  assert.equal(skipped.json.outcome, 'engine_answers');
+  assert.deepEqual(skipped.json.demo, { apiStatus: null, outcome: 'opted_out' });
+  assert.deepEqual(pnpmCalls(optedOut), []);
+
+  const dry = demoRoot({});
+  const planned = guard(dry, 'Prestart', '-DryRun');
+  assert.equal(planned.json.outcome, 'engine_answers');
+  assert.deepEqual(planned.json.demo, { apiStatus: null, outcome: 'planned' });
+  assert.deepEqual(pnpmCalls(dry), []);
+});
+
+test('Watch: one silent API waits, the second starts the demo, at most twice in six hours', () => {
+  const fake = demoRoot({});
+  const outcomes = [];
+  for (let run = 0; run < 6; run++) {
+    const watch = guard(fake, 'Watch');
+    assert.equal(watch.json.outcome, 'engine_answers', JSON.stringify(watch.json));
+    outcomes.push([watch.json.demo.outcome, pnpmCalls(fake).length]);
+  }
+  assert.deepEqual(outcomes, [
+    ['api_silent_waiting', 0], ['doctor_failed', 2], ['api_silent_waiting', 2], ['doctor_failed', 4],
+    ['api_silent_waiting', 4], ['start_limit_reached', 4]
+  ]);
+  const state = JSON.parse(readFileSync(join(fake.ops, 'state.json'), 'utf8'));
+  assert.equal(state.demoStarts.length, 2);
+  assert.equal(state.apiFailures, 2);
 });

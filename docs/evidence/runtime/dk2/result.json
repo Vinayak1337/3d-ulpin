@@ -1,0 +1,32 @@
+{
+  "task": "DK2",
+  "branch": "task/dk2-guard-starts-demo",
+  "base": "a5dfed2c",
+  "date": "2026-10-21",
+  "files": [
+    "scripts/platform/docker-guard.ps1",
+    "scripts/platform/docker-guard.test.mjs",
+    "docs/backend/DOCKER-GUARD.md"
+  ],
+  "tests": {
+    "command": "node --test scripts/platform/docker-guard.test.mjs",
+    "before": {"exit": 0, "pass": 6, "fail": 0},
+    "after": {"exit": 0, "pass": 9, "fail": 0},
+    "cases": [
+      "health 200 (stand-in node http server): Prestart records api_answers, no pnpm call",
+      "health 503: one platform:start then one platform:doctor, both --profile demo in the demo checkout",
+      "health 503: doctor exit 1, lastLine, pass 2, fail 1 recorded; child output only in the demo log",
+      "no-demo-start present: opted_out, no pnpm call; -DryRun: planned, no pnpm call",
+      "Watch, closed health port: wait, start, wait, start, wait, start_limit_reached; two starts in state",
+      "never list adds --create, platform:stop, --runtime, .env; only start and doctor --profile demo appear"
+    ],
+    "harness": "real script under PowerShell 5.1, made-up root, stand-in docker and pnpm .cmd files",
+    "harnessNote": "under a made-up root no Docker process is stopped or started"
+  },
+  "realMachine": {
+    "check": {"command": "docker-guard.ps1 -Check", "exit": 0, "engineAnswers": true, "dockerProcesses": 8,
+      "demoContainers": 6},
+    "notRun": ["-Recover", "-Prestart", "-Watch", "pnpm platform:start", "pnpm platform:doctor", "any Docker stop"]
+  },
+  "diffCheck": "git diff --check clean; added lines 120 characters or fewer"
+}
