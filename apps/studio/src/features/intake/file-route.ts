@@ -21,7 +21,7 @@ export function routeWords(name: string): string {
   if (fileRoute(name) === 'table') return 'Table · opens the table import';
   if (/\.zip$/i.test(name)) return 'ZIP · the batch reads what it holds';
   if (/\.(geojson|json|gpkg|kml|kmz)$/i.test(name)) return 'Map file · joins the batch';
-  if (/\.(shp|dbf|shx|prj)$/i.test(name)) return 'Shapefile part · kept in the batch';
+  if (/\.(shp|shx|dbf|prj|cpg)$/i.test(name)) return 'Shapefile part · read with its other parts as one shapefile';
   if (/\.(pdf|docx?)$/i.test(name)) return 'Document · joins the batch';
   // An orthophoto, terrain or a page image: the batch decides which.
   if (/\.tiff?$/i.test(name)) return 'Image or raster · joins the batch';

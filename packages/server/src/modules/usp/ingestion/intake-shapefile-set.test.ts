@@ -9,7 +9,8 @@ import type { PoolClient } from 'pg';
 import type { IntakeCard } from '@ulpin/contracts/usp';
 import { localOperatorSubject } from '../principal';
 import { probeOriginal } from './intake-probe';
-import { convertNativeLayers, queueShapefileSetTx, stateLayerCrsTx,
+import { queueLateIntakeEvidenceTx } from './intake-evidence';
+import { convertNativeLayers, queueShapefileSetTx, setPartWordsTx, stateLayerCrsTx,
   type NativeDerivativeDependencies } from './intake-native-derivative';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'shapefile-set-protocol';
@@ -59,6 +60,8 @@ const extensions = ['shp', 'shx', 'dbf', 'prj', 'cpg'];
 // An item and its original are named by the file's name, so the same file has the same IDs in every batch.
 const idOf = (kind: 'item' | 'source', name: string) =>
   `40000000-0000-4000-8000-${kind === 'item' ? '1' : '2'}${sha(Buffer.from(name)).slice(0, 11)}`;
+// AU4-B2: the officer's key profile a table kept after it is read under.
+const profile = { profile_id: '40000000-0000-4000-8000-400000000001', profile_sha256: sha(Buffer.from('profile')) };
 
 function retained(id: string, bytes: number, hash: string, name: string) {
   return { id, case_id: caseId, family_id: id, revision: 1, bytes, sha256: hash, profile: 'large-original-v1',
@@ -74,9 +77,10 @@ function batch() {
   const sources = new Map<string, any>();
   const items = new Map<string, any>();
   const jobs: any[] = [];
+  const coverage = new Map<string, any>();
   const latest = (row: any) => ![...sources.values()].some(other =>
     other.family_id === row.family_id && other.revision > row.revision);
-  const handlers: [string, (values: any[]) => any[]][] = [
+  const handlers: [string, (values: any[], sql: string) => any[]][] = [
     ['SELECT i.item_id,i.card', ([, names]) => [...items.values()]
       .map(item => ({ item, source: sources.get(item.source_id) }))
       .filter(({ item, source }) => item.card && names.includes(source.name.toLowerCase()) && latest(source))
@@ -110,19 +114,44 @@ function batch() {
     }],
     ['SELECT 1 FROM jobs', ([sourceId]) => jobs.filter(job => job.source_id === sourceId && job.status === 'running')],
     ['SELECT id,status', ([sourceId]) => jobs.filter(job => job.source_id === sourceId)],
-    ['INSERT INTO jobs', ([id, , sourceId, caseRevision, digest, payload]) => {
-      jobs.push({ id, case_id: caseId, source_id: sourceId, operation: 'intake-native-derivative',
+    ['INSERT INTO jobs', ([id, , sourceId, caseRevision, digest, payload], sql) => {
+      jobs.push({ id, case_id: caseId, source_id: sourceId, operation: /'(intake-[a-z-]+)'/.exec(sql)![1],
         case_revision: caseRevision, input_fingerprint: digest, payload, status: 'queued' });
       return [];
     }],
     ['SELECT * FROM jobs', ([id]) => jobs.filter(job => job.id === id)],
     ['SELECT * FROM usp_job_metadata', () => []],
     ['INSERT INTO usp_job_metadata', () => []],
+    // AU4-B2's late reading of a kept table, and N05B's withdrawal of one still queued.
+    ['SELECT name FROM sources', ([, id]) => [sources.get(id)]],
+    ['SELECT profile_id,profile_sha256', () => [profile]],
+    ['SELECT family,source_id', ([, itemId]) => [{ family: items.get(itemId).card.family,
+      source_id: items.get(itemId).source_id }]],
+    ['SELECT id FROM jobs', ([id]) => jobs.filter(job => job.id === id)],
+    ['INSERT INTO usp_intake_evidence_coverage', ([, itemId, , , jobId]) => {
+      coverage.set(itemId, { job_id: jobId, state: 'reading', read: null });
+      return [];
+    }],
+    ['SELECT payload FROM jobs', ([, sourceIds]) => jobs.filter(job => job.operation === 'intake-evidence'
+      && job.status === 'queued' && sourceIds.includes(job.source_id))],
+    ['SELECT status FROM jobs', ([id]) => jobs.filter(job => job.id === id)],
+    ['SELECT 1 FROM usp_job_attempts', () => []],
+    ['UPDATE usp_job_metadata', () => []],
+    ['UPDATE jobs SET status', ([id, status, error]) => {
+      Object.assign(jobs.find(job => job.id === id), { status, error });
+      return [];
+    }],
+    ['SELECT job_id FROM usp_intake_evidence_coverage', ([, itemId]) => [coverage.get(itemId)]],
+    ['DELETE FROM usp_intake_evidence_candidates', () => []],
+    ['UPDATE usp_intake_evidence_coverage', ([, itemId, state, , read]) => {
+      Object.assign(coverage.get(itemId), { state, read });
+      return [];
+    }],
   ];
   const client = { query: async (sql: string, values: any[] = []) => {
     const handler = handlers.find(([prefix]) => sql.startsWith(prefix));
     if (!handler) throw new Error(`Unexpected SQL: ${sql}`);
-    const rows = handler[1](values);
+    const rows = handler[1](values, sql);
     return { rows, rowCount: rows.length };
   } } as unknown as PoolClient;
 
@@ -134,7 +163,9 @@ function batch() {
       parent_item_id: null, card, state: 'probed', placement: 'undecided', plan_ref: null, limit_reason: null });
     return queueShapefileSetTx(client, source, card as IntakeCard);
   }
-  return { client, sources, items, jobs, drop };
+  /** A kept table is read under the case's key profile, as publish does for a file that is no shapefile part. */
+  const readLater = (name: string) => queueLateIntakeEvidenceTx(client, caseId, idOf('item', name), 'table');
+  return { client, sources, items, jobs, coverage, drop, readLater };
 }
 
 /** Each item's state, placement and words, by its original's name. */
@@ -306,4 +337,47 @@ test('a set short of its .shx waits in words; a lone .dbf and a misnamed file ke
   assert.equal(ledger.jobs.length, 0);
   // A file named .shx whose bytes are not a shapefile index is not taken as one.
   assert.equal(await batch().drop('roads.shx', bytes('text'), { format: 'unknown', family: 'unknown' }), false);
+});
+
+test('a Tweed .dbf queued for a key-profile reading, then its .shp and .shx: the reading ends stale in set words',
+  { skip: !ready }, async () => {
+    const folder = mkdtempSync(join(tmpdir(), 'shapefile-set-'));
+    const { parts } = await tweedParts(folder);
+    const ledger = batch();
+    const dbf = parts.get('dbf')!;
+    assert.equal(await ledger.drop(dbf.name, dbf.bytes, dbf.card), false);
+    await ledger.readLater(dbf.name);
+    const [reading] = ledger.jobs;
+    assert.deepEqual([reading.operation, reading.status], ['intake-evidence', 'queued']);
+    for (const extension of ['shp', 'shx']) {
+      const part = parts.get(extension)!;
+      await ledger.drop(part.name, part.bytes, part.card);
+    }
+    const read = 'Read with Council_Buildings.shp as one shapefile.';
+    assert.deepEqual(ledger.jobs.map(job => [job.operation, job.status, job.error]),
+      [['intake-evidence', 'stale', read], ['intake-native-derivative', 'queued', undefined]]);
+    // The .dbf is left unread under the profile (read 0, nothing proposed) and rests in the same words.
+    assert.deepEqual(ledger.coverage.get(idOf('item', dbf.name)), { job_id: reading.id, state: 'partial', read: 0 });
+    assert.equal(ledger.items.get(idOf('item', dbf.name)).limit_reason, read);
+    // D2: a worker starting that reading finds its source a part in the same words; the .shp is not a part of it.
+    assert.equal(await setPartWordsTx(ledger.client, caseId, idOf('source', dbf.name)), read);
+    assert.equal(await setPartWordsTx(ledger.client, caseId, idOf('source', 'Council_Buildings.shp')), null);
+  });
+
+test('a reading already running is left when its set forms; a lone .dbf still queues its reading', async () => {
+  const ledger = batch();
+  assert.equal(await ledger.drop('roads.dbf', bytes('dbf'), dbfCard), false);
+  await ledger.readLater('roads.dbf');
+  ledger.jobs[0].status = 'running';
+  await ledger.drop('roads.shx', bytes('shx'), shxCard);
+  await ledger.drop('roads.shp', bytes('shp'), shapefileCard);
+  assert.deepEqual(ledger.jobs.map(job => [job.operation, job.status, job.error]),
+    [['intake-evidence', 'running', undefined], ['intake-native-derivative', 'queued', undefined]]);
+  assert.equal(ledger.coverage.get(idOf('item', 'roads.dbf')).state, 'reading');
+
+  assert.equal(await ledger.drop('parcels.dbf', bytes('parcels'), dbfCard), false);
+  await ledger.readLater('parcels.dbf');
+  assert.deepEqual(ledger.jobs.slice(2).map(job => [job.operation, job.source_id, job.status]),
+    [['intake-evidence', idOf('source', 'parcels.dbf'), 'queued']]);
+  assert.equal(await setPartWordsTx(ledger.client, caseId, idOf('source', 'parcels.dbf')), null);
 });
