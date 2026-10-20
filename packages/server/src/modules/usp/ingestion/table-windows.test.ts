@@ -5,8 +5,8 @@ import { Readable } from 'node:stream';
 import { afterEach, beforeEach, mock, test } from 'node:test';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { Pool, PoolClient } from 'pg';
-import { TABULAR_LIMITS, TabularSourceProfileSchema, type AnyStreamingInput, type ChunkMappingInput,
-  type TabularMappingPlan, type TabularSourceProfile } from '@ulpin/contracts/usp';
+import { TABULAR_LIMITS, TableProfileJobSchema, TabularSourceProfileSchema, type AnyStreamingInput,
+  type ChunkMappingInput, type TabularMappingPlan, type TabularSourceProfile } from '@ulpin/contracts/usp';
 import { createContractValidator } from '../../../../../../apps/studio/src/local/contract';
 import { settings } from '../../../infrastructure/config';
 import { transaction } from '../../../infrastructure/db';
@@ -14,6 +14,7 @@ import type { UspJobAttempt } from '../jobs';
 import { mapTableWindow, publishTableWindowTx } from './chunk-mapping-tabular';
 import { manualTeacherPlan } from './mapping-teacher';
 import { ManualIngestionService } from './service';
+import { runTableProfileJob } from './table-profile-worker';
 import { TableRowsService, readTableWindowTx, writeTableWindowTx } from './table-windows';
 import { officerMappingMethod, validateStreamedTabularRecipe } from './tabular-recipe';
 import { readTabularWindows } from './tabular-stream';
@@ -64,6 +65,11 @@ class Store {
   raw = { state: 'running', source_revision: 1, input_sha256: 'a'.repeat(64), next_publish_index: 0, records: 0 };
   mapping = { state: 'running', next_publish_index: 0, records: 0, unresolved: 0, quarantined: 0 };
   windows: Window[] = []; mappings: Mapped[] = []; events: string[] = []; statements = 0;
+  // TP1: the job authority's rows for the table read.
+  jobs: Record<string, any>[] = []; attempts: Record<string, any>[] = [];
+  metadata = new Map<string, Record<string, any>>();
+  // TP1: what else happens in the workspace while the job reads the object; a later revision of the same family.
+  whileReading = () => {}; familyRevision: number | null = null;
   constructor(readonly bytes: Buffer) {
     this.source = { id: this.sourceId, case_id: this.caseId, family_id: this.familyId, revision: 1,
       profile: 'large-original-v1', mime_type: 'text/csv', bytes: String(bytes.length), sha256: sha(bytes),
@@ -78,6 +84,8 @@ class Store {
   private window(index: number) { return this.windows.find(item => item.window_index === index); }
   private answer(sql: string, args: any[]): any[] {
     if (sql.startsWith('BEGIN') || sql === 'COMMIT' || sql === 'ROLLBACK') return [];
+    const job = this.jobAnswer(sql, args);
+    if (job) return job;
     if (sql.includes('registry_case_feature_mappings') || sql.includes('FROM import_packages')) return [];
     if (sql.startsWith('SELECT id,revision FROM cases') || sql.startsWith('SELECT revision FROM cases'))
       return [{ id: this.caseId, revision: this.caseRevision }];
@@ -87,7 +95,7 @@ class Store {
     }
     if (sql.startsWith('SELECT * FROM sources WHERE id=$1 AND case_id=$2'))
       return args[0] === this.sourceId && args[1] === this.caseId ? [structuredClone(this.source)] : [];
-    if (sql.includes('max(revision)')) return [{ revision: this.source.revision }];
+    if (sql.includes('max(revision)')) return [{ revision: this.familyRevision ?? this.source.revision }];
     if (sql.startsWith('SELECT payload_hash,result FROM operations')) {
       const prior = this.operations.get(String(args[1]));
       return prior ? [prior] : [];
@@ -103,7 +111,10 @@ class Store {
     if (sql.startsWith('UPDATE cases SET revision=revision+1')) { this.caseRevision++; return []; }
     if (sql.startsWith('INSERT INTO usp_outbox_streams')) return [];
     if (sql.startsWith('UPDATE usp_outbox_streams')) return [{ sequence: String(++this.sequence) }];
-    if (sql.startsWith('INSERT INTO usp_outbox(')) { this.events.push(args[2].change.kind); return []; }
+    if (sql.startsWith('INSERT INTO usp_outbox(')) {
+      this.events.push(args[2].change?.kind ?? args[2].type);
+      return [];
+    }
     if (sql.startsWith('SELECT * FROM usp_streaming_vector_imports')) return [{ ...this.raw }];
     if (sql.startsWith('SELECT first_record,records,window_sha256,byte_start,byte_end FROM usp_table_windows')) {
       const prior = this.window(args[1]);
@@ -155,6 +166,49 @@ class Store {
     }
     throw new Error(`Unexpected statement: ${sql.slice(0, 120)}`);
   }
+  /** TP1: the statements of the table read's queue, status, claim, acceptance and stop. */
+  private jobAnswer(sql: string, args: any[]): any[] | null {
+    const job = this.jobs.find(row => row.id === args[0]), meta = this.metadata.get(args[0]);
+    const attempt = this.attempts.filter(row => row.job_id === args[0]).at(-1);
+    if (sql.startsWith('SELECT id FROM cases')) return [{ id: this.caseId }];
+    if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='table-profile'"))
+      return this.jobs.filter(row => row.source_id === args[0] && ['queued', 'running'].includes(row.status));
+    if (sql.startsWith('INSERT INTO jobs(')) {
+      this.jobs.push({ id: args[0], case_id: args[1], source_id: args[2], operation: 'table-profile', status: 'queued',
+        case_revision: args[3], input_fingerprint: args[4], payload: structuredClone(args[5]), error: null });
+      return [];
+    }
+    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')) return job ? [job] : [];
+    if (sql.startsWith('UPDATE jobs SET status=$2')) {
+      Object.assign(job!, { status: args[1], error: args[2] });
+      return [];
+    }
+    if (sql.startsWith('UPDATE jobs SET status=')) { job!.status = /status='(\w+)'/.exec(sql)![1]; return []; }
+    if (sql.startsWith('INSERT INTO usp_job_metadata')) {
+      this.metadata.set(args[0], { job_id: args[0], input_manifest_id: args[1], input_sha256: args[2], scope: args[3],
+        logical_state: 'queued', version: 1 });
+      return [];
+    }
+    if (sql.includes('FROM usp_job_metadata')) return meta ? [meta] : [];
+    if (sql.startsWith('UPDATE usp_job_metadata')) {
+      Object.assign(meta!, { logical_state: /logical_state='(\w+)'/.exec(sql)![1], version: meta!.version + 1 });
+      return [];
+    }
+    if (sql.startsWith('SELECT * FROM usp_job_attempts')) return attempt ? [attempt] : [];
+    if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return attempt?.state === 'active' ? [attempt] : [];
+    if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+      const lease_until = new Date(Date.now() + 180_000);
+      this.attempts.push({ job_id: args[0], number: args[1], fence: args[2], owner: args[3], input_sha256: args[4],
+        state: 'active', lease_until });
+      return [{ lease_until }];
+    }
+    if (sql.startsWith('UPDATE usp_job_attempts SET lease_until')) return [{ lease_until: attempt!.lease_until }];
+    if (sql.startsWith('UPDATE usp_job_attempts SET state=')) {
+      attempt!.state = /state='(\w+)'/.exec(sql)![1];
+      return [];
+    }
+    return null;
+  }
   install() {
     globals.ulpinPool = { query: this.query, connect: async () => ({ query: this.query, release() {} }) } as never;
     for (const [name, value] of [['s3Endpoint', 'http://127.0.0.1:1'], ['s3Region', 'us-east-1'],
@@ -163,6 +217,7 @@ class Store {
     mock.method(S3Client.prototype, 'send', async (command: { constructor: { name: string }; input: any }) => {
       assert.equal(command.constructor.name, 'GetObjectCommand');
       assert.equal(command.input.IfMatch, '"g13-control"');
+      this.whileReading();
       return { Body: this.stream(), ContentLength: this.bytes.length, ETag: '"g13-control"' };
     });
   }
@@ -197,13 +252,16 @@ test('a generated test_only 200,000-row CSV goes from large original to profile,
     // D7: the large original becomes a table source; its row, bytes and object stay the same.
     const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
     const service = new ManualIngestionService();
-    const profile = TabularSourceProfileSchema.parse(
-      await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    const queued = TableProfileJobSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    assert.equal(queued.status, 'queued');
+    await runTableProfileJob(queued.jobId);
+    const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
     assert.equal(profile.records, 200_000);
     assert.deepEqual(profile.headers, ['Building Address', 'Record', 'Area (sq m)', 'Note']);
     assert.equal(store.source.profile, 'large-original-v1');
     assert.equal(store.source.object_key, `large-originals/${store.sourceId}`);
-    assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), profile, 'replayed');
+    assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request),
+      { ...queued, status: 'succeeded' }, 'replayed');
     assert.equal(store.caseRevision, 1);
     assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json',
       profile), []);
@@ -267,8 +325,112 @@ test('a generated test_only 200,000-row CSV goes from large original to profile,
     assert.deepEqual(validate('GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json',
       across), []);
     await assert.rejects(rows.page(store.caseId, store.sourceId, { limit: '501' }));
-    assert.deepEqual([...new Set(store.events)], ['source.retained', 'streaming-vector.window',
+    assert.deepEqual([...new Set(store.events)], ['source.retained', 'job.succeeded', 'streaming-vector.window',
       'chunk-mapping.window']);
     t.diagnostic(JSON.stringify({ records: profile.records, bytes: bytes.length, windows: store.windows.length,
       elapsedMs: Math.round(performance.now() - started) }));
   });
+
+const tableJob = (value: unknown) => TableProfileJobSchema.parse(value);
+
+test('TP1: a large CSV request queues one job and returns; a replay queues none; the job attaches the receipt',
+  async () => {
+    const store = new Store(generatedCsv(200_000));
+    store.install();
+    const service = new ManualIngestionService();
+    const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+    const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    assert.deepEqual([queued.status, queued.issueCode, store.jobs.length], ['queued', null, 1]);
+    assert.equal(store.source.inspection.manualProfile, undefined, 'the request did not read the original');
+    assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_sourceId_table_Response_202_application_json',
+      queued), []);
+    assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), queued, 'replayed');
+    assert.equal(store.jobs.length, 1, 'a replay queues none');
+    await assert.rejects(service.tableFromOriginal(store.caseId, store.sourceId,
+      { ...request, requestKey: randomUUID() }), { code: 'STALE_REVISION' }, 'one read of an original at a time');
+    await runTableProfileJob(queued.jobId);
+    assert.equal(store.source.inspection.manualProfile.records, 200_000);
+    assert.equal(store.caseRevision, 1);
+    assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,
+      'succeeded');
+  });
+
+test('TP1: a malformed large CSV stops its job with the reader\'s code and words; the source is unchanged',
+  async () => {
+    // test_only: a generated register whose last record opens a quote that never closes.
+    const store = new Store(Buffer.concat([generatedCsv(200_000), Buffer.from('"Plot open,G-0,1\n')]));
+    store.install();
+    const service = new ManualIngestionService();
+    const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+    const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    await assert.rejects(runTableProfileJob(queued.jobId), { code: 'TABULAR_CSV_MALFORMED' });
+    const stopped = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    assert.deepEqual([stopped.status, stopped.issueCode], ['failed', 'TABULAR_CSV_MALFORMED']);
+    assert.match(stopped.message!, /^Record 200002 of this table has a quote that does not close where a cell ends\.$/);
+    assert.equal(store.source.inspection.manualProfile, undefined);
+    assert.equal(store.caseRevision, 0);
+  });
+
+test('TP1: another file kept in the workspace while the job reads does not stop it', async () => {
+  const store = new Store(generatedCsv(200_000));
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  store.whileReading = () => { store.caseRevision++; };
+  await runTableProfileJob(queued.jobId);
+  assert.equal(store.source.inspection.manualProfile.records, 200_000);
+  assert.equal(store.caseRevision, 2);
+  assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,
+    'succeeded');
+});
+
+test('TP1: a new revision of the same source while the job reads makes the job stale', async () => {
+  const store = new Store(generatedCsv(200_000));
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  store.whileReading = () => { store.familyRevision = 2; store.caseRevision++; };
+  await assert.rejects(runTableProfileJob(queued.jobId), { code: 'STALE_REVISION' });
+  const stale = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  assert.deepEqual([stale.status, stale.issueCode, stale.message],
+    ['stale', 'STALE_REVISION', 'This source revision has been superseded.']);
+  assert.equal(store.source.inspection.manualProfile, undefined);
+  assert.equal(store.caseRevision, 1);
+});
+
+/** A real table kept through the batch (large-original/1) becomes a table in the request, with no job. */
+async function keptTable(file: string, chosen: typeof selection | typeof workbook) {
+  const store = new Store(readFileSync(`fixtures/usp/D8-messy-india/dev/d1b/${file}`));
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: chosen };
+  const profile = TabularSourceProfileSchema.parse(
+    await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  assert.ok(profile.records > 0, file);
+  assert.deepEqual(profile.tabular.selection, chosen);
+  assert.deepEqual([store.jobs.length, store.caseRevision, store.source.profile], [0, 1, 'large-original-v1']);
+  assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), profile, 'replayed');
+  assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', profile), []);
+}
+const workbook = { format: 'xlsx' as const, sheet: 'T_18', table: null, headerRows: [4, 5] };
+
+test('TP1: a real CSV kept through the batch becomes a table in the request', () =>
+  keptTable('mi-d10-02.csv', selection));
+
+// The native workbook reader runs the geo package; it needs an interpreter that has its dependencies.
+test('TP1: a real workbook kept through the batch becomes a table in the request',
+  { skip: !process.env.ULPIN_PROFILE_PYTHON && 'ULPIN_PROFILE_PYTHON names no geo-compatible interpreter' },
+  () => keptTable('mi-d19-01.xlsx', workbook));
+
+test('TP1: a workbook above 16 MiB is refused in its own words before any read', async () => {
+  // test_only: only the byte count matters; the refusal reads nothing.
+  const store = new Store(Buffer.alloc(TABULAR_LIMITS.bytes + 1));
+  store.install();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: workbook };
+  await assert.rejects(new ManualIngestionService().tableFromOriginal(store.caseId, store.sourceId, request),
+    { code: 'TABLE_ORIGINAL_WORKBOOK_SIZE',
+      message: 'This workbook is more than 16 MiB; a workbook is read up to 16 MiB for now.' });
+  assert.deepEqual([store.jobs.length, store.caseRevision], [0, 0]);
+});

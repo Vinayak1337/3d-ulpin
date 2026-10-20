@@ -21,6 +21,7 @@ import {runIntakeZipLayersJob} from '../usp/ingestion/intake-zip-layers-worker';
 import {runIntakePageImageJob} from '../usp/ingestion/intake-page-image-worker';
 import {runIntakeNativeDerivativeJob} from '../usp/ingestion/intake-native-derivative-worker';
 import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
+import {runTableProfileJob} from '../usp/ingestion/table-profile-worker';
 import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
@@ -46,6 +47,7 @@ let intakeZipLayersWorker:Promise<void>|undefined;
 let intakePageImageWorker:Promise<void>|undefined;
 let intakeNativeDerivativeWorker:Promise<void>|undefined;
 let intakeEvidenceWorker:Promise<void>|undefined;
+let tableProfileWorker:Promise<void>|undefined;
 let intakeRunWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
@@ -387,6 +389,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
           // The fenced attempt and the reading's coverage row own recovery; a rerun replaces its candidates.
           .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{intakeEvidenceWorker=undefined;});
+        return;
+      }
+      if(job.operation==='table-profile'){
+        if(!tableProfileWorker)tableProfileWorker=runTableProfileJob(job.id)
+          // The fenced attempt owns retry; the accepting transaction attaches the table receipt once.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{tableProfileWorker=undefined;});
         return;
       }
       if(job.operation==='intake-run'){

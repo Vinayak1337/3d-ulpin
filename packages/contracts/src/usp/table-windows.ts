@@ -9,12 +9,20 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const record = z.number().int().nonnegative().max(limits.rows - 1);
 const issue = z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
 
-/** A large original already retained (large-original/1) is read as a stream and becomes a table source. */
+/** An original already retained (large-original/1) becomes a table source: up to 16 MiB it is read whole, a CSV above
+ * that is read as a stream by a job; a workbook keeps the 16 MiB bound. */
 export const TableFromOriginalSchema = z.strictObject({
-  requestKey: id, expectedWorkspaceRevision: z.number().int().nonnegative(),
-  selection: TabularSelectionSchema.refine(selection => selection.format === 'csv',
-    'Only a CSV is read as a stream; a workbook keeps the 16 MiB bound.'),
+  requestKey: id, expectedWorkspaceRevision: z.number().int().nonnegative(), selection: TabularSelectionSchema,
   ...TabularProvenanceSchema.partial().shape,
+});
+
+/** TP1. The job that reads a large CSV as a stream, in the shared job status words; a stop keeps the reader's code
+ * and its officer words. */
+export const TableProfileJobSchema = z.strictObject({
+  version: z.literal('table-profile/1'), jobId: id, caseId: id, sourceId: id,
+  sourceRevision: z.number().int().positive(),
+  status: z.enum(['queued', 'running', 'succeeded', 'failed', 'cancelled', 'stale']),
+  issueCode: z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/).nullable(), message: z.string().min(1).max(600).nullable(),
 });
 
 /** One record as written: its number among the table's records (the first is 0), its logical row in the file
@@ -56,5 +64,6 @@ export const TableRowsPageSchema = z.strictObject({
 });
 
 export type TableWindowRow = z.infer<typeof TableWindowRowSchema>;
+export type TableProfileJob = z.infer<typeof TableProfileJobSchema>;
 export type TableMappedCell = z.infer<typeof TableMappedCellSchema>;
 export type TableRowsPage = z.infer<typeof TableRowsPageSchema>;

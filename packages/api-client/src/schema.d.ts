@@ -3514,7 +3514,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Read a CSV kept as a large original as a stream and make it a table source; its bytes stay unchanged */
+        /** Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV is read as a stream by a queued job (202), and a replay answers that job as it stands; its bytes stay unchanged */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_table"];
         delete?: never;
         options?: never;
@@ -65708,6 +65708,21 @@ export interface components {
             /** @enum {string} */
             containsPersonalData?: "unknown" | "yes" | "no";
         };
+        POST_ingestion_cases_caseId_sources_sourceId_table_Response_202_application_json: {
+            /** @enum {string} */
+            version: "table-profile/1";
+            /** Format: uuid */
+            jobId: string;
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            sourceId: string;
+            sourceRevision: number;
+            /** @enum {string} */
+            status: "queued" | "running" | "succeeded" | "failed" | "cancelled" | "stale";
+            issueCode: string | null;
+            message: string | null;
+        };
         GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json: {
             /** Format: uuid */
             caseId: string;
@@ -94121,6 +94136,17 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_Response_201_application_json"];
+                };
+            };
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_table_Response_202_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
