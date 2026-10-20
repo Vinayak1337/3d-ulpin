@@ -6,6 +6,8 @@ import { AddFilesDialog } from './AddFilesDialog';
 import { DropOutcomes } from './IntakeDropDialog';
 import { IntakeTray } from './IntakeTray';
 import { LayoutQuestion } from './LayoutQuestion';
+import { PageImageQuestion } from './PageImageQuestion';
+import { isPageImage } from './page-image-model';
 import { isSettled, trayItems } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
@@ -64,6 +66,8 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     {current?.sourceId && (current.plan || needsLayoutAnswer(current)) ?
       <LayoutQuestion key={current.itemId} caseId={caseId}
         item={current} refresh={refresh} /> : null}
+    {isPageImage(current) ? <PageImageQuestion key={current.itemId} caseId={caseId} item={current}
+      refresh={refresh} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
     </section>

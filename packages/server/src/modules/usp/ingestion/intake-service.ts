@@ -5,7 +5,7 @@ import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManif
   IntakePageImageAnswerSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { readObjectRange } from '../../../infrastructure/storage';
+import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, saveIntakeCardTx, citeIntakeReceipt } from './intake-ledger';
@@ -22,7 +22,7 @@ const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_i
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
-const defaults = { transaction, read: readObjectRange, probe: probeOriginal };
+const defaults = { transaction, read: readObjectRange, probe: probeOriginal, object: readObject };
 
 async function itemContextTx(client: PoolClient, caseId: string, itemId: string) {
   const row = (await client.query(`${itemSelect} WHERE i.case_id=$1 AND i.item_id=$2`, [caseId, itemId])).rows[0]
@@ -199,6 +199,17 @@ export class IntakeService {
       assertIngestionBinding(scope.binding);
     });
     return this.one(caseId, itemId);
+  }
+
+  /** G23S. A read page image's stored preview: its key comes from the item, its bytes must match the kept hash. */
+  async pageImagePreview(caseValue: string, itemValue: string) {
+    const preview = (await this.one(caseValue, itemValue)).pageImage?.preview
+      ?? notFound('This item has no page image preview.');
+    const bytes = await this.dependencies.object(preview.key);
+    if (sha256(bytes) !== preview.sha256) {
+      throw new AppError(409, 'PAGE_IMAGE_PREVIEW_INTEGRITY', 'The stored preview differs from its kept SHA-256.');
+    }
+    return { bytes, sha256: preview.sha256 };
   }
 
   /** G23. The officer's answer to what a read page image shows, kept as a candidate label; one stored request. */

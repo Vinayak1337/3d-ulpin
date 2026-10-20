@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { api, unwrap } from '@ulpin/api-client';
+import { api, ApiError, unwrap } from '@ulpin/api-client';
 import type { Recipe } from './layout-model';
 import type { AuthorBody } from './question-model';
 import type { Schemas } from '@ulpin/api-client';
 import { readTargets } from './run/api';
 import { runKey } from './run/useTargets';
 import type { RetryResult } from './retry-command';
+import type { PageImageBody } from './page-image-model';
 
 export const recipeKey = (caseId: string) => ['batch-recipes', caseId];
 
@@ -46,4 +47,21 @@ export async function retryStoppedItem(caseId: string, itemId: string, requestKe
   return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry', {
     params: { path: { caseId, itemId } }, body: { requestKey },
   }));
+}
+
+export async function answerPageImage(caseId: string, itemId: string, body: PageImageBody) {
+  return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-label', {
+    params: { path: { caseId, itemId } }, body,
+  }));
+}
+
+const PREVIEW = '/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview';
+
+/** The item's kept preview PNG; the server checks its hash, and its size must be the one kept on the item. */
+export async function readPageImagePreview(caseId: string, itemId: string, bytes: number,
+  signal: AbortSignal): Promise<Blob> {
+  const result = await api.GET(PREVIEW, { params: { path: { caseId, itemId } }, parseAs: 'blob', signal });
+  if (!result.response.ok || !result.data) throw new ApiError(result.response.status, PREVIEW, result.error);
+  if (result.data.size !== bytes) throw new Error('The preview differs from the size kept on this file.');
+  return result.data;
 }

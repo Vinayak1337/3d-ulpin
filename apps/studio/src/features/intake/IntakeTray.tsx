@@ -2,6 +2,7 @@ import { Button, DataTable } from '@ulpin/ui';
 import { Link } from 'react-router';
 import type { Package } from './run/model';
 import { needsLayoutAnswer } from './question-model';
+import { isPageImage } from './page-image-model';
 import { canRetryStopped } from './retry-command';
 import { StoppedRetry } from './StoppedRetry';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
@@ -49,6 +50,8 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
     {item.existingAreaId ? <Link to={`/studio/areas/${item.existingAreaId}`}>Open that area</Link> : null}
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
+    {isPageImage(item) ? <Button variant="soft" onClick={() => choose(item)}
+      aria-label={`View page image: ${item.name}`}>View page image</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
   </div>;
 }

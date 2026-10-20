@@ -1,6 +1,6 @@
-import { Controller, Get, HttpCode, Inject, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import { Controller, Get, HttpCode, Inject, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AnyAuthorMappingSchema, MappingDecisionSchema,
   AnyMappingReceiptSchema, AnySourceProfileSchema, StreamedMappingReceiptSchema } from '@ulpin/contracts/usp';
@@ -13,7 +13,7 @@ import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
-import { jsonBody, multipartBody, wireResponse } from '../intake/wire-schemas';
+import { binary, jsonBody, multipartBody, wireResponse } from '../intake/wire-schemas';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 
 const param = (name: string) => ApiParam({name,schema:{type:'string',format:'uuid'}});
@@ -85,6 +85,20 @@ export class IngestionController {
   @jsonBody(IntakePageImageAnswerSchema) @wireResponse(200,IntakeItemSchema)
   async labelPageImage(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
     return this.intake.labelPageImage(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/page-image-preview')
+  @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview',
+    summary:'Read the stored PNG preview of a read page image; its bytes are checked against the kept SHA-256'})
+  @ApiResponse({status:200,content:{'image/png':{schema:binary}}})
+  @ApiResponse({status:404,description:'The item is not in this case, or it has no page image preview'})
+  @ApiResponse({status:409,description:'The stored preview differs from the SHA-256 kept on the item'})
+  async pageImagePreview(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Res() response:Response){
+    const preview=await this.intake.pageImagePreview(caseId,itemId);
+    response.set({'Content-Type':'image/png','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff',
+      'Content-Length':String(preview.bytes.length),'X-Content-SHA256':preview.sha256});
+    response.send(Buffer.from(preview.bytes));
   }
 
   @Post('cases/:caseId/intake/items/:itemId/retry')

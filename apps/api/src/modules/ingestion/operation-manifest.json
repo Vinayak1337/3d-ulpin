@@ -790,6 +790,19 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "image/png; X-Content-SHA256 of the item's kept preview",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending",
+      "batch": "G23S"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/targets",
       "operationId": "GET_api_v1_ingestion_cases_caseId_targets",
       "disposition": "added",
