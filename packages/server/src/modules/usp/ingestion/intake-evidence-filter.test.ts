@@ -47,14 +47,14 @@ beforeEach(() => { saved = globals.ulpinPool; });
 afterEach(() => { globals.ulpinPool = saved; });
 
 /** The stores answer the page read's statements; the candidate read keeps each row its parameters name. */
-function install() {
+function install(confirmations: Record<string, unknown>[] = []) {
   const seen: Statement[] = [];
   const answers: [string, (args: any[]) => unknown[]][] = [
     ['BEGIN', () => []], ['COMMIT', () => []], ['ROLLBACK', () => []], ['SET TRANSACTION', () => []],
     ['SELECT id,revision,archived FROM cases', () => [{ id: caseId, revision: 1, archived: false }]],
     ['SELECT * FROM usp_intake_key_profiles', () => []],
     ['SELECT c.*,s.id source_id', () => []],
-    ['SELECT * FROM usp_intake_evidence_confirmations', () => []],
+    ['SELECT * FROM usp_intake_evidence_confirmations', () => confirmations],
     ['SELECT candidate FROM', ([, outcome, cursor, profileId, itemId, limit]) => rows
       .filter(row => (outcome === null || row.outcome === outcome)
         && (cursor === null || row.candidate.candidateId > cursor)
@@ -113,4 +113,20 @@ test('the cursor pages one file of one key, and no filter reads as before', asyn
   assert.equal(all.nextCursor, all.candidates.at(-1)!.candidateId);
   const select = seen.find(statement => statement.sql.startsWith('SELECT candidate FROM'))!;
   assert.deepEqual(select.args, [caseId, null, null, null, null, INTAKE_EVIDENCE_LIMITS.page + 1]);
+});
+
+test('each stored confirmation lists the candidates it accepted, read from its stored decisions', async () => {
+  const [one, two, three] = rows.map(row => row.candidate);
+  const decide = (candidate: IntakeEvidenceCandidate, decision: 'accept' | 'reject') => decision === 'accept'
+    ? { decision, candidateId: candidate.candidateId, candidateSha256: candidate.candidateSha256,
+      targetId: candidate.anchors[0]!.targetId, evidence: candidate.evidence }
+    : { decision, candidateId: candidate.candidateId, candidateSha256: candidate.candidateSha256, reason: 'Not it.' };
+  const confirmation = (n: number, additions: object) => ({ confirmation_id: ids(`confirmation:${n}`), case_id: caseId,
+    profile_id: profiles[0], additions: (additions as { kind: string }).kind, created_at: at, expires_at: at,
+    pins: { included: [], excluded: [], additions } });
+  install([confirmation(1, { kind: 'citations', decisions: [decide(one!, 'accept'), decide(two!, 'reject'),
+    decide(three!, 'accept')] }), confirmation(2, { kind: 'no_additions' })]);
+  const page = await read({});
+  assert.deepEqual(page.confirmations.map(row => row.accepted),
+    [[one!.candidateId, three!.candidateId], []]);
 });

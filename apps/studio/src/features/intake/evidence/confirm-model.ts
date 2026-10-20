@@ -55,6 +55,13 @@ export function acceptedIds(confirmation: EvidenceConfirmation): string[] {
     ? additions.decisions.flatMap((decision) => decision.decision === 'accept' ? [decision.candidateId] : []) : [];
 }
 
+/** The candidates confirmations of this key accepted: those the read lists, and those stored here since it. */
+export function confirmedOf(page: EvidencePage, profile: KeyProfile,
+  stored: Iterable<string> = []): ReadonlySet<string> {
+  return new Set([...page.confirmations.filter((confirmation) => confirmation.profileId === profile.profileId)
+    .flatMap((confirmation) => confirmation.accepted ?? []), ...stored]);
+}
+
 /**
  * "Accept every exact single match of this file": the file's matched candidates as read, in candidate order, up to
  * the decision limit less the decisions already made on other candidates. A match a stored confirmation accepted is

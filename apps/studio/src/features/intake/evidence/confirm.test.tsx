@@ -10,7 +10,7 @@ import { runKey } from '../run/useTargets';
 import { createEvidenceConfirmation, evidenceKey, readPackagePins } from './api';
 import { blankDraft, ConfirmEvidenceForm, pressAcceptFile, pressConfirm, rereadAfterRefusal, type ConfirmDraft,
   type ConfirmRead, type FileAccepts } from './ConfirmEvidence';
-import { acceptedIds, acceptFile, decidable, setAccept, setReject, type ConfirmBody,
+import { acceptedIds, acceptFile, confirmedOf, decidable, setAccept, setReject, type ConfirmBody,
   type EvidenceConfirmation } from './confirm-model';
 import type { Candidate, EvidencePage, KeyProfile } from './model';
 
@@ -353,4 +353,29 @@ it('accepts a file\'s matches over every page, 100 at a time; the next press con
       setReject({}, several, 'Two houses.'), new Set());
     expect(Object.keys(shared.choices)).toHaveLength(100);
     expect(shared.words).toBe(`${words} 1 other decision is already made, so 99 are selected.`);
+  });
+
+it('after a reload the stored confirmations the read lists for the key are not offered again; the press continues',
+  async () => {
+    const many = Array.from({ length: 250 }, (_, n) => candidate(3000 + n, 'matched', `R-${n}`,
+      row(n + 2, `R-${n}`), [anchor(20, `R-${n}`)]));
+    const ids = (from: number, to: number) => many.slice(from, to).map((match) => match.candidateId);
+    const state = (n: number, profileId: string, accepted: string[]) => ({ confirmationId: id(n), profileId,
+      additions: 'citations' as const, createdAt: at, expiresAt: at, newerSources: [], accepted });
+    // As read after a reload: this key's confirmation of the first 100, and another key's that names the next ten.
+    const reloaded: EvidencePage = { ...page, candidates: many.slice(0, 200), nextCursor: many[199]!.candidateId,
+      confirmations: [state(81, profile.profileId, ids(0, 100)), state(82, id(32), ids(100, 110)),
+        { ...state(83, profile.profileId, []), additions: 'no_additions' }] };
+    expect(validate(schemas.page, reloaded)).toEqual([]);
+    stubEvidence((query) => query.get('cursor') ? { ...reloaded, candidates: many.slice(200), nextCursor: null }
+      : reloaded, () => ({ status: 500, body: {} }));
+    const confirmed = confirmedOf(reloaded, profile);
+    expect([...confirmed]).toEqual(ids(0, 100));
+    const next = await pressAcceptFile(caseId, profile, register.itemId, {}, confirmed);
+    expect(Object.keys(next.choices)).toEqual(ids(100, 200));
+    expect(next.words).toContain('100 were confirmed already here and are not offered again.');
+    // A confirmation stored since the read is merged with the read's own.
+    const since = await pressAcceptFile(caseId, profile, register.itemId, {},
+      confirmedOf(reloaded, profile, ids(100, 200)));
+    expect(Object.keys(since.choices)).toEqual(ids(200, 250));
   });

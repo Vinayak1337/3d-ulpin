@@ -66955,6 +66955,8 @@ export interface components {
                 expiresAt: string;
                 /** @description Sources read under the profile after it that the confirmation neither includes nor excludes. */
                 newerSources: string[];
+                /** @description The candidates the confirmation accepted, in the order of its stored decisions. */
+                accepted?: string[];
             }[];
             sources: {
                 /** Format: uuid */

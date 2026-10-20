@@ -487,6 +487,12 @@ export const EVIDENCE_RECEIPT_KIND = 'intake-evidence-citations';
 export const evidenceReceiptKey = (confirmationId: string, targetId: string) =>
   `${EVIDENCE_RECEIPT_KIND}:${confirmationId}:${targetId}`;
 
+/** EVS3: the candidates a confirmation accepts, as its stored decisions name them. */
+export function acceptedCandidates(pins: IntakeEvidenceConfirm): string[] {
+  const decisions = pins.additions.kind === 'citations' ? pins.additions.decisions : [];
+  return decisions.flatMap(decision => decision.decision === 'accept' ? [decision.candidateId] : []);
+}
+
 /** The buildings a confirmation accepts a candidate for, each once. */
 export function acceptedTargets(pins: IntakeEvidenceConfirm): string[] {
   const decisions = pins.additions.kind === 'citations' ? pins.additions.decisions : [];
@@ -562,7 +568,8 @@ export async function readIntakeEvidence(caseValue: string,
       confirmations: confirmations.map(row => ({ confirmationId: row.confirmation_id, profileId: row.profile_id,
         additions: row.additions, createdAt: new Date(row.created_at).toISOString(),
         expiresAt: new Date(row.expires_at).toISOString(), newerSources: newerSources(row.pins,
-          sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)) })),
+          sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)),
+        accepted: acceptedCandidates(row.pins) })),
       sources: sources.map(evidenceSourceView),
       candidates: page, counts, nextCursor: rows.length > page.length ? page.at(-1)!.candidateId : null });
   });

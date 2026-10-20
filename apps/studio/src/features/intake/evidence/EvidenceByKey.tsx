@@ -6,7 +6,7 @@ import { useBatchPackages } from '../batch-queries';
 import type { Target } from '../run/model';
 import { evidenceKey, useEvidencePage } from './api';
 import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
-import { acceptedIds } from './confirm-model';
+import { acceptedIds, confirmedOf } from './confirm-model';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead } from './EvidenceRead';
 import { anchorItems, documentChoices, tableChoices, type Outcome } from './model';
@@ -59,9 +59,9 @@ function EvidenceSection({ caseId, items, targets }: {
 }
 
 /**
- * D3: each declared key is confirmed on its own, one at a time, from the evidence as read. EVS3: the read does not
- * list a stored confirmation's decisions, so the candidates accepted by confirmations stored here are kept here and
- * not offered again by "Accept every exact single match of this file".
+ * D3: each declared key is confirmed on its own, one at a time, from the evidence as read. EVS3: the candidates its
+ * stored confirmations accepted, as the read lists them and as each confirmation stored here answers until the read
+ * catches up, are not offered again by "Accept every exact single match of this file".
  */
 function ConfirmSection({ caseId, read }: { caseId: string; read: ConfirmRead }) {
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -71,7 +71,7 @@ function ConfirmSection({ caseId, read }: { caseId: string; read: ConfirmRead })
   return <section className={batch.stack} aria-labelledby="confirm-evidence">
     <h3 className="ul-heading" id="confirm-evidence">Confirm the evidence of a key</h3>
     {open ? <ConfirmEvidence key={open.profileId} caseId={caseId} profile={open} read={read}
-      close={() => setProfileId(null)} confirmed={confirmed}
+      close={() => setProfileId(null)} confirmed={confirmedOf(read.page, open, confirmed)}
       stored={(confirmation) => setConfirmed((ids) => new Set([...ids, ...acceptedIds(confirmation)]))} />
       : <ul className={styles.list}>
       {read.page.profiles.map((profile) => <li key={profile.profileId}>

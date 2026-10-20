@@ -387,6 +387,8 @@ export const IntakeEvidenceConfirmationStateSchema = z.strictObject({
   confirmationId: uuid, profileId: uuid, additions: z.enum(['citations', 'no_additions']), createdAt: at,
   expiresAt: at, newerSources: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.sources)
     .describe('Sources read under the profile after it that the confirmation neither includes nor excludes.'),
+  accepted: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.decisions).optional()
+    .describe('The candidates the confirmation accepted, in the order of its stored decisions.'),
 });
 export const IntakeEvidencePageSchema = z.strictObject({
   caseId: uuid, profiles: z.array(IntakeKeyProfileSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
