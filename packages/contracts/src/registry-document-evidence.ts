@@ -26,8 +26,16 @@ const citationBase={id:hash,document:DocumentAssociationSourceSchema,
   selection:z.strictObject({subject:z.string().min(1).max(256),accessSha256:hash,selectedAt:z.iso.datetime()}),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 };
+const confirmedBy=z.strictObject({confirmationId:z.uuid(),candidateId:z.uuid(),candidateSha256:hash});
+/** AU4-B3: a part an officer's evidence confirmation accepted by an exact key keeps the exact quote it was read
+ * with. */
+const confirmedQuote=z.strictObject({confirmation:confirmedBy,key:IntakeEvidenceKeySchema,
+  quote:z.string().min(1).max(4096),quoteStart:z.number().int().nonnegative(),quoteEnd:z.number().int().positive()})
+  .refine(value=>value.quoteEnd-value.quoteStart===value.quote.length&&value.quote.includes(value.key.literal),
+    'The quote is the exact span it names and holds the key literal.');
 export const RegistryNativeDocumentCitationSchema=z.strictObject({...citationBase,
-  version:z.literal('registry-document-citation/1'),partId:z.uuid(),partSha256:hash,locator:DocumentLocatorSchema});
+  version:z.literal('registry-document-citation/1'),partId:z.uuid(),partSha256:hash,locator:DocumentLocatorSchema,
+  evidence:confirmedQuote.optional()});
 export const RegistrySurveyCitationSchema=RegistrySurveyReferenceFieldsSchema.extend({...citationBase,
   version:z.literal('registry-survey-row-citation/1')});
 export const RegistryObjCitationSchema=RegistryObjReferenceFieldsSchema.extend({...citationBase,
@@ -146,17 +154,20 @@ export const RegistryImageRegionCitationSchema=z.strictObject({
   applicability:z.literal('explicit_officer_inclusion; effective_after_canonical_commit'),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
-/** AU4-B1: one table row a batch evidence confirmation accepted for a recorded building. Not yet in the union
- * below: the citation authority that writes and checks it (AU4-B3) adds it there. A document part keeps the
- * native citation above. */
+/** AU4-B1: one table row a batch evidence confirmation accepted for a recorded building. A document part keeps the
+ * native citation above. AU4-B3: the excerpt is the row's literal text cells as read, one 'header: value' line each. */
 export const RegistryTableRowCitationSchema=z.strictObject({version:z.literal('registry-table-row-citation/1'),id:hash,
   row:IntakeTableRowLocatorSchema,key:IntakeEvidenceKeySchema,
-  confirmation:z.strictObject({confirmationId:z.uuid(),candidateId:z.uuid(),candidateSha256:hash}),
+  confirmation:confirmedBy,excerpt:z.string().min(1).max(2048).optional(),
   target:citationBase.target,selection:citationBase.selection,
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 }).refine(citation=>citation.row.cell.value===citation.key.literal,'The cited cell must hold the exact key literal.');
 export const RegistryDocumentCitationSchema=z.discriminatedUnion('version',[
-  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,RegistryImageRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,RegistryCityGMLCitationSchema,RegistryGeoParquetCitationSchema,RegistryRasterCitationSchema,RegistryPointCitationSchema,RegistrySurveyCitationSchema,RegistryGltfCitationSchema,RegistryObjCitationSchema]);
+  RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,
+  RegistryRegionCitationSchema,RegistryImageRegionCitationSchema,RegistryDXFCitationSchema,RegistryKMLCitationSchema,
+  RegistryCityGMLCitationSchema,RegistryGeoParquetCitationSchema,RegistryRasterCitationSchema,
+  RegistryPointCitationSchema,RegistrySurveyCitationSchema,RegistryGltfCitationSchema,RegistryObjCitationSchema,
+  RegistryTableRowCitationSchema]);
 export const RegistryDocumentCitationsSchema=z.array(RegistryDocumentCitationSchema).max(25)
   .superRefine((items,ctx)=>{
     if(new Set(items.map(item=>item.id)).size!==items.length)
@@ -201,7 +212,8 @@ export const RegistryDocumentEvidenceSchema=z.strictObject({draftId:z.uuid(),dra
     z.strictObject({pin:RegistrySurveyCitationSchema,fragment:RegistrySurveyFragmentSchema}),
     z.strictObject({pin:RegistryGltfCitationSchema,fragment:RegistryGltfFragmentSchema}),
     z.strictObject({pin:RegistryObjCitationSchema,fragment:RegistryObjFragmentSchema}),
-    z.strictObject({pin:RegistryRegionCitationSchema}),z.strictObject({pin:RegistryImageRegionCitationSchema})])).max(25),
+    z.strictObject({pin:RegistryRegionCitationSchema}),z.strictObject({pin:RegistryImageRegionCitationSchema}),
+    z.strictObject({pin:RegistryTableRowCitationSchema})])).max(25),
   associationState:z.literal('operator_selected'),qualification:z.literal('not_assessed'),
 });
 export const RegistryDocumentAmendmentReceiptSchema=z.strictObject({draftId:z.uuid(),draftRevision:revision,

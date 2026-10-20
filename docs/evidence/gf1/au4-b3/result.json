@@ -1,0 +1,51 @@
+{
+  "task": "AU4-B3",
+  "base": "3a1bdfe2",
+  "branch": "task/au4-b3-evidence-citations",
+  "built": {
+    "D1": "A matched candidate accepted by a stored evidence confirmation becomes a citation on the building's record through the registry correction path (draft, amendment, review, commit). A table row is cited by registry-table-evidence.ts; a document part keeps the native citation with its exact quote (registry-document-evidence.ts). No cell or part value becomes a field. Accepting a several, conflicting or no_match candidate is refused 409 INTAKE_EVIDENCE_NOT_MATCHED, in words.",
+    "D2": "Only a stored confirmation is written. Every pin (profile, source revision, SHA-256 and bytes, reading, package revision and review, candidate hash and evidence) is checked again before the draft and again in the commit transaction; a moved pin refuses 409 INTAKE_EVIDENCE_STALE. One operations receipt per confirmation and building is stored in the commit transaction, so a replay writes nothing.",
+    "D3": "The E1 run has an evidence step between record and snapshot. It writes revision n+1 and stores the evidence artefact; the snapshot pins the cited revision. A building with no confirmation goes on as before. registryWritten is true once every accepted building holds its receipt.",
+    "D4": "The plan accepts 'CSV logical row N' and an evidence citation's pointer; it reads the original again and refuses an excerpt that is not byte-exact. The card quotes each citation exactly from the stored citation, with the file name, the locator in words and 'Evidence confirmed by the officer by an exact key; it states no right or owner.'",
+    "D5": "not built: a confirmation stored after the building is carded is not written by the run (the evidence step runs only before a snapshot exists). The writer already accepts the earlier write's confirmation ids."
+  },
+  "realInputs": {
+    "buildings": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "classification": "test_only",
+      "geography": "foreign (Manhattan)"
+    },
+    "register": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+      "sha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b",
+      "issuer": "NYC Landmarks Preservation Commission",
+      "licence": "not stated, permission unconfirmed",
+      "classification": "test_only"
+    }
+  },
+  "results": {
+    "key": "bin as written",
+    "writtenOnce": "the first matched register candidate: one draft, one commit, one receipt; record pinned at revision 2; a replay returns null and writes nothing",
+    "staleRefused": ["package revision 1 -> 3", "register SHA-256 changed"],
+    "conflictingRefused": "BIN 1002123 (two register rows): 409 INTAKE_EVIDENCE_NOT_MATCHED, nothing drafted",
+    "excerpt": "equal to the register line split independently of the reader; the original with one changed byte and a stored excerpt one space longer are both refused",
+    "card": {
+      "feature": "NYC feature 1 (doitt_id 547, BIN 1003053), register CSV logical row 447",
+      "fact": "evidence_citation_1 directly after source_citation, equal to the exact excerpt, 'gpmc-yuvp.csv', 'CSV logical row 447' and the officer line",
+      "tamperedExcerpt": "the plan is refused"
+    },
+    "noEvidenceCard": {
+      "feature": "NYC feature 0",
+      "stableBodySha256": "2ca3844c8a07db5540ee4f7c85270ccb9c714dc6994b1537bf360fd785e21b78",
+      "method": "card body without fresh ids and times; the same digest with card-projection.ts and plan-authority.ts at 3a1bdfe2 and with this change"
+    },
+    "run": "a cards-only run of three buildings where one has a written citation pins revisions [1, 2, 1] and cards all three"
+  },
+  "tests": [
+    "packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts (4)",
+    "packages/server/src/modules/usp/packets/card-projection.test.ts (3)",
+    "packages/server/src/modules/usp/ingestion/intake-run.test.ts (1 added)"
+  ],
+  "noRuntime": "No Docker, database, provider or GPU. Backend tests use mocked clients and the real NYC files. amendConfirmedEvidenceTx and the document-part path are covered by typecheck and the shared citation checks, not by a database run."
+}

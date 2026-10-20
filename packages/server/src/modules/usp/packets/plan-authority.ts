@@ -21,6 +21,7 @@ import { selectExactPart, type Packet0Line } from '../packet0';
 import { captureDocumentSourceTx } from '../ingestion/document-authority';
 import { sharedKey, SharedAuthorityNeeded, type SharedAuthority } from './plan-shared';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
+import { evidenceCitationBindings, evidenceExcerptTx } from './plan-citation-authority';
 
 async function capturedTx(client: PoolClient, manifestId: string, pin: TargetPin) {
   const row = (await client.query(`SELECT body,body_sha256 FROM usp_snapshot_bodies WHERE manifest_id=$1
@@ -215,6 +216,7 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
   const entries: PacketPlanEntry[] = [], lines: Packet0Line[] = [];
   const bindings = [...(target.body?.evidence ?? []), ...(target.body?.rights ?? [])
     .map((r: { evidence?: { sourceId: string; locator: string } }) => r.evidence).filter(Boolean)];
+  const confirmed = evidenceCitationBindings(target.body);
   const budget = new PlanSourceReadBudget();
   const sources = new Map<string, Awaited<ReturnType<typeof capturedTx>>>();
   const verifiedBytes = new Set<string>();
@@ -243,8 +245,9 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     let reasonCode: string | null = null, applicabilitySha256: string | null = null;
     if (selection.review.kind === 'direct') {
       const locator = pointer.locator;
-      const expected = locator.kind === 'verbatim' && bindings.some((b: { sourceId: string; locator: string }) =>
-        b.sourceId === id && b.locator === locator.locator);
+      const expected = locator.kind === 'verbatim' && (bindings.some((b: { sourceId: string; locator: string }) =>
+        b.sourceId === id && b.locator === locator.locator) || confirmed.some(b => b.sourceId === id
+        && b.sourceRevision === pointer.sourceRevision.revision && b.locator === locator.locator));
       if (!expected || locator.kind !== 'verbatim' || pointer.origin !== 'direct' || pointer.purpose !== 'record' || pointer.assetRevision || pointer.partRevision
         || pointer.legacyLocator !== locator.locator)
         throw new AppError(422, 'PACKET_PLAN_LINK', 'Use the exact record-backed evidence link.');
@@ -257,7 +260,10 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     const locator = pointer.locator;
     const supported = !pointer.assetRevision && !pointer.partRevision && locator.kind === 'verbatim' && (
       source.body.profile === 'text-reference-v2' && /^line [1-9][0-9]*$/.test(locator.locator)
-      || source.body.profile === 'csv-reference-v2' && /^CSV row [1-9][0-9]*$/.test(locator.locator));
+      || source.body.profile === 'csv-reference-v2' && /^CSV (?:logical )?row [1-9][0-9]*$/.test(locator.locator));
+    const cited = selection.review.kind === 'direct' && locator.kind === 'verbatim'
+      ? confirmed.find(b => b.sourceId === id && b.sourceRevision === pointer.sourceRevision.revision
+        && b.locator === locator.locator) : undefined;
     const nativeSupported = ['shapefile_zip-area-v2', 'gpkg-area-v2'].includes(source.body.profile)
       && source.body.status === 'inspected' && source.body.inspection?.status === 'interpreted';
     const featureSupported = target.kind === 'building' && !pointer.assetRevision && !pointer.partRevision
@@ -302,6 +308,15 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
       } else {
         excerpt = observedFeatureExtract(bytes, observation);
       }
+    }
+    if (cited && !reasonCode) {
+      const bytes = await readBytes(source.body.object_key);
+      if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256) {
+        throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY',
+          'The selected original does not match its byte receipt.');
+      }
+      verifiedBytes.add(id);
+      excerpt = await evidenceExcerptTx(client, cited, bytes);
     }
     if (!reasonCode && excerpt === null) reasonCode = 'exact_extract_unavailable';
     if (!reasonCode && !range && !verifiedBytes.has(id)) {

@@ -144,7 +144,7 @@ async function targetRecordRows(client: PoolClient, siteId: string, pins: readon
 function citedSourceIds(body: Record<string, any>): string[] {
   const refs = [...(body.evidence ?? []), ...(body.rights ?? []).map((right: any) => right.evidence),
     ...Object.values(body.geometry?.bindings ?? {}), body.sourceOnly?.evidence,
-    ...(body.documentCitations ?? []).map((citation: any) => citation.document)];
+    ...(body.documentCitations ?? []).map((citation: any) => citation.document ?? citation.row)];
   if (body.registryMetadata) refs.push(...registryMetadataEvidence(RegistryMetadataSchema.parse(body.registryMetadata)));
   return refs.flatMap(ref => ref ? [ref.sourceId ?? ref.sourceRevisionId].filter(id => typeof id === 'string') : []);
 }

@@ -135,6 +135,9 @@ export const IntakeTargetArtefactsSchema = z.strictObject({
   packet: z.strictObject({ id: uuid }).optional(),
   card: pinned.optional(),
   verification: z.literal('consistent').optional(),
+  evidence: z.strictObject({ confirmationIds: z.array(uuid).min(1).max(100), record: pinned }).optional()
+    .describe('AU4-B3: the evidence confirmations whose citations were written, and the record revision that cites '
+      + 'them; the snapshot pins this revision. Absent when no confirmation names the building.'),
 });
 export const IntakeTargetSchema = z.strictObject({
   targetId: uuid, caseId: uuid, anchorItemId: uuid, packageId: uuid, featureId: uuid, locator: text,
@@ -357,7 +360,8 @@ export const IntakeEvidenceConfirmSchema = z.strictObject({
 export const IntakeEvidenceConfirmationSchema = z.strictObject({
   confirmationId: uuid, caseId: uuid, inputSha256: hash, input: IntakeEvidenceConfirmSchema,
   subject: z.string().min(1).max(256), expiresAt: at, createdAt: at,
-  registryWritten: z.literal(false).describe('AU4-B2 stores the confirmation only; the citation step writes later.'),
+  registryWritten: z.boolean().describe('True once the citation step wrote every building it accepts; the write '
+    + 'and this state are one transaction.'),
   note: z.string().min(1).max(500),
 });
 export type IntakeKeyProfileInput = z.infer<typeof IntakeKeyProfileInputSchema>;

@@ -3,7 +3,7 @@ import test from 'node:test';
 import { z } from 'zod';
 import type { ImportPackage } from '@ulpin/contracts';
 import type { Pool, PoolClient } from 'pg';
-import { IntakeConfirmSchema, type PropertyCardVerification } from '@ulpin/contracts/usp';
+import { IntakeConfirmSchema, type PropertyCardVerification, type TargetPin } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { ingestionBinding } from './events';
@@ -307,6 +307,8 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null) {
     ['SELECT * FROM usp_intake_targets WHERE target_id=$1', ([id]) =>
       [structuredClone(store.targets.find(row => row.target_id === id))]],
     ['SET TRANSACTION ISOLATION LEVEL', () => []],
+    ['SELECT confirmation_id,pins,acknowledgement,expires_at', () => []],
+    ['SELECT body FROM usp_snapshot_bodies', () => []],
     ['SELECT site_id FROM registry_records', () => [{ site_id: caseId }]],
     ['SELECT body FROM usp_snapshots', () => [{ body: { scope: { kind: 'targets', pins: [] } } }]],
     ['UPDATE usp_intake_targets SET stage=', ([id, stage, readiness, reason, artefacts]) => {
@@ -415,4 +417,20 @@ test('a cards-only building refused at a step stops in its own words; the others
   assert.deepEqual([store.targets[1].readiness, store.targets[1].blocked_by, store.targets[1].reason],
     ['stopped', refusal.code, refusal.message]);
   assert.deepEqual([store.renewals, store.committed, store.status, store.error], [3, [], 'failed', refusal.code]);
+});
+
+test('a building with confirmed evidence is pinned at its cited revision; the others as recorded', async () => {
+  const { targetIds, store, run } = commitRun(0, [1, 2, 3]);
+  const written = { confirmationIds: ['10000000-0000-4000-8000-000000000031'],
+    record: { ...made, revision: made.revision + 1 } };
+  const pins: number[] = [];
+  const citeEvidence = async (_tx: unknown, building: { targetId: string }) =>
+    building.targetId === targetIds[1] ? written : null;
+  const snapshot = async (_client: unknown, _ctx: unknown, _site: string, selection: { pins: TargetPin[] }) => {
+    pins.push(selection.pins[0].revision);
+    return { id, digest: 'd'.repeat(64) };
+  };
+  await run({ citeEvidence, snapshot } as unknown as Partial<IntakeRunSteps>);
+  assert.deepEqual(pins, [1, 2, 1]);
+  assert.deepEqual([store.carded, store.status], [targetIds, 'succeeded']);
 });

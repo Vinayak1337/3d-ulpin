@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { ZodError } from 'zod';
 import type { ImportPackage } from '@ulpin/contracts';
-import type { IntakeTargetArtefacts, PropertyCardVerification,
+import type { EvidencePointer, IntakeTargetArtefacts, PropertyCardVerification,
   RequestContext, SnapshotScope, TargetPin } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
@@ -17,6 +17,8 @@ import { localOperatorSubject, localRequestContext } from '../principal';
 import { captureRegistrySnapshotTx, resolveRegistryTarget } from '../snapshots';
 import { intakeCaseTx } from './intake-context';
 import { queueIntakeLargePackageTx } from './intake-large';
+import { writeEvidenceCitations } from './intake-evidence-citations';
+import { evidenceCitationBindings } from '../packets/plan-citation-authority';
 import { ingestionBinding } from './events';
 import { isCardsOnly, packageDifference, readConfirmationRow,
   type IntakeConfirmationRow } from './intake-confirmations';
@@ -31,6 +33,7 @@ export const intakeRunSteps = {
   review: reviewPackage, commit: commitPackage, snapshot: captureRegistrySnapshotTx, resolve: resolveRegistryTarget,
   createPlan: createPacketPlan, confirmPlan: confirmPacketPlan, executePlan: executePacketPlan,
   card: generatePropertyCard, readCard: readPropertyCard, verify: verifyPropertyCard,
+  citeEvidence: writeEvidenceCitations,
 };
 export type IntakeRunSteps = typeof intakeRunSteps;
 type Run = { input: IntakeRunInput; attempt: UspJobAttempt; steps: IntakeRunSteps };
@@ -186,9 +189,21 @@ async function step(carry: Carry, stage: number, reason: string, artefacts: Part
   Object.assign(carry.target.artefacts, artefacts);
 }
 
+/** The cited revision once evidence citations are written, else the recorded one. */
 function recordPin(target: IntakeTargetRow): TargetPin {
-  const record = target.artefacts.record ?? refuse('INTAKE_TARGET_NOT_RECORDED', 'This building has no record.');
+  const record = target.artefacts.evidence?.record ?? target.artefacts.record
+    ?? refuse('INTAKE_TARGET_NOT_RECORDED', 'This building has no record.');
   return { ref: { namespace: 'registry_record', id: record.id }, revision: record.revision };
+}
+
+/** D3: before its snapshot, a building's stored evidence confirmations are written as citations on its record, so
+ * the snapshot pins the cited revision. A building no confirmation names goes on exactly as before. */
+async function evidence(carry: Carry) {
+  if (carry.target.artefacts.snapshot) return;
+  const { target_id: targetId, case_id: caseId, artefacts } = carry.target;
+  const record = artefacts.record ?? refuse('INTAKE_TARGET_NOT_RECORDED', 'This building has no record.');
+  const written = await carry.steps.citeEvidence(work => pinned(carry, work), { targetId, caseId, record });
+  if (written) Object.assign(carry.target.artefacts, { evidence: written });
 }
 
 /** Captured in the same repeatable-read transaction that stores it, so a retry never captures twice. */
@@ -224,18 +239,34 @@ export function intakeTargetCitation<T extends { legacyLocator?: string }>(evide
   return matches[0];
 }
 
-/** One entry: the record's own citation of this feature, with the confirmation's sentence as its reason. */
+/** The record's confirmed evidence citations as plan pointers, read from the captured body of the pinned revision. */
+async function evidencePointers(carry: Carry, scope: SnapshotScope, pin: TargetPin): Promise<EvidencePointer[]> {
+  if (!carry.target.artefacts.evidence) return [];
+  const row = (await query(`SELECT body FROM usp_snapshot_bodies WHERE manifest_id=$1 AND namespace='registry_record'
+    AND object_id=$2 AND revision=$3`, [scope.manifestId, pin.ref.id, pin.revision])).rows[0];
+  return evidenceCitationBindings(row?.body.body).map(cited => ({
+    sourceRevision: { ref: { namespace: 'source_revision', id: cited.sourceId }, revision: cited.sourceRevision },
+    assetRevision: null, partRevision: null, locator: { kind: 'verbatim', locator: cited.locator },
+    legacyLocator: cited.locator, purpose: 'record', origin: 'direct', target: pin.ref }));
+}
+
+/** The record's own citation of this feature, then each confirmed evidence citation, with the confirmation's
+ * sentence as their reason. */
 async function plan(carry: Carry) {
   const scope = await snapshotScope(carry);
   const pin = recordPin(carry.target);
   const resolved = await carry.steps.resolve(carry.ctx, scope, pin);
   if (resolved.state !== 'available') refuse('INTAKE_TARGET_UNAVAILABLE', 'The pinned record cannot be read.');
-  const pointer = intakeTargetCitation(resolved.data.evidence, carry.target.locator);
+  const pointers = [intakeTargetCitation(resolved.data.evidence, carry.target.locator),
+    ...await evidencePointers(carry, scope, pin)];
   const created = await carry.steps.createPlan(carry.ctx, { input: { target: pin, scope, purpose: 'record_evidence',
     format: 'csv', recipe: 'pack0-exact-text-csv/1', expiresAt: carry.confirmation.expires_at.toISOString(),
-    entries: [{ pointer, required: true, inclusionReason: carry.confirmation.reason,
-      review: { kind: 'direct', reviewed: true } }] }, guard: { mode: 'create', requestKey: key(carry, 'plan') } });
-  if (created.entries[0]?.state !== 'included') refuse('INTAKE_PLAN_OMITTED', 'The plan left out the citation.');
+    entries: pointers.map(pointer => ({ pointer, required: true, inclusionReason: carry.confirmation.reason,
+      review: { kind: 'direct' as const, reviewed: true } })) },
+  guard: { mode: 'create', requestKey: key(carry, 'plan') } });
+  if (created.entries.length !== pointers.length || created.entries.some(entry => entry.state !== 'included')) {
+    refuse('INTAKE_PLAN_OMITTED', 'The plan left out a citation.');
+  }
   await step(carry, 7, 'Its evidence plan names its own citation.',
     { plan: { id: created.planId, version: created.version, sha256: created.planSha256 } });
 }
@@ -298,7 +329,7 @@ async function verify(carry: Carry) {
 }
 
 const carrySteps: [keyof IntakeTargetArtefacts, (carry: Carry) => Promise<void>][] = [
-  ['snapshot', snapshot],
+  ['evidence', evidence], ['snapshot', snapshot],
   ['identity', carry => step(carry, 6, 'Identity is not applicable to a building.',
     { identity: identityNotApplicable })],
   ['plan', plan], ['planConfirmation', confirmPlan], ['packet', execute], ['card', card], ['verification', verify],

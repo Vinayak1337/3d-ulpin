@@ -4,8 +4,10 @@ import {RegistryDocumentAmendmentSchema,RegistryDocumentAmendmentReceiptSchema,R
   RegistryDocumentCitationsSchema,RegistryDocumentEvidenceSchema,RegistryDocumentReviewContextSchema,
   RegistryNativeDocumentCitationSchema,RegistryOcrDocumentCitationSchema,RegistryIFCCitationSchema,RegistryRegionCitationSchema,
   type RegistryRecord,type RegistryDocumentCitation,type RegistryNativeDocumentCitation,type RegistryOcrDocumentCitation,
-  type RegistryDocumentReviewContext,type RegistryIFCCitation,type RegistryRegionCitation,type RegistryDocumentAmendment} from '@ulpin/contracts';
-import {DocumentPartSchema,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
+  type RegistryDocumentReviewContext,type RegistryIFCCitation,type RegistryRegionCitation,
+  type RegistryDocumentAmendment,type RegistryTableRowCitation} from '@ulpin/contracts';
+import {DocumentPartSchema,type DocumentInput,type DocumentResult,type IntakeEvidenceKey,
+  type IntakeEvidenceLocator} from '@ulpin/contracts/usp';
 import {transaction} from '../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../infrastructure/errors';
 import {sha256} from '../../infrastructure/storage';
@@ -17,6 +19,8 @@ import {documentPartEligibleForProposal} from '../usp/ingestion/document-model';
 import {registrySourceTx,registryDocumentSourceAccessTx,registryMetadataEvidence} from './registry-metadata';
 import {RegistryMetadataSchema} from '@ulpin/contracts';
 import {registryDocumentCases,registryRegionCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
+import {assertRegistryTableCitationsTx,citedTableTx,tableRowCitation,
+  type TableEvidenceDependencies} from './registry-table-evidence';
 import {registryRegionSourceTx,prepareRegistryRegion,regionCitationId,assertRegionCitation,type RegistryRegionPrepared} from './registry-region-evidence';
 import {RegistryImageRegionCitationSchema,type RegistryImageRegionCitation} from '../../../../contracts/src/registry-document-evidence';
 import {registryImageRegionSourceTx,prepareRegistryImageRegion,imageRegionCitationId,assertImageRegionCitation,
@@ -64,7 +68,7 @@ import {gltfCitationFusionSelection,gltfCitationFields,gltfCitationFragment,gltf
 
 export type RegistryDocumentDependencies=FusionCitationDependencies&{result:typeof readDocumentResult;registrySource:typeof registrySourceTx;
   citationSource?:typeof registryDocumentSourceAccessTx;regionSource?:typeof registryRegionSourceTx;
-  imageRegionSource?:typeof registryImageRegionSourceTx};
+  imageRegionSource?:typeof registryImageRegionSourceTx;tableEvidence?:TableEvidenceDependencies};
 type Dependencies=RegistryDocumentDependencies;
 const defaults:Dependencies={source:associationDocumentInputTx,result:readDocumentResult,registrySource:registrySourceTx,
   citationSource:registryDocumentSourceAccessTx};
@@ -210,11 +214,13 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
     captured:Awaited<ReturnType<typeof registryRasterCitationSourceTx>>}[]=[];
   const checkedPoint:{selection:ReturnType<typeof pointCitationFusionSelection>;
     captured:Awaited<ReturnType<typeof registryPointCitationSourceTx>>}[]=[];
-  const groups=new Map<string,RegistryDocumentCitation[]>();
+  const groups=new Map<string,Exclude<RegistryDocumentCitation,RegistryTableRowCitation>[]>();
+  const tableRows:RegistryTableRowCitation[]=[];
   for(const pin of citations){
     if(pin.selection.subject!==ctx.principal.subject)
       throw new AppError(403,'REGISTRY_DOCUMENT_DENIED','This document citation is unavailable to the current operator.');
     await historicalTargetTx(client,siteId,record,pin);
+    if(pin.version==='registry-table-row-citation/1'){tableRows.push(pin);continue;}
     const key=`${pin.version}:${fingerprint(pin.document)}${pin.version==='registry-gltf-node-citation/1'?':'+fingerprint({
       combinedContextSha256:pin.gltf.combinedContextSha256,selectedNodeIndices:pin.gltf.selectedNodeIndices}):pin.version==='registry-obj-polygon-citation/1'?':'+fingerprint({
       combinedContextSha256:pin.obj.combinedContextSha256,selectedPolygonIndices:pin.obj.selectedPolygonIndices}):''}`;
@@ -425,6 +431,8 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
         if(pin.id!==citationId(pin)||pin.inputSha256!==fingerprint(input)||pin.readerSha256!==input.readerSha256||pin.acceptedFence!==fence||
           pin.selection.accessSha256!==input.accessSha256||pin.partSha256!==part.sha256||fingerprint(pin.locator)!==fingerprint(part.locator))
           conflict('The exact native part, reader, accepted attempt or access pin changed.');
+        if(pin.evidence&&part.text.slice(pin.evidence.quoteStart,pin.evidence.quoteEnd)!==pin.evidence.quote)
+          conflict('The confirmed quote is not the exact text of its accepted part.');
         entries.push({pin,part});
       }
     }else if(first.version==='registry-survey-row-citation/1'){
@@ -466,6 +474,7 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
       conflict('The document source or accepted attempt changed during its read.');
     checked.push({pin:first,input,source,fence});
   }
+  entries.push(...await assertRegistryTableCitationsTx(client,siteId,tableRows,dependencies.tableEvidence));
   // Finish every object read before acquiring the complete authority lock set.
   // The canonical helper locks the case (including source-family changes) and
   // exact source/job/accepted-attempt rows until the caller's transaction ends.
@@ -537,7 +546,8 @@ export async function assertRegistryDocumentCitationsTx(client:PoolClient,siteId
   // a source can change during lock acquisition or later groups' result I/O.
   for(const item of aggregate)await item.validate();
   if(checkedObj.length||checkedIFC.length||checkedDXF.length||checkedKML.length||checkedCityGML.length||checkedGeoParquet.length||checkedRaster.length||checkedPoint.length||checkedRegions.length||checkedImageRegions.length)for(const pin of citations)await historicalTargetTx(client,siteId,record,pin);
-  if(citations.some(pin=>pin.version!=='registry-document-citation/1'))fusionLive(budget);
+  if(citations.some(pin=>!['registry-document-citation/1','registry-table-row-citation/1'].includes(pin.version)))
+    fusionLive(budget);
   return entries;
 }
 export function citationId(pin:Pick<RegistryNativeDocumentCitation,'document'|'partId'|'target'>|RegistryOcrDocumentCitation|RegistryIFCCitation|RegistryRegionCitation|RegistryImageRegionCitation|RegistryDXFCitation|RegistryKMLCitation|RegistryCityGMLCitation|RegistryGeoParquetCitation|RegistryRasterCitation|RegistryPointCitation|RegistrySurveyCitation|RegistryGltfCitation|RegistryObjCitation){
@@ -846,6 +856,53 @@ export async function amendRegistryDocumentCitationsTx(client:PoolClient,draftId
   await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'registry-document-citations',$3,$4)",
     [draft.case_id,operationKey,digest,receipt]);
   return receipt;
+}
+export type ConfirmedEvidence={confirmation:{confirmationId:string;candidateId:string;candidateSha256:string};
+  key:IntakeEvidenceKey;evidence:IntakeEvidenceLocator};
+type CitationTarget=RegistryDocumentCitation['target'];
+/** A confirmed document part keeps the native citation, read again at every pin, with the exact quote confirmed. */
+async function confirmedPartCitationTx(client:PoolClient,siteId:string,confirmed:ConfirmedEvidence,
+  part:Extract<IntakeEvidenceLocator,{kind:'document_part'}>,target:CitationTarget,dependencies:Dependencies){
+  const ctx=context(),{caseId,caseRevision,sourceId,sourceRevision,sourceSha256,jobId,resultSha256}=part;
+  const document={caseId,caseRevision,sourceId,sourceRevision,sourceSha256,jobId,resultSha256};
+  await citationSource(dependencies)(client,siteId,sourceId);
+  const input=await dependencies.source(client,ctx,document,undefined,true);
+  const fence=await acceptedFenceTx(client,input.jobId);
+  if(fingerprint(input)!==part.inputSha256||input.readerSha256!==part.readerSha256||fence!==part.acceptedFence)
+    conflict('The confirmed part was read under other pins.');
+  const [native]=literalCitationParts(await dependencies.result(input,resultSha256),input,[part.partId]);
+  if(native.sha256!==part.partSha256)conflict('The confirmed part is not at its pinned SHA-256.');
+  const pin={document,partId:part.partId,target};
+  return RegistryNativeDocumentCitationSchema.parse({...pin,id:citationId(pin),version:'registry-document-citation/1',
+    inputSha256:part.inputSha256,readerSha256:input.readerSha256,acceptedFence:fence,partSha256:native.sha256,
+    locator:native.locator,selection:{subject:ctx.principal.subject,accessSha256:input.accessSha256,
+      selectedAt:new Date().toISOString()},associationState:'operator_selected',qualification:'not_assessed',
+    evidence:{confirmation:confirmed.confirmation,key:confirmed.key,quote:part.quote,quoteStart:part.quoteStart,
+      quoteEnd:part.quoteEnd}});
+}
+/** AU4-B3: the citations of an officer's evidence confirmation, added to one open correction through the same
+ * locked draft and checks as any amendment. A table row is cited by registry-table-evidence, a document part by
+ * its native citation with the exact quote. Nothing of the row or part becomes a field of the record. */
+export async function amendConfirmedEvidenceTx(client:PoolClient,draftId:string,confirmed:readonly ConfirmedEvidence[],
+  dependencies:Dependencies=defaults){
+  const cases=[...new Set(confirmed.map(item=>item.evidence.caseId))];
+  const {draft,record}=await lockedDraftTx(client,draftId,undefined,true,cases);
+  if(draft.status!=='draft')conflict('Use the exact active correction.');
+  const target=await currentTargetTx(client,draft.site_id,record,true,dependencies),ctx=context();
+  const targetPin={recordId:record.id,revision:record.revision,bodySha256:fingerprint(target.body)};
+  const added:RegistryDocumentCitation[]=[];
+  for(const item of confirmed)added.push(item.evidence.kind==='table_row'
+    ?tableRowCitation({row:item.evidence,key:item.key,confirmation:item.confirmation},
+      await citedTableTx(client,draft.site_id,item.evidence,dependencies.tableEvidence),targetPin,ctx.principal.subject)
+    :await confirmedPartCitationTx(client,draft.site_id,item,item.evidence,targetPin,dependencies));
+  const next=applyCitationAmendment(record,added,[]);
+  await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,dependencies);
+  await currentTargetTx(client,draft.site_id,record,true,dependencies);
+  await recheckRegionsTx(client,draft.site_id,next,dependencies);
+  const changed=fingerprint(record.documentCitations??[])!==fingerprint(next.documentCitations??[]);
+  if(changed)await client.query('UPDATE registry_drafts SET records=$2,revision=revision+1 WHERE id=$1',
+    [draftId,JSON.stringify([next])]);
+  return {draftRevision:draft.revision+(changed?1:0),record:next};
 }
 /** Read-only preflight; no advisory/row mutation locks and no native execution.
  * An existing receipt is reauthorized by the mutation path without re-rendering. */
