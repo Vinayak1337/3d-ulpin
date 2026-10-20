@@ -224,7 +224,7 @@ async function currentAgainTx(client: PoolClient, item: Item, partIndex: number,
 }
 
 type Due = { item_id: string; case_id: string; operation: Operation; planned: boolean; pins: string[][] | null;
-  case_now: [unknown, unknown, string | null, boolean] };
+  case_now: [unknown, unknown, string | null, boolean]; moved?: boolean };
 
 /** D1. A published part's job pins another case context, access or reader than the case has now (the readers' pins). */
 function readElsewhere(row: Due) {
@@ -236,7 +236,9 @@ function readElsewhere(row: Due) {
 
 /**
  * One dispatcher tick: each kept surface with none queued and a part to read, oldest first, one part each. A part to
- * read is planned, or published from a job of another context; the item's transaction checks that again.
+ * read is planned, or published from a job of another context; the item's transaction checks that again. SF1 D2: an
+ * item read under its area whose extent or drafted footprints moved since it was settled is settled again, so its
+ * words and placement follow; no part is read again for it and every earlier read is kept.
  */
 export async function admitIntakeSurfaceParts() {
   const rows = (await query<Due>(`SELECT i.item_id,i.case_id,i.plan_ref->>'operation' AS operation,
@@ -244,16 +246,22 @@ export async function admitIntakeSurfaceParts() {
       (SELECT jsonb_build_array(c.frame,c.context,c.site_id,c.archived) FROM cases c WHERE c.id=i.case_id) AS case_now,
       (SELECT jsonb_agg(DISTINCT jsonb_build_array(j.payload->>'caseContextSha256',j.payload->>'accessSha256',
         j.payload->>'readerSha256')) FROM usp_intake_parts p JOIN jobs j ON j.id=p.job_id
-        WHERE p.item_id=i.item_id AND p.state='published') AS pins
+        WHERE p.item_id=i.item_id AND p.state='published') AS pins,
+      jsonb_typeof(i.plan_ref->'header')='object' AND i.plan_ref->>'placedOn' IS DISTINCT FROM
+        (SELECT ${areaKey} ${caseArea} WHERE c.id=i.case_id) AS moved
     FROM usp_intake_items i
     WHERE i.plan_ref->>'version'=$1 AND NOT EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id
       AND p.state='queued')
     ORDER BY (SELECT max(p.updated_at) FROM usp_intake_parts p WHERE p.item_id=i.item_id)`,
   [INTAKE_SURFACE_VERSION])).rows;
-  const items = rows.filter(row => row.planned || readElsewhere(row)).slice(0, INTAKE_SURFACE_LIMITS.page);
-  for (const { item_id: itemId } of items) await transaction(async client => {
-    const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0];
-    if (item?.plan_ref?.version === INTAKE_SURFACE_VERSION) await admitSurfaceItemTx(client, item);
+  const items = rows.filter(row => row.planned || readElsewhere(row) || row.moved)
+    .slice(0, INTAKE_SURFACE_LIMITS.page);
+  for (const row of items) await transaction(async client => {
+    const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [row.item_id])).rows[0];
+    if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
+    if (row.planned || readElsewhere(row)) await admitSurfaceItemTx(client, item);
+    // An unchanged settlement writes nothing, so one the admission has just written is not written twice.
+    if (row.moved) await settleSurfaceItemTx(client, row.item_id);
   });
 }
 
@@ -362,35 +370,68 @@ export async function failIntakeSurfacePartTx(client: PoolClient, jobId: string,
   await settleSurfaceItemTx(client, part.item_id);
 }
 
-type Area = { id: string; revision: number; reference: any; extent: number[] | null };
+/** The batch area as stored, the bounds of the batch's own drafted footprints, and the key of both (SF1). */
+type Area = { id: string; revision: number; reference: any; extent: number[] | null; drafted: number[] | null;
+  key: string };
 type NotPlaced = { state: 'not_placed'; reason: 'no_batch_area' | 'no_area_reference' | 'no_area_extent'
   | 'no_stated_crs' | 'transform_unavailable' | 'outside_area'; words: string };
-type Frame = { area: Area; from: number; to: number };
+/** The extent a part is placed against, and whether the batch's drafted footprints gave or widened it. */
+type Frame = { area: Area; extent: number[]; drafted: boolean; from: number; to: number };
 
 const notPlaced = (reason: NotPlaced['reason'], words: string): NotPlaced => ({ state: 'not_placed', reason, words });
 const outside = 'Read, outside this area: its corners do not meet the batch area\'s extent.';
 const older = 'This part was read under an older batch context, so it is not shown as current.';
 
+/**
+ * SF1 D1. The bounds of the batch's drafted footprint packages in its area, in the area's local frame: the
+ * package extent the recording step merges into the area's extent (areas.ts commitPackage). Recorded packages are
+ * already in that extent; source workspaces, quarantined and geometry-free packages give none. No package gives
+ * null, never a zero box.
+ */
+const draftedBounds = `LEFT JOIN LATERAL (SELECT CASE WHEN count(*)>0 THEN jsonb_build_array(
+    min((p.body->'extent'->>0)::float8),min((p.body->'extent'->>1)::float8),
+    max((p.body->'extent'->>2)::float8),max((p.body->'extent'->>3)::float8)) END AS extent
+  FROM import_packages p WHERE p.case_id=c.id AND p.area_id=a.id AND p.state<>'COMMITTED'
+    AND NOT p.body ? 'sourceWorkspace' AND NOT p.body ? 'quarantine'
+    AND CASE WHEN jsonb_typeof(p.body->'extent')='array' THEN jsonb_array_length(p.body->'extent')=4
+      AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(p.body->'extent') v WHERE jsonb_typeof(v)<>'number')
+      ELSE false END) d ON true`;
+/** SF1 D2. What an item's placement was settled against: the dispatcher tick compares it in the same words. */
+const areaKey = 'md5(jsonb_build_array(a.id,a.reference,a.extent,d.extent)::text)';
+const caseArea = `FROM cases c JOIN map_areas a ON a.site_id=c.site_id ${draftedBounds}`;
+
 async function batchAreaTx(client: PoolClient, caseId: string) {
-  return (await client.query(`SELECT a.id,a.revision,a.reference,a.extent FROM cases c
-    JOIN map_areas a ON a.site_id=c.site_id WHERE c.id=$1`, [caseId])).rows[0] as Area | undefined;
+  return (await client.query(`SELECT a.id,a.revision,a.reference,a.extent,d.extent AS drafted,${areaKey} AS key
+    ${caseArea} WHERE c.id=$1`, [caseId])).rows[0] as Area | undefined;
 }
 
-/** The batch area's local frame for a stated source CRS, or why a part read in it is not placed. */
-async function frameTx(client: PoolClient, caseId: string, authority: string | null): Promise<Frame | NotPlaced> {
+const within = (inner: number[], outer: number[]) => inner[0] >= outer[0] && inner[1] >= outer[1]
+  && inner[2] <= outer[2] && inner[3] <= outer[3];
+
+/**
+ * The batch area's local frame for a stated source CRS, or why a part read in it is not placed. The extent is the
+ * area's recorded one, widened by the batch's drafted footprints (SF1 D1); with neither, today's words (D3).
+ */
+async function frameTx(client: PoolClient, caseId: string, authority: string | null,
+  stored?: Area | null): Promise<Frame | NotPlaced> {
   if (!authority) return notPlaced('no_stated_crs', 'Read but not placed: the file states no coordinate system.');
-  const area = await batchAreaTx(client, caseId);
+  const area = stored === undefined ? await batchAreaTx(client, caseId) : stored;
   if (!area) return notPlaced('no_batch_area', 'Read but not placed: the batch has no map area yet.');
   if (!area.reference) return notPlaced('no_area_reference',
     'Read but not placed: the batch area has no reference system yet.');
-  if (!area.extent) return notPlaced('no_area_extent', 'Read but not placed: the batch area has no extent yet.');
+  const { extent: recorded, drafted } = area;
+  if (!recorded && !drafted) return notPlaced('no_area_extent',
+    'Read but not placed: the batch area has no extent yet.');
+  const extent = recorded && drafted ? [Math.min(recorded[0], drafted[0]), Math.min(recorded[1], drafted[1]),
+    Math.max(recorded[2], drafted[2]), Math.max(recorded[3], drafted[3])] : (recorded ?? drafted)!;
   const [from, to] = [authority, area.reference.analysisCrs].map(code => Number(/^EPSG:(\d+)$/.exec(code)?.[1]));
   const known = from > 0 && to > 0 && Number((await client.query(`SELECT count(DISTINCT auth_srid)::int n
     FROM spatial_ref_sys WHERE auth_name='EPSG' AND auth_srid IN ($1,$2)`, [from, to])).rows[0].n)
     === new Set([from, to]).size;
   if (!known) return notPlaced('transform_unavailable',
     `Read but not placed: no transform from ${authority} to the batch reference is available.`);
-  return { area, from, to };
+  return { area, extent: extent.map(Number), drafted: Boolean(drafted && (!recorded || !within(drafted, recorded))),
+    from, to };
 }
 
 /**
@@ -399,7 +440,7 @@ async function frameTx(client: PoolClient, caseId: string, authority: string | n
  */
 async function localPartsTx(client: PoolClient, frame: Frame, parts: number[][][]) {
   const flat = parts.flatMap((corners, part) => corners.map(([x, y]) => [x, y, part]));
-  const [ox, oy] = frame.area.reference.origin, [x0, y0, x1, y1] = frame.area.extent!;
+  const [ox, oy] = frame.area.reference.origin, [x0, y0, x1, y1] = frame.extent;
   const rows = (await client.query(`SELECT c.part,array_agg(ST_X(t.p) ORDER BY c.n) xs,
       array_agg(ST_Y(t.p) ORDER BY c.n) ys,ST_Intersects(ST_SetSRID(ST_Envelope(ST_Collect(t.p)),0),
       ST_MakeEnvelope($8,$9,$10,$11,0)) meets
@@ -435,9 +476,10 @@ function surfaceWords(header: Header | null, state: string, done: number, failed
  * The item is on the map only when a part read so far meets the batch area's extent; otherwise its words say why
  * it is not placed, or that it is read outside this area.
  */
-async function itemPlacementTx(client: PoolClient, caseId: string, header: Header | null, parts: any[]) {
+async function itemPlacementTx(client: PoolClient, caseId: string, header: Header | null, parts: any[],
+  area: Area | null) {
   if (!header) return { placement: 'undecided' as const, where: '' };
-  const frame = await frameTx(client, caseId, header.authority);
+  const frame = await frameTx(client, caseId, header.authority, area);
   if ('reason' in frame) return { where: frame.words,
     placement: ['no_stated_crs', 'transform_unavailable'].includes(frame.reason) ? 'not_understood' as const
       : 'waiting_for_anchor' as const };
@@ -446,8 +488,14 @@ async function itemPlacementTx(client: PoolClient, caseId: string, header: Heade
   if (!read.length) return { placement: 'waiting_for_anchor' as const,
     where: 'Read but not placed: no part read so far has records to place.' };
   return (await localPartsTx(client, frame, read)).some(part => part.meets)
-    ? { placement: 'on_map' as const, where: '' } : { placement: 'not_understood' as const, where: outside };
+    ? { placement: 'on_map' as const, where: frame.drafted ? draftedWords(frame) : '' }
+    : { placement: 'not_understood' as const, where: outside };
 }
+
+/** SF1 D1. Where the extent came from, when the batch's drafted footprints gave or widened it. */
+const draftedWords = (frame: Frame) => frame.area.extent
+  ? 'Placed against the area\'s recorded extent, widened by this batch\'s drafted footprints.'
+  : 'Placed against the extent of this batch\'s drafted footprints; the area has no recorded extent yet.';
 
 /** The item's tray state, placement and words follow its part rows; an unchanged state publishes nothing. */
 export async function settleSurfaceItemTx(client: PoolClient, itemId: string) {
@@ -463,12 +511,15 @@ export async function settleSurfaceItemTx(client: PoolClient, itemId: string) {
     && part.result_ref?.rereadPin === reread.pin).length : 0;
   const again = reread && pending ? `Read again under the batch's area: ${reread.parts - pending} of ${reread.parts} `
     + 'parts.' : '';
-  const { placement, where } = await itemPlacementTx(client, item.case_id, header, parts);
+  // SF1 D2. The area the placement is settled against is kept in the plan; a tick re-settles when it moves.
+  const area = header ? await batchAreaTx(client, item.case_id) ?? null : null;
+  const planRef = header ? { ...item.plan_ref, placedOn: area?.key ?? null } : item.plan_ref;
+  const { placement, where } = await itemPlacementTx(client, item.case_id, header, parts, area);
   const state = failed ? 'failed_part' : header && done === parts.length && !pending
     ? (header.total > header.planned ? 'read_to_limit' : 'read')
     : done > 0 || parts.some(part => part.state === 'queued') ? 'reading' : 'planned';
   const recordsSeen = parts.reduce((sum, part) => sum + Number(part.counts?.points ?? 0), 0);
-  await writeIntakeLargeTx(client, item.case_id, itemId, { state, placement, planRef: item.plan_ref,
+  await writeIntakeLargeTx(client, item.case_id, itemId, { state, placement, planRef,
     partsPlanned: header?.planned ?? null, partsDone: done, recordsSeen,
     limitReason: surfaceWords(header, state, done, failed, where, again) });
 }
@@ -505,7 +556,8 @@ export async function surfacePartPlacementTx(client: PoolClient, caseId: string,
   if (!part?.meets) return notPlaced('outside_area', outside);
   return { state: 'placed', areaId: frame.area.id, areaRevision: Number(frame.area.revision),
     analysisCrs: frame.area.reference.analysisCrs, origin: frame.area.reference.origin,
-    operation: `postgis:ST_Transform(${header.authority}->${frame.area.reference.analysisCrs}) minus area origin`,
+    operation: `postgis:ST_Transform(${header.authority}->${frame.area.reference.analysisCrs}) minus area origin`
+      + (frame.drafted ? '; area extent from the batch\'s drafted footprints' : ''),
     corners: part.corners } as const;
 }
 

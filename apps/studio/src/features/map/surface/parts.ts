@@ -118,15 +118,24 @@ export class SurfaceParts {
     private readonly publish: (parts: SurfacePartInput[], lines: SurfaceLine[]) => void,
   ) {}
 
-  /** The batch reported its items: a new file, or one whose parts or state moved, is paged again. */
+  /**
+   * The batch reported its items: a new file, or one whose parts, state, placement or words moved, is paged again.
+   * When its placement moved, or its words moved with no new part read, the area it is placed against may have
+   * changed: the parts held as not placed are asked again, inside the same bounds as any read.
+   */
   sync(items: readonly IntakeItem[]): void {
     const surface = items.filter(isSurfaceItem);
     const live = new Set(surface.map((item) => item.itemId));
     for (const id of [...this.items.keys()]) if (!live.has(id)) this.items.delete(id);
     for (const item of surface) {
       const known = this.items.get(item.itemId);
-      if (known && known.item.partsDone === item.partsDone && known.item.state === item.state) continue;
+      const placedAgain = Boolean(known) && (known!.item.placement !== item.placement
+        || (known!.item.limitReason !== item.limitReason && known!.item.partsDone === item.partsDone));
+      if (known && !placedAgain && known.item.partsDone === item.partsDone && known.item.state === item.state)
+        continue;
       const state = known ?? this.fresh(item);
+      // Their words stay on the line until each is answered again.
+      if (placedAgain) for (const partIndex of state.notPlaced.keys()) state.asked.delete(partIndex);
       state.item = item;
       this.items.set(item.itemId, state);
       void this.page(state);
@@ -206,6 +215,7 @@ export class SurfaceParts {
         state.notPlaced.set(partIndex, display.placement.words);
         return;
       }
+      state.notPlaced.delete(partIndex);
       const corners = display.placement.corners as unknown as PlacedCorners;
       const part: SurfacePartInput = { id: `${state.item.itemId}:${partIndex}`, corners: sceneCorners(corners) };
       await this.dress(state, part, partIndex, display, corners);
