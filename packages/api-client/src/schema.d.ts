@@ -66975,6 +66975,14 @@ export interface components {
                     unread: number | null;
                     failed: number | null;
                 } | null;
+                /**
+                 * Format: uuid
+                 * @description The item's current retained source; with its revision, SHA-256 and bytes, the pins an evidence confirmation names for this item.
+                 */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                bytes: number;
             }[];
             candidates: {
                 /** @enum {string} */
@@ -67540,7 +67548,8 @@ export interface components {
             additions: {
                 /** @enum {string} */
                 kind: "citations";
-                linkManifestSha256: string;
+                /** @description The SHA-256 of the decisions in candidate order. When omitted the server computes it; when sent it must equal that value. The stored confirmation always holds the computed hash. */
+                linkManifestSha256?: string;
                 decisions: ({
                     /** @enum {string} */
                     decision: "accept";
@@ -67687,7 +67696,8 @@ export interface components {
                 additions: {
                     /** @enum {string} */
                     kind: "citations";
-                    linkManifestSha256: string;
+                    /** @description The SHA-256 of the decisions in candidate order. When omitted the server computes it; when sent it must equal that value. The stored confirmation always holds the computed hash. */
+                    linkManifestSha256?: string;
                     decisions: ({
                         /** @enum {string} */
                         decision: "accept";

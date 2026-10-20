@@ -377245,6 +377245,27 @@
                     "failed"
                   ],
                   "additionalProperties": false
+                },
+                "sourceId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "The item's current retained source; with its revision, SHA-256 and bytes, the pins an evidence confirmation names for this item."
+                },
+                "sourceRevision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "sourceSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -377253,7 +377274,11 @@
                 "family",
                 "jobId",
                 "resultSha256",
-                "coverage"
+                "coverage",
+                "sourceId",
+                "sourceRevision",
+                "sourceSha256",
+                "bytes"
               ],
               "additionalProperties": false
             }
@@ -379723,6 +379748,7 @@
                     ]
                   },
                   "linkManifestSha256": {
+                    "description": "The SHA-256 of the decisions in candidate order. When omitted the server computes it; when sent it must equal that value. The stored confirmation always holds the computed hash.",
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
@@ -380131,7 +380157,6 @@
                 },
                 "required": [
                   "kind",
-                  "linkManifestSha256",
                   "decisions"
                 ],
                 "additionalProperties": false
@@ -380409,6 +380434,7 @@
                         ]
                       },
                       "linkManifestSha256": {
+                        "description": "The SHA-256 of the decisions in candidate order. When omitted the server computes it; when sent it must equal that value. The stored confirmation always holds the computed hash.",
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
                       },
@@ -380817,7 +380843,6 @@
                     },
                     "required": [
                       "kind",
-                      "linkManifestSha256",
                       "decisions"
                     ],
                     "additionalProperties": false
