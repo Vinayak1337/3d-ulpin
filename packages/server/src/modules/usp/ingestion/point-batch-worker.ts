@@ -9,6 +9,7 @@ import {appendCaseIngestionTx} from './events';
 import {assertPointInputTx,assertPointJobRow,pointArtifactKey,pointResultKey,readPointResult} from './point-batch';
 import {readPointObject} from './point-batch-object';
 import {nativePointBatch,pointPublicationLive} from './point-publication';
+import {acceptIntakeSurfacePartTx,failIntakeSurfacePartTx,pointRecordsExtent} from './intake-surface';
 
 type Dependencies={request:typeof fetch;put:typeof putOriginal;read:typeof readPointObject};
 const defaults:Dependencies={request:fetch,put:putOriginal,read:readPointObject};
@@ -60,6 +61,7 @@ export async function failPointBatchJob(jobId:string,code:string,attempt?:UspJob
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[jobId]);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,stale?'stale':'failed',code]);
+    await failIntakeSurfacePartTx(client,jobId,code);
     if(canEmit&&parsed.success&&fingerprint(job.payload)===fingerprint(parsed.data)){try{await assertPointInputTx(client,parsed.data);
       await appendCaseIngestionTx(client,parsed.data.caseId,{kind:'point-batch.changed',sourceId:parsed.data.sourceId,
         sourceRevision:parsed.data.sourceRevision,jobId,status:stale?'stale':'failed'},parsed.data.subject);
@@ -123,6 +125,7 @@ async function executePointBatchJob(jobId:string,deps:Dependencies,bounds:DbDead
     if(stored.length!==artifact.bytes||sha256(stored)!==artifact.sha256)
       throw new AppError(422,'POINT_ARTIFACT_INTEGRITY','The staged native batch differs from its receipt.');
     const preflight=Object.freeze({inputSha256:fingerprint(input),resultSha256:hash,artifactSha256:sha256(stored),artifactBytes:stored.length});
+    const extent=pointRecordsExtent(stored,result.metadata.scale,result.metadata.offset);
     pointPublicationLive(bounds);
     await acceptUspJobAttempt(owned,asset,async(client,currentJob,accepted)=>{
       pointPublicationLive(bounds);
@@ -135,6 +138,7 @@ async function executePointBatchJob(jobId:string,deps:Dependencies,bounds:DbDead
     },beforeLocks,async client=>{
       await appendCaseIngestionTx(client,input.caseId,{kind:'point-batch.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
+      await acceptIntakeSurfacePartTx(client,{operation:'point-batch',jobId,resultSha256:hash,value:result,extent});
     },bounds);
   }catch(error){await terminal(error,owned);}
 }

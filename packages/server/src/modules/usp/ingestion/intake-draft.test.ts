@@ -12,6 +12,7 @@ import type { MapArea } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { registerUspJobInputTx } from '../jobs';
 import { fingerprint } from '../../cases/domain';
+import { IntakePageImageInputSchema, labelPageImageTx, settlePageImageTx } from './intake-page-image';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'ca0-protocol-operator';
 const caseId = '10000000-0000-4000-8000-000000000001';
@@ -79,8 +80,11 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
   if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 0 }];
+  if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
     return jobs.filter(job => ['queued', 'running'].includes(job.status));
+  if (sql.startsWith('SELECT id,status FROM jobs WHERE source_id'))
+    return jobs.filter(job => job.operation === 'intake-native-derivative');
   if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
     return jobs.filter(row => row.id === values[0]);
   return null;
@@ -88,7 +92,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
 function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { tray, jobs, state } = fixture;
   if (sql.startsWith('INSERT INTO jobs')) {
-    jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2], operation: 'intake-draft',
+    jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2],
+      operation: /VALUES\(\$1,\$2,\$3,'([a-z-]+)'/.exec(sql)![1],
       case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
     return [];
   }
@@ -191,36 +196,33 @@ for (const [name, modify] of [
     assert(intakeDraftLimit(item(), src));
   });
 }
-test('a GeoPackage refusal names its direct route, bounds and missing recipe/citation support', async () => {
-  const fixture = protocol();
-  fixture.src.profile = 'large-original-v1';
-  fixture.src.inspection = {};
-  fixture.tray.card = { format: 'geopackage', family: 'vector', crs: { state: 'absent' } } as DraftItem['card'];
-  const expected = 'This GeoPackage can be imported through POST /api/v1/import-packages with format=gpkg '
-    + 'and one selected layer within 16 MiB and 2000 features; intake recipe drafting and '
-    + 'decoded binary-record citations for its card are not built.';
-  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
-  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
-  assert.equal(fixture.state.projection.limit_reason, expected);
-  assert.equal(fixture.jobs.length, 0);
-});
-
-test('a grouped shapefile ZIP names the existing selected-set import without claiming intake fan-out', async () => {
-  const fixture = protocol();
-  fixture.src.profile = 'large-original-v1';
-  fixture.src.inspection = {};
-  fixture.tray.family = 'archive';
-  fixture.tray.card = {
-    format: 'zip', family: 'archive', members: [{ format: 'shapefile' }],
-  } as DraftItem['card'];
-  const expected = 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
-    + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
-    + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
-  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
-  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
-  assert.equal(fixture.state.events, 0, 'Archive roots have no automatic draft transition today.');
-  assert.equal(fixture.jobs.length, 0);
-});
+// SH2: a GeoPackage, or a ZIP its card names a shapefile set in, is converted by its own job, at any size.
+for (const [name, format, card] of [
+  ['GeoPackage', 'GeoPackage', { format: 'geopackage', family: 'vector', crs: { state: 'stated' } }],
+  ['shapefile ZIP', 'shapefile ZIP', { format: 'zip', family: 'archive', members: [{ format: 'shapefile' }] }],
+] as const) {
+  test(`a ${name} queues one conversion job and says its layers are being converted`, async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.bytes = 40 * 1024 * 1024;
+    fixture.src.inspection = {};
+    fixture.tray.family = card.family;
+    fixture.tray.card = card as unknown as DraftItem['card'];
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.deepEqual(fixture.jobs.map(job => [job.id, job.operation, job.payload.version]),
+      [[jobId, 'intake-native-derivative', 'intake-native-derivative/1']]);
+    assert.deepEqual(fixture.state.projection, { state: 'reading', placement: 'undecided', plan_ref: null,
+      records_seen: 0, limit_reason: `The layers of this ${format} are being converted to GeoJSON, each to be `
+        + 'taken in as its own file.' });
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), jobId);
+    fixture.jobs[0].status = 'completed';
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+    fixture.jobs[0].status = 'failed';
+    const again = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(fixture.jobs.length, 2);
+    assert.notEqual(again, jobId, 'A failed conversion is queued again under a new id.');
+  });
+}
 
 function zipFixture(members: { name: string; format: string; refusalCode?: string }[]) {
   const fixture = protocol();
@@ -303,10 +305,9 @@ test('oversized GeoJSON names retention only and does not promise a larger direc
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';
 for (const [format, family, bytes, expected] of [
-  ['pdf', 'document', 3355443, `Kept as a PDF document (3.2 MB).${kept}`],
+  ['docx', 'document', 3355443, `Kept as a DOCX document (3.2 MB).${kept}`],
   ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
   ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
-  ['ifc', 'model3d', 421888, `Kept as an IFC 3D model (412 KB).${kept}`],
   ['unknown', 'unknown', 421888, 'Kept (412 KB); its kind was not recognised from its first and last bytes.'],
 ] as const) {
   test(`a probed ${format} no batch reader takes rests not understood in words naming what the probe saw`,
@@ -537,4 +538,36 @@ test('contained-source lookup examines only the 50 newest, not a usable 51st rec
   const result = await lookupIntakeMemory(next, binding.subject, async (_sql, values) => values.length === 2 ? []
     : [...Array.from({ length: 50 }, () => unusable), { body: remembered, manual_profile: storedInventory() }]);
   assert.equal(result, null);
+});
+
+test('G23: a page image enrols its own first read once, says it is being read, then asks what it shows', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.inspection = {};
+  fixture.tray.family = 'image';
+  fixture.tray.card = { format: 'jpeg', family: 'image', crs: { state: 'absent' } } as DraftItem['card'];
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.jobs.length, 1);
+  assert.equal(fixture.jobs[0].id, jobId);
+  assert.equal(IntakePageImageInputSchema.parse(fixture.jobs[0].payload).sourceSha256, hash);
+  assert.deepEqual({ ...fixture.state.projection }, { state: 'reading', placement: 'undecided', plan_ref: null,
+    records_seen: 0, limit_reason: 'This page image is being read: its size, bands, orientation and a preview.' });
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(fixture.jobs.length, 1, 'No second read is queued while one waits.');
+  const read = { version: 'page-image-read/1' as const, format: 'jpeg' as const, width: 4032, height: 3024,
+    bands: 3, bitDepth: 8, orientation: null, captureTime: null, locationStated: false, dpi: null, preview: null,
+    previewLimit: 'it could not be decoded for a preview', label: null };
+  await settlePageImageTx(fixture.client, caseId, sourceId, read);
+  assert.equal(fixture.state.projection.state, 'read');
+  assert.equal(fixture.state.projection.placement, 'needs_answer');
+  assert.match(fixture.state.projection.limit_reason, /^A 4,032 x 3,024 JPEG image, no location stated\. /);
+  const labelled = await labelPageImageTx(fixture.client, caseId, sourceId, 'plan', '2026-10-21T00:00:00.000Z');
+  assert.deepEqual(labelled.label, { value: 'plan', state: 'candidate', answeredAt: '2026-10-21T00:00:00.000Z' });
+  assert.equal(fixture.state.projection.placement, 'undecided');
+  assert.deepEqual(fixture.state.projection.plan_ref.pageImage, labelled);
+  // A later probe keeps the read: nothing is queued again and the answered words stand.
+  fixture.tray.plan_ref = fixture.state.projection.plan_ref;
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(fixture.jobs.length, 1);
+  assert.match(fixture.state.projection.limit_reason, /The officer said it shows a plan; this is a candidate label/);
 });

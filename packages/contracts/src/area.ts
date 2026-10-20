@@ -172,6 +172,16 @@ export interface MapArea {
   geographicExtent: [number, number, number, number] | null;
   administrativeUnits: AdministrativeUnit[];
 }
+/** An officer's retire or restore of an area. Nothing is deleted; each change is one event. */
+export interface AreaRetirement {
+  areaId: string;
+  state: "retired" | "active";
+  areaRevision: number;
+  eventId: string;
+  actor: string;
+  reason: string;
+  at: string;
+}
 export interface AreaFinding {
   id: string;
   category: "geometric" | "coverage" | "rule" | "document";

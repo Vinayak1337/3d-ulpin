@@ -6,14 +6,16 @@ import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
 import { AreaIntakeService } from '@ulpin/server/modules/areas/area-intake-service';
 import {
-  acquisitionProbeSchema, acquisitionSchema, areaDisplayWindowSchema, areaIdSchema, documentFormatSchema,
+  acquisitionProbeSchema, acquisitionSchema, areaDisplayWindowSchema, areaIdSchema, areaRetirementSchema,
+  documentFormatSchema,
   externalIdentifierSchema,
 } from '@ulpin/server/modules/areas/area-validation';
 import { sourceCaseSchema } from '@ulpin/server/modules/cases/source-cases';
 import { sourceWorkspaceSchema } from '@ulpin/server/modules/cases/source-workspaces';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
 import {
-  acquisition, acquisitionProbe, areaContextResponse, areaDisplaySummary, areaDisplayWindow, caseDocument,
+  acquisition, acquisitionProbe, areaContextResponse, areaDisplaySummary, areaDisplayWindow, areaRetirement,
+  caseDocument,
   externalIdentifier,
   importPackage, jsonBody, mapArea, multipartBody, resolvedIdentifier, retiredBranchResponse, sourceCase,
   sourceCatalog, wireResponse,
@@ -145,6 +147,30 @@ export class AreaSourcesController {
   ) {
     const id = areaIdSchema.parse(areaId), bounds = areaDisplayWindowSchema.parse(window);
     return untilClientCloses('display-window', response, signal => this.areas.displayWindow(id, bounds, signal));
+  }
+
+  @Post('areas/:areaId/retire')
+  @HttpCode(200)
+  @ApiOperation({operationId: 'POST_api_v1_areas_areaId_retire',
+    summary: 'Retire an area: it leaves the area lists and map reads; nothing is deleted and the change is an event'})
+  @ApiParam({name: 'areaId', schema: {type: 'string', format: 'uuid'}})
+  @jsonBody(areaRetirementSchema)
+  @wireResponse(200, areaRetirement)
+  async retire(@Param('areaId') areaId: string, @Req() request: Request) {
+    const input = areaRetirementSchema.parse(await readJsonBody(request, JSON_BODY_LIMIT));
+    return this.areas.retire(areaIdSchema.parse(areaId), input);
+  }
+
+  @Post('areas/:areaId/restore')
+  @HttpCode(200)
+  @ApiOperation({operationId: 'POST_api_v1_areas_areaId_restore',
+    summary: 'Restore a retired area to the area lists and map reads; the change is an event'})
+  @ApiParam({name: 'areaId', schema: {type: 'string', format: 'uuid'}})
+  @jsonBody(areaRetirementSchema)
+  @wireResponse(200, areaRetirement)
+  async restore(@Param('areaId') areaId: string, @Req() request: Request) {
+    const input = areaRetirementSchema.parse(await readJsonBody(request, JSON_BODY_LIMIT));
+    return this.areas.restore(areaIdSchema.parse(areaId), input);
   }
 
   @Post('areas/:areaId/scenario')

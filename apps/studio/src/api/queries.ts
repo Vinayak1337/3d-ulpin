@@ -575,4 +575,8 @@ async function remove(path: string) {
   if (!response.ok && response.status !== 204) throw new ApiError(response.status, path, await response.json().catch(() => null));
 }
 export const deleteBuilding = (buildingId: string) => remove(`/api/v1/buildings/${buildingId}`);
-export const deleteArea = (areaId: string) => remove(`/api/v1/areas/${areaId}`);
+
+/** Retires an area at the revision on screen; nothing is deleted and the server records who, when and why. */
+export async function retireArea(areaId: string, body: PostBody<'/api/v1/areas/{areaId}/retire'>) {
+  return unwrap(await api.POST('/api/v1/areas/{areaId}/retire', { params: { path: { areaId } }, body }));
+}

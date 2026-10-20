@@ -1,9 +1,8 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { mkdir, mkdtemp, realpath, rm, statfs } from 'node:fs/promises';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Transform, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
@@ -17,17 +16,18 @@ import { profileTabularChunk } from './chunk-mapping-agent';
  * the line ending excluded. Cells are the bytes as written, decoded; a cell past the end of a short row is absent. */
 export type StreamedTabularRow = { index: number; sourceRow: number; byteStart: number; byteEnd: number;
   rawSha256: string; cells: string[] };
-/** One workbook record: its physical sheet row, its sheet and the SHA-256 of the sheet's XML cite it; it has no
- * byte range in the original. A missing cell is null; a marked cell says how its text was read. */
-export type StreamedWorkbookRow = { index: number; sourceRow: number; sheet: string; memberSha256: string;
+/** One workbook record: its physical sheet row, its sheet and the SHA-256 of the sheet's XML as read; its byte
+ * range is the sheet's stored bytes in the ZIP and `rawSha256` is of exactly those bytes. A missing cell is null;
+ * a marked cell says how its text was read, and is unknown wherever it is mapped or cited. */
+export type StreamedWorkbookRow = Omit<StreamedTabularRow, 'cells'> & { sheet: string; sheetSha256: string;
   cells: (string | null)[]; marks?: { column: number; mark: TableCellMark }[] };
 /** A CSV window's byte range runs from its first record's start to its last record's end; its SHA-256 is of exactly
  * those bytes of the original, the line endings and skipped blank records between its records included. A
- * workbook window's byte range is the sheet member's stored bytes in the original, and its SHA-256 is of the
- * window as the reader wrote it. */
+ * workbook window's byte range is its sheet's stored bytes in the ZIP, and its SHA-256 is of exactly those bytes. */
 export type StreamedTabularWindow<Row = StreamedTabularRow> = { index: number; rows: Row[]; byteStart: number;
   byteEnd: number; sha256: string };
 export type StreamedTableWindow = StreamedTabularWindow<StreamedTabularRow | StreamedWorkbookRow>;
+export type TableSource = { selection: TabularSelection; bytes: number };
 export type StreamedTabularRead = { headers: string[]; records: number; windows: number; bytes: number;
   sha256: string; notes?: string[] };
 type OnWindow<Row> = (window: StreamedTabularWindow<Row>, headers: string[]) => Promise<void>;
@@ -190,7 +190,7 @@ export async function readTabularWindows(
 const hex64 = z.string().regex(/^[a-f0-9]{64}$/), count = z.number().int().nonnegative();
 const ReaderLineSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('sheet'), sheet: z.string(), member: z.string(), memberSha256: hex64,
-    memberBytes: count, byteStart: count, byteEnd: count, headers: z.array(z.string()) }),
+    memberBytes: count, byteStart: count, byteEnd: count, storedSha256: hex64, headers: z.array(z.string()) }),
   z.strictObject({ kind: z.literal('window'), index: count, rows: z.array(z.strictObject({ row: z.number().int(),
     cells: z.array(z.string().nullable()), marks: z.array(z.tuple([count, TableCellMarkSchema])).optional() })) }),
   z.strictObject({ kind: z.literal('end'), records: count, windows: count,
@@ -239,6 +239,29 @@ function readerLine(line: Buffer) {
   } catch {
     return readerStopped();
   }
+}
+
+const size = (bytes: number) => bytes < 1024 ** 3 ? `${mib(bytes)} MiB` : `${(bytes / 1024 ** 3).toFixed(2)} GiB`;
+
+/** A private folder for one copy, in the private scratch the demo runtime gives its local readers
+ * (ULPIN_DOCUMENT_OCR_SCRATCH, outside the repository), with room for the copy and 1 GiB more. */
+async function scratchFolder(bytes: number) {
+  const root = process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+  const outside = (path: string) => { const at = relative(settings.repositoryRoot, path);
+    return at === '..' || at.startsWith(`..${sep}`) || isAbsolute(at); };
+  if (!root || !isAbsolute(root) || !outside(resolve(root))) {
+    throw new AppError(503, 'TABULAR_SCRATCH_UNAVAILABLE', 'A workbook above 16 MiB is copied to the private ' +
+      'scratch folder to be read, and none is configured outside the repository. It was kept unchanged.');
+  }
+  await mkdir(root, { recursive: true, mode: 0o700 });
+  const folder = await realpath(root), disk = await statfs(folder), free = disk.bavail * disk.bsize;
+  if (!outside(folder)) throw new AppError(503, 'TABULAR_SCRATCH_UNAVAILABLE', 'The scratch folder is inside the ' +
+    'repository; a workbook is never copied there. It was kept unchanged.');
+  if (free < bytes + 1024 ** 3) {
+    throw new AppError(507, 'TABULAR_SCRATCH_SPACE', `The scratch folder has ${size(free)} free; reading this ` +
+      `${size(bytes)} workbook needs its size and 1 GiB more (${size(bytes + 1024 ** 3)}). It was kept unchanged.`);
+  }
+  return mkdtemp(join(folder, 'table-workbook-'));
 }
 
 /** Copies the original to a private file while counting and hashing it; a ZIP is read from its end, not a stream. */
@@ -295,12 +318,12 @@ function workbookArguments(path: string, selection: TabularSelection) {
 }
 
 /** Reads one sheet of an XLSX original as a stream in windows of 10,000 rows, never whole. The original is copied
- * to a private temporary file (a ZIP is read from its directory at the end), then the native window reader is
+ * to a private scratch file (a ZIP is read from its directory at the end), then the native window reader is
  * started once; each window is passed to `onWindow` before the next line is read, so the reader runs at most one
  * window ahead. Cells are the text the file stores; nothing is calculated or reformatted. */
-export async function readWorkbookWindows(body: Readable, selection: TabularSelection,
+export async function readWorkbookWindows(body: Readable, { selection, bytes }: TableSource,
   onWindow: OnWindow<StreamedWorkbookRow>): Promise<StreamedTabularRead> {
-  const scratch = await mkdtemp(join(tmpdir(), 'ulpin-workbook-'));
+  const scratch = await scratchFolder(bytes);
   let reader: ChildProcess | undefined, closed: Promise<number | null> = Promise.resolve(null);
   try {
     const path = join(scratch, 'original.xlsx'), receipt = await spool(body, path);
@@ -316,11 +339,11 @@ export async function readWorkbookWindows(body: Readable, selection: TabularSele
       if (item.kind === 'end') end = item;
       if (item.kind !== 'window') continue;
       if (!head || item.index !== windows++) readerStopped();
-      const { sheet, memberSha256 } = head;
-      const rows = item.rows.map(row => ({ index: records++, sourceRow: row.row, sheet, memberSha256,
-        cells: row.cells, ...(row.marks ? { marks: row.marks.map(([column, mark]) => ({ column, mark })) } : {}) }));
-      await onWindow({ index: item.index, rows, byteStart: head.byteStart, byteEnd: head.byteEnd,
-        sha256: createHash('sha256').update(line).digest('hex') }, head.headers);
+      const { sheet, memberSha256: sheetSha256, byteStart, byteEnd, storedSha256: sha256 } = head;
+      const rows = item.rows.map(row => ({ index: records++, sourceRow: row.row, byteStart, byteEnd,
+        rawSha256: sha256, sheet, sheetSha256, cells: row.cells,
+        ...(row.marks ? { marks: row.marks.map(([column, mark]) => ({ column, mark })) } : {}) }));
+      await onWindow({ index: item.index, rows, byteStart, byteEnd, sha256 }, head.headers);
     }
     if (await closed !== 0 || !head || !end || end.records !== records || end.windows !== windows) readerStopped();
     if (!records) {
@@ -335,22 +358,30 @@ export async function readWorkbookWindows(body: Readable, selection: TabularSele
 }
 
 /** The pinned selection chooses the reader: a CSV's own bytes, or one sheet of a workbook. */
-export function readTableWindows(body: Readable, selection: TabularSelection,
+export function readTableWindows(body: Readable, source: TableSource,
   onWindow: OnWindow<StreamedTabularRow | StreamedWorkbookRow>) {
-  return selection.format === 'xlsx' ? readWorkbookWindows(body, selection, onWindow)
+  return source.selection.format === 'xlsx' ? readWorkbookWindows(body, source, onWindow)
     : readTabularWindows(body, onWindow);
+}
+
+/** A workbook cell marked by the reader (a formula's stored result, an error, no value) is unknown, as in the
+ * whole read; it is never mapped or cited as a value. */
+export function unavailableColumns(row: { marks?: { column: number }[] }) {
+  return new Set(row.marks?.map(mark => mark.column));
 }
 
 /** The profile of a streamed table: the existing layout profile of its first 100 records, and per column the
  * counts of written, empty and absent cells over every record. */
-export async function profileTabularStream(body: Readable, selection: TabularSelection) {
+export async function profileTabularStream(body: Readable, source: TableSource) {
   const first: (string | undefined)[][] = [];
   let counts: { written: number; empty: number; absent: number }[] = [];
-  const read = await readTableWindows(body, selection, async (window, headers) => {
+  const read = await readTableWindows(body, source, async (window, headers) => {
     if (!counts.length) counts = headers.map(() => ({ written: 0, empty: 0, absent: 0 }));
     for (const row of window.rows) {
-      // As in the whole read, a cell without a stored value is absent from the layout profile.
-      if (first.length < 100) first.push(row.cells.map(cell => cell ?? undefined));
+      // As in the whole read, a cell without a stored value or with a marked one has no value in the profile.
+      const unavailable = 'marks' in row ? unavailableColumns(row) : new Set<number>();
+      if (first.length < 100) first.push(row.cells.map((cell, column) =>
+        unavailable.has(column) ? undefined : cell ?? undefined));
       counts.forEach((count, column) => {
         const cell = row.cells[column];
         if (cell === undefined || cell === null) count.absent++;
@@ -360,6 +391,6 @@ export async function profileTabularStream(body: Readable, selection: TabularSel
     }
   });
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: read.headers, rows: first,
-    sourceRef: 'inventory', selection }).profile;
+    sourceRef: 'inventory', selection: source.selection }).profile;
   return { ...read, profile, streamCounts: counts };
 }

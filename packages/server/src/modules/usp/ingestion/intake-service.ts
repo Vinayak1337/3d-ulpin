@@ -1,18 +1,23 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema,
-  type IntakeCard } from '@ulpin/contracts/usp';
+import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
+  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { readObjectRange } from '../../../infrastructure/storage';
+import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
+import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
+import { areaGeo } from '../../areas/areas';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, saveIntakeCardTx, citeIntakeReceipt } from './intake-ledger';
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
 import { queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
+import { labelPageImageTx } from './intake-page-image';
+import { queueLateIntakeEvidenceTx } from './intake-evidence';
+import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -21,7 +26,21 @@ const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_i
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
-const defaults = { transaction, read: readObjectRange, probe: probeOriginal };
+const defaults = { transaction, read: readObjectRange, probe: probeOriginal, object: readObject,
+  resolve: (collection: Record<string, unknown>) =>
+    areaGeo<{ authority: string }>('resolve-geojson-crs', { collection }) };
+
+/** CR1. The geo service decides whether it knows a code (pyproj builds it as a 2D system); none is ever guessed. */
+async function knownCrs(crs: string, resolve: typeof defaults.resolve) {
+  let authority: string | null = null;
+  try {
+    authority = (await resolve({ crs: { type: 'name', properties: { name: crs } } })).authority;
+  } catch (error) {
+    if (!(error instanceof AppError) || error.status !== 422) throw error;
+  }
+  if (authority !== crs) throw new AppError(422, 'INTAKE_LAYER_CRS_UNKNOWN',
+    `${crs} is not a two-dimensional coordinate reference system the geo service knows; state one it knows.`);
+}
 
 async function itemContextTx(client: PoolClient, caseId: string, itemId: string) {
   const row = (await client.query(`${itemSelect} WHERE i.case_id=$1 AND i.item_id=$2`, [caseId, itemId])).rows[0]
@@ -125,9 +144,14 @@ export class IntakeService {
         await saveIntakeCardTx(client, initial.itemId, citeIntakeReceipt(probed.card, fresh.source));
         await childrenTx(client, caseId, initial.itemId, probed.card);
         await notifyTx(client, fresh.source);
-        await queueIntakeDraftTx(client, fresh.source, probed.card);
+        // SB1: a kept TIFF or LAZ is read in parts by its existing reader; every other item takes the vector queue.
+        if (!await queueIntakeSurfaceTx(client, fresh.source, probed.card)) {
+          await queueIntakeDraftTx(client, fresh.source, probed.card);
+        }
         // ZJ1: a ZIP's layers are taken out by a dispatcher job; enrolling it again queues a retry when one waits.
         await queueZipLayersTx(client, fresh.source, probed.card, initial.itemId);
+        // AU4-B2 (D4): a table or document kept after a key profile exists is read under it.
+        await queueLateIntakeEvidenceTx(client, caseId, initial.itemId, probed.card.family);
       } else {
         await client.query(`UPDATE usp_intake_items SET state=CASE WHEN card IS NULL THEN $2 ELSE state END,
           limit_reason=CASE WHEN card IS NULL THEN $3 ELSE limit_reason END,updated_at=now() WHERE item_id=$1`,
@@ -180,6 +204,32 @@ export class IntakeService {
     });
   }
 
+  /** SB1: a kept surface's parts in order, under the item's original source authority. */
+  async parts(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const { after } = IntakeSurfacePartsQuerySchema.parse(raw);
+    return this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId);
+      await itemContextTx(client, caseId, itemId);
+      assertIngestionBinding(scope.binding);
+      return surfacePartsTx(client, caseId, itemId, after);
+    });
+  }
+
+  /** SB1 (D5): one accepted part placed in the batch's local frame, its reader's accepted fence checked again. */
+  async display(caseValue: string, itemValue: string, partValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const partIndex = z.coerce.number().int().nonnegative().parse(partValue);
+    return this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId);
+      await itemContextTx(client, caseId, itemId);
+      assertIngestionBinding(scope.binding);
+      return surfacePartDisplayTx(client, caseId, itemId, partIndex);
+    });
+  }
+
   async pin(caseValue: string, itemValue: string, raw: unknown) {
     const caseId = uuid.parse(caseValue);
     const itemId = uuid.parse(itemValue);
@@ -195,6 +245,56 @@ export class IntakeService {
       await appendIntakeItemTx(client, caseId, itemId);
       await rememberTx(client, caseId, key, digest, { itemId });
       await notifyTx(client, source);
+      assertIngestionBinding(scope.binding);
+    });
+    return this.one(caseId, itemId);
+  }
+
+  /** G23S. A read page image's stored preview: its key comes from the item, its bytes must match the kept hash. */
+  async pageImagePreview(caseValue: string, itemValue: string) {
+    const preview = (await this.one(caseValue, itemValue)).pageImage?.preview
+      ?? notFound('This item has no page image preview.');
+    const bytes = await this.dependencies.object(preview.key);
+    if (sha256(bytes) !== preview.sha256) {
+      throw new AppError(409, 'PAGE_IMAGE_PREVIEW_INTEGRITY', 'The stored preview differs from its kept SHA-256.');
+    }
+    return { bytes, sha256: preview.sha256 };
+  }
+
+  /** G23. The officer's answer to what a read page image shows, kept as a candidate label; one stored request. */
+  async labelPageImage(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakePageImageAnswerSchema.parse(raw);
+    await this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId, true);
+      await itemContextTx(client, caseId, itemId);
+      const key = `intake-page-image-label:${request.requestKey}`;
+      const digest = fingerprint({ request, itemId, access: scope.binding.access });
+      if (await priorTx(client, caseId, key, digest)) return;
+      await labelPageImageTx(client, caseId, itemId, request.label, new Date().toISOString());
+      await rememberTx(client, caseId, key, digest, { itemId });
+      assertIngestionBinding(scope.binding);
+    });
+    return this.one(caseId, itemId);
+  }
+
+  /** CR1. The officer states the EPSG code of a layer whose file states none; the conversion is queued again. */
+  async layerCrs(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakeLayerCrsSchema.parse(raw);
+    await knownCrs(request.crs, this.dependencies.resolve);
+    await this.dependencies.transaction(async client => {
+      await lockSourceCaseDestinationTx(client, caseId);
+      const scope = await intakeCaseTx(client, caseId, true);
+      const { source } = await itemContextTx(client, caseId, itemId);
+      const key = `intake-layer-crs:${request.requestKey}`;
+      const digest = fingerprint({ request, itemId, access: scope.binding.access });
+      if (await priorTx(client, caseId, key, digest)) return;
+      const { stateLayerCrsTx } = await import('./intake-native-derivative');
+      await stateLayerCrsTx(client, source, itemId, request);
+      await rememberTx(client, caseId, key, digest, { itemId });
       assertIngestionBinding(scope.binding);
     });
     return this.one(caseId, itemId);

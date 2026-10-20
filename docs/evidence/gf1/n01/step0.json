@@ -1,0 +1,54 @@
+{
+  "task": "N01",
+  "branch": "task/n01-one-drop-one-batch",
+  "base": "b2f1bb37",
+  "outcome": "stopped_at_step0",
+  "reason": "D4 applies: the table page cannot open from a batch item's source for a CSV of 16 MiB or less or for any XLSX without a server change.",
+  "findings": [
+    {
+      "what": "A CSV or XLSX dropped into the batch is kept through /uploads as profile large-original-v1 (viaUpload is true for every name other than .geojson/.json/.zip).",
+      "where": "apps/studio/src/features/intake/retain-batch.ts:55-57"
+    },
+    {
+      "what": "The table page shows 'This retained source is not a table.' unless the source's profile is manual-tabular/1; a batch item's large-original-v1 source has none until it is read as a table.",
+      "where": "apps/studio/src/features/intake/table/TablePage.tsx:27-29"
+    },
+    {
+      "what": "The only route that turns an already kept original into a table refuses originals of 16 MiB or less (TABLE_ORIGINAL_SMALL) and reads only CSV (TABULAR_FORMAT refuses XLSX).",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/service.ts:421-422",
+        "packages/server/src/modules/usp/ingestion/tabular-source.ts:203-205"
+      ]
+    },
+    {
+      "what": "Without the server change the Studio's only options are a second copy of the bytes through POST /sources (a different source, and only while the File is still in the drop dialog) or a sheet question before retention for XLSX; both contradict D2 ('for that source', 'joins the batch as an item').",
+      "where": "apps/studio/src/features/intake/table/retain.ts:27-34"
+    },
+    {
+      "what": "No blocker for D1 and D3: a small ZIP goes to POST intake/archives and a GPKG or large ZIP to /uploads; the batch converts a GeoPackage or a ZIP whose card names a shapefile set (SH2), and the archive route accepts any ZIP up to 16 MiB.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:39-42",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:159-170",
+        "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:49-56"
+      ]
+    },
+    {
+      "what": "Large CSV (above 16 MiB) works today from a batch item: tableFromOriginal(caseId, sourceId, { requestKey, expectedWorkspaceRevision, selection: csv }) then the table page.",
+      "where": "apps/studio/src/features/intake/table/useRetainTable.ts:14-28"
+    }
+  ],
+  "serverChangeNeeded": {
+    "seam": "packages/server/src/modules/usp/ingestion/service.ts tableFromOriginal (POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table) and its OpenAPI summary",
+    "change": "For a large-original-v1 source of 16 MiB or less, read the object whole and profile it with the same bounded tabular reader the /sources table route uses (inspectTabularSource with the request's selection), for CSV and for XLSX (sheet and header rows from the selection); keep the streamed CSV path above 16 MiB; refuse XLSX above 16 MiB with its own words. Same pins, replay key, revision check and source.retained event as today.",
+    "studioAfter": "Batch item of family table: 'Read as a table' -> CSV posts tableFromOriginal with the fixed CSV selection and opens /studio/work/cases/{caseId}/tables/{sourceId}; XLSX first asks sheet and header rows on that page (TableSelectionFields), no case choice. Then file-route.ts sends .gpkg, every ZIP, CSV and XLSX to the batch and the drop list words each route."
+  },
+  "alternativeWithoutServerChange": "CSV only: retain a CSV of 16 MiB or less through POST /sources (format csv, fixed selection) and enrol it with /intake/items (intake-context.ts:55 accepts tabular-manual-v1), so its item's source is already a table. Needs retain-batch.ts (not in N01's owned paths) and leaves XLSX unsolved.",
+  "filesPlanned": [
+    "apps/studio/src/features/intake/file-route.ts",
+    "apps/studio/src/features/intake/AddFilesDialog.tsx",
+    "apps/studio/src/features/intake/IntakeTray.tsx",
+    "apps/studio/src/features/intake/table/TablePage.tsx",
+    "tests beside them"
+  ],
+  "codeChanged": false
+}

@@ -1,0 +1,95 @@
+{
+  "task": "AU4-B2",
+  "base": "ad660383",
+  "branch": "task/au4-b2-batch-evidence",
+  "built": {
+    "D1": "intake-evidence job kind in the existing job authority (jobs.ts registration branch, processing.ts dispatcher block); intake-evidence.ts stores and reads, intake-evidence-worker.ts reads one table or document under one key profile and writes coverage and candidates in the accepting transaction",
+    "D2": "GET evidence, POST key-profiles and POST evidence confirmations answer from the store; the confirmation keeps every pin, refuses a stale pin with 409 INTAKE_EVIDENCE_STALE, returns registryWritten false with a note, and writes nothing to the registry",
+    "D3": "candidate id and hash depend only on the profile, the source and the buildings, so sources read in any order give the same candidates and closure",
+    "D4": "a table or document kept after a profile exists is queued under every profile of its case; a stored confirmation is unchanged and the read lists the sources read after it as newerSources"
+  },
+  "realInputs": {
+    "buildings": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "classification": "test_only",
+      "geography": "foreign (Manhattan)"
+    },
+    "register": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+      "sha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b",
+      "issuer": "NYC Landmarks Preservation Commission",
+      "licence": "not stated, permission unconfirmed",
+      "classification": "test_only"
+    },
+    "document": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-office-of-technology-and-innovation/Metadata_BuildingFootprints.md",
+      "classification": "test_only"
+    }
+  },
+  "results": {
+    "key": "bin as written (integer kind: digits as written)",
+    "registerCoverage": {
+      "state": "closed",
+      "read": 753,
+      "eligible": 753,
+      "keyless": 0,
+      "unread": 0,
+      "failed": 0
+    },
+    "outcomes": {
+      "matched": 612,
+      "conflicting": 81,
+      "no_match": 60,
+      "several": 0
+    },
+    "conflictExample": "BIN 1002123 on two register rows, both conflicting in one group",
+    "documentCoverage": {
+      "state": "closed",
+      "read": 1,
+      "eligible": 0,
+      "keyless": 1,
+      "unread": 0,
+      "failed": 0,
+      "note": "the footprint metadata names no BIN; a document never proposes absence"
+    },
+    "orderIndependence": "register then metadata vs metadata then register with buildings reversed: identical candidate ids and hashes",
+    "staleConfirmation": "profile, source revision, reading, unnamed newer source, candidate hash, package revision and link manifest each refuse"
+  },
+  "notBuilt": [
+    "a table over 16 MiB (streamed CSV) stays coverage partial (read 0, other counts unknown): it needs G13's window read, a bounded read of every physical row of the retained original with its source row number, cell states as read and a result hash, callable by this reading's own job",
+    "a document is read from its latest accepted document-extraction job of the same source revision; the reading waits up to 30 minutes for one, then stays partial; it does not queue extraction itself",
+    "a building drafted after the key is not read back against earlier sources (late map side); left for the citation step",
+    "a map key held as a JSON number is never read as a key, since its spelling is lost on parse; a key path of the source feature id is refused",
+    "no runtime run: no database or Docker; the worker and stores are typechecked, and matching, closure, order and pin checks run on the real files"
+  ],
+  "seamsOutsideOwnedPaths": [
+    "packages/server/src/modules/usp/jobs.ts: one registration branch for the intake-evidence operation",
+    "apps/api/src/modules/ingestion/ingestion.controller.ts and intake-run.controller.ts with their test: the three 501s replaced",
+    "packages/contracts/src/usp/intake.ts: confirmation state on the read, registryWritten and note on the confirmation",
+    "tests/intake-ledger.test.ts: the fake client answers the key profile lookup with no profile"
+  ],
+  "checks": {
+    "pnpm typecheck:backend": 0,
+    "pnpm studio:typecheck": 0,
+    "pnpm studio:test": {
+      "exit": 0,
+      "studio": "479 passed",
+      "scene": "58 passed, 1 skipped",
+      "ui": "7 passed",
+      "api-client": "2 passed"
+    },
+    "backend test command plus intake-evidence, controller and contract tests": {
+      "exit": 0,
+      "tests": 386,
+      "pass": 384,
+      "fail": 0,
+      "skipped": 2
+    },
+    "openapi --check": {
+      "exit": 0,
+      "after": "refresh-contract.ts ad660383, pnpm studio:api-types, scripts/api/check.py (317 operations, 361 schemas)"
+    },
+    "git diff --check": 0
+  }
+}

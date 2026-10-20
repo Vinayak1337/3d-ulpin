@@ -35,7 +35,7 @@
 .mapTools { scrollbar-width: none; }
 .mapTools::-webkit-scrollbar { display: none; }
 .mapTools > summary { position: sticky; top: 0; z-index: 1; background: var(--ui-surface); }
-.deleteArea { justify-self: start; margin: 8px 0 4px; padding: 0 10px; color: var(--ui-danger); }
+.retireArea { justify-self: start; margin: 8px 0 4px; padding: 0 10px; color: var(--ui-danger); }
 .viewNote {
   flex: none; display: grid; max-width: min(38rem, calc(100% - 23rem)); overflow-wrap: anywhere; margin: 0;
   padding: 4px 8px; border-radius: var(--ui-radius-4);

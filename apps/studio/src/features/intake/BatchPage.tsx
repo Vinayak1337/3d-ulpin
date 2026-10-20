@@ -2,10 +2,15 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
+import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from './AddFilesDialog';
 import { DropOutcomes } from './IntakeDropDialog';
 import { IntakeTray } from './IntakeTray';
+import { IfcStructure } from './ifc/IfcStructure';
+import { isIfcItem } from './ifc/structure-model';
 import { LayoutQuestion } from './LayoutQuestion';
+import { PageImageQuestion } from './PageImageQuestion';
+import { isPageImage } from './page-image-model';
 import { isSettled, trayItems } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
@@ -64,6 +69,10 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     {current?.sourceId && (current.plan || needsLayoutAnswer(current)) ?
       <LayoutQuestion key={current.itemId} caseId={caseId}
         item={current} refresh={refresh} /> : null}
+    {current && isIfcItem(current) ?
+      <IfcStructure key={current.itemId} caseId={caseId} sourceId={current.sourceId} name={current.name} /> : null}
+    {isPageImage(current) ? <PageImageQuestion key={current.itemId} caseId={caseId} item={current}
+      refresh={refresh} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
     </section>
@@ -84,8 +93,9 @@ function BatchRecords({ batch, choose }: {
     </Banner> : null}
     {sourceCase.error ? <Banner tone="warning">{sourceCase.error.message}</Banner> : null}
     {packages.error ? <Banner tone="warning">{packages.error.message}</Banner> : null}
-    {items.length ? <IntakeTray caseId={caseId} items={items}
-      packages={listedPackages} choose={choose} refresh={refresh} /> : null}
+    {items.length ? <EvidenceProvider>
+      <IntakeTray caseId={caseId} items={items} packages={listedPackages} choose={choose} refresh={refresh} />
+    </EvidenceProvider> : null}
     {!manifest.isPending && !items.length ? <p>No files are enrolled in this batch.</p> : null}
   </>;
 }

@@ -1,0 +1,40 @@
+{
+  "task": "AU4-B2B",
+  "gap": "AU4-B2 left a table over 16 MiB partial with read 0; G13 now stores its records in usp_table_windows",
+  "base": "b2f1bb37",
+  "change": [
+    {
+      "file": "packages/server/src/modules/usp/ingestion/intake-evidence-worker.ts",
+      "why": "D1/D2/D4: a table source whose newest raw streaming job has stored windows is read window by window with readTableWindowTx, one window held at a time; coverage closes only when a finished raw job's every window was read"
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/intake-evidence.ts",
+      "why": "windowAssertions beside tableAssertions: the key cell of each stored window row, an absent (null) cell absent and any other cell literal as written"
+    },
+    {
+      "file": "packages/contracts/src/usp/intake.ts",
+      "why": "one optional field on the table row locator: the stored window, record number, byte range and SHA-256 of a streamed row; a whole-file row omits it"
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/table-windows.ts",
+      "why": "one export only: the raw job lookup TableRowsService.page uses, so the evidence reading uses the same lookup"
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/intake-evidence.test.ts",
+      "why": "the NYC register cut into windows by readTabularWindows gives the same 612/81/60 and candidate ids as the whole read; a running raw job is partial with unknown counts and a failed window counts failed (fake client)"
+    },
+    {
+      "file": "docs/api/openapi.json, packages/api-client/src/schema.d.ts",
+      "why": "generated from the locator change"
+    }
+  ],
+  "reuse": [
+    "readTableWindowTx and the raw job lookup of TableRowsService.page (table-windows.ts, G13)",
+    "readTabularWindows (tabular-stream.ts) to cut the real register into windows in the test",
+    "tableAssertions semantics (keyLiteral, cell states, rowSha256 = fingerprint of the cell states) and closeEvidence unchanged"
+  ],
+  "seamsOutside": [
+    "table-windows.ts: one exported lookup; TableRowsService.page calls it instead of its inline copy"
+  ],
+  "noRuntime": "No Docker, database, provider or GPU: the worker test answers the statements it issues from a fake client."
+}

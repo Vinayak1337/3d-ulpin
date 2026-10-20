@@ -34,14 +34,16 @@ export function useRun(caseId: string) {
   const command = useConfirmationCommand(caseId, stored, () => { setChoice([]); setCards(null); refresh(); });
   const progress = confirmations.flatMap(query => query.data?.progress ?? []);
   useRunStream(caseId, progress, refresh);
-  const preview = command.preview ?? targets.summary.data;
+  const preview = command.preview ?? targets.packagePage.data;
   const selected = currentChoice(preview, choice, command.preview ? [] : targets.targets);
-  const selection = useSelection(caseId, preview, selected, setChoice);
+  const selection = useSelection(caseId, preview, selected, setChoice, targets.packageCursor);
+  const turn = (move: () => void) => () => { setChoice([]); move(); };
   const priority = usePriority(caseId);
   const opening = useCardsOpening(caseId, setCards);
   return { targets, discovery, confirmations, confirmationKeys: ids,
     filter, setFilter, choice: selected, acknowledgement, setAcknowledgement,
-    refresh, command, priority, ...selection, cards, closeCards: () => setCards(null), ...opening };
+    refresh, command, priority, ...selection, cards, closeCards: () => setCards(null), ...opening,
+    nextPackages: turn(targets.nextPackages), firstPackages: turn(targets.firstPackages) };
 }
 
 /** Lists the next recorded buildings with no card on the confirmation screen; nothing is pressed for the officer. */
@@ -78,7 +80,7 @@ function currentChoice(page: ReturnType<typeof useTargets>['summary']['data'],
 }
 
 function useSelection(caseId: string, page: ReturnType<typeof useTargets>['summary']['data'],
-  choice: Target[], setChoice: (choice: Target[]) => void) {
+  choice: Target[], setChoice: (choice: Target[]) => void, packageCursor: string | null) {
   const [choosing, setChoosing] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const packages = page ? confirmablePackages(page) : [];
@@ -95,7 +97,7 @@ function useSelection(caseId: string, page: ReturnType<typeof useTargets>['summa
     setChoosing(true);
     setError(null);
     try {
-      setChoice(await readFirstReady(caseId));
+      setChoice(await readFirstReady(caseId, packageCursor ?? undefined));
     } catch (failure) {
       setError(failure);
     } finally {

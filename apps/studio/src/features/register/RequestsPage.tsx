@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
-import { Check, FilePlus, MapPin, Tray, Trash, X } from '@phosphor-icons/react';
+import { Archive, Check, FilePlus, MapPin, Tray, Trash, X } from '@phosphor-icons/react';
 import type { RegisterRequest, RequestState } from '@ulpin/api-client/draft';
 import { api, unwrap } from '@ulpin/api-client';
 import {
@@ -12,6 +12,8 @@ import {
   decideRegisterRequest, featureCode, queryKeys, useAreas, useRegisterRequests, type AreaFeature, type RequestFilter,
 } from '../../api/queries';
 import { DeleteDialog } from '../manage/DeleteDialog';
+import { RetireAreaDialog, type RetireTarget } from '../manage/RetireAreaDialog';
+import { isDemoId } from '../../api/demo-import';
 import { REQUEST_KINDS } from '../../local/requestKinds';
 import { isServed } from '../../local/routes';
 import { IDENTIFIER_HEADERS, NOT_STATED, identifierColumns, openRequestsColumn } from './buildingColumns';
@@ -210,7 +212,7 @@ function RequestDetail({ request: r }: { request: RegisterRequest }) {
 }
 
 const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
-const canDeleteArea = isServed('DELETE', '/api/v1/areas/:areaId');
+const canRetireArea = isServed('POST', '/api/v1/areas/:areaId/retire');
 
 const formatSize = (bytes: number) => (bytes >= 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
 
@@ -228,7 +230,8 @@ function Identifier({ value }: { value: string | null | undefined }) {
 function BuildingsView() {
   const areas = useAreas();
   const requests = useRegisterRequests('open');
-  const [target, setTarget] = useState<{ kind: 'area' | 'building'; id: string; name: string; detail: string } | null>(null);
+  const [target, setTarget] = useState<{ kind: 'building'; id: string; name: string; detail: string } | null>(null);
+  const [retiring, setRetiring] = useState<RetireTarget | null>(null);
   const contexts = useQueries({
     queries: (areas.data ?? []).map((area) => ({
       queryKey: queryKeys.areaContext(area.id),
@@ -259,12 +262,11 @@ function BuildingsView() {
                 {area.name} <span className="ul-caption">{buildingCount(buildings.length)}</span>
               </h2>
               <Link to={`/studio/areas/${area.id}`} className="ul-btn ul-btn--ghost"><Icon icon={MapPin} />Open map</Link>
-              {canDeleteArea ? (
-                <Button variant="ghost" icon={Trash} onClick={() => setTarget({
-                  kind: 'area', id: area.id, name: area.name,
-                  detail: `${area.name} and its ${buildingCount(buildings.length)}, parcels, roads and utilities `
-                    + 'are deleted, with every building register in it.',
-                })}>Delete area</Button>
+              {canRetireArea && !isDemoId(area.id) ? (
+                <Button variant="ghost" icon={Archive}
+                  onClick={() => setRetiring({ id: area.id, name: area.name, revision: area.revision })}>
+                  Retire area
+                </Button>
               ) : null}
             </div>
             {contexts[i]?.isPending ? <Skeleton height={200} /> : (
@@ -302,6 +304,9 @@ function BuildingsView() {
         );
       })}
       {target ? <DeleteDialog target={target} onClose={() => setTarget(null)} onDeleted={() => setTarget(null)} /> : null}
+      {retiring ? (
+        <RetireAreaDialog target={retiring} onClose={() => setRetiring(null)} onRetired={() => setRetiring(null)} />
+      ) : null}
     </div>
   );
 }

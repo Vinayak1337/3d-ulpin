@@ -139,19 +139,25 @@ export class StreamingVectorService{
       if(prior){if(prior.payload_hash!==digest)conflict('The import request key names different inputs.');return statusTx(client,caseId,sourceId,prior.result.jobId);}
       if(!ctx.latest||ctx.current.revision!==request.expectedCaseRevision||ctx.source.revision!==request.expectedSourceRevision||ctx.source.sha256!==request.sourceSha256)
         conflict('The source/case revision changed before streaming admission.');
-      // G13: a large CSV is read in windows to the table ceiling, beside the reader's own 128 MiB bound.
+      // G13: a large CSV is read in windows to the table ceiling; any other source keeps the reader's own bound.
       const windowed=isWindowedTable({...request,sourceBytes:Number(ctx.source.bytes)});
       if(windowed&&Number(ctx.source.bytes)>TABULAR_STREAM_LIMITS.bytes)throw new AppError(413,'TABULAR_SOURCE_BUDGET',
         `A table is read as a stream up to ${Number((TABULAR_STREAM_LIMITS.bytes/1024**3).toFixed(3))} GiB.`);
-      if(!windowed&&Number(ctx.source.bytes)>limits.sourceBytes||Number(ctx.source.bytes)<=0)throw new AppError(413,'STREAMING_SOURCE_BUDGET','This reader profile supports retained originals up to 128 MiB.');
+      if((!windowed&&Number(ctx.source.bytes)>limits.sourceBytes)||Number(ctx.source.bytes)<=0)
+        throw new AppError(413,'STREAMING_SOURCE_BUDGET',
+          `This reader profile supports retained originals up to ${limits.sourceBytes/1024**2} MiB.`);
       if(request.framing==='tabular')assertTabularPin(request.tabular,ctx.source);
       else if(ctx.source.profile==='tabular-manual-v1')conflict('Pin tabular framing for this source.');
       if(ctx.source.profile==='geojson-manual-v1'&&request.framing!=='feature-collection')throw new AppError(422,'STREAMING_FRAMING','The manual GeoJSON receipt is a FeatureCollection.');
       if(ctx.source.profile==='large-original-v1'&&!windowed&&ctx.source.mime_type!=='application/octet-stream')throw new AppError(422,'STREAMING_FRAMING','This retained source is not declared as JSON bytes.');
       const active=Number((await client.query("SELECT count(*)::int n FROM usp_streaming_vector_imports WHERE state IN ('queued','running')")).rows[0].n);
-      if(active>=2)throw new AppError(429,'STREAMING_CAPACITY','The bounded streaming workers are occupied.');
-      const requests=Number((await client.query("SELECT count(*)::int n FROM operations WHERE kind='streaming-vector'")).rows[0].n);
-      if(requests>=128)throw new AppError(429,'STREAMING_HISTORY_CAPACITY','The finite streaming import history is full.');
+      if(active>=2)throw new AppError(429,'STREAMING_CAPACITY','2 streaming imports are running on this service, '
+        +'its limit; a slot frees when one of them finishes.',{limit:'running_imports',freesAt:null});
+      // The kept history is bounded per case, so imports in other cases never spend this one's.
+      const requests=Number((await client.query("SELECT count(*)::int n FROM operations WHERE case_id=$1 "
+        +"AND kind='streaming-vector'",[caseId])).rows[0].n);
+      if(requests>=128)throw new AppError(429,'STREAMING_HISTORY_CAPACITY','This case keeps 128 streaming imports, '
+        +'its limit; kept imports stay, so read the file in another case.',{limit:'case_imports',freesAt:null});
       const jobId=randomUUID(),base={version:limits.version,jobId,caseId,caseRevision:ctx.current.revision,
         sourceId,sourceRevision:ctx.source.revision,sourceFamilyId:ctx.source.family_id,sourceSha256:ctx.source.sha256,
         sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,framing:request.framing,

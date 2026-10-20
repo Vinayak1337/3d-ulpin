@@ -1,13 +1,17 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { STREAMING_VECTOR_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
+import { DOCUMENT_LIMITS, STREAMING_VECTOR_LIMITS, type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
 import { conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { writeIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
+import { writeIntakeDraftTx, writeIntakeLargeTx, type IntakeDraftState } from './intake-ledger';
 import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
+import { queuePageImageTx } from './intake-page-image';
+import { batchIfc, queueIntakeIfcTx } from './intake-ifc';
 import { stableUuid } from './intake-run';
+import { pageImageFormat } from './page-image-read';
+import { queueBatchDocumentTx } from './documents';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -31,8 +35,14 @@ export function intakeDraftKey(itemId: string, revision: number, phase: string):
 export const shapefileZip = (card: IntakeCard | null) =>
   card?.format === 'zip' && card.members.some(member => member.format === 'shapefile');
 
+/** SH2. The native format a batch card is converted from into GeoJSON layers, or null for any other card. */
+export function nativeDerivativeFormat(card: IntakeCard | null): 'gpkg' | 'shapefile_zip' | null {
+  if (card?.format === 'geopackage') return 'gpkg';
+  return shapefileZip(card) ? 'shapefile_zip' : null;
+}
+
 /** Names entries within `budget` characters (limit_reason holds 2000); the rest are counted, never cut. */
-function listWords(entries: string[], budget: number): string {
+export function listWords(entries: string[], budget: number): string {
   let shown = 0;
   for (let used = 0; shown < entries.length && used + entries[shown].length + 2 <= budget; shown++) {
     used += entries[shown].length + 2;
@@ -100,11 +110,7 @@ function keptWords(card: IntakeCard, bytes: number): string {
 export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): string | null {
   const format = item.card?.format;
   const count = source.inspection?.manualProfile?.featureCount;
-  if (format === 'geopackage' || format === 'gpkg')
-    return 'This GeoPackage can be imported through POST /api/v1/import-packages with format=gpkg '
-      + 'and one selected layer within 16 MiB and 2000 features; intake recipe drafting and '
-      + 'decoded binary-record citations for its card are not built.';
-  if (format === 'shapefile' || format === 'shapefile_zip' || shapefileZip(item.card))
+  if (format === 'shapefile' || format === 'shapefile_zip')
     return 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
       + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
       + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
@@ -153,7 +159,15 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
   if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
+  if (publishedCard?.format === 'pdf' && publishedCard.family === 'document') return queueBatchPdfTx(client, source);
+  if (publishedCard && pageImageFormat(publishedCard)) return readPageImageTx(client, source, publishedCard);
+  if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
   if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
+  if (nativeDerivativeFormat(publishedCard ?? null)) {
+    // SH2: converted into GeoJSON layers by its own job; each layer then takes the large GeoJSON path.
+    const { queueNativeDerivativeTx } = await import('./intake-native-derivative');
+    return queueNativeDerivativeTx(client, source, publishedCard!);
+  }
   // Nonvector readers keep their own behavior. Unsupported vectors receive a reason, never another reader.
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
   const item = await draftItemTx(client, source.id);
@@ -203,6 +217,124 @@ async function settleKeptTx(client: PoolClient, source: IntakeSourceRow, card: I
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
     planRef: null, recordsSeen: 0, limitReason: keptWords(card, Number(source.bytes)) });
   return null;
+}
+
+/** G23. A page image goes to its own first read instead of resting kept only; a placed or answered item stands. */
+async function readPageImageTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard): Promise<string | null> {
+  const item = await draftItemTx(client, source.id);
+  if (!item || item.parent_item_id || !['probed', 'reading', 'read'].includes(item.state)) return null;
+  return queuePageImageTx(client, source, card, item);
+}
+
+/** G10. Words while the document reader reads a batch PDF, and after a stopped or stale read. */
+const pdfReading = 'Reading the text layer of each page. Nothing is recorded until you confirm it.';
+const pdfStopped = 'The page reader stopped before it finished; the original is kept unchanged with its SHA-256.';
+const pdfStale = 'This PDF or its batch changed while it was read; nothing was kept from that read.';
+type PdfItemState = Pick<IntakeDraftState, 'state' | 'placement' | 'limitReason'>;
+const pdfJobStates: Record<string, PdfItemState> = {
+  queued: { state: 'reading', placement: 'undecided', limitReason: pdfReading },
+  running: { state: 'reading', placement: 'undecided', limitReason: pdfReading },
+  succeeded: { state: 'read', placement: 'undecided',
+    limitReason: 'Read earlier. Open its pages to review what the reader found.' },
+  stale: { state: 'failed_part', placement: 'not_understood', limitReason: pdfStale },
+};
+
+/**
+ * G10. A probed PDF is read by the existing document reader, on its text layer only. Above the reader's byte bound
+ * it rests kept, in words. A later probe finds the same job and says where that job stands.
+ */
+async function queueBatchPdfTx(client: PoolClient, source: IntakeSourceRow): Promise<string | null> {
+  const item = await draftItemTx(client, source.id);
+  if (!item || item.parent_item_id || item.state !== 'probed' || item.plan_ref
+    || !['undecided', 'not_understood'].includes(item.placement)) return null;
+  const bytes = Number(source.bytes);
+  if (bytes > DOCUMENT_LIMITS.originalBytes) {
+    await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
+      planRef: null, recordsSeen: 0, limitReason: `Kept as a PDF document (${sizeWords(bytes)}). The page reader `
+        + `in a batch reads a PDF of at most ${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so this one is not read; `
+        + 'the original is kept with its SHA-256.' });
+    return null;
+  }
+  const { jobId, status } = await queueBatchDocumentTx(client, item.case_id, source.id);
+  const next = pdfJobStates[status] ?? { state: 'failed_part', placement: 'not_understood', limitReason: pdfStopped };
+  await writeIntakeDraftTx(client, item.case_id, item.item_id, { ...next, planRef: null, recordsSeen: 0 });
+  return jobId;
+}
+
+const noText = /^PDF page (\d+) has no native text/;
+const floorsOrRooms = new RegExp('\\b(?:storeys?|stories|floors?|levels?|basements?|stilts?|rooms?|bedrooms?'
+  + '|kitchens?|toilets?|balcon(?:y|ies))\\b|\\bG\\s*\\+\\s*\\d+\\b', 'i');
+
+/** Page numbers as an officer reads them: "page 3", "pages 1–2", "pages 1, 3 and 5–6". */
+export function pageWords(pages: readonly number[]): string {
+  const runs: string[] = [];
+  for (let at = 0; at < pages.length;) {
+    let end = at;
+    while (end + 1 < pages.length && pages[end + 1] === pages[end] + 1) end++;
+    runs.push(end === at ? `${pages[at]}` : `${pages[at]}–${pages[end]}`);
+    at = end + 1;
+  }
+  const list = runs.length > 1 ? `${runs.slice(0, -1).join(', ')} and ${runs.at(-1)}` : runs[0];
+  return `${pages.length === 1 ? 'page' : 'pages'} ${list}`;
+}
+
+const ascending = (pages: Iterable<number>) => [...new Set(pages)].sort((a, b) => a - b);
+
+/**
+ * G10. What the page reader found, in an officer's words. Every page has either text parts or a no-text warning,
+ * so their union is the page count. A passage naming floors or rooms is a candidate cited to its page and lines,
+ * never a value; a page with no text layer is said to be scanned and unread, as no OCR runs in a batch.
+ */
+export function batchPdfSettlement(native: DocumentResult['native']): PdfItemState {
+  if (native.status === 'encrypted') return { state: 'read', placement: 'needs_answer', limitReason: 'This PDF is '
+    + 'encrypted, so no page was read. Add an unlocked copy to the batch; no password is kept.' };
+  if (native.status === 'tool_error') return { state: 'failed_part', placement: 'not_understood',
+    limitReason: native.code === 'NATIVE_READER_BYTE_LIMIT' ? 'The page reader reads a PDF of at most '
+      + `${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, so this one is not read; the original is kept with its SHA-256.`
+      : pdfStopped };
+  if (native.status === 'unsupported') return { state: 'read', placement: 'not_understood',
+    limitReason: 'The page reader could not take this file as a PDF; the original is kept with its SHA-256.' };
+  const textPages = ascending(native.parts.flatMap(part => part.locator.page ?? []));
+  const scanned = ascending(native.warnings.map(warning => Number(noText.exec(warning)?.[1]))
+    .filter(page => Number.isSafeInteger(page) && !textPages.includes(page)));
+  const total = textPages.length + scanned.length;
+  const words = [`${total} ${total === 1 ? 'page' : 'pages'} read.`];
+  if (textPages.length) words.push(`Text was found on ${pageWords(textPages)}.`);
+  const one = scanned.length === 1;
+  if (scanned.length) words.push(`${pageWords(scanned).replace(/^p/, 'P')} ${one ? 'has' : 'have'} no text layer `
+    + `(scanned), so the words on ${one ? 'it' : 'them'} are not read; no OCR runs in a batch.`);
+  const named = new Map<string, number>();
+  for (const part of native.parts) {
+    if (!part.locator.page || !floorsOrRooms.test(part.text)) continue;
+    named.set(part.locator.unitId ?? part.id, part.locator.page);
+  }
+  if (named.size) words.push(`${named.size} ${named.size === 1 ? 'passage' : 'passages'} on `
+    + `${pageWords(ascending(named.values()))} name floors, storeys, levels or rooms: candidates cited to their page `
+    + 'and lines, for your review.');
+  else if (textPages.length) words.push('No passage names floors, storeys, levels or rooms.');
+  words.push('Nothing is recorded until you confirm it.');
+  return { state: 'read', placement: textPages.length ? 'undecided' : 'not_understood', limitReason: words.join(' ') };
+}
+
+/** G10. A batch PDF's item, when this source has one in this case. */
+async function batchPdfItemTx(client: PoolClient, caseId: string, sourceId: string) {
+  const item = await draftItemTx(client, sourceId);
+  return item?.case_id === caseId && item.card?.format === 'pdf' ? item : null;
+}
+
+/** G10. A finished document read settles its batch PDF's item; a source with no PDF item is left alone. */
+export async function settleBatchPdfTx(client: PoolClient, caseId: string, sourceId: string,
+  native: DocumentResult['native']) {
+  const item = await batchPdfItemTx(client, caseId, sourceId);
+  if (item) await writeIntakeDraftTx(client, caseId, item.item_id, { ...batchPdfSettlement(native),
+    planRef: item.plan_ref, recordsSeen: 0 });
+}
+
+/** G10. A stopped or stale document read is said on its batch PDF's item; the original stays kept. */
+export async function stopBatchPdfTx(client: PoolClient, caseId: string, sourceId: string, stale: boolean) {
+  const item = await batchPdfItemTx(client, caseId, sourceId);
+  if (item) await writeIntakeDraftTx(client, caseId, item.item_id, { state: 'failed_part',
+    placement: 'not_understood', planRef: item.plan_ref, recordsSeen: 0, limitReason: stale ? pdfStale : pdfStopped });
 }
 
 async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow) {

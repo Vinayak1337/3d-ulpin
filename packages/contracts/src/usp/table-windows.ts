@@ -22,26 +22,23 @@ export const TableFromOriginalSchema = z.strictObject({
  * null and marked; an error cell keeps its stored text. */
 export const TableCellMarkSchema = z.enum(['formula_cached', 'formula_uncached', 'no_value', 'error', 'unsupported']);
 
-/** One record as written: its number among the table's records (the first is 0) and its row in the file. A CSV
- * record (the header is row 1) cites its byte range in the unchanged original and that range's SHA-256. A workbook
- * record cites its sheet, its physical sheet row and the SHA-256 of the sheet's XML as read; it claims no byte
- * range. An absent cell is null; an empty cell stays the empty string. */
+/** One record as written: its number among the table's records (the first is 0), its row in the file, its byte
+ * range in the unchanged original and that range's SHA-256. A CSV record's range is its own bytes (the header is
+ * row 1). A workbook record's range is the stored bytes of its sheet in the ZIP, and it also cites the sheet, its
+ * physical sheet row and the SHA-256 of the sheet's XML as read. An absent cell is null; an empty cell stays the
+ * empty string. */
 const WindowRowObject = z.strictObject({
-  record, sourceRow: z.number().int().min(2), byteStart: z.number().int().nonnegative().optional(),
-  byteEnd: z.number().int().nonnegative().optional(), sha256: hash.optional(),
-  sheet: z.string().min(1).max(150).optional(), memberSha256: hash.optional(),
+  record, sourceRow: z.number().int().min(2), byteStart: z.number().int().nonnegative(),
+  byteEnd: z.number().int().nonnegative(), sha256: hash,
+  sheet: z.string().min(1).max(150).optional(), sheetSha256: hash.optional(),
   marks: z.array(z.strictObject({ column: z.number().int().nonnegative().max(TABULAR_LIMITS.columns - 1),
     mark: TableCellMarkSchema })).min(1).max(TABULAR_LIMITS.columns).optional(),
   cells: z.array(z.string().nullable()).min(1).max(TABULAR_LIMITS.columns),
 });
-type RowLocator = { byteStart?: number; byteEnd?: number; sha256?: string; sheet?: string; memberSha256?: string;
-  marks?: unknown[] };
-const located = (row: RowLocator) => row.byteStart !== undefined && row.byteEnd !== undefined
-  && row.sha256 !== undefined && row.byteEnd >= row.byteStart
-  && row.sheet === undefined && row.memberSha256 === undefined && row.marks === undefined
-  || row.byteStart === undefined && row.byteEnd === undefined && row.sha256 === undefined
-  && row.sheet !== undefined && row.memberSha256 !== undefined;
-const locatedMessage = 'A record cites either its ordered byte range or its sheet row, never both.';
+type RowLocator = { byteStart: number; byteEnd: number; sheet?: string; sheetSha256?: string; marks?: unknown[] };
+const located = (row: RowLocator) => row.byteEnd >= row.byteStart
+  && (row.sheet === undefined) === (row.sheetSha256 === undefined) && (row.marks === undefined || !!row.sheet);
+const locatedMessage = 'A record ends where it starts or later; a sheet row names its sheet and the sheet\'s SHA-256.';
 export const TableWindowRowSchema = WindowRowObject.refine(located, locatedMessage);
 
 /** A mapped cell of a window, without the citation list: the record's locator cites it. */

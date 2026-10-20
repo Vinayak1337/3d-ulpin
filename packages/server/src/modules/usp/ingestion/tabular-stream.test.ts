@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createReadStream, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { Readable } from 'node:stream';
 import test from 'node:test';
@@ -78,7 +79,7 @@ test('1,000,000 generated test_only rows stream in windows with bounded memory; 
   const sample = setInterval(() => { peak = Math.max(peak, process.memoryUsage().heapUsed); }, 5);
   gc();
   const before = process.memoryUsage().heapUsed, started = performance.now();
-  const read = await profileTabularStream(generated(TABULAR_STREAM_LIMITS.rows), selection);
+  const read = await profileTabularStream(generated(TABULAR_STREAM_LIMITS.rows), { selection, bytes: 0 });
   const elapsedMs = Math.round(performance.now() - started);
   clearInterval(sample);
   assert.equal(read.records, 1_000_000);
@@ -141,6 +142,7 @@ test('a 77 MB register with long quoted geometry cells is read by the raw job as
 });
 
 const workbook = { format: 'xlsx' as const, sheet: 'Register', table: null, headerRows: [2] };
+const source = (bytes: Buffer, selection: typeof workbook = workbook) => ({ selection, bytes: bytes.length });
 // The workbook readers need the native reader's packages (services/geo); this one is named in the task's checks.
 const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
 process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
@@ -150,7 +152,10 @@ const rbi = 'E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/orig
 const chunked = (bytes: Buffer) => Readable.from((function* () {
   for (let at = 0; at < bytes.length; at += 64 * 1024) yield bytes.subarray(at, at + 64 * 1024);
 })());
-const scratchDirectories = () => readdirSync(tmpdir()).filter(name => name.startsWith('ulpin-workbook-')).length;
+// The private scratch the demo runtime gives its local readers; here a test folder outside the repository.
+const scratchRoot = process.env.ULPIN_DOCUMENT_OCR_SCRATCH = join(tmpdir(), 'ulpin-table-scratch-stream');
+const scratchDirectories = () => existsSync(scratchRoot)
+  ? readdirSync(scratchRoot).filter(name => name.startsWith('table-workbook-')).length : 0;
 
 test('a generated test_only workbook above 16 MiB is read sheet by sheet in windows, nothing calculated',
   python, async t => {
@@ -159,7 +164,7 @@ test('a generated test_only workbook above 16 MiB is read sheet by sheet in wind
     const scratch = scratchDirectories(), started = performance.now();
     const windows: Omit<StreamedTableWindow, 'rows'>[] = [];
     let first: StreamedTableWindow | null = null, firstHeaders: string[] = [];
-    const read = await readTableWindows(chunked(control.bytes), workbook, async (window, headers) => {
+    const read = await readTableWindows(chunked(control.bytes), source(control.bytes), async (window, headers) => {
       if (!first) { first = window; firstHeaders = headers; }
       const { rows, ...cited } = window;
       assert.equal(rows.length, 10_000);
@@ -169,28 +174,32 @@ test('a generated test_only workbook above 16 MiB is read sheet by sheet in wind
     assert.deepEqual(read.headers, ['Ward', 'Plot', 'Area', 'Doubled', 'Tripled', 'Note', 'Hash']);
     assert.deepEqual([read.records, read.windows, read.bytes, read.sha256],
       [180_000, 18, control.bytes.length, sha(control.bytes)]);
-    // D3: a window cites the sheet member's stored bytes in the original and the hash of the window as read.
-    const [byteStart, byteEnd] = control.ranges.get(CONTROL_SHEET)!;
+    // D3: a window and each of its rows cite the sheet member's stored bytes in the original and the SHA-256 of
+    // exactly those bytes; a row also names its sheet and the SHA-256 of the sheet's XML as read.
+    const [byteStart, byteEnd] = control.ranges.get(CONTROL_SHEET)!, stored = sha(control.bytes.subarray(byteStart,
+      byteEnd));
     assert.deepEqual(windows.map(window => window.index), Array.from({ length: 18 }, (_, index) => index));
-    assert.ok(windows.every(window => window.byteStart === byteStart && window.byteEnd === byteEnd));
-    assert.equal(new Set(windows.map(window => window.sha256)).size, 18);
+    assert.ok(windows.every(window => window.byteStart === byteStart && window.byteEnd === byteEnd
+      && window.sha256 === stored));
     const rows = first!.rows as StreamedWorkbookRow[], area = parseInt(control.digest(3).slice(0, 8), 16);
-    assert.deepEqual(rows[0], { index: 0, sourceRow: 3, sheet: 'Register', memberSha256: control.sheetSha256,
+    assert.deepEqual(rows[0], { index: 0, sourceRow: 3, byteStart, byteEnd, rawSha256: stored, sheet: 'Register',
+      sheetSha256: control.sheetSha256,
       cells: [control.ward(3), '3.50', String(area), String(area * 2), null, ' lot 3 ', control.digest(3)],
       marks: [{ column: 3, mark: 'formula_cached' }, { column: 4, mark: 'formula_uncached' }] });
     assert.deepEqual([rows[2].sourceRow, rows[2].cells[5]], [5, ''], 'an empty shared string stays empty');
     assert.deepEqual([rows[4].sourceRow, rows[4].cells[5]], [7, null], 'a missing cell stays absent, not 0');
-    const stored = windowRows(first!, firstHeaders)[4];
-    assert.deepEqual(stored, { record: 4, sourceRow: 7, sheet: 'Register', memberSha256: control.sheetSha256,
-      marks: rows[4].marks, cells: rows[4].cells });
-    assert.equal(TableWindowRowSchema.safeParse({ ...stored, byteStart: 0, byteEnd: 1 }).success, false,
-      'a record cites its sheet row or its bytes, never both');
+    const kept = windowRows(first!, firstHeaders)[4];
+    assert.deepEqual(kept, { record: 4, sourceRow: 7, byteStart, byteEnd, sha256: stored, sheet: 'Register',
+      sheetSha256: control.sheetSha256, marks: rows[4].marks, cells: rows[4].cells });
+    const { sheetSha256: _sheetSha256, ...unnamed } = kept;
+    assert.equal(TableWindowRowSchema.safeParse(unnamed).success, false, 'a sheet row names its sheet\'s SHA-256');
     assert.equal(scratchDirectories(), scratch, 'the private copy is removed');
     t.diagnostic(JSON.stringify({ bytes: read.bytes, records: read.records, windows: read.windows, elapsedMs }));
 
     // D2, D4: the pin states the streamed size, the raw job takes the windowed path, the notes say what was kept.
     const inventory = await inspectTabularStream(chunked(control.bytes), { sha256: read.sha256, bytes: read.bytes },
       workbook);
+    assert.equal(scratchDirectories(), scratch, 'the profile read removes its copy too');
     assert.ok(isWindowedTable({ framing: 'tabular', tabular: inventory.tabular, sourceBytes: read.bytes }));
     const absentNotes = Array.from({ length: 180_000 }, (_, n) => n + 3).filter(row => row % 7 === 0 && row % 5);
     assert.deepEqual(inventory.streamCounts.slice(3, 6), [{ written: 180_000, empty: 0, absent: 0 },
@@ -206,29 +215,46 @@ test('a generated test_only workbook above 16 MiB is read sheet by sheet in wind
 
 test('a refused workbook stops with its code in officer words; the copy is removed', python, async () => {
   const scratch = scratchDirectories(), small = controlWorkbook(30);
-  await assert.rejects(readTableWindows(chunked(small.bytes), { ...workbook, sheet: 'register' }, async () => {}),
+  await assert.rejects(readTableWindows(chunked(small.bytes), source(small.bytes, { ...workbook, sheet: 'register' }),
+    async () => {}),
     { status: 422, code: 'WORKBOOK_SHEET_MISSING',
       message: 'This workbook has no sheet with exactly that name; check its spelling and case.' });
   const entity = controlWorkbook(0, '<!DOCTYPE x [<!ENTITY a "aaaa">]><worksheet xmlns="http://schemas.' +
     'openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="2"><c r="A2" t="inlineStr"><is><t>&a;</t>' +
     '</is></c></row></sheetData></worksheet>');
-  await assert.rejects(readTableWindows(chunked(entity.bytes), workbook, async () => {}),
+  await assert.rejects(readTableWindows(chunked(entity.bytes), source(entity.bytes), async () => {}),
     { status: 422, code: 'NATIVE_WORKBOOK_INVALID' });
-  await assert.rejects(readTableWindows(Readable.from([Buffer.from('a,b\n1,2\n')]), workbook, async () => {}),
+  const csv = Buffer.from('a,b\n1,2\n');
+  await assert.rejects(readTableWindows(Readable.from([csv]), source(csv), async () => {}),
     { status: 422, code: 'NATIVE_WORKBOOK_INVALID' });
-  await assert.rejects(readTableWindows(chunked(small.bytes), { ...workbook, headerRows: [2, 40] }, async () => {}),
-    { status: 422, code: 'TABULAR_HEADER_REQUIRED' }, 'a pinned header row the sheet does not have');
+  await assert.rejects(readTableWindows(chunked(small.bytes), source(small.bytes, { ...workbook, headerRows: [2, 40] }),
+    async () => {}), { status: 422, code: 'TABULAR_HEADER_REQUIRED' }, 'a pinned header row the sheet does not have');
   const enough = new Error('first window read');
-  await assert.rejects(readTableWindows(chunked(small.bytes), workbook, async () => { throw enough; }),
+  await assert.rejects(readTableWindows(chunked(small.bytes), source(small.bytes), async () => { throw enough; }),
     error => error === enough, 'the caller may stop after one window; the reader is stopped');
   assert.equal(scratchDirectories(), scratch);
+});
+
+test('a workbook larger than the scratch folder can hold is refused before it is copied', async () => {
+  const scratch = scratchDirectories(), body = Readable.from([Buffer.from('never read')]);
+  await assert.rejects(readTableWindows(body, { selection: workbook, bytes: 2 ** 50 }, async () => {}),
+    (error: Error & { status?: number; code?: string }) => error.status === 507
+      && error.code === 'TABULAR_SCRATCH_SPACE' && /^The scratch folder has \d+(\.\d+)? (MiB|GiB) free; reading this /
+        .test(error.message) && error.message.includes('1048576.00 GiB workbook needs its size and 1 GiB more'));
+  assert.equal(scratchDirectories(), scratch, 'nothing was copied');
+  const configured = process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+  try {
+    delete process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+    await assert.rejects(readTableWindows(body, { selection: workbook, bytes: 1 }, async () => {}),
+      { status: 503, code: 'TABULAR_SCRATCH_UNAVAILABLE' });
+  } finally { process.env.ULPIN_DOCUMENT_OCR_SCRATCH = configured; }
 });
 
 test('a real workbook reads the same headers, rows and cells as the whole read',
   { skip: existsSync(rbi) ? python.skip : 'data drive not mounted' }, async () => {
     const bytes = readFileSync(rbi), selection = { ...workbook, sheet: 'T_18' };
     const whole = readTabularSource(bytes, selection), rows: StreamedWorkbookRow[] = [];
-    const read = await readTableWindows(chunked(bytes), selection, async window => {
+    const read = await readTableWindows(chunked(bytes), { selection, bytes: bytes.length }, async window => {
       rows.push(...window.rows as StreamedWorkbookRow[]);
     });
     assert.equal(read.sha256, sha(bytes));

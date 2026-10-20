@@ -20,8 +20,9 @@ test('target filters are strict: duplicate cursors or ignored query fields canno
   assert.deepEqual(intakeTargetQuery('/api/v1/ingestion/cases/x/targets'), {});
   assert.deepEqual(intakeTargetQuery(`/targets?readiness=ready&cursor=${id}`),
     { readiness: 'ready', cursor: id });
+  assert.deepEqual(intakeTargetQuery('/targets?packageCursor=WzAsbnVsbF0'), { packageCursor: 'WzAsbnVsbF0' });
   for (const query of ['readiness=ready&readiness=held', `cursor=${id}&cursor=${id}`, 'subject=other',
-    'cursor=0', 'readiness=unknown']) {
+    'cursor=0', 'readiness=unknown', 'packageCursor=a&packageCursor=a', 'packageCursor=a%2Bb', 'packageCursor=']) {
     assert.throws(() => intakeTargetQuery(`/targets?${query}`));
   }
 });

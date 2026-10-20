@@ -9,6 +9,9 @@ export type Readiness = Target['readiness'];
 export type Confirmation = GetResponse<'/api/v1/ingestion/cases/{caseId}/confirmations/{confirmationId}'>;
 export type ConfirmBody = Schemas['POST_ingestion_cases_caseId_confirmations_Request_application_json'];
 
+/** A target read lists at most this many packages, as many as one confirmation names. */
+export const PACKAGE_PAGE = 100;
+
 export const readinessWords: Record<Readiness, string> = {
   preparing: 'The package is being prepared for review.',
   ready: 'Ready to record and make a card.',
@@ -53,6 +56,10 @@ export function confirmationWords(chosen: number): string {
 export function cardsOnlyWords(chosen: number): string {
   return `These ${chosen} recorded buildings will each get a snapshot, an evidence plan and packet, and a property `
     + 'card made and verified, in the order listed, without another press. Nothing is recorded again.';
+}
+
+export function remainingPackagesWords(listed: number, after: number): string {
+  return `After these ${listed} packages, ${after} more packages of this batch are not yet recorded.`;
 }
 
 export function noCardWords(counts: TargetPage['counts']): string {

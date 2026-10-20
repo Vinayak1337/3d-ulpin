@@ -37,6 +37,8 @@ class WindowControl {
   sources: Source[] = [];
   /** The case_id column of each package, by package id: the case of the source it cites. */
   cases = new Map<string, string>();
+  /** When the area was retired (G20); a retired area answers no display read. */
+  retiredAt: Date | null = null;
 
   /** A package of this area proposing the rows as they are given, citing a source of its own. */
   propose(state: string, rows: (Row & { areaId?: string; sourceKey?: string })[]) {
@@ -68,6 +70,7 @@ class WindowControl {
   }
 
   private rows(sql: string, values: any[]): any[] {
+    if (sql.startsWith('SELECT archived_at FROM map_areas')) return [{ archived_at: this.retiredAt }];
     if (sql.includes('FROM map_areas a')) return [{ ...this.area, feature_count: this.features.length }];
     if (sql.includes('FROM import_packages WHERE area_id')) {
       assert.match(sql, /jsonb_agg/);
@@ -146,6 +149,16 @@ test('the summary counts the area and states its extent in local metres', async 
   assert.equal((await areaDisplaySummary(control.area.id)).extent, null);
   assert.ok(control.statements.includes("SET LOCAL statement_timeout='15s'"));
 }));
+
+test('a retired area answers no summary or window, and its features stay unread', async () =>
+  memory(async control => {
+    control.features = [square('b-1', 0, 0, 12)];
+    control.retiredAt = new Date('2026-10-20T10:00:00.000Z');
+    await assert.rejects(areaDisplaySummary(control.area.id), { status: 404, code: 'AREA_RETIRED' });
+    await assert.rejects(areaDisplayWindow(control.area.id, window({ minX: -1, minY: -1, maxX: 20, maxY: 20 })),
+      { status: 404, code: 'AREA_RETIRED' });
+    assert(!control.statements.some(sql => sql.startsWith('WITH win') || sql.includes('ST_Extent')));
+  }));
 
 test('a window returns only the features meeting it, keyset page by page without repeat or gap', async () =>
   memory(async control => {

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { afterEach, beforeEach, mock, test } from 'node:test';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -280,6 +282,7 @@ test('a generated test_only workbook above 16 MiB goes from large original to wi
   { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
   async t => {
     process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-windows');
     const control = controlWorkbook(180_000), workbook = { ...selection, format: 'xlsx' as const,
       sheet: 'Register', headerRows: [2] };
     assert.ok(control.bytes.length > TABULAR_LIMITS.bytes, 'the workbook is above the whole-file bound');
@@ -301,20 +304,24 @@ test('a generated test_only workbook above 16 MiB goes from large original to wi
     const attempt = { number: 1, fence: 1, inputSha256: store.raw.input_sha256 } as UspJobAttempt;
     const rawInput = { jobId: store.rawJobId, caseId: store.caseId, sourceId: store.sourceId, sourceRevision: 1,
       subject } as AnyStreamingInput;
-    await readTableWindows(store.stream(), workbook, async (window, headers) => {
+    const tableSource = { selection: workbook, bytes: control.bytes.length };
+    await readTableWindows(store.stream(), tableSource, async (window, headers) => {
       await transaction(client => writeTableWindowTx(client, rawInput, attempt, window, headers));
     });
+    // Every stored range is a real range of the original with that range's SHA-256: the sheet's stored bytes.
     const [byteStart, byteEnd] = control.ranges.get(CONTROL_SHEET)!;
+    const stored = createHash('sha256').update(control.bytes.subarray(byteStart, byteEnd)).digest('hex');
     assert.deepEqual([store.windows.length, store.raw.records], [18, 180_000]);
-    assert.ok(store.windows.every(window => window.byte_start === byteStart && window.byte_end === byteEnd));
+    assert.ok(store.windows.every(window => window.byte_start === byteStart && window.byte_end === byteEnd
+      && window.window_sha256 === stored));
     const seventh = JSON.parse(store.windows[0]!.rows)[4];
-    assert.deepEqual(seventh, { record: 4, sourceRow: 7, sheet: 'Register', memberSha256: control.sheetSha256,
-      marks: [{ column: 3, mark: 'formula_cached' }, { column: 4, mark: 'formula_uncached' }],
-      cells: seventh.cells });
+    assert.deepEqual(seventh, { record: 4, sourceRow: 7, byteStart, byteEnd, sha256: stored, sheet: 'Register',
+      sheetSha256: control.sheetSha256, marks: [{ column: 3, mark: 'formula_cached' },
+        { column: 4, mark: 'formula_uncached' }], cells: seventh.cells });
     assert.deepEqual([seventh.cells[4], seventh.cells[5]], [null, null], 'no formula is calculated, no cell is 0');
     // A recovered job reads the same first window again; the stored window matches it exactly.
     const enough = new Error('first window replayed');
-    await assert.rejects(readTableWindows(store.stream(), workbook, async (window, headers) => {
+    await assert.rejects(readTableWindows(store.stream(), tableSource, async (window, headers) => {
       await transaction(client => writeTableWindowTx(client, rawInput, attempt, window, headers));
       throw enough;
     }), error => error === enough);
@@ -334,10 +341,17 @@ test('a generated test_only workbook above 16 MiB goes from large original to wi
     }
     assert.deepEqual([store.mapping.next_publish_index, store.mapping.records], [18, 180_000]);
     assert.deepEqual(store.mappings.filter(row => row.status !== 'mapped'), []);
+    // A formula cell with a cached value (Doubled) and one without (Tripled) map as unknown, as in the whole read.
+    const formulas = JSON.parse(store.mappings[0]!.rows!)[0].cells
+      .filter((cell: { sourceField: string }) => ['4|Doubled', '5|Tripled'].includes(cell.sourceField));
+    assert.deepEqual(formulas.map(({ target: _target, ...cell }: { target: string }) => cell), [
+      { value: null, state: 'unknown', sourceField: '4|Doubled', issueCode: 'TABULAR_CELL_UNAVAILABLE' },
+      { value: null, state: 'unknown', sourceField: '5|Tripled', issueCode: 'TABULAR_CELL_UNAVAILABLE' }]);
     const across = await new TableRowsService().page(store.caseId, store.sourceId, { after: '9997', limit: '4' });
     assert.deepEqual(across.rows.map(row => [row.record, row.window, row.sourceRow]),
       [[9998, 0, 10_001], [9999, 0, 10_002], [10_000, 1, 10_003], [10_001, 1, 10_004]]);
-    assert.ok(across.rows.every(row => row.sheet === 'Register' && row.byteStart === undefined && row.mapped));
+    assert.ok(across.rows.every(row => row.sheet === 'Register' && row.byteStart === byteStart
+      && row.sha256 === stored && row.mapped));
     assert.deepEqual(validate('GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json',
       across), []);
     t.diagnostic(JSON.stringify({ records: profile.records, bytes: control.bytes.length,

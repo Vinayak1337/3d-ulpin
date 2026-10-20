@@ -204,7 +204,7 @@ export async function inspectTabularStream(body: Readable, receipt: { sha256: st
   if (admitted.kind !== 'case_original') {
     throw new AppError(422, 'TABULAR_FORMAT', 'Only a case original is read as a stream.');
   }
-  const read = await profileTabularStream(body, selection);
+  const read = await profileTabularStream(body, { selection, bytes: receipt.bytes });
   if (read.bytes !== receipt.bytes || read.sha256 !== receipt.sha256) {
     throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The original differs from its byte receipt.');
   }

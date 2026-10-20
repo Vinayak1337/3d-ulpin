@@ -7,7 +7,7 @@ import {
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
-  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, type TabularSelection,
+  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, streamingReadMs, type TabularSelection,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
@@ -20,7 +20,9 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
-import { authoredIntakeDestination, intakeDestination } from './intake-destination';
+import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
+  from './intake-destination';
+import { assertAreaRowLive } from '../../areas/area-retire';
 import { appendCaseIngestionTx } from './events';
 import { inspectTabularSource, inspectTabularStream, assertTabularPin } from './tabular-source';
 import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
@@ -110,6 +112,10 @@ async function validate(client: PoolClient,
   if(current.version!=='manual-geojson/1')conflict('The recipe and receipt formats differ.');
   return {row,bytes,mapping:compileMapping(plan,current)};
 }
+/** This file's own namespace: its bytes, or its bytes scoped to the case that received them again. */
+const fileNamespace = (namespace: string, sha256: string) =>
+  namespace === `file:${sha256}` || namespace.startsWith(`file:${sha256}:case:`);
+
 /** The first window of a streamed table, for the recipe's dry run; the rest of the original is not read. */
 async function firstWindow(row: any, selection: TabularSelection) {
   const object = await openObjectStream(row.object_key, Number(row.bytes), STREAMING_VECTOR_LIMITS.readMs,
@@ -117,7 +123,7 @@ async function firstWindow(row: any, selection: TabularSelection) {
   let first: { headers: string[]; rows: (string | undefined)[][] } | null = null;
   const enough = new Error('first window read');
   try {
-    await readTableWindows(object.body, selection, async (window, headers) => {
+    await readTableWindows(object.body, { selection, bytes: Number(row.bytes) }, async (window, headers) => {
       first = { headers, rows: window.rows.map(item => headers.map((_, column) => item.cells[column] ?? undefined)) };
       throw enough;
     });
@@ -130,14 +136,16 @@ export async function destination(client: PoolClient, value: MappingDestination,
   // Match ingestArea's seed-lock -> area-lock order before any lock upgrade.
   if (executing) await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`${value.namespace}:${value.name}`]);
   if (value.kind === 'existing_area') {
-    await client.query(executing ? 'SELECT id FROM map_areas WHERE id=$1 FOR UPDATE' : 'SELECT id FROM map_areas WHERE id=$1 FOR SHARE',[value.areaId]);
+    const row = (await client.query(executing ? 'SELECT id,archived_at FROM map_areas WHERE id=$1 FOR UPDATE'
+      : 'SELECT id,archived_at FROM map_areas WHERE id=$1 FOR SHARE', [value.areaId])).rows[0];
+    if (row) assertAreaRowLive(row);
     const area = await getArea(value.areaId,client);
     if (area.revision !== value.expectedAreaRevision || fingerprint(area.reference || null) !== value.referenceFingerprint)
       conflict('The destination revision or reference changed; author a current recipe.');
   } else {
-    const existing = (await client.query('SELECT id,name FROM map_areas WHERE seed_key=$1',
+    const existing = (await client.query('SELECT id,name,archived_at FROM map_areas WHERE seed_key=$1',
       [`${value.namespace}:${value.name}`])).rows[0];
-    if (existing && sourceSha256 && value.namespace === `file:${sourceSha256}`)
+    if (existing && !existing.archived_at && sourceSha256 && fileNamespace(value.namespace, sourceSha256))
       throw new AppError(409, 'SOURCE_ALREADY_IN_AREA',
         `This file is already the source of the area “${existing.name}”. Open that area; nothing new is prepared from a second copy.`,
         { areaId: existing.id });
@@ -290,8 +298,9 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
   await lockSourceCaseDestinationTx(client,caseId);
   const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
   const validated=await validate(client,input.plan,scope);
-  const actualDestination=input.destination===undefined
-    ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination;
+  const actualDestination=await caseScopedDestination(caseId,input.destination===undefined
+    ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination,
+  async(sql,values)=>(await client.query(sql,values)).rows);
   if(actualDestination)await destination(client,actualDestination,false,validated.row.sha256);
   const priorRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',
     [sourceId])).rows[0];
@@ -341,6 +350,7 @@ export class ManualIngestionService {
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(!duplicate)return undefined;
+      await refuseRetiredFileAreaTx(client,caseId,hash);
       const retained=await source(client,caseId,duplicate.id);
       if(tabular)assertTabularPin(tabular.tabular,retained);
       const result=profile(retained,scope);
@@ -366,6 +376,7 @@ export class ManualIngestionService {
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(duplicate) {
+        await refuseRetiredFileAreaTx(client,caseId,hash);
         if(tabular)assertTabularPin(tabular.tabular,duplicate);
         const result=profile(await source(client,caseId,duplicate.id),scope);
         await remember(client,caseId,key,digest,result);return result;
@@ -424,7 +435,7 @@ export class ManualIngestionService {
     });
     if('replay' in pinned)return pinned.replay as AnySourceProfile;
     const {row:read}=pinned;
-    const object=await openObjectStream(read.object_key,Number(read.bytes),STREAMING_VECTOR_LIMITS.readMs,
+    const object=await openObjectStream(read.object_key,Number(read.bytes),streamingReadMs(Number(read.bytes)),
       read.inspection?.largeOriginal?.objectEtag);
     let inventory:Awaited<ReturnType<typeof inspectTabularStream>>;
     try{

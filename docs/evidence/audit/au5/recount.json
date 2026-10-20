@@ -1,0 +1,417 @@
+{
+  "base": "872a57dd",
+  "source": "docs/evidence/audit/au2/gaps.json",
+  "mergingNow": {
+    "CR1": "G11 follow-up (merged at 8223ce93, after the base)",
+    "IFC3": "G15",
+    "AU4-B2": "G09",
+    "G13": "G13",
+    "SB1": "G14 (backend half)"
+  },
+  "recount": [
+    {
+      "id": "G01",
+      "state": "closed",
+      "evidence": [
+        "apps/studio/src/features/intake/file-route.ts:7-12",
+        "apps/studio/src/features/intake/retain-batch.ts:54-57",
+        "packages/contracts/src/usp/ingestion.ts:250-252"
+      ],
+      "merge": "9765270f (CD1)",
+      "left": null
+    },
+    {
+      "id": "G02",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:94-106",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:163",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:211-218"
+      ],
+      "merge": "b3d6fe8a (NU1)",
+      "left": null
+    },
+    {
+      "id": "G03",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:56-58",
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:71-74",
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:174",
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:373-376"
+      ],
+      "merge": "da2f1ffc (HB1)",
+      "left": null
+    },
+    {
+      "id": "G04",
+      "state": "partly",
+      "evidence": [
+        "apps/studio/src/features/intake/run/model.ts:68-72",
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:336-352",
+        "apps/studio/src/features/map/MapWorkspace.tsx:377",
+        "apps/studio/src/features/map/MapWorkspace.tsx:380-385",
+        "apps/studio/src/features/map/MapWorkspace.tsx:557"
+      ],
+      "merge": "b9380fe6 (CC1)",
+      "left": "Cards come only from the batch page, 100 a press in stored order; the map inspector of a recorded building has no card action (only a unit in level mode opens the card dialog), so a building the judge picks cannot be carded directly."
+    },
+    {
+      "id": "G05",
+      "state": "open",
+      "evidence": [
+        "docs/evidence/runtime/reh6/report.md:1",
+        "docs/evidence/runtime/reh7/report.md:1",
+        "docs/STATUS.md:34",
+        "docs/STATUS.md:35"
+      ],
+      "merge": null,
+      "left": "No rehearsal has pressed confirm through to a card; REH8 waits for Docker Desktop, and none of the merges since 20 October has run on a live stack."
+    },
+    {
+      "id": "G06",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/areas/areas.ts:309-316",
+        "packages/server/src/modules/areas/area-display-window.ts:94-99"
+      ],
+      "merge": "494e68a5 (PX1)",
+      "left": null
+    },
+    {
+      "id": "G07",
+      "state": "partly",
+      "evidence": [
+        "packages/server/src/modules/areas/area-display-window.ts:39-45",
+        "packages/server/src/modules/areas/areas.ts:311-312",
+        "packages/server/src/modules/areas/area-display-proposals.ts:15-18",
+        "docs/evidence/runtime/reh7/report.md:14",
+        "docs/evidence/runtime/reh7/report.md:51"
+      ],
+      "merge": "494e68a5 (PX1)",
+      "left": "Outlines are found through the GiST index now, but every read still unnests every package body of the area; REH7 measured a 1.8 s floor for an empty 50 m window at 41,809 features, not yet split by statement."
+    },
+    {
+      "id": "G08",
+      "state": "open",
+      "evidence": [
+        "packages/server/src/modules/areas/areas.ts:1652-1654",
+        "packages/server/src/modules/areas/exterior-records.ts:45-80"
+      ],
+      "merge": null,
+      "left": "Commit cost is still unmeasured and every commit still takes one global advisory lock; waits for G05."
+    },
+    {
+      "id": "G09",
+      "state": "partly",
+      "evidence": [
+        "database/sql/95-ingestion/intake-evidence.sql:3",
+        "database/sql/95-ingestion/intake-evidence.sql:42",
+        "apps/api/src/modules/ingestion/ingestion.controller.ts:197-201",
+        "apps/api/src/modules/ingestion/ingestion.controller.ts:210-214"
+      ],
+      "merge": "ad660383 (TB1)",
+      "left": "TB1 added the contracts and tables, but the evidence routes answer 501 and no server code writes a key profile or candidate; AU4-B2 (running) builds the matching."
+    },
+    {
+      "id": "G10",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:161",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:244-260",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:286-314",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:66-67"
+      ],
+      "merge": "f46d9671 (G10)",
+      "left": "Closed as stated; pages attaching to a building by key is G09."
+    },
+    {
+      "id": "G11",
+      "state": "partly",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:37-40",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:164-168",
+        "apps/studio/src/features/intake/file-route.ts:9",
+        "apps/studio/src/features/intake/file-route.ts:44-47",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:177",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:117-119"
+      ],
+      "merge": "0b77c7dd (SH2); CR1 8223ce93 merged after 872a57dd",
+      "left": "The server converts a batch GeoPackage or shapefile ZIP, but the Studio still sends a dropped .gpkg or shapefile ZIP to the bounded direct import (N01), and KML/KMZ still has no batch recipe."
+    },
+    {
+      "id": "G12",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:264",
+        "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:321-346",
+        "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:380-390"
+      ],
+      "merge": "6d038782 (ZL1), f861dfa2 (ZL2)",
+      "left": null
+    },
+    {
+      "id": "G13",
+      "state": "open",
+      "evidence": [
+        "packages/contracts/src/usp/ingestion.ts:126",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:95"
+      ],
+      "merge": null,
+      "left": "Tables are still 16 MiB and 2,000 rows, and a table kept through /uploads rests not understood; the G13 branch (running) streams them."
+    },
+    {
+      "id": "G14",
+      "state": "open",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:94-97",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:163"
+      ],
+      "merge": null,
+      "left": "A raster or point cloud in a batch still rests kept only; SB1 (running) is the backend half."
+    },
+    {
+      "id": "G15",
+      "state": "partly",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-signatures.ts:116-117",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:94-97",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:163",
+        "apps/studio/src/features/intake/ifc/useIfcStructure.ts:14"
+      ],
+      "merge": "05b4565b (IFC1), c3d4659b (IFC2)",
+      "left": "The structure scan and its batch view exist, but on 872a57dd a batch IFC is model3d and rests kept only, so no scan starts from the drop; IFC3 (merging) reads it on drop."
+    },
+    {
+      "id": "G16",
+      "state": "closed",
+      "evidence": [
+        "packages/contracts/src/usp/streaming-vector.ts:4-12",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:175-184"
+      ],
+      "merge": "3bfcdf39 (G16)",
+      "left": "Reading closes; confirming and drawing a 500,000-feature file are new gaps N02 and N03."
+    },
+    {
+      "id": "G17",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/large-original.ts:101-104",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:146-156",
+        "packages/server/src/modules/usp/ingestion/streaming-vector.ts:146-153"
+      ],
+      "merge": "8a5c6373 (G17)",
+      "left": "An abandoned open receipt still holds its slot until it expires (N04)."
+    },
+    {
+      "id": "G18",
+      "state": "closed",
+      "evidence": [
+        "apps/studio/src/features/map/WindowedArea.tsx:140-141",
+        "packages/server/src/modules/areas/area-display-window.ts:137"
+      ],
+      "merge": "35bf9ba0 (MB2)",
+      "left": null
+    },
+    {
+      "id": "G19",
+      "state": "open",
+      "evidence": [
+        "docs/STATUS.md:35",
+        "docs/STATUS.md:36"
+      ],
+      "merge": null,
+      "left": "The owner's keys are not on the runtime and no live Sarvam call has run."
+    },
+    {
+      "id": "G20",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/service.ts:104-105",
+        "packages/server/src/modules/usp/ingestion/service.ts:117-123",
+        "packages/server/src/modules/areas/area-retire.ts:11-22"
+      ],
+      "merge": "8a2e0632 (G20)",
+      "left": "Code only; not yet run on the demo runtime."
+    },
+    {
+      "id": "G21",
+      "state": "open",
+      "evidence": [
+        "docs/next-steps/INGESTION-ARCHITECTURE.md:169",
+        "database/sql/95-ingestion/intake-evidence.sql:22",
+        "apps/api/src/modules/ingestion/ingestion.controller.ts:201"
+      ],
+      "merge": null,
+      "left": "No waiting keys or closing pass; TB1 added the coverage table but nothing writes it; AU4-B3 is cut, not merged."
+    },
+    {
+      "id": "G22",
+      "state": "open",
+      "evidence": [
+        "packages/server/src/modules/cases/processing.ts:229-233"
+      ],
+      "merge": null,
+      "left": "The dispatcher still takes operations in turn with no waves, memory reservation or GPU lane; after SB1."
+    },
+    {
+      "id": "G23",
+      "state": "partly",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:162",
+        "packages/server/src/modules/usp/ingestion/page-image-read.ts:204-215",
+        "packages/server/src/modules/usp/ingestion/intake-service.ts:215-226"
+      ],
+      "merge": "2644eb6c (G23), 66edca23 (G23S)",
+      "left": "A page image is read, previewed and labelled by the officer as a candidate, but no OCR or plan model runs on a scan, so nothing from it reaches a building."
+    },
+    {
+      "id": "G24",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/service.ts:133",
+        "packages/server/src/modules/usp/ingestion/service.ts:397",
+        "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:213"
+      ],
+      "merge": "217dec60 (LC1)",
+      "left": null
+    },
+    {
+      "id": "RG1",
+      "state": "closed",
+      "evidence": [
+        "packages/server/src/modules/areas/area-feature-read.ts:1",
+        "docs/evidence/runtime/reh6/report.md:20-22"
+      ],
+      "merge": "7bf0203a (RG1)",
+      "left": null
+    },
+    {
+      "id": "LA4",
+      "state": "closed",
+      "evidence": [
+        "packages/scene/src/engine.ts:69-75",
+        "docs/evidence/runtime/reh6/report.md:23-24"
+      ],
+      "merge": "a7057d23 (LA4)",
+      "left": null
+    },
+    {
+      "id": "LA5",
+      "state": "closed",
+      "evidence": [
+        "apps/studio/src/features/map/areaWindow.ts:68",
+        "docs/evidence/runtime/reh6/report.md:32-34"
+      ],
+      "merge": "2ddefbbb (LA5)",
+      "left": null
+    }
+  ],
+  "newGaps": [
+    {
+      "id": "N01",
+      "what": "One drop of mixed kinds is split three ways in the Studio: GeoJSON, ZIPs of GeoJSON, PDFs and other originals go to the batch; .gpkg and shapefile ZIP go to the bounded direct import (16 MiB, 2,000 features); each CSV/XLSX needs its own table dialog where the case is chosen again.",
+      "whyItBlocksTheDemo": "A judge folder dropped at once does not land in one batch; a large GeoPackage is refused by the direct import although SH2 converts it in a batch.",
+      "evidence": [
+        "apps/studio/src/features/intake/file-route.ts:8-11",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:40-44",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:177-186",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:252-256",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:303",
+        "apps/studio/src/features/intake/table/TableImportDialog.tsx:9-18",
+        "apps/api/src/modules/intake/import-packages.controller.ts:85-88"
+      ],
+      "proposedTask": "Route .gpkg and shapefile ZIP to the batch through /uploads, and keep tables in the same batch case; keep direct import only behind an explicit choice.",
+      "ownedPaths": [
+        "apps/studio/src/features/intake/file-route.ts",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx",
+        "apps/studio/src/features/intake/retain-batch.ts"
+      ],
+      "size": "M",
+      "needsRuntime": false
+    },
+    {
+      "id": "N02",
+      "what": "The batch target page lists only the first 100 packages by package id, committed or not; a file of more than 100 packages (over about 200,000 features; 500,000 is 250 packages) never offers packages 101 and up.",
+      "whyItBlocksTheDemo": "After the first 100 are recorded the page shows the same 100 committed packages; the rest of a large file cannot be confirmed or carded from the Studio.",
+      "evidence": [
+        "packages/server/src/modules/usp/ingestion/intake-targets.ts:197-201",
+        "packages/server/src/modules/usp/ingestion/intake-targets.ts:219-221",
+        "packages/server/src/modules/usp/ingestion/intake-targets.ts:229",
+        "packages/server/src/modules/usp/ingestion/intake-targets.ts:238-242",
+        "packages/contracts/src/usp/intake.ts:193",
+        "apps/studio/src/features/intake/run/model.ts:80-83"
+      ],
+      "proposedTask": "List unrecorded packages first, or page packages with a cursor, so every package can be confirmed in sets of 100.",
+      "ownedPaths": [
+        "packages/server/src/modules/usp/ingestion/intake-targets.ts",
+        "apps/studio/src/features/intake/run/model.ts",
+        "apps/studio/src/features/intake/run/IntakeRunPanel.tsx"
+      ],
+      "size": "S",
+      "needsRuntime": false
+    },
+    {
+      "id": "N03",
+      "what": "The area map summary takes every proposal of every package into the API and back: with no window the rule body keeps all features, then every package and feature id is sent as two uuid arrays and unnested again.",
+      "whyItBlocksTheDemo": "At 41,809 the summary took 2.2 s (REH7); a 500,000-feature area sends about 12 times the ids per read and has never been measured.",
+      "evidence": [
+        "packages/server/src/modules/areas/area-display-window.ts:94-99",
+        "packages/server/src/modules/areas/area-display-window.ts:103-105",
+        "packages/server/src/modules/areas/area-display-window.ts:28-34",
+        "packages/server/src/modules/areas/areas.ts:311-312",
+        "packages/server/src/modules/areas/area-display-proposals.ts:15-18",
+        "docs/evidence/runtime/reh7/report.md:14"
+      ],
+      "proposedTask": "Count and extent proposals in SQL from the draft rows (revision 0 outlines) without the round trip; measure on a 500,000-feature file.",
+      "ownedPaths": [
+        "packages/server/src/modules/areas/area-display-window.ts",
+        "packages/server/src/modules/areas/area-display-proposals.ts"
+      ],
+      "size": "M",
+      "needsRuntime": true
+    },
+    {
+      "id": "N04",
+      "what": "The batch page after a reload: the files not added and the files still to add live only in navigation state, and a large upload stopped by a reload is not resumed; its open receipt keeps its slot until expiry (7 days for large-original/2, which has one slot on the whole service).",
+      "whyItBlocksTheDemo": "One reload during a judge file over 128 MiB blocks every other file over 128 MiB with 429 UPLOAD_QUOTA; the Studio lists no open receipt to cancel.",
+      "evidence": [
+        "apps/studio/src/features/intake/BatchPage.tsx:50-52",
+        "apps/studio/src/features/intake/BatchPage.tsx:103-104",
+        "apps/studio/src/features/intake/useRetainBatch.ts:41",
+        "apps/studio/src/features/intake/upload-command.ts:27",
+        "apps/studio/src/features/intake/upload-model.ts:25",
+        "packages/contracts/src/usp/ingestion.ts:226",
+        "packages/contracts/src/usp/ingestion.ts:229",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:101-104"
+      ],
+      "proposedTask": "The batch page lists the case's open upload receipts with resume (same file) and cancel; refused files are read from the server, not navigation state.",
+      "ownedPaths": [
+        "apps/studio/src/features/intake/BatchPage.tsx",
+        "apps/studio/src/features/intake/upload-command.ts",
+        "apps/studio/src/features/intake/upload-api.ts"
+      ],
+      "size": "M",
+      "needsRuntime": false
+    },
+    {
+      "id": "N05",
+      "what": "A shapefile dropped as loose parts (.shp, .shx, .dbf, .prj) is not assembled: each part is its own item; the .shp item asks a question whose words point to a bounded API route, and the .dbf rests kept as a table.",
+      "whyItBlocksTheDemo": "Judges often hand loose shapefile parts, not a ZIP; nothing of them reaches the map.",
+      "evidence": [
+        "apps/studio/src/features/intake/file-route.ts:11",
+        "packages/server/src/modules/usp/ingestion/intake-signatures.ts:40",
+        "packages/server/src/modules/usp/ingestion/intake-signatures.ts:49",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:111-115",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:94-97"
+      ],
+      "proposedTask": "Group same-stem parts of one drop into a shapefile set (a ZIP made in the Studio, or server side) and send it down the SH2 conversion.",
+      "ownedPaths": [
+        "apps/studio/src/features/intake/retain-batch.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts"
+      ],
+      "size": "M",
+      "needsRuntime": false
+    }
+  ]
+}

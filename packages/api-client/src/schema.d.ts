@@ -414,6 +414,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/areas/{areaId}/retire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retire an area: it leaves the area lists and map reads; nothing is deleted and the change is an event */
+        post: operations["POST_api_v1_areas_areaId_retire"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/areas/{areaId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore a retired area to the area lists and map reads; the change is an event */
+        post: operations["POST_api_v1_areas_areaId_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/areas/{areaId}/scenario": {
         parameters: {
             query?: never;
@@ -3301,6 +3335,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the parts of a kept orthophoto, terrain raster or point cloud in order, a page at a time */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the corners of one accepted part in the batch frame and its private artifact; display only */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/pin": {
         parameters: {
             query?: never;
@@ -3318,6 +3386,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-label": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Say what a read page image shows (plan, elevation, photo, other); kept as an unreviewed candidate label */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_label"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the stored PNG preview of a read page image; its bytes are checked against the kept SHA-256 */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry": {
         parameters: {
             query?: never;
@@ -3329,6 +3431,23 @@ export interface paths {
         put?: never;
         /** Try a large file again after its preparation stopped on repeated step errors; one stored request */
         post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layer-crs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** State the EPSG code of a GeoPackage or shapefile layer whose file states none, and convert it again */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_layer_crs"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3488,6 +3607,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read exact-key profiles, source coverage, stored evidence confirmations and a page of candidate table rows and document parts for the batch, with counts by outcome */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_evidence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/evidence/key-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Declare which map field and table columns or documents carry one exact literal key, and queue every named source to be read under it */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_evidence_key_profiles"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/targets": {
         parameters: {
             query?: never;
@@ -3567,6 +3720,23 @@ export interface paths {
         put?: never;
         /** Take a confirmed or recorded target opened by the officer before other waiting intake-run targets */
         post: operations["POST_api_v1_ingestion_cases_caseId_targets_targetId_priority"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/evidence/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm exact-key table rows and document parts as cited candidates for named buildings, with every source, coverage, candidate and package pin; a stale pin is refused. It is stored only: nothing is written to the registry until the citation step */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_evidence_confirmations"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7684,6 +7854,22 @@ export interface components {
                 caseId?: string;
             }[];
             next: string | null;
+        };
+        POST_areas_areaId_retire_Request_application_json: {
+            expectedRevision: number;
+            reason: string;
+        };
+        POST_areas_areaId_retire_Response_200_application_json: {
+            /** Format: uuid */
+            areaId: string;
+            /** @enum {string} */
+            state: "retired" | "active";
+            areaRevision: number;
+            /** Format: uuid */
+            eventId: string;
+            actor: string;
+            reason: string;
+            at: string;
         };
         POST_areas_areaId_scenario_Response_410_application_json: {
             error: {
@@ -52098,6 +52284,52 @@ export interface components {
                         storeysAreLegalUnits: false;
                         /** @enum {string} */
                         rights: "not_assessed";
+                        structure?: {
+                            /** @enum {string} */
+                            state: "read";
+                            lengthUnit: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "conflicting";
+                                stepIds: number[];
+                            } | {
+                                /** @enum {string} */
+                                state: "supplied";
+                                stepId: number;
+                                /** @enum {string} */
+                                entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                prefix: string | null;
+                                name: string | null;
+                            };
+                            nodes: {
+                                stepId: number;
+                                /** @enum {string} */
+                                entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                /** @enum {string|null} */
+                                candidate: "building" | "level" | "space" | null;
+                                globalId: string | null;
+                                name: string | null;
+                                longName: string | null;
+                                parentStepIds: number[];
+                                relationStepIds: number[];
+                                elevation?: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    value: number;
+                                    literal: string;
+                                };
+                            }[];
+                        } | {
+                            /** @enum {string} */
+                            state: "not_read";
+                            code: string;
+                            reason: string;
+                        };
                     };
                     artifactSha256: string;
                     artifactBytes: number;
@@ -54355,6 +54587,52 @@ export interface components {
                             storeysAreLegalUnits: false;
                             /** @enum {string} */
                             rights: "not_assessed";
+                            structure?: {
+                                /** @enum {string} */
+                                state: "read";
+                                lengthUnit: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "conflicting";
+                                    stepIds: number[];
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                    prefix: string | null;
+                                    name: string | null;
+                                };
+                                nodes: {
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                    /** @enum {string|null} */
+                                    candidate: "building" | "level" | "space" | null;
+                                    globalId: string | null;
+                                    name: string | null;
+                                    longName: string | null;
+                                    parentStepIds: number[];
+                                    relationStepIds: number[];
+                                    elevation?: {
+                                        /** @enum {string} */
+                                        state: "absent";
+                                    } | {
+                                        /** @enum {string} */
+                                        state: "supplied";
+                                        value: number;
+                                        literal: string;
+                                    };
+                                }[];
+                            } | {
+                                /** @enum {string} */
+                                state: "not_read";
+                                code: string;
+                                reason: string;
+                            };
                         };
                         artifactSha256: string;
                         artifactBytes: number;
@@ -64721,6 +64999,72 @@ export interface components {
              * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
              */
             existingAreaId?: string | null;
+            /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
+            pageImage?: {
+                /** @enum {string} */
+                version: "page-image-read/1";
+                /** @enum {string} */
+                format: "jpeg" | "png" | "tiff";
+                width: number | null;
+                height: number | null;
+                bands: number | null;
+                bitDepth: number | null;
+                /** @description The EXIF orientation as stated; null when none is stated. */
+                orientation: number | null;
+                /** @description EXIF DateTimeOriginal exactly as stated, or null. */
+                captureTime: string | null;
+                /** @description Whether its EXIF states a GPS position; the position is not read here. */
+                locationStated: boolean;
+                dpi: {
+                    x: number;
+                    y: number;
+                    /** @enum {string} */
+                    statedIn: "jfif" | "exif" | "png_phys" | "tiff";
+                } | null;
+                preview: {
+                    key: string;
+                    sha256: string;
+                    bytes: number;
+                    width: number;
+                    height: number;
+                    /** @enum {string} */
+                    mediaType: "image/png";
+                    orientationApplied: number | null;
+                    original: {
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sha256: string;
+                    };
+                } | null;
+                /** @description Why no preview was made; null when one was. */
+                previewLimit: string | null;
+                /** @description The officer's answer to what it shows, unreviewed. */
+                label: {
+                    /** @enum {string} */
+                    value: "plan" | "elevation" | "photo" | "other";
+                    /** @enum {string} */
+                    state: "candidate";
+                    /** Format: date-time */
+                    answeredAt: string;
+                } | null;
+            };
+            /** @description GeoPackage or shapefile ZIP: each layer whose file states no coordinate system, with the officer's answer or null while none is given; present only when there is such a layer. */
+            layerCrs?: {
+                layer: string;
+                answer: {
+                    crs: string;
+                    /** @enum {string} */
+                    state: "officer_stated";
+                    /** Format: date-time */
+                    statedAt: string;
+                } | null;
+            }[];
+            /**
+             * Format: uuid
+             * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
+             */
+            ifcJobId?: string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -64940,16 +65284,219 @@ export interface components {
                  * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
                  */
                 existingAreaId?: string | null;
+                /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
+                pageImage?: {
+                    /** @enum {string} */
+                    version: "page-image-read/1";
+                    /** @enum {string} */
+                    format: "jpeg" | "png" | "tiff";
+                    width: number | null;
+                    height: number | null;
+                    bands: number | null;
+                    bitDepth: number | null;
+                    /** @description The EXIF orientation as stated; null when none is stated. */
+                    orientation: number | null;
+                    /** @description EXIF DateTimeOriginal exactly as stated, or null. */
+                    captureTime: string | null;
+                    /** @description Whether its EXIF states a GPS position; the position is not read here. */
+                    locationStated: boolean;
+                    dpi: {
+                        x: number;
+                        y: number;
+                        /** @enum {string} */
+                        statedIn: "jfif" | "exif" | "png_phys" | "tiff";
+                    } | null;
+                    preview: {
+                        key: string;
+                        sha256: string;
+                        bytes: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        mediaType: "image/png";
+                        orientationApplied: number | null;
+                        original: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sha256: string;
+                        };
+                    } | null;
+                    /** @description Why no preview was made; null when one was. */
+                    previewLimit: string | null;
+                    /** @description The officer's answer to what it shows, unreviewed. */
+                    label: {
+                        /** @enum {string} */
+                        value: "plan" | "elevation" | "photo" | "other";
+                        /** @enum {string} */
+                        state: "candidate";
+                        /** Format: date-time */
+                        answeredAt: string;
+                    } | null;
+                };
+                /** @description GeoPackage or shapefile ZIP: each layer whose file states no coordinate system, with the officer's answer or null while none is given; present only when there is such a layer. */
+                layerCrs?: {
+                    layer: string;
+                    answer: {
+                        crs: string;
+                        /** @enum {string} */
+                        state: "officer_stated";
+                        /** Format: date-time */
+                        statedAt: string;
+                    } | null;
+                }[];
+                /**
+                 * Format: uuid
+                 * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
+                 */
+                ifcJobId?: string;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
                 updatedAt: string;
             }[];
         };
+        GET_ingestion_cases_caseId_intake_items_itemId_parts_Response_200_application_json: {
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            itemId: string;
+            /** @enum {string} */
+            operation: "raster-window" | "point-batch";
+            partsPlanned: number | null;
+            parts: {
+                partIndex: number;
+                /** @enum {string} */
+                state: "planned" | "queued" | "published" | "quarantined";
+                /** @description The part asked of the original; a null window or batch is the reader's first part. */
+                locator: {
+                    /** @enum {string} */
+                    operation: "raster-window";
+                    window: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                    } | null;
+                } | {
+                    /** @enum {string} */
+                    operation: "point-batch";
+                    batch: {
+                        start: number;
+                        count: number;
+                    } | null;
+                };
+                partKey: string;
+                /** Format: uuid */
+                jobId: string | null;
+                resultSha256: string | null;
+                issueCode: string | null;
+            }[];
+            next: number | null;
+        };
+        GET_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display_Response_200_application_json: {
+            /** @enum {string} */
+            version: "intake-surface/1";
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            itemId: string;
+            partIndex: number;
+            /** Format: uuid */
+            jobId: string;
+            original: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sha256: string;
+                bytes: number;
+            };
+            /** @description The part asked of the original; a null window or batch is the reader's first part. */
+            locator: {
+                /** @enum {string} */
+                operation: "raster-window";
+                window: {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                } | null;
+            } | {
+                /** @enum {string} */
+                operation: "point-batch";
+                batch: {
+                    start: number;
+                    count: number;
+                } | null;
+            };
+            /** @description The exact part the reader read. */
+            read: {
+                /** @enum {string} */
+                operation: "raster-window";
+                window: {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                } | null;
+            } | {
+                /** @enum {string} */
+                operation: "point-batch";
+                batch: {
+                    start: number;
+                    count: number;
+                } | null;
+            };
+            resultSha256: string;
+            artifact: {
+                sha256: string;
+                bytes: number;
+                /** @enum {string} */
+                mediaType: "image/tiff" | "application/vnd.las.point-records";
+                path: string;
+            };
+            sourceCrs: {
+                /** @enum {string} */
+                state: "stated" | "not_stated";
+                authority: string | null;
+            };
+            verticalReference: {
+                /** @enum {string} */
+                status: "known" | "unknown";
+                name: string | null;
+            };
+            /** @description In the source's own coordinate system and units: a window's corners from its affine (upper left, upper right, lower right, lower left), or the XY extent of a batch's native records. */
+            sourceCorners: ((number)[] | (number)[] | (number)[] | (number)[])[];
+            placement: {
+                /** @enum {string} */
+                state: "placed";
+                /** Format: uuid */
+                areaId: string;
+                areaRevision: number;
+                analysisCrs: string;
+                origin: (number)[];
+                operation: string;
+                corners: ((number)[] | (number)[] | (number)[] | (number)[])[];
+            } | {
+                /** @enum {string} */
+                state: "not_placed";
+                /** @enum {string} */
+                reason: "no_batch_area" | "no_area_reference" | "no_area_extent" | "no_stated_crs" | "transform_unavailable" | "outside_area";
+                words: string;
+            };
+            /** @enum {string} */
+            use: "display_only";
+        };
         POST_ingestion_cases_caseId_intake_items_itemId_pin_Request_application_json: {
             wave: number;
             /** Format: uuid */
             requestKey: string;
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_page_image_label_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            /** @enum {string} */
+            label: "plan" | "elevation" | "photo" | "other";
         };
         POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json: {
             /** Format: uuid */
@@ -64958,6 +65505,12 @@ export interface components {
             jobId: string;
             /** @description How many officer retries this item has, this one included. */
             retry: number;
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_layer_crs_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            layer: string;
+            crs: string;
         };
         GET_ingestion_conversions_Response_200_application_json: {
             /** @enum {string} */
@@ -65167,11 +65720,11 @@ export interface components {
             rows: {
                 record: number;
                 sourceRow: number;
-                byteStart?: number;
-                byteEnd?: number;
-                sha256?: string;
+                byteStart: number;
+                byteEnd: number;
+                sha256: string;
                 sheet?: string;
-                memberSha256?: string;
+                sheetSha256?: string;
                 marks?: {
                     column: number;
                     /** @enum {string} */
@@ -65896,6 +66449,285 @@ export interface components {
             requestKey: string;
             expectedRecipeRevision: number;
         };
+        GET_ingestion_cases_caseId_intake_evidence_Response_200_application_json: {
+            /** Format: uuid */
+            caseId: string;
+            profiles: {
+                /** Format: uuid */
+                profileId: string;
+                /** Format: uuid */
+                caseId: string;
+                profileSha256: string;
+                input: {
+                    /** Format: uuid */
+                    requestKey: string;
+                    /** @enum {string} */
+                    version: "exact-key/1";
+                    /** @description The identifier namespace in the officer's words; never an official ULPIN. */
+                    namespace: string;
+                    /** @enum {string} */
+                    kind: "text" | "integer";
+                    map: {
+                        /** Format: uuid */
+                        anchorItemId: string;
+                        sourcePath: string;
+                    };
+                    tables: {
+                        /** Format: uuid */
+                        itemId: string;
+                        selection: {
+                            /** @enum {string} */
+                            format: "csv" | "xlsx";
+                            sheet: string;
+                            /** @enum {string|null} */
+                            table: null;
+                            headerRows: number[];
+                        };
+                        columnIndex: number;
+                    }[];
+                    documents: string[];
+                };
+                subject: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            confirmations: {
+                /** Format: uuid */
+                confirmationId: string;
+                /** Format: uuid */
+                profileId: string;
+                /** @enum {string} */
+                additions: "citations" | "no_additions";
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+                /** @description Sources read under the profile after it that the confirmation neither includes nor excludes. */
+                newerSources: string[];
+            }[];
+            sources: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                profileId: string;
+                /** @enum {string} */
+                family: "table" | "document";
+                /** Format: uuid */
+                jobId: string | null;
+                resultSha256: string | null;
+                coverage: {
+                    /** @enum {string} */
+                    state: "reading" | "partial" | "closed";
+                    read: number | null;
+                    eligible: number | null;
+                    keyless: number | null;
+                    unread: number | null;
+                    failed: number | null;
+                } | null;
+            }[];
+            candidates: {
+                /** @enum {string} */
+                version: "intake-evidence/1";
+                /** Format: uuid */
+                candidateId: string;
+                /** Format: uuid */
+                caseId: string;
+                candidateSha256: string;
+                key: {
+                    /** Format: uuid */
+                    profileId: string;
+                    profileSha256: string;
+                    namespace: string;
+                    /** @enum {string} */
+                    kind: "text" | "integer";
+                    literal: string;
+                };
+                evidence: {
+                    /** @enum {string} */
+                    kind: "table_row";
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    caseId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    rawJobId: string;
+                    rawInputSha256: string;
+                    rawResultSha256: string;
+                    acceptedFence: number;
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceRow: number;
+                    rowSha256: string;
+                    columnIndex: number;
+                    columnHeader: string;
+                    cell: {
+                        /** @enum {string} */
+                        state: "literal";
+                        value: string;
+                    };
+                    /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
+                    window?: {
+                        index: number;
+                        record: number;
+                        byteStart: number;
+                        byteEnd: number;
+                        sha256: string;
+                        sheet?: string;
+                        physicalRow?: number;
+                        sheetSha256?: string;
+                    };
+                } | {
+                    /** @enum {string} */
+                    kind: "document_part";
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    inputSha256: string;
+                    readerSha256: string;
+                    acceptedFence: number;
+                    /** Format: uuid */
+                    partId: string;
+                    partSha256: string;
+                    page: number | null;
+                    quote: string;
+                    quoteStart: number;
+                    quoteEnd: number;
+                };
+                /** @enum {string} */
+                outcome: "matched" | "no_match" | "several" | "conflicting";
+                anchors: {
+                    /** Format: uuid */
+                    targetId: string;
+                    /** Format: uuid */
+                    anchorItemId: string;
+                    /** Format: uuid */
+                    packageId: string;
+                    packageRevision: number;
+                    /** Format: uuid */
+                    featureId: string;
+                    locator: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourcePath: string;
+                    literal: string;
+                }[];
+                /** Format: uuid */
+                conflictGroup: string | null;
+                sourceCoverage: {
+                    /** @enum {string} */
+                    state: "reading" | "partial" | "closed";
+                    read: number | null;
+                    eligible: number | null;
+                    keyless: number | null;
+                    unread: number | null;
+                    failed: number | null;
+                } | null;
+                /** @enum {string} */
+                state: "candidate";
+                /** @enum {string} */
+                qualification: "not_assessed";
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            /** @description Stored candidates by outcome, each counted once; not a reading total (see sources). */
+            counts: {
+                matched: number;
+                no_match: number;
+                several: number;
+                conflicting: number;
+            };
+            /** Format: uuid */
+            nextCursor: string | null;
+        };
+        POST_ingestion_cases_caseId_intake_evidence_key_profiles_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            /** @enum {string} */
+            version: "exact-key/1";
+            /** @description The identifier namespace in the officer's words; never an official ULPIN. */
+            namespace: string;
+            /** @enum {string} */
+            kind: "text" | "integer";
+            map: {
+                /** Format: uuid */
+                anchorItemId: string;
+                sourcePath: string;
+            };
+            tables: {
+                /** Format: uuid */
+                itemId: string;
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                columnIndex: number;
+            }[];
+            documents: string[];
+        };
+        POST_ingestion_cases_caseId_intake_evidence_key_profiles_Response_201_application_json: {
+            /** Format: uuid */
+            profileId: string;
+            /** Format: uuid */
+            caseId: string;
+            profileSha256: string;
+            input: {
+                /** Format: uuid */
+                requestKey: string;
+                /** @enum {string} */
+                version: "exact-key/1";
+                /** @description The identifier namespace in the officer's words; never an official ULPIN. */
+                namespace: string;
+                /** @enum {string} */
+                kind: "text" | "integer";
+                map: {
+                    /** Format: uuid */
+                    anchorItemId: string;
+                    sourcePath: string;
+                };
+                tables: {
+                    /** Format: uuid */
+                    itemId: string;
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    columnIndex: number;
+                }[];
+                documents: string[];
+            };
+            subject: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
         GET_ingestion_cases_caseId_targets_Response_200_application_json: {
             /** Format: uuid */
             caseId: string;
@@ -66002,6 +66834,14 @@ export interface components {
                 };
             }[];
             packagesTruncated: boolean;
+            /** @description Opaque cursor of the next package page: unrecorded packages first, then recorded; null on the last. */
+            packagesNextCursor?: string | null;
+            /** @description Every package of the batch, listed on this page or not. */
+            packagesTotal?: number;
+            /** @description Packages of the batch not yet recorded, listed or not. */
+            packagesUnrecorded?: number;
+            /** @description Packages not yet recorded that later package pages list. */
+            packagesUnrecordedAfter?: number;
         };
         POST_ingestion_cases_caseId_confirmations_Request_application_json: {
             /** Format: uuid */
@@ -66168,6 +67008,306 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        POST_ingestion_cases_caseId_intake_evidence_confirmations_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            acknowledgement: string;
+            /** Format: uuid */
+            profileId: string;
+            profileSha256: string;
+            included: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                bytes: number;
+                /** Format: uuid */
+                jobId: string;
+                resultSha256: string;
+                coverage: {
+                    /** @enum {string} */
+                    state: "reading" | "partial" | "closed";
+                    read: number | null;
+                    eligible: number | null;
+                    keyless: number | null;
+                    unread: number | null;
+                    failed: number | null;
+                };
+            }[];
+            excluded: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                bytes: number;
+                reason: string;
+            }[];
+            targets: {
+                /** Format: uuid */
+                targetId: string;
+                /** Format: uuid */
+                packageId: string;
+                packageRevision: number;
+                reviewFingerprint: string;
+            }[];
+            additions: {
+                /** @enum {string} */
+                kind: "citations";
+                linkManifestSha256: string;
+                decisions: ({
+                    /** @enum {string} */
+                    decision: "accept";
+                    /** Format: uuid */
+                    candidateId: string;
+                    candidateSha256: string;
+                    /** Format: uuid */
+                    targetId: string;
+                    evidence: {
+                        /** @enum {string} */
+                        kind: "table_row";
+                        /** Format: uuid */
+                        itemId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        rawJobId: string;
+                        rawInputSha256: string;
+                        rawResultSha256: string;
+                        acceptedFence: number;
+                        selection: {
+                            /** @enum {string} */
+                            format: "csv" | "xlsx";
+                            sheet: string;
+                            /** @enum {string|null} */
+                            table: null;
+                            headerRows: number[];
+                        };
+                        sourceRow: number;
+                        rowSha256: string;
+                        columnIndex: number;
+                        columnHeader: string;
+                        cell: {
+                            /** @enum {string} */
+                            state: "literal";
+                            value: string;
+                        };
+                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
+                        window?: {
+                            index: number;
+                            record: number;
+                            byteStart: number;
+                            byteEnd: number;
+                            sha256: string;
+                            sheet?: string;
+                            physicalRow?: number;
+                            sheetSha256?: string;
+                        };
+                    } | {
+                        /** @enum {string} */
+                        kind: "document_part";
+                        /** Format: uuid */
+                        itemId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        caseRevision: number;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        jobId: string;
+                        resultSha256: string;
+                        inputSha256: string;
+                        readerSha256: string;
+                        acceptedFence: number;
+                        /** Format: uuid */
+                        partId: string;
+                        partSha256: string;
+                        page: number | null;
+                        quote: string;
+                        quoteStart: number;
+                        quoteEnd: number;
+                    };
+                } | {
+                    /** @enum {string} */
+                    decision: "reject";
+                    /** Format: uuid */
+                    candidateId: string;
+                    candidateSha256: string;
+                    reason: string;
+                })[];
+            } | {
+                /** @enum {string} */
+                kind: "no_additions";
+            };
+        };
+        POST_ingestion_cases_caseId_intake_evidence_confirmations_Response_202_application_json: {
+            /** Format: uuid */
+            confirmationId: string;
+            /** Format: uuid */
+            caseId: string;
+            inputSha256: string;
+            input: {
+                /** Format: uuid */
+                requestKey: string;
+                acknowledgement: string;
+                /** Format: uuid */
+                profileId: string;
+                profileSha256: string;
+                included: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    bytes: number;
+                    /** Format: uuid */
+                    jobId: string;
+                    resultSha256: string;
+                    coverage: {
+                        /** @enum {string} */
+                        state: "reading" | "partial" | "closed";
+                        read: number | null;
+                        eligible: number | null;
+                        keyless: number | null;
+                        unread: number | null;
+                        failed: number | null;
+                    };
+                }[];
+                excluded: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    bytes: number;
+                    reason: string;
+                }[];
+                targets: {
+                    /** Format: uuid */
+                    targetId: string;
+                    /** Format: uuid */
+                    packageId: string;
+                    packageRevision: number;
+                    reviewFingerprint: string;
+                }[];
+                additions: {
+                    /** @enum {string} */
+                    kind: "citations";
+                    linkManifestSha256: string;
+                    decisions: ({
+                        /** @enum {string} */
+                        decision: "accept";
+                        /** Format: uuid */
+                        candidateId: string;
+                        candidateSha256: string;
+                        /** Format: uuid */
+                        targetId: string;
+                        evidence: {
+                            /** @enum {string} */
+                            kind: "table_row";
+                            /** Format: uuid */
+                            itemId: string;
+                            /** Format: uuid */
+                            caseId: string;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            rawJobId: string;
+                            rawInputSha256: string;
+                            rawResultSha256: string;
+                            acceptedFence: number;
+                            selection: {
+                                /** @enum {string} */
+                                format: "csv" | "xlsx";
+                                sheet: string;
+                                /** @enum {string|null} */
+                                table: null;
+                                headerRows: number[];
+                            };
+                            sourceRow: number;
+                            rowSha256: string;
+                            columnIndex: number;
+                            columnHeader: string;
+                            cell: {
+                                /** @enum {string} */
+                                state: "literal";
+                                value: string;
+                            };
+                            /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
+                            window?: {
+                                index: number;
+                                record: number;
+                                byteStart: number;
+                                byteEnd: number;
+                                sha256: string;
+                                sheet?: string;
+                                physicalRow?: number;
+                                sheetSha256?: string;
+                            };
+                        } | {
+                            /** @enum {string} */
+                            kind: "document_part";
+                            /** Format: uuid */
+                            itemId: string;
+                            /** Format: uuid */
+                            caseId: string;
+                            caseRevision: number;
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            /** Format: uuid */
+                            jobId: string;
+                            resultSha256: string;
+                            inputSha256: string;
+                            readerSha256: string;
+                            acceptedFence: number;
+                            /** Format: uuid */
+                            partId: string;
+                            partSha256: string;
+                            page: number | null;
+                            quote: string;
+                            quoteStart: number;
+                            quoteEnd: number;
+                        };
+                    } | {
+                        /** @enum {string} */
+                        decision: "reject";
+                        /** Format: uuid */
+                        candidateId: string;
+                        candidateSha256: string;
+                        reason: string;
+                    })[];
+                } | {
+                    /** @enum {string} */
+                    kind: "no_additions";
+                };
+            };
+            subject: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: date-time */
+            createdAt: string;
+            /**
+             * @description AU4-B2 stores the confirmation only; the citation step writes later.
+             * @enum {boolean}
+             */
+            registryWritten: false;
+            note: string;
+        };
         GET_ingestion_upload_limits_Response_200_application_json: {
             limits: {
                 /** @enum {string} */
@@ -66184,8 +67324,6 @@ export interface components {
                 maxActivePerOperator: 2;
                 /** @enum {number} */
                 maxActiveGlobal: 4;
-                /** @enum {number} */
-                maxUploadReceipts: 128;
                 /** @enum {number} */
                 maxZeroPayloadFenceObjectsPerReceipt: 17;
                 /** @enum {number} */
@@ -66229,8 +67367,6 @@ export interface components {
                     maxParts: 896;
                     /** @enum {number} */
                     maxActiveGlobal: 1;
-                    /** @enum {number} */
-                    maxUploadReceipts: 8;
                     /** @enum {number} */
                     maxReservedOriginalBytes: 7516192768;
                     /** @enum {number} */
@@ -68725,6 +69861,52 @@ export interface components {
                             storeysAreLegalUnits: false;
                             /** @enum {string} */
                             rights: "not_assessed";
+                            structure?: {
+                                /** @enum {string} */
+                                state: "read";
+                                lengthUnit: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "conflicting";
+                                    stepIds: number[];
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                    prefix: string | null;
+                                    name: string | null;
+                                };
+                                nodes: {
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                    /** @enum {string|null} */
+                                    candidate: "building" | "level" | "space" | null;
+                                    globalId: string | null;
+                                    name: string | null;
+                                    longName: string | null;
+                                    parentStepIds: number[];
+                                    relationStepIds: number[];
+                                    elevation?: {
+                                        /** @enum {string} */
+                                        state: "absent";
+                                    } | {
+                                        /** @enum {string} */
+                                        state: "supplied";
+                                        value: number;
+                                        literal: string;
+                                    };
+                                }[];
+                            } | {
+                                /** @enum {string} */
+                                state: "not_read";
+                                code: string;
+                                reason: string;
+                            };
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -69101,6 +70283,52 @@ export interface components {
                             storeysAreLegalUnits: false;
                             /** @enum {string} */
                             rights: "not_assessed";
+                            structure?: {
+                                /** @enum {string} */
+                                state: "read";
+                                lengthUnit: {
+                                    /** @enum {string} */
+                                    state: "absent";
+                                } | {
+                                    /** @enum {string} */
+                                    state: "conflicting";
+                                    stepIds: number[];
+                                } | {
+                                    /** @enum {string} */
+                                    state: "supplied";
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                                    prefix: string | null;
+                                    name: string | null;
+                                };
+                                nodes: {
+                                    stepId: number;
+                                    /** @enum {string} */
+                                    entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                                    /** @enum {string|null} */
+                                    candidate: "building" | "level" | "space" | null;
+                                    globalId: string | null;
+                                    name: string | null;
+                                    longName: string | null;
+                                    parentStepIds: number[];
+                                    relationStepIds: number[];
+                                    elevation?: {
+                                        /** @enum {string} */
+                                        state: "absent";
+                                    } | {
+                                        /** @enum {string} */
+                                        state: "supplied";
+                                        value: number;
+                                        literal: string;
+                                    };
+                                }[];
+                            } | {
+                                /** @enum {string} */
+                                state: "not_read";
+                                code: string;
+                                reason: string;
+                            };
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -70921,6 +72149,52 @@ export interface components {
                     storeysAreLegalUnits: false;
                     /** @enum {string} */
                     rights: "not_assessed";
+                    structure?: {
+                        /** @enum {string} */
+                        state: "read";
+                        lengthUnit: {
+                            /** @enum {string} */
+                            state: "absent";
+                        } | {
+                            /** @enum {string} */
+                            state: "conflicting";
+                            stepIds: number[];
+                        } | {
+                            /** @enum {string} */
+                            state: "supplied";
+                            stepId: number;
+                            /** @enum {string} */
+                            entityType: "IfcSIUnit" | "IfcConversionBasedUnit" | "IfcConversionBasedUnitWithOffset" | "IfcContextDependentUnit";
+                            prefix: string | null;
+                            name: string | null;
+                        };
+                        nodes: {
+                            stepId: number;
+                            /** @enum {string} */
+                            entityType: "IfcProject" | "IfcSite" | "IfcBuilding" | "IfcBuildingStorey" | "IfcSpace";
+                            /** @enum {string|null} */
+                            candidate: "building" | "level" | "space" | null;
+                            globalId: string | null;
+                            name: string | null;
+                            longName: string | null;
+                            parentStepIds: number[];
+                            relationStepIds: number[];
+                            elevation?: {
+                                /** @enum {string} */
+                                state: "absent";
+                            } | {
+                                /** @enum {string} */
+                                state: "supplied";
+                                value: number;
+                                literal: string;
+                            };
+                        }[];
+                    } | {
+                        /** @enum {string} */
+                        state: "not_read";
+                        code: string;
+                        reason: string;
+                    };
                 };
                 artifact: {
                     key: string;
@@ -74196,6 +75470,238 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GET_areas_areaId_display_window_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_areas_areaId_retire: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                areaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_areas_areaId_retire_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_areas_areaId_retire_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_areas_areaId_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                areaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_areas_areaId_retire_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_areas_areaId_retire_Response_200_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -91505,6 +93011,235 @@ export interface operations {
             };
         };
     };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts: {
+        parameters: {
+            query?: {
+                after?: number;
+            };
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_parts_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partIndex: number;
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
     POST_api_v1_ingestion_cases_caseId_intake_items_itemId_pin: {
         parameters: {
             query?: never;
@@ -91622,6 +93357,166 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_label: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_page_image_label_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            /** @description The item is not in this case, or it has no page image preview */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The stored preview differs from the SHA-256 kept on the item */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     POST_api_v1_ingestion_cases_caseId_intake_items_itemId_retry: {
         parameters: {
             query?: never;
@@ -91647,6 +93542,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_items_itemId_layer_crs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_layer_crs_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_Response_201_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
@@ -92775,9 +94787,241 @@ export interface operations {
             };
         };
     };
+    GET_api_v1_ingestion_cases_caseId_intake_evidence: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                outcome?: "matched" | "no_match" | "several" | "conflicting";
+            };
+            header?: never;
+            path: {
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_evidence_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_evidence_key_profiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_evidence_key_profiles_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_evidence_key_profiles_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
     GET_api_v1_ingestion_cases_caseId_targets: {
         parameters: {
             query?: {
+                packageCursor?: string;
                 cursor?: string;
                 readiness?: "preparing" | "ready" | "needs_answer" | "held" | "confirmed" | "recorded" | "carded" | "stopped";
             };
@@ -93261,6 +95505,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_targets_targetId_priority_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_evidence_confirmations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_evidence_confirmations_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_evidence_confirmations_Response_202_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

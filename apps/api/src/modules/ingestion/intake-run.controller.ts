@@ -1,29 +1,35 @@
 import { Controller, Get, HttpCode, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { IntakeConfirmSchema, IntakeConfirmationSchema, IntakeRunControlSchema,
-  IntakeTargetPageSchema, IntakeTargetQuerySchema, IntakeTargetReadinessSchema,
-  IntakeTargetSchema } from '@ulpin/contracts/usp';
+import { z } from 'zod';
+import { IntakeConfirmSchema, IntakeConfirmationSchema, IntakeEvidenceConfirmSchema,
+  IntakeEvidenceConfirmationSchema, IntakeRunControlSchema, IntakeTargetPageSchema, IntakeTargetQuerySchema,
+  IntakeTargetReadinessSchema, IntakeTargetSchema } from '@ulpin/contracts/usp';
 import { confirmIntake, readIntakeConfirmation, retryIntakeConfirmation }
   from '@ulpin/server/modules/usp/ingestion/intake-confirmations';
+import { confirmIntakeEvidence } from '@ulpin/server/modules/usp/ingestion/intake-evidence';
 import { listIntakeTargets, prioritizeIntakeTarget } from '@ulpin/server/modules/usp/ingestion/intake-targets';
 import { AppError } from '@ulpin/server/infrastructure/errors';
-import { readJsonBody } from '../../common/body';
+import { JSON_BODY_LIMIT, readJsonBody } from '../../common/body';
 import { jsonBody, wireResponse } from '../intake/wire-schemas';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 
 const bodyLimit = 32 * 1024;
 const param = (name: string) => ApiParam({ name, schema: { type: 'string', format: 'uuid' } });
 
-export function intakeTargetQuery(originalUrl: string) {
+/** Each allowed field at most once and no other field, so an ignored or repeated field cannot change a read. */
+export function strictQuery<T extends z.ZodType>(originalUrl: string, schema: T, fields: string[],
+  code: string, message: string): z.infer<T> {
   const params = new URL(originalUrl, 'http://127.0.0.1').searchParams;
   for (const key of params.keys()) {
-    if (!['readiness', 'cursor'].includes(key) || params.getAll(key).length !== 1) {
-      throw new AppError(422, 'INTAKE_TARGET_QUERY',
-        'Use one optional readiness and cursor, and no other query fields.');
-    }
+    if (!fields.includes(key) || params.getAll(key).length !== 1) throw new AppError(422, code, message);
   }
-  return IntakeTargetQuerySchema.parse(Object.fromEntries(params));
+  return schema.parse(Object.fromEntries(params));
+}
+
+export function intakeTargetQuery(originalUrl: string) {
+  return strictQuery(originalUrl, IntakeTargetQuerySchema, ['readiness', 'cursor', 'packageCursor'],
+    'INTAKE_TARGET_QUERY', 'Use one optional readiness, cursor and packageCursor, and no other query fields.');
 }
 
 @ApiTags('private intake run')
@@ -34,12 +40,14 @@ export class IntakeRunController {
   @param('caseId')
   @ApiQuery({ name: 'readiness', required: false, enum: IntakeTargetReadinessSchema.options })
   @ApiQuery({ name: 'cursor', required: false, schema: { type: 'string', format: 'uuid' } })
+  @ApiQuery({ name: 'packageCursor', required: false,
+    schema: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,512}$' } })
   @ApiOperation({ operationId: 'GET_api_v1_ingestion_cases_caseId_targets',
     summary: 'Read a bounded target page and grouped readiness counts for the retained batch' })
   @wireResponse(200, IntakeTargetPageSchema)
   targets(@Param('caseId') caseId: string, @Req() request: Request) {
     const query = intakeTargetQuery(request.originalUrl);
-    return listIntakeTargets(caseId, query.readiness, query.cursor);
+    return listIntakeTargets(caseId, query.readiness, query.cursor, query.packageCursor);
   }
 
   @Post('cases/:caseId/confirmations')
@@ -80,5 +88,16 @@ export class IntakeRunController {
   async priority(@Param('caseId') caseId: string, @Param('targetId') targetId: string, @Req() request: Request) {
     IntakeRunControlSchema.parse(await readJsonBody(request, bodyLimit));
     return prioritizeIntakeTarget(caseId, targetId);
+  }
+
+  @Post('cases/:caseId/intake/evidence/confirmations')
+  @HttpCode(202) @param('caseId')
+  @ApiOperation({ operationId: 'POST_api_v1_ingestion_cases_caseId_intake_evidence_confirmations',
+    summary: 'Confirm exact-key table rows and document parts as cited candidates for named buildings, with every '
+      + 'source, coverage, candidate and package pin; a stale pin is refused. It is stored only: nothing is '
+      + 'written to the registry until the citation step' })
+  @jsonBody(IntakeEvidenceConfirmSchema) @wireResponse(202, IntakeEvidenceConfirmationSchema)
+  async confirmEvidence(@Param('caseId') caseId: string, @Req() request: Request) {
+    return confirmIntakeEvidence(caseId, await readJsonBody(request, JSON_BODY_LIMIT));
   }
 }

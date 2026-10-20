@@ -154,6 +154,8 @@ def test_generated_workbook_above_16_mib_streams_in_windows(large: Path):
         info = archive.getinfo("xl/worksheets/sheet2.xml")
         assert head["memberSha256"] == hashlib.sha256(archive.read(info)).hexdigest()
         assert head["memberBytes"] == info.file_size and head["byteEnd"] - head["byteStart"] == info.compress_size
+    stored = large.read_bytes()[head["byteStart"]:head["byteEnd"]]
+    assert head["storedSha256"] == hashlib.sha256(stored).hexdigest(), "the range's SHA-256 is of exactly its bytes"
     assert end["records"] == 160_000 and end["windows"] == len(windows) == 16 and end["mergedRanges"] is True
     assert [len(window["rows"]) for window in windows] == [10_000] * 16
     assert [window["index"] for window in windows] == list(range(16))

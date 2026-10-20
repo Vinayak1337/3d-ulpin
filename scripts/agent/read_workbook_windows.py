@@ -88,15 +88,24 @@ def member_info(archive, path, limits):
 
 
 def stored_range(file_path, info):
-    """The member's stored bytes in the original: after its local header, for its compressed size."""
+    """The member's stored bytes in the original, after its local header for its compressed size, and the SHA-256
+    of exactly those bytes, read once."""
     with open(file_path, "rb") as source:
         source.seek(info.header_offset)
         header = source.read(30)
-    if len(header) != 30 or header[:4] != b"PK\x03\x04":
-        raise Refused("NATIVE_WORKBOOK_INVALID")
-    names, extra = struct.unpack("<HH", header[26:30])
-    start = info.header_offset + 30 + names + extra
-    return start, start + info.compress_size
+        if len(header) != 30 or header[:4] != b"PK\x03\x04":
+            raise Refused("NATIVE_WORKBOOK_INVALID")
+        names, extra = struct.unpack("<HH", header[26:30])
+        start = info.header_offset + 30 + names + extra
+        source.seek(start)
+        digest, left = hashlib.sha256(), info.compress_size
+        while left:
+            block = source.read(min(READ_BYTES, left))
+            if not block:
+                raise Refused("NATIVE_WORKBOOK_INVALID")
+            digest.update(block)
+            left -= len(block)
+    return start, start + info.compress_size, digest.hexdigest()
 
 
 def locate_sheet(workbook, archive, sheet_name):
@@ -338,13 +347,14 @@ def main():
                 member_sha256, member_bytes = member.drain()
             finally:
                 member.close()
-            byte_start, byte_end = stored_range(limits.file_path, info)
+            byte_start, byte_end, stored_sha256 = stored_range(limits.file_path, info)
             shared = shared_strings(workbook, archive, shared_path, limits)
 
             def head(headers):
                 emit(json.dumps({"kind": "sheet", "sheet": limits.sheet, "member": sheet_path,
                                  "memberSha256": member_sha256, "memberBytes": member_bytes,
-                                 "byteStart": byte_start, "byteEnd": byte_end, "headers": headers},
+                                 "byteStart": byte_start, "byteEnd": byte_end,
+                                 "storedSha256": stored_sha256, "headers": headers},
                                 ensure_ascii=False, separators=(",", ":")))
                 return headers
 

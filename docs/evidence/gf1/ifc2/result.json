@@ -1,0 +1,34 @@
+{
+  "task": "IFC2",
+  "gate": "GF1",
+  "gap": "AU2 G15 (Studio half)",
+  "base": "05b4565b",
+  "change": {
+    "view": "apps/studio/src/features/intake/ifc/: the batch page shows the chosen IFC item's structure: buildings, each storey with its stated elevation and length unit as stated ('Elevation 0 (unit: millimetre, as stated)' or 'Elevation not stated'), and its spaces by name and long name; every line says 'Candidate ... from the file' with its STEP id and GlobalId in mono",
+    "long_trees": "a storey list longer than 10 starts collapsed; spaces are a counted, collapsed <details>; storeys and spaces the file places under no building or storey are listed, not dropped",
+    "words": "no reading run, queued, running, stopped (with code), out of date, read before the scan existed, and not_read with its reason sentence and code",
+    "data": "read only from the API: the case detail's jobs give the source's newest 'ifc-native' job; its status route gives result.summary.structure; no API or OpenAPI change",
+    "tray": "an item whose probed format is ifc offers 'View structure'",
+    "kept": "nothing is confirmed or written to the register from this view; no geometry or 3D",
+    "contract_message": "packages/contracts/src/source-fusion.ts: the IFC receipt message reads its size from IFC_LIMITS.resultBytes (64 KiB); no behaviour change; source-pins.json repinned"
+  },
+  "real_inputs": {
+    "good": "real-structures.json: the IFC1 pass-1 scan (services/geo/geo/native_ifc.py scan_structure) of the public IFC2X3 and IFC4 buildingSMART samples; the IFC2X3 status body (counts and georeference from the retained native run) validates against the published status schema and reads as 1 building, 1 storey (#36, elevation 0, millimetre as stated), 2 spaces (#183 living room, #296 entry hall)",
+    "difficult": "the real IFC2X3 scanned under a 3-entity ceiling gives not_read STRUCTURE_ENTITY_LIMIT, shown with its sentence; a generated test_only tree (13 storeys, 182 spaces, unit absent, one elevation absent, a storey under no building, a space under nothing, a nested space) inside the 48 KiB output bound validates and starts collapsed"
+  },
+  "checks": {
+    "studio_typecheck": 0,
+    "studio_test": "0; studio 486 passed (75 files), scene 58 passed 1 skipped, ui 7, api-client 2",
+    "typecheck_backend": 0,
+    "backend_tests": "0; 376 tests, 374 pass, 2 skipped, 0 fail",
+    "openapi_check": "first run 1 (source-pins.json stale from the source-fusion.ts message); after scripts/api/refresh-contract.ts 05b4565b and pnpm studio:api-types: 0, 314 operations, 356 named schemas; openapi.json and schema.d.ts unchanged",
+    "check_py": "1: 'runtime receipt changed' for three receipts this worktree checks out with CRLF (cityjson-validation-runtime.json, current-runtime-20261003.json, source-evidence-history-20261005.json); each hashes to its recorded sha256 with LF; no file of this change involved",
+    "diff_check": 0
+  },
+  "ui_design_check": {
+    "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 05b4565b: exit 0 (it scans apps/web only); the same rules over apps/studio: one candidate, a false positive ('STEP #296' in a test string)",
+    "blocking": "none: values come from the status route; no invented data; no provenance label; no theme switch",
+    "design_system": "none open: --ui-* tokens only; border and white surface without shadow or tint; identifiers in mono; unknown, absent and conflicting units and elevations worded distinctly; soft buttons only (no primary); native <details>/<summary> keyboard reachable with the global 2 px focus ring; text wraps at 200 % zoom"
+  },
+  "not_measured": "No runtime: the view was not seen against a live API. A .ifc dropped in a batch is kept through /uploads and never queued for the native IFC reader (only sources retained through POST .../ifc have ifc-native jobs), so on today's batch path the view says 'No IFC reading has been run for this file'."
+}
