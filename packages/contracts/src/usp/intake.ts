@@ -343,6 +343,9 @@ export const IntakeEvidenceCoverageSchema = z.strictObject({
 export const IntakeEvidenceSourceSchema = z.strictObject({
   itemId: uuid, profileId: uuid, family: z.enum(['table', 'document']), jobId: uuid.nullable(),
   resultSha256: hash.nullable(), coverage: IntakeEvidenceCoverageSchema.nullable(),
+  sourceId: uuid.describe('The item\'s current retained source; with its revision, SHA-256 and bytes, the pins an '
+    + 'evidence confirmation names for this item.'),
+  sourceRevision: z.number().int().positive(), sourceSha256: hash, bytes: z.number().int().nonnegative(),
 }).refine(source => source.coverage?.state !== 'closed' || (source.jobId !== null && source.resultSha256 !== null),
   'Closed coverage names the job and result that read it.');
 type EvidenceKey = z.infer<typeof IntakeEvidenceKeySchema>;
@@ -411,7 +414,9 @@ export const IntakeEvidenceConfirmSchema = z.strictObject({
   targets: z.array(z.strictObject({ targetId: uuid, packageId: uuid, packageRevision: z.number().int().positive(),
     reviewFingerprint: hash })).min(1).max(INTAKE_TARGET_LIMITS.confirmationTargets),
   additions: z.discriminatedUnion('kind', [
-    z.strictObject({ kind: z.literal('citations'), linkManifestSha256: hash,
+    z.strictObject({ kind: z.literal('citations'), linkManifestSha256: hash.optional()
+      .describe('The SHA-256 of the decisions in candidate order. When omitted the server computes it; when sent it '
+        + 'must equal that value. The stored confirmation always holds the computed hash.'),
       decisions: z.array(decision).min(1).max(INTAKE_EVIDENCE_LIMITS.decisions) }),
     z.strictObject({ kind: z.literal('no_additions') }),
   ]),

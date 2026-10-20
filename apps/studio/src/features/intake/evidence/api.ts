@@ -1,5 +1,8 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
+import { readTargets } from '../run/api';
+import { INTAKE_TARGET_LIMITS, PACKAGE_PAGE, type Package } from '../run/model';
+import type { ConfirmBody, ConfirmInput, EvidenceConfirmation } from './confirm-model';
 import type { EvidencePage, KeyProfile, KeyProfileBody, KeyProfileInput, Outcome } from './model';
 
 /**
@@ -27,19 +30,19 @@ export async function declareKeyProfile(caseId: string, body: KeyProfileBody): P
   })) as KeyProfile;
 }
 
-function sentInput({ requestKey: _requestKey, ...input }: KeyProfileBody): KeyProfileInput {
-  return input;
-}
-
 /**
- * One press of "Declare the key": a new request key. A lost answer for the same profile is sent again with the same
- * key; a refusal or another profile makes the next press a new request.
+ * One press sends one body under a fresh request key. A lost answer for the same input is sent again with the same
+ * key; a refusal or another input makes the next press a new request.
  */
-export function createDeclaration(caseId: string, send = declareKeyProfile) {
-  let body: KeyProfileBody | null = null;
-  return async (input: KeyProfileInput): Promise<KeyProfile> => {
-    if (body && JSON.stringify(sentInput(body)) !== JSON.stringify(input)) body = null;
-    body ??= { ...input, requestKey: crypto.randomUUID() };
+function keyedRequest<Input, Body extends Input & { requestKey: string }, Answer>(caseId: string,
+  send: (caseId: string, body: Body) => Promise<Answer>) {
+  let body: Body | null = null;
+  return async (input: Input): Promise<Answer> => {
+    if (body) {
+      const { requestKey: _requestKey, ...sent } = body;
+      if (JSON.stringify(sent) !== JSON.stringify(input)) body = null;
+    }
+    body ??= { ...input, requestKey: crypto.randomUUID() } as Body;
     try {
       return await send(caseId, body);
     } catch (error) {
@@ -47,4 +50,38 @@ export function createDeclaration(caseId: string, send = declareKeyProfile) {
       throw error;
     }
   };
+}
+
+/** One press of "Declare the key", under the request key rule above. */
+export function createDeclaration(caseId: string, send = declareKeyProfile) {
+  return keyedRequest<KeyProfileInput, KeyProfileBody, KeyProfile>(caseId, send);
+}
+
+export async function confirmEvidence(caseId: string, body: ConfirmBody): Promise<EvidenceConfirmation> {
+  return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/evidence/confirmations', {
+    params: { path: { caseId } }, body: body as never,
+  })) as EvidenceConfirmation;
+}
+
+/** One press of "Confirm the evidence", under the same request key rule as a declaration. */
+export function createEvidenceConfirmation(caseId: string, send = confirmEvidence) {
+  return keyedRequest<ConfirmInput, ConfirmBody, EvidenceConfirmation>(caseId, send);
+}
+
+/**
+ * The packages of the targets read with these ids, read when the officer presses: its first package page, then each
+ * later page until every one is found, at most the pages its stated package total spans.
+ */
+export async function readPackagePins(caseId: string, packageIds: readonly string[],
+  read: typeof readTargets = readTargets): Promise<Map<string, Package>> {
+  const wanted = new Set(packageIds), found = new Map<string, Package>();
+  let cursor: string | undefined;
+  for (let pages = 1; wanted.size; pages++) {
+    const page = await read(caseId, undefined, undefined, cursor);
+    for (const pkg of page.packages) if (wanted.has(pkg.packageId)) found.set(pkg.packageId, pkg);
+    const bound = Math.ceil((page.packagesTotal ?? INTAKE_TARGET_LIMITS.draftTargets) / PACKAGE_PAGE);
+    if (found.size === wanted.size || !page.packagesNextCursor || pages >= bound) break;
+    cursor = page.packagesNextCursor;
+  }
+  return found;
 }

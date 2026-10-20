@@ -62,15 +62,21 @@ test('a candidate holds the exact key literal on both sides; a normalised or inv
 });
 
 test('coverage may be null; unread coverage is never absence and closed coverage states every count', () => {
+  const pins = { sourceId: id, sourceRevision: 1, sourceSha256: hash, bytes: 10 };
   assert(ok(IntakeEvidenceSourceSchema, { itemId: id, profileId: id, family: 'table', jobId: null,
-    resultSha256: null, coverage: null }));
+    resultSha256: null, coverage: null, ...pins }));
   assert(ok(IntakeEvidenceSourceSchema, { itemId: id, profileId: id, family: 'document', jobId: id,
     resultSha256: null, coverage: { state: 'reading', read: 12, eligible: null, keyless: null, unread: null,
-      failed: null } }));
+      failed: null }, ...pins }));
   assert(!ok(IntakeEvidenceSourceSchema, { itemId: id, profileId: id, family: 'table', jobId: null,
-    resultSha256: null, coverage: closed }));
+    resultSha256: null, coverage: closed, ...pins }));
   assert(!ok(IntakeEvidenceSourceSchema, { itemId: id, profileId: id, family: 'table', jobId: id,
-    resultSha256: hash, coverage: { ...closed, unread: null } }));
+    resultSha256: hash, coverage: { ...closed, unread: null }, ...pins }));
+  for (const field of Object.keys(pins)) {
+    const { [field as keyof typeof pins]: _, ...rest } = pins;
+    assert(!ok(IntakeEvidenceSourceSchema, { itemId: id, profileId: id, family: 'table', jobId: null,
+      resultSha256: null, coverage: null, ...rest }), `a source read names its ${field}`);
+  }
   const noMatch = { ...candidate, outcome: 'no_match', anchors: [] };
   assert(!ok(IntakeEvidenceCandidateSchema, noMatch));
   assert(!ok(IntakeEvidenceCandidateSchema, { ...noMatch, sourceCoverage: { ...closed, state: 'partial',
@@ -98,7 +104,10 @@ test('an evidence confirmation refuses a missing pin, an unread source and any r
     assert(!ok(IntakeEvidenceConfirmSchema, { ...confirm, additions: { ...confirm.additions,
       decisions: [without(accept, field)] } }), field);
   }
-  assert(!ok(IntakeEvidenceConfirmSchema, { ...confirm, additions: without(confirm.additions, 'linkManifestSha256') }));
+  // EVS2: the server computes an omitted link manifest hash; a malformed one is still refused.
+  assert(ok(IntakeEvidenceConfirmSchema, { ...confirm, additions: without(confirm.additions, 'linkManifestSha256') }));
+  assert(!ok(IntakeEvidenceConfirmSchema, { ...confirm, additions: { ...confirm.additions,
+    linkManifestSha256: 'abc' } }));
   assert(!ok(IntakeEvidenceConfirmSchema, { ...confirm, included: [{ ...confirm.included[0]!,
     coverage: { ...closed, state: 'partial', unread: 1 } }] }));
   assert(!ok(IntakeEvidenceConfirmSchema, { ...confirm, additions: { ...confirm.additions,

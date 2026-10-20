@@ -467,6 +467,8 @@ type CoverageRow = { profile_id: string; item_id: string; family: 'table' | 'doc
   result_sha256: string | null; state: IntakeEvidenceCoverage['state']; read_count: string | null;
   eligible_count: string | null; keyless_count: string | null; unread_count: string | null;
   failed_count: string | null };
+type SourceCoverageRow = CoverageRow & { source_id: string | null; source_revision: number | null;
+  source_sha256: string | null; source_bytes: string | number | null };
 const counted = (value: string | null) => value === null ? null : Number(value);
 export function coverageOf(row: CoverageRow): IntakeEvidenceCoverage {
   return { state: row.state, read: counted(row.read_count), eligible: counted(row.eligible_count),
@@ -513,6 +515,19 @@ export function newerSources(pins: IntakeEvidenceConfirm, read: string[]) {
   return read.filter(itemId => !named.has(itemId));
 }
 
+/** EVS2: a source read under a profile with the pins of its item's current retained source, which a confirmation
+ * names. A table or document read here always has one; an item without it is refused as itemTx refuses it. */
+export function evidenceSourceView(row: SourceCoverageRow) {
+  if (row.source_id === null || row.source_revision === null || row.source_sha256 === null
+    || row.source_bytes === null) {
+    throw new AppError(422, 'INTAKE_EVIDENCE_ITEM',
+      `Item ${row.item_id} is not a retained ${row.family} of this batch.`);
+  }
+  return { itemId: row.item_id, profileId: row.profile_id, family: row.family, jobId: row.job_id,
+    resultSha256: row.result_sha256, coverage: coverageOf(row), sourceId: row.source_id,
+    sourceRevision: row.source_revision, sourceSha256: row.source_sha256, bytes: Number(row.source_bytes) };
+}
+
 /** Profiles, coverage and stored confirmations of the case, and one page of candidates with counts by outcome. */
 export async function readIntakeEvidence(caseValue: string, query: { outcome?: string; cursor?: string }) {
   const caseId = uuid.parse(caseValue);
@@ -524,8 +539,11 @@ export async function readIntakeEvidence(caseValue: string, query: { outcome?: s
     await intakeCaseTx(client, caseId);
     const profiles: ProfileRow[] = (await client.query(`SELECT * FROM usp_intake_key_profiles WHERE case_id=$1
       ORDER BY created_at,profile_id LIMIT $2`, [caseId, limit])).rows;
-    const sources: CoverageRow[] = (await client.query(`SELECT * FROM usp_intake_evidence_coverage WHERE case_id=$1
-      ORDER BY profile_id,item_id LIMIT $2`, [caseId, limit])).rows;
+    const sources: SourceCoverageRow[] = (await client.query(`SELECT c.*,s.id source_id,s.revision source_revision,
+      s.sha256 source_sha256,s.bytes source_bytes FROM usp_intake_evidence_coverage c
+      LEFT JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id
+      LEFT JOIN sources s ON s.case_id=c.case_id AND s.id=i.source_id
+      WHERE c.case_id=$1 ORDER BY c.profile_id,c.item_id LIMIT $2`, [caseId, limit])).rows;
     const confirmations: ConfirmationRow[] = (await client.query(`SELECT * FROM usp_intake_evidence_confirmations
       WHERE case_id=$1 ORDER BY created_at,confirmation_id LIMIT $2`, [caseId, limit])).rows;
     const rows = (await client.query(`SELECT candidate FROM usp_intake_evidence_candidates WHERE case_id=$1
@@ -541,8 +559,7 @@ export async function readIntakeEvidence(caseValue: string, query: { outcome?: s
         additions: row.additions, createdAt: new Date(row.created_at).toISOString(),
         expiresAt: new Date(row.expires_at).toISOString(), newerSources: newerSources(row.pins,
           sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)) })),
-      sources: sources.map(row => ({ itemId: row.item_id, profileId: row.profile_id, family: row.family,
-        jobId: row.job_id, resultSha256: row.result_sha256, coverage: coverageOf(row) })),
+      sources: sources.map(evidenceSourceView),
       candidates: page, counts, nextCursor: rows.length > page.length ? page.at(-1)!.candidateId : null });
   });
 }
@@ -563,6 +580,14 @@ export type EvidenceState = {
 /** The officer's link manifest: the decisions as sent, in candidate order. */
 export function evidenceLinkManifest(decisions: { candidateId: string }[]) {
   return fingerprint([...decisions].sort((a, b) => a.candidateId.localeCompare(b.candidateId)));
+}
+
+/** EVS2: a confirmation that omits the link manifest hash takes the server's own; one that sends it keeps it, and
+ * evidenceConfirmationIssue refuses it unless it is that value. The stored pins always hold the computed hash. */
+export function withLinkManifest(input: IntakeEvidenceConfirm): IntakeEvidenceConfirm {
+  const additions = input.additions;
+  if (additions.kind === 'no_additions' || additions.linkManifestSha256 !== undefined) return input;
+  return { ...input, additions: { ...additions, linkManifestSha256: evidenceLinkManifest(additions.decisions) } };
 }
 
 type NamedSource = Pick<IntakeEvidenceConfirm['excluded'][number], 'itemId' | 'sourceId' | 'sourceRevision'
@@ -679,7 +704,7 @@ export async function evidenceStateTx(client: PoolClient, caseId: string, input:
 /** D2: the officer's evidence confirmation is stored with all its pins; a stale pin refuses it. No registry write. */
 export async function confirmIntakeEvidence(caseValue: string, raw: unknown) {
   const caseId = uuid.parse(caseValue);
-  const input = IntakeEvidenceConfirmSchema.parse(raw);
+  const input = withLinkManifest(IntakeEvidenceConfirmSchema.parse(raw));
   return transaction(async client => {
     const { binding } = await intakeCaseTx(client, caseId, true);
     const digest = fingerprint(input);
