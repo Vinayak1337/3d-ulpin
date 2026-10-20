@@ -27,6 +27,9 @@ export function PackageDetails({ pkg, reasons = [], confirming = false }: {
 }) {
   return <div className={styles.package}>
     <h3 className="studio-heading">Package <CopyableId id={pkg.packageId} name="package identifier" /></h3>
+    {pkg.recordingConfirmationId ? <p>Being recorded by confirmation <CopyableId
+      id={pkg.recordingConfirmationId} name="confirmation identifier" />. Its buildings cannot be chosen until that
+      run ends.</p> : null}
     {reviewWords(pkg) ? <>
       <p>{reviewWords(pkg)}</p>
       {!pkg.reviewRefusal ? reasons.map(reason => <p key={reason}>{reason}</p>) : null}

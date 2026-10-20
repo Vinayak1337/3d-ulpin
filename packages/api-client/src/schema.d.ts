@@ -66531,6 +66531,11 @@ export interface components {
                     code: string;
                     message: string;
                 } | null;
+                /**
+                 * Format: uuid
+                 * @description The stored confirmation whose run is recording this package now; it cannot be named again until that run ends. Null when none. Older pages may omit it.
+                 */
+                recordingConfirmationId?: string | null;
                 counts: {
                     preparing: number;
                     ready: number;

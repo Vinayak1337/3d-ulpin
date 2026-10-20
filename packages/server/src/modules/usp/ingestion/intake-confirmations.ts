@@ -11,7 +11,7 @@ import { localOperatorSubject } from '../principal';
 import { appendCaseIngestionTx } from './events';
 import { intakeCaseTx } from './intake-context';
 import { queueIntakeRunTx } from './intake-run';
-import { intakeTargetView, type IntakeTargetRow } from './intake-targets';
+import { intakeTargetView, recordingConfirmationsTx, type IntakeTargetRow } from './intake-targets';
 
 /** The most the packet plan and card policy admit (plan-service.ts:51-53, card-service.ts:196-198). */
 export const INTAKE_CONFIRMATION_VALIDITY_MS = 24 * 60 * 60 * 1000;
@@ -64,6 +64,17 @@ async function assertPackagesTx(client: PoolClient, caseId: string, input: Intak
     [named.packageId, caseId])).rows[0];
     const difference = packageDifference(named, row?.body);
     if (difference) stale(difference);
+  }
+  if (input.packages.length) await assertNotRecordingTx(client, caseId, input);
+}
+
+/** Under the same package locks: a package another confirmation's open run is recording cannot be named again. */
+async function assertNotRecordingTx(client: PoolClient, caseId: string, input: IntakeConfirm) {
+  const recording = await recordingConfirmationsTx(client, caseId, input.packages.map(named => named.packageId));
+  const pending = input.packages.find(named => recording.has(named.packageId));
+  if (pending) {
+    throw new AppError(409, 'INTAKE_CONFIRMATION_PENDING', `Package ${pending.packageId} is already being recorded `
+      + `by confirmation ${recording.get(pending.packageId)}.`);
   }
 }
 
