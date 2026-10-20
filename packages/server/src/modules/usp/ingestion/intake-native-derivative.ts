@@ -135,6 +135,36 @@ const memberPins = (parts: SetPart[]): SetMember[] => parts.map(part => ({ sourc
 
 const dotted = (extensions: SetExtension[]) => extensions.map(extension => `.${extension}`).join(' and ');
 
+const readWith = (shp: SetPart) => `Read with ${fileName(shp.name)} as one shapefile.`;
+
+/** N05B. The words a part other than the .shp of a whole live set rests with; null for any other source. */
+export async function setPartWordsTx(client: PoolClient, caseId: string, sourceId: string): Promise<string | null> {
+  const name: string | undefined = (await client.query('SELECT name FROM sources WHERE case_id=$1 AND id=$2',
+    [caseId, sourceId])).rows[0]?.name;
+  const named = name ? partName(name) : null;
+  if (!named) return null;
+  const parts = await stemPartsTx(client, caseId, named.stem);
+  const { twice, missing } = setGaps(parts);
+  return !twice.length && !missing.length && parts.slice(1).some(part => part.source_id === sourceId)
+    ? readWith(parts[0]) : null;
+}
+
+/**
+ * N05B (D1). A key-profile reading of a part that is still queued ends stale in the words the part rests with; one
+ * running or finished is left.
+ */
+async function withdrawPartReadingsTx(client: PoolClient, caseId: string, parts: SetPart[], words: string) {
+  const jobs = (await client.query(`SELECT payload FROM jobs WHERE case_id=$1 AND operation='intake-evidence'
+    AND status='queued' AND source_id=ANY($2::uuid[]) ORDER BY id FOR UPDATE`,
+  [caseId, parts.map(part => part.source_id)])).rows;
+  if (!jobs.length) return;
+  const { IntakeEvidenceInputSchema } = await import('./intake-evidence');
+  const { endIntakeEvidenceJobTx } = await import('./intake-evidence-worker');
+  for (const job of jobs) {
+    await endIntakeEvidenceJobTx(client, IntakeEvidenceInputSchema.parse(job.payload), 'stale', words);
+  }
+}
+
 async function restPartTx(client: PoolClient, caseId: string, part: SetPart,
   state: Pick<IntakeDraftState, 'state' | 'placement' | 'limitReason'>) {
   await writeIntakeDraftTx(client, caseId, part.item_id, { ...state, planRef: part.plan_ref, recordsSeen: 0 });
@@ -144,7 +174,8 @@ async function restPartTx(client: PoolClient, caseId: string, part: SetPart,
  * N05. A published loose part (named .shp, .shx, .dbf, .prj or .cpg) of a stem holding a .shp or .shx is read only
  * with its set. A stem holding two parts of one extension rests every part in words naming them; one short of its
  * .shp, .shx or .dbf rests every part waiting; a whole set queues SH2's conversion on its .shp item, and every other
- * part rests read with it. False for any other file, a lone .dbf included, which keeps its own path.
+ * part rests read with it, its queued key-profile reading withdrawn. False for any other file, a lone .dbf included,
+ * which keeps its own path.
  */
 export async function queueShapefileSetTx(client: PoolClient, source: IntakeSourceRow,
   card: IntakeCard): Promise<boolean> {
@@ -170,7 +201,8 @@ export async function queueShapefileSetTx(client: PoolClient, source: IntakeSour
   }
   const [shp, ...others] = parts;
   for (const part of others) await restPartTx(client, source.case_id, part, { state: 'read', placement: 'undecided',
-    limitReason: `Read with ${fileName(shp.name)} as one shapefile.` });
+    limitReason: readWith(shp) });
+  await withdrawPartReadingsTx(client, source.case_id, others, readWith(shp));
   const { source: parent } = await intakeSourceTx(client, source.case_id, shp.source_id);
   await queueNativeDerivativeTx(client, parent, shp.card);
   return true;
