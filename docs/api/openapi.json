@@ -370690,12 +370690,6 @@
                   4
                 ]
               },
-              "maxUploadReceipts": {
-                "type": "number",
-                "enum": [
-                  128
-                ]
-              },
               "maxZeroPayloadFenceObjectsPerReceipt": {
                 "type": "number",
                 "enum": [
@@ -370795,7 +370789,6 @@
               "maxActivePerCase",
               "maxActivePerOperator",
               "maxActiveGlobal",
-              "maxUploadReceipts",
               "maxZeroPayloadFenceObjectsPerReceipt",
               "maxReservedOriginalBytes",
               "maxStoredBytesIncludingTemporaryCopies",
@@ -370848,12 +370841,6 @@
                     "type": "number",
                     "enum": [
                       1
-                    ]
-                  },
-                  "maxUploadReceipts": {
-                    "type": "number",
-                    "enum": [
-                      8
                     ]
                   },
                   "maxReservedOriginalBytes": {
@@ -370947,7 +370934,6 @@
                   "maxOriginalBytes",
                   "maxParts",
                   "maxActiveGlobal",
-                  "maxUploadReceipts",
                   "maxReservedOriginalBytes",
                   "maxStoredBytesIncludingTemporaryCopies",
                   "uploadLifetimeSeconds",
