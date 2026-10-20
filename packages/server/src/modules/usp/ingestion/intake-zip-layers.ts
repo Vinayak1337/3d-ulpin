@@ -259,6 +259,8 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
 
 async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSourceRow, member: MemberRow,
   dependencies: ZipLayerDependencies): Promise<string> {
+  const linked = await dependencies.transaction(client => linkKeptTx(client, caseId, archive, member));
+  if (linked) return linked;
   if (member.size_bytes !== null && Number(member.size_bytes) > ZIP_LAYER_LIMITS.memberBytes) {
     return keepLargeLayer(caseId, parentItemId, archive, member, dependencies);
   }
@@ -292,6 +294,22 @@ async function fenced<T>(caseId: string, dependencies: ZipLayerDependencies,
       if (attempt >= 2 || !(error instanceof AppError) || error.status !== 409) throw error;
     }
   }
+}
+
+/**
+ * ZL2. A child kept for this member but never linked to it (a stop between the retain and the link) is found by the
+ * lineage it was retained with and linked, in one transaction, before any member byte is read. The parent's
+ * revision and SHA-256 pin the member's bytes; the child's own SHA-256 must be the member's.
+ */
+async function linkKeptTx(client: PoolClient, caseId: string, archive: IntakeSourceRow,
+  member: MemberRow): Promise<string | null> {
+  const kept = (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND inspection->'archiveMember' @> $2::jsonb
+    AND sha256=inspection->'archiveMember'->>'memberSha256' ORDER BY created_at,id LIMIT 1`,
+  [caseId, { parentSourceId: archive.id, parentSourceRevision: archive.revision, parentSha256: archive.sha256,
+    memberPath: member.member_path }])).rows[0];
+  if (!kept) return null;
+  await linkTx(client, caseId, member, kept.id);
+  return kept.id;
 }
 
 async function linkTx(client: PoolClient, caseId: string, member: MemberRow, sourceId: string) {
