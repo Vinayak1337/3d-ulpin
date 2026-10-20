@@ -109,8 +109,17 @@ export async function boundedProviderJson(response: Response): Promise<{body:unk
   finally { await reader.cancel().catch(() => {}); }
 }
 
+/** Reasoning is off for every gateway call (Sarvam pages read on 21 October 2026). Thinking is on unless the request
+ * sends reasoning_effort null; reasoning tokens are billed as completion tokens and share max_tokens, and a spent
+ * budget ends with finish_reason length (https://docs.sarvam.ai/api-reference/chat/chat-completions-v1,
+ * https://docs.sarvam.ai/api-reference-docs/api-guides-tutorials/chat-completion/overview). The value 'low' still
+ * reasons: on 21 October all ten live answers stopped at the 2048-token limit. Omitting the field is not off.
+ */
+export const REASONING_EFFORT = null;
+
 /** Protocol reference: https://docs.sarvam.ai/api-reference/chat/chat-completions-v1.
- * Fixed destination, redirect-deny, no SDK retries/tools, nonstreamed low-reasoning n=1.
+ * Fixed destination, redirect-deny, no SDK retries/tools, nonstreamed, reasoning off, n=1.
+ * Only message.content is the answer; reasoning_content, if a response carries it, is neither parsed nor kept.
  * Configuration does not establish hosting residency or processor permission qualification.
  */
 export class SarvamAdapter implements ProviderAdapter {
@@ -125,7 +134,7 @@ export class SarvamAdapter implements ProviderAdapter {
         method:'POST', headers:{'api-subscription-key':this.key,'Content-Type':'application/json'},
         redirect:'error', cache:'no-store', signal:request.signal,
         body:JSON.stringify({model:request.model,messages,max_tokens:request.maxOutputTokens,
-          temperature:0.2,reasoning_effort:'low',n:1,stream:false,
+          temperature:0.2,reasoning_effort:REASONING_EFFORT,n:1,stream:false,
           response_format:{type:'json_schema',json_schema:{name:'officer_grounded_facts',strict:true,schema:request.outputSchema}}}),
       });
     } catch { throw new ProviderFailure('outcome_unknown'); }

@@ -69,7 +69,8 @@ test('Sarvam V1 fixed transport, minimized prompt, complete/invalid response cos
     assert.equal(url,'https://api.sarvam.ai/v1/chat/completions');
     assert.equal(init?.redirect,'error');assert.equal(init?.cache,'no-store');
     const body=JSON.parse(String(init?.body));
-    assert.equal(body.model,'sarvam-105b');assert.equal(body.reasoning_effort,'low');
+    assert.equal(body.model,'sarvam-105b');assert(Object.hasOwn(body,'reasoning_effort'));
+    assert.equal(body.reasoning_effort,null);
     assert.equal(body.n,1);assert.equal(body.stream,false);assert.equal(body.tools,undefined);
     assert(!JSON.stringify(body).includes('control-secret'));
     return Response.json({choices:[{finish_reason:calls===1?'length':'stop',message:{content:'{"control":true,"credentialEcho":"control-only-token"}'}}],
@@ -82,6 +83,38 @@ test('Sarvam V1 fixed transport, minimized prompt, complete/invalid response cos
   assert.match(truncated.responseHash,/^[a-f0-9]{64}$/);
   const noMeter=await adapter.propose(request);assert.equal(noMeter.usage,undefined);
   assert(!JSON.stringify(noMeter.output).includes('control-only-token'));
+});
+// Response shapes from the Sarvam V1 reference (read 21 October 2026): reasoning_content beside content, and
+// completion_tokens_details.reasoning_tokens inside completion_tokens. The texts are made up.
+test('SV1 reasoning is sent off; separate reasoning is not the answer nor kept; truncation unchanged', async () => {
+  const sent: any[]=[];
+  const answers=[
+    {choices:[{finish_reason:'stop',message:{content:'{"control":true}',reasoning_content:'control thinking text'}}],
+      usage:{prompt_tokens:600,completion_tokens:40,completion_tokens_details:{reasoning_tokens:0}}},
+    {choices:[{finish_reason:'length',message:{content:'',reasoning_content:'control thinking text'}}],
+      usage:{prompt_tokens:600,completion_tokens:2048,completion_tokens_details:{reasoning_tokens:2048}}},
+    {choices:[{finish_reason:'length',message:{content:'{"control":tr'}}],
+      usage:{prompt_tokens:600,completion_tokens:2048}},
+  ];
+  const adapter=new SarvamAdapter('control-only-token',(async(_url,init)=>{
+    sent.push(JSON.parse(String(init?.body)));return Response.json(answers[sent.length-1]);
+  }) as typeof fetch);
+  const request={model:'sarvam-105b' as const,messages:[{role:'user' as const,content:'control'}],
+    outputSchema:{type:'object'},maxOutputTokens:2048,inputHash:hash('control'),sourceHashes:[],
+    signal:new AbortController().signal,authorize:async()=>{}};
+  const answered=await adapter.propose(request);
+  assert.equal(answered.semanticError,undefined);assert.deepEqual(answered.output,{control:true});
+  assert.deepEqual(answered.usage,{promptTokens:600,completionTokens:40});
+  const thinkingOnly=await adapter.propose(request);
+  assert.equal(thinkingOnly.semanticError,'truncated_output');
+  assert.deepEqual(thinkingOnly.output,{invalidResponse:true});
+  const cut=await adapter.propose(request);assert.equal(cut.semanticError,'truncated_output');
+  for (const result of [answered,thinkingOnly,cut]) assert(!JSON.stringify(result).includes('control thinking text'));
+  assert.equal(sent.length,3);
+  for (const body of sent) {
+    assert.equal(body.reasoning_effort,null);assert.equal(body.max_tokens,2048);
+    assert.equal(body.response_format.type,'json_schema');assert.equal(body.response_format.json_schema.strict,true);
+  }
 });
 test('encoded selected text/operator answers mask credential fields before transport and preserve numeric tokens', async () => {
   const encoded='{"apiKey":"control-secret","controlFraction":1.2500,"controlCounter":100000000000000001}';

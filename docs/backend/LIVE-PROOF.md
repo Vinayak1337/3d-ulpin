@@ -81,14 +81,27 @@ proposal, on a state that is not `enabled: true`, or when the enabled hash is no
 
 ## 5. What it costs at most
 
-At the owner's approved prices and caps: **10 calls; estimate ₹1.14; at most ₹7.75 of the ₹100 total.**
+At the owner's approved prices and caps: **10 calls; estimate ₹1.76; at most ₹7.75 of the ₹100 total.** The
+estimate was ₹1.14 under the old half-the-maximum rule; ₹1.76 was computed on 21 October from a made-up policy of
+the same shape (same prices, caps, bounds and 2048 output tokens), whose old-rule estimate equals the owner's
+₹1.14 to the micro-rupee. Run `--plan` again on the owner's file.
 
-- Estimate: request bytes divided by 3 as input tokens, half the output maximum as output tokens. No tokenizer for
-  the provider is in the repository, so the error of this estimate is not measured.
+- Estimate: request bytes divided by 3 as input tokens, the full output maximum as output tokens. No tokenizer
+  for the provider is in the repository, so the error of this estimate is not measured.
 - Upper bound: every call held at the ledger's full reservation, ₹0.78 a call at the approved tariff. A call cannot
   settle above its reservation without the gateway blocking the pool.
 - Share of each cap at most: 7.75% of the total, 30.97% of the day, 10 of 150 calls for one person,
   20.65% of the document agent's part.
+
+**Output tokens.** On `sarvam-105b`, thinking is on unless the request sends `reasoning_effort: null`; reasoning
+tokens are billed as completion tokens, share the `max_tokens` budget, and a spent budget ends with
+`finish_reason: "length"` and an empty or cut answer (Sarvam's chat completions reference and overview, read
+21 October 2026; facts and URLs in `docs/evidence/gf-ai/gateway/sv1/result.json`). The first live run (LP4) sent
+`reasoning_effort: "low"`, and all ten answers stopped at 2048 output tokens. The adapter now sends
+`reasoning_effort: null` with the strict JSON schema, reads the answer only from `message.content`, and keeps no
+`reasoning_content`. A `length` finish is still `truncated_output`. The policy keeps 2048; if an answer still
+ends `truncated_output` with reasoning off, the owner may raise `maxOutputTokens` to 4096, the schema's maximum
+and Sarvam's Starter-plan cap, which raises the bound to ₹9.22 and the estimate to ₹2.98 for these ten calls.
 
 ## 6. The receipts, and the boxes they close
 
