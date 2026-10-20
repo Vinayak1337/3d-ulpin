@@ -1,5 +1,6 @@
 import { createInflateRaw, constants, crc32, inflateRawSync } from 'node:zlib';
 import { performance } from 'node:perf_hooks';
+import { Readable, pipeline } from 'node:stream';
 import { INTAKE_PROBE_LIMITS as limits, type IntakeCard, type IntakeMember } from '@ulpin/contracts/usp';
 import { applyShapefileCompanions, applyRasterCompanions } from './intake-headers';
 import { workbookSheets } from './intake-workbook';
@@ -271,12 +272,8 @@ export async function probeZip(card: IntakeCard, read: IntakeRangeReader, size: 
 
 const RANGE_BYTES = 1024 * 1024;
 
-/**
- * Reads one whole member back out of a retained ZIP, for keeping it as its own original. The directory guards of the
- * probe apply; the member is found by its exact path, nothing past `maxBytes` is inflated, and the result must match
- * the directory's size and CRC-32. Errors carry a code only, never member text.
- */
-export async function readZipMember(read: IntakeRangeReader, size: number, path: string, maxBytes: number) {
+/** One member found by its exact path in a retained ZIP's directory, past the probe's directory guards. */
+export async function locateZipMember(read: IntakeRangeReader, size: number, path: string) {
   const tail = await read(Math.max(0, size - limits.tailBytes), size);
   const profile = directoryProfile(Buffer.from(tail), size, 0);
   if (profile.refusal) throw new Error(profile.refusal);
@@ -287,9 +284,21 @@ export async function readZipMember(read: IntakeRangeReader, size: number, path:
   if (!entry || entries.filter(other => other.name === path).length !== 1) throw new Error('ZIP_MEMBER_NOT_FOUND');
   const refusal = entry.flags & 1 ? 'ZIP_ENCRYPTED_MEMBER' : zipMemberRefusal(entry);
   if (refusal) throw new Error(refusal);
+  return { entry, ordinal, directoryOffset: profile.offset };
+}
+
+export type ZipMemberLocation = Awaited<ReturnType<typeof locateZipMember>>;
+
+/**
+ * Reads one whole member back out of a retained ZIP, for keeping it as its own original. The directory guards of the
+ * probe apply; the member is found by its exact path, nothing past `maxBytes` is inflated, and the result must match
+ * the directory's size and CRC-32. Errors carry a code only, never member text.
+ */
+export async function readZipMember(read: IntakeRangeReader, size: number, path: string, maxBytes: number) {
+  const { entry, ordinal, directoryOffset } = await locateZipMember(read, size, path);
   if (entry.size > maxBytes || entry.compressed > maxBytes + RANGE_BYTES) throw new Error('ZIP_LAYER_SIZE');
   if (entry.method !== 0 && entry.method !== 8) throw new Error('ZIP_COMPRESSION_UNSUPPORTED');
-  const start = await memberDataOffset(read, entry, profile.offset);
+  const start = await memberDataOffset(read, entry, directoryOffset);
   const chunks: Uint8Array[] = [];
   for (let at = start; at < start + entry.compressed; at += RANGE_BYTES) {
     chunks.push(await read(at, Math.min(start + entry.compressed, at + RANGE_BYTES)));
@@ -300,4 +309,38 @@ export async function readZipMember(read: IntakeRangeReader, size: number, path:
   catch { throw new Error('ZIP_MEMBER_INTEGRITY'); }
   if (bytes.length !== entry.size || crc32(bytes) !== entry.crc) throw new Error('ZIP_MEMBER_INTEGRITY');
   return { bytes, ordinal, compressedBytes: entry.compressed, crc32: entry.crc };
+}
+
+/**
+ * ZL1. Streams a located member's bytes in order: its compressed bytes are read in 1 MiB ranges and inflated as a
+ * stream, so neither the member nor its compressed bytes are held whole. A member past `maxBytes` is refused before
+ * any read and nothing past the directory's size is inflated; the size and CRC-32 are checked after the last chunk,
+ * before the stream ends.
+ */
+export async function* streamZipMember(read: IntakeRangeReader, member: ZipMemberLocation, maxBytes: number) {
+  const { entry } = member;
+  if (entry.size > maxBytes || entry.compressed > maxBytes + RANGE_BYTES) throw new Error('ZIP_LAYER_SIZE');
+  if (entry.method !== 0 && entry.method !== 8) throw new Error('ZIP_COMPRESSION_UNSUPPORTED');
+  const start = await memberDataOffset(read, entry, member.directoryOffset);
+  const compressed = Readable.from((async function* () {
+    for (let at = start; at < start + entry.compressed; at += RANGE_BYTES) {
+      yield await read(at, Math.min(start + entry.compressed, at + RANGE_BYTES));
+    }
+  })(), { objectMode: false });
+  const chunks = entry.method === 0 ? compressed : pipeline(compressed, createInflateRaw(), () => {});
+  let bytes = 0;
+  let crc = 0;
+  try {
+    for await (const chunk of chunks as AsyncIterable<Buffer>) {
+      bytes += chunk.length;
+      if (bytes > entry.size) throw new Error('ZIP_MEMBER_INTEGRITY');
+      crc = crc32(chunk, crc);
+      yield chunk;
+    }
+  } catch (error) {
+    // A damaged deflate stream is the member's fault; a storage read's own error passes through unchanged.
+    const code = (error as { code?: unknown }).code;
+    throw typeof code === 'string' && code.startsWith('Z_') ? new Error('ZIP_MEMBER_INTEGRITY') : error;
+  }
+  if (bytes !== entry.size || crc !== entry.crc) throw new Error('ZIP_MEMBER_INTEGRITY');
 }
