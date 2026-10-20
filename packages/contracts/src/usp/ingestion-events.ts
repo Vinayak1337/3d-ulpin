@@ -59,6 +59,13 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind:z.literal('streaming-vector.chunk'),sourceId:id,sourceRevision:revision,jobId:id,
     chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
     records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
+  // G13: a streamed table's window of up to 10,000 records, written by the raw job and mapped by the recipe.
+  z.strictObject({kind:z.literal('streaming-vector.window'),sourceId:id,sourceRevision:revision,jobId:id,
+    window:z.number().int().nonnegative().max(4095),firstRecord:z.number().int().nonnegative(),
+    records:z.number().int().positive().max(10000),sha256:hash}),
+  z.strictObject({kind:z.literal('chunk-mapping.window'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
+    window:z.number().int().nonnegative().max(4095),status:z.enum(['mapped','failed']),
+    records:z.number().int().positive().max(10000),issueCode:z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/).nullable()}),
   z.strictObject({kind:z.literal('chunk-mapping.changed'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
     status:z.enum(['queued','running','needs_input','disabled','unavailable','completed','completed_with_rejections','failed','stale'])}),
   z.strictObject({kind:z.literal('chunk-mapping.chunk'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,

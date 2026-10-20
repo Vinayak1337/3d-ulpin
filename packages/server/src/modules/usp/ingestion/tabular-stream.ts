@@ -8,7 +8,10 @@ import { profileTabularChunk } from './chunk-mapping-agent';
  * the line ending excluded. Cells are the bytes as written, decoded; a cell past the end of a short row is absent. */
 export type StreamedTabularRow = { index: number; sourceRow: number; byteStart: number; byteEnd: number;
   rawSha256: string; cells: string[] };
-export type StreamedTabularWindow = { index: number; rows: StreamedTabularRow[] };
+/** A window's byte range runs from its first record's start to its last record's end; its SHA-256 is of exactly
+ * those bytes of the original, the line endings and skipped blank records between its records included. */
+export type StreamedTabularWindow = { index: number; rows: StreamedTabularRow[]; byteStart: number;
+  byteEnd: number; sha256: string };
 export type StreamedTabularRead = { headers: string[]; records: number; windows: number; bytes: number;
   sha256: string };
 
@@ -76,20 +79,32 @@ function checkedHeaders(cells: string[]): string[] {
   return cells;
 }
 
-/** Reads a CSV original as a stream in windows of 10,000 records, never whole. Values stay exactly as written:
- * no trimming and no number or date reading; an empty cell stays empty. A record of blanks only is skipped, as
- * the whole-file reader skips it, and its number is kept by the next record. */
+/** Reads a CSV original as a stream in windows of 10,000 records, never whole; a window also closes at 16 MiB of
+ * record bytes, or when the bytes between two of its records pass 1 MiB. Values stay exactly as written: no
+ * trimming and no number or date reading; an empty cell stays empty. A record of blanks only is skipped, as the
+ * whole-file reader skips it, and its number is kept by the next record. */
 export async function readTabularWindows(
   body: Readable, onWindow: (window: StreamedTabularWindow, headers: string[]) => Promise<void>,
 ): Promise<StreamedTabularRead> {
   const hash = createHash('sha256');
   let carry: Buffer = Buffer.alloc(0), carryStart = 0, bytes = 0, logical = 0, records = 0, windows = 0;
-  let headers: string[] | null = null, rows: StreamedTabularRow[] = [];
+  let headers: string[] | null = null, rows: StreamedTabularRow[] = [], windowBytes = 0;
+  let windowHash = createHash('sha256'), gap: Buffer[] = [], gapBytes = 0;
   const flush = async () => {
     if (!rows.length) return;
-    const window = { index: windows++, rows };
-    rows = [];
+    if (windows >= limits.windows) {
+      throw new AppError(413, 'TABULAR_STREAM_WINDOWS', `This table needs more than ${limits.windows} windows.`);
+    }
+    const window = { index: windows++, rows, byteStart: rows[0]!.byteStart, byteEnd: rows.at(-1)!.byteEnd,
+      sha256: windowHash.digest('hex') };
+    rows = []; windowBytes = 0; gap = []; gapBytes = 0; windowHash = createHash('sha256');
     await onWindow(window, headers!);
+  };
+  // Bytes after a window's last record wait here until a next record joins the same window.
+  const between = async (bytes: Buffer) => {
+    if (!rows.length || !bytes.length) return;
+    gap.push(Buffer.from(bytes)); gapBytes += bytes.length;
+    if (gapBytes > limits.recordBytes) await flush();
   };
   const take = async (data: Buffer, final: boolean) => {
     let at = 0;
@@ -112,11 +127,17 @@ export async function readTabularWindows(
           throw new AppError(413, 'TABULAR_STREAM_ROWS', `This table is ${mib(bytes)} MiB and has more than ` +
             `${limits.rows.toLocaleString('en-US')} records, the most a table may have for now.`);
         }
+        const content = data.subarray(at, record.contentEnd);
+        for (const part of rows.length ? gap : []) windowHash.update(part);
+        gap = []; gapBytes = 0;
+        windowHash.update(content);
         rows.push({ index: records - 1, sourceRow: logical, byteStart: carryStart + at,
           byteEnd: carryStart + record.contentEnd, cells: record.cells,
-          rawSha256: createHash('sha256').update(data.subarray(at, record.contentEnd)).digest('hex') });
-        if (rows.length >= limits.windowRows) await flush();
-      }
+          rawSha256: createHash('sha256').update(content).digest('hex') });
+        windowBytes += record.next - at;
+        await between(data.subarray(record.contentEnd, record.next));
+        if (rows.length >= limits.windowRows || windowBytes >= limits.windowBytes) await flush();
+      } else await between(data.subarray(at, record.next));
       at = record.next;
     }
     carry = data.subarray(at);

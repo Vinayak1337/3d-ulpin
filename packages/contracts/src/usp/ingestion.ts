@@ -125,7 +125,7 @@ export type StreamedMapOriginalReceipt = z.infer<typeof StreamedMapOriginalRecei
 export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256, chunkRows: 16 });
 /** A CSV above TABULAR_LIMITS.bytes is read as a stream in row windows; its byte ceiling is large-original/2's. */
 export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows: 1_000_000, windowRows: 10_000,
-  recordBytes: 1024 * 1024 });
+  recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
 export const TabularSelectionSchema = z.strictObject({
   format: z.enum(['csv', 'xlsx']), sheet: z.string().min(1).max(150), table: z.null(),
   headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),
@@ -143,7 +143,7 @@ const DevelopmentTabularPinSchema = z.strictObject({
   developmentAssetId: z.string().min(1).max(150), developmentFamily: z.string().regex(/^mi-d\d+$/),
   derivativeOf: z.strictObject({ originalSha256: hash, version: z.literal('json-table-csv/1') }).optional(),
 });
-const TabularProvenanceSchema = z.strictObject({
+export const TabularProvenanceSchema = z.strictObject({
   issuer: z.string().min(1).max(500).refine(value => Boolean(value.trim())).nullable(),
   origin: z.literal('officer_supplied'), licence: z.enum(['unconfirmed', 'open', 'restricted']),
   containsPersonalData: z.enum(['unknown', 'yes', 'no']),
@@ -196,7 +196,9 @@ export const AnyStreamingRequestSchema = z.union([StreamingVectorRequestSchema,
     framing: z.literal('tabular'), tabular: TabularPinSchema })]);
 export const AnyStreamingInputSchema = z.union([StreamingVectorInputSchema,
   StreamingVectorInputSchema.omit({ framing: true }).extend({
-    framing: z.literal('tabular'), tabular: TabularPinSchema })]);
+    framing: z.literal('tabular'), tabular: TabularPinSchema,
+    // G13: a case-original CSV is read in windows up to the table's own byte ceiling; GIS stays at 128 MiB.
+    sourceBytes: z.number().int().positive().max(TABULAR_STREAM_LIMITS.bytes) })]);
 export const AnyStreamingStatusSchema = StreamingVectorStatusSchema.omit({ framing: true }).extend({
   framing: z.enum(['feature-collection', 'geojson-seq-rs', 'tabular']), tabular: TabularPinSchema.optional(),
 });

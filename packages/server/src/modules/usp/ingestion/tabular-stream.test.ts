@@ -41,6 +41,13 @@ test('cells stay as written across every chunk boundary, each row citing its own
   }
   assert.equal(bytes.subarray(whole.rows[1].byteStart, whole.rows[1].byteEnd).toString(), '8,"two\nlines", 12.50 ');
   assert.equal(whole.read.sha256, sha(bytes));
+  const windows: { byteStart: number; byteEnd: number; sha256: string }[] = [];
+  await readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
+    async window => { windows.push(window); });
+  assert.deepEqual(windows.map(window => [window.byteStart, window.byteEnd]),
+    [[whole.rows[0].byteStart, whole.rows[3].byteEnd]]);
+  assert.equal(windows[0].sha256, sha(bytes.subarray(windows[0].byteStart, windows[0].byteEnd)),
+    'a window hashes its own bytes, the blank record between its records included');
   await assert.rejects(rowsOf(Readable.from(['a,b\n1,"open\n'])), { code: 'TABULAR_CSV_MALFORMED' });
   await assert.rejects(rowsOf(Readable.from(['a,b\n1,2,3\n'])), { code: 'TABULAR_SCHEMA_DRIFT' });
 });
