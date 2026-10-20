@@ -928,8 +928,8 @@
       "disposition": "added",
       "nativeController": "ingestion",
       "requestSchema": "TableFromOriginalSchema",
-      "responseSchema": "AnySourceProfileSchema",
-      "responseStatus": 201,
+      "responseSchema": "TableProfileJobSchema",
+      "responseStatus": 202,
       "transportProfile": "json",
       "runtimeEvidence": "pending",
       "batch": "G13"

@@ -1,0 +1,27 @@
+{
+  "task": "TP1",
+  "gate": "GF1",
+  "base": "b2f1bb37",
+  "change": {
+    "route": "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table answers 202 with a table-profile/1 job for a kept CSV above 16 MiB, or 201 with the table profile for a kept original of 16 MiB or less (CSV or XLSX)",
+    "admission": "one transaction: replay by table-original:<requestKey> (same digest), workspace revision pin, kept-original refusals (profile, operator, already a table, superseded), then queue; no read in the request for a large CSV",
+    "job": "operation table-profile through the one job authority (jobs row, registerUspJobInputTx with the intake scope, fenced claim, lease renewed every 30 s while the stream is read, acceptUspJobAttempt); job id stableUuid(table-profile/1:<sourceId>:<revision>:<requestKey>); a second read of the same original while one is queued or running is refused with 409",
+    "accept": "attachTableTx, shared by the whole read and the job: same workspace revision check, same source row pins (sha256, revision, object key), same manualProfile receipt, case revision +1, source.retained event",
+    "status": "queued, running, succeeded, failed, cancelled, stale; a stop keeps the reader's code and words; a 409 (workspace or original changed) marks the job stale",
+    "status_read": "no generic USP job read route exists; the same request sent again answers the job as it stands, so no route was added",
+    "small_originals": "up to 16 MiB a kept CSV or XLSX is read whole from its object, checked against its byte receipt and profiled with inspectTabularSource and the request's selection, in the request; no job",
+    "large_workbook": "an XLSX above 16 MiB is refused before any read: 413 TABLE_ORIGINAL_WORKBOOK_SIZE, 'This workbook is more than 16 MiB; a workbook is read up to 16 MiB for now.'",
+    "add_files_path": "POST .../sources (a CSV under 16 MiB from Add files) is not changed",
+    "studio": "Import as a table for a CSV above 16 MiB keeps the upload words, then shows the job words (queued, running) and resends the same request every 2 s; it opens the table page on success, shows the reader's words on a stop and takes a new request key for the next try"
+  },
+  "tests": {
+    "file": "packages/server/src/modules/usp/ingestion/table-windows.test.ts (fake pool emulating the job authority SQL)",
+    "large_csv_test_only": "generated in memory, 200,000 records: the request queues one job and reads nothing; the answer matches the 202 contract; a replay queues none; another request key while it is queued is refused; the job attaches 200,000 records; case revision 1; a replay then answers succeeded",
+    "malformed_csv_test_only": "the same generated CSV with an unclosed quote at the end: the job rejects with TABULAR_CSV_MALFORMED; a replay answers failed with that code and the reader's words; the source has no table receipt; case revision 0",
+    "real_csv": "fixtures mi-d10-02.csv kept through the batch becomes a table in the request: no job, case revision 1, replay equal, 201 contract",
+    "real_xlsx": "mi-d19-01.xlsx (sheet T_18, header rows 4-5) kept through the batch becomes a table in the request; needs ULPIN_PROFILE_PYTHON pointing at a Python with the reader's packages, skipped without it",
+    "large_xlsx_test_only": "a 16 MiB + 1 byte buffer kept as an .xlsx original is refused with the workbook words; no job",
+    "g13_flow": "G13's 200,000-row flow now queues, runs the job and goes on to windows and mapping unchanged; its events add job.succeeded"
+  },
+  "not_measured": "No live Postgres, object store or dispatcher was run in this task; the job SQL is checked against the fake pool and the backend typecheck. Time to read a multi-GiB CSV in the job is for the runtime owner to measure."
+}
