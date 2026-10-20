@@ -156,14 +156,15 @@ async function targetEventTx(client: PoolClient, row: Pick<IntakeTargetRow, 'cas
     { kind: 'intake.target', targetId: row.target_id, readiness: row.readiness, stage: row.stage });
 }
 
-/** One step done: its stage, its artefacts and the words, with the event in the same transaction. */
+/** One step done: its stage, its artefacts and the words, with the event in the same transaction. `dropped` names
+ * artefacts made from an earlier record revision, to be made again from the new one. */
 export async function advanceIntakeTargetTx(client: PoolClient, targetId: string, change: {
   stage: number; readiness: IntakeTargetReadiness; reason: string; artefacts: Partial<IntakeTargetArtefacts>;
-}) {
+}, dropped: readonly (keyof IntakeTargetArtefacts)[] = []) {
   const row = (await client.query(`UPDATE usp_intake_targets SET stage=$2,readiness=$3,reason=$4,
-    artefacts=artefacts||$5,blocked_by='{}',updated_at=now() WHERE target_id=$1
+    artefacts=(artefacts-$6::text[])||$5,blocked_by='{}',updated_at=now() WHERE target_id=$1
     RETURNING case_id,target_id,readiness,stage`,
-  [targetId, change.stage, change.readiness, change.reason, change.artefacts])).rows[0];
+  [targetId, change.stage, change.readiness, change.reason, change.artefacts, dropped])).rows[0];
   await targetEventTx(client, row);
 }
 

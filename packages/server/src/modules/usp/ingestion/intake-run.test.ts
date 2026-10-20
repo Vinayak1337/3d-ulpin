@@ -3,13 +3,13 @@ import test from 'node:test';
 import { z } from 'zod';
 import type { ImportPackage } from '@ulpin/contracts';
 import type { Pool, PoolClient } from 'pg';
-import { IntakeConfirmSchema, type PropertyCardVerification } from '@ulpin/contracts/usp';
+import { IntakeConfirmSchema, type PropertyCardVerification, type TargetPin } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { ingestionBinding } from './events';
 import { cardTargetDifference, confirmIntake, intakeConfirmationReason, isCardsOnly,
   packageDifference, retryIntakeConfirmation } from './intake-confirmations';
-import { IntakeRunInputSchema, intakeRunKey } from './intake-run';
+import { IntakeRunInputSchema, intakeRunKey, stableUuid } from './intake-run';
 import { assertIntakeCardVerified, intakeCardVerificationPin, intakeRunRefusal, intakeRunSteps,
   intakeTargetCitation, runIntakeRunJob, type IntakeRunSteps } from './intake-run-worker';
 
@@ -235,16 +235,19 @@ const cardSteps = {
 } as unknown as Partial<IntakeRunSteps>;
 
 /** One confirmation of three packages, one listed building each, on a store that answers the run's own SQL.
- * A cards-only one lists the three recorded buildings in the order given, and its packages are already recorded. */
-function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null) {
+ * A cards-only one lists the three recorded buildings in the order given, and its packages are already recorded.
+ * `late` names an evidence confirmation whose own job is run for the first building instead. */
+function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null, late: string | null = null) {
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
   const caseId = '10000000-0000-4000-8000-000000000003';
   const binding = ingestionBinding(caseId);
   const confirmationId = '10000000-0000-4000-8000-000000000005';
-  const input = IntakeRunInputSchema.parse({ version: 'intake-run/1', jobId: '10000000-0000-4000-8000-000000000004',
-    caseId, caseRevision: 0, subject: binding.subject, accessSha256: binding.access, phase: 'commit', confirmationId });
   const ids = [1, 2, 3].map(n => `10000000-0000-4000-8000-00000000001${n}`);
   const targetIds = [1, 2, 3].map(n => `10000000-0000-4000-8000-00000000002${n}`);
+  const order = late ? { phase: 'evidence', confirmationId: late, targetId: targetIds[0] }
+    : { phase: 'commit', confirmationId };
+  const input = IntakeRunInputSchema.parse({ version: 'intake-run/1', jobId: '10000000-0000-4000-8000-000000000004',
+    caseId, caseRevision: 0, subject: binding.subject, accessSha256: binding.access, ...order });
   const createdAt = new Date();
   const confirmation = { confirmation_id: confirmationId, case_id: caseId, subject: binding.subject,
     acknowledgement: 'Fixture physical observations only.', expires_at: new Date(Date.now() + 3600_000),
@@ -253,7 +256,7 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null) {
   const store = { status: 'queued', logical: 'queued', error: null as string | null, renewals: 0,
     attempts: [] as { number: number; fence: number; owner: string; state: string; lease_until: Date }[],
     targets: ids.map(id => ({ target_id: `target:${id}`, package_id: id, readiness: 'confirmed' })) as Target[],
-    committed: [] as string[], carded: [] as string[] };
+    committed: [] as string[], carded: [] as string[], pending: [] as { target: string; row: unknown }[] };
   if (cardsOnly) store.targets = ids.map((id, index) => ({ target_id: targetIds[index], package_id: id,
     readiness: 'recorded', confirmation_id: confirmationId, locator, artefacts: { record: made } }));
   const attempt = (number: unknown) => store.attempts.find(row => row.number === number);
@@ -307,6 +310,11 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null) {
     ['SELECT * FROM usp_intake_targets WHERE target_id=$1', ([id]) =>
       [structuredClone(store.targets.find(row => row.target_id === id))]],
     ['SET TRANSACTION ISOLATION LEVEL', () => []],
+    ['SELECT confirmation_id,pins,acknowledgement,expires_at', ([, decisions]) => {
+      const { targetId } = JSON.parse(decisions as string)[0];
+      return store.pending.flatMap(item => item.target === targetId ? [item.row] : []);
+    }],
+    ['SELECT body FROM usp_snapshot_bodies', () => []],
     ['SELECT site_id FROM registry_records', () => [{ site_id: caseId }]],
     ['SELECT body FROM usp_snapshots', () => [{ body: { scope: { kind: 'targets', pins: [] } } }]],
     ['UPDATE usp_intake_targets SET stage=', ([id, stage, readiness, reason, artefacts]) => {
@@ -415,6 +423,22 @@ test('a cards-only building refused at a step stops in its own words; the others
   assert.deepEqual([store.targets[1].readiness, store.targets[1].blocked_by, store.targets[1].reason],
     ['stopped', refusal.code, refusal.message]);
   assert.deepEqual([store.renewals, store.committed, store.status, store.error], [3, [], 'failed', refusal.code]);
+});
+
+test('a building with confirmed evidence is pinned at its cited revision; the others as recorded', async () => {
+  const { targetIds, store, run } = commitRun(0, [1, 2, 3]);
+  const written = { confirmationIds: ['10000000-0000-4000-8000-000000000031'],
+    record: { ...made, revision: made.revision + 1 } };
+  const pins: number[] = [];
+  const citeEvidence = async (_tx: unknown, building: { targetId: string }) =>
+    building.targetId === targetIds[1] ? written : null;
+  const snapshot = async (_client: unknown, _ctx: unknown, _site: string, selection: { pins: TargetPin[] }) => {
+    pins.push(selection.pins[0].revision);
+    return { id, digest: 'd'.repeat(64) };
+  };
+  await run({ citeEvidence, snapshot } as unknown as Partial<IntakeRunSteps>);
+  assert.deepEqual(pins, [1, 2, 1]);
+  assert.deepEqual([store.carded, store.status], [targetIds, 'succeeded']);
 });
 
 type OpenRun = ReturnType<typeof commitRun>;
@@ -569,3 +593,94 @@ test('a stopped confirmation is not retried while another open run records its p
     assert.deepEqual(retried.asked.slice(1, 4).map(call => call.values[0]), open.ids);
     assert.deepEqual(retried.asked.at(-1)!.values, [open.caseId, open.ids, open.confirmationId]);
   });
+
+/** An evidence confirmation stored after its building was carded, as the store holds it until it is written. */
+function lateConfirmation(caseId: string, confirmationId: string) {
+  return { confirmation_id: confirmationId, case_id: caseId, subject: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT,
+    acknowledgement: 'Checked the register row.', expires_at: new Date(Date.now() + 3600_000),
+    created_at: new Date('2026-10-21T00:00:00.000Z') };
+}
+
+/** The writer as the run sees it: each pending confirmation is written once as the next record revision, and the
+ * target keeps what the writer's own transaction keeps; a card is named by the request key that made it. */
+function lateSteps(run: ReturnType<typeof commitRun>) {
+  const { store } = run, writes: { record: number; written: unknown }[] = [], pins: number[] = [];
+  const cards: { cardId: unknown; requestKey: string }[] = [];
+  const citeEvidence = async (_tx: unknown, building: { targetId: string; record: { revision: number };
+    written?: { confirmationIds: string[] } }) => {
+    const ids = store.pending.filter(item => item.target === building.targetId)
+      .map(item => (item.row as { confirmation_id: string }).confirmation_id);
+    if (!ids.length) return null;
+    writes.push({ record: building.record.revision, written: building.written });
+    store.pending = store.pending.filter(item => item.target !== building.targetId);
+    const written = { confirmationIds: [...building.written?.confirmationIds ?? [], ...ids],
+      record: { ...made, revision: building.record.revision + 1 } };
+    const row = store.targets.find(target => target.target_id === building.targetId)!;
+    const { snapshot, plan, planConfirmation, packet, card, verification, ...kept } = row.artefacts!;
+    Object.assign(row, { readiness: 'recorded', artefacts: { ...kept, evidence: written } });
+    return written;
+  };
+  const snapshot = async (_client: unknown, _ctx: unknown, _site: string, selection: { pins: TargetPin[] }) => {
+    pins.push(selection.pins[0].revision);
+    return { id, digest: 'd'.repeat(64) };
+  };
+  const card = async (_ctx: unknown, command: { cardId: unknown; guard: { requestKey: string } }) => {
+    cards.push({ cardId: command.cardId, requestKey: command.guard.requestKey });
+    return { cardId: stableUuid(command.guard.requestKey), revision: 1 };
+  };
+  const readCard = async (_ctx: unknown, made: { cardId: string; revision: number }) => ({ card: {
+    resolverUrl: `http://127.0.0.1:3000/api/v1/usp/property-cards/${made.cardId}/revisions/${made.revision}` } });
+  return { writes, pins, cards,
+    steps: { citeEvidence, snapshot, card, readCard } as unknown as Partial<IntakeRunSteps> };
+}
+
+test('evidence confirmed after a building is carded is written once and carried to a new card; the first card is '
+  + 'kept and a replay writes nothing', async () => {
+  const lateId = '10000000-0000-4000-8000-000000000041';
+  const open = commitRun(0, [1, 2, 3], lateId), { store, targetIds, caseId } = open;
+  const first = { id: other, revision: 1 };
+  store.targets[0] = { ...store.targets[0], readiness: 'carded', artefacts: { record: made,
+    snapshot: { id, digest: 'd'.repeat(64) }, identity: 'not_applicable: codes are for recorded spaces only',
+    plan: { id, version: 1, sha256: 'c'.repeat(64) }, planConfirmation: { id }, packet: { id }, card: first,
+    verification: 'consistent' } };
+  store.pending.push({ target: targetIds[0], row: lateConfirmation(caseId, lateId) });
+  const late = lateSteps(open);
+  await open.run(late.steps);
+  assert.deepEqual(late.writes, [{ record: 1, written: undefined }], 'written once, at the carded revision');
+  assert.deepEqual(late.pins, [2], 'the new snapshot pins the cited revision');
+  assert.deepEqual(late.cards, [{ cardId: null, requestKey: intakeRunKey(lateId, targetIds[0], 'card') }],
+    'a new card under the late confirmation; the first card is never sent to a step');
+  const [target] = store.targets;
+  assert.equal(target.readiness, 'carded');
+  assert.deepEqual(target.artefacts!.card, { id: stableUuid(intakeRunKey(lateId, targetIds[0], 'card')),
+    revision: 1 });
+  assert.notDeepEqual(target.artefacts!.card, first);
+  assert.deepEqual(target.artefacts!.evidence, { confirmationIds: [lateId], record: { ...made, revision: 2 } });
+  assert.deepEqual([store.carded, store.status], [[targetIds[0]], 'succeeded']);
+  // The same job claimed again: the confirmation holds its receipt, so nothing is written or carded again.
+  Object.assign(store, { status: 'queued', logical: 'queued' });
+  await open.run(late.steps);
+  assert.deepEqual([late.writes.length, late.pins.length, late.cards.length, store.carded.length], [1, 1, 1, 1]);
+});
+
+test('a confirmation stored while its building was carried is written when that carry ends; the others are not '
+  + 'carded again', async () => {
+  const lateId = '10000000-0000-4000-8000-000000000042';
+  const open = commitRun(0, [1, 2, 3]), { store, targetIds, caseId } = open;
+  const late = lateSteps(open), carded = late.steps.readCard!;
+  // test_only: the officer confirms evidence for building 2 while its first card is being verified.
+  const readCard = (async (ctx: never, made: never) => {
+    if (store.targets[1].artefacts?.card && !store.targets[1].artefacts.evidence && !store.pending.length) {
+      store.pending.push({ target: targetIds[1], row: lateConfirmation(caseId, lateId) });
+    }
+    return carded(ctx, made);
+  }) as IntakeRunSteps['readCard'];
+  await open.run({ ...late.steps, readCard });
+  assert.deepEqual(late.pins, [1, 1, 2, 1], 'building 2 is pinned again at its cited revision before building 3');
+  assert.deepEqual(late.cards.map(card => card.requestKey), [intakeRunKey(open.confirmationId, targetIds[0], 'card'),
+    intakeRunKey(open.confirmationId, targetIds[1], 'card'), intakeRunKey(lateId, targetIds[1], 'card'),
+    intakeRunKey(open.confirmationId, targetIds[2], 'card')]);
+  assert.deepEqual(store.targets.map(target => target.readiness), ['carded', 'carded', 'carded']);
+  assert.deepEqual([store.carded, store.status], [[targetIds[0], targetIds[1], targetIds[1], targetIds[2]],
+    'succeeded']);
+});

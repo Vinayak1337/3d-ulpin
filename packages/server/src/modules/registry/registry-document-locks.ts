@@ -1,12 +1,14 @@
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
-import type {RegistryRecord} from '@ulpin/contracts';
+import type {RegistryDocumentCitation,RegistryRecord} from '@ulpin/contracts';
 import {conflict} from '../../infrastructure/errors';
 import {lockSourceCaseDestinationTx} from '../cases/source-case-lock';
 
+/** The case a citation reads from: a table row names it on its row, every other citation on its document. */
+export const citedCaseId=(pin:RegistryDocumentCitation)=>'row' in pin?pin.row.caseId:pin.document.caseId;
 /** Lookup identities only; a removed/revoked citation needs no document access. */
 export function registryDocumentCases(caseId:string,records:readonly RegistryRecord[],extra:readonly string[]=[]){
-  return [...new Set([caseId,...records.flatMap(record=>(record.documentCitations??[]).map(pin=>pin.document.caseId)),...extra]
+  return [...new Set([caseId,...records.flatMap(record=>(record.documentCitations??[]).map(citedCaseId)),...extra]
     .map(value=>z.uuid().parse(value).toLowerCase()))].sort();
 }
 /** Call before destination rows, document authority rows or recording/receipt locks. */

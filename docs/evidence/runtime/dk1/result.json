@@ -1,0 +1,40 @@
+{
+  "task": "DK1",
+  "branch": "task/dk1-docker-guard",
+  "base": "a809ac35",
+  "date": "2026-10-21",
+  "files": [
+    "scripts/platform/docker-guard.ps1",
+    "scripts/platform/docker-guard-install.ps1",
+    "scripts/platform/docker-guard.test.mjs",
+    "docs/backend/DOCKER-GUARD.md"
+  ],
+  "tests": {
+    "command": "node --test scripts/platform/docker-guard.test.mjs",
+    "exit": 0,
+    "pass": 6,
+    "fail": 0,
+    "cases": [
+      "engine up: Check exit 0 with ulpin-demo-* containers only; Recover -DryRun does nothing",
+      "engine down: Check exit 3; Recover -DryRun renames both folders together, every file kept, one start recorded",
+      "second rename fails (target exists): first folder put back, exit 4 with words, no start",
+      "Watch: paused file does nothing; one silent run waits (exit 3), the second recovers",
+      "a made-up root without -DryRun is refused (exit 2) before anything is written",
+      "never-list text check over docker-guard.ps1 and docker-guard-install.ps1"
+    ],
+    "harness": "real docker-guard.ps1 under Windows PowerShell 5.1, made-up root in a temporary folder, stand-in docker .cmd, -DryRun for process stop/start"
+  },
+  "realMachine": {
+    "check": {"command": "docker-guard.ps1 -Check", "exit": 0, "file": "docs/evidence/runtime/dk1/check.json",
+      "engineAnswers": true, "dockerProcesses": 8, "socketEntries": [4, 1], "staleLogLines": 4,
+      "demoContainers": 6, "demoRunningHealthy": 5},
+    "installStatus": {"command": "docker-guard-install.ps1 -Status", "exit": 0, "tasksInstalled": false,
+      "dockerAutoStart": false},
+    "notRun": ["-Recover", "-Prestart", "-Watch", "-Install"],
+    "dockerAfter": "engine 29.8.0 answering; ulpin-demo worker, geo, redis, postgres and minio up and healthy"
+  },
+  "notes": [
+    "the four staleLogLines are from the 20 October 20:48Z crash that was fixed by hand at 02:31 on 21 October",
+    "backend and Studio checks were not run: no TypeScript, API or Studio file changed"
+  ]
+}

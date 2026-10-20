@@ -2,7 +2,7 @@ import type { PoolClient } from 'pg';
 import { UspDeclarationInputSchema, UspReviewDeclarationSchema, type RequestContext, type TargetPin } from '@ulpin/contracts/usp';
 import { normalizeProjectCode, ProjectLocationSchema } from '../../../../../contracts/src/usp/project-identity';
 import { UspPropertyCardFactSchema, type PropertyCardFact } from '../../../../../contracts/src/usp/property-card';
-import type { AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
+import type { AnyPacketPlan, PacketPlan } from '../../../../../contracts/src/usp/packets';
 import { isPdfPlan } from './plan-store';
 import { canonical, fingerprint } from '../../cases/domain';
 import { conflict } from '../../../infrastructure/errors';
@@ -11,6 +11,7 @@ import { scopedManifestTx } from '../commands';
 import { selectExactPart, decodedRecordLabel } from '../packet0';
 import { sourceStatedCardFacts } from './card-source-facts';
 import { anchorSentence, inWords, locationSentence } from './card-wording';
+import { evidenceCardValue, evidenceCitationBindings } from './plan-citation-authority';
 
 /** Called only under the existing plan disclosure protection. No current body is
  * substituted for a captured body, and no dependency outside the plan is read. */
@@ -87,6 +88,29 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
         : `${source.body.name}, ${locator.locator}`);
     }
     if (citations.length) available('source_citation', 'Source citation', citations.join('; '));
+    await evidenceFacts(plan.entries);
+  }
+  /** AU4-B3: each confirmed citation the plan included, quoted exactly from the stored citation. */
+  async function evidenceFacts(entries: PacketPlan['entries']) {
+    const confirmed = evidenceCitationBindings(body.body);
+    let quoted = 0;
+    for (const entry of entries) {
+      const pointer = entry.selection.pointer, locator = pointer.locator;
+      const direct = entry.state === 'included' && entry.selection.review.kind === 'direct'
+        && locator.kind === 'verbatim';
+      const cited = direct ? confirmed.find(b => b.sourceId === pointer.sourceRevision.ref.id
+        && b.sourceRevision === pointer.sourceRevision.revision && b.locator === locator.locator) : undefined;
+      if (!cited) continue;
+      const source = await captured(pointer.sourceRevision);
+      if (source.body_sha256 !== entry.sourceBodySha256 || source.body.sha256 !== entry.sourceSha256
+        || sha256(cited.excerpt) !== entry.excerptSha256 || typeof source.body.name !== 'string'
+        || !source.body.name.length) conflict('The included evidence citation changed after its plan.');
+      const key = `evidence_citation_${++quoted}`, name: string = source.body.name;
+      const value = evidenceCardValue(cited.excerpt, name, cited.locator);
+      if (value.length <= 4096) available(key, 'Confirmed evidence', value);
+      else missing(key, 'Confirmed evidence', `${name}, ${cited.locator}: the excerpt is longer than one card line.`,
+        'evidence_excerpt_too_long');
+    }
   }
   const shares: string[] = [], visited = new Set<string>();
   if (!isPdfPlan(plan)) for (const entry of plan.entries) if (entry.state === 'included' && entry.applicabilitySha256 && entry.selection.review.kind === 'shared') {

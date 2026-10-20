@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { closeSync, existsSync, openSync, readFileSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { command, root } from './runtime.mjs';
 import { definedRuntime, demoRuntime, freePort, safeEnvironment } from './demo-config.mjs';
@@ -17,17 +17,28 @@ export function processInfo(pid) {
     CommandLine: readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' '), ExecutablePath: process.execPath }; }
   catch { return null; }
 }
-export function ownedProcess(label, name = demoRuntime) {
+/**
+ * The recorded process, or null when it has exited. A PID now held by a process created at another time means the
+ * recorded one exited and the PID was reused: its record is moved aside, never deleted, and a later launch writes anew.
+ */
+export function ownedProcess(label, name = demoRuntime, { info = processInfo } = {}) {
   const runtime = definedRuntime(name);
   if (!labels.includes(label)) throw new Error('Unknown native process label.');
-  if (!existsSync(recordFile(runtime, label))) return null;
-  const record = JSON.parse(readFileSync(recordFile(runtime, label), 'utf8'));
+  const file = recordFile(runtime, label);
+  if (!existsSync(file)) return null;
+  const record = JSON.parse(readFileSync(file, 'utf8'));
   if (record.project !== runtime.project || record.label !== label) {
     throw new Error('Unexpected process ownership record.');
   }
-  const current = processInfo(record.pid);
+  const current = info(record.pid);
   if (!current) return null;
-  if (current.CreationDate !== record.creationDate || !current.CommandLine.includes(record.entry)
+  if (current.CreationDate !== record.creationDate) {
+    renameSync(file, `${file}.exited-${new Date().toISOString().replace(/\D/g, '').slice(0, 14)}`);
+    console.log(`${label} process record moved aside: recorded creation ${record.creationDate}, `
+      + `PID now held by a process created ${current.CreationDate}.`);
+    return null;
+  }
+  if (!current.CommandLine.includes(record.entry)
     || resolve(current.ExecutablePath).toLowerCase() !== resolve(record.executable).toLowerCase()
     || !current.CommandLine.includes(record.preload)) throw new Error(`${label} PID identity changed; refusing to stop or adopt it.`);
   return record;

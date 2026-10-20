@@ -14029,6 +14029,27 @@ export interface components {
                         characterStart: number;
                         characterEnd: number;
                     };
+                    evidence?: {
+                        confirmation: {
+                            /** Format: uuid */
+                            confirmationId: string;
+                            /** Format: uuid */
+                            candidateId: string;
+                            candidateSha256: string;
+                        };
+                        key: {
+                            /** Format: uuid */
+                            profileId: string;
+                            profileSha256: string;
+                            namespace: string;
+                            /** @enum {string} */
+                            kind: "text" | "integer";
+                            literal: string;
+                        };
+                        quote: string;
+                        quoteStart: number;
+                        quoteEnd: number;
+                    };
                 } | {
                     id: string;
                     document: {
@@ -15208,6 +15229,88 @@ export interface components {
                     qualification: "not_assessed";
                     /** @enum {string} */
                     version: "registry-obj-polygon-citation/1";
+                } | {
+                    /** @enum {string} */
+                    version: "registry-table-row-citation/1";
+                    id: string;
+                    row: {
+                        /** @enum {string} */
+                        kind: "table_row";
+                        /** Format: uuid */
+                        itemId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        rawJobId: string;
+                        rawInputSha256: string;
+                        rawResultSha256: string;
+                        acceptedFence: number;
+                        selection: {
+                            /** @enum {string} */
+                            format: "csv" | "xlsx";
+                            sheet: string;
+                            /** @enum {string|null} */
+                            table: null;
+                            headerRows: number[];
+                        };
+                        sourceRow: number;
+                        rowSha256: string;
+                        columnIndex: number;
+                        columnHeader: string;
+                        cell: {
+                            /** @enum {string} */
+                            state: "literal";
+                            value: string;
+                        };
+                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
+                        window?: {
+                            index: number;
+                            record: number;
+                            byteStart: number;
+                            byteEnd: number;
+                            sha256: string;
+                            sheet?: string;
+                            physicalRow?: number;
+                            sheetSha256?: string;
+                        };
+                    };
+                    key: {
+                        /** Format: uuid */
+                        profileId: string;
+                        profileSha256: string;
+                        namespace: string;
+                        /** @enum {string} */
+                        kind: "text" | "integer";
+                        literal: string;
+                    };
+                    confirmation: {
+                        /** Format: uuid */
+                        confirmationId: string;
+                        /** Format: uuid */
+                        candidateId: string;
+                        candidateSha256: string;
+                    };
+                    excerpt?: string;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -17068,6 +17171,27 @@ export interface components {
                         characterStart: number;
                         characterEnd: number;
                     };
+                    evidence?: {
+                        confirmation: {
+                            /** Format: uuid */
+                            confirmationId: string;
+                            /** Format: uuid */
+                            candidateId: string;
+                            candidateSha256: string;
+                        };
+                        key: {
+                            /** Format: uuid */
+                            profileId: string;
+                            profileSha256: string;
+                            namespace: string;
+                            /** @enum {string} */
+                            kind: "text" | "integer";
+                            literal: string;
+                        };
+                        quote: string;
+                        quoteStart: number;
+                        quoteEnd: number;
+                    };
                 } | {
                     id: string;
                     document: {
@@ -18247,6 +18371,88 @@ export interface components {
                     qualification: "not_assessed";
                     /** @enum {string} */
                     version: "registry-obj-polygon-citation/1";
+                } | {
+                    /** @enum {string} */
+                    version: "registry-table-row-citation/1";
+                    id: string;
+                    row: {
+                        /** @enum {string} */
+                        kind: "table_row";
+                        /** Format: uuid */
+                        itemId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        rawJobId: string;
+                        rawInputSha256: string;
+                        rawResultSha256: string;
+                        acceptedFence: number;
+                        selection: {
+                            /** @enum {string} */
+                            format: "csv" | "xlsx";
+                            sheet: string;
+                            /** @enum {string|null} */
+                            table: null;
+                            headerRows: number[];
+                        };
+                        sourceRow: number;
+                        rowSha256: string;
+                        columnIndex: number;
+                        columnHeader: string;
+                        cell: {
+                            /** @enum {string} */
+                            state: "literal";
+                            value: string;
+                        };
+                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
+                        window?: {
+                            index: number;
+                            record: number;
+                            byteStart: number;
+                            byteEnd: number;
+                            sha256: string;
+                            sheet?: string;
+                            physicalRow?: number;
+                            sheetSha256?: string;
+                        };
+                    };
+                    key: {
+                        /** Format: uuid */
+                        profileId: string;
+                        profileSha256: string;
+                        namespace: string;
+                        /** @enum {string} */
+                        kind: "text" | "integer";
+                        literal: string;
+                    };
+                    confirmation: {
+                        /** Format: uuid */
+                        confirmationId: string;
+                        /** Format: uuid */
+                        candidateId: string;
+                        candidateSha256: string;
+                    };
+                    excerpt?: string;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
                 })[];
                 nativeExteriorCandidate?: {
                     /** @enum {string} */
@@ -18962,6 +19168,27 @@ export interface components {
                         segmentCount?: number;
                         characterStart: number;
                         characterEnd: number;
+                    };
+                    evidence?: {
+                        confirmation: {
+                            /** Format: uuid */
+                            confirmationId: string;
+                            /** Format: uuid */
+                            candidateId: string;
+                            candidateSha256: string;
+                        };
+                        key: {
+                            /** Format: uuid */
+                            profileId: string;
+                            profileSha256: string;
+                            namespace: string;
+                            /** @enum {string} */
+                            kind: "text" | "integer";
+                            literal: string;
+                        };
+                        quote: string;
+                        quoteStart: number;
+                        quoteEnd: number;
                     };
                 };
                 part: {
@@ -21475,6 +21702,90 @@ export interface components {
                     };
                     /** @enum {string} */
                     applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                };
+            } | {
+                pin: {
+                    /** @enum {string} */
+                    version: "registry-table-row-citation/1";
+                    id: string;
+                    row: {
+                        /** @enum {string} */
+                        kind: "table_row";
+                        /** Format: uuid */
+                        itemId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        rawJobId: string;
+                        rawInputSha256: string;
+                        rawResultSha256: string;
+                        acceptedFence: number;
+                        selection: {
+                            /** @enum {string} */
+                            format: "csv" | "xlsx";
+                            sheet: string;
+                            /** @enum {string|null} */
+                            table: null;
+                            headerRows: number[];
+                        };
+                        sourceRow: number;
+                        rowSha256: string;
+                        columnIndex: number;
+                        columnHeader: string;
+                        cell: {
+                            /** @enum {string} */
+                            state: "literal";
+                            value: string;
+                        };
+                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
+                        window?: {
+                            index: number;
+                            record: number;
+                            byteStart: number;
+                            byteEnd: number;
+                            sha256: string;
+                            sheet?: string;
+                            physicalRow?: number;
+                            sheetSha256?: string;
+                        };
+                    };
+                    key: {
+                        /** Format: uuid */
+                        profileId: string;
+                        profileSha256: string;
+                        namespace: string;
+                        /** @enum {string} */
+                        kind: "text" | "integer";
+                        literal: string;
+                    };
+                    confirmation: {
+                        /** Format: uuid */
+                        confirmationId: string;
+                        /** Format: uuid */
+                        candidateId: string;
+                        candidateSha256: string;
+                    };
+                    excerpt?: string;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
                     /** @enum {string} */
                     associationState: "operator_selected";
                     /** @enum {string} */
@@ -36226,6 +36537,27 @@ export interface components {
                         characterStart: number;
                         characterEnd: number;
                     };
+                    evidence?: {
+                        confirmation: {
+                            /** Format: uuid */
+                            confirmationId: string;
+                            /** Format: uuid */
+                            candidateId: string;
+                            candidateSha256: string;
+                        };
+                        key: {
+                            /** Format: uuid */
+                            profileId: string;
+                            profileSha256: string;
+                            namespace: string;
+                            /** @enum {string} */
+                            kind: "text" | "integer";
+                            literal: string;
+                        };
+                        quote: string;
+                        quoteStart: number;
+                        quoteEnd: number;
+                    };
                 };
                 part: {
                     /** Format: uuid */
@@ -38738,6 +39070,90 @@ export interface components {
                     };
                     /** @enum {string} */
                     applicability: "explicit_officer_inclusion; effective_after_canonical_commit";
+                    /** @enum {string} */
+                    associationState: "operator_selected";
+                    /** @enum {string} */
+                    qualification: "not_assessed";
+                };
+            } | {
+                pin: {
+                    /** @enum {string} */
+                    version: "registry-table-row-citation/1";
+                    id: string;
+                    row: {
+                        /** @enum {string} */
+                        kind: "table_row";
+                        /** Format: uuid */
+                        itemId: string;
+                        /** Format: uuid */
+                        caseId: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceRevision: number;
+                        sourceSha256: string;
+                        /** Format: uuid */
+                        rawJobId: string;
+                        rawInputSha256: string;
+                        rawResultSha256: string;
+                        acceptedFence: number;
+                        selection: {
+                            /** @enum {string} */
+                            format: "csv" | "xlsx";
+                            sheet: string;
+                            /** @enum {string|null} */
+                            table: null;
+                            headerRows: number[];
+                        };
+                        sourceRow: number;
+                        rowSha256: string;
+                        columnIndex: number;
+                        columnHeader: string;
+                        cell: {
+                            /** @enum {string} */
+                            state: "literal";
+                            value: string;
+                        };
+                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
+                        window?: {
+                            index: number;
+                            record: number;
+                            byteStart: number;
+                            byteEnd: number;
+                            sha256: string;
+                            sheet?: string;
+                            physicalRow?: number;
+                            sheetSha256?: string;
+                        };
+                    };
+                    key: {
+                        /** Format: uuid */
+                        profileId: string;
+                        profileSha256: string;
+                        namespace: string;
+                        /** @enum {string} */
+                        kind: "text" | "integer";
+                        literal: string;
+                    };
+                    confirmation: {
+                        /** Format: uuid */
+                        confirmationId: string;
+                        /** Format: uuid */
+                        candidateId: string;
+                        candidateSha256: string;
+                    };
+                    excerpt?: string;
+                    target: {
+                        /** Format: uuid */
+                        recordId: string;
+                        revision: number;
+                        bodySha256: string;
+                    };
+                    selection: {
+                        subject: string;
+                        accessSha256: string;
+                        /** Format: date-time */
+                        selectedAt: string;
+                    };
                     /** @enum {string} */
                     associationState: "operator_selected";
                     /** @enum {string} */
@@ -66822,6 +67238,15 @@ export interface components {
                     };
                     /** @enum {string} */
                     verification?: "consistent";
+                    /** @description AU4-B3: the evidence confirmations whose citations were written, and the record revision that cites them; the snapshot pins this revision. Absent when no confirmation names the building. */
+                    evidence?: {
+                        confirmationIds: string[];
+                        record: {
+                            /** Format: uuid */
+                            id: string;
+                            revision: number;
+                        };
+                    };
                 };
                 /** Format: date-time */
                 updatedAt: string;
@@ -66939,6 +67364,15 @@ export interface components {
                 };
                 /** @enum {string} */
                 verification?: "consistent";
+                /** @description AU4-B3: the evidence confirmations whose citations were written, and the record revision that cites them; the snapshot pins this revision. Absent when no confirmation names the building. */
+                evidence?: {
+                    confirmationIds: string[];
+                    record: {
+                        /** Format: uuid */
+                        id: string;
+                        revision: number;
+                    };
+                };
             };
             /** Format: date-time */
             updatedAt: string;
@@ -67033,6 +67467,15 @@ export interface components {
                     };
                     /** @enum {string} */
                     verification?: "consistent";
+                    /** @description AU4-B3: the evidence confirmations whose citations were written, and the record revision that cites them; the snapshot pins this revision. Absent when no confirmation names the building. */
+                    evidence?: {
+                        confirmationIds: string[];
+                        record: {
+                            /** Format: uuid */
+                            id: string;
+                            revision: number;
+                        };
+                    };
                 };
                 /** Format: date-time */
                 updatedAt: string;
@@ -67341,11 +67784,8 @@ export interface components {
             expiresAt: string;
             /** Format: date-time */
             createdAt: string;
-            /**
-             * @description AU4-B2 stores the confirmation only; the citation step writes later.
-             * @enum {boolean}
-             */
-            registryWritten: false;
+            /** @description True once the citation step wrote every building it accepts; the write and this state are one transaction. */
+            registryWritten: boolean;
             note: string;
         };
         GET_ingestion_upload_limits_Response_200_application_json: {

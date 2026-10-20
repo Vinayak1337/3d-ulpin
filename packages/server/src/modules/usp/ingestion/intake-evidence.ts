@@ -15,7 +15,7 @@ import { registerUspJobInputTx } from '../jobs';
 import { appendIntakeItemTx } from './events';
 import { intakeCaseTx, intakeSourceTx } from './intake-context';
 import { INTAKE_CONFIRMATION_VALIDITY_MS } from './intake-confirmations';
-import { stableUuid } from './intake-run';
+import { queueIntakeRunTx, stableUuid } from './intake-run';
 import type { TabularTable } from './tabular-source';
 import { unavailableColumns } from './tabular-stream';
 
@@ -74,6 +74,15 @@ kind: KeyKind): IntakeEvidenceAnchor | null {
     sourceRevision: source.revision, sourceSha256: source.sha256, sourcePath, literal };
 }
 
+/** Every cell of one row as read: a literal keeps its value, an absent or unknown cell only its state. */
+export function rowCells(table: TabularTable, index: number) {
+  const states = table.cellStates?.[index];
+  return table.headers.map((_, column) => {
+    const state = states?.[column] ?? (table.rows[index][column] === undefined ? 'absent' : 'literal');
+    return state === 'literal' ? { state, value: table.rows[index][column] } : { state };
+  });
+}
+
 /** Each physical row's key cell, with its locator; blank cells and integer keys not written as digits are keyless. */
 export function tableAssertions(table: TabularTable, columnIndex: number, kind: KeyKind,
   locate: (index: number, cells: unknown[], literal: string) => IntakeTableRowLocator) {
@@ -82,11 +91,7 @@ export function tableAssertions(table: TabularTable, columnIndex: number, kind: 
   }
   const assertions: EvidenceAssertion[] = [];
   for (const [index, row] of table.rows.entries()) {
-    const states = table.cellStates?.[index];
-    const cells = table.headers.map((_, column) => {
-      const state = states?.[column] ?? (row[column] === undefined ? 'absent' : 'literal');
-      return state === 'literal' ? { state, value: row[column] } : { state };
-    });
+    const cells = rowCells(table, index);
     const literal = cells[columnIndex].state === 'literal' ? keyLiteral(row[columnIndex], kind) : null;
     if (literal !== null) assertions.push({ literal, evidence: locate(index, cells, literal) });
   }
@@ -235,15 +240,17 @@ async function assertProfileItemsTx(client: PoolClient, caseId: string, input: I
   for (const itemId of input.documents) await itemTx(client, caseId, itemId, 'document');
 }
 
-/** One read of one source under one profile, enrolled once in the existing job authority. */
+/** One read of one source under one profile, enrolled once in the existing job authority. A read again after a raw
+ * table job finished (ER1) names that job in its id. */
 export async function queueIntakeEvidenceTx(client: PoolClient, caseId: string,
-  profile: Pick<ProfileRow, 'profile_id' | 'profile_sha256'>, itemId: string): Promise<string | null> {
+  profile: Pick<ProfileRow, 'profile_id' | 'profile_sha256'>, itemId: string,
+  rawJobId?: string): Promise<string | null> {
   const item = (await client.query(`SELECT family,source_id FROM usp_intake_items WHERE case_id=$1 AND item_id=$2`,
     [caseId, itemId])).rows[0];
   if (!item?.source_id || !['table', 'document'].includes(item.family)) return null;
   const { current, binding, source } = await intakeSourceTx(client, caseId, item.source_id);
   const jobId = stableUuid(`intake-evidence/1:${profile.profile_id}:${profile.profile_sha256}:${itemId}:`
-    + `${source.id}:${source.revision}:${source.sha256}`);
+    + `${source.id}:${source.revision}:${source.sha256}${rawJobId === undefined ? '' : `:raw:${rawJobId}`}`);
   if ((await client.query('SELECT id FROM jobs WHERE id=$1', [jobId])).rowCount) return jobId;
   const input = IntakeEvidenceInputSchema.parse({ version: 'intake-evidence-read/1', jobId, caseId,
     caseRevision: current.revision, profileId: profile.profile_id, profileSha256: profile.profile_sha256, itemId,
@@ -269,6 +276,32 @@ export async function queueLateIntakeEvidenceTx(client: PoolClient, caseId: stri
   const profiles = (await client.query(`SELECT profile_id,profile_sha256 FROM usp_intake_key_profiles
     WHERE case_id=$1 ORDER BY created_at,profile_id LIMIT $2`, [caseId, INTAKE_EVIDENCE_LIMITS.sources])).rows;
   for (const profile of profiles) await queueIntakeEvidenceTx(client, caseId, profile, itemId);
+}
+
+const FINISHED_RAW = ['completed', 'completed_with_rejections'];
+
+/**
+ * ER1: in the transaction where a table's raw streaming job finishes, each reading of its source that may have read
+ * it unfinished is read again: one left partial, or one still running. A queued reading is left alone: its claim
+ * waits on the job rows locked here, so it reads the finished job. A partial reading's job, result and candidates
+ * are kept. A raw job that did not finish queues nothing, and a replay finds each new reading already queued.
+ */
+export async function queueFinishedTableEvidenceTx(client: PoolClient, caseId: string, rawJobId: string) {
+  const raw = (await client.query(`SELECT source_id,state FROM usp_streaming_vector_imports
+    WHERE case_id=$1 AND job_id=$2`, [caseId, rawJobId])).rows[0];
+  if (!raw || !FINISHED_RAW.includes(raw.state)) return;
+  // The readings' jobs are locked before their coverage, in the order a reading's own completion takes them.
+  await client.query(`SELECT j.id FROM jobs j JOIN usp_intake_evidence_coverage c ON c.job_id=j.id
+    JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id
+    WHERE c.case_id=$1 AND i.source_id=$2 AND c.family='table' ORDER BY j.id FOR SHARE OF j`,
+  [caseId, raw.source_id]);
+  const readings = (await client.query(`SELECT c.item_id,p.profile_id,p.profile_sha256
+    FROM usp_intake_evidence_coverage c JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
+    JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id LEFT JOIN jobs j ON j.id=c.job_id
+    WHERE c.case_id=$1 AND i.source_id=$2 AND c.family='table'
+    AND (c.state='partial' OR c.state='reading' AND j.status='running') ORDER BY p.profile_id,c.item_id`,
+  [caseId, raw.source_id])).rows;
+  for (const row of readings) await queueIntakeEvidenceTx(client, caseId, row, row.item_id, rawJobId);
 }
 
 /** The officer names the key; every named source is queued for reading in the same transaction. */
@@ -396,12 +429,33 @@ type ConfirmationRow = { confirmation_id: string; case_id: string; input_sha256:
   created_at: Date };
 export const EVIDENCE_CONFIRMATION_NOTE = 'Stored with every pin it names. Nothing was written to the registry: '
   + 'the citation step adds accepted rows and parts to recorded buildings under this confirmation.';
+const WRITTEN_NOTE = 'Stored with every pin it names. Its accepted rows and parts are cited on the records of the '
+  + 'buildings it accepts; no value of a row or part became a field.';
+export const EVIDENCE_RECEIPT_KIND = 'intake-evidence-citations';
+/** The write receipt of one building's citations under one confirmation; one per pair, so a write is never repeated. */
+export const evidenceReceiptKey = (confirmationId: string, targetId: string) =>
+  `${EVIDENCE_RECEIPT_KIND}:${confirmationId}:${targetId}`;
 
-function confirmationView(row: ConfirmationRow) {
+/** The buildings a confirmation accepts a candidate for, each once. */
+export function acceptedTargets(pins: IntakeEvidenceConfirm): string[] {
+  const decisions = pins.additions.kind === 'citations' ? pins.additions.decisions : [];
+  return [...new Set(decisions.flatMap(decision => decision.decision === 'accept' ? [decision.targetId] : []))];
+}
+
+/** Written once every building it accepts holds its receipt; the receipt and the registry write are one transaction. */
+async function registryWrittenTx(client: PoolClient, row: ConfirmationRow) {
+  const keys = acceptedTargets(row.pins).map(targetId => evidenceReceiptKey(row.confirmation_id, targetId));
+  if (!keys.length) return false;
+  const { n } = (await client.query(`SELECT count(*)::int n FROM operations WHERE case_id=$1 AND kind=$2
+    AND operation_key=ANY($3::text[])`, [row.case_id, EVIDENCE_RECEIPT_KIND, keys])).rows[0];
+  return n === keys.length;
+}
+
+function confirmationView(row: ConfirmationRow, written = false) {
   return IntakeEvidenceConfirmationSchema.parse({ confirmationId: row.confirmation_id, caseId: row.case_id,
     inputSha256: row.input_sha256, input: row.pins, subject: row.subject,
     expiresAt: new Date(row.expires_at).toISOString(), createdAt: new Date(row.created_at).toISOString(),
-    registryWritten: false, note: EVIDENCE_CONFIRMATION_NOTE });
+    registryWritten: written, note: written ? WRITTEN_NOTE : EVIDENCE_CONFIRMATION_NOTE });
 }
 
 /** Sources read under a profile that a stored confirmation names neither way: they arrived or were read after it. */
@@ -444,15 +498,17 @@ export async function readIntakeEvidence(caseValue: string, query: { outcome?: s
   });
 }
 
-/** What a confirmation is checked against, read in the confirming transaction. */
+type TargetPins = { packageId: string; packageRevision: number; reviewFingerprint: string | null };
+/** What a confirmation is checked against, read in the confirming transaction. A committed package is also seen
+ * at the reviewed revision it was committed from, so a confirmation made before the commit still holds after it. */
 export type EvidenceState = {
   profileSha256: string | null;
   sources: Map<string, { sourceId: string; sourceRevision: number; sourceSha256: string; bytes: number;
     latest: boolean }>;
   coverage: Map<string, { jobId: string | null; resultSha256: string | null; coverage: IntakeEvidenceCoverage }>;
-  targets: Map<string, { packageId: string; packageRevision: number; reviewFingerprint: string | null }>;
+  targets: Map<string, TargetPins & { committed?: TargetPins }>;
   candidates: Map<string, { itemId: string; candidateSha256: string; targetIds: string[];
-    evidence: IntakeEvidenceLocator }>;
+    outcome: IntakeEvidenceCandidate['outcome']; evidence: IntakeEvidenceLocator }>;
 };
 
 /** The officer's link manifest: the decisions as sent, in candidate order. */
@@ -506,8 +562,9 @@ export function evidenceConfirmationIssue(input: IntakeEvidenceConfirm, state: E
   if (unnamed) return `Source item ${unnamed} was read under this profile; include or exclude it.`;
   for (const target of input.targets) {
     const current = state.targets.get(target.targetId);
-    if (!current || current.packageId !== target.packageId || current.packageRevision !== target.packageRevision
-      || current.reviewFingerprint !== target.reviewFingerprint) {
+    const views = current ? [current, current.committed] : [];
+    if (!views.some(view => view && view.packageId === target.packageId
+      && view.packageRevision === target.packageRevision && view.reviewFingerprint === target.reviewFingerprint)) {
       return `Building ${target.targetId} is not at the package pins named.`;
     }
   }
@@ -523,7 +580,20 @@ export function evidenceConfirmationIssue(input: IntakeEvidenceConfirm, state: E
   return null;
 }
 
-async function evidenceStateTx(client: PoolClient, caseId: string, input: IntakeEvidenceConfirm) {
+/** D1: only a matched candidate is ever accepted; several, conflicting and no_match never become a citation. */
+export function unmatchedAcceptance(input: IntakeEvidenceConfirm, state: EvidenceState): string | null {
+  const decisions = input.additions.kind === 'citations' ? input.additions.decisions : [];
+  for (const decision of decisions) {
+    const outcome = state.candidates.get(decision.candidateId)?.outcome;
+    if (decision.decision === 'accept' && outcome !== 'matched') {
+      return `Candidate ${decision.candidateId} is ${outcome ?? 'unknown'}: only a matched candidate becomes a `
+        + 'citation; several, conflicting and no_match are never written.';
+    }
+  }
+  return null;
+}
+
+export async function evidenceStateTx(client: PoolClient, caseId: string, input: IntakeEvidenceConfirm) {
   const profile = (await client.query(`SELECT profile_sha256 FROM usp_intake_key_profiles
     WHERE case_id=$1 AND profile_id=$2 FOR SHARE`, [caseId, input.profileId])).rows[0];
   const items = [...input.included, ...input.excluded].map(source => source.itemId);
@@ -535,10 +605,11 @@ async function evidenceStateTx(client: PoolClient, caseId: string, input: Intake
     WHERE case_id=$1 AND profile_id=$2`, [caseId, input.profileId])).rows;
   const targets = (await client.query(`SELECT t.target_id,t.package_id,(p.body->>'revision')::int revision,
     CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision' THEN p.body->'review'->>'inputFingerprint'
-    END review FROM usp_intake_targets t JOIN import_packages p ON p.id=t.package_id
+    END review,CASE WHEN p.body->>'state'='COMMITTED' THEN p.body->'review' END committed
+    FROM usp_intake_targets t JOIN import_packages p ON p.id=t.package_id
     WHERE t.case_id=$1 AND t.target_id=ANY($2::uuid[])`, [caseId, input.targets.map(t => t.targetId)])).rows;
   const decisions = input.additions.kind === 'citations' ? input.additions.decisions : [];
-  const candidates = (await client.query(`SELECT candidate_id,item_id,candidate_sha256,target_ids,
+  const candidates = (await client.query(`SELECT candidate_id,item_id,candidate_sha256,target_ids,outcome,
     candidate->'evidence' evidence FROM usp_intake_evidence_candidates WHERE case_id=$1 AND profile_id=$2
     AND candidate_id=ANY($3::uuid[])`, [caseId, input.profileId, decisions.map(d => d.candidateId)])).rows;
   return { profileSha256: profile?.profile_sha256 ?? null,
@@ -547,9 +618,12 @@ async function evidenceStateTx(client: PoolClient, caseId: string, input: Intake
     coverage: new Map(coverage.map(row => [row.item_id, { jobId: row.job_id, resultSha256: row.result_sha256,
       coverage: coverageOf(row) }])),
     targets: new Map(targets.map(row => [row.target_id, { packageId: row.package_id, packageRevision: row.revision,
-      reviewFingerprint: row.review ?? null }])),
+      reviewFingerprint: row.review ?? null, committed: row.committed ? { packageId: row.package_id,
+        packageRevision: row.committed.packageRevision, reviewFingerprint: row.committed.inputFingerprint } : undefined,
+    }])),
     candidates: new Map(candidates.map(row => [row.candidate_id, { itemId: row.item_id,
-      candidateSha256: row.candidate_sha256, targetIds: row.target_ids, evidence: row.evidence }])),
+      candidateSha256: row.candidate_sha256, targetIds: row.target_ids, outcome: row.outcome,
+      evidence: row.evidence }])),
   } satisfies EvidenceState;
 }
 
@@ -564,10 +638,13 @@ export async function confirmIntakeEvidence(caseValue: string, raw: unknown) {
       WHERE case_id=$1 AND request_key=$2`, [caseId, input.requestKey])).rows[0];
     if (prior) {
       if (prior.input_sha256 !== digest) conflict('This evidence confirmation request key names other pins.');
-      return confirmationView(prior);
+      return confirmationView(prior, await registryWrittenTx(client, prior));
     }
-    const issue = evidenceConfirmationIssue(input, await evidenceStateTx(client, caseId, input));
+    const state = await evidenceStateTx(client, caseId, input);
+    const issue = evidenceConfirmationIssue(input, state);
     if (issue) throw new AppError(409, 'INTAKE_EVIDENCE_STALE', issue);
+    const unmatched = unmatchedAcceptance(input, state);
+    if (unmatched) throw new AppError(409, 'INTAKE_EVIDENCE_NOT_MATCHED', unmatched);
     const createdAt = new Date();
     const row: ConfirmationRow = (await client.query(`INSERT INTO usp_intake_evidence_confirmations(confirmation_id,
       case_id,request_key,input_sha256,profile_id,profile_sha256,additions,link_manifest_sha256,pins,subject,
@@ -576,6 +653,21 @@ export async function confirmIntakeEvidence(caseValue: string, raw: unknown) {
       input.additions.kind === 'citations' ? input.additions.linkManifestSha256 : null, input, binding.subject,
       input.acknowledgement, new Date(createdAt.getTime() + INTAKE_CONFIRMATION_VALIDITY_MS), createdAt])).rows[0];
     for (const source of input.included) await appendIntakeItemTx(client, caseId, source.itemId);
+    await queueLateEvidenceTx(client, caseId, row.confirmation_id, input);
     return confirmationView(row);
   });
+}
+
+/** D5: each accepted building already carded gets a run job for this confirmation. Any other building's own carry
+ * writes the citations, before its snapshot or once it is carded. The rows are locked so a carry carding one now
+ * either sees this confirmation at its end or is seen here as carded. */
+async function queueLateEvidenceTx(client: PoolClient, caseId: string, confirmationId: string,
+  input: IntakeEvidenceConfirm) {
+  const accepted = input.additions.kind === 'citations' ? input.additions.decisions.flatMap(decision =>
+    decision.decision === 'accept' ? [decision.targetId] : []) : [];
+  const rows = (await client.query(`SELECT target_id,readiness FROM usp_intake_targets WHERE case_id=$1
+    AND target_id=ANY($2::uuid[]) ORDER BY target_id FOR UPDATE`, [caseId, [...new Set(accepted)]])).rows;
+  for (const row of rows) if (row.readiness === 'carded') {
+    await queueIntakeRunTx(client, caseId, { phase: 'evidence', confirmationId, targetId: row.target_id });
+  }
 }
