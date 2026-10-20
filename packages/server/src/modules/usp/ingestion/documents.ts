@@ -2,7 +2,8 @@ import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {DocumentRetainSchema,DocumentRetrySchema,DocumentReceiptSchema,DocumentInputSchema,DocumentResultSchema,DocumentStatusSchema,
-  DOCUMENT_VERSION,DOCUMENT_LIMITS,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
+  DocumentOriginalSchema,DOCUMENT_VERSION,DOCUMENT_LIMITS,type DocumentInput,
+  type DocumentResult} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
@@ -53,6 +54,26 @@ async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:Docu
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.current.revision+1},sourceId,inputHash);
   await appendCaseIngestionTx(client,caseId,{kind:'document.changed',sourceId,sourceRevision:ctx.source.revision,jobId,status:'queued'},ctx.binding.subject);
   return {ctx,jobId};
+}
+/**
+ * G10. A PDF in a batch is read by this reader. Its retained original gains the document receipt its bytes already
+ * prove (same subject, hash and size) and one native_only job, so no page leaves for a provider. A source with a
+ * document job keeps it: a later probe never reads the original again; a retry stays the officer's request.
+ */
+export async function queueBatchDocumentTx(client:PoolClient,caseId:string,sourceId:string){
+  const prior=(await client.query(`SELECT id,status FROM jobs WHERE case_id=$1 AND source_id=$2
+    AND operation='document-extraction' ORDER BY created_at DESC LIMIT 1`,[caseId,sourceId])).rows[0];
+  if(prior)return {jobId:prior.id as string,status:prior.status as string};
+  const scope=await documentCaseTx(client,caseId,true);
+  const source=(await client.query('SELECT sha256,bytes,inspection FROM sources WHERE case_id=$1 AND id=$2',
+    [caseId,sourceId])).rows[0]??notFound('Source not found in this case.');
+  if(!source.inspection?.documentOriginal){
+    const documentOriginal=DocumentOriginalSchema.parse({version:DOCUMENT_VERSION,subject:scope.binding.subject,
+      format:'pdf',sha256:source.sha256,bytes:Number(source.bytes),receivedAt:new Date().toISOString()});
+    await client.query(`UPDATE sources SET inspection=COALESCE(inspection,'{}'::jsonb) || $2::jsonb WHERE id=$1`,
+      [sourceId,{documentOriginal}]);
+  }
+  return {jobId:(await enqueue(client,caseId,sourceId,'native_only')).jobId as string,status:'queued'};
 }
 function receipt(ctx:Awaited<ReturnType<typeof documentSourceTx>>,jobId:string){
   return DocumentReceiptSchema.parse({version:DOCUMENT_VERSION,caseId:ctx.current.id,caseRevision:ctx.current.revision,

@@ -53,6 +53,7 @@ class DocumentControl {
     else if (sql.includes('usp_job_metadata')) rows = this.metadataQuery(sql, args);
     else if (sql.includes('FROM jobs') || sql.startsWith('INSERT INTO jobs') || sql.startsWith('UPDATE jobs'))
       rows = this.jobQuery(sql, args);
+    else if (sql.includes('FROM usp_intake_items')) rows = [];
     else if (sql.startsWith('INSERT INTO usp_outbox_streams')) rows = [];
     else if (sql.startsWith('UPDATE usp_outbox_streams')) rows = [{ sequence: String(this.events.length + 1) }];
     else if (sql.startsWith('INSERT INTO usp_outbox')) this.events.push(args[2]);

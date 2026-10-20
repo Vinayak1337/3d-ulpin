@@ -305,7 +305,7 @@ test('oversized GeoJSON names retention only and does not promise a larger direc
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';
 for (const [format, family, bytes, expected] of [
-  ['pdf', 'document', 3355443, `Kept as a PDF document (3.2 MB).${kept}`],
+  ['docx', 'document', 3355443, `Kept as a DOCX document (3.2 MB).${kept}`],
   ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
   ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
   ['ifc', 'model3d', 421888, `Kept as an IFC 3D model (412 KB).${kept}`],

@@ -1,0 +1,21 @@
+{
+  "task": "g10",
+  "gap": "G10 (AU2): a PDF in a batch is not read; the building Add files route for PDFs is a local draft route only.",
+  "reuse": [
+    "The existing document reader: documents.ts enqueue() and the document-extraction job (one job authority, run by cases/processing.ts), in mode native_only so no provider is called (D4).",
+    "The batch tray item and its one transition writer writeIntakeDraftTx (intake-ledger.ts).",
+    "The pinned page viewer (CitedPageViewer through EvidenceProvider, GET /api/v1/sources/{sourceId}/pages) as the existing document review the batch item links to.",
+    "IntakeDropDialog and the uploads route for the building Add files PDFs."
+  ],
+  "changes": {
+    "packages/server/src/modules/usp/ingestion/documents.ts": "queueBatchDocumentTx: a batch PDF's retained original gets its document receipt (documentOriginal, same subject, hash and bytes) and one native_only document job; a prior job is reused, never a second read.",
+    "packages/server/src/modules/usp/ingestion/intake-draft.ts": "A probed PDF starts that job instead of resting kept; on the job's completion or failure the item is written in an officer's words (pages read, pages with no text layer, passages naming floors or rooms as candidates).",
+    "packages/server/src/modules/usp/ingestion/document-worker.ts": "Seam outside the owned paths, two calls: the accept transaction and failDocumentJob settle the batch item. No other task in the prompt owns it.",
+    "apps/studio/src/features/intake/BatchPage.tsx": "EvidenceProvider around the tray so a read PDF opens in the page viewer.",
+    "apps/studio/src/features/intake/IntakeTray.tsx": "Seam outside the owned paths: a Review pages step for a read PDF, pinned to the source revision and hash from the case detail.",
+    "apps/studio/src/features/intake/batch-model.ts": "Seam outside the owned paths: a document item reading says pages, not records.",
+    "apps/studio/src/features/intake/AddFilesDialog.tsx": "D3, seam outside the owned paths: the building Add files sends PDFs to a batch through IntakeDropDialog (uploads route and server reader); other files keep their route."
+  },
+  "notTouched": ["packages/contracts/src/usp/intake.ts evidence schemas (TB1/AU4)", "images (G23)", "ZIP layers", "quotas", "apps/studio/src/local/routes.ts"],
+  "needs": "No runtime, Docker, GPU or provider call. Real inputs read once with the repository's own native PDF reader (pinned pypdf 5.5.0) in a scratch environment; counts only are kept."
+}

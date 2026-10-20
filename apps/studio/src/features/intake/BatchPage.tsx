@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
+import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from './AddFilesDialog';
 import { DropOutcomes } from './IntakeDropDialog';
 import { IntakeTray } from './IntakeTray';
@@ -88,8 +89,9 @@ function BatchRecords({ batch, choose }: {
     </Banner> : null}
     {sourceCase.error ? <Banner tone="warning">{sourceCase.error.message}</Banner> : null}
     {packages.error ? <Banner tone="warning">{packages.error.message}</Banner> : null}
-    {items.length ? <IntakeTray caseId={caseId} items={items}
-      packages={listedPackages} choose={choose} refresh={refresh} /> : null}
+    {items.length ? <EvidenceProvider>
+      <IntakeTray caseId={caseId} items={items} packages={listedPackages} choose={choose} refresh={refresh} />
+    </EvidenceProvider> : null}
     {!manifest.isPending && !items.length ? <p>No files are enrolled in this batch.</p> : null}
   </>;
 }
