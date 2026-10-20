@@ -9,6 +9,7 @@ import { AppError, notFound } from '../../../infrastructure/errors';
 import { isSourceNativeCandidate } from '../geometry';
 import { appendCaseIngestionTx, appendIntakeItemTx, appendIntakeTargetsTx } from './events';
 import { intakeCaseTx } from './intake-context';
+import { queueAnchorEvidenceTx } from './intake-evidence';
 import { queueIntakeRunTx, stableUuid } from './intake-run';
 
 export type IntakeTargetRow = {
@@ -82,6 +83,7 @@ export async function createIntakeTargetsTx(client: PoolClient, caseId: string, 
   [caseId, itemId, pkg.id, locators.map(locator => stableUuid(`intake-target/1:${pkg.id}:${locator}`)),
     buildings.map(feature => feature.id), locators])).rows;
   if (inserted.length) await appendIntakeTargetsTx(client, caseId, inserted);
+  if (inserted.length) await queueAnchorEvidenceTx(client, pkg.id);
   const prepared = (await client.query(`SELECT id FROM jobs WHERE case_id=$1 AND operation='intake-run'
     AND payload->>'phase'='prepare' AND payload->>'packageId'=$2 LIMIT 1`, [caseId, pkg.id])).rows[0];
   if (!prepared) await queueIntakeRunTx(client, caseId, { phase: 'prepare', packageId: pkg.id }, sourceId);
@@ -123,6 +125,7 @@ export async function prepareIntakeTargetsTx(client: PoolClient, pkg: ImportPack
   [decided.map(row => row.id), decided.map(row => row.readiness), decided.map(row => row.reason)])).rows;
   if (changed.length) await appendIntakeTargetsTx(client, rows[0].case_id, changed);
   if (current && !changed.length && !published) await publishPackageItemsTx(client, pkg.id);
+  await queueAnchorEvidenceTx(client, pkg.id);
   return decided;
 }
 

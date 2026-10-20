@@ -1,0 +1,44 @@
+{
+  "task": "g21",
+  "gap": "A register read while only some buildings of its map item were drafted is read again when more are drafted or a package is decided at a new revision, so a row keyed to a later building can match",
+  "base": "363a441c",
+  "built": {
+    "queueIntakeEvidenceTx": "optional cause ReadAgain = {rawJobId} | {anchorsSha256}; the job id ends ':raw:<rawJobId>' (ER1, unchanged) or ':anchors:<digest>' (G21); with no cause it is the earlier id exactly (tested). A reading has one cause, so the suffixes never combine. The job input keeps an optional anchorsSha256: the digest of the map item's buildings it was queued under",
+    "anchorsDigestTx": "fingerprint of [{targetId, packageId, packageRevision}] of every target of the anchor item, ordered by target id; packageRevision is the package body's revision, as evidenceAnchorsTx reads it",
+    "queueAnchorEvidenceTx": "intake-evidence.ts: finds the package's map item; locks the job rows of every coverage row of the profiles anchored on it FOR SHARE, then reads those coverage rows; skips a reading whose job is queued or whose input names the current digest; queues each other one with the anchors cause",
+    "declareIntakeKeyProfile": "the first readings keep their ids and record the digest at declaration, so deciding the buildings they read queues nothing",
+    "queueFinishedTableEvidenceTx": "ER1's reading read again keeps the replaced reading's digest (it reads no fewer buildings); its id is unchanged",
+    "calls": "intake-targets.ts createIntakeTargetsTx (when a target row was inserted) and prepareIntakeTargetsTx (after the targets are decided)"
+  },
+  "decisions": {
+    "D1": "one reading per source read under each profile anchored on the item; a digest already read or queued is never queued twice: the job id check, plus the digest kept in the current reading's input",
+    "D2": "a source whose coverage names a queued job is skipped: its claim waits on the job rows locked here and reads the new targets; a running reading is replaced through the existing coverage upsert and its write is refused 409 (tested); job rows are locked before coverage, as ER1",
+    "D3": "nothing is deleted: the earlier job, result and candidates stay until the new reading writes; every earlier candidate comes back once under its stable id with its new outcome; stored confirmations are not touched",
+    "D4": "a second footprint file (another anchor item) is out of scope: the officer declares a profile for it",
+    "D5": "no table and no SQL migration: the digest lives in the job id and the job input"
+  },
+  "deviation": {
+    "recordPackageTargetsTx": "not called. The commit moves the package revision by one without changing a feature, and the citation step re-checks a stored evidence confirmation's reading and candidate pins after the commit (intake-evidence-citations.ts recheckTx). A reading queued at the commit would refuse every evidence confirmation made before it."
+  },
+  "realInput": {
+    "buildings": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson (test_only, foreign geography), 1662 footprints drafted as two packages of one map item, 831 each",
+    "register": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv (test_only), 753 rows keyed by BIN",
+    "beforeSecondPackage": "declared over the first package: matched 317, conflicting 50, no_match 386; deciding the first package again queues nothing",
+    "afterSecondPackage": "one reading queued with ':anchors:<digest>'; once it runs: matched 612, conflicting 81, no_match 60 (the whole-file outcome); the same 753 candidate ids; 295 earlier no_match rows now matched to a building of the second package, the other 31 now conflicting; a replayed draft and a decision under the same digest queue nothing"
+  },
+  "tests": [
+    "G21: footprints drafted after the register was read are matched by one reading under the new buildings",
+    "G21: a queued reading is left to read the new buildings; a running one is replaced and its write refused"
+  ],
+  "negativeCheck": "with the createIntakeTargetsTx call removed, the first G21 test fails (no new reading is queued)",
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": "0 (api-client 2, scene 59 + 1 skipped, ui 7, studio 542 + 2 skipped), same as before",
+    "backend set": "before 422 tests, 419 pass, 0 fail, 3 skipped; after 424 tests, 421 pass, 0 fail, 3 skipped (the same skips before and after: two point-cloud scheduling tests, TP1 workbook without a geo python). The data drive is present, so the real-input tests ran",
+    "openapi --check": "0 after refresh-contract.ts origin/staging (source pins of intake-evidence.ts and intake-targets.ts); openapi.json and the api-client types unchanged",
+    "scripts/api/check.py": "1, 'runtime receipt changed': docs/evidence/usp/cityjson-validation-runtime.json is checked out with CRLF line ends here and its pinned hash is of the LF bytes; not touched by this task",
+    "git diff --check": 0
+  },
+  "notRun": "No database: the SQL of queueAnchorEvidenceTx and anchorsDigestTx is answered by an in-memory fake, so the lock order, the queued filter and the digest query are checked by reading, not by Postgres. No Docker, GPU or provider call."
+}

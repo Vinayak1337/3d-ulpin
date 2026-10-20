@@ -5,18 +5,20 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { afterEach, beforeEach, test } from 'node:test';
 import type { Pool, PoolClient } from 'pg';
+import type { ImportPackage } from '@ulpin/contracts';
 import { IntakeTableRowLocatorSchema, type DocumentResult, type IntakeEvidenceAnchor, type IntakeEvidenceCandidate,
   type IntakeEvidenceConfirm, type IntakeEvidenceCoverage, type IntakeEvidenceLocator, type IntakeKeyProfileInput,
   type TableWindowRow, type TabularSelection } from '@ulpin/contracts/usp';
 import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
-import { closeEvidence, documentAssertions, evidenceAnchor, evidenceConfirmationIssue, evidenceLinkManifest,
-  keyLiteral, newerSources, partLiterals, queueFinishedTableEvidenceTx, queueIntakeEvidenceTx, tableAssertions,
-  writeIntakeEvidenceTx, type EvidenceState, type IntakeEvidenceInput } from './intake-evidence';
+import { NOT_READ, anchorsDigestTx, closeEvidence, documentAssertions, evidenceAnchor, evidenceConfirmationIssue,
+  evidenceLinkManifest, keyLiteral, newerSources, partLiterals, queueFinishedTableEvidenceTx, queueIntakeEvidenceTx,
+  tableAssertions, writeIntakeEvidenceTx, type EvidenceState, type IntakeEvidenceInput } from './intake-evidence';
 import { windowedTableReading } from './intake-evidence-worker';
 import type { IntakeSourceRow } from './intake-context';
 import { stableUuid } from './intake-run';
+import { createIntakeTargetsTx, prepareIntakeTargetsTx } from './intake-targets';
 import { windowRows } from './table-windows';
 import { readTabularSource } from './tabular-source';
 import { readTableWindows, readTabularWindows } from './tabular-stream';
@@ -335,15 +337,36 @@ type Coverage = { job_id: string; state: string; read: number | null; result_sha
 type QueuedJob = { id: string; case_revision: number; input_fingerprint: string; payload: IntakeEvidenceInput;
   status: string };
 type Handler = (args: any[]) => unknown[];
+type DraftedTarget = { target_id: string; package_id: string; feature_id: string; locator: string };
+const mapItemId = ids('map');
 
-/** test_only: one case's evidence stores in memory, answering the statements ER1's queue and a reading's write
- * issue; `raw` is the register's raw streaming job. */
+/** test_only: one case's evidence stores in memory, answering the statements ER1's and G21's queues, target
+ * creation and decision, and a reading's write issue; `raw` is the register's raw streaming job. Every target is of
+ * the one map item the profile is anchored on, and no target is open, so a decision changes none. */
 function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: number }) {
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-evidence-protocol';
   const itemId = ids('register'), sourceId = ids(`source:${itemId}`);
   const jobs = new Map<string, QueuedJob>(), coverage = new Map<string, Coverage>();
   const candidates = new Map<string, IntakeEvidenceCandidate>();
+  const targets: DraftedTarget[] = [], revisions = new Map<string, number>();
   const handlers: [string, Handler][] = [
+    ['INSERT INTO usp_intake_targets', ([, , packageId, targetIds, featureIds, locators]) => {
+      const fresh = targetIds.flatMap((id: string, at: number) => targets.some(row => row.target_id === id) ? []
+        : [{ target_id: id, package_id: packageId, feature_id: featureIds[at], locator: locators[at] }]);
+      targets.push(...fresh);
+      return fresh.map((row: DraftedTarget) => ({ target_id: row.target_id, readiness: 'preparing', stage: 2 }));
+    }],
+    ['SELECT id FROM jobs WHERE case_id', () => [{ id: ids('prepare-run') }]],
+    ['SELECT case_id,anchor_item_id', ([packageId]) => targets.some(row => row.package_id === packageId)
+      ? [{ case_id: caseId, anchor_item_id: mapItemId }] : []],
+    ['SELECT p.profile_id,p.profile_sha256,c.item_id', () => [...coverage]
+      .filter(([, row]) => jobs.get(row.job_id)?.status !== 'queued')
+      .map(([item, row]) => ({ profile_id: profileId, profile_sha256: profileSha256, item_id: item,
+        anchors_sha256: jobs.get(row.job_id)?.payload.anchorsSha256 ?? null }))],
+    ['SELECT t.target_id,t.package_id', () => [...targets].sort((a, b) => a.target_id < b.target_id ? -1 : 1)
+      .map(row => ({ ...row, revision: revisions.get(row.package_id) ?? 1 }))],
+    ['SELECT target_id,case_id,feature_id', () => []],
+    ['UPDATE usp_intake_targets t SET readiness', () => []],
     ['SELECT source_id,state FROM usp_streaming_vector_imports', () => [{ source_id: sourceId, state: raw.state }]],
     ['SELECT j.id FROM jobs j', () => []],
     // The coverage rows the finish reads again: partial, or reading under a job already running.
@@ -395,7 +418,7 @@ function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: 
     const rows = handler[1](args);
     return { rows, rowCount: rows.length };
   } } as unknown as PoolClient;
-  return { client, jobs, coverage, candidates, itemId, sourceId };
+  return { client, jobs, coverage, candidates, targets, revisions, itemId, sourceId };
 }
 
 /** A queued reading run as its job runs it: read, closed against the buildings, written under its own job. */
@@ -474,4 +497,98 @@ test('ER1: on the finish a reading still running is read again; one still queued
     await queueFinishedTableEvidenceTx(store.client, caseId, rawJobId);
     assert.equal(store.jobs.size, 2);
     assert.notEqual(store.coverage.get(store.itemId)!.job_id, queued, 'the running reading is replaced');
+  });
+
+/** test_only: buildings `from` to `to` of a footprint file drafted as one package of the map item, each keyed by its
+ * place in the file. */
+function drafted(features: { properties: Record<string, unknown> }[], name: string, from: number, to: number) {
+  return { id: ids(`package:${name}`), revision: 1, features: features.slice(from, to).map((feature, at) => ({
+    id: ids(`feature:${from + at}`), kind: 'building', sourceKey: `${from + at}`, evidence: [],
+    properties: feature.properties })) } as unknown as ImportPackage;
+}
+
+/** The buildings a reading reads when it runs, as evidenceAnchorsTx reads them from the drafted targets. */
+function anchorsNow(store: ReturnType<typeof evidenceStore>, packages: ImportPackage[],
+  source: { id: string; revision: number; sha256: string }) {
+  const features = new Map(packages.flatMap(pkg => pkg.features.map(feature => [feature.id, feature] as const)));
+  return store.targets.flatMap(row => {
+    const anchor = evidenceAnchor({ targetId: row.target_id, anchorItemId: mapItemId, packageId: row.package_id,
+      packageRevision: store.revisions.get(row.package_id) ?? 1, locator: row.locator },
+    features.get(row.feature_id)!, source, '/features/*/properties/bin', 'integer');
+    return anchor ? [anchor] : [];
+  });
+}
+
+const plainReading = (store: ReturnType<typeof evidenceStore>, sourceSha256: string) =>
+  `intake-evidence/1:${profileId}:${profileSha256}:${store.itemId}:${store.sourceId}:1:${sourceSha256}`;
+/** The declaration's reading: no cause in its id, and the digest of the buildings drafted when it was queued. */
+const declare = async (store: ReturnType<typeof evidenceStore>) => (await queueIntakeEvidenceTx(store.client,
+  caseId, evidenceProfile, store.itemId, undefined, await anchorsDigestTx(store.client, caseId, mapItemId)))!;
+
+test('G21: footprints drafted after the register was read are matched by one reading under the new buildings',
+  { skip }, async () => {
+    const bytes = readFileSync(registerPath), buildings = readFileSync(buildingsPath);
+    const features = JSON.parse(buildings.toString('utf8')).features as { properties: Record<string, unknown> }[];
+    const source = { id: ids('buildings'), revision: 1, sha256: sha256(buildings) };
+    const store = evidenceStore({ state: 'completed' }, { sha256: sha256(bytes), length: bytes.length });
+    const half = Math.ceil(features.length / 2);
+    const first = drafted(features, 'first', 0, half), second = drafted(features, 'second', half, features.length);
+    assert.equal(await createIntakeTargetsTx(store.client, caseId, mapItemId, first, source.id), 831);
+    assert.equal(store.jobs.size, 0, 'no key profile yet: nothing is read');
+    const declared = await declare(store);
+    assert.equal(declared, stableUuid(plainReading(store, sha256(bytes))), 'a first reading keeps its id');
+    await runReading(store, declared, registerReading(bytes), anchorsNow(store, [first], source));
+    const earlier = new Map(store.candidates);
+    assert.deepEqual(tally([...earlier.values()]), { matched: 317, conflicting: 50, no_match: 386 },
+      'a row keyed to a building of the second half reads no_match');
+    await prepareIntakeTargetsTx(store.client, first);
+    assert.equal(store.jobs.size, 1, 'deciding the buildings the reading read queues nothing');
+
+    assert.equal(await createIntakeTargetsTx(store.client, caseId, mapItemId, second, source.id), 831);
+    const digest = fingerprint([...store.targets].sort((a, b) => a.target_id < b.target_id ? -1 : 1)
+      .map(row => ({ targetId: row.target_id, packageId: row.package_id, packageRevision: 1 })));
+    const again = stableUuid(`${plainReading(store, sha256(bytes))}:anchors:${digest}`);
+    assert.deepEqual([...store.jobs.keys()], [declared, again], 'one new reading, named by the new digest');
+    assert.deepEqual(store.coverage.get(store.itemId), { job_id: again, state: 'reading', read: null,
+      result_sha256: null });
+    assert.deepEqual(store.candidates, earlier, 'the earlier candidates are kept until the new reading writes');
+
+    await runReading(store, again, registerReading(bytes), anchorsNow(store, [first, second], source));
+    assert.deepEqual(tally([...store.candidates.values()]), { matched: 612, conflicting: 81, no_match: 60 },
+      'the outcomes of reading the register after every footprint');
+    assert.deepEqual([...store.candidates.keys()].sort(), [...earlier.keys()].sort(), 'each candidate once, same id');
+    const late = [...earlier.values()].filter(candidate => candidate.outcome === 'no_match'
+      && store.candidates.get(candidate.candidateId)!.outcome === 'matched');
+    assert.equal(late.length, 295, 'the other 31 of the 326 rows matched now repeat a BIN, so they read conflicting');
+    for (const candidate of late) {
+      const [anchor] = store.candidates.get(candidate.candidateId)!.anchors;
+      assert.equal(anchor.packageId, second.id, 'matched to a building of the later package');
+    }
+    assert.equal(await createIntakeTargetsTx(store.client, caseId, mapItemId, second, source.id), 0);
+    await prepareIntakeTargetsTx(store.client, second);
+    assert.equal(store.jobs.size, 2, 'a replayed draft or a decision under the same digest queues nothing');
+  });
+
+test('G21: a queued reading is left to read the new buildings; a running one is replaced and its write refused',
+  async () => {
+    const store = evidenceStore({ state: 'completed' }, { sha256: fingerprint('test_only:register'), length: 87352 });
+    const features = [{ properties: {} }, { properties: {} }];
+    const one = drafted(features, 'one', 0, 1), two = drafted(features, 'two', 1, 2);
+    await createIntakeTargetsTx(store.client, caseId, mapItemId, one, ids('buildings'));
+    const declared = await declare(store);
+    await createIntakeTargetsTx(store.client, caseId, mapItemId, two, ids('buildings'));
+    assert.deepEqual([store.jobs.size, store.coverage.get(store.itemId)!.job_id], [1, declared],
+      'the queued reading reads the new building when it runs');
+    store.jobs.get(declared)!.status = 'running';
+    store.revisions.set(two.id, 2);
+    await prepareIntakeTargetsTx(store.client, { ...two, revision: 2 });
+    const replacing = store.coverage.get(store.itemId)!.job_id;
+    assert.equal(store.jobs.size, 2);
+    assert.notEqual(replacing, declared, 'a revised package replaces the running reading');
+    await assert.rejects(writeIntakeEvidenceTx(store.client, store.jobs.get(declared)!.payload, NOT_READ,
+      fingerprint('test_only:result'), []), (error: { status?: number }) => error.status === 409);
+    store.revisions.set(two.id, 3);
+    await prepareIntakeTargetsTx(store.client, { ...two, revision: 3 });
+    assert.deepEqual([store.jobs.size, store.coverage.get(store.itemId)!.job_id], [2, replacing],
+      'a queued reading is not queued again');
   });
