@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { ApiError } from '@ulpin/api-client';
 import { sendConfirmation, failureWords } from './api';
-import { confirmBody, type Confirmation, type ConfirmBody, type Target, type TargetPage } from './model';
+import { cardsBody, confirmBody, type Confirmation, type ConfirmBody, type Target, type TargetPage } from './model';
 
 export function useConfirmationCommand(caseId: string, stored: (confirmation: Confirmation) => void,
   moved: () => void) {
@@ -11,9 +11,10 @@ export function useConfirmationCommand(caseId: string, stored: (confirmation: Co
   const [uncertain, setUncertain] = useState(false);
   const [error, setError] = useState('');
   const [preview, setPreview] = useState<TargetPage | null>(null);
-  const press = async (page: TargetPage, choice: readonly Target[], acknowledgement: string, cardsOnly = false) => {
+  // An uncertain outcome sends the same body again, with its request key, until the server answers.
+  const send = async (make: (requestKey: string) => ConfirmBody, page: TargetPage | null) => {
     if (inFlight.current) return;
-    const body = pending.current ?? confirmBody(page, choice, acknowledgement, crypto.randomUUID(), cardsOnly);
+    const body = pending.current ?? make(crypto.randomUUID());
     if (!pending.current) setPreview(page);
     pending.current = body;
     inFlight.current = true;
@@ -40,5 +41,10 @@ export function useConfirmationCommand(caseId: string, stored: (confirmation: Co
       setBusy(false);
     }
   };
-  return { press, busy, uncertain, error, preview };
+  const press = (page: TargetPage, choice: readonly Target[], acknowledgement: string, cardsOnly = false) =>
+    send(requestKey => confirmBody(page, choice, acknowledgement, requestKey, cardsOnly), page);
+  /** Cards only, for recorded buildings named outside the batch page: no page is previewed. */
+  const pressCards = (choice: readonly Target[], acknowledgement: string) =>
+    send(requestKey => cardsBody(choice, acknowledgement, requestKey), null);
+  return { press, pressCards, busy, uncertain, error, preview };
 }

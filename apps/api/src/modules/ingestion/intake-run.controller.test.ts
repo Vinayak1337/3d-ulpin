@@ -7,7 +7,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { z } from 'zod';
 import { IntakeConfirmationSchema, IntakeTargetPageSchema, IntakeTargetSchema } from '@ulpin/contracts/usp';
-import { IntakeRunController, intakeTargetQuery } from './intake-run.controller';
+import { IntakeRunController, intakeTargetByFeatureQuery, intakeTargetQuery } from './intake-run.controller';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 
 @Module({ controllers: [IntakeRunController], providers: [PrivateSpatialGuard] })
@@ -26,6 +26,28 @@ test('target filters are strict: duplicate cursors or ignored query fields canno
     assert.throws(() => intakeTargetQuery(`/targets?${query}`));
   }
 });
+
+test('the by-feature read takes one featureId and at most one packageId, and publishes the target contract',
+  async () => {
+    const path = '/api/v1/ingestion/intake/targets/by-feature';
+    assert.deepEqual(intakeTargetByFeatureQuery(`${path}?featureId=${id}`), { featureId: id });
+    assert.deepEqual(intakeTargetByFeatureQuery(`${path}?featureId=${id}&packageId=${id}`),
+      { featureId: id, packageId: id });
+    for (const query of ['', `featureId=${id}&featureId=${id}`, `featureId=${id}&caseId=${id}`,
+      'featureId=building-101', `packageId=${id}`]) {
+      assert.throws(() => intakeTargetByFeatureQuery(`${path}?${query}`));
+    }
+    const app = await NestFactory.create(IntakeRunTestModule, { logger: false, abortOnError: false });
+    try {
+      const doc = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('G04M by feature').build());
+      const operation = doc.paths[path]!.get as any;
+      assert.deepEqual(operation.responses[200].content['application/json'].schema,
+        z.toJSONSchema(IntakeTargetSchema, { target: 'openapi-3.0' }));
+      assert.equal(operation.requestBody, undefined);
+    } finally {
+      await app.close();
+    }
+  });
 
 test('all five private routes publish the canonical response contracts and reject malformed writes before domain I/O',
   async () => {

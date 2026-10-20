@@ -196,6 +196,10 @@ export const IntakeTargetQuerySchema = z.strictObject({
   readiness: IntakeTargetReadinessSchema.optional(), cursor: uuid.optional(),
   packageCursor: packageCursor.optional(),
 });
+export const IntakeTargetByFeatureQuerySchema = z.strictObject({
+  featureId: uuid, packageId: uuid.optional()
+    .describe('The package proposing the feature; without it, the packages that recorded the feature are read.'),
+});
 export const IntakeRunControlSchema = z.strictObject({});
 export const IntakeTargetPackageSchema = z.strictObject({
   packageId: uuid, areaId: uuid, anchorItemId: uuid, revision: z.number().int().positive(),
