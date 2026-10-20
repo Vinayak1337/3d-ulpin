@@ -4,14 +4,14 @@ import { useWorkQueue } from '../../../api/queries';
 import { uploadWords, type UploadProgress } from '../upload-model';
 import { streamedImport, tableFormat } from './retain';
 import { TableRefusal } from './Progress';
-import { jobWords } from './useFollowTable';
+import { jobWords, type Opened } from './useFollowTable';
 import { useRetainTable } from './useRetainTable';
 import { TableSelectionFields, SourceCaseFields } from './TableImportFields';
 import type { TableJob } from './types';
 import styles from './Table.module.css';
 
-export function TableImportDialog({ file, onClose, onBack }: {
-  file: File; onClose: () => void; onBack: () => void;
+export function TableImportDialog({ file, onClose, onBack, onImported }: {
+  file: File; onClose: () => void; onBack: () => void; onImported?: (opened: Opened) => void;
 }) {
   const cases = useWorkQueue('all', '', 1).data?.items.filter((item) => item.kind === 'case') ?? [];
   const [caseId, setCaseId] = useState('');
@@ -20,7 +20,7 @@ export function TableImportDialog({ file, onClose, onBack }: {
   const [sheet, setSheet] = useState('');
   const [rows, setRows] = useState('');
   const { retain, created, clearCreated, upload, retryUpload, job } = useRetainTable(file, caseId, name, mode, sheet,
-    rows);
+    rows, onImported);
   const blocked = mode === 'create' ? !name.trim() : !caseId;
   return <ImportDialogBody file={file} onClose={onClose} onBack={onBack} pending={retain.isPending}
     blocked={blocked} submit={() => retain.mutate()} error={retain.error}

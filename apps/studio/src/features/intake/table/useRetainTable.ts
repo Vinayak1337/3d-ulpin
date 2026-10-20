@@ -30,8 +30,9 @@ async function streamedTable(file: File, caseId: string, selection: TableFromOri
   return follow(caseId, current.sourceId, body, () => { current.body = null; });
 }
 
+/** `imported`, when given, takes the read table instead of opening its page: the drop has other files to route. */
 export function useRetainTable(file: File, caseId: string, name: string, mode: 'existing' | 'create',
-  sheet: string, rows: string) {
+  sheet: string, rows: string, imported?: (opened: Opened) => void) {
   const created = useRef<string | null>(null);
   const attempt = useRef<{ signature: string; caseId: string; body: FormData } | null>(null);
   const kept = useRef<Kept['current']>(null);
@@ -66,7 +67,7 @@ export function useRetainTable(file: File, caseId: string, name: string, mode: '
         if (kept.current) kept.current.body = null;
       }
     },
-    onSuccess: (opened: Opened) => open(opened),
+    onSuccess: (opened: Opened) => (imported ?? open)(opened),
   });
   return { retain, created: Boolean(created.current), clearCreated: () => { created.current = null; },
     upload, retryUpload: () => command.current?.retry(), job };

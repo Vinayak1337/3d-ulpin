@@ -9,8 +9,13 @@ import styles from './Batch.module.css';
 /** Under the batch's own key, so every batch refresh reads the receipts again. */
 export const uploadsKey = (caseId: string) => ['intake', caseId, 'uploads'];
 
-/** N04. Receipts a reload left open hold their slot until expiry; each is resumed with its own file or cancelled. */
-export function UnfinishedUploads({ caseId, refresh }: { caseId: string; refresh: () => void }) {
+/**
+ * N04. Receipts a reload left open hold their slot until expiry; each is resumed with its own file or cancelled.
+ * `settled` hears of a receipt whose file finished and joined the batch, or whose upload was cancelled.
+ */
+export function UnfinishedUploads({ caseId, refresh, settled }: {
+  caseId: string; refresh: () => void; settled?: (entry: UploadEntry) => void;
+}) {
   const uploads = useQuery({ queryKey: uploadsKey(caseId), retry: false, queryFn: () => listUploads(caseId) });
   if (uploads.error) return <Banner tone="warning">{uploads.error.message}</Banner>;
   const entries = uploads.data?.uploads ?? [];
@@ -20,7 +25,8 @@ export function UnfinishedUploads({ caseId, refresh }: { caseId: string; refresh
     <p className="ul-help">Each one holds an upload slot until it finishes, is cancelled or expires. Resume it with the
       same file, or cancel it.</p>
     <ul className={styles.stack}>
-      {entries.map((entry) => <UnfinishedUpload key={entry.id} caseId={caseId} entry={entry} settle={refresh} />)}
+      {entries.map((entry) => <UnfinishedUpload key={entry.id} caseId={caseId} entry={entry} settle={refresh}
+        settled={() => settled?.(entry)} />)}
     </ul>
   </section>;
 }
@@ -34,7 +40,9 @@ export function receiptWords(entry: UploadEntry): string {
 
 const failureWords = (failure: unknown) => failure instanceof Error ? failure.message : 'The server did not answer.';
 
-function UnfinishedUpload({ caseId, entry, settle }: { caseId: string; entry: UploadEntry; settle: () => void }) {
+function UnfinishedUpload({ caseId, entry, settle, settled }: {
+  caseId: string; entry: UploadEntry; settle: () => void; settled: () => void;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const command = useRef<ReturnType<typeof createUploadCommand> | null>(null);
   const [progress, setProgress] = useState<UploadProgress | null>(null);
@@ -47,6 +55,8 @@ function UnfinishedUpload({ caseId, entry, settle }: { caseId: string; entry: Up
     try {
       const sourceId = await command.current.run();
       if (sourceId) await enrolSource(caseId, sourceId);
+      // Finished and enrolled, or cancelled while it ran: either way the file no longer waits.
+      settled();
     } catch (failure) {
       setError(failureWords(failure));
     } finally {
@@ -59,6 +69,7 @@ function UnfinishedUpload({ caseId, entry, settle }: { caseId: string; entry: Up
     setError('');
     try {
       await action();
+      settled();
     } catch (failure) {
       setError(failureWords(failure));
     }
