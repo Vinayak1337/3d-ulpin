@@ -7646,6 +7646,8 @@ export interface components {
                 heightState: "unresolved" | "estimated" | "source_supported" | "reviewed" | "unknown";
                 /** @enum {string} */
                 displayState: "recorded" | "unrecorded_proposal";
+                /** Format: uuid */
+                caseId?: string;
             }[];
             next: string | null;
         };
