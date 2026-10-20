@@ -354,13 +354,16 @@ async function wholeOriginal(row:any):Promise<Uint8Array>{
     throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original differs from its byte receipt.');
   return whole;
 }
-/** TP1: the accepting step of the whole read and of the stream job: the table receipt on the same source row, the
- * workspace revision the request pinned, and the source event. */
+/** TP1: the accepting step of the whole read and of the stream job: the table receipt on the same source row and
+ * the source event. The whole read keeps the workspace revision its request pinned; the job (null) pins only its
+ * source, still the latest revision of its family, unchanged and with no table receipt, so other files dropped in
+ * the same workspace while it reads do not stop it. */
 export async function attachTableTx(client:PoolClient,target:{caseId:string;sourceId:string;actor:string;
-  expectedWorkspaceRevision:number;read:{sha256:string;revision:number;object_key:string}},
+  expectedWorkspaceRevision:number|null;read:{sha256:string;revision:number;object_key:string}},
 inventory:TableInventory):Promise<AnySourceProfile>{
   const {caseId,sourceId,actor,read}=target,scope=await workspace(client,caseId);
-  if(scope.revision!==target.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
+  if(target.expectedWorkspaceRevision!==null&&scope.revision!==target.expectedWorkspaceRevision)
+    conflict('The source workspace changed; refresh first.');
   const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
   if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
     conflict('The original changed while it was read.');

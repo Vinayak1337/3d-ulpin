@@ -68,6 +68,8 @@ class Store {
   // TP1: the job authority's rows for the table read.
   jobs: Record<string, any>[] = []; attempts: Record<string, any>[] = [];
   metadata = new Map<string, Record<string, any>>();
+  // TP1: what else happens in the workspace while the job reads the object; a later revision of the same family.
+  whileReading = () => {}; familyRevision: number | null = null;
   constructor(readonly bytes: Buffer) {
     this.source = { id: this.sourceId, case_id: this.caseId, family_id: this.familyId, revision: 1,
       profile: 'large-original-v1', mime_type: 'text/csv', bytes: String(bytes.length), sha256: sha(bytes),
@@ -93,7 +95,7 @@ class Store {
     }
     if (sql.startsWith('SELECT * FROM sources WHERE id=$1 AND case_id=$2'))
       return args[0] === this.sourceId && args[1] === this.caseId ? [structuredClone(this.source)] : [];
-    if (sql.includes('max(revision)')) return [{ revision: this.source.revision }];
+    if (sql.includes('max(revision)')) return [{ revision: this.familyRevision ?? this.source.revision }];
     if (sql.startsWith('SELECT payload_hash,result FROM operations')) {
       const prior = this.operations.get(String(args[1]));
       return prior ? [prior] : [];
@@ -215,6 +217,7 @@ class Store {
     mock.method(S3Client.prototype, 'send', async (command: { constructor: { name: string }; input: any }) => {
       assert.equal(command.constructor.name, 'GetObjectCommand');
       assert.equal(command.input.IfMatch, '"g13-control"');
+      this.whileReading();
       return { Body: this.stream(), ContentLength: this.bytes.length, ETag: '"g13-control"' };
     });
   }
@@ -367,6 +370,35 @@ test('TP1: a malformed large CSV stops its job with the reader\'s code and words
     assert.equal(store.source.inspection.manualProfile, undefined);
     assert.equal(store.caseRevision, 0);
   });
+
+test('TP1: another file kept in the workspace while the job reads does not stop it', async () => {
+  const store = new Store(generatedCsv(200_000));
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  store.whileReading = () => { store.caseRevision++; };
+  await runTableProfileJob(queued.jobId);
+  assert.equal(store.source.inspection.manualProfile.records, 200_000);
+  assert.equal(store.caseRevision, 2);
+  assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,
+    'succeeded');
+});
+
+test('TP1: a new revision of the same source while the job reads makes the job stale', async () => {
+  const store = new Store(generatedCsv(200_000));
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  store.whileReading = () => { store.familyRevision = 2; store.caseRevision++; };
+  await assert.rejects(runTableProfileJob(queued.jobId), { code: 'STALE_REVISION' });
+  const stale = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  assert.deepEqual([stale.status, stale.issueCode, stale.message],
+    ['stale', 'STALE_REVISION', 'This source revision has been superseded.']);
+  assert.equal(store.source.inspection.manualProfile, undefined);
+  assert.equal(store.caseRevision, 1);
+});
 
 /** A real table kept through the batch (large-original/1) becomes a table in the request, with no job. */
 async function keptTable(file: string, chosen: typeof selection | typeof workbook) {

@@ -137,8 +137,9 @@ export async function runTableProfileJob(jobId: string) {
     await acceptUspJobAttempt(attempt, { assetId: `table-profile:${input.sourceId}`, version: input.sourceRevision,
       sha256: inventory.schemaFingerprint }, async (client, accepted) => {
       if (fingerprint(accepted.payload) !== fingerprint(input)) conflict('The table read changed.');
+      // Other sources may change while the stream is read; only this source's own pins can make the read stale.
       await attachTableTx(client, { caseId: input.caseId, sourceId: input.sourceId, actor: input.subject, read: row,
-        expectedWorkspaceRevision: input.request.expectedWorkspaceRevision }, inventory);
+        expectedWorkspaceRevision: null }, inventory);
     }, lockCase(input));
   } catch (error) {
     await fail(input, attempt, error).catch(() => {/* A newer fence owns the job's durable state. */});
