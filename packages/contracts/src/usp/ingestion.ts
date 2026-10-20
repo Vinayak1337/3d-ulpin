@@ -284,7 +284,13 @@ export const LargeUploadStatusSchema = z.strictObject({
   source: z.strictObject({sourceId: id, sourceRevision: revision, sha256: hash, bytes: z.number().int().positive()}).nullable(),
   conversion: z.literal('unsupported'), bundleCompleteness: z.literal('single_original_only_archive_dependencies_not_assessed'),
   cleanupPending: z.boolean(), lastError: z.string().nullable(),
-  finalization: z.strictObject({jobId:id,phase:z.enum(['queued','assembling','verifying','cleaning','complete']),completedParts:z.number().int().nonnegative()}).optional(),
+  /** N04B. The receipt's own worker lease (finalization or cleanup); null when none is held. */
+  leaseExpiresAt: z.string().datetime().nullable(),
+  finalization: z.strictObject({jobId:id,phase:z.enum(['queued','assembling','verifying','cleaning','complete']),
+    completedParts:z.number().int().nonnegative(),
+    /** N04B. The storage job's own status and error, when its row is found. */
+    jobStatus: z.enum(['queued','running','succeeded','failed','stale','cancelled']).optional(),
+    jobError: z.string().nullable().optional()}).optional(),
 });
 /** N04. This operator's receipts in one case that hold an upload slot, newest first: what resume and cancel need. */
 export const LargeUploadListSchema = z.strictObject({uploads: z.array(z.strictObject({

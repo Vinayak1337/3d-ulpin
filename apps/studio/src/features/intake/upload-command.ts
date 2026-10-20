@@ -5,6 +5,9 @@ import { uploadGuard, uploadPlan } from './upload-model';
 import type { UploadCreate, UploadEntry, UploadGuard, UploadProgress, UploadReceipt } from './upload-model';
 
 export const NOT_THE_FILE = 'This is not the file this upload was started with.';
+export const FINISHING_AGAIN = 'The last finish was interrupted; finishing the upload again.';
+/** v2 storage job outcomes after which the job no longer holds the finish. */
+const ENDED_JOBS: readonly string[] = ['failed', 'stale', 'cancelled'];
 
 /** A fresh upload states when its file was acquired; a resume continues the receipt it names, as admitted. */
 type Start = { acquiredAt: string; resume?: undefined } | { resume: UploadEntry; acquiredAt?: undefined };
@@ -75,13 +78,18 @@ async function runUpload(context: Context): Promise<string | null> {
     await sendPart(context, part, limits.limits.maxPartAttempts);
   }
   if (state.cancelled) return null;
-  publish(context, { phase: 'verifying' });
-  // A resumed receipt already finalizing is followed by its status only; a second finalize would queue it again.
-  if (state.receipt!.state === 'receiving') {
-    const finalize = { ...uploadGuard(state.receipt!, context.key()), sha256 };
-    state.receipt = await guarded(context, () => transport.finalize(state.receipt!, finalize));
-  }
+  publish(context, { phase: 'verifying', words: undefined });
+  // A resumed receipt already finalizing is followed by its status; it is finalized once more only when the status
+  // shows its finish is no longer held, and the server's rules decide that request.
+  let again = Boolean(resume) && state.receipt!.state === 'finalizing';
+  if (state.receipt!.state === 'receiving') await finalize(context, sha256);
   while (state.receipt?.state === 'finalizing' && !state.cancelled) {
+    if (again && finishReleased(state.receipt)) {
+      again = false;
+      publish(context, { words: FINISHING_AGAIN });
+      await finalize(context, sha256);
+      continue;
+    }
     await context.pause();
     state.receipt = await guarded(context, () => transport.status(state.receipt!));
   }
@@ -89,6 +97,19 @@ async function runUpload(context: Context): Promise<string | null> {
   if (state.receipt?.state !== 'retained' || !state.receipt.source)
     throw new Error(state.receipt?.lastError || 'The server did not publish a retained original.');
   return state.receipt.source.sourceId;
+}
+
+/** Sends the admitted SHA-256 under the receipt's current guard and a new request key. */
+async function finalize(context: Context, sha256: string) {
+  const body = { ...uploadGuard(context.state.receipt!, context.key()), sha256 };
+  context.state.receipt = await guarded(context, () => context.transport.finalize(context.state.receipt!, body));
+}
+
+/** v1: the finalization lease has expired. v2: the storage job ended without publishing the original. */
+function finishReleased(receipt: UploadReceipt) {
+  if (receipt.version === 'large-original/1')
+    return receipt.leaseExpiresAt !== null && Date.parse(receipt.leaseExpiresAt) <= Date.now();
+  return ENDED_JOBS.includes(receipt.finalization?.jobStatus ?? '');
 }
 
 /** A resume names its receipt only after name, size and SHA-256 match the file; a mismatch sends nothing. */

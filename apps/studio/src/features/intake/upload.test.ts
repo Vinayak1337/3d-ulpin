@@ -7,7 +7,7 @@ import { expect, it, vi } from 'vitest';
 import published from '../../../../../docs/api/openapi.json';
 import { hashSlices } from './file-hash';
 import { partProgressWords } from './batch-model';
-import { abortReceipt, cleanupReceipt, createUploadCommand, NOT_THE_FILE } from './upload-command';
+import { abortReceipt, cleanupReceipt, createUploadCommand, FINISHING_AGAIN, NOT_THE_FILE } from './upload-command';
 import { LARGE_UPLOAD_MINIMUM, uploadPlan, uploadWords, type UploadCreate, type UploadEntry,
   type UploadLimits, type UploadReceipt } from './upload-model';
 
@@ -210,4 +210,66 @@ it('Finish cancelling sends the existing cleanup with the receipt guard; a refus
   transport.cleanup.mockRejectedValueOnce(new ApiError(409, '', { error: { message: words } }));
   await expect(cleanupReceipt(transport, cancelling)).rejects.toThrow(words);
   expect(transport.abort).not.toHaveBeenCalled();
+});
+
+// N04B. test_only: a 16 MiB + 1 byte file of zeros made here; the receipt a crash left 'finalizing' is the fake's.
+async function finalizingResume(more: Record<string, unknown>) {
+  const file = new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], 'control.geojson');
+  const { entry, parts, transport } = await openReceipt(file, [1, 2, 3]);
+  const finalizing = { id: entry.id, revision: 12, currentCaseRevision: 3, state: 'finalizing',
+    receivedBytes: file.size, parts, leaseExpiresAt: null, ...more } as unknown as UploadReceipt;
+  const retained = { ...finalizing, state: 'retained' as const, leaseExpiresAt: null,
+    source: { sourceId: 'resumed-source', sourceRevision: 1, sha256: entry.sha256, bytes: file.size } };
+  transport.status.mockResolvedValueOnce(finalizing);
+  const progress = vi.fn();
+  const command = createUploadCommand({ file, resume: { ...entry, state: 'finalizing' }, transport, hash: hashSlices,
+    publish: progress, pause: async () => {}, key: () => 'finish-key' });
+  return { entry, transport, progress, command, finalizing, retained };
+}
+const v1 = (leaseMs: number) => ({ version: 'large-original/1',
+  leaseExpiresAt: new Date(Date.now() + leaseMs).toISOString() });
+
+it('a v1 receipt whose finalization lease expired is finalized once more and ends retained', async () => {
+  const run = await finalizingResume(v1(-60_000));
+  expect(await run.command.run()).toBe('resumed-source');
+  expect(run.transport.part).not.toHaveBeenCalled();
+  expect(run.transport.finalize).toHaveBeenCalledOnce();
+  expect(run.transport.finalize.mock.calls[0]![1]).toEqual({ requestKey: 'finish-key', expectedRevision: 12,
+    expectedCaseRevision: 3, sha256: run.entry.sha256 });
+  const shown = run.progress.mock.calls.map(call => call[0]).find(progress => progress.words === FINISHING_AGAIN);
+  expect(uploadWords(shown)).toBe(FINISHING_AGAIN);
+});
+
+it('a v1 receipt whose finalization lease is live is only followed by its status', async () => {
+  const run = await finalizingResume(v1(60_000));
+  run.transport.status.mockResolvedValueOnce(run.retained);
+  expect(await run.command.run()).toBe('resumed-source');
+  expect(run.transport.status).toHaveBeenCalledTimes(2);
+  expect(run.transport.finalize).not.toHaveBeenCalled();
+});
+
+it('a v2 receipt whose storage job failed while finalizing is finalized once more, never twice', async () => {
+  const failed = { version: 'large-original/2', finalization: { jobId: crypto.randomUUID(), phase: 'assembling',
+    completedParts: 1, jobStatus: 'failed', jobError: 'FINALIZATION_INTERRUPTED' } };
+  const run = await finalizingResume(failed);
+  run.transport.finalize.mockResolvedValueOnce({ ...run.finalizing, revision: 13 } as never);
+  run.transport.status.mockResolvedValueOnce({ ...run.finalizing, revision: 14 })
+    .mockResolvedValueOnce(run.retained);
+  expect(await run.command.run()).toBe('resumed-source');
+  expect(run.transport.finalize).toHaveBeenCalledOnce();
+  expect(run.transport.finalize.mock.calls[0]![1]).toMatchObject({ requestKey: 'finish-key', expectedRevision: 12 });
+  expect(run.transport.status).toHaveBeenCalledTimes(3);
+});
+
+it('a refused finish again shows the server words and keeps Cancel upload', async () => {
+  const run = await finalizingResume(v1(-60_000));
+  const words = 'Original finalization is still active; resume from status.';
+  run.transport.finalize.mockRejectedValueOnce(new ApiError(409, '', { error: { message: words } }));
+  const finished = run.command.run();
+  await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
+    phase: 'stopped', words })));
+  await run.command.cancel();
+  expect(await finished).toBeNull();
+  expect(run.transport.finalize).toHaveBeenCalledOnce();
+  expect(run.transport.abort).toHaveBeenCalledOnce();
 });
