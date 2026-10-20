@@ -151,7 +151,8 @@ function confirmationOf(candidates: IntakeEvidenceCandidate[], coverage: IntakeE
     targets: new Map([[input.targets[0].targetId, { packageId: ids('package'), packageRevision: 1,
       reviewFingerprint: fingerprint('test_only:review') }]]),
     candidates: new Map([[accepted.candidateId, { itemId: ids('register'), candidateSha256: accepted.candidateSha256,
-      targetIds: accepted.anchors.map(anchor => anchor.targetId), evidence: accepted.evidence }]]) };
+      targetIds: accepted.anchors.map(anchor => anchor.targetId), outcome: accepted.outcome,
+      evidence: accepted.evidence }]]) };
   return { input, state };
 }
 

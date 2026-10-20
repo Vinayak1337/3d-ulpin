@@ -11,7 +11,7 @@ import {fingerprint} from '../cases/domain';
 import {recordFrom,recordBodySchema} from './registry';
 import {assertRegistryCurrentCitationTargetTx,assertRegistryDocumentCitationsTx,documentReviewContext,
   type RegistryDocumentDependencies} from './registry-document-evidence';
-import {lockRegistryDocumentCasesTx,registryRegionCases} from './registry-document-locks';
+import {citedCaseId,lockRegistryDocumentCasesTx,registryRegionCases} from './registry-document-locks';
 import {registrySourceTx,registryDocumentSourceAccessTx} from './registry-metadata';
 import {associationDocumentInputTx} from '../usp/ingestion/document-association-authority';
 import {readDocumentResult} from '../usp/ingestion/documents';
@@ -74,7 +74,7 @@ function records(capture:Capture,input:RegistryRecordEvidenceRequest){
   return {current,selected};
 }
 const cases=(records:RegistryRecord[])=>[...new Set(records.flatMap(record=>
-  (record.documentCitations??[]).map(pin=>pin.document.caseId.toLowerCase())))].sort();
+  (record.documentCitations??[]).map(pin=>citedCaseId(pin).toLowerCase())))].sort();
 function same(expected:Capture,actual:Capture){
   if(fingerprint(expected)!==fingerprint(actual))conflict('The complete committed target, site or requested history changed during its evidence read.');
 }
