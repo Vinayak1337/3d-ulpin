@@ -15,6 +15,7 @@ import { tabularLearningPaths, activeTabularLearner, learnApprovedTabularTx } fr
 import { manualTeacherPlan, mappingContextFromColumnProfile, type TeacherDataPolicy } from './mapping-teacher';
 import { executeMappingPlanV2, MappingPlanValidationError } from './mapping-executor';
 import { readTableWindowTx, type StoredWindow } from './table-windows';
+import { unavailableColumns } from './tabular-stream';
 
 type Stored = { payload: ChunkMappingPayload; bytes: number; hash: string; key: string };
 type Store = (payload: ChunkMappingPayload) => Promise<Stored>;
@@ -160,14 +161,21 @@ export function mapTableWindow(plan: TabularMappingPlan, profile: TabularSourceP
   }
   try {
     const context = mappingContextFromColumnProfile(profile.profile, profile.tabular.selection);
-    const rows = window.rows.map(row => Object.fromEntries(profile.headers.map((header, index) =>
-      [`${index + 1}|${header}`, row.cells[index] ?? undefined])));
+    // XW1: a marked workbook cell is unknown, as the whole read leaves it; its stored result is never mapped.
+    const unavailable = window.rows.map(row => new Set([...unavailableColumns(row)].map(column =>
+      `${column + 1}|${profile.headers[column]}`)));
+    const rows = window.rows.map((row, offset) => Object.fromEntries(profile.headers.map((header, index) =>
+      [`${index + 1}|${header}`, unavailable[offset]!.has(`${index + 1}|${header}`) ? undefined
+        : row.cells[index] ?? undefined])));
     const result = executeMappingPlanV2(plan.mapping, rows,
       { ...context, sourceRef: `source:${sourceId}`, rowOffset: window.firstRecord });
     return { status: 'mapped', rows: result.rows.map((row, offset) => ({ record: window.rows[offset]!.record,
-      cells: row.fields.map(cell => ({ value: cell.value, state: cell.state, sourceField: cell.sourceField,
-        target: cell.target, ...(cell.unit ? { unit: cell.unit } : {}),
-        ...(cell.issueCode ? { issueCode: cell.issueCode } : {}) })) })) };
+      cells: row.fields.map(cell => unavailable[offset]!.has(cell.sourceField)
+        ? { value: null, state: 'unknown' as const, sourceField: cell.sourceField, target: cell.target,
+          issueCode: 'TABULAR_CELL_UNAVAILABLE' }
+        : { value: cell.value, state: cell.state, sourceField: cell.sourceField,
+          target: cell.target, ...(cell.unit ? { unit: cell.unit } : {}),
+          ...(cell.issueCode ? { issueCode: cell.issueCode } : {}) }) })) };
   } catch (error) {
     if (error instanceof MappingPlanValidationError) {
       return failed('MAPPING_PLAN_INVALID', 'The approved recipe failed canonical verification on this window.');
@@ -245,8 +253,9 @@ export async function proposeFromTableWindow(input: ChunkMappingInput, attempt: 
     records: window.rows.slice(0, take).map(row => ({ featureIndex: row.record, byteStart: row.byteStart,
       byteEnd: row.byteEnd, rawSha256: row.sha256, disposition: 'accepted' as const, issueCode: null,
       feature: { headers, sheet: input.tabular!.selection.sheet, sourceRow: row.sourceRow,
-        cells: row.cells.map(cell => cell === null ? { state: 'absent' as const }
-          : { state: 'literal' as const, value: cell }) } })) } as unknown as StreamingVectorPayload;
+        cells: row.cells.map((cell, column) => unavailableColumns(row).has(column) ? { state: 'unknown' as const }
+          : cell === null ? { state: 'absent' as const } : { state: 'literal' as const, value: cell }) } })) } as
+      unknown as StreamingVectorPayload;
   await acceptTabularDataSlot(input, attempt, raw, window.sha256, mapper, store, true);
   return true;
 }

@@ -100,7 +100,8 @@ function windowCoverage(raw: RawTable, read: number, eligible: number, failed: n
     unread: finished ? raw.records - read - failed : null, failed: finished || failed ? failed : null };
 }
 
-/** D1: each stored window of the raw job, one at a time; a row's locator cites its window, byte range and hash.
+/** D1: each stored window of the raw job, one at a time; a row's locator cites its window, byte range and hash,
+ * and a workbook row its sheet, physical row and sheet SHA-256 (XW1).
  * A streamed row's raw result is its stored window, pinned by the window's SHA-256 and fence. */
 async function readWindows(input: IntakeEvidenceInput, { spec, kind, headers }: WindowedSpec,
   { raw, windows }: StoredTable, literals: ReadonlySet<string>): Promise<Reading> {
@@ -121,7 +122,8 @@ async function readWindows(input: IntakeEvidenceInput, { spec, kind, headers }: 
       selection: spec.selection, sourceRow: row.sourceRow, rowSha256: fingerprint(cells), columnIndex: spec.columnIndex,
       columnHeader: headers[spec.columnIndex], cell: { state: 'literal', value: literal },
       window: { index: window.index, record: row.record, byteStart: row.byteStart, byteEnd: row.byteEnd,
-        sha256: row.sha256 } })));
+        sha256: row.sha256, ...(row.sheet !== undefined
+          ? { sheet: row.sheet, physicalRow: row.sourceRow, sheetSha256: row.sheetSha256 } : {}) } })));
     read += window.rows.length;
   }
   const coverage = windowCoverage(raw, read, assertions.length, failed);
@@ -209,27 +211,50 @@ async function waitsForExtraction(input: IntakeEvidenceInput, family: string, cr
   return true;
 }
 
+/**
+ * Ends one reading `stale` or `failed` with its reason, leaving its source unread under the profile. The caller holds
+ * the case. Without an attempt, only a job still queued or running with no live attempt is ended.
+ */
+export async function endIntakeEvidenceJobTx(client: PoolClient, input: IntakeEvidenceInput,
+  status: 'stale' | 'failed', reason: string, attempt?: UspJobAttempt) {
+  const job = (await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE', [input.jobId])).rows[0];
+  if (attempt) {
+    await assertUspJobAttemptTx(client, attempt);
+    await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
+      [input.jobId, attempt.number]);
+  } else {
+    const active = (await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active'
+      AND lease_until>now() LIMIT 1`, [input.jobId])).rowCount;
+    if (active || !job || !['queued', 'running'].includes(job.status)) return;
+  }
+  await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
+    [input.jobId]);
+  await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',
+    [input.jobId, status, reason]);
+  // A replaced reading leaves the newer one's coverage alone.
+  await stopIntakeEvidenceTx(client, input).catch(error => {
+    if (!(error instanceof AppError && error.status === 409)) throw error;
+  });
+}
+
 async function stopped(input: IntakeEvidenceInput, code: string, attempt?: UspJobAttempt) {
   await transaction(async client => {
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
-    const job = (await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE', [input.jobId])).rows[0];
-    if (attempt) {
-      await assertUspJobAttemptTx(client, attempt);
-      await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
-        [input.jobId, attempt.number]);
-    } else {
-      const active = (await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active'
-        AND lease_until>now() LIMIT 1`, [input.jobId])).rowCount;
-      if (active || !job || !['queued', 'running'].includes(job.status)) return;
-    }
-    await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
-      [input.jobId]);
-    await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',
-      [input.jobId, code === 'STALE_REVISION' ? 'stale' : 'failed', code]);
-    // A replaced reading leaves the newer one's coverage alone.
-    await stopIntakeEvidenceTx(client, input).catch(error => {
-      if (!(error instanceof AppError && error.status === 409)) throw error;
-    });
+    await endIntakeEvidenceJobTx(client, input, code === 'STALE_REVISION' ? 'stale' : 'failed', code, attempt);
+  });
+}
+
+/**
+ * N05B (D2): a reading whose source is now read as a part of a shapefile ends stale in the words the part rests
+ * with. Under the case lock, so a set formed by a publish in the same instant is seen.
+ */
+async function readAsSetPart(input: IntakeEvidenceInput, attempt: UspJobAttempt) {
+  return transaction(async client => {
+    await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
+    const { setPartWordsTx } = await import('./intake-native-derivative');
+    const words = await setPartWordsTx(client, input.caseId, input.sourceId);
+    if (words) await endIntakeEvidenceJobTx(client, input, 'stale', words, attempt);
+    return Boolean(words);
   });
 }
 
@@ -279,6 +304,7 @@ export async function runIntakeEvidenceJob(jobId: string) {
     return;
   }
   try {
+    if (await readAsSetPart(input, attempt)) return;
     const { reading, candidates } = await read(input, attempt, job.family);
     await complete(input, attempt, reading, candidates);
   } catch (error) {

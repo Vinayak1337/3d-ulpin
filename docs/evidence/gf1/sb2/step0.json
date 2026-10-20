@@ -1,0 +1,18 @@
+{
+  "task": "SB2",
+  "gap": "SB1 result GAPS: a part accepted before the batch gained its area is refused by the display read (409) but is not read again automatically",
+  "base": "3f9e9d33",
+  "files": {
+    "packages/server/src/modules/usp/ingestion/intake-surface.ts": "admitIntakeSurfaceParts also returns items with a published part whose job pins another case context, access or reader than today's (one statement; the exact check is in the item's transaction); admitSurfaceItemTx takes the lowest part that is planned or published under another pin, in the same statement, lock and order as the first admission, and enrols it under the current pin with the same stable-id rule; the first re-read under a pin marks the parts read elsewhere and counts them in plan_ref.reread; acceptance keeps the earlier job ids on the part's result; the tray words say 'Read again under the batch's area: n of m parts.'; a display read of a part being read again keeps the older-context 409 words",
+    "packages/server/src/modules/usp/ingestion/intake-surface.test.ts": "fake-pool tests: three parts read, area binds, three re-reads one per tick under the new context; old job rows kept; replayed tick queues nothing; a file waiting for its area is not read again; a failed re-read rests quarantined with words",
+    "docs/evidence/gf1/sb2/": "step0.json, result.json"
+  },
+  "reuse": [
+    "pointSourceTx / rasterSourceTx context and access (the readers' stale check compares the same job payload pins: caseContextSha256, accessSha256, readerSha256)",
+    "enqueuePointBatchTx / enqueueRasterWindowTx with the stable job id (caps, history limit, busy)",
+    "acceptIntakeSurfacePartTx, failIntakeSurfacePartTx, quarantineTx, settleSurfaceItemTx, waitsForAreaTx"
+  ],
+  "seamsOutsideOwnedPaths": [],
+  "notTouched": ["packages/server/src/modules/cases/processing.ts (G22)", "processing.test.ts: the tick still sends one surface statement, so its count of two holds"],
+  "runtime": "none: no Docker, GPU or provider call"
+}

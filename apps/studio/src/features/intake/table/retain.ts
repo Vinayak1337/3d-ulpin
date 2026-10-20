@@ -2,8 +2,17 @@ import { api, unwrap } from '@ulpin/api-client';
 import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
 import type { RetainBody, Selection, TableJob, TableProfile } from './types';
 
+/** The import dialog knows a dropped file only by its name; a batch item states its format on its card. */
+export function tableFormat(file: File): 'csv' | 'xlsx' {
+  return /\.csv$/i.test(file.name) ? 'csv' : 'xlsx';
+}
+
 export function tableSelection(file: File, sheet: string, rows: string): Selection {
-  if (/\.csv$/i.test(file.name)) return { format: 'csv', sheet: 'csv', table: null, headerRows: [1] };
+  return formatSelection(tableFormat(file), sheet, rows);
+}
+
+export function formatSelection(format: 'csv' | 'xlsx', sheet: string, rows: string): Selection {
+  if (format === 'csv') return { format: 'csv', sheet: 'csv', table: null, headerRows: [1] };
   const parts = rows.split(',').map((part) => part.trim());
   const headerRows = parts.map(Number);
   if (!sheet.trim() || parts.some((part) => !/^\d+$/.test(part)) || headerRows.length > 5 ||
@@ -32,16 +41,16 @@ export async function retainTable(caseId: string, body: FormData): Promise<Table
   return result as TableProfile;
 }
 
-/** G13: a CSV above 16 MiB is kept through the uploads route, then read on the server as a stream into a table by a
- * job (TP1). */
+/** G13, XW1: a CSV or XLSX above 16 MiB is kept through the uploads route, then read on the server as a stream
+ * into a table by a job (TP1); a workbook's one sheet is read with the sheet and header rows the officer typed. */
 export function streamedImport(file: File) {
-  return /\.csv$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
+  return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }
 
-/** A kept original up to 16 MiB answers its table profile; a larger CSV answers its read job. Sending the same body
- * again answers the same job as it stands. */
+/** A kept original up to 16 MiB answers its table profile; a larger CSV or workbook answers its read job. Sending
+ * the same body again answers the same job as it stands. */
 export async function tableFromOriginal(caseId: string, sourceId: string, body: TableFromOriginalBody)
   : Promise<TableProfile | TableJob> {
   const result = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table', {

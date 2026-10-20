@@ -1,0 +1,104 @@
+import { describe, expect, it, vi } from 'vitest';
+import type { SurfacePartInput } from '@ulpin/scene';
+import type { DecodeReply } from './decode';
+import { SHADED, SURFACE_LIMITS, SurfaceParts, type IntakeItem, type PartDisplay, type PartPage, type SurfaceIo,
+  type SurfaceLine } from './parts';
+
+const OUTSIDE = 'Read, outside this area: its corners do not meet the batch area\'s extent.';
+const corners = [[0, 10], [10, 10], [10, 0], [0, 0]];
+
+function item(partsDone: number, state = 'reading'): IntakeItem {
+  return { itemId: 'i-1', caseId: 'c-1', sourceId: 's-1', name: 'nyc-10013-dem-2017.tif', family: 'raster', state,
+    partsDone, limitReason: null } as unknown as IntakeItem;
+}
+
+/** Answers the reads as the server would for `published` parts; records what was asked and how many at once. */
+function fakeIo(published: () => number, display: (partIndex: number) => Partial<PartDisplay> | Error,
+  decoded: (partIndex: number) => DecodeReply = () => ({ kind: 'raster', picture: {
+    width: 1, height: 1, rgba: new Uint8ClampedArray(4), shading: 'own_range', range: [1, 2], note: null } })) {
+  const asked: number[] = [];
+  let inFlight = 0, most = 0;
+  const io: SurfaceIo = {
+    page: async (_item, after) => {
+      const parts = Array.from({ length: published() }, (_, partIndex) => ({ partIndex, state: 'published' }))
+        .filter((part) => part.partIndex > after).slice(0, 64);
+      const last = parts[parts.length - 1]?.partIndex;
+      return { parts, next: last !== undefined && last < published() - 1 ? last : null } as unknown as PartPage;
+    },
+    display: async (_item, partIndex) => {
+      asked.push(partIndex);
+      most = Math.max(most, ++inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      inFlight--;
+      const answer = display(partIndex);
+      if (answer instanceof Error) throw answer;
+      return { partIndex, artifact: { mediaType: 'image/tiff' }, ...answer } as PartDisplay;
+    },
+    artifact: async (part) => new ArrayBuffer(part.partIndex + 1), // the length names the part to the decoder
+    decode: async (request) => decoded(request.bytes.byteLength - 1),
+    canvas: () => ({}) as HTMLCanvasElement,
+  };
+  return { io, asked, most: () => most };
+}
+
+const placed = { placement: { state: 'placed', corners } } as unknown as Partial<PartDisplay>;
+const outside = { placement: { state: 'not_placed', reason: 'outside_area', words: OUTSIDE } } as Partial<PartDisplay>;
+
+function layer(io: SurfaceIo) {
+  const view: { parts: SurfacePartInput[]; lines: SurfaceLine[] } = { parts: [], lines: [] };
+  const parts = new SurfaceParts(io, (drawn, lines) => { view.parts = drawn; view.lines = lines; });
+  return { parts, view };
+}
+
+describe('the read parts of a batch\'s kept surfaces', () => {
+  it('counts a part not placed in the placement\'s own words and never draws it', async () => {
+    const { io } = fakeIo(() => 3, (n) => (n === 1 ? outside : placed));
+    const { parts, view } = layer(io);
+    parts.sync([item(3, 'read')]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(2));
+    await vi.waitFor(() => expect(view.lines[0]!.line).toContain('1 not placed'));
+    expect(view.parts.map((part) => part.id)).toEqual(['i-1:0', 'i-1:2']);
+    expect(view.parts[0]!.corners).toEqual([[0, 0], [10, 0], [10, 10], [0, 10]]); // SW, SE, NE, NW
+    expect(view.lines[0]!.line).toBe('Display only. 2 parts drawn and 1 not placed, of 3 read parts. '
+      + `Not placed: 1 part: ${OUTSIDE} ${SHADED}`);
+  });
+
+  it('draws at most 256 parts of one file, says which, and keeps at most 4 display reads in flight', async () => {
+    const fake = fakeIo(() => 300, () => placed);
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(300, 'read')]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(SURFACE_LIMITS.drawnPerItem), { timeout: 5000 });
+    expect(fake.asked).toHaveLength(256);
+    expect(fake.most()).toBe(SURFACE_LIMITS.displayReads);
+    expect(view.lines[0]!.line).toContain('Only the first 256 read parts are shown (parts 0 to 255), the most drawn '
+      + 'for one file; 44 later parts are not drawn.');
+  });
+
+  it('draws new parts as the stream reports them, without reading drawn parts again', async () => {
+    let published = 2;
+    const fake = fakeIo(() => published, () => placed);
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(2)]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(2));
+    published = 5;
+    parts.sync([item(5)]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(5));
+    expect(fake.asked).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('names a failed read on its line, leaves the rest drawn and draws refused content as an outline', async () => {
+    const fake = fakeIo(() => 3, (n) => (n === 0 ? new Error('This part was read under an older batch context.')
+      : placed), (n) => (n === 2 ? { refusal: 'This part is tiled; the map reads only the reader\'s own strips.' }
+      : { kind: 'points', positions: new Float32Array(3), colors: new Float32Array(3), sizeM: 1 }));
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(3, 'read')]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(2));
+    await vi.waitFor(() => expect(view.lines[0]!.line).toContain('Outline only'));
+    const line = view.lines[0]!.line;
+    expect(line).toContain('Not read for the map: 1 part: This part was read under an older batch context.');
+    expect(line).toContain('Outline only: 1 part: This part is tiled; the map reads only the reader\'s own strips.');
+    expect(view.parts.find((part) => part.id === 'i-1:2')).toMatchObject({ corners: expect.any(Array) });
+    expect(view.parts.find((part) => part.id === 'i-1:2')!.points).toBeUndefined();
+    expect(view.parts.find((part) => part.id === 'i-1:1')!.points).toBeDefined();
+  });
+});

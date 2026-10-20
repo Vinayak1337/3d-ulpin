@@ -17,6 +17,7 @@ import { intakeCaseTx, intakeSourceTx } from './intake-context';
 import { INTAKE_CONFIRMATION_VALIDITY_MS } from './intake-confirmations';
 import { queueIntakeRunTx, stableUuid } from './intake-run';
 import type { TabularTable } from './tabular-source';
+import { unavailableColumns } from './tabular-stream';
 
 /**
  * AU4-B2: exact-key evidence of a batch. A table row or a document part is proposed as evidence for a building of
@@ -101,7 +102,8 @@ export function tableAssertions(table: TabularTable, columnIndex: number, kind: 
 }
 
 /** The key cell of each record of one stored window, read as tableAssertions reads a whole table: a null cell is
- * absent and any other cell is literal as written, so the same row gives the same cells and row hash. */
+ * absent, a marked workbook cell unknown and never a key (XW1), and any other cell is literal as written, so the
+ * same row gives the same cells and row hash. */
 export function windowAssertions(rows: TableWindowRow[], columnIndex: number, kind: KeyKind,
   locate: (row: TableWindowRow, cells: unknown[], literal: string) => IntakeTableRowLocator) {
   const assertions: EvidenceAssertion[] = [];
@@ -109,8 +111,10 @@ export function windowAssertions(rows: TableWindowRow[], columnIndex: number, ki
     if (columnIndex >= row.cells.length) {
       throw new AppError(422, 'INTAKE_EVIDENCE_COLUMN', 'The key column is outside this table\'s header row.');
     }
-    const cells = row.cells.map(value => value === null ? { state: 'absent' } : { state: 'literal', value });
-    const literal = keyLiteral(row.cells[columnIndex], kind);
+    const unavailable = unavailableColumns(row);
+    const cells = row.cells.map((value, column) => unavailable.has(column) ? { state: 'unknown' }
+      : value === null ? { state: 'absent' } : { state: 'literal', value });
+    const literal = unavailable.has(columnIndex) ? null : keyLiteral(row.cells[columnIndex], kind);
     if (literal !== null) assertions.push({ literal, evidence: locate(row, cells, literal) });
   }
   return assertions;

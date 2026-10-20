@@ -1,0 +1,29 @@
+{
+  "task": "N05B a shapefile part's words follow its set, and a .dbf's queued evidence read is withdrawn when its set forms",
+  "base": "8ed253c2",
+  "changes": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts",
+      "why": "D1: when queueShapefileSetTx finds the set whole, an intake-evidence job of any other part still queued is ended stale with error words 'Read with <stem>.shp as one shapefile.' (the words the part rests with), in the same transaction; one running or finished is left. D2 seam: setPartWordsTx gives those words for a source that is a non-.shp part of a whole live set, else null"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-evidence-worker.ts",
+      "why": "the body of the existing stopped() becomes endIntakeEvidenceJobTx (status, error, optional attempt), so D1 ends a queued job the same way other code does; D2: after claiming, a job whose source is now a set part ends stale with the set's words under the case lock, its attempt fenced"
+    },
+    {
+      "path": "apps/studio/src/features/intake/file-route.ts",
+      "why": "D3: .shp/.shx/.dbf/.prj/.cpg drop words 'Shapefile part · read with its other parts as one shapefile'"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-shapefile-set.test.ts, apps/studio/src/features/intake/file-route.test.ts",
+      "why": "real Tweed .dbf queued for late evidence then .shp and .shx: job stale with words, set job queued; test_only: a running one is left; a lone .dbf still queues evidence; setPartWordsTx; Studio words"
+    }
+  ],
+  "reuse": [
+    "the job table's existing 'stale' status and the evidence worker's own stop path (metadata failed, jobs status/error/completed_at, stopIntakeEvidenceTx leaves the source unread under the profile)",
+    "queueLateIntakeEvidenceTx (AU4-B2) to queue the .dbf's reading in the test, as publish does",
+    "N05's stemPartsTx/setGaps for set membership"
+  ],
+  "seamsOutsideOwnedPaths": [],
+  "runtimeDockerGpuProvider": false
+}

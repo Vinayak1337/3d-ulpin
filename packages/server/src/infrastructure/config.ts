@@ -49,4 +49,12 @@ export const settings = {
   get fixtureRoot() {
     return process.env.ULPIN_FIXTURE_ROOT || path.join(repositoryRoot, "fixtures");
   },
+  /** The dispatcher's memory budget in MiB; unset, the dispatcher uses half of this machine's memory. */
+  get dispatchMemoryMib(): number | undefined {
+    const value = process.env.DISPATCH_MEMORY_MIB;
+    if (!value) return undefined;
+    if (!/^[1-9][0-9]{0,6}$/.test(value))
+      throw new Error("DISPATCH_MEMORY_MIB must be a whole number of MiB above 0.");
+    return Number(value);
+  },
 };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { retainForm, tableSelection } from './retain';
+import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
+import { retainForm, streamedImport, tableSelection } from './retain';
 
 // Form serialization only; these empty File handles carry no fabricated source records.
 const csv = new File([], 'mi-d10-02.csv', { type: 'text/csv' });
@@ -32,5 +33,13 @@ describe('retained table form', () => {
       expect(() => tableSelection(xlsx, 'T_18', rows)).toThrow('increasing');
     }
     expect(() => tableSelection(xlsx, '', '4,5')).toThrow('exact sheet');
+  });
+
+  it('streams a CSV or XLSX from 16 MiB and 1 byte, and nothing else', () => {
+    const sized = (name: string, size: number) => Object.defineProperty(new File([], name), 'size', { value: size });
+    expect(streamedImport(sized('register.xlsx', LARGE_UPLOAD_MINIMUM))).toBe(true);
+    expect(streamedImport(sized('register.CSV', LARGE_UPLOAD_MINIMUM))).toBe(true);
+    expect(streamedImport(sized('register.xlsx', LARGE_UPLOAD_MINIMUM - 1))).toBe(false);
+    expect(streamedImport(sized('register.ods', LARGE_UPLOAD_MINIMUM))).toBe(false);
   });
 });

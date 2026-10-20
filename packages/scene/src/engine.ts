@@ -2,7 +2,7 @@ import {
   BackSide, MOUSE, Spherical, TOUCH, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
   Group, HemisphereLight, LineBasicMaterial, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
-  SphereGeometry, Vector2, Vector3, WebGLRenderer, type Material, type Object3D,
+  SphereGeometry, Vector2, Vector3, WebGLRenderer, LineLoop, type Material, type Object3D,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
@@ -14,6 +14,7 @@ import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, loo
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
   OverlayInput, ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
+  SurfacePartInput,
 } from './types';
 
 export interface SceneEngineOptions {
@@ -207,6 +208,8 @@ export class SceneEngine {
   private readonly raised: Mesh[] = [];
   private readonly anchorSizes = new Map<string, number>();
   private readonly overlays = new Group();
+  private readonly surface = new Group();
+  private readonly surfaceParts = new Map<string, { input: SurfacePartInput; object: Group }>();
   private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
   constructor(container: HTMLElement, options: SceneEngineOptions) {
@@ -281,6 +284,7 @@ export class SceneEngine {
     this.base.add(this.kerbs);
     this.dressing.add(this.trees);
     this.scene.add(this.ground, this.overlays, this.dressing, this.plate, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
+    this.scene.add(this.surface);
 
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', this.onPointerDown);
@@ -425,6 +429,27 @@ export class SceneEngine {
         points.userData.overlay = o.id;
         this.overlays.add(points);
       }
+    }
+    this.requestRender();
+  }
+
+  /**
+   * Read parts of kept surfaces, display only. Parts are kept by id: a new part is added and a gone or changed one
+   * removed, so a part that arrives never rebuilds the parts already drawn.
+   */
+  setSurfaceParts(parts: SurfacePartInput[]): void {
+    const next = new Map(parts.map((part) => [part.id, part]));
+    for (const [id, drawn] of this.surfaceParts) {
+      if (next.get(id) === drawn.input) continue;
+      this.surface.remove(drawn.object);
+      disposeSurfacePart(drawn.object);
+      this.surfaceParts.delete(id);
+    }
+    for (const part of next.values()) {
+      if (this.surfaceParts.has(part.id)) continue;
+      const object = surfacePartObject(part, this.options.palette.comparisonPlan ?? this.options.palette.selected);
+      this.surface.add(object);
+      this.surfaceParts.set(part.id, { input: part, object });
     }
     this.requestRender();
   }
@@ -1008,6 +1033,7 @@ export class SceneEngine {
     canvas.removeEventListener('wheel', this.onWheel, { capture: true });
     for (const tiles of this.tilesets) tiles.dispose();
     this.setOverlays([]);
+    this.setSurfaceParts([]);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
     for (const material of [...Object.values(this.m), ...this.spaceMaterials.values()] as Material[]) {
       (material as MeshBasicMaterial).map?.dispose();
@@ -2213,6 +2239,54 @@ function parapetRings(polygons: MultiPolygon, thickness: number): [number, numbe
 
 function disposeObject(object: Object3D) {
   object.traverse((o) => (o as Mesh).geometry?.dispose?.());
+}
+
+/** Surface outlines and points sit just above the ground pictures, under every record. */
+const SURFACE_LIFT_M = 0.05;
+
+/** One read surface part: its outline, and its picture as a ground picture or its points laid flat. */
+function surfacePartObject(part: SurfacePartInput, outlineColour: string): Group {
+  const group = new Group();
+  const at = (lift: number) => new Float32BufferAttribute(part.corners.flatMap(([x, y]) => [x, lift, -y]), 3);
+  const ring = new BufferGeometry();
+  ring.setAttribute('position', at(SURFACE_LIFT_M));
+  group.add(new LineLoop(ring, new LineBasicMaterial({ color: outlineColour })));
+  if (part.image) {
+    const g = new BufferGeometry();
+    g.setAttribute('position', at(0));
+    g.setAttribute('uv', new Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
+    g.setIndex([0, 1, 2, 0, 2, 3]);
+    const texture = new CanvasTexture(part.image);
+    texture.colorSpace = SRGBColorSpace;
+    // As a ground picture: no-data pixels cut out, no depth test or write, drawn before every record.
+    const material = new MeshBasicMaterial({ map: texture, alphaTest: 0.01, depthTest: false, depthWrite: false });
+    const mesh = new Mesh(g, material);
+    mesh.renderOrder = GROUND_PICTURE_ORDER;
+    group.add(mesh);
+  }
+  if (part.points) {
+    const { positions: flat, colors, sizeM } = part.points;
+    const positions = new Float32Array(flat.length);
+    for (let i = 0; i < flat.length; i += 3) {
+      positions[i] = flat[i]!; positions[i + 1] = SURFACE_LIFT_M; positions[i + 2] = -flat[i + 1]!;
+    }
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(positions, 3));
+    g.setAttribute('color', new BufferAttribute(colors, 3));
+    group.add(new Points(g, new PointsMaterial({ size: sizeM, vertexColors: true, sizeAttenuation: true })));
+  }
+  for (const child of group.children) child.raycast = () => {};
+  group.userData.surface = part.id;
+  return group;
+}
+
+function disposeSurfacePart(group: Group) {
+  for (const child of group.children as (Mesh | LineLoop | Points)[]) {
+    child.geometry.dispose();
+    const material = child.material as Material & { map?: { dispose(): void } | null };
+    material.map?.dispose();
+    material.dispose();
+  }
 }
 
 function disposeGroup(group: Group) {

@@ -2,22 +2,13 @@ import { useState } from 'react';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
 import { uploadWords, type UploadProgress } from '../upload-model';
-import { streamedImport } from './retain';
+import { streamedImport, tableFormat } from './retain';
 import { TableRefusal } from './Progress';
+import { jobWords } from './useFollowTable';
 import { useRetainTable } from './useRetainTable';
 import { TableSelectionFields, SourceCaseFields } from './TableImportFields';
 import type { TableJob } from './types';
 import styles from './Table.module.css';
-
-/** TP1: words for the server job reading a large CSV while the dialog follows it. */
-function jobWords(job: TableJob) {
-  if (job.status === 'queued') return 'The CSV is kept unchanged. Its reading as a table is queued on the server.';
-  if (job.status === 'running') {
-    return 'The server is reading the CSV as a stream. A large table takes minutes; the reading continues on the ' +
-      'server if this dialog closes.';
-  }
-  return job.status === 'succeeded' ? 'The table is read. Opening its table page.' : null;
-}
 
 export function TableImportDialog({ file, onClose, onBack }: {
   file: File; onClose: () => void; onBack: () => void;
@@ -39,7 +30,8 @@ export function TableImportDialog({ file, onClose, onBack }: {
         clearCreated();
         setMode(value);
       }} locked={created} />
-    <TableSelectionFields file={file} sheet={sheet} setSheet={setSheet} rows={rows} setRows={setRows} />
+    <TableSelectionFields format={tableFormat(file)} sheet={sheet} setSheet={setSheet} rows={rows}
+      setRows={setRows} />
   </ImportDialogBody>;
 }
 
@@ -49,7 +41,7 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
   submit: () => void; error: Error | null; upload: UploadProgress | null; retryUpload: () => void;
   job: TableJob | null; children: React.ReactNode;
 }) {
-  const reading = job ? jobWords(job) : null;
+  const workbook = /\.xlsx$/i.test(file.name), reading = job ? jobWords(job, workbook ? 'workbook' : 'CSV') : null;
   return (
     <Dialog title="Import as a table" onClose={onClose} footer={(
       <><Button variant="ghost" onClick={onBack} disabled={pending}>Back to files</Button>
@@ -63,10 +55,7 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
           Only exact public D8 development originals are admitted. Other files will be refused by the server.
           Tables create mapped draft rows, not buildings; nothing enters the registry or appears on the map.
         </Banner>
-        {streamedImport(file) ? <p className="ul-help">
-          This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to
-          1,000,000 records.
-        </p> : null}
+        {streamedImport(file) ? <StreamedHelp workbook={workbook} /> : null}
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>
         {upload ? <p role="status">{uploadWords(upload)}</p> : null}
         {upload?.phase === 'stopped' ? <div><Button onClick={retryUpload}>Retry upload</Button></div> : null}
@@ -75,4 +64,15 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
       </div>
     </Dialog>
   );
+}
+
+function StreamedHelp({ workbook }: { workbook: boolean }) {
+  return workbook ? <p className="ul-help">
+    This workbook is above 16 MiB. It is uploaded in parts, kept unchanged, and the sheet you name is read as a
+    stream of up to 1,000,000 records. Formulas are not calculated; a formula's stored result is kept and read as
+    unknown.
+  </p> : <p className="ul-help">
+    This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to
+    1,000,000 records.
+  </p>;
 }

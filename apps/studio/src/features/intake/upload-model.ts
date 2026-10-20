@@ -39,7 +39,7 @@ export function uploadWords(progress: UploadProgress): string {
   if (progress.phase === 'checking') return `Checking the file: ${percent}%`;
   if (progress.phase === 'uploading') return `Uploading: ${percent}% (${MiB(progress.doneBytes)} of `
     + `${MiB(progress.totalBytes)} MiB)`;
-  if (progress.phase === 'verifying') return 'Verifying the upload';
+  if (progress.phase === 'verifying') return progress.words || 'Verifying the upload';
   if (progress.phase === 'cancelled') return 'Upload cancelled';
   return `The upload stopped at part ${progress.part} of ${progress.parts}: `
     + `${progress.words || 'the server did not answer'}.`;

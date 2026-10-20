@@ -90,7 +90,8 @@ export async function runIntakeNativeDerivativeJob(jobId: string,
   }
   const renewal = setInterval(() => { heartbeatUspJobAttempt(attempt).catch(() => {}); }, RENEW_MS);
   try {
-    const kept = await convertNativeLayers(input.caseId, input.itemId, { ...defaults, ...dependencies });
+    const kept = await convertNativeLayers(input.caseId, input.itemId, { ...defaults, ...dependencies },
+      input.members);
     await acceptUspJobAttempt(attempt,
       { assetId: `intake-native-derivative:${input.itemId}`, version: 1, sha256: fingerprint(kept) },
       async (_client, stored) => {

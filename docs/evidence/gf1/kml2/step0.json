@@ -1,0 +1,12 @@
+{
+  "task": "KML2 a KML start tag larger than its bound is refused before it is held whole",
+  "base": "8ed253c2",
+  "changes": [
+    {"path": "services/geo/geo/native_gis.py", "why": "_kml_parse records the byte index of each start, end and character-data event; after each fed chunk of at most 64 KiB (_file_blocks and _kmz_blocks read 64 KiB), bytes fed past that index over TAG_BOUND (1 MiB) stop the read with _KmlStop carrying code tag_too_large and the lead's words; convert_kml_file's existing _KmlStop path abandons written layers and returns the whole file not_converted with those words"},
+    {"path": "services/geo/tests/test_native_kml.py", "why": "a 3 MiB attribute value (test_only, generated in the test) is refused as tag_too_large with peak tracemalloc under 16 MiB, through the file and the KMZ paths; a 900 KiB attribute is still read"}
+  ],
+  "reuse": ["_KmlStop and convert_kml_file's whole-file not_converted refusal", "the Expat handlers of _KmlReader unchanged", "KML1's real fixtures and tests in test_native_conversion.py (run unchanged for same layers and counts)"],
+  "seamsOutsideOwned": [],
+  "notes": "The TS StoppedLayerSchema is strict (layer, ordinal, state, reason): the officer sees the words; the code tag_too_large is carried on the stop and recorded in evidence. Adding a code field to the stopped layer would be a TS contract change outside owned paths.",
+  "runtimeNeeded": false
+}

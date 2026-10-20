@@ -40066,7 +40066,7 @@
             }
           }
         },
-        "summary": "Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV is read as a stream by a queued job (202), and a replay answers that job as it stands; its bytes stay unchanged",
+        "summary": "Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV, or one sheet of a larger workbook, is read as a stream by a queued job (202), and a replay answers that job as it stands; its bytes stay unchanged",
         "tags": [
           "manual ingestion"
         ],
@@ -116825,7 +116825,7 @@
                               "additionalProperties": false
                             },
                             "window": {
-                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.",
                               "type": "object",
                               "properties": {
                                 "index": {
@@ -116849,6 +116849,20 @@
                                   "maximum": 9007199254740991
                                 },
                                 "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sheet": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 150
+                                },
+                                "physicalRow": {
+                                  "type": "integer",
+                                  "minimum": 2,
+                                  "maximum": 9007199254740991
+                                },
+                                "sheetSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 }
@@ -132523,7 +132537,7 @@
                               "additionalProperties": false
                             },
                             "window": {
-                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.",
                               "type": "object",
                               "properties": {
                                 "index": {
@@ -132547,6 +132561,20 @@
                                   "maximum": 9007199254740991
                                 },
                                 "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sheet": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 150
+                                },
+                                "physicalRow": {
+                                  "type": "integer",
+                                  "minimum": 2,
+                                  "maximum": 9007199254740991
+                                },
+                                "sheetSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 }
@@ -148507,7 +148535,7 @@
                               "additionalProperties": false
                             },
                             "window": {
-                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.",
                               "type": "object",
                               "properties": {
                                 "index": {
@@ -148531,6 +148559,20 @@
                                   "maximum": 9007199254740991
                                 },
                                 "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sheet": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 150
+                                },
+                                "physicalRow": {
+                                  "type": "integer",
+                                  "minimum": 2,
+                                  "maximum": 9007199254740991
+                                },
+                                "sheetSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 }
@@ -237113,7 +237155,7 @@
                               "additionalProperties": false
                             },
                             "window": {
-                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                              "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.",
                               "type": "object",
                               "properties": {
                                 "index": {
@@ -237137,6 +237179,20 @@
                                   "maximum": 9007199254740991
                                 },
                                 "sha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sheet": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 150
+                                },
+                                "physicalRow": {
+                                  "type": "integer",
+                                  "minimum": 2,
+                                  "maximum": 9007199254740991
+                                },
+                                "sheetSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 }
@@ -373124,6 +373180,45 @@
                   "type": "string",
                   "pattern": "^[a-f0-9]{64}$"
                 },
+                "sheet": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 150
+                },
+                "sheetSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "marks": {
+                  "minItems": 1,
+                  "maxItems": 256,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "column": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      },
+                      "mark": {
+                        "type": "string",
+                        "enum": [
+                          "formula_cached",
+                          "formula_uncached",
+                          "no_value",
+                          "error",
+                          "unsupported"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "column",
+                      "mark"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "cells": {
                   "minItems": 1,
                   "maxItems": 256,
@@ -377365,7 +377460,7 @@
                           "additionalProperties": false
                         },
                         "window": {
-                          "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                          "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.",
                           "type": "object",
                           "properties": {
                             "index": {
@@ -377389,6 +377484,20 @@
                               "maximum": 9007199254740991
                             },
                             "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sheet": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 150
+                            },
+                            "physicalRow": {
+                              "type": "integer",
+                              "minimum": 2,
+                              "maximum": 9007199254740991
+                            },
+                            "sheetSha256": {
                               "type": "string",
                               "pattern": "^[a-f0-9]{64}$"
                             }
@@ -379783,7 +379892,7 @@
                                       "additionalProperties": false
                                     },
                                     "window": {
-                                      "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                                      "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.",
                                       "type": "object",
                                       "properties": {
                                         "index": {
@@ -379807,6 +379916,20 @@
                                           "maximum": 9007199254740991
                                         },
                                         "sha256": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{64}$"
+                                        },
+                                        "sheet": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 150
+                                        },
+                                        "physicalRow": {
+                                          "type": "integer",
+                                          "minimum": 2,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "sheetSha256": {
                                           "type": "string",
                                           "pattern": "^[a-f0-9]{64}$"
                                         }
@@ -380455,7 +380578,7 @@
                                           "additionalProperties": false
                                         },
                                         "window": {
-                                          "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it.",
+                                          "description": "A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.",
                                           "type": "object",
                                           "properties": {
                                             "index": {
@@ -380479,6 +380602,20 @@
                                               "maximum": 9007199254740991
                                             },
                                             "sha256": {
+                                              "type": "string",
+                                              "pattern": "^[a-f0-9]{64}$"
+                                            },
+                                            "sheet": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 150
+                                            },
+                                            "physicalRow": {
+                                              "type": "integer",
+                                              "minimum": 2,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "sheetSha256": {
                                               "type": "string",
                                               "pattern": "^[a-f0-9]{64}$"
                                             }
@@ -381566,6 +381703,12 @@
             "nullable": true,
             "type": "string"
           },
+          "leaseExpiresAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
           "finalization": {
             "type": "object",
             "properties": {
@@ -381588,6 +381731,21 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "jobStatus": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "running",
+                  "succeeded",
+                  "failed",
+                  "stale",
+                  "cancelled"
+                ]
+              },
+              "jobError": {
+                "nullable": true,
+                "type": "string"
               }
             },
             "required": [
@@ -381621,7 +381779,8 @@
           "conversion",
           "bundleCompleteness",
           "cleanupPending",
-          "lastError"
+          "lastError",
+          "leaseExpiresAt"
         ],
         "additionalProperties": false
       },

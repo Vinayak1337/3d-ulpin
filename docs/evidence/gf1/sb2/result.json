@@ -1,0 +1,48 @@
+{
+  "task": "SB2",
+  "gap": "SB1 result GAPS: a part accepted before the batch gained its area is refused by the display read (409) but is not read again automatically",
+  "branch": "task/sb2-surface-reread",
+  "base": "3f9e9d33",
+  "status": "built_not_runtime_proven",
+  "what": [
+    "D1. Each dispatcher tick, admitIntakeSurfaceParts reads in one statement every kept surface with no part queued: whether it has a planned part, the case's frame, context, site and archived flag, and the distinct pins (caseContextSha256, accessSha256, readerSha256) of its published parts' jobs. An item is due when it has a planned part or a published part whose pins differ from the case's current pins (the context the readers fingerprint, the local access and the reader hash). At most one page of items, oldest first.",
+    "In the item's transaction, after the reader's source authority and the same admission lock as the first admission, one statement takes the lowest part that is planned, or published from a job whose pins differ from the current ones (only while the source is the latest revision). That part is enrolled with the same stable-id rule under the current pin, inside the reader's caps; a busy reader leaves it as it is.",
+    "D2. Nothing is deleted: the old job, its result and its artifact stay. The part row shows queued with the new job id until the reader accepts it; the accepted result then names the earlier job ids in result_ref.earlier. The parts list shows no result hash while a part is not published. A display read of a part being read again (not published, with an earlier result) returns today's 409 words: 'This part was read under an older batch context, so it is not shown as current.'",
+    "D3. A file waiting for its area (waitsForAreaTx) is not read again until the area binds. A read again that fails rests quarantined with the reader's code in the item's words and is never offered again.",
+    "D4. The first part read again under a pin marks every part read elsewhere and stores the count in plan_ref.reread; while any marked part is not yet read again the item is 'reading' and its words begin 'Read again under the batch's area: <n> of <m> parts.'",
+    "If the context comes back to an earlier pin before a read again ends, the part's accepted read under that pin is current again (published with its own job) and the count is taken again under that pin, so no part waits on a job that has already ended."
+  ],
+  "realInputs": {
+    "good": "nyc-10013-lidar-2017.laz (sha256 8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790, 11110715 bytes): the reader's recorded first batch from docs/evidence/gf1/au3/result.json plans 211 parts; three are read with no area, the area binds, and parts 0, 1 and 2 are read again one per tick under the new context; the item is on_map at the end and the next tick reads planned part 3.",
+    "difficult": "the same file with a footprint still drafting and the batch frame changed: nothing is read again until the area binds; a read again that fails (POINT_PROCESSING_FAILED) rests quarantined and parts 1, 2 and 3 go on without it; the context returning before a read again ends restores the accepted read.",
+    "notUsed": "No raster re-read fixture: AU3 did not record the window transform of the DEM or ortho first read, and none is invented. The raster path shares every line except the reader's enqueue."
+  },
+  "tests": "packages/server/src/modules/usp/ingestion/intake-surface.test.ts, over a fake pool that answers the tick, the point reader's source check and enqueue (the real enqueuePointBatchTx, registerUspJobInputTx and outbox code run), the acceptance, the failure and the tray: three parts read again one per tick under the new context with old job rows kept; a replayed tick sends one statement and queues nothing; a file waiting for its area is not read again; the context coming back; a failed read again rests quarantined with words and is not retried. With the SB2 code stashed, the four tick tests written first fail.",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0,
+      "counts": "studio 507 passed (81 files); scene 58 passed, 1 skipped; ui 7 passed; api-client 2 passed" },
+    { "command": "template backend test command plus tests/raster-publication.test.ts and tests/point-publication.test.ts (intake-surface.test.ts is in $D)",
+      "exit": 0, "counts": "457 tests, 455 pass, 0 fail, 2 skipped (database-only dispatcher tests)" },
+    { "command": "tsx --test packages/server/src/modules/usp/ingestion/intake-surface.test.ts", "exit": 0,
+      "counts": "15 pass, 0 skipped (5 new)" },
+    { "command": "tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 3f9e9d33; pnpm studio:api-types",
+      "exit": 0, "note": "repinned intake-surface.ts only; openapi.json and schema.d.ts unchanged" },
+    { "command": "tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0,
+      "counts": "327 native operations, 369 named schemas",
+      "note": "first run failed 'runtime receipt changed' because the worktree's autocrlf checkout wrote three committed receipts with CRLF; rewritten from HEAD bytes (no content change), then it passed" },
+    { "command": "git diff --check", "exit": 0 }
+  ],
+  "notRun": [
+    "Runtime: no Docker or live PostgreSQL for this task. The finder and admission SQL (jsonb_agg of job pins, row IS DISTINCT FROM, the marking UPDATE) are proven by code and a fake pool, not by a run."
+  ],
+  "gaps": [
+    "Runtime proof: drop the NYC LAZ before the footprints in one live batch and watch the parts read again after the area binds.",
+    "The tick's finder reads every kept surface with no part queued (with the distinct pins of its published jobs) each tick, then keeps one page; fine for a batch's few surfaces, unbounded over a long history.",
+    "A part whose read again was accepted under a second context, when the context returns to the first one, waits: its first accepted read is named only by job id in result_ref.earlier, so it is not restored; the display keeps the 409 words.",
+    "A raster history holds 32 jobs per source: a 16-window DEM can be read again once; a second re-read of all parts rests the rest quarantined with RASTER_HISTORY_LIMIT."
+  ],
+  "notTouched": ["packages/server/src/modules/cases/processing.ts (G22)", "processing.test.ts still holds: the tick sends one surface statement"]
+}

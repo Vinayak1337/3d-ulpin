@@ -8,6 +8,7 @@ import {
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
   STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, streamingReadMs, type TableProfileJob,
+  type TabularSelection,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
@@ -26,7 +27,7 @@ import { assertAreaRowLive } from '../../areas/area-retire';
 import { appendCaseIngestionTx } from './events';
 import { inspectTabularSource, inspectTabularStream, assertTabularPin } from './tabular-source';
 import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
-import { readTabularWindows } from './tabular-stream';
+import { readTableWindows } from './tabular-stream';
 import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 
@@ -98,7 +99,7 @@ async function validate(client: PoolClient,
     // G13: a streamed table is never read whole here; the raw job checks its bytes and hash on every read.
     if (current.version!=='manual-tabular/1') conflict('The recipe and receipt formats differ.');
     assertTabularPin(plan.tabular,row);
-    validateStreamedTabularRecipe(plan,current,await firstWindow(row));
+    validateStreamedTabularRecipe(plan,current,await firstWindow(row,plan.tabular.selection));
     return {row,bytes:new Uint8Array(),mapping:undefined};
   }
   const bytes = await readObject(row.object_key);
@@ -117,14 +118,14 @@ const fileNamespace = (namespace: string, sha256: string) =>
   namespace === `file:${sha256}` || namespace.startsWith(`file:${sha256}:case:`);
 
 /** The first window of a streamed table, for the recipe's dry run; the rest of the original is not read. */
-async function firstWindow(row: any) {
+async function firstWindow(row: any, selection: TabularSelection) {
   const object = await openObjectStream(row.object_key, Number(row.bytes), STREAMING_VECTOR_LIMITS.readMs,
     row.inspection?.largeOriginal?.objectEtag);
   let first: { headers: string[]; rows: (string | undefined)[][] } | null = null;
   const enough = new Error('first window read');
   try {
-    await readTabularWindows(object.body, async (window, headers) => {
-      first = { headers, rows: window.rows.map(item => headers.map((_, column) => item.cells[column])) };
+    await readTableWindows(object.body, { selection, bytes: Number(row.bytes) }, async (window, headers) => {
+      first = { headers, rows: window.rows.map(item => headers.map((_, column) => item.cells[column] ?? undefined)) };
       throw enough;
     });
   } catch (error) { if (error !== enough) throw error; }
@@ -459,8 +460,8 @@ export class ManualIngestionService {
   }
   /** G13: an original retained through the large upload becomes a table source. Its row keeps its bytes, object and
    * identity; the table receipt is added beside the upload receipt. TP1: up to 16 MiB, a CSV or workbook is read
-   * whole here; a CSV above that is read as a stream by one queued job, and the request answers that job. A replay
-   * of the same request answers the same job as it stands. */
+   * whole here; above that a CSV, or one sheet of a workbook (XW1), is read as a stream by one queued job, and the
+   * request answers that job. A replay of the same request answers the same job as it stands. */
   async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown):Promise<AnySourceProfile|TableProfileJob>{
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=TableFromOriginalSchema.parse(value);
     const actor=localOperatorSubject(),digest=fingerprint({input,sourceId,actor});
@@ -473,9 +474,6 @@ export class ManualIngestionService {
       if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
       const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
       if(Number(row.bytes)<=TABULAR_LIMITS.bytes)return {row};
-      if(input.selection.format!=='csv')throw new AppError(413,'TABLE_ORIGINAL_WORKBOOK_SIZE',
-        `This workbook is more than ${TABULAR_LIMITS.bytes/1024**2} MiB; a workbook is read up to `+
-        `${TABULAR_LIMITS.bytes/1024**2} MiB for now.`);
       const jobId=await queueTableProfileTx(client,row,scope.revision,input,actor);
       await remember(client,caseId,key,digest,{jobId});
       return {job:await tableProfileJobTx(client,jobId)};

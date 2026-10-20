@@ -362,6 +362,10 @@ _ENVELOPE_BYTES = {0: 0, 1: 32, 2: 48, 3: 48, 4: 64}
 _SOURCE_KEY = re.compile(r"^(sources|large-originals)/([0-9a-f-]{36})/([0-9a-f]{64})$")
 _OFFICER_CODE = re.compile(r"EPSG:([1-9][0-9]{0,8})")
 _STATES_NONE = "states no coordinate reference system"
+_PIN_FIELDS = ("sourceId", "objectKey", "sha256", "bytes")
+# N05. A shapefile dropped as loose parts: each part is its own retained original, read together as one set.
+SET_FORMAT = "shapefile_set"
+SET_PARTS = ("shp", "shx", "dbf", "prj", "cpg")
 
 
 def _json(value) -> str:
@@ -598,38 +602,66 @@ def _shapefile_layer(archive, names: dict, layer: str, ordinal: int, folder: Pat
     stopped = {"layer": names[layer + ".shp"].filename[:-4], "ordinal": ordinal, "state": "not_converted"}
     if any(layer + suffix not in names for suffix in (".shx", ".dbf")):
         return {**stopped, "reason": "lacks its .shx or .dbf companion"}
-    officer = layer + ".prj" not in names
+
+    def read(suffix: str) -> bytes | None:
+        return archive.read(names[layer + suffix]) if layer + suffix in names else None
+
+    def place() -> Path:
+        scratch = folder / f"shapefile-{ordinal}"
+        scratch.mkdir()
+        for suffix in (".shp", ".shx", ".dbf"):
+            with archive.open(names[layer + suffix]) as source, (scratch / f"layer{suffix}").open("xb") as target:
+                while block := source.read(1024 * 1024):
+                    target.write(block)
+        return scratch / "layer"
+    origin = {"originalSha256": source_sha256, "format": "shapefile_zip", "layer": stopped["layer"],
+              "member": names[layer + ".dbf"].filename}
+    return _shapefile_parts(stopped, read, place, folder, origin, shapefile, answers)
+
+
+def _shapefile_set_layer(base: Path, layer: str, source_sha256: str, parts: dict, answers: dict) -> dict:
+    """N05. Loose parts already copied side by side under one base name are read as the ZIP's one set is."""
+    import shapefile
+
+    def read(suffix: str) -> bytes | None:
+        path = base.with_suffix(suffix)
+        return path.read_bytes() if path.exists() else None
+    origin = {"originalSha256": source_sha256, "format": SET_FORMAT, "layer": layer, "member": f"{layer}.dbf",
+              "parts": [{"extension": extension, "sha256": parts[extension]["sha256"]} for extension in sorted(parts)]}
+    return _shapefile_parts({"layer": layer, "ordinal": 0, "state": "not_converted"}, read, lambda: base,
+                            base.parent, origin, shapefile, answers)
+
+
+def _shapefile_parts(stopped: dict, read, place, folder: Path, origin: dict, shapefile, answers: dict) -> dict:
+    """One shapefile, from a ZIP's members or from loose parts: `read` gives a .prj or .cpg's bytes (None when
+    absent) and `place` the base path its .shp, .shx and .dbf sit under on scratch disk."""
+    prj = read(".prj")
+    officer = prj is None
     if officer:
         crs = _officer_crs(stopped, f"{_STATES_NONE} (no .prj)", answers)
         if isinstance(crs, dict):
             return crs
     else:
         try:
-            crs = f"EPSG:{_epsg(archive.read(names[layer + '.prj']).decode('utf-8-sig'))}"
+            crs = f"EPSG:{_epsg(prj.decode('utf-8-sig'))}"
         except (InputError, UnicodeError):
             return {**stopped, "state": "crs_unstated", "statesCrs": True,
                     "reason": "states a coordinate reference system that does not resolve to one EPSG code"}
-    encoding = archive.read(names[layer + ".cpg"]).decode("ascii").strip() if layer + ".cpg" in names else "utf-8"
+    cpg = read(".cpg")
+    encoding = cpg.decode("ascii").strip() if cpg is not None else "utf-8"
     encoding = {"65001": "utf-8", "1252": "cp1252"}.get(encoding, encoding)
-    scratch = folder / f"shapefile-{ordinal}"
-    scratch.mkdir()
-    for suffix in (".shp", ".shx", ".dbf"):
-        with archive.open(names[layer + suffix]) as source, (scratch / f"layer{suffix}").open("xb") as target:
-            while block := source.read(1024 * 1024):
-                target.write(block)
+    base = place()
     header = {"version": "native-gis-locators/1", "conversion": CONVERSION, "readerVersion": WINDOW_READER,
-              "originalSha256": source_sha256, "format": "shapefile_zip", "layer": stopped["layer"],
-              "member": names[layer + ".dbf"].filename, "positionKind": "sequence", "encoding": encoding,
-              **_crs_fields(crs, officer)}
+              **origin, "positionKind": "sequence", "encoding": encoding, **_crs_fields(crs, officer)}
     try:
-        reader = shapefile.Reader(str(scratch / "layer"), encoding=encoding)
+        reader = shapefile.Reader(str(base), encoding=encoding)
     except (shapefile.ShapefileException, LookupError, OSError):
         return {**stopped, "reason": "could not be opened with its companions and encoding"}
     with reader:
         if reader.shapeType not in (0, 1, 3, 5, 8) or reader.numShapes != reader.numRecords:
             return {**stopped, "reason": "stores Z, M or MultiPatch shapes, or its shapes and records differ in number"}
         fields = [item[0] for item in reader.fields[1:]]
-        derivative = _Derivative(folder, ordinal, header, crs)
+        derivative = _Derivative(folder, stopped["ordinal"], header, crs)
         try:
             for start in range(0, len(reader), WINDOW):
                 for position in range(start, min(start + WINDOW, len(reader))):
@@ -678,10 +710,22 @@ _KML_RATIO = 100
 # here as the characters captured for one open Placemark (or one container name) across all its captures.
 PLACEMARK_BOUND = 1024 * 1024
 TOO_LARGE = "placemark_too_large"
+# KML2. Expat holds a start tag (or any other open token) whole until it closes: bytes fed past the last event are
+# bounded, and the file is fed in chunks of at most _KML_CHUNK so the bound is checked often.
+TAG_BOUND = 1024 * 1024
+TAG_TOO_LARGE = "tag_too_large"
+_KML_CHUNK = 64 * 1024
+_NOT_KML = "is not a KML 2.2 document: its root is not kml in the KML namespace"
+_TAG_WORDS = ("A KML tag is larger than 1 MiB before it closes; the file was not read further. "
+              "The original is kept with its SHA-256.")
 
 
 class _KmlStop(Exception):
-    """The root is not a KML document; nothing further is read."""
+    """Nothing further is read: the root is not a KML document, or (KML2) a tag is past TAG_BOUND."""
+
+    def __init__(self, code: str = "not_kml", reason: str = _NOT_KML):
+        super().__init__(code)
+        self.code, self.reason = code, reason
 
 
 class _Placemark:
@@ -965,11 +1009,23 @@ def _kml_parse(blocks, reader: _KmlReader):
     parser.buffer_text = True
     parser.SetParamEntityParsing(expat.XML_PARAM_ENTITY_PARSING_NEVER)
     parser.StartDoctypeDeclHandler = parser.EntityDeclHandler = parser.ExternalEntityRefHandler = deny
-    parser.StartElementHandler, parser.EndElementHandler = reader.start, reader.end
-    parser.CharacterDataHandler = reader.characters
+    seen = fed = 0
+
+    def marked(handler):
+        def event(*arguments):
+            nonlocal seen
+            seen = parser.CurrentByteIndex
+            handler(*arguments)
+        return event
+
+    parser.StartElementHandler, parser.EndElementHandler = marked(reader.start), marked(reader.end)
+    parser.CharacterDataHandler = marked(reader.characters)
     try:
         for block in blocks:
             parser.Parse(block, False)
+            fed += len(block)
+            if fed - seen > TAG_BOUND:
+                raise _KmlStop(TAG_TOO_LARGE, _TAG_WORDS)
         parser.Parse(b"", True)
     except expat.ExpatError:
         raise InputError("The KML is not well-formed XML.") from None
@@ -977,7 +1033,7 @@ def _kml_parse(blocks, reader: _KmlReader):
 
 def _file_blocks(path: Path):
     with path.open("rb") as source:
-        while block := source.read(1024 * 1024):
+        while block := source.read(_KML_CHUNK):
             yield block
 
 
@@ -1002,7 +1058,7 @@ def _kmz_blocks(archive: zipfile.ZipFile, entry: zipfile.ZipInfo):
         raise InputError("The KMZ's KML member expands beyond the conversion's bound.")
     count = 0
     with archive.open(entry) as stream:
-        while block := stream.read(1024 * 1024):
+        while block := stream.read(_KML_CHUNK):
             count += len(block)
             if count > limit:
                 raise InputError("The KMZ's KML member expands beyond its stated size.")
@@ -1027,10 +1083,9 @@ def convert_kml_file(path: Path, fmt: str, folder: Path, source_sha256: str) -> 
         try:
             _kml_parse(_kmz_blocks(archive, entry) if archive is not None else _file_blocks(path), reader)
             return reader.finish(), reader.not_read
-        except _KmlStop:
+        except _KmlStop as stop:
             reader.abandon()
-            return [{"layer": WHOLE_FILE, "ordinal": 0, "state": "not_converted",
-                     "reason": "is not a KML 2.2 document: its root is not kml in the KML namespace"}], {}
+            return [{"layer": WHOLE_FILE, "ordinal": 0, "state": "not_converted", "reason": stop.reason}], {}
         except BaseException:
             reader.abandon()
             raise
@@ -1073,41 +1128,82 @@ def _s3():
                         config=Config(connect_timeout=5, read_timeout=60, retries={"max_attempts": 2}))
 
 
-def convert_native(data: dict, s3=None) -> dict:
-    """SH2. Copies a retained original from object storage to scratch disk (size and SHA-256 checked), converts
-    each layer and stores each derivative and its sidecar under content-addressed keys for the caller to retain.
-    KML1: a KML or KMZ is read by its streamed reader and the result counts what it kept but did not read."""
-    from . import settings
-    if not isinstance(data, dict) or set(data) - {"layerCrs"} != {"sourceId", "objectKey", "sha256", "bytes", "format"}:
-        raise InputError("Conversion requires the retained original's exact pins and its format.")
-    answers = _answers(data.get("layerCrs", {}))
-    source_id, key, digest, size, fmt = (data[name] for name in ("sourceId", "objectKey", "sha256", "bytes", "format"))
+def _pins(source_id, key, digest, size):
     match = _SOURCE_KEY.fullmatch(key) if isinstance(key, str) else None
     if not match or match.group(2) != source_id or match.group(3) != digest:
         raise InputError("The object key must name the retained original's ID and SHA-256.")
     if isinstance(size, bool) or not isinstance(size, int) or not 1 <= size <= MAX_SOURCE_BYTES:
         raise InputError(f"Conversion reads originals of 1 to {MAX_SOURCE_BYTES} bytes.")
+
+
+def _set_parts(data: dict) -> dict:
+    """N05. Each loose part's pins by extension: one .shp, .shx and .dbf, and a .prj and .cpg when present. The .shp
+    is the original the request names; the layer is its name without the extension."""
+    members, layer = data["members"], data["layer"]
+    if not isinstance(members, list) or not isinstance(layer, str) or not 1 <= len(layer) <= 256:
+        raise InputError("A shapefile set names its layer and its parts.")
+    parts = {}
+    for member in members:
+        if not isinstance(member, dict) or set(member) != {"extension", *_PIN_FIELDS} \
+                or member["extension"] not in SET_PARTS or member["extension"] in parts:
+            raise InputError("A shapefile set holds one .shp, .shx and .dbf, and at most one .prj and .cpg.")
+        _pins(*(member[name] for name in _PIN_FIELDS))
+        parts[member["extension"]] = member
+    if not {"shp", "shx", "dbf"} <= set(parts) or any(parts["shp"][name] != data[name] for name in _PIN_FIELDS):
+        raise InputError("A shapefile set needs its .shp, .shx and .dbf, and its .shp is the original it names.")
+    if sum(member["bytes"] for member in parts.values()) > MAX_SOURCE_BYTES:
+        raise InputError(f"Conversion reads a shapefile set of at most {MAX_SOURCE_BYTES} bytes.")
+    return parts
+
+
+def _fetch(client, key: str, size: int, digest: str, target: Path):
+    """Copies one retained original from object storage to scratch disk, byte for byte, checking size and SHA-256."""
+    from . import settings
+    body = client.get_object(Bucket=settings.S3_BUCKET, Key=key)["Body"]
+    hashed, count = hashlib.sha256(), 0
+    try:
+        with target.open("xb") as output:
+            for block in body.iter_chunks(chunk_size=1024 * 1024):
+                count += len(block)
+                if count > size:
+                    raise InputError("The retained original is longer than its receipt.")
+                hashed.update(block)
+                output.write(block)
+    finally:
+        body.close()
+    if count != size or hashed.hexdigest() != digest:
+        raise InputError("The retained original's size or SHA-256 differs from its receipt.")
+
+
+def convert_native(data: dict, s3=None) -> dict:
+    """SH2. Copies a retained original from object storage to scratch disk (size and SHA-256 checked), converts
+    each layer and stores each derivative and its sidecar under content-addressed keys for the caller to retain.
+    KML1: a KML or KMZ is read by its streamed reader and the result counts what it kept but did not read.
+    N05: a shapefile set's loose parts are each copied and checked into one scratch folder, then read as one."""
+    from . import settings
+    loose = isinstance(data, dict) and data.get("format") == SET_FORMAT
+    fields = {"format", *_PIN_FIELDS, *(("layer", "members") if loose else ())}
+    if not isinstance(data, dict) or set(data) - {"layerCrs"} != fields:
+        raise InputError("Conversion requires the retained original's exact pins and its format.")
+    answers = _answers(data.get("layerCrs", {}))
+    source_id, key, digest, size, fmt = (data[name] for name in (*_PIN_FIELDS, "format"))
+    _pins(source_id, key, digest, size)
+    parts = _set_parts(data) if loose else None
     client = s3 or _s3()
     with tempfile.TemporaryDirectory(prefix="ulpin-native-convert-") as temporary:
         folder = Path(temporary)
-        original = folder / "original"
-        body = client.get_object(Bucket=settings.S3_BUCKET, Key=key)["Body"]
-        hashed, count = hashlib.sha256(), 0
-        try:
-            with original.open("xb") as target:
-                for block in body.iter_chunks(chunk_size=1024 * 1024):
-                    count += len(block)
-                    if count > size:
-                        raise InputError("The retained original is longer than its receipt.")
-                    hashed.update(block)
-                    target.write(block)
-        finally:
-            body.close()
-        if count != size or hashed.hexdigest() != digest:
-            raise InputError("The retained original's size or SHA-256 differs from its receipt.")
         kml = fmt in KML_FORMATS
-        layers, not_read = convert_kml_file(original, fmt, folder, digest) if kml \
-            else (convert_native_file(original, fmt, folder, digest, answers), {})
+        if parts:
+            base = folder / "parts" / "layer"
+            base.parent.mkdir()
+            for extension, part in parts.items():
+                _fetch(client, part["objectKey"], part["bytes"], part["sha256"], base.with_suffix(f".{extension}"))
+            layers, not_read = [_shapefile_set_layer(base, data["layer"], digest, parts, answers)], {}
+        else:
+            original = folder / "original"
+            _fetch(client, key, size, digest, original)
+            layers, not_read = convert_kml_file(original, fmt, folder, digest) if kml \
+                else (convert_native_file(original, fmt, folder, digest, answers), {})
         for layer in (layer for layer in layers if layer["state"] == "converted"):
             for name, kind in (("geojson", "application/geo+json"), ("sidecar", "application/x-ndjson")):
                 entry = layer[name]

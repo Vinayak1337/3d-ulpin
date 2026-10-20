@@ -47,6 +47,10 @@ async function load(client:PoolClient,caseId:string,id:string){
 }
 async function status(client:PoolClient,upload:Upload,currentCaseRevision:number){
   const parts=(await client.query('SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 ORDER BY part_number',[upload.id])).rows;
+  const jobId=v2(upload)?upload.body.storageJobId:undefined;
+  // N04B. The storage job's own outcome, so a resume can tell a v2 finish that ended without a result.
+  const job=jobId?(await client.query(
+    "SELECT status,error FROM jobs WHERE id=$1 AND operation='large-original-storage'",[jobId])).rows[0]:undefined;
   return LargeUploadStatusSchema.parse({version:v2(upload)?v2Limits.version:limits.version,id:upload.id,caseId:upload.case_id,revision:upload.revision,
     currentCaseRevision,pinnedCaseRevision:upload.case_revision,state:upload.state,operatorSubject:upload.operator_subject,
     filename:upload.body.input.filename,mediaType:upload.body.input.mediaType,bytes:Number(upload.original_bytes),
@@ -57,9 +61,10 @@ async function status(client:PoolClient,upload:Upload,currentCaseRevision:number
     source:upload.state==='retained'?{sourceId:upload.source_id,sourceRevision:1,sha256:upload.body.verified.sha256,bytes:Number(upload.original_bytes)}:null,
     conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed',
     cleanupPending:upload.body.cleanupPending,lastError:upload.body.lastError||null,
-    ...(v2(upload)&&upload.body.storageJobId?{finalization:{jobId:upload.body.storageJobId,
+    leaseExpiresAt:upload.lease_expires_at?iso(upload.lease_expires_at):null,
+    ...(jobId?{finalization:{jobId,
       phase:!upload.body.cleanupPending?'complete':upload.state==='retained'||upload.state==='aborting'||upload.state==='aborted'?'cleaning':upload.body.finalizationPhase||'queued',
-      completedParts:upload.body.completedParts||0}}:{})});
+      completedParts:upload.body.completedParts||0,...(job?{jobStatus:job.status,jobError:job.error??null}:{})}}:{})});
 }
 async function guard(client:PoolClient,upload:Upload,input:LargeUploadGuard,currentRevision:number,unassigned=true){
   if(input.expectedRevision!==upload.revision || input.expectedCaseRevision!==currentRevision)conflict('Upload or case revision changed; read current status before continuing.');
