@@ -142,7 +142,7 @@ export class StreamingVectorService{
       // G13: a large CSV is read in windows to the table ceiling, beside the reader's own 128 MiB bound.
       const windowed=isWindowedTable({...request,sourceBytes:Number(ctx.source.bytes)});
       if(windowed&&Number(ctx.source.bytes)>TABULAR_STREAM_LIMITS.bytes)throw new AppError(413,'TABULAR_SOURCE_BUDGET',
-        'A table is read as a stream up to 7 GiB.');
+        `A table is read as a stream up to ${Number((TABULAR_STREAM_LIMITS.bytes/1024**3).toFixed(3))} GiB.`);
       if(!windowed&&Number(ctx.source.bytes)>limits.sourceBytes||Number(ctx.source.bytes)<=0)throw new AppError(413,'STREAMING_SOURCE_BUDGET','This reader profile supports retained originals up to 128 MiB.');
       if(request.framing==='tabular')assertTabularPin(request.tabular,ctx.source);
       else if(ctx.source.profile==='tabular-manual-v1')conflict('Pin tabular framing for this source.');
