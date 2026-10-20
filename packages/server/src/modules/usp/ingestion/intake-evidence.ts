@@ -528,11 +528,14 @@ export function evidenceSourceView(row: SourceCoverageRow) {
     sourceRevision: row.source_revision, sourceSha256: row.source_sha256, bytes: Number(row.source_bytes) };
 }
 
-/** Profiles, coverage and stored confirmations of the case, and one page of candidates with counts by outcome. */
-export async function readIntakeEvidence(caseValue: string, query: { outcome?: string; cursor?: string }) {
+/** Profiles, coverage and stored confirmations of the case, and one page of candidates with counts by outcome.
+ * EVS3: the page may be narrowed to one key profile and one table or document; the counts stay case-wide. */
+export async function readIntakeEvidence(caseValue: string,
+  query: { outcome?: string; cursor?: string; profileId?: string; itemId?: string }) {
   const caseId = uuid.parse(caseValue);
   const outcome = query.outcome === undefined ? null : IntakeEvidenceOutcomeSchema.parse(query.outcome);
-  const cursor = query.cursor === undefined ? null : uuid.parse(query.cursor);
+  const [cursor, profileId, itemId] = [query.cursor, query.profileId, query.itemId]
+    .map(value => value === undefined ? null : uuid.parse(value));
   const limit = INTAKE_EVIDENCE_LIMITS.sources;
   return transaction(async client => {
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
@@ -547,8 +550,9 @@ export async function readIntakeEvidence(caseValue: string, query: { outcome?: s
     const confirmations: ConfirmationRow[] = (await client.query(`SELECT * FROM usp_intake_evidence_confirmations
       WHERE case_id=$1 ORDER BY created_at,confirmation_id LIMIT $2`, [caseId, limit])).rows;
     const rows = (await client.query(`SELECT candidate FROM usp_intake_evidence_candidates WHERE case_id=$1
-      AND ($2::text IS NULL OR outcome=$2) AND ($3::uuid IS NULL OR candidate_id>$3) ORDER BY candidate_id LIMIT $4`,
-    [caseId, outcome, cursor, INTAKE_EVIDENCE_LIMITS.page + 1])).rows;
+      AND ($2::text IS NULL OR outcome=$2) AND ($3::uuid IS NULL OR candidate_id>$3)
+      AND ($4::uuid IS NULL OR profile_id=$4) AND ($5::uuid IS NULL OR item_id=$5) ORDER BY candidate_id LIMIT $6`,
+    [caseId, outcome, cursor, profileId, itemId, INTAKE_EVIDENCE_LIMITS.page + 1])).rows;
     const tallies = (await client.query(`SELECT outcome,count(*)::int n FROM usp_intake_evidence_candidates
       WHERE case_id=$1 GROUP BY outcome`, [caseId])).rows;
     const page = rows.slice(0, INTAKE_EVIDENCE_LIMITS.page).map(row => row.candidate as IntakeEvidenceCandidate);

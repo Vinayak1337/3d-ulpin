@@ -1,0 +1,77 @@
+{
+  "task": "EVS3",
+  "gate": "GF1",
+  "base": "79d16d5b",
+  "branch": "task/evs3-evidence-filter",
+  "status": "delivered",
+  "qualification": "Code and tests only. The server lines are proved with an in-memory pool whose candidate read keeps each stored row its parameters name; the Studio with a fake client (stubbed fetch) and test_only fixtures checked against docs/api/openapi.json by the contract validator. No server, database, Docker or served Studio walk was run.",
+  "works": {
+    "D1": "IntakeEvidenceQuerySchema takes optional profileId and itemId (uuid). readIntakeEvidence applies them in SQL on the stored candidate's profile_id and item_id columns, beside the existing outcome filter and cursor: ($4::uuid IS NULL OR profile_id=$4) AND ($5::uuid IS NULL OR item_id=$5), ordered by candidate_id as before. No filter sends nulls and reads as before. The counts stay case-wide; the counts description says so once ('the outcome, profile and item filters narrow the page, never these counts'). The controller's strict query takes the two new fields and refuses any other (422 INTAKE_EVIDENCE_QUERY); each has an ApiQuery entry.",
+    "D2": "'Accept every exact single match of this file' reads outcome=matched with profileId and itemId page after page along nextCursor, stopping at the server's page bound times the decision limit (200 x 100 candidates) and saying in words when more remain. It selects the file's matches in candidate order up to 100, less any decisions already made on other candidates. With more than that, the file's words read 'This file has N exact single matches; one confirmation takes 100. Confirm these, then accept the next 100.' A confirmation stored from the section hands its accepted candidate ids to the section, and the next press does not offer them again ('M were confirmed already here and are not offered again.'), so it selects the next 100. The button is offered for every file read under the key, since a file's matches may sit on later pages only.",
+    "D3": "Conflicting and several candidates stay questions: the file read keeps only matched candidates with one building (singleMatch), and the reject-only controls are unchanged."
+  },
+  "design": [
+    "What was already confirmed: the evidence read lists each stored confirmation's id, profile, additions and dates, but not its decisions, and no read returns a stored confirmation's input. The Studio therefore takes the accepted candidate ids from the stored confirmation the confirm request returns and keeps them in the confirm section for the open batch screen; the next press continues after them in candidate order.",
+    "The file read keeps the client-side check that each candidate belongs to the key and the file and is a single match, so a read that ignored a filter could not select another file's rows.",
+    "While a file is read the form is disabled, so the selection is made on the decisions as they stood at the press; a refused read shows the server's words and code (TableRefusal).",
+    "The 100 is shared with the officer's other decisions: if 1 other decision is made, 99 are selected and the words say so."
+  ],
+  "gaps": [
+    "The read does not show which candidates a stored confirmation accepted. The Studio remembers those of confirmations stored from the open screen only; after a reload, or for a confirmation stored elsewhere, the next press offers the first 100 again. A field on IntakeEvidenceConfirmationStateSchema (accepted candidate ids, or a per-candidate 'confirmed' state with a filter) would close this; it is a contract change outside this task.",
+    "A file with more than 20000 matched candidates is read up to that bound only; the words say more remain, and matches past it are not offered.",
+    "usp_intake_evidence_candidates has indexes on (case_id, outcome, candidate_id) and (profile_id, key_literal), none on item_id; the filtered read walks the case's matched candidates in candidate_id order and keeps the file's. An index on (case_id, item_id, outcome, candidate_id) would serve it directly; that is a database change outside this task.",
+    "The press reads every page of the file before selecting, so a 612-match file costs four reads per press."
+  ],
+  "files": [
+    "packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-evidence.ts",
+    "packages/server/src/modules/usp/ingestion/intake-evidence-filter.test.ts (new)",
+    "apps/api/src/modules/ingestion/ingestion.controller.ts",
+    "tests/intake-evidence-contract.test.ts",
+    "docs/api/openapi.json, docs/api/source-pins.json, packages/api-client/src/schema.d.ts (generated)",
+    "apps/studio/src/features/intake/evidence/api.ts",
+    "apps/studio/src/features/intake/evidence/confirm-model.ts",
+    "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx",
+    "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx",
+    "apps/studio/src/features/intake/evidence/confirm.test.tsx"
+  ],
+  "tests": {
+    "server": {
+      "file": "packages/server/src/modules/usp/ingestion/intake-evidence-filter.test.ts",
+      "count": 2,
+      "cover": [
+        "the profile and item filters narrow the page (30 of 300 stored candidates) with the SQL predicate and parameters named; the counts stay case-wide; a profile filter alone narrows to that profile; a malformed id is refused",
+        "the cursor pages one file of one key (200 then 50, in candidate order, nextCursor null at the end); no filter sends null filters and reads the first 200 of all 300 as before"
+      ],
+      "contract": "tests/intake-evidence-contract.test.ts: profileId and itemId parse as uuids beside outcome and cursor; a non-uuid and an unknown field are refused"
+    },
+    "studio": {
+      "file": "apps/studio/src/features/intake/evidence/confirm.test.tsx",
+      "count": 7,
+      "cover": [
+        "a file on one page is accepted as before: one read naming outcome=matched, profileId and itemId selects the same matches with no words; every file read under the key has the button",
+        "250 matched across two pages: the first press reads both pages (the second with the cursor), selects the first 100 in candidate order and shows the words beside the file; the stored confirmation of those 100 is valid against the request schema; the next press selects the next 100 and says 100 were confirmed already; the last selects the remaining 50; with one other decision made, 99 are selected and the words say so",
+        "the five EVS2 tests, on the new acceptFile over one file's matches"
+      ]
+    }
+  },
+  "manualReview": {
+    "method": "Read of the rendered markup and the components; no served walk (no runtime on this task).",
+    "keyboard": "No new control: the existing native Button per file; no custom key handling.",
+    "labels": "The bulk button keeps its exact words and its aria-describedby file name; the reading line and the file's words are role=status; a refused read is role=alert.",
+    "wordsNotColour": "Counts, the 100-per-confirmation rule, confirmed-already and the read bound are all words.",
+    "zoom200": "The file row stays ul-row (flex-wrap) inside the existing stack.",
+    "uiDesignCheckScan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging: exit 0, no candidates (the scan covers apps/web only). By hand: no new CSS or tokens, no sample values, one primary button per form as before."
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "exit": 0 },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "api-client": "2 passed", "scene": "59 passed, 1 skipped", "ui": "7 passed", "studio": "90 files, 565 passed, 2 skipped" },
+    "backend set (packages/server/src/modules/usp/ingestion/*.test.ts plus tests/intake-evidence-contract.test.ts)": { "exit": 0, "tests": 320, "pass": 319, "skipped": 1, "fail": 0 },
+    "openapi.ts --check": { "exit": 0, "operations": 328, "schemas": 371 },
+    "refresh-contract.ts origin/staging": "not run: check.py found the pins valid after regeneration",
+    "pnpm studio:api-types": { "exit": 0 },
+    "check.py": { "exit": 0, "note": "As checked out it exits 1 with 'runtime receipt changed': this Windows checkout writes docs/evidence/usp/cityjson-validation-runtime.json with CRLF, and its LF bytes match the recorded hash. Run with that receipt read as its LF bytes and restored after; this task does not touch it." },
+    "git diff --check": { "exit": 0 }
+  }
+}

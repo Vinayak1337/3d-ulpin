@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { PoolClient } from 'pg';
 import {
-  IntakeEvidenceCandidateSchema, IntakeEvidenceConfirmSchema, IntakeEvidenceSourceSchema, IntakeKeyProfileInputSchema,
+  IntakeEvidenceCandidateSchema, IntakeEvidenceConfirmSchema, IntakeEvidenceQuerySchema, IntakeEvidenceSourceSchema,
+  IntakeKeyProfileInputSchema,
 } from '../packages/contracts/src/usp';
 import { RegistryTableRowCitationSchema } from '../packages/contracts/src/registry-document-evidence';
 import { migrateIntakeLedgerTx } from '../packages/server/src/modules/usp/ingestion/intake-migration';
@@ -85,6 +86,13 @@ test('coverage may be null; unread coverage is never absence and closed coverage
   assert(!ok(IntakeEvidenceCandidateSchema, { ...candidate, outcome: 'several' }));
   assert(!ok(IntakeEvidenceCandidateSchema, { ...candidate, outcome: 'conflicting' }));
   assert(ok(IntakeEvidenceCandidateSchema, { ...candidate, outcome: 'conflicting', conflictGroup: other }));
+});
+
+test('the evidence read may name one key profile and one file; each is a uuid and no other field is taken', () => {
+  assert(ok(IntakeEvidenceQuerySchema, {}));
+  assert(ok(IntakeEvidenceQuerySchema, { outcome: 'matched', cursor: id, profileId: id, itemId: other }));
+  for (const field of ['profileId', 'itemId']) assert(!ok(IntakeEvidenceQuerySchema, { [field]: 'register.csv' }));
+  assert(!ok(IntakeEvidenceQuerySchema, { key: '12-A' }));
 });
 
 test('an evidence confirmation refuses a missing pin, an unread source and any right or issuance field', () => {

@@ -6,10 +6,10 @@ import type { IntakeItem } from '../batch-model';
 import type { Target } from '../run/model';
 import { runKey } from '../run/useTargets';
 import { TableRefusal } from '../table/Progress';
-import { createEvidenceConfirmation, evidenceKey, readPackagePins } from './api';
+import { createEvidenceConfirmation, evidenceKey, readEvidence, readFileMatches, readPackagePins } from './api';
 import { acceptFile, closedReading, confirmInput, decidable, namedBuildings, question, setAccept, setReject,
-  singleMatch, sourcesOf, type Choices, type EvidenceConfirmation, type EvidenceSource,
-  type Exclusions } from './confirm-model';
+  singleMatch, sourcesOf, type Choices, type EvidenceConfirmation, type EvidenceSource, type Exclusions,
+  type FileSelection } from './confirm-model';
 import { buildingWords, coverageWords, evidenceWords, outcomeWords, type Candidate, type EvidencePage,
   type KeyProfile } from './model';
 import batch from '../Batch.module.css';
@@ -23,6 +23,9 @@ type Change = (patch: Partial<ConfirmDraft>) => void;
 /** A press either stores a confirmation or names, before any request, what is still missing. */
 export type PressResult = { confirmation: EvidenceConfirmation } | { missing: string };
 export interface ConfirmRead { page: EvidencePage; items: readonly IntakeItem[]; targets: readonly Target[] }
+/** "Accept every exact single match of this file": the file being read, each file's words and the read's refusal. */
+export interface FileAccepts { reading: string | null; words: Readonly<Record<string, string>>; error: Error | null;
+  accept: (itemId: string) => void }
 
 const nameOf = (items: readonly IntakeItem[]) => (itemId: string) =>
   items.find((item) => item.itemId === itemId)?.name ?? 'a file no longer listed';
@@ -38,6 +41,14 @@ export async function pressConfirm(caseId: string, profile: KeyProfile, read: Co
   return typeof input === 'string' ? { missing: input } : { confirmation: await send(input) };
 }
 
+/** EVS3: one press of "Accept every exact single match of this file" reads every page of the file's matches under
+ * the key, then selects them; the candidates a stored confirmation accepted are not offered again. */
+export async function pressAcceptFile(caseId: string, profile: KeyProfile, itemId: string, choices: Choices,
+  confirmed: ReadonlySet<string>, read = readEvidence): Promise<FileSelection> {
+  return acceptFile(choices, await readFileMatches(caseId, { profileId: profile.profileId, itemId }, read),
+    confirmed);
+}
+
 /** D4: a refusal names a pin that no longer holds, so the evidence and the buildings are read again. */
 export function rereadAfterRefusal(client: Pick<QueryClient, 'invalidateQueries'>, caseId: string, error: unknown) {
   if (!(error instanceof ApiError) || error.status !== 409) return;
@@ -46,27 +57,42 @@ export function rereadAfterRefusal(client: Pick<QueryClient, 'invalidateQueries'
 }
 
 /** D3 and D4. One officer press confirms the evidence of one key: its files, buildings and decisions. */
-export function ConfirmEvidence({ caseId, profile, read, close }: {
+export function ConfirmEvidence({ caseId, profile, read, close, confirmed, stored }: {
   caseId: string; profile: KeyProfile; read: ConfirmRead; close: () => void;
+  /** The candidates the confirmations stored from this section accepted. */
+  confirmed: ReadonlySet<string>; stored: (confirmation: EvidenceConfirmation) => void;
 }) {
   const client = useQueryClient();
   const [draft, setDraft] = useState(blankDraft);
+  const [words, setWords] = useState<Readonly<Record<string, string>>>({});
   const [send] = useState(() => createEvidenceConfirmation(caseId));
   const press = useMutation({
     mutationFn: () => pressConfirm(caseId, profile, read, draft, send),
     onSuccess: (result) => {
-      if ('confirmation' in result) void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
+      if (!('confirmation' in result)) return;
+      stored(result.confirmation);
+      void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
     },
     onError: (error) => rereadAfterRefusal(client, caseId, error),
   });
-  return <ConfirmEvidenceForm profile={profile} read={read} draft={draft} pending={press.isPending}
+  const accept = useMutation({
+    mutationFn: (itemId: string) => pressAcceptFile(caseId, profile, itemId, draft.choices, confirmed),
+    onSuccess: (selection, itemId) => {
+      setDraft((value) => ({ ...value, choices: selection.choices }));
+      setWords(({ [itemId]: _, ...rest }) => selection.words === null ? rest
+        : { ...rest, [itemId]: selection.words });
+    },
+  });
+  const files: FileAccepts = { reading: accept.isPending ? accept.variables : null, words, error: accept.error,
+    accept: (itemId) => accept.mutate(itemId) };
+  return <ConfirmEvidenceForm profile={profile} read={read} draft={draft} pending={press.isPending || accept.isPending}
     change={(patch) => setDraft((value) => ({ ...value, ...patch }))} submit={() => press.mutate()} close={close}
-    result={press.data ?? null} error={press.error} />;
+    result={press.data ?? null} error={press.error} files={files} />;
 }
 
-export function ConfirmEvidenceForm({ profile, read, draft, change, pending, submit, close, result, error }: {
+export function ConfirmEvidenceForm({ profile, read, draft, change, pending, submit, close, result, error, files }: {
   profile: KeyProfile; read: ConfirmRead; draft: ConfirmDraft; change: Change; pending: boolean; submit: () => void;
-  close: () => void; result: PressResult | null; error: Error | null;
+  close: () => void; result: PressResult | null; error: Error | null; files: FileAccepts;
 }) {
   if (result && 'confirmation' in result) return <ConfirmedWords confirmation={result.confirmation} close={close} />;
   const decided = Object.keys(draft.choices).length > 0;
@@ -81,7 +107,7 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
     </p>
     <fieldset className={batch.fieldset} disabled={pending}>
       <SourceFields sources={sourcesOf(read.page, profile)} items={read.items} draft={draft} change={change} />
-      <DecisionFields candidates={decidable(read.page, profile)} read={read} draft={draft} change={change} />
+      <DecisionFields profile={profile} read={read} draft={draft} change={change} files={files} />
       <ChosenList draft={draft} items={read.items} change={change} />
       {decided ? null : <label className="ul-row">
         <input type="checkbox" checked={draft.noAdditions}
@@ -152,23 +178,33 @@ function SourceFields({ sources, items, draft, change }: {
   </fieldset>;
 }
 
-function FileAccept({ name, accept }: { name: string; accept: () => void }) {
+/** The button reads every page of the file's matches under the key, not only the page shown. */
+function FileAccept({ name, reading, words, accept }: {
+  name: string; reading: boolean; words: string | undefined; accept: () => void;
+}) {
   const id = useId();
-  return <span className="ul-row">
-    <span id={id}>{name}</span>
-    <Button variant="soft" aria-describedby={id} onClick={accept}>Accept every exact single match of this file</Button>
-  </span>;
+  return <div className={batch.stack}>
+    <span className="ul-row">
+      <span id={id}>{name}</span>
+      <Button variant="soft" aria-describedby={id} onClick={accept}>
+        Accept every exact single match of this file
+      </Button>
+    </span>
+    {reading ? <p role="status">{`Reading every exact single match of ${name}…`}</p> : null}
+    {words ? <p className="ul-help" role="status">{words}</p> : null}
+  </div>;
 }
 
-function DecisionFields({ candidates, read, draft, change }: {
-  candidates: readonly Candidate[]; read: ConfirmRead; draft: ConfirmDraft; change: Change;
+function DecisionFields({ profile, read, draft, change, files }: {
+  profile: KeyProfile; read: ConfirmRead; draft: ConfirmDraft; change: Change; files: FileAccepts;
 }) {
-  const files = [...new Set(candidates.filter(singleMatch).map((candidate) => candidate.evidence.itemId))];
+  const candidates = decidable(read.page, profile);
   const name = nameOf(read.items);
   return <fieldset className={styles.group}>
     <legend className="ul-label">Candidates of this key on this page</legend>
-    {files.map((itemId) => <FileAccept key={itemId} name={name(itemId)}
-      accept={() => change({ choices: acceptFile(draft.choices, candidates, itemId) })} />)}
+    {sourcesOf(read.page, profile).map(({ itemId }) => <FileAccept key={itemId} name={name(itemId)}
+      reading={files.reading === itemId} words={files.words[itemId]} accept={() => files.accept(itemId)} />)}
+    {files.error ? <TableRefusal error={files.error} /> : null}
     {candidates.length ? <div className={styles.scroll}>
       <DataTable caption="Decide each candidate" rows={[...candidates]} rowKey={(row) => row.candidateId} columns={[
         { header: 'Key as written', cell: (row) => <span className="ul-mono">{row.key.literal}</span> },

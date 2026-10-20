@@ -6,6 +6,7 @@ import { useBatchPackages } from '../batch-queries';
 import type { Target } from '../run/model';
 import { evidenceKey, useEvidencePage } from './api';
 import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
+import { acceptedIds } from './confirm-model';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead } from './EvidenceRead';
 import { anchorItems, documentChoices, tableChoices, type Outcome } from './model';
@@ -57,15 +58,22 @@ function EvidenceSection({ caseId, items, targets }: {
   </>;
 }
 
-/** D3: each declared key is confirmed on its own, one at a time, from the evidence as read. */
+/**
+ * D3: each declared key is confirmed on its own, one at a time, from the evidence as read. EVS3: the read does not
+ * list a stored confirmation's decisions, so the candidates accepted by confirmations stored here are kept here and
+ * not offered again by "Accept every exact single match of this file".
+ */
 function ConfirmSection({ caseId, read }: { caseId: string; read: ConfirmRead }) {
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState<ReadonlySet<string>>(() => new Set());
   const open = read.page.profiles.find((profile) => profile.profileId === profileId);
   if (!read.page.profiles.length) return null;
   return <section className={batch.stack} aria-labelledby="confirm-evidence">
     <h3 className="ul-heading" id="confirm-evidence">Confirm the evidence of a key</h3>
     {open ? <ConfirmEvidence key={open.profileId} caseId={caseId} profile={open} read={read}
-      close={() => setProfileId(null)} /> : <ul className={styles.list}>
+      close={() => setProfileId(null)} confirmed={confirmed}
+      stored={(confirmation) => setConfirmed((ids) => new Set([...ids, ...acceptedIds(confirmation)]))} />
+      : <ul className={styles.list}>
       {read.page.profiles.map((profile) => <li key={profile.profileId}>
         <Button variant="soft" onClick={() => setProfileId(profile.profileId)}>
           Confirm the evidence of {profile.input.namespace}

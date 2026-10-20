@@ -43,16 +43,58 @@ export function decidable(page: EvidencePage, profile: KeyProfile) {
     && (singleMatch(candidate) || question(candidate)));
 }
 
-/** "Accept every exact single match of this file": every matched candidate of the file on the page as read. Other
- * decisions are kept; a question is never selected. */
-export function acceptFile(choices: Choices, candidates: readonly Candidate[], itemId: string): Choices {
-  const next = { ...choices };
-  for (const candidate of candidates) {
-    if (candidate.evidence.itemId === itemId && singleMatch(candidate)) {
-      next[candidate.candidateId] = { decision: 'accept', candidate };
+/** The candidates of one file as read under one key; `more` says the read stopped at its bound with more left. */
+export interface FileMatches { itemId: string; matches: readonly Candidate[]; more: boolean }
+/** The choices after one press, and the words saying what the press left for the next confirmation. */
+export interface FileSelection { choices: Choices; words: string | null }
+
+/** The candidates a stored confirmation accepted; "accept every match" does not offer them again. */
+export function acceptedIds(confirmation: EvidenceConfirmation): string[] {
+  const { additions } = confirmation.input;
+  return additions.kind === 'citations'
+    ? additions.decisions.flatMap((decision) => decision.decision === 'accept' ? [decision.candidateId] : []) : [];
+}
+
+/**
+ * "Accept every exact single match of this file": the file's matched candidates as read, in candidate order, up to
+ * the decision limit less the decisions already made on other candidates. A match a stored confirmation accepted is
+ * not offered again, so the next press continues after it. Other decisions are kept; a question is never selected.
+ */
+export function acceptFile(choices: Choices, file: FileMatches,
+  confirmed: ReadonlySet<string> = new Set()): FileSelection {
+  const limit = INTAKE_EVIDENCE_LIMITS.decisions;
+  const matches = file.matches
+    .filter((candidate) => candidate.evidence.itemId === file.itemId && singleMatch(candidate))
+    .sort((a, b) => a.candidateId.localeCompare(b.candidateId));
+  const own = new Set(matches.map((candidate) => candidate.candidateId));
+  const next: Record<string, Choice> = Object.fromEntries(Object.entries(choices)
+    .filter(([candidateId, choice]) => !own.has(candidateId) || choice.decision !== 'accept'));
+  const others = Object.keys(next).length;
+  const offered = matches.filter((candidate) => !confirmed.has(candidate.candidateId));
+  const chosen = offered.slice(0, Math.max(0, limit - others));
+  for (const candidate of chosen) next[candidate.candidateId] = { decision: 'accept', candidate };
+  const total = file.more ? `more than ${matches.length}` : `${matches.length}`;
+  const words: string[] = [];
+  if (!matches.length && !file.more) words.push('This file has no exact single match under this key.');
+  if (offered.length > chosen.length) {
+    words.push(`This file has ${total} exact single matches; one confirmation takes ${limit}. Confirm these, then `
+      + `accept the next ${limit}.`);
+    if (others) {
+      words.push(`${others} other ${others === 1 ? 'decision is' : 'decisions are'} already made, so `
+        + `${chosen.length} are selected.`);
     }
   }
-  return next;
+  const before = matches.length - offered.length;
+  if (before) {
+    const again = before === 1 ? 'was confirmed already here and is' : 'were confirmed already here and are';
+    words.push(offered.length ? `${before} ${again} not offered again.`
+      : 'Every exact single match of this file read here was confirmed already.');
+  }
+  if (file.more) {
+    words.push(`Only the first ${INTAKE_EVIDENCE_LIMITS.page * INTAKE_EVIDENCE_LIMITS.decisions} candidates of this `
+      + 'file are read; more remain.');
+  }
+  return { choices: next, words: words.length ? words.join(' ') : null };
 }
 
 export function setAccept(choices: Choices, candidate: Candidate, on: boolean): Choices {

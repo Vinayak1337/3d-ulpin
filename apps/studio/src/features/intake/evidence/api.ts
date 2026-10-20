@@ -1,9 +1,11 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
+import { INTAKE_EVIDENCE_LIMITS } from '../../../../../../packages/contracts/src/usp/intake';
 import { readTargets } from '../run/api';
 import { INTAKE_TARGET_LIMITS, PACKAGE_PAGE, type Package } from '../run/model';
-import type { ConfirmBody, ConfirmInput, EvidenceConfirmation } from './confirm-model';
-import type { EvidencePage, KeyProfile, KeyProfileBody, KeyProfileInput, Outcome } from './model';
+import { singleMatch, type ConfirmBody, type ConfirmInput, type EvidenceConfirmation,
+  type FileMatches } from './confirm-model';
+import type { Candidate, EvidencePage, KeyProfile, KeyProfileBody, KeyProfileInput, Outcome } from './model';
 
 /**
  * Under the batch's own key: every refresh the batch takes from its live updates (or its five-second check while
@@ -11,11 +13,35 @@ import type { EvidencePage, KeyProfile, KeyProfileBody, KeyProfileInput, Outcome
  */
 export const evidenceKey = (caseId: string) => ['intake', caseId, 'evidence'];
 
+/** EVS3: the candidates of one file read under one key; the read's counts stay case-wide. */
+export interface EvidenceFilter { profileId: string; itemId: string }
+
 // Readable<T> and Writable<T> drop selection.table:null, although it is present on the wire.
-export async function readEvidence(caseId: string, outcome?: Outcome, cursor?: string): Promise<EvidencePage> {
+export async function readEvidence(caseId: string, outcome?: Outcome, cursor?: string,
+  filter?: EvidenceFilter): Promise<EvidencePage> {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/intake/evidence', {
-    params: { path: { caseId }, query: { ...(outcome ? { outcome } : {}), ...(cursor ? { cursor } : {}) } },
+    params: { path: { caseId }, query: { ...(outcome ? { outcome } : {}), ...(cursor ? { cursor } : {}),
+      ...filter } },
   })) as EvidencePage;
+}
+
+/**
+ * EVS3: every exact single match of one file under one key, read page after page along the cursor. The read stops
+ * at the server's page bound times the decision limit; `more` says candidates remain past it.
+ */
+export async function readFileMatches(caseId: string, filter: EvidenceFilter,
+  read: typeof readEvidence = readEvidence): Promise<FileMatches> {
+  const most = INTAKE_EVIDENCE_LIMITS.page * INTAKE_EVIDENCE_LIMITS.decisions;
+  const matches: Candidate[] = [];
+  let cursor: string | undefined, seen = 0;
+  for (;;) {
+    const page = await read(caseId, 'matched', cursor, filter);
+    seen += page.candidates.length;
+    matches.push(...page.candidates.filter((candidate) => candidate.key.profileId === filter.profileId
+      && candidate.evidence.itemId === filter.itemId && singleMatch(candidate)));
+    if (!page.nextCursor || seen >= most) return { itemId: filter.itemId, matches, more: page.nextCursor !== null };
+    cursor = page.nextCursor;
+  }
 }
 
 export function useEvidencePage(caseId: string, outcome: Outcome | '', cursor: string | null) {

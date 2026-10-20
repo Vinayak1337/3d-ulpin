@@ -41255,6 +41255,26 @@
         "operationId": "GET_api_v1_ingestion_cases_caseId_intake_evidence",
         "parameters": [
           {
+            "name": "itemId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Only the candidates of this table or document; the counts stay case-wide."
+          },
+          {
+            "name": "profileId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Only the candidates read under this key profile; the counts stay case-wide."
+          },
+          {
             "name": "cursor",
             "required": false,
             "in": "query",
@@ -377890,7 +377910,7 @@
               "conflicting"
             ],
             "additionalProperties": false,
-            "description": "Stored candidates by outcome, each counted once; not a reading total (see sources)."
+            "description": "Stored candidates of the whole case by outcome, each counted once; the outcome, profile and item filters narrow the page, never these counts. Not a reading total (see sources)."
           },
           "nextCursor": {
             "nullable": true,
