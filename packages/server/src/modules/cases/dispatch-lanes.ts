@@ -1,34 +1,46 @@
-import { totalmem } from 'node:os';
+import { statfs } from 'node:fs/promises';
+import { tmpdir, totalmem } from 'node:os';
+import { TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 
 /** G22. The lanes of docs/next-steps/INGESTION-ARCHITECTURE.md section 8; an operation no row names is `other`. */
 export type DispatchLane = 'probe' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d' | 'link' | 'gpu'
   | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
-type OperationRow = { lane: DispatchLane; mib?: number; processor?: true };
+type Hold = Cost & { scratchMiB: number };
+type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
+/** `workbook` names the payload field that pins a table read, whose workbook is copied into scratch (XW1). */
+type OperationRow = { lane: DispatchLane; mib?: number; scratchMiB?: number; workbook?: 'request' | 'tabular';
+  processor?: true };
+
+/** XW1 (tabular-stream.ts scratchFolder): a workbook read as a stream is copied whole into the scratch root, which
+ * must keep its size and 1 GiB more free; the largest is TABULAR_STREAM_LIMITS.bytes, 7 GiB. */
+const WORKBOOK_SCRATCH_MIB = TABULAR_STREAM_LIMITS.bytes / 1024 ** 2 + 1024;
 
 /**
- * Each lane's concurrency in one dispatcher process, and the worst-case memory in MiB of a job whose operation states
- * none. A number without a cited source is the lane's conservative default, not a measurement.
+ * Each lane's concurrency in one dispatcher process, and the worst-case memory and scratch in MiB of a job whose
+ * operation states none. A number without a cited source is the lane's conservative default, not a measurement.
+ * Scratch is what a job writes under dispatchScratchBudgetMiB's root; a lane whose jobs write none there is 0.
  */
-export const DISPATCH_LANES: Readonly<Record<DispatchLane, { concurrency: number; mib: number }>> = Object.freeze({
+export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.freeze({
   // Header reads only: INTAKE_PROBE_LIMITS (64 KiB head and tail, 1 MiB directory); the processor inspects 16 MiB.
-  probe: { concurrency: 8, mib: 64 },
-  vector: { concurrency: 2, mib: 512 },
-  table: { concurrency: 2, mib: 256 },
+  probe: { concurrency: 8, mib: 64, scratchMiB: 0 },
+  vector: { concurrency: 2, mib: 512, scratchMiB: 0 },
+  // A table-profile read of a workbook whose size its payload does not name.
+  table: { concurrency: 2, mib: 256, scratchMiB: WORKBOOK_SCRATCH_MIB },
   // docs/evidence/usp/whole-page-ocr-runtime.json: the source OCR worker's peakJobPrivateBytes 975,704,064.
-  document: { concurrency: 2, mib: 931 },
+  document: { concurrency: 2, mib: 931, scratchMiB: 0 },
   // RASTER_WINDOW_LIMITS.active is 2.
-  raster: { concurrency: 2, mib: 1024 },
+  raster: { concurrency: 2, mib: 1024, scratchMiB: 0 },
   // POINT_BATCH_LIMITS.active is 2.
-  point: { concurrency: 2, mib: 512 },
+  point: { concurrency: 2, mib: 512, scratchMiB: 0 },
   // IFC_LIMITS.active is 2.
-  model3d: { concurrency: 2, mib: 512 },
-  link: { concurrency: 2, mib: 256 },
+  model3d: { concurrency: 2, mib: 512, scratchMiB: 0 },
+  link: { concurrency: 2, mib: 256, scratchMiB: 0 },
   // One GPU. docs/evidence/gf-ai/building/b4-pytorch-resource-20261010/result.json: the roof model's peak working
   // set 1,017,249,792 bytes.
-  gpu: { concurrency: 1, mib: 970 },
-  teacher: { concurrency: 2, mib: 128 },
-  other: { concurrency: 2, mib: 512 },
+  gpu: { concurrency: 1, mib: 970, scratchMiB: 0 },
+  teacher: { concurrency: 2, mib: 128, scratchMiB: 0 },
+  other: { concurrency: 2, mib: 512, scratchMiB: 0 },
 });
 
 /**
@@ -37,8 +49,9 @@ export const DISPATCH_LANES: Readonly<Record<DispatchLane, { concurrency: number
  */
 export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Object.freeze({
   inspect: { lane: 'probe', processor: true },
-  // docs/evidence/gf1/g16/result.json memoryProof: peakRssMiB 414.9 for 500,000 features in 5000 parts.
-  'streaming-vector': { lane: 'vector', mib: 415 },
+  // docs/evidence/gf1/g16/result.json memoryProof: peakRssMiB 414.9 for 500,000 features in 5000 parts. A tabular
+  // read pins its table under `tabular`.
+  'streaming-vector': { lane: 'vector', mib: 415, workbook: 'tabular' },
   // docs/evidence/gf1/lp3a/parts-result.json: peakRssKiB 435,232 cutting the 43 MB NYC GeoJSON into 487 parts.
   'intake-large': { lane: 'vector', mib: 426 },
   'streamed-profile': { lane: 'vector' },
@@ -48,11 +61,14 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Objec
   'private-mvt': { lane: 'vector' },
   // A GeoPackage or zipped shapefile converted into GeoJSON layers.
   'intake-native-derivative': { lane: 'vector' },
-  // Table windows; a streamed GeoJSON's chunks are mapped by the same job.
-  'chunk-mapping': { lane: 'table' },
-  // TP1: a kept CSV above 16 MiB profiled as a stream; no peak is measured, so the table lane's default holds.
-  'table-profile': { lane: 'table' },
-  'document-extraction': { lane: 'document' },
+  // Table windows; a streamed GeoJSON's chunks are mapped by the same job. It reads stored windows, never a file.
+  'chunk-mapping': { lane: 'table', scratchMiB: 0 },
+  // TP1: a kept CSV above 16 MiB profiled as a stream; no peak is measured, so the table lane's default holds. XW1:
+  // a workbook is read the same way, and its payload pins the table under `request` without the workbook's size.
+  'table-profile': { lane: 'table', workbook: 'request' },
+  // document-ocr.ts copies the PDF, at most DOCUMENT_LIMITS.originalBytes 16 MiB, into the scratch root beside the
+  // 128 KiB result and 64 KiB receipt it reads back.
+  'document-extraction': { lane: 'document', scratchMiB: 17 },
   'packet-pdf': { lane: 'document' },
   // INTAKE_PAGE_IMAGE_LIMITS.inputPixels 250,000,000 decoded at 4 bytes a pixel.
   'intake-page-image': { lane: 'document', mib: 954 },
@@ -87,10 +103,35 @@ export function dispatchInProcessOperations(): string[] {
   return Object.entries(DISPATCH_OPERATIONS).filter(([, row]) => !row.processor).map(([operation]) => operation);
 }
 
+const operationRow = (operation: string) =>
+  Object.hasOwn(DISPATCH_OPERATIONS, operation) ? DISPATCH_OPERATIONS[operation] : undefined;
+
 export function dispatchCost(operation: string): Cost {
-  const row = Object.hasOwn(DISPATCH_OPERATIONS, operation) ? DISPATCH_OPERATIONS[operation] : undefined;
+  const row = operationRow(operation);
   const lane = row?.lane ?? 'other';
   return { lane, mib: row?.mib ?? DISPATCH_LANES[lane].mib };
+}
+
+type TablePinned = { sourceBytes?: unknown }
+  & Partial<Record<'request' | 'tabular', { selection?: { format?: unknown } }>>;
+/** A table read's scratch from its payload: none for a CSV, read in place; a workbook's named size in MiB and 1 GiB
+ * more, else the largest workbook's. Undefined when the payload pins no table at `at`. */
+function workbookScratchMiB(payload: unknown, at: 'request' | 'tabular'): number | undefined {
+  const pinned = payload as TablePinned | null | undefined, pin = pinned?.[at];
+  if (!pin) return undefined;
+  if (pin.selection?.format === 'csv') return 0;
+  const bytes = pinned?.sourceBytes;
+  return typeof bytes === 'number' && Number.isSafeInteger(bytes) && bytes > 0
+    ? Math.ceil(bytes / 1024 ** 2) + 1024 : WORKBOOK_SCRATCH_MIB;
+}
+
+/** A job's worst-case MiB under the scratch root: none for a job the processor runs in its container, as it runs any
+ * operation no row names; a table read's from its payload; else its row's number or its lane's default. */
+export function dispatchScratchMiB({ operation, payload }: DispatchJob): number {
+  const row = operationRow(operation);
+  if (!row || row.processor) return 0;
+  const workbook = row.workbook ? workbookScratchMiB(payload, row.workbook) : undefined;
+  return workbook ?? row.scratchMiB ?? DISPATCH_LANES[row.lane].scratchMiB;
 }
 
 /** The stated budget, or half of this machine's memory, in MiB. */
@@ -98,35 +139,68 @@ export function dispatchMemoryBudgetMiB(stated: number | undefined): number {
   return stated ?? Math.floor(totalmem() / 2 / 1024 ** 2);
 }
 
-/** How long a job refused for memory waits before no newer job outside the probe lane may start ahead of it. */
-export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
-
-/** A job as the tick reads it: any operation, created at a database time. */
-export type DispatchJob = { id: string; operation: string; created_at: Date | string };
-const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
+/** The free space the scratch budget always leaves on the scratch root. */
+export const DISPATCH_SCRATCH_FLOOR_MIB = 2048;
+type ReadDisk = (path: string) => Promise<{ bavail: number; bsize: number }>;
 
 /**
- * The jobs this process runs, each holding its lane slot and its stated memory until its own finally releases it,
- * and the jobs refused for memory, each with the time of its first refusal.
+ * The scratch root's free MiB less DISPATCH_SCRATCH_FLOOR_MIB, read once a tick. The root is the private scratch the
+ * local readers write to (ULPIN_DOCUMENT_OCR_SCRATCH), else the system temp folder. A failed read logs one line and
+ * leaves scratch unlimited for that tick, so it never blocks all work.
+ */
+export async function dispatchScratchBudgetMiB(readDisk: ReadDisk = statfs): Promise<number> {
+  try {
+    const disk = await readDisk(process.env.ULPIN_DOCUMENT_OCR_SCRATCH || tmpdir());
+    return Math.floor(disk.bavail * disk.bsize / 1024 ** 2) - DISPATCH_SCRATCH_FLOOR_MIB;
+  } catch (error) {
+    const code = (error as { code?: unknown } | null)?.code;
+    console.warn(`The dispatcher could not read the scratch root's free space (${typeof code === 'string' ? code
+      : 'unknown'}); scratch is not limited this tick.`);
+    return Infinity;
+  }
+}
+
+/** How long a job refused for memory or scratch waits before no newer job outside the probe lane may start ahead. */
+export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
+
+/** A job as the tick reads it: any operation, created at a database time, with its payload where the tick has it. */
+export type DispatchJob = { id: string; operation: string; created_at: Date | string; payload?: unknown };
+const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
+const dispatchHold = (job: DispatchJob): Hold =>
+  ({ ...dispatchCost(job.operation), scratchMiB: dispatchScratchMiB(job) });
+
+/** Memory fits what is unreserved, or nothing is held. Scratch fits what is unreserved, or the job writes none, or no
+ * held job writes any, so a job larger than the whole scratch budget runs alone among the jobs that write scratch. */
+function fits(holding: readonly Hold[], cost: Hold, budgetMiB: number, scratchBudgetMiB: number): boolean {
+  const sum = (key: 'mib' | 'scratchMiB') => holding.reduce((total, other) => total + other[key], 0);
+  if (holding.length > 0 && sum('mib') + cost.mib > budgetMiB) return false;
+  const scratch = sum('scratchMiB');
+  return cost.scratchMiB === 0 || scratch === 0 || scratch + cost.scratchMiB <= scratchBudgetMiB;
+}
+
+/**
+ * The jobs this process runs, each holding its lane slot and its stated memory and scratch until its own finally
+ * releases it, and the jobs refused for memory or scratch, each with the time of its first refusal.
  */
 export class DispatchReservations {
-  private readonly held = new Map<string, Cost>();
+  private readonly held = new Map<string, Hold>();
   private readonly refused = new Map<string, { since: number; created: number }>();
 
   /**
-   * Reserves only when the job's lane is under its concurrency and its memory fits what is unreserved, counting this
-   * process's jobs and the processor's jobs `elsewhere`; a job larger than the whole budget fits when nothing else is
-   * held. A refused job holds nothing, a job already held is not started twice, and a job outside the probe lane
-   * waits behind an older job refused for memory more than DISPATCH_HEAD_OF_LINE_MS ago.
+   * Reserves only when the job's lane is under its concurrency and its memory and scratch fit what is unreserved
+   * (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
+   * budget fits when nothing else is held. A refused job holds nothing, a job already held is not started twice, and
+   * a job outside the probe lane waits behind an older job refused more than DISPATCH_HEAD_OF_LINE_MS ago.
    */
-  admit(job: DispatchJob, budgetMiB: number, elsewhere: readonly DispatchJob[], now: number): boolean {
+  admit(job: DispatchJob, budgetMiB: number, elsewhere: readonly DispatchJob[], now: number,
+    scratchBudgetMiB = Infinity): boolean {
     if (this.held.has(job.id)) return false;
-    const cost = dispatchCost(job.operation);
+    const cost = dispatchHold(job);
     if (cost.lane !== 'probe' && this.behindRefused(job, now)) return false;
     const outside = elsewhere.filter(other => other.id !== job.id && !this.held.has(other.id));
-    const holding = [...this.held.values(), ...outside.map(other => dispatchCost(other.operation))];
+    const holding = [...this.held.values(), ...outside.map(dispatchHold)];
     if (holding.filter(other => other.lane === cost.lane).length >= DISPATCH_LANES[cost.lane].concurrency) return false;
-    if (holding.length > 0 && holding.reduce((sum, other) => sum + other.mib, 0) + cost.mib > budgetMiB) {
+    if (!fits(holding, cost, budgetMiB, scratchBudgetMiB)) {
       if (!this.refused.has(job.id)) this.refused.set(job.id, { since: now, created: createdAt(job) });
       return false;
     }

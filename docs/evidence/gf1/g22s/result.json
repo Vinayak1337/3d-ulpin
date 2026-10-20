@@ -1,0 +1,106 @@
+{
+  "task": "G22S",
+  "gate": "GF1",
+  "base": "4e8d5986",
+  "branch": "task/g22s-scratch-admission",
+  "what": "The dispatcher reserves host scratch disk per job the same way it reserves memory. Each tick reads the scratch root's free space once with statfs (ULPIN_DOCUMENT_OCR_SCRATCH when set, else os.tmpdir()) and subtracts a 2048 MiB floor; a job starts only when its lane has room, its memory fits and its scratch fits what is unreserved. A job that writes no scratch is never refused for scratch; a job whose scratch is larger than the whole budget starts only when no held job writes scratch. A job refused for scratch is recorded with its first refusal and holds back newer non-probe jobs after DISPATCH_HEAD_OF_LINE_MS, as for memory. A failed statfs logs one line with the error code only and leaves scratch unlimited for that tick. The tick's SQL, the lanes' concurrency and memory admission are unchanged.",
+  "budget": "floor(bavail * bsize / MiB) - DISPATCH_SCRATCH_FLOOR_MIB (2048) of the scratch root, read once a tick; Infinity when the read fails",
+  "laneScratchDefaults": {
+    "table": {
+      "scratchMiB": 8192,
+      "source": "TABULAR_STREAM_LIMITS.bytes (7 GiB), the largest workbook read as a stream, copied whole into scratch by tabular-stream.ts scratchFolder, which requires its size and 1 GiB more free (XW1)"
+    },
+    "probe, vector, document, raster, point, model3d, link, gpu, teacher, other": {
+      "scratchMiB": 0,
+      "source": "no job in these lanes writes under the scratch root, except the operations with their own rule below"
+    }
+  },
+  "operationScratch": [
+    {
+      "operation": "any processor operation (processor: true) and any operation no row names",
+      "scratchMiB": 0,
+      "source": "runs in the processor's container, not on this host's scratch root"
+    },
+    {
+      "operation": "table-profile",
+      "scratchMiB": "0 for a CSV selection (read in place); otherwise the table lane default 8192, because the payload (TableProfileInputSchema) names no source size",
+      "source": "payload.request.selection.format; tabular-stream.ts readTableWindows and scratchFolder"
+    },
+    {
+      "operation": "streaming-vector",
+      "scratchMiB": "ceil(payload.sourceBytes / MiB) + 1024 for a tabular read of a workbook; 0 for a CSV or GIS read; 8192 for a workbook without a size",
+      "source": "AnyStreamingInputSchema: tabular.selection.format and sourceBytes; streaming-vector-worker.ts reads windows through readTableWindows"
+    },
+    {
+      "operation": "chunk-mapping",
+      "scratchMiB": 0,
+      "source": "reads stored windows, never a file; stated so the table lane default does not apply"
+    },
+    {
+      "operation": "document-extraction",
+      "scratchMiB": 17,
+      "source": "document-ocr.ts privateOcrDirectory under ULPIN_DOCUMENT_OCR_SCRATCH: the PDF copy, at most DOCUMENT_LIMITS.originalBytes 16 MiB, plus the 128 KiB result and 64 KiB receipt limits"
+    }
+  ],
+  "gaps": [
+    "table-profile: its payload names no workbook size, so every workbook read reserves the 8192 MiB lane default. Adding the source's bytes to TableProfileInputSchema (packages/server/src/modules/usp/ingestion/table-profile-worker.ts, not owned here) would let it reserve its size plus 1024 MiB.",
+    "document-extraction: the OCR worker's own page renders and temporary files (scripts/usp/document-models/run_source_ocr.py, which also receives TEMP) are not measured; only the PDF copy and the result and receipt limits are counted.",
+    "Native readers that copy their original into their own profile's scratchRoot are not counted, because that root is configured separately and this budget does not read it: ifc-native, dxf-native, kml-native, citygml-native, obj-native, gltf-native, geoparquet-native (each *-processor.ts mkdtemp under config.scratchRoot) and cityjson-validation (ULPIN_CITYJSON_VALIDATOR_SCRATCH_ROOT). They reserve 0 here.",
+    "packet-pdf may reach the packet region runtime (region-runtime.ts, ULPIN_PACKET_REGIONS_SCRATCH), a separate root; it reserves 0 here. Document page and image previews (ULPIN_DOCUMENT_PAGES_SCRATCH, ULPIN_DOCUMENT_IMAGES_SCRATCH) run outside the dispatcher.",
+    "Free space is read each tick while held jobs are already writing, so bytes a running job has written are counted twice (in the lower free space and in its reservation) until it is released. This is conservative: it can delay a job, never overfill the disk.",
+    "Each dispatcher process reserves scratch for its own in-process jobs only, as it does memory; two dispatcher processes on one host do not see each other's scratch reservations."
+  ],
+  "tests": {
+    "file": "packages/server/src/modules/cases/dispatch-scratch.test.ts",
+    "cases": [
+      "a workbook read reserves its copy and 1 GiB; a CSV, a GIS read and a stored-window job reserve none",
+      "every operation the processor runs, and any it is sent unnamed, reserves no scratch",
+      "two workbooks over the scratch budget start one after the other (a release lets the waiting one start)",
+      "a workbook over the whole scratch budget runs alone among the jobs that write scratch",
+      "a workbook refused for scratch stops newer jobs after the head-of-line wait, then starts when it fits",
+      "the scratch budget is the root's free space less the floor, read from the OCR scratch or the temp folder (fake statfs)",
+      "a scratch root that cannot be read logs one line and blocks nothing that tick (fake statfs failure)"
+    ],
+    "memoryAdmission": "processing.test.ts unchanged; all its memory, lane and tick tests pass"
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck:backend",
+      "before": { "exit": 0 },
+      "after": { "exit": 0 }
+    },
+    {
+      "command": "pnpm studio:typecheck",
+      "before": { "exit": 0 },
+      "after": { "exit": 0 }
+    },
+    {
+      "command": "pnpm studio:test",
+      "before": { "exit": 0, "studio": "542 passed, 2 skipped", "scene": "59 passed, 1 skipped", "ui": "7 passed", "apiClient": "2 passed" },
+      "after": { "exit": 0, "studio": "542 passed, 2 skipped", "scene": "59 passed, 1 skipped", "ui": "7 passed", "apiClient": "2 passed" }
+    },
+    {
+      "command": "backend tests (usp/ingestion, areas, officer, cases, and the five named tests/*.test.ts)",
+      "before": { "exit": 0, "tests": 482, "pass": 479, "fail": 0, "skipped": 3 },
+      "after": { "exit": 0, "tests": 489, "pass": 486, "fail": 0, "skipped": 3 },
+      "skipped": [
+        "two dispatch selection tests need ULPIN_DISPATCH_TEST_DATABASE_URL",
+        "TP1 real workbook test: ULPIN_PROFILE_PYTHON names no geo-compatible interpreter"
+      ],
+      "dataDrive": "no test failed for the missing E:/BhuAayam-data drive before or after"
+    },
+    {
+      "command": "apps/api/scripts/openapi.ts --check",
+      "before": { "exit": 0 },
+      "after": { "exit": 0, "note": "first run reported docs/api/source-pins.json stale for the two edited sources; refresh-contract.ts origin/staging repinned dispatch-lanes.ts and processing.ts; openapi.json and the api-client types are unchanged" }
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "after": { "exit": 1, "note": "'runtime receipt changed' for docs/evidence/usp/cityjson-validation-runtime.json, a file this task does not touch: this checkout (core.autocrlf=true) holds it with CRLF, and its SHA-256 matches the pin with LF endings, so the failure comes from the checkout, not this change" }
+    },
+    {
+      "command": "git diff --check origin/staging...HEAD",
+      "after": { "exit": 0 }
+    }
+  ]
+}
