@@ -5,10 +5,12 @@ import type { IntakeItem } from '../batch-model';
 import { useBatchPackages } from '../batch-queries';
 import type { Target } from '../run/model';
 import { evidenceKey, useEvidencePage } from './api';
+import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead } from './EvidenceRead';
 import { anchorItems, documentChoices, tableChoices, type Outcome } from './model';
 import batch from '../Batch.module.css';
+import styles from './Evidence.module.css';
 
 /** The batch section "Evidence by key": declare a key, then read what each source matched. */
 export function EvidenceByKey({ caseId, items }: { caseId: string; items: readonly IntakeItem[] }) {
@@ -51,5 +53,24 @@ function EvidenceSection({ caseId, items, targets }: {
         setOutcome(value);
         setCursor(null);
       }, firstPage: () => setCursor(null), nextPage: next ? () => setCursor(next) : null }} />
+    <ConfirmSection caseId={caseId} read={{ page: page.data, items, targets }} />
   </>;
+}
+
+/** D3: each declared key is confirmed on its own, one at a time, from the evidence as read. */
+function ConfirmSection({ caseId, read }: { caseId: string; read: ConfirmRead }) {
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const open = read.page.profiles.find((profile) => profile.profileId === profileId);
+  if (!read.page.profiles.length) return null;
+  return <section className={batch.stack} aria-labelledby="confirm-evidence">
+    <h3 className="ul-heading" id="confirm-evidence">Confirm the evidence of a key</h3>
+    {open ? <ConfirmEvidence key={open.profileId} caseId={caseId} profile={open} read={read}
+      close={() => setProfileId(null)} /> : <ul className={styles.list}>
+      {read.page.profiles.map((profile) => <li key={profile.profileId}>
+        <Button variant="soft" onClick={() => setProfileId(profile.profileId)}>
+          Confirm the evidence of {profile.input.namespace}
+        </Button>
+      </li>)}
+    </ul>}
+  </section>;
 }
