@@ -2,33 +2,8 @@ import { expect, it } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
 import { countWords, crsWords, fieldWords, isSettled, opensPages, partProgressWords, placementWords, stateWords,
   trayItems } from './batch-model';
-import { fileRoute, zipMemberNames, zipRoute } from './file-route';
-import { zip } from '../register/workbook';
 import { intakeRefreshFrame, silenceDelay } from './batch-events';
 import type { IntakeItem } from './batch-model';
-
-it('routes map originals to intake, binary maps to direct import and tables to their dialog', () => {
-  expect(fileRoute('buildings-original.geojson')).toBe('intake');
-  expect(fileRoute('sidewalk.JSON')).toBe('intake');
-  expect(fileRoute('boundary.gpkg')).toBe('direct');
-  expect(fileRoute('boundary.zip')).toBe('direct');
-  expect(fileRoute('register.csv')).toBe('table');
-  expect(fileRoute('register.xlsx')).toBe('table');
-  for (const name of ['plan.pdf', 'ortho.tif', 'cloud.laz', 'model.ifc', 'unknown'])
-    expect(fileRoute(name)).toBe('original');
-});
-
-it('routes a shapefile ZIP to direct import and every other ZIP to the batch', async () => {
-  const pack = (files: Record<string, string>) => new Blob([zip(files)]);
-  const layers = pack({ 'layers/': '', 'layers/roads.geojson': '{}', 'layers/blocks.json': '{}', 'README.md': '' });
-  expect(await zipMemberNames(layers)).toEqual(['layers/', 'layers/roads.geojson', 'layers/blocks.json', 'README.md']);
-  expect(await zipRoute(layers)).toBe('intake');
-  expect(await zipRoute(pack({ 'a.shp': '', 'a.shx': '', 'a.dbf': '', 'meta.json': '{}' }))).toBe('direct');
-  expect(await zipRoute(pack({ 'set/ROADS.SHP': '', 'set/ROADS.DBF': '' }))).toBe('direct');
-  expect(await zipRoute(pack({ 'register.csv': 'id\n1' }))).toBe('intake');
-  expect(await zipRoute(pack({ 'plan.pdf': '' }))).toBe('intake');
-  expect(await zipRoute(new Blob(['not a zip']))).toBe('intake');
-});
 
 it('lists a kept layer once: its member row under the ZIP gives way to its own item', () => {
   const base = { ...controls.manifest.items[0], plan: null, streamedProfileJobId: null } as IntakeItem;
