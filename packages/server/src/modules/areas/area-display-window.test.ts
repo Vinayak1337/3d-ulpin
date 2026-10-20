@@ -56,14 +56,14 @@ class WindowControl {
 
   private drawn(packageIds: string[], featureIds: string[]) {
     const recorded = this.features.filter(row => row.revision > 0 && !featureIds.includes(row.id))
-      .map(({ revision, ...row }) => ({ ...row, display_state: 'recorded', case_id: null }));
+      .map(({ revision, ...row }) => ({ ...row, display_state: 'recorded', case_id: null, package_id: null }));
     const proposed = featureIds.map((id, index) => {
       const feature = this.packages.find(pkg => pkg.id === packageIds[index])!.features.find(row => row.id === id)!;
       const ring: number[][] = feature.geometry.coordinates[0];
       const xs = ring.map(([x]) => x), ys = ring.map(([, y]) => y);
       return { id, identifier: this.features.find(row => row.id === id)!.identifier, kind: feature.kind,
         height: feature.height, geometry: feature.geometry, display_state: 'unrecorded_proposal',
-        case_id: this.cases.get(packageIds[index]),
+        case_id: this.cases.get(packageIds[index]), package_id: packageIds[index],
         box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] };
     });
     return [...recorded, ...proposed];
@@ -309,7 +309,7 @@ test('a window draws the same proposals from draft outlines as from package bodi
     assert.match(rule, /ST_Intersects\(geographic_geometry,ST_Transform\(ST_MakeEnvelope/);
   }));
 
-test('a proposal names the case of its package, from an outline and from a body; a record names none', async () =>
+test('a proposal names its package and its case, from an outline and from a body; a record names neither', async () =>
   memory(async control => {
     const recorded = square('r-1', 0, 0, 9), outlined = { ...square('p-1', 20, 0, 9, 0), outlined: true };
     const old = square('p-2', 40, 0, 9, 0);
@@ -318,10 +318,12 @@ test('a proposal names the case of its package, from an outline and from a body;
     const seen = await drawnInWindow(control, { minX: -1, minY: -1, maxX: 60, maxY: 20 });
     assert.deepEqual(seen.map(feature => [feature.identifier, feature.caseId]), [['p-1', control.cases.get(drawn.id)],
       ['p-2', control.cases.get(drafted.id)], ['r-1', undefined]]);
-    assert.ok(!('caseId' in seen[2]));
+    assert.deepEqual(seen.map(feature => feature.packageId), [drawn.id, drafted.id, undefined]);
+    assert.ok(!('caseId' in seen[2]) && !('packageId' in seen[2]));
     const sql = control.statements.find(statement => statement.startsWith('WITH win'))!;
-    assert.match(sql, /'recorded' display_state,NULL::uuid case_id/);
-    assert.match(sql, /'unrecorded_proposal',\s+p\.case_id/);
+    assert.match(sql, /'recorded' display_state,NULL::uuid case_id,NULL::uuid package_id/);
+    assert.match(sql, /'unrecorded_proposal',\s+p\.case_id,p\.package_id/);
+    assert.match(sql, /p\.case_id,p\.id package_id/);
   }));
 
 test('a window over 35 packages draws the proposals of the oldest', async () => memory(async control => {

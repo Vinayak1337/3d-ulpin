@@ -143,3 +143,21 @@ it('a recorded building picked in a windowed area offers the same press, read by
     onClose={() => {}} />, client);
   expect(parcel).not.toContain('Property card');
 });
+
+it('a proposal picked in a windowed area reads its target by feature in the package the window names', async () => {
+  const reads = answers(ready);
+  const client = new QueryClient();
+  const proposal: AreaWindowFeature = { id: ready.featureId, identifier: '763933', kind: 'building', polygons: [],
+    heightM: null, heightState: 'unknown', displayState: 'unrecorded_proposal', caseId: ready.caseId,
+    packageId: ready.packageId };
+  const inspector = <WindowedInspector feature={proposal} areaName="Area" onClose={() => {}} />;
+  shown(inspector, client);
+  const [query, ...others] = client.getQueryCache().getAll();
+  expect(others).toEqual([]);
+  expect(query!.queryKey).toEqual(buildingTargetKey(ready.featureId, ready.packageId));
+  await query!.fetch();
+  expect(reads).toEqual([{ featureId: ready.featureId, packageId: ready.packageId }]);
+  const markup = shown(inspector, client);
+  expect(markup).toContain('Open batch to confirm');
+  expect(markup).toContain(readinessWords.ready);
+});
