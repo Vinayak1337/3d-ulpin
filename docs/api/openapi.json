@@ -40781,6 +40781,15 @@
         "operationId": "GET_api_v1_ingestion_cases_caseId_targets",
         "parameters": [
           {
+            "name": "packageCursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,512}$"
+            }
+          },
+          {
             "name": "cursor",
             "required": false,
             "in": "query",
@@ -373969,6 +373978,30 @@
           },
           "packagesTruncated": {
             "type": "boolean"
+          },
+          "packagesNextCursor": {
+            "description": "Opaque cursor of the next package page: unrecorded packages first, then recorded; null on the last.",
+            "nullable": true,
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,512}$"
+          },
+          "packagesTotal": {
+            "description": "Every package of the batch, listed on this page or not.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "packagesUnrecorded": {
+            "description": "Packages of the batch not yet recorded, listed or not.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "packagesUnrecordedAfter": {
+            "description": "Packages not yet recorded that later package pages list.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [

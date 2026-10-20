@@ -66543,6 +66543,14 @@ export interface components {
                 };
             }[];
             packagesTruncated: boolean;
+            /** @description Opaque cursor of the next package page: unrecorded packages first, then recorded; null on the last. */
+            packagesNextCursor?: string | null;
+            /** @description Every package of the batch, listed on this page or not. */
+            packagesTotal?: number;
+            /** @description Packages of the batch not yet recorded, listed or not. */
+            packagesUnrecorded?: number;
+            /** @description Packages not yet recorded that later package pages list. */
+            packagesUnrecordedAfter?: number;
         };
         POST_ingestion_cases_caseId_confirmations_Request_application_json: {
             /** Format: uuid */
@@ -94238,6 +94246,7 @@ export interface operations {
     GET_api_v1_ingestion_cases_caseId_targets: {
         parameters: {
             query?: {
+                packageCursor?: string;
                 cursor?: string;
                 readiness?: "preparing" | "ready" | "needs_answer" | "held" | "confirmed" | "recorded" | "carded" | "stopped";
             };
