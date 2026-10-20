@@ -39,7 +39,7 @@ export type ProfileRow = { profile_id: string; case_id: string; request_key: str
 export const IntakeEvidenceInputSchema = z.strictObject({
   version: z.literal('intake-evidence-read/1'), jobId: uuid, caseId: uuid, caseRevision: z.number().int().nonnegative(),
   profileId: uuid, profileSha256: hash, itemId: uuid, sourceId: uuid, sourceRevision: z.number().int().positive(),
-  sourceSha256: hash, subject: z.string().min(1).max(256), accessSha256: hash,
+  sourceSha256: hash, subject: z.string().min(1).max(256), accessSha256: hash, anchorsSha256: hash.optional(),
 });
 export type IntakeEvidenceInput = z.infer<typeof IntakeEvidenceInputSchema>;
 
@@ -240,22 +240,28 @@ async function assertProfileItemsTx(client: PoolClient, caseId: string, input: I
   for (const itemId of input.documents) await itemTx(client, caseId, itemId, 'document');
 }
 
-/** One read of one source under one profile, enrolled once in the existing job authority. A read again after a raw
- * table job finished (ER1) names that job in its id. */
+/** Why a source is read again, named at the end of its job id: a raw table job that finished (ER1), or a change to
+ * the buildings of the profile's map item (G21). A reading has one cause, so the two never combine. */
+export type ReadAgain = { rawJobId: string } | { anchorsSha256: string };
+const againSuffix = (again?: ReadAgain) => again === undefined ? ''
+  : 'rawJobId' in again ? `:raw:${again.rawJobId}` : `:anchors:${again.anchorsSha256}`;
+
+/** One read of one source under one profile, enrolled once in the existing job authority. A read again names its
+ * cause in its id. The input keeps the digest of the map item's buildings it was queued under, when known. */
 export async function queueIntakeEvidenceTx(client: PoolClient, caseId: string,
-  profile: Pick<ProfileRow, 'profile_id' | 'profile_sha256'>, itemId: string,
-  rawJobId?: string): Promise<string | null> {
+  profile: Pick<ProfileRow, 'profile_id' | 'profile_sha256'>, itemId: string, again?: ReadAgain,
+  anchorsSha256 = again && 'anchorsSha256' in again ? again.anchorsSha256 : undefined): Promise<string | null> {
   const item = (await client.query(`SELECT family,source_id FROM usp_intake_items WHERE case_id=$1 AND item_id=$2`,
     [caseId, itemId])).rows[0];
   if (!item?.source_id || !['table', 'document'].includes(item.family)) return null;
   const { current, binding, source } = await intakeSourceTx(client, caseId, item.source_id);
   const jobId = stableUuid(`intake-evidence/1:${profile.profile_id}:${profile.profile_sha256}:${itemId}:`
-    + `${source.id}:${source.revision}:${source.sha256}${rawJobId === undefined ? '' : `:raw:${rawJobId}`}`);
+    + `${source.id}:${source.revision}:${source.sha256}${againSuffix(again)}`);
   if ((await client.query('SELECT id FROM jobs WHERE id=$1', [jobId])).rowCount) return jobId;
   const input = IntakeEvidenceInputSchema.parse({ version: 'intake-evidence-read/1', jobId, caseId,
     caseRevision: current.revision, profileId: profile.profile_id, profileSha256: profile.profile_sha256, itemId,
     sourceId: source.id, sourceRevision: source.revision, sourceSha256: source.sha256, subject: binding.subject,
-    accessSha256: binding.access });
+    accessSha256: binding.access, ...anchorsSha256 === undefined ? {} : { anchorsSha256 } });
   const digest = fingerprint(input);
   await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
     VALUES($1,$2,$3,'intake-evidence',$4,$5,$6)`, [jobId, caseId, source.id, current.revision, digest, input]);
@@ -295,13 +301,55 @@ export async function queueFinishedTableEvidenceTx(client: PoolClient, caseId: s
     JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id
     WHERE c.case_id=$1 AND i.source_id=$2 AND c.family='table' ORDER BY j.id FOR SHARE OF j`,
   [caseId, raw.source_id]);
-  const readings = (await client.query(`SELECT c.item_id,p.profile_id,p.profile_sha256
+  // A reading read again reads no fewer buildings than the one it replaces, so it keeps that one's digest (G21).
+  const readings = (await client.query(`SELECT c.item_id,p.profile_id,p.profile_sha256,
+    j.payload->>'anchorsSha256' AS anchors_sha256
     FROM usp_intake_evidence_coverage c JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
     JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id LEFT JOIN jobs j ON j.id=c.job_id
     WHERE c.case_id=$1 AND i.source_id=$2 AND c.family='table'
     AND (c.state='partial' OR c.state='reading' AND j.status='running') ORDER BY p.profile_id,c.item_id`,
   [caseId, raw.source_id])).rows;
-  for (const row of readings) await queueIntakeEvidenceTx(client, caseId, row, row.item_id, rawJobId);
+  for (const row of readings) {
+    await queueIntakeEvidenceTx(client, caseId, row, row.item_id, { rawJobId }, row.anchors_sha256 ?? undefined);
+  }
+}
+
+/** G21: the digest of a map item's drafted buildings, each with its package and that package's revision. A building
+ * drafted or a package revised changes it; nothing removes a building, so a digest never comes back. */
+export async function anchorsDigestTx(client: PoolClient, caseId: string, anchorItemId: string) {
+  const rows = (await client.query(`SELECT t.target_id,t.package_id,(p.body->>'revision')::int AS revision
+    FROM usp_intake_targets t JOIN import_packages p ON p.id=t.package_id
+    WHERE t.case_id=$1 AND t.anchor_item_id=$2 ORDER BY t.target_id`, [caseId, anchorItemId])).rows;
+  return fingerprint(rows.map(row => ({ targetId: row.target_id, packageId: row.package_id,
+    packageRevision: row.revision })));
+}
+
+/**
+ * G21: in the transaction where a package's buildings are drafted or decided at a new revision, every source read
+ * under a profile anchored on their map item is read again, so a row keyed to a building drafted after it was read
+ * can still match. A queued reading is left alone: its claim waits on the job rows locked here, so it reads the new
+ * buildings. A reading queued under the same digest is not queued again. A running reading is replaced, and its
+ * write is refused. Earlier jobs, results and candidates are kept; candidates come back under their stable ids.
+ */
+export async function queueAnchorEvidenceTx(client: PoolClient, packageId: string) {
+  const map = (await client.query(`SELECT case_id,anchor_item_id FROM usp_intake_targets WHERE package_id=$1
+    LIMIT 1`, [packageId])).rows[0];
+  if (!map) return;
+  // The readings' jobs are locked before their coverage, in the order a reading's own completion takes them.
+  await client.query(`SELECT j.id FROM jobs j JOIN usp_intake_evidence_coverage c ON c.job_id=j.id
+    JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
+    WHERE c.case_id=$1 AND p.anchor_item_id=$2 ORDER BY j.id FOR SHARE OF j`, [map.case_id, map.anchor_item_id]);
+  const readings = (await client.query(`SELECT p.profile_id,p.profile_sha256,c.item_id,
+    j.payload->>'anchorsSha256' AS anchors_sha256
+    FROM usp_intake_evidence_coverage c JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
+    LEFT JOIN jobs j ON j.id=c.job_id WHERE c.case_id=$1 AND p.anchor_item_id=$2
+    AND j.status IS DISTINCT FROM 'queued' ORDER BY p.profile_id,c.item_id`,
+  [map.case_id, map.anchor_item_id])).rows;
+  if (!readings.length) return;
+  const anchorsSha256 = await anchorsDigestTx(client, map.case_id, map.anchor_item_id);
+  for (const row of readings) if (row.anchors_sha256 !== anchorsSha256) {
+    await queueIntakeEvidenceTx(client, map.case_id, row, row.item_id, { anchorsSha256 });
+  }
 }
 
 /** The officer names the key; every named source is queued for reading in the same transaction. */
@@ -325,8 +373,9 @@ export async function declareIntakeKeyProfile(caseValue: string, raw: unknown) {
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
     [randomUUID(), caseId, input.requestKey, digest, keyProfileSha256(input), input.version, input.namespace,
       input.kind, input.map.anchorItemId, input.map.sourcePath, input, binding.subject])).rows[0];
+    const anchorsSha256 = await anchorsDigestTx(client, caseId, input.map.anchorItemId);
     for (const itemId of [...input.tables.map(table => table.itemId), ...input.documents]) {
-      await queueIntakeEvidenceTx(client, caseId, row, itemId);
+      await queueIntakeEvidenceTx(client, caseId, row, itemId, undefined, anchorsSha256);
     }
     return profileView(row);
   });

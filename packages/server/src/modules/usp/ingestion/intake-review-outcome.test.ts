@@ -67,6 +67,10 @@ function projection(sql: string, buildings: boolean, item: Item, target: Target)
     review_refusal: item.review_refusal_code ? { code: item.review_refusal_code,
       message: item.review_refusal_message } : null }] };
   if (sql.startsWith('SELECT DISTINCT ON (p.id)')) return { rows: [] };
+  // G21: the package's map item, under no key profile.
+  if (sql.startsWith('SELECT case_id,anchor_item_id')) return { rows: buildings ? [{ case_id: caseId,
+    anchor_item_id: caseId }] : [] };
+  if (/^SELECT (j\.id FROM jobs j|p\.profile_id,p\.profile_sha256)/.test(sql)) return { rows: [] };
   if (/^(BEGIN|COMMIT|ROLLBACK|INSERT INTO usp_outbox|UPDATE usp_outbox_streams)/.test(sql)) {
     return { rows: [{ sequence: '1' }] };
   }
