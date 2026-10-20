@@ -11,6 +11,7 @@ import { assertIntakeDraftTx } from './intake-draft';
 import { IntakeService } from './intake-service';
 import { IntakeZipLayersInputSchema, fanOutZipLayers, zipParentStageTx, type IntakeZipLayersInput,
   type ZipLayerDependencies } from './intake-zip-layers';
+import { LargeOriginalService } from './large-original';
 import { ManualIngestionService } from './service';
 
 const manual = new ManualIngestionService();
@@ -18,7 +19,9 @@ const intake = new IntakeService();
 // The dependencies the enrol request passed before ZJ1; each layer is enrolled like any dropped file.
 const defaults: ZipLayerDependencies = { transaction, read: readObjectRange,
   retain: manual.retain.bind(manual) as ZipLayerDependencies['retain'],
-  register: (caseId, raw) => intake.register(caseId, raw) };
+  register: (caseId, raw) => intake.register(caseId, raw), large: new LargeOriginalService() };
+// ZL1: a large layer is read twice in 1 MiB ranges, longer than one lease; its reads renew it at most this often.
+const READ_RENEW_MS = 60_000;
 
 /** The archive's pins hold; the case revision may have moved forward, never back. */
 const pinned = (input: IntakeZipLayersInput) => (client: PoolClient) =>
@@ -83,8 +86,16 @@ export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial
   const own = { ...defaults, ...dependencies };
   // A large ZIP outlasts one lease; each layer's retain and enrolment renews it first.
   const renew = () => heartbeatUspJobAttempt(attempt);
+  let renewed = Date.now();
   try {
     const kept = await fanOutZipLayers(input.caseId, input.itemId, { ...own,
+      read: async (...args) => {
+        if (Date.now() - renewed >= READ_RENEW_MS) {
+          await renew();
+          renewed = Date.now();
+        }
+        return own.read(...args);
+      },
       retain: async (...args) => { await renew(); return own.retain(...args); },
       register: async (...args) => { await renew(); return own.register(...args); } });
     await complete(input, attempt, kept);

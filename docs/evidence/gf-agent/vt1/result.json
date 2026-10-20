@@ -1,0 +1,171 @@
+{
+  "task": "VT1",
+  "gates": ["GF-AGENT", "FP-LEARN-TEST"],
+  "status": "completed_one_arm_measured_miss",
+  "base": "7231538c (staging)",
+  "codeCommit": "9be54c21",
+  "decisions": {
+    "D1": "load_examples admits labelKind synthetic_variant only with seedProfileId on example and link, dev split",
+    "D2": "fit-only: excluded with its seed family per fold; never tested, scored, thresholded or calibrated",
+    "D3": "5 variants dropped at load: variant header equals another family's real header",
+    "D4": "without variants every trainer output is byte-identical to 7231538c (cross_fit and single_family test)",
+    "D5": "one A4e-arm retrain with the 265 remaining variants; one held-out count-only run; no tuning"
+  },
+  "run": {
+    "command": "pnpm exec tsx scripts/agent/measure-a4d.ts --variants <variantFile.path>",
+    "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "pythonNote": "venv-vision has no scikit-learn; venv-plans is the interpreter A4e used, so nothing else changed",
+    "rule": {"calibrationMode": "cross_fit", "classBalance": false, "folds": 32, "seed": 17,
+      "featuresChanged": false, "thresholdRuleChanged": false},
+    "outputs": "E:/BhuAayam-data/task-data/vt1/",
+    "sha256": {
+      "measurements/completed-v1/result.json": "39f2a0acee5894bce2f626f1352b47578c3fcebf3715d6f292e2031d2148998d",
+      "measurements/completed-v1/heldout-counts.json":
+        "c498d31ab4e092bb30e761e35c22c1b67012de1aadb601c0a174b119aefeb659",
+      "measurements/completed-v1/fit-receipt.json": "b02877032d814d8e57c87d8385fca7d86d2e9e758f0a6c5b6e04b7c799c181a8",
+      "learner/one-arm-v1/cross-fit-scores.json": "8d13397df3d91f6a9e66fa798e0fafef869f51d58813da914b570b386a637f89",
+      "learner/one-arm-v1/v1/model.npz": "ef266b9106f29c5a51a56a0d41e44df42fbb32d8e1a84c9bea9645671cdf6339"
+    },
+    "variantFile": {"path": "E:/BhuAayam-data/task-data/va2/variant-examples.jsonl",
+      "sha256": "5cbf9768dbec923051291972dfbf2ea2eab896bb8477f8ee1834c6db54cf2c6d"},
+    "freshFits": 1,
+    "heldOutRuns": 1
+  },
+  "examplesByKind": {
+    "real": {"total": 805, "byTarget": {"unknown": 772, "building.name": 8, "building.storeyLabel": 3,
+      "document.registrationNo": 4, "unit.type": 2, "building.addressLiteral": 8, "building.footprint": 1,
+      "building.sourceKey": 4, "building.storeyCount": 2, "building.heightM": 1}},
+    "variantLoaded": {"total": 270, "byTarget": {"building.addressLiteral": 59, "building.heightM": 13,
+      "building.name": 57, "building.sourceKey": 53, "building.storeyCount": 25, "document.registrationNo": 41,
+      "unit.type": 22}},
+    "variantDroppedD3": {"total": 5, "reason": "variant header equals another family's real header",
+      "byFamilyTarget": [
+        {"family": "mi-d02", "target": "building.name"},
+        {"family": "opf-d02", "target": "building.name"},
+        {"family": "opf-d02", "target": "building.addressLiteral"},
+        {"family": "opf-d02", "target": "building.addressLiteral"},
+        {"family": "opf-d05", "target": "building.addressLiteral"}
+      ]},
+    "variantFitOnly": {"total": 265, "byTarget": {"building.addressLiteral": 56, "building.heightM": 13,
+      "building.name": 55, "building.sourceKey": 53, "building.storeyCount": 25, "document.registrationNo": 41,
+      "unit.type": 22}},
+    "finalFit": 1070,
+    "calibrationAndScored": 741
+  },
+  "pooledLeaveOneFamilyOut": {
+    "n": 741,
+    "a4e": {"threshold": 0.9866563081741333, "wrong": 0, "correctPositive": 0, "unknownCommitted": 2,
+      "abstained": 739},
+    "vt1": {"threshold": null, "wrong": 0, "correctPositive": 0, "unknownCommitted": 0, "abstained": 741},
+    "byGroupVt1": {
+      "Indian": {"n": 527, "wrong": 0, "correctPositive": 0, "unknownCommitted": 0, "abstained": 527},
+      "foreign": {"n": 214, "wrong": 0, "correctPositive": 0, "unknownCommitted": 0, "abstained": 214}
+    }
+  },
+  "perTargetCorrectPositiveCommits": {
+    "building.addressLiteral": {"n": 8, "a4e": 0, "vt1": 0},
+    "building.footprint": {"n": 1, "a4e": 0, "vt1": 0},
+    "building.heightM": {"n": 1, "a4e": 0, "vt1": 0},
+    "building.name": {"n": 8, "a4e": 0, "vt1": 0},
+    "building.sourceKey": {"n": 4, "a4e": 0, "vt1": 0},
+    "building.storeyCount": {"n": 2, "a4e": 0, "vt1": 0},
+    "building.storeyLabel": {"n": 3, "a4e": 0, "vt1": 0},
+    "document.registrationNo": {"n": 4, "a4e": 0, "vt1": 0},
+    "unit.type": {"n": 2, "a4e": 0, "vt1": 0}
+  },
+  "threshold": {
+    "value": null,
+    "why": [
+      "The pooled rule takes the lowest confidence at which every committed field agrees. The two highest",
+      "pooled scores (0.9846, mi-d23) are pseudo-label unknown predicted building.name, so no cut is clean."
+    ]
+  },
+  "developmentDiagnostics": {
+    "note": "Read from development cross-fit scores after the run; not used to change anything.",
+    "positivesWithCorrectArgmax": {"a4e": 14, "vt1": 20, "of": 33},
+    "unknownPredictedAsPositiveTarget": {"a4e": 6, "vt1": 515, "of": 708}
+  },
+  "heldOut": {
+    "scorable": {"n": 2, "committed": 0, "correct": 0, "abstained": 2},
+    "nonScorable": {"n": 2, "committed": 0},
+    "a4e": {"n": 2, "committed": 0, "correct": 0, "abstained": 2},
+    "qualification": "Counts only, through the existing measurement; no held-out file was opened by hand."
+  },
+  "success": {
+    "criterion": "At least one correct positive commit with zero wrong commits, pooled",
+    "met": false,
+    "reading": "Measured miss, not tuned."
+  },
+  "ledgerEntry": {
+    "operation": "VT1 fallback Step 1: Stage A fits on VA2 variants (fit-only), one A4e-arm retrain",
+    "hypothesis": [
+      "Header variants of the 33 real positives over re-sampled real values give the cross-fit",
+      "student at least one correct positive commit with zero wrong commits"
+    ],
+    "baseline": [
+      "A4e: cross_fit, no class balance, 805 examples / 33 positive, threshold 0.9866563081741333;",
+      "pooled n=741: wrong 0, correct positive 0, unknown committed 2, abstained 739; held-out 0/2 committed"
+    ],
+    "bounded_comparison": [
+      "One run of the A4e arm with 265 variants (270 minus 5 D3 drops) added fit-only;",
+      "one held-out count-only run; no second arm, no tuning"
+    ],
+    "result": [
+      "Threshold none. Pooled n=741: wrong 0, correct positive 0, unknown committed 0, abstained 741.",
+      "Held-out scorable n=2: committed 0, correct 0, abstained 2; non-scorable n=2: committed 0."
+    ],
+    "failure_signature": [
+      "Variants raise argmax-correct positives (14 to 20 of 33) but also move 515 of 708 unknown fields",
+      "to a positive argmax; the top pooled scores are unknown fields predicted building.name, so the",
+      "zero-wrong threshold rule finds no clean cut and the model abstains everywhere"
+    ],
+    "not_separated": [
+      "Whether the top fields are teacher misses (unknown on a name-like column) or student errors;",
+      "the effect of 265 positives against 772 unknowns without class balance"
+    ],
+    "receipts": [
+      "vt1/result.json",
+      "E:/BhuAayam-data/task-data/vt1/measurements/completed-v1/result.json"
+    ],
+    "decision": [
+      "Hypothesis not supported in this run. No further fit or held-out run. The lead decides the",
+      "next fallback step (FALLBACK-LEARNER.md section 4/5)."
+    ]
+  },
+  "tests": {
+    "stageA": {"files": ["services/geo/tests/test_stage_a.py", "services/geo/tests/test_foreign_stage_a.py"],
+      "passed": 18},
+    "newPythonCases": [
+      "VA2 variants load with seed family; a variant without seed is refused",
+      "a variant never replaces a real example for the same key",
+      "variants fit every other fold, never tested, thresholded or calibrated",
+      "D3 drop and seed match",
+      "byte-identical outputs without variants, cross_fit and single_family"
+    ],
+    "agent": {"files": ["scripts/agent/measure-a4d.test.ts", "scripts/agent/t1-prep.test.ts",
+      "scripts/agent/verify-teacher-labels.test.ts", "scripts/agent/a3-chunk.test.ts",
+      "scripts/agent/foreign-development.test.ts"], "passed": 22}
+  },
+  "checks": [
+    {"command": "python -B -m pytest --noconftest test_stage_a.py test_foreign_stage_a.py", "exitCode": 0},
+    {"command": "python -B -m ruff check stage_a.py test_stage_a.py test_foreign_stage_a.py", "exitCode": 0},
+    {"command": "pnpm exec tsx --test (measure-a4d, t1-prep, verify-teacher-labels, a3-chunk, foreign-development)",
+      "exitCode": 0},
+    {"command": "pnpm exec tsx scripts/agent/measure-a4d.ts --variants <va2 file>", "exitCode": 0},
+    {"command": "pnpm exec tsx scripts/agent/measure-a4d.ts --variants <va2 file> --check", "exitCode": 0},
+    {"command": "pnpm exec tsx scripts/agent/measure-a4d.ts --check (A4d unchanged)", "exitCode": 0},
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "git diff --check 7231538c", "exitCode": 0}
+  ],
+  "boundaries": {
+    "heldOutOpened": false,
+    "providerCalls": 0,
+    "docker": false,
+    "rehearsalCheck": "skipped by the lead: ulpin-reh-02 not running, Docker not up",
+    "gpu": false,
+    "fits": 1,
+    "heldOutRuns": 1,
+    "tuningAfterMeasurement": false,
+    "pushed": false
+  }
+}

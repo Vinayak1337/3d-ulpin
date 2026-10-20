@@ -155,14 +155,27 @@ describe('a picked footprint', () => {
     expect(markup).toContain('B-1');
   });
 
-  it('says a proposal is not yet confirmed, keeps its identifier and register, and says nothing of a record', () => {
-    const proposal = render(createElement(WindowedInspector, {
-      feature: feature('B-2', 'building', null, 'unrecorded_proposal'), areaName: 'Area', onClose() {},
-    }));
-    expect(proposal).toContain('A reviewed proposal, not yet confirmed by an officer.');
-    expect(proposal).toContain('B-2');
-    expect(proposal).toContain('>Open register</a>');
-    expect(inspector('building')).not.toContain('not yet confirmed');
+  const proposal = (caseId?: string) => render(createElement(WindowedInspector, {
+    feature: { ...feature('B-2', 'building', null, 'unrecorded_proposal'), ...(caseId ? { caseId } : {}) },
+    areaName: 'Area', onClose() {},
+  }));
+
+  it('links a proposal to the batch of its case, keeps its identifier and register; a record has no such line', () => {
+    const markup = proposal('c-1');
+    expect(markup).toContain('Proposed in a batch, not yet confirmed.');
+    expect(markup).toMatch(/<a href="\/studio\/work\/cases\/c-1\/intake"[^>]*>Open batch to confirm<\/a>/);
+    expect(markup).toContain('B-2');
+    expect(markup).toContain('>Open register</a>');
+    const recorded = inspector('building');
+    expect(recorded).not.toContain('not yet confirmed');
+    expect(recorded).not.toContain('/intake');
+  });
+
+  it('says a proposal with no case is not yet confirmed and links no batch', () => {
+    const markup = proposal();
+    expect(markup).toContain('Proposed in a batch, not yet confirmed.');
+    expect(markup).not.toContain('/intake');
+    expect(markup).not.toContain('Open batch');
   });
 
   it('offers no register for a feature that is not a building', () => {
