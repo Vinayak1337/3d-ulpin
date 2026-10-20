@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createReadStream, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { Readable } from 'node:stream';
-import test from 'node:test';
+import test, { afterEach, beforeEach } from 'node:test';
 import v8 from 'node:v8';
 import { runInNewContext } from 'node:vm';
 import { TABULAR_LIMITS, TABULAR_STREAM_LIMITS, TableWindowRowSchema, TabularPinSchema, TabularSourceProfileSchema }
@@ -152,8 +153,20 @@ const rbi = 'E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/orig
 const chunked = (bytes: Buffer) => Readable.from((function* () {
   for (let at = 0; at < bytes.length; at += 64 * 1024) yield bytes.subarray(at, at + 64 * 1024);
 })());
-// The private scratch the demo runtime gives its local readers; here a test folder outside the repository.
-const scratchRoot = process.env.ULPIN_DOCUMENT_OCR_SCRATCH = join(tmpdir(), 'ulpin-table-scratch-stream');
+// The private scratch the demo runtime gives its local readers; here each test makes its own folder outside the
+// repository, so runs that overlap on one machine never count each other's copies. Only that folder is removed.
+const configuredScratch = process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+let scratchRoot = '';
+beforeEach(async () => {
+  scratchRoot = process.env.ULPIN_DOCUMENT_OCR_SCRATCH = await mkdtemp(join(tmpdir(), 'ulpin-table-scratch-stream-'));
+});
+afterEach(async () => {
+  if (configuredScratch === undefined) delete process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+  else process.env.ULPIN_DOCUMENT_OCR_SCRATCH = configuredScratch;
+  const folder = scratchRoot;
+  scratchRoot = '';
+  if (folder) await rm(folder, { recursive: true, force: true });
+});
 const scratchDirectories = () => existsSync(scratchRoot)
   ? readdirSync(scratchRoot).filter(name => name.startsWith('table-workbook-')).length : 0;
 
