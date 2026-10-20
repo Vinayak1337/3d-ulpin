@@ -51,6 +51,8 @@ export function confirmationWords(chosen: number): string {
 
 /** A cards-only confirmation records nothing and cards its buildings in the order listed. */
 export function cardsOnlyWords(chosen: number): string {
+  if (chosen === 1) return 'This recorded building will get a snapshot, an evidence plan and packet, and a property '
+    + 'card made and verified, without another press. Nothing is recorded again.';
   return `These ${chosen} recorded buildings will each get a snapshot, an evidence plan and packet, and a property `
     + 'card made and verified, in the order listed, without another press. Nothing is recorded again.';
 }
@@ -93,11 +95,14 @@ export function chooseReady<T extends ChoiceTarget>(targets: readonly T[], packa
   return [...unique.values()].slice(0, INTAKE_TARGET_LIMITS.confirmationTargets);
 }
 
+/** A cards-only confirmation: no package, the recorded buildings with no card it names, in order. */
+export function cardsBody(choice: readonly CardTarget[], acknowledgement: string, requestKey: string): ConfirmBody {
+  return { requestKey, acknowledgement, packages: [], targets: nextRecorded(choice).map(target => target.targetId) };
+}
+
 export function confirmBody(page: TargetPage, choice: readonly (ChoiceTarget & CardTarget)[],
   acknowledgement: string, requestKey: string, cardsOnly = false): ConfirmBody {
-  if (cardsOnly) {
-    return { requestKey, acknowledgement, packages: [], targets: nextRecorded(choice).map(target => target.targetId) };
-  }
+  if (cardsOnly) return cardsBody(choice, acknowledgement, requestKey);
   const packages = confirmablePackages(page);
   return {
     requestKey, acknowledgement,

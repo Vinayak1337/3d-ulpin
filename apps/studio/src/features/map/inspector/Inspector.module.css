@@ -59,3 +59,14 @@
   .above { display: block; overflow: auto; }
   .body { overflow: visible; }
 }
+/* The property card of a building named by an intake target: its words, the acknowledgement and one press. */
+.cardSection {
+  display: grid; gap: var(--ui-space-2); padding-top: var(--ui-space-3); border-top: 1px solid var(--ui-divider);
+}
+.cardSection p { margin: 0; overflow-wrap: anywhere; }
+.field { display: grid; gap: var(--ui-space-2); color: var(--ui-ink); }
+.field textarea {
+  width: 100%; max-width: 100%; padding: var(--ui-space-2); border: 1px solid var(--ui-line-control);
+  border-radius: var(--ui-radius-8); background: var(--ui-surface); color: var(--ui-ink); font: inherit;
+  resize: vertical;
+}

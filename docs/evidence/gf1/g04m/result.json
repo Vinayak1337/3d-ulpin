@@ -1,0 +1,52 @@
+{
+  "task": "G04M",
+  "gate": "GF1",
+  "status": "done",
+  "base": "ecbf8b93",
+  "branch": "task/g04m-map-card",
+  "defect": "AU5 G04 (partly): a recorded building picked on the area map had no way to get its property card; cards-only confirmation was reachable only from the batch page, 100 per press.",
+  "decisions": {
+    "D1": "When an intake target names the picked building and it is recorded with no card and in no confirmation, the inspector shows the batch page's cards-only words for one building, the same caveat, a typed acknowledgement and 'Make the property card'. The press posts the existing cards-only confirmation (fresh requestKey, packages [], targets [this target]) through useConfirmationCommand, whose resend-on-uncertain and 409 handling are unchanged. The target is then re-read and followed through the case's one subscription (useRunStream) until carded, and the card dialog opens.",
+    "D2": "A carded building shows 'Open the property card'; one listed in a confirmation shows its reason, locator and step and a batch link; any other readiness shows its label and words, its reason and 'Open batch' to /studio/work/cases/<caseId>/intake; a building no target names shows nothing.",
+    "D3": "No target lookup by feature existed, so one read is added: GET /api/v1/ingestion/intake/targets/by-feature?featureId[&packageId]. The map holds no package for a recorded building (a proposal carries proposalPackageId), so packageId is optional: with it the target is read in that package; without it in the packages that recorded the feature, read through physical_feature_revisions (primary key on feature_id) and UNIQUE(package_id,locator) on targets, so no index or schema step. Several targets: the furthest stage, then the latest. Case access is intakeCaseTx on the target's case, as the target page; none is 404 NOT_FOUND.",
+    "cardDialog": "The Studio has no building-level card dialog (UnitCardDialog is per unit and asks the snapshot's unit cards). The dialog opened here is the shared Dialog with the run's own ArtefactLinks: card PDF of the exact revision, verification page, record.",
+    "words": "cardsOnlyWords(1) now reads in the singular ('This recorded building will get ...'); every other count reads as before.",
+    "scope": "The map's BuildingInspector only (MapWorkspace passes the section; RegisterPage and WorkspacePage are unchanged). WindowedArea, which draws areas over one display read (the NYC area), uses WindowedInspector and is not changed here."
+  },
+  "changed": [
+    "packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-targets.ts",
+    "packages/server/src/modules/usp/ingestion/intake-targets.test.ts",
+    "apps/api/src/modules/ingestion/intake-run.controller.ts",
+    "apps/api/src/modules/ingestion/intake-run.controller.test.ts",
+    "apps/api/src/modules/ingestion/operation-manifest.json",
+    "docs/api/openapi.json",
+    "docs/api/source-pins.json",
+    "packages/api-client/src/schema.d.ts",
+    "apps/studio/src/features/intake/run/api.ts",
+    "apps/studio/src/features/intake/run/model.ts",
+    "apps/studio/src/features/intake/run/useConfirmationCommand.ts",
+    "apps/studio/src/features/map/MapWorkspace.tsx",
+    "apps/studio/src/features/map/inspector/BuildingInspector.tsx",
+    "apps/studio/src/features/map/inspector/BuildingCard.tsx",
+    "apps/studio/src/features/map/inspector/cardState.ts",
+    "apps/studio/src/features/map/inspector/Inspector.module.css",
+    "apps/studio/src/features/map/inspector/BuildingCard.test.tsx"
+  ],
+  "tests": {
+    "inputs": "The captured E3B run of 11 October (docs/evidence/gf1/e3b/targets.json, confirmation.json): a ready building (good: not recorded) and the same building carded and verified (difficult: full artefacts). The recorded-no-card and listed states are that carded target with its later artefacts removed, stated in the test.",
+    "studio": "BuildingCard.test.tsx: recorded without card (words, disabled press until typed; pressCards posts {packages: [], targets: [this]} equal to the batch page's confirmBody cards-only body; stored once; reads follow listed -> carded and followCard opens; the dialog shows the card PDF, verification and 'Card consistent'); carded (offers 'Open the property card', no dialog until asked); not recorded (ready label and words, batch link, no press); not a target (404 NOT_FOUND -> null -> nothing; a server without the route is an error, not none; query carries featureId and packageId).",
+    "server": "intake-targets.test.ts: recorded read uses physical_feature_revisions with [featureId, null], orders by stage, checks the target's case; a proposal read passes the packageId; none -> 404; archived case -> INGESTION_CASE_ARCHIVED; a malformed featureId is refused before any statement. intake-run.controller.test.ts: strict query (one featureId, at most one packageId, no other field) and the published IntakeTargetSchema response."
+  },
+  "checks": {
+    "typecheck:backend": "exit 0",
+    "studio:typecheck": "exit 0",
+    "studio:test": "exit 0; studio 79 files, 502 passed; scene 58 passed, 1 skipped; ui 7; api-client 2",
+    "backend tests": "exit 0; template set plus intake-run.controller.test.ts: 419 tests, 417 pass, 0 fail, 2 skipped",
+    "openapi --check": "exit 0 after scripts/api/refresh-contract.ts ecbf8b93 and pnpm studio:api-types",
+    "scripts/api/check.py": "exit 0 (323 operations, 365 named schemas). In this worktree three committed runtime receipts check out with CRLF and fail their hash; with their committed bytes the check passes; those files are not changed by this task",
+    "git diff --check": "exit 0",
+    "ui-design-check scan": "exit 0, no candidates (scan reads apps/web only); Studio lines checked by hand, report in ui-design-check.md"
+  },
+  "notRun": "No runtime, Docker, database or provider call: the SQL is checked by statement and parameters against an in-memory client, not against PostGIS, and the Studio was not opened in a browser. The run itself (cards-only confirmation to card) is the existing worker, unchanged."
+}

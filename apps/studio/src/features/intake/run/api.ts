@@ -1,4 +1,5 @@
 import { api, unwrap, ApiError } from '@ulpin/api-client';
+import { isNotFound } from '../../identity/registryCard';
 import { chooseReady, confirmablePackages, INTAKE_TARGET_LIMITS, nextRecorded,
   type Confirmation, type ConfirmBody, type Readiness, type Target, type TargetPage } from './model';
 
@@ -26,6 +27,18 @@ export async function readNextRecorded(caseId: string): Promise<Target[]> {
     choice = nextRecorded([...choice, ...page.items]);
   }
   return choice;
+}
+
+/** The intake target naming one building, or null when the server holds none. */
+export async function readTargetByFeature(featureId: string, packageId?: string): Promise<Target | null> {
+  try {
+    return unwrap(await api.GET('/api/v1/ingestion/intake/targets/by-feature', {
+      params: { query: { featureId, ...(packageId ? { packageId } : {}) } },
+    })) as Target;
+  } catch (failure) {
+    if (isNotFound(failure)) return null;
+    throw failure;
+  }
 }
 
 export async function readConfirmation(caseId: string, confirmationId: string): Promise<Confirmation> {
