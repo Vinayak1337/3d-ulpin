@@ -368,17 +368,25 @@ export function decodeColumnText(bytes: Uint8Array): string {
 }
 
 /** Literal positional records, also reused by tabular source admission and the raw chunk reader. */
+/** The comma is fixed, as the stream reader reads it: a guessed delimiter fails on a short table that ends with a
+ * line ending. A record of blanks only (the empty line after a final line ending included) is skipped and never
+ * counted toward `maxRows`; its number is kept by the next record. An empty cell stays empty text. */
 export function readColumnCsv(text: string, maxRows = 2000) {
-  const parsed = Papa.parse<string[]>(text, { dynamicTyping: false, preview: maxRows + 2 });
-  if (parsed.errors.length || parsed.data.length > maxRows + 1) throw new Error('COLUMN_CSV_LIMIT_OR_INVALID');
-  const [headers = [], ...records] = parsed.data;
-  const observed = records.map((row, index) => ({ row, sourceRow: index + 2 }))
-    .filter(record => record.row.some(cell => cell.trim()));
-  const rows = observed.map(record => record.row);
-  if (!headers.length || !headers.some(header => header.trim()) || rows.some(row => row.length > headers.length)) {
+  let headers: string[] | undefined, sourceRow = 0, invalid = false;
+  const rows: string[][] = [], sourceRows: number[] = [];
+  Papa.parse<string[]>(text, { dynamicTyping: false, delimiter: ',', step: (result, parser) => {
+    sourceRow++;
+    if (result.errors.length || rows.length >= maxRows && result.data.some(cell => cell.trim())) {
+      invalid = true;
+      parser.abort();
+    } else if (!headers) headers = result.data;
+    else if (result.data.some(cell => cell.trim())) { rows.push(result.data); sourceRows.push(sourceRow); }
+  } });
+  if (invalid) throw new Error('COLUMN_CSV_LIMIT_OR_INVALID');
+  if (!headers?.length || !headers.some(header => header.trim()) || rows.some(row => row.length > headers!.length)) {
     throw new Error('COLUMN_HEADER_NEEDS_INPUT');
   }
-  return { headers, rows, sourceRows: observed.map(record => record.sourceRow) };
+  return { headers, rows, sourceRows };
 }
 
 function csvColumns(text: string): ProfiledInput {
