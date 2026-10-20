@@ -235,15 +235,17 @@ async function assertProfileItemsTx(client: PoolClient, caseId: string, input: I
   for (const itemId of input.documents) await itemTx(client, caseId, itemId, 'document');
 }
 
-/** One read of one source under one profile, enrolled once in the existing job authority. */
+/** One read of one source under one profile, enrolled once in the existing job authority. A read again after a raw
+ * table job finished (ER1) names that job in its id. */
 export async function queueIntakeEvidenceTx(client: PoolClient, caseId: string,
-  profile: Pick<ProfileRow, 'profile_id' | 'profile_sha256'>, itemId: string): Promise<string | null> {
+  profile: Pick<ProfileRow, 'profile_id' | 'profile_sha256'>, itemId: string,
+  rawJobId?: string): Promise<string | null> {
   const item = (await client.query(`SELECT family,source_id FROM usp_intake_items WHERE case_id=$1 AND item_id=$2`,
     [caseId, itemId])).rows[0];
   if (!item?.source_id || !['table', 'document'].includes(item.family)) return null;
   const { current, binding, source } = await intakeSourceTx(client, caseId, item.source_id);
   const jobId = stableUuid(`intake-evidence/1:${profile.profile_id}:${profile.profile_sha256}:${itemId}:`
-    + `${source.id}:${source.revision}:${source.sha256}`);
+    + `${source.id}:${source.revision}:${source.sha256}${rawJobId === undefined ? '' : `:raw:${rawJobId}`}`);
   if ((await client.query('SELECT id FROM jobs WHERE id=$1', [jobId])).rowCount) return jobId;
   const input = IntakeEvidenceInputSchema.parse({ version: 'intake-evidence-read/1', jobId, caseId,
     caseRevision: current.revision, profileId: profile.profile_id, profileSha256: profile.profile_sha256, itemId,
@@ -269,6 +271,32 @@ export async function queueLateIntakeEvidenceTx(client: PoolClient, caseId: stri
   const profiles = (await client.query(`SELECT profile_id,profile_sha256 FROM usp_intake_key_profiles
     WHERE case_id=$1 ORDER BY created_at,profile_id LIMIT $2`, [caseId, INTAKE_EVIDENCE_LIMITS.sources])).rows;
   for (const profile of profiles) await queueIntakeEvidenceTx(client, caseId, profile, itemId);
+}
+
+const FINISHED_RAW = ['completed', 'completed_with_rejections'];
+
+/**
+ * ER1: in the transaction where a table's raw streaming job finishes, each reading of its source that may have read
+ * it unfinished is read again: one left partial, or one still running. A queued reading is left alone: its claim
+ * waits on the job rows locked here, so it reads the finished job. A partial reading's job, result and candidates
+ * are kept. A raw job that did not finish queues nothing, and a replay finds each new reading already queued.
+ */
+export async function queueFinishedTableEvidenceTx(client: PoolClient, caseId: string, rawJobId: string) {
+  const raw = (await client.query(`SELECT source_id,state FROM usp_streaming_vector_imports
+    WHERE case_id=$1 AND job_id=$2`, [caseId, rawJobId])).rows[0];
+  if (!raw || !FINISHED_RAW.includes(raw.state)) return;
+  // The readings' jobs are locked before their coverage, in the order a reading's own completion takes them.
+  await client.query(`SELECT j.id FROM jobs j JOIN usp_intake_evidence_coverage c ON c.job_id=j.id
+    JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id
+    WHERE c.case_id=$1 AND i.source_id=$2 AND c.family='table' ORDER BY j.id FOR SHARE OF j`,
+  [caseId, raw.source_id]);
+  const readings = (await client.query(`SELECT c.item_id,p.profile_id,p.profile_sha256
+    FROM usp_intake_evidence_coverage c JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
+    JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id LEFT JOIN jobs j ON j.id=c.job_id
+    WHERE c.case_id=$1 AND i.source_id=$2 AND c.family='table'
+    AND (c.state='partial' OR c.state='reading' AND j.status='running') ORDER BY p.profile_id,c.item_id`,
+  [caseId, raw.source_id])).rows;
+  for (const row of readings) await queueIntakeEvidenceTx(client, caseId, row, row.item_id, rawJobId);
 }
 
 /** The officer names the key; every named source is queued for reading in the same transaction. */

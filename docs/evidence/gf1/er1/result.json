@@ -1,0 +1,36 @@
+{
+  "task": "er1",
+  "gap": "A partial evidence reading of a windowed CSV or workbook is read again when its table's raw streaming job finishes",
+  "base": "e878cc0b",
+  "built": {
+    "queueIntakeEvidenceTx": "optional rawJobId; with one the stable job id ends ':raw:<rawJobId>', without one it is the earlier id exactly (tested)",
+    "queueFinishedTableEvidenceTx": "intake-evidence.ts: reads the raw job's state and source; when completed or completed_with_rejections it locks the readings' job rows FOR SHARE, then queues one reading for each table coverage row of that source that is partial or reading under a running job",
+    "call": "streaming-vector-worker.ts runStreamingVectorJob, in the beforeCommit of acceptUspJobAttempt right after usp_streaming_vector_imports.state is set to its finished status and before the case outbox append; guarded by isWindowedTable(input)"
+  },
+  "decisions": {
+    "D1": "one new reading per partial (or running) coverage row; the coverage row points at it through the existing upsert",
+    "D2": "the partial reading's job, result and candidates are kept until the new reading writes; candidate ids are stable by evidence identity and literal (the raw job is not in them), so every earlier candidate reappears once under the same id. Officer decisions live in usp_intake_evidence_confirmations pins, which nothing here touches; the candidate's candidateSha256 changes because its sourceCoverage changes from partial to closed",
+    "D3": "a failed, stale or still running raw job queues nothing; a replay finds the new job already queued (or the coverage closed) and inserts nothing",
+    "D4": "WINDOW_ASSERTIONS (50,000) unchanged"
+  },
+  "realInput": {
+    "buildings": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson (test_only, foreign geography)",
+    "register": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv (test_only), the AU4-B2B register, regrouped into 8 stored windows of 100 records",
+    "partial": "first reading over 3 windows while the raw job runs: coverage partial, only keys a building holds proposed",
+    "closed": "second reading after the finish: coverage closed, 753 candidates (matched 612, conflicting 81, no_match 60), every earlier candidate id present once"
+  },
+  "tests": [
+    "ER1: a reading partial while the raw job ran is read again once when it finishes, and closes",
+    "ER1: on the finish a reading still running is read again; one still queued reads the finished job"
+  ],
+  "checks": {
+    "intake-evidence.test.ts": "9 pass, 0 skipped",
+    "backend set": "482 tests, 479 pass, 0 fail, 3 skipped (pre-existing skips: two point-cloud scheduling tests, TP1 workbook without geo python)",
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": "0 (studio 542 pass, 2 skipped)",
+    "openapi --check": "0 after refresh-contract.ts e878cc0b (source pins of the two changed files)",
+    "git diff --check": 0
+  },
+  "notRun": "No database: the SQL of queueFinishedTableEvidenceTx is answered by an in-memory fake, so the lock order and the coverage filter are checked by reading, not by Postgres. No Docker, GPU or provider call."
+}

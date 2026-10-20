@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { afterEach, beforeEach, test } from 'node:test';
-import type { Pool } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 import { IntakeTableRowLocatorSchema, type DocumentResult, type IntakeEvidenceAnchor, type IntakeEvidenceCandidate,
   type IntakeEvidenceConfirm, type IntakeEvidenceCoverage, type IntakeEvidenceLocator, type IntakeKeyProfileInput,
   type TableWindowRow, type TabularSelection } from '@ulpin/contracts/usp';
@@ -12,8 +12,8 @@ import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { closeEvidence, documentAssertions, evidenceAnchor, evidenceConfirmationIssue, evidenceLinkManifest,
-  keyLiteral, newerSources, partLiterals, tableAssertions, type EvidenceState,
-  type IntakeEvidenceInput } from './intake-evidence';
+  keyLiteral, newerSources, partLiterals, queueFinishedTableEvidenceTx, queueIntakeEvidenceTx, tableAssertions,
+  writeIntakeEvidenceTx, type EvidenceState, type IntakeEvidenceInput } from './intake-evidence';
 import { windowedTableReading } from './intake-evidence-worker';
 import type { IntakeSourceRow } from './intake-context';
 import { stableUuid } from './intake-run';
@@ -328,4 +328,149 @@ test('a raw job still running or failed leaves the rest unknown; a window that d
     assert.deepEqual(finished!.coverage, { state: 'partial', read: 653, eligible: 653, keyless: 0, unread: 0,
       failed: 100 });
     assert.equal(await read({ state: 'running', records: 0, windows: [] }), null, 'no stored window: not read here');
+  });
+
+type Coverage = { job_id: string; state: string; read: number | null; result_sha256: string | null };
+type QueuedJob = { id: string; case_revision: number; input_fingerprint: string; payload: IntakeEvidenceInput;
+  status: string };
+type Handler = (args: any[]) => unknown[];
+
+/** test_only: one case's evidence stores in memory, answering the statements ER1's queue and a reading's write
+ * issue; `raw` is the register's raw streaming job. */
+function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: number }) {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-evidence-protocol';
+  const itemId = ids('register'), sourceId = ids(`source:${itemId}`);
+  const jobs = new Map<string, QueuedJob>(), coverage = new Map<string, Coverage>();
+  const candidates = new Map<string, IntakeEvidenceCandidate>();
+  const handlers: [string, Handler][] = [
+    ['SELECT source_id,state FROM usp_streaming_vector_imports', () => [{ source_id: sourceId, state: raw.state }]],
+    ['SELECT j.id FROM jobs j', () => []],
+    // The coverage rows the finish reads again: partial, or reading under a job already running.
+    ['SELECT c.item_id,p.profile_id', () => [...coverage].filter(([, row]) => row.state === 'partial'
+      || row.state === 'reading' && jobs.get(row.job_id)?.status === 'running')
+      .map(([item]) => ({ item_id: item, profile_id: profileId, profile_sha256: profileSha256 }))],
+    ['SELECT family,source_id FROM usp_intake_items', () => [{ family: 'table', source_id: sourceId }]],
+    ['SELECT id,revision,archived FROM cases', () => [{ id: caseId, revision: 4, archived: false }]],
+    ['SELECT revision FROM cases', () => [{ revision: 4 }]],
+    ['SELECT * FROM sources', () => [{ id: sourceId, case_id: caseId, revision: 1, sha256: bytes.sha256,
+      bytes: bytes.length, object_key: 'test_only/register', profile: 'tabular-manual-v1',
+      inspection: { actor: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT } }]],
+    ['SELECT id FROM jobs', ([id]) => jobs.has(id) ? [{ id }] : []],
+    ['INSERT INTO jobs', ([id, , , revision, digest, payload]) => {
+      jobs.set(id, { id, case_revision: revision, input_fingerprint: digest, payload, status: 'queued' });
+      return [];
+    }],
+    ['SELECT * FROM jobs', ([id]) => [{ ...jobs.get(id), case_id: caseId, source_id: sourceId,
+      operation: 'intake-evidence' }]],
+    ['SELECT * FROM usp_job_metadata', () => []],
+    ['INSERT INTO usp_job_metadata', () => []],
+    ['INSERT INTO usp_intake_evidence_coverage', ([, item, , , jobId]) => {
+      coverage.set(item, { job_id: jobId, state: 'reading', read: null, result_sha256: null });
+      return [];
+    }],
+    ['SELECT item_id AS', ([, item]) => [{ itemId: item, state: 'read', family: 'table', format: 'csv',
+      sizeClass: 'L', wave: 1, pinnedByOfficer: false }]],
+    ['INSERT INTO usp_outbox_streams', () => []],
+    ['UPDATE usp_outbox_streams', () => [{ sequence: '1' }]],
+    ['INSERT INTO usp_outbox', () => []],
+    ['SELECT job_id FROM usp_intake_evidence_coverage', ([, item]) => [coverage.get(item)]],
+    ['DELETE FROM usp_intake_evidence_candidates', ([, , keep]) => {
+      for (const id of candidates.keys()) if (!keep.includes(id)) candidates.delete(id);
+      return [];
+    }],
+    ['INSERT INTO usp_intake_evidence_candidates', ([, , , rows]) => {
+      for (const { candidate } of JSON.parse(rows)) candidates.set(candidate.candidateId, candidate);
+      return [];
+    }],
+    ['UPDATE usp_intake_evidence_coverage SET state', ([, item, state, resultSha256, read]) => {
+      Object.assign(coverage.get(item)!, { state, result_sha256: resultSha256, read });
+      return [];
+    }],
+  ];
+  const client = { query: async (text: string, args: unknown[] = []) => {
+    const sql = text.replace(/\s+/g, ' ').trim();
+    const handler = handlers.find(([prefix]) => sql.startsWith(prefix));
+    if (!handler) throw new Error(`Unexpected statement: ${sql.slice(0, 120)}`);
+    const rows = handler[1](args);
+    return { rows, rowCount: rows.length };
+  } } as unknown as PoolClient;
+  return { client, jobs, coverage, candidates, itemId, sourceId };
+}
+
+/** A queued reading run as its job runs it: read, closed against the buildings, written under its own job. */
+async function runReading(store: ReturnType<typeof evidenceStore>, jobId: string,
+  reading: Awaited<ReturnType<typeof windowedTableReading>>, anchors: IntakeEvidenceAnchor[]) {
+  const job = store.jobs.get(jobId)!;
+  job.status = 'running';
+  const candidates = close(reading!, anchors);
+  const resultSha256 = fingerprint({ coverage: reading!.coverage, candidates: pinsOf(candidates) });
+  await writeIntakeEvidenceTx(store.client, job.payload, reading!.coverage, resultSha256, candidates);
+  job.status = 'succeeded';
+}
+
+const evidenceProfile = { profile_id: profileId, profile_sha256: profileSha256 };
+
+test('ER1: a reading partial while the raw job ran is read again once when it finishes, and closes', { skip },
+  async () => {
+    const bytes = readFileSync(registerPath), anchors = anchorsOf(readFileSync(buildingsPath));
+    const read = streamedRegister(bytes, new Set(anchors.map(anchor => anchor.literal)));
+    const windows = await storedWindows(bytes, 100), raw = { state: 'running' };
+    const store = evidenceStore(raw, { sha256: sha256(bytes), length: bytes.length });
+    const first = (await queueIntakeEvidenceTx(store.client, caseId, evidenceProfile, store.itemId))!;
+    assert.equal(first, stableUuid(`intake-evidence/1:${profileId}:${profileSha256}:${store.itemId}:`
+      + `${store.sourceId}:1:${sha256(bytes)}`), 'a reading without a raw job keeps its id');
+    await runReading(store, first, await read({ state: 'running', records: 300, windows: windows.slice(0, 3) }),
+      anchors);
+    assert.equal(store.coverage.get(store.itemId)!.state, 'partial');
+    const earlier = new Map(store.candidates);
+    // The officer's stored decisions on two candidates of the partial reading: one accepted, one rejected.
+    const [accepted, rejected] = [...earlier.values()].filter(candidate => candidate.outcome === 'matched');
+    const decisions = structuredClone([{ decision: 'accept', candidateId: accepted.candidateId,
+      targetId: accepted.anchors[0].targetId, evidence: accepted.evidence },
+    { decision: 'reject', candidateId: rejected.candidateId, targetId: null, evidence: rejected.evidence }]);
+
+    for (const state of ['failed', 'stale', 'running']) {
+      raw.state = state;
+      await queueFinishedTableEvidenceTx(store.client, caseId, rawJobId);
+      assert.deepEqual([store.jobs.size, store.coverage.get(store.itemId)!.job_id], [1, first], state);
+    }
+    raw.state = 'completed';
+    await queueFinishedTableEvidenceTx(store.client, caseId, rawJobId);
+    const again = stableUuid(`intake-evidence/1:${profileId}:${profileSha256}:${store.itemId}:${store.sourceId}:1:`
+      + `${sha256(bytes)}:raw:${rawJobId}`);
+    assert.deepEqual([...store.jobs.keys()], [first, again], 'one new reading, named by the raw job');
+    assert.deepEqual(store.coverage.get(store.itemId), { job_id: again, state: 'reading', read: null,
+      result_sha256: null });
+    assert.equal(store.jobs.get(first)!.status, 'succeeded', 'the earlier reading\'s job is kept');
+    assert.deepEqual(store.candidates, earlier, 'and its candidates, until the new reading writes');
+    await queueFinishedTableEvidenceTx(store.client, caseId, rawJobId);
+    assert.equal(store.jobs.size, 2, 'a replay of the finish queues nothing');
+
+    await runReading(store, again, await read({ state: 'completed', records: 753, windows }), anchors);
+    assert.equal(store.coverage.get(store.itemId)!.state, 'closed');
+    assert.equal(store.candidates.size, 753);
+    assert.deepEqual(tally([...store.candidates.values()]), { matched: 612, conflicting: 81, no_match: 60 });
+    for (const id of earlier.keys()) assert.ok(store.candidates.has(id), 'a candidate read before is read again');
+    for (const decision of decisions) {
+      const cited = [...store.candidates.values()].filter(candidate =>
+        fingerprint(candidate.evidence) === fingerprint(decision.evidence));
+      assert.deepEqual(cited.map(candidate => candidate.candidateId), [decision.candidateId],
+        'the row a decision names has one candidate, under the same id');
+      if (decision.targetId) assert.ok(cited[0].anchors.some(anchor => anchor.targetId === decision.targetId));
+    }
+    await queueFinishedTableEvidenceTx(store.client, caseId, rawJobId);
+    assert.equal(store.jobs.size, 2, 'a closed reading is not read again');
+  });
+
+test('ER1: on the finish a reading still running is read again; one still queued reads the finished job',
+  async () => {
+    const store = evidenceStore({ state: 'completed_with_rejections' },
+      { sha256: fingerprint('test_only:register'), length: 87352 });
+    const queued = (await queueIntakeEvidenceTx(store.client, caseId, evidenceProfile, store.itemId))!;
+    await queueFinishedTableEvidenceTx(store.client, caseId, rawJobId);
+    assert.deepEqual([store.jobs.size, store.coverage.get(store.itemId)!.job_id], [1, queued]);
+    store.jobs.get(queued)!.status = 'running';
+    await queueFinishedTableEvidenceTx(store.client, caseId, rawJobId);
+    assert.equal(store.jobs.size, 2);
+    assert.notEqual(store.coverage.get(store.itemId)!.job_id, queued, 'the running reading is replaced');
   });
