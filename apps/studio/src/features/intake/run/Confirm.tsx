@@ -52,7 +52,8 @@ export function Confirm(props: Props) {
       {pressLabel(props.busy, props.uncertain, Boolean(cards))}
     </Button>
     {!allowed && !props.uncertain ? <p className="ul-help">Type your acknowledgement before confirming.
-      {cards ? '' : ' Only packages with a current review and ready buildings or no buildings can be recorded.'}
+      {cards ? '' : ' Only packages with a current review, not being recorded, and with ready buildings or no '
+        + 'buildings can be recorded.'}
     </p> : null}
     {props.stale ? <p className="ul-help">The current batch could not be read. Refresh it before confirming.</p> : null}
   </Panel>;

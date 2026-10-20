@@ -207,6 +207,9 @@ export const IntakeTargetPackageSchema = z.strictObject({
   reviewFingerprint: hash.nullable(), findingCounts: z.record(code, tally).nullable(),
   reviewRefusal: z.strictObject({ code, message: z.string().min(1).max(2000) }).nullable().optional()
     .describe('Current review refusal; emitted as null before review or after it passes. Older pages may omit it.'),
+  recordingConfirmationId: uuid.nullable().optional()
+    .describe('The stored confirmation whose run is recording this package now; it cannot be named again until '
+      + 'that run ends. Null when none. Older pages may omit it.'),
   counts: IntakeTargetCountsSchema,
 });
 export const IntakeTargetPageSchema = z.strictObject({

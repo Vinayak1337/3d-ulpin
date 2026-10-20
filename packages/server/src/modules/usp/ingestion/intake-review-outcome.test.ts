@@ -66,6 +66,7 @@ function projection(sql: string, buildings: boolean, item: Item, target: Target)
     revision: 1, state: 'READY_FOR_REVIEW', review_fingerprint: null, finding_counts: null,
     review_refusal: item.review_refusal_code ? { code: item.review_refusal_code,
       message: item.review_refusal_message } : null }] };
+  if (sql.startsWith('SELECT DISTINCT ON (p.id)')) return { rows: [] };
   if (/^(BEGIN|COMMIT|ROLLBACK|INSERT INTO usp_outbox|UPDATE usp_outbox_streams)/.test(sql)) {
     return { rows: [{ sequence: '1' }] };
   }

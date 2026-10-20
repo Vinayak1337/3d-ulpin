@@ -11,6 +11,8 @@ interface Props {
   setFilter: (filter: Readiness | '') => void;
   toggle: (target: Target) => void;
   selectable: (target: Target) => boolean;
+  /** Packages another confirmation's run is recording; their buildings are not offered. */
+  recording: ReadonlySet<string>;
   onOpen: (target: Target) => void;
   showMore: () => void;
   hasMore: boolean;
@@ -49,6 +51,8 @@ function TargetRow({ target, props }: { target: Target; props: Props }) {
       <span className={styles.locator}>{target.locator}</span>
     </label>
     <p>{readinessWords[target.readiness]}</p>
+    {target.readiness === 'ready' && props.recording.has(target.packageId)
+      ? <p className={styles.reason}>Being recorded with its package; it cannot be chosen now.</p> : null}
     {reason ? <p className={styles.reason}>{reason}</p> : null}
     <ArtefactLinks target={target} onOpen={() => props.onOpen(target)} />
   </li>;

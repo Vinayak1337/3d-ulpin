@@ -4,7 +4,8 @@ import { Packages } from './Packages';
 import { Progress } from './Progress';
 import { TargetList } from './TargetList';
 import { failureWords } from './api';
-import { countsLine, hasRecordedPackage, INTAKE_TARGET_LIMITS, noCardWords, type TargetPage } from './model';
+import { beingRecorded, countsLine, hasRecordedPackage, INTAKE_TARGET_LIMITS, noCardWords,
+  type TargetPage } from './model';
 import { useRun } from './useRun';
 import styles from './Run.module.css';
 
@@ -31,7 +32,8 @@ function Run({ caseId }: { caseId: string }) {
         <CardsAction run={run} page={page} locked={locked} />
         <ChoiceControls run={run} locked={locked} />
         <TargetList targets={run.targets.targets} choice={run.choice} filter={run.filter} setFilter={run.setFilter}
-          toggle={run.toggle} selectable={run.selectable} onOpen={run.priority.open}
+          toggle={run.toggle} selectable={run.selectable} recording={beingRecorded(packagePage?.packages ?? [])}
+          onOpen={run.priority.open}
           showMore={() => void run.targets.showMore()}
           hasMore={Boolean(run.targets.cursor)} loading={run.targets.busy || run.targets.first.isFetching}
           locked={locked} />

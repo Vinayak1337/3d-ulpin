@@ -258,8 +258,25 @@ async function packageOrderTx(client: PoolClient, caseId: string, ids: string[])
     .sort(comparePackageKeys);
 }
 
+/** For each unrecorded package, the stored confirmation of the case naming it whose commit run is still queued or
+ * running, other than `except`. A run that failed or was cancelled frees its packages; one that recorded them left
+ * them COMMITTED. */
+export async function recordingConfirmationsTx(client: PoolClient, caseId: string, packageIds: string[],
+  except: string | null = null): Promise<Map<string, string>> {
+  const rows = (await client.query(`SELECT DISTINCT ON (p.id) p.id AS package_id,c.confirmation_id
+    FROM usp_intake_confirmations c CROSS JOIN LATERAL jsonb_array_elements(c.packages) AS named
+    JOIN import_packages p ON p.id::text=named->>'packageId' AND p.state<>'COMMITTED'
+    WHERE c.case_id=$1 AND p.id=ANY($2::uuid[]) AND c.confirmation_id IS DISTINCT FROM $3::uuid
+      AND EXISTS (SELECT 1 FROM jobs j WHERE j.case_id=c.case_id
+      AND j.operation='intake-run' AND j.status IN ('queued','running') AND j.payload->>'phase'='commit'
+      AND j.payload->>'confirmationId'=c.confirmation_id::text)
+    ORDER BY p.id,c.created_at,c.confirmation_id`, [caseId, packageIds, except])).rows;
+  return new Map(rows.map(row => [row.package_id as string, row.confirmation_id as string]));
+}
+
 /** Project review metadata in SQL: never return the body or any package features. */
-async function packageFactsTx(client: PoolClient, ids: string[], packages: Map<string, PackageCounts>) {
+async function packageFactsTx(client: PoolClient, caseId: string, ids: string[],
+  packages: Map<string, PackageCounts>) {
   const rows = (await client.query(`WITH packages AS (
     SELECT p.id,p.body->>'areaId' AS area_id,(p.body->>'revision')::int AS revision,
       p.body->>'state' AS state,CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision'
@@ -278,10 +295,11 @@ async function packageFactsTx(client: PoolClient, ids: string[], packages: Map<s
     ),'{}'::jsonb) END AS finding_counts FROM packages`,
   [ids, ids.map(id => packages.get(id)!.anchorItemId)])).rows;
   const place = new Map(ids.map((id, index) => [id, index]));
+  const recording = await recordingConfirmationsTx(client, caseId, ids);
   return rows.sort((a, b) => place.get(a.id)! - place.get(b.id)!).map(row => ({ packageId: row.id,
     areaId: row.area_id, anchorItemId: packages.get(row.id)!.anchorItemId, revision: row.revision, state: row.state,
     reviewFingerprint: row.review_fingerprint, findingCounts: row.finding_counts,
-    reviewRefusal: row.review_refusal ?? null,
+    reviewRefusal: row.review_refusal ?? null, recordingConfirmationId: recording.get(row.id) ?? null,
     counts: packages.get(row.id)!.counts }));
 }
 
@@ -292,7 +310,7 @@ async function packagePageTx(client: PoolClient, caseId: string, packages: Map<s
   const after = cursor ? order.filter(key => comparePackageKeys(key, cursor) > 0) : order;
   const page = after.slice(0, packagePage);
   const unrecorded = (keys: PackageKey[]) => keys.filter(key => key[0] === 0).length;
-  return { packages: await packageFactsTx(client, page.map(key => key[3]), packages),
+  return { packages: await packageFactsTx(client, caseId, page.map(key => key[3]), packages),
     packagesTruncated: page.length < order.length,
     packagesNextCursor: after.length > page.length ? packageCursor(page.at(-1)!) : null,
     packagesTotal: order.length, packagesUnrecorded: unrecorded(order),

@@ -39,8 +39,10 @@ test('derived footprints and packages that are not reviewable are held, not reso
 
 type PackagePlace = { recorded: boolean; part: number | null };
 
+/** A store answering the target read's own SQL; `recording` maps a package to the confirmation whose run records it. */
 function packagePageProtocol(size: number, zeroTargets = false,
-  place: (index: number) => PackagePlace = () => ({ recorded: false, part: null })) {
+  place: (index: number) => PackagePlace = () => ({ recorded: false, part: null }),
+  recording: Record<string, string> = {}) {
   const packages = Array.from({ length: size }, (_, index) => ({
     id: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
     area_id: sourceId, revision: 2, state: place(index).recorded ? 'COMMITTED' : 'REVIEWED',
@@ -63,6 +65,9 @@ function packagePageProtocol(size: number, zeroTargets = false,
     if (sql.startsWith('WITH packages AS')) {
       return { rows: packages.filter(row => (values[0] as string[]).includes(row.id)) };
     }
+    if (sql.startsWith('SELECT DISTINCT ON (p.id)')) return { rows: (values[1] as string[])
+      .filter(packageId => recording[packageId]).map(packageId => ({ package_id: packageId,
+        confirmation_id: recording[packageId] })) };
     assert(['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql), sql);
     return { rows: [] };
   } } as unknown as PoolClient;
@@ -147,6 +152,28 @@ test('250 packages, 120 recorded: unrecorded first in file part order, then reco
     assert(reads.every(call => !/features|SELECT p\.body\b/.test(call.sql)));
     await assert.rejects(listIntakeTargets(id, undefined, undefined, 'bm90LWEta2V5'),
       (error: { code?: string }) => error.code === 'INTAKE_TARGET_QUERY');
+  } finally {
+    globals.ulpinPool = previous;
+  }
+});
+
+test('a package a confirmation is recording says so on the page; the others say none', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const confirmationId = '10000000-0000-4000-8000-000000000900';
+  const fixture = packagePageProtocol(3, false, undefined,
+    { '10000000-0000-4000-8000-000000000002': confirmationId });
+  globals.ulpinPool = fixture.pool;
+  try {
+    const page = await listIntakeTargets(id, undefined, undefined);
+    assert.deepEqual(page.packages.map(row => row.recordingConfirmationId), [null, confirmationId, null]);
+    assert.equal(page.counts.ready, 6);
+    const asked = fixture.calls.filter(call => call.sql.startsWith('SELECT DISTINCT ON (p.id)'));
+    assert.equal(asked.length, 1);
+    assert.deepEqual(asked[0].values, [id, fixture.packages.map(row => row.id), null]);
+    assert.match(asked[0].sql, /j\.status IN \('queued','running'\) AND j\.payload->>'phase'='commit'/);
+    assert.match(asked[0].sql, /p\.state<>'COMMITTED'/);
+    assert(!/p\.body/.test(asked[0].sql));
   } finally {
     globals.ulpinPool = previous;
   }
