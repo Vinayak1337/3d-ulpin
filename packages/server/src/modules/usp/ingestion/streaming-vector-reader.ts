@@ -92,6 +92,7 @@ class Cursor {
     return this.chunk[this.position]!;
   }
   async take():Promise<number|null>{const value=await this.peek();if(value!==null){this.position++;this.offset++;}return value;}
+  private takeBuffered(){this.offset++;return this.chunk[this.position++]!;}
   async nonspace():Promise<number|null>{let byte=await this.peek();while(byte!==null&&whitespace(byte)){await this.take();byte=await this.peek();}return byte;}
   async expect(expected:number){const value=await this.nonspace();if(value!==expected)throw new AppError(422,'GEOJSON_CONTAINER','The GeoJSON framing is incomplete or malformed.');await this.take();}
   async value(maxBytes:number):Promise<{bytes:Buffer;start:number;end:number}>{
@@ -106,7 +107,9 @@ class Cursor {
       if(bytes.length>maxBytes)throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
       if(!compound&&!inString){const next=await this.peek();if(next===null||whitespace(next)||next===44||next===93||next===125||next===30)break;}
       if(compound&&brackets.length===0||first===34&&!inString)break;
-      const byte=await this.take();if(byte===null)throw new AppError(422,'GEOJSON_CONTAINER','The original ends inside a JSON value.');
+      // A byte already buffered is taken without a wait; only an exhausted chunk awaits the next one.
+      const byte=this.position<this.chunk.length?this.takeBuffered():await this.take();
+      if(byte===null)throw new AppError(422,'GEOJSON_CONTAINER','The original ends inside a JSON value.');
       bytes.push(byte);
       if(inString){if(escaped)escaped=false;else if(byte===92)escaped=true;else if(byte===34)inString=false;continue;}
       if(byte===34){inString=true;continue;}

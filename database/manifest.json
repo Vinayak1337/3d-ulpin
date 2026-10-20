@@ -1879,6 +1879,36 @@
       }
     },
     {
+      "id": "ingestion.streaming-vector.capacity",
+      "source": {
+        "path": "database/sql/95-ingestion/streaming-vector-capacity.sql",
+        "function": "migrateStreamingCapacityTx",
+        "kind": "authored-sql",
+        "task": "G16",
+        "acceptedBase": "6d038782d019e8e24a8df9930fee3e1d48d7d8e5"
+      },
+      "file": "sql/95-ingestion/streaming-vector-capacity.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; idempotent constraint widening",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 38,
+      "sha256": "d32bf963a99331f01dc32741342f85f44cf482652d54c2c937ed5a9db2192078",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "270444145a0599322649ff880d905a82131485d898c9bd0791cce37a1c2cf1b9"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateStreamingCapacityTx"
+      }
+    },
+    {
       "id": "usp.declarations.check",
       "source": {
         "path": "database/sql/60-usp/11-declarations-check.sql",
@@ -1901,7 +1931,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 38,
+      "order": 39,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -1931,7 +1961,7 @@
       "parameters": [],
       "guardedBy": "usp.declarations.check",
       "callMode": "one-query-call",
-      "order": 39,
+      "order": 40,
       "sha256": "c5693dcc9d2ce2d16b253d6a4a4dc426543e418c90bb5f36b27d3fe3370543fd",
       "statements": [
         {
@@ -2031,7 +2061,7 @@
       ],
       "guardedBy": "usp.declarations.check",
       "callMode": "one-query-call",
-      "order": 40,
+      "order": 41,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2067,7 +2097,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 41,
+      "order": 42,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2097,7 +2127,7 @@
       "parameters": [],
       "guardedBy": "usp.packet-plans.check",
       "callMode": "one-query-call",
-      "order": 42,
+      "order": 43,
       "sha256": "120343ee2f4d24f6c2df09d503ea9a517f319dd164c229dbfc2596d4de483b79",
       "statements": [
         {
@@ -2161,7 +2191,7 @@
       ],
       "guardedBy": "usp.packet-plans.check",
       "callMode": "one-query-call",
-      "order": 43,
+      "order": 44,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2197,7 +2227,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 44,
+      "order": 45,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2227,7 +2257,7 @@
       "parameters": [],
       "guardedBy": "usp.property-cards.check",
       "callMode": "one-query-call",
-      "order": 45,
+      "order": 46,
       "sha256": "528956a643a71dbbc03953f3daf75a140e384fd07280d02a11f3eb6439f495d6",
       "statements": [
         {
@@ -2275,7 +2305,7 @@
       ],
       "guardedBy": "usp.property-cards.check",
       "callMode": "one-query-call",
-      "order": 46,
+      "order": 47,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2311,7 +2341,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 47,
+      "order": 48,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2341,7 +2371,7 @@
       "parameters": [],
       "guardedBy": "usp.packet-pdf-entries.check",
       "callMode": "one-query-call",
-      "order": 48,
+      "order": 49,
       "sha256": "c46863dcc975b2a7bafbca972fad7fb6bacd11baa483454b190a5f20c003d31a",
       "statements": [
         {
@@ -2385,7 +2415,7 @@
       ],
       "guardedBy": "usp.packet-pdf-entries.check",
       "callMode": "one-query-call",
-      "order": 49,
+      "order": 50,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2415,7 +2445,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 50,
+      "order": 51,
       "sha256": "e58f0d57877783e2a356f7295129b479e824566176104ca31ce2a3fee1ec8b47",
       "statements": [
         {
@@ -2473,7 +2503,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 51,
+      "order": 52,
       "sha256": "446cf0df4644b887877d34b7f0dc95956f073fdaa2be4e43eb9e66ffc0d51958",
       "statements": [
         {
@@ -2509,7 +2539,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 52,
+      "order": 53,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2539,7 +2569,7 @@
       "parameters": [],
       "guardedBy": "usp.property-card-revocations.check",
       "callMode": "one-query-call",
-      "order": 53,
+      "order": 54,
       "sha256": "078d7aa71068760d51ce0d9edf5e8375b0022668d73ba9fb1e0c9e5b8a067fd3",
       "statements": [
         {
@@ -2583,7 +2613,7 @@
       ],
       "guardedBy": "usp.property-card-revocations.check",
       "callMode": "one-query-call",
-      "order": 54,
+      "order": 55,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2613,7 +2643,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 55,
+      "order": 56,
       "sha256": "d9547bf5458beb07024b12c6a4c5ab3a8bd50fbc9720a65035b573c6801f1e65",
       "statements": [
         {
@@ -2675,7 +2705,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 56,
+      "order": 57,
       "sha256": "f4f334fa42f4051064f8c450780f9fd0a3ff13a9ceafb15c609e93ab36ab8daf",
       "statements": [
         {

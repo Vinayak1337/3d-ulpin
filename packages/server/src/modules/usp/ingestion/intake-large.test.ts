@@ -131,11 +131,11 @@ test('CRS, size and feature ceiling refusals use literal metadata and the existi
     + 'nothing was prepared from it.');
   assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1),
     'The coordinate system this file declares could not be resolved; nothing was prepared from it.');
-  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_BUDGET', 129 * 1024 ** 2),
-    `This file is 129 MiB. A map file is read in parts up to ${limits.sourceBytes / 1024 ** 2} MiB for now; `
+  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_BUDGET', limits.sourceBytes + 1024 ** 2),
+    'This file is 1025 MiB. A map file is read in parts up to 1024 MiB for now; '
     + 'nothing was prepared from it.');
   assert.equal(intakeLargeFailureReason('STREAMING_INDEX', 1),
-    `This file has more than ${limits.chunks * limits.chunkFeatures} features, `
+    'This file has more than 500000 features, '
     + 'the most a map file may have for now; nothing was prepared from it.');
 });
 
@@ -243,7 +243,7 @@ test('a retained large GeoJSON above the reader ceiling rests with its size in o
     recordsSeen: 0, limitReason: null, partsDone: 0, partsPlanned: null };
   const fixture = ledger(initial);
   const source: IntakeSourceRow = { id: itemId, case_id: caseId, family_id: itemId, revision: 1,
-    name: 'Protocol control', profile: 'large-original-v1', bytes: 129 * 1024 ** 2,
+    name: 'Protocol control', profile: 'large-original-v1', bytes: 1025 * 1024 ** 2,
     sha256: 'a'.repeat(64), object_key: 'protocol-control', status: 'needs_input', inspection: {} };
   const card = { family: 'vector', format: 'geojson' } as IntakeCard;
   assert.equal(await queueIntakeDraftTx(fixture.client, source, card), null);

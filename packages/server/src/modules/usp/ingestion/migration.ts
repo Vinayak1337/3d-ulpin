@@ -37,3 +37,7 @@ export async function migrateChunkMappingTx(client:PoolClient){
 export async function migrateStreamedProfileTx(client:PoolClient){
   await client.query(sql('ingestion.streamed-profile.schema'));
 }
+/** After the raw, mapping and profile tables exist: their part-count checks follow the reader's ceiling. */
+export async function migrateStreamingCapacityTx(client:PoolClient){
+  await client.query(sql('ingestion.streaming-vector.capacity'));
+}
