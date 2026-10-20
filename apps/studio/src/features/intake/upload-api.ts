@@ -36,6 +36,9 @@ export function uploadTransport(caseId: string) {
     abort: async (receipt: Receipt, body: UploadGuard) => unwrap(await api.POST(
       '/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/abort',
       { params: { path: path(receipt) }, body })),
+    cleanup: async (receipt: Receipt, body: UploadGuard) => unwrap(await api.POST(
+      '/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/cleanup',
+      { params: { path: path(receipt) }, body })),
   };
 }
 export type UploadTransport = ReturnType<typeof uploadTransport>;

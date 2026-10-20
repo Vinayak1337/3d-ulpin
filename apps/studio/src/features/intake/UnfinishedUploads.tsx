@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Banner, Button, formatDateTime } from '@ulpin/ui';
-import { abortReceipt, createUploadCommand } from './upload-command';
+import { abortReceipt, cleanupReceipt, createUploadCommand } from './upload-command';
 import { enrolSource, listUploads, uploadTransport } from './upload-api';
 import { sizeWords, uploadWords, type UploadEntry, type UploadProgress } from './upload-model';
 import styles from './Batch.module.css';
@@ -55,19 +55,26 @@ function UnfinishedUpload({ caseId, entry, settle }: { caseId: string; entry: Up
       settle();
     }
   };
-  const cancel = async () => {
+  const send = async (action: () => Promise<unknown>) => {
     setError('');
     try {
-      await (command.current ? command.current.cancel() : abortReceipt(uploadTransport(caseId), entry));
+      await action();
     } catch (failure) {
       setError(failureWords(failure));
     }
     settle();
   };
+  const cancel = () => send(() => command.current?.cancel() ?? abortReceipt(uploadTransport(caseId), entry));
+  const finish = () => send(() => cleanupReceipt(uploadTransport(caseId), entry));
   const stopped = progress?.phase === 'stopped';
   return <li className="ul-stack">
     <span><span className="ul-id">{entry.filename}</span>, {sizeWords(entry.bytes)}. {receiptWords(entry)}</span>
     {progress ? <span role="status">{uploadWords(progress)}</span> : null}
+    {entry.state === 'aborting' ? <span className="ul-row">
+      <Button variant="soft" aria-label={`Finish cancelling ${entry.filename}`} onClick={() => void finish()}>
+        Finish cancelling
+      </Button>
+    </span> : null}
     {entry.state !== 'aborting' && (!progress || stopped) ? <span className="ul-row">
       {stopped ? <Button onClick={() => command.current?.retry()}>Try again</Button>
         : <Button aria-label={`Resume ${entry.filename}`} onClick={() => input.current?.click()}>Resume</Button>}

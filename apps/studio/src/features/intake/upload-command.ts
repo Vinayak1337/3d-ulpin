@@ -184,3 +184,9 @@ export function abortReceipt(transport: UploadTransport, entry: UploadEntry,
   key: () => string = () => crypto.randomUUID()) {
   return transport.abort(entry, uploadGuard(entry, key()));
 }
+
+/** A receipt left being cancelled finishes through the existing cleanup route, with its own guard. */
+export function cleanupReceipt(transport: UploadTransport, entry: UploadEntry,
+  key: () => string = () => crypto.randomUUID()) {
+  return transport.cleanup(entry, uploadGuard(entry, key()));
+}

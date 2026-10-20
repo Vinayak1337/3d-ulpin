@@ -7,7 +7,7 @@ import { expect, it, vi } from 'vitest';
 import published from '../../../../../docs/api/openapi.json';
 import { hashSlices } from './file-hash';
 import { partProgressWords } from './batch-model';
-import { abortReceipt, createUploadCommand, NOT_THE_FILE } from './upload-command';
+import { abortReceipt, cleanupReceipt, createUploadCommand, NOT_THE_FILE } from './upload-command';
 import { LARGE_UPLOAD_MINIMUM, uploadPlan, uploadWords, type UploadCreate, type UploadEntry,
   type UploadLimits, type UploadReceipt } from './upload-model';
 
@@ -48,6 +48,7 @@ function harness() {
     finalize: vi.fn(async () => ({ ...receipt, state: 'retained' as const,
       source: { sourceId: 'retained-source', sourceRevision: 1, sha256: 'a'.repeat(64), bytes: 1 } })),
     abort: vi.fn(async () => ({ ...receipt, state: 'aborted' as const })),
+    cleanup: vi.fn(async () => ({ ...receipt, state: 'aborted' as const })),
   };
   const progress = vi.fn();
   const file = new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], 'control.geojson');
@@ -148,6 +149,7 @@ async function openReceipt(file: File, received: number[], failed: number[] = []
     finalize: vi.fn(async (_receipt: unknown, _body: unknown) => ({ ...receipt, state: 'retained' as const,
       source: { sourceId: 'resumed-source', sourceRevision: 1, sha256: entry.sha256, bytes: file.size } })),
     abort: vi.fn(async () => ({ ...receipt, state: 'aborted' as const })),
+    cleanup: vi.fn(async (_receipt: unknown, _body: unknown) => ({ ...receipt, state: 'aborted' as const })),
   };
   return { entry, parts, transport };
 }
@@ -195,4 +197,17 @@ it('Cancel upload aborts a listed receipt with its own guard', async () => {
   await abortReceipt(transport, entry, () => 'abort-key');
   expect(transport.abort).toHaveBeenCalledWith(entry, { requestKey: 'abort-key', expectedRevision: 9,
     expectedCaseRevision: 3 });
+});
+
+it('Finish cancelling sends the existing cleanup with the receipt guard; a refusal keeps its words', async () => {
+  const file = new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], 'control.geojson');
+  const { entry, transport } = await openReceipt(file, [1]);
+  const cancelling: UploadEntry = { ...entry, state: 'aborting', revision: 11 };
+  await cleanupReceipt(transport, cancelling, () => 'cleanup-key');
+  expect(transport.cleanup).toHaveBeenCalledWith(cancelling, { requestKey: 'cleanup-key', expectedRevision: 11,
+    expectedCaseRevision: 3 });
+  const words = 'Upload or case revision changed; read current status before continuing.';
+  transport.cleanup.mockRejectedValueOnce(new ApiError(409, '', { error: { message: words } }));
+  await expect(cleanupReceipt(transport, cancelling)).rejects.toThrow(words);
+  expect(transport.abort).not.toHaveBeenCalled();
 });
