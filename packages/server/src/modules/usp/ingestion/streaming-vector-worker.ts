@@ -17,6 +17,7 @@ import {queueIntakeLargeTx,writeIntakeLargeReadTx} from './intake-large';
 import {AREA_PROCESSOR_OPERATION} from '../../areas/areas';
 import {readTableWindows} from './tabular-stream';
 import {isWindowedTable,writeTableWindowTx} from './table-windows';
+import {queueFinishedTableEvidenceTx} from './intake-evidence';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
@@ -316,6 +317,7 @@ export async function runStreamingVectorJob(jobId:string){
         await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
         if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,
           {...result,quarantinedByCode:setAside},reference);
+        if(isWindowedTable(input))await queueFinishedTableEvidenceTx(client,input.caseId,jobId);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
         await queueIntakeLargeTx(client,input.sourceId);
