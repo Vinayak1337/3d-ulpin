@@ -4,9 +4,8 @@ import { RegistryDocumentCitationsSchema, type RegistryNativeDocumentCitation,
 import { DocumentInputSchema } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
-import { readRowRange, tableRowLocatorWords, wholeTableRow,
-  windowedTableRow } from '../../registry/registry-table-evidence';
-import type { readObjectRange } from '../../../infrastructure/storage';
+import { streamedRowTx, tableRowLocatorWords, wholeTableRow,
+  type TableEvidenceDependencies } from '../../registry/registry-table-evidence';
 import { readDocumentResult } from '../ingestion/documents';
 
 /**
@@ -46,10 +45,12 @@ export function evidenceCitationBindings(body: { documentCitations?: unknown } |
   return unique;
 }
 
-/** The original as the plan reads it: whole and verified, or, for a streamed row, its range reader. */
+/** The original as the plan reads it: whole and verified, or, for a streamed row, by range through `table`, whose
+ * reads one plan shares so a sheet range is read once however many of its rows are cited. */
 export type EvidenceOriginal = { object_key: string; bytes: number | string; inspection?: { manualProfile?: {
   headers?: string[] } } };
-export type EvidenceReads = { whole?: Uint8Array; range?: typeof readObjectRange; read?: typeof readDocumentResult };
+export type EvidenceReads = { whole?: Uint8Array; table?: TableEvidenceDependencies;
+  read?: typeof readDocumentResult };
 
 /** The byte range a cited streamed row is read from, or null when the citation reads its original otherwise. */
 export function evidenceRange(cited: EvidenceBinding) {
@@ -58,12 +59,12 @@ export function evidenceRange(cited: EvidenceBinding) {
     ? { byteStart: pin.row.window.byteStart, byteEnd: pin.row.window.byteEnd } : null;
 }
 
-/** The table row read again: a whole table from its verified bytes, a streamed row from its own byte range only.
- * Its excerpt must be exactly the stored one. */
-async function tableExcerpt(pin: RegistryTableRowCitation, source: EvidenceOriginal, reads: EvidenceReads) {
+/** The table row read again: a whole table from its verified bytes, a streamed row under its stored window by
+ * range only. Its excerpt must be exactly the stored one. */
+async function tableExcerptTx(client: PoolClient, pin: RegistryTableRowCitation, source: EvidenceOriginal,
+  reads: EvidenceReads) {
   const { row } = pin, window = row.window;
-  const excerpt = window ? await windowedTableRow({ ...row, window },
-    source.inspection?.manualProfile?.headers ?? [], await readRowRange(source, window, reads.range))
+  const excerpt = window ? await streamedRowTx(client, { ...row, window }, source, reads.table)
     : wholeTableRow(row, reads.whole!);
   if (excerpt !== pin.excerpt) conflict('The cited row excerpt changed.');
   return excerpt;
@@ -91,7 +92,7 @@ async function documentExcerptTx(client: PoolClient, pin: Extract<Citation, { pa
 export async function evidenceExcerptTx(client: PoolClient, cited: EvidenceBinding, source: EvidenceOriginal,
   reads: EvidenceReads) {
   const pin = cited.citation;
-  return pin.version === 'registry-table-row-citation/1' ? tableExcerpt(pin, source, reads)
+  return pin.version === 'registry-table-row-citation/1' ? tableExcerptTx(client, pin, source, reads)
     : documentExcerptTx(client, pin, reads.read ?? readDocumentResult);
 }
 

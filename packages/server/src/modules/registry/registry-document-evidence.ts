@@ -19,7 +19,7 @@ import {documentPartEligibleForProposal} from '../usp/ingestion/document-model';
 import {registrySourceTx,registryDocumentSourceAccessTx,registryMetadataEvidence} from './registry-metadata';
 import {RegistryMetadataSchema} from '@ulpin/contracts';
 import {registryDocumentCases,registryRegionCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
-import {assertRegistryTableCitationsTx,citedRowTx,tableRowCitation,
+import {assertRegistryTableCitationsTx,citedRowTx,onceTableReads,tableRowCitation,
   type TableEvidenceDependencies} from './registry-table-evidence';
 import {registryRegionSourceTx,prepareRegistryRegion,regionCitationId,assertRegionCitation,type RegistryRegionPrepared} from './registry-region-evidence';
 import {RegistryImageRegionCitationSchema,type RegistryImageRegionCitation} from '../../../../contracts/src/registry-document-evidence';
@@ -885,6 +885,8 @@ async function confirmedPartCitationTx(client:PoolClient,siteId:string,confirmed
  * its native citation with the exact quote. Nothing of the row or part becomes a field of the record. */
 export async function amendConfirmedEvidenceTx(client:PoolClient,draftId:string,confirmed:readonly ConfirmedEvidence[],
   dependencies:Dependencies=defaults){
+  // One write reads each table original or sheet range once, for its citations and for their check.
+  dependencies={...dependencies,tableEvidence:onceTableReads(dependencies.tableEvidence)};
   const cases=[...new Set(confirmed.map(item=>item.evidence.caseId))];
   const {draft,record}=await lockedDraftTx(client,draftId,undefined,true,cases);
   if(draft.status!=='draft')conflict('Use the exact active correction.');

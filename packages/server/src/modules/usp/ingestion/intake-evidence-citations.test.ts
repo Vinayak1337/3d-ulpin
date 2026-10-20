@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { test } from 'node:test';
 import type { PoolClient } from 'pg';
@@ -10,8 +12,9 @@ import { AppError } from '../../../infrastructure/errors';
 import { sha256, type readObjectRange } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import type { ConfirmedEvidence } from '../../registry/registry-document-evidence';
-import { assertRegistryTableCitationsTx, citedRowTx, tableRowCitation, tableRowExcerpt, wholeTableRow,
-  type CitedRow, type TableEvidenceDependencies } from '../../registry/registry-table-evidence';
+import { assertRegistryTableCitationsTx, citedRowTx, onceTableReads, tableRowCitation, tableRowExcerpt,
+  wholeTableRow, type CitedRow, type TableEvidenceDependencies } from '../../registry/registry-table-evidence';
+import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
 import { evidenceCardValue, evidenceCitationBindings, evidenceExcerptTx,
   evidenceRange } from '../packets/plan-citation-authority';
 import { writeEvidenceCitations, type EvidenceCitationSteps } from './intake-evidence-citations';
@@ -20,7 +23,7 @@ import { closeEvidence, evidenceAnchor, evidenceLinkManifest, evidenceReceiptKey
 import { stableUuid } from './intake-run';
 import { windowRows } from './table-windows';
 import { readTabularSource } from './tabular-source';
-import { readTabularWindows } from './tabular-stream';
+import { readTableWindows, readTabularWindows } from './tabular-stream';
 
 // Real public NYC inputs (test_only, foreign geography): DOITT building footprints and the LPC landmark register
 // for the same blocks, which share the building identification number (BIN) as written.
@@ -60,7 +63,7 @@ function realInputs() {
     createdAt: '2026-10-21T00:00:00.000Z', ...reading });
   return { bytes, table, coverage: reading.coverage, candidates };
 }
-type Inputs = ReturnType<typeof realInputs>;
+type Inputs = Pick<ReturnType<typeof realInputs>, 'bytes' | 'coverage' | 'candidates'>;
 
 /** The same register as the stream stores it (one window; the reader closes a window at 10,000 records), each
  * row's locator citing its window, byte range and range hash as the evidence job writes it. */
@@ -120,7 +123,8 @@ function writerStore(inputs: Inputs, candidate: IntakeEvidenceCandidate, cite = 
     ['SELECT i.item_id', () => [{ item_id: register, id: sourceId, revision: 1, sha256: store.sourceSha256,
       bytes: String(inputs.bytes.length), latest: true }]],
     ['SELECT * FROM usp_intake_evidence_coverage', () => [{ item_id: register, job_id: ids('job:reading'),
-      result_sha256: result, state: 'closed', read_count: '753', eligible_count: '753', keyless_count: '0',
+      result_sha256: result, state: 'closed', read_count: String(inputs.coverage.read),
+      eligible_count: String(inputs.coverage.eligible), keyless_count: String(inputs.coverage.keyless),
       unread_count: '0', failed_count: '0' }]],
     ['SELECT t.target_id', () => [{ target_id: targetId, package_id: ids('package'), revision: store.packageRevision,
       review, committed: null }]],
@@ -274,13 +278,112 @@ test('a streamed register row is cited once and its excerpt is read again from i
     assert.deepEqual(evidenceRange(cited), { byteStart: window.byteStart, byteEnd: window.byteEnd });
     const original = { object_key: 'test_only:register', bytes: inputs.bytes.length,
       inspection: { manualProfile: { headers: inputs.table.headers } } };
-    assert.equal(await evidenceExcerptTx(windows, cited, original, { range }), citation.excerpt);
+    assert.equal(await evidenceExcerptTx(windows, cited, original, { table: { range } }), citation.excerpt);
     assert.deepEqual(reads, Array(3).fill([window.byteStart, window.byteEnd]), 'only the range of the row is read');
     // test_only: one byte of the cited range changed in the retained original.
     const changed = Buffer.from(inputs.bytes);
     changed[window.byteStart + 1] ^= 1;
     const changedRange = (async (_key: string, start: number, end: number) =>
       changed.subarray(start, end)) as typeof readObjectRange;
-    await assert.rejects(evidenceExcerptTx(windows, cited, original, { range: changedRange }),
+    await assert.rejects(evidenceExcerptTx(windows, cited, original, { table: { range: changedRange } }),
       /differs from its window/);
   });
+
+// The native workbook reader runs in the geo interpreter the deployment names; here a test folder outside the repo.
+const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
+const python = !existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) && 'needs ULPIN_PROFILE_PYTHON';
+const xlsx: TabularSelection = { format: 'xlsx', sheet: 'Register', table: null, headerRows: [2] };
+
+/** test_only: XW1's generated control workbook read by the real stream reader into one stored window, keyed by its
+ * Area column; two buildings hold the areas of records 0 and 1. Each row's locator cites the sheet's stored bytes,
+ * the sheet and the physical row, as the evidence job writes it. */
+async function workbookInputs() {
+  process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+  process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-citations');
+  const control = controlWorkbook(30), bytes = control.bytes, rows: TableWindowRow[] = [];
+  let headers: string[] = [], windowSha256 = '';
+  await readTableWindows(Readable.from([bytes]), { selection: xlsx, bytes: bytes.length }, async (window, names) => {
+    rows.push(...windowRows(window, names));
+    [headers, windowSha256] = [names, window.sha256];
+  });
+  const column = headers.indexOf('Area');
+  const assertions = windowAssertions(rows, column, 'integer', (row, cells, literal) => ({
+    kind: 'table_row', itemId: register, caseId, sourceId, sourceRevision: 1, sourceSha256: sha256(bytes),
+    rawJobId: ids('job:workbook'), rawInputSha256: fingerprint('test_only:workbook'), rawResultSha256: windowSha256,
+    acceptedFence: 1, selection: xlsx, sourceRow: row.sourceRow, rowSha256: fingerprint(cells), columnIndex: column,
+    columnHeader: 'Area', cell: { state: 'literal', value: literal },
+    window: { index: 0, record: row.record, byteStart: row.byteStart, byteEnd: row.byteEnd, sha256: row.sha256,
+      sheet: row.sheet, physicalRow: row.sourceRow, sheetSha256: row.sheetSha256 } }));
+  const source = { id: ids('buildings'), revision: 1, sha256: fingerprint('test_only:buildings') };
+  const anchors = [0, 1].map(record => evidenceAnchor({ targetId: ids(`target:${record}`), anchorItemId: ids('map'),
+    packageId: ids('package'), packageRevision: 1, locator: `feature ${record}` },
+  { id: ids(`feature:${record}`), properties: { area: rows[record].cells[column] } }, source,
+  '/features/*/properties/area', 'integer')!);
+  const coverage = { state: 'closed' as const, read: rows.length, eligible: assertions.length,
+    keyless: rows.length - assertions.length, unread: 0, failed: 0 };
+  const candidates = closeEvidence({ caseId, key, anchors, createdAt: '2026-10-21T00:00:00.000Z', assertions,
+    coverage });
+  const stored = { fence: 1, window_sha256: windowSha256, byte_start: rows[0].byteStart, byte_end: rows[0].byteEnd,
+    window_index: 0, first_record: 0, records: rows.length, rows };
+  return { bytes, headers, coverage, candidates, stored, control };
+}
+
+/** A store of the one stored window, answering the stored-window check and readTableWindowTx. */
+function windowStore(stored: Awaited<ReturnType<typeof workbookInputs>>['stored']) {
+  return { query: async (sql: string) => {
+    assert.match(sql, /FROM usp_table_windows/);
+    return { rows: [stored] };
+  } } as unknown as PoolClient;
+}
+
+test('a streamed workbook row is cited from its stored window once its sheet\'s stored bytes are proven unchanged; '
+  + 'two rows of one sheet read it once', { skip: python }, async () => {
+  const inputs = await workbookInputs(), { bytes, stored, control } = inputs;
+  const [first, second] = [0, 1].map(record => inputs.candidates.find(candidate => candidate.outcome === 'matched'
+    && (candidate.evidence as IntakeTableRowLocator).window!.record === record)!);
+  const [byteStart, byteEnd] = control.ranges.get(CONTROL_SHEET)!;
+  const reads: number[][] = [];
+  const range = (async (_key: string, start: number, end: number) => {
+    reads.push([start, end]);
+    return bytes.subarray(start, end);
+  }) as typeof readObjectRange;
+  const source = (async () => ({ case_id: caseId, revision: 1, sha256: sha256(bytes), object_key: 'test_only:book',
+    bytes: bytes.length, accessSha256, inspection: { manualProfile: { headers: inputs.headers } } })) as any;
+  const deps: TableEvidenceDependencies = { source, range,
+    bytes: async () => assert.fail('a streamed workbook row never reads its original whole') };
+  const windows = windowStore(stored);
+  const { store, write } = writerStore(inputs, first, cited => citedRowTx(windows, ids('site'), cited, deps));
+  await write();
+  assert.equal(await write(), null, 'a replay finds the receipt and writes nothing');
+  assert.deepEqual([store.drafts, store.commits, store.receipts.size, store.citations.length], [1, 1, 1, 1]);
+  const [citation] = store.citations, row = first.evidence as IntakeTableRowLocator;
+  const lines = citation.excerpt!.split('\n');
+  assert.equal(lines[0], 'Sheet Register, row 3', 'the excerpt names the sheet and the physical row');
+  assert.ok(lines.includes(`Area: ${row.cell.value}`) && lines.includes('Doubled: unknown')
+    && lines.includes('Tripled: unknown'), 'a formula cell is shown as unknown');
+  assert.equal(evidenceCitationBindings({ documentCitations: [citation] })[0].locator, 'Sheet Register, row 3');
+  // The later check: two cited rows of one sheet read its stored bytes once, in the registry and in the plan.
+  const other = tableRowCitation({ row: second.evidence as IntakeTableRowLocator, key: second.key,
+    confirmation: citation.confirmation }, await citedRowTx(windows, ids('site'), second.evidence as
+    IntakeTableRowLocator, deps), citation.target, 'test_only:officer');
+  reads.length = 0;
+  await assertRegistryTableCitationsTx(windows, ids('site'), [citation, other], deps);
+  const table = onceTableReads({ range }), original = { object_key: 'test_only:book', bytes: bytes.length,
+    inspection: { manualProfile: { headers: inputs.headers } } };
+  for (const cited of evidenceCitationBindings({ documentCitations: [citation, other] })) {
+    assert.equal(await evidenceExcerptTx(windows, cited, original, { table }), cited.excerpt);
+  }
+  assert.deepEqual(reads, [[byteStart, byteEnd], [byteStart, byteEnd]], 'one sheet read per check, not per row');
+  // test_only: a stored window row whose Ward cell was changed after it was written.
+  const tampered = { ...stored, rows: stored.rows.map(item => item.record !== 0 ? item
+    : { ...item, cells: item.cells.map((cell, column) => column === 0 ? `${cell}x` : cell) }) };
+  await assert.rejects(assertRegistryTableCitationsTx(windowStore(tampered), ids('site'), [citation], deps),
+    /row, its key cell or its header changed/);
+  // test_only: one stored byte of the sheet changed in the retained original.
+  const changed = Buffer.from(bytes);
+  changed[byteStart + 1] ^= 1;
+  const changedRange = (async (_key: string, start: number, end: number) =>
+    changed.subarray(start, end)) as typeof readObjectRange;
+  await assert.rejects(assertRegistryTableCitationsTx(windows, ids('site'), [citation], { ...deps,
+    range: changedRange }), /stored bytes in the original differ from its window/);
+});

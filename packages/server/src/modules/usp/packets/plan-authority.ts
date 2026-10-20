@@ -23,6 +23,7 @@ import { sharedKey, SharedAuthorityNeeded, type SharedAuthority } from './plan-s
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { evidenceCitationBindings, evidenceExcerptTx, evidenceRange,
   type EvidenceOriginal } from './plan-citation-authority';
+import { onceTableReads } from '../../registry/registry-table-evidence';
 
 async function capturedTx(client: PoolClient, manifestId: string, pin: TargetPin) {
   const row = (await client.query(`SELECT body,body_sha256 FROM usp_snapshot_bodies WHERE manifest_id=$1
@@ -217,7 +218,7 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
   const entries: PacketPlanEntry[] = [], lines: Packet0Line[] = [];
   const bindings = [...(target.body?.evidence ?? []), ...(target.body?.rights ?? [])
     .map((r: { evidence?: { sourceId: string; locator: string } }) => r.evidence).filter(Boolean)];
-  const confirmed = evidenceCitationBindings(target.body);
+  const confirmed = evidenceCitationBindings(target.body), tableReads = onceTableReads({ range: readRange });
   const budget = new PlanSourceReadBudget();
   const sources = new Map<string, Awaited<ReturnType<typeof capturedTx>>>();
   const verifiedBytes = new Set<string>();
@@ -312,7 +313,7 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
       }
     }
     if (cited && citedRange && !reasonCode) {
-      excerpt = await evidenceExcerptTx(client, cited, source.body as EvidenceOriginal, { range: readRange });
+      excerpt = await evidenceExcerptTx(client, cited, source.body as EvidenceOriginal, { table: tableReads });
     } else if (cited && !reasonCode) {
       const bytes = await readBytes(source.body.object_key);
       if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256) {
