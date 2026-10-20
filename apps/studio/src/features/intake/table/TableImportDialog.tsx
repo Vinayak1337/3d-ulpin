@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
+import { uploadWords, type UploadProgress } from '../upload-model';
+import { streamedImport } from './retain';
 import { TableRefusal } from './Progress';
 import { useRetainTable } from './useRetainTable';
 import { TableSelectionFields, SourceCaseFields } from './TableImportFields';
@@ -15,10 +17,12 @@ export function TableImportDialog({ file, onClose, onBack }: {
   const [mode, setMode] = useState<'existing' | 'create'>('existing');
   const [sheet, setSheet] = useState('');
   const [rows, setRows] = useState('');
-  const { retain, created, clearCreated } = useRetainTable(file, caseId, name, mode, sheet, rows);
+  const { retain, created, clearCreated, upload, retryUpload } = useRetainTable(file, caseId, name, mode, sheet,
+    rows);
   const blocked = mode === 'create' ? !name.trim() : !caseId;
   return <ImportDialogBody file={file} onClose={onClose} onBack={onBack} pending={retain.isPending}
-    blocked={blocked} submit={() => retain.mutate()} error={retain.error}>
+    blocked={blocked} submit={() => retain.mutate()} error={retain.error}
+    upload={retain.isPending ? upload : null} retryUpload={retryUpload}>
     <SourceCaseFields cases={cases} caseId={caseId} setCaseId={setCaseId} name={name} setName={setName}
       mode={mode} setMode={(value) => {
         clearCreated();
@@ -28,9 +32,11 @@ export function TableImportDialog({ file, onClose, onBack }: {
   </ImportDialogBody>;
 }
 
-function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, error, children }: {
+function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, error, upload, retryUpload,
+  children }: {
   file: File; onClose: () => void; onBack: () => void; pending: boolean; blocked: boolean;
-  submit: () => void; error: Error | null; children: React.ReactNode;
+  submit: () => void; error: Error | null; upload: UploadProgress | null; retryUpload: () => void;
+  children: React.ReactNode;
 }) {
   return (
     <Dialog title="Import as a table" onClose={onClose} footer={(
@@ -45,7 +51,13 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
           Only exact public D8 development originals are admitted. Other files will be refused by the server.
           Tables create mapped draft rows, not buildings; nothing enters the registry or appears on the map.
         </Banner>
+        {streamedImport(file) ? <p className="ul-help">
+          This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to
+          1,000,000 records.
+        </p> : null}
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>
+        {upload ? <p role="status">{uploadWords(upload)}</p> : null}
+        {upload?.phase === 'stopped' ? <div><Button onClick={retryUpload}>Retry upload</Button></div> : null}
         {error ? <TableRefusal error={error} /> : null}
       </div>
     </Dialog>

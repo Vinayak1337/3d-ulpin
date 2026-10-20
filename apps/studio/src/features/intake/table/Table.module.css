@@ -95,3 +95,14 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--ui-space-4);
 }
+
+.muted {
+  color: var(--ui-muted);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}

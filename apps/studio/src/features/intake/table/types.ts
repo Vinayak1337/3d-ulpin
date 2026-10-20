@@ -11,6 +11,8 @@ export type MappingJob =
 export type MappedChunk = GetResponse<
   '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping/jobs/{jobId}/chunks/{chunkIndex}'
 >;
+export type TableRowsPage = GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/rows'>;
+export type TableRow = TableRowsPage['rows'][number];
 export type ChunkMapping = NonNullable<NonNullable<MappedChunk['payload']>['mapping']>;
 export type Metrics = ChunkMapping['metrics'];
 /** Whether a job or chunk response still describes the current state of the case, as the server says. */
