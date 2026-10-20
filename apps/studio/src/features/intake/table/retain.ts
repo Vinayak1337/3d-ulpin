@@ -32,9 +32,10 @@ export async function retainTable(caseId: string, body: FormData): Promise<Table
   return result as TableProfile;
 }
 
-/** G13: a CSV above 16 MiB is kept through the uploads route, then read on the server as a stream into a table. */
+/** G13, XW1: a CSV or XLSX above 16 MiB is kept through the uploads route, then read on the server as a stream
+ * into a table (one sheet of a workbook, with the sheet and header rows the officer typed). */
 export function streamedImport(file: File) {
-  return /\.csv$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
+  return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }

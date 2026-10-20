@@ -8,27 +8,30 @@ import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import type { UspJobAttempt } from '../jobs';
 import { appendCaseIngestionTx } from './events';
-import type { StreamedTabularWindow } from './tabular-stream';
+import type { StreamedTableWindow } from './tabular-stream';
 
 const uuid = z.string().uuid();
 
-/** A case original's CSV above the whole-file bound is read in windows, never in G16's slots. */
+/** A case original's CSV or workbook above the whole-file bound is read in windows, never in G16's slots. */
 export function isWindowedTable(input: { framing: string; tabular?: TabularPin; sourceBytes: number }) {
-  return input.framing === 'tabular' && input.tabular?.selection.format === 'csv'
-    && 'admission' in input.tabular && input.sourceBytes > TABULAR_LIMITS.bytes;
+  return input.framing === 'tabular' && input.tabular !== undefined && 'admission' in input.tabular
+    && input.sourceBytes > TABULAR_LIMITS.bytes;
 }
 
-/** The stored form of a window's records: every header position present, an absent cell null. */
-export function windowRows(window: StreamedTabularWindow, headers: string[]): TableWindowRow[] {
+/** The stored form of a window's records: every header position present, an absent cell null. A CSV record cites
+ * its bytes; a workbook record cites its sheet row and the sheet's SHA-256, with its marked cells. */
+export function windowRows(window: StreamedTableWindow, headers: string[]): TableWindowRow[] {
   return window.rows.map(row => TableWindowRowSchema.parse({ record: row.index, sourceRow: row.sourceRow,
-    byteStart: row.byteStart, byteEnd: row.byteEnd, sha256: row.rawSha256,
+    ...('sheet' in row
+      ? { sheet: row.sheet, memberSha256: row.memberSha256, ...(row.marks ? { marks: row.marks } : {}) }
+      : { byteStart: row.byteStart, byteEnd: row.byteEnd, sha256: row.rawSha256 }),
     cells: headers.map((_, column) => row.cells[column] ?? null) }));
 }
 
 /** Writes one window under the raw job's watermark: windows are numbered without gaps and their first record
  * continues the job's count. A replayed window must match the stored one exactly. */
 export async function writeTableWindowTx(client: PoolClient, input: AnyStreamingInput, attempt: UspJobAttempt,
-  window: StreamedTabularWindow, headers: string[]) {
+  window: StreamedTableWindow, headers: string[]) {
   const state = (await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',
     [input.jobId])).rows[0];
   if (!state || !['queued', 'running'].includes(state.state) || state.source_revision !== input.sourceRevision

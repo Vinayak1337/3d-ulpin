@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { Readable } from 'node:stream';
 import { afterEach, beforeEach, mock, test } from 'node:test';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -8,6 +8,7 @@ import type { Pool, PoolClient } from 'pg';
 import { TABULAR_LIMITS, TabularSourceProfileSchema, type AnyStreamingInput, type ChunkMappingInput,
   type TabularMappingPlan, type TabularSourceProfile } from '@ulpin/contracts/usp';
 import { createContractValidator } from '../../../../../../apps/studio/src/local/contract';
+import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
 import { settings } from '../../../infrastructure/config';
 import { transaction } from '../../../infrastructure/db';
 import type { UspJobAttempt } from '../jobs';
@@ -16,13 +17,15 @@ import { manualTeacherPlan } from './mapping-teacher';
 import { ManualIngestionService } from './service';
 import { TableRowsService, readTableWindowTx, writeTableWindowTx } from './table-windows';
 import { officerMappingMethod, validateStreamedTabularRecipe } from './tabular-recipe';
-import { readTabularWindows } from './tabular-stream';
+import { readTableWindows, readTabularWindows } from './tabular-stream';
 
 const subject = 'g13-table-windows-control';
 const selection = { format: 'csv' as const, sheet: 'csv', table: null, headerRows: [1] };
 const globals = globalThis as unknown as { ulpinPool?: Pool };
 const validate = createContractValidator(JSON.parse(readFileSync('docs/api/openapi.json', 'utf8')));
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+// The workbook reader needs the native reader's packages (services/geo).
+const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
 let savedPool: Pool | undefined, savedSubject: string | undefined;
 
 beforeEach(() => {
@@ -174,10 +177,10 @@ class Store {
   }
 }
 
-function approvedPlan(profile: TabularSourceProfile): TabularMappingPlan {
+function approvedPlan(profile: TabularSourceProfile, header = 'Building Address'): TabularMappingPlan {
   const mapping = manualTeacherPlan(profile.profile, 'MAPPING_REVIEW_REQUIRED').plan;
   mapping.method = officerMappingMethod(subject);
-  const address = mapping.fields.findIndex(field => field.sourceField.endsWith('|Building Address'));
+  const address = mapping.fields.findIndex(field => field.sourceField.endsWith(`|${header}`));
   mapping.fields[address] = { ...mapping.fields[address], target: 'building.addressLiteral', confidence: 1,
     rationale: 'Keep the stated address text unresolved.' };
   return { version: 'manual-tabular/1', mode: 'manual_mapping', source: profile.source, caseId: profile.caseId,
@@ -271,4 +274,72 @@ test('a generated test_only 200,000-row CSV goes from large original to profile,
       'chunk-mapping.window']);
     t.diagnostic(JSON.stringify({ records: profile.records, bytes: bytes.length, windows: store.windows.length,
       elapsedMs: Math.round(performance.now() - started) }));
+  });
+
+test('a generated test_only workbook above 16 MiB goes from large original to windows, mapping and pages',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async t => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    const control = controlWorkbook(180_000), workbook = { ...selection, format: 'xlsx' as const,
+      sheet: 'Register', headerRows: [2] };
+    assert.ok(control.bytes.length > TABULAR_LIMITS.bytes, 'the workbook is above the whole-file bound');
+    const store = new Store(control.bytes);
+    store.source.mime_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    store.install();
+    const started = performance.now();
+
+    // D5: the large original becomes a table on the officer's sheet and header rows; its object stays the same.
+    const service = new ManualIngestionService();
+    const profile = TabularSourceProfileSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId,
+      { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: workbook }));
+    assert.deepEqual([profile.records, profile.tabular.sourceBytes, profile.headers],
+      [180_000, control.bytes.length, ['Ward', 'Plot', 'Area', 'Doubled', 'Tripled', 'Note', 'Hash']]);
+    assert.ok(profile.limitations.some(line => line.startsWith('180000 formula cells keep their cached text')));
+    assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', profile), []);
+
+    // D4: the raw job writes each window as it arrives; a window cites the sheet member, each record its row.
+    const attempt = { number: 1, fence: 1, inputSha256: store.raw.input_sha256 } as UspJobAttempt;
+    const rawInput = { jobId: store.rawJobId, caseId: store.caseId, sourceId: store.sourceId, sourceRevision: 1,
+      subject } as AnyStreamingInput;
+    await readTableWindows(store.stream(), workbook, async (window, headers) => {
+      await transaction(client => writeTableWindowTx(client, rawInput, attempt, window, headers));
+    });
+    const [byteStart, byteEnd] = control.ranges.get(CONTROL_SHEET)!;
+    assert.deepEqual([store.windows.length, store.raw.records], [18, 180_000]);
+    assert.ok(store.windows.every(window => window.byte_start === byteStart && window.byte_end === byteEnd));
+    const seventh = JSON.parse(store.windows[0]!.rows)[4];
+    assert.deepEqual(seventh, { record: 4, sourceRow: 7, sheet: 'Register', memberSha256: control.sheetSha256,
+      marks: [{ column: 3, mark: 'formula_cached' }, { column: 4, mark: 'formula_uncached' }],
+      cells: seventh.cells });
+    assert.deepEqual([seventh.cells[4], seventh.cells[5]], [null, null], 'no formula is calculated, no cell is 0');
+    // A recovered job reads the same first window again; the stored window matches it exactly.
+    const enough = new Error('first window replayed');
+    await assert.rejects(readTableWindows(store.stream(), workbook, async (window, headers) => {
+      await transaction(client => writeTableWindowTx(client, rawInput, attempt, window, headers));
+      throw enough;
+    }), error => error === enough);
+    assert.equal(store.windows.length, 18);
+
+    // D4: G13's recipe check, mapping and keyset pages work unchanged.
+    const plan = approvedPlan(profile, 'Ward');
+    const head = await transaction(client => readTableWindowTx(client, store.rawJobId, 0));
+    validateStreamedTabularRecipe(plan, profile, { headers: profile.headers,
+      rows: head!.rows.map(row => row.cells.map(cell => cell ?? undefined)) });
+    const mappingInput = { jobId: store.mappingJobId, rawJobId: store.rawJobId, caseId: store.caseId,
+      sourceId: store.sourceId, sourceRevision: 1, subject } as ChunkMappingInput;
+    for (let index = 0; index < store.windows.length; index++) {
+      const window = (await transaction(client => readTableWindowTx(client, store.rawJobId, index)))!;
+      const outcome = mapTableWindow(plan, profile, window, store.sourceId);
+      await transaction(client => publishTableWindowTx(client as PoolClient, mappingInput, attempt, window, outcome));
+    }
+    assert.deepEqual([store.mapping.next_publish_index, store.mapping.records], [18, 180_000]);
+    assert.deepEqual(store.mappings.filter(row => row.status !== 'mapped'), []);
+    const across = await new TableRowsService().page(store.caseId, store.sourceId, { after: '9997', limit: '4' });
+    assert.deepEqual(across.rows.map(row => [row.record, row.window, row.sourceRow]),
+      [[9998, 0, 10_001], [9999, 0, 10_002], [10_000, 1, 10_003], [10_001, 1, 10_004]]);
+    assert.ok(across.rows.every(row => row.sheet === 'Register' && row.byteStart === undefined && row.mapped));
+    assert.deepEqual(validate('GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json',
+      across), []);
+    t.diagnostic(JSON.stringify({ records: profile.records, bytes: control.bytes.length,
+      windows: store.windows.length, elapsedMs: Math.round(performance.now() - started) }));
   });

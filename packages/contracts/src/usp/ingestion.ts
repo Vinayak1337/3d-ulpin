@@ -123,7 +123,8 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
 export type StreamedMapOriginalReceipt = z.infer<typeof StreamedMapOriginalReceiptSchema>;
 
 export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256, chunkRows: 16 });
-/** A CSV above TABULAR_LIMITS.bytes is read as a stream in row windows; its byte ceiling is large-original/2's. */
+/** A CSV or workbook above TABULAR_LIMITS.bytes is read as a stream in row windows; its byte ceiling is
+ * large-original/2's. */
 export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows: 1_000_000, windowRows: 10_000,
   recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
 export const TabularSelectionSchema = z.strictObject({
@@ -148,12 +149,11 @@ export const TabularProvenanceSchema = z.strictObject({
   origin: z.literal('officer_supplied'), licence: z.enum(['unconfirmed', 'open', 'restricted']),
   containsPersonalData: z.enum(['unknown', 'yes', 'no']),
 });
-/** Only a case original's CSV is read as a stream; a workbook and a development asset keep the 16 MiB bound. */
+/** A case original's CSV or workbook above 16 MiB is read as a stream; a development asset keeps the 16 MiB bound. */
 export const TabularPinSchema = z.union([DevelopmentTabularPinSchema, z.strictObject({
   selection: TabularSelectionSchema, sourceBytes: z.number().int().positive().max(TABULAR_STREAM_LIMITS.bytes),
   admission: TabularProvenanceSchema.extend({ kind: z.literal('case_original') }),
-}).refine(pin => pin.selection.format === 'csv' || pin.sourceBytes <= TABULAR_LIMITS.bytes,
-  'A workbook is read whole within 16 MiB.')]);
+})]);
 /** Counts over every record the stream read, per header position; an empty cell is never counted as a value. */
 const TabularStreamCountsSchema = z.strictObject({ written: z.number().int().nonnegative(),
   empty: z.number().int().nonnegative(), absent: z.number().int().nonnegative() });

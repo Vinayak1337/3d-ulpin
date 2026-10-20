@@ -9,24 +9,40 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const record = z.number().int().nonnegative().max(limits.rows - 1);
 const issue = z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
 
-/** A large original already retained (large-original/1) is read as a stream and becomes a table source. */
+/** A large original already retained (large-original/1), a CSV or one sheet of a workbook, is read as a stream and
+ * becomes a table source. */
 export const TableFromOriginalSchema = z.strictObject({
   requestKey: id, expectedWorkspaceRevision: z.number().int().nonnegative(),
-  selection: TabularSelectionSchema.refine(selection => selection.format === 'csv',
-    'Only a CSV is read as a stream; a workbook keeps the 16 MiB bound.'),
+  selection: TabularSelectionSchema,
   ...TabularProvenanceSchema.partial().shape,
 });
 
-/** One record as written: its number among the table's records (the first is 0), its logical row in the file
- * (the header is 1), its byte range in the unchanged original and that range's SHA-256. An absent cell is null;
- * an empty cell stays the empty string. */
+/** How a workbook cell's text was read, by its position in `cells`; nothing is calculated. A formula's cached text
+ * is kept and marked; a formula without one, a cell element with no stored value and an unknown storage type are
+ * null and marked; an error cell keeps its stored text. */
+export const TableCellMarkSchema = z.enum(['formula_cached', 'formula_uncached', 'no_value', 'error', 'unsupported']);
+
+/** One record as written: its number among the table's records (the first is 0) and its row in the file. A CSV
+ * record (the header is row 1) cites its byte range in the unchanged original and that range's SHA-256. A workbook
+ * record cites its sheet, its physical sheet row and the SHA-256 of the sheet's XML as read; it claims no byte
+ * range. An absent cell is null; an empty cell stays the empty string. */
 const WindowRowObject = z.strictObject({
-  record, sourceRow: z.number().int().min(2), byteStart: z.number().int().nonnegative(),
-  byteEnd: z.number().int().nonnegative(), sha256: hash,
+  record, sourceRow: z.number().int().min(2), byteStart: z.number().int().nonnegative().optional(),
+  byteEnd: z.number().int().nonnegative().optional(), sha256: hash.optional(),
+  sheet: z.string().min(1).max(150).optional(), memberSha256: hash.optional(),
+  marks: z.array(z.strictObject({ column: z.number().int().nonnegative().max(TABULAR_LIMITS.columns - 1),
+    mark: TableCellMarkSchema })).min(1).max(TABULAR_LIMITS.columns).optional(),
   cells: z.array(z.string().nullable()).min(1).max(TABULAR_LIMITS.columns),
 });
-const ordered = (row: { byteStart: number; byteEnd: number }) => row.byteEnd >= row.byteStart;
-export const TableWindowRowSchema = WindowRowObject.refine(ordered, 'A record ends where it starts or later.');
+type RowLocator = { byteStart?: number; byteEnd?: number; sha256?: string; sheet?: string; memberSha256?: string;
+  marks?: unknown[] };
+const located = (row: RowLocator) => row.byteStart !== undefined && row.byteEnd !== undefined
+  && row.sha256 !== undefined && row.byteEnd >= row.byteStart
+  && row.sheet === undefined && row.memberSha256 === undefined && row.marks === undefined
+  || row.byteStart === undefined && row.byteEnd === undefined && row.sha256 === undefined
+  && row.sheet !== undefined && row.memberSha256 !== undefined;
+const locatedMessage = 'A record cites either its ordered byte range or its sheet row, never both.';
+export const TableWindowRowSchema = WindowRowObject.refine(located, locatedMessage);
 
 /** A mapped cell of a window, without the citation list: the record's locator cites it. */
 export const TableMappedCellSchema = CanonicalMappedValueSchema.pick({ value: true, state: true, unit: true,
@@ -52,9 +68,10 @@ export const TableRowsPageSchema = z.strictObject({
   after: z.number().int().min(-1), next: record.nullable(),
   rows: z.array(WindowRowObject.extend({ window: z.number().int().nonnegative(),
     mapped: z.array(TableMappedCellSchema).max(TABULAR_LIMITS.columns).nullable() })
-    .refine(ordered, 'A record ends where it starts or later.')).max(limits.pageRows),
+    .refine(located, locatedMessage)).max(limits.pageRows),
 });
 
 export type TableWindowRow = z.infer<typeof TableWindowRowSchema>;
+export type TableCellMark = z.infer<typeof TableCellMarkSchema>;
 export type TableMappedCell = z.infer<typeof TableMappedCellSchema>;
 export type TableRowsPage = z.infer<typeof TableRowsPageSchema>;

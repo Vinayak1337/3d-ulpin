@@ -65167,9 +65167,16 @@ export interface components {
             rows: {
                 record: number;
                 sourceRow: number;
-                byteStart: number;
-                byteEnd: number;
-                sha256: string;
+                byteStart?: number;
+                byteEnd?: number;
+                sha256?: string;
+                sheet?: string;
+                memberSha256?: string;
+                marks?: {
+                    column: number;
+                    /** @enum {string} */
+                    mark: "formula_cached" | "formula_uncached" | "no_value" | "error" | "unsupported";
+                }[];
                 cells: (string | null)[];
                 window: number;
                 mapped: {

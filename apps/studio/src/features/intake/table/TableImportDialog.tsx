@@ -51,10 +51,7 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
           Only exact public D8 development originals are admitted. Other files will be refused by the server.
           Tables create mapped draft rows, not buildings; nothing enters the registry or appears on the map.
         </Banner>
-        {streamedImport(file) ? <p className="ul-help">
-          This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to
-          1,000,000 records.
-        </p> : null}
+        {streamedImport(file) ? <StreamedHelp workbook={/\.xlsx$/i.test(file.name)} /> : null}
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>
         {upload ? <p role="status">{uploadWords(upload)}</p> : null}
         {upload?.phase === 'stopped' ? <div><Button onClick={retryUpload}>Retry upload</Button></div> : null}
@@ -62,4 +59,14 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
       </div>
     </Dialog>
   );
+}
+
+function StreamedHelp({ workbook }: { workbook: boolean }) {
+  return workbook ? <p className="ul-help">
+    This workbook is above 16 MiB. It is uploaded in parts, kept unchanged, and the sheet you name is read as a
+    stream of up to 1,000,000 records. Formulas are not calculated; a stored result is shown as stored.
+  </p> : <p className="ul-help">
+    This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to
+    1,000,000 records.
+  </p>;
 }

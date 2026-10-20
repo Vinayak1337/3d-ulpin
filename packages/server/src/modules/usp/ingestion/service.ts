@@ -7,7 +7,7 @@ import {
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
-  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema,
+  STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, type TabularSelection,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
@@ -24,7 +24,7 @@ import { authoredIntakeDestination, intakeDestination } from './intake-destinati
 import { appendCaseIngestionTx } from './events';
 import { inspectTabularSource, inspectTabularStream, assertTabularPin } from './tabular-source';
 import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
-import { readTabularWindows } from './tabular-stream';
+import { readTableWindows } from './tabular-stream';
 import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 
@@ -96,7 +96,7 @@ async function validate(client: PoolClient,
     // G13: a streamed table is never read whole here; the raw job checks its bytes and hash on every read.
     if (current.version!=='manual-tabular/1') conflict('The recipe and receipt formats differ.');
     assertTabularPin(plan.tabular,row);
-    validateStreamedTabularRecipe(plan,current,await firstWindow(row));
+    validateStreamedTabularRecipe(plan,current,await firstWindow(row,plan.tabular.selection));
     return {row,bytes:new Uint8Array(),mapping:undefined};
   }
   const bytes = await readObject(row.object_key);
@@ -111,14 +111,14 @@ async function validate(client: PoolClient,
   return {row,bytes,mapping:compileMapping(plan,current)};
 }
 /** The first window of a streamed table, for the recipe's dry run; the rest of the original is not read. */
-async function firstWindow(row: any) {
+async function firstWindow(row: any, selection: TabularSelection) {
   const object = await openObjectStream(row.object_key, Number(row.bytes), STREAMING_VECTOR_LIMITS.readMs,
     row.inspection?.largeOriginal?.objectEtag);
   let first: { headers: string[]; rows: (string | undefined)[][] } | null = null;
   const enough = new Error('first window read');
   try {
-    await readTabularWindows(object.body, async (window, headers) => {
-      first = { headers, rows: window.rows.map(item => headers.map((_, column) => item.cells[column])) };
+    await readTableWindows(object.body, selection, async (window, headers) => {
+      first = { headers, rows: window.rows.map(item => headers.map((_, column) => item.cells[column] ?? undefined)) };
       throw enough;
     });
   } catch (error) { if (error !== enough) throw error; }

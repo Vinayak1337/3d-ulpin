@@ -366796,6 +366796,45 @@
                   "type": "string",
                   "pattern": "^[a-f0-9]{64}$"
                 },
+                "sheet": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 150
+                },
+                "memberSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "marks": {
+                  "minItems": 1,
+                  "maxItems": 256,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "column": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      },
+                      "mark": {
+                        "type": "string",
+                        "enum": [
+                          "formula_cached",
+                          "formula_uncached",
+                          "no_value",
+                          "error",
+                          "unsupported"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "column",
+                      "mark"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "cells": {
                   "minItems": 1,
                   "maxItems": 256,
@@ -366925,9 +366964,6 @@
               "required": [
                 "record",
                 "sourceRow",
-                "byteStart",
-                "byteEnd",
-                "sha256",
                 "cells",
                 "window",
                 "mapped"
