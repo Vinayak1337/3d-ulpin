@@ -7,6 +7,7 @@ import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { stableUuid } from './intake-run';
 import { writeIntakeLargeTx } from './intake-ledger';
+import { ingestionBinding } from './events';
 import type { IntakeSourceRow } from './intake-context';
 import { rasterSourceTx, enqueueRasterWindowTx, rasterReaderSha, rasterWindowCaptureTx } from './raster-window';
 import { pointSourceTx, enqueuePointBatchTx, pointReaderSha, pointBatchCaptureTx } from './point-batch';
@@ -20,7 +21,8 @@ import { pointSourceTx, enqueuePointBatchTx, pointReaderSha, pointBatchCaptureTx
 type Operation = IntakeSurfaceLocator['operation'];
 type Header = { operation: Operation; crsStated: boolean; authority: string | null;
   vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number };
-type Plan = { version: typeof INTAKE_SURFACE_VERSION; operation: Operation; header: Header | null };
+type Plan = { version: typeof INTAKE_SURFACE_VERSION; operation: Operation; header: Header | null;
+  reread?: { pin: string; parts: number } };
 type Item = { item_id: string; case_id: string; source_id: string; plan_ref: Plan };
 
 const readers = { 'raster-window': rasterReaderSha, 'point-batch': pointReaderSha };
@@ -133,9 +135,28 @@ async function waitsForAreaTx(client: PoolClient, caseId: string) {
       AND i.state IN ('received','probed','planned','reading'))`, [caseId])).rowCount);
 }
 
+/** A job read under another case context, access or reader than now: the pins the readers' stale check compares. */
+const elsewhere = (at: number) => `(j.payload->>'caseContextSha256',j.payload->>'accessSha256',
+  j.payload->>'readerSha256') IS DISTINCT FROM ($${at}::text,$${at + 1}::text,$${at + 2}::text)`;
+
 /**
- * Admit the item's next planned part to its reader's existing job, inside the reader's caps. The same source,
- * part and context pin is the same job (D7). A busy reader leaves the part planned for the next tick.
+ * D4. The first part read again under a pin marks every part read elsewhere (or being read again), so the item's
+ * words can count them; a later part of the same pin finds them marked.
+ */
+async function markRereadTx(client: PoolClient, item: Item, pin: string, now: string[]) {
+  if (item.plan_ref.reread?.pin === pin) return;
+  const marked = await client.query(`UPDATE usp_intake_parts p
+    SET result_ref=p.result_ref||jsonb_build_object('rereadPin',$2::text),updated_at=now()
+    WHERE p.item_id=$1 AND p.result_ref IS NOT NULL AND p.state<>'quarantined' AND (p.state<>'published'
+      OR EXISTS (SELECT 1 FROM jobs j WHERE j.id=p.job_id AND ${elsewhere(3)}))`, [item.item_id, pin, ...now]);
+  await client.query('UPDATE usp_intake_items SET plan_ref=$2 WHERE item_id=$1',
+    [item.item_id, { ...item.plan_ref, reread: { pin, parts: marked.rowCount } }]);
+}
+
+/**
+ * Admit the item's next part to its reader's existing job, inside the reader's caps: the lowest part that is planned,
+ * or published from a job of another context (D1). The same source, part and context pin is the same job (D7). A
+ * busy reader leaves the part as it is for the next tick; the earlier job and its read are kept (D2).
  */
 async function admitSurfaceItemTx(client: PoolClient, item: Item) {
   const operation = item.plan_ref.operation;
@@ -146,9 +167,12 @@ async function admitSurfaceItemTx(client: PoolClient, item: Item) {
     const ctx = operation === 'raster-window' ? await rasterSourceTx(client, item.case_id, item.source_id, true)
       : await pointSourceTx(client, item.case_id, item.source_id, true);
     await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`${operation}-admission-v1`]);
-    const part = (await client.query(`SELECT part_index,locator FROM usp_intake_parts WHERE item_id=$1
-      AND state='planned' AND NOT EXISTS (SELECT 1 FROM usp_intake_parts q WHERE q.item_id=$1 AND q.state='queued')
-      ORDER BY part_index LIMIT 1 FOR UPDATE`, [item.item_id])).rows[0];
+    const now = [ctx.context, ctx.binding.access, readers[operation]()];
+    const part = (await client.query(`SELECT p.part_index,p.locator,p.result_ref FROM usp_intake_parts p
+      LEFT JOIN jobs j ON j.id=p.job_id WHERE p.item_id=$1
+      AND (p.state='planned' OR p.state='published' AND $2 AND ${elsewhere(3)})
+      AND NOT EXISTS (SELECT 1 FROM usp_intake_parts q WHERE q.item_id=$1 AND q.state='queued')
+      ORDER BY p.part_index LIMIT 1 FOR UPDATE OF p`, [item.item_id, ctx.latest, ...now])).rows[0];
     if (!part) return;
     partIndex = part.part_index as number;
     const { partKey: key, ...stored } = part.locator;
@@ -160,11 +184,13 @@ async function admitSurfaceItemTx(client: PoolClient, item: Item) {
     // The same pin names the same job; one that already ended is not queued again under that pin.
     const job = (await client.query('SELECT status,error FROM jobs WHERE id=$1', [jobId])).rows[0];
     if (['failed', 'stale'].includes(job?.status)) return quarantineTx(client, item.item_id, partIndex, job.error);
+    if (job?.status === 'succeeded') return currentAgainTx(client, item, partIndex, jobId, pin, now);
+    if (part.result_ref) await markRereadTx(client, item, pin, now);
     await client.query(`UPDATE usp_intake_parts SET state='queued',job_id=$3,updated_at=now()
       WHERE item_id=$1 AND part_index=$2`, [item.item_id, partIndex, jobId]);
     await settleSurfaceItemTx(client, item.item_id);
   } catch (error) {
-    // A busy reader leaves the part planned; a refusal of the reader's own authority rests on the part.
+    // A busy reader leaves the part as it is; a refusal of the reader's own authority rests on the part.
     if (error instanceof AppError && error.code.endsWith('_WORKER_BUSY')) return;
     if (error instanceof AppError && partIndex === undefined && refusals.has(error.code)) {
       // The kept original is refused by its reader after enrolment: no later part is offered to it again.
@@ -184,14 +210,47 @@ async function quarantineTx(client: PoolClient, itemId: string, partIndex: numbe
   await settleSurfaceItemTx(client, itemId);
 }
 
-/** One dispatcher tick: each kept surface with a planned part and none queued, oldest first, one part each. */
+/**
+ * The context came back to the pin of the part's accepted read before its read again ended: that read is current
+ * again, and the parts still read elsewhere are counted again under this pin.
+ */
+async function currentAgainTx(client: PoolClient, item: Item, partIndex: number, jobId: string, pin: string,
+  now: string[]) {
+  await client.query(`UPDATE usp_intake_parts SET state='published',job_id=$3,result_ref=result_ref-'rereadPin',
+    updated_at=now() WHERE item_id=$1 AND part_index=$2 AND result_ref->>'jobId'=$3::text`,
+  [item.item_id, partIndex, jobId]);
+  await markRereadTx(client, item, pin, now);
+  await settleSurfaceItemTx(client, item.item_id);
+}
+
+type Due = { item_id: string; case_id: string; operation: Operation; planned: boolean; pins: string[][] | null;
+  case_now: [unknown, unknown, string | null, boolean] };
+
+/** D1. A published part's job pins another case context, access or reader than the case has now (the readers' pins). */
+function readElsewhere(row: Due) {
+  const [frame, context, siteId, archived] = row.case_now;
+  if (archived || !row.pins) return false;
+  const now = [fingerprint({ frame, context, siteId }), ingestionBinding(row.case_id).access, readers[row.operation]()];
+  return row.pins.some(pin => pin.some((value, n) => value !== now[n]));
+}
+
+/**
+ * One dispatcher tick: each kept surface with none queued and a part to read, oldest first, one part each. A part to
+ * read is planned, or published from a job of another context; the item's transaction checks that again.
+ */
 export async function admitIntakeSurfaceParts() {
-  const items = (await query(`SELECT i.item_id FROM usp_intake_items i
-    WHERE i.plan_ref->>'version'=$1 AND EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id
-      AND p.state='planned') AND NOT EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id
+  const rows = (await query<Due>(`SELECT i.item_id,i.case_id,i.plan_ref->>'operation' AS operation,
+      EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id AND p.state='planned') AS planned,
+      (SELECT jsonb_build_array(c.frame,c.context,c.site_id,c.archived) FROM cases c WHERE c.id=i.case_id) AS case_now,
+      (SELECT jsonb_agg(DISTINCT jsonb_build_array(j.payload->>'caseContextSha256',j.payload->>'accessSha256',
+        j.payload->>'readerSha256')) FROM usp_intake_parts p JOIN jobs j ON j.id=p.job_id
+        WHERE p.item_id=i.item_id AND p.state='published') AS pins
+    FROM usp_intake_items i
+    WHERE i.plan_ref->>'version'=$1 AND NOT EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id
       AND p.state='queued')
-    ORDER BY (SELECT max(p.updated_at) FROM usp_intake_parts p WHERE p.item_id=i.item_id) LIMIT $2`,
-  [INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS.page])).rows;
+    ORDER BY (SELECT max(p.updated_at) FROM usp_intake_parts p WHERE p.item_id=i.item_id)`,
+  [INTAKE_SURFACE_VERSION])).rows;
+  const items = rows.filter(row => row.planned || readElsewhere(row)).slice(0, INTAKE_SURFACE_LIMITS.page);
   for (const { item_id: itemId } of items) await transaction(async client => {
     const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0];
     if (item?.plan_ref?.version === INTAKE_SURFACE_VERSION) await admitSurfaceItemTx(client, item);
@@ -274,8 +333,11 @@ export async function acceptIntakeSurfacePartTx(client: PoolClient, accepted: Ac
     JOIN usp_intake_items i ON i.item_id=p.item_id WHERE p.job_id=$1 FOR UPDATE OF p,i`, [accepted.jobId])).rows[0];
   if (!part || part.state === 'published') return;
   const { result, counts } = partResult(accepted);
+  // D2. A part read again names the jobs of its earlier reads; those jobs, results and artifacts are kept.
+  const earlier = part.result_ref ? [part.result_ref.jobId, ...part.result_ref.earlier ?? []] : [];
   await client.query(`UPDATE usp_intake_parts SET state='published',counts=$3,result_ref=$4,updated_at=now()
-    WHERE item_id=$1 AND part_index=$2`, [part.item_id, part.part_index, counts, result]);
+    WHERE item_id=$1 AND part_index=$2`, [part.item_id, part.part_index, counts,
+    earlier.length ? { ...result, earlier } : result]);
   const plan: Plan = part.plan_ref;
   if (!plan.header) {
     const all = accepted.operation === 'raster-window' ? rasterPlan(accepted.value) : pointPlan(accepted.value);
@@ -307,6 +369,7 @@ type Frame = { area: Area; from: number; to: number };
 
 const notPlaced = (reason: NotPlaced['reason'], words: string): NotPlaced => ({ state: 'not_placed', reason, words });
 const outside = 'Read, outside this area: its corners do not meet the batch area\'s extent.';
+const older = 'This part was read under an older batch context, so it is not shown as current.';
 
 async function batchAreaTx(client: PoolClient, caseId: string) {
   return (await client.query(`SELECT a.id,a.revision,a.reference,a.extent FROM cases c
@@ -350,7 +413,8 @@ async function localPartsTx(client: PoolClient, frame: Frame, parts: number[][][
     meets: row.meets === true }));
 }
 
-function surfaceWords(header: Header | null, state: string, done: number, failed: string | null, where: string) {
+function surfaceWords(header: Header | null, state: string, done: number, failed: string | null, where: string,
+  again: string) {
   if (failed) return `A part could not be read (${failed}); the original is kept with its SHA-256.`;
   if (!header) return `The first part ${state === 'reading' ? 'is being read' : 'waits for its reader'}; `
     + 'its coordinate system and size are not read yet.';
@@ -363,8 +427,8 @@ function surfaceWords(header: Header | null, state: string, done: number, failed
     + `so ${header.total - header.planned} are not read.` : '';
   const vertical = header.vertical.status === 'known' ? ` Vertical reference stated: ${header.vertical.name}.`
     : ' The file states no vertical reference.';
-  return `${parts}${limit}${where ? ` ${where}` : ''}${vertical} Display only: no height, measurement or record `
-    + 'is taken from it.';
+  return `${again ? `${again} ` : ''}${parts}${limit}${where ? ` ${where}` : ''}${vertical} Display only: no height, `
+    + 'measurement or record is taken from it.';
 }
 
 /**
@@ -391,17 +455,22 @@ export async function settleSurfaceItemTx(client: PoolClient, itemId: string) {
     [itemId])).rows[0] ?? notFound('Intake item not found.');
   const parts = (await client.query(`SELECT state,counts,issue_code,result_ref FROM usp_intake_parts
     WHERE item_id=$1 ORDER BY part_index`, [itemId])).rows;
-  const header: Header | null = item.plan_ref.header;
+  const plan: Plan = item.plan_ref, header = plan.header;
   const done = parts.filter(part => part.state === 'published').length;
   const failed = parts.find(part => part.state === 'quarantined')?.issue_code ?? null;
+  // D4. The parts marked under the current re-read pin and not read again yet.
+  const reread = plan.reread, pending = reread ? parts.filter(part => part.state !== 'quarantined'
+    && part.result_ref?.rereadPin === reread.pin).length : 0;
+  const again = reread && pending ? `Read again under the batch's area: ${reread.parts - pending} of ${reread.parts} `
+    + 'parts.' : '';
   const { placement, where } = await itemPlacementTx(client, item.case_id, header, parts);
-  const state = failed ? 'failed_part' : header && done === parts.length
+  const state = failed ? 'failed_part' : header && done === parts.length && !pending
     ? (header.total > header.planned ? 'read_to_limit' : 'read')
     : done > 0 || parts.some(part => part.state === 'queued') ? 'reading' : 'planned';
   const recordsSeen = parts.reduce((sum, part) => sum + Number(part.counts?.points ?? 0), 0);
   await writeIntakeLargeTx(client, item.case_id, itemId, { state, placement, planRef: item.plan_ref,
     partsPlanned: header?.planned ?? null, partsDone: done, recordsSeen,
-    limitReason: surfaceWords(header, state, done, failed, where) });
+    limitReason: surfaceWords(header, state, done, failed, where, again) });
 }
 
 const partSelect = `SELECT p.*,i.source_id,i.plan_ref FROM usp_intake_parts p
@@ -411,7 +480,7 @@ function partOf(row: any) {
   const { partKey: key, ...locator } = row.locator;
   return { partIndex: row.part_index, state: row.state === 'running' ? 'queued' : row.state,
     locator: IntakeSurfaceLocatorSchema.parse(locator), partKey: key, jobId: row.job_id,
-    resultSha256: row.result_ref?.resultSha256 ?? null, issueCode: row.issue_code };
+    resultSha256: row.state === 'published' ? row.result_ref?.resultSha256 ?? null : null, issueCode: row.issue_code };
 }
 
 /** The item's parts in order, a page at a time; the caller has checked the item's authority. */
@@ -448,12 +517,13 @@ export async function surfacePartDisplayTx(client: PoolClient, caseId: string, i
   const row = (await client.query(`${partSelect} AND p.part_index=$3`, [caseId, itemId, partIndex])).rows[0]
     ?? notFound('Intake part not found.');
   const plan: Plan = row.plan_ref;
+  // D2. A part being read again keeps the words of a part read under an older context.
+  if (row.state !== 'published' && row.result_ref) conflict(older);
   if (plan?.version !== INTAKE_SURFACE_VERSION || row.state !== 'published' || !plan.header)
     throw new AppError(409, 'INTAKE_PART_NOT_READ', 'This part has no accepted read yet.');
   const capture = plan.operation === 'raster-window' ? rasterWindowCaptureTx : pointBatchCaptureTx;
   const { ctx, job, stale } = await capture(client, caseId, row.source_id, row.job_id);
-  if (stale || job.status !== 'succeeded' || job.result_ref?.sha256 !== row.result_ref.resultSha256)
-    conflict('This part was read under an older batch context, so it is not shown as current.');
+  if (stale || job.status !== 'succeeded' || job.result_ref?.sha256 !== row.result_ref.resultSha256) conflict(older);
   const result = row.result_ref, { partKey: _key, ...locator } = row.locator;
   const corners = result.sourceCorners as number[][] | null;
   if (!corners) throw new AppError(409, 'INTAKE_PART_EMPTY', 'This part read no records to place.');

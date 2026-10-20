@@ -456,7 +456,7 @@
     "packages/server/src/modules/usp/ingestion/intake-run.ts": "eaabcea72bd8a0e3b5de904bc9a654e85b9de1e4953a948cf66a0b80cf2f2248",
     "packages/server/src/modules/usp/ingestion/intake-service.ts": "13e0b76db4402c7691fbe56d34ea64898f378a4e8cb88db2c6ed16c31e663192",
     "packages/server/src/modules/usp/ingestion/intake-signatures.ts": "6dfba02f227a6c02ff1b56bcb2e917ae0b678552b4219c1690462488ae6be208",
-    "packages/server/src/modules/usp/ingestion/intake-surface.ts": "8fa330e8e52ef8fcc5664d39e372786d46e7d932e964c49749e6ffe18140c661",
+    "packages/server/src/modules/usp/ingestion/intake-surface.ts": "7d15060593d5650e749868806af59517b981c38cd8eee37d36f4932e965a26ae",
     "packages/server/src/modules/usp/ingestion/intake-targets.ts": "46bf6c65ab1d7fefc648509a0014bda209be8916a3f75238e8e2f394142440ee",
     "packages/server/src/modules/usp/ingestion/intake-text.ts": "7e7a633cd09bb1b78f23663dddf920a368258523446245e6ae701fa8047927fe",
     "packages/server/src/modules/usp/ingestion/intake-workbook.ts": "5a0273c6459e4e9de319260e6a2648b0a5215c6588aca3e048c0aa722b289c0f",
