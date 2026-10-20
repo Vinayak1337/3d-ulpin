@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { useOpenEvidence } from '../evidence/EvidenceContext';
 import type { Package } from './run/model';
 import { needsLayoutAnswer } from './question-model';
+import { isPageImage } from './page-image-model';
 import { canRetryStopped } from './retry-command';
 import { StoppedRetry } from './StoppedRetry';
 import { useSourceCase } from './table/queries';
@@ -53,6 +54,8 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
     {isIfcItem(item) ? <Button variant="soft" onClick={() => choose(item)}>View structure</Button> : null}
+    {isPageImage(item) ? <Button variant="soft" onClick={() => choose(item)}
+      aria-label={`View page image: ${item.name}`}>View page image</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
     {opensPages(item) ? <ReviewPages caseId={caseId} item={item} /> : null}
   </div>;

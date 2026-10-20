@@ -3335,6 +3335,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the stored PNG preview of a read page image; its bytes are checked against the kept SHA-256 */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry": {
         parameters: {
             query?: never;
@@ -92547,6 +92564,49 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
                 };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            /** @description The item is not in this case, or it has no page image preview */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The stored preview differs from the SHA-256 kept on the item */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

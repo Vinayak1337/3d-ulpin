@@ -37788,6 +37788,90 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "description": "Canonical result",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "The item is not in this case, or it has no page image preview",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "The stored preview differs from the SHA-256 kept on the item",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read the stored PNG preview of a read page image; its bytes are checked against the kept SHA-256",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "G23S",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-bounded-read",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry": {
       "post": {
         "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_retry",
