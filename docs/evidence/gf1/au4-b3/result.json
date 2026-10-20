@@ -1,13 +1,14 @@
 {
   "task": "AU4-B3",
-  "base": "3a1bdfe2",
+  "base": "3a1bdfe2, merged with staging 5ee060be in 42a1895c (no rebase)",
   "branch": "task/au4-b3-evidence-citations",
   "built": {
     "D1": "A matched candidate accepted by a stored evidence confirmation becomes a citation on the building's record through the registry correction path (draft, amendment, review, commit). A table row is cited by registry-table-evidence.ts; a document part keeps the native citation with its exact quote (registry-document-evidence.ts). No cell or part value becomes a field. Accepting a several, conflicting or no_match candidate is refused 409 INTAKE_EVIDENCE_NOT_MATCHED, in words.",
     "D2": "Only a stored confirmation is written. Every pin (profile, source revision, SHA-256 and bytes, reading, package revision and review, candidate hash and evidence) is checked again before the draft and again in the commit transaction; a moved pin refuses 409 INTAKE_EVIDENCE_STALE. One operations receipt per confirmation and building is stored in the commit transaction, so a replay writes nothing.",
     "D3": "The E1 run has an evidence step between record and snapshot. It writes revision n+1 and stores the evidence artefact; the snapshot pins the cited revision. A building with no confirmation goes on as before. registryWritten is true once every accepted building holds its receipt.",
     "D4": "The plan accepts 'CSV logical row N' and an evidence citation's pointer; it reads the original again and refuses an excerpt that is not byte-exact. The card quotes each citation exactly from the stored citation, with the file name, the locator in words and 'Evidence confirmed by the officer by an exact key; it states no right or owner.'",
-    "D5": "not built: a confirmation stored after the building is carded is not written by the run (the evidence step runs only before a snapshot exists). The writer already accepts the earlier write's confirmation ids."
+    "D5": "A confirmation stored after its building is carded queues an evidence-phase run job for that building only. The job writes the citations as record revision n+1 through the same writer (one receipt per confirmation and building), drops the carried artefacts (snapshot, plan, plan confirmation, packet, card, verification) from the target, then carries the building again through the existing run steps to a new snapshot and a new card under the evidence confirmation. The earlier card row is never edited. A confirmation stored while its building was being carried is written when that carry ends. A replay writes nothing.",
+    "windowed": "A streamed table row's locator window is cited like a whole-file row. The writer and the plan read only the row's byte range [byteStart, byteEnd) of the original, check its length and SHA-256 against window.sha256 and the stored usp_table_windows row (fence, window hash, bounds), and read the record through the stream reader to the hashed cells. A whole-file row still reads its whole original, as before."
   },
   "realInputs": {
     "buildings": {
@@ -27,7 +28,10 @@
   "results": {
     "key": "bin as written",
     "writtenOnce": "the first matched register candidate: one draft, one commit, one receipt; record pinned at revision 2; a replay returns null and writes nothing",
-    "staleRefused": ["package revision 1 -> 3", "register SHA-256 changed"],
+    "staleRefused": [
+      "package revision 1 -> 3",
+      "register SHA-256 changed"
+    ],
     "conflictingRefused": "BIN 1002123 (two register rows): 409 INTAKE_EVIDENCE_NOT_MATCHED, nothing drafted",
     "excerpt": "equal to the register line split independently of the reader; the original with one changed byte and a stored excerpt one space longer are both refused",
     "card": {
@@ -40,12 +44,36 @@
       "stableBodySha256": "2ca3844c8a07db5540ee4f7c85270ccb9c714dc6994b1537bf360fd785e21b78",
       "method": "card body without fresh ids and times; the same digest with card-projection.ts and plan-authority.ts at 3a1bdfe2 and with this change"
     },
-    "run": "a cards-only run of three buildings where one has a written citation pins revisions [1, 2, 1] and cards all three"
+    "run": "a cards-only run of three buildings where one has a written citation pins revisions [1, 2, 1] and cards all three",
+    "windowed": "streamed register row (B2B-style locator from readTabularWindows): cited once; the whole original is never read; the range is read 3 times (draft, commit, plan), only [byteStart, byteEnd); a replay writes nothing; one changed byte in the range is refused",
+    "late": {
+      "run": "a carded building with a late confirmation: written once at revision 1 -> 2, the new snapshot pins 2, one new card under the evidence confirmation's key, the first card never sent to a step; the same job again writes and cards nothing",
+      "duringCarry": "a confirmation stored while building 2 was carried: pins [1, 1, 2, 1], building 3 carded once",
+      "card": "card-level: the late card quotes the register excerpt; the first card row is deep-equal before and after and its stored bytes keep their SHA-256 (fixture confirmations, executions and packets cleared, test_only)"
+    }
   },
   "tests": [
-    "packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts (4)",
-    "packages/server/src/modules/usp/packets/card-projection.test.ts (3)",
-    "packages/server/src/modules/usp/ingestion/intake-run.test.ts (1 added)"
+    "packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts (5)",
+    "packages/server/src/modules/usp/packets/card-projection.test.ts (4)",
+    "packages/server/src/modules/usp/ingestion/intake-run.test.ts (3 added)"
   ],
-  "noRuntime": "No Docker, database, provider or GPU. Backend tests use mocked clients and the real NYC files. amendConfirmedEvidenceTx and the document-part path are covered by typecheck and the shared citation checks, not by a database run."
+  "noRuntime": "No Docker, database, provider or GPU. Backend tests use mocked clients and the real NYC files. amendConfirmedEvidenceTx and the document-part path are covered by typecheck and the shared citation checks, not by a database run.",
+  "gaps": [
+    "The late card is a separate card (new card id, revision 1), not revision 2 of the first card: card-service.ts refuses a revision whose plan or snapshot differs (CARD_REVISION_CONTEXT), and that file is outside this task's paths. The first card stays stored unchanged; the target's card artefact names the new card.",
+    "A crash between the late plan and its confirmation can leave an unconfirmed plan behind; the resumed job makes the plan again under the same request key.",
+    "intake-run.ts (additive evidence phase), intake-evidence.ts and intake-evidence-citations.ts are touched outside the listed owned files."
+  ],
+  "checks": {
+    "typecheck:backend": 0,
+    "backend set + card-projection": "0 (464 tests, 461 pass, 3 skipped)",
+    "registry + packets tests": "0 (165 pass)",
+    "evidence, card-projection, intake-run": "0 (40 pass)",
+    "studio:typecheck": 0,
+    "studio:test": "0 (studio 518, scene 58 + 1 skipped, ui 7, api-client 2)",
+    "refresh-contract 5ee060be": 0,
+    "studio:api-types": 0,
+    "check.py": 0,
+    "openapi --check": 0,
+    "git diff --check": 0
+  }
 }

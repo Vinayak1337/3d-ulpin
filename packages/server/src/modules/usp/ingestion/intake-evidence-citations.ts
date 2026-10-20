@@ -24,11 +24,18 @@ export type EvidenceWrite = NonNullable<IntakeTargetArtefacts['evidence']>;
 type Transaction = <T>(work: (client: PoolClient) => Promise<T>) => Promise<T>;
 /** The record is the revision the run holds: the cited one once a write is stored, else the recorded one. */
 type Building = { targetId: string; caseId: string; record: { id: string; revision: number }; written?: EvidenceWrite };
-type Pending = { confirmation_id: string; pins: IntakeEvidenceConfirm; acknowledgement: string; expires_at: Date };
+export type PendingEvidence = { confirmation_id: string; case_id: string; subject: string;
+  pins: IntakeEvidenceConfirm; acknowledgement: string; expires_at: Date; created_at: Date };
+type Pending = PendingEvidence;
+/** D5: what a building's card was made from at the earlier revision; a later write leaves these to be made again
+ * from the cited revision. Its earlier card stays stored exactly as it was. */
+export const CARRIED = ['snapshot', 'plan', 'planConfirmation', 'packet', 'card', 'verification'] as const;
 
-/** Stored citation confirmations that accept a candidate for this building and hold no receipt for it yet. */
-async function pendingTx(client: PoolClient, building: Building): Promise<Pending[]> {
-  return (await client.query(`SELECT confirmation_id,pins,acknowledgement,expires_at
+/** Stored citation confirmations that accept a candidate for this building and hold no receipt for it yet,
+ * earliest first. */
+export async function pendingEvidenceTx(client: PoolClient,
+  building: Pick<Building, 'caseId' | 'targetId'>): Promise<Pending[]> {
+  return (await client.query(`SELECT confirmation_id,pins,acknowledgement,expires_at,case_id,subject,created_at
     FROM usp_intake_evidence_confirmations c WHERE c.case_id=$1 AND c.additions='citations'
     AND c.pins->'additions'->'decisions' @> $2::jsonb AND NOT EXISTS (SELECT 1 FROM operations o
       WHERE o.case_id=c.case_id AND o.kind=$3 AND o.operation_key=$3||':'||c.confirmation_id||':'||$4)
@@ -85,7 +92,7 @@ async function openTx(client: PoolClient, building: Building, pending: Pending[]
 export async function writeEvidenceCitations(tx: Transaction, building: Building,
   steps: EvidenceCitationSteps = evidenceCitationSteps): Promise<EvidenceWrite | null> {
   const opened = await tx(async client => {
-    const pending = await pendingTx(client, building);
+    const pending = await pendingEvidenceTx(client, building);
     return pending.length ? { pending, ...await openTx(client, building, pending, steps) } : null;
   });
   if (!opened) return null;
@@ -103,7 +110,7 @@ export async function writeEvidenceCitations(tx: Transaction, building: Building
     }
     await advanceIntakeTargetTx(client, building.targetId, { stage: 4, readiness: 'recorded',
       reason: 'Its record cites the evidence the officer confirmed by an exact key.',
-      artefacts: { evidence: written } });
+      artefacts: { evidence: written } }, CARRIED);
     return written;
   });
 }

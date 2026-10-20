@@ -5,7 +5,7 @@ import type { TabularSelection } from '@ulpin/contracts/usp';
 import { UspTextPacketPlanInputSchema } from '../../../../../contracts/src/usp/packets';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
-import { tableRowCitation } from '../../registry/registry-table-evidence';
+import { tableRowCitation, tableRowExcerpt } from '../../registry/registry-table-evidence';
 import { rowCells } from '../ingestion/intake-evidence';
 import { readTabularSource } from '../ingestion/tabular-source';
 import { generatePropertyCard } from './card-service';
@@ -25,18 +25,18 @@ const csv: TabularSelection = { format: 'csv', sheet: 'csv', table: null, header
 const BASE_CARD = '2ca3844c8a07db5540ee4f7c85270ccb9c714dc6994b1537bf360fd785e21b78';
 
 type Entry = { pointer: unknown; required: true; inclusionReason: string; review: { kind: 'direct'; reviewed: true } };
-async function cardOf(store: FeaturePlanStore, extra: Entry[] = []) {
+async function cardOf(store: FeaturePlanStore, extra: Entry[] = [], keys = 'au4b3') {
   const base = store.input(), input = UspTextPacketPlanInputSchema.parse({ ...base,
     entries: [...base.entries, ...extra] });
-  const plan = await createPacketPlan(store.ctx, { input, guard: { mode: 'create', requestKey: 'au4b3-create' } },
+  const plan = await createPacketPlan(store.ctx, { input, guard: { mode: 'create', requestKey: `${keys}-create` } },
     store.io);
   const confirmation = await confirmPacketPlan(store.ctx, { planId: plan.planId, version: plan.version,
-    planSha256: plan.planSha256, reviewed: true, guard: { mode: 'update', requestKey: 'au4b3-confirm',
+    planSha256: plan.planSha256, reviewed: true, guard: { mode: 'update', requestKey: `${keys}-confirm`,
       expectedVersion: plan.version, expectedManifestId: plan.input.scope.manifestId } }, store.io);
   await executePacketPlan(store.ctx, { planId: plan.planId, version: plan.version,
-    confirmationId: confirmation.confirmationId, guard: { mode: 'create', requestKey: 'au4b3-execute' } }, store.io);
+    confirmationId: confirmation.confirmationId, guard: { mode: 'create', requestKey: `${keys}-execute` } }, store.io);
   return generatePropertyCard(store.ctx, { planId: plan.planId, planVersion: plan.version, cardId: null,
-    expiresAt: new Date(Date.now() + 3600000).toISOString(), guard: { mode: 'create', requestKey: 'au4b3-card' } },
+    expiresAt: new Date(Date.now() + 3600000).toISOString(), guard: { mode: 'create', requestKey: `${keys}-card` } },
   store.cards.io);
 }
 
@@ -76,7 +76,7 @@ function citeRegisterRow(store: FeaturePlanStore, bytes: Buffer, found: ReturnTy
   const citation = tableRowCitation({ row: evidence, key: { profileId: uuid(24), profileSha256: fingerprint('profile'),
     namespace: 'NYC building identification number', kind: 'integer', literal },
   confirmation: { confirmationId: uuid(25), candidateId: uuid(26), candidateSha256: fingerprint('candidate') } },
-  { table, accessSha256: fingerprint('test_only:access') },
+  { excerpt: tableRowExcerpt(table, row, column), accessSha256: fingerprint('test_only:access') },
   { recordId: store.record.id, revision: 1, bodySha256: fingerprint(store.record.body) }, 'test_only:officer');
   store.record.body.documentCitations = [citation];
   const fixture = store as unknown as { bodies(): unknown[]; rows(sql: string, values: unknown[]): unknown[] | null };
@@ -118,3 +118,24 @@ test('a stored excerpt that is not the row read again refuses the plan', { skip 
     await assert.rejects(cardOf(store, [entry]), /excerpt changed/);
   });
 });
+
+test('a late confirmation gives the building a new card that quotes the row; its first card stays as stored',
+  { skip }, async () => {
+    const bytes = readFileSync(registerPath), found = registerRowOfFeature(bytes);
+    await withFeaturePlan(found.feature, async store => {
+      const first = await cardOf(store);
+      const objects = () => [...store.cards.objects].map(([key, value]) => [key, sha256(value)]);
+      const kept = structuredClone(store.cards.cards), keptObjects = objects();
+      const { citation, entry, locator } = citeRegisterRow(store, bytes, found);
+      // test_only: the fixture answers one plan's confirmation, execution and packet; the late plan makes its own.
+      Object.assign(store, { confirmations: [], executions: [], packets: [] });
+      const late = await cardOf(store, [entry], 'au4b3-late');
+      assert.notEqual(late.cardId, first.cardId);
+      assert.deepEqual(late.facts.find(fact => fact.key === 'evidence_citation_1')?.value,
+        evidenceCardValue(citation.excerpt!, 'gpmc-yuvp.csv', locator));
+      assert(!first.facts.some(fact => fact.key.startsWith('evidence_citation')));
+      assert.deepEqual(store.cards.cards.slice(0, kept.length), kept, 'the first card row is not edited');
+      assert.deepEqual(objects().slice(0, keptObjects.length), keptObjects, 'nor its stored bytes');
+      assert.equal(store.cards.cards.length, kept.length + 1);
+    });
+  });

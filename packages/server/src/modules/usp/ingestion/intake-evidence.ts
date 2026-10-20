@@ -15,7 +15,7 @@ import { registerUspJobInputTx } from '../jobs';
 import { appendIntakeItemTx } from './events';
 import { intakeCaseTx, intakeSourceTx } from './intake-context';
 import { INTAKE_CONFIRMATION_VALIDITY_MS } from './intake-confirmations';
-import { stableUuid } from './intake-run';
+import { queueIntakeRunTx, stableUuid } from './intake-run';
 import type { TabularTable } from './tabular-source';
 
 /**
@@ -621,6 +621,21 @@ export async function confirmIntakeEvidence(caseValue: string, raw: unknown) {
       input.additions.kind === 'citations' ? input.additions.linkManifestSha256 : null, input, binding.subject,
       input.acknowledgement, new Date(createdAt.getTime() + INTAKE_CONFIRMATION_VALIDITY_MS), createdAt])).rows[0];
     for (const source of input.included) await appendIntakeItemTx(client, caseId, source.itemId);
+    await queueLateEvidenceTx(client, caseId, row.confirmation_id, input);
     return confirmationView(row);
   });
+}
+
+/** D5: each accepted building already carded gets a run job for this confirmation. Any other building's own carry
+ * writes the citations, before its snapshot or once it is carded. The rows are locked so a carry carding one now
+ * either sees this confirmation at its end or is seen here as carded. */
+async function queueLateEvidenceTx(client: PoolClient, caseId: string, confirmationId: string,
+  input: IntakeEvidenceConfirm) {
+  const accepted = input.additions.kind === 'citations' ? input.additions.decisions.flatMap(decision =>
+    decision.decision === 'accept' ? [decision.targetId] : []) : [];
+  const rows = (await client.query(`SELECT target_id,readiness FROM usp_intake_targets WHERE case_id=$1
+    AND target_id=ANY($2::uuid[]) ORDER BY target_id FOR UPDATE`, [caseId, [...new Set(accepted)]])).rows;
+  for (const row of rows) if (row.readiness === 'carded') {
+    await queueIntakeRunTx(client, caseId, { phase: 'evidence', confirmationId, targetId: row.target_id });
+  }
 }

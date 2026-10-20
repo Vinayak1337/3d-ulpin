@@ -19,7 +19,7 @@ import {documentPartEligibleForProposal} from '../usp/ingestion/document-model';
 import {registrySourceTx,registryDocumentSourceAccessTx,registryMetadataEvidence} from './registry-metadata';
 import {RegistryMetadataSchema} from '@ulpin/contracts';
 import {registryDocumentCases,registryRegionCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
-import {assertRegistryTableCitationsTx,citedTableTx,tableRowCitation,
+import {assertRegistryTableCitationsTx,citedRowTx,tableRowCitation,
   type TableEvidenceDependencies} from './registry-table-evidence';
 import {registryRegionSourceTx,prepareRegistryRegion,regionCitationId,assertRegionCitation,type RegistryRegionPrepared} from './registry-region-evidence';
 import {RegistryImageRegionCitationSchema,type RegistryImageRegionCitation} from '../../../../contracts/src/registry-document-evidence';
@@ -893,7 +893,7 @@ export async function amendConfirmedEvidenceTx(client:PoolClient,draftId:string,
   const added:RegistryDocumentCitation[]=[];
   for(const item of confirmed)added.push(item.evidence.kind==='table_row'
     ?tableRowCitation({row:item.evidence,key:item.key,confirmation:item.confirmation},
-      await citedTableTx(client,draft.site_id,item.evidence,dependencies.tableEvidence),targetPin,ctx.principal.subject)
+      await citedRowTx(client,draft.site_id,item.evidence,dependencies.tableEvidence),targetPin,ctx.principal.subject)
     :await confirmedPartCitationTx(client,draft.site_id,item,item.evidence,targetPin,dependencies));
   const next=applyCitationAmendment(record,added,[]);
   await assertRegistryDocumentCitationsTx(client,draft.site_id,next,true,dependencies);

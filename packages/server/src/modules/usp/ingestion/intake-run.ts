@@ -12,15 +12,17 @@ const common = {
   version: z.literal('intake-run/1'), jobId: uuid, caseId: uuid, caseRevision: z.number().int().nonnegative(),
   subject: z.string().min(1).max(256), accessSha256: z.string().regex(/^[a-f0-9]{64}$/),
 };
-/** Preparation reviews a draft; a confirmation commits its packages; a target is carried to its card. */
+/** Preparation reviews a draft; a confirmation commits its packages; a target is carried to its card; evidence
+ * confirmed after a building was carded is written and the building carded again (AU4-B3 D5). */
 export const IntakeRunInputSchema = z.discriminatedUnion('phase', [
   z.strictObject({ ...common, phase: z.literal('prepare'), packageId: uuid }),
   z.strictObject({ ...common, phase: z.literal('commit'), confirmationId: uuid }),
   z.strictObject({ ...common, phase: z.literal('target'), confirmationId: uuid, targetId: uuid }),
+  z.strictObject({ ...common, phase: z.literal('evidence'), confirmationId: uuid, targetId: uuid }),
 ]);
 export type IntakeRunInput = z.infer<typeof IntakeRunInputSchema>;
 type Order = { phase: 'prepare'; packageId: string } | { phase: 'commit'; confirmationId: string }
-  | { phase: 'target'; confirmationId: string; targetId: string };
+  | { phase: 'target' | 'evidence'; confirmationId: string; targetId: string };
 
 /** The one thing a run job acts on; it is the job's registered input manifest. */
 export function intakeRunSubject(input: Order): string {
@@ -44,10 +46,12 @@ export function intakeRunKey(confirmationId: string, targetId: string, step: str
   return stableUuid(`intake-run/1:${confirmationId}:${targetId}:${step}`);
 }
 
+/** The same order waiting already; an evidence order is the same only for the same evidence confirmation. */
 async function activeJobTx(client: PoolClient, order: Order): Promise<string | null> {
   const row = (await client.query(`SELECT id FROM jobs WHERE operation='intake-run' AND status IN ('queued','running')
     AND payload->>'phase'=$1 AND COALESCE(payload->>'targetId',payload->>'confirmationId',payload->>'packageId')=$2
-    LIMIT 1`, [order.phase, intakeRunSubject(order)])).rows[0];
+    AND ($3::text IS NULL OR payload->>'confirmationId'=$3) LIMIT 1`,
+  [order.phase, intakeRunSubject(order), order.phase === 'evidence' ? order.confirmationId : null])).rows[0];
   return row?.id ?? null;
 }
 

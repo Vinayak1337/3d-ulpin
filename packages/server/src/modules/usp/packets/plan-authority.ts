@@ -21,7 +21,8 @@ import { selectExactPart, type Packet0Line } from '../packet0';
 import { captureDocumentSourceTx } from '../ingestion/document-authority';
 import { sharedKey, SharedAuthorityNeeded, type SharedAuthority } from './plan-shared';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
-import { evidenceCitationBindings, evidenceExcerptTx } from './plan-citation-authority';
+import { evidenceCitationBindings, evidenceExcerptTx, evidenceRange,
+  type EvidenceOriginal } from './plan-citation-authority';
 
 async function capturedTx(client: PoolClient, manifestId: string, pin: TargetPin) {
   const row = (await client.query(`SELECT body,body_sha256 FROM usp_snapshot_bodies WHERE manifest_id=$1
@@ -264,6 +265,7 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     const cited = selection.review.kind === 'direct' && locator.kind === 'verbatim'
       ? confirmed.find(b => b.sourceId === id && b.sourceRevision === pointer.sourceRevision.revision
         && b.locator === locator.locator) : undefined;
+    const citedRange = cited ? evidenceRange(cited) : null;
     const nativeSupported = ['shapefile_zip-area-v2', 'gpkg-area-v2'].includes(source.body.profile)
       && source.body.status === 'inspected' && source.body.inspection?.status === 'interpreted';
     const featureSupported = target.kind === 'building' && !pointer.assetRevision && !pointer.partRevision
@@ -275,7 +277,7 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     const observation = featureSupported ? await capturedFeatureTx(client, input, manifest, pointer) : null;
     const range = featureSupported && !nativeSupported
       ? capturedSourceRange(observation, Number(source.body.bytes)) : null;
-    budget.charge(id, Number(source.body.bytes), range);
+    budget.charge(id, Number(source.body.bytes), range ?? citedRange);
     if (featureSupported && !reasonCode && range) {
       const key = `${id}:${range.byteStart}:${range.byteEnd}`;
       let bytes = rangeBytes.get(key);
@@ -309,17 +311,19 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
         excerpt = observedFeatureExtract(bytes, observation);
       }
     }
-    if (cited && !reasonCode) {
+    if (cited && citedRange && !reasonCode) {
+      excerpt = await evidenceExcerptTx(client, cited, source.body as EvidenceOriginal, { range: readRange });
+    } else if (cited && !reasonCode) {
       const bytes = await readBytes(source.body.object_key);
       if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256) {
         throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY',
           'The selected original does not match its byte receipt.');
       }
       verifiedBytes.add(id);
-      excerpt = await evidenceExcerptTx(client, cited, bytes);
+      excerpt = await evidenceExcerptTx(client, cited, source.body as EvidenceOriginal, { whole: bytes });
     }
     if (!reasonCode && excerpt === null) reasonCode = 'exact_extract_unavailable';
-    if (!reasonCode && !range && !verifiedBytes.has(id)) {
+    if (!reasonCode && !range && !citedRange && !verifiedBytes.has(id)) {
       const bytes = await readBytes(source.body.object_key);
       if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256)
         throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY', 'The selected original does not match its byte receipt.');

@@ -1,21 +1,26 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
+import { Readable } from 'node:stream';
 import { test } from 'node:test';
 import type { PoolClient } from 'pg';
 import type { RegistryRecord, RegistryTableRowCitation } from '@ulpin/contracts';
 import { UspPropertyCardFactSchema, type IntakeEvidenceAnchor, type IntakeEvidenceCandidate, type IntakeEvidenceConfirm,
-  type IntakeTableRowLocator, type TabularSelection } from '@ulpin/contracts/usp';
+  type IntakeTableRowLocator, type TableWindowRow, type TabularSelection } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
-import { sha256 } from '../../../infrastructure/storage';
+import { sha256, type readObjectRange } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import type { ConfirmedEvidence } from '../../registry/registry-document-evidence';
-import { assertRegistryTableCitationsTx, tableRowCitation } from '../../registry/registry-table-evidence';
-import { evidenceCardValue, evidenceCitationBindings, evidenceExcerptTx } from '../packets/plan-citation-authority';
+import { assertRegistryTableCitationsTx, citedRowTx, tableRowCitation, tableRowExcerpt, wholeTableRow,
+  type CitedRow, type TableEvidenceDependencies } from '../../registry/registry-table-evidence';
+import { evidenceCardValue, evidenceCitationBindings, evidenceExcerptTx,
+  evidenceRange } from '../packets/plan-citation-authority';
 import { writeEvidenceCitations, type EvidenceCitationSteps } from './intake-evidence-citations';
-import { closeEvidence, evidenceAnchor, evidenceLinkManifest, evidenceReceiptKey,
-  tableAssertions } from './intake-evidence';
+import { closeEvidence, evidenceAnchor, evidenceLinkManifest, evidenceReceiptKey, tableAssertions,
+  windowAssertions } from './intake-evidence';
 import { stableUuid } from './intake-run';
+import { windowRows } from './table-windows';
 import { readTabularSource } from './tabular-source';
+import { readTabularWindows } from './tabular-stream';
 
 // Real public NYC inputs (test_only, foreign geography): DOITT building footprints and the LPC landmark register
 // for the same blocks, which share the building identification number (BIN) as written.
@@ -57,6 +62,30 @@ function realInputs() {
 }
 type Inputs = ReturnType<typeof realInputs>;
 
+/** The same register as the stream stores it (one window; the reader closes a window at 10,000 records), each
+ * row's locator citing its window, byte range and range hash as the evidence job writes it. */
+async function streamedInputs() {
+  const bytes = readFileSync(registerPath), table = readTabularSource(bytes, csv);
+  const column = table.headers.indexOf('bin'), rows: TableWindowRow[] = [];
+  let stored = { index: -1, sha256: '', byteStart: 0, byteEnd: 0 };
+  await readTabularWindows(Readable.from([bytes]), async (window, headers) => {
+    rows.push(...windowRows(window, headers));
+    stored = { index: window.index, sha256: window.sha256, byteStart: window.byteStart, byteEnd: window.byteEnd };
+  });
+  const assertions = windowAssertions(rows, column, 'integer', (row, cells, literal) => ({
+    kind: 'table_row', itemId: register, caseId, sourceId, sourceRevision: 1, sourceSha256: sha256(bytes),
+    rawJobId: ids('job:stream'), rawInputSha256: fingerprint('test_only:stream'), rawResultSha256: stored.sha256,
+    acceptedFence: 1, selection: csv, sourceRow: row.sourceRow, rowSha256: fingerprint(cells), columnIndex: column,
+    columnHeader: 'bin', cell: { state: 'literal', value: literal },
+    window: { index: stored.index, record: row.record, byteStart: row.byteStart, byteEnd: row.byteEnd,
+      sha256: row.sha256 } }));
+  const coverage = { state: 'closed' as const, read: rows.length, eligible: assertions.length,
+    keyless: rows.length - assertions.length, unread: 0, failed: 0 };
+  const candidates = closeEvidence({ caseId, key, anchors: anchorsOf(readFileSync(buildingsPath)),
+    createdAt: '2026-10-21T00:00:00.000Z', assertions, coverage });
+  return { bytes, table, coverage, candidates, stored };
+}
+
 /** The officer's stored confirmation accepting one candidate for its first building. */
 function confirmationOf(inputs: Inputs, candidate: IntakeEvidenceCandidate) {
   const decisions = [{ decision: 'accept' as const, candidateId: candidate.candidateId,
@@ -73,8 +102,13 @@ function confirmationOf(inputs: Inputs, candidate: IntakeEvidenceCandidate) {
     acknowledgement: pins.acknowledgement, expires_at: new Date(Date.now() + 3_600_000) };
 }
 
-/** A store answering exactly the writer's SQL, and fake registry steps that count what they would write. */
-function writerStore(inputs: Inputs, candidate: IntakeEvidenceCandidate) {
+/** The whole register row read again from the real bytes, as the registry reads it. */
+const wholeRow = (inputs: Inputs) => async (row: IntakeTableRowLocator): Promise<CitedRow> =>
+  ({ excerpt: wholeTableRow(row, inputs.bytes), accessSha256 });
+
+/** A store answering exactly the writer's SQL, and fake registry steps that count what they would write; `cite`
+ * reads each confirmed row again as the registry amend does. */
+function writerStore(inputs: Inputs, candidate: IntakeEvidenceCandidate, cite = wholeRow(inputs)) {
   const confirmation = confirmationOf(inputs, candidate), targetId = candidate.anchors[0].targetId;
   const record = { id: ids('record'), revision: 1 };
   const store = { packageRevision: 1, sourceSha256: sha256(inputs.bytes), receipts: new Map<string, unknown>(),
@@ -120,9 +154,11 @@ function writerStore(inputs: Inputs, candidate: IntakeEvidenceCandidate) {
       return { id: ids('draft'), records: [{ id: recordId, revision: record.revision }] };
     },
     amend: async (_client: PoolClient, _draftId: string, confirmed: ConfirmedEvidence[]) => {
-      store.citations = confirmed.map(item => tableRowCitation({ row: item.evidence as IntakeTableRowLocator,
-        key: item.key, confirmation: item.confirmation }, { table: inputs.table, accessSha256 }, target,
-      'test_only:officer'));
+      store.citations = await Promise.all(confirmed.map(async item => {
+        const row = item.evidence as IntakeTableRowLocator;
+        return tableRowCitation({ row, key: item.key, confirmation: item.confirmation }, await cite(row), target,
+          'test_only:officer');
+      }));
       return { draftRevision: 2, record: { documentCitations: store.citations } as unknown as RegistryRecord };
     },
     review: async () => ({ id: ids('review') }),
@@ -171,10 +207,12 @@ test('the citation quotes its row exactly, is checked against the original, and 
       { source, bytes: async () => changed }), /differs from its pins/);
     const [cited] = evidenceCitationBindings({ documentCitations: [citation] });
     assert.equal(cited.locator, `CSV logical row ${citation.row.sourceRow}`);
-    assert.equal(await evidenceExcerptTx(job, cited, inputs.bytes), citation.excerpt);
+    const original = { object_key: 'test_only:register', bytes: inputs.bytes.length };
+    assert.equal(await evidenceExcerptTx(job, cited, original, { whole: inputs.bytes }), citation.excerpt);
     // test_only: a stored excerpt one space longer than the row.
     const longer = { ...citation, excerpt: `${citation.excerpt} ` };
-    await assert.rejects(evidenceExcerptTx(job, { ...cited, citation: longer }, inputs.bytes), /excerpt changed/);
+    await assert.rejects(evidenceExcerptTx(job, { ...cited, citation: longer }, original, { whole: inputs.bytes }),
+      /excerpt changed/);
     const value = evidenceCardValue(cited.excerpt, 'gpmc-yuvp.csv', cited.locator);
     UspPropertyCardFactSchema.parse({ key: 'evidence_citation_1', label: 'Confirmed evidence', state: 'available',
       value, reasonCode: null });
@@ -202,3 +240,47 @@ test('a conflicting candidate is never written: the write is refused in words', 
   await assert.rejects(write(), refusedWith('INTAKE_EVIDENCE_NOT_MATCHED', /only a matched candidate/));
   assert.deepEqual([store.drafts, store.commits, store.receipts.size], [0, 0, 0]);
 });
+
+test('a streamed register row is cited once and its excerpt is read again from its byte range alone', { skip },
+  async () => {
+    const inputs = await streamedInputs(), matched = matchedOf(inputs);
+    const row = matched.evidence as IntakeTableRowLocator, window = row.window!;
+    assert.equal(window.sha256, sha256(inputs.bytes.subarray(window.byteStart, window.byteEnd)));
+    const reads: number[][] = [];
+    const range = (async (_key: string, start: number, end: number) => {
+      reads.push([start, end]);
+      return inputs.bytes.subarray(start, end);
+    }) as typeof readObjectRange;
+    const source = (async () => ({ case_id: caseId, revision: 1, sha256: sha256(inputs.bytes),
+      object_key: 'test_only:register', bytes: inputs.bytes.length, accessSha256,
+      inspection: { manualProfile: { headers: inputs.table.headers } } })) as any;
+    const deps: TableEvidenceDependencies = { source, range,
+      bytes: async () => assert.fail('a streamed row never reads its original whole') };
+    const { stored } = inputs, windows = { query: async (sql: string) => {
+      assert.match(sql, /FROM usp_table_windows/);
+      return { rows: [{ fence: 1, window_sha256: stored.sha256, byte_start: stored.byteStart,
+        byte_end: stored.byteEnd }] };
+    } } as unknown as PoolClient;
+    const { store, write } = writerStore(inputs, matched, cited => citedRowTx(windows, ids('site'), cited, deps));
+    await write();
+    assert.equal(await write(), null, 'a replay finds the receipt and writes nothing');
+    assert.deepEqual([store.drafts, store.commits, store.receipts.size, store.citations.length], [1, 1, 1, 1]);
+    const [citation] = store.citations, index = inputs.table.sourceRows.indexOf(row.sourceRow);
+    assert.deepEqual(citation.row, row);
+    assert.equal(citation.excerpt, tableRowExcerpt(inputs.table, index, row.columnIndex),
+      'the range gives the excerpt the whole read gives');
+    await assertRegistryTableCitationsTx(windows, ids('site'), [citation], deps);
+    const [cited] = evidenceCitationBindings({ documentCitations: [citation] });
+    assert.deepEqual(evidenceRange(cited), { byteStart: window.byteStart, byteEnd: window.byteEnd });
+    const original = { object_key: 'test_only:register', bytes: inputs.bytes.length,
+      inspection: { manualProfile: { headers: inputs.table.headers } } };
+    assert.equal(await evidenceExcerptTx(windows, cited, original, { range }), citation.excerpt);
+    assert.deepEqual(reads, Array(3).fill([window.byteStart, window.byteEnd]), 'only the range of the row is read');
+    // test_only: one byte of the cited range changed in the retained original.
+    const changed = Buffer.from(inputs.bytes);
+    changed[window.byteStart + 1] ^= 1;
+    const changedRange = (async (_key: string, start: number, end: number) =>
+      changed.subarray(start, end)) as typeof readObjectRange;
+    await assert.rejects(evidenceExcerptTx(windows, cited, original, { range: changedRange }),
+      /differs from its window/);
+  });

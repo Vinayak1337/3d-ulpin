@@ -17,7 +17,8 @@ import { localOperatorSubject, localRequestContext } from '../principal';
 import { captureRegistrySnapshotTx, resolveRegistryTarget } from '../snapshots';
 import { intakeCaseTx } from './intake-context';
 import { queueIntakeLargePackageTx } from './intake-large';
-import { writeEvidenceCitations } from './intake-evidence-citations';
+import { CARRIED, pendingEvidenceTx, writeEvidenceCitations,
+  type PendingEvidence } from './intake-evidence-citations';
 import { evidenceCitationBindings } from '../packets/plan-citation-authority';
 import { ingestionBinding } from './events';
 import { isCardsOnly, packageDifference, readConfirmationRow,
@@ -37,7 +38,9 @@ export const intakeRunSteps = {
 };
 export type IntakeRunSteps = typeof intakeRunSteps;
 type Run = { input: IntakeRunInput; attempt: UspJobAttempt; steps: IntakeRunSteps };
-type Carry = Run & { ctx: RequestContext; confirmation: IntakeConfirmationRow; target: IntakeTargetRow };
+/** The officer's confirmation a building is carried under: its id keys every step, its sentence is the reason. */
+type Order = { confirmationId: string; reason: string; expiresAt: Date };
+type Carry = Run & { ctx: RequestContext; order: Order; target: IntakeTargetRow };
 const identityNotApplicable = 'not_applicable: codes are for recorded spaces only';
 const retryDelay = "interval '2 seconds'";
 const leaseLostCode = 'INTAKE_RUN_LEASE_LOST';
@@ -187,6 +190,7 @@ async function step(carry: Carry, stage: number, reason: string, artefacts: Part
   if (client) await advanceIntakeTargetTx(client, carry.target.target_id, change);
   else await pinned(carry, tx => advanceIntakeTargetTx(tx, carry.target.target_id, change));
   Object.assign(carry.target.artefacts, artefacts);
+  Object.assign(carry.target, { stage, readiness: change.readiness });
 }
 
 /** The cited revision once evidence citations are written, else the recorded one. */
@@ -225,7 +229,7 @@ async function snapshotScope(carry: Carry): Promise<SnapshotScope> {
 }
 
 function key(carry: Carry, name: string): string {
-  return intakeRunKey(carry.confirmation.confirmation_id, carry.target.target_id, name);
+  return intakeRunKey(carry.order.confirmationId, carry.target.target_id, name);
 }
 
 /** An exact citation is usable only when it is unique; a run never chooses among several matches. */
@@ -260,8 +264,8 @@ async function plan(carry: Carry) {
   const pointers = [intakeTargetCitation(resolved.data.evidence, carry.target.locator),
     ...await evidencePointers(carry, scope, pin)];
   const created = await carry.steps.createPlan(carry.ctx, { input: { target: pin, scope, purpose: 'record_evidence',
-    format: 'csv', recipe: 'pack0-exact-text-csv/1', expiresAt: carry.confirmation.expires_at.toISOString(),
-    entries: pointers.map(pointer => ({ pointer, required: true, inclusionReason: carry.confirmation.reason,
+    format: 'csv', recipe: 'pack0-exact-text-csv/1', expiresAt: carry.order.expiresAt.toISOString(),
+    entries: pointers.map(pointer => ({ pointer, required: true, inclusionReason: carry.order.reason,
       review: { kind: 'direct' as const, reviewed: true } })) },
   guard: { mode: 'create', requestKey: key(carry, 'plan') } });
   if (created.entries.length !== pointers.length || created.entries.some(entry => entry.state !== 'included')) {
@@ -291,7 +295,7 @@ async function execute(carry: Carry) {
 async function card(carry: Carry) {
   const planned = carry.target.artefacts.plan!;
   const generated = await carry.steps.card(carry.ctx, { planId: planned.id, planVersion: planned.version,
-    cardId: null, expiresAt: carry.confirmation.expires_at.toISOString(),
+    cardId: null, expiresAt: carry.order.expiresAt.toISOString(),
     guard: { mode: 'create', requestKey: key(carry, 'card') } });
   await step(carry, 8, 'Its property card is made; it is verified next.',
     { card: { id: generated.cardId, revision: generated.revision } });
@@ -353,15 +357,80 @@ async function carryTarget(run: Run, confirmationId: string, targetId: string) {
 }
 
 async function carryListed(run: Run, confirmation: IntakeConfirmationRow, target: IntakeTargetRow) {
-  if (target.readiness === 'carded') return;
-  if (target.readiness !== 'recorded') refuse('INTAKE_TARGET_NOT_RECORDED', `This building is ${target.readiness}.`);
-  const named = confirmation.packages.find(value => value.packageId === target.package_id);
-  const pkg = await run.steps.package(target.package_id);
-  if (!named || pkg.state !== 'COMMITTED' || pkg.revision !== named.revision + 1) {
-    refuse('INTAKE_PACKAGE_MOVED', 'The recorded package revision changed after confirmation.');
+  if (target.readiness !== 'carded') {
+    if (target.readiness !== 'recorded') refuse('INTAKE_TARGET_NOT_RECORDED', `This building is ${target.readiness}.`);
+    const named = confirmation.packages.find(value => value.packageId === target.package_id);
+    const pkg = await run.steps.package(target.package_id);
+    if (!named || pkg.state !== 'COMMITTED' || pkg.revision !== named.revision + 1) {
+      refuse('INTAKE_PACKAGE_MOVED', 'The recorded package revision changed after confirmation.');
+    }
+    await carryOn({ ...run, ctx: localRequestContext(run.input.jobId), target, order: {
+      confirmationId: confirmation.confirmation_id, reason: confirmation.reason,
+      expiresAt: confirmation.expires_at } });
   }
-  const carry: Carry = { ...run, ctx: localRequestContext(run.input.jobId), confirmation, target };
-  for (const [artefact, send] of carrySteps) if (!target.artefacts[artefact]) await send(carry);
+  await lateEvidence(run, target);
+}
+
+async function carryOn(carry: Carry) {
+  for (const [artefact, send] of carrySteps) if (!carry.target.artefacts[artefact]) await send(carry);
+}
+
+/** The sentence a building carried again for late evidence states as its reason. */
+export function lateEvidenceReason(confirmationId: string, at: Date): string {
+  return `Confirmed by the officer in evidence confirmation ${confirmationId} on ${at.toISOString().slice(0, 10)}.`;
+}
+
+type LateConfirmation = Pick<PendingEvidence, 'confirmation_id' | 'case_id' | 'subject' | 'expires_at' | 'created_at'>;
+/** A late carry runs under the evidence confirmation, which must be this case's, current and the operator's. */
+function lateOrder(run: Run, late: LateConfirmation): Order {
+  if (late.case_id !== run.input.caseId) refuse('INTAKE_CONFIRMATION_SCOPE', 'The confirmation is in another case.');
+  if (new Date(late.expires_at).getTime() <= Date.now()) {
+    refuse('INTAKE_EVIDENCE_STALE', 'The evidence confirmation expired; the officer confirms again.');
+  }
+  if (late.subject !== localOperatorSubject()) {
+    throw new AppError(403, 'INTAKE_RUN_OPERATOR', 'Only the officer who confirmed can run this confirmation.');
+  }
+  return { confirmationId: late.confirmation_id, expiresAt: new Date(late.expires_at),
+    reason: lateEvidenceReason(late.confirmation_id, new Date(late.created_at)) };
+}
+
+/** D5: the citations are written as a new record revision; what the card was made from is made again from it. */
+async function rewrite(carry: Carry) {
+  const { target_id: targetId, case_id: caseId, artefacts } = carry.target;
+  const record = artefacts.evidence?.record ?? artefacts.record
+    ?? refuse('INTAKE_TARGET_NOT_RECORDED', 'This building has no record.');
+  const written = await carry.steps.citeEvidence(work => pinned(carry, work),
+    { targetId, caseId, record, written: artefacts.evidence });
+  if (!written) return;
+  for (const name of CARRIED) delete artefacts[name];
+  Object.assign(artefacts, { evidence: written });
+  Object.assign(carry.target, { stage: 4, readiness: 'recorded' });
+}
+
+/** D5: evidence confirmed after a building's snapshot. A carded building with such a confirmation is written again
+ * and carried from a new snapshot to a new card under the earliest one; its earlier card stays stored as it was.
+ * Repeated until none is left, so a confirmation stored while the building was carried is never left behind. */
+async function lateEvidence(run: Run, target: IntakeTargetRow) {
+  const pending = () => pinned(run, client => pendingEvidenceTx(client,
+    { caseId: target.case_id, targetId: target.target_id }));
+  for (let [late] = await pending(); late && target.readiness === 'carded'; [late] = await pending()) {
+    const carry: Carry = { ...run, ctx: localRequestContext(run.input.jobId), target, order: lateOrder(run, late) };
+    await rewrite(carry);
+    await carryOn(carry);
+  }
+}
+
+/** D5: an evidence confirmation's own job. A carded building is carried again; one this job left part-way, its
+ * citations written, is carried on. Any other building is left to its own carry, which ends with the same check. */
+async function lateTarget(run: Run, confirmationId: string, targetId: string) {
+  const target = (await query('SELECT * FROM usp_intake_targets WHERE target_id=$1 AND case_id=$2',
+    [targetId, run.input.caseId])).rows[0] as IntakeTargetRow | undefined;
+  if (target?.readiness === 'recorded' && target.artefacts.evidence?.confirmationIds.includes(confirmationId)) {
+    const late = (await query(`SELECT confirmation_id,case_id,subject,expires_at,created_at
+      FROM usp_intake_evidence_confirmations WHERE confirmation_id=$1`, [confirmationId])).rows[0] as LateConfirmation;
+    await carryOn({ ...run, ctx: localRequestContext(run.input.jobId), target, order: lateOrder(run, late) });
+  }
+  if (target?.readiness === 'carded') await lateEvidence(run, target);
 }
 
 /** A cards-only confirmation records nothing: one run carries its targets in the order listed, renewing the lease
@@ -388,6 +457,13 @@ async function cardInOrder(run: Run, confirmation: IntakeConfirmationRow) {
 async function stopTx(client: PoolClient, input: IntakeRunInput, code: string, message: string) {
   if (input.phase === 'target') {
     await stopIntakeTargetTx(client, input.targetId, input.confirmationId, code, message);
+    return;
+  }
+  if (input.phase === 'evidence') {
+    // A carded building keeps its card; one refused after its new revision was written stops in these words.
+    const row = (await client.query('SELECT confirmation_id FROM usp_intake_targets WHERE target_id=$1',
+      [input.targetId])).rows[0];
+    if (row?.confirmation_id) await stopIntakeTargetTx(client, input.targetId, row.confirmation_id, code, message);
     return;
   }
   if (input.phase !== 'commit') return;
@@ -450,6 +526,7 @@ async function advance(run: Run) {
   assertRunBinding(input);
   if (input.phase === 'prepare') await prepare(run, input.packageId);
   else if (input.phase === 'commit') await commit(run, input.confirmationId);
+  else if (input.phase === 'evidence') await lateTarget(run, input.confirmationId, input.targetId);
   else await carryTarget(run, input.confirmationId, input.targetId);
 }
 
