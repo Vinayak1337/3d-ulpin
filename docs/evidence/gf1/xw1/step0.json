@@ -1,51 +1,68 @@
 {
   "task": "xw1",
   "gap": "G13 follow-on: a workbook (XLSX) above 16 MiB is read sheet by sheet in row windows, like a large CSV",
-  "base": "fb3b6318",
+  "base": "afaf3e2f",
   "change": [
     {
       "path": "scripts/agent/read_workbook_windows.py (new, sibling of read_workbook_cells.py)",
-      "why": "D1 reader: the selected sheet of an XLSX file is read from a file path with zipfile member streams and ElementTree iterparse (elem cleared, never loaded whole), one JSON line per window of rows on stdout. A sibling, not a new mode: the whole-read script's contract (base64 on stdin, one JSON document, 20 MB expanded cap) stays byte for byte, and the window reader's contract (file path, sheet and header rows, JSON lines, refusal line with a code) differs. It imports the workbook structure checks of services/geo/geo/native_workbook.py (relationships, targets, cell references, rich text) instead of copying them."
+      "why": "D1 reader: one sheet read from a file path with zipfile member streams and iterparse, one JSON line per window. The head line also gives the sheet member's stored byte range and the SHA-256 of exactly those stored bytes."
     },
     {
       "path": "packages/server/src/modules/usp/ingestion/tabular-stream.ts",
-      "why": "readWorkbookWindows beside readTabularWindows: spool the original stream to a private temporary file while hashing and counting it, spawn the reader once, take one window line at a time (stdout is read only after the window is written, so the reader cannot run ahead more than one window), map a refusal code to officer words. readTableWindows chooses CSV or workbook by the selection; profileTabularStream counts a null cell as absent."
+      "why": "readWorkbookWindows beside readTabularWindows; TableSource {selection, bytes}; the copy goes to ULPIN_DOCUMENT_OCR_SCRATCH after a free-space check (size + 1 GiB, TABULAR_SCRATCH_SPACE) and is removed in finally; unavailableColumns names marked cells; the profile gives a marked cell no value."
     },
     {
       "path": "packages/server/src/modules/usp/ingestion/table-windows.ts",
-      "why": "isWindowedTable admits an XLSX case original above 16 MiB; windowRows stores a workbook row with sheet, member SHA-256 and cell marks, without a byte range."
+      "why": "windowRows stores every row with its byte range and that range's SHA-256; a workbook row also with sheet, sheetSha256 and marks."
     },
     {
       "path": "packages/contracts/src/usp/table-windows.ts",
-      "why": "Optional row fields sheet, memberSha256 and marks; byteStart/byteEnd/sha256 become optional with a refine: a row cites either its bytes (CSV, unchanged) or its sheet row (workbook). TableFromOriginalSchema admits an xlsx selection."
+      "why": "Row fields sheet, sheetSha256 and marks are optional beside the required byte range and SHA-256; a sheet row names its sheet and sheet SHA-256 together. TableFromOriginalSchema admits an xlsx selection."
     },
     {
       "path": "packages/contracts/src/usp/ingestion.ts",
-      "why": "TabularPinSchema: a case-original XLSX pin may state up to TABULAR_STREAM_LIMITS.bytes; the development pin keeps 16 MiB."
+      "why": "TabularPinSchema: a case-original XLSX pin may state up to TABULAR_STREAM_LIMITS.bytes."
+    },
+    {
+      "path": "packages/contracts/src/usp/intake.ts (AU4-B2B lines, granted by the review)",
+      "why": "IntakeTableRowLocatorSchema.window: optional sheet, physicalRow and sheetSha256, all three or none."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-evidence-worker.ts (granted) and intake-evidence.ts windowAssertions",
+      "why": "A workbook row's locator carries sheet, physicalRow and sheetSha256; a marked cell is unknown in the row hash and never a key."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts (granted)",
+      "why": "mapTableWindow and the window proposal map a marked cell as unknown (TABULAR_CELL_UNAVAILABLE), as the whole read does."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/service.ts, table-profile-worker.ts, apps/api ingestion.controller.ts",
+      "why": "TP1 integration: the 413 TABLE_ORIGINAL_WORKBOOK_SIZE branch is removed so an XLSX above 16 MiB queues TP1's table-profile/1 job; comments and the route summary name the workbook. attachTableTx unchanged."
     },
     {
       "path": "apps/studio/src/features/intake/table/retain.ts, TableImportDialog.tsx",
-      "why": "streamedImport admits .xlsx at 16 MiB + 1 byte; the help line names the file kind. Sheet and header rows stay typed by the officer."
+      "why": "streamedImport admits .xlsx at 16 MiB + 1 byte; help line and job words name the workbook."
     },
     {
       "path": "tests/fixtures/xlsx-control.ts (new)",
-      "why": "test_only workbook generator shared by tabular-stream.test.ts and table-windows.test.ts: a deflated ZIP written in memory with shared strings, an inline string, formulas with and without a cached value, an empty string and a missing cell."
+      "why": "test_only workbook generator shared by the workbook tests."
     },
     {
       "path": "docs/api/openapi.json, docs/api/source-pins.json, packages/api-client/src/schema.d.ts",
-      "why": "generated after the contract change"
+      "why": "generated after the contract change (refresh-contract afaf3e2f)"
     }
   ],
   "reuse": [
-    "G13 window store (usp_table_windows, writeTableWindowTx), mapping per window and keyset paging, unchanged",
-    "TABULAR_STREAM_LIMITS for rows, window rows, window bytes, record bytes and windows",
-    "INTAKE_PROBE_LIMITS.compressionRatio (100) for the member ratio check",
-    "native_workbook.py structure checks and expat DTD guard pattern"
+    "G13 window store (usp_table_windows, writeTableWindowTx), mapping per window and keyset paging; no SQL change",
+    "TP1 table-profile/1 job, its status words and attachTableTx as the single accepting step",
+    "TABULAR_STREAM_LIMITS, INTAKE_PROBE_LIMITS.compressionRatio",
+    "native_workbook.py structure checks and the expat DTD guard pattern",
+    "ULPIN_DOCUMENT_OCR_SCRATCH, the existing private scratch setting for local readers"
   ],
   "seamsOutside": [
-    "Three one-line call sites pass the pinned selection to readTableWindows instead of calling the CSV reader: streaming-vector-worker.ts (raw job), service.ts firstWindow (recipe dry run) and tabular-source.ts inspectTabularStream (format check). No other change there.",
-    "usp_table_windows.byte_start/byte_end/window_sha256 are NOT NULL (G13 SQL, not owned): a workbook window stores the sheet member's stored byte range in the original and the SHA-256 of the window line as read. No SQL change.",
-    "chunk-mapping-tabular.ts (not owned) maps a window's cells as text: a cell marked formula_cached keeps its cached text there, where the whole read treats it as unknown. Reported, not changed."
+    "intake.ts locator, intake-evidence-worker.ts locator fill and chunk-mapping-tabular.ts marked-cell mapping: granted by the XW1 review.",
+    "intake-evidence.ts windowAssertions (not named in the grant): a marked cell becomes unknown in the row hash and is never a key; four lines, needed so evidence never cites a formula's stored result as a key.",
+    "service.ts, table-profile-worker.ts and the controller summary: TP1's lines, changed as the coordinator asked (413 branch removed, comments)."
   ],
-  "runtime": "none: no Docker, GPU or provider. Python tests and the memory measurement run with E:/BhuAayam-data/ml/venv-k3a-geo (Python 3.13.7)."
+  "runtime": "none: no Docker, GPU or provider. Workbook tests run with ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe (backend set) and venv-k3a-geo (pytest, both pass)."
 }
