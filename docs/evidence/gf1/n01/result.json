@@ -1,0 +1,37 @@
+{
+  "task": "N01 (D1 and D3; the table half is N01B after TP1)",
+  "branch": "task/n01-one-drop-one-batch",
+  "base": "b2f1bb37",
+  "leadDecision": "Split after step 0: D1 and D3 now; CSV and XLSX keep today's table import; retain-batch.ts and the table page untouched.",
+  "changed": {
+    "apps/studio/src/features/intake/file-route.ts": "fileRoute: CSV/XLSX -> table, every other name -> intake (GeoPackage and any ZIP included). The ZIP directory reader and the shapefile-ZIP 'direct' route are removed. dropState gives a dropped file's first state; routeWords gives the drop list's words.",
+    "apps/studio/src/features/intake/AddFilesDialog.tsx": "The drop no longer calls POST /import-packages/inspect or POST /import-packages; with that route gone, its field-mapping panel and 'Direct import' badge were unreachable and are removed. The opt-in NYC profile is unchanged: a file it answers is 'Proposed', one it does not take joins the batch. Detected column words come from routeWords; 'Not imported' is gone.",
+    "apps/studio/src/features/intake/AddFilesDialog.module.css": "Rules used only by the removed mapping panel are removed.",
+    "apps/studio/src/features/intake/file-route.test.ts": "New: the mixed-drop split, difficult names, the opt-in profile states, and the route words.",
+    "apps/studio/src/features/intake/batch-model.test.ts": "The two old route tests (direct for .gpkg and shapefile ZIP) moved out and were replaced by file-route.test.ts."
+  },
+  "dropWords": {
+    "geojson/json/gpkg": "Map file · joins the batch",
+    "zip": "ZIP · the batch reads what it holds",
+    "pdf/doc/docx": "Document · joins the batch",
+    "png/jpg/jpeg/tif/tiff/webp": "Image · joins the batch",
+    "csv/xlsx": "Table · opens the table import",
+    "other": "Original · kept in the batch"
+  },
+  "inputs": {
+    "good": "One drop of buildings.geojson, wards.gpkg, parcels-shapefile.zip, layers.zip, plan.pdf, scan.bin, register.csv, floors.xlsx: the first six go to one IntakeDropDialog (one case choice), the CSV and XLSX keep their table import.",
+    "difficult": "Upper-case and double extensions (SIDEWALK.JSON, Wards.GPKG, plan.pdf.zip, register.csv.gz), no extension (README), a bare '.zip'.",
+    "note": "The route is now chosen from the file name alone; no bytes are read, so no data-drive file changes the outcome. A shapefile ZIP is kept and converted by the batch (SH2), checked on the server side at step 0."
+  },
+  "serverRoutesKept": "POST /api/v1/import-packages and /inspect are unchanged on the server. The Studio offered them only from this drop, so no Studio entry to the direct import remains.",
+  "checks": {
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "studioFiles": 79, "studioTests": 500,
+      "note": "A first run had exit 1: 11 files failed to load @phosphor-icons modules with a file-open error (UNKNOWN/Cannot find module) and every one of the 425 tests that loaded passed. The rerun had no failures." },
+    "pnpm typecheck:backend": { "exit": 0 },
+    "backend test command": { "exit": 0, "tests": 419, "pass": 417, "fail": 0, "skipped": 2 },
+    "openapi --check": { "exit": 0, "operations": 324, "schemas": 367 },
+    "ui-design-check scan": { "exit": 0, "candidates": 0, "note": "The scan covers apps/web; the Studio diff was read by hand." },
+    "git diff --check": { "exit": 0 }
+  }
+}
