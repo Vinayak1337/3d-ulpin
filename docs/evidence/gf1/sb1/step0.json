@@ -1,0 +1,33 @@
+{
+  "task": "SB1",
+  "gap": "G14",
+  "design": "docs/evidence/gf1/au3/proposal.json task SURFACE-BACKEND",
+  "base": "ad660383",
+  "retentionPath": [
+    "The Studio's batch now keeps every file that is not a small GeoJSON or ZIP through the part upload (retain-batch.ts viaUpload), so a dropped TIFF or LAZ arrives as a large-original-v1 source and is enrolled by POST .../intake/items.",
+    "So the front door is not changed: the raster-window and point-batch source checks also accept a large-original-v1 receipt of at most 16 MiB (operator subject, verified hash and bytes, its own object key); the dedicated /rasters and /points receipts keep working.",
+    "No new source authority, route for retention, queue, operation or SQL table."
+  ],
+  "files": {
+    "packages/server/src/modules/usp/ingestion/intake-surface.ts": "new helper: which card is a surface, officer words for limits, part keys, part plan (256 px windows, 8192-point batches), part 0 in the publishing transaction, dispatcher admission one part per file, acceptance and failure of a part, parts list and display read",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts": "publish hook beside queueIntakeDraftTx (a surface item skips the vector function); parts and display reads",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.ts": "read_to_limit added to the tray state type",
+    "packages/server/src/modules/usp/ingestion/raster-window.ts": "enqueue takes a stable job id; source check accepts a retained large original",
+    "packages/server/src/modules/usp/ingestion/point-batch.ts": "same for points",
+    "packages/server/src/modules/usp/ingestion/raster-window-worker.ts": "acceptance and failure call the part hook in their own transaction",
+    "packages/server/src/modules/usp/ingestion/point-batch-worker.ts": "same; part XY extent from the native records",
+    "packages/server/src/modules/cases/processing.ts": "one call: admit planned surface parts each tick",
+    "packages/contracts/src/usp/intake.ts": "part list and display contracts",
+    "packages/contracts/src/usp/point-batch.ts": "jobsPerSource 32 -> 611 as the proposal's pointOfficerLimits state",
+    "apps/api/src/modules/ingestion/ingestion.controller.ts": "GET .../intake/items/:itemId/parts and .../parts/:n/display",
+    "services/geo/geo/raster_window.py, point_batch.py": "object key may be the large original's key",
+    "docs/api/openapi.json, packages/api-client/src/schema.d.ts": "generated"
+  },
+  "reuse": ["RasterWindowService/PointBatchService source checks and enqueue", "runRasterWindowJob/runPointBatchJob acceptance (acceptUspJobAttempt beforeCommit)", "usp_intake_parts, writeIntakeLargeTx", "case site -> map_areas reference (intakeCaseArea's join)", "PostGIS ST_Transform into the area's analysis CRS minus its origin (area-display-window.ts LOCAL)"],
+  "seamsOutsideOwnedPaths": [],
+  "decisions": [
+    "Admission waits while the batch has no area and a map file of the batch is still being drafted, because the site is a context pin of every reader job (proposal step 2). Part 0 is queued in the publishing transaction when that wait does not apply and the active cap allows; otherwise it is planned and the dispatcher admits it.",
+    "A part failed because its context moved goes back to planned and is enrolled again under the fresh pin (new job id); accepted parts are never rewritten."
+  ],
+  "notRun": "Python reader tests: neither E:/Projects/3d-ulpin/.venv nor venv-k3a-geo exists with rasterio/laspy on this PC; no Docker for this task."
+}

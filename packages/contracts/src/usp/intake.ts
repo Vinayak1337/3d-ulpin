@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { SourcePathSchema, TabularSelectionSchema } from './ingestion';
+import { RasterPixelWindowSchema } from './raster-window';
+import { PointBatchSelectionSchema } from './point-batch';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -356,3 +358,48 @@ export type IntakeTableRowLocator = z.infer<typeof IntakeTableRowLocatorSchema>;
 export type IntakeEvidenceCoverage = z.infer<typeof IntakeEvidenceCoverageSchema>;
 export type IntakeEvidenceCandidate = z.infer<typeof IntakeEvidenceCandidateSchema>;
 export type IntakeEvidenceConfirm = z.infer<typeof IntakeEvidenceConfirmSchema>;
+
+/** SB1: an orthophoto, terrain raster or point cloud of a batch read in parts by its existing reader; display only. */
+export const INTAKE_SURFACE_VERSION = 'intake-surface/1' as const;
+export const INTAKE_SURFACE_LIMITS = Object.freeze({ windowSide: 256, batchPoints: 8192, page: 64 });
+export const IntakeSurfaceOperationSchema = z.enum(['raster-window', 'point-batch']);
+export const IntakeSurfaceLocatorSchema = z.discriminatedUnion('operation', [
+  z.strictObject({ operation: z.literal('raster-window'), window: RasterPixelWindowSchema.nullable() }),
+  z.strictObject({ operation: z.literal('point-batch'), batch: PointBatchSelectionSchema.nullable() }),
+]).describe('The part asked of the original; a null window or batch is the reader\'s first part.');
+export const IntakeSurfacePartSchema = z.strictObject({
+  partIndex: z.number().int().nonnegative(), state: z.enum(['planned', 'queued', 'published', 'quarantined']),
+  locator: IntakeSurfaceLocatorSchema, partKey: hash, jobId: uuid.nullable(), resultSha256: hash.nullable(),
+  issueCode: z.string().max(128).nullable(),
+});
+export const IntakeSurfacePartPageSchema = z.strictObject({
+  caseId: uuid, itemId: uuid, operation: IntakeSurfaceOperationSchema,
+  partsPlanned: z.number().int().positive().nullable(), parts: z.array(IntakeSurfacePartSchema),
+  next: z.number().int().nonnegative().nullable(),
+});
+export const IntakeSurfacePartsQuerySchema = z.strictObject({ after: z.coerce.number().int().min(-1).optional() });
+const xy = z.tuple([z.number().finite(), z.number().finite()]);
+const corners = z.tuple([xy, xy, xy, xy]);
+export const IntakeSurfaceDisplaySchema = z.strictObject({
+  version: z.literal(INTAKE_SURFACE_VERSION), caseId: uuid, itemId: uuid, partIndex: z.number().int().nonnegative(),
+  jobId: uuid, original: z.strictObject({ sourceId: uuid, sourceRevision: z.number().int().positive(),
+    sha256: hash, bytes: z.number().int().positive() }),
+  locator: IntakeSurfaceLocatorSchema, read: IntakeSurfaceLocatorSchema.describe('The exact part the reader read.'),
+  resultSha256: hash, artifact: z.strictObject({ sha256: hash, bytes: z.number().int().positive(),
+    mediaType: z.enum(['image/tiff', 'application/vnd.las.point-records']), path: z.string().min(1).max(512) }),
+  sourceCrs: z.strictObject({ state: z.enum(['stated', 'not_stated']), authority: z.string().max(100).nullable() }),
+  verticalReference: z.strictObject({ status: z.enum(['known', 'unknown']), name: z.string().max(500).nullable() }),
+  sourceCorners: corners.describe('In the source\'s own coordinate system and units: a window\'s corners from its '
+    + 'affine (upper left, upper right, lower right, lower left), or the XY extent of a batch\'s native records.'),
+  placement: z.discriminatedUnion('state', [
+    z.strictObject({ state: z.literal('placed'), areaId: uuid, areaRevision: z.number().int().nonnegative(),
+      analysisCrs: z.string().max(64), origin: xy, operation: z.string().max(200), corners }),
+    z.strictObject({ state: z.literal('not_placed'),
+      reason: z.enum(['no_batch_area', 'no_area_reference', 'no_stated_crs', 'transform_unavailable']),
+      words: z.string().max(500) }),
+  ]),
+  use: z.literal('display_only'),
+});
+export type IntakeSurfaceLocator = z.infer<typeof IntakeSurfaceLocatorSchema>;
+export type IntakeSurfacePart = z.infer<typeof IntakeSurfacePartSchema>;
+export type IntakeSurfaceDisplay = z.infer<typeof IntakeSurfaceDisplaySchema>;

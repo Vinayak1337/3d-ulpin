@@ -1,0 +1,55 @@
+{
+  "task": "SB1",
+  "gap": "G14",
+  "branch": "task/sb1-surface-backend",
+  "base": "ad660383",
+  "status": "built_not_runtime_proven",
+  "what": [
+    "A dropped TIFF or LAZ kept through the part upload (large-original-v1) is taken by the existing raster-window or point-batch reader: the raster and point source checks accept that retained receipt within the reader's 16 MiB ceiling, and both Python readers accept its object key.",
+    "Enrolment publishes part 0 in usp_intake_parts and queues it in the same transaction, beside the vector queue (intake-surface.ts queueIntakeSurfaceTx; a surface item skips queueIntakeDraftTx).",
+    "Each dispatcher tick admits the next planned part of each kept surface, one per file, oldest first, inside the readers' own active and per-source caps (admitIntakeSurfaceParts). A busy reader leaves the part planned.",
+    "Job identity: stableUuid(intake-surface/1, item, source revision, part key, context pin); part key = fingerprint(original sha256, reader sha256, locator). The same pin is the same job (D7).",
+    "The reader's acceptance transaction publishes the part; the first accepted part plans the rest from what the reader found (dimensions, affine, CRS authority, point count, vertical reference) and writes it to plan_ref.header (D3). The probe card is unchanged.",
+    "A stale read returns its part to planned under a fresh pin; any other failure quarantines the part with its code; the item becomes failed_part.",
+    "Tray words and state follow the part rows: reading, read or read_to_limit; placement on_map with a batch area reference, waiting_for_anchor without one, not_understood when the file states no CRS. Vertical reference stays unknown unless the file states it (D4). recordsSeen counts points read; rasters count none.",
+    "GET .../intake/items/:itemId/parts (paged) and GET .../parts/:partIndex/display: the reader's accepted fence is checked again (409 if stale), source corners from the window affine or the batch's native XY extent, transformed on the server by postgis:ST_Transform(EPSG:src->area analysis CRS) minus the area origin, with the accepted artifact path and exact original sha256 (D5). use = display_only.",
+    "Over a limit the original is kept and the item names the limit in words (D6); point jobsPerSource 32 -> 611 as the proposal's pointOfficerLimits state."
+  ],
+  "realInputs": {
+    "pack": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload",
+    "readerMetadataFrom": "docs/evidence/gf1/au3/result.json (accepted first reads of the same three files; hashes checked against the bytes)",
+    "files": [
+      { "file": "nyc-10013-ortho-2018.tif", "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716", "reader": "raster-window", "sourcePixels": "768 x 768, 4 bands, EPSG:3857", "partsPlanned": 9, "firstPartEqualsReaderFirstRead": true },
+      { "file": "nyc-10013-dem-2017.tif", "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317", "reader": "raster-window", "sourcePixels": "832 x 911, 1 band, EPSG:2263", "partsPlanned": 16, "firstPartEqualsReaderFirstRead": true, "probe": "signature only (IFD outside the head); taken by the reader, not refused as missing CRS", "verticalReference": "unknown" },
+      { "file": "nyc-10013-lidar-2017.laz", "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790", "reader": "point-batch", "sourcePoints": 1726222, "partsPlanned": 211, "lastBatch": { "start": 1720320, "count": 5902 }, "firstPartEqualsReaderFirstRead": true, "verticalReference": "NAVD88 height (stated by the file)" }
+    ],
+    "difficult": "DEM: probe depth signature, crs state absent; the item is planned and read, and its words say the coordinate system is not read yet until the first part is accepted."
+  },
+  "replay": "intake-surface.test.ts: accepting the same part again writes nothing and publishes no event (211 parts stay 211); enrolling the same kept original again writes nothing.",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0, "counts": "studio 479 passed (74 files); scene 58 passed, 1 skipped; ui 7 passed; api-client 2 passed" },
+    { "command": "backend test command of the template plus intake-surface.test.ts (in $D), tests/raster-publication.test.ts, tests/point-publication.test.ts", "exit": 0, "counts": "393 tests, 391 pass, 0 fail, 2 skipped (database-only dispatcher tests)" },
+    { "command": "tsx --test tests/raster-read-authority, raster-point-later-receipt, source-fusion-point, source-fusion-raster, registry-point-citations, registry-raster-citations, sufficiency-raster-point", "exit": 0, "counts": "21 pass, 0 fail" },
+    { "command": "tsx apps/api/scripts/openapi.ts --check", "exit": 0, "note": "after scripts/api/refresh-contract.ts ad660383 (exit 0) and pnpm studio:api-types (exit 0)" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0, "counts": "319 native operations, 363 named schemas" },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "python ast.parse services/geo/geo/raster_window.py and point_batch.py", "exit": 0 }
+  ],
+  "notRun": [
+    "Python reader tests: E:/Projects/3d-ulpin/.venv does not exist; E:/BhuAayam-data/ml/venv-k3a-geo exists but has neither rasterio nor laspy (import exit 1 each). The key change (sources/ or large-originals/) is checked by parse only.",
+    "Runtime: no Docker or live PostgreSQL for this task, so the three files have not been dropped into one live batch; part SQL, dispatcher admission, PostGIS placement and the readers on large-original keys are proven by code and doubles, not by a run."
+  ],
+  "gaps": [
+    "Runtime proof (proposal accept 1): one live batch with the three files reaching 9/16/211 published parts.",
+    "Point display preview: the proposal's bounded min/max cell preview in point_batch.py is not built; the display read points at the native .bin artifact.",
+    "A part accepted before the batch gained its area is refused by the display read (409) but is not read again automatically.",
+    "usp_holding_extent is not written; placement on_map follows the area reference and the stated CRS, without an extent-overlap check.",
+    "If the reader's own source check refuses a kept original before a part is chosen, the enrolment transaction fails with that code instead of resting the item."
+  ],
+  "testFilesOutsideOwnedCode": [
+    "packages/server/src/modules/cases/processing.test.ts: the dispatcher now sends the surface admission read after the job selection; the packet mock answers only the job selection.",
+    "tests/raster-publication.test.ts, tests/point-publication.test.ts: the SQL double answers the new part lookup with no row (a dedicated-route job has no intake part)."
+  ]
+}

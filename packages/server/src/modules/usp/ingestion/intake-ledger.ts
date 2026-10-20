@@ -46,8 +46,8 @@ export function intakeItem(row: any) {
 }
 
 export type IntakeDraftState = {
-  state: 'probed' | 'planned' | 'reading' | 'read' | 'failed_part';
-  placement: 'undecided' | 'needs_answer' | 'on_map' | 'not_understood';
+  state: 'probed' | 'planned' | 'reading' | 'read' | 'read_to_limit' | 'failed_part';
+  placement: 'undecided' | 'needs_answer' | 'on_map' | 'waiting_for_anchor' | 'not_understood';
   planRef: Record<string, unknown> | null;
   recordsSeen: number;
   limitReason: string | null;
