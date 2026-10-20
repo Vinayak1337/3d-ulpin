@@ -7,9 +7,9 @@ import { SHADED, SURFACE_LIMITS, SurfaceParts, type IntakeItem, type PartDisplay
 const OUTSIDE = 'Read, outside this area: its corners do not meet the batch area\'s extent.';
 const corners = [[0, 10], [10, 10], [10, 0], [0, 0]];
 
-function item(partsDone: number, state = 'reading'): IntakeItem {
+function item(partsDone: number, state = 'reading', tray: Partial<IntakeItem> = {}): IntakeItem {
   return { itemId: 'i-1', caseId: 'c-1', sourceId: 's-1', name: 'nyc-10013-dem-2017.tif', family: 'raster', state,
-    partsDone, limitReason: null } as unknown as IntakeItem;
+    partsDone, limitReason: null, ...tray } as unknown as IntakeItem;
 }
 
 /** Answers the reads as the server would for `published` parts; records what was asked and how many at once. */
@@ -100,5 +100,60 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     expect(view.parts.find((part) => part.id === 'i-1:2')).toMatchObject({ corners: expect.any(Array) });
     expect(view.parts.find((part) => part.id === 'i-1:2')!.points).toBeUndefined();
     expect(view.parts.find((part) => part.id === 'i-1:1')!.points).toBeDefined();
+  });
+
+  const NO_EXTENT = 'Read but not placed: the batch area has no extent yet.';
+  const waiting = { placement: 'waiting_for_anchor', limitReason: `Read 3 of 3 windows. ${NO_EXTENT}` } as const;
+  const onMap = { placement: 'on_map', limitReason: 'Read 3 of 3 windows. Placed against the extent of this '
+    + 'batch\'s drafted footprints; the area has no recorded extent yet.' } as const;
+
+  it('draws the parts held as not placed once the stream reports the file placed, without a reload', async () => {
+    let extent = false;
+    const noExtent = { placement: { state: 'not_placed', reason: 'no_area_extent', words: NO_EXTENT } };
+    const fake = fakeIo(() => 3, () => (extent ? placed : noExtent as Partial<PartDisplay>));
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(3, 'read', waiting)]);
+    await vi.waitFor(() => expect(view.lines[0]!.line).toContain('0 parts drawn and 3 not placed'));
+    expect(view.parts).toHaveLength(0);
+    // The batch's footprints are drafted: the server settles the file on the map and the stream reports it.
+    extent = true;
+    parts.sync([item(3, 'read', onMap)]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(3));
+    await vi.waitFor(() => expect(view.lines[0]!.line).toContain('3 parts drawn and 0 not placed'));
+    expect(view.lines[0]!.line).not.toContain('Not placed:');
+    expect(fake.asked).toEqual([0, 1, 2, 0, 1, 2]);
+    // The same report again asks nothing.
+    parts.sync([item(3, 'read', onMap)]);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(fake.asked).toHaveLength(6);
+  });
+
+  it('asks the parts held as not placed again inside the same bounds: 4 in flight, 256 per file', async () => {
+    let extent = false;
+    const noExtent = { placement: { state: 'not_placed', reason: 'no_area_extent', words: NO_EXTENT } };
+    const fake = fakeIo(() => 300, () => (extent ? placed : noExtent as Partial<PartDisplay>));
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(300, 'read', waiting)]);
+    await vi.waitFor(() => expect(view.lines[0]!.line).toContain('0 parts drawn and 256 not placed'),
+      { timeout: 5000 });
+    expect(fake.asked).toHaveLength(256);
+    extent = true;
+    parts.sync([item(300, 'read', onMap)]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(SURFACE_LIMITS.drawnPerItem), { timeout: 5000 });
+    expect(fake.asked).toHaveLength(512);
+    expect(new Set(fake.asked.slice(256))).toEqual(new Set(fake.asked.slice(0, 256)));
+    expect(fake.most()).toBe(SURFACE_LIMITS.displayReads);
+  });
+
+  it('does not ask a part read outside the area again when only new parts are read', async () => {
+    let published = 2;
+    const fake = fakeIo(() => published, (n) => (n === 1 ? outside : placed));
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(2, 'reading', { placement: 'on_map', limitReason: 'Read 2 of 3 windows.' })]);
+    await vi.waitFor(() => expect(view.lines[0]!.line).toContain('1 not placed'));
+    published = 3;
+    parts.sync([item(3, 'read', { placement: 'on_map', limitReason: 'Read 3 of 3 windows.' })]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(2));
+    expect(fake.asked).toEqual([0, 1, 2]);
   });
 });
