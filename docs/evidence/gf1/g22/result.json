@@ -1,0 +1,321 @@
+{
+  "task": "G22",
+  "gate": "GF1",
+  "base": "30e3fb79",
+  "branch": "task/g22-lanes-and-memory",
+  "what": "dispatchTick picks probe-lane jobs first, then each (lane, source or case) group's oldest job before any group's second, in one SQL with LIMIT 12 and the usp:% exclusion; an in-process reservation admits a picked job only when its lane is under its concurrency and its stated MiB fits the unreserved budget; a job over the whole budget starts only when nothing else is held; the reservation is released in the same finally that clears each single-worker guard",
+  "budget": "settings.dispatchMemoryMib (DISPATCH_MEMORY_MIB, a whole number of MiB) or floor(os.totalmem() / 2) in MiB",
+  "lanes": [
+    {
+      "lane": "probe",
+      "concurrency": 8,
+      "defaultMiB": 64,
+      "mibSource": "lane default (not measured): header reads, INTAKE_PROBE_LIMITS; the processor inspects at most 16 MiB",
+      "concurrencySource": "conservative choice"
+    },
+    {
+      "lane": "vector",
+      "concurrency": 2,
+      "defaultMiB": 512,
+      "mibSource": "lane default (not measured)",
+      "concurrencySource": "conservative choice"
+    },
+    {
+      "lane": "table",
+      "concurrency": 2,
+      "defaultMiB": 256,
+      "mibSource": "lane default (not measured)",
+      "concurrencySource": "conservative choice"
+    },
+    {
+      "lane": "document",
+      "concurrency": 2,
+      "defaultMiB": 931,
+      "mibSource": "measured: docs/evidence/usp/whole-page-ocr-runtime.json worker peakJobPrivateBytes 975,704,064",
+      "concurrencySource": "conservative choice"
+    },
+    {
+      "lane": "raster",
+      "concurrency": 2,
+      "defaultMiB": 1024,
+      "mibSource": "lane default (not measured): the gap's 1 GiB raster part",
+      "concurrencySource": "RASTER_WINDOW_LIMITS.active"
+    },
+    {
+      "lane": "point",
+      "concurrency": 2,
+      "defaultMiB": 512,
+      "mibSource": "lane default (not measured)",
+      "concurrencySource": "POINT_BATCH_LIMITS.active"
+    },
+    {
+      "lane": "model3d",
+      "concurrency": 2,
+      "defaultMiB": 512,
+      "mibSource": "lane default (not measured)",
+      "concurrencySource": "IFC_LIMITS.active"
+    },
+    {
+      "lane": "link",
+      "concurrency": 2,
+      "defaultMiB": 256,
+      "mibSource": "lane default (not measured)",
+      "concurrencySource": "conservative choice"
+    },
+    {
+      "lane": "gpu",
+      "concurrency": 1,
+      "defaultMiB": 970,
+      "mibSource": "measured: docs/evidence/gf-ai/building/b4-pytorch-resource-20261010/result.json roof model peak_working_set 1,017,249,792 bytes",
+      "concurrencySource": "one GPU (task decision D1)"
+    },
+    {
+      "lane": "teacher",
+      "concurrency": 2,
+      "defaultMiB": 128,
+      "mibSource": "lane default (not measured): waits on the gateway",
+      "concurrencySource": "conservative choice"
+    },
+    {
+      "lane": "other",
+      "concurrency": 2,
+      "defaultMiB": 512,
+      "mibSource": "lane default (not measured)",
+      "concurrencySource": "conservative choice"
+    }
+  ],
+  "operations": [
+    {
+      "operation": "inspect",
+      "lane": "probe",
+      "mib": 64,
+      "source": "lane default (not measured): header reads, INTAKE_PROBE_LIMITS; the processor inspects at most 16 MiB (lane value)"
+    },
+    {
+      "operation": "streaming-vector",
+      "lane": "vector",
+      "mib": 415,
+      "source": "measured: docs/evidence/gf1/g16/result.json memoryProof.peakRssMiB 414.9 (500,000 features, 5000 parts)"
+    },
+    {
+      "operation": "intake-large",
+      "lane": "vector",
+      "mib": 426,
+      "source": "measured: docs/evidence/gf1/lp3a/parts-result.json peakRssKiB 435,232 (NYC GeoJSON, 487 parts, 25 cuts)"
+    },
+    {
+      "operation": "streamed-profile",
+      "lane": "vector",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "projected-vector",
+      "lane": "vector",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "kml-native",
+      "lane": "vector",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "geoparquet-native",
+      "lane": "vector",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "private-mvt",
+      "lane": "vector",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "intake-native-derivative",
+      "lane": "vector",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "chunk-mapping",
+      "lane": "table",
+      "mib": 256,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "document-extraction",
+      "lane": "document",
+      "mib": 931,
+      "source": "measured: docs/evidence/usp/whole-page-ocr-runtime.json worker peakJobPrivateBytes 975,704,064 (lane value)"
+    },
+    {
+      "operation": "packet-pdf",
+      "lane": "document",
+      "mib": 931,
+      "source": "measured: docs/evidence/usp/whole-page-ocr-runtime.json worker peakJobPrivateBytes 975,704,064 (lane value)"
+    },
+    {
+      "operation": "intake-page-image",
+      "lane": "document",
+      "mib": 954,
+      "source": "reader cap: INTAKE_PAGE_IMAGE_LIMITS.inputPixels 250,000,000 x 4 bytes a pixel"
+    },
+    {
+      "operation": "raster-window",
+      "lane": "raster",
+      "mib": 1024,
+      "source": "lane default (not measured): the gap's 1 GiB raster part (lane value)"
+    },
+    {
+      "operation": "point-batch",
+      "lane": "point",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "build",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "ifc-native",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "dxf-native",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "citygml-native",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "obj-native",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "gltf-native",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "cityjson-native",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "cityjson-validation",
+      "lane": "model3d",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "intake-evidence",
+      "lane": "link",
+      "mib": 256,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "intake-run",
+      "lane": "link",
+      "mib": 256,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "spatial-inference",
+      "lane": "gpu",
+      "mib": 970,
+      "source": "measured: docs/evidence/gf-ai/building/b4-pytorch-resource-20261010/result.json roof model peak_working_set 1,017,249,792 bytes (lane value)"
+    },
+    {
+      "operation": "dataset-spatial-inference",
+      "lane": "gpu",
+      "mib": 970,
+      "source": "measured: docs/evidence/gf-ai/building/b4-pytorch-resource-20261010/result.json roof model peak_working_set 1,017,249,792 bytes (lane value)"
+    },
+    {
+      "operation": "intake-draft",
+      "lane": "teacher",
+      "mib": 128,
+      "source": "lane default (not measured): waits on the gateway (lane value)"
+    },
+    {
+      "operation": "intake-zip-layers",
+      "lane": "other",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    },
+    {
+      "operation": "large-original-storage",
+      "lane": "other",
+      "mib": 512,
+      "source": "lane default (not measured) (lane value)"
+    }
+  ],
+  "unknownOperation": {
+    "lane": "other",
+    "mib": 512,
+    "dropped": false
+  },
+  "outsideOwnedPaths": [
+    {
+      "path": "tests/usp-packet-pdf.test.ts",
+      "change": "one line: its fake pool recognised the old selection by its first words; it now recognises the new ones. Without it that test sees no job (0 !== 1)"
+    },
+    {
+      "path": "docs/api/source-pins.json",
+      "change": "repinned config.ts, dispatch-lanes.ts and processing.ts by scripts/api/refresh-contract.ts 30e3fb79; openapi.json and schema.d.ts unchanged"
+    }
+  ],
+  "tests": {
+    "file": "packages/server/src/modules/cases/processing.test.ts",
+    "withFakes": [
+      "the selection SQL and its lane columns (point-batch is point, spatial-inference is gpu)",
+      "every operation processing.ts names has a lane row",
+      "a 1 GiB raster part and a 954 MiB page image on a 1536 MiB budget: the second waits, then starts after the first is released",
+      "a job over the whole budget waits while a probe runs, then runs alone and nothing joins it",
+      "gpu: a second inference job waits while one runs; another lane still starts",
+      "an unknown operation is lane other at 512 MiB and is admitted",
+      "through dispatchTick: one queued job starts on the first tick even with a 1 MiB budget, and its reservation is released",
+      "through dispatchTick on a 1000 MiB budget: a packet PDF (931 MiB) runs, an unknown operation waits that tick, and is dispatched the tick after the PDF ends"
+    ],
+    "postgresOnly": [
+      "211 point parts of one file, a second file, a vector job, an unknown operation, one table job and one probe: probe first, the table in the first 12 (expected order written out)",
+      "one file with 15 jobs still offers 12"
+    ],
+    "postgresOnlyRun": false,
+    "mutationCheck": "removing the memory rule fails three of the tests above"
+  },
+  "realInputs": "none: the change is scheduling only; the MiB numbers are taken from the measured real-file runs cited per row",
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": "0 (78 files, 498 tests; packages/ui 2 files, 7 tests)",
+    "backendTests": "0 (440 tests: 438 pass, 2 skipped (the PostgreSQL-only selection tests), 0 fail)",
+    "openapiCheck": "1 at the base and after the change (source-pins stale); 0 after refresh-contract 30e3fb79 and studio:api-types",
+    "scripts/api/check.py": 0,
+    "gitDiffCheck": 0,
+    "ui-design-check": "not run: no Studio change"
+  },
+  "notProved": [
+    "the selection SQL has not run on PostgreSQL here (no runtime in this task); its two meaning tests skip without ULPIN_DISPATCH_TEST_DATABASE_URL",
+    "jobs sent to the processor (inspect, build, projected-vector, spatial-inference, dataset-spatial-inference and any unknown operation) hold their reservation only for the tick that dispatches them; after that they run in the processor, whose own queue paces them, so the gpu lane limit holds per dispatch, not for the inference run itself",
+    "most MiB values are lane defaults, not measurements (marked per row); raster, point and model3d have no measured peak in the repo",
+    "a job over the budget, or a large one, can be delayed by a steady stream of small jobs: a refused job holds nothing, by rule D3, and nothing ages it",
+    "no scratch-disk reservation; jobs carry no wave, so waves are not ordered here"
+  ]
+}
