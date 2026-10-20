@@ -284,7 +284,7 @@ async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSo
 const layerName = (member: MemberRow) => member.member_path.split('/').filter(Boolean).pop() ?? member.member_path;
 
 /** The case revision is the retain's fence; a sibling's retain moves it, so read it again and retry twice. */
-async function fenced<T>(caseId: string, dependencies: ZipLayerDependencies,
+export async function fenced<T>(caseId: string, dependencies: Pick<ZipLayerDependencies, 'transaction'>,
   retain: (revision: number) => Promise<T>): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     const revision = await dependencies.transaction(async client =>
@@ -344,13 +344,13 @@ async function keepLargeLayer(caseId: string, parentItemId: string, archive: Int
     memberPath: member.member_path, ordinal: located.ordinal, memberBytes: entry.size,
     compressedBytes: entry.compressed, crc32: entry.crc, memberSha256: file.sha256 });
   const sourceId = await fenced(caseId, dependencies, revision =>
-    receiveLargeLayer(caseId, revision, file, lineage, byteParts(stream()), dependencies));
+    receiveLargeLayer(caseId, revision, file, byteParts(stream()), dependencies, lineage));
   await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
 }
 
 /** Regroups a member's chunks into the receipt's byte parts; only the part being filled is held. */
-async function* byteParts(chunks: AsyncIterable<Uint8Array>) {
+export async function* byteParts(chunks: AsyncIterable<Uint8Array>) {
   let part = Buffer.allocUnsafe(LARGE_ORIGINAL_LIMITS.partBytes);
   let filled = 0;
   for await (const chunk of chunks) {
@@ -370,12 +370,12 @@ async function* byteParts(chunks: AsyncIterable<Uint8Array>) {
 }
 
 /**
- * One byte receipt, driven as /uploads drives it: admit, store each part, finalize with the member's lineage.
- * A failed receipt is aborted.
+ * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A ZIP member passes its lineage,
+ * which finalize writes with the source. A failed receipt is aborted.
  */
-async function receiveLargeLayer(caseId: string, revision: number,
-  file: { name: string; bytes: number; sha256: string }, lineage: ArchiveMemberLineage,
-  parts: AsyncIterable<Uint8Array>, dependencies: ZipLayerDependencies): Promise<string> {
+export async function receiveLargeLayer(caseId: string, revision: number,
+  file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
+  dependencies: Pick<ZipLayerDependencies, 'large'>, lineage?: ArchiveMemberLineage): Promise<string> {
   let status = await dependencies.large.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: revision,
     filename: file.name, mediaType: 'application/octet-stream', sha256: file.sha256, bytes: file.bytes,
     provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } });

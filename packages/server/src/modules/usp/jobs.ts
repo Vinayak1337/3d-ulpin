@@ -157,6 +157,15 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||inputSha256!==fingerprint(input))
       throw new AppError(422,'INTAKE_PAGE_IMAGE_INPUT_SCOPE',
         'Page image jobs must pin their retained image and intake revision.');
+  } else if(job.operation==='intake-native-derivative'){
+    const {IntakeNativeDerivativeInputSchema}=await import('./ingestion/intake-native-derivative');
+    const input=IntakeNativeDerivativeInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
+      ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
+      ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
+      ||inputSha256!==fingerprint(input))
+      throw new AppError(422,'INTAKE_NATIVE_DERIVATIVE_INPUT_SCOPE',
+        'Conversion jobs must pin their retained original and intake revision.');
   } else if(job.operation==='intake-large'){
     const {IntakeLargeInputSchema}=await import('./ingestion/intake-large');
     const input=IntakeLargeInputSchema.parse(job.payload);
