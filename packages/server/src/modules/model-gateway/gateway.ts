@@ -5,7 +5,8 @@ import { AppError } from '../../infrastructure/errors';
 import { redactDerivative } from '../usp/ingest/redact';
 import { hash, type GatewayConfig } from './config';
 import { cost } from './pricing';
-import { closedKeyRefusal, PgModelCallLedger } from './ledger';
+import { closedKeyRefusal, PgModelCallLedger, type CallDiagnostics, type CallReceipt,
+  type ValidationIssue } from './ledger';
 import { citedKeyRefusal, minimizeMessages, ProviderFailure, type KeyRefusalKind, type ProviderAdapter,
   type ProviderResult } from './adapter';
 
@@ -20,20 +21,63 @@ export type TrustedCall = {
   observeResponse?: (event: {
     inputHash: string; latencyMs: number; result?: ProviderResult; failure?: ProviderFailure;
   }) => Promise<void>;
+  /** The caller's validator on the minimized output, as issue pairs only; recorded in the call's diagnostics. */
+  validationIssues?: (output: unknown) => readonly ValidationIssue[];
 };
+/** What a caller that holds this gateway may watch: ids, receipts and diagnostics, never text, key or principal. */
+export type GatewayCallEvent =
+  | { kind: 'dispatched'; callId: string }
+  | { kind: 'settled'; callId: string; receipt: CallReceipt; priceVersion: string;
+    diagnostics: CallDiagnostics | null };
 
 /** Uses the canonical USP gateway envelope. All routing/budget/profile controls are server-owned. */
 export type ModelCallLedger = Pick<PgModelCallLedger,
-  'admissionDelay' | 'reserve' | 'dispatch' | 'releaseBeforeDispatch' | 'retainExposure' | 'settle'>;
+  'admissionDelay' | 'reserve' | 'dispatch' | 'releaseBeforeDispatch' | 'retainExposure' | 'settle'>
+  & Partial<Pick<PgModelCallLedger, 'recordDiagnostics'>>;
+
+const ISSUE_LIMIT = 20;
+const PATH_KEY = /^(?:[A-Za-z_][A-Za-z0-9_]{0,63}|\d{1,9})$/;
+const ISSUE_CODE = /^[A-Za-z0-9_]{1,64}$/;
+/** A path keeps schema keys and indices; any other segment, which could be text of the answer, becomes '*'. */
+const pathOf = (path: readonly PropertyKey[]) => path.map(segment => typeof segment === 'number'
+  || typeof segment === 'string' && PATH_KEY.test(segment) ? String(segment) : '*').join('.').slice(0, 256);
+/** A validator's issues as {path, code} pairs, at most 20; a message, value or received key is never kept. */
+export function issuePairs(issues: readonly { path: readonly PropertyKey[]; code: string }[]): ValidationIssue[] {
+  return issues.slice(0, ISSUE_LIMIT).map(issue => ({ path: pathOf(issue.path),
+    code: ISSUE_CODE.test(issue.code) ? issue.code : 'unrecognized' }));
+}
+const UNMEASURED = { finishReason: null, contentChars: null, reasoningChars: null, reasoningTokens: null };
 /** The refused call was closed without charge and its key marked; the same request may be sent again. */
 const keyRefused = (kind: KeyRefusalKind) => new AppError(503, `MODEL_${kind.toUpperCase()}`,
   'The provider refused the key in use. It is marked used up and this call was closed without charge; '
   + 'send the request again or prepare manually.', { retryable: true });
 export class ModelGateway {
+  /** Set by a caller that holds this gateway, as the live proof does. A failing observer never changes a call. */
+  observer?: (event: GatewayCallEvent) => void;
   constructor(readonly config: GatewayConfig, private readonly ledger: ModelCallLedger,
     private readonly adapter: ProviderAdapter) {}
   get adapterKind() {
     return this.adapter.kind;
+  }
+  private notify(event: GatewayCallEvent) {
+    try { this.observer?.(event); } catch { /* watching is never part of the call */ }
+  }
+  /** The adapter's measures and the caller's issue pairs; null when there is neither. Text is never read here. */
+  private diagnostics(result: ProviderResult, trusted: TrustedCall, output?: unknown): CallDiagnostics | null {
+    let validationIssues: ValidationIssue[] | null = null;
+    if (output !== undefined && !result.semanticError && trusted.validationIssues) {
+      try {
+        validationIssues = issuePairs(trusted.validationIssues(output).map(issue => ({
+          path: issue.path.split('.').filter(Boolean), code: issue.code })));
+      } catch { /* a validator that throws records no issues */ }
+    }
+    if (!result.diagnostics && !validationIssues) return null;
+    return { ...UNMEASURED, ...result.diagnostics, validationIssues };
+  }
+  /** Beside the receipt, outside the settlement: a ledger without the column or the method keeps the call as is. */
+  private async recordDiagnostics(callId: string, diagnostics: CallDiagnostics | null) {
+    if (!diagnostics || !this.ledger.recordDiagnostics) return;
+    try { await this.ledger.recordDiagnostics(callId, diagnostics); } catch { /* the receipt stands without them */ }
   }
   /** Bind a server-authorized profile to the existing canonical port, never caller routing controls. */
   port(trusted: TrustedCall): Pick<UspPorts, 'modelGateway'> {
@@ -102,6 +146,7 @@ export class ModelGateway {
     // Mark intent durably before a single byte may leave. A crash after this point never refunds.
     try { await trusted.authorize(); await this.ledger.dispatch(admission.call.id); }
     catch (error) { await this.ledger.releaseBeforeDispatch(admission.call.id); throw error; }
+    this.notify({kind:'dispatched',callId:admission.call.id});
     const duration = Math.min(this.config.timeoutMs,request.budget.deadlineMs,
       admission.call.deadline_at.getTime() - Date.now());
     const persistCompletion = async (result: ProviderResult) => {
@@ -111,13 +156,19 @@ export class ModelGateway {
         actual = cost(result.usage,this.config.price);
       } catch {
         await this.ledger.retainExposure(admission.call.id);
+        await this.recordDiagnostics(admission.call.id,this.diagnostics(result,trusted));
         throw new AppError(503,'MODEL_USAGE_UNVERIFIED','Provider usage could not be verified. Its reservation remains held.');
       }
       const output = trusted.minimizeOutput(redactDerivative(result.output));
       const receipt = {httpStatus:result.httpStatus,responseHash:result.responseHash,
         inputTokens:result.usage!.promptTokens,outputTokens:result.usage!.completionTokens,
         actualMicroInr:actual.toString(),...(result.semanticError ? {semanticError:result.semanticError} : {})};
-      return this.ledger.settle(admission.call.id,actual,output,receipt);
+      const settled = await this.ledger.settle(admission.call.id,actual,output,receipt);
+      const diagnostics = this.diagnostics(result,trusted,output);
+      await this.recordDiagnostics(admission.call.id,diagnostics);
+      this.notify({kind:'settled',callId:admission.call.id,receipt:settled.receipt!,
+        priceVersion:this.config.price.version,diagnostics});
+      return settled;
     };
     let result;
     const startedAt = Date.now();

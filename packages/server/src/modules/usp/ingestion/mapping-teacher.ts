@@ -16,7 +16,8 @@ import type { RequestContext } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { minimizeMessages } from '../../model-gateway/adapter';
 import { hash } from '../../model-gateway/config';
-import type { ModelGateway, TrustedCall } from '../../model-gateway/gateway';
+import { issuePairs, type ModelGateway, type TrustedCall } from '../../model-gateway/gateway';
+import type { ValidationIssue } from '../../model-gateway/ledger';
 import { TeacherRecordings } from '../../model-gateway/recordings';
 import { mappingTeacherGatewayRuntime } from '../../model-gateway/runtime';
 import { validateMappingPlanV2, layoutFingerprint, type MappingValidationResult } from './mapping-plan-v2';
@@ -345,6 +346,24 @@ export function validateTeacherOutput(raw: unknown, profile: ColumnProfileDocume
   return validateMappingPlanV2(plan, mappingContextFromColumnProfile(profile));
 }
 
+/**
+ * The same validation, as {path, code} pairs for the call's diagnostics; [] for a valid plan. A schema failure
+ * gives the schema's own issues; a plan failure names the answer's field by its position, never by a column name.
+ */
+export function teacherValidationIssues(raw: unknown, profile: ColumnProfileDocument): ValidationIssue[] {
+  const parsed = TeacherOutputSchema.safeParse(raw);
+  if (!parsed.success) return issuePairs(parsed.error.issues);
+  const checked = validateTeacherOutput(raw, profile);
+  if (checked.success) return [];
+  const names = new Map(profile.columns.map((column, index) => [alias(index), column.name]));
+  const position = new Map(parsed.data.fields.map((field, index) => [names.get(field.sourceField) ?? field.sourceField,
+    index]));
+  return issuePairs(checked.errors.map(error => {
+    const index = error.field === undefined ? undefined : position.get(error.field);
+    return { path: index === undefined ? [] : ['fields', index], code: error.code };
+  }));
+}
+
 /** Preserve a refusal thrown by the asked gateway; an omitted retryable flag means false, as at the gateway. */
 export function gatewayRefusal(error: unknown): GatewayRefusal | undefined {
   if (!(error instanceof AppError) || !error.code.startsWith('MODEL_')) return undefined;
@@ -529,6 +548,7 @@ async function callTeacherOnce(
       replayKey,
       authorize: options.authorize,
       minimizeOutput: (output) => output,
+      validationIssues: (output) => teacherValidationIssues(output, profile),
       observeResponse: event => recordTeacherResponse(event, attempt, call),
     },
   );

@@ -1,0 +1,111 @@
+{
+ "schemaVersion": "sv2-sarvam-diagnostics/1",
+ "task": "SV2",
+ "date": "2026-10-21",
+ "branch": "task/sv2-sarvam-diagnostics",
+ "base": "ed7e2b00 (origin/staging, the R9 merge, after 8d6e19fa)",
+ "claim": [
+  "The live run waits, before each paid step, until the gateway's pace has passed since its last send, so the run",
+  "itself never meets MODEL_COOLDOWN. Every answer the gateway settles now records why it ended and how long it",
+  "was, without its text: finishReason, contentChars, reasoningChars, reasoningTokens and the validator's",
+  "{path, code} pairs, in the call's ledger row and in the live-proof receipt step. The receipt step carries the",
+  "settled tokens and micro-INR from the gateway, and --report prints them. Not proven live: no provider call."
+ ],
+ "failure": {
+  "source": "docs/evidence/gf-ai/gateway/lp5/result.json",
+  "signature": [
+   "step 11 refused MODEL_COOLDOWN: step 10 settled in 0.7 s and live-proof.ts sent the next call at once, inside",
+   "the 1500 ms pace; storey steps 1 and 9 truncated at 2048, mapping steps 3 and 6 TEACHER_INVALID_PLAN, and",
+   "nothing recorded why"
+  ]
+ },
+ "decisions": {
+  "D1_pace": [
+   "the gateway tells the caller that holds it when a call is dispatched (after the ledger's dispatch commits);",
+   "live-proof.ts stamps that with its clock and, before each paid step and before a key-move re-attempt, waits",
+   "paceMs from the last send (waitForPace); the receipt step records paceWaitMs"
+  ],
+  "D2_diagnostics": {
+   "adapter": [
+    "answerDiagnostics(choice, usage): finish_reason kept only as a token of [A-Za-z0-9_.-]{1,64}, else null;",
+    "contentChars = message.content length or 0; reasoningChars = length of message.reasoning_content (or",
+    "message.reasoning) or 0, never its text; reasoningTokens = usage.completion_tokens_details.reasoning_tokens",
+    "or null"
+   ],
+   "validation": [
+    "TrustedCall.validationIssues(output) is run by the gateway on the minimized output of an answer without a",
+    "semantic error; storeyValidationIssues and teacherValidationIssues give the validators' issues as {path, code};",
+    "issuePairs keeps at most 20, a path keeps schema keys and indices (any other segment becomes *), a code",
+    "outside [A-Za-z0-9_]{1,64} becomes unrecognized; a mapping plan issue names the answer's field by position,",
+    "never by column name; null issues mean the answer was not validated (truncated or invalid output)"
+   ],
+   "unmeasured": "an adapter that measures nothing (control, replay) gives null fields, never 0"
+  },
+  "D3_storage": {
+   "column": "usp_model_calls.diagnostics jsonb, additive",
+   "statement": "ALTER TABLE usp_model_calls ADD COLUMN IF NOT EXISTS diagnostics jsonb;",
+   "schemaStep": [
+    "appended to database/sql/90-model-gateway/model-gateway.sql (step model-gateway.schema, migrateModelGateway);",
+    "manifest file sha256 d1128c5d0f128d6fe531a94acf420f995e8c98f720b441447d06212867cec6dc, statements 11 -> 12,",
+    "ordinals 1 to 11 unchanged, ordinal 12 962db8ab84d794277654901728d550f29e9b78e7c559ec039c6477e9907e1e61"
+   ],
+   "write": [
+    "PgModelCallLedger.recordDiagnostics: UPDATE usp_model_calls SET diagnostics=$2 WHERE id=$1 AND",
+    "config_hash=$3 AND diagnostics IS NULL, in its own transaction after settle, outside the settlement hash;",
+    "the gateway swallows its failure, so a demo without the schema step still settles every call as before"
+   ],
+   "unchanged": "request body sent to Sarvam, policy schema, policy hash, receipt schema, contracts, OpenAPI"
+  },
+  "D4_report": {
+   "receiptStep": [
+    "live.{httpStatus, inputTokens, outputTokens, actualMicroInr, responseHash, ledgerCallId, semanticError,",
+    "priceVersion, diagnostics, settledCalls} from the gateway's settled-call event (its CallReceipt); before SV2",
+    "these came from the teacher recordings, which keep only answers that passed validation"
+   ],
+   "command": "tsx scripts/agent/live-proof.ts --report <receipt dir or receipt.json> (reads only, writes nothing)",
+   "whatWasMissing": [
+    "the gateway already returned tokens and micro-INR in its result's receipt, but only to the teacher, and",
+    "neither StoreyAgentResult nor the mapper's proposal passes it on; the settled-call event closes that gap"
+   ],
+   "lp5ReceiptRead": [
+    "--report on E:/BhuAayam-data/task-data/s1/lp5-live/receipt.json (sha256 ee0f65cf...): 1 settled call of",
+    "the 5 LP5 settled (step 10, 1901 -> 120 tokens, 35715 micro-INR), diagnostics null: the four failed answers",
+    "had no numbers in the old receipt, which is why the ledger was read by SQL"
+   ]
+  }
+ },
+ "tests": {
+  "file": "tests/model-gateway/diagnostics.test.ts (7) and scripts/agent/live-proof.test.ts (4 new)",
+  "truncatedAnswer": "finishReason length, contentChars, reasoningTokens 1900, issues null; no answer text in row",
+  "validAnswer": "finishReason stop, contentChars, validationIssues []; settled event 600 tokens in, 16200 micro-INR",
+  "separateReasoning": "reasoningChars = length of reasoning_content; neither row nor events hold its text",
+  "invalidPlanTwoIssues": [
+   "fields.1 MAPPING_SOURCE_FIELD_DUPLICATE and (root) MAPPING_SOURCE_FIELD_UNMAPPED; diagnostics hold no column",
+   "name and no answer text"
+  ],
+  "pace": [
+   "waitForPace on a fake clock; a software walk of the ten planned calls on a fake clock: 0 cooldowns, every",
+   "paid step after the first waits 1500 ms; the same walk without the wait meets MODEL_COOLDOWN"
+  ],
+  "report": "sums tokens and micro-INR of the settled steps; a pre-SV2 receipt reads with null diagnostics"
+ },
+ "checks": {
+  "typecheckBackend": "exit 0",
+  "agentScriptsTsc": "tsc -p scripts/agent/tsconfig.json: exit 0",
+  "gatewayAndLiveProofTests": "tests/model-gateway/*.test.ts, live-proof.test.ts: 47 tests, 46 pass, 1 skipped (SQL)",
+  "callerTests": "mapping-teacher, document-storey-agent: 35 pass; storey-document-proposals: 6 pass",
+  "demoGatewayTest": "scripts/platform/demo-gateway.test.mjs: 12 tests, 12 pass",
+  "backendIngestionSet": "the GF1 ZJ1 command: 455 tests, 452 pass, 3 skipped, 0 fail",
+  "openapi": [
+   "five source pins refreshed (refresh-contract.ts origin/staging); openapi.ts --check matches, 328 operations,",
+   "371 schemas; api-types regenerated with no content change"
+  ],
+  "checkPy": "exit 1 only on the known Windows CRLF hash of docs/evidence/usp/cityjson-validation-runtime.json",
+  "diffCheck": "git diff --check clean"
+ },
+ "nextLiveRun": [
+  "the demo needs this code and the model-gateway.schema step run once (additive, IF NOT EXISTS) before the next",
+  "live run; the policy hash does not change; then --report on the receipt gives every step's numbers and reasons"
+ ],
+ "notIncluded": "no key, no env value, no provider call, no prompt or answer text"
+}

@@ -4,7 +4,8 @@ import type { RequestContext } from '@ulpin/contracts/usp';
 import { AppError } from '../../infrastructure/errors';
 import { holdsRefusedForm } from '../model-gateway/adapter';
 import { hash } from '../model-gateway/config';
-import type { ModelGateway, TrustedCall } from '../model-gateway/gateway';
+import { issuePairs, type ModelGateway, type TrustedCall } from '../model-gateway/gateway';
+import type { ValidationIssue } from '../model-gateway/ledger';
 import { TeacherRecordings } from '../model-gateway/recordings';
 import { minimizeStructuredText } from '../model-gateway/redaction';
 import { mappingTeacherGatewayRuntime } from '../model-gateway/runtime';
@@ -172,6 +173,12 @@ export function validateStoreyOutput(raw: unknown, parts: StoreyPart[]) {
   return { success: false as const, output: null, errors: parsed.error.issues.slice(0, 10).map((issue) => issue.code) };
 }
 
+/** The same validation, as {path, code} pairs for the call's diagnostics; [] for a valid answer. */
+export function storeyValidationIssues(raw: unknown, parts: StoreyPart[]): ValidationIssue[] {
+  const parsed = storeyOutputSchema(parts.map((part) => part.partId) as [string, ...string[]]).safeParse(raw);
+  return parsed.success ? [] : issuePairs(parsed.error.issues);
+}
+
 export type StoreyAgentOptions = {
   context: RequestContext;
   dataPolicy: StoreyDataPolicy;
@@ -239,6 +246,7 @@ async function callOnce(
       sourceHashes: [partsHash], deadlineAt, taskKind: 'storey_facts_v1', outputSchemaId: STOREY_AGENT_TEMPLATE,
       outputSchema: request.schema, replayKey: storeyReplayKey(partsHash), authorize: options.authorize,
       minimizeOutput: (output) => output,
+      validationIssues: (output) => storeyValidationIssues(output, parts),
       observeResponse: (event) => recordResponse(event, attempt, parts, gateway, recordings),
     },
   );
