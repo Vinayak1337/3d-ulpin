@@ -264,18 +264,14 @@ test('a ZIP with no map layer says so and lists its members with their reasons, 
   assert(words.length <= 2000);
 });
 
-test('a KML refusal distinguishes its native inspection route from an unbuilt map-package adapter', async () => {
-  const fixture = protocol();
-  fixture.src.profile = 'kml-native-v1';
-  fixture.src.inspection = {};
-  fixture.tray.card = { format: 'kml', family: 'vector', crs: { state: 'absent' } } as DraftItem['card'];
-  const expected = 'This KML/KMZ has a native-inspection route at POST /api/v1/ingestion/cases/:caseId/kml '
-    + 'within 16 MiB; no area-import adapter or intake recipe drafts its map package or card.';
-  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
-  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
-  assert.equal(fixture.state.projection.limit_reason, expected);
-  assert.equal(fixture.state.projection.placement, 'needs_answer');
-  assert.equal(fixture.jobs.length, 0);
+test('a KML or KMZ card is converted into GeoJSON layers by its own job, never asked a question', async () => {
+  for (const format of ['kml', 'kmz']) {
+    const fixture = protocol();
+    fixture.tray.card = { format, family: 'vector', crs: { state: 'absent' } } as DraftItem['card'];
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.deepEqual(fixture.jobs.map(job => job.operation), ['intake-native-derivative']);
+    assert.deepEqual([fixture.state.projection.state, fixture.state.projection.placement], ['reading', 'undecided']);
+  }
 });
 
 test('oversized GeoJSON names retention only and does not promise a larger direct import', async () => {

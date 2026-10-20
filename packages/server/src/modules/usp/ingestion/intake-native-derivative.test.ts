@@ -7,12 +7,13 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { probeOriginal } from './intake-probe';
 import { intakeItem } from './intake-ledger';
-import { convertNativeLayers, nativeParentState, NativeConversionSchema, stateLayerCrsTx,
+import { nativeDerivativeFormat } from './intake-draft';
+import { convertNativeLayers, nativeParentState, NativeConversionSchema, queueNativeDerivativeTx, stateLayerCrsTx,
   type NativeDerivativeDependencies } from './intake-native-derivative';
 import { IntakeService } from './intake-service';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
@@ -342,4 +343,86 @@ test('the original\'s words: every layer taken, refused or failed is named; noth
       + 'geometry). Converted but not taken in: roads (UPLOAD_QUOTA; enrol the file again to retry).' });
   assert.equal(nativeParentState('gpkg', { ...conversion, layers: [conversion.layers[1]] }, []).placement,
     'not_understood');
+});
+
+// KML1. Google's libkml samples (test_only), converted by the real streamed KML reader.
+const kmlSamples = 'E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml';
+const kmlScript = `
+import hashlib, json, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, 'services/geo')
+from geo.native_gis import convert_kml_file
+path = Path(sys.argv[1])
+raw = path.read_bytes()
+layers, not_read = convert_kml_file(path, 'kml', Path(tempfile.mkdtemp()), hashlib.sha256(raw).hexdigest())
+print(json.dumps({'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(), 'layers': layers,
+  'notRead': not_read}))`;
+
+test('a KML of folders: each folder with placemarks kept and enrolled, read with its heights; the rest named',
+  { skip: !existsSync(python) || !existsSync(kmlSamples) }, async () => {
+    const result = JSON.parse(execFileSync(python, ['-B', '-c', kmlScript, kmlSamples], { encoding: 'utf8',
+      env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
+    const files = new Map<string, Buffer>();
+    const layers = stored(result, files);
+    const original = retained(sourceId, result.bytes, result.sha256, 'kmlsamples.kml');
+    const { client, sources, item } = ledger(original);
+    item.card = { format: 'kml', family: 'vector' };
+    const kept = new Map<string, Buffer>();
+    const dependencies: NativeDerivativeDependencies = {
+      transaction: (async (work: (c: PoolClient) => unknown) => work(client)) as
+        NativeDerivativeDependencies['transaction'],
+      read: async (key, start, end) => files.get(key)!.subarray(start, end),
+      convert: async request => {
+        assert.equal(request.format, 'kml');
+        return { conversion: 'native_gis_to_geojson@1', readerVersion: 'native-kml-stream/1', sourceId,
+          sourceSha256: result.sha256, layers, notRead: result.notRead };
+      },
+      register: async () => ({}),
+      large: receipt(sources, kept),
+    };
+    const children = await convertNativeLayers(caseId, itemId, dependencies);
+    assert.equal(children.length, 6);
+    const campus = sources.get(children[3]);
+    assert.deepEqual([campus.name, campus.inspection.nativeDerivative.format, campus.inspection.nativeDerivative.crs,
+      campus.inspection.nativeDerivative.crsSource], ['Google Campus.geojson', 'kml', 'EPSG:4326', 'stated']);
+    assert.match(campus.inspection.nativeDerivative.crsBasis, /KML 2\.2 specification/);
+    assert.equal(item.placement, 'undecided');
+    assert.equal(item.limit_reason, '6 layers of this KML are converted to GeoJSON and taken in as their own '
+      + 'files: Placemarks, Highlighted Icon, Paths, Google Campus, Extruded Polygon, Absolute and Relative. '
+      + 'Not converted: Styles and Markup (holds no Placemark whose geometry could be written). Coordinate system: '
+      + 'the KML 2.2 specification states longitude and latitude on WGS 84 (EPSG:4326). Kept in the original but '
+      + 'not fetched or read: GroundOverlay (1), ScreenOverlay (7).');
+
+    // The large GeoJSON path takes the child unchanged: four 3D building outlines, accepted under EPSG:4326.
+    const bytes = kept.get(children[3])!;
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, campus.name);
+    assert.deepEqual([card.family, card.format, card.crs.state], ['vector', 'geojson', 'stated']);
+    let accepted = 0;
+    const closure = await readStreamingFeatures(Readable.from([bytes]), 'feature-collection', async entry => {
+      accepted += Number(sourceRecord(entry).disposition === 'accepted');
+    });
+    assert.deepEqual([closure.features, accepted], [4, 4]);
+    assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:4326');
+  });
+
+test('a KML with no placemark geometry rests not understood, naming what it keeps but does not read', () => {
+  const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1',
+    readerVersion: 'native-kml-stream/1', sourceId, sourceSha256: 'a'.repeat(64), notRead: { NetworkLink: 2 },
+    layers: [{ layer: 'whole file', ordinal: 0, state: 'not_converted', reason: 'holds no Placemark' }] });
+  assert.deepEqual(nativeParentState('kmz', conversion, []), { state: 'read', placement: 'not_understood',
+    planRef: null, recordsSeen: 0, limitReason: 'Not converted: whole file (holds no Placemark). Kept in the '
+      + 'original but not fetched or read: NetworkLink (2).' });
+});
+
+test('publishing a KML or KMZ card queues its conversion job; any other vector card is not converted', async () => {
+  for (const format of ['kml', 'kmz']) {
+    const original = retained(sourceId, 10, 'c'.repeat(64), `ward.${format}`);
+    const { client, item, jobs } = ledger(original);
+    item.card = { format, family: 'vector' };
+    const jobId = await queueNativeDerivativeTx(client, original, item.card as IntakeCard);
+    assert.deepEqual(jobs.map(job => [job.id, job.operation]), [[jobId, 'intake-native-derivative']]);
+    assert.equal(item.limit_reason, `The layers of this ${format.toUpperCase()} are being converted to GeoJSON, `
+      + 'each to be taken in as its own file.');
+  }
+  assert.equal(nativeDerivativeFormat({ format: 'geojson', family: 'vector' } as IntakeCard), null);
 });

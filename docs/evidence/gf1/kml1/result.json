@@ -1,0 +1,90 @@
+{
+  "task": "KML1",
+  "gate": "GF1",
+  "baseCommit": "ecbf8b93",
+  "complete": true,
+  "state": "converted_and_taken_on_the_large_path",
+  "summary": [
+    "A KML or KMZ card in a batch is no longer refused with the inspection route's words. Publishing it queues",
+    "SH2's fenced intake-native-derivative job; convert-native reads the original from object storage onto",
+    "scratch disk (hash and size checked) and streams it through Expat (a document type or entity declaration",
+    "is refused). Each Document or Folder holding Placemarks becomes one GeoJSON derivative with SH2's locator",
+    "sidecar (the whole file is one layer when it has neither); only the open Placemark is held. Each kept",
+    "derivative is a large-original-v1 child with SH2's lineage, enrolled, and the large GeoJSON path reads it",
+    "unchanged."
+  ],
+  "decisions": {
+    "D1": [
+      "A KMZ is read from its root doc.kml, else from its only .kml member, as a stream under the shapefile",
+      "ZIP's member checks (no unsafe path, link or encrypted member), never past the member's stated size,",
+      "128 MiB or a 1:100 expansion; with several .kml members and no root doc.kml it is not converted, in",
+      "words. Placemark name, ExtendedData Data/value and SchemaData/SimpleData become properties as written",
+      "(strings); styles, descriptions and styleUrl are not kept. A repeated or unnamed property refuses",
+      "that Placemark (sidecar names it). A layer is named by its container's name, else 'Folder n' or",
+      "'Document n'; a repeated name gets ' (2)'. Position is the Placemark's sequence in the file."
+    ],
+    "D1_crs": [
+      "Each layer is EPSG:4326 with crsSource 'stated' (the existing file-stated value; no separate",
+      "'file_stated' value was added) and crsBasis 'the KML 2.2 specification states longitude and latitude",
+      "on WGS 84 (EPSG:4326)', kept in the converted layer, the sidecar header and the child's lineage; the",
+      "original's words say 'Coordinate system: <crsBasis>.'"
+    ],
+    "D2": [
+      "A coordinate's third value is written as the GeoJSON position's third number, as written, never",
+      "measured or filled; a Placemark mixing 2- and 3-value tuples is not written (coordinates_mixed_height).",
+      "altitudeMode (KML or gx) is kept as written in the property altitudeMode."
+    ],
+    "D3": [
+      "NetworkLink, GroundOverlay, PhotoOverlay and ScreenOverlay are counted, never fetched or read; the",
+      "conversion's notRead counts become 'Kept in the original but not fetched or read: NetworkLink (n)'.",
+      "A Placemark whose geometry is Model or gx:Track/MultiTrack is not written (geometry_not_read:<kind>).",
+      "A layer with no Placemark whose geometry could be written is not converted; a file with none rests",
+      "not_understood in words. A root other than kml in a KML 2.2 namespace is not converted, in words."
+    ],
+    "D4": "SH2's bounds apply unchanged (128 MiB original, 128 MiB per derivative, 100 layers)."
+  },
+  "changedOutsideOwnedPaths": [
+    "packages/server/src/modules/usp/ingestion/intake-draft.ts: nativeDerivativeFormat returns kml/kmz; the",
+    "KML branch of intakeDraftLimit, now unreachable, removed.",
+    "packages/server/src/modules/usp/ingestion/intake-draft.test.ts: the KML refusal test now expects the job.",
+    "docs/api/source-pins.json repinned; openapi.json and api-client types regenerate with no change."
+  ],
+  "limits": [
+    "Geometry is written as written: a LineString of one position or an unclosed ring is left to the large",
+    "reader's own checks. A standalone LinearRing is written as the closed LineString it draws.",
+    "Placemarks with no geometry are written with null geometry in a layer that has others.",
+    "The walk to a package on a running stack was not run here."
+  ],
+  "realInputs": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml",
+      "label": "test_only",
+      "origin": "google-libkml-1-20261001 (Google libkml examples); 20 Placemarks in 9 Folders/Documents",
+      "result": [
+        "six layers converted (19 features), 'Styles and Markup' not converted (its one Placemark has no",
+        "geometry); GroundOverlay (1) and ScreenOverlay (7) counted; Google Campus' four 3D outlines (Z 17,",
+        "altitudeMode relativeToGround) taken by the large reader, 4 of 4 accepted under EPSG:4326"
+      ]
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-kml-native/originals/multikml-doc.kmz",
+      "label": "test_only",
+      "origin": "google-libkml-2-20261001; four .kml members, none doc.kml at the root",
+      "result": "not converted: 'holds 4 .kml members and none is doc.kml at its root'"
+    }
+  ],
+  "syntheticInputs": "A test_only KML and the same KML as a KMZ doc.kml, written by the tests (two Folders of one name, ExtendedData Data and SimpleData, 3D polygon with an inner ring, a mixed-height line, a repeated name, a MultiGeometry, a geometry-less Placemark, a NetworkLink and a GroundOverlay); a NetworkLink-only KML; a root-less fragment; a KML with a DOCTYPE.",
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm studio:test", "exit": 0, "counts": "ui 7/7, studio 498/498 (78 files)"},
+    {"command": "backend test command (template) incl. intake-native-derivative.test.ts", "exit": 0,
+     "counts": "417 tests, 415 pass, 0 fail, 2 skipped (pre-existing skips)"},
+    {"command": "venv-k3a-geo pytest tests/test_native_conversion.py test_native_adapters.py test_native_record_citation.py",
+     "exit": 0, "counts": "39 passed (17 in test_native_conversion.py, 6 of them KML1)"},
+    {"command": "apps/api/scripts/openapi.ts --check", "exit": 0, "note": "after scripts/api/refresh-contract.ts ecbf8b93"},
+    {"command": "python scripts/api/check.py", "exit": 1,
+     "note": "API-DOC: runtime receipt changed. Pre-existing: three receipts under docs/evidence/usp are checked out with CRLF in this worktree; each matches its pinned SHA-256 with LF; none is touched here."},
+    {"command": "git diff --check", "exit": 0}
+  ]
+}
