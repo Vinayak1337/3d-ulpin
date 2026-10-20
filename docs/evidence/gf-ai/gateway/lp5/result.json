@@ -1,0 +1,383 @@
+{
+ "schemaVersion": "lp5-live-proof/1",
+ "task": "R9 part C (LP5)",
+ "date": "2026-10-21",
+ "claim": [
+  "The second live Sarvam run, on the demo rolled to 8d6e19fa (SV1: reasoning_effort null). Five paid calls",
+  [
+   "settled with HTTP 200 for Rs 0.54. One storey answer passed validation and was recorded; two storey ",
+   "answers"
+  ],
+  [
+   "still stopped at 2048 output tokens (truncated_output); both mapping answers finished untruncated bu",
+   "t their"
+  ],
+  "plans were refused. The run stopped at step 11 on MODEL_COOLDOWN, the gateway's own 1.5 s pace, not a",
+  "provider limit."
+ ],
+ "approval": "owner, 21 October about 03:15: full permission; Sarvam approved",
+ "servedCommit": "8d6e19fa91e1d08fa61d02946500b2f5227dd393 (docs/evidence/runtime/r9/result.json)",
+ "policy": {
+  "file": "E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.owner-confirmed-20261010.json (outside Git)",
+  "fileSha256": "2f6160ea02c81c6aeaca780f93ef9ed0f3afbeb73f89484e2d360ec2a485dbf3",
+  "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+  "maxOutputTokens": 2048,
+  "paceMs": 1500,
+  "changed": false
+ },
+ "environment": [
+  "every live-proof command (plan, dry run, live) ran as LP4's live run: readDemo(ulpin-demo),",
+  [
+   "safeEnvironment(), the isolated-env.cjs preload, --import tsx, working directory the demo checkout, ",
+   "output"
+  ],
+  "through redact() into a log; launcher E:/BhuAayam-data/task-data/s1/lp5-launcher/launch.mjs, outside Git"
+ ],
+ "plan": {
+  "out": "E:/BhuAayam-data/task-data/s1/lp5-plan/plan.json",
+  "fileSha256": "5f2a7fd160653f8bb21f39f0f85c72eeb300712b44796e14b899928eb8b80f6c",
+  "policyHashMatchesExpected": true,
+  "steps": 15,
+  "calls": 10,
+  "estimateMicroInr": "1750875",
+  "requestBoundMicroInr": "3102105",
+  "atMostMicroInr": "7741440",
+  "keyMoves": {
+   "keysInPolicy": 11,
+   "extraAttemptsAtMost": 11
+  }
+ },
+ "dryRun": {
+  "out": "E:/BhuAayam-data/task-data/s1/lp5-dry-run/receipt.json",
+  "fileSha256": "e2bb4d746ab6376a0c515135b547e53af4c7a9a2de677669f7291357b020ceab",
+  "summary": {
+   "steps": 15,
+   "gatewayAsks": 11,
+   "providerDispatches": 0,
+   "ledgerReservations": 0,
+   "fetchAttempts": 0,
+   "requestsMatchingPlan": 10,
+   "endStates": {
+    "needs_input": 6,
+    "teacher_unavailable": 9
+   }
+  },
+  "stopped": null
+ },
+ "gatewayStatusBefore": {
+  "file": "E:/BhuAayam-data/task-data/s1/lp5-launcher/status.txt",
+  "fileSha256": "7bc2d70791638d13f8c3fe1c7f953b12c9cfee798f2e86853551bf03ecf51183",
+  "lines": [
+   "enabled: true",
+   "policyHash: efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+   "providerKeyPresent: true",
+   "mappingTeacherAdapter: sarvam",
+   "dailyCapPresent: true",
+   "providerKeysNamed: 11",
+   "providerKeysPresent: 11"
+  ],
+  "fiveFactsAsRequired": true,
+  "keyCounts": "11 and 11"
+ },
+ "keyMarksBefore": "ULPIN_PROVIDER_KEY_SARVAM_01 in_use; _02 to _11 waiting",
+ "live": {
+  "command": "live-proof.ts --live --tariff <policy> --gateway-state <status.txt> --out .../s1/lp5-live",
+  "runs": 1,
+  "startedAt": "2026-10-20T22:21:00Z",
+  "endedAt": "2026-10-20T22:21:41Z",
+  "seconds": 40.2,
+  "exit": 0,
+  "receiptFile": "E:/BhuAayam-data/task-data/s1/lp5-live/receipt.json",
+  "receiptSha256": "ee0f65cfefacbbc9431285e89eb87bd6f94b7640205229a1dd431c1f841a3b99",
+  "agentFiles": 8,
+  "stopped": "storey-2aadce88-batch1: TEACHER_RATE_LIMITED (gateway MODEL_COOLDOWN)",
+  "notRun": [],
+  "requestHashes": "the ten planned request hashes are LP4's (the input hash does not carry the reasoning setting)",
+  "ledgerRead": [
+   [
+    "usp_model_calls rows created after 22:20Z, one READ ONLY transaction through the demo checkout's poo",
+    "l, as"
+   ],
+   [
+    "LIVE-PROOF.md section 6 says; columns: input hash, attempt, consumer, state, amounts, error kind, re",
+    "ceipt"
+   ],
+   "status, tokens and semantic error, times. 5 rows, each matched to a step by request hash; steps 11 to 15",
+   "have no row (11 refused at reservation, 12 to 15 asked the replay store only after the stop)"
+  ],
+  "steps": [
+   {
+    "step": 1,
+    "id": "storey-cf152f32-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": "cb2ae3e69cce49140f2ba157588240d05b764145c55a780024b3e73542f3429b",
+    "ledger": {
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 652,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "132660",
+     "secondsDispatchToSettle": 9.7
+    }
+   },
+   {
+    "step": 2,
+    "id": "replay-of-storey-cf152f32-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_REPLAY_UNAVAILABLE",
+    "gatewayCode": "MODEL_REPLAY_UNAVAILABLE",
+    "afterStop": false,
+    "requestHash": null,
+    "ledger": null
+   },
+   {
+    "step": 3,
+    "id": "curve-file1-chunk1",
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": "1ddd396c48b4de996bcdf71cfcfb9b63b9dc8b308d0a7cc63c95a591aa5e7f7c",
+    "ledger": {
+     "consumer": "INGEST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 3462,
+     "outputTokens": 1085,
+     "semanticError": null,
+     "actualMicroInr": "117030",
+     "secondsDispatchToSettle": 4.5
+    }
+   },
+   {
+    "step": 4,
+    "id": "curve-file1-chunk2",
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": null,
+    "ledger": null
+   },
+   {
+    "step": 5,
+    "id": "curve-file1-chunk3",
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": null,
+    "ledger": null
+   },
+   {
+    "step": 6,
+    "id": "curve-file2-chunk1",
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": "b9718e7deb1d7c117fbf2721e1dd0f90a0790b8c8f442e6c5469a1064a49b34e",
+    "ledger": {
+     "consumer": "INGEST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 3554,
+     "outputTokens": 1234,
+     "semanticError": null,
+     "actualMicroInr": "127350",
+     "secondsDispatchToSettle": 5.0
+    }
+   },
+   {
+    "step": 7,
+    "id": "curve-file2-chunk2",
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": null,
+    "ledger": null
+   },
+   {
+    "step": 8,
+    "id": "curve-file2-chunk3",
+    "endState": "needs_input",
+    "code": "TEACHER_INVALID_PLAN",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": null,
+    "ledger": null
+   },
+   {
+    "step": 9,
+    "id": "storey-0f793ce7-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_INVALID_OUTPUT",
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": "a547500e44dbb82bda1b559611a4c3dd8fc51e0e8ce17127e6682111caccfbf4",
+    "ledger": {
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 580,
+     "outputTokens": 2048,
+     "semanticError": "truncated_output",
+     "actualMicroInr": "131580",
+     "secondsDispatchToSettle": 8.9
+    }
+   },
+   {
+    "step": 10,
+    "id": "storey-b6f0178b-batch1",
+    "endState": "candidate",
+    "code": null,
+    "gatewayCode": null,
+    "afterStop": false,
+    "requestHash": "c89943ccf8a244d23be940d5f32fff73ff6e6ba1633323b775f701b32d22728f",
+    "ledger": {
+     "consumer": "ASSIST",
+     "state": "settled",
+     "httpStatus": 200,
+     "inputTokens": 1901,
+     "outputTokens": 120,
+     "semanticError": null,
+     "actualMicroInr": "35715",
+     "secondsDispatchToSettle": 0.7
+    },
+    "answer": [
+     "schema-valid candidate, recorded (responseHash ebf5c363...); every field empty: storeyCount",
+     "and basementCount null with no citation, no labels, heights or unit counts, abstain false"
+    ]
+   },
+   {
+    "step": 11,
+    "id": "storey-2aadce88-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_RATE_LIMITED",
+    "gatewayCode": "MODEL_COOLDOWN",
+    "afterStop": false,
+    "requestHash": "902e09567dffac48566f34992eb77067ffdd55a825e03223b0012a53096abb87",
+    "ledger": null
+   },
+   {
+    "step": 12,
+    "id": "storey-2b9f8803-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_REPLAY_UNAVAILABLE",
+    "gatewayCode": "MODEL_REPLAY_UNAVAILABLE",
+    "afterStop": true,
+    "requestHash": "fbf108ca332f473905b234006b0df1c40bd288fd6a6a34ae9febc8e8f17c1ecd",
+    "ledger": null
+   },
+   {
+    "step": 13,
+    "id": "storey-f8a55dc2-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_REPLAY_UNAVAILABLE",
+    "gatewayCode": "MODEL_REPLAY_UNAVAILABLE",
+    "afterStop": true,
+    "requestHash": "15969aa5a06aa10ee1fb645cbf43abe3eb27e2633d1b24646355b1ece445cdd6",
+    "ledger": null
+   },
+   {
+    "step": 14,
+    "id": "storey-26c2d310-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_REPLAY_UNAVAILABLE",
+    "gatewayCode": "MODEL_REPLAY_UNAVAILABLE",
+    "afterStop": true,
+    "requestHash": "b78f955517ed7dfb7b9d75b13c7c869e62c4195f0f13f7888d4e7a3726599286",
+    "ledger": null
+   },
+   {
+    "step": 15,
+    "id": "storey-f0dc0d56-batch1",
+    "endState": "teacher_unavailable",
+    "code": "TEACHER_REPLAY_UNAVAILABLE",
+    "gatewayCode": "MODEL_REPLAY_UNAVAILABLE",
+    "afterStop": true,
+    "requestHash": "533e83b397a6b8062dcf0f18ec04134f88a97c5d11b15945015c440557b8ce90",
+    "ledger": null
+   }
+  ]
+ },
+ "spent": {
+  "actualMicroInr": "544335",
+  "rupees": "Rs 0.54",
+  "check": "10149 input tokens x Rs 15/M + 6535 output tokens x Rs 60/M = 152235 + 392100 = 544335",
+  "estimateMicroInr": "1750875",
+  "atMostMicroInr": "7741440",
+  "ledgerToday": "15 calls (LP4's 10 and these 5), 1998720 micro-INR (Rs 2.00) of Rs 25 a day and Rs 100",
+  "callsOfPersonDailyCap": "15 of 150"
+ },
+ "truncation": {
+  "verdict": "still truncated_output for 2 of 3 storey calls with reasoning off",
+  "storey": [
+   "step 1: 652 in, 2048 out, truncated_output; step 9: 580 in, 2048 out, truncated_output;",
+   "step 10: 1901 in, 120 out, valid (0.7 s)"
+  ],
+  "mapping": [
+   "steps 3 and 6: 3462 and 3554 in, 1085 and 1234 out, no semantic error at the gateway (LP4: 2048,",
+   "truncated); both plans refused by the mapper, TEACHER_INVALID_PLAN, 16 fields needs_input each"
+  ],
+  "decision": "stopped and reported as the task says; the policy is unchanged (4096 is the lead's decision)"
+ },
+ "stopCause": {
+  "code": "MODEL_COOLDOWN (429, from ledger.reserve)",
+  "what": [
+   "the gateway sets next_admission_at to dispatch + paceMs (1500 ms); step 10's call settled 0.7 s after",
+   "dispatch, and live-proof.ts waits paceMs only before a key-move retry, never between steps, so step",
+   "11 asked at about 22:21:31.6Z, before next_admission_at 22:21:32.397Z. The run's stop rule treats it",
+   "as a rate limit. No provider 429: cooldown_until is null and no key was marked. LP4 never met it:",
+   "each of its calls took 8 s or more"
+  ],
+  "where": "scripts/agent/live-proof.ts runStep/keyed attempts: no wait of paceMs between steps"
+ },
+ "keyMarksAfter": {
+  "command": "node scripts/platform/demo-gateway.mjs key-marks",
+  "lines": [
+   "ULPIN_PROVIDER_KEY_SARVAM_01 in_use",
+   "ULPIN_PROVIDER_KEY_SARVAM_02 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_03 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_04 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_05 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_06 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_07 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_08 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_09 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_10 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_11 waiting"
+  ]
+ },
+ "gatewayAfter": "left on: status unchanged (enabled true, efb90b3a..., 11 and 11); budget not blocked",
+ "doctorAfter": "28 PASS, 0 FAIL at 8d6e19fa after the run",
+ "boxes": {
+  "closed": {
+   "AG-S1": [
+    "step 10: a live storey call admitted, dispatched and settled in the PostgreSQL ledger (HTTP 200,",
+    "1901/120 tokens, 35715 micro-INR) whose answer passed validation and was recorded; the answer is empty",
+    "(no storey or basement value, no citation)"
+   ]
+  },
+  "notClosed": {
+   "AG-S2": "the replay step replays step 1, which was truncated; step 10's recording was not replayed",
+   "ML-D1": "one valid storey answer, holding no value to score; 2 truncated; 5 storey steps not sent",
+   "ML-D3": "no registry-scorable answer",
+   "ML-L2": "no committed field; precision has no n",
+   "AG-E2": "both mapping plans TEACHER_INVALID_PLAN although untruncated; curve [1,0,0] and [1,0,0] again",
+   "AG-D1": "no answer with content, and the agent-to-proposal adapter is another task"
+  }
+ },
+ "next": [
+  "live-proof.ts should wait the gateway's pace (or its admissionDelay) between steps before a third run",
+  "raising maxOutputTokens to 4096 for the storey calls is the lead's decision; the mapping calls fit 2048",
+  "why the two untruncated mapping plans were refused is not read here (no answer text is opened)"
+ ],
+ "notIncluded": "no key, no env value, no prompt or answer text, no contact lines, no principal or credential hash"
+}
