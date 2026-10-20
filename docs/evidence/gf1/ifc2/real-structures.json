@@ -1,0 +1,234 @@
+{
+  "note": "test_only: IFC1 pass-1 structures read by services/geo/geo/native_ifc.py scan_structure (stdlib only) from the two public buildingSMART samples listed in docs/api/datasets.json; values copied as the scan returned them, no runtime job.",
+  "origin": "E:/BhuAayam-data/task-data/desktop-ifc-native/originals (outside Git)",
+  "files": {
+    "ifc2x3-building-architecture.ifc": {
+      "sha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885",
+      "bytes": 92542,
+      "structure": {
+        "state": "read",
+        "lengthUnit": {
+          "state": "supplied",
+          "stepId": 15,
+          "entityType": "IfcSIUnit",
+          "prefix": "MILLI",
+          "name": "METRE"
+        },
+        "nodes": [
+          {
+            "stepId": 13,
+            "entityType": "IfcProject",
+            "candidate": null,
+            "globalId": "2Ndyd$OSX7s9A04nc4lyye",
+            "name": "ifc silly sample scene - project",
+            "longName": null,
+            "parentStepIds": [],
+            "relationStepIds": []
+          },
+          {
+            "stepId": 18,
+            "entityType": "IfcSite",
+            "candidate": null,
+            "globalId": "23sFQGRy90RxVbRHD9iSE2",
+            "name": "environment - site",
+            "longName": null,
+            "parentStepIds": [
+              13
+            ],
+            "relationStepIds": [
+              19
+            ]
+          },
+          {
+            "stepId": 25,
+            "entityType": "IfcBuilding",
+            "candidate": "building",
+            "globalId": "0c$N1CTon2BB2Sp89385G8",
+            "name": "Single-family house",
+            "longName": "house - building",
+            "parentStepIds": [
+              18
+            ],
+            "relationStepIds": [
+              30
+            ]
+          },
+          {
+            "stepId": 36,
+            "entityType": "IfcBuildingStorey",
+            "candidate": "level",
+            "globalId": "1Ano2ZUxnEIvVQ_beukl8b",
+            "name": "00 groundfloor",
+            "longName": null,
+            "parentStepIds": [
+              25
+            ],
+            "relationStepIds": [
+              37
+            ],
+            "elevation": {
+              "state": "supplied",
+              "value": 0.0,
+              "literal": "0."
+            }
+          },
+          {
+            "stepId": 183,
+            "entityType": "IfcSpace",
+            "candidate": "space",
+            "globalId": "0xY$LvXaDEswJDk_VU74C_",
+            "name": "living room",
+            "longName": null,
+            "parentStepIds": [
+              36
+            ],
+            "relationStepIds": [
+              184
+            ]
+          },
+          {
+            "stepId": 296,
+            "entityType": "IfcSpace",
+            "candidate": "space",
+            "globalId": "18QhMtUIXBvQktPHXXxs7H",
+            "name": "entry hall",
+            "longName": null,
+            "parentStepIds": [
+              36
+            ],
+            "relationStepIds": [
+              184
+            ]
+          }
+        ]
+      },
+      "structureUnderThreeEntityCeiling": {
+        "state": "not_read",
+        "code": "STRUCTURE_ENTITY_LIMIT",
+        "reason": "The IFC holds more structure entities than the scan keeps."
+      },
+      "retainedNativeFacts": {
+        "from": "E:/BhuAayam-data/task-data/desktop-ifc-native/outputs/final/ifc2x3.json (the retained native run in docs/evidence/usp/native-ifc/manifest.json)",
+        "schema": "IFC2X3",
+        "sourceEntities": 2046,
+        "projectedRecords": 45,
+        "georeferenceState": "missing_or_unqualified"
+      }
+    },
+    "ifc4-building-architecture.ifc": {
+      "sha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80",
+      "bytes": 142325,
+      "structure": {
+        "state": "read",
+        "lengthUnit": {
+          "state": "supplied",
+          "stepId": 15,
+          "entityType": "IfcSIUnit",
+          "prefix": "MILLI",
+          "name": "METRE"
+        },
+        "nodes": [
+          {
+            "stepId": 13,
+            "entityType": "IfcProject",
+            "candidate": null,
+            "globalId": "2Ndyd$OSX7s9A04nc4lyye",
+            "name": "ifc silly sample scene - project",
+            "longName": null,
+            "parentStepIds": [],
+            "relationStepIds": []
+          },
+          {
+            "stepId": 21,
+            "entityType": "IfcSite",
+            "candidate": null,
+            "globalId": "23sFQGRy90RxVbRHD9iSE2",
+            "name": "environment - site",
+            "longName": null,
+            "parentStepIds": [
+              13
+            ],
+            "relationStepIds": [
+              22
+            ]
+          },
+          {
+            "stepId": 28,
+            "entityType": "IfcSite",
+            "candidate": null,
+            "globalId": "1Pbuu0tu59NfhrTsztVBK1",
+            "name": "house - site",
+            "longName": null,
+            "parentStepIds": [
+              21
+            ],
+            "relationStepIds": [
+              29
+            ]
+          },
+          {
+            "stepId": 35,
+            "entityType": "IfcBuilding",
+            "candidate": "building",
+            "globalId": "0c$N1CTon2BB2Sp89385G8",
+            "name": "Single-family house",
+            "longName": "house - building",
+            "parentStepIds": [
+              28
+            ],
+            "relationStepIds": [
+              39
+            ]
+          },
+          {
+            "stepId": 45,
+            "entityType": "IfcBuildingStorey",
+            "candidate": "level",
+            "globalId": "1Ano2ZUxnEIvVQ_beukl8b",
+            "name": "00 groundfloor",
+            "longName": null,
+            "parentStepIds": [
+              35
+            ],
+            "relationStepIds": [
+              46
+            ],
+            "elevation": {
+              "state": "supplied",
+              "value": 0.0,
+              "literal": "0."
+            }
+          },
+          {
+            "stepId": 85,
+            "entityType": "IfcSpace",
+            "candidate": "space",
+            "globalId": "0xY$LvXaDEswJDk_VU74C_",
+            "name": "living room",
+            "longName": "living room",
+            "parentStepIds": [
+              45
+            ],
+            "relationStepIds": [
+              86
+            ]
+          },
+          {
+            "stepId": 135,
+            "entityType": "IfcSpace",
+            "candidate": "space",
+            "globalId": "18QhMtUIXBvQktPHXXxs7H",
+            "name": "entry hall",
+            "longName": "entry hall",
+            "parentStepIds": [
+              45
+            ],
+            "relationStepIds": [
+              86
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

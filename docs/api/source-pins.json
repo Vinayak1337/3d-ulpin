@@ -138,7 +138,7 @@
     "packages/contracts/src/source-fusion-point.ts": "7a95cbe5da59e75ee36deee869f9f9ba83332d00603ef0f798db1e94d3bc2a11",
     "packages/contracts/src/source-fusion-raster.ts": "b30c85f7a25a7bf58349b861ba845696828d50a21cdce35cb1ab7bbb12ae5326",
     "packages/contracts/src/source-fusion-survey.ts": "d901cbca2a970a3530d60fd04a4199fb5f506400439136826daa539b6c553478",
-    "packages/contracts/src/source-fusion.ts": "ff97bb6612eb265ef259b7aebd9caa9e0d5cee96bb91bab0692baf231459c9ac",
+    "packages/contracts/src/source-fusion.ts": "2f8e324eefa0acd9f4a0bccdfe62e16d4c4005ba00c412d5a7414bdcefa6b409",
     "packages/contracts/src/spatial-ml-source-review.ts": "7a41d10c3033432d663aba6790dca76fc85d320254378975a9fbb9234af6ff88",
     "packages/contracts/src/spatial-ml.ts": "ecb15d6133730ffd9ebdc74eafa8288b9b2a7287258cb4529e512fa3b6173c52",
     "packages/contracts/src/spatial/core/frame-schema.ts": "270df12d9a5592441a72d5f1430e2f508f1a7477fd24ce211f54117acf2596e9",

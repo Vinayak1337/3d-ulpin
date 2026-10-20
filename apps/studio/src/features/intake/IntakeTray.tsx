@@ -7,6 +7,7 @@ import { StoppedRetry } from './StoppedRetry';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
   stateWords, packagePath, partProgressWords } from './batch-model';
 import type { IntakeItem } from './batch-model';
+import { isIfcItem } from './ifc/structure-model';
 import styles from './Batch.module.css';
 
 export function IntakeTray({ caseId, items, packages, choose, refresh }: {
@@ -49,6 +50,7 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
     {item.existingAreaId ? <Link to={`/studio/areas/${item.existingAreaId}`}>Open that area</Link> : null}
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
+    {isIfcItem(item) ? <Button variant="soft" onClick={() => choose(item)}>View structure</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
   </div>;
 }

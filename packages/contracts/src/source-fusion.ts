@@ -53,7 +53,7 @@ export const SourceFusionRequestSchema=z.strictObject({sources:z.array(SourceFus
       if(source.kind==='cityjson'&&source.pin.resultBytes>16*1024)
         ctx.addIssue({code:'custom',message:'CityJSON result receipts have a 16 KiB profile.'});
       if(source.kind==='ifc'&&source.pin.resultBytes>IFC_LIMITS.resultBytes)
-        ctx.addIssue({code:'custom',message:'IFC result receipts have a 16 KiB profile.'});
+        ctx.addIssue({code:'custom',message:`IFC result receipts have a ${IFC_LIMITS.resultBytes/1024} KiB profile.`});
       if(source.kind==='dxf'&&source.pin.resultBytes>DXF_LIMITS.resultBytes)
         ctx.addIssue({code:'custom',message:'DXF result receipts have a 16 KiB profile.'});
       if(source.kind==='kml'&&source.pin.resultBytes>KML_LIMITS.resultBytes)
