@@ -38,7 +38,7 @@ import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
 import type {runPacketPdfJob} from '../usp/packets/pdf-worker';
 import {DispatchReservations,dispatchInProcessOperations,dispatchLaneParameters,dispatchMemoryBudgetMiB,
-  type DispatchJob} from './dispatch-lanes';
+  dispatchScratchBudgetMiB,type DispatchJob} from './dispatch-lanes';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
@@ -256,10 +256,11 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
   if(refused.length)reservations.keepRefused((await query<{id:string}>(
     "SELECT id::text AS id FROM jobs WHERE id::text=ANY($1::text[]) AND status IN ('queued','running')",[refused],
   )).rows.map(job=>job.id));
-  // A job starts only while its lane has room and its memory fits; a refused one waits for a later tick.
-  const budget=dispatchMemoryBudgetMiB(settings.dispatchMemoryMib),now=Date.now();
-  const admit=(job:QueryResultRow)=>reservations.admit({id:job.id,operation:job.operation,created_at:job.created_at},
-    budget,elsewhere,now);
+  // A job starts only while its lane has room and its memory and scratch fit; a refused one waits for a later tick.
+  const budget=dispatchMemoryBudgetMiB(settings.dispatchMemoryMib),scratch=await dispatchScratchBudgetMiB();
+  const now=Date.now();
+  const admit=(job:QueryResultRow)=>reservations.admit({id:job.id,operation:job.operation,created_at:job.created_at,
+    payload:job.payload},budget,elsewhere,now,scratch);
   // SB1: a kept TIFF or LAZ of a batch admits its next planned part within its reader's own caps, one per file.
   await admitIntakeSurfaceParts().catch(keepWorkerError('intake-surface', 'admission'));
   await Promise.all(
