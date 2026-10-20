@@ -15,7 +15,8 @@ import { inspectTabularStream } from './tabular-source';
 
 const uuid = z.string().uuid();
 const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
-/** TP1. A CSV above 16 MiB kept as a large original, pinned with the request that asked for its table. */
+/** TP1. A CSV or workbook (XW1) above 16 MiB kept as a large original, pinned with the request that asked for its
+ * table. */
 export const TableProfileInputSchema = z.strictObject({
   version: z.literal('table-profile/1'), jobId: uuid, caseId: uuid, caseRevision: z.number().int().nonnegative(),
   sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hex64,
@@ -119,8 +120,8 @@ async function readOriginal(input: TableProfileInput, attempt: UspJobAttempt) {
   }
 }
 
-/** TP1. The dispatcher's fenced job reads the CSV the table request used to read inline, then attaches the same
- * table receipt to the same source row in its accepting transaction. */
+/** TP1. The dispatcher's fenced job reads the CSV, or the workbook's one sheet (XW1), the table request used to read
+ * inline, then attaches the same table receipt to the same source row in its accepting transaction. */
 export async function runTableProfileJob(jobId: string) {
   const job = (await query(`SELECT * FROM jobs WHERE id=$1 AND operation='table-profile'`, [jobId])).rows[0];
   if (!job || !['queued', 'running'].includes(job.status)) return;

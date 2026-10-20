@@ -84,7 +84,7 @@ function ReadAsTable({ caseId, source }: { caseId: string; source: ItemTableSour
     },
     onSuccess: open,
   });
-  const reading = press.isPending && job ? jobWords(job) : null;
+  const reading = press.isPending && job ? jobWords(job, source.format === 'xlsx' ? 'workbook' : 'CSV') : null;
   return <ReadAsTableForm source={source} sheet={sheet} setSheet={setSheet} rows={rows} setRows={setRows}
     pending={press.isPending} submit={() => press.mutate()} reading={reading} error={press.error} />;
 }

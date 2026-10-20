@@ -129,7 +129,7 @@ it('a large CSV item gets its job, is followed with the same request until it su
   const opened = await pending;
   expect(seen.map((row) => row.status)).toEqual(['queued', 'running', 'succeeded']);
   expect(new Set(bodies.map((body) => body.requestKey)).size).toBe(1);
-  expect(seen.map(jobWords)[0]).toContain('queued on the server');
+  expect(seen.map((job) => jobWords(job, 'CSV'))[0]).toContain('queued on the server');
   expect(tablePath(opened)).toBe(`/studio/work/cases/${caseId}/tables/${sourceId}`);
 });
 

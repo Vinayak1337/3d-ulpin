@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { afterEach, beforeEach, test } from 'node:test';
 import type { Pool } from 'pg';
-import type { DocumentResult, IntakeEvidenceAnchor, IntakeEvidenceCandidate, IntakeEvidenceConfirm,
-  IntakeEvidenceCoverage, IntakeEvidenceLocator, IntakeKeyProfileInput, TableWindowRow,
-  TabularSelection } from '@ulpin/contracts/usp';
+import { IntakeTableRowLocatorSchema, type DocumentResult, type IntakeEvidenceAnchor, type IntakeEvidenceCandidate,
+  type IntakeEvidenceConfirm, type IntakeEvidenceCoverage, type IntakeEvidenceLocator, type IntakeKeyProfileInput,
+  type TableWindowRow, type TabularSelection } from '@ulpin/contracts/usp';
+import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { closeEvidence, documentAssertions, evidenceAnchor, evidenceConfirmationIssue, evidenceLinkManifest,
@@ -16,7 +19,7 @@ import type { IntakeSourceRow } from './intake-context';
 import { stableUuid } from './intake-run';
 import { windowRows } from './table-windows';
 import { readTabularSource } from './tabular-source';
-import { readTabularWindows } from './tabular-stream';
+import { readTableWindows, readTabularWindows } from './tabular-stream';
 
 type Part = DocumentResult['native']['parts'][number];
 type TableRowLocator = Extract<IntakeEvidenceLocator, { kind: 'table_row' }>;
@@ -266,6 +269,44 @@ test('the register read from its stored windows gives the outcomes, ids and row 
       }
     }
   });
+
+// The workbook reader needs the native reader's packages (services/geo) and the private scratch the demo runtime
+// gives its local readers; here a test folder outside the repository.
+const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
+const python = existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON';
+
+test('a workbook row read from its stored window cites the sheet\'s stored bytes, its sheet and physical row; '
+  + 'a formula key cell is unknown, never a key', { skip: python }, async () => {
+  process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+  process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-evidence');
+  const control = controlWorkbook(30), bytes = control.bytes, rows: TableWindowRow[] = [];
+  const selection: TabularSelection = { format: 'xlsx', sheet: 'Register', table: null, headerRows: [2] };
+  let headers: string[] = [], windowSha256 = '';
+  await readTableWindows(Readable.from([bytes]), { selection, bytes: bytes.length }, async (window, names) => {
+    rows.push(...windowRows(window, names));
+    [headers, windowSha256] = [names, window.sha256];
+  });
+  const itemId = ids('workbook');
+  const input = { itemId, caseId, sourceId: ids(`source:${itemId}`), sourceRevision: 1,
+    sourceSha256: sha256(bytes) } as IntakeEvidenceInput;
+  const source = { sha256: sha256(bytes), bytes: bytes.length, inspection: { manualProfile: { headers,
+    tabular: { selection } } } } as unknown as IntakeSourceRow;
+  installRawJob({ state: 'completed', records: 30, windows: [{ window_index: 0, first_record: 0, records: 30,
+    fence: 1, window_sha256: windowSha256, rows }] });
+  const read = (header: string) => windowedTableReading(input, { kind: 'integer', tables: [{ itemId, selection,
+    columnIndex: headers.indexOf(header) }] } as IntakeKeyProfileInput, source, new Set());
+  const area = (await read('Area'))!;
+  assert.deepEqual(area.coverage, { state: 'closed', read: 30, eligible: 30, keyless: 0, unread: 0, failed: 0 });
+  const [byteStart, byteEnd] = control.ranges.get(CONTROL_SHEET)!;
+  for (const [at, { evidence }] of area.assertions.entries()) {
+    const locator = IntakeTableRowLocatorSchema.parse(evidence);
+    assert.deepEqual(locator.window, { index: 0, record: at, byteStart, byteEnd, sha256: windowSha256,
+      sheet: 'Register', physicalRow: at + 3, sheetSha256: control.sheetSha256 });
+    assert.equal(sha256(bytes.subarray(byteStart, byteEnd)), locator.window!.sha256);
+  }
+  const doubled = (await read('Doubled'))!;
+  assert.deepEqual([doubled.assertions, doubled.coverage.keyless], [[], 30], 'a cached formula result is no key');
+});
 
 test('a raw job still running or failed leaves the rest unknown; a window that does not read back is failed',
   { skip }, async () => {

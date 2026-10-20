@@ -100,7 +100,8 @@ function windowCoverage(raw: RawTable, read: number, eligible: number, failed: n
     unread: finished ? raw.records - read - failed : null, failed: finished || failed ? failed : null };
 }
 
-/** D1: each stored window of the raw job, one at a time; a row's locator cites its window, byte range and hash.
+/** D1: each stored window of the raw job, one at a time; a row's locator cites its window, byte range and hash,
+ * and a workbook row its sheet, physical row and sheet SHA-256 (XW1).
  * A streamed row's raw result is its stored window, pinned by the window's SHA-256 and fence. */
 async function readWindows(input: IntakeEvidenceInput, { spec, kind, headers }: WindowedSpec,
   { raw, windows }: StoredTable, literals: ReadonlySet<string>): Promise<Reading> {
@@ -121,7 +122,8 @@ async function readWindows(input: IntakeEvidenceInput, { spec, kind, headers }: 
       selection: spec.selection, sourceRow: row.sourceRow, rowSha256: fingerprint(cells), columnIndex: spec.columnIndex,
       columnHeader: headers[spec.columnIndex], cell: { state: 'literal', value: literal },
       window: { index: window.index, record: row.record, byteStart: row.byteStart, byteEnd: row.byteEnd,
-        sha256: row.sha256 } })));
+        sha256: row.sha256, ...(row.sheet !== undefined
+          ? { sheet: row.sheet, physicalRow: row.sourceRow, sheetSha256: row.sheetSha256 } : {}) } })));
     read += window.rows.length;
   }
   const coverage = windowCoverage(raw, read, assertions.length, failed);

@@ -3514,7 +3514,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV is read as a stream by a queued job (202), and a replay answers that job as it stands; its bytes stay unchanged */
+        /** Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV, or one sheet of a larger workbook, is read as a stream by a queued job (202), and a replay answers that job as it stands; its bytes stay unchanged */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_table"];
         delete?: never;
         options?: never;
@@ -65758,6 +65758,13 @@ export interface components {
                 byteStart: number;
                 byteEnd: number;
                 sha256: string;
+                sheet?: string;
+                sheetSha256?: string;
+                marks?: {
+                    column: number;
+                    /** @enum {string} */
+                    mark: "formula_cached" | "formula_uncached" | "no_value" | "error" | "unsupported";
+                }[];
                 cells: (string | null)[];
                 window: number;
                 mapped: {
@@ -66603,13 +66610,16 @@ export interface components {
                         state: "literal";
                         value: string;
                     };
-                    /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it. */
+                    /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
                     window?: {
                         index: number;
                         record: number;
                         byteStart: number;
                         byteEnd: number;
                         sha256: string;
+                        sheet?: string;
+                        physicalRow?: number;
+                        sheetSha256?: string;
                     };
                 } | {
                     /** @enum {string} */
@@ -67129,13 +67139,16 @@ export interface components {
                             state: "literal";
                             value: string;
                         };
-                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it. */
+                        /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
                         window?: {
                             index: number;
                             record: number;
                             byteStart: number;
                             byteEnd: number;
                             sha256: string;
+                            sheet?: string;
+                            physicalRow?: number;
+                            sheetSha256?: string;
                         };
                     } | {
                         /** @enum {string} */
@@ -67273,13 +67286,16 @@ export interface components {
                                 state: "literal";
                                 value: string;
                             };
-                            /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. A whole-file row omits it. */
+                            /** @description A row of a streamed table, read from its stored window: the window, the record number (the first is 0), its byte range in the unchanged original and that range's SHA-256. For a workbook row the range is its sheet's stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the sheet's XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window. */
                             window?: {
                                 index: number;
                                 record: number;
                                 byteStart: number;
                                 byteEnd: number;
                                 sha256: string;
+                                sheet?: string;
+                                physicalRow?: number;
+                                sheetSha256?: string;
                             };
                         } | {
                             /** @enum {string} */

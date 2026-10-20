@@ -196,14 +196,15 @@ export function inspectTabularSource(
     limitations: admissionLimitations(admitted) };
 }
 
-/** A case original's CSV above 16 MiB, read from its retained object as a stream against its byte receipt. */
+/** A case original's CSV or workbook above 16 MiB, read from its retained object as a stream against its byte
+ * receipt. */
 export async function inspectTabularStream(body: Readable, receipt: { sha256: string; bytes: number },
   selection: TabularSelection, provenance: TabularProvenance = {}) {
   const admitted = admitTabularSource(receipt.sha256, receipt.bytes, provenance);
-  if (admitted.kind !== 'case_original' || selection.format !== 'csv') {
-    throw new AppError(422, 'TABULAR_FORMAT', 'Only a case original CSV is read as a stream.');
+  if (admitted.kind !== 'case_original') {
+    throw new AppError(422, 'TABULAR_FORMAT', 'Only a case original is read as a stream.');
   }
-  const read = await profileTabularStream(body, selection);
+  const read = await profileTabularStream(body, { selection, bytes: receipt.bytes });
   if (read.bytes !== receipt.bytes || read.sha256 !== receipt.sha256) {
     throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The original differs from its byte receipt.');
   }
@@ -212,7 +213,8 @@ export async function inspectTabularStream(body: Readable, receipt: { sha256: st
     streamCounts: read.streamCounts,
     schemaFingerprint: fingerprint({ selection, headers: read.headers, layout: read.profile.layoutFingerprint }),
     limitations: [...admissionLimitations(admitted),
-      `Read as a stream in ${read.windows} windows; the profile shows the first 100 records.`] };
+      `Read as a stream in ${read.windows} windows; the profile shows the first 100 records.`,
+      ...read.notes ?? []] };
 }
 
 function admissionLimitations(admitted: TabularAdmission): string[] {

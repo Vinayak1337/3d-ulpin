@@ -304,10 +304,17 @@ export const IntakeTableRowLocatorSchema = z.strictObject({
   cell: z.strictObject({ state: z.literal('literal'), value: literal }),
   window: z.strictObject({ index: z.number().int().nonnegative().max(TABULAR_STREAM_LIMITS.windows - 1),
     record: z.number().int().nonnegative().max(TABULAR_STREAM_LIMITS.rows - 1),
-    byteStart: z.number().int().nonnegative(), byteEnd: z.number().int().nonnegative(), sha256: hash })
-    .refine(row => row.byteEnd >= row.byteStart, 'A record ends where it starts or later.').optional()
+    byteStart: z.number().int().nonnegative(), byteEnd: z.number().int().nonnegative(), sha256: hash,
+    sheet: z.string().min(1).max(150).optional(), physicalRow: z.number().int().min(2).optional(),
+    sheetSha256: hash.optional() })
+    .refine(row => row.byteEnd >= row.byteStart, 'A record ends where it starts or later.')
+    .refine(row => [row.sheet, row.physicalRow, row.sheetSha256].every(value => value === undefined)
+      || [row.sheet, row.physicalRow, row.sheetSha256].every(value => value !== undefined),
+    'A workbook row names its sheet, physical row and sheet SHA-256 together.').optional()
     .describe('A row of a streamed table, read from its stored window: the window, the record number (the first '
-      + 'is 0), its byte range in the unchanged original and that range\'s SHA-256. A whole-file row omits it.'),
+      + 'is 0), its byte range in the unchanged original and that range\'s SHA-256. For a workbook row the range '
+      + 'is its sheet\'s stored bytes in the ZIP, and the sheet name, the physical sheet row and the SHA-256 of the '
+      + 'sheet\'s XML as read name the row inside it; a CSV row omits them. A whole-file row omits the window.'),
 });
 /** One native text part of a retained document; the quote is an exact character span of the part's text. */
 export const IntakeDocumentPartLocatorSchema = z.strictObject({

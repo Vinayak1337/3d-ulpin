@@ -41,16 +41,16 @@ export async function retainTable(caseId: string, body: FormData): Promise<Table
   return result as TableProfile;
 }
 
-/** G13: a CSV above 16 MiB is kept through the uploads route, then read on the server as a stream into a table by a
- * job (TP1). */
+/** G13, XW1: a CSV or XLSX above 16 MiB is kept through the uploads route, then read on the server as a stream
+ * into a table by a job (TP1); a workbook's one sheet is read with the sheet and header rows the officer typed. */
 export function streamedImport(file: File) {
-  return /\.csv$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
+  return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }
 
-/** A kept original up to 16 MiB answers its table profile; a larger CSV answers its read job. Sending the same body
- * again answers the same job as it stands. */
+/** A kept original up to 16 MiB answers its table profile; a larger CSV or workbook answers its read job. Sending
+ * the same body again answers the same job as it stands. */
 export async function tableFromOriginal(caseId: string, sourceId: string, body: TableFromOriginalBody)
   : Promise<TableProfile | TableJob> {
   const result = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table', {

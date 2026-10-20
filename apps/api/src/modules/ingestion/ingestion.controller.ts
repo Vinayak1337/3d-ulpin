@@ -200,8 +200,9 @@ export class IngestionController {
   @Post('cases/:caseId/sources/:sourceId/table')
   @HttpCode(202) @param('caseId') @param('sourceId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_table',
-    summary:'Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV is read as a '+
-      'stream by a queued job (202), and a replay answers that job as it stands; its bytes stay unchanged'})
+    summary:'Make a kept original a table source: up to 16 MiB it is read here (201); a larger CSV, or one sheet of a '+
+      'larger workbook, is read as a stream by a queued job (202), and a replay answers that job as it stands; '+
+      'its bytes stay unchanged'})
   @jsonBody(TableFromOriginalSchema) @wireResponse(202,TableProfileJobSchema)
   @ApiResponse({status:201,schema:z.toJSONSchema(AnySourceProfileSchema,{target:'openapi-3.0'}) as never})
   async tableFromOriginal(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Req() request:Request,
