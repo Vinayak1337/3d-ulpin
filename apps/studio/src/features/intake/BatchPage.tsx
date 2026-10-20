@@ -5,6 +5,8 @@ import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { AddFilesDialog } from './AddFilesDialog';
 import { DropOutcomes } from './IntakeDropDialog';
 import { IntakeTray } from './IntakeTray';
+import { IfcStructure } from './ifc/IfcStructure';
+import { isIfcItem } from './ifc/structure-model';
 import { LayoutQuestion } from './LayoutQuestion';
 import { isSettled, trayItems } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
@@ -64,6 +66,8 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     {current?.sourceId && (current.plan || needsLayoutAnswer(current)) ?
       <LayoutQuestion key={current.itemId} caseId={caseId}
         item={current} refresh={refresh} /> : null}
+    {current && isIfcItem(current) ?
+      <IfcStructure key={current.itemId} caseId={caseId} sourceId={current.sourceId} name={current.name} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
     </section>
