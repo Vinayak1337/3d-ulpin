@@ -1,0 +1,12 @@
+{
+  "task": "G20B",
+  "gate": "GF1",
+  "base": "872a57dd",
+  "status": "stopped_at_step0",
+  "qualification": "Step 0 proof only, on fake lookups and the NYC buildings layer's SHA-256; no database, object store or served walk. No production code changed.",
+  "defect": "A same-case redrop after its area was retired gets no fresh area: the recipe path folds it into the old source, the large path is refused AREA_RETIRED because the case still offers the retired area, a new_area destination is refused AREA_SOURCE_DENIED by the case's one-site binding, and a third drop would collide with the second's scoped namespace.",
+  "gaps": ["Lead decision needed on the case-site binding (step0.json decisionNeeded) before D1-D3 can be delivered; two of the three seams are outside this task's owned paths."],
+  "checks": [
+    {"command": "tsx --test packages/server/src/modules/usp/ingestion/retired-same-case.test.ts", "exit": 0, "tests": 3, "pass": 3, "fail": 0}
+  ]
+}
