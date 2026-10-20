@@ -11,45 +11,116 @@
     "Job identity: stableUuid(intake-surface/1, item, source revision, part key, context pin); part key = fingerprint(original sha256, reader sha256, locator). The same pin is the same job (D7).",
     "The reader's acceptance transaction publishes the part; the first accepted part plans the rest from what the reader found (dimensions, affine, CRS authority, point count, vertical reference) and writes it to plan_ref.header (D3). The probe card is unchanged.",
     "A stale read returns its part to planned under a fresh pin; any other failure quarantines the part with its code; the item becomes failed_part.",
-    "Tray words and state follow the part rows: reading, read or read_to_limit; placement on_map with a batch area reference, waiting_for_anchor without one, not_understood when the file states no CRS. Vertical reference stays unknown unless the file states it (D4). recordsSeen counts points read; rasters count none.",
-    "GET .../intake/items/:itemId/parts (paged) and GET .../parts/:partIndex/display: the reader's accepted fence is checked again (409 if stale), source corners from the window affine or the batch's native XY extent, transformed on the server by postgis:ST_Transform(EPSG:src->area analysis CRS) minus the area origin, with the accepted artifact path and exact original sha256 (D5). use = display_only.",
+    "Tray words and state follow the part rows: reading, read or read_to_limit. Placement is on_map only when a part read so far meets the batch area's local extent, in the same PostGIS statement the display read uses (corners transformed into the area's analysis CRS minus its origin, each part's envelope against the area extent); otherwise 'Read, outside this area' (not_understood), waiting_for_anchor without an area, reference or extent, not_understood when the file states no CRS or no transform exists. Vertical reference stays unknown unless the file states it (D4). recordsSeen counts points read; rasters count none.",
+    "GET .../intake/items/:itemId/parts (paged) and GET .../parts/:partIndex/display: the reader's accepted fence is checked again (409 if stale), source corners from the window affine or the batch's native XY extent, transformed on the server by postgis:ST_Transform(EPSG:src->area analysis CRS) minus the area origin; a part whose corners do not meet the area's extent is not_placed with reason outside_area; with the accepted artifact path and exact original sha256 (D5). use = display_only.",
+    "A kept original refused by its reader's own source check (RASTER_DENIED, RASTER_SOURCE_INTEGRITY, POINT_DENIED, POINT_SOURCE_INTEGRITY) never fails the publishing transaction: the check runs inside a savepoint, the item rests probed / not_understood with words naming the reason and the 16 MiB bound, and nothing is queued. A refusal at a later dispatcher tick quarantines the item's remaining planned parts.",
     "Over a limit the original is kept and the item names the limit in words (D6); point jobsPerSource 32 -> 611 as the proposal's pointOfficerLimits state."
   ],
   "realInputs": {
     "pack": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload",
     "readerMetadataFrom": "docs/evidence/gf1/au3/result.json (accepted first reads of the same three files; hashes checked against the bytes)",
     "files": [
-      { "file": "nyc-10013-ortho-2018.tif", "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716", "reader": "raster-window", "sourcePixels": "768 x 768, 4 bands, EPSG:3857", "partsPlanned": 9, "firstPartEqualsReaderFirstRead": true },
-      { "file": "nyc-10013-dem-2017.tif", "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317", "reader": "raster-window", "sourcePixels": "832 x 911, 1 band, EPSG:2263", "partsPlanned": 16, "firstPartEqualsReaderFirstRead": true, "probe": "signature only (IFD outside the head); taken by the reader, not refused as missing CRS", "verticalReference": "unknown" },
-      { "file": "nyc-10013-lidar-2017.laz", "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790", "reader": "point-batch", "sourcePoints": 1726222, "partsPlanned": 211, "lastBatch": { "start": 1720320, "count": 5902 }, "firstPartEqualsReaderFirstRead": true, "verticalReference": "NAVD88 height (stated by the file)" }
+      {
+        "file": "nyc-10013-ortho-2018.tif",
+        "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716",
+        "reader": "raster-window",
+        "sourcePixels": "768 x 768, 4 bands, EPSG:3857",
+        "partsPlanned": 9,
+        "firstPartEqualsReaderFirstRead": true
+      },
+      {
+        "file": "nyc-10013-dem-2017.tif",
+        "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317",
+        "reader": "raster-window",
+        "sourcePixels": "832 x 911, 1 band, EPSG:2263",
+        "partsPlanned": 16,
+        "firstPartEqualsReaderFirstRead": true,
+        "probe": "signature only (IFD outside the head); taken by the reader, not refused as missing CRS",
+        "verticalReference": "unknown"
+      },
+      {
+        "file": "nyc-10013-lidar-2017.laz",
+        "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790",
+        "reader": "point-batch",
+        "sourcePoints": 1726222,
+        "partsPlanned": 211,
+        "lastBatch": {
+          "start": 1720320,
+          "count": 5902
+        },
+        "firstPartEqualsReaderFirstRead": true,
+        "verticalReference": "NAVD88 height (stated by the file)"
+      }
     ],
     "difficult": "DEM: probe depth signature, crs state absent; the item is planned and read, and its words say the coordinate system is not read yet until the first part is accepted."
   },
-  "replay": "intake-surface.test.ts: accepting the same part again writes nothing and publishes no event (211 parts stay 211); enrolling the same kept original again writes nothing.",
+  "replay": "intake-surface.test.ts: accepting the same part again writes nothing and publishes no event (211 parts stay 211); enrolling the same kept original again writes nothing. Placement: a LAZ part meeting the area is on_map with local corners; the same part against an area elsewhere is 'Read, outside this area' (item and display read). Refusal: an over-bound kept receipt of a TIFF and of a LAZ rests the item with words, rolls back to the savepoint and touches no part or job.",
   "checks": [
-    { "command": "pnpm typecheck:backend", "exit": 0 },
-    { "command": "pnpm studio:typecheck", "exit": 0 },
-    { "command": "pnpm studio:test", "exit": 0, "counts": "studio 479 passed (74 files); scene 58 passed, 1 skipped; ui 7 passed; api-client 2 passed" },
-    { "command": "backend test command of the template plus intake-surface.test.ts (in $D), tests/raster-publication.test.ts, tests/point-publication.test.ts", "exit": 0, "counts": "393 tests, 391 pass, 0 fail, 2 skipped (database-only dispatcher tests)" },
-    { "command": "tsx --test tests/raster-read-authority, raster-point-later-receipt, source-fusion-point, source-fusion-raster, registry-point-citations, registry-raster-citations, sufficiency-raster-point", "exit": 0, "counts": "21 pass, 0 fail" },
-    { "command": "tsx apps/api/scripts/openapi.ts --check", "exit": 0, "note": "after scripts/api/refresh-contract.ts ad660383 (exit 0) and pnpm studio:api-types (exit 0)" },
-    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0, "counts": "319 native operations, 363 named schemas" },
-    { "command": "git diff --check", "exit": 0 },
-    { "command": "python ast.parse services/geo/geo/raster_window.py and point_batch.py", "exit": 0 }
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:test",
+      "exit": 0,
+      "counts": "studio 479 passed (74 files); scene 58 passed, 1 skipped; ui 7 passed; api-client 2 passed"
+    },
+    {
+      "command": "backend test command of the template plus tests/raster-publication.test.ts and tests/point-publication.test.ts (intake-surface.test.ts is in $D)",
+      "exit": 0,
+      "counts": "397 tests, 395 pass, 0 fail, 2 skipped (database-only dispatcher tests)"
+    },
+    {
+      "command": "tsx --test packages/server/src/modules/usp/ingestion/intake-surface.test.ts",
+      "exit": 0,
+      "counts": "10 pass, 0 skipped (3 real-input NYC tests ran)"
+    },
+    {
+      "command": "tsx --test tests/raster-read-authority, raster-point-later-receipt, source-fusion-point, source-fusion-raster, registry-point-citations, registry-raster-citations, sufficiency-raster-point",
+      "exit": 0,
+      "counts": "21 pass, 0 fail"
+    },
+    {
+      "command": "tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts ad660383; pnpm studio:api-types",
+      "exit": 0
+    },
+    {
+      "command": "tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 0
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "exit": 0,
+      "counts": "319 native operations, 363 named schemas"
+    },
+    {
+      "command": "cd services/geo; PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -c \"sys.path.append('E:/BhuAayam-data/ml/venv-b5-check/Lib/site-packages'); pytest.main(['-p','no:cacheprovider','-q','tests/test_surface_readers.py'])\"",
+      "exit": 0,
+      "counts": "4 passed: ortho first and last window (9 planned), DEM first and last window 64 x 143 (16 planned), LAZ first and last batch 1720320+5902 (211 planned), key of another prefix or source refused",
+      "venv": "venv-vision (Python 3.11.15, rasterio and laspy) has no pytest; pytest 8 (pure Python) was appended to sys.path from venv-b5-check (same Python 3.11.15); no package was installed",
+      "firstReads": "artifact SHA-256 of each first part equals the AU3 accepted first read"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
   ],
   "notRun": [
-    "Python reader tests: E:/Projects/3d-ulpin/.venv does not exist; E:/BhuAayam-data/ml/venv-k3a-geo exists but has neither rasterio nor laspy (import exit 1 each). The key change (sources/ or large-originals/) is checked by parse only.",
-    "Runtime: no Docker or live PostgreSQL for this task, so the three files have not been dropped into one live batch; part SQL, dispatcher admission, PostGIS placement and the readers on large-original keys are proven by code and doubles, not by a run."
+    "Runtime: no Docker or live PostgreSQL for this task, so the three files have not been dropped into one live batch; part SQL, dispatcher admission, the PostGIS placement statement and the readers on large-original keys in the worker are proven by code and doubles, not by a run. The placement double answers the statement as PostGIS would for a source already in the area's CRS."
   ],
   "gaps": [
     "Runtime proof (proposal accept 1): one live batch with the three files reaching 9/16/211 published parts.",
     "Point display preview: the proposal's bounded min/max cell preview in point_batch.py is not built; the display read points at the native .bin artifact.",
     "A part accepted before the batch gained its area is refused by the display read (409) but is not read again automatically.",
-    "usp_holding_extent is not written; placement on_map follows the area reference and the stated CRS, without an extent-overlap check.",
-    "If the reader's own source check refuses a kept original before a part is chosen, the enrolment transaction fails with that code instead of resting the item."
+    "usp_holding_extent is not written."
   ],
   "testFilesOutsideOwnedCode": [
     "packages/server/src/modules/cases/processing.test.ts: the dispatcher now sends the surface admission read after the job selection; the packet mock answers only the job selection.",
     "tests/raster-publication.test.ts, tests/point-publication.test.ts: the SQL double answers the new part lookup with no row (a dedicated-route job has no intake part)."
-  ]
+  ],
+  "review": "Coordinator review fixes 1-3 on the same branch: source-check refusal rests the item; on_map only when a part meets the area extent; Python reader tests run with venv-vision."
 }

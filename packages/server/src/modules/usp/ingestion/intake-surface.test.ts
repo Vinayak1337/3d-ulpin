@@ -5,7 +5,7 @@ import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { INTAKE_SURFACE_VERSION, type PointBatchResult, type RasterWindowResult } from '@ulpin/contracts/usp';
 import { probeOriginal } from './intake-probe';
-import { acceptIntakeSurfacePartTx, pointRecordsExtent, queueIntakeSurfaceTx, surfacePlan,
+import { acceptIntakeSurfacePartTx, pointRecordsExtent, queueIntakeSurfaceTx, surfacePartPlacementTx, surfacePlan,
   surfaceReader } from './intake-surface';
 import type { IntakeSourceRow } from './intake-context';
 
@@ -53,7 +53,7 @@ test('above a reader limit the original is kept and the limit is named', () => {
   const reader = surfaceReader(card, 1024) as { limit: string };
   assert.match(reader.limit, /LAS 1\.4 point format 6 only; this is LAZ 1\.2 format 1/);
   const big = surfaceReader({ family: 'raster', format: 'geotiff', raster: null, counts: {} } as never, 17 * 1024 ** 2);
-  assert.match((big as { limit: string }).limit, /^Kept \(17 MB\)\. The batch reads a raster of at most 16 MB/);
+  assert.match((big as { limit: string }).limit, /^Kept \(17 MiB\)\. The batch reads a raster of at most 16 MiB/);
 });
 
 test('a native format-6 batch gives the XY extent of its records', () => {
@@ -64,12 +64,30 @@ test('a native format-6 batch gives the XY extent of its records', () => {
   assert.equal(pointRecordsExtent(new Uint8Array(0), [1, 1, 1], [0, 0, 0]), null);
 });
 
+/** The double's answer to the placement statement; the transform is the identity (same EPSG code). */
+function localParts([xs, ys, ids, from, to, ox, oy, x0, y0, x1, y1]: any[]) {
+  assert.equal(from, to);
+  const groups = new Map<number, number[][]>();
+  ids.forEach((id: number, n: number) => groups.set(id, [...groups.get(id) ?? [], [xs[n] - ox, ys[n] - oy]]));
+  return [...groups].map(([part, points]) => {
+    const px = points.map(p => p[0]), py = points.map(p => p[1]);
+    return { part, xs: px, ys: py, meets: Math.min(...px) <= x1 && Math.max(...px) >= x0 && Math.min(...py) <= y1
+      && Math.max(...py) >= y0 };
+  });
+}
+
 const caseId = '30000000-0000-4000-8000-000000000001';
 const itemId = '30000000-0000-4000-8000-000000000002';
 const jobId = '30000000-0000-4000-8000-000000000003';
 
-/** An item with its first point part queued; the statements the acceptance writes, each counted. */
-function ledger() {
+type Area = { id: string; revision: number; reference: { analysisCrs: string; origin: number[] }; extent: number[] };
+
+/**
+ * An item with its first point part queued; the statements the acceptance writes, each counted. With an area, the
+ * placement statement is answered as PostGIS would for a source already in the area's CRS: minus the origin, then
+ * each part's envelope against the area's local extent.
+ */
+function ledger(area: Area | null = null) {
   const item: Record<string, any> = { item_id: itemId, case_id: caseId, state: 'reading', placement: 'undecided',
     plan_ref: { version: INTAKE_SURFACE_VERSION, operation: 'point-batch', header: null }, records_seen: 0,
     limit_reason: null, parts_planned: null, parts_done: 0, family: 'point_cloud', format: 'laz',
@@ -99,9 +117,11 @@ function ledger() {
       item.plan_ref = values[1];
       return one({});
     }
-    if (sql.startsWith('SELECT state,counts,issue_code FROM usp_intake_parts'))
+    if (sql.startsWith('SELECT state,counts,issue_code,result_ref FROM usp_intake_parts'))
       return { rows: [...parts.values()].sort((a, b) => a.part_index - b.part_index), rowCount: parts.size };
-    if (sql.startsWith('SELECT a.id,a.revision,a.reference FROM cases')) return one(null);
+    if (sql.startsWith('SELECT a.id,a.revision,a.reference,a.extent FROM cases')) return one(area);
+    if (sql.startsWith('SELECT count(DISTINCT auth_srid)')) return one({ n: new Set([values[0], values[1]]).size });
+    if (sql.startsWith('SELECT c.part,array_agg')) return { rows: localParts(values), rowCount: 1 };
     if (sql.startsWith('SELECT case_id,plan_ref FROM usp_intake_items') || sql.startsWith('SELECT state,placement')
       || sql.startsWith('SELECT parts_planned')) return one(item);
     if (sql.startsWith('UPDATE usp_intake_items SET parts_planned')) {
@@ -177,3 +197,78 @@ test('enrolling the same kept original again changes nothing', async () => {
   assert.equal(queried.filter(sql => /^(INSERT|UPDATE)/.test(sql)).length, 0);
   assert.deepEqual(count, after);
 });
+
+const area = (extent: number[]): Area => ({ id: '30000000-0000-4000-8000-000000000004', revision: 2,
+  reference: { analysisCrs: 'EPSG:6347', origin: [583500, 4507900] }, extent });
+const lazBox = [583402.5958, 4507755.5254, 583659.1058, 4508041.3854];
+
+test('a part whose corners meet the batch area is on the map; the item follows', async () => {
+  const { client, item } = ledger(area([-200, -200, 200, 200]));
+  await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value: lazFirstBatch(), extent: lazBox });
+  assert.equal(item.placement, 'on_map');
+  assert.doesNotMatch(item.limit_reason, /outside|not placed/);
+  const placed = await surfacePartPlacementTx(client, caseId, item.plan_ref.header,
+    [[lazBox[0], lazBox[3]], [lazBox[2], lazBox[1]]]) as any;
+  assert.equal(placed.state, 'placed');
+  assert.deepEqual(placed.corners.map((c: number[]) => c.map(v => Math.round(v))), [[-97, 141], [159, -144]]);
+});
+
+test('a part read outside the batch area is not on the map, and says so', async () => {
+  const { client, item } = ledger(area([5000, 5000, 6000, 6000]));
+  await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value: lazFirstBatch(), extent: lazBox });
+  assert.equal(item.placement, 'not_understood');
+  assert.match(item.limit_reason, /Read, outside this area: its corners do not meet the batch area's extent\./);
+  const placed = await surfacePartPlacementTx(client, caseId, item.plan_ref.header,
+    [[lazBox[0], lazBox[3]], [lazBox[2], lazBox[1]]]);
+  assert.deepEqual(placed, { state: 'not_placed', reason: 'outside_area',
+    words: 'Read, outside this area: its corners do not meet the batch area\'s extent.' });
+});
+
+for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geotiff'],
+  ['LAZ', 'point', 'point_cloud', 'laz']] as const) {
+  test(`a kept ${name} whose receipt is over its reader's bound rests with words; the publish goes on`, async () => {
+    const sha = 'd'.repeat(64), sourceId = '30000000-0000-4000-8000-000000000005', over = 17 * 1024 ** 2;
+    const item: Record<string, any> = { item_id: itemId, case_id: caseId, source_id: sourceId, plan_ref: null,
+      state: 'probed', placement: 'undecided', records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0,
+      family, format, size_class: 'S', wave: 1 };
+    const statements: string[] = [];
+    const one = (row: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+    const client = { query: async (sql: string, values: any[] = []) => {
+      statements.push(sql);
+      if (sql.startsWith('SELECT * FROM usp_intake_items') || sql.startsWith('SELECT state,placement')
+        || sql.startsWith('SELECT parts_planned')) return one(item);
+      if (/^(SAVEPOINT|ROLLBACK TO SAVEPOINT|RELEASE SAVEPOINT)/.test(sql)) return one(null);
+      if (sql.startsWith('SELECT id,revision,archived')) return one({ id: caseId, revision: 1, archived: false,
+        frame: {}, context: {}, site_id: null });
+      if (sql.startsWith('SELECT * FROM sources')) return one({ id: sourceId, case_id: caseId,
+        profile: 'large-original-v1', sha256: sha, bytes: 1024 ** 2, object_key: `large-originals/${sourceId}/${sha}`,
+        inspection: { largeOriginal: { operatorSubject: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT,
+          verifiedSha256: sha, verifiedBytes: over } } });
+      if (sql.startsWith("SELECT inspection->'largeOriginal'")) return one({ bytes: String(over) });
+      if (sql.startsWith('UPDATE usp_intake_items SET state=$3')) {
+        Object.assign(item, { state: values[2], placement: values[3], plan_ref: values[4], limit_reason: values[6] });
+        return one({});
+      }
+      if (sql.startsWith('SELECT item_id AS "itemId"')) return one({ itemId, state: item.state, family, format,
+        sizeClass: 'S', wave: 1, pinnedByOfficer: false });
+      if (sql.startsWith('SELECT revision FROM cases')) return one({ revision: 3 });
+      if (sql.startsWith('INSERT INTO usp_outbox_streams') || sql.startsWith('INSERT INTO usp_outbox(')) return one({});
+      if (sql.startsWith('UPDATE usp_outbox_streams')) return one({ sequence: '1' });
+      throw new Error(`Unexpected statement: ${sql.slice(0, 60)}`);
+    } } as unknown as PoolClient;
+    const card = { family, format, formatVersion: profile === 'point' ? '1.4' : null,
+      point: profile === 'point' ? { format: 6, scale: null } : null, counts: { points: 1000, bands: 1 },
+      raster: null } as never;
+    const source = { id: sourceId, case_id: caseId, profile: 'large-original-v1', bytes: 1024 ** 2 } as IntakeSourceRow;
+    assert.equal(await queueIntakeSurfaceTx(client, source, card), true);
+    assert.deepEqual([item.state, item.placement, item.plan_ref], ['probed', 'not_understood', null]);
+    assert.equal(item.limit_reason, `Kept. The ${profile} reader reads an original of at most 16 MiB with this `
+      + 'batch\'s own kept receipt; its kept receipt states 17 MiB, over the reader\'s 16 MiB bound, so it is not '
+      + 'read or on the map; the original is kept with its SHA-256.');
+    assert.doesNotMatch(item.limit_reason, /\d{5,}/);
+    assert.ok(statements.includes('ROLLBACK TO SAVEPOINT intake_surface_source'));
+    assert.equal(statements.filter(sql => /usp_intake_parts|INTO jobs/.test(sql)).length, 0);
+  });
+}

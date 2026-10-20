@@ -65214,7 +65214,7 @@ export interface components {
                 /** @enum {string} */
                 state: "not_placed";
                 /** @enum {string} */
-                reason: "no_batch_area" | "no_area_reference" | "no_stated_crs" | "transform_unavailable";
+                reason: "no_batch_area" | "no_area_reference" | "no_area_extent" | "no_stated_crs" | "transform_unavailable" | "outside_area";
                 words: string;
             };
             /** @enum {string} */

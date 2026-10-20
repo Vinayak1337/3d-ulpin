@@ -29,5 +29,5 @@
     "Admission waits while the batch has no area and a map file of the batch is still being drafted, because the site is a context pin of every reader job (proposal step 2). Part 0 is queued in the publishing transaction when that wait does not apply and the active cap allows; otherwise it is planned and the dispatcher admits it.",
     "A part failed because its context moved goes back to planned and is enrolled again under the fresh pin (new job id); accepted parts are never rewritten."
   ],
-  "notRun": "Python reader tests: neither E:/Projects/3d-ulpin/.venv nor venv-k3a-geo exists with rasterio/laspy on this PC; no Docker for this task."
+  "notRun": "Step 0 plan only. Python reader tests: E:/Projects/3d-ulpin/.venv is absent and venv-k3a-geo lacks rasterio and laspy; result.json records the run with E:/BhuAayam-data/ml/venv-vision. No Docker for this task."
 }
