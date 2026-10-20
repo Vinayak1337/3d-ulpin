@@ -264,7 +264,7 @@
     "packages/server/src/modules/datasets/reference-import/source-adapters.ts": "17946691bff30ab3d3cab490165f68a40392bbde0138e4dcfcdace72efba0e4f",
     "packages/server/src/modules/datasets/reference-import/source-normalizer.ts": "b42d349c616f2fd83d59c9af54bf2e0194e01afbfaa92ec8f4205f5d99f9b505",
     "packages/server/src/modules/datasets/reference-import/survey-assets.ts": "2cc180c8d89e3ccc14503f8eb67f4cd4b07f47c5307109d63a6bff7c3a2479d4",
-    "packages/server/src/modules/model-gateway/adapter.ts": "bea7f11b69ff0a44989a7c48dfd52d719811ecb933228546c610279dbac46a0b",
+    "packages/server/src/modules/model-gateway/adapter.ts": "8277eb7810c9ffc4ac292ff57b5fa97c904222bb59d9fcf16aad0d68f0f38877",
     "packages/server/src/modules/model-gateway/config.ts": "7c402b9925e000a9b10ea6c82aaf61a862b96c7a027e58701346329e07e88fba",
     "packages/server/src/modules/model-gateway/gateway.ts": "0a88d1a13a67b1f9cf6cd7a77f5a5174f36afbf353dfd188d37fe8c633ef3026",
     "packages/server/src/modules/model-gateway/ledger.ts": "20e377ac5f886b0a70d40ae66a5b0c0c337b8615de0a6e93db6d34bb03cf14ea",

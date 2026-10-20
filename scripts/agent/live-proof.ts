@@ -148,7 +148,8 @@ function plannedRequest(spec: RequestSpec, tariff: Tariff): NonNullable<PlannedS
   const { policy } = tariff;
   const { body, bytes } = gatewayBody(spec, policy);
   const inputEstimate = Number((BigInt(bytes) + BYTES_PER_TOKEN_ESTIMATE - 1n) / BYTES_PER_TOKEN_ESTIMATE);
-  const outputEstimate = Math.ceil(policy.maxOutputTokens / 2);
+  // The full output maximum: on 21 October every live answer used all of it (LP4), so half was an underestimate.
+  const outputEstimate = policy.maxOutputTokens;
   const inputUpperBound = bytes + GATEWAY_TOKEN_ALLOWANCE;
   const estimate = cost({ promptTokens: inputEstimate, completionTokens: outputEstimate }, policy.price);
   const upperBound = cost({ promptTokens: inputUpperBound, completionTokens: policy.maxOutputTokens }, policy.price);
@@ -493,7 +494,8 @@ const TOKEN_METHOD = {
   inputEstimate: 'bytes of the body the gateway measures (messages, schema, model, output maximum) divided by 3',
   inputEstimateError: 'not measured: 3 bytes per token is an assumption until the first receipt gives the ratio',
   inputUpperBound: "body bytes + 2048, the gateway's own admission rule (one token per byte at worst)",
-  outputEstimate: 'half the configured output maximum; reasoning tokens are billed as output',
+  outputEstimate: 'the configured output maximum, as an upper bound: the first live run (LP4) used all of it on '
+    + 'every call; the gateway now sends reasoning off, and reasoning tokens would be billed as output',
   outputUpperBound: 'the configured output maximum (max_tokens in the request)',
   held: "the ledger's reservation per call: the bound's prompt maximum and the output maximum, plus the cushion",
   paise: 'every rupee figure is rounded up to the next paisa',
