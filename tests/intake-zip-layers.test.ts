@@ -4,7 +4,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { PoolClient } from 'pg';
 import { zipSync } from 'fflate';
-import { ArchiveMemberLineageSchema, type IntakeCard } from '../packages/contracts/src/usp/intake';
+import { ArchiveMemberLineageSchema, ZIP_LAYER_LIMITS, type IntakeCard } from '../packages/contracts/src/usp/intake';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { locateZipMember, readZipMember, streamZipMember }
   from '../packages/server/src/modules/usp/ingestion/intake-zip';
@@ -365,15 +365,19 @@ test('a member streamed in ranges yields the bytes the whole read does; a damage
     for (const name of Object.keys(real)) {
       const chunks: Uint8Array[] = [];
       const located = await locateZipMember(reader(pack), pack.length, name);
-      for await (const chunk of streamZipMember(reader(pack), located)) chunks.push(chunk);
+      const stream = streamZipMember(reader(pack), located, ZIP_LAYER_LIMITS.memberBytes);
+      for await (const chunk of stream) chunks.push(chunk);
       assert.equal(sha(Buffer.concat(chunks)), sha(real[name as keyof typeof real]));
     }
   }
   const damaged = Buffer.from(zipSync({ 'a.geojson': real['uttam/block-boundary.geojson'] }));
   damaged[60] ^= 0xff;
   const located = await locateZipMember(reader(damaged), damaged.length, 'a.geojson');
-  await assert.rejects(async () => { for await (const _ of streamZipMember(reader(damaged), located)); },
-    /^Error: ZIP_MEMBER_INTEGRITY$/);
+  const drain = (maxBytes: number) => async () => {
+    for await (const _ of streamZipMember(reader(damaged), located, maxBytes));
+  };
+  await assert.rejects(drain(ZIP_LAYER_LIMITS.memberBytes), /^Error: ZIP_MEMBER_INTEGRITY$/);
+  await assert.rejects(drain(located.entry.size - 1), /^Error: ZIP_LAYER_SIZE$/);
 });
 
 // ZL1. A 20 MiB GeoJSON layer made in the test by repeating one real Google Open Buildings feature (test_only).

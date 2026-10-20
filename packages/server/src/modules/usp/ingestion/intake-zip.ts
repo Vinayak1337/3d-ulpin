@@ -313,11 +313,13 @@ export async function readZipMember(read: IntakeRangeReader, size: number, path:
 
 /**
  * ZL1. Streams a located member's bytes in order: its compressed bytes are read in 1 MiB ranges and inflated as a
- * stream, so neither the member nor its compressed bytes are held whole. Nothing past the directory's size is
- * inflated; the size and CRC-32 are checked after the last chunk, before the stream ends.
+ * stream, so neither the member nor its compressed bytes are held whole. A member past `maxBytes` is refused before
+ * any read and nothing past the directory's size is inflated; the size and CRC-32 are checked after the last chunk,
+ * before the stream ends.
  */
-export async function* streamZipMember(read: IntakeRangeReader, member: ZipMemberLocation) {
+export async function* streamZipMember(read: IntakeRangeReader, member: ZipMemberLocation, maxBytes: number) {
   const { entry } = member;
+  if (entry.size > maxBytes || entry.compressed > maxBytes + RANGE_BYTES) throw new Error('ZIP_LAYER_SIZE');
   if (entry.method !== 0 && entry.method !== 8) throw new Error('ZIP_COMPRESSION_UNSUPPORTED');
   const start = await memberDataOffset(read, entry, member.directoryOffset);
   const compressed = Readable.from((async function* () {

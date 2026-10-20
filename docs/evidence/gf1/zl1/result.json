@@ -1,0 +1,47 @@
+{
+  "task": "ZL1",
+  "gate": "GF1",
+  "base": "7231538c",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers (the job authority's statements included), an in-memory stand-in for the /uploads byte receipt, the real probe and real repository inputs. No database, object store, processor, dispatcher loop or served HTTP walk was run; AU2 marks G12 as needing a runtime walk, which this task does not claim.",
+  "defect": "AU2 G12: a ZIP holding one GeoJSON layer over ZIP_LAYER_LIMITS.memberBytes (16 MiB) yielded no map; keepLayer refused the member ZIP_LAYER_SIZE and only the ZIP item's words remained.",
+  "decisions": [
+    "D1 intake-zip.ts: readZipMember's directory lookup is split out as locateZipMember (same guards, same codes); streamZipMember reads the member's compressed bytes in 1 MiB ranges, inflates them as a stream (createInflateRaw), refuses a member past maxBytes before any data read, never inflates past the directory's size and checks size and CRC-32 after the last chunk (ZIP_MEMBER_INTEGRITY). readZipMember keeps its behaviour.",
+    "D1 intake-zip-layers.ts keepLargeLayer: a member above 16 MiB and within STREAMING_VECTOR_LIMITS.sourceBytes (128 MiB, equal to LARGE_ORIGINAL_LIMITS.maxOriginalBytes) is streamed twice from the archive object: pass 1 hashes it and checks size and CRC-32; pass 2 regroups the chunks into 8 MiB byte parts and drives LargeOriginalService (create, claimPart, receivePart, finalize; failPart on a failed part, abort on any failure) exactly as Studio's /uploads client does (mediaType application/octet-stream, provenance origin not_stated). The receipt re-hashes the parts and refuses a mismatch, so bytes changed between passes keep nothing.",
+    "D1 lineage: the same zip-layer/1 record the small path writes (parent source, revision, SHA-256, item, member path, ordinal, member bytes, compressed bytes, CRC-32, member SHA-256), with memberBytes bounded by the large ceiling, is merged into the child's sources.inspection as archiveMember in the transaction that links the member item to the child, before the child is enrolled.",
+    "D2 the child is a large-original-v1 source enrolled through the same register call as any other layer, so intake-draft.ts queues queueIntakeLargeTx for it unchanged. Members at or under 16 MiB take keepLayer's former path; only the size branch moved ahead of the read setup.",
+    "D3 notKept now names the member's size: ZIP_LAYER_SIZE for a member over 128 MiB ('kept inside the archive; members above 134217728 bytes are not kept as their own original'), UPLOAD_QUOTA when the receipt allowance is full ('enrol the archive again to retry once a receipt is free'); a CRC or size mismatch says ZIP_MEMBER_INTEGRITY. No silent skip.",
+    "D4 zipParentWords is unchanged; a large layer counts as taken in like any other. No new state, column, schema step or contract field (ZIP_LAYER_LIMITS untouched).",
+    "Worker: the large copy reads for longer than one lease, so the job's range reads renew the attempt at most once a minute, in addition to the existing renew before each retain and enrolment."
+  ],
+  "memory": {
+    "claim": "The copy never holds the member whole: at most one 1 MiB compressed range, the inflater's output chunk and one 8 MiB byte part, about 9 MiB for a member of up to 128 MiB.",
+    "howMeasured": "Structurally, in the 20 MiB test: a wrapping reader records the widest range the copy asks for (asserted 1 MiB), and the receipt stand-in records each part it is handed (asserted [8 MiB, 8 MiB, rest]) and hashes them as they pass, keeping none. No process heap sample was taken."
+  },
+  "tests": {
+    "server": {
+      "command": "D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts packages/server/src/modules/areas/*.test.ts packages/server/src/modules/officer/*.test.ts tests/manual-author.test.ts tests/ingestion-events.test.ts packages/server/src/modules/cases/processing.test.ts tests/usp-packet-pdf.test.ts tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts",
+      "before": { "tests": 362, "pass": 360, "fail": 0, "skipped": 2, "note": "derived: the base run was not repeated after the earlier stop; the only test change is four added tests in tests/intake-zip-layers.test.ts" },
+      "after": { "tests": 366, "pass": 364, "fail": 0, "skipped": 2 },
+      "changed": [
+        "tests/intake-zip-layers.test.ts: a member streamed in ranges (stored and deflated) yields the bytes the whole read does; a damaged deflate stream stops ZIP_MEMBER_INTEGRITY; a member past maxBytes stops ZIP_LAYER_SIZE.",
+        "tests/intake-zip-layers.test.ts: a real three-layer ZIP plus a 20 MiB GeoJSON member keeps the three small layers on the whole-member retain and the large one through the byte receipt with its name, size and SHA-256, the zip-layer/1 lineage (ordinal 4) on the child, the member item linked, every child enrolled after all are kept, and the ZIP's words counting four layers.",
+        "tests/intake-zip-layers.test.ts: a flipped CRC-32 in the large member's directory entry opens no receipt and leaves ZIP_MEMBER_INTEGRITY words; a member over 128 MiB opens no receipt and leaves ZIP_LAYER_SIZE words with its size; a full receipt allowance (UPLOAD_QUOTA) leaves words with its size and a later enrolment queues the job again."
+      ]
+    },
+    "typecheckBackend": { "command": "pnpm typecheck:backend", "after": 0 },
+    "studioTypecheck": { "command": "pnpm studio:typecheck", "after": 0 },
+    "studioTest": { "command": "pnpm studio:test", "after": "545 passed, 1 skipped (studio 478, scene 58 + 1 skipped, ui 7, api-client 2); Studio unchanged" },
+    "openapi": { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeRefresh": "1: docs/api/source-pins.json stale", "after": 0, "regenerated": "scripts/api/refresh-contract.ts 7231538c repinned intake-zip.ts, intake-zip-layers.ts, intake-zip-layers-worker.ts; pnpm studio:api-types produced no change; scripts/api/check.py exit 0 (314 operations, 356 schemas)" },
+    "diffCheck": { "command": "git diff --check", "after": 0 }
+  },
+  "realInputs": [
+    "fixtures/google-uttam (OSM / Google Open Buildings layers and README, test_only), zipped in the tests and never committed",
+    "the 20 MiB member is one real Google Open Buildings feature from that fixture repeated in the test (test_only), stored uncompressed because a repeated feature deflates past the probe's ratio bound"
+  ],
+  "limits": [
+    "The lineage is merged into the child's inspection in a transaction after finalize, because large-original.ts is not this task's to edit; a crash between the two leaves a retained child without its archiveMember record and the member unlinked, and a later enrolment would keep the member again as a second original. Folding the lineage into finalize is a seam in large-original.ts.",
+    "The large copy is proved with a stored member; deflated streaming is proved on the small real layers.",
+    "Shapefile ZIPs, nested ZIPs, the 64-layer cap and the Studio are unchanged."
+  ]
+}

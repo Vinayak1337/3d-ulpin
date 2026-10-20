@@ -319,16 +319,16 @@ async function keepLargeLayer(caseId: string, parentItemId: string, archive: Int
     dependencies.read(archive.object_key, start, end, size, deadline, signal);
   const located = await locateZipMember(read, size, member.member_path);
   const { entry } = located;
-  if (entry.size > STREAMING_VECTOR_LIMITS.sourceBytes) throw new Error('ZIP_LAYER_SIZE');
+  const stream = () => streamZipMember(read, located, STREAMING_VECTOR_LIMITS.sourceBytes);
   const hash = createHash('sha256');
-  for await (const chunk of streamZipMember(read, located)) hash.update(chunk);
+  for await (const chunk of stream()) hash.update(chunk);
   const file = { name: layerName(member), bytes: entry.size, sha256: hash.digest('hex') };
   const lineage = LargeLayerLineageSchema.parse({ version: 'zip-layer/1', parentSourceId: archive.id,
     parentSourceRevision: archive.revision, parentSha256: archive.sha256, parentItemId,
     memberPath: member.member_path, ordinal: located.ordinal, memberBytes: entry.size,
     compressedBytes: entry.compressed, crc32: entry.crc, memberSha256: file.sha256 });
   const sourceId = await fenced(caseId, dependencies, revision =>
-    receiveLargeLayer(caseId, revision, file, byteParts(streamZipMember(read, located)), dependencies));
+    receiveLargeLayer(caseId, revision, file, byteParts(stream()), dependencies));
   await dependencies.transaction(async client => {
     await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('archiveMember',$2::jsonb)
       WHERE id=$1 AND profile='large-original-v1'`, [sourceId, lineage]);
