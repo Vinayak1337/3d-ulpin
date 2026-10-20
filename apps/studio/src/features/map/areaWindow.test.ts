@@ -163,7 +163,7 @@ describe('a picked footprint', () => {
   it('links a proposal to the batch of its case, keeps its identifier and register; a record has no such line', () => {
     const markup = proposal('c-1');
     expect(markup).toContain('Proposed in a batch, not yet confirmed.');
-    expect(markup).toContain('href="/studio/work/cases/c-1/intake">Open batch to confirm</a>');
+    expect(markup).toMatch(/<a href="\/studio\/work\/cases\/c-1\/intake"[^>]*>Open batch to confirm<\/a>/);
     expect(markup).toContain('B-2');
     expect(markup).toContain('>Open register</a>');
     const recorded = inspector('building');
