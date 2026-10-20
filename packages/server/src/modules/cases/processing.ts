@@ -20,6 +20,7 @@ import {runIntakeLargeJob} from '../usp/ingestion/intake-large-worker';
 import {runIntakeZipLayersJob} from '../usp/ingestion/intake-zip-layers-worker';
 import {runIntakePageImageJob} from '../usp/ingestion/intake-page-image-worker';
 import {runIntakeNativeDerivativeJob} from '../usp/ingestion/intake-native-derivative-worker';
+import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
 import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
@@ -43,6 +44,7 @@ let intakeLargeWorker:Promise<void>|undefined;
 let intakeZipLayersWorker:Promise<void>|undefined;
 let intakePageImageWorker:Promise<void>|undefined;
 let intakeNativeDerivativeWorker:Promise<void>|undefined;
+let intakeEvidenceWorker:Promise<void>|undefined;
 let intakeRunWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
@@ -375,6 +377,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
           // The fenced attempt and each child's lineage own recovery; a rerun keeps no layer twice.
           .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{intakeNativeDerivativeWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-evidence'){
+        if(!intakeEvidenceWorker)intakeEvidenceWorker=runIntakeEvidenceJob(job.id)
+          // The fenced attempt and the reading's coverage row own recovery; a rerun replaces its candidates.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{intakeEvidenceWorker=undefined;});
         return;
       }
       if(job.operation==='intake-run'){

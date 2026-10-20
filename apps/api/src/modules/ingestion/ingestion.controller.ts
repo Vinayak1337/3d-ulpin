@@ -12,13 +12,14 @@ import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifest
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
   IntakeKeyProfileInputSchema, IntakeKeyProfileSchema } from '@ulpin/contracts/usp';
 import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake-zip-layers';
+import { declareIntakeKeyProfile, readIntakeEvidence } from '@ulpin/server/modules/usp/ingestion/intake-evidence';
 import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake-large';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
 import { binary, jsonBody, multipartBody, wireResponse } from '../intake/wire-schemas';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
-import { intakeEvidenceNotBuilt, strictQuery } from './intake-run.controller';
+import { strictQuery } from './intake-run.controller';
 
 const param = (name: string) => ApiParam({name,schema:{type:'string',format:'uuid'}});
 const registrySchema=z.object({version:z.literal('manual-geojson/1'),conversions:z.array(z.object({id:z.string(),target:z.string(),inputUnit:z.string(),outputUnit:z.string(),semantics:z.string()})),limitations:z.array(z.string())});
@@ -201,25 +202,22 @@ export class IngestionController {
   @ApiQuery({name:'outcome',required:false,enum:IntakeEvidenceOutcomeSchema.options})
   @ApiQuery({name:'cursor',required:false,schema:{type:'string',format:'uuid'}})
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_evidence',
-    summary:'Read exact-key profiles, source coverage and candidate table rows and document parts for the batch; '
-      +'answers 501 until the evidence pass is built'})
-  @wireResponse(200,IntakeEvidencePageSchema,[501])
+    summary:'Read exact-key profiles, source coverage, stored evidence confirmations and a page of candidate '
+      +'table rows and document parts for the batch, with counts by outcome'})
+  @wireResponse(200,IntakeEvidencePageSchema)
   intakeEvidence(@Param('caseId') caseId:string,@Req() request:Request){
-    z.uuid().parse(caseId);
-    strictQuery(request.originalUrl,IntakeEvidenceQuerySchema,['outcome','cursor'],'INTAKE_EVIDENCE_QUERY',
+    const query=strictQuery(request.originalUrl,IntakeEvidenceQuerySchema,['outcome','cursor'],'INTAKE_EVIDENCE_QUERY',
       'Use one optional outcome and cursor, and no other query fields.');
-    return intakeEvidenceNotBuilt('Reading batch evidence');
+    return readIntakeEvidence(caseId,query);
   }
 
   @Post('cases/:caseId/intake/evidence/key-profiles')
   @HttpCode(201) @param('caseId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_evidence_key_profiles',
-    summary:'Declare which map field and table columns or documents carry one exact literal key; '
-      +'answers 501 until the evidence pass is built'})
-  @jsonBody(IntakeKeyProfileInputSchema) @wireResponse(201,IntakeKeyProfileSchema,[501])
+    summary:'Declare which map field and table columns or documents carry one exact literal key, and queue '
+      +'every named source to be read under it'})
+  @jsonBody(IntakeKeyProfileInputSchema) @wireResponse(201,IntakeKeyProfileSchema)
   async keyProfile(@Param('caseId') caseId:string,@Req() request:Request){
-    z.uuid().parse(caseId);
-    IntakeKeyProfileInputSchema.parse(await readJsonBody(request,JSON_BODY_LIMIT));
-    return intakeEvidenceNotBuilt('Declaring an exact key');
+    return declareIntakeKeyProfile(caseId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 }

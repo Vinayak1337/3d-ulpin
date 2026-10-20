@@ -40529,25 +40529,6 @@
               }
             }
           },
-          "501": {
-            "description": "Rejected or unavailable operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
-                }
-              }
-            },
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "description": "Server request identifier."
-              }
-            }
-          },
           "503": {
             "description": "Rejected or unavailable operation",
             "content": {
@@ -40568,7 +40549,7 @@
             }
           }
         },
-        "summary": "Read exact-key profiles, source coverage and candidate table rows and document parts for the batch; answers 501 until the evidence pass is built",
+        "summary": "Read exact-key profiles, source coverage, stored evidence confirmations and a page of candidate table rows and document parts for the batch, with counts by outcome",
         "tags": [
           "manual ingestion"
         ],
@@ -40760,25 +40741,6 @@
               }
             }
           },
-          "501": {
-            "description": "Rejected or unavailable operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
-                }
-              }
-            },
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "description": "Server request identifier."
-              }
-            }
-          },
           "503": {
             "description": "Rejected or unavailable operation",
             "content": {
@@ -40799,7 +40761,7 @@
             }
           }
         },
-        "summary": "Declare which map field and table columns or documents carry one exact literal key; answers 501 until the evidence pass is built",
+        "summary": "Declare which map field and table columns or documents carry one exact literal key, and queue every named source to be read under it",
         "tags": [
           "manual ingestion"
         ],
@@ -42088,25 +42050,6 @@
               }
             }
           },
-          "501": {
-            "description": "Rejected or unavailable operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
-                }
-              }
-            },
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "description": "Server request identifier."
-              }
-            }
-          },
           "503": {
             "description": "Rejected or unavailable operation",
             "content": {
@@ -42127,7 +42070,7 @@
             }
           }
         },
-        "summary": "Confirm exact-key table rows and document parts as cited candidates for named buildings, with every source, coverage, candidate and package pin; answers 501 until the citation step is built",
+        "summary": "Confirm exact-key table rows and document parts as cited candidates for named buildings, with every source, coverage, candidate and package pin; a stale pin is refused. It is stored only: nothing is written to the registry until the citation step",
         "tags": [
           "private intake run"
         ],
@@ -372535,6 +372478,61 @@
               "additionalProperties": false
             }
           },
+          "confirmations": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "confirmationId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "profileId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "additions": {
+                  "type": "string",
+                  "enum": [
+                    "citations",
+                    "no_additions"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "newerSources": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "description": "Sources read under the profile after it that the confirmation neither includes nor excludes."
+                }
+              },
+              "required": [
+                "confirmationId",
+                "profileId",
+                "additions",
+                "createdAt",
+                "expiresAt",
+                "newerSources"
+              ],
+              "additionalProperties": false
+            }
+          },
           "sources": {
             "maxItems": 100,
             "type": "array",
@@ -373201,6 +373199,7 @@
         "required": [
           "caseId",
           "profiles",
+          "confirmations",
           "sources",
           "candidates",
           "counts",
@@ -375931,6 +375930,18 @@
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "registryWritten": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "AU4-B2 stores the confirmation only; the citation step writes later."
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
           }
         },
         "required": [
@@ -375940,7 +375951,9 @@
           "input",
           "subject",
           "expiresAt",
-          "createdAt"
+          "createdAt",
+          "registryWritten",
+          "note"
         ],
         "additionalProperties": false
       },
