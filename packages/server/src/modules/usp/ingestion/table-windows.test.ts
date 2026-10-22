@@ -443,7 +443,8 @@ async function keptTable(file: string, chosen: typeof selection | typeof workboo
   const profile = TabularSourceProfileSchema.parse(
     await service.tableFromOriginal(store.caseId, store.sourceId, request));
   assert.ok(profile.records > 0, file);
-  assert.deepEqual(profile.tabular.selection, chosen);
+  const expectedSelection = chosen.format === 'csv' ? { ...chosen, delimiter: ',', encoding: 'utf-8' } : chosen;
+  assert.deepEqual(profile.tabular.selection, expectedSelection);
   assert.deepEqual([store.jobs.length, store.caseRevision, store.source.profile], [0, 1, 'large-original-v1']);
   assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), profile, 'replayed');
   assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', profile), []);

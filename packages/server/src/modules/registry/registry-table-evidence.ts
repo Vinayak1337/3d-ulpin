@@ -75,12 +75,14 @@ export function wholeTableRow(row:IntakeTableRowLocator,bytes:Uint8Array){
 }
 /** The record's cells as the stream reader stores them, read by that reader from the record's own bytes placed
  * under its header row; the bytes must come back as exactly one whole record. */
-async function streamedCells(headers:string[],bytes:Uint8Array){
-  const header=Buffer.from(`${headers.map(name=>`"${name.replaceAll('"','""')}"`).join(',')}\n`);
+async function streamedCells(headers:string[],bytes:Uint8Array,selection:IntakeTableRowLocator['selection']){
+  const delimiter=selection.delimiter??',';
+  // Only the width is needed here. ASCII placeholders work unchanged in UTF-8 and Windows-1252.
+  const header=Buffer.from(`${headers.map((_,column)=>`column${column}`).join(delimiter)}\n`);
   const rows:TableWindowRow[]=[];
   await readTabularWindows(Readable.from([header,Buffer.from(bytes)]),async(window,names)=>{
     rows.push(...windowRows(window,names));
-  });
+  },{delimiter,encoding:selection.encoding??'utf-8'});
   if(rows.length!==1||rows[0].byteStart!==header.length||rows[0].byteEnd!==header.length+bytes.length)
     conflict('The cited byte range is not exactly one record of the table.');
   return rows[0].cells.map((value):Cell=>value===null?{state:'absent'}:{state:'literal',value});
@@ -90,7 +92,7 @@ async function streamedCells(headers:string[],bytes:Uint8Array){
 export async function windowedTableRow(row:Windowed,headers:string[],bytes:Uint8Array){
   if(bytes.length!==row.window.byteEnd-row.window.byteStart||sha256(bytes)!==row.window.sha256)
     conflict('The cited byte range of the original differs from its window.');
-  const cells=await streamedCells(headers,bytes);
+  const cells=await streamedCells(headers,bytes,row.selection);
   return rowExcerpt(headers,assertRowCells(row,headers,cells),row.columnIndex);
 }
 /** Dependencies whose calls share one record of reads; ones that already hold it are returned as they are. */

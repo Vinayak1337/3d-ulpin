@@ -1,23 +1,20 @@
 """Strict native level schedules propose typed facts with exact row/cell locators."""
 import csv
-import io
 import math
 
 from shapely import from_wkt
 
 from .validation import InputError
+from .delimited_text import table_dict_reader, table_reading
 
 
-def extract_reference_table(raw):
+def extract_reference_table(raw: bytes) -> dict:
     """Preserve complete logical CSV rows as references without proposing geometry facts."""
-    try:
-        text = raw.decode("utf-8-sig")
-    except UnicodeDecodeError:
-        raise InputError("CSV reference table must be UTF-8.") from None
+    text, reading = table_reading(raw)
     if len(text) > 250_000 or "\x00" in text:
         raise InputError("CSV reference table exceeds 250,000 characters or contains binary null bytes.")
     try:
-        reader = csv.DictReader(io.StringIO(text, newline=""), strict=True)
+        reader = table_dict_reader(text, reading["delimiter"])
         header = reader.fieldnames
         if not header or len(header) > 64 or len(header) != len(set(header)) or any(not key or len(key) > 150 for key in header):
             raise InputError("CSV reference table needs a unique, bounded header.")
@@ -35,19 +32,16 @@ def extract_reference_table(raw):
         raise InputError("CSV reference table could not be parsed without ambiguity.") from None
     if not parts:
         raise InputError("CSV reference table contains no data rows.")
-    return {"parts": parts, "candidates": [], "characterCount": len(text),
+    return {**reading, "parts": parts, "candidates": [], "characterCount": len(text),
             "status": "needs_input", "warnings": ["CSV rows are retained references only; field meaning and target applicability require review."]}
 
 
-def extract_schedule(raw):
+def extract_schedule(raw: bytes) -> dict:
     from .area import _geometry, _json_geometry
-    try:
-        text = raw.decode("utf-8-sig")
-    except UnicodeDecodeError:
-        raise InputError("CSV schedule must be UTF-8.") from None
+    text, reading = table_reading(raw)
     if len(text) > 250_000 or "\x00" in text:
         raise InputError("CSV schedule exceeds 250,000 text characters or contains binary null bytes.")
-    reader = csv.DictReader(io.StringIO(text), strict=True)
+    reader = table_dict_reader(text, reading["delimiter"])
     header = reader.fieldnames
     allowed = {"alias", "label", "level", "lower", "upper", "unit", "benchmark", "method", "footprint_wkt", "frame"}
     if not header or len(header) != len(set(header)) or not set(header).issubset(allowed) or not {"alias", "lower", "upper", "unit", "benchmark"}.issubset(header):
@@ -119,5 +113,5 @@ def extract_schedule(raw):
         raise InputError("CSV schedule could not be parsed without ambiguity.") from None
     if not parts:
         raise InputError("CSV level schedule contains no data rows.")
-    return {"parts": parts, "candidates": candidates, "questions": questions, "characterCount": len(text),
+    return {**reading, "parts": parts, "candidates": candidates, "questions": questions, "characterCount": len(text),
             "status": "needs_input" if questions else "ready", "warnings": ["Strict native level-schedule candidates require explicit building/space association and review. A benchmark string does not place local footprints in a geographic area."]}

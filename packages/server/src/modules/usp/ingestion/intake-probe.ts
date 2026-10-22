@@ -41,9 +41,9 @@ function initialCard(head: Uint8Array, name: string): IntakeCard {
     raster: null, point: null, citations: [] };
 }
 
-function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8Array = new Uint8Array()) {
+function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8Array = new Uint8Array(), name = '') {
   if (['geojson', 'geojson-seq', 'ndjson'].includes(card.format)) probeJson(card, head, size);
-  if (card.format === 'csv' || card.format === 'tsv') probeDelimited(card, head);
+  if (card.format === 'csv' || card.format === 'tsv') probeDelimited(card, head, name);
   if (card.format === 'shapefile') probeShapefile(card, head);
   if (card.format === 'dbf') probeDbf(card, head);
   if (card.format === 'pdf') probePdf(card, head, tail);
@@ -89,11 +89,12 @@ export async function probeOriginal(read: IntakeRangeReader, size: number, name:
   const tailStart = Math.max(head.length, size - limits.tailBytes);
   const tail = size > head.length ? await bounded.read(tailStart, size) : head;
   const card = initialCard(head, name);
-  probeHead(card, head, size, tail);
+  probeHead(card, head, size, tail, name);
   if (card.format === 'zip') {
     await probeZip(card, bounded.read, size, tail, async (memberHead, memberSize, memberName) => {
       const child = initialCard(memberHead, memberName);
-      probeHead(child, memberHead, memberSize, memberHead.length === memberSize ? memberHead : new Uint8Array());
+      probeHead(child, memberHead, memberSize, memberHead.length === memberSize ? memberHead : new Uint8Array(),
+        memberName);
       if (child.format === 'zip') {
         child.limits.push('Nested archive retained; its directory requires a child original.');
       }

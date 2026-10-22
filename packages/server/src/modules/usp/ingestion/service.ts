@@ -398,7 +398,7 @@ export class ManualIngestionService {
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
       throw new AppError(413,'FILE_SIZE',
         'Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
-    const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection,input);
+    const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection,input,file.name);
     if(input.format==='geojson')geojsonInventory(file.bytes);
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor,...(lineage?{lineage}:{})}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
@@ -491,7 +491,7 @@ export class ManualIngestionService {
     });
     if('job' in admitted)return admitted.job;
     if('profile' in admitted)return admitted.profile;
-    const read=admitted.row,inventory=inspectTabularSource(await wholeOriginal(read),input.selection,input);
+    const read=admitted.row,inventory=inspectTabularSource(await wholeOriginal(read),input.selection,input,read.name);
     return transaction(async client=>{
       await workspace(client,caseId,sourceId);
       const replay=await operation(client,caseId,key,digest);

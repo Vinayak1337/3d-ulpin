@@ -114,7 +114,7 @@ async function readOriginal(input: TableProfileInput, attempt: UspJobAttempt) {
   }, RENEW_MS);
   try {
     const inventory = await inspectTabularStream(object.body, { sha256: row.sha256, bytes },
-      input.request.selection, input.request);
+      input.request.selection, input.request, row.name);
     return { row, inventory };
   } finally {
     clearInterval(renew);

@@ -11,6 +11,7 @@ from PIL import Image
 from pypdf import PdfReader
 
 from .validation import InputError, MAX_FEATURES, frame, number, polygon, text
+from .delimited_text import table_dict_reader, table_reading
 
 MAX_BYTES = 16 * 1024 * 1024
 PROFILES = {"parcel-local-json-v1", "levels-csv-v1", "control-csv-v1", "plan-png-v1", "plan-pdf-v1"}
@@ -80,7 +81,8 @@ def _spatial(raw: bytes) -> dict:
 
 
 def _csv_rows(raw: bytes, required: list[str]) -> list[tuple[int, dict]]:
-    reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig"), newline=""), strict=True)
+    decoded, reading = table_reading(raw)
+    reader = table_dict_reader(decoded, reading["delimiter"])
     if not reader.fieldnames or len(set(reader.fieldnames)) != len(reader.fieldnames):
         raise InputError("CSV requires unique header names.")
     missing = set(required) - set(reader.fieldnames)
@@ -193,11 +195,15 @@ def inspect_bytes(profile: str, raw: bytes) -> dict:
         raise InputError("Source must be nonempty and at most 16 MiB.")
     processor = {"parcel-local-json-v1": _spatial, "levels-csv-v1": _levels, "control-csv-v1": _controls, "plan-png-v1": _png, "plan-pdf-v1": _pdf}[profile]
     try:
-        return processor(raw)
+        result = processor(raw)
+        if profile in ("levels-csv-v1", "control-csv-v1"):
+            _, reading = table_reading(raw)
+            result.update(reading)
+        return result
     except InputError as error:
         message = str(error)
     except (UnicodeError, json.JSONDecodeError, csv.Error):
-        message = "Source could not be parsed as the selected UTF-8 JSON/CSV profile. Check file contents and encoding."
+        message = "Source could not be parsed as the selected JSON/table profile. Check file contents and encoding."
     except Exception:
         if profile not in ("plan-png-v1", "plan-pdf-v1"):
             raise

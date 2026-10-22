@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import { INTAKE_PROBE_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
 import { profileColumns } from './column-profile';
 import { decodeIntakeHead } from './intake-signatures';
+import { chooseTableDelimiter } from './delimited-text';
 
 export function intakeColumns(rows: Record<string, unknown>[], names: string[]): IntakeCard['columns'] {
   const bounded = names.slice(0, INTAKE_PROBE_LIMITS.columns);
@@ -18,11 +19,12 @@ export function intakeColumns(rows: Record<string, unknown>[], names: string[]):
   }
 }
 
-export function probeDelimited(card: IntakeCard, head: Uint8Array) {
+export function probeDelimited(card: IntakeCard, head: Uint8Array, name = '') {
   const { text, encoding } = decodeIntakeHead(head);
   const completeLines = text.slice(0, text.lastIndexOf('\n') + 1);
+  const delimiter = chooseTableDelimiter(completeLines, name);
   const parsed = Papa.parse<string[]>(completeLines, { preview: INTAKE_PROBE_LIMITS.sampleRecords + 1,
-    skipEmptyLines: true, delimitersToGuess: [',', '\t', ';', '|'] });
+    skipEmptyLines: 'greedy', delimiter });
   const [headers, ...values] = parsed.data;
   card.encoding = encoding;
   if (!headers || ![',', '\t', ';', '|'].includes(parsed.meta.delimiter)) {

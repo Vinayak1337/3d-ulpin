@@ -1,16 +1,13 @@
 import type { IntakeCard } from '@ulpin/contracts/usp';
+import { decodeDelimitedText } from './delimited-text';
 
 type Kind = { format: string; family: IntakeCard['family'] };
 const kind = (format: string, family: Kind['family']): Kind => ({ format, family });
 
 export function decodeIntakeHead(bytes: Uint8Array): { text: string; encoding: string | null } {
-  let encoding = 'utf-8';
-  if (bytes[0] === 255 && bytes[1] === 254) encoding = 'utf-16le';
-  if (bytes[0] === 254 && bytes[1] === 255) encoding = 'utf-16be';
   try {
-    // Streaming decoding permits a multibyte character cut by the header boundary.
-    const text = new TextDecoder(encoding, { fatal: true }).decode(bytes, { stream: true });
-    return { text, encoding };
+    // A head is not the whole-file encoding receipt; a cut multibyte character is allowed here.
+    return decodeDelimitedText(bytes, true);
   } catch {
     return { text: '', encoding: null };
   }

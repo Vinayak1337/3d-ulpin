@@ -10,6 +10,7 @@ import { fingerprint } from '../../cases/domain';
 import { decodeColumnText, readColumnCsv } from './column-profile';
 import { profileTabularChunk } from './chunk-mapping-agent';
 import { profileTabularStream } from './tabular-stream';
+import { decodeTableBytes, detectDelimitedReading } from './delimited-text';
 
 type Part = { text: string; locator: { sheet: string; row: number; column: number; cellState: string } };
 export type TabularTable = { headers: string[]; rows: unknown[][]; sourceRows: number[];
@@ -162,7 +163,10 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
   try {
     if (selection.format === 'xlsx') table = workbookTable(bytes, selection);
     else {
-      const csv = readColumnCsv(decodeColumnText(bytes), TABULAR_LIMITS.rows);
+      const text = selection.encoding
+        ? decodeTableBytes(bytes, selection.encoding)
+        : decodeColumnText(bytes);
+      const csv = readColumnCsv(text, TABULAR_LIMITS.rows, selection.delimiter ?? ',');
       table = csv;
     }
   } catch (error) {
@@ -179,8 +183,12 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
 }
 
 export function inspectTabularSource(
-  bytes: Uint8Array, selection: TabularSelection, provenance: TabularProvenance = {},
+  bytes: Uint8Array, selection: TabularSelection, provenance: TabularProvenance = {}, name = '',
 ) {
+  if (selection.format === 'csv') {
+    const { delimiter, encoding } = detectDelimitedReading(bytes, name);
+    selection = { ...selection, delimiter, encoding };
+  }
   const admitted = admitTabularSource(sha256(bytes), bytes.length, provenance);
   const expected = selection.format === 'csv' ? 'text/csv' :
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -190,6 +198,10 @@ export function inspectTabularSource(
   const table = readTabularSource(bytes, selection);
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: table.headers,
     rows: table.rows.slice(0, 100), sourceRef: 'inventory', selection }).profile;
+  if (selection.format === 'csv') {
+    profile.delimiter = selection.delimiter;
+    profile.encoding = selection.encoding;
+  }
   const tabular = admittedPin(admitted, selection, bytes.length);
   return { tabular, headers: table.headers, records: table.rows.length, profile,
     schemaFingerprint: fingerprint({ selection, headers: table.headers, layout: profile.layoutFingerprint }),
@@ -199,12 +211,13 @@ export function inspectTabularSource(
 /** A case original's CSV or workbook above 16 MiB, read from its retained object as a stream against its byte
  * receipt. */
 export async function inspectTabularStream(body: Readable, receipt: { sha256: string; bytes: number },
-  selection: TabularSelection, provenance: TabularProvenance = {}) {
+  selection: TabularSelection, provenance: TabularProvenance = {}, name = '') {
   const admitted = admitTabularSource(receipt.sha256, receipt.bytes, provenance);
   if (admitted.kind !== 'case_original') {
     throw new AppError(422, 'TABULAR_FORMAT', 'Only a case original is read as a stream.');
   }
-  const read = await profileTabularStream(body, { selection, bytes: receipt.bytes });
+  const read = await profileTabularStream(body, { selection, bytes: receipt.bytes, detectReading: true, name });
+  if (selection.format === 'csv') selection = { ...selection, delimiter: read.delimiter, encoding: read.encoding };
   if (read.bytes !== receipt.bytes || read.sha256 !== receipt.sha256) {
     throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The original differs from its byte receipt.');
   }

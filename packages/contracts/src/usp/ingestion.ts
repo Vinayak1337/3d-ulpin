@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import {LegacyMappingTargetSchema} from '../canonical/targets';
-import { ColumnProfileDocumentSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
+import { ColumnProfileDocumentSchema, DelimitedReadingSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
 import { STREAMING_VECTOR_LIMITS, StreamingVectorInputSchema, StreamingVectorRequestSchema,
   StreamingVectorStatusSchema } from './streaming-vector';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
@@ -129,6 +129,7 @@ export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 200
 export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows: 1_000_000, windowRows: 10_000,
   recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
 export const TabularSelectionSchema = z.strictObject({
+  ...DelimitedReadingSchema.shape,
   format: z.enum(['csv', 'xlsx']), sheet: z.string().min(1).max(150), table: z.null(),
   headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),
 }).superRefine((value, ctx) => {

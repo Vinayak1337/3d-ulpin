@@ -1,16 +1,19 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { createWriteStream } from 'node:fs';
+import { createReadStream, createWriteStream } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { mkdir, mkdtemp, realpath, rm, statfs } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Transform, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
+import type { DelimitedReading } from '@ulpin/contracts';
 import { INTAKE_PROBE_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS as limits, TableCellMarkSchema,
   type TableCellMark, type TabularSelection } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
 import { profileTabularChunk } from './chunk-mapping-agent';
+import { bomEncoding, chooseTableDelimiter } from './delimited-text';
 
 /** One CSV record: its logical record number (the header is 1) and its byte range in the unchanged original,
  * the line ending excluded. Cells are the bytes as written, decoded; a cell past the end of a short row is absent. */
@@ -27,13 +30,18 @@ export type StreamedWorkbookRow = Omit<StreamedTabularRow, 'cells'> & { sheet: s
 export type StreamedTabularWindow<Row = StreamedTabularRow> = { index: number; rows: Row[]; byteStart: number;
   byteEnd: number; sha256: string };
 export type StreamedTableWindow = StreamedTabularWindow<StreamedTabularRow | StreamedWorkbookRow>;
-export type TableSource = { selection: TabularSelection; bytes: number };
+export type TableSource = { selection: TabularSelection; bytes: number; detectReading?: boolean; name?: string };
 export type StreamedTabularRead = { headers: string[]; records: number; windows: number; bytes: number;
-  sha256: string; notes?: string[] };
+  sha256: string; notes?: string[] } & DelimitedReading;
 type OnWindow<Row> = (window: StreamedTabularWindow<Row>, headers: string[]) => Promise<void>;
 
-const QUOTE = 0x22, COMMA = 0x2c, LF = 0x0a, CR = 0x0d;
-const utf8 = new TextDecoder('utf-8', { fatal: true });
+const QUOTE = 0x22, LF = 0x0a, CR = 0x0d;
+const cellDecoders = {
+  'utf-8': new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }),
+  'windows-1252': new TextDecoder('windows-1252', { ignoreBOM: true }),
+};
+type ByteReading = { delimiter: NonNullable<DelimitedReading['delimiter']>;
+  encoding: keyof typeof cellDecoders };
 const mib = (bytes: number) => Number((bytes / 1024 ** 2).toFixed(3));
 
 function malformed(sourceRow: number): never {
@@ -62,17 +70,20 @@ function recordTooLarge(sourceRow: number): never {
     `Record ${sourceRow} of this table is larger than ${mib(limits.recordBytes)} MiB.`);
 }
 
-function decodeCell(bytes: Buffer, quoted: boolean, sourceRow: number): string {
+function decodeCell(bytes: Buffer, quoted: boolean, sourceRow: number, reading: ByteReading): string {
   try {
-    const text = utf8.decode(bytes);
+    const text = cellDecoders[reading.encoding].decode(bytes);
+    if (text.includes('\0')) throw new Error('binary null');
     return quoted ? text.replaceAll('""', '"') : text;
   } catch {
-    throw new AppError(422, 'TABULAR_ENCODING', `Record ${sourceRow} of this table is not valid UTF-8 text.`);
+    throw new AppError(422, 'TABULAR_ENCODING',
+      `Record ${sourceRow} has invalid ${reading.encoding} text or a binary null byte.`);
   }
 }
 
 /** Parses one record from `start`; null when the bytes end first and more may follow. */
-function parseRecord(data: Buffer, start: number, final: boolean, sourceRow: number) {
+function parseRecord(data: Buffer, start: number, final: boolean, sourceRow: number, reading: ByteReading) {
+  const delimiter = reading.delimiter.charCodeAt(0);
   const cells: string[] = [];
   let at = start;
   while (true) {
@@ -86,17 +97,17 @@ function parseRecord(data: Buffer, start: number, final: boolean, sourceRow: num
         if (close + 1 === data.length && !final) return null;
         break;
       }
-      cells.push(decodeCell(data.subarray(at + 1, close), true, sourceRow));
+      cells.push(decodeCell(data.subarray(at + 1, close), true, sourceRow, reading));
       end = close + 1; next = data[end] ?? -1;
-      if (next !== COMMA && next !== LF && next !== CR && next !== -1) malformed(sourceRow);
+      if (next !== delimiter && next !== LF && next !== CR && next !== -1) malformed(sourceRow);
     } else {
       end = at;
-      while (end < data.length && data[end] !== COMMA && data[end] !== LF && data[end] !== CR) end++;
+      while (end < data.length && data[end] !== delimiter && data[end] !== LF && data[end] !== CR) end++;
       next = data[end] ?? -1;
       if (next === -1 && !final) return null;
-      cells.push(decodeCell(data.subarray(at, end), false, sourceRow));
+      cells.push(decodeCell(data.subarray(at, end), false, sourceRow, reading));
     }
-    if (next === COMMA) { at = end + 1; continue; }
+    if (next === delimiter) { at = end + 1; continue; }
     if (next === CR && end + 1 === data.length && !final) return null;
     const after = next === -1 ? end : next === CR && data[end + 1] === LF ? end + 2 : end + 1;
     return { cells, contentEnd: end, next: after };
@@ -116,8 +127,8 @@ function checkedHeaders(cells: string[]): string[] {
  * record bytes, or when the bytes between two of its records pass 1 MiB. Values stay exactly as written: no
  * trimming and no number or date reading; an empty cell stays empty. A record of blanks only is skipped, as the
  * whole-file reader skips it, and its number is kept by the next record. */
-export async function readTabularWindows(
-  body: Readable, onWindow: OnWindow<StreamedTabularRow>,
+async function readCsvWindows(
+  body: Readable, onWindow: OnWindow<StreamedTabularRow>, reading: ByteReading,
 ): Promise<StreamedTabularRead> {
   const hash = createHash('sha256');
   let carry: Buffer = Buffer.alloc(0), carryStart = 0, bytes = 0, logical = 0, records = 0, windows = 0;
@@ -141,15 +152,15 @@ export async function readTabularWindows(
     let at = 0;
     if (carryStart === 0 && data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf) at = 3;
     if (carryStart === 0 && (data[0] === 0xff && data[1] === 0xfe || data[0] === 0xfe && data[1] === 0xff)) {
-      throw new AppError(422, 'TABULAR_ENCODING', 'This table is written in UTF-16; it is read as UTF-8 only.');
+      utf16WindowRefusal();
     }
     while (at < data.length) {
-      const record = parseRecord(data, at, final, logical + 1);
+      const record = parseRecord(data, at, final, logical + 1, reading);
       if (!record) break;
       logical++;
       if (record.next - at > limits.recordBytes) recordTooLarge(logical);
-      if (!headers) headers = checkedHeaders(record.cells);
-      else if (record.cells.some(cell => cell.trim())) {
+      if (!headers && record.cells.some(cell => cell.trim())) headers = checkedHeaders(record.cells);
+      else if (headers && record.cells.some(cell => cell.trim())) {
         if (record.cells.length > headers.length) {
           throw new AppError(422, 'TABULAR_SCHEMA_DRIFT',
             `Record ${logical} of this table has more cells than its header names.`);
@@ -184,7 +195,59 @@ export async function readTabularWindows(
     throw new AppError(422, 'TABULAR_HEADER_REQUIRED', 'This table needs a header record and at least one record.');
   }
   await flush();
-  return { headers, records, windows, bytes, sha256: hash.digest('hex') };
+  return { headers, records, windows, bytes, sha256: hash.digest('hex'), ...reading };
+}
+
+function utf16WindowRefusal(): never {
+  throw new AppError(422, 'TABULAR_ENCODING', 'This table is UTF-16; this reader cannot make byte-range row ' +
+    'windows for UTF-16. The original is unchanged; a whole-file table up to 16 MiB can read it.');
+}
+
+/** Validate all bytes before choosing a single encoding; a late invalid UTF-8 byte changes the whole reading. */
+function csvProbe() {
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let valid = true, head = Buffer.alloc(0);
+  const take = (chunk: Buffer) => {
+    const remaining = 2 * limits.recordBytes + 4 - head.length;
+    if (remaining > 0) head = Buffer.concat([head, chunk.subarray(0, remaining)]);
+    if (bomEncoding(head)) utf16WindowRefusal();
+    if (valid) {
+      try { decoder.decode(chunk, { stream: true }); } catch { valid = false; }
+    }
+  };
+  const finish = (name: string): ByteReading => {
+    if (valid) {
+      try { decoder.decode(); } catch { valid = false; }
+    }
+    const encoding = valid ? 'utf-8' : 'windows-1252';
+    const start = head[0] === 0xef && head[1] === 0xbb && head[2] === 0xbf ? 3 : 0;
+    const text = new TextDecoder(encoding).decode(head.subarray(start), { stream: true });
+    return { encoding, delimiter: chooseTableDelimiter(text, name) };
+  };
+  return { take, finish };
+}
+
+/** Unpinned reads need a private byte copy for full UTF-8 validation. Pinned replays stream directly. */
+export async function readTabularWindows(body: Readable, onWindow: OnWindow<StreamedTabularRow>,
+  reading: DelimitedReading = {}, name = '', sourceBytes = 0): Promise<StreamedTabularRead> {
+  if (reading.encoding?.startsWith('utf-16')) utf16WindowRefusal();
+  if (reading.delimiter && (reading.encoding === 'utf-8' || reading.encoding === 'windows-1252')) {
+    return readCsvWindows(body, onWindow, { delimiter: reading.delimiter, encoding: reading.encoding });
+  }
+  const folder = await scratchFolder(sourceBytes, 'csv');
+  let copy: Readable | undefined;
+  try {
+    const path = join(folder, 'original.csv'), probe = csvProbe();
+    await spool(body, path, probe.take);
+    const detected = probe.finish(name);
+    copy = createReadStream(path);
+    const encoding = reading.encoding ?? detected.encoding;
+    if (encoding !== 'utf-8' && encoding !== 'windows-1252') utf16WindowRefusal();
+    return await readCsvWindows(copy, onWindow, { delimiter: reading.delimiter ?? detected.delimiter, encoding });
+  } finally {
+    copy?.destroy();
+    await rm(folder, { recursive: true, force: true, maxRetries: 3 });
+  }
 }
 
 const hex64 = z.string().regex(/^[a-f0-9]{64}$/), count = z.number().int().nonnegative();
@@ -245,8 +308,8 @@ const size = (bytes: number) => bytes < 1024 ** 3 ? `${mib(bytes)} MiB` : `${(by
 
 /** A private folder for one copy, in the private scratch the demo runtime gives its local readers
  * (ULPIN_DOCUMENT_OCR_SCRATCH, outside the repository), with room for the copy and 1 GiB more. */
-async function scratchFolder(bytes: number) {
-  const root = process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+async function scratchFolder(bytes: number, format: 'csv' | 'workbook' = 'workbook') {
+  const root = process.env.ULPIN_DOCUMENT_OCR_SCRATCH ?? (format === 'csv' ? tmpdir() : undefined);
   const outside = (path: string) => { const at = relative(settings.repositoryRoot, path);
     return at === '..' || at.startsWith(`..${sep}`) || isAbsolute(at); };
   if (!root || !isAbsolute(root) || !outside(resolve(root))) {
@@ -256,22 +319,23 @@ async function scratchFolder(bytes: number) {
   await mkdir(root, { recursive: true, mode: 0o700 });
   const folder = await realpath(root), disk = await statfs(folder), free = disk.bavail * disk.bsize;
   if (!outside(folder)) throw new AppError(503, 'TABULAR_SCRATCH_UNAVAILABLE', 'The scratch folder is inside the ' +
-    'repository; a workbook is never copied there. It was kept unchanged.');
+    'repository; an original is never copied there. It was kept unchanged.');
   if (free < bytes + 1024 ** 3) {
     throw new AppError(507, 'TABULAR_SCRATCH_SPACE', `The scratch folder has ${size(free)} free; reading this ` +
-      `${size(bytes)} workbook needs its size and 1 GiB more (${size(bytes + 1024 ** 3)}). It was kept unchanged.`);
+      `${size(bytes)} ${format} needs its size and 1 GiB more (${size(bytes + 1024 ** 3)}). It was kept unchanged.`);
   }
-  return mkdtemp(join(folder, 'table-workbook-'));
+  return mkdtemp(join(folder, `table-${format}-`));
 }
 
 /** Copies the original to a private file while counting and hashing it; a ZIP is read from its end, not a stream. */
-async function spool(body: Readable, path: string) {
+async function spool(body: Readable, path: string, onChunk?: (chunk: Buffer) => void) {
   const hash = createHash('sha256');
   let bytes = 0;
   await pipeline(body, new Transform({ transform(chunk: Buffer, _encoding, done) {
     bytes += chunk.length;
     if (bytes > limits.bytes) return done(sourceBudgetError());
     hash.update(chunk);
+    try { onChunk?.(chunk); } catch (error) { return done(error as Error); }
     done(null, chunk);
   } }), createWriteStream(path, { flags: 'wx', mode: 0o600 }));
   return { bytes, sha256: hash.digest('hex') };
@@ -361,7 +425,9 @@ export async function readWorkbookWindows(body: Readable, { selection, bytes }: 
 export function readTableWindows(body: Readable, source: TableSource,
   onWindow: OnWindow<StreamedTabularRow | StreamedWorkbookRow>) {
   return source.selection.format === 'xlsx' ? readWorkbookWindows(body, source, onWindow)
-    : readTabularWindows(body, onWindow);
+    : readTabularWindows(body, onWindow, source.detectReading ? {} : {
+      delimiter: source.selection.delimiter ?? ',', encoding: source.selection.encoding ?? 'utf-8',
+    }, source.name, source.bytes);
 }
 
 /** A workbook cell marked by the reader (a formula's stored result, an error, no value) is unknown, as in the
@@ -392,5 +458,6 @@ export async function profileTabularStream(body: Readable, source: TableSource) 
   });
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: read.headers, rows: first,
     sourceRef: 'inventory', selection: source.selection }).profile;
-  return { ...read, profile, streamCounts: counts };
+  return { ...read, profile: { ...profile,
+    ...(read.delimiter ? { delimiter: read.delimiter, encoding: read.encoding } : {}) }, streamCounts: counts };
 }
