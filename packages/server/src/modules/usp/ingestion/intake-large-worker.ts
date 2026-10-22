@@ -17,9 +17,10 @@ import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intake
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
 import { readIntakeDraftTx, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
-import { IntakePackageCutter, pairMappedFeatures, type IntakePackageCut,
-  type MappedPartFeature } from './intake-package-cuts';
-import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
+import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
+  type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
+import type { AreaFrame } from './intake-package-extent';
+import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
 import { StreamedProfileService } from './streamed-profile';
@@ -33,9 +34,14 @@ type State = NonNullable<Awaited<ReturnType<typeof largeStateKey>>>;
 type Outcome = 'more' | 'pressure' | 'stale' | 'end';
 type Fold = {
   readerJobId: string; mappingJobId: string; chunks: number; firstChunk: number; after: number; parts: number;
-  cutKey: string; held: number; pending: number[]; conflicts: Set<number>; metadata: Record<string, unknown>;
+  cutKey: string; held: IntakePartHeld; pending: HeldPartFeature[]; conflicts: Set<number>;
+  metadata: Record<string, unknown>; frame: AreaFrame | null;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
   recordsRead: number; readerRejected: number; started: number; kind: string;
+};
+const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
+  PART_FEATURE_VERTEX_BOUND: 'held', PART_FEATURE_INPUT_BOUND: 'held',
+  PART_FEATURE_EXTENT_BOUND: 'heldWide', PART_FEATURE_AREA_BOUND: 'heldOutside',
 };
 
 /** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
@@ -155,7 +161,17 @@ async function largeDestination(input: IntakeLargeInput, name: string, area: Map
     ...(destination.kind === 'existing_area' ? { areaId: destination.areaId } : {}) };
 }
 
-/** Resume after the last stored cut: its end locator, the next index and the held count through its end. */
+/** The reference the map processor places this file's packages in: its destination area's, once that has one. */
+async function destinationFrameTx(client: PoolClient, destination: ProvedAreaPartInput['destination'])
+  : Promise<AreaFrame | null> {
+  const [where, key] = destination.areaId ? ['id=$1', destination.areaId]
+    : ['seed_key=$1', `${destination.namespace}:${destination.name}`];
+  const reference = (await client.query(`SELECT reference FROM map_areas WHERE ${where}`, [key])).rows[0]?.reference;
+  if (typeof reference?.analysisCrs !== 'string' || !Array.isArray(reference.origin)) return null;
+  return { analysisCrs: reference.analysisCrs, origin: [Number(reference.origin[0]), Number(reference.origin[1])] };
+}
+
+/** Resume after the last stored cut: its end locator, the next index and the held counts through its end. */
 async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Promise<Fold> {
   const destination = await largeDestination(input, await sourceName(input), await intakeCaseArea(input.caseId));
   return pinned(input, attempt, async (client, state) => {
@@ -171,9 +187,11 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
       .flatMap(row => [Number(row.first_feature_index), Number(row.later_feature_index)]);
     const layout = (await client.query(`SELECT body->>'planHash' hash,body->'plan'->>'kind' kind
       FROM usp_mapping_recipes WHERE id=$1`, [recipe!.id])).rows[0];
+    const held = { held: Number(last?.counts.held ?? 0), heldWide: Number(last?.counts.heldWide ?? 0),
+      heldOutside: Number(last?.counts.heldOutside ?? 0) };
     return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id, chunks: Number(raw!.sealed_chunks),
       firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: state.store.parts,
-      cutKey: intakeLargeCutKey(state.store), held: Number(last?.counts.held ?? 0), pending: [],
+      cutKey: intakeLargeCutKey(state.store), held, pending: [], frame: await destinationFrameTx(client, destination),
       conflicts: new Set(conflicts), metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
       part: { sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
         readerVersion: 'geojson-stream/2', layoutHash: layout.hash, destination },
@@ -211,11 +229,17 @@ async function rawFeatures(fold: Fold, cut: IntakePackageCut): Promise<ProvedAre
   return features;
 }
 
+function countHeld(total: IntakePartHeld, items: HeldPartFeature[]): IntakePartHeld {
+  const sum = { ...total };
+  for (const item of items) sum[HELD_COUNT[item.code]]++;
+  return sum;
+}
+
 /** Held features up to a cut's last feature count with that cut; later ones wait for the next cut or the end. */
-function heldThrough(fold: Fold, cut: IntakePackageCut | undefined): number {
+function heldThrough(fold: Fold, cut: IntakePackageCut | undefined): IntakePartHeld {
   const end = cut ? cut.features.at(-1)!.raw.featureIndex : Infinity;
-  fold.held += fold.pending.filter(index => index < end).length;
-  fold.pending = fold.pending.filter(index => index > end);
+  fold.held = countHeld(fold.held, fold.pending.filter(held => held.featureIndex < end));
+  fold.pending = fold.pending.filter(held => held.featureIndex > end);
   return fold.held;
 }
 
@@ -224,9 +248,10 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
     FROM usp_intake_parts WHERE item_id=$1`, [input.itemId])).rows[0];
   const setAside = intakeLargeSetAside(fold.kind, state.source.inspection?.streamedGeometrySummary,
     fold.readerJobId, fold.recordsRead - fold.readerRejected);
+  const held = countHeld(fold.held, fold.pending);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
-    duplicates: fold.conflicts.size, oversized: fold.held + fold.pending.length, setAside },
+    duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide, outside: held.heldOutside, setAside },
   intakeLargePlan(state.store.recipe));
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
 }
@@ -264,17 +289,19 @@ function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
   };
 }
 
-/** Fold the sealed parts in order from the last stored cut; stop at eight unreviewed, the end or 60 seconds. */
+/** Fold the sealed parts in order from the last stored cut; stop at eight unreviewed, the end or 60 seconds.
+ * A destination area without a reference takes it from the first cut, so the step ends there and the next step
+ * cuts the rest in that stored reference, as a resumed fold would. */
 async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
   const fold = await foldContext(input, attempt), beat = heartbeat(input, attempt);
-  const cutter = new IntakePackageCutter(fold.metadata, { index: fold.parts, previous: fold.after });
+  const cutter = new IntakePackageCutter(fold.metadata, { index: fold.parts, previous: fold.after }, fold.frame);
   for (let index = fold.firstChunk; index < fold.chunks; index++) {
     for (const item of await pairedChunk(input, fold, index)) {
       const result = cutter.consume(item);
-      if (result.held) fold.pending.push(result.held.featureIndex);
+      if (result.held) fold.pending.push(result.held);
       if (!result.cut) continue;
       const outcome = await draftCut(input, attempt, fold, result.cut, false);
-      if (outcome !== 'more' || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+      if (outcome !== 'more' || !fold.frame || Date.now() - fold.started >= DRAFT_STEP_MS) return;
       await beat();
     }
     await beat();

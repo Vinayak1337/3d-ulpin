@@ -210,6 +210,13 @@ test('hold summaries use only nonzero clauses and no illustrative count', () => 
     + '2 share an identifier with another record and are held. 1 are larger than a package can hold and are held.');
 });
 
+test('features held for their extent are counted apart, each with its own reason', () => {
+  const counts = { recordsRead: 10, accepted: 6, packages: 2, readerRejected: 0, duplicates: 0, oversized: 0 };
+  assert.equal(intakeLargeHoldsReason({ ...counts, wide: 1, outside: 3 }),
+    '10 records read; 6 in 2 packages. 1 are wider than one map area (50 km or 1 degree across) and are held. '
+    + '3 lie outside the 50 km map area this batch places features in and are held.');
+});
+
 function ledger(initial: IntakeLargeState) {
   let row = { ...initial };
   let events = 0;

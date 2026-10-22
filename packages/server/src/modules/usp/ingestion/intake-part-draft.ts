@@ -10,6 +10,10 @@ import type { ProvedAreaPartInput } from './proved-area-part';
 import { isRetainedMapOriginal } from './retained-map-original';
 
 export const INTAKE_UNFINISHED_PACKAGE_LIMIT = 8;
+/** Features no package takes, counted through a cut's last feature: too large for any package (`held`), wider than
+ * one map area (`heldWide`), or outside the area the file is placed in (`heldOutside`). */
+export type IntakePartHeld = { held: number; heldWide: number; heldOutside: number };
+export const NO_HELD_FEATURES: Readonly<IntakePartHeld> = Object.freeze({ held: 0, heldWide: 0, heldOutside: 0 });
 
 /** Admission and publication share the item lock. */
 export async function assertIntakePackagePressureTx(client: PoolClient, itemId: string) {
@@ -59,9 +63,9 @@ async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, map
 }
 
 /** Sealed-only safe door: no targets exist before whole-file verification and global key closure.
- * `held` is the fold's count of features too large for any package, up to this cut's last feature. */
+ * `held` is the fold's count of features no package takes, up to this cut's last feature. */
 export async function draftIntakePartTx(client: PoolClient, itemId: string, mappingJobId: string,
-  input: ProvedAreaPartInput, held = 0) {
+  input: ProvedAreaPartInput, held: IntakePartHeld = NO_HELD_FEATURES) {
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-parts-case:${lookup.case_id}`]);
@@ -82,7 +86,7 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
   if (!prior) await assertIntakePackagePressureTx(client, itemId);
   const pkg = await ingestProvedAreaPart(input, client);
   const counts = { recordsSeen, features: input.features.length, accepted: pkg.features.length,
-    quarantined: pkg.quarantine?.rejected ?? 0, held,
+    quarantined: pkg.quarantine?.rejected ?? 0, ...held,
     rawBytes: input.features.reduce((sum, feature) => sum + feature.rawBytes.byteLength, 0) };
   await publishIntakePartTx(client, itemId, input.cutIndex, pkg, locator, counts);
   if (!prior) await createIntakeTargetsTx(client, item.case_id, itemId, pkg, input.sourceId);

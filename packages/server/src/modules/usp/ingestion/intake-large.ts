@@ -12,6 +12,8 @@ import { registerUspJobInputTx } from '../jobs';
 import { intakeCaseTx, intakeSourcePin, intakeSourceTx } from './intake-context';
 import { readIntakeDraftTx, unfinishedIntakePackagesTx, writeIntakeLargeTx,
   type IntakeLargeState } from './intake-ledger';
+import { AREA_NORMALIZER_EXTENT } from './intake-package-extent';
+import { INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import { stableUuid } from './intake-run';
 import { setAsideWords } from './registry';
 import { isRetainedMapOriginal } from './retained-map-original';
@@ -153,20 +155,27 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
   return { partsPlanned: null, partsDone: rows.reader?.next_publish_index ?? 0, recordsSeen };
 }
 
+/** `wide` features span more than any one map area; `outside` ones lie beyond the area the batch places into. */
 export type IntakeLargeCounts = {
   recordsRead: number; accepted: number; packages: number;
   readerRejected: number; duplicates: number; oversized: number; setAside?: GisSetAside;
+  wide?: number; outside?: number;
 };
+const AREA_KM = AREA_NORMALIZER_EXTENT.metres / 1000;
 
 /** All counts come from sealed reader/mapping rows, published part counts and the reader's own geometry summary,
  * not displayed sample records. */
 export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null {
-  if (!counts.readerRejected && !counts.duplicates && !counts.oversized
+  if (!counts.readerRejected && !counts.duplicates && !counts.oversized && !counts.wide && !counts.outside
     && counts.accepted === counts.recordsRead) return null;
   const sentences = [`${counts.recordsRead} records read; ${counts.accepted} in ${counts.packages} packages.`];
   if (counts.readerRejected) sentences.push(`${counts.readerRejected} not accepted by the reader.`);
   if (counts.duplicates) sentences.push(`${counts.duplicates} share an identifier with another record and are held.`);
   if (counts.oversized) sentences.push(`${counts.oversized} are larger than a package can hold and are held.`);
+  if (counts.wide) sentences.push(`${counts.wide} are wider than one map area (${AREA_KM} km or `
+    + `${AREA_NORMALIZER_EXTENT.degrees} degree across) and are held.`);
+  if (counts.outside) sentences.push(`${counts.outside} lie outside the ${AREA_KM} km map area this batch places `
+    + 'features in and are held.');
   const setAside = setAsideWords(counts.setAside);
   if (setAside) sentences.push(setAside);
   return sentences.join(' ');
@@ -393,6 +402,14 @@ export function intakeLargeFailureContext(store: IntakeLargeStore, source: Intak
   return { bytes: Number(source.bytes), crsWords: kept ? refusal.words : null };
 }
 
+/** Drafting pauses at the unfinished-package limit; the row says so instead of reading on. The words are made
+ * at call time: the limit's module imports this one. */
+function waitingWords(store: IntakeLargeStore): string | null {
+  if (store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) return null;
+  return `${INTAKE_UNFINISHED_PACKAGE_LIMIT} packages of this file wait for review. `
+    + 'The rest of the file is cut into packages as these are reviewed.';
+}
+
 /** What the row says in each state of the stored rows; only the drafting step writes the end. */
 export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLargeRows, store: IntakeLargeStore,
   failure: IntakeLargeFailure): IntakeLargeState {
@@ -407,7 +424,8 @@ export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLarge
   if (phase === 'layout' || phase === 'map' && !rows.mapping) return { state: 'planned', placement: 'undecided',
     planRef, ...numbers, limitReason: null };
   return { state: 'reading', placement: store.parts ? 'on_map' : 'undecided',
-    planRef: phase === 'start' || phase === 'read' ? null : planRef, ...numbers, limitReason: null };
+    planRef: phase === 'start' || phase === 'read' ? null : planRef, ...numbers,
+    limitReason: phase === 'draft' ? waitingWords(store) : null };
 }
 
 /** After the last cut; a file with no cut rests not understood with the same counts. */
