@@ -8,9 +8,10 @@ import { publishIntakePartTx, unfinishedIntakePackagesTx } from './intake-ledger
 import { createIntakeTargetsTx } from './intake-targets';
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { isRetainedMapOriginal } from './retained-map-original';
+import type { CellCutResume } from './intake-package-cuts';
 
 export const INTAKE_UNFINISHED_PACKAGE_LIMIT = 8;
-/** Features no package takes, counted through a cut's last feature: too large for any package (`held`), wider than
+/** Features no package takes, counted through the fold's stored cursor: too large for any package (`held`), wider than
  * one map area (`heldWide`), or outside the area the file is placed in (`heldOutside`). */
 export type IntakePartHeld = { held: number; heldWide: number; heldOutside: number };
 export const NO_HELD_FEATURES: Readonly<IntakePartHeld> = Object.freeze({ held: 0, heldWide: 0, heldOutside: 0 });
@@ -63,9 +64,9 @@ async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, map
 }
 
 /** Sealed-only safe door: no targets exist before whole-file verification and global key closure.
- * `held` is the fold's count of features no package takes, up to this cut's last feature. */
+ * `held` counts through the cell checkpoint cursor, or the cut's last feature for a legacy fold. */
 export async function draftIntakePartTx(client: PoolClient, itemId: string, mappingJobId: string,
-  input: ProvedAreaPartInput, held: IntakePartHeld = NO_HELD_FEATURES) {
+  input: ProvedAreaPartInput, held: IntakePartHeld = NO_HELD_FEATURES, cellResume?: CellCutResume) {
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-parts-case:${lookup.case_id}`]);
@@ -78,7 +79,8 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
   await assertObservedCut(input, item.case_id, mappingJobId, rawJobId);
   const locator = { version: 'intake-package-cut/1', sourceId: input.sourceId, sourceRevision: input.sourceRevision,
     sourceSha256: input.sourceSha256, readerVersion: input.readerVersion, layoutHash: input.layoutHash,
-    mappingJobId, cutIndex: input.cutIndex, featureIndices: input.features.map(feature => feature.featureIndex) };
+    mappingJobId, cutIndex: input.cutIndex, featureIndices: input.features.map(feature => feature.featureIndex),
+    ...(cellResume ? { cellResume, destination: input.destination } : {}) };
   const prior = (await client.query('SELECT locator FROM usp_intake_parts WHERE item_id=$1 AND part_index=$2',
     [itemId, input.cutIndex])).rows[0];
   if (prior && fingerprint(prior.locator) !== fingerprint(locator))

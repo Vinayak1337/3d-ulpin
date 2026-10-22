@@ -210,6 +210,12 @@ test('hold summaries use only nonzero clauses and no illustrative count', () => 
     + '2 share an identifier with another record and are held. 1 are larger than a package can hold and are held.');
 });
 
+test('cell routing words name the counted map areas and keep every feature a review candidate', () => {
+  assert.equal(intakeLargeHoldsReason({ recordsRead: 40, accepted: 40, packages: 2, readerRejected: 0,
+    duplicates: 0, oversized: 0, cellAreas: 2 }), '40 records read; 40 in 2 packages. '
+    + 'Prepared in 2 map areas by spatial cell; every feature remains a candidate for review.');
+});
+
 test('features held for their extent are counted apart, each with its own reason', () => {
   const counts = { recordsRead: 10, accepted: 6, packages: 2, readerRejected: 0, duplicates: 0, oversized: 0 };
   assert.equal(intakeLargeHoldsReason({ ...counts, wide: 1, outside: 3 }),

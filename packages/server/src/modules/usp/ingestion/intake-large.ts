@@ -159,7 +159,7 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
 export type IntakeLargeCounts = {
   recordsRead: number; accepted: number; packages: number;
   readerRejected: number; duplicates: number; oversized: number; setAside?: GisSetAside;
-  wide?: number; outside?: number;
+  wide?: number; outside?: number; cellAreas?: number;
 };
 const AREA_KM = AREA_NORMALIZER_EXTENT.metres / 1000;
 
@@ -167,8 +167,10 @@ const AREA_KM = AREA_NORMALIZER_EXTENT.metres / 1000;
  * not displayed sample records. */
 export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null {
   if (!counts.readerRejected && !counts.duplicates && !counts.oversized && !counts.wide && !counts.outside
-    && counts.accepted === counts.recordsRead) return null;
+    && !counts.cellAreas && counts.accepted === counts.recordsRead) return null;
   const sentences = [`${counts.recordsRead} records read; ${counts.accepted} in ${counts.packages} packages.`];
+  if (counts.cellAreas) sentences.push(`Prepared in ${counts.cellAreas} map areas by spatial cell; `
+    + 'every feature remains a candidate for review.');
   if (counts.readerRejected) sentences.push(`${counts.readerRejected} not accepted by the reader.`);
   if (counts.duplicates) sentences.push(`${counts.duplicates} share an identifier with another record and are held.`);
   if (counts.oversized) sentences.push(`${counts.oversized} are larger than a package can hold and are held.`);

@@ -10,16 +10,18 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
 import { ChunkMappingService } from './chunk-mapping';
-import { caseScopedDestination, intakeCaseArea, intakeDestination, retiredFileAreaWords } from './intake-destination';
+import { caseScopedDestination, intakeCaseArea, intakeCellDestination, intakeDestination,
+  retiredFileAreaWords } from './intake-destination';
 import { assertIntakeDraftTx } from './intake-draft';
 import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
 import { readIntakeDraftTx, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
-import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
-  type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
-import type { AreaFrame } from './intake-package-extent';
+import { IntakeCellCutter, IntakePackageCutter, pairMappedFeatures, type CellCutResume, type HeldPartCode,
+  type HeldPartFeature, type IntakeCellCut, type IntakePackageCut, type MappedPartFeature
+} from './intake-package-cuts';
+import { measurableCrs, type AreaFrame } from './intake-package-extent';
 import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
@@ -35,7 +37,7 @@ type Outcome = 'more' | 'pressure' | 'stale' | 'end';
 type Fold = {
   readerJobId: string; mappingJobId: string; chunks: number; firstChunk: number; after: number; parts: number;
   cutKey: string; held: IntakePartHeld; pending: HeldPartFeature[]; conflicts: Set<number>;
-  metadata: Record<string, unknown>; frame: AreaFrame | null;
+  metadata: Record<string, unknown>; frame: AreaFrame | null; cells: boolean; cellResume?: CellCutResume;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
   recordsRead: number; readerRejected: number; started: number; kind: string;
 };
@@ -179,7 +181,10 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
     await publishTx(client, input, state);
     const last = (await client.query(`SELECT locator,counts FROM usp_intake_parts WHERE item_id=$1
       ORDER BY part_index DESC LIMIT 1`, [input.itemId])).rows[0];
-    const after = last ? Number(last.locator.featureIndices.at(-1)) : -1;
+    const cellResume = last?.locator.cellResume as CellCutResume | undefined;
+    const after = cellResume?.previous ?? (last ? Number(last.locator.featureIndices.at(-1)) : -1);
+    const metadata = state.source.inspection?.streamedMapReceipt.collectionMetadata;
+    const cells = Boolean(cellResume || !last && measurableCrs(metadata));
     const first = (await client.query(`SELECT min(chunk_index)::int n FROM usp_streaming_vector_slots
       WHERE job_id=$1 AND published AND last_feature_index>$2`, [raw!.job_id, after])).rows[0].n;
     const conflicts = (await client.query(`SELECT first_feature_index,later_feature_index
@@ -191,8 +196,8 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
       heldOutside: Number(last?.counts.heldOutside ?? 0) };
     return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id, chunks: Number(raw!.sealed_chunks),
       firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: state.store.parts,
-      cutKey: intakeLargeCutKey(state.store), held, pending: [], frame: await destinationFrameTx(client, destination),
-      conflicts: new Set(conflicts), metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
+      cutKey: intakeLargeCutKey(state.store), held, pending: [], cells, cellResume,
+      frame: cells ? null : await destinationFrameTx(client, destination), conflicts: new Set(conflicts), metadata,
       part: { sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
         readerVersion: 'geojson-stream/2', layoutHash: layout.hash, destination },
       objectKey: state.source.object_key, sourceBytes: Number(state.source.bytes), recordsRead: raw!.records,
@@ -235,23 +240,27 @@ function countHeld(total: IntakePartHeld, items: HeldPartFeature[]): IntakePartH
   return sum;
 }
 
-/** Held features up to a cut's last feature count with that cut; later ones wait for the next cut or the end. */
-function heldThrough(fold: Fold, cut: IntakePackageCut | undefined): IntakePartHeld {
-  const end = cut ? cut.features.at(-1)!.raw.featureIndex : Infinity;
+/** Cell cuts commit all holds through their consumed cursor, even if that cut's last member is earlier. */
+function heldThrough(fold: Fold, cut: IntakePackageCut | IntakeCellCut | undefined): IntakePartHeld {
+  const end = cut && 'resume' in cut ? cut.resume.previous + 1
+    : cut?.features.at(-1)!.raw.featureIndex ?? Infinity;
   fold.held = countHeld(fold.held, fold.pending.filter(held => held.featureIndex < end));
   fold.pending = fold.pending.filter(held => held.featureIndex > end);
   return fold.held;
 }
 
 async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fold, state: State) {
-  const parts = (await client.query(`SELECT count(*)::int n,COALESCE(sum((counts->>'accepted')::int),0)::int accepted
-    FROM usp_intake_parts WHERE item_id=$1`, [input.itemId])).rows[0];
+  const parts = (await client.query(`SELECT count(*)::int n,
+    COALESCE(sum((part.counts->>'accepted')::int),0)::int accepted,count(DISTINCT pkg.area_id)::int areas
+    FROM usp_intake_parts part JOIN import_packages pkg ON pkg.id=(part.result_ref->>'packageId')::uuid
+    WHERE part.item_id=$1`, [input.itemId])).rows[0];
   const setAside = intakeLargeSetAside(fold.kind, state.source.inspection?.streamedGeometrySummary,
     fold.readerJobId, fold.recordsRead - fold.readerRejected);
   const held = countHeld(fold.held, fold.pending);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
-    duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide, outside: held.heldOutside, setAside },
+    duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide, outside: held.heldOutside,
+    ...(fold.cells ? { cellAreas: parts.areas } : {}), setAside },
   intakeLargePlan(state.store.recipe));
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
 }
@@ -259,7 +268,7 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
 /** One cut, one transaction: it drafts only while the fold's stored context is unchanged, and queues what follows.
  * The last cut of the file also writes the end; `cut` is absent when the file ends after a stored cut. */
 async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold,
-  cut: IntakePackageCut | undefined, end: boolean): Promise<Outcome> {
+  cut: IntakePackageCut | IntakeCellCut | undefined, end: boolean): Promise<Outcome> {
   const features = cut ? await rawFeatures(fold, cut) : [];
   const held = heldThrough(fold, cut);
   return pinned(input, attempt, async (client, state) => {
@@ -267,8 +276,12 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
       await queueIntakeLargeTx(client, input.sourceId);
       return 'stale';
     }
-    if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
-      { ...fold.part, cutIndex: cut.index, features }, held);
+    if (cut) {
+      const destination = 'cell' in cut
+        ? intakeCellDestination(input.caseId, fold.part.destination, cut.cell) : fold.part.destination;
+      await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
+        { ...fold.part, destination, cutIndex: cut.index, features }, held, 'resume' in cut ? cut.resume : undefined);
+    }
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
     if (end) await writeEndTx(client, input, fold, after);
     fold.cutKey = intakeLargeCutKey(after.store);
@@ -289,11 +302,55 @@ function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
   };
 }
 
+/** Rehydrate only the open cuts' exact records; their order is retained separately in the locator. */
+async function restoredCellFeatures(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold,
+  beat: () => Promise<void>) {
+  const wanted = new Set(fold.cellResume?.open.flat() ?? []);
+  if (!wanted.size) return [];
+  const chunks = await pinned(input, attempt, async client => (await client.query(`SELECT chunk_index
+    FROM usp_streaming_vector_slots slot WHERE job_id=$1 AND published AND EXISTS (
+      SELECT 1 FROM unnest($2::int[]) feature_index
+      WHERE feature_index BETWEEN slot.first_feature_index AND slot.last_feature_index)
+    ORDER BY chunk_index`, [fold.readerJobId, [...wanted]])).rows);
+  const restored: MappedPartFeature[] = [];
+  for (const chunk of chunks) {
+    const records = await pairedChunk(input, { ...fold, after: -1 }, Number(chunk.chunk_index));
+    restored.push(...records.filter(item => wanted.has(item.raw.featureIndex)));
+    await beat();
+  }
+  return restored;
+}
+
+async function draftCells(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold) {
+  const beat = heartbeat(input, attempt);
+  const restored = await restoredCellFeatures(input, attempt, fold, beat);
+  const cutter = new IntakeCellCutter(fold.metadata, fold.cellResume, restored);
+  for (let index = fold.firstChunk; index < fold.chunks; index++) {
+    for (const item of await pairedChunk(input, fold, index)) {
+      const result = cutter.consume(item);
+      if (result.held) fold.pending.push(result.held);
+      if (!result.cut) continue;
+      const outcome = await draftCut(input, attempt, fold, result.cut, false);
+      if (outcome !== 'more' || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+      await beat();
+    }
+    await beat();
+  }
+  for (let cut = cutter.close(); cut; cut = cutter.close()) {
+    const end = !cut.resume.open.length;
+    const outcome = await draftCut(input, attempt, fold, cut, end);
+    if (outcome !== 'more' || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+    await beat();
+  }
+  await draftCut(input, attempt, fold, undefined, true);
+}
+
 /** Fold the sealed parts in order from the last stored cut; stop at eight unreviewed, the end or 60 seconds.
  * A destination area without a reference takes it from the first cut, so the step ends there and the next step
  * cuts the rest in that stored reference, as a resumed fold would. */
 async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
   const fold = await foldContext(input, attempt), beat = heartbeat(input, attempt);
+  if (fold.cells) return draftCells(input, attempt, fold);
   const cutter = new IntakePackageCutter(fold.metadata, { index: fold.parts, previous: fold.after }, fold.frame);
   for (let index = fold.firstChunk; index < fold.chunks; index++) {
     for (const item of await pairedChunk(input, fold, index)) {

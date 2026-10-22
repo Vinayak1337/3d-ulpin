@@ -5,6 +5,7 @@ import { AppError } from '../../../infrastructure/errors';
 import { query } from '../../../infrastructure/db';
 import { fingerprint } from '../../cases/domain';
 import { getArea } from '../../areas/areas';
+import type { SpatialCell } from './intake-package-extent';
 
 /** The intake's proposal, not a new destination policy. */
 export function intakeDestination(gis: { suggestedTitle: string; suggestedNamespace: string },
@@ -13,6 +14,13 @@ export function intakeDestination(gis: { suggestedTitle: string; suggestedNamesp
   if (!area) return { kind: 'new_area', ...named };
   return { kind: 'existing_area', areaId: area.id, expectedAreaRevision: area.revision,
     referenceFingerprint: fingerprint(area.reference || null), ...named };
+}
+
+/** Cell areas always belong to this batch, including before the first package creates its area.
+ * Do not pin the batch's first map area: every cell retains its own first package's reference. */
+export function intakeCellDestination(caseId: string, base: { namespace: string; name: string }, cell: SpatialCell) {
+  const namespace = base.namespace.includes(':case:') ? base.namespace : `${base.namespace}:case:${caseId}`;
+  return { namespace, name: `${base.name} - cell ${cell.label}` };
 }
 
 type AreaLookup = (sql: string, values: string[]) => Promise<{ id: string } | undefined>;

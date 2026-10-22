@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { Readable } from 'node:stream';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { cutMappedFeatures, INTAKE_PACKAGE_LIMITS, IntakePackageCutter, normalizerInputUpperBound,
+  IntakeCellCutter, INTAKE_OPEN_CELL_LIMIT, type CellCutResume, type IntakeCellCut,
   type MappedPartFeature } from './intake-package-cuts';
 import { AREA_NORMALIZER_EXTENT, utmForward, type AreaFrame } from './intake-package-extent';
 
@@ -149,6 +150,77 @@ test('a fold resumed after a cut closed on extent closes the same remaining cuts
   assertResumes(items, { analysisCrs: 'EPSG:32643', origin: utmForward(32643, ...HERE) });
 });
 
+test('K open cells coalesce alternating features and the next cell closes the least recently used cut', () => {
+  const items = Array.from({ length: 40 }, (_, index) => placedItem(index, index % 2 ? FAR : HERE));
+  const cutter = new IntakeCellCutter();
+  const cuts = [];
+  for (const item of items) {
+    const result = cutter.consume(item);
+    assert.equal(result.held, undefined);
+    if (result.cut) cuts.push(result.cut);
+    assert(cutter.checkpoint().open.length <= INTAKE_OPEN_CELL_LIMIT);
+  }
+  for (let cut = cutter.close(); cut; cut = cutter.close()) cuts.push(cut);
+  assert.equal(cuts.length, 2);
+  assert.equal(cuts[0].features.length, 20);
+  assert.notEqual(cuts[0].cell.key, cuts[1].cell.key);
+  const lru = new IntakeCellCutter();
+  const limit = INTAKE_OPEN_CELL_LIMIT;
+  const places: [number, number][] = Array.from({ length: limit + 1 }, (_, index) => [77, 28 + index]);
+  places.slice(0, limit).forEach((place, index) => lru.consume(placedItem(index, place)));
+  lru.consume(placedItem(limit, HERE));
+  const evicted = lru.consume(placedItem(limit + 1, places[limit])).cut;
+  assert.deepEqual(evicted?.features.map(item => item.raw.featureIndex), [1]);
+});
+
+function cellFold(items: MappedPartFeature[], resume?: CellCutResume) {
+  const wanted = new Set(resume?.open.flat() ?? []);
+  const cutter = new IntakeCellCutter({}, resume, items.filter(item => wanted.has(item.raw.featureIndex)));
+  const cuts: IntakeCellCut[] = [], held = [];
+  for (const item of items.filter(item => item.raw.featureIndex > (resume?.previous ?? -1))) {
+    const result = cutter.consume(item);
+    if (result.cut) cuts.push(result.cut);
+    if (result.held) held.push(result.held);
+  }
+  for (let cut = cutter.close(); cut; cut = cutter.close()) cuts.push(cut);
+  return { cuts, held };
+}
+
+function assertCellResumes(items: MappedPartFeature[]) {
+  const whole = cellFold(items);
+  const shape = (cuts: IntakeCellCut[]) => cuts.map(cut => [cut.index, cut.cell.key,
+    cut.features.map(item => item.raw.featureIndex), cut.resume]);
+  for (const [index, stored] of whole.cuts.entries()) {
+    const snapshot = JSON.parse(JSON.stringify(stored.resume));
+    const tail = cellFold(items, snapshot);
+    assert.deepEqual(shape(tail.cuts), shape(whole.cuts.slice(index + 1)));
+    assert.deepEqual(tail.held, whole.held.filter(item => item.featureIndex > snapshot.previous));
+  }
+}
+
+test('cell snapshots resume after every stored cut, including scattered indexes, holds and EOF draining', () => {
+  assertCellResumes(Array.from({ length: 120 }, (_, index) => index % 13 === 0 ? placedItem(index, HERE, 0.6)
+    : placedItem(index, [77, 28 + index % (INTAKE_OPEN_CELL_LIMIT + 2)])));
+});
+
+test('a cell size cut checkpoints its triggering feature and retains single-feature wide holds unchanged', () => {
+  const items = Array.from({ length: 6005 }, (_, index) => index % 997 === 0 ? placedItem(index, HERE, 0.6)
+    : placedItem(index, index % 2 ? HERE : FAR));
+  const before = JSON.stringify(items);
+  assertCellResumes(items);
+  const result = cellFold(items);
+  assert(result.cuts.some(cut => cut.features.length === 2000));
+  assert(result.held.every(item => item.code === 'PART_FEATURE_EXTENT_BOUND'));
+  assert.equal(JSON.stringify(items), before);
+});
+
+test('a stored cell fold cannot exceed the open-cut bound or resume without its exact source records', () => {
+  const resume: CellCutResume = { version: 'intake-cell-cuts/1', index: 1, previous: 20,
+    open: Array.from({ length: INTAKE_OPEN_CELL_LIMIT + 1 }, (_, index) => [index]) };
+  assert.throws(() => new IntakeCellCutter({}, resume), { code: 'PART_CELL_RESUME' });
+  assert.throws(() => new IntakeCellCutter({}, { ...resume, open: [[0]] }), { code: 'PART_CELL_RESUME' });
+});
+
 test('serialized input bound reserves Python ASCII expansion and number spelling', () => {
   assert.equal(normalizerInputUpperBound({ text: 'अ😀' }), '{"text":"\\u0905\\ud83d\\ude00"}'.length);
   assert(normalizerInputUpperBound({ x: 1e-7 }) > JSON.stringify({ x: 1e-7 }).length);
@@ -173,6 +245,16 @@ test('real NYC reader preserves global indexes and spans through deterministic c
     held: first.held };
   assert.equal(createHash('sha256').update(JSON.stringify(shape)).digest('hex'),
     '76e4e298e07b3c51be2d12d80517b97ea36067d145c0a34c8d7767d1a35e766e');
+  const cells = new IntakeCellCutter();
+  const cellCuts = [];
+  for (const item of items) {
+    const result = cells.consume(item);
+    if (result.cut) cellCuts.push(result.cut);
+  }
+  for (let cut = cells.close(); cut; cut = cells.close()) cellCuts.push(cut);
+  assert.equal(createHash('sha256').update(JSON.stringify({ cuts: cellCuts.map(cut =>
+    [cut.index, cut.features.map(item => item.raw.featureIndex)]), held: [] })).digest('hex'),
+  '76e4e298e07b3c51be2d12d80517b97ea36067d145c0a34c8d7767d1a35e766e');
   assert.equal(first.cuts.length, 1);
   assert.equal(first.cuts[0].cost.features, 1662);
   assert.equal(first.cuts[0].features[1322].raw.featureIndex, 1322);

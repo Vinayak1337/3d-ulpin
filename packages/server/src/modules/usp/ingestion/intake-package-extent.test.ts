@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { CutExtent, featureExtent, measurableCrs, utmForward, utmInverse } from './intake-package-extent';
+import { CutExtent, featureCell, featureExtent, measurableCrs, utmForward, utmInverse
+} from './intake-package-extent';
 
 const named = (name: string) => ({ crs: { type: 'name', properties: { name } } });
 const square = (corner: [number, number], side: number) => ({ type: 'Feature', properties: {}, geometry: {
@@ -29,6 +30,28 @@ test('the declaration is read as the processor reads it; a system not converted 
   assert.deepEqual(measurableCrs(named('urn:ogc:def:crs:EPSG::3857')), { kind: 'web_mercator' });
   assert.equal(measurableCrs(named('EPSG:7755')), null);
   assert.equal(measurableCrs({ crs: { type: 'link', properties: { href: 'x' } } }), null);
+});
+
+test('cell edges belong east/north; UTM edges and the equator never share incompatible area frames', () => {
+  const inMetres = (x: number, y = 3100000) => featureExtent(square([x, y], 1),
+    { kind: 'utm', epsg: 32643 })!;
+  assert.match(featureCell(inMetres(719999.999), 0).key, /-e17-/);
+  assert.match(featureCell(inMetres(720000), 1).key, /-e18-/);
+  assert.match(featureCell(inMetres(720000, 3119999.999), 1).key, /-n77-/);
+  assert.match(featureCell(inMetres(720000, 3120000), 1).key, /-n78-/);
+  const degreeExtent = (lon: number, lat: number, side = 0.0001) =>
+    featureExtent(square([lon, lat], side), { kind: 'degree' })!;
+  assert.match(featureCell(degreeExtent(-74.250000001, 40.6), 1).key, /-l211-/);
+  assert.match(featureCell(degreeExtent(-74.25, 40.6), 1).key, /-l212-/);
+  assert.match(featureCell(degreeExtent(-74, 40.749999999), 1).key, /-b261/);
+  assert.match(featureCell(degreeExtent(-74, 40.75), 1).key, /-b262/);
+  assert.match(featureCell(degreeExtent(5.9998, 28), 2).key, /^utm-32631-/);
+  assert.match(featureCell(degreeExtent(6, 28), 3).key, /^utm-32632-/);
+  assert.match(featureCell(degreeExtent(5.99995, 28), 4).key, /-feature-4$/);
+  assert.match(featureCell(degreeExtent(77, -0.00005), 5).key, /-feature-5$/);
+  assert.match(featureCell(degreeExtent(179.9998, 28), 6).key, /^utm-32660-/);
+  assert.match(featureCell(degreeExtent(-180, 28), 7).key, /^utm-32601-/);
+  assert.match(featureCell(degreeExtent(77, 28, 0.4), 8).key, /-feature-8$/);
 });
 
 test('a file written in UTM metres is measured as its longitude and latitude are', () => {

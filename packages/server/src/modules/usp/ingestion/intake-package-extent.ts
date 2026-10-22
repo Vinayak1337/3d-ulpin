@@ -204,6 +204,28 @@ function withinMetres(metres: Bounds, origin: [number, number] | null): boolean 
     && [metres[0] - x, metres[1] - y, metres[2] - x, metres[3] - y].every(edge => Math.abs(edge) <= limit);
 }
 
+export type SpatialCell = { key: string; label: string };
+
+/** The intersection keeps every shared cell below both area bounds, even at high latitude.
+ * Larger or zone-crossing features get a stable singleton, never an outside-area hold. */
+export function featureCell(feature: FeatureExtent, featureIndex: number): SpatialCell {
+  const zone = analysisZone(feature.bounds, null)!;
+  const [west, south, east, north] = feature.bounds;
+  const metres = projectedBounds(feature, zone);
+  const easting = Math.floor(metres[0] / 40000), northing = Math.floor(metres[1] / 40000);
+  const longitude = Math.floor((west + 180.25) / 0.5), latitude = Math.floor((south + 90.25) / 0.5);
+  const key = `utm-${zone}-e${easting}-n${northing}-l${longitude}-b${latitude}`;
+  const label = `UTM ${zoneOf(zone)}${southern(zone) ? 'S' : 'N'} E${easting} N${northing}`
+    + ` L${longitude} B${latitude}`;
+  const zoneWest = centralMeridian(zone) - 3;
+  const contained = west >= zoneWest && east <= zoneWest + 6
+    && (southern(zone) ? north <= 0 : south >= 0);
+  const shared = contained && east - west <= 0.25 && north - south <= 0.25
+    && metres[2] - metres[0] <= 9000 && metres[3] - metres[1] <= 9000;
+  return shared ? { key, label } : { key: `${key}-feature-${featureIndex}`,
+    label: `${label} feature ${featureIndex}` };
+}
+
 /** One open cut's extent, as area.py would measure the package it becomes. */
 export class CutExtent {
   private members: FeatureExtent[] = [];

@@ -1,13 +1,40 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { PoolClient } from 'pg';
-import type { ImportPackage } from '@ulpin/contracts';
+import type { ImportPackage, MapArea } from '@ulpin/contracts';
+import { bindRetainedCaseTx } from '../../areas/areas';
+import { areaProposals } from '../../areas/area-display-proposals';
 import { assertIntakePackagePressureTx, draftIntakePartTx } from './intake-part-draft';
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { localOperatorSubject } from '../principal';
 import { sealedMapReceipt } from './streamed-map-receipt';
 import type { StreamingVectorInput } from '@ulpin/contracts/usp';
 import { publishIntakePartTx } from './intake-ledger';
+
+test('current one-site source authority blocks a second cell area and its map proposal', async context => {
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'cw2-protocol-only';
+  context.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  });
+  const feature = { id: 'protocol-feature', sourceKey: 'protocol-key', areaId: 'protocol-second-area',
+    revision: 0, sourceRevisionId: 'protocol-source' };
+  const source = { id: 'protocol-source', case_id: 'protocol-case', site_id: 'protocol-first-site', archived: false };
+  const client = { query: async (sql: string) => {
+    if (sql.startsWith('SELECT id,site_id,archived,frame FROM cases')) return { rows: [{
+      id: source.case_id, site_id: source.site_id, archived: false, frame: { id: 'UNASSIGNED' } }] };
+    if (sql.startsWith('SELECT id,revision FROM physical_features')) return { rows: [feature] };
+    if (sql.startsWith('SELECT s.*,c.archived,c.site_id FROM sources')) return { rows: [source] };
+    throw new Error(`Unexpected write or query: ${sql}`);
+  } } as unknown as PoolClient;
+  await assert.rejects(bindRetainedCaseTx(client, source.case_id, { id: 'protocol-second-site' }),
+    { status: 403, code: 'AREA_SOURCE_DENIED' });
+  const pkg = { id: 'protocol-package', datasetNamespace: 'protocol-cell', state: 'READY_FOR_REVIEW',
+    sourceRevisionIds: [source.id], features: [feature] } as unknown as ImportPackage;
+  const area = { id: feature.areaId, siteId: 'protocol-second-site' } as MapArea;
+  assert.deepEqual(await areaProposals(client, area, [pkg]), []);
+});
 
 test('a file admits seven unfinished package drafts but refuses the ninth', async () => {
   let unfinished = 7;
@@ -77,12 +104,13 @@ test('no closure makes no package or target; both duplicate positions refused', 
 
 test('an exact published-part replay is write-free; changed locator/package is refused', async () => {
   const pkg = { id: 'protocol-package', sourceRevisionIds: ['protocol-source'] } as ImportPackage;
-  const locator = { cutIndex: 0, featureIndices: [0, 2] }, counts = { features: 2 };
+  const locator = { cutIndex: 0, featureIndices: [0, 2], cellResume: {
+    version: 'intake-cell-cuts/1', index: 1, previous: 7, open: [[1, 5], [3, 7]] } }, counts = { features: 2 };
   let changed = false, writes = 0;
   const client = { query: async (sql: string) => {
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [{ source_id: 'protocol-source' }] };
     if (sql.startsWith('SELECT * FROM usp_intake_parts')) return { rows: [{ state: 'published',
-      locator: changed ? { ...locator, featureIndices: [1, 2] } : locator,
+      locator: changed ? { ...locator, cellResume: { ...locator.cellResume, open: [[1], [3, 7]] } } : locator,
       counts, result_ref: { packageId: pkg.id } }] };
     writes++;
     throw new Error('Unexpected write');

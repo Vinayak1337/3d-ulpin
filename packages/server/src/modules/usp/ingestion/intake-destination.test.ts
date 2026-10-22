@@ -3,7 +3,8 @@ import test from 'node:test';
 import type { Pool } from 'pg';
 import { AuthorMappingSchema, MappingDestinationSchema } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
-import { authoredIntakeDestination, intakeCaseArea, intakeDestination } from './intake-destination';
+import { authoredIntakeDestination, intakeCaseArea, intakeCellDestination, intakeDestination
+} from './intake-destination';
 
 const caseId = '10000000-0000-4000-8000-000000000001';
 const areaId = '10000000-0000-4000-8000-000000000002';
@@ -15,6 +16,16 @@ const plan = { version: 'manual-geojson/1', mode: 'manual_mapping',
     { target: 'building.sourceKey', sourcePath: '/features/*/properties/id', conversionId: 'literal_identifier@1' },
     { target: 'building.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_polygon@1' },
   ] };
+
+test('cell destinations keep literal file/cell words and stable case-scoped seed keys without an area pin', () => {
+  const base = { namespace: 'file:abc', name: 'Buildings' };
+  const cell = { key: 'utm-32620-e20-n245-l460-b898', label: 'UTM 20N E20 N245 L460 B898' };
+  const destination = intakeCellDestination(caseId, base, cell);
+  assert.deepEqual(destination, { namespace: `file:abc:case:${caseId}`,
+    name: 'Buildings - cell UTM 20N E20 N245 L460 B898' });
+  assert.deepEqual(intakeCellDestination(caseId, { ...base, namespace: destination.namespace }, cell), destination);
+  assert(!Object.hasOwn(destination, 'areaId'));
+});
 
 test('destination omission inserts no default; an explicit destination and its hash remain byte-identical', () => {
   const input = { requestKey: caseId, expectedRecipeRevision: 0, plan };

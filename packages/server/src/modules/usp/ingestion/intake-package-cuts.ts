@@ -2,8 +2,8 @@ import { isDeepStrictEqual } from 'node:util';
 import type { StreamingVectorRecord, ChunkMappingObservation } from '@ulpin/contracts/usp';
 import type { SourceRangeReference } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
-import { CutExtent, featureExtent, frameZone, measurableCrs, type AreaFrame, type FeatureExtent,
-  type SourceCrs } from './intake-package-extent';
+import { CutExtent, featureCell, featureExtent, frameZone, measurableCrs, type AreaFrame, type FeatureExtent,
+  type SourceCrs, type SpatialCell } from './intake-package-extent';
 import { setAsideGeometryTypes } from './registry';
 
 /** Mirror services/geo/geo/area.py's compact ensure_ascii source JSON ceiling. */
@@ -179,6 +179,95 @@ export class IntakePackageCutter {
     this.cost = initialCost(this.metadata);
     this.extent = this.rule.open();
     return cut;
+  }
+}
+
+export const INTAKE_OPEN_CELL_LIMIT = 12;
+export type CellCutResume = {
+  version: 'intake-cell-cuts/1'; index: number; previous: number; open: number[][];
+};
+export type IntakeCellCut = IntakePackageCut & { cell: SpatialCell; resume: CellCutResume };
+type OpenCell = { cell: SpatialCell; cutter: IntakePackageCutter; features: MappedPartFeature[] };
+
+/** Bounded LRU cuts, checkpointed by original feature indices rather than copied geometry or new tables. */
+export class IntakeCellCutter {
+  private readonly open = new Map<string, OpenCell>();
+  private readonly crs: SourceCrs;
+  private previous: number;
+  private index: number;
+
+  constructor(private readonly metadata: Record<string, unknown> = {}, resume?: CellCutResume,
+    restored: MappedPartFeature[] = []) {
+    const crs = measurableCrs(metadata);
+    if (!crs) throw new AppError(422, 'PART_CELL_CRS', 'This coordinate system needs the original package fold.');
+    if (resume && resume.open.length > INTAKE_OPEN_CELL_LIMIT)
+      throw new AppError(409, 'PART_CELL_RESUME', 'The stored fold has more open cuts than it can resume.');
+    this.crs = crs;
+    this.previous = resume?.previous ?? -1;
+    this.index = resume?.index ?? 0;
+    const records = new Map(restored.map(item => [item.raw.featureIndex, item]));
+    for (const indices of resume?.open ?? []) this.restore(indices, records);
+  }
+
+  private restore(indices: number[], records: Map<number, MappedPartFeature>) {
+    for (const index of indices) {
+      const item = records.get(index);
+      if (!item) throw new AppError(409, 'PART_CELL_RESUME', 'An open cut source feature is unavailable.');
+      const cell = featureCell(featureExtent(item.feature, this.crs)!, index);
+      const entry = this.open.get(cell.key) ?? this.create(cell);
+      const result = entry.cutter.consume(item);
+      if (result.cut || result.held)
+        throw new AppError(409, 'PART_CELL_RESUME', 'The stored open cut no longer fits its source.');
+      entry.features.push(item);
+    }
+  }
+
+  private create(cell: SpatialCell): OpenCell {
+    const entry = { cell, cutter: new IntakePackageCutter(this.metadata), features: [] as MappedPartFeature[] };
+    this.open.set(cell.key, entry);
+    return entry;
+  }
+
+  checkpoint(): CellCutResume {
+    return { version: 'intake-cell-cuts/1', index: this.index, previous: this.previous,
+      open: [...this.open.values()].map(entry => entry.features.map(item => item.raw.featureIndex)) };
+  }
+
+  private publish(cut: IntakePackageCut, cell: SpatialCell): IntakeCellCut {
+    return { ...cut, index: this.index++, cell, resume: this.checkpoint() };
+  }
+
+  consume(item: MappedPartFeature): { cut?: IntakeCellCut; held?: HeldPartFeature } {
+    if (item.mapped.disposition !== 'observed') return {};
+    assertPair(item, this.previous);
+    this.previous = item.raw.featureIndex;
+    const sized = sizeHold(featureCost(item.feature, item.raw), this.metadata);
+    const extent = sized ? null : featureExtent(item.feature, this.crs);
+    const held = sized ?? (!extent || !new CutExtent(null).admit(extent) ? 'PART_FEATURE_EXTENT_BOUND' : null);
+    if (held) return { held: { featureIndex: this.previous, code: held } };
+    const cell = featureCell(extent!, this.previous);
+    let entry = this.open.get(cell.key);
+    let evicted: { cut: IntakePackageCut; cell: SpatialCell } | undefined;
+    if (!entry && this.open.size === INTAKE_OPEN_CELL_LIMIT) {
+      const oldest = this.open.values().next().value!;
+      evicted = { cut: oldest.cutter.close()!, cell: oldest.cell };
+      this.open.delete(oldest.cell.key);
+    }
+    entry ??= this.create(cell);
+    const result = entry.cutter.consume(item);
+    if (result.cut) entry.features = [item];
+    else entry.features.push(item);
+    this.open.delete(cell.key);
+    this.open.set(cell.key, entry);
+    if (evicted) return { cut: this.publish(evicted.cut, evicted.cell) };
+    return result.cut ? { cut: this.publish(result.cut, cell) } : {};
+  }
+
+  close(): IntakeCellCut | undefined {
+    const oldest = this.open.values().next().value;
+    if (!oldest) return undefined;
+    this.open.delete(oldest.cell.key);
+    return this.publish(oldest.cutter.close()!, oldest.cell);
   }
 }
 
