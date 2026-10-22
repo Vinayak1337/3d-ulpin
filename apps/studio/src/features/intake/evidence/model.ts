@@ -1,8 +1,9 @@
-import type { GetResponse, Schemas } from '@ulpin/api-client';
+import type { Schemas } from '@ulpin/api-client';
+import type { IntakeEvidencePage } from '../../../../../../packages/contracts/src/usp/intake';
 import { fieldWords, type IntakeItem } from '../batch-model';
 import type { Package, Target } from '../run/model';
 
-export type EvidencePage = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake/evidence'>;
+export type EvidencePage = IntakeEvidencePage;
 export type Candidate = EvidencePage['candidates'][number];
 type EvidenceSource = EvidencePage['sources'][number];
 export type KeyProfile = EvidencePage['profiles'][number];

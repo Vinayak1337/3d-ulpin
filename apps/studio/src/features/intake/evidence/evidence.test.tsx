@@ -191,10 +191,10 @@ const page: EvidencePage = {
   profiles: [{ profileId: id(30), caseId, profileSha256: sha('a'), subject: 'local-officer', createdAt: at,
     input: { ...(profileInput(declared) as KeyProfileInput), requestKey: id(31) } }],
   sources: [{ itemId: register.itemId, profileId: id(30), family: 'table', jobId: id(40), resultSha256: sha('d'),
-    coverage, sourceId: id(53), sourceRevision: 1, sourceSha256: sha('c'), bytes: 10 },
+    coverage, sourceId: id(53), sourceRevision: 1, sourceSha256: sha('c'), bytes: 10, source: { state: 'retained' } },
   { itemId: letter.itemId, profileId: id(30), family: 'document', jobId: id(41), resultSha256: null,
     coverage: { state: 'partial', read: 0, eligible: null, keyless: null, unread: null, failed: null },
-    sourceId: id(56), sourceRevision: 1, sourceSha256: sha('1'), bytes: 10 }],
+    sourceId: id(56), sourceRevision: 1, sourceSha256: sha('1'), bytes: 10, source: { state: 'retained' } }],
   candidates: [candidate(60, 'matched', row(7), [anchor(20)]), candidate(61, 'several', row(9, 'Sheet1'),
     [anchor(21), anchor(22)]), candidate(62, 'conflicting', part, [anchor(20)])],
   counts: { matched: 1, no_match: 0, several: 1, conflicting: 1 }, nextCursor: id(62),
@@ -220,6 +220,20 @@ it('reads coverage in words, a null count as not known yet, the counts and a pag
   expect(html).toContain('Feature 15 of outlines.geojson; Feature at index 22');
   expect(html).toMatch(/<button type="button"[^>]*>Next page<\/button>/);
   expect(html).not.toContain('First page');
+});
+
+it('keeps both coverage rows and the candidates visible when one retained source is unavailable', () => {
+  const reason = 'The item no longer has a retained source in this batch.';
+  const mixed: EvidencePage = { ...page, sources: [page.sources[0]!, { ...page.sources[1]!,
+    sourceId: null, sourceRevision: null, sourceSha256: null, bytes: null,
+    source: { state: 'unavailable', reason } }] };
+  expect(validate(schemas.page, mixed)).toEqual([]);
+  const html = renderToStaticMarkup(<EvidenceRead page={mixed} items={items} targets={targets} paging={paging} />);
+  expect(html).toContain('register.csv (Table). Closed: 3 read');
+  expect(html).toContain('letter.pdf (Document). Partial: 0 read, not known yet with a key');
+  expect(html).toContain(reason);
+  expect(html).toContain('register.csv, column “House no”, row 7');
+  expect(html).toContain('>Next page</button>');
 });
 
 it('says when no key is declared, and keeps the evidence under the batch key its live updates refresh', () => {

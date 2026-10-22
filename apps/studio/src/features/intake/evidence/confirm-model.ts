@@ -26,9 +26,17 @@ export interface NamedBuilding { targetId: string; packageId: string; locator: s
 export const sourcesOf = (page: EvidencePage, profile: KeyProfile) =>
   page.sources.filter((source) => source.profileId === profile.profileId);
 
-/** Only a reading that closed can be included; it names the job and result that read it. */
+/** Only current retained pins may be named in a confirmation, including an exclusion. */
+export function retainedSource(source: EvidenceSource): source is EvidenceSource &
+  Pick<ConfirmInput['included'][number], 'sourceId' | 'sourceRevision' | 'sourceSha256' | 'bytes'> {
+  return source.source?.state !== 'unavailable' && source.sourceId !== null && source.sourceRevision !== null
+    && source.sourceSha256 !== null && source.bytes !== null;
+}
+
+/** Only a retained reading that closed can be included; it names the job and result that read it. */
 export function closedReading(source: EvidenceSource) {
-  return source.coverage?.state === 'closed' && source.jobId !== null && source.resultSha256 !== null;
+  return retainedSource(source) && source.coverage?.state === 'closed'
+    && source.jobId !== null && source.resultSha256 !== null;
 }
 
 /** An exact single match: the only outcome that may become a citation. */
@@ -39,8 +47,9 @@ export const question = (candidate: Candidate) =>
 
 /** The candidates of this key the officer can decide on the page as read; a no-match names no building. */
 export function decidable(page: EvidencePage, profile: KeyProfile) {
+  const retained = new Set(sourcesOf(page, profile).filter(retainedSource).map((source) => source.itemId));
   return page.candidates.filter((candidate) => candidate.key.profileId === profile.profileId
-    && (singleMatch(candidate) || question(candidate)));
+    && retained.has(candidate.evidence.itemId) && (singleMatch(candidate) || question(candidate)));
 }
 
 /** The candidates of one file as read under one key; `more` says the read stopped at its bound with more left. */
@@ -149,6 +158,9 @@ export interface ConfirmState {
 function sourcePins(state: ConfirmState): Pick<ConfirmInput, 'included' | 'excluded'> | string {
   const included: ConfirmInput['included'] = [], excluded: ConfirmInput['excluded'] = [];
   for (const source of state.sources) {
+    if (!retainedSource(source)) {
+      return `${state.name(source.itemId)}: this key cannot be confirmed while a source is unavailable.`;
+    }
     const pins = { itemId: source.itemId, sourceId: source.sourceId, sourceRevision: source.sourceRevision,
       sourceSha256: source.sourceSha256, bytes: source.bytes };
     const reason = state.exclusions[source.itemId];

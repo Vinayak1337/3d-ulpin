@@ -7,8 +7,8 @@ import type { Target } from '../run/model';
 import { runKey } from '../run/useTargets';
 import { TableRefusal } from '../table/Progress';
 import { createEvidenceConfirmation, evidenceKey, readEvidence, readFileMatches, readPackagePins } from './api';
-import { acceptFile, closedReading, confirmInput, decidable, namedBuildings, question, setAccept, setReject,
-  singleMatch, sourcesOf, type Choices, type EvidenceConfirmation, type EvidenceSource, type Exclusions,
+import { acceptFile, closedReading, confirmInput, decidable, namedBuildings, question, retainedSource, setAccept,
+  setReject, singleMatch, sourcesOf, type Choices, type EvidenceConfirmation, type EvidenceSource, type Exclusions,
   type FileSelection } from './confirm-model';
 import { buildingWords, coverageWords, evidenceWords, outcomeWords, type Candidate, type EvidencePage,
   type KeyProfile } from './model';
@@ -96,6 +96,7 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
 }) {
   if (result && 'confirmation' in result) return <ConfirmedWords confirmation={result.confirmation} close={close} />;
   const decided = Object.keys(draft.choices).length > 0;
+  const unavailable = sourcesOf(read.page, profile).some((source) => !retainedSource(source));
   return <form className={batch.stack} aria-label={`Confirm the evidence of the key ${profile.input.namespace}`}
     onSubmit={(event) => {
       event.preventDefault();
@@ -121,9 +122,10 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       </label>
     </fieldset>
     <span className="ul-row">
-      <Button type="submit" variant="primary" disabled={pending}>Confirm the evidence</Button>
+      <Button type="submit" variant="primary" disabled={pending || unavailable}>Confirm the evidence</Button>
       <Button variant="ghost" disabled={pending} onClick={close}>Cancel</Button>
     </span>
+    {unavailable ? <p className="ul-help">This key cannot be confirmed while a source is unavailable.</p> : null}
     {pending ? <p role="status">Confirming the evidence…</p> : null}
     {result && 'missing' in result ? <p className="ul-error" role="alert">{result.missing}</p> : null}
     {error ? <TableRefusal error={error} /> : null}
@@ -158,6 +160,9 @@ function SourceFields({ sources, items, draft, change }: {
     <legend className="ul-label">Files read under this key</legend>
     {sources.length ? null : <p className="ul-help">No file is read under this key yet.</p>}
     {sources.map((source) => {
+      if (source.source?.state === 'unavailable') return <div key={source.itemId} className={batch.stack}>
+        <p><strong>{name(source.itemId)}</strong>. {coverageWords(source.coverage)} {source.source.reason}</p>
+      </div>;
       const reason = draft.exclusions[source.itemId];
       const state = reason !== undefined ? 'Excluded with your reason.' : closedReading(source) ? 'Included.'
         : 'Can be confirmed when its reading closes.';
@@ -202,8 +207,9 @@ function DecisionFields({ profile, read, draft, change, files }: {
   const name = nameOf(read.items);
   return <fieldset className={styles.group}>
     <legend className="ul-label">Candidates of this key on this page</legend>
-    {sourcesOf(read.page, profile).map(({ itemId }) => <FileAccept key={itemId} name={name(itemId)}
-      reading={files.reading === itemId} words={files.words[itemId]} accept={() => files.accept(itemId)} />)}
+    {sourcesOf(read.page, profile).filter(retainedSource).map(({ itemId }) => <FileAccept key={itemId}
+      name={name(itemId)} reading={files.reading === itemId} words={files.words[itemId]}
+      accept={() => files.accept(itemId)} />)}
     {files.error ? <TableRefusal error={files.error} /> : null}
     {candidates.length ? <div className={styles.scroll}>
       <DataTable caption="Decide each candidate" rows={[...candidates]} rowKey={(row) => row.candidateId} columns={[

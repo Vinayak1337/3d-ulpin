@@ -534,6 +534,18 @@ export function evidenceSourceView(row: SourceCoverageRow) {
     sourceRevision: row.source_revision, sourceSha256: row.source_sha256, bytes: Number(row.source_bytes) };
 }
 
+/** Coverage survives a missing source on reads only; confirmations still require every retained source pin. */
+function evidenceSourceReadView(row: SourceCoverageRow) {
+  if (row.source_id === null || row.source_revision === null || row.source_sha256 === null
+    || row.source_bytes === null) {
+    return { itemId: row.item_id, profileId: row.profile_id, family: row.family, jobId: row.job_id,
+      resultSha256: row.result_sha256, coverage: coverageOf(row), sourceId: null, sourceRevision: null,
+      sourceSha256: null, bytes: null, source: { state: 'unavailable',
+        reason: 'The item no longer has a retained source in this batch.' } };
+  }
+  return { ...evidenceSourceView(row), source: { state: 'retained' } };
+}
+
 /** Profiles, coverage and stored confirmations of the case, and one page of candidates with counts by outcome.
  * EVS3: the page may be narrowed to one key profile and one table or document; the counts stay case-wide. */
 export async function readIntakeEvidence(caseValue: string,
@@ -570,7 +582,7 @@ export async function readIntakeEvidence(caseValue: string,
         expiresAt: new Date(row.expires_at).toISOString(), newerSources: newerSources(row.pins,
           sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)),
         accepted: acceptedCandidates(row.pins) })),
-      sources: sources.map(evidenceSourceView),
+      sources: sources.map(evidenceSourceReadView),
       candidates: page, counts, nextCursor: rows.length > page.length ? page.at(-1)!.candidateId : null });
   });
 }

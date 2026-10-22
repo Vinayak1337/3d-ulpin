@@ -377277,25 +377277,72 @@
                   "additionalProperties": false
                 },
                 "sourceId": {
+                  "nullable": true,
+                  "description": "The item's current retained source; with its revision, SHA-256 and bytes, the pins an evidence confirmation names for this item. All pins are null when unavailable.",
                   "type": "string",
                   "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                  "description": "The item's current retained source; with its revision, SHA-256 and bytes, the pins an evidence confirmation names for this item."
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                 },
                 "sourceRevision": {
+                  "nullable": true,
                   "type": "integer",
                   "minimum": 0,
                   "exclusiveMinimum": true,
                   "maximum": 9007199254740991
                 },
                 "sourceSha256": {
+                  "nullable": true,
                   "type": "string",
                   "pattern": "^[a-f0-9]{64}$"
                 },
                 "bytes": {
+                  "nullable": true,
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "source": {
+                  "default": {
+                    "state": "retained"
+                  },
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "retained"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "state"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "unavailable"
+                          ]
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
                 }
               },
               "required": [
@@ -377308,7 +377355,8 @@
                 "sourceId",
                 "sourceRevision",
                 "sourceSha256",
-                "bytes"
+                "bytes",
+                "source"
               ],
               "additionalProperties": false
             }

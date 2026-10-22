@@ -343,11 +343,20 @@ export const IntakeEvidenceCoverageSchema = z.strictObject({
 export const IntakeEvidenceSourceSchema = z.strictObject({
   itemId: uuid, profileId: uuid, family: z.enum(['table', 'document']), jobId: uuid.nullable(),
   resultSha256: hash.nullable(), coverage: IntakeEvidenceCoverageSchema.nullable(),
-  sourceId: uuid.describe('The item\'s current retained source; with its revision, SHA-256 and bytes, the pins an '
-    + 'evidence confirmation names for this item.'),
-  sourceRevision: z.number().int().positive(), sourceSha256: hash, bytes: z.number().int().nonnegative(),
+  sourceId: uuid.nullable().describe('The item\'s current retained source; with its revision, SHA-256 and bytes, '
+    + 'the pins an evidence confirmation names for this item. All pins are null when unavailable.'),
+  sourceRevision: z.number().int().positive().nullable(), sourceSha256: hash.nullable(),
+  bytes: z.number().int().nonnegative().nullable(),
+  source: z.discriminatedUnion('state', [
+    z.strictObject({ state: z.literal('retained') }),
+    z.strictObject({ state: z.literal('unavailable'), reason: words(500) }),
+  ]).default({ state: 'retained' }),
 }).refine(source => source.coverage?.state !== 'closed' || (source.jobId !== null && source.resultSha256 !== null),
-  'Closed coverage names the job and result that read it.');
+  'Closed coverage names the job and result that read it.')
+  .refine(source => {
+    const pins = [source.sourceId, source.sourceRevision, source.sourceSha256, source.bytes];
+    return source.source.state === 'retained' ? pins.every(pin => pin !== null) : pins.every(pin => pin === null);
+  }, 'A retained source states every pin; an unavailable source has no current pins.');
 type EvidenceKey = z.infer<typeof IntakeEvidenceKeySchema>;
 type EvidenceLocator = z.infer<typeof IntakeEvidenceLocatorSchema>;
 function keyIssue(key: EvidenceKey, evidence: EvidenceLocator, anchors: { literal: string }[]) {
