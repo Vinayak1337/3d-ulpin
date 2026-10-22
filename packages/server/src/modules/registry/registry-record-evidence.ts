@@ -8,7 +8,7 @@ import {transaction} from '../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../infrastructure/errors';
 import {readObjectBounded} from '../../infrastructure/storage';
 import {fingerprint} from '../cases/domain';
-import {recordFrom,recordBodySchema} from './registry';
+import {recordFrom,recordedBodySchema} from './registry';
 import {assertRegistryCurrentCitationTargetTx,assertRegistryDocumentCitationsTx,documentReviewContext,
   type RegistryDocumentDependencies} from './registry-document-evidence';
 import {citedCaseId,lockRegistryDocumentCasesTx,registryRegionCases} from './registry-document-locks';
@@ -62,7 +62,8 @@ async function captureTx(client:PoolClient,input:RegistryRecordEvidenceRequest,l
     capture.selectedBody.kind!==capture.record.kind||Number(capture.history.site_revision)>Number(capture.site.revision)||
     (input.revision===Number(capture.record.revision)&&fingerprint(capture.body)!==fingerprint(capture.selectedBody)))
     conflict('The exact committed target, site or revision body changed.');
-  recordBodySchema.parse(capture.body);recordBodySchema.parse(capture.selectedBody);
+  recordedBodySchema(capture.body).parse(capture.body);
+  recordedBodySchema(capture.selectedBody).parse(capture.selectedBody);
   return capture;
 }
 function records(capture:Capture,input:RegistryRecordEvidenceRequest){

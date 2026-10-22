@@ -6,12 +6,16 @@ import { exteriorOnlySql, isExteriorOnly } from './exterior-only';
 import { importRegistryCase } from './registry-seed';
 import { bodyOnly, commitRegistryReviewTx, persistRegistryReviewTx, prepareRegistryReview,
   recordBodySchema } from './registry';
-import type { assertRegistryDocumentCitationsTx } from './registry-document-evidence';
-import { attributed } from './registry-recorded-source.test-fixture';
+import type { assertRegistryDocumentCitationsTx, RegistryDocumentDependencies } from './registry-document-evidence';
+import { readRegistryRecordEvidenceTx } from './registry-record-evidence';
+import { attributed, subject } from './registry-recorded-source.test-fixture';
 import { tableRowCitation } from './registry-table-evidence';
+import { rowCells } from '../usp/ingestion/intake-evidence';
+import { readTabularSource } from '../usp/ingestion/tabular-source';
 import { setPreparationPlacement } from '../officer/officer-preparation';
 import { fingerprint } from '../cases/domain';
 import { settings } from '../../infrastructure/config';
+import { sha256 } from '../../infrastructure/storage';
 
 const stamp = '2026-10-11T00:00:00.000Z';
 const frame = { id: 'TEST', horizontalUnit: 'm', verticalUnit: 'm', benchmark: 'unknown' };
@@ -325,3 +329,67 @@ test('a correction cannot turn a recorded outline into an exterior-only building
     citationCheck([])), strict);
   assert.equal(changed.state.written, undefined, 'commit never nulls a recorded footprint');
 }));
+
+/** The confirmed register row with pins a real read of a protocol-only CSV gives, so the table check can run. */
+function readableRegisterRow(caseId: string) {
+  const { row, key, confirmation } = registerRow(caseId);
+  const bytes = Buffer.from(`bin
+${row.cell.value}
+`);
+  const table = readTabularSource(bytes, row.selection);
+  const pins = { sourceSha256: sha256(bytes), rawResultSha256: fingerprint(table), sourceRow: table.sourceRows[0],
+    rowSha256: fingerprint(rowCells(table, 0)) };
+  return { bytes, evidence: { row: { ...row, ...pins }, key, confirmation } };
+}
+
+/** The SQL the record-evidence read issues for one committed revision, answered from memory. */
+function committedQuery(capture: Record<string, any>, recorded: unknown, acceptedFence: number) {
+  return async (sql: string, args: any[]) => {
+    let rows: any[] = [];
+    if (sql.includes('selected_body')) rows = [capture];
+    else if (sql.includes('CASE WHEN r.revision=$2')) rows = [{ site_id: capture.site.id, kind: 'building',
+      project_status: null, body: args[1] === 1 ? recorded : capture.body }];
+    else if (sql.includes('FROM usp_job_metadata')) rows = [{ accepted_fence: acceptedFence }];
+    else if (sql.includes('FROM registry_records')) rows = [{ ...capture.record, body: capture.body, project_status: null }];
+    else assert(/^SELECT (pg_advisory_xact_lock|id FROM registry_sites)/.test(sql), sql);
+    return { rows, rowCount: rows.length };
+  };
+}
+
+/** RC3's act 1 building once committed: revision 2 is the revision 1 exterior-only body plus its register row. */
+function committedExterior(footprint: number[][] = []) {
+  const caseId = randomUUID(), recordId = randomUUID(), siteId = randomUUID();
+  const recorded = { ...exterior, evidence: [{ sourceId: randomUUID(), locator: 'feature 1087575' }] };
+  const { bytes, evidence } = readableRegisterRow(caseId);
+  const target = { recordId, revision: 1, bodySha256: fingerprint(recorded) };
+  const pin = tableRowCitation(evidence, { excerpt: 'bin: technical-control', accessSha256: digest }, target, subject);
+  const body = { ...recorded, footprint, documentCitations: [pin] };
+  const capture = { body, selected_body: body, project_status: null,
+    record: { id: recordId, site_id: siteId, identifier: 'technical exterior', kind: 'building', revision: 2 },
+    history: { record_id: recordId, revision: 2, site_revision: 2 },
+    site: { id: siteId, identifier: 'technical site', name: 'Technical control', frame, revision: 2, synthetic: false } };
+  const source = { case_id: caseId, revision: 1, sha256: evidence.row.sourceSha256, accessSha256: digest,
+    object_key: `sources/${evidence.row.sourceId}`, bytes: bytes.length };
+  const unread = async () => assert.fail('a table-row citation reads no native document');
+  const dependencies = { source: unread, result: unread, citationSource: unread, registrySource: async () => ({}),
+    tableEvidence: { source: async () => source, bytes: async () => bytes } } as unknown as RegistryDocumentDependencies;
+  const client = { query: committedQuery(capture, recorded, evidence.row.acceptedFence) } as unknown as PoolClient;
+  return { recordId, pin, client, dependencies };
+}
+
+test('the evidence of a committed exterior-only building with its register citation can be read', () => attributed(
+  async () => {
+    const control = committedExterior();
+    const read = await readRegistryRecordEvidenceTx(control.client, { recordId: control.recordId, revision: 2 },
+      control.dependencies);
+    assert.equal(read.recordKind, 'building');
+    assert.equal(read.snapshotState, 'current');
+    assert.deepEqual(read.citations.map(entry => entry.pin), [control.pin]);
+  }));
+
+test('a committed body with a two-point footprint is still refused by the evidence read', () => attributed(
+  async () => {
+    const control = committedExterior([[0, 0], [2, 0]]);
+    await assert.rejects(() => readRegistryRecordEvidenceTx(control.client, { recordId: control.recordId,
+      revision: 2 }, control.dependencies), (error: any) => error.name === 'ZodError');
+  }));
