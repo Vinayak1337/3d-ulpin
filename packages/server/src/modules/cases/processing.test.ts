@@ -5,6 +5,7 @@ import { Client } from 'pg';
 import { AppError } from '../../infrastructure/errors';
 import { DISPATCH_HEAD_OF_LINE_MS, DISPATCH_OPERATIONS, DispatchReservations, dispatchCost } from './dispatch-lanes';
 import { dispatchTick, dispatchWakeVersion, waitForDispatch } from './processing';
+import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-selection.fixture';
 
 type Sent = { sql: string; values: unknown[] };
 /** Runs `run` on a pool that answers each statement with `answer`'s rows. */
@@ -43,7 +44,7 @@ async function selection(): Promise<Sent> {
   return sent[1];
 }
 
-test("the dispatcher takes probes first, then each file's oldest job in its lane", async () => {
+test("the dispatcher keeps file fairness between batches and item order within a batch", async () => {
   const { sql, values } = await selection();
   const flat = sql.replace(/\s+/g, ' ');
   assert.match(flat,
@@ -55,12 +56,65 @@ test("the dispatcher takes probes first, then each file's oldest job in its lane
   assert.match(flat, /a.state='active' AND a.lease_until>now\(\)/);
   assert.match(flat, /jobs.dispatched_at IS NOT NULL AND NOT jobs.operation=ANY\(\$6::text\[\]\)/);
   assert.match(flat, /OR NOT COALESCE\(lanes.lane,'other'\)=ANY\(\$5::text\[\]\)/);
-  assert.match(flat, /ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12$/);
+  assert.match(flat, /LEFT JOIN usp_intake_items i ON i.source_id=jobs.source_id AND i.case_id=jobs.case_id/);
+  assert.match(flat, /i.parent_item_id IS NULL/);
+  assert.match(flat, /min\(fifo_rank\) OVER \( PARTITION BY COALESCE\(intake_case_id::text,id::text\),lane='probe'\)/);
+  assert.match(flat, /ORDER BY lane='probe' DESC,batch_rank,item_wave/);
+  assert.match(flat, /i.placement='needs_answer' OR i.plan_ref->>'recipeState'='approved'/);
+  assert.match(flat, /item_waiting DESC NULLS LAST,item_created_at,created_at,id LIMIT 12$/);
   const [operations, lanes, held, unavailable] = values as [string[], string[], string[], string[]];
   assert.deepEqual(held, []);
   assert.deepEqual(unavailable, []);
   assert.equal(lanes[operations.indexOf('point-batch')], 'point');
   assert.equal(lanes[operations.indexOf('spatial-inference')], 'gpu');
+});
+
+const intakeJob = (id: string, itemCreated: number, created: number): SelectionFixtureJob =>
+  ({ id, operation: 'intake-large', source_id: id, case_id: 'batch-control', created_at: new Date(created),
+    itemCreated });
+
+async function offlinePicked(jobs: SelectionFixtureJob[]): Promise<string[]> {
+  const { sql, values } = await selection();
+  return dispatchFixtureSelection(sql, values, jobs).map(row => String(row.id));
+}
+
+test('a member keeps item FIFO ahead of more than twelve younger sibling layers, before LIMIT', async () => {
+  const siblings = Array.from({ length: 15 }, (_, index) => intakeJob(`layer-${index}`, index + 1, index));
+  assert.deepEqual(await offlinePicked([...siblings, intakeJob('member', 0, 100)]),
+    ['member', ...siblings.slice(0, 11).map(row => row.id)]);
+});
+
+for (const waiting of [{ placement: 'needs_answer' }, { recipeState: 'approved' }]) {
+  test(`a later item's ${Object.values(waiting)[0]} layout work goes ahead of older siblings`, async () => {
+    const older = intakeJob('layer', 0, 0);
+    const waitingItem = { ...intakeJob('answer', 100, 100), ...waiting };
+    assert.deepEqual(await offlinePicked([older, waitingItem]), ['answer', 'layer']);
+  });
+}
+
+test('officer-pinned waves order a batch, without moving it ahead of an older unrelated batch', async () => {
+  const rows = [intakeJob('ordinary', 0, 10),
+    { ...intakeJob('wave-2', 2, 11), pinned: true, wave: 2 },
+    { ...intakeJob('wave-1', 3, 12), pinned: true, wave: 1 },
+    { ...intakeJob('wave-4', 4, 13), pinned: true, wave: 4 },
+    { ...intakeJob('other-batch', 0, 0), case_id: 'older-batch' }];
+  assert.deepEqual(await offlinePicked(rows), ['other-batch', 'ordinary', 'wave-1', 'wave-2', 'wave-4']);
+});
+
+test('non-batch work retains G22 file fairness and probe precedence offline', async () => {
+  const rows = Array.from({ length: 15 }, (_, index) => ({ ...intakeJob(`part-${index}`, 0, index),
+    source_id: 'same-file', operation: 'point-batch', itemCreated: undefined }));
+  rows.push({ ...intakeJob('table', 0, 20), operation: 'chunk-mapping', itemCreated: undefined });
+  rows.push({ ...intakeJob('probe', 0, 30), operation: 'inspect', itemCreated: undefined });
+  assert.deepEqual(await offlinePicked(rows), ['probe', 'part-0', 'table',
+    ...rows.slice(1, 10).map(row => row.id)]);
+});
+
+test('211 bulk parts linked to batch items still cannot hide that batch\'s table profile', async () => {
+  const rows = Array.from({ length: 211 }, (_, index) => ({ ...intakeJob(`part-${index}`, 0, index),
+    source_id: 'same-file', operation: 'point-batch' }));
+  rows.push({ ...intakeJob('table', 100, 300), operation: 'table-profile' });
+  assert.deepEqual(await offlinePicked(rows), ['part-0', 'table', ...rows.slice(1, 11).map(row => row.id)]);
 });
 
 test('every operation the dispatcher names has a lane', () => {
@@ -305,6 +359,9 @@ async function picked(fill: (add: (id: string, operation: string, source: string
     await client.query(`CREATE TEMPORARY TABLE jobs (id text PRIMARY KEY, operation text NOT NULL,
       status text NOT NULL, next_attempt_at timestamptz NOT NULL, created_at timestamptz NOT NULL, source_id text,
       case_id text NOT NULL, dispatched_at timestamptz)`);
+    await client.query(`CREATE TEMPORARY TABLE usp_intake_items (source_id text,case_id text,parent_item_id text,
+      created_at timestamptz NOT NULL,pinned_by_officer boolean NOT NULL,wave integer NOT NULL,
+      placement text,plan_ref jsonb)`);
     await client.query(`CREATE TEMPORARY TABLE usp_job_attempts
       (job_id text NOT NULL, state text NOT NULL, lease_until timestamptz NOT NULL)`);
     await fill((id, operation, source, minutes, status = 'queued', due = 0, dispatched = false) => client.query(
@@ -578,6 +635,37 @@ test('a nonterminal processor poll does not wake a busy loop', async () => {
       await settle();
     });
     assert.equal(dispatchWakeVersion(), version);
+  });
+});
+
+test('a stalled surface admission neither delays ready work nor overlaps another pass', async () => {
+  const admission = deferred<object[]>();
+  const began = deferred<void>();
+  let passes = 0;
+  const started: string[] = [];
+  await withPool(sql => {
+    if (sql.includes('AS file_rank')) return [pdf];
+    if (!sql.includes('FROM usp_intake_items i')) return [];
+    passes++;
+    began.resolve();
+    return admission.promise;
+  }, async () => {
+    const packetPdf = async (id: string) => { started.push(id); };
+    const first = dispatchTick({ packetPdf });
+    try {
+      await began.promise;
+      assert.equal(await Promise.race([first.then(() => true), settle().then(() => false)]), true);
+      await dispatchTick({ packetPdf });
+      assert.equal(passes, 1, 'the blocked pass retains exclusive ownership');
+      assert.deepEqual(started, ['pdf-1', 'pdf-1']);
+    } finally {
+      admission.resolve([]);
+      await first;
+      await settle();
+    }
+    await dispatchTick({ packetPdf });
+    assert.equal(passes, 2, 'a settled pass permits the next admission');
+    await settle();
   });
 });
 
