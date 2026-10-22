@@ -95,7 +95,10 @@ class NativeGltfTest(unittest.TestCase):
         for uri in ("../../private.bin", "https://127.0.0.1/secret", "file:///C:/private.bin"):
             document["buffers"][0]["uri"] = uri
             observed = reader.inspect_gltf(json.dumps(document).encode())
-            self.assertEqual(observed["buffers"][0]["status"], "needs_input")
+            # GB1: a uri that is not a plain sibling file name is refused with words, never resolved.
+            self.assertEqual(observed["buffers"][0]["status"], "refused")
+            self.assertEqual(observed["buffers"][0]["reason"], "EXTERNAL_URI_NOT_PLAIN_NAME")
+            self.assertFalse(observed["buffers"][0]["fetched"])
         document = copy.deepcopy(self.document)
         document["images"] = [{"uri": "https://127.0.0.1/private.png"}]
         document["textures"] = [{"source": 0}]

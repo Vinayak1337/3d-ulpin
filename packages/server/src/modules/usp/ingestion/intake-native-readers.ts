@@ -173,12 +173,42 @@ const objAxesWords: Record<ObjSummary['axes'], string> = { unknown: 'not stated'
 const objUnitsWords: Record<ObjSummary['units'], string> = { unknown: 'not stated' };
 const objCrsWords: Record<ObjSummary['crs'], string> = { unknown: 'not stated, so the model stays unplaced' };
 
+const refusalWords: Record<string, string> = {
+  EXTERNAL_URI_NOT_PLAIN_NAME: 'not a plain file name beside the glTF',
+  COMPANION_AMBIGUOUS: 'several kept files have this name',
+  COMPANION_SHORTER_THAN_BYTE_LENGTH: 'the file is shorter than the buffer it must hold',
+  BYTE_BUDGET: 'the glTF and its files would pass the 16 MiB reading limit',
+  COMPANION_ACCESS: 'the file belongs to another access context',
+};
+const cut = (name: string) => JSON.stringify(name.length > 40 ? `${name.slice(0, 37)}...` : name);
+/** At most four names, each cut to 40 characters, so the item line stays inside its 2,000-character bound. */
+function names(shown: string[], total: number): string {
+  if (!total || !shown.length) return '';
+  const more = total - Math.min(shown.length, 4);
+  return ` (${shown.slice(0, 4).join(', ')}${more > 0 ? ` and ${more} more` : ''})`;
+}
+
+/** GB1: which companion files were joined by name, which are still missing, and which were refused and why. */
+function companionWords(summary: GltfSummary): string {
+  if (!summary.companions) return `companion files named but not supplied: ${summary.missingCompanionCount}`;
+  const of = (state: string) => summary.companions!.filter(companion => companion.state === state);
+  const joined = of('joined').map(companion => cut(companion.name));
+  const missing = of('missing').map(companion => cut(companion.name));
+  const refused = of('refused').map(companion =>
+    `${cut(companion.name)}: ${refusalWords[companion.reason ?? ''] ?? 'refused'}`);
+  const joinedCount = summary.joinedCompanionCount ?? joined.length;
+  const refusedCount = summary.refusedCompanionCount ?? refused.length;
+  return `companion files joined: ${joinedCount}${names(joined, joinedCount)}; `
+    + `still missing: ${summary.missingCompanionCount}${names(missing, summary.missingCompanionCount)}`
+    + (refusedCount ? `; refused: ${refusedCount}${names(refused, refusedCount)}` : '');
+}
+
 /** A glTF has no coordinate reference system field: its positions are local to the model. */
 function gltfWords(summary: GltfSummary): string {
   return `The glTF reading is ${meshStatus(summary.status)}. It states ${counted(summary.nodeCount, 'node')} and `
     + `${counted(summary.primitiveCount, 'mesh primitive')}; they are candidates. `
-    + `Positions read: ${summary.projectedPositions}; companion files named but not supplied: `
-    + `${summary.missingCompanionCount}; unsupported primitives: ${summary.unsupportedPrimitiveCount}. `
+    + `Positions read: ${summary.projectedPositions}; ${companionWords(summary)}; `
+    + `unsupported primitives: ${summary.unsupportedPrimitiveCount}. `
     + `Placement on the earth: ${gltfPlacementWords[summary.globalPlacement]}. `
     + 'A glTF states no coordinate reference system, so the model stays unplaced.';
 }

@@ -439,7 +439,7 @@ test('the difficult external-buffer glTF and an OBJ missing its material settle 
   const gltfJob = (await queueIntakeDraftTx(gltf.client, gltf.source, gltf.card))!;
   await settleIntakeNativeReaderTx(gltf.client, gltf.source.case_id, gltfJob, acceptedEnd('gltf', gltf, gltfJob));
   assert.match(gltf.item.limit_reason,
-    /reading is partial\. .* Positions read: 0; companion files named but not supplied: 1;/);
+    /reading is partial\. .* Positions read: 0; companion files joined: 0; still missing: 1 \("Box0\.bin"\);/);
   const raw = readFileSync(`${objRoot}/missing_material_file.obj`);
   const summary = objSummary(readFileSync(`${objRoot}/partial-run01/obj.json`),
     { sourceSha256: sha256(raw), sourceBytes: raw.length } as any);

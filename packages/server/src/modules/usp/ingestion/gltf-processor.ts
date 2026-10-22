@@ -2,17 +2,21 @@ import {spawn} from 'node:child_process';
 import {mkdtemp,writeFile,readFile,stat,rm,realpath} from 'node:fs/promises';
 import {join,relative,isAbsolute} from 'node:path';
 import {z} from 'zod';
-import {GLTF_LIMITS,GltfSummarySchema,GltfSupervisionSchema,type GltfInput} from '../../../../../contracts/src/usp/gltf-ingestion';
+import {GLTF_COMPANION_LIMIT,GLTF_LIMITS,GltfSummarySchema,GltfSupervisionSchema,type GltfCompanion,type GltfInput}
+  from '../../../../../contracts/src/usp/gltf-ingestion';
 import {sha256} from '../../../infrastructure/storage';
 import {AppError} from '../../../infrastructure/errors';
 import {assertGltfTools,type GltfConfig} from './gltf-config';
 
-const count=z.number().int().nonnegative(),declaredResource=z.object({dependency:z.object({status:z.string(),fetched:z.literal(false).optional()}).optional()});
+const count=z.number().int().nonnegative(),declaredResource=z.object({declaration:z.object({uri:z.unknown().optional()}).optional(),
+  dependency:z.object({kind:z.string().optional(),status:z.string(),fetched:z.literal(false).optional()}).optional()});
+const nativeBuffer=z.object({status:z.string(),fetched:z.literal(false),kind:z.string().optional(),uri:z.string().optional(),
+  reason:z.string().optional(),binding:z.object({sourceId:z.string().nullable().optional(),sha256:z.string().optional()}).optional()});
 const native=z.object({schemaVersion:z.literal('gltf-local-inspection/1'),status:GltfSummarySchema.shape.status,
   sourceSha256:GltfSummarySchema.shape.sourceSha256,sourceBytes:GltfSummarySchema.shape.sourceBytes,
   geometryProjectionStatus:GltfSummarySchema.shape.geometryProjectionStatus,representation:z.literal('context_mesh'),
   selectedScene:z.object({index:GltfSummarySchema.shape.selectedSceneIndex,origin:GltfSummarySchema.shape.selectedSceneOrigin}),
-  nodes:z.array(z.unknown()).max(10000),buffers:z.array(z.object({status:z.string(),fetched:z.literal(false)})).max(10000),
+  nodes:z.array(z.unknown()).max(10000),buffers:z.array(nativeBuffer).max(10000),
   primitives:z.array(z.object({status:z.string(),projection:z.object({
     POSITION:z.object({values:z.array(z.array(z.number()).length(3)).max(100000).optional()}),
     indices:z.object({values:z.array(count).max(300000).nullable().optional()})}).nullable()})).max(10000),
@@ -21,6 +25,31 @@ const native=z.object({schemaVersion:z.literal('gltf-local-inspection/1'),status
   qualification:z.object({profile:z.literal('local_source_inspection_only'),globalPlacement:z.literal('unknown'),
     analyticalGeometry:z.literal(false),measurements:z.literal(false),propertyIdentity:z.literal(false),registryAdmission:z.literal(false),rendering:z.literal(false),
     coordinates:z.literal('source_accessor_values; node transforms are declarations only')})});
+const integrity=()=>{throw new AppError(422,'GLTF_ARTIFACT_INTEGRITY','Native result differs from the enrolled source or inventory.');};
+/** GB1: which companion files the reading joined, still misses or refused; a joined buffer must match its pinned binding. */
+function gltfCompanions(value:z.infer<typeof native>,input:GltfInput){
+  const pinned=new Map((input.buffers??[]).map(entry=>[entry.bufferIndex,entry])),list:GltfCompanion[]=[];
+  const none={reason:null,sourceId:null,sha256:null,bytes:null};
+  value.buffers.forEach((buffer,index)=>{
+    const entry=pinned.get(index),name=(buffer.uri??'').slice(0,2048);
+    if(buffer.kind==='bound_companion'){
+      if(entry?.state!=='bound'||buffer.status!=='available'||buffer.binding?.sourceId!==entry.sourceId||buffer.binding?.sha256!==entry.sha256)integrity();
+      const bound=entry as Extract<typeof entry,{state:'bound'}>;
+      list.push({kind:'buffer',index,name,state:'joined',reason:null,sourceId:bound.sourceId,sha256:bound.sha256,bytes:bound.bytes});
+    }else if(buffer.kind==='external_uri'&&name){
+      if(buffer.status==='needs_input'){if(entry)integrity();list.push({kind:'buffer',index,name,state:'missing',...none});}
+      else if(buffer.status==='refused')list.push({kind:'buffer',index,name,state:'refused',...none,
+        reason:/^[A-Z_]{1,64}$/.test(buffer.reason??'')?buffer.reason!:'COMPANION_REFUSED'});
+    }else if(entry)integrity();
+  });
+  value.resources.images.forEach((image,index)=>{
+    const uri=image.declaration?.uri;
+    if(image.dependency?.kind==='external_uri'&&image.dependency.status==='needs_input'&&typeof uri==='string'&&uri)
+      list.push({kind:'image',index,name:uri.slice(0,2048),state:'missing',...none});
+  });
+  return {companions:list.slice(0,GLTF_COMPANION_LIMIT),joinedCompanionCount:list.filter(c=>c.state==='joined').length,
+    refusedCompanionCount:list.filter(c=>c.state==='refused').length};
+}
 /** Derive small status from the actual unaltered native projection, not source labels. */
 export function gltfSummary(bytes:Buffer,input:GltfInput){
   if(bytes.length>GLTF_LIMITS.artifactBytes)throw new AppError(413,'GLTF_OUTPUT_LIMIT','Gltf native output exceeds its profile.');
@@ -35,6 +64,7 @@ export function gltfSummary(bytes:Buffer,input:GltfInput){
     selectedSceneIndex:value.selectedScene.index,selectedSceneOrigin:value.selectedScene.origin,
     nodeCount:c.nodes,primitiveCount:c.primitives,projectedPositions:c.projectedPositions,projectedIndices:c.projectedIndices,
     missingCompanionCount:value.buffers.filter(b=>b.status==='needs_input').length+value.resources.images.filter(i=>i.dependency?.status==='needs_input').length,
+    ...gltfCompanions(value,input),
     unsupportedPrimitiveCount:value.primitives.filter(p=>p.status==='unsupported').length,
     globalPlacement:'unknown',accuracy:'not_assessed',validity:'not_assessed',canonicalIdentity:'not_assessed',
     analyticEligible:false,registryAdmission:false,measurements:false,learningLabels:false,rights:'not_assessed'});
@@ -80,7 +110,22 @@ export function superviseGltf(config:GltfConfig,requestPath:string,scratch:strin
     if(signal.aborted)abort();
   });
 }
-export async function processGltf(input:GltfInput,source:Buffer,signal:AbortSignal,deadlineAt:number){
+/** GB1: the CLI manifest of exact buffer bindings; bound entries name their scratch snapshot by path. */
+export function gltfCompanionManifest(input:GltfInput,companions:Map<number,Buffer>,scratch:string){
+  const files:{path:string;bytes:Buffer}[]=[];
+  const entries=(input.buffers??[]).map(entry=>{
+    if(entry.state==='ambiguous')return {bufferIndex:entry.bufferIndex,uri:entry.uri,state:entry.state};
+    if(entry.state==='refused')return {bufferIndex:entry.bufferIndex,uri:entry.uri,state:entry.state,reason:entry.reason};
+    const bytes=companions.get(entry.bufferIndex);
+    if(!bytes||bytes.length!==entry.bytes||sha256(bytes)!==entry.sha256)
+      throw new AppError(422,'GLTF_COMPANION_INTEGRITY',`The retained original bound to buffer ${entry.bufferIndex} differs from its SHA-256.`);
+    const path=join(scratch,`companion-${entry.bufferIndex}.bin`);files.push({path,bytes});
+    return {bufferIndex:entry.bufferIndex,uri:entry.uri,state:entry.state,sourceId:entry.sourceId,sha256:entry.sha256,bytes:entry.bytes,path};
+  });
+  return {files,manifest:Buffer.from(JSON.stringify(entries))};
+}
+export async function processGltf(input:GltfInput,source:Buffer,signal:AbortSignal,deadlineAt:number,
+  companions:Map<number,Buffer>=new Map()){
   signal.throwIfAborted();if(source.length!==input.sourceBytes||sha256(source)!==input.sourceSha256)
     throw new AppError(422,'GLTF_SOURCE_INTEGRITY','Retained Gltf source differs from its byte receipt.');
   const config=assertGltfTools(input.tools,deadlineAt),scratch=await mkdtemp(join(config.scratchRoot,'gltf-native-'));
@@ -88,7 +133,14 @@ export async function processGltf(input:GltfInput,source:Buffer,signal:AbortSign
   try{
     const sourcePath=join(scratch,'original.bin'),outputDirectory=join(scratch,'output'),output=join(outputDirectory,'gltf.json'),requestPath=join(scratch,'request.json');
     await writeFile(sourcePath,source,{flag:'wx'});
-    await writeFile(requestPath,JSON.stringify({source:sourcePath,sourceSha256:input.sourceSha256,outputDirectory,sceneIndex:input.sceneIndex,profilePath:config.profilePath,tools:input.tools}),{flag:'wx'});
+    let bindings={};
+    if(input.buffers){
+      const {files,manifest}=gltfCompanionManifest(input,companions,scratch),manifestPath=join(scratch,'companions.json');
+      for(const file of files)await writeFile(file.path,file.bytes,{flag:'wx'});
+      await writeFile(manifestPath,manifest,{flag:'wx'});
+      bindings={companionsManifest:manifestPath,companionsSha256:sha256(manifest)};
+    }
+    await writeFile(requestPath,JSON.stringify({source:sourcePath,sourceSha256:input.sourceSha256,outputDirectory,sceneIndex:input.sceneIndex,profilePath:config.profilePath,tools:input.tools,...bindings}),{flag:'wx'});
     const supervision=await superviseGltf(config,requestPath,scratch,signal);signal.throwIfAborted();
     const info=await stat(output);if(!info.isFile()||info.size>GLTF_LIMITS.artifactBytes)throw new AppError(413,'GLTF_OUTPUT_LIMIT','Local Gltf output exceeds its profile.');
     const bytes=await readFile(output,{signal}),summary=gltfSummary(bytes,input);

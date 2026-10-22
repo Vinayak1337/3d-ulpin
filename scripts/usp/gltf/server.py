@@ -189,6 +189,14 @@ def main():
                        '--output-dir',str(output_directory)]
             if request['sceneIndex'] is not None:
                 arguments.extend(['--scene',str(request['sceneIndex'])])
+            # GB1: exact buffer bindings; the CLI locks and hash-checks each bound retained original.
+            companions=None
+            if request.get('companionsManifest') is not None:
+                manifest=bounded(request['companionsManifest'],1024**2)
+                if digest(manifest)!=request.get('companionsSha256'):
+                    raise ValueError('companions_changed')
+                companions=[{k:v for k,v in entry.items() if k!='path'} for entry in json.loads(manifest)]
+                arguments.extend(['--companions',str(request['companionsManifest'])])
             stdout,stderr=io.StringIO(),io.StringIO()
             with redirect_stdout(stdout),redirect_stderr(stderr):
                 exit_code=cli.main(arguments)
@@ -209,7 +217,8 @@ def main():
             if receipt['schemaVersion']!='gltf-local-receipt/1' or receipt['sourceSha256']!=request['sourceSha256'] \
                     or receipt['artifact']['sha256']!=digest(encoded) or receipt['artifact']['bytes']!=len(encoded) \
                     or receipt['pythonSha256']!=pins['pythonSha256'] or receipt['workerPythonSha256']!=pins['pythonSha256'] \
-                    or receipt['sourceWriteDeniedThroughPublication'] is not True:
+                    or receipt['sourceWriteDeniedThroughPublication'] is not True \
+                    or receipt.get('companions')!=companions:
                 raise ValueError('receipt_changed')
             supervision=receipt['supervision']
             dependency_profile.verify(profile)

@@ -9,7 +9,7 @@ import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {claimUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {assertGltfTools} from './gltf-config';
 import {processGltf} from './gltf-processor';
-import {assertGltfInputTx,assertGltfJobRow,gltfResultKey,gltfArtifactKey,readGltfResult,boundedGltfObject} from './gltf';
+import {assertGltfInputTx,assertGltfJobRow,gltfResultKey,gltfArtifactKey,readGltfResult,boundedGltfObject,gltfCompanionBytes} from './gltf';
 import {appendCaseIngestionTx} from './events';
 import {settleIntakeNativeReaderTx} from './intake-native-readers';
 
@@ -108,8 +108,9 @@ async function executeGltfJob(jobId:string,deadline:DbDeadline,controller:AbortC
       await appendCaseIngestionTx(client,input.caseId,{kind:'gltf-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);},deadline);
     const original=await boundedGltfObject(input.objectKey,input.sourceBytes,controller.signal);
+    const companions=await gltfCompanionBytes(input,controller.signal);
     await current();controller.signal.throwIfAborted();
-    const native=await processGltf(input,original,controller.signal,deadline.deadlineAt);
+    const native=await processGltf(input,original,controller.signal,deadline.deadlineAt,companions);
     await current();controller.signal.throwIfAborted();
     const artifact={key:gltfArtifactKey(jobId,native.hash),sha256:native.hash,bytes:native.bytes.length,
       mediaType:'application/json' as const,profile:'gltf-local-inspection/1' as const};

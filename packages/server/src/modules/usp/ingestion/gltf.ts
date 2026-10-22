@@ -5,7 +5,7 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {GLTF_VERSION,GLTF_LIMITS,GltfRetainSchema,GltfRequestSchema,
   GltfOriginalSchema,GltfInputSchema,GltfResultSchema,GltfStatusSchema,GltfRetainReceiptSchema,GltfQueueReceiptSchema,
-  type GltfInput,type GltfResult} from '../../../../../contracts/src/usp/gltf-ingestion';
+  type GltfInput,type GltfResult,type GltfBufferBinding} from '../../../../../contracts/src/usp/gltf-ingestion';
 import {transaction,query,DbCommitOutcomeUnknown,type DbDeadline} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
@@ -17,6 +17,7 @@ import {gltfConfig,assertGltfReadTools} from './gltf-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 import {assertBatchNativeSourceTx} from './intake-native-readers';
+import {assertGltfBuffersTx,gltfBufferBindingsTx} from './gltf-companions';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -41,6 +42,20 @@ export async function boundedGltfObject(key:string,size:number,signal?:AbortSign
   }finally{body.destroy();}
 }
 
+/** GB1: the bytes of each bound companion, read from its retained original and checked by its recorded SHA-256. */
+export async function gltfCompanionBytes(input:GltfInput,signal?:AbortSignal){
+  const bytes=new Map<number,Buffer>();
+  for(const entry of input.buffers??[]){
+    if(entry.state!=='bound')continue;
+    if(entry.memberPath!==null)throw new AppError(422,'GLTF_ZIP_COMPANION_UNAVAILABLE',
+      'A companion inside a ZIP cannot be read by the glTF reader yet; the glTF and the ZIP are kept unchanged.');
+    const raw=await boundedGltfObject(entry.objectKey,entry.bytes,signal);
+    if(raw.length!==entry.bytes||sha256(raw)!==entry.sha256)
+      throw new AppError(422,'GLTF_COMPANION_INTEGRITY',`The retained original bound to buffer ${entry.bufferIndex} differs from its SHA-256.`);
+    bytes.set(entry.bufferIndex,raw);
+  }
+  return bytes;
+}
 /** Pin the stored payload and accepted attempt, not merely job.status. */
 export function assertGltfJobRow(job:Record<string,any>,input:GltfInput,accepted=false){
   const digest=fingerprint(input);
@@ -72,8 +87,9 @@ export async function gltfSourceTx(client:PoolClient,caseId:string,sourceId:stri
   return {current,source,binding,latest,context:fingerprint({frame:current.frame,context:current.context,siteId:current.site_id})};
 }
 export function nullableGltfTools(){try{return gltfConfig().pins;}catch(error){if(error instanceof AppError&&error.status===503)return null;throw error;}}
-export function gltfInput(ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,tools=nullableGltfTools(),sceneIndex:number|null=null):GltfInput{
-  return GltfInputSchema.parse({version:GLTF_VERSION,jobId,caseId:ctx.current.id,
+export function gltfInput(ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,tools=nullableGltfTools(),sceneIndex:number|null=null,
+  buffers?:GltfBufferBinding[]):GltfInput{
+  return GltfInputSchema.parse({version:GLTF_VERSION,jobId,caseId:ctx.current.id,...(buffers?{buffers}:{}),
     caseRevision:ctx.current.revision,caseContextSha256:ctx.context,sourceId:ctx.source.id,
     sourceFamilyId:ctx.source.family_id,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
     sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,subject:ctx.binding.subject,
@@ -81,8 +97,9 @@ export function gltfInput(ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:str
 }
 export async function assertGltfInputTx(client:PoolClient,input:GltfInput,lock=false){
   const ctx=await gltfSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||!compareSourcePins(gltfInput(ctx,input.jobId,input.tools,input.sceneIndex),input).current)
+  if(!ctx.latest||!compareSourcePins(gltfInput(ctx,input.jobId,input.tools,input.sceneIndex,input.buffers),input).current)
     conflict('The Gltf original, case, reader or private access context changed. Retry under current pins.');
+  await assertGltfBuffersTx(client,input,ctx.binding);
   return ctx;
 }
 async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSourceTx>>,sceneIndex:number|null){
@@ -97,7 +114,16 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSou
 export async function insertGltfJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,
   sceneIndex:number|null=null){
   if(!ctx.latest)conflict('This Gltf source has a newer retained revision.');
-  const input=gltfInput(ctx,jobId,nullableGltfTools(),sceneIndex),inputHash=fingerprint(input);
+  // GB1: buffer uris are joined to same-named retained originals of the case when the job is inserted; a later
+  // companion is picked up only by a new read (the retries route), never by changing this input or its result.
+  // A storage fault while looking for uris leaves the buffers unbound (needs_input), never blocks the read itself.
+  const buffers=await gltfBufferBindingsTx(client,ctx.source,ctx.binding,async()=>{
+    let raw:Buffer;
+    try{raw=await boundedGltfObject(ctx.source.object_key,Number(ctx.source.bytes));}catch{return null;}
+    if(sha256(raw)!==ctx.source.sha256)throw new AppError(422,'GLTF_SOURCE_INTEGRITY','Retained Gltf source differs from its byte receipt.');
+    return raw;
+  });
+  const input=gltfInput(ctx,jobId,nullableGltfTools(),sceneIndex,buffers),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'gltf-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);
