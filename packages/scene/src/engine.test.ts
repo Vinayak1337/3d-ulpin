@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Points, Raycaster, Vector3 } from 'three';
 import { SceneEngine } from './engine';
 import { FLAT_THICKNESS_M, prismGeometry } from './geometry';
@@ -117,11 +117,37 @@ describe('the read parts of a kept surface', () => {
   function surfaceEngine() {
     const surface = new Group();
     const engine = Object.assign(Object.create(SceneEngine.prototype), {
-      surface, surfaceParts: new Map(), options: { palette: { selected: '#1f6feb' } }, requestRender: vi.fn(),
-    }) as SceneEngine;
+      surface, surfaceParts: new Map(), surfaceQueue: new Map(), options: { palette: { selected: '#1f6feb' } },
+      requestRender: vi.fn(),
+    }) as SceneEngine & { drainSurfaceQueue(): void };
     return { engine, surface };
   }
   const square: SurfacePartInput['corners'] = [[0, 0], [10, 0], [10, 10], [0, 10]];
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('queues a synthetic 15-part backlog without building it and adds at most one part per frame', () => {
+    const { engine, surface } = surfaceEngine();
+    // Synthetic test-only raster and point shapes; matches the rehearsal's 9 pictures and 6 point parts.
+    const parts: SurfacePartInput[] = Array.from({ length: 15 }, (_, index) => ({
+      id: `synthetic:${index}`, corners: square,
+      ...(index < 9 ? { image: {} as HTMLCanvasElement } : {
+        points: { positions: new Float32Array(8192 * 3), colors: new Float32Array(8192 * 3), sizeM: 0.6 },
+      }),
+    }));
+    engine.setSurfaceParts(parts);
+    expect(surface.children).toHaveLength(0);
+    for (let frame = 1; frame <= parts.length; frame++) {
+      engine.drainSurfaceQueue();
+      expect(surface.children).toHaveLength(frame);
+    }
+    const drawn = [...surface.children];
+    engine.setSurfaceParts([...parts, { id: 'synthetic:next', corners: square }]);
+    expect(surface.children).toEqual(drawn);
+    engine.drainSurfaceQueue();
+    expect(surface.children.slice(0, 15)).toEqual(drawn);
+    expect(surface.children).toHaveLength(16);
+  });
 
   it('adds and removes parts by id and keeps a part drawn while its input is the same', () => {
     const { engine, surface } = surfaceEngine();
@@ -129,9 +155,11 @@ describe('the read parts of a kept surface', () => {
     const b: SurfacePartInput = { id: 'i:1', corners: square,
       points: { positions: Float32Array.of(2, 3, 0), colors: Float32Array.of(1, 0, 0), sizeM: 0.6 } };
     engine.setSurfaceParts([a]);
+    engine.drainSurfaceQueue();
     const first = surface.children[0]!;
     expect(first.children.map((child) => child.type)).toEqual(['LineLoop', 'Mesh']);
     engine.setSurfaceParts([a, b]);
+    engine.drainSurfaceQueue();
     expect(surface.children).toHaveLength(2);
     expect(surface.children[0]).toBe(first);
     const points = surface.children[1]!.children[1] as Points;
