@@ -5,7 +5,7 @@ import {
 } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import type { IngestionBinding } from './events';
-import type { IntakeSourceRow } from './intake-context';
+import { intakeSourceTx, type IntakeSourceRow } from './intake-context';
 import { writeIntakeDraftTx } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { dxfSourceTx, insertDXFJobTx } from './dxf';
@@ -133,8 +133,9 @@ function citygmlWords(summary: CityGMLResult['summary']): string {
 }
 
 function cityjsonWords(summary: CityJSONResult['summary']): string {
-  const crs = summary.referenceSystemState === 'declared'
-    ? 'declared (the summary gives no code)' : summary.referenceSystemState;
+  const state = summary.referenceSystemState;
+  const crs = state === 'declared' ? 'declared (the summary gives no code)'
+    : `${state}, so its building outlines stay unplaced`;
   const status = summary.status === 'supported' ? 'supported' : 'partial: some geometry is unsupported';
   return `The CityJSON reading is ${status}. It states ${summary.objectCount} objects, `
     + `${summary.supportedGeometryCount} supported geometries and ${summary.unsupportedGeometryCount} unsupported `
@@ -166,13 +167,28 @@ function stoppedWords(end: Extract<IntakeNativeReaderEnd, { status: string }>): 
     + 'The original is kept with its SHA-256.';
 }
 
+/**
+ * B3D1. A CityJSON reading whose file states a reference system has its building ground outlines converted to
+ * GeoJSON by SH2's derivative job; each converted layer then takes the GeoJSON map path, and the officer still
+ * confirms every card. Any other reading stays unplaced evidence.
+ */
+export function outlinesConverted(end: IntakeNativeReaderEnd): boolean {
+  return 'summary' in end && end.format === 'cityjson' && end.summary.referenceSystemState === 'declared';
+}
+
 /** Called inside the native worker's terminal transaction, after its accepted-attempt fences. */
 export async function settleIntakeNativeReaderTx(client: PoolClient, caseId: string, jobId: string,
   end: IntakeNativeReaderEnd) {
-  const item = (await client.query(`SELECT item_id FROM usp_intake_items
+  const item = (await client.query(`SELECT item_id,source_id,card FROM usp_intake_items
     WHERE case_id=$1 AND parent_item_id IS NULL AND plan_ref->>'nativeReaderJobId'=$2 AND format=$3 FOR UPDATE`,
   [caseId, jobId, end.format])).rows[0];
   if (!item) return;
+  if (outlinesConverted(end)) {
+    const { queueNativeDerivativeTx } = await import('./intake-native-derivative');
+    const { source } = await intakeSourceTx(client, caseId, item.source_id);
+    await queueNativeDerivativeTx(client, source, item.card);
+    return;
+  }
   const read = 'summary' in end;
   await writeIntakeDraftTx(client, caseId, item.item_id, {
     state: 'read', placement: read ? 'undecided' : 'not_understood',

@@ -21,6 +21,7 @@ from pyproj import CRS
 from pyproj.exceptions import CRSError
 from shapely import from_wkb
 
+from .cityjson_outline import OUTLINE_READER, convert_cityjson_file
 from .validation import InputError
 
 MAX_BYTES = 16 * 1024 * 1024
@@ -1096,10 +1097,31 @@ def convert_kml_file(path: Path, fmt: str, folder: Path, source_sha256: str) -> 
             archive.close()
 
 
+def _horizontal_epsg(code: int) -> str | None:
+    """B3D1. The two-dimensional horizontal EPSG system of a code a file states: the code itself, or the horizontal
+    part the EPSG registry defines for a compound code. None for anything else; nothing is guessed."""
+    try:
+        reference = CRS.from_epsg(code)
+    except CRSError:
+        return None
+    if reference.is_compound:
+        reference = reference.sub_crs_list[0]
+    authority = reference.to_authority()
+    planar = len(reference.axis_info) == 2 and (reference.is_projected or reference.is_geographic)
+    if authority is None or authority[0] != "EPSG" or not planar:
+        return None
+    return f"EPSG:{authority[1]}"
+
+
 def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str,
                         answers: dict | None = None) -> list[dict]:
     """Every layer of one original on scratch disk, each converted or stopped with words naming why. `answers` maps
-    a layer whose file states no CRS to the EPSG code an officer stated for it (CR1)."""
+    a layer whose file states no CRS to the EPSG code an officer stated for it (CR1). B3D1: a CityJSON gives one
+    layer of building ground outlines."""
+    if fmt == "cityjson":
+        return convert_cityjson_file(path, source_sha256, lambda header, crs: _Derivative(
+            folder, 0, {"version": "native-gis-locators/1", "conversion": CONVERSION, **header}, crs),
+            _horizontal_epsg)
     if fmt == "gpkg":
         with path.open("rb") as head:
             if head.read(16) != b"SQLite format 3\x00":
@@ -1210,5 +1232,6 @@ def convert_native(data: dict, s3=None) -> dict:
                 entry["objectKey"] = f"native-derivatives/{digest}/{layer['ordinal']}/{name}-{entry['sha256']}"
                 client.upload_file(entry.pop("path"), settings.S3_BUCKET, entry["objectKey"],
                                    ExtraArgs={"ContentType": kind, "Metadata": {"sha256": entry["sha256"]}})
-    return {"conversion": CONVERSION, "readerVersion": KML_READER if kml else WINDOW_READER, "sourceId": source_id,
+    reader = {"cityjson": OUTLINE_READER, **dict.fromkeys(KML_FORMATS, KML_READER)}.get(fmt, WINDOW_READER)
+    return {"conversion": CONVERSION, "readerVersion": reader, "sourceId": source_id,
             "sourceSha256": digest, "layers": layers, **({"notRead": not_read} if not_read else {})}

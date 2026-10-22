@@ -71,17 +71,28 @@ export const NativeDerivativeLineageSchema = z.strictObject({
   version: z.literal('native-derivative/1'), conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION),
   readerVersion: z.string().min(1).max(64), originalSourceId: uuid, originalSourceRevision: z.number().int().positive(),
   originalSha256: hex64, originalItemId: uuid,
-  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz']),
+  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz', 'cityjson']),
   layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
   members: SetMembersSchema.optional(),
 }).refine(lineage => (lineage.format === 'shapefile_set') === Boolean(lineage.members),
   'Only a shapefile set names its members, and it names every one.');
 
-type NativeFormat = NonNullable<ReturnType<typeof nativeDerivativeFormat>>;
+/** B3D1. The format an item's original is converted from: SH2's GIS formats, or a CityJSON's ground outlines. */
+function derivativeFormat(card: IntakeCard | null, name: string) {
+  return card?.format === 'cityjson' ? 'cityjson' as const : nativeDerivativeFormat(card, name);
+}
+
+type NativeFormat = NonNullable<ReturnType<typeof derivativeFormat>>;
 const kinds: Record<NativeFormat, string> = { gpkg: 'GeoPackage', shapefile_zip: 'shapefile ZIP',
-  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ' };
+  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ', cityjson: 'CityJSON' };
 const kind = (format: NativeFormat) => kinds[format];
+
+/** B3D1. The reading a CityJSON's outlines are converted after stays cited beside its item. */
+function withReading(planRef: Record<string, unknown> | null, stored: unknown): Record<string, unknown> | null {
+  const jobId = (stored as { nativeReaderJobId?: unknown } | null)?.nativeReaderJobId;
+  return typeof jobId === 'string' ? { ...planRef, nativeReaderJobId: jobId } : planRef;
+}
 
 type SetPart = { item_id: string; card: IntakeCard; plan_ref: Record<string, unknown> | null; source_id: string;
   name: string; revision: number; sha256: string; object_key: string; bytes: string | number;
@@ -217,7 +228,7 @@ export async function queueShapefileSetTx(client: PoolClient, source: IntakeSour
  */
 export async function queueNativeDerivativeTx(client: PoolClient, source: IntakeSourceRow,
   card: IntakeCard, answered = false): Promise<string | null> {
-  const format = nativeDerivativeFormat(card, source.name);
+  const format = derivativeFormat(card, source.name);
   const item = (await client.query(`SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL
     FOR UPDATE`, [source.id])).rows[0];
   if (!format || !item) return null;
@@ -250,8 +261,9 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
   const nativeLayers = nativeLayersRef(item.plan_ref);
   const planRef = nativeLayers.unstated.length || nativeLayers.answers.length ? { nativeLayers } : null;
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
-    planRef, recordsSeen: 0, limitReason: `The layers of this ${kind(format)} are being converted `
-      + 'to GeoJSON, each to be taken in as its own file.' });
+    planRef: withReading(planRef, item.plan_ref), recordsSeen: 0,
+    limitReason: `The layers of this ${kind(format)} are being converted to GeoJSON, each to be taken in as its own `
+      + 'file.' });
   return input.jobId;
 }
 
@@ -368,13 +380,13 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       AND parent_item_id IS NULL`, [caseId, itemId])).rows[0];
     if (!item?.source_id || !item.card) return null;
     const { source } = await intakeSourceTx(client, caseId, item.source_id);
-    const format = nativeDerivativeFormat(item.card, source.name);
+    const format = derivativeFormat(item.card, source.name);
     const parts = format === 'shapefile_set' ? await pinnedSetTx(client, source, pinned) : undefined;
     if (!format || parts === null) return null;
-    return { format, source, parts, answers: nativeLayersRef(item.plan_ref).answers };
+    return { format, source, parts, answers: nativeLayersRef(item.plan_ref).answers, stored: item.plan_ref };
   });
   if (!scope) return [];
-  const { format, source, parts, answers } = scope;
+  const { format, source, parts, answers, stored } = scope;
   const layerCrs = Object.fromEntries(answers.map(answer => [answer.layer, answer.crs]));
   const set = parts && { layer: fileName(partName(source.name)!.stem), members: parts.map(part => ({
     extension: part.extension, sourceId: part.source_id, objectKey: part.object_key, sha256: part.sha256,
@@ -411,8 +423,8 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
   }
   await dependencies.transaction(async client => {
     if (parts && !await pinnedSetTx(client, source, memberPins(parts))) return;
-    await writeIntakeDraftTx(client, caseId, itemId, nativeParentState(format, conversion, outcomes, answers,
-      parts?.map(part => fileName(part.name))));
+    const state = nativeParentState(format, conversion, outcomes, answers, parts?.map(part => fileName(part.name)));
+    await writeIntakeDraftTx(client, caseId, itemId, { ...state, planRef: withReading(state.planRef, stored) });
   });
   return outcomes.flatMap(outcome => outcome.sourceId ? [outcome.sourceId] : []);
 }

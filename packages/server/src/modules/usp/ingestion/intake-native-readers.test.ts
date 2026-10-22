@@ -22,7 +22,7 @@ import { ingestionBinding } from './events';
 import type { IntakeSourceRow } from './intake-context';
 import { queueIntakeDraftTx } from './intake-draft';
 import { intakeItem } from './intake-ledger';
-import { batchNativeReader, intakeNativeReaderJobId, intakeNativeReadWords,
+import { batchNativeReader, intakeNativeReaderJobId, intakeNativeReadWords, outlinesConverted,
   settleIntakeNativeReaderTx, type IntakeNativeReaderEnd } from './intake-native-readers';
 import { probeOriginal } from './intake-probe';
 
@@ -114,9 +114,10 @@ class BatchProtocol {
     if (sql.includes("plan_ref->>'nativeReaderJobId'=$2")) {
       const match = args[0] === this.source.case_id && args[1] === this.item.plan_ref?.nativeReaderJobId
         && args[2] === this.item.format;
-      return match ? [{ item_id: this.item.item_id }] : [];
+      return match ? [{ item_id: this.item.item_id, source_id: this.item.source_id, card: this.item.card }] : [];
     }
-    if (sql.startsWith('SELECT item_id,case_id,plan_ref') || sql.startsWith('SELECT state,placement,plan_ref')) {
+    if (sql.startsWith('SELECT item_id,case_id,plan_ref') || sql.startsWith('SELECT state,placement,plan_ref')
+      || sql.startsWith('SELECT * FROM usp_intake_items')) {
       return [this.item];
     }
     if (sql.startsWith('UPDATE usp_intake_items SET state=')) {
@@ -130,11 +131,18 @@ class BatchProtocol {
   }
 
   jobQuery(sql: string, args: any[]): any[] | undefined {
+    const derivative = "operation='intake-native-derivative'";
     if (sql.startsWith('INSERT INTO jobs')) {
+      const operation = sql.includes("'intake-native-derivative'") ? 'intake-native-derivative'
+        : `${this.card.format}-native`;
       this.jobs.set(args[0], { id: args[0], case_id: args[1], source_id: args[2],
-        operation: `${this.card.format}-native`, case_revision: args[3], input_fingerprint: args[4],
+        operation, case_revision: args[3], input_fingerprint: args[4],
         payload: args[5], status: 'queued' });
       return [];
+    }
+    if (sql.includes(derivative)) {
+      return [...this.jobs.values()]
+        .filter(job => job.source_id === args[0] && job.operation === 'intake-native-derivative');
     }
     if (sql.includes('FROM jobs')) return this.jobs.has(args[0]) ? [this.jobs.get(args[0])] : [];
     if (sql.startsWith('INSERT INTO usp_job_metadata')) {
@@ -278,6 +286,10 @@ for (const format of Object.keys(inputs) as Format[]) {
       const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
       const end = acceptedEnd(format, fixture, jobId);
       assert.ok('summary' in end);
+      if (format === 'cityjson') {
+        // B3D1: a reading stating no reference system stays unplaced; one stating it is the next test.
+        (end.summary as CityJSONResult['summary']).referenceSystemState = 'absent';
+      }
       await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
       assert.deepEqual([item.state, item.placement], ['read', 'undecided']);
       assert.equal(item.limit_reason, intakeNativeReadWords(end.summary));
@@ -316,6 +328,32 @@ for (const format of Object.keys(inputs) as Format[]) {
       }
     });
 }
+
+test('a CityJSON reading that states its reference system queues its outline conversion, citing the reading', {
+  skip: !existsSync(inputs.cityjson.path),
+}, async () => {
+  const fixture = await batch('cityjson'), { client, source, item, jobs } = fixture;
+  const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+  const end = acceptedEnd('cityjson', fixture, jobId);
+  assert.equal((end as { summary: CityJSONResult['summary'] }).summary.referenceSystemState, 'declared');
+  assert.ok(outlinesConverted(end));
+  await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
+  const [conversion] = [...jobs.values()].filter(job => job.operation === 'intake-native-derivative');
+  assert.deepEqual([conversion.source_id, conversion.payload.itemId, conversion.payload.sourceSha256],
+    [source.id, item.item_id, source.sha256]);
+  assert.deepEqual([item.state, item.placement, item.plan_ref], ['reading', 'undecided', { nativeReaderJobId: jobId }]);
+  assert.equal(item.limit_reason, 'The layers of this CityJSON are being converted to GeoJSON, '
+    + 'each to be taken in as its own file.');
+  assert.equal(intakeItem(item).nativeReaderJobId, jobId);
+  const published = fixture.events.length;
+  await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
+  assert.equal(jobs.size, 2);
+  assert.equal(fixture.events.length, published);
+  assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
+  for (const format of ['dxf', 'citygml'] as const) {
+    assert.equal(outlinesConverted({ format, summary: { referenceSystemState: 'declared' } } as never), false);
+  }
+});
 
 test('a partial CityGML summary stays partial and never invents a surface count or CRS', {
   skip: !existsSync(`${gmlRoot}/run-02-local/projection.json`),
