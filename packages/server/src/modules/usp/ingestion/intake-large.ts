@@ -155,11 +155,12 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
   return { partsPlanned: null, partsDone: rows.reader?.next_publish_index ?? 0, recordsSeen };
 }
 
-/** `wide` features span more than any one map area; `outside` ones lie beyond the area the batch places into. */
+/** `wide` features span more than any one map area; `outside` ones lie beyond the area the batch places into;
+ * `unmeasured` ones have a position that could not be measured, so they are neither wide nor outside. */
 export type IntakeLargeCounts = {
   recordsRead: number; accepted: number; packages: number;
   readerRejected: number; duplicates: number; oversized: number; setAside?: GisSetAside;
-  wide?: number; outside?: number;
+  wide?: number; outside?: number; unmeasured?: number;
 };
 const AREA_KM = AREA_NORMALIZER_EXTENT.metres / 1000;
 
@@ -167,7 +168,7 @@ const AREA_KM = AREA_NORMALIZER_EXTENT.metres / 1000;
  * not displayed sample records. */
 export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null {
   if (!counts.readerRejected && !counts.duplicates && !counts.oversized && !counts.wide && !counts.outside
-    && counts.accepted === counts.recordsRead) return null;
+    && !counts.unmeasured && counts.accepted === counts.recordsRead) return null;
   const sentences = [`${counts.recordsRead} records read; ${counts.accepted} in ${counts.packages} packages.`];
   if (counts.readerRejected) sentences.push(`${counts.readerRejected} not accepted by the reader.`);
   if (counts.duplicates) sentences.push(`${counts.duplicates} share an identifier with another record and are held.`);
@@ -176,6 +177,8 @@ export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null
     + `${AREA_NORMALIZER_EXTENT.degrees} degree across) and are held.`);
   if (counts.outside) sentences.push(`${counts.outside} lie outside the ${AREA_KM} km map area this batch places `
     + 'features in and are held.');
+  if (counts.unmeasured) sentences.push(`${counts.unmeasured} have a position that could not be measured and are `
+    + 'held.');
   const setAside = setAsideWords(counts.setAside);
   if (setAside) sentences.push(setAside);
   return sentences.join(' ');

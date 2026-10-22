@@ -215,6 +215,11 @@ test('features held for their extent are counted apart, each with its own reason
   assert.equal(intakeLargeHoldsReason({ ...counts, wide: 1, outside: 3 }),
     '10 records read; 6 in 2 packages. 1 are wider than one map area (50 km or 1 degree across) and are held. '
     + '3 lie outside the 50 km map area this batch places features in and are held.');
+  // A position that could not be measured is its own hold, never told as wider than a map area.
+  const unmeasured = intakeLargeHoldsReason({ ...counts, accepted: 8, unmeasured: 2 });
+  assert.equal(unmeasured, '10 records read; 8 in 2 packages. 2 have a position that could not be measured and are '
+    + 'held.');
+  assert.doesNotMatch(unmeasured!, /wider than one map area/);
 });
 
 function ledger(initial: IntakeLargeState) {

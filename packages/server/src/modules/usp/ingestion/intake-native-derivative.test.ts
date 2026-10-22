@@ -206,7 +206,8 @@ test('a GeoPackage of 2,500 outlines, a second layer and one with no CRS: two ch
     assert.deepEqual(item.plan_ref, { nativeLayers: { unstated: ['unstated'], answers: [] } });
     assert.equal(item.limit_reason, '2 layers of this GeoPackage are converted to GeoJSON and taken in as their '
       + 'own files: buildings, footprints. Not converted until its coordinate reference system is stated: '
-      + 'unstated (states no coordinate reference system).');
+      + 'unstated (states no coordinate reference system). Features per converted layer: buildings (88 written, '
+      + '0 not written), footprints (2,500 written, 0 not written).');
 
     // The large GeoJSON path takes the child unchanged: its card is GeoJSON with the stated system, and its
     // reader reads 2,500 accepted features in parts of 100 under that declaration.
@@ -294,7 +295,9 @@ test('an officer states the CRS of the layer whose file states none; only that l
     assert.deepEqual([child.format, child.crs.state], ['geojson', 'stated']);
     assert.equal(item.placement, 'undecided');
     assert.equal(item.limit_reason, '3 layers of this GeoPackage are converted to GeoJSON and taken in as their own '
-      + 'files: buildings, footprints, unstated (EPSG:28356, stated by the officer).');
+      + 'files: buildings, footprints, unstated (EPSG:28356, stated by the officer). Features per converted layer: '
+      + 'buildings (88 written, 0 not written), footprints (2,500 written, 0 not written), unstated (88 written, '
+      + '0 not written).');
     assert.deepEqual(item.plan_ref, { nativeLayers: { unstated: [], answers: [answer] } });
     assert.deepEqual(intakeItem({ ...row, plan_ref: item.plan_ref }).layerCrs, [{ layer: 'unstated',
       answer: { crs: 'EPSG:28356', state: 'officer_stated', statedAt: answer.statedAt } }]);
@@ -341,10 +344,30 @@ test('the original\'s words: every layer taken, refused or failed is named; noth
   assert.deepEqual(nativeParentState('shapefile_zip', conversion,
     [{ layer: 'roads', sourceId: null, code: 'UPLOAD_QUOTA' }]), { state: 'read', placement: 'undecided',
     planRef: null, recordsSeen: 0, limitReason: 'Not converted: blocks (stores measure (M) values on every '
-      + 'geometry). Converted but not taken in: roads (UPLOAD_QUOTA; enrol the file again to retry).' });
+      + 'geometry). Converted but not taken in: roads (UPLOAD_QUOTA; enrol the file again to retry). '
+      + 'Features per converted layer: roads (3 written, 0 not written).' });
   assert.equal(nativeParentState('gpkg', { ...conversion, layers: [conversion.layers[1]] }, []).placement,
     'not_understood');
 });
+
+test('each converted layer tells its written and not-written features and where the ones not written are named',
+  () => {
+    const kept = { objectKey: `native-derivatives/${'a'.repeat(64)}/0/geojson-${'b'.repeat(64)}`, bytes: 10,
+      sha256: 'b'.repeat(64) };
+    const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1', readerVersion: 'r',
+      sourceId, sourceSha256: 'a'.repeat(64), layers: [
+        { layer: 'plots', ordinal: 0, state: 'converted', crs: 'EPSG:32643', crsSource: 'stated', features: 1200,
+          notWritten: 3, geojson: kept, sidecar: kept },
+        { layer: 'roads', ordinal: 1, state: 'converted', crs: 'EPSG:32643', crsSource: 'stated', features: 7,
+          notWritten: 0, geojson: kept, sidecar: kept }] });
+    const state = nativeParentState('gpkg', conversion, [{ layer: 'plots', sourceId: randomUUID(), code: null },
+      { layer: 'roads', sourceId: randomUUID(), code: null }]);
+    assert.equal(state.placement, 'undecided');
+    assert.equal(state.limitReason, '2 layers of this GeoPackage are converted to GeoJSON and taken in as their own '
+      + 'files: plots, roads. Features per converted layer: plots (1,200 written, 3 not written), roads (7 written, '
+      + '0 not written). A feature not written is not in that layer\'s GeoJSON; the stored locator file kept beside '
+      + 'that GeoJSON names its position in the original and why.');
+  });
 
 test('an unresolvable stated CRS is kept, not converted, without promising a CRS answer', () => {
   const reason = 'states a coordinate reference system that does not resolve to one EPSG code';
@@ -352,18 +375,22 @@ test('an unresolvable stated CRS is kept, not converted, without promising a CRS
     sourceId, sourceSha256: 'a'.repeat(64), layers: [
       { layer: 'unresolved', ordinal: 0, state: 'crs_unstated', statesCrs: true, reason }] });
   const unresolved = nativeParentState('shapefile_zip', conversion, []);
-  assert.equal(unresolved.limitReason, `Kept, not converted: unresolved (${reason}).`);
+  const export_ = 'Export this layer with a coordinate reference system that resolves to one EPSG code and add the '
+    + 'file again; a system the file states is never replaced.';
+  assert.equal(unresolved.limitReason, `Kept, not converted: unresolved (${reason}). ${export_}`);
   assert.equal(unresolved.planRef, null);
-  // Only words change: the existing placement remains needs_answer, but there is no CRS answer for this layer.
-  assert.equal(unresolved.placement, 'needs_answer');
+  // No layer can take a CRS answer, so the item does not say it needs one.
+  assert.equal(unresolved.placement, 'not_understood');
   const mixed = NativeConversionSchema.parse({ ...conversion, layers: [...conversion.layers,
     { layer: 'missing', ordinal: 1, state: 'crs_unstated', statesCrs: false,
       reason: 'states no coordinate reference system (no .prj)' }] });
   const both = nativeParentState('shapefile_zip', mixed, []);
   assert.equal(both.limitReason, 'Not converted until its coordinate reference system is stated: '
     + 'missing (states no coordinate reference system (no .prj)). '
-    + `Kept, not converted: unresolved (${reason}).`);
+    + `Kept, not converted: unresolved (${reason}). ${export_}`);
   assert.deepEqual(both.planRef, { nativeLayers: { unstated: ['missing'], answers: [] } });
+  // Only the layer stating no system takes an answer; that one makes the item need it.
+  assert.equal(both.placement, 'needs_answer');
 });
 
 // KML1. Google's libkml samples (test_only), converted by the real streamed KML reader.
@@ -410,8 +437,10 @@ test('a KML of folders: each folder with placemarks kept and enrolled, read with
     assert.equal(item.placement, 'undecided');
     assert.equal(item.limit_reason, '6 layers of this KML are converted to GeoJSON and taken in as their own '
       + 'files: Placemarks, Highlighted Icon, Paths, Google Campus, Extruded Polygon, Absolute and Relative. '
-      + 'Not converted: Styles and Markup (holds no Placemark whose geometry could be written). Coordinate system: '
-      + 'the KML 2.2 specification states longitude and latitude on WGS 84 (EPSG:4326). Kept in the original but '
+      + 'Not converted: Styles and Markup (holds no Placemark whose geometry could be written). Features per '
+      + 'converted layer: Placemarks (3 written, 0 not written), Highlighted Icon (1 written, 0 not written), Paths '
+      + '(6 written, 0 not written), Google Campus (4 written, 0 not written), Extruded Polygon (1 written, 0 not '
+      + 'written), Absolute and Relative (4 written, 0 not written). Coordinate system: the KML 2.2 specification states longitude and latitude on WGS 84 (EPSG:4326). Kept in the original but '
       + 'not fetched or read: GroundOverlay (1), ScreenOverlay (7).');
 
     // The large GeoJSON path takes the child unchanged: four 3D building outlines, accepted under EPSG:4326.
@@ -470,8 +499,8 @@ test('a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 a
     assert.deepEqual([item.state, item.placement, item.plan_ref], ['read', 'undecided',
       { nativeReaderJobId: readerJobId }]);
     assert.equal(item.limit_reason, '1 layer of this CityJSON is converted to GeoJSON and taken in as its own file: '
-      + 'building ground outlines. Coordinate system: EPSG:28992, the horizontal part of the EPSG:7415 the file '
-      + 'states.');
+      + 'building ground outlines. Features per converted layer: building ground outlines (1 written, 0 not '
+      + 'written). Coordinate system: EPSG:28992, the horizontal part of the EPSG:7415 the file states.');
 
     // The large GeoJSON path takes the child unchanged: one 3D outline, accepted under EPSG:28992.
     const bytes = kept.get(child)!;

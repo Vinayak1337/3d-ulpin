@@ -67,9 +67,9 @@ test('a longitude/latitude CSV of 5 rows, one blank: 4 points with row locators 
   assert.deepEqual(features[1].properties, { ward: 'Ward 2', longitude: '77.6100', latitude: '12.9800' });
   // The numbers are the cells' own text; nothing is rounded, moved or placed at 0,0.
   assert.ok(geojson.includes('"coordinates":[77.6100,12.9800]'));
-  assert.equal(tablePlacementWords(counts, { name: 'wards.geojson', crs: 'EPSG:4326' }), 'Placed 4 rows on the map; '
-    + '1 row skipped: 1 had no coordinates. They are taken in as their own GeoJSON file, wards.geojson, in '
-    + 'EPSG:4326 as stated by the officer.');
+  assert.equal(tablePlacementWords(counts, { name: 'wards.geojson', crs: 'EPSG:4326' }), 'Prepared 4 rows as a '
+    + 'GeoJSON file, wards.geojson, in EPSG:4326 as stated by the officer; 1 row skipped: 1 had no coordinates. '
+    + 'That file is taken in as its own item in this batch; its own line says whether it is on the map.');
   const read = await largePath(geojson, 'wards.geojson');
   assert.deepEqual([read.card.family, read.card.format, read.features, read.accepted], ['vector', 'geojson', 4, 4]);
   assert.deepEqual([read.reference.sourceCrs, read.reference.coordinateUnit], ['EPSG:4326', 'degree']);
@@ -78,8 +78,8 @@ test('a longitude/latitude CSV of 5 rows, one blank: 4 points with row locators 
 test('a row whose coordinate cell is not a number is skipped and named so', async () => {
   const bytes = Buffer.from('id,x,y\na,77.5,12.9\nb,12.5 N,77.1\nc,,12.0\n');
   const { counts } = await written(bytes, plan(bytes, ['id', 'x', 'y'], { kind: 'columns', x: 1, y: 2 }));
-  assert.equal(tablePlacementWords(counts, null), 'Placed 1 row on the map; 2 rows skipped: 1 had no coordinates, '
-    + '1 had text that is not a number.');
+  assert.equal(tablePlacementWords(counts, null), 'Prepared 1 row as GeoJSON features; 2 rows skipped: '
+    + '1 had no coordinates, 1 had text that is not a number.');
 });
 
 test('a WKT column stated in EPSG:32643 gives polygons in that declared system, unprojected', async () => {
@@ -110,7 +110,7 @@ test('a feature the map reader would quarantine is skipped by its own reason; Pl
       skipped: { open_ring: 1, too_large: 2, inexact_number: 1 } });
     const read = await largePath(geojson, 'plots.geojson');
     assert.deepEqual([read.features, read.accepted], [counts.features, counts.features]);
-    assert.equal(tablePlacementWords(counts, null), 'Placed 2 rows on the map; 4 rows skipped: '
+    assert.equal(tablePlacementWords(counts, null), 'Prepared 2 rows as GeoJSON features; 4 rows skipped: '
       + '1 had a polygon ring that does not end where it starts, 2 had a shape larger than the map reader takes, '
       + '1 had a number with more digits than the map reader keeps exactly.');
   });
@@ -208,7 +208,7 @@ test('a stated system queues one job pinning the table read; a column past the t
       [[jobId, 'EPSG:32643', ['plot', 'outline'], selection]]);
     // The table's own count and words stay; the placement's words are added beside them.
     assert.deepEqual([item.state, item.records_seen, item.limit_reason], ['reading', 5, 'Kept as a CSV table. '
-      + 'Map placement: Placing the rows of this table on the map in EPSG:32643, as stated by the officer.']);
+      + 'Map placement: Preparing the rows of this table as a GeoJSON file in EPSG:32643, as stated by the officer.']);
     await assert.rejects(queueTableGeojsonTx(client, original, { ...request, requestKey: randomUUID() }),
       { status: 409 });
   });
@@ -268,9 +268,9 @@ test('the job keeps the derivative once with its lineage, enrols it and words th
     locator: 'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.' });
   assert.deepEqual(registered.map(entry => entry.sourceId), [child]);
   assert.equal(JSON.parse(kept.get(child)!.toString()).features.length, 2);
-  const placedWords = 'Kept as a CSV table. Map placement: Placed 2 rows on the map; 1 row skipped: 1 had text '
-    + 'that is not WKT of a point, line or polygon. They are taken in as their own GeoJSON file, plots.geojson, in '
-    + 'EPSG:32643 as stated by the officer.';
+  const placedWords = 'Kept as a CSV table. Map placement: Prepared 2 rows as a GeoJSON file, plots.geojson, in '
+    + 'EPSG:32643 as stated by the officer; 1 row skipped: 1 had text that is not WKT of a point, line or polygon. '
+    + 'That file is taken in as its own item in this batch; its own line says whether it is on the map.';
   assert.deepEqual([item.state, item.records_seen, item.limit_reason], ['read', 5, placedWords]);
   // The table is read twice, to measure and to keep; a rerun finds the kept child by its lineage and hash.
   assert.equal(opened, 2);
@@ -346,7 +346,12 @@ test('enrolment: a refusal is worded on the item; a fault that is not a refusal 
     const [child] = await placeTableRows(jobs[0].payload,
       refusing(new AppError(409, 'STALE_REVISION', 'The case changed.')));
     assert.ok(sources.get(child));
-    assert.match(item.limit_reason, /plots\.geojson, was kept but not taken in \(STALE_REVISION\)/);
+    assert.equal(item.limit_reason, 'Kept as a CSV table. Map placement: Not taken in (STALE_REVISION): the GeoJSON '
+      + 'file plots.geojson, in EPSG:32643 as stated by the officer, was kept but is not an item of this batch, so '
+      + 'none of its rows is on the map. It holds 2 rows; 1 row skipped: 1 had text that is not WKT of a point, line '
+      + 'or polygon. Place the rows again to retry.');
+    // A refused enrolment is never announced after success words.
+    assert.doesNotMatch(item.limit_reason, /Placed|Prepared/);
   });
 
 test('a fault that is not a refusal stops a placement as TABLE_PLACEMENT_FAILED; the native path keeps its own code',
@@ -358,10 +363,11 @@ test('a fault that is not a refusal stops a placement as TABLE_PLACEMENT_FAILED;
   });
 
 test('a stopped placement keeps the table\'s own words and writes its stop beside them', () => {
-  const placing = 'Kept as a CSV table. Map placement: Placing the rows of this table on the map in EPSG:4326, as '
-    + 'stated by the officer.';
+  const placing = 'Kept as a CSV table. Map placement: Preparing the rows of this table as a GeoJSON file in '
+    + 'EPSG:4326, as stated by the officer.';
   assert.equal(tableGeojsonJob.stopped('TABLE_PLACEMENT_FAILED', placing), 'Kept as a CSV table. Map placement: '
-    + 'Placing the rows of this table on the map stopped (TABLE_PLACEMENT_FAILED); place them again to retry.');
+    + 'Preparing the rows of this table as a GeoJSON file stopped (TABLE_PLACEMENT_FAILED); place them again to '
+    + 'retry.');
 });
 
 const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';

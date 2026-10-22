@@ -47,8 +47,9 @@ export function PlaceOnMapForm({ headers, form, change, state, submit, close }: 
   const columns = headers.map((header, index) => ({ path: String(index), header }));
   if (state.started) return <div className={styles.stack}>
     <p role="status">
-      Placing the rows of this table on the map has started. The file&apos;s line in this batch will say how many
-      rows were placed and how many were skipped, and why.
+      Preparing the rows of this table as a GeoJSON file has started. The table&apos;s line in this batch will say
+      how many rows were prepared and how many were skipped, and why. That GeoJSON file is then taken in as its own
+      item in this batch, and its own line says whether it is on the map.
     </p>
     <div><Button variant="primary" onClick={close}>Close</Button></div>
   </div>;

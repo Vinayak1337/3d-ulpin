@@ -11,9 +11,11 @@ import { isRetainedMapOriginal } from './retained-map-original';
 
 export const INTAKE_UNFINISHED_PACKAGE_LIMIT = 8;
 /** Features no package takes, counted through a cut's last feature: too large for any package (`held`), wider than
- * one map area (`heldWide`), or outside the area the file is placed in (`heldOutside`). */
-export type IntakePartHeld = { held: number; heldWide: number; heldOutside: number };
-export const NO_HELD_FEATURES: Readonly<IntakePartHeld> = Object.freeze({ held: 0, heldWide: 0, heldOutside: 0 });
+ * one map area (`heldWide`), outside the area the file is placed in (`heldOutside`), or with a position that could
+ * not be measured (`heldUnmeasured`). */
+export type IntakePartHeld = { held: number; heldWide: number; heldOutside: number; heldUnmeasured: number };
+export const NO_HELD_FEATURES: Readonly<IntakePartHeld> = Object.freeze({ held: 0, heldWide: 0, heldOutside: 0,
+  heldUnmeasured: 0 });
 
 /** Admission and publication share the item lock. */
 export async function assertIntakePackagePressureTx(client: PoolClient, itemId: string) {

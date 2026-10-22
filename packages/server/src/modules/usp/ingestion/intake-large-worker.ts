@@ -42,6 +42,7 @@ type Fold = {
 const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_VERTEX_BOUND: 'held', PART_FEATURE_INPUT_BOUND: 'held',
   PART_FEATURE_EXTENT_BOUND: 'heldWide', PART_FEATURE_AREA_BOUND: 'heldOutside',
+  PART_FEATURE_POSITION_UNMEASURED: 'heldUnmeasured',
 };
 
 /** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
@@ -188,7 +189,7 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
     const layout = (await client.query(`SELECT body->>'planHash' hash,body->'plan'->>'kind' kind
       FROM usp_mapping_recipes WHERE id=$1`, [recipe!.id])).rows[0];
     const held = { held: Number(last?.counts.held ?? 0), heldWide: Number(last?.counts.heldWide ?? 0),
-      heldOutside: Number(last?.counts.heldOutside ?? 0) };
+      heldOutside: Number(last?.counts.heldOutside ?? 0), heldUnmeasured: Number(last?.counts.heldUnmeasured ?? 0) };
     return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id, chunks: Number(raw!.sealed_chunks),
       firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: state.store.parts,
       cutKey: intakeLargeCutKey(state.store), held, pending: [], frame: await destinationFrameTx(client, destination),
@@ -251,7 +252,8 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
   const held = countHeld(fold.held, fold.pending);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
-    duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide, outside: held.heldOutside, setAside },
+    duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide, outside: held.heldOutside,
+    unmeasured: held.heldUnmeasured, setAside },
   intakeLargePlan(state.store.recipe));
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
 }

@@ -82,6 +82,14 @@ test('a single feature wider than one map area is held with its own reason and n
   assert.equal(JSON.stringify(wide.feature), before);
 });
 
+test('a feature whose position cannot be measured is held with its own reason, never counted as wide', () => {
+  const unmeasured = placedItem(1, HERE);
+  unmeasured.feature.geometry = { type: 'Polygon', coordinates: [] };
+  const result = cutMappedFeatures([placedItem(0, HERE), unmeasured, placedItem(2, NEAR)]);
+  assert.deepEqual(indexes(result.cuts), [[0, 2]]);
+  assert.deepEqual(result.held, [{ featureIndex: 1, code: 'PART_FEATURE_POSITION_UNMEASURED' }]);
+});
+
 test('cuts close at feature, raw-byte, vertex and serialized-input bounds with no empty package', () => {
   assert.deepEqual(cutMappedFeatures([]), { cuts: [], held: [] });
   const count = cutMappedFeatures(Array.from({ length: 2001 }, (_, index) => protocolItem(index)));
