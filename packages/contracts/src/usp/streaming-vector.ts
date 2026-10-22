@@ -16,6 +16,15 @@ export function streamingReadMs(sourceBytes:number){
   const spans=Math.max(1,Math.ceil(sourceBytes/STREAMING_VECTOR_LIMITS.readSpanBytes));
   return spans*STREAMING_VECTOR_LIMITS.readMs;
 }
+/** Exact parity with the canonical area normalizer; counts are accepted features, not multipart members. */
+export const StreamingVectorGeometryKindSchema=z.enum([
+  'Point','MultiPoint','LineString','MultiLineString','Polygon','MultiPolygon',
+]);
+export const StreamingVectorGeometrySummarySchema=z.strictObject({
+  rawJobId:id,
+  counts:z.partialRecord(StreamingVectorGeometryKindSchema,z.number().int().positive().max(STREAMING_VECTOR_LIMITS.features)),
+});
+export type StreamingVectorGeometrySummary=z.infer<typeof StreamingVectorGeometrySummarySchema>;
 export const StreamingVectorFramingSchema=z.enum(['feature-collection','geojson-seq-rs']);
 export const StreamingVectorRequestSchema=z.strictObject({
   requestKey:id,expectedCaseRevision:z.number().int().nonnegative(),

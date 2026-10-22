@@ -1,7 +1,8 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,AnyStreamingInputSchema,streamingReadMs,
-  StreamingVectorPayloadSchema,type AnyStreamingInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
+  StreamingVectorPayloadSchema,StreamingVectorGeometrySummarySchema,StreamingVectorGeometryKindSchema,
+  type StreamingVectorGeometrySummary,type AnyStreamingInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {openObjectStream,putOriginal,readObject,sha256} from '../../../infrastructure/storage';
@@ -33,6 +34,24 @@ export function tallySetAside(tally:Record<string,number>,record:StreamingVector
   if(record.disposition!=='quarantined')return;
   const code=record.issueCode??'UNSTATED';
   tally[code]=(tally[code]??0)+1;
+}
+
+/** Count only the final accepted disposition, after topology and the part's payload budget. */
+export function tallyAcceptedGeometry(counts:StreamingVectorGeometrySummary['counts'],record:StreamingVectorRecord){
+  if(record.disposition!=='accepted')return;
+  const feature=record.feature as {geometry?:{type?:unknown}}|null;
+  const kind=StreamingVectorGeometryKindSchema.parse(feature?.geometry?.type);
+  counts[kind]=(counts[kind]??0)+1;
+}
+
+/** Written only with the sealed result; a replay replaces the tally instead of adding to a previous attempt. */
+export async function writeStreamingGeometrySummaryTx(client:PoolClient,input:AnyStreamingInput,
+  counts:StreamingVectorGeometrySummary['counts'],accepted:number){
+  const summary=StreamingVectorGeometrySummarySchema.parse({rawJobId:input.jobId,counts});
+  if(Object.values(summary.counts).reduce((total,count)=>total+count,0)!==accepted)
+    conflict('The geometry summary does not account for every accepted feature.');
+  await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedGeometrySummary}',$2::jsonb)
+    WHERE id=$1`,[input.sourceId,JSON.stringify(summary)]);
 }
 
 /** A single SQL watermark is the ordered publication authority; SSE cursors stay per subscriber. */
@@ -249,12 +268,14 @@ export async function runStreamingVectorJob(jobId:string){
   });
   let nextFeatureIndex=0,lastHeartbeat=Date.now(),lastProgress=0;
   const setAside:Record<string,number>={};
+  const geometryCounts:StreamingVectorGeometrySummary['counts']={};
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertStreamingInputTx(client,input).then(()=>{}));lastHeartbeat=Date.now();
     await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",[jobId]);
   };
   const parts=new StreamingPartWriter(async(index,records)=>{
     await pulse();const slot=await storeChunk(input,index,records);
+    if(input.framing!=='tabular')for(const record of records)tallyAcceptedGeometry(geometryCounts,record);
     // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
     const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
     await acceptSlot(input,attempt,slot,progress);
@@ -312,11 +333,12 @@ export async function runStreamingVectorJob(jobId:string){
         if(current.operation!=='streaming-vector'||state.sealed_chunks!==nextIndex||state.next_publish_index!==nextIndex||state.records!==result.features||state.unknown_remainder)
           conflict('The complete reader manifest is not published.');
       },client=>assertStreamingInputTx(client,input).then(()=>{}),async client=>{
-        const state=(await client.query('SELECT quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
+        const state=(await client.query('SELECT accepted,quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
         const status=state.quarantined?'completed_with_rejections':'completed';
         await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
         if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,
           {...result,quarantinedByCode:setAside},reference);
+        if(input.framing!=='tabular')await writeStreamingGeometrySummaryTx(client,input,geometryCounts,state.accepted);
         if(isWindowedTable(input))await queueFinishedTableEvidenceTx(client,input.caseId,jobId);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
