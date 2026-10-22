@@ -6,6 +6,9 @@ import { exteriorOnlySql, isExteriorOnly } from './exterior-only';
 import { importRegistryCase } from './registry-seed';
 import { bodyOnly, commitRegistryReviewTx, persistRegistryReviewTx, prepareRegistryReview,
   recordBodySchema } from './registry';
+import type { assertRegistryDocumentCitationsTx } from './registry-document-evidence';
+import { attributed } from './registry-recorded-source.test-fixture';
+import { tableRowCitation } from './registry-table-evidence';
 import { setPreparationPlacement } from '../officer/officer-preparation';
 import { fingerprint } from '../cases/domain';
 import { settings } from '../../infrastructure/config';
@@ -154,21 +157,33 @@ function reviewControl(peerBody: any = exterior, proposedBody?: any) {
   return { client: { query } as unknown as PoolClient, snapshot, review, peer, queries };
 }
 
-test('prepare checks only detailed inputs; malformed peers and exterior proposals still fail', async () => {
+/** Answers the registry geo check in memory with no units or findings; `onCheck` sees each payload. */
+async function withGeoCheck<T>(onCheck: (payload: any) => void, work: () => Promise<T>) {
   const previous = globalThis.fetch;
   const geoUrl = Object.getOwnPropertyDescriptor(settings, 'geoUrl')!;
   const geoToken = Object.getOwnPropertyDescriptor(settings, 'geoToken')!;
   Object.defineProperty(settings, 'geoUrl', { value: 'http://technical-control.invalid', configurable: true });
   Object.defineProperty(settings, 'geoToken', { value: 'technical-control-only', configurable: true });
-  let checked = 0;
   globalThis.fetch = (async (_url: unknown, input: any) => {
-    const payload = JSON.parse(input.body);
-    assert.equal(payload.records.length, 1);
-    assert.equal(payload.records[0].alias, 'detailed');
-    checked++;
+    onCheck(JSON.parse(input.body));
     return new Response(JSON.stringify({ units: [], findings: [] }));
   }) as typeof fetch;
   try {
+    return await work();
+  } finally {
+    globalThis.fetch = previous;
+    Object.defineProperty(settings, 'geoUrl', geoUrl);
+    Object.defineProperty(settings, 'geoToken', geoToken);
+  }
+}
+
+test('prepare checks only detailed inputs; malformed peers and exterior proposals still fail', async () => {
+  let checked = 0;
+  await withGeoCheck(payload => {
+    assert.equal(payload.records.length, 1);
+    assert.equal(payload.records[0].alias, 'detailed');
+    checked++;
+  }, async () => {
     const control = reviewControl();
     await memoryPool(control.client.query.bind(control.client) as any,
       () => prepareRegistryReview(control.snapshot.d.id, 1, 1));
@@ -177,12 +192,8 @@ test('prepare checks only detailed inputs; malformed peers and exterior proposal
         () => assert.rejects(() => prepareRegistryReview(invalid.snapshot.d.id, 1, 1),
           (error: any) => error.name === 'ZodError'));
     }
-    assert.equal(checked, 1);
-  } finally {
-    globalThis.fetch = previous;
-    Object.defineProperty(settings, 'geoUrl', geoUrl);
-    Object.defineProperty(settings, 'geoToken', geoToken);
-  }
+  });
+  assert.equal(checked, 1);
 });
 
 test('persist and commit exclude unchanged exterior peers but never bypass proposed-body checks', async () => {
@@ -205,3 +216,112 @@ test('a malformed non-exterior peer cannot disappear from persisted or committed
   await assert.rejects(() => commitRegistryReviewTx(invalid.client, invalid.review.id, 'Technical control'),
     (error: any) => error.code === 'STALE_REVISION');
 });
+
+const digest = 'a'.repeat(64);
+
+/** One register row an officer's evidence confirmation accepted, with the keys read on ulpin-reh-02 (RC2). */
+function registerRow(caseId: string) {
+  const literal = 'technical-control';
+  return {
+    row: { kind: 'table_row' as const, itemId: randomUUID(), caseId, sourceId: randomUUID(), sourceRevision: 1,
+      sourceSha256: digest, rawJobId: randomUUID(), rawInputSha256: digest, rawResultSha256: digest,
+      acceptedFence: 1, selection: { format: 'csv' as const, sheet: 'csv', table: null, headerRows: [1] },
+      sourceRow: 168, rowSha256: digest, columnIndex: 0, columnHeader: 'bin',
+      cell: { state: 'literal' as const, value: literal } },
+    key: { profileId: randomUUID(), profileSha256: digest, namespace: 'technical-control', kind: 'text' as const,
+      literal },
+    confirmation: { confirmationId: randomUUID(), candidateId: randomUUID(), candidateSha256: digest },
+  };
+}
+
+/** RC2's act 1 building: recorded exterior-only at revision 1 from its batch-drafted footprints, its correction
+ * adding the confirmed register row. Keys and nesting are the real ones; values are protocol-only. */
+function citedExterior(footprint: number[][] = []) {
+  const site = { id: randomUUID(), identifier: 'technical site', name: 'Technical control',
+    frame, revision: 1, synthetic: false };
+  const caseId = randomUUID(), sourceId = randomUUID(), recordId = randomUUID();
+  const recorded = { ...exterior, evidence: [{ sourceId, locator: 'feature 1087575' }] };
+  const current = { id: recordId, site_id: site.id, identifier: 'technical exterior', revision: 1, body: recorded };
+  const target = { recordId, revision: 1, bodySha256: fingerprint(recorded) };
+  const pin = tableRowCitation(registerRow(caseId), { excerpt: 'bin: technical-control', accessSha256: digest },
+    target, 'technical-control');
+  const proposed = { ...recorded, footprint, documentCitations: [pin], id: recordId, siteId: site.id,
+    identifier: current.identifier, revision: 1 };
+  const draft = { id: randomUUID(), site_id: site.id, case_id: caseId, revision: 2, status: 'draft',
+    records: [proposed], created_at: stamp };
+  const state: { review?: any; written?: any[] } = {};
+  const query = async (sql: string, args: any[]) => {
+    let rows: any[] = [];
+    if (sql.startsWith('INSERT INTO registry_reviews')) {
+      state.review = { id: args[0], draft_id: args[1], body: args[2], committed: false };
+    } else if (sql.startsWith('UPDATE registry_records')) state.written = args;
+    else if (sql.includes('FROM registry_reviews')) rows = [state.review];
+    else if (sql.includes('FROM registry_sites')) rows = [site];
+    else if (sql.includes('FROM registry_drafts')) rows = [draft];
+    else if (sql.includes('FROM registry_records')) rows = [current];
+    else if (sql.includes('FROM sources')) rows = [{ id: sourceId, status: 'ready', profile: 'levels-csv-v1',
+      case_id: caseId, created_at: stamp }];
+    else assert(/^(SELECT|UPDATE|INSERT|DELETE|BEGIN|COMMIT|ROLLBACK|SET)/.test(sql), sql);
+    return { rows, rowCount: rows.length };
+  };
+  return { draft, current, proposed, pin, state, client: { query } as unknown as PoolClient };
+}
+
+/** The citation check runs on every pass; its private reads are qualified by the registry document tests. */
+function citationCheck(seen: unknown[]) {
+  return (async (_client: PoolClient, _siteId: string, record: { documentCitations?: unknown[] }) => {
+    seen.push(record.documentCitations);
+    return [];
+  }) as unknown as typeof assertRegistryDocumentCitationsTx;
+}
+
+test('a recorded exterior-only building gains its confirmed register citation through review and commit',
+  () => attributed(async () => {
+    const control = citedExterior(), seen: unknown[] = [], checked: unknown[] = [];
+    const review = await withGeoCheck(payload => checked.push(payload.records), () => memoryPool(
+      control.client.query.bind(control.client) as any, () => prepareRegistryReview(control.draft.id, 2, 1,
+        citationCheck(seen))));
+    const result = await commitRegistryReviewTx(control.client, review.id, 'Technical control', undefined,
+      citationCheck(seen));
+    assert.equal(result.committed, true);
+    assert.deepEqual(checked, [[]], 'the geo check never receives the exterior-only building');
+    assert.deepEqual(seen, Array(3).fill([control.pin]), 'prepare, persist and commit each check the citation');
+    const [id, body, revision, footprint] = control.state.written!;
+    assert.deepEqual([id, revision, footprint], [control.proposed.id, 2, null]);
+    assert.deepEqual(body.footprint, []);
+    assert.equal(body.representation, 'physical_exterior');
+    assert.deepEqual(body.documentCitations, [control.pin]);
+    assert.deepEqual(body.evidence, control.proposed.evidence);
+  }));
+
+test('a correction with fewer than three footprint points keeps the strict body check', () => attributed(async () => {
+  for (const footprint of [[[0, 0], [2, 0]], ring.slice(0, 1)]) {
+    const control = citedExterior(footprint);
+    await withGeoCheck(() => assert.fail('no geo check'), () => memoryPool(
+      control.client.query.bind(control.client) as any, () => assert.rejects(
+        () => prepareRegistryReview(control.draft.id, 2, 1, citationCheck([])),
+        (error: any) => error.name === 'ZodError')));
+  }
+}));
+
+/** The recorded building keeps its outline: only the representation marker goes, as a polygon record holds none. */
+function outline(current: { body: Record<string, unknown> }) {
+  const { representation: _representation, ...body } = current.body;
+  current.body = { ...body, footprint: ring };
+}
+
+test('a correction cannot turn a recorded outline into an exterior-only building', () => attributed(async () => {
+  const strict = (error: any) => error.name === 'ZodError';
+  const refused = citedExterior();
+  outline(refused.current);
+  await withGeoCheck(() => assert.fail('no geo check'), () => memoryPool(
+    refused.client.query.bind(refused.client) as any,
+    () => assert.rejects(() => prepareRegistryReview(refused.draft.id, 2, 1, citationCheck([])), strict)));
+  const changed = citedExterior();
+  const review = await withGeoCheck(() => {}, () => memoryPool(changed.client.query.bind(changed.client) as any,
+    () => prepareRegistryReview(changed.draft.id, 2, 1, citationCheck([]))));
+  outline(changed.current);
+  await assert.rejects(() => commitRegistryReviewTx(changed.client, review.id, 'Technical control', undefined,
+    citationCheck([])), strict);
+  assert.equal(changed.state.written, undefined, 'commit never nulls a recorded footprint');
+}));
