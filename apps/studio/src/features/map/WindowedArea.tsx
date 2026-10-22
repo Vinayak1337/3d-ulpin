@@ -11,6 +11,7 @@ import { WINDOW_EMPTY, useAreaWindow } from './areaWindow';
 import { BuildingCard } from './inspector/BuildingCard';
 import { InspectorShell } from './inspector/InspectorShell';
 import { ScaleAndNorth } from './ScaleAndNorth';
+import { createViewFrames } from './viewFrames';
 import { useMapView } from './useMapView';
 import { SurfaceKey } from './surface/SurfaceKey';
 import { useSurfaceLayer } from './surface/useSurfaceLayer';
@@ -30,7 +31,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   const name = area?.name ?? 'This area';
   const reference = area?.reference;
   const [engine, setEngine] = useState<SceneEngine | null>(null);
-  const [tick, setTick] = useState(0);
+  const [frames] = useState(createViewFrames);
   const { selection, dispatch } = useSelection();
   const [mapView] = useMapView();
   const windowed = useAreaWindow(areaId, engine, true);
@@ -40,7 +41,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
     mode: 'area', buildingId: selected?.id ?? null, levelId: null, spaceId: null, tool: 'select', finding: null,
   }), [selected]);
   const { onView: readView } = windowed;
-  const onView = useCallback(() => { setTick((t) => (t + 1) % 1_000_000); readView(); }, [readView]);
+  const onView = useCallback(() => { frames.emit(); readView(); }, [frames, readView]);
   const readoutTitle = reference
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
     : '';
@@ -90,7 +91,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
           ) : null}
           {windowed.empty ? null : (
             <div className={styles.readout}>
-              <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={reference?.sourceCrs} />
+              <ScaleAndNorth engine={engine} frames={frames} title={readoutTitle} prefix={reference?.sourceCrs} />
             </div>
           )}
         </div>

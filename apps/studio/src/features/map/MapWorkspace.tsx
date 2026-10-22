@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Archive, FilePlus, SlidersHorizontal, X } from '@phosphor-icons/react';
@@ -37,6 +37,7 @@ import {
 import { noFloorsState } from './floorState';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
+import { createViewFrames, type ViewFrames } from './viewFrames';
 import { useSurfaceLayer } from './surface/useSurfaceLayer';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
@@ -80,7 +81,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   }, [buildingImport.data?.state, buildingImport.data?.buildingId, client]);
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
+  const [frames] = useState(createViewFrames);
   const [dialog, setDialog] = useState<'card' | 'files' | 'delete-building' | 'retire-area' | null>(null);
   const navigate = useNavigate();
   const [notice, setNotice] = useState<string | null>(null);
@@ -258,7 +259,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
 
   const { onView: readView } = windowed;
-  const onView = useCallback(() => { setTick((t) => (t + 1) % 1_000_000); readView(); }, [readView]);
+  const onView = useCallback(() => { frames.emit(); readView(); }, [frames, readView]);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
   const chooseColour = (c: Exclude<typeof colour, never>) => {
     patch({ colourBy: c });
@@ -394,7 +395,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
   const tray = packageId ? (
-    <ImportTray packageId={packageId} drawnBuildings={engine?.drawnBuildings().count}
+    <MapImportTray packageId={packageId} engine={engine} frames={frames}
       onClose={() => closeParam('package')} />
   )
     : buildingImportId ? <BuildingImportTray importId={buildingImportId} onClose={() => closeParam('building-import')} /> : selection.mode === 'findings' && findings.length ? (
@@ -474,7 +475,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 </div>
               </div>
             ) : null}
-            <SceneLabels engine={engine} labels={labels} tick={tick} />
+            <SceneLabels engine={engine} labels={labels} frames={frames} />
             <div className={styles.leftStack}>
               <details
                 className={styles.mapTools}
@@ -541,7 +542,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
             {nothingToDraw || windowed.empty ? null : (
               <div className={styles.readout}>
-                <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} />
+                <ScaleAndNorth engine={engine} frames={frames} title={readoutTitle} prefix={readout} />
               </div>
             )}
             {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
@@ -567,4 +568,13 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
       {notice ? <Toast onDone={() => setNotice(null)}>{notice}</Toast> : null}
     </EvidenceProvider>
   );
+}
+
+/** Keep the drawn count current without re-rendering the workspace on every camera or streamed frame. */
+function MapImportTray({ packageId, engine, frames, onClose }: {
+  packageId: string; engine: SceneEngine | null; frames: ViewFrames; onClose: () => void;
+}) {
+  const count = useCallback(() => engine?.drawnBuildings().count, [engine]);
+  const drawnBuildings = useSyncExternalStore(frames.subscribe, count, count);
+  return <ImportTray packageId={packageId} drawnBuildings={drawnBuildings} onClose={onClose} />;
 }

@@ -118,8 +118,8 @@ describe('the read parts of a kept surface', () => {
     const surface = new Group();
     const engine = Object.assign(Object.create(SceneEngine.prototype), {
       surface, surfaceParts: new Map(), surfaceQueue: new Map(), options: { palette: { selected: '#1f6feb' } },
-      requestRender: vi.fn(),
-    }) as SceneEngine & { drainSurfaceQueue(): void };
+      programWarmUp: { settled: true }, requestRender: vi.fn(),
+    }) as Pick<SceneEngine, keyof SceneEngine> & Record<string, any>;
     return { engine, surface };
   }
   const square: SurfacePartInput['corners'] = [[0, 0], [10, 0], [10, 10], [0, 10]];
@@ -147,6 +147,28 @@ describe('the read parts of a kept surface', () => {
     engine.drainSurfaceQueue();
     expect(surface.children.slice(0, 15)).toEqual(drawn);
     expect(surface.children).toHaveLength(16);
+  });
+
+  it('cancels queued parts that are hidden or closed before their frame and disposes changed parts once', () => {
+    const { engine, surface } = surfaceEngine();
+    const a: SurfacePartInput = { id: 'synthetic:0', corners: square, image: {} as HTMLCanvasElement };
+    const b: SurfacePartInput = { id: 'synthetic:1', corners: square };
+    engine.setSurfaceParts([a, b]);
+    engine.drainSurfaceQueue();
+    const image = surface.children[0]!.children[1] as Mesh;
+    const geometry = vi.spyOn(image.geometry, 'dispose');
+    const material = image.material as MeshBasicMaterial;
+    const texture = vi.spyOn(material.map!, 'dispose');
+    engine.setSurfaceParts([{ ...a }]);
+    expect(geometry).toHaveBeenCalledOnce();
+    expect(texture).toHaveBeenCalledOnce();
+    engine.drainSurfaceQueue();
+    expect(surface.children.map((group) => group.userData.surface)).toEqual([a.id]);
+    engine.setSurfaceParts([a, b]);
+    engine.setSurfaceParts([]);
+    engine.drainSurfaceQueue();
+    expect(surface.children).toHaveLength(0);
+    expect(engine.surfaceQueue.size).toBe(0);
   });
 
   it('adds and removes parts by id and keeps a part drawn while its input is the same', () => {
