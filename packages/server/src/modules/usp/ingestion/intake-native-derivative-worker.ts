@@ -37,10 +37,13 @@ export const derivativeKeeping: Pick<NativeDerivativeDependencies, 'transaction'
 const defaults: NativeDerivativeDependencies = { ...derivativeKeeping, read: readObjectRange, convert };
 
 type DerivativeInput = IntakeSourcePins & { jobId: string };
-/** A fenced job that writes derivatives of an item's original: its operation, payload, work and stop words. */
+/**
+ * A fenced job that writes derivatives of an item's original: its operation, payload, work and stop words, and the
+ * code a fault that is not a refusal is labelled with.
+ */
 export type DerivativeJob<Input extends DerivativeInput> = {
   operation: string; parse: (payload: unknown) => Input; run: (input: Input) => Promise<string[]>;
-  stopped: (code: string) => string; refusedCode?: string;
+  stopped: (code: string) => string; failedCode: string; refusedCode?: string;
 };
 
 const pinned = (input: DerivativeInput) => (client: PoolClient) =>
@@ -58,9 +61,14 @@ async function stoppedTx<Input extends DerivativeInput>(client: PoolClient, inpu
     [input.jobId, code === 'STALE_REVISION' ? 'stale' : 'failed', code]);
 }
 
+/** The code a stopped job is labelled with: a refusal's own code, else the job's failure code. */
+export function stopCode<Input extends DerivativeInput>(error: unknown, job: DerivativeJob<Input>): string {
+  return error instanceof AppError ? error.code : job.failedCode;
+}
+
 async function fail<Input extends DerivativeInput>(input: Input, attempt: UspJobAttempt, error: unknown,
   job: DerivativeJob<Input>) {
-  const code = error instanceof AppError ? error.code : 'NATIVE_DERIVATIVE_FAILED';
+  const code = stopCode(error, job);
   await transaction(async client => {
     await lockSourceCaseDestinationTx(client, input.caseId);
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
@@ -114,12 +122,14 @@ export async function runDerivativeJob<Input extends DerivativeInput>(jobId: str
 }
 
 /** SH2. Convert, retain and enrol each layer, then write the original's words. */
+export const nativeDerivativeJob = (dependencies: Partial<NativeDerivativeDependencies> = {}):
+  DerivativeJob<IntakeNativeDerivativeInput> => ({ operation: 'intake-native-derivative',
+  parse: payload => IntakeNativeDerivativeInputSchema.parse(payload),
+  run: input => convertNativeLayers(input.caseId, input.itemId, { ...defaults, ...dependencies }, input.members),
+  stopped: code => `Converting the layers of this file to GeoJSON stopped (${code}); enrol the file again to retry.`,
+  failedCode: 'NATIVE_DERIVATIVE_FAILED', refusedCode: 'NATIVE_DERIVATIVE_FILE' });
+
 export async function runIntakeNativeDerivativeJob(jobId: string,
   dependencies: Partial<NativeDerivativeDependencies> = {}) {
-  await runDerivativeJob(jobId, { operation: 'intake-native-derivative',
-    parse: payload => IntakeNativeDerivativeInputSchema.parse(payload),
-    run: (input: IntakeNativeDerivativeInput) => convertNativeLayers(input.caseId, input.itemId,
-      { ...defaults, ...dependencies }, input.members),
-    stopped: code => `Converting the layers of this file to GeoJSON stopped (${code}); enrol the file again to retry.`,
-    refusedCode: 'NATIVE_DERIVATIVE_FILE' });
+  await runDerivativeJob(jobId, nativeDerivativeJob(dependencies));
 }

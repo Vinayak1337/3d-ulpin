@@ -13,6 +13,8 @@ import { streamedSourceReference } from './streamed-map-receipt';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { placeTableRows, queueTableGeojsonTx, tablePlacementWords, writeTableGeojson,
   type IntakeTableGeojsonInput, type TableGeojsonDependencies, type TablePlacementPlan } from './table-geojson';
+import { nativeDerivativeJob, stopCode } from './intake-native-derivative-worker';
+import { tableGeojsonJob } from './table-geojson-worker';
 import { readTabularSource } from './tabular-source';
 import { readTableWindows } from './tabular-stream';
 
@@ -327,6 +329,14 @@ test('a small Windows-1252 table whose read pinned no reading is decoded as the 
     const [child] = await placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, kept), bytes));
     const features = JSON.parse(kept.get(child)!.toString()).features;
     assert.deepEqual(features.map((feature: any) => feature.properties.ward), ['Café']);
+  });
+
+test('a fault that is not a refusal stops a placement as TABLE_PLACEMENT_FAILED; the native path keeps its own code',
+  () => {
+    const fault = new TypeError('the object store closed the stream');
+    assert.equal(stopCode(fault, tableGeojsonJob), 'TABLE_PLACEMENT_FAILED');
+    assert.equal(stopCode(fault, nativeDerivativeJob()), 'NATIVE_DERIVATIVE_FAILED');
+    assert.equal(stopCode(new AppError(422, 'TABULAR_ENCODING', 'invalid text'), tableGeojsonJob), 'TABULAR_ENCODING');
   });
 
 const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
