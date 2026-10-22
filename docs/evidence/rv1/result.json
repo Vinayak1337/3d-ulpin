@@ -1,0 +1,52 @@
+{
+  "task": "RV1",
+  "title": "The record evidence read accepts revision-1 bodies that repeat their own row envelope",
+  "base": "c7309611",
+  "failure": {
+    "seen": "REH14 journey:check, GET /api/v1/registry-records/{recordId}/revisions/1/document-citations",
+    "words": "422 INVALID_INPUT Unrecognized keys: id, siteId, revision, identifier",
+    "reproducedOffline": "the new test against the old reader fails with the same four keys"
+  },
+  "writer": {
+    "fact": "packages/server/src/modules/areas/exterior-records.ts:31-41 recordExteriorTx stores {...reserved body, id, siteId, identifier, revision: 1, evidence} in both registry_records.body and registry_revisions.body",
+    "which": "the reserved exterior-only building (areas.ts:919-937, footprint [], physical_exterior) recorded at revision 1 when its area package commits (areas.ts:1754); this is the footprint-only record 4d051593",
+    "sameShape": [
+      "usp/ingestion/source-building-records.ts:77-84 (revision = feature revision)",
+      "usp/ingestion/source-building-children.ts:39-45 (revision 1, plus sourceOnly)",
+      "usp/ingestion/source-building-candidates.ts:81-84 and officer/canonical-conflict-decisions.ts:82-87 (carry the body forward, revision set to the new one)"
+    ],
+    "notThisShape": "registry/registry.ts:915-919 commit path deletes id, siteId, identifier, revision before it writes revision 2 and later",
+    "bodyVsSelected": "at the current revision both columns hold the same written object, so the fingerprint comparison held; only the strict parse refused"
+  },
+  "change": {
+    "helper": "registry.ts recordedBody(body, envelope): drops id, siteId, identifier, revision only where each equals the row value, parses the rest with recordedBodySchema (strict), returns the raw stored values",
+    "reader": "registry-record-evidence.ts capturedBodies: current body against the record's revision, selected body against the requested revision; the current-revision fingerprint compares the two bodies without their matching envelope",
+    "unchanged": "stored rows, recordBodySha256 (still the raw stored body), every other check",
+    "writer": "not changed: exterior-records.test.ts:71-72 pins the envelope keys as the writer's shape and four other writers store the same; rows already on the demo need the reader fix in any case",
+    "otherStrictReaders": "none: recordedBodySchema/recordBodySchema parse stored bodies only here; registry.ts:514 parses bodyOnly(record), which already strips the envelope; registry-input.ts and editDraftSchema parse request input"
+  },
+  "tests": {
+    "file": "packages/server/src/modules/registry/registry-record-evidence.test.ts",
+    "cases": [
+      "the real writer recordCommittedExteriorsTx stores the four keys in an exterior-only revision-1 body",
+      "that body is read at revision 1 (current), recordBodySha256 equals the stored body's hash",
+      "revision 1 is read as history under a revision 2 written without the envelope",
+      "a differing siteId, id, identifier or revision, an extra unknown key, or a revision-1 envelope on a revision-2 body is refused"
+    ],
+    "beforeFix": "2 of 4 fail with Unrecognized keys id, siteId, identifier, revision",
+    "afterFix": "4 of 4 pass"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/registry/*.test.ts packages/server/src/modules/areas/exterior-records.test.ts packages/server/src/modules/officer/building-ledger*.test.ts tests/registry*.test.ts", "exit": 0, "tests": 168, "pass": 167, "skipped": 1, "note": "the skip is the existing external D1 artifact pin; tests/registry-ifc-citations.test.ts is included" },
+    { "command": "tsx scripts/api/refresh-contract.ts c7309611", "exit": 0, "repinned": ["registry-record-evidence.ts", "registry.ts"] },
+    { "command": "tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0 },
+    { "command": "python scripts/api/check.py", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 }
+  ],
+  "runtimeCheckForLead": "on a runtime with this reader: pnpm journey:check whose newest card cites a revision-1 exterior-only record (REH14's 4d051593 r1, also 55462938, a69cdab3, 37080b64 r1) returns 200; 37080b64 r2 still 200",
+  "gaps": [
+    "source-stated records (source-building-records.ts, source-building-children.ts) also store placement, classification or sourceOnly; the strict reader still refuses those keys, as the task requires for any other unknown key",
+    "no runtime or PostgreSQL run in this task"
+  ]
+}
