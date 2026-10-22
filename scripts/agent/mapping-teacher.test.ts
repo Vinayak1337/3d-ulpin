@@ -144,6 +144,22 @@ test('request: the four whole-sample tokens go as plain-text forms the minimizer
   assert.deepEqual(mappingTeacherRequest(stored).sampleForms, []);
 });
 
+test('rationale: prompt states the rule and examples; schema still rejects literal-fact forms', () => {
+  const profile = profileColumns([{ Registration: 'masked' }], [{ name: 'Registration' }], 'tabular');
+  const request = mappingTeacherRequest(profile);
+  const prompt = minimizeMessages(request.messages)[0].content;
+  for (const instruction of ['no literal facts in explanations', 'Devanagari digits', 'EPSG',
+    'coordinate or coordinates', 'allowed "the column header names a registration number"', 'refused "column 3"']) {
+    assert(prompt.includes(instruction), instruction);
+  }
+  const output = (rationale: string) => ({ fields: [{ sourceField: 'column_a', target: 'unknown',
+    operation: { kind: 'copy' }, confidence: 'none', rationale }] });
+  for (const rationale of ['column 3', 'column ३', 'EPSG 4326', 'coordinates', 'coordinate']) {
+    assert(!validateTeacherOutput(output(rationale), profile).success, rationale);
+  }
+  assert(validateTeacherOutput(output('the column header names a registration number'), profile).success);
+});
+
 test('gateway: a message that is only too long is refused as size; shape and content refusals stay privacy', () => {
   const long = 'x'.repeat(32769);
   assert.equal(minimizeMessages([{ role: 'user', content: 'x'.repeat(20000) }]).length, 1);
@@ -179,16 +195,16 @@ async function askCounted(profile: ReturnType<typeof madeUpProfile>) {
   return { result, asked, reserved: ledger.reserved, dispatched: ledger.dispatched };
 }
 
-test('size: a request within the bound is built as before, with every sample', () => {
-  // Hashes of the messages and schema for the two retained inputs, measured on the base 39ed2dbb.
-  const before = [
-    '533f7722234e603bc3b07aef5c57bd0f0d72af716b801dfeda5931a518532d22',
-    '067a245bb3141442c9d94acd646ecf4609b989047012fbe2c6d50c939db4c1e9',
+test('size: a fitting request carries the rationale instruction and every sample', () => {
+  // Pin the intentional prompt/template change; source profiles and samples are unchanged.
+  const expected = [
+    '21a8599b0a0883ef774959ce09220e2d6d271dccd5cee5a3f3cad6bd6cfd67e4',
+    'aa0eae2859ba679e5326b8611076f557a67756fbc89960613c008f05cd3f31f1',
   ];
   for (const [index, file] of [goodFile, difficultFile].entries()) {
     const { profile } = profileColumnFile(file);
     const request = mappingTeacherRequest(profile);
-    assert.equal(requestHash(request), before[index], file);
+    assert.equal(requestHash(request), expected[index], file);
     const most = Math.max(...profile.columns.map((column) => column.maskedSamples.length));
     assert.deepEqual([request.samplesPerColumn, request.overBound], [most, false], file);
   }
@@ -198,17 +214,17 @@ test('size: a request over the bound carries fewer samples in every column; colu
   const profile = madeUpProfile(40);
   const whole = { ...profile, columns: profile.columns.map((column) => ({ ...column, maskedSamples: [] })) };
   const request = mappingTeacherRequest(profile);
-  assert.deepEqual([request.samplesPerColumn, request.overBound], [7, false]);
+  assert.deepEqual([request.samplesPerColumn, request.overBound], [6, false]);
   assert.equal(minimizeMessages(request.messages).length, 2);
   const [sent, bare] = [sentColumns(request), sentColumns(mappingTeacherRequest(whole))];
   assert.equal(sent.length, 40);
-  assert(sent.every((column) => column.maskedSamples.length === 7));
+  assert(sent.every((column) => column.maskedSamples.length === 6));
   const named = (columns: typeof sent) => columns.map((column) => [column.header, column.sourceField]);
   assert.deepEqual(named(sent), named(bare));
   // One sample more in every column is over the bound: the step down stopped at the first number that fits.
-  const eight = sent.map((column) => ({ ...column, maskedSamples: [...column.maskedSamples, 'xxxxx D xx D'] }));
+  const seven = sent.map((column) => ({ ...column, maskedSamples: [...column.maskedSamples, 'xxxxx D xx D'] }));
   const user = JSON.parse(request.messages[1].content);
-  const longer = JSON.stringify({ ...user, columnProfile: { ...user.columnProfile, columns: eight } });
+  const longer = JSON.stringify({ ...user, columnProfile: { ...user.columnProfile, columns: seven } });
   assert.throws(() => minimizeMessages([request.messages[0], { role: 'user', content: longer }]), {
     code: 'MODEL_INPUT_LIMIT',
   });
@@ -244,7 +260,7 @@ function screenedProfile(asset: SourceAsset) {
   return { ...prepared.inventory.profile, columns };
 }
 
-test('size: the two recorded mi-d22 tables need two groups of consecutive columns, each carrying three samples',
+test('size: the recorded mi-d22 tables need two consecutive groups carrying three and two samples',
   async () => {
   const wide = developmentProfileAssets().filter((asset) => asset.family === 'mi-d22');
   const measured: number[][] = [];
@@ -256,11 +272,11 @@ test('size: the two recorded mi-d22 tables need two groups of consecutive column
       Buffer.byteLength(JSON.stringify(request.messages))]);
     const { result, ...counts } = await askCounted(profile);
     assert.deepEqual(counts, { asked: 2, reserved: 2, dispatched: 2 }, asset.id);
-    assert.deepEqual([result.columnGroups, result.samplesPerColumn], [2, [3, 3]], asset.id);
+    assert.deepEqual([result.columnGroups, result.samplesPerColumn], [2, [3, 2]], asset.id);
     assert(result.issues.every((issue) => issue.code === 'TEACHER_UNCERTAIN'), asset.id);
   }
   // Columns, characters of the user message and bytes of both messages with no samples, as Step 0 measured them.
-  assert.deepEqual(measured.sort((a, b) => b[1] - a[1]), [[90, 33178, 37690], [90, 33054, 37566]]);
+  assert.deepEqual(measured.sort((a, b) => b[1] - a[1]), [[90, 33178, 38023], [90, 33054, 37899]]);
 });
 
 test('groups: one fitting request is unchanged; the fewest equal groups keep columns in order', () => {

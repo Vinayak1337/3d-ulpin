@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "sv3-offline-teacher-limits/1",
+  "task": "SV3",
+  "gate": "GF-AGENT / AG-E2; GF-AI / ML-D1 (offline only)",
+  "baseCommit": "fe834af6",
+  "branch": "task/sv3-teacher-limits",
+  "scope": "Offline code and tests; no runtime, Docker, policy edits, provider call or push.",
+  "inputs": {
+    "good": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+    "difficult": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+    "wide": ["mi-d22/schemes-yes-v1.csv", "mi-d22/schemes-no-v1.csv"],
+    "storeyComparison": "docs/evidence/gf-ai/documents/d2/control-output.json",
+    "storeyComparisonStatus": "retained software control, not evaluation truth or an LP6 answer",
+    "diagnostics": ["docs/evidence/gf-ai/gateway/lp5/result.json", "docs/evidence/gf-ai/gateway/lp6/result.json"]
+  },
+  "mapping": {
+    "template": "mapping-teacher/2.2",
+    "regexChanged": false,
+    "promptRuleAndExamplesCheckedAfterMinimizer": true,
+    "refused": ["column 3", "column ३", "EPSG 4326", "coordinates", "coordinate"],
+    "accepted": "the column header names a registration number",
+    "wideSamplesPerGroupBefore": [3, 3],
+    "wideSamplesPerGroupAfter": [3, 2],
+    "columnsRetained": true,
+    "realInputs": "both pass profile, control-plan validation and executor dry-run; originals unchanged"
+  },
+  "storey": {
+    "choice": "a: shorter answer; citation ID strings on the wire, quotes restored from selected source lines",
+    "template": "document-storey/1.1",
+    "fieldsOrListCapacitiesRemoved": [],
+    "readers": "docs/backend/DEMO-GATEWAY.md, LP6 follow-up section, reader audit table",
+    "lp6Columns": ["step", "contentChars", "outputTokens", "finish"],
+    "lp6Rows": [
+      [1, 3101, 2048, "length"], [9, 4708, 1699, "stop"],
+      [10, 5103, 2048, "length"], [11, 3684, 2048, "length"],
+      [12, 3987, 1471, "stop"], [13, 3570, 1330, "stop"],
+      [14, 3092, 2048, "length"], [15, 5389, 2048, "length"]
+    ],
+    "lp6ReasoningTokens": 0,
+    "lp6Truncated": "5 of 8",
+    "diagnosticLimit": "No answer text or per-field lengths: actual LP6 dominant fields cannot be identified.",
+    "hypothesis": "Do not regenerate redundant quote text; emit compact JSON without duplicate facts.",
+    "controlComparison": {"beforeChars": 416, "afterChars": 360, "savedChars": 56, "savedPercent": 13.5},
+    "qualification": "Format reduction proven; live truncation removal and extraction accuracy NOT qualified.",
+    "invariants": [
+      "all fact fields, scopes, units, conflicts and multiple citations retained",
+      "wire citations restricted to sent IDs; unknown ID fails closed",
+      "full source quotes restored before product and recording validation; replay preserves output",
+      "older requests cannot reuse changed template/replay keys",
+      "quote/value-at-locator verifier and officer review unchanged"
+    ],
+    "maxOutputTokensUnchanged": 2048,
+    "outputComponentInrAt60PerMillion": "0.122880",
+    "reservationInrAtExistingBoundsAndCushion": "0.774144",
+    "policyStep": "none; no global or per-request budget change"
+  },
+  "checks": {
+    "reproduce": "bash docs/evidence/sv3/verify.sh",
+    "reproduceExit": 0,
+    "typecheck:backend": {"exit": 0},
+    "focusedGatewayAndTeacherTests": {"exit": 0, "tests": 104, "pass": 103, "skip": 1, "fail": 0},
+    "skipped": "fresh owned SQL test: no database supplied or started",
+    "measure.ts": {"exit": 0},
+    "live-proof.ts --plan": {"exit": 0, "calls": 10},
+    "live-proof.ts --dry-run": {
+      "exit": 0, "steps": 15, "gatewayAsks": 11, "providerDispatches": 0,
+      "fetchAttempts": 0, "ledgerReservations": 0, "requestsMatchingPlan": 10
+    },
+    "git diff --check": {"exit": 0}
+  },
+  "recovery": [
+    "Initial typecheck failed on a test generic intersection; explicit Omit return type fixed it.",
+    "Initial focused tests found expected old prompt hashes and size counts; remeasured and updated them.",
+    "Initial network guard blocked local named-pipe IPC; allow named pipes only, never IP sockets.",
+    "Plan initially refused in-Git output; rerun with fresh OS-temp output and empty temp replay directory.",
+    "Initial verify script used relative preload paths in package subprocesses; absolute path fixed it."
+  ],
+  "broaderSuite": {
+    "exit": 1, "tests": 142, "pass": 128, "skip": 1, "fail": 13,
+    "fixedInFocusedRerun": "old live-proof hash expectation; four default-recording failures routed to temp",
+    "remainingPrerequisites": [
+      "six tests need Python native-reader or learner dependencies (default interpreter lacks sklearn)",
+      "legacy A3c test requires forbidden runtime memory content; deliberately blocked",
+      "A3b officer-command test hits body.destroy under the strict offline fetch guard"
+    ],
+    "notRetriedUnchanged": true
+  },
+  "safety": {
+    "guard": "docs/evidence/sv3/offline-preload.cjs",
+    "settingsAndRuntimeReads": "blocked before file read; runtime-dependent test reported, not bypassed",
+    "network": "fetch, HTTP requests and IP sockets blocked; injected fake transports allowed",
+    "sql": "disabled; test skipped",
+    "recordings": "fresh OS-temp directories only",
+    "answerTextOpened": "retained D2 control only; no LP5/LP6 answer opened",
+    "policyFilesReadOrChanged": false,
+    "liveCalls": 0
+  },
+  "next": "Review code, then one separately authorised compact-answer rehearsal; no live gate claimed here."
+}
