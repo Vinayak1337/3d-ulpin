@@ -385,14 +385,18 @@ const older = 'This part was read under an older batch context, so it is not sho
 /**
  * SF1 D1. The bounds of the batch's drafted footprint packages in its area, in the area's local frame: the
  * package extent the recording step merges into the area's extent (areas.ts commitPackage). Recorded packages are
- * already in that extent; source workspaces, quarantined and geometry-free packages give none. No package gives
+ * already in that extent; source workspaces, fully quarantined and geometry-free packages give none. No package gives
  * null, never a zero box.
  */
 const draftedBounds = `LEFT JOIN LATERAL (SELECT CASE WHEN count(*)>0 THEN jsonb_build_array(
     min((p.body->'extent'->>0)::float8),min((p.body->'extent'->>1)::float8),
     max((p.body->'extent'->>2)::float8),max((p.body->'extent'->>3)::float8)) END AS extent
-  FROM import_packages p WHERE p.case_id=c.id AND p.area_id=a.id AND p.state<>'COMMITTED'
-    AND NOT p.body ? 'sourceWorkspace' AND NOT p.body ? 'quarantine'
+  FROM import_packages p WHERE p.area_id=a.id AND p.state<>'COMMITTED' AND EXISTS (
+    SELECT 1 FROM usp_intake_items anchor WHERE anchor.case_id=c.id AND (
+      anchor.plan_ref->>'packageId'=p.id::text OR EXISTS (
+        SELECT 1 FROM usp_intake_parts part WHERE part.item_id=anchor.item_id
+          AND part.state='published' AND part.result_ref->>'packageId'=p.id::text)))
+    AND NOT p.body ? 'sourceWorkspace' AND p.body->'quarantine'->>'complete' IS DISTINCT FROM 'true'
     AND CASE WHEN jsonb_typeof(p.body->'extent')='array' THEN jsonb_array_length(p.body->'extent')=4
       AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(p.body->'extent') v WHERE jsonb_typeof(v)<>'number')
       ELSE false END) d ON true`;
