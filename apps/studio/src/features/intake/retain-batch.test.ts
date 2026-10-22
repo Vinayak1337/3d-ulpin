@@ -113,7 +113,8 @@ it.each(refusedInputs)('keeps $name through /uploads after /sources refuses it, 
   const active = vi.fn();
   const acquiredAt = '2026-10-21T00:00:00.000Z';
   const rows = await retainBatch(caseId, [file], update => frames.push(update), { acquiredAt, active });
-  expect(rows[0]).toMatchObject({ state: 'enrolled', message: input.message });
+  const words = `Sent through upload after the first route refused it: ${input.message}`;
+  expect(rows[0]).toMatchObject({ state: 'enrolled', message: words });
   expect(rows[0]!.sourceId).toBeTruthy();
   expect(io.calls).toEqual(['GET ', 'POST /sources', ...uploadCalls]);
   expect(io.created).toMatchObject([{ filename: file.name, bytes: file.size, expectedCaseRevision: 4,
@@ -121,9 +122,9 @@ it.each(refusedInputs)('keeps $name through /uploads after /sources refuses it, 
   const bytes = new Uint8Array(await file.arrayBuffer());
   expect(io.parts.map(bytesHash)).toEqual([bytesHash(bytes)]);
   expect(bytesHash(new Uint8Array(await io.bounded[0]!.file.arrayBuffer()))).toBe(bytesHash(bytes));
-  const firstRefusal = frames.findIndex(frame => frame[0]!.message === input.message);
+  const firstRefusal = frames.findIndex(frame => frame[0]!.message === words);
   expect(firstRefusal).toBeGreaterThan(0);
-  expect(frames.slice(firstRefusal).every(frame => frame[0]!.message === input.message)).toBe(true);
+  expect(frames.slice(firstRefusal).every(frame => frame[0]!.message === words)).toBe(true);
   expect(active.mock.calls).toEqual([[expect.objectContaining({ run: expect.any(Function) })], [null]]);
 });
 
@@ -132,7 +133,8 @@ it('falls back for a small ZIP only after the archive route refuses it', async (
   const io = transport(refusal);
   const file = fileOf('test_only archive transport bytes', 'pack.zip');
   const rows = await retainBatch(caseId, [file], () => undefined);
-  expect(rows[0]).toMatchObject({ state: 'enrolled', message: refusal.message });
+  expect(rows[0]).toMatchObject({ state: 'enrolled',
+    message: 'Sent through upload after the first route refused it: No supported map layers in this ZIP.' });
   expect(io.calls).toEqual(['GET ', 'POST /intake/archives', ...uploadCalls]);
   expect(io.parts).toEqual([new Uint8Array(await file.arrayBuffer())]);
 });
@@ -166,7 +168,7 @@ it('keeps the first refusal words if the upload also fails', async () => {
   });
   const rows = await retainBatch(caseId, [fileOf(refusal.bytes, refusal.name)], () => undefined);
   expect(rows[0]).toMatchObject({ state: 'not_enrolled',
-    message: `${refusal.message} Upload limits unavailable.` });
+    message: `Sent through upload after the first route refused it: ${refusal.message} Upload limits unavailable.` });
   expect(io.created).toEqual([]);
 });
 

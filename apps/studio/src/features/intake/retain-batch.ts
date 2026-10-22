@@ -67,7 +67,8 @@ async function retainOriginal(caseId: string, file: File, progress: (upload: Upl
     try { return await retainMap(caseId, file); }
     catch (error) {
       if (!(error instanceof ApiError) || ![413, 422].includes(error.status)) throw error;
-      onRefusal(error.message);
+      // The refusal stands beside the file's outcome, so it says the file went on through upload.
+      onRefusal(`Sent through upload after the first route refused it: ${error.message}`);
     }
   }
   const command = createUploadCommand({ file, acquiredAt: options?.acquiredAt ?? new Date().toISOString(),

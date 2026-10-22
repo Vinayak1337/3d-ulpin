@@ -35,10 +35,28 @@ it('uses each reader ceiling inclusively, including the native PDF limit rather 
       .toMatchObject({ ceilingBytes: bytes, withinCeiling: true });
     expect(readerEligibility({ name: `source.${extension}`, size: bytes + 1 }).withinCeiling).toBe(false);
   }
-  expect(readerEligibility({ name: 'ambiguous.json', size: 1024 }).reader).toBeNull();
   expect(readerEligibility({ name: 'archive.zip', size: 1024 }).withinCeiling).toBeNull();
   expect(readerEligibility({ name: 'source.__proto__', size: 1024 }).reader).toBeNull();
   expect(readerEligibility({ name: 'source.constructor', size: 1024 }).withinCeiling).toBeNull();
+});
+
+it('forecasts only what the name and size settle: the point rule, JSON, DXF and GML kinds', () => {
+  const words = (name: string, size = 1024) => readerEligibility({ name, size }).words;
+  const points = 'Points are read when the file is compressed LAZ of LAS 1.4 point format 6 with at most '
+    + '5 million points (within 16 MiB). Other point files are kept, not read.';
+  expect(words('scan.laz')).toBe(points);
+  expect(words('scan.las')).toBe(points);
+  expect(words('scan.laz', POINT_BATCH_LIMITS.originalBytes + 1))
+    .toBe('Will be kept, not read: larger than the 16 MiB point cloud reader');
+  expect(words('city.json')).toBe('Read as GeoJSON or CityJSON once its bytes are checked (within 1 GiB). '
+    + 'A CityJSON is read up to 8 MiB; other JSON is kept, not read.');
+  expect(words('plan.dxf')).toBe('Will be read by the DXF reader (within 16 MiB). '
+    + 'Its reading is kept as evidence, not placed on the map.');
+  expect(words('city.gml')).toBe('Read by the CityGML reader when its bytes show a CityGML city model '
+    + '(within 32 MiB). Other GML is kept, not read. A CityGML reading is kept as evidence, not placed on the map.');
+  for (const name of ['scan.laz', 'city.json', 'plan.dxf', 'city.gml']) {
+    expect(words(name)).not.toContain('Kind not known');
+  }
 });
 
 it('keeps the exported native conversion ceiling aligned with the processor ceiling', () => {

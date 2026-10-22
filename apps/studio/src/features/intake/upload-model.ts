@@ -1,6 +1,6 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
-import { DOCUMENT_LIMITS, IFC_LIMITS, INTAKE_PAGE_IMAGE_LIMITS, NATIVE_GIS_LIMITS,
-  POINT_BATCH_LIMITS, RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS,
+import { CITYGML_LIMITS, CITYJSON_LIMITS, DOCUMENT_LIMITS, DXF_LIMITS, IFC_LIMITS, INTAKE_PAGE_IMAGE_LIMITS,
+  INTAKE_TABLE_READER_FORMATS, NATIVE_GIS_LIMITS, POINT_BATCH_LIMITS, RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS,
   TABULAR_STREAM_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
 export type UploadLimits = GetResponse<'/api/v1/ingestion/upload-limits'>;
@@ -59,8 +59,28 @@ export function sizeWords(bytes: number): string {
   return `${Math.max(1, Math.round(bytes / 1024))} KiB`;
 }
 
-const readers: Record<string, { name: string; bytes: number; note?: string }> = {
+/**
+ * One reader's forecast. `read` replaces "Will be read by the … reader" where the name cannot settle whether the
+ * reader takes the file, so the words state the condition the bytes must meet instead.
+ */
+interface ReaderForecast { name: string; bytes: number; read?: string; note?: string }
+
+const evidenceOnly = 'Its reading is kept as evidence, not placed on the map.';
+const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes,
+  read: 'Points are read when the file is compressed LAZ of LAS 1.4 point format 6 with at most '
+    + `${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points`, note: 'Other point files are kept, not read.' };
+const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes,
+  note: 'Choose Read as a table after upload.' };
+
+const readers: Record<string, ReaderForecast> = {
   geojson: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes },
+  json: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes,
+    read: 'Read as GeoJSON or CityJSON once its bytes are checked',
+    note: `A CityJSON is read up to ${sizeWords(CITYJSON_LIMITS.originalBytes)}; other JSON is kept, not read.` },
+  dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes, note: evidenceOnly },
+  gml: { name: 'CityGML', bytes: CITYGML_LIMITS.originalBytes,
+    read: 'Read by the CityGML reader when its bytes show a CityGML city model',
+    note: 'Other GML is kept, not read. A CityGML reading is kept as evidence, not placed on the map.' },
   gpkg: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kml: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kmz: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
@@ -70,12 +90,12 @@ const readers: Record<string, { name: string; bytes: number; note?: string }> = 
   pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes },
   tif: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   tiff: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
-  laz: { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes },
+  las: pointReader,
+  laz: pointReader,
   png: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
   jpg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
   jpeg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
-  csv: { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes, note: 'Choose Read as a table after upload.' },
-  xlsx: { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes, note: 'Choose Read as a table after upload.' },
+  ...Object.fromEntries(INTAKE_TABLE_READER_FORMATS.map((format) => [format, tableReader])),
 };
 
 /** The dialog does not read file headers: this is a name-based size forecast, never a routing decision. */
@@ -86,7 +106,7 @@ export function readerEligibility(file: { name: string; size: number }) {
     words: 'Kind not known yet: will be kept and recognised after upload' };
   const withinCeiling = file.size <= reader.bytes;
   const words = withinCeiling
-    ? `Will be read by the ${reader.name} reader (within ${sizeWords(reader.bytes)})`
+    ? `${reader.read ?? `Will be read by the ${reader.name} reader`} (within ${sizeWords(reader.bytes)})`
     : `Will be kept, not read: larger than the ${sizeWords(reader.bytes)} ${reader.name} reader`;
   return { reader: reader.name, ceilingBytes: reader.bytes, withinCeiling,
     words: withinCeiling && reader.note ? `${words}. ${reader.note}` : words };
