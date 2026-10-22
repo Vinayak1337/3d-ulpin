@@ -19,7 +19,7 @@ import { readTableWindows, unavailableColumns, type StreamedTableWindow } from '
 import { coordinateText, geometryJson, parseWkt, type TableGeometry } from './wkt';
 
 /**
- * TC1. A kept table whose rows hold coordinates is placed on the map: the officer names the coordinate columns
+ * TC1. A kept table whose rows hold coordinates is prepared for the map: the officer names the coordinate columns
  * (x and y, or one WKT column) and the EPSG code they are in, and one job writes the rows as a GeoJSON derivative,
  * reading the table in windows. The derivative declares the officer's system, each feature cites its table row, and
  * it is kept as its own large original and enrolled like a dropped file, so the large GeoJSON path reads it unchanged.
@@ -220,7 +220,7 @@ export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSour
   if (!item) throw new AppError(409, 'TABLE_PLACEMENT_NOT_READ', 'This file has no item in the batch.');
   if ((await client.query(`SELECT 1 FROM jobs WHERE source_id=$1 AND operation='intake-table-geojson'
     AND status IN ('queued','running') LIMIT 1`, [source.id])).rowCount) conflict(
-    'The rows of this table are being placed on the map; follow that placement.');
+    'The rows of this table are being prepared as a GeoJSON file; follow that placement.');
   const scope = await intakeCaseTx(client, source.case_id);
   const input = IntakeTableGeojsonInputSchema.parse({ version: 'intake-table-geojson/1',
     jobId: stableUuid(`intake-table-geojson/1:${source.id}:${source.revision}:${request.requestKey}`),
@@ -237,7 +237,7 @@ export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSour
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
     planRef: item.plan_ref, recordsSeen: Number(item.records_seen), limitReason: besideTableWords(item.limit_reason,
-      `Placing the rows of this table on the map in ${request.crs}, as stated by the officer.`) });
+      `Preparing the rows of this table as a GeoJSON file in ${request.crs}, as stated by the officer.`) });
   return input.jobId;
 }
 
@@ -264,20 +264,25 @@ export async function openTableOriginal(source: IntakeSourceRow): Promise<Readab
 
 const plural = (value: number, one: string) => `${value.toLocaleString('en-US')} ${value === 1 ? one : `${one}s`}`;
 
-/** Officer words: how many rows were placed, and how many were skipped and why. */
+/**
+ * Officer words: how many rows were prepared as a GeoJSON file, how many were skipped and why, and whether that file
+ * was taken in as its own item. These words never say the rows are on the map: only the GeoJSON item's own line
+ * says that, once its own reading has placed it. A refused enrolment is said first, never after success words.
+ */
 export function tablePlacementWords(counts: TablePlacementCounts, kept: { name: string; crs: string } | null,
   code: string | null = null): string {
   const reasons = (Object.keys(SKIP_WORDS) as SkipReason[]).flatMap(reason => counts.skipped[reason]
     ? [`${counts.skipped[reason]!.toLocaleString('en-US')} ${SKIP_WORDS[reason]}`] : []);
   const skipped = counts.rows - counts.features;
-  const placed = counts.features ? `Placed ${plural(counts.features, 'row')} on the map`
-    : 'No row of this table was placed on the map';
-  const words = [`${placed}${skipped ? `; ${plural(skipped, 'row')} skipped: ${reasons.join(', ')}` : ''}.`];
-  if (kept && !code) words.push(`They are taken in as their own GeoJSON file, ${kept.name}, in ${kept.crs} as `
-    + 'stated by the officer.');
-  if (kept && code) words.push(`Their GeoJSON file, ${kept.name}, was kept but not taken in (${code}); place the `
-    + 'rows again to retry.');
-  return words.join(' ');
+  const skips = skipped ? `; ${plural(skipped, 'row')} skipped: ${reasons.join(', ')}` : '';
+  const rows = plural(counts.features, 'row');
+  if (!counts.features) return `No row of this table could be prepared for the map${skips}.`;
+  if (!kept) return `Prepared ${rows} as GeoJSON features${skips}.`;
+  if (code) return `Not taken in (${code}): the GeoJSON file ${kept.name}, in ${kept.crs} as stated by the officer, `
+    + `was kept but is not an item of this batch, so none of its rows is on the map. It holds ${rows}${skips}. `
+    + 'Place the rows again to retry.';
+  return `Prepared ${rows} as a GeoJSON file, ${kept.name}, in ${kept.crs} as stated by the officer${skips}. `
+    + 'That file is taken in as its own item in this batch; its own line says whether it is on the map.';
 }
 
 async function keptChildTx(client: PoolClient, caseId: string, sha256: string, lineage: TableDerivativeLineage) {

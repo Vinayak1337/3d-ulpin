@@ -13,6 +13,19 @@ import { useTableData } from './useTableData';
 import type { ChunkMapping, MappingJob, Metrics, TableProfile } from './types';
 import styles from './Table.module.css';
 
+/**
+ * WD1. This page is the table-only step. Placing rows that hold coordinates is a separate batch action, whose GeoJSON
+ * item can reach the map and a card; these words never say a table cannot.
+ */
+export function TableStepNotice() {
+  return <Banner tone="info">
+    This page is the table-only step: it maps columns into draft rows, not buildings, and by itself puts nothing in
+    the registry or on the map. To place rows that hold coordinates, use Place on the map on this table&apos;s line
+    in a batch (add the file to one if it is not in one). Its rows become a GeoJSON file taken in as its own item,
+    which follows the batch&apos;s path to the map and to a property card that an officer confirms.
+  </Banner>;
+}
+
 export function TablePage() {
   const { caseId = '', sourceId = '' } = useParams();
   return <TableImport key={`${caseId}:${sourceId}`} caseId={caseId} sourceId={sourceId} />;
@@ -33,9 +46,7 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
       <Link to="/studio/work">Batches</Link>
       <SourceHeader profile={profile.data}
         name={sourceCase.data?.sources.find((source) => source.id === sourceId)?.name} />
-      <Banner tone="info">
-        Tables produce mapped draft rows, not buildings. Nothing enters the registry or the map.
-      </Banner>
+      <TableStepNotice />
       <StartJobs profile={profile.data} />
       {stale ? <StaleNotice reasons={stale} /> : null}
       <Progress raw={jobs.raw.data} mapping={jobs.mapping.data} fallback={fallback} reconnect={reconnect}

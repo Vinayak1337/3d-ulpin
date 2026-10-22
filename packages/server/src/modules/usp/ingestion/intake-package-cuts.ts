@@ -18,9 +18,10 @@ export type MappedPartFeature = {
 type Cost = { features: number; rawBytes: number; vertices: number; serializedInput: number };
 export type IntakePackageCut = { index: number; features: MappedPartFeature[]; cost: Cost };
 export type HeldPartFeature = { featureIndex: number; code: HeldPartCode };
-/** Too many vertices or bytes for any package; wider than any one map area; outside the area it is drafted into. */
+/** Too many vertices or bytes for any package; wider than any one map area; outside the area it is drafted into;
+ * or a position that could not be measured (none, or one that does not convert to a finite place). */
 export type HeldPartCode = 'PART_FEATURE_VERTEX_BOUND' | 'PART_FEATURE_INPUT_BOUND' | 'PART_FEATURE_EXTENT_BOUND'
-  | 'PART_FEATURE_AREA_BOUND';
+  | 'PART_FEATURE_AREA_BOUND' | 'PART_FEATURE_POSITION_UNMEASURED';
 
 function vertices(value: unknown): number {
   if (!Array.isArray(value)) return 0;
@@ -120,11 +121,13 @@ class ExtentRule {
     return this.crs ? new CutExtent(this.frame) : null;
   }
 
-  /** The feature's extent, or why it can join no package: wider than any one area, or outside this area. */
+  /** The feature's extent, or why it can join no package: a position that could not be measured, wider than any
+   * one area, or outside this area. An unmeasured position is never counted as wide. */
   measure(feature: Record<string, unknown>): FeatureExtent | HeldPartCode | null {
     if (!this.crs) return null;
     const extent = featureExtent(feature, this.crs);
-    if (!extent || !new CutExtent(null).admit(extent)) return 'PART_FEATURE_EXTENT_BOUND';
+    if (!extent) return 'PART_FEATURE_POSITION_UNMEASURED';
+    if (!new CutExtent(null).admit(extent)) return 'PART_FEATURE_EXTENT_BOUND';
     return new CutExtent(this.frame).admit(extent) ? extent : 'PART_FEATURE_AREA_BOUND';
   }
 }

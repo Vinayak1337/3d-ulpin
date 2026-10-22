@@ -110,5 +110,10 @@ it('the dialog offers the read headers by position, preselects no column or syst
   expect(html).toContain('never placed at 0,0. Points stay points.');
   expect(markup({ kind: 'wkt' })).toContain('aria-label="WKT column"');
   expect(markup({}, { ...idle, error: UNSTATED_CRS })).toContain('role="alert"');
-  expect(markup({}, { ...idle, started: true })).toContain('role="status"');
+  const started = markup({}, { ...idle, started: true });
+  expect(started).toContain('role="status"');
+  // The start promises a GeoJSON file, not the map: only that file's own line says whether it is on the map.
+  expect(started).toContain('Preparing the rows of this table as a GeoJSON file has started.');
+  expect(started).toContain('its own line says whether it is on the map.');
+  expect(started).not.toMatch(/rows were placed|on the map has started/);
 });

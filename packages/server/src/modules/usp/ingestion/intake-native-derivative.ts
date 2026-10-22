@@ -309,6 +309,9 @@ type Outcome = { layer: string; sourceId: string | null; code: string | null };
 /**
  * Officer words name each layer and what became of it; a layer with no stated system asks the officer. The layers
  * stating none and the officer's answers are kept beside the item. N05: a shapefile set's words name its parts.
+ * WD1: only a layer that can take an answer (one stating no system) makes the item need one; a stated system that
+ * does not resolve is kept, never replaced, and the words say how to export it again. Each converted layer's
+ * written and not-written feature counts are told, and where the features not written are named.
  */
 export function nativeParentState(format: NativeFormat, conversion: NativeConversion,
   outcomes: Outcome[], answers: NativeLayersRef['answers'] = [], parts: string[] = []): IntakeDraftState {
@@ -323,7 +326,7 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
     .map(outcome => `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
   const stopped = (state: StoppedLayer['state']) => conversion.layers
     .filter((layer): layer is StoppedLayer => layer.state === state).map(layer => `${layer.layer} (${layer.reason})`);
-  const unstated = stopped('crs_unstated'), refused = stopped('not_converted');
+  const refused = stopped('not_converted');
   const asked = conversion.layers.flatMap(layer =>
     layer.state === 'crs_unstated' && !layer.statesCrs ? [layer.layer] : []);
   const planRef = asked.length || answers.length ? { nativeLayers: { unstated: asked, answers } } : null;
@@ -337,13 +340,33 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
     ? [`${layer.layer} (${layer.reason})`] : []);
   if (missingCrs.length) sentences.push(`Not converted until its coordinate reference system is stated: `
     + `${listWords(missingCrs, 500)}.`);
-  if (unresolvedCrs.length) sentences.push(`Kept, not converted: ${listWords(unresolvedCrs, 500)}.`);
+  if (unresolvedCrs.length) sentences.push(`Kept, not converted: ${listWords(unresolvedCrs, 500)}. Export `
+    + `${unresolvedCrs.length === 1 ? 'this layer' : 'these layers'} with a coordinate reference system that resolves `
+    + 'to one EPSG code and add the file again; a system the file states is never replaced.');
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
+  sentences.push(...featureCountWords(conversion));
   if (parts.length) sentences.push(`Read as one shapefile from its parts: ${listWords(parts, 300)}.`);
   sentences.push(...basisWords(conversion));
-  const placement = unstated.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
+  const placement = asked.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
   return { state: 'read', placement, planRef, recordsSeen: 0, limitReason: sentences.join(' ') };
+}
+
+const featureCount = (value: number) => value.toLocaleString('en-US');
+
+/**
+ * Gap 6. Each converted layer's written and not-written features. A feature not written stays in the original; the
+ * layer's stored locator sidecar names its position there and why, so the words point to it, not to a new route.
+ */
+function featureCountWords(conversion: NativeConversion): string[] {
+  const converted = conversion.layers.filter((layer): layer is ConvertedLayer => layer.state === 'converted');
+  if (!converted.length) return [];
+  const counts = converted.map(layer => `${layer.layer} (${featureCount(layer.features)} written, `
+    + `${featureCount(layer.notWritten)} not written)`);
+  const words = [`Features per converted layer: ${listWords(counts, 300)}.`];
+  if (converted.some(layer => layer.notWritten)) words.push('A feature not written is not in that layer\'s GeoJSON; '
+    + 'the stored locator file kept beside that GeoJSON names its position in the original and why.');
+  return words;
 }
 
 /** KML1. Where a system the format states comes from, and what the original keeps that is not fetched or read. */

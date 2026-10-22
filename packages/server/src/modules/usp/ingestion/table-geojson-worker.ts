@@ -7,7 +7,7 @@ export const tableGeojsonJob: DerivativeJob<IntakeTableGeojsonInput> = { operati
   parse: payload => IntakeTableGeojsonInputSchema.parse(payload),
   run: input => placeTableRows(input, { ...derivativeKeeping, open: openTableOriginal }),
   stopped: (code, current) => besideTableWords(current,
-    `Placing the rows of this table on the map stopped (${code}); place them again to retry.`),
+    `Preparing the rows of this table as a GeoJSON file stopped (${code}); place them again to retry.`),
   failedCode: 'TABLE_PLACEMENT_FAILED' };
 
 export function runIntakeTableGeojsonJob(jobId: string) {

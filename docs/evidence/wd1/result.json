@@ -1,0 +1,119 @@
+{
+  "task": "WD1",
+  "branch": "task/wd1-judge-words",
+  "base": "ee99e231a81b435e2784bdbf00cbfc0b105f0e1b",
+  "source": "AUD3 docs/evidence/aud3/AUDIT.md: ranked gaps 1, 2, 3, 4, 6 and words items 1-6 plus the CityGML note",
+  "runtime": "Not run. Offline source and unit checks only; words need a combined-build rehearsal before any runtime claim.",
+  "items": [
+    {
+      "item": "1 (gap 1, words 1): table placement words",
+      "files": ["packages/server/src/modules/usp/ingestion/table-geojson.ts",
+        "packages/server/src/modules/usp/ingestion/table-geojson-worker.ts",
+        "apps/studio/src/features/intake/PlaceOnMapDialog.tsx"],
+      "before": {
+        "taken_in": "Placed {n} rows on the map; {skipped} skipped: {reasons}. They are taken in as their own GeoJSON file, {name}, in {crs} as stated by the officer.",
+        "enrolment_refused": "Placed {n} rows on the map; {skipped} skipped: {reasons}. Their GeoJSON file, {name}, was kept but not taken in ({code}); place the rows again to retry.",
+        "no_row": "No row of this table was placed on the map; {skipped} skipped: {reasons}.",
+        "queued": "Placing the rows of this table on the map in {crs}, as stated by the officer.",
+        "stopped": "Placing the rows of this table on the map stopped ({code}); place them again to retry.",
+        "dialog_started": "Placing the rows of this table on the map has started. The file's line in this batch will say how many rows were placed and how many were skipped, and why."
+      },
+      "after": {
+        "taken_in": "Prepared {n} rows as a GeoJSON file, {name}, in {crs} as stated by the officer; {skipped} skipped: {reasons}. That file is taken in as its own item in this batch; its own line says whether it is on the map.",
+        "enrolment_refused": "Not taken in ({code}): the GeoJSON file {name}, in {crs} as stated by the officer, was kept but is not an item of this batch, so none of its rows is on the map. It holds {n} rows; {skipped} skipped: {reasons}. Place the rows again to retry.",
+        "no_row": "No row of this table could be prepared for the map; {skipped} skipped: {reasons}.",
+        "queued": "Preparing the rows of this table as a GeoJSON file in {crs}, as stated by the officer.",
+        "stopped": "Preparing the rows of this table as a GeoJSON file stopped ({code}); place them again to retry.",
+        "dialog_started": "Preparing the rows of this table as a GeoJSON file has started. The table's line in this batch will say how many rows were prepared and how many were skipped, and why. That GeoJSON file is then taken in as its own item in this batch, and its own line says whether it is on the map."
+      },
+      "note": "'On the map' is now said only by the child item's own placement words (batch-model placements.on_map). A refused enrolment leads with the refusal; the test asserts no 'Placed' or 'Prepared' precedes it.",
+      "tests": ["table-geojson.test.ts: exact words for taken in, refused enrolment, queued and stopped", "PlaceOnMapDialog.test.tsx: started text"]
+    },
+    {
+      "item": "2 (gap 2, words 2): PDF forecast",
+      "files": ["apps/studio/src/features/intake/upload-model.ts"],
+      "before": {
+        "up_to_10_MiB": "Will be read by the PDF native text reader (within 10 MiB)",
+        "10_to_16_MiB": "Will be kept, not read: larger than the 10 MiB PDF native text reader",
+        "above_16_MiB": "Will be kept, not read: larger than the 10 MiB PDF native text reader"
+      },
+      "after": {
+        "up_to_10_MiB": "Will be read by the PDF native text reader (within 10 MiB)",
+        "10_to_16_MiB": "Text layer not read above 10 MiB, but its pages can be read by OCR when the PDF has at most 8 pages, checked after upload (within 16 MiB)",
+        "above_16_MiB": "Will be kept, not read: larger than the 16 MiB PDF document reader"
+      },
+      "note": "10 MiB = DOCUMENT_LIMITS.nativeBytes, 16 MiB = DOCUMENT_LIMITS.originalBytes, 8 = DOCUMENT_LIMITS.ocrMaxPage.",
+      "tests": ["upload-reader.test.tsx: both band edges and the band above"]
+    },
+    {
+      "item": "3 (gap 3, words 3): unresolved stated .prj placement",
+      "files": ["packages/server/src/modules/usp/ingestion/intake-native-derivative.ts"],
+      "before": {
+        "placement": "needs_answer ('Needs an answer') for any crs_unstated layer, including one whose file states a system that does not resolve",
+        "words": "Kept, not converted: {layer} (states a coordinate reference system that does not resolve to one EPSG code)."
+      },
+      "after": {
+        "placement": "needs_answer only when a layer stating no system can take an answer (asked); an unresolved stated system alone rests not_understood (or undecided when other layers were taken in)",
+        "words": "Kept, not converted: {layer} (states a coordinate reference system that does not resolve to one EPSG code). Export this layer with a coordinate reference system that resolves to one EPSG code and add the file again; a system the file states is never replaced."
+      },
+      "tests": ["intake-native-derivative.test.ts: unresolved alone is not_understood with the export words; mixed with a missing .prj stays needs_answer and asks only that layer"]
+    },
+    {
+      "item": "4 (gap 4, words 4): .json forecast",
+      "files": ["apps/studio/src/features/intake/upload-model.ts"],
+      "before": "Read as GeoJSON or CityJSON once its bytes are checked (within 1 GiB). A CityJSON is read up to 8 MiB; other JSON is kept, not read.",
+      "after": "Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked (within 1 GiB). A CityJSON is read up to 8 MiB and glTF JSON up to 16 MiB; other JSON is kept, not read. CityJSON building ground outlines are placed on the map when the file states an EPSG system; otherwise, and for glTF, the reading is kept as evidence.",
+      "note": "8 MiB = CITYJSON_LIMITS.originalBytes, 16 MiB = GLTF_LIMITS.originalBytes.",
+      "tests": ["upload-reader.test.tsx: exact .json words"]
+    },
+    {
+      "item": "5 (words 5): unmeasured feature position",
+      "files": ["packages/server/src/modules/usp/ingestion/intake-package-cuts.ts",
+        "packages/server/src/modules/usp/ingestion/intake-part-draft.ts",
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+        "packages/server/src/modules/usp/ingestion/intake-large.ts"],
+      "before": "{n} are wider than one map area (50 km or 1 degree across) and are held. (also used when featureExtent was null)",
+      "after": "{n} have a position that could not be measured and are held. (code PART_FEATURE_POSITION_UNMEASURED, counted as heldUnmeasured in IntakePartHeld and as unmeasured in intakeLargeHoldsReason; the wide words now count only measured extents)",
+      "tests": ["intake-package-cuts.test.ts: a feature with no position is held as PART_FEATURE_POSITION_UNMEASURED", "intake-large.test.ts: exact unmeasured words, never the wide words"]
+    },
+    {
+      "item": "6 (words 6): TablePage help",
+      "files": ["apps/studio/src/features/intake/table/TablePage.tsx"],
+      "before": "Tables produce mapped draft rows, not buildings. Nothing enters the registry or the map.",
+      "after": "This page is the table-only step: it maps columns into draft rows, not buildings, and by itself puts nothing in the registry or on the map. To place rows that hold coordinates, use Place on the map on this table's line in a batch (add the file to one if it is not in one). Its rows become a GeoJSON file taken in as its own item, which follows the batch's path to the map and to a property card that an officer confirms.",
+      "tests": ["table/TablePage.test.tsx"]
+    },
+    {
+      "item": "7 (gap 6): per-layer written and not-written counts",
+      "files": ["packages/server/src/modules/usp/ingestion/intake-native-derivative.ts"],
+      "before": "Converted layers were named only; notWritten was stored in lineage but never told.",
+      "after": "Features per converted layer: {layer} ({written} written, {notWritten} not written), ... When any is not written: A feature not written is not in that layer's GeoJSON; the stored locator file kept beside that GeoJSON names its position in the original and why.",
+      "note": "Words only; no new route. The sidecar is the converter's {ordinal}.locators.jsonl stored with each layer.",
+      "tests": ["intake-native-derivative.test.ts: synthetic two-layer counts with 3 not written; real inputs (GeoPackage, officer-stated layer, libkml KML samples, CityJSON EPSG:7415) carry the counts sentence"]
+    },
+    {
+      "item": "8 (CityGML note, B3D1/CG1 merged): CityGML and CityJSON forecasts",
+      "files": ["apps/studio/src/features/intake/upload-model.ts"],
+      "before": {
+        "gml": "Read by the CityGML reader when its bytes show a CityGML city model (within 32 MiB). Other GML is kept, not read. A CityGML reading is kept as evidence, not placed on the map.",
+        "cityjson": "Kind not known yet: will be kept and recognised after upload"
+      },
+      "after": {
+        "gml": "Read by the CityGML reader when its bytes show a CityGML city model (within 32 MiB). Other GML is kept, not read. Building ground outlines are placed on the map when the file states an EPSG system; otherwise its reading is kept as evidence.",
+        "cityjson": "Read by the CityJSON reader when its bytes show a CityJSON city model (within 8 MiB). Building ground outlines are placed on the map when the file states an EPSG system; otherwise its reading is kept as evidence.",
+        "json": "see item 4"
+      },
+      "tests": ["upload-reader.test.tsx: exact .gml, .cityjson and .cityjson above 8 MiB words"]
+    }
+  ],
+  "contract": "Unchanged: no OpenAPI or contract schema changed (held codes and counts are server-internal), so openapi --check and studio:api-types were not needed.",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "npx tsx --tsconfig apps/api/tsconfig.json --test table-geojson.test.ts intake-native-derivative.test.ts intake-package-cuts.test.ts intake-large.test.ts intake-large-steps.test.ts", "exit": 0, "tests": 69, "pass": 69, "fail": 0, "skipped": 0 },
+    { "command": "npx tsx --tsconfig apps/api/tsconfig.json --test intake-large-geometry.test.ts", "exit": 0, "tests": 5, "pass": 5 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "exit": 0, "files": 43, "tests": 238 },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs ee99e231", "exit": 0, "note": "covers apps/web only; studio reviewed by hand in ui-design-check.md" }
+  ]
+}
