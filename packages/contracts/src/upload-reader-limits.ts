@@ -4,7 +4,10 @@ export { RASTER_WINDOW_LIMITS } from './usp/raster-window';
 export { POINT_BATCH_LIMITS } from './usp/point-batch';
 export { IFC_LIMITS } from './usp/ifc-ingestion';
 export { DOCUMENT_LIMITS, documentScannedPages } from './usp/document-ingestion';
-export { INTAKE_PAGE_IMAGE_LIMITS } from './usp/intake';
+export { INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS } from './usp/intake';
+export { DXF_LIMITS } from './usp/dxf-ingestion';
+export { CITYGML_LIMITS } from './usp/citygml-ingestion';
+export { CITYJSON_LIMITS } from './usp/cityjson-ingestion';
 export { TABULAR_STREAM_LIMITS } from './usp/ingestion';
 
 /** Native GIS conversion's source/set ceiling (services/geo/geo/native_gis.py: MAX_SOURCE_BYTES). */

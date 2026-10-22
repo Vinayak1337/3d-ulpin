@@ -12,6 +12,8 @@ export const INTAKE_PROBE_LIMITS = Object.freeze({
 export const IntakeFamilySchema = z.enum([
   'vector', 'table', 'raster', 'point_cloud', 'model3d', 'document', 'image', 'archive', 'unknown',
 ]);
+/** Table card formats a batch item is read from with "Open the table"; a TSV takes the delimited reader. */
+export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx']);
 export const IntakeSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']);
 export const IntakeStateSchema = z.enum([
   'received', 'probed', 'planned', 'reading', 'read', 'read_to_limit', 'failed_part', 'probe_failed',

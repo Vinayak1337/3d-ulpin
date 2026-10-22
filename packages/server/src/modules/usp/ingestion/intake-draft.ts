@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { DOCUMENT_LIMITS, STREAMING_VECTOR_LIMITS, type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
+import { DOCUMENT_LIMITS, INTAKE_TABLE_READER_FORMATS, STREAMING_VECTOR_LIMITS, type DocumentResult,
+  type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
@@ -11,6 +12,7 @@ import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
 import { queuePageImageTx } from './intake-page-image';
 import { batchIfc, queueIntakeIfcTx } from './intake-ifc';
 import { batchNativeReader, queueIntakeNativeReaderTx } from './intake-native-readers';
+import { surfaceKind } from './intake-surface';
 import { stableUuid } from './intake-run';
 import { pageImageFormat } from './page-image-read';
 import { queueBatchDocumentTx } from './documents';
@@ -79,7 +81,7 @@ export function zipParentWords(card: IntakeCard, stage: ZipLayerStage = 'taken',
   const pending = independent.filter(member => !actual.get(member.name)?.sourceId && !member.refusalCode
     && !actual.get(member.name)?.reason);
   const kept = independent.filter(member => member.refusalCode || actual.get(member.name)?.reason
-    || actual.get(member.name)?.sourceId && !zipMemberHasReader(member.format));
+    || actual.get(member.name)?.sourceId && !zipMemberHasReader(member));
   const sentences = [`${zipCountWords(card.counts?.members ?? members.length, 'member')}.`];
   if (typeof stage === 'object') sentences.push(stage.stopped);
   if (shapes.length) sentences.push(`${shapes.length} shapefile layer${shapes.length === 1 ? '' : 's'} grouped `
@@ -103,9 +105,23 @@ function zipCountWords(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
-function zipMemberHasReader(format: string): boolean {
-  return ['geojson', 'geopackage', 'kml', 'kmz', 'pdf', 'csv', 'xlsx', 'jpeg', 'png', 'tiff', 'ifc', 'zip',
-    'geotiff', 'laz', 'copc'].includes(format);
+/** A batch PDF goes to the document reader; a batch table is read with "Open the table". */
+const batchPdf = (card: IntakeCard) => card.format === 'pdf' && card.family === 'document';
+const batchTable = (card: IntakeCard) => card.family === 'table' && INTAKE_TABLE_READER_FORMATS.includes(card.format);
+
+/** A member taken out of a ZIP other than a small GeoJSON is kept through the byte receipt, under this profile. */
+const keptMember = { profile: 'large-original-v1' } as IntakeSourceRow;
+
+/**
+ * Whether the member's own item is read: the routes of the batch enrolment (the surface queue, then
+ * queueIntakeDraftTx) applied to the member's own card, as kept through the byte receipt.
+ */
+function zipMemberHasReader(member: IntakeCard['members'][number]): boolean {
+  const card: IntakeCard | null = member.card && { ...member.card, members: [] };
+  if (!card) return false;
+  return card.format === 'zip' || card.format === 'geojson' || batchPdf(card) || Boolean(pageImageFormat(card))
+    || batchIfc(keptMember, card) || batchNativeReader(keptMember, card) || Boolean(nativeDerivativeFormat(card))
+    || Boolean(surfaceKind(card)) || batchTable(card);
 }
 
 function zipKindWords(members: IntakeCard['members']): string {
@@ -147,10 +163,12 @@ function keptWords(card: IntakeCard, bytes: number): string {
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
   const kind = `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
-  if (card.family === 'table') return `Kept as a ${kind} (${sizeWords(bytes)}). `
-    + 'Read it as a table with "Open the table"; the original is kept with its SHA-256.';
-  return `Kept as ${/^[AEIO]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}). No reader in a batch takes `
-    + 'this kind of file yet, so it is not on the map; the original is kept with its SHA-256.';
+  const kept = `Kept as ${/^[AEIOX]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}).`;
+  if (batchTable(card)) return `${kept} Read it as a table with "Open the table"; the original is kept with its `
+    + 'SHA-256.';
+  if (card.family === 'table') return `${kept} It is not read as a table today; the original is kept with its SHA-256.`;
+  return `${kept} No reader in a batch takes this kind of file yet, so it is not on the map; the original is kept `
+    + 'with its SHA-256.';
 }
 
 /** A refusal is tray metadata, not permission to use a different reader or split an original. */
@@ -250,7 +268,7 @@ async function retainedGeojsonAdapterTx(client: PoolClient, item: DraftItem, sou
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
   if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
-  if (publishedCard?.format === 'pdf' && publishedCard.family === 'document') return queueBatchPdfTx(client, source);
+  if (publishedCard && batchPdf(publishedCard)) return queueBatchPdfTx(client, source);
   if (publishedCard && pageImageFormat(publishedCard)) return readPageImageTx(client, source, publishedCard);
   if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
   if (batchNativeReader(source, publishedCard)) return queueIntakeNativeReaderTx(client, source, publishedCard!);

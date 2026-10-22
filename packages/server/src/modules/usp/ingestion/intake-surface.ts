@@ -29,11 +29,19 @@ const readers = { 'raster-window': rasterReaderSha, 'point-batch': pointReaderSh
 const mib = (bytes: number) => `${(bytes / 1024 ** 2).toFixed(1).replace(/\.0$/, '')} MiB`;
 const kept = 'so it is not read or on the map; the original is kept with its SHA-256.';
 
+/** The probed kinds the raster-window and point-batch readers read, or refuse in their own words. */
+export function surfaceKind(card: Pick<IntakeCard, 'family' | 'format'>): 'raster' | 'point' | null {
+  if (card.family === 'raster' && ['tiff', 'geotiff', 'bigtiff'].includes(card.format)) return 'raster';
+  if (card.family === 'point_cloud' && ['las', 'laz'].includes(card.format)) return 'point';
+  return null;
+}
+
 /** Which existing reader takes a probed original, or the limit it is over in officer words (D6), or null. */
 export function surfaceReader(card: IntakeCard, bytes: number): { operation: Operation } | { limit: string } | null {
-  const raster = card.family === 'raster' && ['tiff', 'geotiff', 'bigtiff'].includes(card.format);
-  const point = card.family === 'point_cloud' && ['las', 'laz'].includes(card.format);
-  if (!raster && !point) return null;
+  const kind = surfaceKind(card);
+  if (!kind) return null;
+  const raster = kind === 'raster';
+  const point = kind === 'point';
   const noun = raster ? 'raster' : 'point cloud';
   const ceiling = (raster ? RASTER_WINDOW_LIMITS : POINT_BATCH_LIMITS).originalBytes;
   if (bytes > ceiling) return { limit: `Kept (${mib(bytes)}). The batch reads a ${noun} of at most `
