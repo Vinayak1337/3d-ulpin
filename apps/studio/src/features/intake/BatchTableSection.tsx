@@ -26,7 +26,7 @@ export function itemTableSource(item: IntakeItem, items: readonly IntakeItem[]):
   const card = item.card;
   if (card?.family !== 'table' || !INTAKE_TABLE_READER_FORMATS.includes(card.format)) return null;
   const parent = items.find((row) => row.itemId === item.parentItemId);
-  const sourceId = item.sourceId ?? (parent?.card?.format === 'xlsx' ? parent.sourceId : null);
+  const sourceId = item.sourceId ?? (['xlsx', 'ods'].includes(parent?.card?.format ?? '') ? parent?.sourceId : null);
   // A TSV is read by the delimited reader, as a CSV is.
   return sourceId ? { sourceId, format: card.format === 'xlsx' || card.format === 'ods' ? card.format : 'csv',
     sheets: card.sheets.map((sheet) => sheet.name) } : null;

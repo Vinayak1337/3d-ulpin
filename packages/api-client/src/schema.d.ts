@@ -66360,6 +66360,8 @@ export interface components {
                 sha256: string;
                 sheet?: string;
                 sheetSha256?: string;
+                rowElement?: number;
+                rowSha256?: string;
                 marks?: {
                     column: number;
                     /** @enum {string} */

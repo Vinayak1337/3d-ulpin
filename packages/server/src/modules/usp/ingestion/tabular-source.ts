@@ -10,7 +10,7 @@ import { COLUMN_CSV_ROW_LIMIT, decodeColumnText, readColumnCsv } from './column-
 import { profileTabularChunk } from './chunk-mapping-agent';
 import { profileTabularStream } from './tabular-stream';
 import { decodeTableBytes, detectDelimitedReading } from './delimited-text';
-import { rowLimit, workbookLimit, workbookTable, type TabularTable } from './tabular-workbook';
+import { rowLimit, workbookTable, type TabularTable } from './tabular-workbook';
 
 export { TABULAR_ROW_LIMIT, type TabularTable } from './tabular-workbook';
 
@@ -128,10 +128,7 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
     throw new AppError(422, 'TABULAR_HEADER_OR_READER',
       'The literal reader requires valid headers, at most 2,000 rows and 256 columns.');
   }
-  if (table.rows.length > TABULAR_LIMITS.rows) {
-    if (selection.format !== 'csv') workbookLimit(selection.format);
-    rowLimit();
-  }
+  if (table.rows.length > TABULAR_LIMITS.rows) rowLimit();
   if (!table.rows.length || !table.headers.some(header => header.trim()) ||
       table.headers.length > TABULAR_LIMITS.columns || table.headers.some(header => header.length > 400)) {
     throw new AppError(422, 'TABULAR_HEADER_REQUIRED',

@@ -34,20 +34,25 @@ export const TableCellMarkSchema = z.enum(['formula_cached', 'formula_uncached',
 /** One record as written: its number among the table's records (the first is 0), its row in the file, its byte
  * range in the unchanged original and that range's SHA-256. A CSV record's range is its own bytes (the header is
  * row 1). A workbook record's range is the stored bytes of its sheet in the ZIP, and it also cites the sheet, its
- * physical sheet row and the SHA-256 of the sheet's XML as read. An absent cell is null; an empty cell stays the
- * empty string. */
+ * physical sheet row and the SHA-256 of the sheet's XML as read. OD2: a streamed ODS record also cites its row
+ * element's ordinal in the sheet and the SHA-256 of that element's XML as read; rows a repeat covers share both. An
+ * absent cell is null; an empty cell stays the empty string. */
 const WindowRowObject = z.strictObject({
   record, sourceRow: z.number().int().min(2), byteStart: z.number().int().nonnegative(),
   byteEnd: z.number().int().nonnegative(), sha256: hash,
   sheet: z.string().min(1).max(150).optional(), sheetSha256: hash.optional(),
+  rowElement: z.number().int().positive().optional(), rowSha256: hash.optional(),
   marks: z.array(z.strictObject({ column: z.number().int().nonnegative().max(TABULAR_LIMITS.columns - 1),
     mark: TableCellMarkSchema })).min(1).max(TABULAR_LIMITS.columns).optional(),
   cells: z.array(z.string().nullable()).min(1).max(TABULAR_LIMITS.columns),
 });
-type RowLocator = { byteStart: number; byteEnd: number; sheet?: string; sheetSha256?: string; marks?: unknown[] };
+type RowLocator = { byteStart: number; byteEnd: number; sheet?: string; sheetSha256?: string; marks?: unknown[];
+  rowElement?: number; rowSha256?: string };
 const located = (row: RowLocator) => row.byteEnd >= row.byteStart
-  && (row.sheet === undefined) === (row.sheetSha256 === undefined) && (row.marks === undefined || !!row.sheet);
-const locatedMessage = 'A record ends where it starts or later; a sheet row names its sheet and the sheet\'s SHA-256.';
+  && (row.sheet === undefined) === (row.sheetSha256 === undefined) && (row.marks === undefined || !!row.sheet)
+  && (row.rowElement === undefined) === (row.rowSha256 === undefined) && (row.rowElement === undefined || !!row.sheet);
+const locatedMessage = 'A record ends where it starts or later; a sheet row names its sheet and the sheet\'s SHA-256, '
+  + 'and an ODS row element comes with its SHA-256.';
 export const TableWindowRowSchema = WindowRowObject.refine(located, locatedMessage);
 
 /** A mapped cell of a window, without the citation list: the record's locator cites it. */

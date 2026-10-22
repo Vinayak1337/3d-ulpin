@@ -193,3 +193,184 @@ def test_refusals_carry_codes(tmp_path: Path, large: Path):
                         "</worksheet>")
     code, lines, _ = run(doctype, "Register", "2")
     assert code == 2 and lines == [{"kind": "refused", "code": "NATIVE_WORKBOOK_INVALID", "row": None}]
+
+
+ODS_NAMESPACES = ('xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" '
+                  'xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" '
+                  'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"')
+ODS_TYPE = "application/vnd.oasis.opendocument.spreadsheet"
+
+
+def ods_text(text: str, repeat: int = 1) -> str:
+    repeated = f' table:number-columns-repeated="{repeat}"' if repeat > 1 else ""
+    return f'<table:table-cell{repeated} office:value-type="string"><text:p>{text}</text:p></table:table-cell>'
+
+
+def ods_float(value: str, formula: str | None = None) -> str:
+    formula = f' table:formula="{formula}"' if formula else ""
+    return (f'<table:table-cell{formula} office:value-type="float" office:value="{value}">'
+            f"<text:p>{value}</text:p></table:table-cell>")
+
+
+def ods_rows(blocks: int) -> list[str]:
+    """test_only: blocks of ten typed rows, one written once and one repeated nine times; block 3's total is a
+    formula with its stored result."""
+    rows = [f"<table:table-row>{ods_text('id')}{ods_text('ward')}{ods_text('zone')}{ods_text('total')}"
+            "</table:table-row>"]
+    for block in range(blocks):
+        total = ods_float("6", "of:=[.D2]*2") if block == 3 else ods_float(str(block))
+        rows.append(f"<table:table-row>{ods_text(f'R{block * 10 + 1}')}{ods_text(f'W{block}')}"
+                    f"{ods_text(f'Z{block % 7}')}{total}</table:table-row>")
+        rows.append(f'<table:table-row table:number-rows-repeated="9">{ods_text(f"B{block}")}'
+                    f"{ods_text(f'W{block}', 2)}{ods_float(str(block))}</table:table-row>")
+    return rows
+
+
+def ods_workbook(path: Path, blocks: int) -> list[str]:
+    """A Notes sheet, then Wards with its typed rows and LibreOffice's trailing block of empty padding."""
+    rows = ods_rows(blocks)
+    padding = (f'<table:table-row table:number-rows-repeated="{1048576 - 1 - blocks * 10}">'
+               '<table:table-cell table:number-columns-repeated="1024"/></table:table-row>')
+    content = (f'<?xml version="1.0" encoding="UTF-8"?><office:document-content {ODS_NAMESPACES} '
+               'office:version="1.3"><office:body><office:spreadsheet>'
+               f'<table:table table:name="Notes"><table:table-row>{ods_text("notes")}</table:table-row></table:table>'
+               f'<table:table table:name="Wards">{"".join(rows)}{padding}</table:table>'
+               "</office:spreadsheet></office:body></office:document-content>")
+    write_ods(path, content)
+    return rows
+
+
+def write_ods(path: Path, content: str | bytes) -> None:
+    manifest = ('<?xml version="1.0" encoding="UTF-8"?><manifest:manifest xmlns:manifest="urn:oasis:names:tc:'
+                'opendocument:xmlns:manifest:1.0" manifest:version="1.3"><manifest:file-entry manifest:full-path="/" '
+                f'manifest:media-type="{ODS_TYPE}"/><manifest:file-entry manifest:full-path="content.xml" '
+                'manifest:media-type="text/xml"/></manifest:manifest>')
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(zipfile.ZipInfo("mimetype"), ODS_TYPE)
+        archive.writestr("content.xml", content)
+        archive.writestr("META-INF/manifest.xml", manifest)
+
+
+def expanded_whole_read(path: Path, sheet: str) -> dict[tuple[int, int], dict]:
+    """The whole read's cell elements, expanded by their repeats as the server's whole read expands them."""
+    cells = {}
+    for part in whole_read(path)["parts"]:
+        locator = part["locator"]
+        repeat = locator["ods"]["rowRepeat"] * locator["ods"]["columnRepeat"]
+        if locator["sheet"] != sheet or locator["cellState"] == "empty" or (
+                repeat > 1 and locator["cellState"] in ("empty_string", "whitespace")):
+            continue
+        for row in range(locator["row"], locator["row"] + locator["ods"]["rowRepeat"]):
+            for column in range(locator["column"], locator["column"] + locator["ods"]["columnRepeat"]):
+                cells[row, column] = part
+    return cells
+
+
+def test_ods_sheet_streams_in_windows_as_the_whole_read_gives_it(tmp_path: Path) -> None:
+    path = tmp_path / "wards.ods"
+    written = ods_workbook(path, 250)
+    code, lines, _ = run(path, "Wards", "1", "--window-rows", "1000")
+    assert code == 0, lines[-1]
+    head, *windows, end = lines
+    assert head["member"] == "content.xml" and head["headers"] == ["id", "ward", "zone", "total"]
+    with zipfile.ZipFile(path) as archive:
+        info = archive.getinfo("content.xml")
+        assert head["memberSha256"] == hashlib.sha256(archive.read(info)).hexdigest()
+    assert head["byteEnd"] - head["byteStart"] == info.compress_size
+    assert end["records"] == 2500 and end["windows"] == len(windows) == 3 and end["sharedStrings"] == 0
+    assert [len(window["rows"]) for window in windows] == [1000, 1000, 500]
+    rows = [row for window in windows for row in window["rows"]]
+    assert [row["row"] for row in rows] == list(range(2, 2502)), "the trailing padding writes no row"
+    cells = expanded_whole_read(path, "Wards")
+    for row in rows:
+        for column, cell in enumerate(row["cells"], 1):
+            part = cells.get((row["row"], column))
+            assert cell == (part["text"] if part else None)
+    formula = rows[30]
+    assert formula["cells"] == ["R31", "W3", "Z3", "6"] and formula["marks"] == [[3, "formula_cached"]]
+    assert end["marks"]["formula_cached"] == 1
+    # Each row cites its row element: the ordinal in the sheet (the header is 1) and the SHA-256 of its XML.
+    assert [rows[1]["rowElement"], rows[9]["rowElement"], rows[10]["rowElement"]] == [3, 3, 4]
+    assert rows[1]["rowSha256"] == rows[9]["rowSha256"] == hashlib.sha256(written[2].encode()).hexdigest()
+    assert rows[1]["cells"] == ["B0", "W0", "W0", "0"]
+
+
+def test_ods_refusals_carry_codes(tmp_path: Path) -> None:
+    path = tmp_path / "wards.ods"
+    ods_workbook(path, 3)
+    code, lines, _ = run(path, "wards", "1")
+    assert code == 2 and lines == [{"kind": "refused", "code": "WORKBOOK_SHEET_MISSING", "row": None}]
+    code, lines, _ = run(path, "Wards", "1", "--rows", "25")
+    assert code == 2 and lines[-1] == {"kind": "refused", "code": "TABULAR_STREAM_ROWS", "row": 27}
+    code, lines, _ = run(path, "Wards", "1", "--record-bytes", "64")
+    assert code == 2 and lines[-1]["code"] == "TABULAR_RECORD_BUDGET"
+    code, lines, _ = run(path, "Wards", "1", "--window-rows", "10", "--windows", "1")
+    assert code == 2 and lines[-1]["code"] == "TABULAR_STREAM_WINDOWS"
+    code, lines, _ = run(path, "Wards", "1", "--member-bytes", "1000")
+    assert code == 2 and lines[-1]["code"] == "ZIP_EXPANDED_LIMIT"
+    code, lines, _ = run(path, "Wards", "1", "--ratio", "1")
+    assert code == 2 and lines[-1]["code"] == "ZIP_RATIO_LIMIT"
+
+
+def test_ods_windows_never_cross_the_byte_budget(tmp_path: Path) -> None:
+    path = tmp_path / "wards.ods"
+    ods_workbook(path, 3)
+    code, lines, _ = run(path, "Wards", "1", "--window-bytes", "600")
+    assert code == 0, lines[-1]
+    windows = [line for line in lines if line["kind"] == "window"]
+    assert sum(len(window["rows"]) for window in windows) == 30
+    assert all(len(json.dumps(window, ensure_ascii=False, separators=(",", ":")).encode()) <= 600
+               for window in windows)
+
+
+def test_ods_stored_types_and_text_controls_share_the_native_cell_rules(tmp_path: Path) -> None:
+    path = tmp_path / "types.ods"
+    cells = [
+        '<table:table-cell office:value-type="date" office:date-value="2026-10-22"/>',
+        '<table:table-cell office:value-type="boolean" office:boolean-value="false"/>',
+        '<table:table-cell office:value-type="string"><text:p>A<text:s text:c="2"/>B<text:tab/>C'
+        '<text:line-break/>D</text:p><text:p>E</text:p></table:table-cell>',
+        ods_float("0", "of:=2-2"),
+        '<table:table-cell table:formula="of:=1+1" office:value-type="float"/>',
+        '<table:table-cell office:value-type="error"><text:p>#VALUE!</text:p></table:table-cell>',
+        '<table:covered-table-cell/>',
+        '<table:table-cell office:value-type="string" office:string-value=""/>',
+    ]
+    header = ''.join(ods_text(f"column-{number}") for number in range(len(cells)))
+    content = (f'<office:document-content {ODS_NAMESPACES} office:version="1.3"><office:body>'
+               f'<office:spreadsheet><table:table table:name="Wards"><table:table-row>{header}</table:table-row>'
+               f'<table:table-row>{"".join(cells)}</table:table-row></table:table>'
+               '</office:spreadsheet></office:body></office:document-content>')
+    write_ods(path, content)
+    code, lines, _ = run(path, "Wards", "1")
+    assert code == 0, lines[-1]
+    row = lines[1]["rows"][0]
+    assert row["cells"] == ["2026-10-22", "false", "A  B\tC\nD\nE", "0", None, "#VALUE!", None, ""]
+    assert row["marks"] == [[3, "formula_cached"], [4, "formula_uncached"], [5, "error"], [6, "unsupported"]]
+    assert lines[-1]["mergedRanges"] is True
+
+
+def test_ods_raw_row_budget_and_split_tag_hash(tmp_path: Path) -> None:
+    path = tmp_path / "row.ods"
+    # test_only: XML overhead exceeds the record bound although the row's stored value is small.
+    header = f"<table:table-row>{ods_text('name')}</table:table-row>"
+    row = f"<table:table-row><!--{'x' * 800}-->{ods_text('value')}</table:table-row>"
+    content = (f'<office:document-content {ODS_NAMESPACES} office:version="1.3"><office:body>'
+               f'<office:spreadsheet><table:table table:name="Wards">{header}{row}</table:table>'
+               '</office:spreadsheet></office:body></office:document-content>')
+    write_ods(path, content)
+    code, lines, _ = run(path, "Wards", "1", "--record-bytes", "500")
+    assert code == 2 and lines[-1]["code"] == "TABULAR_RECORD_BUDGET"
+    # Put the start tag across the incremental parser's 1 MiB read boundary.
+    start = content.index(row)
+    padding = '<!--' + 'x' * (1024 * 1024 - start - 12) + '-->'
+    write_ods(path, content[:start] + padding + content[start:])
+    code, lines, _ = run(path, "Wards", "1", "--ratio", "10000")
+    assert code == 0, lines[-1]
+    assert lines[1]["rows"][0]["rowSha256"] == hashlib.sha256(row.encode()).hexdigest()
+    # Expat reports byte offsets, not character offsets, for UTF-16 originals too.
+    for encoding, bom in (("utf-16-le", b"\xff\xfe"), ("utf-16-be", b"\xfe\xff")):
+        write_ods(path, bom + content.encode(encoding))
+        code, lines, _ = run(path, "Wards", "1")
+        assert code == 0, lines[-1]
+        assert lines[1]["rows"][0]["rowSha256"] == hashlib.sha256(row.encode(encoding)).hexdigest()

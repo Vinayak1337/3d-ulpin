@@ -91,7 +91,7 @@ async function childrenTx(client: PoolClient, caseId: string, parentId: string, 
   const members: { path: string; size: number | null; card: IntakeCard | null; refusal: string | null }[] =
     card.members.map(member => ({ path: member.name, size: member.sizeBytes,
     card: member.card ? { ...member.card, members: [] } as IntakeCard : null, refusal: member.refusalCode }));
-  // A workbook's items are its sheets, never its package parts; an ODS card lists none, so it has no child item.
+  // A workbook's items are its sheets, never its package parts; an ODS card lists those its content.xml head names.
   if (card.format === 'xlsx' || card.format === 'ods') {
     members.length = 0;
     for (const sheet of card.sheets) members.push({ path: sheet.name, size: null,

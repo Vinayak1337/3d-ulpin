@@ -4,7 +4,7 @@ import { ApiError } from '@ulpin/api-client';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
 import { uploadWords, type UploadProgress } from '../upload-model';
-import { largeOds, streamedImport, tableFormat } from './retain';
+import { streamedImport, tableFormat } from './retain';
 import { TableRefusal } from './Progress';
 import { jobWords, tablePath, type Opened } from './useFollowTable';
 import { useRetainTable } from './useRetainTable';
@@ -72,7 +72,6 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
           stream. Tables create mapped draft rows, not buildings; nothing enters the registry.
         </Banner>
         {streamedImport(file) ? <StreamedHelp workbook={workbook} /> : null}
-        {largeOds(file) ? <p className="ul-help">{LARGE_ODS}</p> : null}
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>
         {upload ? <p role="status">{uploadWords(upload)}</p> : null}
         {upload?.phase === 'stopped' ? <div><Button onClick={retryUpload}>Retry upload</Button></div> : null}
@@ -86,9 +85,6 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
     </Dialog>
   );
 }
-
-const LARGE_ODS = 'This ODS workbook is above 16 MiB. It is kept unchanged, but an ODS is read whole, up to 16 MiB, '
-  + 'never as a stream, so its cells will not be read. Save it as XLSX or CSV to read it as a stream.';
 
 function StreamedHelp({ workbook }: { workbook: boolean }) {
   return workbook ? <p className="ul-help">

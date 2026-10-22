@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { Readable, pipeline } from 'node:stream';
 import { INTAKE_PROBE_LIMITS as limits, type IntakeCard, type IntakeMember } from '@ulpin/contracts/usp';
 import { applyShapefileCompanions, applyRasterCompanions } from './intake-headers';
-import { workbookSheets } from './intake-workbook';
+import { odsSheets, workbookSheets } from './intake-workbook';
 
 export type IntakeRangeReader = (start: number, end: number) => Promise<Uint8Array>;
 type Entry = { name: string; size: number; compressed: number; method: number; flags: number; offset: number;
@@ -189,10 +189,13 @@ function officeKind(card: IntakeCard, inspected: Awaited<ReturnType<typeof inspe
     card.family = 'document';
     card.limits.push('OOXML member layout only; no document text opened.');
   } else if (names.includes('mimetype')) {
-    const mime = inspected.find(item => item.member.name === 'mimetype')?.bytes;
-    if (mime && Buffer.from(mime).toString() === 'application/vnd.oasis.opendocument.spreadsheet') {
+    if (odsMimetype(inspected)) {
       card.format = 'ods';
       card.family = 'table';
+      const content = inspected.find(item => item.member.name === 'content.xml');
+      if (content?.bytes) odsSheets(card, content.bytes, content.member.sizeBytes);
+      else card.limits.push('ODS content.xml was refused or unavailable; sheet names remain unknown.');
+      card.limits.push('ODS sheet names only, from table start tags in content.xml; no row or cell read.');
     }
   } else {
     const shape = kmzShape(inspected);
@@ -307,20 +310,45 @@ async function readDirectory(card: IntakeCard, read: IntakeRangeReader, size: nu
   return { entries, offset: profile.offset };
 }
 
+const odsMimetype = (inspected: InspectedEntry[]) => {
+  const mime = inspected.find(item => item.member.name === 'mimetype')?.bytes;
+  return !!mime && Buffer.from(mime).toString() === 'application/vnd.oasis.opendocument.spreadsheet';
+};
+
+/** OD2: the head of an ODS's content.xml, for its sheet names; unread when its member cannot be read. */
+async function odsContentHead(read: IntakeRangeReader, entry: Entry, offset: number): Promise<Uint8Array | null> {
+  try {
+    return await memberHead(read, entry, offset);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'INTAKE_PROBE_BUDGET') throw error;
+    return null;
+  }
+}
+
 async function inspectZipMembers(read: IntakeRangeReader, entries: Entry[], offset: number,
   probe: MemberProbe, depth: number) {
   const office = entries.some(entry => entry.name === 'xl/workbook.xml' || entry.name === 'word/document.xml')
     || entries.some(entry => entry.name === 'mimetype') && entries.some(entry => entry.name === 'content.xml');
   const inspected: InspectedEntry[] = [];
+  // The mimetype is first in a conforming ODS's local entries, but central-directory order need not match it.
+  const mimeEntry = office ? entries.find(entry => entry.name === 'mimetype') : undefined;
+  const mimetype = mimeEntry ? await inspectEntry(read, mimeEntry, offset, probe) : null;
+  const ods = mimetype !== null && odsMimetype([mimetype]);
   for (const entry of entries.filter(entry => !entry.name.endsWith('/'))) {
-    // Office signatures/sheet lists come from the directory plus workbook/mimetype, never cells/document text.
+    // Only the bounded content.xml head is opened for ODS sheet names; no cell value is interpreted.
+    if (entry.name === 'mimetype' && mimetype) {
+      inspected.push(mimetype);
+      continue;
+    }
     if (office && !['xl/workbook.xml', 'mimetype'].includes(entry.name)) {
       const directoryCard = await probe(new Uint8Array(), entry.size, entry.name);
-      directoryCard.limits = ['Office member listed from central directory only; no content opened.'];
       const refusal = entry.flags & 1 ? 'ZIP_ENCRYPTED_MEMBER' : zipMemberRefusal(entry, depth);
+      const sheets = entry.name === 'content.xml' && !refusal && ods;
+      directoryCard.limits = [sheets ? 'ODS content.xml: only its head is read, for sheet names; no row or cell read.'
+        : 'Office member listed from central directory only; no content opened.'];
       inspected.push({ member: { name: entry.name, sizeBytes: entry.size, compressedBytes: entry.compressed,
         format: 'unknown', family: 'unknown', refusalCode: refusal, companions: [],
-        card: shallowCard(directoryCard) }, bytes: null });
+        card: shallowCard(directoryCard) }, bytes: sheets ? await odsContentHead(read, entry, offset) : null });
     } else inspected.push(await inspectEntry(read, entry, offset, probe));
   }
   return inspected;

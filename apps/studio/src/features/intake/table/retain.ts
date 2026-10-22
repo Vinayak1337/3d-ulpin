@@ -26,16 +26,11 @@ export function formatSelection(format: TableFormat, sheet: string, rows: string
   return { format, sheet, table: null, headerRows };
 }
 
-/** G13, XW1: a CSV or XLSX above 16 MiB is read on the server as a stream into a table by a job (TP1); a workbook's
+/** A CSV, XLSX or ODS above 16 MiB is read on the server as a stream into a table by a job; a workbook's
  * one sheet is read with the sheet and header rows the officer typed. TB2: every table is kept through the uploads
  * route; this only chooses the dialog's words. */
 export function streamedImport(file: File) {
-  return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
-}
-
-/** XL1: an ODS has no stream reader; one above 16 MiB is kept, and the server refuses to read it. */
-export function largeOds(file: File) {
-  return tableFormat(file) === 'ods' && file.size >= LARGE_UPLOAD_MINIMUM;
+  return /\.(csv|xlsx|ods)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }

@@ -374251,6 +374251,16 @@
                   "type": "string",
                   "pattern": "^[a-f0-9]{64}$"
                 },
+                "rowElement": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "rowSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
                 "marks": {
                   "minItems": 1,
                   "maxItems": 256,
