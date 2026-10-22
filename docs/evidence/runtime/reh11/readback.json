@@ -1,0 +1,145 @@
+{ "at": "2026-10-22T10:38:49.516Z", "checks": [ {
+"path": "/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/intake", "status": 200, "schema": "passed" }, {
+"path": "/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/intake/evidence", "status": 200, "schema": "passed" }, {
+"path": [ "/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/confirmations/d7e97d41-cd9f-4c98-851", "1-2222ef3db13a"
+], "status": 200, "schema": "passed" }, { "path": "/cases/704a2c5e-669a-42a2-ac4c-99099217685c", "status": 200,
+"schema": "not requested" }, { "path": [
+"/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/intake/items/70be6e04-c3cf-478a-9fc5", "-2bee3e4ed5b7/parts" ],
+"status": 200, "schema": "passed" }, { "path": [
+"/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/intake/items/70be6e04-c3cf-478a-9fc5",
+"-2bee3e4ed5b7/parts/0/display" ], "status": 200, "schema": "passed" }, { "path": [
+"/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/intake/items/c43a5557-9d5d-4533-a06f", "-da25e68f00a0/parts" ],
+"status": 200, "schema": "passed" }, { "path": [
+"/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/intake/items/c43a5557-9d5d-4533-a06f",
+"-da25e68f00a0/parts/0/display" ], "status": 200, "schema": "passed" }, {
+"path": "/ingestion/cases/a8287433-2963-49de-aad1-9da46678a79c/intake", "status": 200, "schema": "passed" }, {
+"path": "/cases/a8287433-2963-49de-aad1-9da46678a79c", "status": 200, "schema": "not requested" }, {
+"path": "/cases/3b0d10c9-80b2-4137-a2d6-d9bcb6cece1f", "status": 200, "schema": "not requested" } ], "originalHashes": [
+{ "name": "gpmc-yuvp.csv", "status": "needs_input", "profile": "large-original-v1", "revision": 1,
+"sha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b", "matchesOriginal": true }, {
+"name": "buildings-original.geojson", "status": "needs_input", "profile": "geojson-manual-v1", "revision": 1,
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e", "matchesOriginal": true }, {
+"name": "nyc-10013-ortho-2018.tif", "status": "needs_input", "profile": "large-original-v1", "revision": 1,
+"sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716", "matchesOriginal": true }, {
+"name": "nyc-10013-lidar-2017.laz", "status": "needs_input", "profile": "large-original-v1", "revision": 1,
+"sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790", "matchesOriginal": true } ],
+"judgeHashes": [ { "name": "nyc-map-and-report-test_only.zip", "status": "needs_input", "profile": "zip-manual-v1",
+"revision": 1, "sha256": "cf77ee6969b055e313a955422f5a66d15516c5dd600a8b650d12081e0eaf24a5", "matchesOriginal": true },
+{ "name": "Metadata_BuildingFootprints.md", "status": "needs_input", "profile": "large-original-v1", "revision": 1,
+"sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27", "matchesOriginal": true }, {
+"name": "buildings-original.geojson", "status": "needs_input", "profile": "geojson-manual-v1", "revision": 1,
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e", "matchesOriginal": true }, {
+"name": "2537.pdf", "status": "needs_input", "profile": "large-original-v1", "revision": 1,
+"sha256": "2efaa36052c1481c90ace5a856f88ab4a7ae551e4233b0b454f199db29c70ea9", "matchesOriginal": true } ],
+"shortHashes": [ { "name": "lpc-register-two-records-test_only.csv", "status": "needs_input",
+"profile": "tabular-manual-v1", "revision": 1,
+"sha256": "92aa63ef224e0f08643154339e1ef01235b17fc73a56f9db1274c6e222ba4da3", "matchesOriginal": true } ],
+"caseId": "704a2c5e-669a-42a2-ac4c-99099217685c", "manifest": [ { "itemId": "73ff6ae8-4db4-4901-be3c-8104fee5aee0",
+"sourceId": "73ff6ae8-4db4-4901-be3c-8104fee5aee0", "name": "buildings-original.geojson", "state": "read",
+"placement": "on_map", "partsDone": 0, "partsPlanned": null, "limitReason": null }, {
+"itemId": "70be6e04-c3cf-478a-9fc5-2bee3e4ed5b7", "sourceId": "70be6e04-c3cf-478a-9fc5-2bee3e4ed5b7",
+"name": "nyc-10013-lidar-2017.laz", "state": "reading", "placement": "on_map", "partsDone": 5, "partsPlanned": 211,
+"limitReason": [ "Read 5 of 211 batches (1726222 points, EPSG:6347). Vertical reference stated: NAVD88 heigh",
+"t. Display only: no height, measurement or record is taken from it." ] }, {
+"itemId": "c43a5557-9d5d-4533-a06f-da25e68f00a0", "sourceId": "c43a5557-9d5d-4533-a06f-da25e68f00a0",
+"name": "nyc-10013-ortho-2018.tif", "state": "read", "placement": "on_map", "partsDone": 9, "partsPlanned": 9,
+"limitReason": [ "Read 9 of 9 windows (768 × 768 pixels, 4 bands, EPSG:3857). The file states no vertical re",
+"ference. Display only: no height, measurement or record is taken from it." ] }, {
+"itemId": "7059469a-2ba4-442a-8350-770a6d235145", "sourceId": "7059469a-2ba4-442a-8350-770a6d235145",
+"name": "gpmc-yuvp.csv", "state": "probed", "placement": "not_understood", "partsDone": 0, "partsPlanned": null,
+"limitReason": [ "Kept as a CSV table (85 KB). No reader in a batch takes this kind of file yet, so it is no",
+"t on the map; the original is kept with its SHA-256." ] } ], "confirmation": {
+"confirmationId": "d7e97d41-cd9f-4c98-8511-2222ef3db13a", "caseId": "704a2c5e-669a-42a2-ac4c-99099217685c",
+"requestKey": "c14bffbd-837e-4d47-8c19-8d22e44f6bce", "subject": "rehearsal-runtime-ulpin-reh-02", "acknowledgement": [
+"REH11 test_only: record the 1661 ready source-stated NYC exteriors and make one card for f",
+"eature 1001960, including its reviewed exact BIN register citation. No heights, floors, un",
+"its, ownership or rights are asserted. The skipped invalid source geometry is unchanged." ], "packages": [ {
+"packageId": "334859a7-d120-48b7-b534-c2c5fe8a320f", "revision": 2, "reviewFingerprint": "[omitted non-source digest]" }
+], "targets": [ "03d0fb81-2dee-5fb0-9009-d78542ff7bd3" ],
+"reason": "Confirmed by the officer in intake confirmation d7e97d41-cd9f-4c98-8511-2222ef3db13a on 2026-10-22.",
+"expiresAt": "2026-10-23T10:32:52.458Z", "createdAt": "2026-10-22T10:32:52.458Z", "progress": [ {
+"targetId": "03d0fb81-2dee-5fb0-9009-d78542ff7bd3", "caseId": "704a2c5e-669a-42a2-ac4c-99099217685c",
+"anchorItemId": "73ff6ae8-4db4-4901-be3c-8104fee5aee0", "packageId": "334859a7-d120-48b7-b534-c2c5fe8a320f",
+"featureId": "cdee27ed-d45d-49f2-8791-051e1961e9d1", "locator": "feature 1001960", "kind": "building", "stage": 3,
+"readiness": "stopped", "blockedBy": [ "REGISTRY_SOURCE_UNAVAILABLE" ],
+"reason": "A cited source is not currently available.", "confirmationId": "d7e97d41-cd9f-4c98-8511-2222ef3db13a",
+"priorityAt": null, "artefacts": { "record": { "id": "cdee27ed-d45d-49f2-8791-051e1961e9d1", "revision": 1 } },
+"updatedAt": "2026-10-22T10:34:03.605Z" } ], "counts": { "recorded": 1661, "carded": 0, "stopped": 1 },
+"findingCounts": { "BOUNDARY_CONTACT": 1694, "HORIZONTAL_INTERSECTION": 3, "BUILDING_FOOTPRINT_OVERLAP": 106 } },
+"evidence": { "counts": { "matched": 612, "no_match": 60, "several": 0, "conflicting": 81 }, "coverage": [ {
+"state": "closed", "read": 753, "eligible": 753, "keyless": 0, "unread": 0, "failed": 0 } ], "confirmations": [ {
+"confirmationId": "f005f62a-3e83-41dd-bc3f-44c76c6c7436", "profileId": "8b3f31d5-c456-4a22-bdec-5199ed1721f8",
+"additions": "citations", "createdAt": "2026-10-22T10:32:36.375Z", "expiresAt": "2026-10-23T10:32:36.375Z",
+"newerSources": [], "accepted": [ "00427d5f-bd39-5842-a395-d890c7161f9a", "005fa02e-242d-5f2b-9171-26afdb1ed6ee",
+"007faef9-39de-5095-a156-4332c6ace334", "00a724d9-b63c-5a2f-8168-8a894c3f313f", "01d0268d-6bbd-51f1-93a7-e2eb218e4da7",
+"01d20240-d6e8-5c9a-bbe6-5237c3b3a47d", "02117118-72b0-51a6-86cf-ec0acc7d6df7", "02cbd3cf-7fda-5f15-b525-93062236e6b0",
+"02e71c2c-3b15-56e2-8a14-31743657e121", "03071fcf-6c72-5426-8bf6-3fd966e991bb", "0320dcab-4ad0-517a-9227-3f4ba223f34e",
+"04f60202-a484-5391-bcb7-378a4ac001a6", "056d4f56-0e3b-54e0-ae4a-c81a49ac4810", "05ec6af6-a8b8-5099-a401-170ff4eb1426",
+"06174dd5-f9ad-5977-891f-fdcda51a749e", "072fb27a-0125-5df6-8724-005394502e64", "07b8cf9d-d241-5cb8-a624-57245d7480cf",
+"07f7f576-15ac-5de4-9171-f91fa7532628", "08ea4285-bec4-53f6-a81d-3f6087b87601", "0913a006-51f4-5858-b7fd-d726772ac02d",
+"09cd44fe-6ef4-5c72-b350-2ffe43230414", "09d8e102-58d0-58bc-b307-14f249ed2335", "09f86bc4-68d2-5ed8-81fd-4ed017e41009",
+"0a7ffc0e-65bd-551f-86e3-d271c087790d", "0a96376f-84e5-5ce2-b3df-9864fd0c0804", "0af8dca7-0b59-58af-9019-a9ecb2d03af2",
+"0b492bca-6121-554a-a101-39f410727c30", "0b4f6eaf-41f5-570a-bc48-b4fe838539b7", "0bc75313-d54b-5ce8-86de-7bf1b0c76ad7",
+"0bd46ae9-f1a6-5359-af39-3880d0848c60", "0dae8b4b-fc51-5673-a49c-ac0d22a3e5cb", "0de0b611-3000-5663-90d1-e5cb1f8fe5ab",
+"0e7b7d26-9274-5c30-9904-db102047aa7c", "0ebee6b4-2719-5dc9-9faa-24b3fb748878", "0edf5291-4afc-50a8-8bb1-57a7ea710ccc",
+"0f8033ae-3313-562d-9098-61fc7ab3b9bc", "0fbfdcbc-6883-5762-bb2c-0c26db0b1f58", "0fd6d176-4336-576b-a5e5-bb1bc0f0b837",
+"103825b2-cbbc-527f-945f-511146a7a7be", "1086691c-5676-5bfa-b26f-21cbc7b608ca", "11686ba9-e559-58bd-9007-dc4d17ef3451",
+"116c6b1c-f406-599d-92b3-6e78657d3780", "11740715-c9b3-5a61-8594-c7af95cb8e4b", "117be238-6d56-586e-a1c0-c34fef9a03c8",
+"122e33cb-bad1-517e-ac02-8b50831e8e4c", "126825bf-4074-512a-afd0-0d287c2ab698", "12c4deed-d63f-58e8-80bf-9dbcf4a0fee0",
+"1426e458-109e-5c72-8b89-e955bd21ee52", "146b67a8-bd95-599f-8dc3-52ea77df8c0e", "14715046-9303-5afd-baa1-d1ebffbb0e7f",
+"14bbb4ef-dc87-5340-b636-e765e3ed92e0", "1580bd96-a4d4-5c7a-8dc4-3bf111e1618d", "15cef2c8-478d-51d3-8d30-18bd59ab4581",
+"1635841d-573f-5764-8030-d5cfc5d998f9", "17547ed0-370a-5931-b5aa-d3f146004f68", "17d9182f-5754-5445-823c-4dc79778375e",
+"1817b590-c811-5503-90f1-8047b07a5f10", "18f63638-be9e-534a-955d-f0e70c9cb891", "1928dcc6-ef14-57ff-97cc-9d26998ab6d5",
+"196d5ab6-f5df-5fd6-b4d1-609875f06599", "19b0533c-aa44-57d0-9eb2-054af49a308a", "19be3eab-3506-5b69-8214-1aaa912d2d41",
+"19bf42ee-e868-5a85-a4de-52439134fdb7", "1a351313-c05b-54fa-8e82-016613b3f5c7", "1abcb49a-d2a8-5b2d-92c8-cb98fa4f7c26",
+"1ae4cfa1-d00b-5e24-b4e4-764a7c0f4956", "1bbcf7a1-758d-55d0-8af6-f52d53c624d7", "1c2c79fa-efcb-5fc4-98d6-8bd3826c84f1",
+"1c500b6d-9bf1-5b0e-bf98-45f68ae11f39", "1cd2f3c9-6e71-5f5b-a850-b77c5ba21d2a", "1cfb8dda-e0d7-5ed1-aa7b-f5bc204c6cd9",
+"1d001545-9839-5698-8a8b-90adafb3fcfd", "1d5ec3e9-7816-5cee-966a-eaba8031944f", "1e55387d-dbc0-5a55-aaa5-c9bd926ee29a",
+"1eeffbb8-cc55-503f-919c-a80c00d53b17", "1f5482a4-a690-5da9-a9c6-df4eaa83de1b", "1f903745-6b7d-5425-808b-f11812564cde",
+"1fb9d5f9-8790-5664-bbea-bf72ea6cfbec", "20803c6e-b500-544f-af8e-61f6dbe10383", "20d05493-d88e-5145-a92a-d352f8dcb08b",
+"2184ae08-c948-598c-a49a-de7de5fd86af", "21c89839-da0b-5e71-b942-7cb471d7e37b", "2290dccc-6e01-56e1-95fc-dddae48aabaf",
+"22cd5204-0dfc-507c-87f3-3451271f5c38", "239e837d-5e41-5cd0-af71-31d32a4f3d10", "24d52d3d-3569-541a-9bcd-935c0176c7da",
+"24fc2fa8-c56d-50c5-af39-41035df83403", "2535854f-aa00-5423-a9b5-cee856e3571e", "25c033c2-04db-5760-b39e-a9f03dc53393",
+"26066b22-fee4-5008-8a3e-f10dd1a7a1b5", "2611fde6-990c-582b-bd4b-8f6131f9c099", "263c18f2-9d34-5231-8938-63d42774796f",
+"264a8ee0-3607-52a7-9770-d4958d09384e", "27377b45-4568-5722-bd66-13fb0e1652c8", "27ea8cbc-b46f-5a0d-b5cc-fe5a317a1ae1",
+"281a1897-f979-543d-b6be-4eff06b5f694", "285d1e4d-bca7-5f5b-86aa-8bbab97b9507", "295f1bfd-f0df-5145-bfd5-be8edd7f5802",
+"29b4ff0d-0919-544f-9871-de565d46b1a8", "29b5e991-9ab4-5f8d-b6aa-b485b50bc1d4" ] } ] }, "parts": [ {
+"itemId": "70be6e04-c3cf-478a-9fc5-2bee3e4ed5b7", "name": "nyc-10013-lidar-2017.laz", "partsPlanned": 211, "next": 63,
+"plannedOnPage": 59, "states": [ { "partIndex": 0, "state": "published",
+"jobId": "47e6c2ff-0d3f-5bdd-b9d4-78637005f61b", "issueCode": null }, { "partIndex": 1, "state": "published",
+"jobId": "518b3e14-95ac-5164-a58d-eae31d151a1e", "issueCode": null }, { "partIndex": 2, "state": "published",
+"jobId": "e5b08418-39db-50cb-8566-19c3c94fa9da", "issueCode": null }, { "partIndex": 3, "state": "published",
+"jobId": "018efd60-d67e-5955-b6f8-e14deb9943eb", "issueCode": null }, { "partIndex": 4, "state": "published",
+"jobId": "73c8c7c6-7d4b-5ce9-a9c9-13d9777bdc22", "issueCode": null } ] }, {
+"itemId": "c43a5557-9d5d-4533-a06f-da25e68f00a0", "name": "nyc-10013-ortho-2018.tif", "partsPlanned": 9, "next": null,
+"plannedOnPage": 0, "states": [ { "partIndex": 0, "state": "published", "jobId": "d7988c8d-6ae3-51f7-b31e-27007761a4cb",
+"issueCode": null }, { "partIndex": 1, "state": "published", "jobId": "a2f711c4-399e-5e1b-a1a1-1dd59b63e98c",
+"issueCode": null }, { "partIndex": 2, "state": "published", "jobId": "c35e60db-740f-59cc-8cf9-f4bb81df49ed",
+"issueCode": null }, { "partIndex": 3, "state": "published", "jobId": "af0df1cb-c586-5c64-af1f-8ea55d463da6",
+"issueCode": null }, { "partIndex": 4, "state": "published", "jobId": "2903c158-2d88-5cb0-b2ce-2d4e26487fa4",
+"issueCode": null }, { "partIndex": 5, "state": "published", "jobId": "2d335295-d209-5be1-99aa-9197185ab903",
+"issueCode": null }, { "partIndex": 6, "state": "published", "jobId": "9c2f2378-a0ee-52b9-a68c-b18ba2b53b5a",
+"issueCode": null }, { "partIndex": 7, "state": "published", "jobId": "4d438559-5c72-5c42-b749-036d27eb5b5c",
+"issueCode": null }, { "partIndex": 8, "state": "published", "jobId": "e6e6654e-7aa8-5852-a564-d2bdd1988ca7",
+"issueCode": null } ] } ], "judges": [ { "itemId": "7f908ee8-42e2-48cb-9bba-7d63f282a308",
+"sourceId": "7f908ee8-42e2-48cb-9bba-7d63f282a308", "name": "buildings-original.geojson", "state": "read",
+"placement": "on_map", "partsDone": 0, "partsPlanned": null, "limitReason": null }, {
+"itemId": "80ed12dc-7944-4e3d-8161-5669531e000e", "sourceId": "7f908ee8-42e2-48cb-9bba-7d63f282a308",
+"name": "buildings-original.geojson", "state": "probed", "placement": "undecided", "partsDone": 0, "partsPlanned": null,
+"limitReason": null }, { "itemId": "0c7b538b-219e-4e9d-8a84-92afb484ad7f",
+"sourceId": "0c7b538b-219e-4e9d-8a84-92afb484ad7f", "name": "2537.pdf", "state": "read", "placement": "undecided",
+"partsDone": 0, "partsPlanned": null, "limitReason": [
+"18 pages read. Text was found on pages 1–18. 7 passages on pages 5–8, 10 and 16 name floor",
+"s, storeys, levels or rooms: candidates cited to their page and lines, for your review. No",
+"thing is recorded until you confirm it." ] }, { "itemId": "c9d5c2cb-c144-482e-90ed-68d65ca9c398",
+"sourceId": "0c7b538b-219e-4e9d-8a84-92afb484ad7f", "name": "2537.pdf", "state": "probed", "placement": "undecided",
+"partsDone": 0, "partsPlanned": null, "limitReason": null }, { "itemId": "b79f4cca-1fcd-4071-bae9-f31beb79a4ed",
+"sourceId": "b79f4cca-1fcd-4071-bae9-f31beb79a4ed", "name": "Metadata_BuildingFootprints.md", "state": "probed",
+"placement": "not_understood", "partsDone": 0, "partsPlanned": null,
+"limitReason": "Kept (13 KB); its kind was not recognised from its first and last bytes." }, {
+"itemId": "51eef793-78dd-45bb-9bc9-752c9372a3ff", "sourceId": "51eef793-78dd-45bb-9bc9-752c9372a3ff",
+"name": "nyc-map-and-report-test_only.zip", "state": "read", "placement": "undecided", "partsDone": 0,
+"partsPlanned": null, "limitReason": [
+"2 members. 1 GeoJSON layer, 1 PDF taken out as their own items: buildings-original.geojson", ", 2537.pdf." ] } ],
+"short": { "jobs": [ { "operation": "chunk-mapping", "status": "succeeded", "error": null }, {
+"operation": "streaming-vector", "status": "succeeded", "error": null } ] } }
