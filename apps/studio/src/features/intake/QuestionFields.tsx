@@ -52,11 +52,12 @@ export function KindField(props: Answers & { geometryTypes: readonly string[] })
 }
 
 function IdentifierField(props: Props) {
-  const paths = identifierPaths(props.profile);
+  const paths = identifierPaths(props.profile, props.choices.kind);
   const refused = props.profile.paths.filter(path => !paths.includes(path) && path.path !== '/features/*/geometry');
   return <div className={styles.stack}>
     <FieldChoice label="Which field identifies each one?" value={props.choices.identifier} paths={paths}
-      choose={value => props.choose('identifier', value)} words={identifierWords} />
+      choose={value => props.choose('identifier', value)}
+      words={path => identifierWords(path, props.choices.kind)} />
     {!paths.length ? <p>No field of this file can identify its features:
       every feature needs a different, non-empty text value or whole number.</p> : null}
     {refused.length ? <details>

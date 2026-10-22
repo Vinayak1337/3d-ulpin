@@ -372823,6 +372823,12 @@
                     },
                     "integerIdEligible": {
                       "type": "boolean"
+                    },
+                    "outlineLiteralIdEligible": {
+                      "type": "boolean"
+                    },
+                    "outlineIntegerIdEligible": {
+                      "type": "boolean"
                     }
                   },
                   "required": [

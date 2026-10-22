@@ -66098,6 +66098,8 @@ export interface components {
                 literalIdEligible: boolean;
                 literalTextEligible: boolean;
                 integerIdEligible?: boolean;
+                outlineLiteralIdEligible?: boolean;
+                outlineIntegerIdEligible?: boolean;
             }[];
             limitations: string[];
         } | {

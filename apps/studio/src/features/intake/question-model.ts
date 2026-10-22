@@ -51,12 +51,28 @@ export function kindRefusal(kind: Kind, types: readonly string[]): string | null
   return 'The record does not state geometry this kind can use.';
 }
 
-export function identifierPaths(profile: MapProfile): MapProfile['paths'] {
-  return profile.paths.filter(path => path.literalIdEligible || path.integerIdEligible === true);
+type ProfilePath = MapProfile['paths'][number];
+
+/** An outline kind keys only the outlines it draws; the profile states those facts for a file that also holds
+ * pins or lines. Before a kind is chosen, a field either rule accepts is offered. */
+function keyFacts(path: ProfilePath, kind: Kind | ''): { literal: boolean; integer: boolean } {
+  const whole = { literal: path.literalIdEligible, integer: path.integerIdEligible === true };
+  if (kind && !outlineKinds.includes(kind)) return whole;
+  const drawn = { literal: path.outlineLiteralIdEligible ?? whole.literal,
+    integer: (path.outlineIntegerIdEligible ?? path.integerIdEligible) === true };
+  if (kind) return drawn;
+  return { literal: whole.literal || drawn.literal, integer: whole.integer || drawn.integer };
 }
 
-export function identifierWords(path: MapProfile['paths'][number]): string {
-  return fieldWords(path.path) + (path.integerIdEligible === true ? ' (whole number)' : '');
+export function identifierPaths(profile: MapProfile, kind: Kind | '' = ''): MapProfile['paths'] {
+  return profile.paths.filter(path => {
+    const keys = keyFacts(path, kind);
+    return keys.literal || keys.integer;
+  });
+}
+
+export function identifierWords(path: ProfilePath, kind: Kind | '' = ''): string {
+  return fieldWords(path.path) + (keyFacts(path, kind).integer ? ' (whole number)' : '');
 }
 
 export function heightPaths(profile: MapProfile): MapProfile['paths'] {
@@ -67,7 +83,7 @@ export function heightPaths(profile: MapProfile): MapProfile['paths'] {
 export function questionBody(profile: MapProfile, choices: Choices, revision: number,
   requestKey: string): AuthorBody | null {
   if (!choices.kind || kindRefusal(choices.kind, profile.geometryTypes)) return null;
-  const identifier = identifierPaths(profile).find(path => path.path === choices.identifier);
+  const identifier = identifierPaths(profile, choices.kind).find(path => path.path === choices.identifier);
   if (!identifier) return null;
   if (choices.name && !profile.paths.some(path => path.path === choices.name && path.literalTextEligible)) return null;
   if (!profile.paths.some(path => path.path === '/features/*/geometry')) return null;
@@ -75,7 +91,7 @@ export function questionBody(profile: MapProfile, choices: Choices, revision: nu
   if (height === null) return null;
   const operations = [
     { target: 'feature.sourceKey' as const, sourcePath: choices.identifier,
-      conversionId: identifier.integerIdEligible === true
+      conversionId: keyFacts(identifier, choices.kind).integer
         ? 'literal_integer_identifier@1' as const : 'literal_identifier@1' as const },
     { target: 'feature.geometry' as const, sourcePath: '/features/*/geometry',
       conversionId: 'geojson_geometry@1' as const },

@@ -315,6 +315,29 @@ def _source_heights(heights):
                               "unit": None, "reference": None, "basis": "source_coordinates"}}
 
 
+# An outline kind draws polygons only; pins and lines stay in the original (registry.ts setAsideGeometryTypes).
+OUTLINE_KINDS = ("building", "parcel", "public_land")
+SET_ASIDE_TYPES = ("Point", "MultiPoint", "LineString", "MultiLineString")
+
+
+def _set_aside(kind, geometry):
+    return kind in OUTLINE_KINDS and isinstance(geometry, dict) and geometry.get("type") in SET_ASIDE_TYPES
+
+
+def _set_aside_rejection(index, feature, properties, fields, source_crs, geojson_crs_name):
+    """A pin or line an outline kind keeps aside. Its key is reported when it is one, never required or reserved."""
+    raw_key = properties.get(fields["idField"]) if fields.get("idField") else feature.get("id")
+    text = str(raw_key) if isinstance(raw_key, (str, int, float)) and not isinstance(raw_key, bool) else ""
+    source_key = text.strip() if text.strip() and len(text) <= 256 else None
+    try:
+        _, count = _geometry(feature["geometry"], f"Feature {index}", geographic=source_crs.is_geographic,
+                             undeclared=geojson_crs_name is None, heights=[])
+        code, reason = "GEOMETRY_KIND", f"{fields['kind']} requires Polygon or MultiPolygon geometry."
+    except GeometryRejected as error:
+        count, code, reason = error.vertices, error.code, str(error)
+    return count, {"featureIndex": index, "sourceKey": source_key, "code": code, "reason": reason[:500]}
+
+
 def normalize_area(data):
     if isinstance(data, dict) and data.get("format") in ("gpkg", "shapefile_zip"):
         from .native_gis import normalize_native
@@ -392,6 +415,13 @@ def normalize_area(data):
         properties = feature.get("properties" if data["format"] == "geojson" else "attributes") or {}
         if not isinstance(properties, dict):
             raise InputError("Feature attributes/properties must be an object.")
+        if data["format"] == "geojson" and _set_aside(fields["kind"], original):
+            count, rejection = _set_aside_rejection(index, feature, properties, fields, source_crs, geojson_crs_name)
+            rejected.append(rejection)
+            total_vertices += count
+            if total_vertices > MAX_VERTICES:
+                raise InputError(f"An import supports at most {MAX_VERTICES} vertices.")
+            continue
         allowed = {}
         selected_fields = [fields.get(key) for key in ("idField", "nameField", "heightField")] + identifier_fields + semantic_fields
         for field in selected_fields:

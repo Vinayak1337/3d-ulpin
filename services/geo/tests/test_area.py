@@ -552,3 +552,39 @@ def test_private_area_endpoints_auth_validation_and_native_results(monkeypatch):
     checked = client.post("/internal/area/check", json={"features": [record("B")], "reference": REFERENCE}, headers=headers)
     assert checked.status_code == 200
     assert checked.json()["findings"] == []
+
+
+def mixed(pin_properties, line_properties, polygon_keys=("B1", "B2"), kind="building"):
+    """Synthetic outlines with a pin and a line: the shape of the REH14 mixed file, not its values."""
+    polygons = [{"type": "Feature", "properties": {} if key is None else {"bin": key},
+                 "geometry": polygon(77 + index * .001, 28, .0001, .0001)} for index, key in enumerate(polygon_keys)]
+    pin = {"type": "Feature", "properties": pin_properties, "geometry": {"type": "Point", "coordinates": [77.01, 28]}}
+    line = {"type": "Feature", "properties": line_properties,
+            "geometry": {"type": "LineString", "coordinates": [[77.02, 28], [77.0201, 28.0001]]}}
+    return {"format": "geojson", "data": {"type": "FeatureCollection", "features": [*polygons, pin, line]},
+            "mapping": {"kind": kind, "idField": "bin"}, "worldStatus": "synthetic"}
+
+
+def test_an_outline_kind_sets_aside_unkeyed_pins_and_lines_and_draws_the_keyed_outlines():
+    result = normalize_area(mixed({"address": "Fixture pin"}, {"ring_of": "B1"}))
+    assert [feature["sourceKey"] for feature in result["features"]] == ["B1", "B2"]
+    assert result["disposition"]["accepted"] == 2
+    assert [(row["featureIndex"], row["sourceKey"], row["code"]) for row in result["disposition"]["rejections"]] \
+        == [(2, None, "GEOMETRY_KIND"), (3, None, "GEOMETRY_KIND")]
+
+
+def test_set_aside_keys_are_reported_but_never_reserved():
+    keyed = normalize_area(mixed({"bin": "P1"}, {"bin": "B1"}))
+    assert [feature["sourceKey"] for feature in keyed["features"]] == ["B1", "B2"]
+    assert [row["sourceKey"] for row in keyed["disposition"]["rejections"]] == ["P1", "B1"]
+
+
+@pytest.mark.parametrize("keys", [("B1", None), ("B1", "B1"), ("B1", "")])
+def test_a_drawn_outline_without_a_unique_key_still_refuses_the_mixed_file(keys):
+    with pytest.raises(InputError, match="source ID is missing|Duplicate source ID"):
+        normalize_area(mixed({}, {}, keys))
+
+
+def test_a_road_layout_still_keys_every_pin_and_line():
+    with pytest.raises(InputError, match="source ID is missing"):
+        normalize_area(mixed({}, {}, kind="road"))
