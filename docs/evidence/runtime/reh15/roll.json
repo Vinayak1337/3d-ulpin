@@ -1,0 +1,14 @@
+{ "task": "REH15", "target": "6323b054", "initialHead": "1a226949", "databaseDiff": [],
+"diffCommand": "git diff --name-only 1a226949 6323b054 -- database/", "schemaStep": "Skipped: database unchanged.",
+"servicesGeoTree": { "1a226949": "eab382a5", "6323b054": "bee6cc1a" }, "nativeReaders": {
+"build": "dxf, citygml, gltf, obj: built (exit 0)", "check": "four verified (exit 0)",
+"runbook": "docs/backend/DEMO-RUNTIME.md step 5a and the rehearsal step 2 at 6323b054",
+"doctorLine": "platform:doctor has no native reader line; check is the only proof" }, "imageRoll": {
+"command": "node scripts/platform/processor-image.mjs roll --runtime ulpin-reh-02", "exit": 0,
+"from": "ulpin-geo:git-a40b60238728", "to": "ulpin-geo:git-b3b47f77661a",
+"words": "ulpin-reh-02: geo and worker recreated on ulpin-geo:git-b3b47f77661a; volumes kept.", "oldImageKept": true,
+"strayTagLeft": "ulpin-geo:git-b3b47f776616" }, "order": [ "stop", "checkout", "install", "documents", "natives",
+"natives-check", "roll", "start", "doctor" ], "exits": { "stop": 0, "checkout": 0, "install": 0, "documents": 0,
+"natives": 0, "natives-check": 0, "roll": 0, "start": 0, "doctor": 0 }, "seconds": { "stop": 4.066, "checkout": 0.291,
+"install": 0.87, "documents": 49.614, "natives": 50.368, "natives-check": 7.553, "roll": 23.139, "start": 18.308,
+"doctor": 7.109 }, "doctor": "28 PASS, 0 FAIL" }
