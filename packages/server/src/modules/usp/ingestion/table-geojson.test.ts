@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
+import { TABLE_PLACEMENT_UTF16 } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { probeOriginal } from './intake-probe';
@@ -192,6 +193,31 @@ test('no coordinate system stated: refused with a question, nothing queued and n
     coordinates: { kind: 'wkt', column: 1 }, crs: null }), (error: any) => error.code === 'TABLE_PLACEMENT_CRS_UNSTATED'
     && error.status === 422 && /^Which coordinate system are these coordinates in\?/.test(error.message));
   assert.deepEqual(statements, []);
+});
+
+test('TB2: a UTF-16 table is refused for placement with words saying what to do; nothing is queued', async () => {
+  for (const encoding of ['utf-16le', 'utf-16be'] as const) {
+    const original = tableSource(LON_LAT, ['ward', 'longitude', 'latitude'], true, { ...selection, encoding });
+    const { client, jobs } = ledger(original);
+    await assert.rejects(queueTableGeojsonTx(client, original, { requestKey: randomUUID(),
+      coordinates: { kind: 'columns', x: 1, y: 2 }, crs: 'EPSG:4326' }), (error: any) => error.status === 422
+      && error.code === 'TABLE_PLACEMENT_ENCODING' && error.message === TABLE_PLACEMENT_UTF16);
+    assert.deepEqual(jobs, []);
+  }
+  assert.match(TABLE_PLACEMENT_UTF16, /Save the table as CSV UTF-8 and add it again/);
+});
+
+test('TB2: an older UTF-16 table read that pinned no reading stops its placement with the same words', async () => {
+  // test_only: two rows written as UTF-16LE with its byte order mark; the bounded reader decoded them so.
+  const bytes = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from('ward,longitude,latitude\nW-1,77.5,12.9\n',
+    'utf16le')]);
+  const { delimiter: _delimiter, encoding: _encoding, ...unread } = selection;
+  const original = tableSource(bytes, ['ward', 'longitude', 'latitude'], true, unread);
+  const { client, sources, jobs } = ledger(original);
+  await queueTableGeojsonTx(client, original, { requestKey: randomUUID(),
+    coordinates: { kind: 'columns', x: 1, y: 2 }, crs: 'EPSG:4326' });
+  await assert.rejects(placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, new Map()), bytes)),
+    { status: 422, code: 'TABLE_PLACEMENT_ENCODING', message: TABLE_PLACEMENT_UTF16 });
 });
 
 test('a stated system queues one job pinning the table read; a column past the table or an unread file is refused',
