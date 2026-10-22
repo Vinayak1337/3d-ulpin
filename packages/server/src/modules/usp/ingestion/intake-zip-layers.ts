@@ -2,8 +2,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { ArchiveMemberLineageSchema, IntakeArchiveReceiptSchema, IntakeArchiveRetainSchema, LARGE_ORIGINAL_LIMITS,
-  INTAKE_PROBE_LIMITS, STREAMING_VECTOR_LIMITS, ZIP_LAYER_LIMITS, streamingReadMs, type ArchiveMemberLineage,
-  type IntakeCard } from '@ulpin/contracts/usp';
+  INTAKE_PROBE_LIMITS, STREAMING_VECTOR_LIMITS, ZIP_LAYER_LIMITS, streamingReadMs, type AnySourceProfile,
+  type ArchiveMemberLineage, type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { putOriginal, readObjectRange, sha256 } from '../../../infrastructure/storage';
@@ -97,6 +97,8 @@ export type ZipLayerDependencies = {
   transaction: typeof transaction;
   read: typeof readObjectRange;
   register: (caseId: string, input: unknown) => Promise<unknown>;
+  retain: (caseId: string, input: unknown, file: { name: string; bytes: Uint8Array },
+    lineage: ArchiveMemberLineage) => Promise<AnySourceProfile>;
   retainMember: (caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
     lineage: ArchiveMemberLineage) => Promise<string>;
   /** The byte receipt /uploads uses; a layer above the member bound is retained through it as a large original. */
@@ -201,6 +203,8 @@ function notKept(code: string, member: MemberRow): string {
   const sized = `this member${member.size_bytes === null ? '' : ` of ${member.size_bytes} bytes`}`;
   if (code === 'ZIP_EMPTY_MEMBER') return 'ZIP_EMPTY_MEMBER: this empty file is kept inside the archive; '
     + 'the original receipt accepts nonempty members only.';
+  if (code === 'ZIP_LAYER_LIMIT') return `ZIP_LAYER_LIMIT: the first ${ZIP_LAYER_LIMITS.layers} independent `
+    + 'members of this archive are taken out in archive order; this one stays inside the archive, not read.';
   if (code === 'ZIP_LAYER_SIZE') return `ZIP_LAYER_SIZE: ${sized} is kept inside the archive; members above `
     + `${STREAMING_VECTOR_LIMITS.sourceBytes} bytes are not kept as their own original.`;
   if (code === 'UPLOAD_QUOTA') return `UPLOAD_QUOTA: ${sized} stays inside the archive; the large-original receipt `
@@ -212,7 +216,7 @@ function notKept(code: string, member: MemberRow): string {
 
 /**
  * Retain all independent members before enrolling any, so a reader cannot bind the case ahead of its siblings.
- * The byte receipt keeps the archive/member/hash lineage atomically, before any semantic reader runs.
+ * Small GeoJSON keeps its existing manual route; other members use the byte receipt. Both keep lineage.
  */
 export async function fanOutZipLayers(caseValue: string, itemValue: string, dependencies: ZipLayerDependencies) {
   const caseId = uuid.parse(caseValue);
@@ -240,7 +244,13 @@ async function keepMembers(caseId: string, itemId: string, source: IntakeSourceR
   dependencies: ZipLayerDependencies): Promise<Kept[]> {
   const kept = members.filter(member => member.source_id)
     .map(member => ({ member, sourceId: member.source_id! }));
-  for (const member of members.filter(member => !member.source_id && waiting(member))) {
+  const pending = members.filter(member => !member.source_id);
+  const room = Math.max(0, ZIP_LAYER_LIMITS.layers - kept.length);
+  for (const member of pending.slice(room)) {
+    await dependencies.transaction(client => noteTx(client, caseId, member.item_id,
+      notKept('ZIP_LAYER_LIMIT', member)));
+  }
+  for (const member of pending.slice(0, room).filter(waiting)) {
     try { kept.push({ member, sourceId: await keepLayer(caseId, itemId, source, member, dependencies) }); }
     catch (error) {
       await dependencies.transaction(client => noteTx(client, caseId, member.item_id,
@@ -295,8 +305,14 @@ async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSo
     memberPath: member.member_path, ordinal: extracted.ordinal, memberBytes: extracted.bytes.length,
     compressedBytes: extracted.compressedBytes, crc32: extracted.crc32, memberSha256: sha256(extracted.bytes) });
   const file = { name: layerName(member), bytes: extracted.bytes };
-  const sourceId = await fenced(caseId, dependencies, revision =>
-    dependencies.retainMember(caseId, revision, file, lineage));
+  const sourceId = await fenced(caseId, dependencies, async revision => {
+    if (member.card?.format === 'geojson') {
+      const profile = await dependencies.retain(caseId,
+        { format: 'geojson', requestKey: randomUUID(), expectedWorkspaceRevision: revision }, file, lineage);
+      return profile.source.sourceId;
+    }
+    return dependencies.retainMember(caseId, revision, file, lineage);
+  });
   await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
 }

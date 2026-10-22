@@ -3,15 +3,21 @@
   "gate": "GF-STREAM",
   "qualification": "Partial: member fan-out protocol and byte integrity; no live runtime qualification",
   "baseCommit": "0af36554",
-  "implementationCommit": "b6a97076",
+  "initialImplementationCommit": "b6a97076",
+  "reviewBaseCommit": "c7d23423",
+  "reviewRound": 2,
   "implementation": {
     "fencedJob": "intake-zip-layers/1",
-    "receipt": "large-original/1 for every copied member, including small GeoJSON",
+    "receipt": "Manual retain for GeoJSON up to 16 MiB; byte receipt for other members and larger GeoJSON",
+    "smallGeojsonProfile": "geojson-manual-v1",
     "enrolment": "Existing IntakeService.register in the same case, after all copies",
     "lineage": "Parent source/revision/hash/item, exact member path/ordinal/size/CRC and SHA-256",
     "nestingDepth": 2,
     "deeperZip": "Copied and linked; not enrolled or read; ZIP_NESTING_LIMIT on its member row",
-    "memberCount": 2000,
+    "listedMemberLimit": 2000,
+    "independentMemberFanOutLimit": 64,
+    "fanOutOverflow": "ZIP_LAYER_LIMIT: kept inside archive; first 64 selected in archive order",
+    "retryCap": "Already retained originals count against the same per-archive allowance",
     "smallCopyBytes": 16777216,
     "largeCopyRangeBytes": 1048576,
     "unchangedGuards": ["unsafe paths", "ratio 100", "7 GiB expanded", "directory size", "CRC and size"],
@@ -33,8 +39,8 @@
         "packages/server/src/modules/usp/ingestion/intake-zip-layers.test.ts"
       ],
       "exitCode": 0,
-      "tests": 26,
-      "passed": 26,
+      "tests": 28,
+      "passed": 28,
       "failed": 0,
       "skipped": 0
     },
@@ -56,8 +62,8 @@
         "with only tests/intake-migration.test.ts excluded"
       ],
       "exitCode": 0,
-      "tests": 289,
-      "passed": 289,
+      "tests": 291,
+      "passed": 291,
       "failed": 0,
       "skipped": 0,
       "note": "Final code; includes strict API request/response schema checks"
@@ -120,7 +126,9 @@
     "Nested ZIP jobs at depths 0, 1 and 2; retained but unenrolled depth 3",
     "Traversal member refused while safe sibling is copied",
     "Expanded-byte directory refusal with ZIP_EXPANDED_LIMIT parent words",
-    "65 independent members, above the old GeoJSON-only layer ceiling",
+    "Small Point GeoJSON uses manual retain; PDF and CSV use byte receipts",
+    "66 mixed independent members: first 64 retained/enrolled in archive order; 2 kept inside with cap words",
+    "An interrupted retain retries within the same 64-member allowance, including already retained originals",
     "Long/padded basenames admitted without losing exact lineage paths",
     "Large member CRC mismatch, receipt failure, interruption recovery and no duplicate original"
   ],
@@ -149,6 +157,16 @@
       "signature": "Self-review found relative member names invalid for upload filename schema",
       "cause": "Byte receipt accepts trimmed basenames of at most 150 characters",
       "decision": "Bounded display basename; exact path in lineage; receipt schema checked in regression"
+    },
+    {
+      "signature": "Review: small GeoJSON byte receipts changed the Point/Line reader route",
+      "cause": "Adapter choice is not merged; small large-original GeoJSON takes a polygon-only streaming reader",
+      "decision": "Restored ManualIngestionService.retain with format geojson within the 16 MiB bound"
+    },
+    {
+      "signature": "Review: archive could fan out every one of 2000 listed members",
+      "cause": "The first change removed the old 64-layer room check",
+      "decision": "Restored ZIP_LAYER_LIMITS.layers across all independent members; overflow stays inside"
     }
   ],
   "runtime": {
@@ -164,7 +182,6 @@
     "Existing probe classifies a ZIP containing KML as KMZ, bypassing generic mixed-member fan-out",
     "Depth fence prevents ZIP jobs; explicit deeper-shapefile re-enrolment needs pre-reader admission fence",
     "CSV is retained/enrolled like a drop, but still needs existing Read as a table selection",
-    "Coordinate with adapter-choice changes: small GeoJSON members now use large-original-v1 receipts",
     "Empty members stay inside the immutable archive: existing receipt/lineage require positive bytes"
   ]
 }

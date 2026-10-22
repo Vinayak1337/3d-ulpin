@@ -216,20 +216,25 @@ async function layersJob(pack: Uint8Array, options: { failRetain?: (name: string
   const ledger = new Ledger(pack, card);
   const client = { query: ledger.query.bind(ledger) } as unknown as PoolClient;
   const order: string[] = [];
-  const retained: { name: string; bytes: Uint8Array; lineage: unknown; input: any; sourceId: string }[] = [];
+  const retained: { name: string; bytes: Uint8Array; lineage: unknown; input: any;
+    sourceId: string; profile: string }[] = [];
+  const keep = (file: { name: string; bytes: Uint8Array }, input: any, lineage: unknown, profile: string) => {
+    const refusal = options.failRetain?.(file.name);
+    if (refusal) throw refusal;
+    order.push(`retain:${file.name}`);
+    const sourceId = randomUUID();
+    retained.push({ ...file, lineage, input, sourceId, profile });
+    ledger.inspections.set(sourceId, lineage);
+    ledger.revision++;
+    return sourceId;
+  };
   const dependencies = {
     read: async (_key: string, start: number, end: number) => pack.subarray(start, end),
+    retain: async (_caseId: string, input: any, file: { name: string; bytes: Uint8Array }, lineage: unknown) =>
+      ({ source: { sourceId: keep(file, input, lineage, 'geojson-manual-v1') } }),
     retainMember: async (_caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
-      lineage: unknown) => {
-      const refusal = options.failRetain?.(file.name);
-      if (refusal) throw refusal;
-      order.push(`retain:${file.name}`);
-      const sourceId = randomUUID();
-      retained.push({ ...file, lineage, input: { format: 'original', expectedWorkspaceRevision: revision }, sourceId });
-      ledger.inspections.set(sourceId, lineage);
-      ledger.revision++;
-      return sourceId;
-    },
+      lineage: unknown) => keep(file, { format: 'original', expectedWorkspaceRevision: revision },
+      lineage, 'large-original-v1'),
     register: async (_caseId: string, input: any) => { order.push(`register:${input.sourceId}`); return {}; },
   };
   // What the enrol request now does: queue the job in the transaction that publishes the probe card.
@@ -287,7 +292,7 @@ test('the job keeps and enrols every independent member, including a README with
         parentSourceRevision: 1, parentSha256: sha(pack), parentItemId: ledger.itemId, memberPath: path, ordinal,
         memberBytes: file.bytes.length, compressedBytes: lineage.compressedBytes, crc32: 0,
         memberSha256: sha(file.bytes) });
-      assert.equal(file.input.format, 'original');
+      assert.equal(file.input.format, path.endsWith('.geojson') ? 'geojson' : 'original');
       assert.equal(ledger.member(path).source_id, kept[ordinal]);
     }
     assert.equal(ledger.member('uttam/README.md').source_id, kept[3]);
@@ -307,7 +312,33 @@ test('the job keeps and enrols every independent member, including a README with
     assert.equal(await queue(), null);
   }));
 
-test('a member whose byte receipt fails stays in the archive with a code; its siblings are kept', () =>
+test('a small Point GeoJSON keeps the manual route while PDF and CSV use the byte receipt', () =>
+  configured(async () => {
+    // Protocol-only geometry, not an operational location or a proposed registry record.
+    const point = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature',
+      properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }] }));
+    const files = { 'map/point.geojson': point, 'docs/plan.pdf': Buffer.from('%PDF-1.4\n%%EOF'),
+      'tables/register.csv': Buffer.from('key,value\na,b\n') };
+    const fixture = await layersJob(zipSync(files));
+    assert.deepEqual(fixture.card.members[0].card?.geometryTypes, ['Point']);
+    await fixture.run((await fixture.queue())!);
+    const [map, pdf, csv] = fixture.retained;
+    assert.deepEqual([map.profile, pdf.profile, csv.profile],
+      ['geojson-manual-v1', 'large-original-v1', 'large-original-v1']);
+    assert.equal(map.input.format, 'geojson');
+    assert.equal(map.input.expectedWorkspaceRevision, 7);
+    assert.match(map.input.requestKey, /^[a-f0-9-]{36}$/);
+    assert.deepEqual([pdf.input.format, csv.input.format], ['original', 'original']);
+    for (const file of fixture.retained) {
+      const path = (file.lineage as { memberPath: keyof typeof files }).memberPath;
+      assert.equal(sha(file.bytes), sha(files[path]));
+      assert.equal(fixture.ledger.member(path).source_id, file.sourceId);
+      assert.ok(fixture.order.includes(`register:${file.sourceId}`));
+    }
+    assert.equal(await fixture.queue(), null);
+  }));
+
+test('a member whose retain fails stays in the archive with a code; its siblings are kept', () =>
   configured(async () => {
     const { ledger, retained, queue, run } = await layersJob(zipSync(real), { failRetain: name =>
       name.startsWith('02-') ? new AppError(422, 'GEOJSON_INVALID', 'parser text that must not be stored') : null });
@@ -687,15 +718,62 @@ test('retained public Tweed originals fan out together as a GeoPackage and a nes
     assert.equal(sha(readFileSync(tweedZip)), sha(originals['maps/buildings.zip']));
   }));
 
-test('a ZIP does not silently stop copying at the former 64 map-layer ceiling', () =>
+function cappedMembers() {
+  return Object.fromEntries(Array.from({ length: ZIP_LAYER_LIMITS.layers + 2 }, (_, index) => {
+    const number = ZIP_LAYER_LIMITS.layers + 2 - index;
+    if (index % 3 === 0) return [`maps/${number}.geojson`, real['uttam/block-boundary.geojson']];
+    if (index % 3 === 1) return [`docs/${number}.pdf`, Buffer.from('%PDF-1.4\n%%EOF')];
+    return [`registers/${number}.csv`, Buffer.from('key,value\na,b\n')];
+  }));
+}
+
+test('one archive caps all independent originals together and names overflow in archive order', () =>
   configured(async () => {
-    const files = Object.fromEntries(Array.from({ length: 65 }, (_, index) =>
-      [`docs/plan-${index}.pdf`, Buffer.from('%PDF-1.4\n%%EOF')]));
+    const files = cappedMembers();
+    const paths = Object.keys(files);
     const fixture = await layersJob(zipSync(files));
+    // The SQL read orders by path; selection must restore archive order before applying the cap.
+    const children = [...fixture.ledger.rows.values()].filter(row => row.parent_item_id)
+      .sort((left, right) => left.member_path.localeCompare(right.member_path));
+    for (const child of children) fixture.ledger.rows.delete(child.item_id);
+    for (const child of children) fixture.ledger.rows.set(child.item_id, child);
     await fixture.run((await fixture.queue())!);
-    assert.equal(fixture.retained.length, 65);
-    assert.equal(fixture.order.filter(step => step.startsWith('register:')).length, 65);
-    assert.ok(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason.length <= 2000);
+    assert.equal(fixture.retained.length, ZIP_LAYER_LIMITS.layers);
+    assert.equal(fixture.order.filter(step => step.startsWith('register:')).length, ZIP_LAYER_LIMITS.layers);
+    assert.deepEqual(fixture.retained.map(file => (file.lineage as { memberPath: string }).memberPath),
+      paths.slice(0, ZIP_LAYER_LIMITS.layers));
+    for (const path of paths.slice(ZIP_LAYER_LIMITS.layers)) {
+      assert.equal(fixture.ledger.member(path).source_id, null);
+      assert.equal(fixture.ledger.member(path).limit_reason, `ZIP_LAYER_LIMIT: the first `
+        + `${ZIP_LAYER_LIMITS.layers} independent members of this archive are taken out in archive order; `
+        + 'this one stays inside the archive, not read.');
+    }
+    const words = fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason;
+    assert.match(words, /2 files kept, not read:.*ZIP_LAYER_LIMIT/);
+    assert.ok(words.indexOf(paths.at(-2)!) < words.indexOf(paths.at(-1)!));
+    assert.ok(words.length <= 2000);
+    assert.equal(await fixture.queue(), null);
+  }));
+
+test('a retry counts originals already kept against the same per-archive cap', () =>
+  configured(async () => {
+    const files = cappedMembers();
+    const first = Object.keys(files)[0].split('/').pop();
+    let interrupted = false;
+    const fixture = await layersJob(zipSync(files), { failRetain: name => {
+      if (name !== first || interrupted) return null;
+      interrupted = true;
+      return new AppError(503, 'ZIP_LAYER_UNAVAILABLE', 'interrupted receipt control');
+    } });
+    await fixture.run((await fixture.queue())!);
+    assert.equal(fixture.retained.length, ZIP_LAYER_LIMITS.layers - 1);
+    await fixture.run((await fixture.queue())!);
+    assert.equal(fixture.retained.length, ZIP_LAYER_LIMITS.layers);
+    for (const path of Object.keys(files).slice(ZIP_LAYER_LIMITS.layers)) {
+      assert.equal(fixture.ledger.member(path).source_id, null);
+      assert.match(fixture.ledger.member(path).limit_reason, /^ZIP_LAYER_LIMIT:/);
+    }
+    assert.equal(await fixture.queue(), null);
   }));
 
 test('long or padded basenames fit the byte receipt while their exact paths stay in lineage', () =>

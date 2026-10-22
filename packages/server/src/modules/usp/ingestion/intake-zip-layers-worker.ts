@@ -13,11 +13,14 @@ import { IntakeZipLayersInputSchema, fanOutZipLayers, retainZipMemberOriginal, z
   type IntakeZipLayersInput,
   type ZipLayerDependencies } from './intake-zip-layers';
 import { LargeOriginalService } from './large-original';
+import { ManualIngestionService } from './service';
 
+const manual = new ManualIngestionService();
 const intake = new IntakeService();
 const large = new LargeOriginalService();
 // Each member uses an existing receipt and the same enrolment as a dropped file.
 const defaults: ZipLayerDependencies = { transaction, read: readObjectRange,
+  retain: manual.retain.bind(manual),
   retainMember: (caseId, revision, file, lineage) =>
     retainZipMemberOriginal(caseId, revision, file, lineage, { large }),
   register: (caseId, raw) => intake.register(caseId, raw), large };
@@ -97,6 +100,7 @@ export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial
         }
         return own.read(...args);
       },
+      retain: async (...args) => { await renew(); return own.retain(...args); },
       retainMember: async (...args) => { await renew(); return own.retainMember(...args); },
       register: async (...args) => { await renew(); return own.register(...args); } });
     await complete(input, attempt, kept);
