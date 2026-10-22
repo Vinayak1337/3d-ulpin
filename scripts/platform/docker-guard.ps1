@@ -4,10 +4,11 @@
 # It never deletes anything, never touches volumes, WSL or Docker's own configuration, and the aside copies stay.
 # Once the engine is back and the demo API's health does not answer 200, it starts the demo's API and dispatcher:
 # pnpm platform:start --profile demo, then pnpm platform:doctor --profile demo, in the demo's serving checkout.
-# Output names folders relative to the root and never prints environment values, command lines or credentials.
+# Output hides root paths; failure diagnostics are bounded and credential-labelled values are redacted.
 # Usage and the never list: docs/backend/DOCKER-GUARD.md
 param(
   [switch]$Check,
+  [switch]$SelfTest,
   [switch]$Recover,
   [switch]$Prestart,
   [switch]$Watch,
@@ -290,35 +291,109 @@ function Get-ApiStatus {
 
 function Get-DemoLogPath { Join-Path $OpsDir ('demo-start-' + (Get-Date -Format 'yyyy-MM-dd') + '.log') }
 
-# Runs one pnpm command in the demo checkout; its output goes only to the demo log, never to the run line.
+function Get-GitInstallRoots {
+  foreach ($git in @(Get-Command git -CommandType Application -ErrorAction SilentlyContinue)) {
+    $dir = Split-Path -Parent $git.Source
+    # git.exe can be in cmd, bin or mingw64/bin.
+    for ($level = 0; $level -lt 3 -and $dir; $level++) {
+      $dir
+      $dir = Split-Path -Parent $dir
+    }
+  }
+  $installed = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\GitForWindows' -ErrorAction SilentlyContinue
+  if ($installed.InstallPath) { $installed.InstallPath }
+  'C:\Program Files\Git'
+}
+
+# Build a child-only environment: a scheduled task can otherwise find the Windows WSL bash launcher first.
+function Get-DemoEnvironment {
+  foreach ($dir in @(Get-GitInstallRoots)) {
+    $bin = Join-Path $dir 'bin'
+    $usrBin = Join-Path $dir 'usr\bin'
+    $bash = Join-Path $bin 'bash.exe'
+    if ((Test-Path -LiteralPath $bash -PathType Leaf) -and
+        (Test-Path -LiteralPath (Join-Path $usrBin 'bash.exe') -PathType Leaf)) {
+      return @{ path = "$bin;$usrBin;$env:PATH"; scriptShell = $bash }
+    }
+  }
+  $null
+}
+
+function New-DemoProcessInfo($Environment) {
+  $info = New-Object System.Diagnostics.ProcessStartInfo
+  $info.FileName = Join-Path $env:SystemRoot 'System32\cmd.exe'
+  $info.UseShellExecute = $false
+  $info.CreateNoWindow = $true
+  $info.EnvironmentVariables['PATH'] = $Environment.path
+  $info.EnvironmentVariables['npm_config_script_shell'] = $Environment.scriptShell
+  $info
+}
+
+# This uses the same child environment as pnpm, but runs only a shell version and OS probe.
+function Invoke-ShellSelfTest {
+  $environment = Get-DemoEnvironment
+  if (-not $environment) {
+    return @{ mode = 'selftest'; ok = $false; error = 'Git Bash not found; demo start refused'; exitCode = 2 }
+  }
+  $info = New-DemoProcessInfo $environment
+  $info.Arguments = '/d /s /c bash -c "echo $BASH_VERSION; uname -s"'
+  $info.RedirectStandardOutput = $true
+  $info.RedirectStandardError = $true
+  $process = [Diagnostics.Process]::Start($info)
+  $out = $process.StandardOutput.ReadToEndAsync()
+  $err = $process.StandardError.ReadToEndAsync()
+  if (-not $process.WaitForExit(10000)) {
+    try { $process.Kill() } catch { }
+    return @{ mode = 'selftest'; ok = $false; error = 'Git Bash probe timed out'; exitCode = 2 }
+  }
+  $process.WaitForExit()
+  $lines = @($out.Result.Trim() -split "`r?`n")
+  $ok = $process.ExitCode -eq 0 -and $lines.Count -eq 2 -and $lines[1] -match '^(MINGW|MSYS)'
+  @{ mode = 'selftest'; ok = $ok; bash = $environment.scriptShell; output = $lines
+    scriptShell = $info.EnvironmentVariables['npm_config_script_shell']; error = $err.Result.Trim()
+    exitCode = $(if ($ok) { 0 } else { 2 }) }
+}
+
+function Get-DemoFailureTail($Lines) {
+  @($Lines | Select-Object -Last 5 | ForEach-Object {
+    $line = Hide-Root $_
+    $line = $line -replace '(?i)((?:[\w-]*(?:token|password|secret|key)[\w-]*|authorization)\s*[:=]\s*).+',
+      '$1[redacted]'
+    $line = $line -replace '(?i)Bearer\s+\S+', 'Bearer [redacted]'
+    $line.Substring(0, [Math]::Min(400, $line.Length))
+  })
+}
+
+# Runs one pnpm command in the demo checkout; only bounded failure tails also go to the run line.
 # A command that outlives its timeout is left running and recorded as timed out.
-function Invoke-DemoPnpm([string]$PnpmPath, [string]$Arguments, [int]$Seconds) {
+function Invoke-DemoPnpm([string]$PnpmPath, [string]$Arguments, [int]$Seconds, $Environment) {
   $log = Get-DemoLogPath
   [IO.File]::AppendAllText($log, "== $((Get-Date).ToString('o')) pnpm $Arguments`r`n", $Utf8)
   $offset = ([IO.FileInfo]$log).Length
-  $info = New-Object System.Diagnostics.ProcessStartInfo
-  $info.FileName = Join-Path $env:SystemRoot 'System32\cmd.exe'
+  $info = New-DemoProcessInfo $Environment
   $info.Arguments = "/d /s /c `"`"$PnpmPath`" $Arguments >> `"$log`" 2>&1`""
   $info.WorkingDirectory = $DemoCheckout
-  $info.UseShellExecute = $false
-  $info.CreateNoWindow = $true
-  $process = [System.Diagnostics.Process]::Start($info)
   $step = [ordered]@{ exitCode = $null; timedOut = $false }
-  if (-not $process.WaitForExit($Seconds * 1000)) { $step.timedOut = $true; return @{ step = $step; lines = @() } }
-  $step.exitCode = $process.ExitCode
+  try { $process = [System.Diagnostics.Process]::Start($info) } catch {
+    $step.exitCode = -1
+    $step.failureTail = @(Get-DemoFailureTail @($_.Exception.Message))
+    return @{ step = $step; lines = @() }
+  }
+  if ($process.WaitForExit($Seconds * 1000)) { $step.exitCode = $process.ExitCode } else { $step.timedOut = $true }
   $stream = New-Object IO.FileStream($log, 'Open', 'Read', 'ReadWrite')
   try {
     [void]$stream.Seek($offset, 'Begin')
     $text = (New-Object IO.StreamReader($stream, $Utf8)).ReadToEnd()
   } finally { $stream.Dispose() }
-  @{ step = $step; lines = @($text -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
+  $lines = @($text -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+  if ($step.timedOut -or $step.exitCode -ne 0) { $step.failureTail = @(Get-DemoFailureTail $lines) }
+  @{ step = $step; lines = $lines }
 }
 
 # demo.mjs writes this marker when the demo is stopped on purpose and removes it when the demo starts.
 function Test-StoppedOnPurpose { Test-Path -LiteralPath (Join-Path $OpsDir 'demo-stopped-on-purpose.json') }
 
-# Starts the demo's two native processes and runs its doctor. Only the exit codes, the doctor's last line and its
-# PASS and FAIL counts are recorded.
+# Starts the demo's two native processes and runs its doctor, recording status and bounded failure diagnostics.
 function Start-Demo($Demo) {
   if (Test-StoppedOnPurpose) { $Demo.outcome = 'stopped_on_purpose'; return $Demo }
   if (Test-Path -LiteralPath (Join-Path $OpsDir 'no-demo-start')) { $Demo.outcome = 'opted_out'; return $Demo }
@@ -327,11 +402,17 @@ function Start-Demo($Demo) {
     Where-Object { @('.cmd', '.bat', '.exe') -contains $_.Extension } | Select-Object -First 1
   if (-not $pnpm) { $Demo.outcome = 'pnpm_missing'; return $Demo }
   if (-not [IO.Directory]::Exists($DemoCheckout)) { $Demo.outcome = 'checkout_missing'; return $Demo }
+  $environment = Get-DemoEnvironment
+  if (-not $environment) {
+    $Demo.outcome = 'git_bash_missing'
+    $Demo.reason = 'Git for Windows bin/bash.exe and usr/bin/bash.exe not found; demo start refused (no WSL fallback)'
+    return $Demo
+  }
   $Demo.log = [IO.Path]::GetFileName((Get-DemoLogPath))
-  $start = Invoke-DemoPnpm $pnpm.Source 'platform:start --profile demo' $DemoStartSeconds
+  $start = Invoke-DemoPnpm $pnpm.Source 'platform:start --profile demo' $DemoStartSeconds $environment
   $Demo.start = $start.step
   if ($start.step.timedOut) { $Demo.outcome = 'start_timed_out'; return $Demo }
-  $doctor = Invoke-DemoPnpm $pnpm.Source 'platform:doctor --profile demo' $DoctorSeconds
+  $doctor = Invoke-DemoPnpm $pnpm.Source 'platform:doctor --profile demo' $DoctorSeconds $environment
   $Demo.doctor = $doctor.step
   $last = @($doctor.lines | Select-Object -Last 1)
   if ($last.Count -gt 0) { $Demo.doctor.lastLine = $last[0].Substring(0, [Math]::Min(200, $last[0].Length)) }
@@ -350,20 +431,44 @@ function Invoke-DemoAfterEngine {
   Start-Demo $demo
 }
 
-# -Watch, engine answering: start the demo after two failed health checks in a row, at most twice in six hours.
+# Keep the six-hour watch budget within the local day, including when old state predates this policy.
+function Update-DemoStartWindow($State, $Demo) {
+  $now = Get-Date
+  $since = $now.AddHours(-$DemoStartLimitHours)
+  $old = @($State.demoStarts)
+  $State.demoStarts = @($old | Where-Object {
+    $at = [DateTimeOffset]::Parse($_).LocalDateTime
+    $at -gt $since -and $at.Date -eq $now.Date
+  })
+  if ($State.demoStarts.Count -lt $old.Count) {
+    $previousDay = @($old | Where-Object { [DateTimeOffset]::Parse($_).LocalDateTime.Date -lt $now.Date })
+    $Demo.startLimitCleared = if ($previousDay.Count -gt 0) { 'new_day' } else { 'six_hour_window' }
+  }
+}
+
+function Clear-DemoStartsAfterDoctor($State, $Demo) {
+  if ($Demo.doctor -and -not $Demo.doctor.timedOut -and $Demo.doctor.exitCode -eq 0 -and
+      $Demo.doctor.pass -gt 0 -and $Demo.doctor.fail -eq 0) {
+    $State.demoStarts = @()
+    $State.apiFailures = 0
+    $Demo.startLimitCleared = 'doctor_pass'
+  }
+}
+
+# -Watch, engine answering: start after two failed health checks, at most twice in six hours within the local day.
 function Invoke-WatchDemo($State) {
   $demo = [ordered]@{ apiStatus = (Get-ApiStatus); outcome = $null }
+  Update-DemoStartWindow $State $demo
   if ($demo.apiStatus -eq 200) { $State.apiFailures = 0; $demo.outcome = 'api_answers'; return $demo }
   if (Test-StoppedOnPurpose) { $State.apiFailures = 0; $demo.outcome = 'stopped_on_purpose'; return $demo }
   $State.apiFailures = [int]$State.apiFailures + 1
   $demo.apiFailures = $State.apiFailures
   if ($State.apiFailures -lt $WatchApiFailuresToStart) { $demo.outcome = 'api_silent_waiting'; return $demo }
-  $since = (Get-Date).AddHours(-$DemoStartLimitHours)
-  $recent = @($State.demoStarts | Where-Object { [DateTime]::Parse($_) -gt $since })
-  if ($recent.Count -ge $DemoStartLimit) { $demo.outcome = 'start_limit_reached'; return $demo }
+  if ($State.demoStarts.Count -ge $DemoStartLimit) { $demo.outcome = 'start_limit_reached'; return $demo }
   $demo = Start-Demo $demo
   $State.apiFailures = 0
-  if ($demo.Contains('start')) { $State.demoStarts = @($recent) + (Get-Date).ToString('o') }
+  if ($demo.Contains('start')) { $State.demoStarts = @($State.demoStarts) + (Get-Date).ToString('o') }
+  Clear-DemoStartsAfterDoctor $State $demo
   $demo
 }
 
@@ -429,12 +534,19 @@ function Invoke-Watch($State) {
 
 function Write-Json($Value) { Write-Output ($Value | ConvertTo-Json -Depth 8 -Compress) }
 
-$modes = @('Check', 'Recover', 'Prestart', 'Watch' | Where-Object { (Get-Variable $_ -ValueOnly).IsPresent })
+$modes = @('Check', 'SelfTest', 'Recover', 'Prestart', 'Watch' |
+  Where-Object { (Get-Variable $_ -ValueOnly).IsPresent })
 if ($modes.Count -ne 1) {
-  Write-Json ([ordered]@{ ok = $false; error = 'give exactly one of -Check, -Recover, -Prestart, -Watch' })
+  Write-Json ([ordered]@{ ok = $false; error = 'give exactly one of -Check, -SelfTest, -Recover, -Prestart, -Watch' })
   exit 2
 }
 $mode = $modes[0]
+
+if ($mode -eq 'SelfTest') {
+  $report = Invoke-ShellSelfTest
+  Write-Json $report
+  exit $report.exitCode
+}
 
 if ($mode -eq 'Check') {
   $engine = Test-Engine
@@ -479,6 +591,7 @@ try {
   $engineBack = @{ Recover = @('recovered'); Prestart = @('engine_back', 'engine_answers') }
   if ($engineBack.Contains($mode) -and $engineBack[$mode] -contains $result.outcome) {
     $result.demo = Invoke-DemoAfterEngine
+    Clear-DemoStartsAfterDoctor $state $result.demo
   }
   $line = [ordered]@{ mode = $mode.ToLower(); at = (Get-Date).ToString('o'); dryRun = [bool]$DryRun }
   foreach ($key in $result.Keys) { $line[$key] = $result[$key] }
