@@ -45,6 +45,7 @@ export function runtimeDefinition(name = demoRuntime, folder = runtimesFolder) {
     file: join(dir, rehearsal ? 'runtime.env' : 'demo.env'), marker: join(dir, 'bootstrap.complete.json'),
     ocrFile: join(dir, 'ocr-paths.json'), ocrProfileFile: join(dir, 'ocr-paths-profile.json'),
     tabularFile: join(dir, 'tabular-paths.json'), documentFile: join(dir, 'document-runtime-paths.json'),
+    nativeReaderFile: join(dir, 'native-reader-paths.json'),
     modelDir: join(dir, 'models').replaceAll('\\', '/'),
     // The checkout a runtime is served from, and the processors it runs: the one pinned image for the demo and
     // every rehearsal alike. No runtime builds it; processor-image.mjs does, once per pin.
@@ -76,6 +77,12 @@ const documentRuntimeGroups = [
     'ULPIN_PACKET_REGIONS_PROFILE_SHA256', 'ULPIN_PACKET_REGIONS_SCRATCH'],
 ];
 export const demoOcrProfileFile = demo.ocrProfileFile;
+/** The batch's native readers; each is configured by its own profile file and that file's SHA-256, or absent. */
+export const nativeReaders = Object.freeze(['dxf', 'citygml', 'gltf', 'obj']);
+export const nativeReaderKeys = reader => {
+  const name = reader.toUpperCase();
+  return [`ULPIN_${name}_PROFILE`, `ULPIN_${name}_PROFILE_SHA256`];
+};
 const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
 
 /** Optional non-secret paths only. Never derive or replace credentials. */
@@ -248,6 +255,41 @@ export function readDemoDocumentRuntime(file = demoDocumentFile) {
   return paths;
 }
 
+/**
+ * Optional non-secret paths. Each reader is wholly configured or absent; values never appear in a message. The
+ * shape is checked here; the full inventory is checked by each reader's own configuration on every job.
+ */
+export function readDemoNativeReaders(file) {
+  if (!existsSync(file)) return {};
+  let paths;
+  try { paths = JSON.parse(readFileSync(file, 'utf8')); }
+  catch { throw new Error('Native reader path keys require readable valid JSON.'); }
+  const groups = nativeReaders.map(nativeReaderKeys);
+  let checkouts;
+  if (!paths || Array.isArray(paths) || typeof paths !== 'object'
+    || Object.keys(paths).some(key => !groups.flat().includes(key))) {
+    throw new Error('Native reader path configuration has unexpected keys.');
+  }
+  for (const [profileKey, hashKey] of groups) {
+    if (Object.hasOwn(paths, profileKey) !== Object.hasOwn(paths, hashKey)) {
+      throw new Error(`Native reader requires keys: ${profileKey}, ${hashKey}.`);
+    }
+    if (!Object.hasOwn(paths, profileKey)) continue;
+    if (typeof paths[hashKey] !== 'string' || !/^[a-f0-9]{64}$/.test(paths[hashKey])) {
+      throw new Error(`Native reader hash is invalid: ${hashKey}.`);
+    }
+    const profile = paths[profileKey];
+    let usable = false;
+    try {
+      usable = typeof profile === 'string' && isAbsolute(profile) && statSync(profile).isFile()
+        && !(checkouts ??= documentCheckouts()).some(checkout => insideDirectory(realpathSync(checkout),
+          realpathSync(profile)));
+    } catch { /* Filesystem exceptions contain configured values; the closed message below names the key. */ }
+    if (!usable) throw new Error(`Native reader profile unavailable or inside a checkout: ${profileKey}.`);
+  }
+  return paths;
+}
+
 export const gatewayFlag = 'ULPIN_MODEL_GATEWAY_ENABLED';
 export const gatewayConfigKey = 'ULPIN_MODEL_GATEWAY_CONFIG';
 export const teacherAdapterKey = 'ULPIN_MAPPING_TEACHER_ADAPTER';
@@ -323,7 +365,7 @@ function assertDemoGateway(env) {
   else throw new Error(`Demo setting ${gatewayFlag} must be 0 or 1.`);
 }
 
-/** The whole configuration of one runtime: its settings file and its three path files, and no other's. */
+/** The whole configuration of one runtime: its settings file and its four path files, and no other's. */
 export function readDemo(name = demoRuntime) {
   const runtime = definedRuntime(name);
   let tabular;
@@ -334,7 +376,7 @@ export function readDemo(name = demoRuntime) {
   }
   return {
     ...readDemoSettings(runtime.file, runtime), ...readDemoOcrPaths(runtime.ocrFile, runtime.ocrProfileFile),
-    ...tabular, ...readDemoDocumentRuntime(runtime.documentFile),
+    ...tabular, ...readDemoDocumentRuntime(runtime.documentFile), ...readDemoNativeReaders(runtime.nativeReaderFile),
   };
 }
 /**
