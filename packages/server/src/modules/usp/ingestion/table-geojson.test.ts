@@ -331,6 +331,24 @@ test('a small Windows-1252 table whose read pinned no reading is decoded as the 
     assert.deepEqual(features.map((feature: any) => feature.properties.ward), ['Café']);
   });
 
+test('enrolment: a refusal is worded on the item; a fault that is not a refusal fails the job so it is retried',
+  async () => {
+    const original = tableSource(WKT, ['plot', 'outline']);
+    const { client, sources, jobs, item } = ledger(original);
+    await queueTableGeojsonTx(client, original, { requestKey: randomUUID(), coordinates: { kind: 'wkt', column: 1 },
+      crs: 'EPSG:32643' });
+    const large = receipt(sources, new Map());
+    const refusing = (error: Error) => jobDependencies(client, large, WKT, { register: async () => { throw error; } });
+    const fault = new TypeError('the connection was reset');
+    await assert.rejects(placeTableRows(jobs[0].payload, refusing(fault)), fault);
+    const unavailable = new AppError(503, 'INTAKE_PROBE_UNAVAILABLE', 'The probe did not answer.');
+    await assert.rejects(placeTableRows(jobs[0].payload, refusing(unavailable)), unavailable);
+    const [child] = await placeTableRows(jobs[0].payload,
+      refusing(new AppError(409, 'STALE_REVISION', 'The case changed.')));
+    assert.ok(sources.get(child));
+    assert.match(item.limit_reason, /plots\.geojson, was kept but not taken in \(STALE_REVISION\)/);
+  });
+
 test('a fault that is not a refusal stops a placement as TABLE_PLACEMENT_FAILED; the native path keeps its own code',
   () => {
     const fault = new TypeError('the object store closed the stream');

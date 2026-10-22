@@ -382,14 +382,18 @@ export async function placeTableRows(input: IntakeTableGeojsonInput,
   return kept ? [kept] : [];
 }
 
-/** Enrols the kept derivative like a dropped file; a refusal is kept as its code for the officer's words. */
+/**
+ * Enrols the kept derivative like a dropped file. A refusal (an AppError below 500) is kept as its code for the
+ * officer's words; any other fault fails the job, so the dispatcher retries and the rerun enrols the kept child.
+ */
 async function enrol(input: IntakeTableGeojsonInput, sourceId: string, dependencies: TableGeojsonDependencies) {
   try {
     await dependencies.register(input.caseId, { sourceId,
       requestKey: stableUuid(`table-derivative/1:${input.itemId}:${sourceId}`) });
     return null;
   } catch (error) {
-    return error instanceof AppError ? error.code : 'TABLE_PLACEMENT_UNAVAILABLE';
+    if (error instanceof AppError && error.status < 500) return error.code;
+    throw error;
   }
 }
 
