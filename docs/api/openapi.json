@@ -117086,7 +117086,17 @@
                                     "utf-8",
                                     "utf-16le",
                                     "utf-16be",
-                                    "windows-1252"
+                                    "windows-1252",
+                                    "iso-8859-1"
+                                  ]
+                                },
+                                "encodingBasis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bom",
+                                    "utf8_valid",
+                                    "fallback_windows_1252",
+                                    "officer_stated"
                                   ]
                                 },
                                 "format": {
@@ -132817,7 +132827,17 @@
                                     "utf-8",
                                     "utf-16le",
                                     "utf-16be",
-                                    "windows-1252"
+                                    "windows-1252",
+                                    "iso-8859-1"
+                                  ]
+                                },
+                                "encodingBasis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bom",
+                                    "utf8_valid",
+                                    "fallback_windows_1252",
+                                    "officer_stated"
                                   ]
                                 },
                                 "format": {
@@ -148926,7 +148946,17 @@
                                     "utf-8",
                                     "utf-16le",
                                     "utf-16be",
-                                    "windows-1252"
+                                    "windows-1252",
+                                    "iso-8859-1"
+                                  ]
+                                },
+                                "encodingBasis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bom",
+                                    "utf8_valid",
+                                    "fallback_windows_1252",
+                                    "officer_stated"
                                   ]
                                 },
                                 "format": {
@@ -237657,7 +237687,17 @@
                                     "utf-8",
                                     "utf-16le",
                                     "utf-16be",
-                                    "windows-1252"
+                                    "windows-1252",
+                                    "iso-8859-1"
+                                  ]
+                                },
+                                "encodingBasis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bom",
+                                    "utf8_valid",
+                                    "fallback_windows_1252",
+                                    "officer_stated"
                                   ]
                                 },
                                 "format": {
@@ -373310,7 +373350,17 @@
                               "utf-8",
                               "utf-16le",
                               "utf-16be",
-                              "windows-1252"
+                              "windows-1252",
+                              "iso-8859-1"
+                            ]
+                          },
+                          "encodingBasis": {
+                            "type": "string",
+                            "enum": [
+                              "bom",
+                              "utf8_valid",
+                              "fallback_windows_1252",
+                              "officer_stated"
                             ]
                           },
                           "format": {
@@ -373417,7 +373467,17 @@
                               "utf-8",
                               "utf-16le",
                               "utf-16be",
-                              "windows-1252"
+                              "windows-1252",
+                              "iso-8859-1"
+                            ]
+                          },
+                          "encodingBasis": {
+                            "type": "string",
+                            "enum": [
+                              "bom",
+                              "utf8_valid",
+                              "fallback_windows_1252",
+                              "officer_stated"
                             ]
                           },
                           "format": {
@@ -373569,7 +373629,17 @@
                       "utf-8",
                       "utf-16le",
                       "utf-16be",
-                      "windows-1252"
+                      "windows-1252",
+                      "iso-8859-1"
+                    ]
+                  },
+                  "encodingBasis": {
+                    "type": "string",
+                    "enum": [
+                      "bom",
+                      "utf8_valid",
+                      "fallback_windows_1252",
+                      "officer_stated"
                     ]
                   },
                   "version": {
@@ -373826,7 +373896,17 @@
                   "utf-8",
                   "utf-16le",
                   "utf-16be",
-                  "windows-1252"
+                  "windows-1252",
+                  "iso-8859-1"
+                ]
+              },
+              "encodingBasis": {
+                "type": "string",
+                "enum": [
+                  "bom",
+                  "utf8_valid",
+                  "fallback_windows_1252",
+                  "officer_stated"
                 ]
               },
               "format": {
@@ -374673,7 +374753,17 @@
                                   "utf-8",
                                   "utf-16le",
                                   "utf-16be",
-                                  "windows-1252"
+                                  "windows-1252",
+                                  "iso-8859-1"
+                                ]
+                              },
+                              "encodingBasis": {
+                                "type": "string",
+                                "enum": [
+                                  "bom",
+                                  "utf8_valid",
+                                  "fallback_windows_1252",
+                                  "officer_stated"
                                 ]
                               },
                               "format": {
@@ -374780,7 +374870,17 @@
                                   "utf-8",
                                   "utf-16le",
                                   "utf-16be",
-                                  "windows-1252"
+                                  "windows-1252",
+                                  "iso-8859-1"
+                                ]
+                              },
+                              "encodingBasis": {
+                                "type": "string",
+                                "enum": [
+                                  "bom",
+                                  "utf8_valid",
+                                  "fallback_windows_1252",
+                                  "officer_stated"
                                 ]
                               },
                               "format": {
@@ -375742,7 +375842,17 @@
                                   "utf-8",
                                   "utf-16le",
                                   "utf-16be",
-                                  "windows-1252"
+                                  "windows-1252",
+                                  "iso-8859-1"
+                                ]
+                              },
+                              "encodingBasis": {
+                                "type": "string",
+                                "enum": [
+                                  "bom",
+                                  "utf8_valid",
+                                  "fallback_windows_1252",
+                                  "officer_stated"
                                 ]
                               },
                               "format": {
@@ -375849,7 +375959,17 @@
                                   "utf-8",
                                   "utf-16le",
                                   "utf-16be",
-                                  "windows-1252"
+                                  "windows-1252",
+                                  "iso-8859-1"
+                                ]
+                              },
+                              "encodingBasis": {
+                                "type": "string",
+                                "enum": [
+                                  "bom",
+                                  "utf8_valid",
+                                  "fallback_windows_1252",
+                                  "officer_stated"
                                 ]
                               },
                               "format": {
@@ -376819,7 +376939,17 @@
                                     "utf-8",
                                     "utf-16le",
                                     "utf-16be",
-                                    "windows-1252"
+                                    "windows-1252",
+                                    "iso-8859-1"
+                                  ]
+                                },
+                                "encodingBasis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bom",
+                                    "utf8_valid",
+                                    "fallback_windows_1252",
+                                    "officer_stated"
                                   ]
                                 },
                                 "format": {
@@ -376926,7 +377056,17 @@
                                     "utf-8",
                                     "utf-16le",
                                     "utf-16be",
-                                    "windows-1252"
+                                    "windows-1252",
+                                    "iso-8859-1"
+                                  ]
+                                },
+                                "encodingBasis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "bom",
+                                    "utf8_valid",
+                                    "fallback_windows_1252",
+                                    "officer_stated"
                                   ]
                                 },
                                 "format": {
@@ -378080,7 +378220,17 @@
                                   "utf-8",
                                   "utf-16le",
                                   "utf-16be",
-                                  "windows-1252"
+                                  "windows-1252",
+                                  "iso-8859-1"
+                                ]
+                              },
+                              "encodingBasis": {
+                                "type": "string",
+                                "enum": [
+                                  "bom",
+                                  "utf8_valid",
+                                  "fallback_windows_1252",
+                                  "officer_stated"
                                 ]
                               },
                               "format": {
@@ -378584,7 +378734,17 @@
                                 "utf-8",
                                 "utf-16le",
                                 "utf-16be",
-                                "windows-1252"
+                                "windows-1252",
+                                "iso-8859-1"
+                              ]
+                            },
+                            "encodingBasis": {
+                              "type": "string",
+                              "enum": [
+                                "bom",
+                                "utf8_valid",
+                                "fallback_windows_1252",
+                                "officer_stated"
                               ]
                             },
                             "format": {
@@ -379198,7 +379358,17 @@
                         "utf-8",
                         "utf-16le",
                         "utf-16be",
-                        "windows-1252"
+                        "windows-1252",
+                        "iso-8859-1"
+                      ]
+                    },
+                    "encodingBasis": {
+                      "type": "string",
+                      "enum": [
+                        "bom",
+                        "utf8_valid",
+                        "fallback_windows_1252",
+                        "officer_stated"
                       ]
                     },
                     "format": {
@@ -379368,7 +379538,17 @@
                             "utf-8",
                             "utf-16le",
                             "utf-16be",
-                            "windows-1252"
+                            "windows-1252",
+                            "iso-8859-1"
+                          ]
+                        },
+                        "encodingBasis": {
+                          "type": "string",
+                          "enum": [
+                            "bom",
+                            "utf8_valid",
+                            "fallback_windows_1252",
+                            "officer_stated"
                           ]
                         },
                         "format": {
@@ -381134,7 +381314,17 @@
                                             "utf-8",
                                             "utf-16le",
                                             "utf-16be",
-                                            "windows-1252"
+                                            "windows-1252",
+                                            "iso-8859-1"
+                                          ]
+                                        },
+                                        "encodingBasis": {
+                                          "type": "string",
+                                          "enum": [
+                                            "bom",
+                                            "utf8_valid",
+                                            "fallback_windows_1252",
+                                            "officer_stated"
                                           ]
                                         },
                                         "format": {
@@ -381869,7 +382059,17 @@
                                                 "utf-8",
                                                 "utf-16le",
                                                 "utf-16be",
-                                                "windows-1252"
+                                                "windows-1252",
+                                                "iso-8859-1"
+                                              ]
+                                            },
+                                            "encodingBasis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "bom",
+                                                "utf8_valid",
+                                                "fallback_windows_1252",
+                                                "officer_stated"
                                               ]
                                             },
                                             "format": {
@@ -400578,7 +400778,17 @@
                               "utf-8",
                               "utf-16le",
                               "utf-16be",
-                              "windows-1252"
+                              "windows-1252",
+                              "iso-8859-1"
+                            ]
+                          },
+                          "encodingBasis": {
+                            "type": "string",
+                            "enum": [
+                              "bom",
+                              "utf8_valid",
+                              "fallback_windows_1252",
+                              "officer_stated"
                             ]
                           },
                           "format": {
@@ -400685,7 +400895,17 @@
                               "utf-8",
                               "utf-16le",
                               "utf-16be",
-                              "windows-1252"
+                              "windows-1252",
+                              "iso-8859-1"
+                            ]
+                          },
+                          "encodingBasis": {
+                            "type": "string",
+                            "enum": [
+                              "bom",
+                              "utf8_valid",
+                              "fallback_windows_1252",
+                              "officer_stated"
                             ]
                           },
                           "format": {
@@ -401076,7 +401296,17 @@
                           "utf-8",
                           "utf-16le",
                           "utf-16be",
-                          "windows-1252"
+                          "windows-1252",
+                          "iso-8859-1"
+                        ]
+                      },
+                      "encodingBasis": {
+                        "type": "string",
+                        "enum": [
+                          "bom",
+                          "utf8_valid",
+                          "fallback_windows_1252",
+                          "officer_stated"
                         ]
                       },
                       "format": {
@@ -401183,7 +401413,17 @@
                           "utf-8",
                           "utf-16le",
                           "utf-16be",
-                          "windows-1252"
+                          "windows-1252",
+                          "iso-8859-1"
+                        ]
+                      },
+                      "encodingBasis": {
+                        "type": "string",
+                        "enum": [
+                          "bom",
+                          "utf8_valid",
+                          "fallback_windows_1252",
+                          "officer_stated"
                         ]
                       },
                       "format": {
@@ -401634,7 +401874,17 @@
                           "utf-8",
                           "utf-16le",
                           "utf-16be",
-                          "windows-1252"
+                          "windows-1252",
+                          "iso-8859-1"
+                        ]
+                      },
+                      "encodingBasis": {
+                        "type": "string",
+                        "enum": [
+                          "bom",
+                          "utf8_valid",
+                          "fallback_windows_1252",
+                          "officer_stated"
                         ]
                       },
                       "format": {
@@ -401741,7 +401991,17 @@
                           "utf-8",
                           "utf-16le",
                           "utf-16be",
-                          "windows-1252"
+                          "windows-1252",
+                          "iso-8859-1"
+                        ]
+                      },
+                      "encodingBasis": {
+                        "type": "string",
+                        "enum": [
+                          "bom",
+                          "utf8_valid",
+                          "fallback_windows_1252",
+                          "officer_stated"
                         ]
                       },
                       "format": {
@@ -402002,7 +402262,17 @@
                           "utf-8",
                           "utf-16le",
                           "utf-16be",
-                          "windows-1252"
+                          "windows-1252",
+                          "iso-8859-1"
+                        ]
+                      },
+                      "encodingBasis": {
+                        "type": "string",
+                        "enum": [
+                          "bom",
+                          "utf8_valid",
+                          "fallback_windows_1252",
+                          "officer_stated"
                         ]
                       },
                       "format": {
@@ -402109,7 +402379,17 @@
                           "utf-8",
                           "utf-16le",
                           "utf-16be",
-                          "windows-1252"
+                          "windows-1252",
+                          "iso-8859-1"
+                        ]
+                      },
+                      "encodingBasis": {
+                        "type": "string",
+                        "enum": [
+                          "bom",
+                          "utf8_valid",
+                          "fallback_windows_1252",
+                          "officer_stated"
                         ]
                       },
                       "format": {
@@ -403002,7 +403282,17 @@
                               "utf-8",
                               "utf-16le",
                               "utf-16be",
-                              "windows-1252"
+                              "windows-1252",
+                              "iso-8859-1"
+                            ]
+                          },
+                          "encodingBasis": {
+                            "type": "string",
+                            "enum": [
+                              "bom",
+                              "utf8_valid",
+                              "fallback_windows_1252",
+                              "officer_stated"
                             ]
                           },
                           "format": {
@@ -403109,7 +403399,17 @@
                               "utf-8",
                               "utf-16le",
                               "utf-16be",
-                              "windows-1252"
+                              "windows-1252",
+                              "iso-8859-1"
+                            ]
+                          },
+                          "encodingBasis": {
+                            "type": "string",
+                            "enum": [
+                              "bom",
+                              "utf8_valid",
+                              "fallback_windows_1252",
+                              "officer_stated"
                             ]
                           },
                           "format": {
@@ -403235,7 +403535,17 @@
                           "utf-8",
                           "utf-16le",
                           "utf-16be",
-                          "windows-1252"
+                          "windows-1252",
+                          "iso-8859-1"
+                        ]
+                      },
+                      "encodingBasis": {
+                        "type": "string",
+                        "enum": [
+                          "bom",
+                          "utf8_valid",
+                          "fallback_windows_1252",
+                          "officer_stated"
                         ]
                       },
                       "version": {
