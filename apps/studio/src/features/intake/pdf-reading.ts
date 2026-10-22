@@ -1,5 +1,5 @@
 import { api, ApiError, unwrap, type GetResponse, type paths } from '@ulpin/api-client';
-import { DOCUMENT_LIMITS, documentScannedPages } from '@ulpin/contracts/upload-reader-limits';
+import { DOCUMENT_LIMITS, DOCUMENT_PAGE_LIMITS, documentScannedPages } from '@ulpin/contracts/upload-reader-limits';
 import { readBatchCase } from './table/retain';
 
 export type PdfReading = GetResponse<
@@ -37,24 +37,31 @@ function pdfTextLayerUnread(reading: PdfReading | undefined) {
   return reading?.native?.code === 'NATIVE_READER_BYTE_LIMIT';
 }
 
+/** A failed native reader has not identified which pages have text; the private renderer checks the original. */
+function pdfPagesUnknown(reading: PdfReading) {
+  return reading.native?.format === 'pdf' && (reading.native.status === 'tool_error'
+    || reading.native.code === 'NATIVE_TEXT_NOT_REQUESTED');
+}
+
 /** Whether the page count must be known before OCR can be offered. */
 export function pdfNeedsPageCount(reading: PdfReading | undefined) {
   if (reading?.status !== 'completed' || !reading.native) return false;
-  return pdfTextLayerUnread(reading) || documentScannedPages(reading.native).length > 0;
+  return pdfPagesUnknown(reading) || documentScannedPages(reading.native).length > 0;
 }
 
-/**
- * The pages one press may read. The OCR runtime opens a PDF of at most `ocrMaxPage` pages and reads one page per
- * job. Scanned pages are named by the text-layer reading; when that reading stopped on its byte bound, no page is
- * known to have text, so every page may be picked.
- */
-export function pdfOcrOffer(reading: PdfReading | undefined, pageCount: number | undefined) {
-  if (!reading?.native || pageCount === undefined) return { pages: [] as number[], refusal: '' };
-  const pages = pdfTextLayerUnread(reading) ? Array.from({ length: pageCount }, (_, at) => at + 1)
-    : documentScannedPages(reading.native);
-  if (!pages.length || pageCount <= DOCUMENT_LIMITS.ocrMaxPage) return { pages, refusal: '' };
-  return { pages: [] as number[], refusal: `OCR opens a PDF of at most ${DOCUMENT_LIMITS.ocrMaxPage} pages; this `
-    + `one has ${pageCount}, so no page of it can be read by OCR. The original stays kept with its SHA-256.` };
+/** Short PDFs retain the multi-page press; longer originals require one explicit page number per press. */
+export function pdfOcrOffer(reading: PdfReading | undefined, pageCount: number | undefined): {
+  pages: number[]; refusal: string; singlePage?: boolean;
+} {
+  if (!reading?.native || pageCount === undefined) return { pages: [], refusal: '' };
+  if (!Number.isSafeInteger(pageCount) || pageCount < 1 || pageCount > DOCUMENT_PAGE_LIMITS.pages) {
+    return { pages: [], refusal: `OCR opens a PDF of at most ${DOCUMENT_PAGE_LIMITS.pages} pages; this `
+      + `one has ${pageCount}, so no page of it can be read by OCR. The original stays kept with its SHA-256.` };
+  }
+  const pages = pdfPagesUnknown(reading) ? Array.from({ length: pageCount }, (_, at) => at + 1)
+    : documentScannedPages(reading.native).filter(page => page <= pageCount);
+  if (!pages.length || pageCount <= DOCUMENT_LIMITS.ocrBatchPages) return { pages, refusal: '' };
+  return { pages, refusal: '', singlePage: true };
 }
 
 /** A press reads only selected pages without a usable reading, so the same selection twice reads once. */
@@ -109,13 +116,23 @@ export function createPdfOcrPress(caseId: string, sourceId: string) {
   let body: RetryBody | null = null;
   return async (reading: PdfReading, selection: { page: number }) => {
     try {
-      if (!body || body.ocrSelection?.page !== selection.page) {
-        unwrap(await api.GET('/api/v1/sources/{sourceId}/pages', { params: { path: { sourceId }, query: {
-          revision: reading.sourceRevision, sha256: reading.sourceSha256, offset: selection.page - 1, limit: 1,
-        } } }));
+      if (!Number.isSafeInteger(selection.page) || selection.page < 1 || selection.page > DOCUMENT_PAGE_LIMITS.pages) {
+        throw new Error(`Choose a page number from 1 to ${DOCUMENT_PAGE_LIMITS.pages}.`);
+      }
+      if (!body || body.ocrSelection?.page !== selection.page || body.sourceSha256 !== reading.sourceSha256
+        || body.expectedSourceRevision !== reading.sourceRevision) {
+        const metadata = unwrap(await api.GET('/api/v1/sources/{sourceId}/pages', {
+          params: { path: { sourceId }, query: {
+            revision: reading.sourceRevision, sha256: reading.sourceSha256, offset: selection.page - 1, limit: 1,
+          } },
+        }));
+        if (selection.page > metadata.pageCount || metadata.pages[0]?.page !== selection.page) {
+          throw new Error('The selected page is not in this PDF. Choose an existing page number.');
+        }
         body = { requestKey: crypto.randomUUID(), expectedCaseRevision: (await readBatchCase(caseId)).revision,
           expectedSourceRevision: reading.sourceRevision, sourceSha256: reading.sourceSha256,
-          mode: 'native_only', ocrSelection: selection };
+          mode: 'native_only', ocrSelection: { ...selection,
+            ...(metadata.pageCount > DOCUMENT_LIMITS.ocrBatchPages ? { singlePage: true } : {}) } };
       }
       const receipt = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry', {
         params: { path: { caseId, sourceId } }, body,
@@ -181,9 +198,13 @@ export function pdfOcrWords(reading: PdfReading) {
   if (reading.status === 'stale') return 'This PDF reading is out of date. Open the batch again before retrying.';
   if (reading.status === 'failed') return `The PDF reading stopped before it finished (${reading.code
     ?? 'reason unknown'}).`;
+  if (reading.native?.code === 'NATIVE_TEXT_NOT_REQUESTED') return 'Only the selected page was requested for OCR; '
+    + 'the text layer was not read.';
   if (pdfTextLayerUnread(reading)) return `The text layer was not read: the page reader takes a PDF of at most `
     + `${MiB(DOCUMENT_LIMITS.nativeBytes)}. OCR takes a PDF of up to ${MiB(DOCUMENT_LIMITS.originalBytes)}, so its `
     + 'pages can still be read as scanned pages.';
+  if (pdfPagesUnknown(reading)) return 'The text-layer reading stopped; a selected page may still be read by OCR '
+    + 'within the page renderer’s bounds.';
   return 'The text-layer reading is complete.';
 }
 

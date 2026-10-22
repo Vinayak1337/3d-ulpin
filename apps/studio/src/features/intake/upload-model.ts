@@ -109,7 +109,8 @@ const readers: Record<string, ReaderForecast> = {
   pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes,
     beyond: { name: 'PDF document', bytes: DOCUMENT_LIMITS.originalBytes,
       read: `Text layer not read above ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, but its pages can be read by OCR `
-        + `when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages, checked after upload` } },
+        + `when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages, checked after upload; above `
+        + `${DOCUMENT_LIMITS.ocrBatchPages} pages, choose one page number` } },
   tif: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   tiff: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   las: pointReader,

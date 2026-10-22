@@ -56,8 +56,8 @@ it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page 
   expect(readerEligibility({ name: 'plan.PDF', size: DOCUMENT_LIMITS.nativeBytes }))
     .toMatchObject({ reader: 'PDF native text', ceilingBytes: DOCUMENT_LIMITS.nativeBytes, withinCeiling: true });
   expect(words(DOCUMENT_LIMITS.nativeBytes)).toBe('Will be read by the PDF native text reader (within 10 MiB)');
-  const ocr = 'Text layer not read above 10 MiB, but its pages can be read by OCR when the PDF has at most 8 pages, '
-    + 'checked after upload (within 16 MiB)';
+  const ocr = 'Text layer not read above 10 MiB, but its pages can be read by OCR when the PDF has at most 400 '
+    + 'pages, checked after upload; above 8 pages, choose one page number (within 16 MiB)';
   for (const size of [DOCUMENT_LIMITS.nativeBytes + 1, DOCUMENT_LIMITS.originalBytes]) {
     expect(words(size)).toBe(ocr);
     expect(readerEligibility({ name: 'plan.pdf', size }))

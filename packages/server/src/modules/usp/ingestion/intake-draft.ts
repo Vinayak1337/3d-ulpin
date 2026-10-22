@@ -404,7 +404,8 @@ function textLayerUnread(sourceBytes: number) {
     + 'layer of this one was not read; the original is kept with its SHA-256.';
   if (sourceBytes > DOCUMENT_LIMITS.originalBytes) return unread;
   return `${unread} Its pages can be read by OCR from the PDF reading, for a PDF of at most `
-    + `${DOCUMENT_LIMITS.ocrMaxPage} pages. Nothing read is a fact until you confirm it.`;
+    + `${DOCUMENT_LIMITS.ocrMaxPage} pages; above ${DOCUMENT_LIMITS.ocrBatchPages} pages, choose one page number. `
+    + 'Nothing read is a fact until you confirm it.';
 }
 
 /**

@@ -14181,6 +14181,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -17329,6 +17331,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -19381,6 +19385,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -36769,6 +36775,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -52746,6 +52754,8 @@ export interface components {
                         selection: {
                             page: number;
                             region?: (number)[];
+                            /** @enum {boolean} */
+                            singlePage?: true;
                         } | null;
                         configSha256: string | null;
                     };
@@ -55063,6 +55073,8 @@ export interface components {
                             selection: {
                                 page: number;
                                 region?: (number)[];
+                                /** @enum {boolean} */
+                                singlePage?: true;
                             } | null;
                             configSha256: string | null;
                         };
@@ -69621,6 +69633,8 @@ export interface components {
             ocrSelection?: {
                 page: number;
                 region?: (number)[];
+                /** @enum {boolean} */
+                singlePage?: true;
             };
             archiveSelection?: {
                 ordinal: number;

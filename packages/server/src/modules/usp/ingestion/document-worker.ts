@@ -6,7 +6,7 @@ import {readRetainedOriginal,putOriginal,sha256} from '../../../infrastructure/s
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx} from '../jobs';
 import {assertDocumentInputTx} from './document-context';
-import {extractSourceDocument} from './document-native';
+import {documentFormat,extractSourceDocument} from './document-native';
 import {proposeDocument} from './document-model';
 import {runSourceOcr} from './document-ocr';
 import {inspectDocumentArchive} from './document-archive';
@@ -49,7 +49,10 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
     await authorize();
     const original=await readRetainedOriginal(input.objectKey,input.sourceBytes,input.sourceSha256,
       DOCUMENT_LIMITS.originalBytes,Math.max(1,deadline-Date.now()));
-    const native=await (dependencies.extract??extractSourceDocument)(input,original);
+    const native:DocumentResult['native']=input.ocrSelection?.singlePage
+      ?{format:documentFormat(original),status:'needs_ocr',readerSha256:input.readerSha256,
+        code:'NATIVE_TEXT_NOT_REQUESTED',warnings:[],parts:[]}
+      :await (dependencies.extract??extractSourceDocument)(input,original);
     await authorize();
     const ocr=input.ocrSelection?await (dependencies.ocr??runSourceOcr)(input,original,deadline):undefined;
     await authorize();
@@ -75,7 +78,7 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
         {status:'needs_input',summary:'Source-bound extraction receipt retained. Native results and model proposals are separate; no facts are approved.',
           documentAccepted:{jobId,sha256:hash,nativeStatus:native.status,modelStatus:model.status}}]);
       await appendCaseIngestionTx(client,input.caseId,{kind:'document.changed',sourceId:input.sourceId,sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
-      await settleBatchPdfTx(client,input.caseId,input.sourceId,native,input.sourceBytes);
+      if(!input.ocrSelection?.singlePage)await settleBatchPdfTx(client,input.caseId,input.sourceId,native,input.sourceBytes);
     });
     async function authorizePins(client:Parameters<typeof assertDocumentInputTx>[0]){
       if(Date.now()>deadline)throw new AppError(503,'DOCUMENT_DEADLINE','The bounded document execution expired.');
