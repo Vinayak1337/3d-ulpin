@@ -40,8 +40,21 @@
   ],
   "realInputQualification": "Byte counts and hashes read-only; originals unchanged; no OCR text or accuracy measured; no acquisition.",
   "outsideOwnedPaths": "packages/contracts/src/upload-reader-limits.d.ts: the browser type surface of DOCUMENT_LIMITS gained originalBytes and jobs (types only).",
+  "followUp": {
+    "task": "PL1-b",
+    "change": "intake-draft.ts batchPdfSettlement now takes the original's byte count (settleBatchPdfTx passes the document job's input.sourceBytes from document-worker.ts). For NATIVE_READER_BYTE_LIMIT the tray says the text layer was not read because the page reader takes at most DOCUMENT_LIMITS.nativeBytes; when the original is at most DOCUMENT_LIMITS.originalBytes it adds that its pages can be read by OCR from the PDF reading, for a PDF of at most DOCUMENT_LIMITS.ocrMaxPage pages, and that nothing read is a fact until the officer confirms it. Numbers come from DOCUMENT_LIMITS, not literals. This closes the first open point below.",
+    "wordsWithinOriginalBound": "The page reader reads a PDF of at most 10 MB, so the text layer of this one was not read; the original is kept with its SHA-256. Its pages can be read by OCR from the PDF reading, for a PDF of at most 8 pages. Nothing read is a fact until you confirm it.",
+    "wordsAboveOriginalBound": "The page reader reads a PDF of at most 10 MB, so the text layer of this one was not read; the original is kept with its SHA-256.",
+    "tests": ["tests/intake-pdf-batch.test.ts: a PDF above the page reader byte bound says its text layer was not read, and OCR when the original allows (written first; failed on the old words, passes after)"],
+    "checks": [
+      {"command": "pnpm typecheck:backend", "exitCode": 0},
+      {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-pdf-batch.test.ts", "exitCode": 0, "passed": 7, "failed": 0},
+      {"command": "git diff --check", "exitCode": 0}
+    ],
+    "sourcePins": "intake-draft.ts and document-worker.ts are pinned in docs/api/source-pins.json; regenerate pins at integration with the others."
+  },
   "openPoints": [
-    "intake-draft.ts batchPdfSettlement (not owned): the tray words for NATIVE_READER_BYTE_LIMIT still end at 'so this one is not read'; add 'Open the PDF reading to request OCR of its pages (a PDF of at most 8 pages).' so the tray points to the offer.",
+    "Done in PL1-b (followUp): intake-draft.ts batchPdfSettlement tray words for NATIVE_READER_BYTE_LIMIT now point to OCR from the PDF reading.",
     "Regenerate docs/api/source-pins.json at integration.",
     "Runtime rehearsal of a multi-page press and of a 10-16 MiB scanned PDF on the document runtime; no browser focus/zoom check was run."
   ]

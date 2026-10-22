@@ -395,18 +395,26 @@ export function pageWords(pages: readonly number[]): string {
 
 const ascending = (pages: Iterable<number>) => [...new Set(pages)].sort((a, b) => a - b);
 
+/** PL1. The page reader stopped on its byte bound; OCR opens an original within the document bound. */
+function textLayerUnread(sourceBytes: number) {
+  const unread = `The page reader reads a PDF of at most ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, so the text `
+    + 'layer of this one was not read; the original is kept with its SHA-256.';
+  if (sourceBytes > DOCUMENT_LIMITS.originalBytes) return unread;
+  return `${unread} Its pages can be read by OCR from the PDF reading, for a PDF of at most `
+    + `${DOCUMENT_LIMITS.ocrMaxPage} pages. Nothing read is a fact until you confirm it.`;
+}
+
 /**
  * G10. What the page reader found, in an officer's words. Every page has either text parts or a no-text warning,
  * so their union is the page count. A passage naming floors or rooms is a candidate cited to its page and lines,
- * never a value. Scanned pages have no native text; their separate OCR reading is an officer's request.
+ * never a value. Scanned pages have no native text; their separate OCR reading is an officer's request. A PDF
+ * above the page reader's byte bound has no text layer read; OCR takes an original of up to `originalBytes`.
  */
-export function batchPdfSettlement(native: DocumentResult['native']): PdfItemState {
+export function batchPdfSettlement(native: DocumentResult['native'], sourceBytes: number): PdfItemState {
   if (native.status === 'encrypted') return { state: 'read', placement: 'needs_answer', limitReason: 'This PDF is '
     + 'encrypted, so no page was read. Add an unlocked copy to the batch; no password is kept.' };
   if (native.status === 'tool_error') return { state: 'failed_part', placement: 'not_understood',
-    limitReason: native.code === 'NATIVE_READER_BYTE_LIMIT' ? 'The page reader reads a PDF of at most '
-      + `${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, so this one is not read; the original is kept with its SHA-256.`
-      : pdfStopped };
+    limitReason: native.code === 'NATIVE_READER_BYTE_LIMIT' ? textLayerUnread(sourceBytes) : pdfStopped };
   if (native.status === 'unsupported') return { state: 'read', placement: 'not_understood',
     limitReason: 'The page reader could not take this file as a PDF; the original is kept with its SHA-256.' };
   const textPages = ascending(native.parts.flatMap(part => part.locator.page ?? []));
@@ -439,9 +447,9 @@ async function batchPdfItemTx(client: PoolClient, caseId: string, sourceId: stri
 
 /** G10. A finished document read settles its batch PDF's item; a source with no PDF item is left alone. */
 export async function settleBatchPdfTx(client: PoolClient, caseId: string, sourceId: string,
-  native: DocumentResult['native']) {
+  native: DocumentResult['native'], sourceBytes: number) {
   const item = await batchPdfItemTx(client, caseId, sourceId);
-  if (item) await writeIntakeDraftTx(client, caseId, item.item_id, { ...batchPdfSettlement(native),
+  if (item) await writeIntakeDraftTx(client, caseId, item.item_id, { ...batchPdfSettlement(native, sourceBytes),
     planRef: item.plan_ref, recordsSeen: 0 });
 }
 
