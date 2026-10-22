@@ -81,6 +81,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
   if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 0 }];
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
+  if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
+    return jobs.filter(job => job.source_id === values[0] && job.operation === 'intake-large');
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
     return jobs.filter(job => ['queued', 'running'].includes(job.status));
   if (sql.startsWith('SELECT id,status,payload FROM jobs WHERE source_id'))

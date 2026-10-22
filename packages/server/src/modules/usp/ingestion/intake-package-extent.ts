@@ -11,6 +11,9 @@ export const AREA_NORMALIZER_EXTENT = Object.freeze({
   metres: 50_000, degrees: 1, south: -80, north: 84, zoneSlack: 0.25,
 });
 
+export const INTAKE_WIDE_GEOJSON_REASON = 'This file is read in parts because its features spread wider than one '
+  + 'map area. Every feature stays a candidate and needs officer review.';
+
 /** west, south, east, north */
 export type Bounds = [number, number, number, number];
 /** The retained reference of the area a package is drafted into, as `map_areas.reference` stores it. */
@@ -157,6 +160,34 @@ export function featureExtent(feature: Record<string, unknown>, crs: SourceCrs):
   const projected = new Map<number, Bounds>();
   if (crs.kind === 'utm') projected.set(crs.epsg, boundsOf(native));
   return { geographic, bounds: boundsOf(geographic), projected };
+}
+
+/** Complete bounded bytes only: the same vertices, declared systems and one-area measure as package cuts. */
+export function inspectGeojsonExtent(bytes: Uint8Array): { bounds: Bounds; fitsOneArea: boolean } | null {
+  let collection;
+  try { collection = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)); }
+  catch { return null; }
+  if (collection?.type !== 'FeatureCollection' || !Array.isArray(collection.features)
+    || !collection.features.length) return null;
+  const crs = measurableCrs(collection);
+  if (!crs) return null;
+  let extent: FeatureExtent | null = null;
+  for (const feature of collection.features) {
+    if (!feature || feature.type !== 'Feature' || Object.hasOwn(feature, 'crs')) return null;
+    let measured: FeatureExtent | null;
+    try { measured = featureExtent(feature, crs); }
+    catch { return null; }
+    if (!measured) return null;
+    if (!extent) {
+      extent = measured;
+      continue;
+    }
+    extent.bounds = union(extent.bounds, measured.bounds);
+    for (const coordinate of measured.geographic) extent.geographic.push(coordinate);
+    for (const [zone, bounds] of measured.projected)
+      extent.projected.set(zone, union(extent.projected.get(zone) ?? null, bounds));
+  }
+  return extent ? { bounds: extent.bounds, fitsOneArea: new CutExtent(null).admit(extent) } : null;
 }
 
 /** The feature's extent in a UTM zone; a feature written in that zone keeps its own coordinates, as PROJ does. */

@@ -143,8 +143,8 @@ test('REH9 act 1 keeps its bounded footprints, CSV table, raster and point-cloud
 for (const geometry of ['Point', 'LineString', 'Polygon']) {
   test(`a retained small ${geometry} collection named .txt gets the existing bounded profile`, async () => {
     // Generated test_only protocol shapes, never operational geometry or evaluation truth.
-    const coordinates = { Point: [1, 2], LineString: [[1, 2], [2, 3]],
-      Polygon: [[[1, 2], [2, 2], [2, 3], [1, 2]]] }[geometry];
+    const coordinates = { Point: [1, 2], LineString: [[1, 2], [1.001, 2.001]],
+      Polygon: [[[1, 2], [1.001, 2], [1.001, 2.001], [1, 2]]] }[geometry];
     const bytes = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [
       { type: 'Feature', id: 'test_only', properties: {}, geometry: { type: geometry, coordinates } },
     ] }));
@@ -298,6 +298,8 @@ for (const [label, name, bytes, code] of [
   ['CityJSON named .json', 'city.json',
     Buffer.from('{"type":"CityJSON","version":"2.0","CityObjects":{},"vertices":[]}'), 'UNSUPPORTED_PROFILE'],
   ['GeoJSON over the feature limit', 'dense.geojson', repeatedNyc(2001), 'RECORD_LIMIT'],
+  ['wide GeoJSON', 'wide.geojson',
+    readFileSync(new URL('./fixtures/sw1-small-wide.geojson', import.meta.url)), 'GEOJSON_EXTENT'],
 ] as const) {
   test(`a refused small ${label} leaves no source row, object or case revision for /uploads to repeat`,
     async () => {
