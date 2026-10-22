@@ -19,7 +19,6 @@ export type Metrics = ChunkMapping['metrics'];
 export type Freshness = Pick<MappingJob, 'current' | 'reasons'>;
 export type Target = ChunkMapping['plan']['fields'][number]['target'];
 export type Selection = RecipeBody['plan']['tabular']['selection'];
-export type RetainBody = Schemas['POST_ingestion_cases_caseId_sources_Request_multipart_form_data'];
 /** TP1: the server job that reads a large kept CSV as a table, in the shared job status words. */
 export type TableJob = Schemas['POST_ingestion_cases_caseId_sources_sourceId_table_Response_202_application_json'];
 export type RecipeBody = Extract<

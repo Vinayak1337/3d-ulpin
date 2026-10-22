@@ -554,3 +554,57 @@ test('XW1, TP1: a generated test_only workbook above 16 MiB goes 202, then the j
     t.diagnostic(JSON.stringify({ records: profile.records, bytes: control.bytes.length,
       windows: store.windows.length, elapsedMs: Math.round(performance.now() - started) }));
   });
+
+test('TB2: a CSV under 16 MiB with more than 2,000 records is read by the stream job, every record kept', async () => {
+  const bytes = generatedCsv(2_500);
+  assert.ok(bytes.length < TABULAR_LIMITS.bytes, 'the register is within the whole-file byte bound');
+  const store = new Store(bytes);
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  assert.deepEqual([queued.status, store.jobs.length], ['queued', 1], 'the row bound promotes the read to a job');
+  assert.deepEqual(store.jobs[0]!.payload.request.selection, selection, 'the officer\'s selection is pinned');
+  assert.equal(store.source.inspection.manualProfile, undefined, 'nothing is attached before the job reads');
+  assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_sourceId_table_Response_202_application_json',
+    queued), []);
+  assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), queued, 'replayed');
+  assert.equal(store.jobs.length, 1, 'a replay queues none');
+  await runTableProfileJob(queued.jobId);
+  const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
+  assert.equal(profile.records, 2_500, 'no record is cut to fit the whole-file bound');
+  assert.deepEqual(profile.tabular.selection, { ...selection, delimiter: ',', encoding: 'utf-8' });
+  assert.deepEqual([store.source.profile, store.source.object_key, store.caseRevision],
+    ['large-original-v1', `large-originals/${store.sourceId}`, 1], 'the same kept original, read once');
+  assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,
+    'succeeded');
+});
+
+test('TB2: a small CSV refused for its text, not its length, stays refused and queues no job', async () => {
+  // test_only: a generated register whose second record opens a quote that never closes.
+  const store = new Store(Buffer.from('Key,Note\nK-1,generated\n"K-2,open\n'));
+  store.install();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  await assert.rejects(new ManualIngestionService().tableFromOriginal(store.caseId, store.sourceId, request),
+    { status: 422, code: 'TABULAR_HEADER_OR_READER' });
+  assert.deepEqual([store.jobs.length, store.source.inspection.manualProfile], [0, undefined]);
+});
+
+test('TB2: a small workbook sheet with more than 2,000 records is read by the stream job with its sheet and headers',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async () => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-windows');
+    const control = controlWorkbook(3_000), register = { ...selection, format: 'xlsx' as const,
+      sheet: 'Register', headerRows: [2] };
+    assert.ok(control.bytes.length < TABULAR_LIMITS.bytes, 'the workbook is within the whole-file byte bound');
+    const store = new Store(control.bytes);
+    store.install();
+    const service = new ManualIngestionService();
+    const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: register };
+    const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    assert.deepEqual([queued.status, store.jobs[0]!.payload.request.selection], ['queued', register]);
+    await runTableProfileJob(queued.jobId);
+    const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
+    assert.deepEqual([profile.records, profile.tabular.selection], [3_000, register]);
+  });

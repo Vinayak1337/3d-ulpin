@@ -10,11 +10,14 @@ import styles from './Batch.module.css';
 type Column = { path: string; header: string };
 const columnWords = (column: Column) => `${Number(column.path) + 1}. ${column.header || 'Empty header'}`;
 
-/** TC1. For an item already read as a table: the officer states its coordinate columns and system, nothing else. */
-export function PlaceOnMap({ caseId, itemId, name, headers }: {
-  caseId: string; itemId: string; name: string; headers: readonly string[];
+/**
+ * TC1. For an item already read as a table: the officer states its coordinate columns and system, nothing else.
+ * TB2: `opened` shows the dialog at once, after a press on the table page has just made the item.
+ */
+export function PlaceOnMap({ caseId, itemId, name, headers, opened = false }: {
+  caseId: string; itemId: string; name: string; headers: readonly string[]; opened?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(opened);
   return <>
     <div><Button variant="soft" onClick={() => setOpen(true)}>Place on the map</Button></div>
     {open ? <PlaceOnMapDialog caseId={caseId} itemId={itemId} name={name} headers={headers}

@@ -6,6 +6,7 @@ import { Button, Skeleton } from '@ulpin/ui';
 import { INTAKE_TABLE_READER_FORMATS } from '@ulpin/contracts/upload-reader-limits';
 import type { IntakeItem } from './batch-model';
 import { PlaceOnMap } from './PlaceOnMapDialog';
+import { placementRefusal } from './table-placement-command';
 import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
 import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
@@ -65,11 +66,13 @@ function ItemTable({ caseId, itemId, name, source }: {
   // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown.
   const profile = useTableProfile(caseId, source.sourceId);
   const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
+  const refusal = read && placementRefusal(read.tabular.selection);
   return <section className={styles.question} aria-label={`Table in ${name}`}>
     <h2 className="ul-heading">Table · {name}</h2>
     {profile.isPending ? <Skeleton /> : read ? <>
       <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />
-      <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={read.headers} />
+      {refusal ? <p className="ul-help">{refusal}</p>
+        : <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={read.headers} />}
     </> : <ReadAsTable caseId={caseId} source={source} />}
   </section>;
 }

@@ -1,6 +1,6 @@
 import { api, unwrap } from '@ulpin/api-client';
 import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
-import type { RetainBody, Selection, TableJob, TableProfile } from './types';
+import type { Selection, TableJob, TableProfile } from './types';
 
 /** The import dialog knows a dropped file only by its name; a batch item states its format on its card. */
 export function tableFormat(file: File): 'csv' | 'xlsx' {
@@ -23,26 +23,9 @@ export function formatSelection(format: 'csv' | 'xlsx', sheet: string, rows: str
   return { format: 'xlsx', sheet, table: null, headerRows };
 }
 
-export function retainForm(file: File, selection: Selection, revision: number, requestKey: string) {
-  const fields: Omit<RetainBody, 'file'> = { format: selection.format, selection: JSON.stringify(selection),
-    requestKey, expectedWorkspaceRevision: revision };
-  const body = new FormData();
-  body.set('file', file);
-  for (const [key, value] of Object.entries(fields)) body.set(key, String(value));
-  return body;
-}
-
-export async function retainTable(caseId: string, body: FormData): Promise<TableProfile> {
-  const result = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources', {
-    params: { path: { caseId } }, body: body as never, bodySerializer: (value) => value as unknown as FormData,
-  }));
-  if (result.version !== 'manual-tabular/1') throw new Error('The server did not retain a tabular profile.');
-  // Readable<T> drops selection.table:null, although it is present on the wire.
-  return result as TableProfile;
-}
-
-/** G13, XW1: a CSV or XLSX above 16 MiB is kept through the uploads route, then read on the server as a stream
- * into a table by a job (TP1); a workbook's one sheet is read with the sheet and header rows the officer typed. */
+/** G13, XW1: a CSV or XLSX above 16 MiB is read on the server as a stream into a table by a job (TP1); a workbook's
+ * one sheet is read with the sheet and header rows the officer typed. TB2: every table is kept through the uploads
+ * route; this only chooses the dialog's words. */
 export function streamedImport(file: File) {
   return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }

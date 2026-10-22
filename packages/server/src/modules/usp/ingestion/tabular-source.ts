@@ -7,7 +7,7 @@ import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
-import { decodeColumnText, readColumnCsv } from './column-profile';
+import { COLUMN_CSV_ROW_LIMIT, decodeColumnText, readColumnCsv } from './column-profile';
 import { profileTabularChunk } from './chunk-mapping-agent';
 import { profileTabularStream } from './tabular-stream';
 import { decodeTableBytes, detectDelimitedReading } from './delimited-text';
@@ -103,12 +103,23 @@ function admittedPin(admitted: TabularAdmission, selection: TabularSelection, so
     ...(asset.derivativeOf ? { derivativeOf: asset.derivativeOf } : {}) });
 }
 
+/** TB2: the code of a refusal at the whole-file reader's size bound; the same bytes can still be read as a stream. */
+export const TABULAR_ROW_LIMIT = 'TABULAR_ROW_LIMIT';
+
+function rowLimit(): never {
+  throw new AppError(422, TABULAR_ROW_LIMIT, 'This table holds more than the whole-file reader takes: 2,000 '
+    + 'records, or 2,000 cells of a workbook. Kept through the upload, it is read as a stream instead; no record is '
+    + 'cut to fit.');
+}
+
 function workbookParts(bytes: Uint8Array): Part[] {
   const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
     join(settings.repositoryRoot, 'scripts/agent/read_workbook_cells.py'),
     join(settings.repositoryRoot, 'services/geo'), '-',
   ], { input: Buffer.from(bytes).toString('base64'), encoding: 'utf8', timeout: 30000,
     maxBuffer: 8 * 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+  // The native reader names its own size bound; any other stop stays its refusal.
+  if (run.status !== 0 && /\bNATIVE_WORKBOOK_LIMIT\b/.test(run.stderr ?? '')) rowLimit();
   if (run.status !== 0) {
     throw new AppError(422, 'TABULAR_NATIVE_READER', 'The unchanged native workbook bounds refused it.');
   }
@@ -171,10 +182,12 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
     }
   } catch (error) {
     if (error instanceof AppError) throw error;
+    if (error instanceof Error && error.message === COLUMN_CSV_ROW_LIMIT) rowLimit();
     throw new AppError(422, 'TABULAR_HEADER_OR_READER',
       'The literal reader requires valid headers, at most 2,000 rows and 256 columns.');
   }
-  if (!table.rows.length || table.rows.length > TABULAR_LIMITS.rows || !table.headers.some(header => header.trim()) ||
+  if (table.rows.length > TABULAR_LIMITS.rows) rowLimit();
+  if (!table.rows.length || !table.headers.some(header => header.trim()) ||
       table.headers.length > TABULAR_LIMITS.columns || table.headers.some(header => header.length > 400)) {
     throw new AppError(422, 'TABULAR_HEADER_REQUIRED',
       'Choose source headers and at least one record, within 2,000 rows and 256 columns.');
