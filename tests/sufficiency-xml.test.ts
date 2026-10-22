@@ -17,12 +17,13 @@ import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/eve
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
 import {AppError} from '../packages/server/src/infrastructure/errors';
+import {CITYGML_JOURNEY_ROOT} from './citygml-journey';
 
 // Reuses exact retained accepted inputs/results and real originals. Source/case,
 // SQL/fence, object transport and tool admission are disclosed controls, never
 // a current profile, live persistence, property match, native run or hash alias.
 const roots={kml:'E:/BhuAayam-data/task-data/desktop-kml-private-api/journey-initial',
-  citygml:'E:/BhuAayam-data/task-data/desktop-citygml-private-api/journey-01'},
+  citygml:CITYGML_JOURNEY_ROOT},
   labels={kml:'kmlsamples.kml',citygml:'Building_and_garage_LOD2-EPSG25832.gml'},
   id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 async function local(kind:'kml'|'citygml',work:()=>Promise<void>){const previous=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
