@@ -345,6 +345,26 @@ test('the original\'s words: every layer taken, refused or failed is named; noth
     'not_understood');
 });
 
+test('an unresolvable stated CRS is kept, not converted, without promising a CRS answer', () => {
+  const reason = 'states a coordinate reference system that does not resolve to one EPSG code';
+  const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1', readerVersion: 'r',
+    sourceId, sourceSha256: 'a'.repeat(64), layers: [
+      { layer: 'unresolved', ordinal: 0, state: 'crs_unstated', statesCrs: true, reason }] });
+  const unresolved = nativeParentState('shapefile_zip', conversion, []);
+  assert.equal(unresolved.limitReason, `Kept, not converted: unresolved (${reason}).`);
+  assert.equal(unresolved.planRef, null);
+  // Only words change: the existing placement remains needs_answer, but there is no CRS answer for this layer.
+  assert.equal(unresolved.placement, 'needs_answer');
+  const mixed = NativeConversionSchema.parse({ ...conversion, layers: [...conversion.layers,
+    { layer: 'missing', ordinal: 1, state: 'crs_unstated', statesCrs: false,
+      reason: 'states no coordinate reference system (no .prj)' }] });
+  const both = nativeParentState('shapefile_zip', mixed, []);
+  assert.equal(both.limitReason, 'Not converted until its coordinate reference system is stated: '
+    + 'missing (states no coordinate reference system (no .prj)). '
+    + `Kept, not converted: unresolved (${reason}).`);
+  assert.deepEqual(both.planRef, { nativeLayers: { unstated: ['missing'], answers: [] } });
+});
+
 // KML1. Google's libkml samples (test_only), converted by the real streamed KML reader.
 const kmlSamples = 'E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml';
 const kmlScript = `

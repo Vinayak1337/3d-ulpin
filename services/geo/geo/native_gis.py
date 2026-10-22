@@ -658,7 +658,7 @@ def _shapefile_parts(stopped: dict, read, place, folder: Path, origin: dict, sha
     except (shapefile.ShapefileException, LookupError, OSError):
         return {**stopped, "reason": "could not be opened with its companions and encoding"}
     with reader:
-        if reader.shapeType not in (0, 1, 3, 5, 8) or reader.numShapes != reader.numRecords:
+        if reader.shapeType not in (0, 1, 3, 5, 8, 11, 13, 15) or reader.numShapes != reader.numRecords:
             return {**stopped, "reason": "stores Z, M or MultiPatch shapes, or its shapes and records differ in number"}
         fields = [item[0] for item in reader.fields[1:]]
         derivative = _Derivative(folder, stopped["ordinal"], header, crs)
@@ -677,6 +677,43 @@ def _shapefile_parts(stopped: dict, read, place, folder: Path, origin: dict, sha
             **derivative.close()}
 
 
+def _shapefile_z_geometry(shape) -> dict:
+    """Keep Z in the GeoJSON positions; the GeoJSON reader supplies sourceHeights, never a measurement."""
+    import shapefile
+
+    heights = getattr(shape, "z", [])
+    if len(heights) != len(shape.points) or not all(math.isfinite(value) for value in heights):
+        raise InputError("stores a Z shape without one finite Z value per position")
+    if any(value is not None for value in getattr(shape, "m", [])):
+        raise InputError("stores measure (M) values on a Z shape; they will not be dropped")
+    points = [[point[0], point[1], height] for point, height in zip(shape.points, heights)]
+    if shape.shapeType == 11:
+        return {"type": "Point", "coordinates": points[0] if points else []}
+    ends = list(shape.parts[1:]) + [len(points)]
+    parts = [points[start:end] for start, end in zip(shape.parts, ends)]
+    if shape.shapeType == 13:
+        if len(parts) == 1:
+            return {"type": "LineString", "coordinates": parts[0]}
+        return {"type": "MultiLineString", "coordinates": parts}
+    # Group rings using x,y only: pyshp's containment helpers expect pairs, not triples.
+    rings = [shape.points[start:end] for start, end in zip(shape.parts, ends)]
+    with_z = {id(ring): part for ring, part in zip(rings, parts)}
+    polygons = [[with_z[id(ring)] for ring in polygon] for polygon in shapefile.organize_polygon_rings(rings)]
+    if len(polygons) == 1:
+        return {"type": "Polygon", "coordinates": polygons[0]}
+    return {"type": "MultiPolygon", "coordinates": polygons}
+
+
+def _shapefile_geometry(shape, layer_type: int) -> dict | None:
+    if shape.shapeType == 0:
+        return None
+    if shape.shapeType != layer_type:
+        raise InputError("stores mixed shape types; no dimensions will be dropped")
+    if shape.shapeType in (11, 13, 15):
+        return _shapefile_z_geometry(shape)
+    return json.loads(_json(shape.__geo_interface__))
+
+
 def _shapefile_record(reader, position: int, fields: list, derivative: _Derivative):
     record = reader.record(position)
     if record is None:
@@ -686,7 +723,7 @@ def _shapefile_record(reader, position: int, fields: list, derivative: _Derivati
     values = record.as_dict()
     properties = {name: values[name].isoformat() if hasattr(values[name], "isoformat") else values[name]
                   for name in fields}
-    geometry = None if shape.shapeType == 0 else json.loads(_json(shape.__geo_interface__))
+    geometry = _shapefile_geometry(shape, reader.shapeType)
     reason = _value_refusal(properties)
     if reason:
         derivative.refuse(position, reason)
