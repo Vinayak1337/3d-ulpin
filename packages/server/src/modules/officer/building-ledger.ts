@@ -1,7 +1,9 @@
-import type { BuildingLedger, RegistryRecord, SourceLocator } from '@ulpin/contracts';
+import { RegistryDocumentCitationSchema, type BuildingLedger, type RegistryRecord,
+  type SourceLocator } from '@ulpin/contracts';
 import { transaction } from '../../infrastructure/db';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { registryRecordedSourceTx, registrySourceTx } from '../registry/registry-metadata';
+import { tableRowLocatorWords } from '../registry/registry-table-evidence';
 import { assertPackageDocumentAuthority } from '../areas/package-authority';
 import { relatedRegistryRecords } from './officer';
 import { ledgerRegistryHistoryEntry, ledgerRegistryHistorySql } from './building-ledger-history';
@@ -36,6 +38,31 @@ export function parcelUlpinCoverage(parcels: Array<{ id: string }>, assertions: 
   return { state, missingParcelIds };
 }
 
+/** One source and locator a record's document citation names. */
+export type CitationLocator = { sourceId: string; locator: string };
+/**
+ * The document citations stored on a record's current revision, each as its source and its locator in words: a
+ * table row as the native reader writes it ('CSV logical row 444'), a native part by its locator label, and any
+ * other kind by its source with the citation's own id. Only the source and locator leave this read; pins, quotes and
+ * excerpts stay with the record. A stored citation that does not read in its current form is counted, never listed
+ * and never guessed at, so the rest of the ledger stays readable.
+ */
+export function documentCitationLocators(citations: unknown): { cited: CitationLocator[]; unreadable: number } {
+  const stored = citations === undefined || citations === null ? [] : Array.isArray(citations) ? citations : [citations];
+  const cited: CitationLocator[] = [];
+  let unreadable = 0;
+  for (const item of stored) {
+    const read = RegistryDocumentCitationSchema.safeParse(item);
+    if (!read.success) { unreadable++; continue; }
+    const pin = read.data;
+    cited.push(pin.version === 'registry-table-row-citation/1'
+      ? { sourceId: pin.row.sourceId, locator: tableRowLocatorWords(pin.row) }
+      : pin.version === 'registry-document-citation/1' ? { sourceId: pin.document.sourceId, locator: pin.locator.label }
+        : { sourceId: pin.document.sourceId, locator: `document citation ${pin.id.slice(0, 12)}` });
+  }
+  return { cited, unreadable };
+}
+
 type Edge = { evidence?: SourceLocator[] };
 type ParcelEvidence = { body: { sourceRevisionId: string; evidence?: SourceLocator[] }; association: Edge };
 type IdentifierEvidence = { source_id: string; evidence: { sourceRevisionId?: string; locator?: string } };
@@ -43,7 +70,7 @@ type IdentifierEvidence = { source_id: string; evidence: { sourceRevisionId?: st
  * or registrySourceTx while the building is still an unrecorded proposal. */
 export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey?: string; evidence?: SourceLocator[] },
   records: Array<Pick<RegistryRecord, 'evidence'>>, detailEdges: Edge[], parcels: ParcelEvidence[],
-  identifiers: IdentifierEvidence[]): Map<string, Set<string>> {
+  identifiers: IdentifierEvidence[], citations: CitationLocator[] = []): Map<string, Set<string>> {
   const locators = new Map<string, Set<string>>();
   const cite = (sourceId: string | undefined, locator: string) => {
     if (!sourceId) throw new AppError(409, 'LEDGER_SOURCE_EVIDENCE', 'A projected fact has no source revision.');
@@ -71,6 +98,7 @@ export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey
       throw new AppError(409, 'LEDGER_IDENTIFIER_EVIDENCE', 'An official parcel identifier lacks its exact source locator.');
     cite(item.source_id, item.evidence.locator);
   }
+  for (const item of citations) cite(item.sourceId, item.locator);
   return locators;
 }
 
@@ -141,7 +169,13 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       AND status='completed' ORDER BY created_at DESC LIMIT 1`, [root.area_id])).rows[0]
       : null;
 
-    const locatorMap = ledgerSourceLocators(root.body, records, detailEdges, parcelRows, identifiers);
+    // The related records are read with their document citations withheld; their stored current bodies name them.
+    const stored = records.length ? (await client.query(`SELECT body->'documentCitations' citations
+      FROM registry_records WHERE id=ANY($1::uuid[]) AND revision>0 AND body ? 'documentCitations' ORDER BY id`,
+      [records.map(record => record.id)])).rows.map(row => documentCitationLocators(row.citations)) : [];
+    const citations = stored.flatMap(read => read.cited);
+    const unreadableCitations = stored.reduce((total, read) => total + read.unreadable, 0);
+    const locatorMap = ledgerSourceLocators(root.body, records, detailEdges, parcelRows, identifiers, citations);
     if (locatorMap.size > 1000) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'Too many cited sources for one ledger read.');
     const readSource = root.revision > 0 ? registryRecordedSourceTx : registrySourceTx;
     const authorized = await authorizeLedgerSources(locatorMap.keys(), id => readSource(client, root.site_id, id));
@@ -160,6 +194,8 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       ...(!parcels.length ? ['No current confirmed parcel association is recorded.'] : []),
       ...(!root.reference ? ['Global placement is unavailable; local-frame records remain inspectable.'] : []),
       ...movedOnDocumentNotes(authorized),
+      ...(unreadableCitations ? [`${unreadableCitations} stored document citation${unreadableCitations > 1 ? 's do'
+        : ' does'} not read in the current citation form and ${unreadableCitations > 1 ? 'are' : 'is'} not listed.`] : []),
       'Technical readiness, rights and deviation are not assessed by this ledger.',
     ];
     return {
