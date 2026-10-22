@@ -8,7 +8,7 @@ import {assertSourceBuildingPackageAuthorityTx, isGeometryFreePackage,
   sourceBuildingOriginalAccessTx} from '../usp/ingestion/source-building-review';
 import {ingestionBinding, assertIngestionBinding} from '../usp/ingestion/events';
 import {isRetainedMapOriginal} from '../usp/ingestion/retained-map-original';
-import {permitsConfirmedRetainedTableSourceTx, permitsReferenceRecordSource,
+import {permitsConfirmedRetainedTableSourceTx, permitsDraftedMapSource, permitsReferenceRecordSource,
   permitsReferenceRightSource} from './registry-reference-policy';
 
 const denied=()=>{throw new AppError(403,'REGISTRY_SOURCE_DENIED','This registry source context is unavailable.');};
@@ -42,7 +42,8 @@ export async function registrySourceTx(client:PoolClient,siteId:string,sourceId:
   const nativeArea=source.status==='inspected'&&source.inspection?.status==='interpreted'&&
     ['geojson-area-v2','gpkg-area-v2','shapefile_zip-area-v2','csv-area-v2'].includes(source.profile);
   if(!['ready','partial'].includes(source.status)&&!nativeArea&&!context.confirmedTable&&
-    !permitsReferenceRecordSource(source,'record')&&!permitsReferenceRightSource(source,'right'))
+    !permitsDraftedMapSource(source)&&!permitsReferenceRecordSource(source,'record')&&
+    !permitsReferenceRightSource(source,'right'))
     throw new AppError(409,'REGISTRY_SOURCE_UNAVAILABLE','A cited source is not currently available.');
   return registrySourceAuthorityTx(client,context,pins);
 }
