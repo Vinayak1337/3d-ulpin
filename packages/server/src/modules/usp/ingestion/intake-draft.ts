@@ -147,6 +147,8 @@ function keptWords(card: IntakeCard, bytes: number): string {
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
   const kind = `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
+  if (card.family === 'table') return `Kept as a ${kind} (${sizeWords(bytes)}). `
+    + 'Read it as a table with "Open the table"; the original is kept with its SHA-256.';
   return `Kept as ${/^[AEIO]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}). No reader in a batch takes `
     + 'this kind of file yet, so it is not on the map; the original is kept with its SHA-256.';
 }

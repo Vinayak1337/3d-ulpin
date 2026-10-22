@@ -8,7 +8,7 @@ import { UspCreatePacketPlanSchema, UspRevisePacketPlanSchema, UspReadPacketPlan
   type PacketPlan, type PacketPlanInput } from '../../../../../contracts/src/usp/packets';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { readObject, readObjectRange, putOriginal } from '../../../infrastructure/storage';
+import { readObject, readObjectRange, readRetainedOriginal, putOriginal } from '../../../infrastructure/storage';
 import { canonical, fingerprint } from '../../cases/domain';
 import { assertLocalUsp } from '../snapshots';
 import { lockDeclarationSiteTx } from '../declarations/authority';
@@ -24,8 +24,11 @@ import {createPdfPacketPlan,revisePdfPacketPlan,readPdfPacketPlan,confirmPdfPack
 
 /** Test I/O transport is explicit and never accepted from HTTP input. */
 export type PacketPlanIo = { read: typeof readObject; range?: typeof readObjectRange;
+  original?: typeof readRetainedOriginal;
   put: typeof putOriginal;pdf?:PdfPacketIo };
-const storage: PacketPlanIo = { read: readObject, range: readObjectRange, put: putOriginal };
+const storage: PacketPlanIo = {
+  read: readObject, range: readObjectRange, original: readRetainedOriginal, put: putOriginal,
+};
 async function withPlanAuthority<T>(ctx: RequestContext, action: (client: PoolClient, shared?: SharedAuthority) => Promise<T>) {
   try { return await transaction(client => action(client)); }
   catch (error) {
@@ -52,7 +55,7 @@ async function planVersionTx(client: PoolClient, ctx: RequestContext, input: Pac
   const expiry = Date.parse(input.expiresAt) - Date.now();
   if (expiry <= 0 || expiry > 24 * 60 * 60 * 1000)
     throw new AppError(422, 'PACKET_PLAN_EXPIRY', 'Use an expiry within the next 24 hours.');
-  const assessment = await assessPlanTx(client, ctx, input, io.read, shared, undefined, io.range);
+  const assessment = await assessPlanTx(client, ctx, input, io.read, shared, undefined, io.range, io.original);
   const body = { planId, version, previousVersion: version === 1 ? null : version - 1, input,
     creator: ctx.principal, accessViewId: ctx.accessViewId, policyVersion: ctx.policyVersion,
     targetBodySha256: assessment.targetBodySha256, targetLabel: assessment.targetLabel,
@@ -142,7 +145,7 @@ export async function confirmPacketPlan(ctx: RequestContext, raw: unknown, io: P
     const existing = (await client.query('SELECT body FROM usp_packet_plan_confirmations WHERE plan_id=$1 AND version=$2',
       [plan.planId, plan.version])).rows[0];
     if (existing) conflict('This exact version is already confirmed; reuse its confirmation request.');
-    const assessment = await assessPlanTx(client, ctx, plan.input, io.read, shared, undefined, io.range);
+    const assessment = await assessPlanTx(client, ctx, plan.input, io.read, shared, undefined, io.range, io.original);
     assertAssessment(plan, assessment);
     if (plan.requiredContext !== 'available' || !assessment.lines.length)
       throw new AppError(422, 'PACKET_PLAN_BLOCKED', 'Review required unavailable context and include at least one supported exact part.');
@@ -180,13 +183,15 @@ export async function executePacketPlan(ctx: RequestContext, raw: unknown, io: P
     if (confirmation.confirmationId !== command.confirmationId || confirmation.planSha256 !== plan.planSha256)
       conflict('The confirmation does not cover this exact plan.');
     await liveTx(client, plan.input.expiresAt);
-    const assessment = await assessPlanTx(client, ctx, plan.input, io.read, shared, undefined, io.range); assertAssessment(plan, assessment);
+    const assessment = await assessPlanTx(client, ctx, plan.input, io.read, shared, undefined, io.range, io.original);
+    assertAssessment(plan, assessment);
     if (plan.requiredContext !== 'available' || !assessment.lines.length)
       throw new AppError(422, 'PACKET_PLAN_BLOCKED', 'Required context is unavailable.');
     const artifact = await preparePacket0Artifact({ id: plan.input.target.ref.id, label: plan.targetLabel },
       assessment.lines, plan.input.format, io.put);
     // Recheck after object I/O before any publication. The same client/locks protect all records and links.
-    const final = await assessPlanTx(client, ctx, plan.input, io.read, shared, undefined, io.range); assertAssessment(plan, final);
+    const final = await assessPlanTx(client, ctx, plan.input, io.read, shared, undefined, io.range, io.original);
+    assertAssessment(plan, final);
     await authorizePlanTx(client, ctx, plan); await liveTx(client, plan.input.expiresAt);
     const packet = await registerPacket0Tx(client, ctx, { scope: plan.input.scope, target: plan.input.target,
       evidence: final.lines.map(l => l.pointer), format: plan.input.format, guard: command.guard }, final.lines, artifact, hash);

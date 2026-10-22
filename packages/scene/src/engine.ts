@@ -210,6 +210,7 @@ export class SceneEngine {
   private readonly overlays = new Group();
   private readonly surface = new Group();
   private readonly surfaceParts = new Map<string, { input: SurfacePartInput; object: Group }>();
+  private surfaceQueue = new Map<string, SurfacePartInput>();
   private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
   constructor(container: HTMLElement, options: SceneEngineOptions) {
@@ -435,23 +436,31 @@ export class SceneEngine {
 
   /**
    * Read parts of kept surfaces, display only. Parts are kept by id: a new part is added and a gone or changed one
-   * removed, so a part that arrives never rebuilds the parts already drawn.
+   * removed, so a part that arrives never rebuilds the parts already drawn. Queue additions so opening a map
+   * with many available parts does not construct and upload all their textures and buffers in one frame.
    */
   setSurfaceParts(parts: SurfacePartInput[]): void {
     const next = new Map(parts.map((part) => [part.id, part]));
+    let removed = false;
     for (const [id, drawn] of this.surfaceParts) {
       if (next.get(id) === drawn.input) continue;
       this.surface.remove(drawn.object);
       disposeSurfacePart(drawn.object);
       this.surfaceParts.delete(id);
+      removed = true;
     }
-    for (const part of next.values()) {
-      if (this.surfaceParts.has(part.id)) continue;
-      const object = surfacePartObject(part, this.options.palette.comparisonPlan ?? this.options.palette.selected);
-      this.surface.add(object);
-      this.surfaceParts.set(part.id, { input: part, object });
-    }
-    this.requestRender();
+    this.surfaceQueue = new Map([...next].filter(([id]) => !this.surfaceParts.has(id)));
+    if (removed || this.surfaceQueue.size) this.requestRender();
+  }
+
+  private drainSurfaceQueue() {
+    if (!this.programWarmUp.settled || !this.surfaceQueue.size) return;
+    // One part is atomic. Limit uploads as well as CPU construction, even when construction is very cheap.
+    const [id, part] = this.surfaceQueue.entries().next().value!;
+    this.surfaceQueue.delete(id);
+    const object = surfacePartObject(part, this.options.palette.comparisonPlan ?? this.options.palette.selected);
+    this.surface.add(object);
+    this.surfaceParts.set(id, { input: part, object });
   }
 
   /** Shows or hides base-map layers. */
@@ -1841,6 +1850,7 @@ export class SceneEngine {
     const started = performance.now();
     this.drainBuildingQueue();
     this.drainBaseQueue();
+    this.drainSurfaceQueue();
     let animating = false;
     if (this.flight) animating = this.stepFlight(performance.now());
     this.followArrivedContent();
@@ -1853,7 +1863,7 @@ export class SceneEngine {
     this.recordFrameTime(performance.now() - started);
     this.finishDraw();
     this.options.onView?.();
-    if (animating || this.buildingQueue.size || this.baseQueue.size
+    if (animating || this.buildingQueue.size || this.baseQueue.size || this.surfaceQueue.size
       || [...this.tilesets].some((tiles) => tiles.loadProgress < 1)) {
       this.requestRender();
     }

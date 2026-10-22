@@ -298,6 +298,19 @@ test('oversized GeoJSON names retention only and does not promise a larger direc
   assert.equal(fixture.jobs.length, 0);
 });
 
+test('a kept batch CSV names its table reader instead of claiming no batch reader exists', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.bytes = 87352;
+  fixture.src.inspection = {};
+  fixture.tray.family = 'table';
+  fixture.tray.card = { format: 'csv', family: 'table', crs: { state: 'not_applicable' } } as DraftItem['card'];
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.state.projection.limit_reason, 'Kept as a CSV table (85 KB). '
+    + 'Read it as a table with "Open the table"; the original is kept with its SHA-256.');
+  assert.equal(fixture.jobs.length, 0);
+});
+
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';
 for (const [format, family, bytes, expected] of [

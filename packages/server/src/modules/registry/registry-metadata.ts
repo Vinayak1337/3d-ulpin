@@ -7,7 +7,9 @@ import {documentAuthorityTx, documentResultFreshnessTx, type DocumentPins} from 
 import {assertSourceBuildingPackageAuthorityTx, isGeometryFreePackage,
   sourceBuildingOriginalAccessTx} from '../usp/ingestion/source-building-review';
 import {ingestionBinding, assertIngestionBinding} from '../usp/ingestion/events';
-import {permitsReferenceRecordSource, permitsReferenceRightSource} from './registry-reference-policy';
+import {isRetainedMapOriginal} from '../usp/ingestion/retained-map-original';
+import {permitsConfirmedRetainedTableSourceTx, permitsReferenceRecordSource,
+  permitsReferenceRightSource} from './registry-reference-policy';
 
 const denied=()=>{throw new AppError(403,'REGISTRY_SOURCE_DENIED','This registry source context is unavailable.');};
 async function registrySourceContextTx(client:PoolClient,siteId:string,sourceId:string) {
@@ -18,10 +20,13 @@ async function registrySourceContextTx(client:PoolClient,siteId:string,sourceId:
   const binding=ingestionBinding(source.case_id);
   const owners=[source.inspection?.actor,source.inspection?.largeOriginal?.operatorSubject,source.inspection?.documentOriginal?.subject];
   if(owners.some(owner=>owner&&owner!==binding.subject))denied();
-  return {source,binding};
+  const confirmedTable=!isRetainedMapOriginal(source)&&await permitsConfirmedRetainedTableSourceTx(client,source,binding);
+  return {source,binding,confirmedTable};
 }
 async function registrySourceAuthorityTx(client:PoolClient,
-  {source,binding}:Awaited<ReturnType<typeof registrySourceContextTx>>,pins:DocumentPins='current') {
+  {source,binding,confirmedTable}:Awaited<ReturnType<typeof registrySourceContextTx>>,pins:DocumentPins='current') {
+  if(source.profile==='large-original-v1'&&!isRetainedMapOriginal(source)&&!confirmedTable)
+    throw new AppError(409,'REGISTRY_SOURCE_UNAVAILABLE','A cited source is not currently available.');
   await documentAuthorityTx(client,source,'snapshot',new Set(),false,pins);
   assertIngestionBinding(binding);
   return {...source,accessSha256:binding.access};
@@ -36,7 +41,7 @@ export async function registrySourceTx(client:PoolClient,siteId:string,sourceId:
   const context=await registrySourceContextTx(client,siteId,sourceId),{source}=context;
   const nativeArea=source.status==='inspected'&&source.inspection?.status==='interpreted'&&
     ['geojson-area-v2','gpkg-area-v2','shapefile_zip-area-v2','csv-area-v2'].includes(source.profile);
-  if(!['ready','partial'].includes(source.status)&&!nativeArea&&
+  if(!['ready','partial'].includes(source.status)&&!nativeArea&&!context.confirmedTable&&
     !permitsReferenceRecordSource(source,'record')&&!permitsReferenceRightSource(source,'right'))
     throw new AppError(409,'REGISTRY_SOURCE_UNAVAILABLE','A cited source is not currently available.');
   return registrySourceAuthorityTx(client,context,pins);
@@ -50,7 +55,10 @@ export async function registryRecordedSourceTx(client:PoolClient,siteId:string,s
   const pinned=(await client.query(
     "SELECT 1 FROM import_packages WHERE body->>'geometryFree'='true' AND body->'sourceRevisionIds' ? $1 LIMIT 1",
     [sourceId])).rows.length>0;
-  const source=pinned?await sourceBuildingOriginalAccessTx(client,siteId,sourceId)
+  // A retained table has upload/confirmation authority, never document-original authority.
+  const pinnedSource=pinned?(await client.query('SELECT * FROM sources WHERE id=$1',[sourceId])).rows[0]:undefined;
+  const retainedTable=pinnedSource?.profile==='large-original-v1'&&!isRetainedMapOriginal(pinnedSource);
+  const source=pinned&&!retainedTable?await sourceBuildingOriginalAccessTx(client,siteId,sourceId)
     :await registrySourceTx(client,siteId,sourceId,'retained');
   const freshness=await documentResultFreshnessTx(client,source);
   return {...source,documentResult:freshness&&!freshness.current?freshness:undefined};
