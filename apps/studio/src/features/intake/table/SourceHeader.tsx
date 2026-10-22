@@ -3,9 +3,20 @@ import { Button, StatusBadge, formatCount } from '@ulpin/ui';
 import type { TableProfile } from './types';
 import styles from './Table.module.css';
 
+export function tableReadingWords(reading: Pick<TableProfile['profile'], 'delimiter' | 'encoding'>) {
+  const delimiters = { ',': 'commas', ';': 'semicolons', '\t': 'tabs', '|': 'pipes' };
+  const encodings = { 'utf-8': 'UTF-8', 'utf-16le': 'UTF-16 LE', 'utf-16be': 'UTF-16 BE',
+    'windows-1252': 'Windows-1252' };
+  const parts = [];
+  if (reading.delimiter) parts.push(delimiters[reading.delimiter]);
+  if (reading.encoding) parts.push(encodings[reading.encoding]);
+  return parts.length ? `Read with ${parts.join(', ')}` : null;
+}
+
 export function SourceHeader({ profile, name }: { profile: TableProfile; name?: string }) {
   const [copied, setCopied] = useState(false);
   const selection = profile.tabular.selection;
+  const reading = tableReadingWords(profile.profile);
   const copy = async () => {
     await navigator.clipboard.writeText(profile.source.sourceSha256);
     setCopied(true);
@@ -20,6 +31,7 @@ export function SourceHeader({ profile, name }: { profile: TableProfile; name?: 
       <div className="ul-row ul-caption">
         <span>{selection.format.toUpperCase()} · Sheet {selection.sheet}</span>
         <span>Header rows {selection.headerRows.join(', ')}</span>
+        {reading ? <span>{reading}</span> : null}
         <span>{formatCount(profile.records)} records · {formatCount(profile.headers.length)} columns</span>
         <span className="ul-mono">SHA-256 {profile.source.sourceSha256.slice(0, 12)}…</span>
         <Button variant="ghost" onClick={() => void copy()}>{copied ? 'Copied' : 'Copy hash'}</Button>

@@ -490,7 +490,7 @@ export class ManualIngestionService {
     const previous=await transaction(async client=>{
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
       if(replay){
-        if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input).tabular,
+        if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input,file.name).tabular,
           await source(client,caseId,replay.source.sourceId));
         return replay;
       }
@@ -500,7 +500,7 @@ export class ManualIngestionService {
       if(!duplicate)return undefined;
       await refuseRetiredFileAreaTx(client,caseId,hash);
       const retained=await source(client,caseId,duplicate.id);
-      if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input).tabular,
+      if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input,file.name).tabular,
         retained);
       const result=profile(retained,scope);
       await remember(client,caseId,key,digest,result);return result;
@@ -509,7 +509,7 @@ export class ManualIngestionService {
     const retained = await keepManualOriginal({ caseId, input, file, profileName, hash, digest, actor, lineage });
     if (input.format !== 'geojson') {
       await assertTableByteKind(file.bytes, input.selection);
-      tabular = inspectTabularSource(file.bytes, input.selection, input);
+      tabular = inspectTabularSource(file.bytes, input.selection, input, file.name);
     } else {
       geojsonFeatureCount(file.bytes);
     }
@@ -573,7 +573,7 @@ export class ManualIngestionService {
     if('profile' in admitted)return admitted.profile;
     const read=admitted.row,bytes=await wholeOriginal(read);
     await assertTableByteKind(bytes,input.selection);
-    const inventory=inspectTabularSource(bytes,input.selection,input);
+    const inventory=inspectTabularSource(bytes,input.selection,input,read.name);
     return transaction(async client=>{
       await workspace(client,caseId,sourceId);
       const replay=await operation(client,caseId,key,digest);
