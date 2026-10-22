@@ -1,0 +1,102 @@
+{
+ "schemaVersion": "r10-demo-roll/1",
+ "task": "R10",
+ "gate": "GF5",
+ "date": "2026-10-22",
+ "approval": "owner, 21 October: full permission, Sarvam approved; 22 October: finish the project",
+ "rehearsedBy": "REH13 (docs/evidence/runtime/reh13/result.json) and part A0 below, on ulpin-reh-02",
+ "from": "8d6e19fa91e1d08fa61d02946500b2f5227dd393",
+ "to": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab",
+ "a0": {
+  "runtime": "ulpin-reh-02, rolled 1a226949 -> 4ffd801a -> 1a226949, then stopped",
+  "script": "r10.mjs reh02 <step> [back|end]: REH13's steps.mjs commands, receipts reh02-*.json",
+  "forward": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": "0, 28 PASS 0 FAIL" },
+  "schema": [
+   "platform:start --runtime ulpin-reh-02 at 4ffd801a ran its own schema step (SV2's additive diagnostics",
+   "column); start's doctor passed DB migrations applied"
+  ],
+  "journey": {
+   "receipt": "journey-reh02.json",
+   "command": "journey:check --case 08cb4df7-baf9-462d-afaf-70450a2a5997 through journey-target.cjs (GETs to 21026)",
+   "exit": 0,
+   "summary": { "pass": 8, "fail": 0, "undecidable": 0, "skipped": 0 },
+   "citation": "pass: 1 register row excerpts found on the exact card PDF (REH13: HTTP 422 INVALID_INPUT); RC4 fixed",
+   "transport": "24 requests, all GET, all to 127.0.0.1:21026 (E:/BhuAayam-data/task-data/r10/journey-transport-*.json)"
+  },
+  "ui1": {
+   "receipt": "ui1-reh02.json (ui1.mjs: rehearsal Studio dev server 5188 -> API 21026, headless Chromium 1440x900)",
+   "page": "/studio/properties/a69cdab3-1b02-4dc1-b5aa-a11e3632d36a/register (feature 1084419)",
+   "header": [ "Building 1084419 · Reviewed; Parcel ULPIN not supplied; Property Card enabled,",
+    "'Card 93fd4362 · revision 1 · cites record revision 2' (REH13: 'Blocked: select a unit ...')" ],
+   "documents": [ "Documents 2: gpmc-yuvp.csv, CSV logical row 444; buildings-original.geojson, feature 1084419",
+    "(REH13: only the GeoJSON); building ledger GET 200" ],
+   "consoleErrors": "1: 404 GET /api/v1/buildings/{id}/residents (no residents route for this building), not the tab",
+   "verdict": "the Documents tab loads; no stop before the demo"
+  },
+  "back": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": "0, 28 PASS 0 FAIL",
+   "end": "platform:stop exit 0; six ulpin-reh-02 containers exited, same ids; volumes kept; checkout clean" },
+  "untouched": "ulpin-reh-01 not read or started"
+ },
+ "before": "before.json: 8d6e19fa, doctor 28 PASS 0 FAIL, API 13100 and dispatcher 8824, gateway enabled",
+ "guardOptOut": [
+  "E:/BhuAayam-data/ops/docker-guard/no-demo-start created 13:36:43Z, before step 2; removed 13:38:36Z after the",
+  "step-8 doctor and after.json passed; no guard run fell inside the roll (last watch run 13:36:30Z, api_answers)"
+ ],
+ "checks": {
+  "databaseDiff": [ "database/manifest.json (model-gateway.schema sha256, ordinal 12 added)",
+   "database/sql/90-model-gateway/model-gateway.sql (+ statement 12, additive)" ],
+  "statement12": "ALTER TABLE usp_model_calls ADD COLUMN IF NOT EXISTS diagnostics jsonb;",
+  "servicesGeoDiff": "git diff --quiet 8d6e19fa 4ffd801a -- services/geo: exit 0 (no change)",
+  "lockfile": "pnpm-lock.yaml unchanged between the two commits"
+ },
+ "steps": [
+  { "step": "2 stop (stopProcesses)", "exit": 0, "seconds": 1.646, "receipt": "step-2.json" },
+  { "step": "3 checkout --detach 4ffd801a", "exit": 0, "seconds": 0.335, "receipt": "step-3.json" },
+  { "step": "4 pnpm install --frozen-lockfile", "exit": 0, "seconds": 0.957, "receipt": "step-4.json" },
+  { "step": "schema: R9's migrate.mjs for ulpin-demo", "exit": 0, "seconds": 6.115, "receipt": "step-schema.json" },
+  { "step": "5 demo-document-runtime.mjs build", "exit": 0, "seconds": 13.317, "receipt": "step-5.json" },
+  { "step": "6 processor-image.mjs roll", "exit": null, "seconds": 0,
+    "skipped": "services/geo and the pin unchanged; the doc says skip when the processors already run the pin" },
+  { "step": "7 platform:start --profile demo", "exit": 0, "seconds": 19.713, "receipt": "step-7.json" },
+  { "step": "8 platform:doctor --profile demo", "exit": 0, "seconds": 7.97, "receipt": "step-8.json" }
+ ],
+ "schema": {
+  "how": [
+   "docs/evidence/runtime/r9/migrate.mjs unchanged: pnpm db:migrate then scripts/platform/demo-schema.ts from the",
+   "demo checkout at 4ffd801a, both native processes stopped, settings by readDemo(ulpin-demo); the API's own",
+   "databaseReadiness() read before and after in a READ ONLY transaction"
+  ],
+  "missingBefore": { "relations": [], "columns": [ "public.usp_model_calls.diagnostics" ], "migrations": [] },
+  "missingAfter": { "relations": [], "columns": [], "migrations": [], "invalidIndexes": 0 },
+  "statusBeforeAfter": "schema_missing -> structurally_ready",
+  "outcome": "statement 12 applied; statements 1-11 are IF NOT EXISTS and already present; nothing else changed",
+  "unvalidatedConstraints": "6 before and 6 after (unchanged)",
+  "rowsBeforeAfter": "sources 38, import packages 7, physical features 67, active legacy datasets 0; unchanged"
+ },
+ "downtime": {
+  "measured": "downtime.json: /health once a second from before step 2",
+  "stopStartedAt": "2026-10-22T13:36:50.634Z",
+  "firstGood200At": "2026-10-22T13:37:51.543Z",
+  "seconds": 60.9
+ },
+ "after": {
+  "file": "after.json",
+  "servedCommit": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab, checkout clean, services/geo eab382a5",
+  "processes": "API 40616 (apps/api/src/main.ts), dispatcher 39112 (scripts/dispatcher.ts), started 13:37:46Z",
+  "doctor": "28 PASS, 0 FAIL, including Document runtimes, Model gateway state and Processors run the pinned image",
+  "gateway": "status and key-marks identical to before: enabled true, efb90b3a..., 11 named, 11 present; _01 in_use",
+  "counts": "cases 11 = 11, areas 4 = 4, sources 38 = 38, import packages 7 = 7, physical features 67 = 67",
+  "containers": "no container new: geo, worker, postgres, minio, minio-init, redis keep their ids",
+  "volumes": "ulpin-demo_minio-data, ulpin-demo_postgres-data, ulpin-demo_redis-data, unchanged"
+ },
+ "runbook": {
+  "file": "docs/STUDIO_DEMO_GUIDE.md as served at 4ffd801a (DG2), section 1 checks",
+  "doctor": "28 PASS 0 FAIL, all nine required PASS lines present (after.json)",
+  "dockerGuardCheck": "docker-guard.ps1 -Check exit 0: engine answers; five demo containers running healthy",
+  "gateway": "the five facts, the approved hash and 11 = 11",
+  "stale": "the guide's opening still says the demo serves 8d6e19fa and the citation read refuses; both now false"
+ },
+ "rollback": "rollback.md (not used)",
+ "liveRun": "docs/evidence/gf-ai/gateway/lp6/result.json",
+ "notIncluded": "no key, no env value, no connection string; digests other than the policy hash and images omitted"
+}
