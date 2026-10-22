@@ -1,0 +1,239 @@
+{
+  "task": "LQ1",
+  "gate": "GF5 / REH16 act 2 scheduling, offline only",
+  "base": "70560f89c7744379efc01210d2522c5d5f880ca0",
+  "branch": "task/lq1-lane-latency",
+  "status": "offline scheduling regression passes; runtime latency targets remain unqualified",
+  "sourceCommit": "744de0d0",
+  "scope": {
+    "decision": "No explicit ownership list supplied; limited to processing, adjacent tests and this evidence.",
+    "unchanged": ["lane caps", "operation singletons", "memory and scratch admission", "leases", "review authority"],
+    "sharedPin": "docs/api/source-pins.json is read-only here; integration must repin processing.ts."
+  },
+  "findings": [
+    {
+      "finding": "The fallback is 750 ms after the awaited tick, not a 750 ms bound on dispatch latency.",
+      "refs": ["scripts/dispatcher.ts:23-35", "packages/server/src/modules/cases/processing.ts:71-91"],
+      "detail": "Reservation release wakes selection; a slow awaited tick prevents the wait from even beginning."
+    },
+    {
+      "finding": "Selection offers 12 rows, not 12 starts. The vector lane has two slots; intake-large is singleton.",
+      "refs": [
+        "packages/server/src/modules/cases/processing.ts:333-371,489-493",
+        "packages/server/src/modules/cases/dispatch-lanes.ts:25-43,52-62,177-225,235-239"
+      ],
+      "detail": [
+        "One tick can start at most the lane's remaining slots, further bounded by memory and scratch.",
+        "intake-large, streaming-vector and streamed-profile share vector's two slots; their own runners are single.",
+        "Memory defaults to half host RAM; intake-large reserves 426 MiB, raw 415 MiB, profile 512 MiB.",
+        "An older memory/scratch refusal eventually prevents newer non-probe starts; existing exceptions stay.",
+        "The singleton allows one intake-large start per tick, but contains no 19-second timer."
+      ]
+    },
+    {
+      "finding": "The remaining explicit cross-lane barrier was awaited surface admission before worker starts.",
+      "baselineRef": "70560f89:packages/server/src/modules/cases/processing.ts:347-354",
+      "refs": [
+        "packages/server/src/modules/cases/processing.ts:315-320,366-371",
+        "packages/server/src/modules/usp/ingestion/intake-surface.ts:174-199,256-280"
+      ],
+      "detail": [
+        "admitIntakeSurfaceParts reads all eligible surfaces, then awaits each selected item's transaction serially.",
+        "Those transactions can wait on case/source SHARE locks and reader admission advisory locks.",
+        "A slow pass delays every selected lane even when its selected jobs take only milliseconds.",
+        "Now one tracked pass runs independently; subsequent ticks cannot overlap it. Reader caps are unchanged.",
+        "Pass completion does not unconditionally wake dispatch: an empty pass must not cause a busy loop."
+      ],
+      "qualification": [
+        "REH16 has no tick, SQL, lock or surface-pass timing. The exact 19-second runtime source is not proven.",
+        "The blocking path is reproduced offline with an 18.25-second surface perturbation matching the cadence.",
+        "Scratch remains awaited. Twelve actual offline probes of E:/ulpin-tmp were fast, not a runtime measurement.",
+        "No receipt supports blaming the 180-second lease or increasing any concurrency cap."
+      ],
+      "scratchProbeMs": {"samples":12,"min":0.218,"median":0.348,"max":2.765}
+    },
+    {
+      "finding": "Pending order was probes, per-source lane row_number, then job created_at; no item continuity.",
+      "baselineRef": "70560f89:packages/server/src/modules/cases/processing.ts:324-339",
+      "refs": [
+        "packages/server/src/modules/cases/processing.ts:333-361",
+        "packages/server/src/modules/usp/ingestion/intake-large.ts:253-260,294-316,394-397",
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:118-154",
+        "packages/server/src/modules/usp/ingestion/intake-service.ts:208"
+      ],
+      "detail": [
+        "Each state change creates a fresh conductor job; six earlier child jobs can precede the member's refresh.",
+        "Children have distinct source IDs, so per-source fairness does not group their common batch.",
+        "Only layout/profile preparation is regrouped at that batch's earliest existing G22 selection position.",
+        "Within it: stored wave, needs_answer/approved layout, original item creation, then job FIFO and ID tie-break.",
+        "The profile and subsequent answer retain the item's age rather than restarting at each job's creation.",
+        "Bulk point/raster/document parts keep G22 fairness; >12 sibling and 211-part controls pass offline.",
+        "There is no persisted opened-item focus in this task: stored layout state and officer wave are reused.",
+        "The batch's display sorts wave/name; scheduling uses FIFO within a wave rather than alphabetical names."
+      ]
+    }
+  ],
+  "watchAnalysis": {
+    "source": "E:/BhuAayam-data/task-data/reh16/watch-zp-alone.jsonl",
+    "rows": 38,
+    "retainAt": "2026-10-22T19:42:53Z",
+    "beforeLayout": [
+      {"fromS":0,"toS":41.463,"observed":"ZIP fan-out/probe and member's first reading projection"},
+      {"fromS":41.463,"toS":61.757,"observed":"member reading to first published reader chunk"},
+      {"fromS":61.757,"toS":65.814,"observed":"member chunks increase from 1 to 17"},
+      {"fromS":65.814,"toS":416.814,"observed":"351-second tail; all six KML child readings progress"},
+      {"fromS":416.814,"toS":423,"observed":"needs_answer with 21 chunks to the reported layout button"}
+    ],
+    "kmlFirstPublishedPartS": {
+      "Placemarks":118.624,"Highlighted Icon":193.674,"Paths":248.452,
+      "Google Campus":287.007,"Extruded Polygon":341.802,"Absolute and Relative":398.563
+    },
+    "otherWork": "KML conversion visible at 23.183-43.496 s; CSV rests with Open the table, no CSV job requested.",
+    "queueVsExecution": {
+      "exactQueueS": null,
+      "exactExecutionS": null,
+      "reason": "Item snapshots omit job creation, claim, profile seal and completion timestamps.",
+      "conclusion": [
+        "423 seconds is not GeoJSON execution time. The long tail overlaps dispatch of six child reader pipelines.",
+        "Reading is an item projection and can include waiting for its reader/profile/conductor, not CPU activity.",
+        "The 351-second tail cannot be assigned exactly among queue, profile execution and conductor refresh.",
+        "QW1 bAlone supplies comparable measured spans: conductor 0.140 s, raw 6.170 s, profile 6.830 s.",
+        "Those are development rehearsal spans for the same member, not exact REH16 execution timings."
+      ]
+    },
+    "afterAnswer": {
+      "answerS":431,
+      "mappingProjectionS":773.901,
+      "draftProjectionS":999.112,
+      "firstMapS":1017.370,
+      "bothPartsS":1045.843,
+      "answerToFirstMapS":586.370,
+      "retainToFirstMapLessOfficerS":1009.370,
+      "retainToBothPartsLessOfficerS":1037.843,
+      "note": "586 seconds is answer-to-first-map, not retain-to-first-map; exclude the stated 8 officer seconds."
+    }
+  },
+  "offlineReplay": {
+    "test": "packages/server/src/modules/cases/processing-latency.test.ts",
+    "selectionHelper": "packages/server/src/modules/cases/dispatch-selection.fixture.ts",
+    "baseline": "Actual processing.ts from 70560f89, with dependency imports substituted for bounded stubs.",
+    "after": "Actual working-tree processing.ts with the same substitutions and unchanged real reservations.",
+    "realInput": {
+      "path": "E:/BhuAayam-data/task-data/reh14/act2/zp1-geojson-kml-csv.zip",
+      "sha256": "cc05cb9a17aa55a016b93f7b40056ab2f9908405185c8a2242600d9753478abf",
+      "bytes":464736,"geojsonFeatures":2100,"kmlLayers":6,"csvJobRequested":false
+    },
+    "method": [
+      "The real ZIP is probed and its GeoJSON extracted with existing readers, including size/CRC checks.",
+      "Six layer names are verified against the permitted watch receipt. No geometry or source content is saved.",
+      "Start at a fan-out-complete ready checkpoint: child job FIFO precedes an older member item's follow-up.",
+      "Stub spans come from QW1 bAlone: start 140 ms, raw 6170 ms, profile 6830 ms, question refresh 13 ms.",
+      "Layer stubs use those same measured member spans; separate layer service times are not available.",
+      "Surface delay 18250 ms is a cadence perturbation, not a measured REH16 surface-service duration.",
+      "Execute the real tick's SQL windows in memory, translating PostgreSQL array joins/casts for SQLite.",
+      "A fixed 8192 MiB disk answer isolates scheduling; this mix reserves zero scratch.",
+      "Memory is 1536 MiB; real singleton guards, lane admission, resource holds and release wakes execute."
+    ],
+    "beforeMs": {"memberFirstDispatch":164810,"memberLayout":402112,"allLayouts":402112},
+    "afterMs": {"memberFirstDispatch":0,"memberLayout":6983,"allLayouts":48041},
+    "bothVersions": {"dispatches":28,"peakVector":2,"peakMemoryMiB":938,"peakSurfacePasses":1},
+    "whySmallest": [
+      "Remove the cross-lane awaited barrier rather than raising lane or singleton caps.",
+      "Reuse stored item/layout/wave state in the existing selection, before LIMIT, rather than add a queue.",
+      "The replay eliminates repeated scheduling waits and demonstrates no sibling starvation.",
+      "It does not model mapping/draft execution, ZIP retention, browser observation or PostgreSQL performance."
+    ],
+    "targets": {
+      "firstMap180S": "not qualified offline; mapping/draft service times unavailable",
+      "bothParts240S": "not qualified offline; authorized runtime rehearsal required"
+    }
+  },
+  "checks": [
+    {"command":"pnpm install --offline --frozen-lockfile","exit":0},
+    {"command":"pnpm typecheck:backend","exit":0},
+    {
+      "command":["pnpm","exec","tsx","--tsconfig","apps/api/tsconfig.json","--test",
+        "packages/server/src/modules/cases/processing.test.ts",
+        "packages/server/src/modules/cases/processing-latency.test.ts",
+        "packages/server/src/modules/cases/dispatch-scratch.test.ts"],
+      "exit":0,"tests":43,"passed":39,"skipped":4,
+      "skipReason":"Optional PostgreSQL tests have no offline database; new ordering controls execute in memory."
+    },
+    {
+      "command":["pnpm","exec","tsx","--tsconfig","apps/api/tsconfig.json","--test","--test-concurrency=4",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/kml*.test.ts","tests/intake-*.test.ts","tests/kml*.test.ts"],
+      "exit":0,"tests":498,"passed":495,"skipped":3,
+      "skipReason":"Configured KML native bridge and full IFC/DXF inventories absent; no runtime launched."
+    },
+    {
+      "command":["pnpm","exec","tsx","--tsconfig","apps/api/tsconfig.json","--test","--test-concurrency=4",
+        "packages/server/src/modules/usp/jobs.test.ts",
+        "packages/server/src/modules/usp/ingestion/retain-routing.test.ts",
+        "tests/registry-kml-citations.test.ts","tests/source-fusion-kml.test.ts"],
+      "exit":0,"tests":23,"passed":23,"skipped":0
+    },
+    {
+      "command":["pnpm","exec","tsx","--tsconfig","apps/api/tsconfig.json","--test",
+        "packages/server/src/modules/cases/processing-latency.test.ts"],
+      "exit":0,"tests":1,"passed":1,"skipped":0
+    },
+    {
+      "command":["pnpm","exec","tsx","--tsconfig","apps/api/tsconfig.json",
+        "E:/ulpin-tmp/lq1-scratch-probe.ts"],"exit":0
+    },
+    {
+      "command":["pnpm","exec","tsx","--tsconfig","apps/api/tsconfig.json",
+        "apps/api/scripts/openapi.ts","--check"],"exit":1,
+      "reason":"Only docs/api/source-pins.json is stale; serialized OpenAPI check completed first."
+    },
+    {
+      "command":["pnpm","exec","tsx","--tsconfig","apps/api/tsconfig.json","--test","--test-concurrency=4",
+        "packages/server/src/modules/cases/processing*.test.ts",
+        "packages/server/src/modules/cases/dispatch-scratch.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/kml*.test.ts","tests/intake-*.test.ts","tests/kml*.test.ts",
+        "packages/server/src/modules/usp/jobs.test.ts",
+        "packages/server/src/modules/usp/ingestion/retain-routing.test.ts",
+        "tests/registry-kml-citations.test.ts","tests/source-fusion-kml.test.ts"],
+      "exit":0,"tests":564,"passed":557,"skipped":7,"log":"E:/ulpin-tmp/lq1-final-tests.log"
+    },
+    {
+      "command":"Scratch probe followed by replay under a 60-second outer timeout",
+      "exit":null,"outcome":"outer timeout; both inner logs completed, replay 1 pass / 0 fail",
+      "diagnosis":"No leaked process or pending replay found; replay log records 31.192 s wall time.",
+      "decision":"One bounded direct-node comparison bypassed package-command startup; passed, no code retry."
+    },
+    {
+      "command":["node","--import","tsx","--test",
+        "packages/server/src/modules/cases/processing-latency.test.ts"],
+      "environment":{"TSX_TSCONFIG_PATH":"apps/api/tsconfig.json"},"exit":0,"tests":1,"passed":1
+    },
+    {"command":"git diff --check","exit":0},
+    {"command":"120-column check on all new files","exit":0},
+    {"command":"Python evidence/replay/source-pin consistency validation","exit":0}
+  ],
+  "int2D": "No separately named INT2-D dispatcher file found; processing, scratch and retain-routing checks run.",
+  "selfReview": {
+    "reviewed":"git diff staging...HEAD restricted to the four scheduling/test files, and the task-base diff",
+    "context":"staging comparison contains pre-existing INT3 work; task changes are isolated from 70560f89.",
+    "style":"New functions are small; one-line microtask loop expanded; new files pass 120-column check."
+  },
+  "integrationPin": {
+    "path": "docs/api/source-pins.json",
+    "key": "sourceSha256.packages/server/src/modules/cases/processing.ts",
+    "old": "38bea5cdb57e7e474c806fdd9e747a7a5b5e52dcc0d256e74a6bd2f3b85cb6b5",
+    "proposedLfSha256": "f569da005f7007c96c89e3eb1abc4090666aa80162a24fe913fd999995bd977c"
+  },
+  "next": [
+    "Integration owner repins processing.ts, then re-runs the native OpenAPI check.",
+    "Run PostgreSQL selection controls and an authorized REH16 ZIP rehearsal; no processor rebuild is needed.",
+    "Capture occupied-query, selection-query, scratch and surface-pass durations to identify the actual 19 s source.",
+    "Capture per-job created/claim/completed times before claiming 180/240-second map targets."
+  ],
+  "safety": {
+    "offline":true,"docker":false,"runtime":false,"networkAcquisition":false,"pushed":false,
+    "originalsModified":false,"credentialsRead":false,"restrictedEvaluationPathsOpened":false,
+    "temporaryRoot":"E:/ulpin-tmp"
+  }
+}
