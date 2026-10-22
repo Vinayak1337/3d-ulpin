@@ -190,7 +190,7 @@ test('new development pins state the reading while old manual-tabular pins parse
   const oldPin = { selection, sourceBytes: developmentBytes.length,
     developmentAssetId: development.id, developmentFamily: development.family };
   assert.deepEqual(inventory.tabular, { ...oldPin,
-    selection: { ...selection, delimiter: ',', encoding: 'utf-8' } });
+    selection: { ...selection, delimiter: ',', encoding: 'utf-8', encodingBasis: 'bom' } });
   assert.equal(fingerprint(TabularPinSchema.parse(oldPin)), fingerprint(oldPin));
   const oldProfile = { version: 'manual-tabular/1', ...inventory,
     source: { sourceId: randomUUID(), familyId: randomUUID(), sourceRevision: 1,
@@ -210,6 +210,8 @@ test('a legacy comma receipt replays and deduplicates without acquiring new read
   delete legacy.tabular.selection.encoding;
   delete legacy.profile.delimiter;
   delete legacy.profile.encoding;
+  delete legacy.tabular.selection.encodingBasis;
+  delete legacy.profile.encodingBasis;
   const inventory = protocol.source!.inspection.manualProfile;
   inventory.tabular = legacy.tabular;
   inventory.profile = legacy.profile;
