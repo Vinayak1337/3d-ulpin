@@ -1,0 +1,120 @@
+{
+  "task": "SW1",
+  "gate": "AUD3 gap 7, small-file routing",
+  "baseCommit": "49333922",
+  "qualification": "Offline routing and queue protocols verified; runtime not exercised.",
+  "approach": {
+    "step": 1,
+    "reason": "The bounded adapter already reads complete small bytes before drafting; no refusal retry is needed.",
+    "measurement": "inspectGeojsonExtent reuses measurableCrs, featureExtent and CutExtent(null).",
+    "stored": "source.inspection.intakeExtent: measured geographic bounds and fitsOneArea",
+    "frontDoor": [
+      "Wide manual preflight returns 413 before retaining anything; the existing batch fallback uploads once.",
+      "The uploaded original is measured before its bounded processor; wide bytes queue intake-large instead.",
+      "No original, source identity, recipe draft, reader authority or coordinate declaration is replaced."
+    ],
+    "words": "The item explains reading in parts and candidate-only review, including after later phase changes."
+  },
+  "inputs": {
+    "good": {
+      "path": "E:/BhuAayam-data/task-data/nyc-zcta-10013/buildings-original.geojson",
+      "issuer": "New York City Office of Technology and Innovation",
+      "classification": "foreign test_only; unchanged public original",
+      "bytes": 1103282,
+      "features": 1662,
+      "fitsOneArea": true,
+      "route": "bounded_geojson"
+    },
+    "difficult": {
+      "path": "packages/server/src/modules/usp/ingestion/fixtures/sw1-small-wide.geojson",
+      "classification": "test_only literal coordinate control; not publisher records or evaluation truth",
+      "bytes": 617,
+      "features": 2,
+      "bounds": [-74, 40.7, -71.799, 40.701],
+      "fitsOneArea": false,
+      "route": "streamed_geojson",
+      "reason": "Checked small public BAG, IGN, NYC footprints and hydrography were compact; no small wide one found."
+    },
+    "additionalControls": [
+      "Explicit EPSG:32618 extents of 49000 m and 51000 m keep bounded and select streaming respectively.",
+      "Explicit EPSG:7755 stays unmeasured and keeps the existing bounded route.",
+      "Native/table derivatives still select streaming irrespective of compactness or measurability."
+    ]
+  },
+  "invariants": {
+    "streamingJobsForRepeatedEnrollment": 1,
+    "boundedDraftsForWideUpload": 0,
+    "boundedProcessorCallsForWideUpload": 0,
+    "originalsRetainedByRefusedManualPreflight": 0,
+    "authorityChecksChanged": false,
+    "sourceBytesAndProfileUnchanged": true,
+    "reviewRequired": true
+  },
+  "testsFirst": {
+    "exitCode": 1,
+    "signature": "Wide and projected-wide controls returned bounded_geojson; the item lacked its extent explanation."
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck:backend",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/usp/ingestion/intake-draft.test.ts",
+        "tests/intake-probe.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-large*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-package-cuts.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-package-extent.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-small-wide.test.ts",
+        "packages/server/src/modules/usp/ingestion/retain-routing.test.ts"
+      ],
+      "exitCode": 0,
+      "passed": 171,
+      "failed": 0
+    },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "tests/intake-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "apps/api/src/modules/ingestion/intake-run.controller.test.ts",
+        "packages/server/src/modules/usp/ingestion/retain-routing.test.ts"
+      ],
+      "environment": {
+        "ULPIN_NR1_PYTHON": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "exitCode": 1,
+      "passed": 413,
+      "failed": 1,
+      "note": "Initial full run, before adding two final regression tests. Failure is unrelated, below."
+    },
+    {
+      "command": "Same full set with --test-skip-pattern='loose Tweed parts dropped' after final changes",
+      "exitCode": 0,
+      "passed": 415,
+      "failed": 0,
+      "excludedKnownFailure": 1
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "existingSuiteFailure": {
+    "file": "packages/server/src/modules/usp/ingestion/intake-shapefile-set.test.ts",
+    "test": "loose Tweed parts dropped .dbf, .shp, .shx: one job, read as one shapefile with the features of its ZIP",
+    "signature": "Expected parent words omit the existing Council_Buildings counts: 88 written, 0 not written.",
+    "diagnosis": "The test and intake-native-derivative.ts are unchanged from the base; its count words predate SW1.",
+    "decision": "Do not change unrelated shapefile expectations in this task."
+  },
+  "imageRebuildNeeded": false,
+  "pythonChanged": false,
+  "runtimeQualified": false,
+  "next": [
+    "Refresh the existing Tweed expectation, then rehearse small-wide intake with the combined cell-file changes.",
+    "No processor rebuild is needed for this change. Legacy direct manual receipts are not migrated."
+  ]
+}

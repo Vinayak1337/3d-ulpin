@@ -222,7 +222,8 @@ export function intakeReaderRoute(card: IntakeCard, source: Pick<IntakeSourceRow
   if (card.format !== 'geojson') return card.format;
   // A derivative (a native layer, TC1's table rows) takes the large path whatever its size, as a dropped large file.
   const derivative = source.inspection?.nativeDerivative || source.inspection?.tableDerivative;
-  if (derivative || Number(source.bytes) > 16 * 1024 * 1024) return 'streamed_geojson';
+  if (derivative || Number(source.bytes) > 16 * 1024 * 1024
+    || source.inspection?.intakeExtent?.fitsOneArea === false) return 'streamed_geojson';
   const count = source.inspection?.manualProfile?.featureCount ?? card.counts.features;
   if (count === null || count === undefined) return 'inspect_geojson';
   return count <= GEOJSON_FEATURE_LIMIT ? 'bounded_geojson' : 'streamed_geojson';
@@ -244,15 +245,15 @@ async function streamedWithReasonTx(client: PoolClient, item: DraftItem, reason:
 /** Inspect only an already-kept bounded original; invalid content rests with a reason, never loses its receipt. */
 async function retainedGeojsonAdapterTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow) {
   if (intakeReaderRoute(item.card!, source) === 'streamed_geojson') return 'streamed';
-  if (!source.inspection?.manualProfile && await streamingReaderQueuedTx(client, source.id)) return 'streamed';
+  if (await streamingReaderQueuedTx(client, source.id)) return 'streamed';
   try {
     const prepared = Boolean(source.inspection?.manualProfile);
-    if (!await prepareRetainedGeojsonTx(client, source)) return 'streamed';
-    if (!prepared) {
+    const bounded = await prepareRetainedGeojsonTx(client, source);
+    if (!prepared && (bounded || source.inspection?.intakeExtent)) {
       item.card = citeIntakeReceipt(structuredClone(item.card!), source);
       await saveIntakeCardTx(client, item.item_id, item.card);
     }
-    return 'bounded';
+    return bounded ? 'bounded' : 'streamed';
   } catch (error) {
     if (error instanceof AppError && error.code === BOUNDED_READER_UNAVAILABLE) {
       return streamedWithReasonTx(client, item, error.message);

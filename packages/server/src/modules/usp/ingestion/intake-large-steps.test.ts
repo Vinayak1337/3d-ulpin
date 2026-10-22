@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
+import { readFileSync } from 'node:fs';
 import test, { mock } from 'node:test';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { PoolClient } from 'pg';
@@ -17,6 +18,8 @@ import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
 import { localOperatorSubject } from '../principal';
 import { sealedMapReceipt } from './streamed-map-receipt';
+import { probeOriginal } from './intake-probe';
+import { INTAKE_WIDE_GEOJSON_REASON } from './intake-package-extent';
 
 const caseId = '20000000-0000-4000-8000-000000000001';
 const sourceId = '20000000-0000-4000-8000-000000000002';
@@ -43,6 +46,7 @@ const sealedReader = () => ({ job_id: readerJob, state: 'completed', issue_code:
 
 /** Stored rows the key reads, and the jobs table the wake-up writes; any other statement fails the test. */
 function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes: number;
+  source: IntakeSourceRow | null;
   reader: Record<string, unknown> | null; profile: Record<string, unknown> | null;
   recipe: Record<string, unknown> | null; mapping: Record<string, unknown> | null; parts: number;
   unreviewed: number; partOf: string | null }> = {}) {
@@ -50,7 +54,7 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
     card: { family: 'vector', format: 'geojson', crs: { code: null } }, plan_ref: null, family: 'vector',
     parent_item_id: null, source_id: sourceId, limit_reason: null, records_seen: 0, parts_planned: null,
     parts_done: 0 } as Record<string, unknown> | null, bytes: 43263076, reader: null, profile: null, recipe: null,
-  mapping: null, parts: 0, unreviewed: 0, partOf: null, ...overrides };
+  mapping: null, parts: 0, unreviewed: 0, partOf: null, source: null, ...overrides };
   const jobs = new Map<string, Record<string, unknown>>();
   const operations = new Map<string, { payload_hash: string; result: Record<string, unknown> }>();
   let metadata = 0;
@@ -59,7 +63,7 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
     if (sql.startsWith('SELECT item_id,case_id,state,placement')) return one(tables.item);
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return one(tables.item);
     if (sql.startsWith('SELECT id,revision,bytes,profile') || sql.startsWith('SELECT * FROM sources'))
-      return one(sourceRow(tables.bytes));
+      return one(tables.source ?? sourceRow(tables.bytes));
     if (sql.startsWith('SELECT job_id,state,issue_code,next_publish_index,records,quarantined'))
       return one(tables.reader);
     if (sql.startsWith('SELECT job_id,state,issue_code,sealed_generation')) return one(tables.profile);
@@ -103,6 +107,14 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
     if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return one(tables.item?.item_id === values[1]
       && tables.item);
     if (sql.startsWith('SELECT state,placement') || sql.startsWith('SELECT parts_planned')) return one(tables.item);
+    if (sql.startsWith('UPDATE sources SET inspection=inspection||')) {
+      Object.assign(tables.source!.inspection!, JSON.parse(values[1] as string));
+      return one({});
+    }
+    if (sql.startsWith('UPDATE usp_intake_items SET card=')) {
+      tables.item!.card = values[1];
+      return one({});
+    }
     if (sql.startsWith('UPDATE usp_intake_items SET parts_planned')) {
       Object.assign(tables.item!, { parts_planned: values[2], parts_done: values[3] });
       return one({});
@@ -141,6 +153,28 @@ test('enrollment queues one step job for a large GeoJSON within the ceiling and 
   assert.equal(await queueIntakeLargeTx(above.client, sourceId), null);
   assert.equal(above.jobs.size, 0);
 });
+
+test('a small wide file enrols the existing streaming chain once, even if a bounded profile appears on replay',
+  async () => {
+    const source = sourceRow(512) as IntakeSourceRow;
+    source.inspection!.intakeExtent = { bounds: [-74, 40.7, -71.8, 40.7], fitsOneArea: false };
+    const fixture = store({ source, bytes: 512 });
+    fixture.tables.item!.card = { ...card, counts: { features: 2 } };
+    const jobId = await queueIntakeDraftTx(fixture.client, source, card);
+    assert.match(String(jobId), /^[0-9a-f-]{36}$/);
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal(fixture.metadata(), 1);
+    assert.equal([...fixture.jobs.values()][0].operation, 'intake-large');
+    // A later profile/probe must not start the bounded reader alongside the one already enrolled.
+    delete source.inspection!.intakeExtent;
+    source.inspection!.manualProfile = { version: 'manual-geojson/1', format: 'geojson', featureCount: 2 };
+    assert.equal(await queueIntakeDraftTx(fixture.client, source, card), jobId);
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal(fixture.metadata(), 1);
+    fixture.jobs.get(jobId!)!.status = 'succeeded';
+    assert.equal(await queueIntakeDraftTx(fixture.client, source, card), jobId);
+    assert.equal(fixture.jobs.size, 1);
+  });
 
 test('a source that is not a large batch item, or an item at rest, queues nothing', async () => {
   assert.equal(await queueIntakeLargeTx(store({ item: null }).client, sourceId), null);
@@ -375,6 +409,30 @@ test('a file stopped by what it contains, a bounded file and a file not stopped 
   for (const fixture of [terminal, bounded, running]) {
     assert.equal(fixture.operations.size, 0);
     assert.equal(fixture.jobs.size, 0);
+  }
+});
+
+test('an unmeasured small wide upload is inspected and queues streaming without a bounded draft', async () => {
+  const bytes = readFileSync(new URL('./fixtures/sw1-small-wide.geojson', import.meta.url));
+  const source = sourceRow(bytes.length) as IntakeSourceRow;
+  source.sha256 = sha256(bytes);
+  source.inspection!.largeOriginal.verifiedSha256 = source.sha256;
+  const fixture = store({ source, bytes: bytes.length });
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, source.name);
+  fixture.tables.item!.card = card;
+  const fetch = processorAnswers(bytes, 503);
+  try {
+    const jobId = await queueIntakeDraftTx(fixture.client, source, card);
+    assert.equal(fixture.jobs.get(jobId!)?.operation, 'intake-large');
+    assert.equal(fetch.mock.callCount(), 0);
+    assert.equal(source.inspection!.manualProfile, undefined);
+    assert.equal(source.inspection!.intakeExtent.fitsOneArea, false);
+    assert((fixture.tables.item!.card as IntakeCard).limits.includes(INTAKE_WIDE_GEOJSON_REASON));
+    assert.equal(await queueIntakeDraftTx(fixture.client, source, card), jobId);
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal(source.profile, 'large-original-v1');
+  } finally {
+    mock.restoreAll();
   }
 });
 

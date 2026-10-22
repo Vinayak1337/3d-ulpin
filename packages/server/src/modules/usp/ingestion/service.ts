@@ -35,6 +35,7 @@ import { readTableWindows } from './tabular-stream';
 import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { inspectGeojsonExtent } from './intake-package-extent';
 
 const uuid = z.string().uuid();
 /**
@@ -449,6 +450,10 @@ async function manualInventory(file: { name: string; bytes: Uint8Array },
     return { tabular, inspection: null, inventory: { version: 'manual-tabular/1', ...tabular } };
   }
   geojsonInventory(file.bytes);
+  // The batch's existing 413 fallback uploads these bytes once, before any bounded original is kept.
+  if (inspectGeojsonExtent(file.bytes)?.fitsOneArea === false)
+    throw new AppError(413, 'GEOJSON_EXTENT', 'This file\'s features spread wider than one map area. '
+      + 'Keep it through the upload route to read it in parts.');
   // Inspection is the existing bounded GIS reader.
   const inspection = await inspectGisBytes(file, null,
     value => areaGeo<Omit<GisInspection, 'suggestedTitle' | 'suggestedNamespace'>>('inspect-gis', value));
@@ -528,8 +533,15 @@ export async function prepareRetainedGeojsonTx(client: PoolClient, source: Intak
   if (detectIntakeKind(bytes).format !== 'geojson')
     throw new AppError(422, 'SOURCE_PROFILE', 'The retained bytes are not a GeoJSON collection.');
   if (geojsonFeatureCount(bytes) > GEOJSON_FEATURE_LIMIT) return false;
+  const intakeExtent = inspectGeojsonExtent(bytes);
+  if (intakeExtent?.fitsOneArea === false) {
+    await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',
+      [source.id, JSON.stringify({ intakeExtent })]);
+    source.inspection = { ...source.inspection, intakeExtent };
+    return false;
+  }
   const gis = await inspectRetainedGeojson(source.name, bytes);
-  const inspection = { manualProfile: inspectedProfile(bytes, gis), gis, actor: localOperatorSubject() };
+  const inspection = { manualProfile: inspectedProfile(bytes, gis), gis, intakeExtent, actor: localOperatorSubject() };
   await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',
     [source.id, JSON.stringify(inspection)]);
   source.inspection = { ...source.inspection, ...inspection };

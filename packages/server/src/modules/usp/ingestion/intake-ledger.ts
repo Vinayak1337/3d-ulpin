@@ -9,6 +9,7 @@ import { conflict, notFound } from '../../../infrastructure/errors';
 import type { ImportPackage } from '@ulpin/contracts';
 import { appendIntakeItemTx } from './events';
 import { intakeNameWords } from './intake-text';
+import { INTAKE_WIDE_GEOJSON_REASON } from './intake-package-extent';
 
 /** Metadata registration only. It adds/changes no source and deliberately does not advance case revision. */
 export async function registerIntakeItemTx(client: PoolClient, source: IntakeSourceRow) {
@@ -63,7 +64,8 @@ function layerCrs(value: unknown) {
 
 export function intakeItem(row: any) {
   const named = intakeNameWords(row.card, row.name ?? row.member_path ?? '');
-  const reason = [named, row.limit_reason].filter(Boolean).join(' ').slice(0, 2000) || null;
+  const wide = row.card?.limits?.includes(INTAKE_WIDE_GEOJSON_REASON) ? INTAKE_WIDE_GEOJSON_REASON : null;
+  const reason = [named, wide, row.limit_reason].filter(Boolean).join(' ').slice(0, 2000) || null;
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
     memberPath: row.member_path, name: row.name ?? row.member_path, family: row.family, format: row.format,
@@ -175,6 +177,12 @@ function sourceCode(value: unknown): string | null {
 export function citeIntakeReceipt(card: IntakeCard, source: IntakeSourceRow): IntakeCard {
   const inspection = source.inspection ?? {};
   const profile = inspection.manualProfile;
+  const extent = inspection.intakeExtent;
+  if (extent?.fitsOneArea === false && !card.limits.includes(INTAKE_WIDE_GEOJSON_REASON)) {
+    card.limits.push(INTAKE_WIDE_GEOJSON_REASON);
+    card.extent.epsg4326 = extent.bounds;
+    card.citations.push({ locator: 'source.inspection.intakeExtent:measured_bounds', sha256: source.sha256 });
+  }
   const count = profile?.featureCount ?? profile?.records ?? inspection.featureCount;
   if (Number.isSafeInteger(count) && count >= 0) {
     if (profile?.records !== undefined) card.counts.rows = count;
