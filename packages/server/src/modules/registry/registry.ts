@@ -92,6 +92,15 @@ export const recordBodySchema = z
     nativeExteriorReferences: RegistryCityJSONReferencesSchema.optional(),
   })
   .strict();
+/** A recorded exterior-only building keeps its empty footprint and representation through a correction. */
+const exteriorRecordBodySchema = recordBodySchema.extend({
+  footprint: z.array(pointSchema).length(0),
+  representation: z.literal("physical_exterior"),
+});
+/** Only a recorded exterior-only record may keep an empty footprint; a new or detailed record needs a polygon. */
+function registryBodySchema(record: RegistryRecord) {
+  return record.revision > 0 && isExteriorOnly(record) ? exteriorRecordBodySchema : recordBodySchema;
+}
 export const editDraftSchema = z
   .object({
     expectedRevision: z.number().int().positive(),
@@ -482,7 +491,7 @@ async function evidenceChecks(
 ) {
   assertNoNativeCandidates(records);
   for (const r of records) {
-    recordBodySchema.parse(bodyOnly(r));
+    registryBodySchema(r).parse(bodyOnly(r));
     await assertRegistryMetadataTx(client, site.id, r.kind, r.registryMetadata);
     await documentCheck(client,site.id,r,lock);
     if (site.synthetic && r.officialUlpin)
@@ -669,6 +678,7 @@ export async function prepareRegistryReview(
   draftId: string,
   expectedRevision: number,
   expectedSiteRevision: number,
+  documentCheck: typeof assertRegistryDocumentCitationsTx = assertRegistryDocumentCitationsTx,
 ): Promise<RegistryReview> {
   const snapshot = await transaction(async (client) => {
     await client.query(
@@ -692,7 +702,7 @@ export async function prepareRegistryReview(
     if (d.records.some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
       conflict("A proposed record has a newer current revision. Create a correction from that current record.");
     const combined = registryReviewInputs(current, d.records);
-    await evidenceChecks(client, site, combined);
+    await evidenceChecks(client, site, combined, false, documentCheck);
     const preparationFingerprint=await linkedPreparationFingerprint(client,d.caseId);
     return { d, site, current, combined, preparationFingerprint };
   });
@@ -708,7 +718,7 @@ export async function prepareRegistryReview(
   const result = await registryGeo<BuildResult>("check", {
     frame: snapshot.site.frame,
     validatorVersion: "registry-relationships-v2",
-    records: snapshot.combined.map(publicRegistryBody),
+    records: snapshot.combined.filter(record => !isExteriorOnly(record)).map(publicRegistryBody),
     inputFingerprint,
   });
   const computed = new Map(result.units.map((u) => [u.id, u]));
@@ -731,7 +741,7 @@ export async function prepareRegistryReview(
     preparationFingerprint: snapshot.preparationFingerprint,
     ...(snapshot.combined.some(record=>record.documentCitations?.length)?{documentReviewContext:documentReviewContext()}:{}),
   };
-  await transaction(client=>persistRegistryReviewTx(client,snapshot,review));
+  await transaction(client=>persistRegistryReviewTx(client,snapshot,review,documentCheck));
   return publicRegistryReview(review);
 }
 /** Revalidate the prepared snapshot under the complete source-case protection
@@ -889,7 +899,8 @@ export async function commitRegistryReviewTx(
       const revision = record.revision + 1;
       await client.query(
         "UPDATE registry_records SET body=$2,revision=$3,footprint=ST_SetSRID(ST_GeomFromGeoJSON($4),0) WHERE id=$1",
-        [record.id, body, revision, ringGeometry(record.footprint)],
+        // An exterior-only building has no footprint polygon; its column stays empty as it was recorded.
+        [record.id, body, revision, isExteriorOnly(record) ? null : ringGeometry(record.footprint)],
       );
       await client.query(
         "INSERT INTO registry_revisions(record_id,revision,body,site_revision) VALUES($1,$2,$3,$4)",
