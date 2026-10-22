@@ -337,7 +337,7 @@
     "packages/server/src/modules/registry/registry-seed.ts": "6a7add453b67dbe78318bc209114ec9adad6b840c902888c815a74c95bbd6659",
     "packages/server/src/modules/registry/registry-survey-reference.ts": "c8a037b1297d9afb7a61dd9a7328592fc96e653d1ace5a2bf3965cdfe2d6810a",
     "packages/server/src/modules/registry/registry-table-evidence.ts": "4b607f326c1ea7b9cbbf8f2ba980de723f70ee528382275ea813cf0d09164e3a",
-    "packages/server/src/modules/registry/registry.ts": "3ef30593ad03b7cd182e14b00e3e33a9282e03bf1855fdd85980cb031ef392fb",
+    "packages/server/src/modules/registry/registry.ts": "f04d66554978a0d07344036b716ad622b8ba4908a9884539f59b5b8b9b80b6ba",
     "packages/server/src/modules/spatial/identifiers/application-identifiers.ts": "05e5fe5eb06f41ae2d5eaad09764e5e86dad7f3e9bcf138eb797aad502c4b63d",
     "packages/server/src/modules/spatial/identifiers/records.d.ts": "c12bafbb349ab6db296db70411160bc9425f5155c6a255aeaa5f12f97b91a5fa",
     "packages/server/src/modules/spatial/identifiers/records.js": "a6957a2431937a05acf7caa6623134a4ae0fd97e1247ed388a7cb4c52bd0fef1",
