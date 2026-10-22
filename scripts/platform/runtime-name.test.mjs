@@ -1,7 +1,7 @@
 // Every file here is a temporary one with made-up values; no runtime's own folder or settings are opened.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import {
@@ -45,7 +45,8 @@ test('ulpin-demo resolves to the values it was created with, and the old names s
     documentFile: join(demoFolder, 'document-runtime-paths.json'),
     nativeReaderFile: join(demoFolder, 'native-reader-paths.json'), modelDir: `${demoFolder}/models`,
     servingCheckout: 'E:/Projects/ulpin-wt/demo', composeFile: 'scripts/platform/processors.compose.yaml',
-    processorImage: 'ulpin-geo:git-22003ea3d878',
+    // The one pinned image, read from the reviewed pin file: the same for the demo and every rehearsal.
+    processorImage: JSON.parse(readFileSync(new URL('./processor-image.json', import.meta.url), 'utf8')).image,
   };
   for (const definition of [runtimeDefinition(), runtimeDefinition('ulpin-demo'), definedRuntime()]) {
     assert.deepEqual({ ...definition, ports: { ...definition.ports } }, expected);
