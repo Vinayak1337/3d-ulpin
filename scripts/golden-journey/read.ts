@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { committed, r1 } from './inputs';
 
-export type State = 'pass' | 'fail' | 'blocked' | 'skipped';
+export type State = 'pass' | 'fail' | 'blocked' | 'undecidable' | 'skipped';
+export class UnavailableRead extends Error {
+  constructor(message: string, readonly state: 'skipped' | 'undecidable') { super(message); }
+}
 export type Step = { id: string; title: string; state: State; ms: number; expected: unknown;
   observed: unknown; evidence: unknown[]; promptId: string };
 export type Outcome = { state?: State; observed: unknown };
@@ -37,7 +40,10 @@ export const readMode = `reads only (GET, and ${POST_READS.length} named POST re
 
 export class Reader {
   readonly reads: Read[] = [];
+  requestCount = 0;
   private readonly cache = new Map<string, Read>();
+
+  constructor(private readonly api = r1.api, private readonly getOnly = false) {}
 
   async get(route: string, params: Read['params'] = {}, query: Read['query'] = {}, probe = false): Promise<Read> {
     const operation = contract.paths[route];
@@ -49,15 +55,16 @@ export class Reader {
     const path = route.replace(/\{([^}]+)\}/g, (_, name: string) => encodeURIComponent(String(params[name])));
     assert(!path.includes('undefined'), 'Missing path pin');
     const search = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
-    const url = `${r1.api}${path}${search.size ? '?' + search : ''}`;
+    const url = `${this.api}${path}${search.size ? '?' + search : ''}`;
     return this.request(url, route, 'GET', params, query);
   }
 
   async postRead(route: string, body: unknown): Promise<Read> {
+    assert(!this.getOnly, 'GET-only check refuses every POST before request');
     const named = POST_READS.find(entry => entry.route === route);
     assert(named && !named.writes, `POST refused before request: ${route} is not a named pure read`);
     assert(contract.paths[route]?.post, 'POST read route is not in the published contract');
-    return this.request(`${r1.api}${route}`, route, 'POST', {}, {}, JSON.stringify(body));
+    return this.request(`${this.api}${route}`, route, 'POST', {}, {}, JSON.stringify(body));
   }
 
   private async request(url: string, route: string, method: Read['method'], params: Read['params'],
@@ -65,12 +72,25 @@ export class Reader {
     const key = JSON.stringify([method, url, payload]);
     let result = this.cache.get(key);
     if (!result) {
-      const response = await fetch(url, { method, body: payload,
-        headers: payload === undefined ? {} : { 'Content-Type': 'application/json' },
-        redirect: 'error', signal: AbortSignal.timeout(30000) });
-      const bytes = await response.text();
-      const body: unknown = JSON.parse(bytes);
-      const envelope = Array.isArray(body) ? {} : object(body);
+      this.requestCount++;
+      let response: Response;
+      try {
+        response = await fetch(url, { method, body: payload,
+          headers: payload === undefined ? {} : { 'Content-Type': 'application/json' },
+          redirect: 'error', signal: AbortSignal.timeout(30000) });
+      } catch {
+        result = { method, route: route.split('/').filter(Boolean), params, query, status: 0,
+          code: 'NETWORK_UNAVAILABLE', bodySha256: '', body: null };
+        this.reads.push(result);
+        return result;
+      }
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      let body: unknown = bytes;
+      if (!response.headers.get('content-type')?.includes('application/pdf')) {
+        try { body = JSON.parse(new TextDecoder().decode(bytes)); }
+        catch { body = { message: 'Response is not JSON or a property-card PDF' }; }
+      }
+      const envelope = body instanceof Uint8Array || Array.isArray(body) ? {} : object(body);
       const error = envelope.error;
       const wrapped = error && typeof error === 'object' ? object(error) : {};
       const code = envelope.code ?? wrapped.code;
@@ -117,7 +137,8 @@ export async function check(reader: Reader, id: string, title: string, promptId:
     outcome = await work();
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown check failure';
-    outcome = { state: 'fail', observed: { reasonLines: reason.match(/.{1,90}/g) ?? [] } };
+    outcome = { state: error instanceof UnavailableRead ? error.state : 'fail',
+      observed: { reason } };
   }
   return { id, title, state: outcome.state ?? 'pass', ms: Math.round(performance.now() - started), expected,
     observed: outcome.observed, evidence: refs(reader.reads.slice(first)), promptId };
