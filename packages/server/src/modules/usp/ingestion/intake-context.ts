@@ -70,6 +70,25 @@ export async function intakeSourceTx(client: PoolClient, caseId: string, sourceI
   return { ...scope, source };
 }
 
+/** Only the receipt keys the authority check reads (`*Original` and `actor`); other inspection facts stay unread. */
+const sourceAuthoritySelect = `SELECT id,case_id,family_id,revision,name,profile,bytes,sha256,object_key,status,
+  CASE WHEN jsonb_typeof(inspection)='object' THEN (SELECT jsonb_object_agg(entry.key,entry.value)
+    FROM jsonb_each(inspection) entry WHERE entry.key LIKE '%Original' OR entry.key='actor')
+  ELSE inspection END inspection
+  FROM sources WHERE case_id=$1 AND id=ANY($2::uuid[])`;
+
+/** MF1. Every listed source checked in one read, in the order given, so the first refusal is the one it was. */
+export async function assertIntakeSourcesTx(client: PoolClient, caseId: string, binding: IngestionBinding,
+  sourceIds: string[]) {
+  if (!sourceIds.length) return;
+  const rows: IntakeSourceRow[] = (await client.query(sourceAuthoritySelect, [caseId, sourceIds])).rows;
+  const byId = new Map(rows.map(row => [row.id, row]));
+  for (const sourceId of sourceIds) {
+    const source = byId.get(sourceId) ?? notFound('Retained source not found in this case.');
+    assertIntakeSource(source, binding);
+  }
+}
+
 export function intakeSourcePin(source: IntakeSourceRow, binding: IngestionBinding) {
   return fingerprint({ id: source.id, caseId: source.case_id, revision: source.revision, hash: source.sha256,
     bytes: Number(source.bytes), key: source.object_key, profile: source.profile, access: binding.access });

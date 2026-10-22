@@ -10,7 +10,8 @@ import { readObject, readObjectRange, sha256 } from '../../../infrastructure/sto
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo } from '../../areas/areas';
-import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
+import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSourcesTx,
+  type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt }
   from './intake-ledger';
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
@@ -189,17 +190,20 @@ export class IntakeService {
 
   async manifest(caseValue: string) {
     const caseId = uuid.parse(caseValue);
+    // MF1: a fixed number of reads for any number of items; each item is checked by its own schema once.
     return this.dependencies.transaction(async client => {
-      await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
       const scope = await intakeCaseTx(client, caseId);
       const rows = (await client.query(`${itemSelect} WHERE i.case_id=$1 ORDER BY i.wave,name,i.item_id`,
         [caseId])).rows;
       // Verify each original's existing access binding, including the parent of an unextracted child.
-      const sources = new Set(rows.map(row => row.source_id).filter(Boolean));
-      for (const sourceId of sources) await intakeSourceTx(client, caseId, sourceId);
+      const sources = [...new Set<string>(rows.map(row => row.source_id).filter(Boolean))];
+      await assertIntakeSourcesTx(client, caseId, scope.binding, sources);
       assertIngestionBinding(scope.binding);
-      return IntakeManifestSchema.parse({ caseId, items: listedIntakeRows(rows).map(intakeItem) });
-    });
+      // ZP2: the list folds enrolled members away; the authority read above still covered every queried row.
+      const manifest: z.infer<typeof IntakeManifestSchema> = { caseId,
+        items: listedIntakeRows(rows).map(intakeItem) };
+      return manifest;
+    }, undefined, 'repeatable_read_only');
   }
 
   async one(caseValue: string, itemValue: string) {
