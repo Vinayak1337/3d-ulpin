@@ -194,10 +194,22 @@ function officeKind(card: IntakeCard, inspected: Awaited<ReturnType<typeof inspe
       card.format = 'ods';
       card.family = 'table';
     }
-  } else if (inspected.some(item => item.member.format === 'kml')) {
+  } else if (kmzShape(inspected)) {
     card.format = 'kmz';
     card.family = 'vector';
   }
+}
+
+// The files a KML document references from inside its KMZ: overlay and icon images, and COLLADA models.
+const KMZ_RESOURCE = /\.(?:png|jpe?g|gif|bmp|tiff?|dae)$/i;
+
+/**
+ * A KMZ is its KML documents and the resources they reference. A ZIP that also holds any other kind keeps its
+ * members as members, so each, the KML included, is taken out as its own item rather than dropped unnamed.
+ */
+function kmzShape(inspected: InspectedEntry[]): boolean {
+  return inspected.some(item => item.member.format === 'kml')
+    && inspected.every(item => item.member.format === 'kml' || KMZ_RESOURCE.test(item.member.name));
 }
 
 function directoryProfile(end: Buffer, size: number, depth: number) {
