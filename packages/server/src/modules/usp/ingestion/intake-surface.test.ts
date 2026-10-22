@@ -241,7 +241,7 @@ test('placement binds the target EPSG code as an integer, never as a PROJ defini
   assert.equal(transformed, true);
 });
 
-test('drafted bounds follow the intake package link and exclude only complete quarantine', async () => {
+test('drafted bounds follow the intake package link and keep partially accepted geometry', async () => {
   const { client, item } = ledger({ ...area([0, 0, 0, 0]), extent: null, drafted: [-200, -200, 200, 200] });
   await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
     value: lazFirstBatch(), extent: lazBox });
@@ -251,7 +251,7 @@ test('drafted bounds follow the intake package link and exclude only complete qu
       assert.match(sql, /anchor\.case_id=c\.id/);
       assert.match(sql, /anchor\.plan_ref->>'packageId'=p\.id::text/);
       assert.match(sql, /part\.state='published' AND part\.result_ref->>'packageId'=p\.id::text/);
-      assert.match(sql, /p\.body->'quarantine'->>'complete' IS DISTINCT FROM 'true'/);
+      assert.match(sql, /NOT p\.body \? 'quarantine' OR \(p\.body->'quarantine'->>'accepted'\)::integer>0/);
     }
     return client.query(sql, values);
   } } as unknown as PoolClient;
