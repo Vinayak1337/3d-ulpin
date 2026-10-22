@@ -5,6 +5,7 @@ import { LearnerPanel } from './LearnerPanel';
 import { mergeMetrics, reviewMapping, staleReasons } from './model';
 import { Progress, TableRefusal } from './Progress';
 import { RecipeReview } from './RecipeReview';
+import { RereadTable } from './RereadTable';
 import { SourceHeader } from './SourceHeader';
 import { StaleNotice } from './StaleNotice';
 import { StartJobs } from './StartJobs';
@@ -47,6 +48,7 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
     <div className={styles.page}>
       <Link to="/studio/work">Batches</Link>
       <SourceHeader profile={profile.data} name={name} />
+      <RereadTable key={profile.data.source.schemaFingerprint} profile={profile.data} />
       <TableStepNotice />
       <StartJobs profile={profile.data} />
       <TablePlacement caseId={caseId} sourceId={sourceId} name={name ?? 'this table'} profile={profile.data} />

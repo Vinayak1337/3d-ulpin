@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { Button, StatusBadge, formatCount } from '@ulpin/ui';
 import type { TableProfile } from './types';
+import { encodingLabels } from './TableImportFields';
 import styles from './Table.module.css';
 
-export function tableReadingWords(reading: Pick<TableProfile['profile'], 'delimiter' | 'encoding'>) {
+export function tableReadingWords(reading: Pick<TableProfile['profile'], 'delimiter' | 'encoding' | 'encodingBasis'>) {
   const delimiters = { ',': 'commas', ';': 'semicolons', '\t': 'tabs', '|': 'pipes' };
-  const encodings = { 'utf-8': 'UTF-8', 'utf-16le': 'UTF-16 LE', 'utf-16be': 'UTF-16 BE',
-    'windows-1252': 'Windows-1252' };
+  if (reading.encodingBasis === 'fallback_windows_1252') {
+    return 'The text was not valid UTF-8 and was shown as Windows-1252 as a fallback. ' +
+      'Labels may be wrong if the file uses another encoding. The original is kept unchanged.';
+  }
   const parts = [];
   if (reading.delimiter) parts.push(delimiters[reading.delimiter]);
-  if (reading.encoding) parts.push(encodings[reading.encoding]);
-  return parts.length ? `Read with ${parts.join(', ')}` : null;
+  if (reading.encoding) parts.push(encodingLabels[reading.encoding]);
+  if (!parts.length) return null;
+  const basis = { bom: 'BOM', utf8_valid: 'Valid UTF-8', officer_stated: 'Officer-stated encoding' };
+  const words = reading.encodingBasis ? basis[reading.encodingBasis] : 'Encoding choice basis: Unknown';
+  return `Read with ${parts.join(', ')} · ${words}`;
 }
 
 export function SourceHeader({ profile, name }: { profile: TableProfile; name?: string }) {
