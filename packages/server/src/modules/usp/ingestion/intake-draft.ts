@@ -62,24 +62,57 @@ export function listWords(entries: string[], budget: number): string {
 /** ZW1. Where the archive's layer job stands: none waiting or done, queued or running, or stopped with a sentence. */
 export type ZipLayerStage = 'taken' | 'taking' | { stopped: string };
 
-/**
- * ZF2. A ZIP's own item asks nothing: its words, from its card alone, say which members became their own files.
- * A layer is what `zipLayerMembers` keeps: a GeoJSON member the probe read without refusal. ZW1: while the layer
- * job waits or runs its layers are being taken in; a stopped job's sentence stands in place of the layers' sentence.
- */
-export function zipParentWords(card: IntakeCard, stage: ZipLayerStage = 'taken'): string {
+/** Parent words describe actual copies when supplied, never infer successful retention from a probe. */
+export function zipParentWords(card: IntakeCard, stage: ZipLayerStage = 'taken',
+  outcomes: { path: string; sourceId: string | null; reason: string | null }[] = []): string {
   const members = card.members.filter(member => !member.name.endsWith('/'));
-  const layers = members.filter(member => member.format === 'geojson' && !member.refusalCode)
-    .map(member => member.name);
-  const others = members.filter(member => member.format !== 'geojson' || member.refusalCode)
-    .map(member => `${member.name} (${member.refusalCode ?? 'not a map layer'})`);
-  if (!layers.length) return 'This ZIP holds no map layer this batch can take in. '
-    + (others.length ? `Its members: ${listWords(others, 1800)}.` : 'No member of it could be listed.');
-  const being = stage === 'taking' ? ' being' : '';
-  const taken = layers.length === 1 ? `1 map layer in this ZIP is${being} taken in as its own file`
-    : `${layers.length} map layers in this ZIP are${being} taken in as their own files`;
-  const lead = typeof stage === 'object' ? stage.stopped : `${taken}: ${listWords(layers, 800)}.`;
-  return lead + (others.length ? ` Not taken in: ${listWords(others, 900)}.` : '');
+  const shapes = members.filter(member => member.format === 'shapefile');
+  const grouped = new Set(shapes.flatMap(member => [member.name, ...(member.companions ?? [])]));
+  const independent = members.filter(member => !grouped.has(member.name));
+  const actual = new Map(outcomes.map(outcome => [outcome.path, outcome]));
+  const taken = independent.filter(member => actual.get(member.name)?.sourceId);
+  const pending = independent.filter(member => !actual.get(member.name)?.sourceId && !member.refusalCode
+    && !actual.get(member.name)?.reason);
+  const kept = independent.filter(member => member.refusalCode || actual.get(member.name)?.reason
+    || actual.get(member.name)?.sourceId && !zipMemberHasReader(member.format));
+  const sentences = [`${zipCountWords(card.counts?.members ?? members.length, 'member')}.`];
+  if (typeof stage === 'object') sentences.push(stage.stopped);
+  if (shapes.length) sentences.push(`${shapes.length} shapefile layer${shapes.length === 1 ? '' : 's'} grouped `
+    + `for the native reader: ${listWords(shapes.map(member => member.name), 150)}.`);
+  if (taken.length) sentences.push(`${zipKindWords(taken)} taken out as their own items: `
+    + `${listWords(taken.map(member => member.name), 400)}.`);
+  if (pending.length) sentences.push(`${zipCountWords(pending.length, 'file')} `
+    + `${stage === 'taking' ? 'being' : 'waiting to be'} `
+    + `taken out as their own items: ${listWords(pending.map(member => member.name), 250)}.`);
+  if (kept.length) sentences.push(`${zipCountWords(kept.length, 'file')} kept, not read: `
+    + `${listWords(kept.map(member => {
+      const outcome = actual.get(member.name);
+      const reason = member.refusalCode ?? outcome?.reason?.split(':')[0] ?? 'no batch reader';
+      return `${member.name} (${outcome?.sourceId ? 'own item' : 'inside archive'}; ${reason})`;
+    }), 350)}.`);
+  if (!members.length) sentences.push(`No members could be taken out. ${listWords(card.limits ?? [], 1000)}`);
+  return sentences.join(' ');
+}
+
+function zipCountWords(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+function zipMemberHasReader(format: string): boolean {
+  return ['geojson', 'geopackage', 'kml', 'kmz', 'pdf', 'csv', 'xlsx', 'jpeg', 'png', 'tiff', 'ifc', 'zip',
+    'geotiff', 'laz', 'copc'].includes(format);
+}
+
+function zipKindWords(members: IntakeCard['members']): string {
+  const counts = new Map<string, number>();
+  const labels: Record<string, [string, string]> = { pdf: ['PDF', 'PDFs'], csv: ['CSV', 'CSVs'],
+    geojson: ['GeoJSON layer', 'GeoJSON layers'], geopackage: ['GeoPackage', 'GeoPackages'],
+    zip: ['nested ZIP', 'nested ZIPs'] };
+  for (const member of members) counts.set(member.format, (counts.get(member.format) ?? 0) + 1);
+  return listWords([...counts].map(([format, count]) => {
+    const [single, plural] = labels[format] ?? [`${format} file`, `${format} files`];
+    return `${count} ${count === 1 ? single : plural}`;
+  }), 200);
 }
 
 /** Sizes in the batch page's units: bytes, KB and MB as there, GB above them, each of 1024. */
