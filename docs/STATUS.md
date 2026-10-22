@@ -27,7 +27,17 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
   - **No model has been trained.** (Superseded on 10 October: B3 trained four epochs and was measured on the Karnataka holdout.)
 - **Release gates:** still 0 of 30 tests with any receipt or attempt, and no `targetDate`. (Superseded on 10 October for scoped receipts: K2c, K3b, R3 and J1b ran live; no gate is passed.)
 
-## Live state right now (21 October, 04:20 IST)
+## Live state right now (22 October, 19:25 IST)
+
+| Item | State |
+| --- | --- |
+| Demo | **Serves `4ffd801a`** (R10, about 19:07 IST; 61 s down, doctor 28 PASS, processor image unchanged `ulpin-geo:git-a40b60238728`, SV2's additive `diagnostics` column applied). Act 1 reaches a register-cited, verified card: REH13 on `4c278323` went from one batch drop to card `93fd4362` quoting LPC row 444 (6 of 6 checks) plus a footprint-only card, no retry, no stop. Before the roll, `journey:check` passed 8 of 8 on `ulpin-reh-02` at `4ffd801a`, and the record page showed the card and the cited row (UI1). Runbook: `docs/STUDIO_DEMO_GUIDE.md` (DG2 and R10 updates). |
+| `staging` | **`8c89120d`, pushed.** Merged today: PDF1 (scanned PDF OCR press), LT1, DG1, RC1 (a confirmed batch table is a citable source), PF1 (map frames), RC2 (the batch's drafted footprints source is readable for the card), RC3 (a recorded exterior-only building gains its confirmed citation through review, never losing a recorded outline), the IFC summary hash fix (`e1337f42`; four IFC citation tests had failed on staging and the integrator's set did not run them; it does now), RC4 (the committed evidence read accepts exterior-only bodies), UI1 (record page shows the batch card; Documents tab lists the cited register row; a cited source the reader may not read is counted, not fatal), REH13, DG2, R10 evidence. Extended backend set 695 of 698 pass (3 skipped), Studio 606 pass. |
+| Sarvam | Gateway ON. LP6 (third live run, 10 calls): Rs 1.25; total Rs 3.25 of Rs 100. Diagnostics: 5 of 8 storey answers end at the 2,048-token limit with 0 reasoning tokens (the answer itself is too long); both mapping plans are refused by the no-literal-facts rationale rule (`mapping-teacher.ts` 99-103). Policy and prompts unchanged; the next step is code for a 4,096-token storey budget and a rationale prompt without digits, EPSG or coordinates, rehearsed before any policy change on the demo. |
+| Post-roll branch | `task/int2-post-roll` **`26bc76fc`, pushed, held for a later roll**: RT1 (keep, then route by bytes), NR1-NR3 (DXF, CityGML, CityJSON batch readers), NR2 (point and line streaming), CSV2 + INT2-D (delimiters, encodings, tab and one-column tables, refused small files kept once, processor-down fallback), ZP1 (refused ZIP GeoJSON members kept; KMZ only by its shape), MX1 (mixed layers: outlines drawn, pins and lines counted aside), W1 (honest tray and drop words), TC1 ('Place on the map' for lon/lat or WKT tables with an officer-stated EPSG). Full set 2,046 of 2,071 pass, 0 fail. Processor image `ulpin-geo:git-67689b17fc05` built (IMG2). **REH14** (running) rehearses it on `ulpin-reh-02`: act 1 again, then judge-style files. |
+| Open | CW1 (city-wide files cut by extent, running); AUD2 gap 4 (scanned plans and image plans stop early); IFC to card; DWG; FL1 (`table-windows.test.ts` file-level failure not reproduced in 11 runs; the process ended mid-file once). |
+
+## Live state on 21 October, 04:20 IST (history)
 
 | Item | State |
 | --- | --- |
