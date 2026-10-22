@@ -8,12 +8,12 @@ export type DispatchLane = 'probe' | 'vector' | 'table' | 'document' | 'raster' 
 type Cost = { lane: DispatchLane; mib: number };
 type Hold = Cost & { scratchMiB: number };
 type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
-/** `workbook` names the payload field that pins a table read, whose workbook is copied into scratch (XW1). */
+/** `workbook` names the table pin: workbooks and CSV reading detection use scratch; pinned CSV reads do not. */
 type OperationRow = { lane: DispatchLane; mib?: number; scratchMiB?: number; workbook?: 'request' | 'tabular';
   processor?: true };
 
-/** XW1 (tabular-stream.ts scratchFolder): a workbook read as a stream is copied whole into the scratch root, which
- * must keep its size and 1 GiB more free; the largest is TABULAR_STREAM_LIMITS.bytes, 7 GiB. */
+/** XW1/CSV2 (tabular-stream.ts scratchFolder): workbook reads and CSV reading detection copy the original,
+ * keeping its size and 1 GiB more free; the largest is TABULAR_STREAM_LIMITS.bytes, 7 GiB. */
 const WORKBOOK_SCRATCH_MIB = TABULAR_STREAM_LIMITS.bytes / 1024 ** 2 + 1024;
 
 /**
@@ -25,7 +25,7 @@ export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.fr
   // Header reads only: INTAKE_PROBE_LIMITS (64 KiB head and tail, 1 MiB directory); the processor inspects 16 MiB.
   probe: { concurrency: 8, mib: 64, scratchMiB: 0 },
   vector: { concurrency: 2, mib: 512, scratchMiB: 0 },
-  // A table-profile read of a workbook whose size its payload does not name.
+  // A table-profile read whose size its payload does not name.
   table: { concurrency: 2, mib: 256, scratchMiB: WORKBOOK_SCRATCH_MIB },
   // docs/evidence/usp/whole-page-ocr-runtime.json: the source OCR worker's peakJobPrivateBytes 975,704,064.
   document: { concurrency: 2, mib: 931, scratchMiB: 0 },
@@ -63,8 +63,8 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Objec
   'intake-native-derivative': { lane: 'vector' },
   // Table windows; a streamed GeoJSON's chunks are mapped by the same job. It reads stored windows, never a file.
   'chunk-mapping': { lane: 'table', scratchMiB: 0 },
-  // TP1: a kept CSV above 16 MiB profiled as a stream; no peak is measured, so the table lane's default holds. XW1:
-  // a workbook is read the same way, and its payload pins the table under `request` without the workbook's size.
+  // TP1/XW1/CSV2: table profiling copies CSV bytes for reading detection or a workbook for sheet windows.
+  // Its payload pins the table under `request`; old jobs without a size reserve the largest original.
   'table-profile': { lane: 'table', workbook: 'request' },
   // document-ocr.ts copies the PDF, at most DOCUMENT_LIMITS.originalBytes 16 MiB, into the scratch root beside the
   // 128 KiB result and 64 KiB receipt it reads back.
@@ -114,12 +114,12 @@ export function dispatchCost(operation: string): Cost {
 
 type TablePinned = { sourceBytes?: unknown }
   & Partial<Record<'request' | 'tabular', { selection?: { format?: unknown } }>>;
-/** A table read's scratch from its payload: none for a CSV, read in place; a workbook's named size in MiB and 1 GiB
- * more, else the largest workbook's. Undefined when the payload pins no table at `at`. */
+/** Pinned CSV windows read in place; table profiling and workbooks reserve the original size plus 1 GiB.
+ * Missing sizes use the largest original. Undefined when the payload pins no table at `at`. */
 function workbookScratchMiB(payload: unknown, at: 'request' | 'tabular'): number | undefined {
   const pinned = payload as TablePinned | null | undefined, pin = pinned?.[at];
   if (!pin) return undefined;
-  if (pin.selection?.format === 'csv') return 0;
+  if (pin.selection?.format === 'csv' && at === 'tabular') return 0;
   const bytes = pinned?.sourceBytes;
   return typeof bytes === 'number' && Number.isSafeInteger(bytes) && bytes > 0
     ? Math.ceil(bytes / 1024 ** 2) + 1024 : WORKBOOK_SCRATCH_MIB;

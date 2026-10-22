@@ -30,6 +30,7 @@ const readerFiles=[
   'database/sql/95-ingestion/streaming-vector.sql',
   'packages/contracts/src/usp/ingestion.ts','packages/server/src/modules/usp/ingestion/tabular-source.ts',
   'packages/server/src/modules/usp/ingestion/tabular-stream.ts',
+  'packages/server/src/modules/usp/ingestion/delimited-text.ts',
   'packages/server/src/modules/usp/ingestion/table-windows.ts','database/sql/95-ingestion/table-windows.sql',
   'packages/server/src/modules/usp/ingestion/column-profile.ts','scripts/agent/read_workbook_cells.py',
   'services/geo/geo/native_workbook.py','fixtures/usp/D8-messy-india/manifest.json',

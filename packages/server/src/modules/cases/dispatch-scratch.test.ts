@@ -14,7 +14,7 @@ const workbook = (id: string, gib: number, seconds = 0) => job(id, 'streaming-ve
 const at = (seconds: number) => Date.UTC(2026, 9, 22) + seconds * 1000;
 const memory = 1_000_000;
 
-test('a workbook read reserves its copy and 1 GiB; a CSV, a GIS read and a stored-window job reserve none', () => {
+test('table detection and workbooks reserve scratch; pinned CSV, GIS and stored-window reads reserve none', () => {
   assert.equal(dispatchScratchMiB(workbook('w', 3)), 4096);
   assert.equal(dispatchScratchMiB(job('csv', 'streaming-vector', 0,
     { sourceBytes: 3 * GiB, tabular: { selection: { format: 'csv' } } })), 0);
@@ -24,7 +24,9 @@ test('a workbook read reserves its copy and 1 GiB; a CSV, a GIS read and a store
   const request = (format: string) => ({ request: { selection: { format } } });
   assert.equal(dispatchScratchMiB(job('t', 'table-profile', 0, request('xlsx'))), DISPATCH_LANES.table.scratchMiB);
   assert.equal(DISPATCH_LANES.table.scratchMiB, 8192);
-  assert.equal(dispatchScratchMiB(job('t', 'table-profile', 0, request('csv'))), 0);
+  assert.equal(dispatchScratchMiB(job('t', 'table-profile', 0, request('csv'))), 8192);
+  assert.equal(dispatchScratchMiB(job('t', 'table-profile', 0,
+    { ...request('csv'), sourceBytes: 2 * GiB })), 3072);
   assert.equal(dispatchScratchMiB(job('t', 'table-profile')), 8192);
   assert.equal(dispatchScratchMiB(job('ocr', 'document-extraction')), 17);
 });

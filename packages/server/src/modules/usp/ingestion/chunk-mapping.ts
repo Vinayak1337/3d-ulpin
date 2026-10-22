@@ -39,6 +39,7 @@ const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/co
   'packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts',
   'packages/server/src/modules/usp/ingestion/streamed-mapping.ts',
   'packages/server/src/modules/usp/ingestion/tabular-source.ts',
+  'packages/server/src/modules/usp/ingestion/delimited-text.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts',
   'packages/server/src/modules/usp/ingestion/tabular-recipe.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts',
