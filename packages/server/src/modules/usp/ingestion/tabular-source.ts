@@ -185,15 +185,20 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
 export function inspectTabularSource(
   bytes: Uint8Array, selection: TabularSelection, provenance: TabularProvenance = {}, name = '',
 ) {
-  if (selection.format === 'csv') {
-    const { delimiter, encoding } = detectDelimitedReading(bytes, name);
-    selection = { ...selection, delimiter, encoding };
-  }
   const admitted = admitTabularSource(sha256(bytes), bytes.length, provenance);
   const expected = selection.format === 'csv' ? 'text/csv' :
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   if (admitted.kind === 'development' && admitted.asset.mediaType !== expected) {
     throw new AppError(422, 'TABULAR_FORMAT', 'The manifest and selected format differ.');
+  }
+  if (selection.format === 'csv') {
+    try {
+      const { delimiter, encoding } = detectDelimitedReading(bytes, name);
+      selection = { ...selection, delimiter, encoding };
+    } catch {
+      throw new AppError(422, 'TABULAR_ENCODING',
+        'This table has invalid text or binary null bytes. The original is unchanged; provide a text table.');
+    }
   }
   const table = readTabularSource(bytes, selection);
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: table.headers,

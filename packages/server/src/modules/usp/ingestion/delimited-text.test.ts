@@ -142,6 +142,14 @@ test('the intake head probe uses the same table reading policy', async () => {
   }
 });
 
+test('invalid table text is refused with reader words rather than an internal error', () => {
+  for (const bytes of [Buffer.from('key,note\nA,\0\n'), Buffer.from([0xff, 0xfe, 0x41])]) {
+    assert.throws(() => inspectTabularSource(bytes, selection),
+      (error: Error & { code?: string; status?: number }) => error.code === 'TABULAR_ENCODING'
+        && error.status === 422 && error.message.includes('original is unchanged'));
+  }
+});
+
 test('stored selections without a delimiter remain comma readings', () => {
   const old = readTabularSource(Buffer.from('a;b\n1;2\n'), selection);
   assert.deepEqual(old, { headers: ['a;b'], rows: [['1;2']], sourceRows: [2] });

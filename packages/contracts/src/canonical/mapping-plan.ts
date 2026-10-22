@@ -123,7 +123,7 @@ export const ColumnProfileSchema = z.strictObject({
   // Do not pad small inputs with fabricated examples: fewer than five observed cells is explicit.
   maskedSamples: z.array(z.string().max(256)).max(20),
 });
-/** Omitted fields describe an older reading: comma delimiter and UTF-8. */
+/** Omitted fields preserve older readings; an omitted delimiter means comma. */
 export const DelimitedReadingSchema = z.strictObject({
   delimiter: z.enum([',', ';', '\t', '|']).optional(),
   encoding: z.enum(['utf-8', 'utf-16le', 'utf-16be', 'windows-1252']).optional(),

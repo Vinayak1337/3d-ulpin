@@ -18,7 +18,7 @@
   "checks": [
     {"command": "pnpm typecheck:backend", "exit": 0},
     {"command": "pnpm studio:typecheck", "exit": 0},
-    {"command": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe pnpm exec tsx --test packages/server/src/modules/usp/ingestion/column-profile.test.ts packages/server/src/modules/usp/ingestion/delimited-text.test.ts packages/server/src/modules/usp/ingestion/csv-final-line.test.ts packages/server/src/modules/usp/ingestion/tabular-stream.test.ts packages/server/src/modules/usp/ingestion/table-windows.test.ts packages/server/src/modules/usp/ingestion/table-batch-case.test.ts packages/server/src/modules/usp/ingestion/intake-evidence.test.ts packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts", "exit": 0, "passed": 58, "failed": 0, "skipped": 0},
+    {"command": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe pnpm exec tsx --test packages/server/src/modules/usp/ingestion/column-profile.test.ts packages/server/src/modules/usp/ingestion/delimited-text.test.ts packages/server/src/modules/usp/ingestion/csv-final-line.test.ts packages/server/src/modules/usp/ingestion/tabular-stream.test.ts packages/server/src/modules/usp/ingestion/table-windows.test.ts packages/server/src/modules/usp/ingestion/table-batch-case.test.ts packages/server/src/modules/usp/ingestion/intake-evidence.test.ts packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts", "exit": 0, "passed": 59, "failed": 0, "skipped": 0},
     {"command": "pnpm --filter @ulpin/studio test src/features/intake/table src/features/intake/BatchTableSection.test.tsx", "exit": 0, "passed": 58},
     {"command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=services/geo E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -m pytest -p no:cacheprovider services/geo/tests/test_delimited_text.py services/geo/tests/test_inspection.py services/geo/tests/test_native_conversion.py -q", "exit": 0, "passed": 42},
     {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts", "exit": 0},
@@ -31,6 +31,7 @@
     "Missing local dependencies: installed the frozen lockfile offline without lifecycle scripts.",
     "Mixed leading line endings exposed Papa newline guessing during delimiter selection: each quoted logical head record is now parsed separately with an explicit candidate.",
     "An existing selection assertion expected no reading metadata; it now expects the newly pinned reading.",
+    "Self-review found encoding detection ran outside the API reader error boundary; invalid text now returns TABULAR_ENCODING/422 with unchanged-original words.",
     "OpenAPI generation requires the API tsconfig; source pins were regenerated after final source edits."
   ],
   "limitations": ["No Docker, live API, database writes or browser qualification was run.", "UTF-16 byte-window reads are intentionally refused, not decoded as single-byte text."],
