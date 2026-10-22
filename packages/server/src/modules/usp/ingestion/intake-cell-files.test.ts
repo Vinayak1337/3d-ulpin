@@ -91,6 +91,17 @@ test('the cell cap keeps exact overflow counts and says why; no outside features
     .then(result => result.files), 0);
 });
 
+test('a cell above the unchanged derived receipt ceiling stays held with byte-limit words, not a failed job',
+  async () => {
+    const { collector } = control();
+    const cell = [...collector.cells.values()][0];
+    cell.ranges[1].byteEnd = cell.ranges[1].byteStart + 128 * 1024 * 1024;
+    const result = await retainCellFiles(parent, collector, {}, {} as never);
+    assert.deepEqual([result.files, result.features, result.held, result.largeCells], [0, 0, 2, 1]);
+    assert.match(cellFileWords(0, result), /2 features in 1 cells.*128 MiB.*receipt limit/);
+    assert.doesNotMatch(cellFileWords(0, result), /cell-file limit/);
+  });
+
 type KeptSource = { id: string; sha256: string; lineage: unknown };
 
 function memoryReceipt(sources: Map<string, KeptSource>, files: Buffer[]) {

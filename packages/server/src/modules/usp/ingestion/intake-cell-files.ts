@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema, type CellFeatureRange,
+import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema, LARGE_ORIGINAL_LIMITS, type CellFeatureRange,
   type CellDerivativeLineage } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { featureCell, featureExtent, measurableCrs, type SourceCrs } from './intake-package-extent';
@@ -9,7 +9,10 @@ import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from 
 export type CellFile = { key: string; ranges: CellFeatureRange[] };
 type RangeRead = (start: number, end: number) => Promise<Buffer>;
 type Parent = { id: string; revision: number; sha256: string; name: string; case_id: string; itemId: string };
-export type CellFileResult = { files: number; features: number; held: number; heldCells: number; cap: number };
+export type CellFileResult = {
+  files: number; features: number; held: number; heldCells: number; cap: number;
+  byteHeld?: number; largeCells?: number;
+};
 export type CellFileDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: RangeRead;
   createCase: (input: { requestKey: string; name: string }) => Promise<{ caseId: string }>;
@@ -66,11 +69,20 @@ export async function* readRawFeatureRanges(ranges: readonly CellFeatureRange[],
   }
 }
 
-/** Only the FeatureCollection envelope is new; every Feature is copied byte for byte, with no added member. */
-export async function* cellFileChunks(cell: CellFile, metadata: Record<string, unknown>, read: RangeRead) {
+function collectionStart(metadata: Record<string, unknown>) {
   const envelope: Record<string, unknown> = { type: 'FeatureCollection' };
   if (Object.hasOwn(metadata, 'crs')) envelope.crs = metadata.crs;
-  yield Buffer.from(`${JSON.stringify(envelope).slice(0, -1)},"features":[`);
+  return Buffer.from(`${JSON.stringify(envelope).slice(0, -1)},"features":[`);
+}
+
+function cellBytes(cell: CellFile, metadata: Record<string, unknown>) {
+  const raw = cell.ranges.reduce((sum, range) => sum + range.byteEnd - range.byteStart, 0);
+  return collectionStart(metadata).length + raw + cell.ranges.length - 1 + 2;
+}
+
+/** Only the FeatureCollection envelope is new; every Feature is copied byte for byte, with no added member. */
+export async function* cellFileChunks(cell: CellFile, metadata: Record<string, unknown>, read: RangeRead) {
+  yield collectionStart(metadata);
   let first = true;
   for await (const item of readRawFeatureRanges(cell.ranges, read)) {
     if (!first) yield Buffer.from(',');
@@ -138,8 +150,13 @@ async function keepCell(parent: Parent, cell: CellFile, caseId: string, name: st
 /** A stable source-case request and lineage lookup make a replay reuse both the case and its retained child. */
 export async function retainCellFiles(parent: Parent, collector: CellFileCollector,
   metadata: Record<string, unknown>, dependencies: CellFileDependencies): Promise<CellFileResult> {
-  let features = 0;
+  let features = 0, files = 0, byteHeld = 0, largeCells = 0;
   for (const cell of collector.cells.values()) {
+    if (cellBytes(cell, metadata) > LARGE_ORIGINAL_LIMITS.maxOriginalBytes) {
+      byteHeld += cell.ranges.length;
+      largeCells++;
+      continue;
+    }
     await dependencies.beat();
     const name = cellName(parent, cell.key);
     const key = stableUuid(`cell-derivative/1:${parent.id}:${parent.revision}:${parent.sha256}:${cell.key}`);
@@ -148,16 +165,21 @@ export async function retainCellFiles(parent: Parent, collector: CellFileCollect
     await dependencies.beat();
     await dependencies.register(caseId, { sourceId, requestKey: key });
     features += cell.ranges.length;
+    files++;
   }
-  return { files: collector.cells.size, features, held: collector.heldFeatures,
-    heldCells: collector.heldCells.size, cap: collector.cap };
+  return { files, features, held: collector.heldFeatures + byteHeld,
+    heldCells: collector.heldCells.size, cap: collector.cap, ...(largeCells ? { byteHeld, largeCells } : {}) };
 }
 
 export function cellFileWords(placed: number, result: CellFileResult) {
   const words = [`${placed} features placed in this file's own area as candidates.`,
     `${result.features} features went to ${result.files} cell files, each its own item in its own batch case.`];
-  if (result.held) words.push(`${result.held} features in ${result.heldCells} additional cells are still held: `
+  const capped = result.held - (result.byteHeld ?? 0);
+  if (capped) words.push(`${capped} features in ${result.heldCells} additional cells are still held: `
     + `the cell-file limit is ${result.cap}; no bytes were discarded.`);
+  if (result.byteHeld) words.push(`${result.byteHeld} features in ${result.largeCells} cells are still held: `
+    + `each cell file must fit the ${LARGE_ORIGINAL_LIMITS.maxOriginalBytes / 1024 ** 2} MiB derived-original `
+    + 'receipt limit; the original is unchanged.');
   words.push('Every card still needs officer confirmation.');
   return words.join(' ');
 }
