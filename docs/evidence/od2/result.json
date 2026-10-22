@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "task-result/1",
+  "task": "OD2",
+  "base": "8a5b2795",
+  "gate": "GF-RECOVERY",
+  "qualification": "Offline supporting checks only; no runtime, provider call or release-gate pass claimed.",
+  "summary": {
+    "works": "ODS sheets exceeding the whole reader stream in bounded row windows; cards offer known sheet names.",
+    "seeIt": "Run tabular-workbook.test.ts with tsx --tsconfig apps/api/tsconfig.json --test.",
+    "inputs": "Home Office hospitality ODS (good); LibreOffice fdo43534test ODS (difficult), both test_only.",
+    "gaps": "Full Studio suite unqualified on this host; live intake/placement rehearsal remains."
+  },
+  "changes": [
+    "Resumed and reviewed all 13 uncommitted files; retained the implementation and corrected its defects.",
+    "read_workbook_windows.py streams content.xml with expat and builds only one selected-sheet row at a time.",
+    "native_ods.py shares package and stored-cell interpretation helpers between whole and stream readers.",
+    "Repeated rows/columns expand exactly; empty trailing padding writes no records; formulas are never evaluated.",
+    "Windows flush before the byte ceiling; raw row XML and serialized records both respect the record ceiling.",
+    "readOdsWindows promotes byte/cell/row bounds to the existing workbook stream, using private scratch.",
+    "TABULAR_ODS_LIMIT now means an ODS repeat/cell bound the stream also cannot take, not a whole-read overflow.",
+    "All case-original ODS raw jobs use windows, including small compressed packages beyond the whole cell bound.",
+    "The bounded content.xml head inventories real table starts; comments/CDATA cannot invent sheet names.",
+    "Incomplete inventories say at least; unsupported namespace/encoding metadata profiles leave names absent.",
+    "Studio ODS sheet items resolve their parent original; obsolete 16 MiB refusal words and forecast removed.",
+    "Window contracts carry paired rowElement/rowSha256 fields; OpenAPI, source pins and client types regenerated.",
+    "tabular-source.ts restored to LF."
+  ],
+  "locators": {
+    "sourceRow": "Expanded physical row number within the chosen sheet, including skipped empty rows.",
+    "byteStartByteEndSha256": "Stored content.xml ZIP-member range and hash, not a fictitious row byte range.",
+    "sheetSha256": "SHA-256 of uncompressed content.xml, which holds all sheets.",
+    "rowElement": "One-based row-element ordinal within the chosen sheet, before expanding repetitions.",
+    "rowSha256": "SHA-256 of that element's exact XML bytes, including its start/end tags; not reserialization.",
+    "repetitions": "Repeated records share rowElement/rowSha256 but retain distinct sourceRow values.",
+    "encodings": "Exact row hashes checked across a 1 MiB parser boundary and UTF-16LE/BE originals."
+  },
+  "controls": {
+    "classification": "test_only; literal/generated controls are not source records or evaluation truth",
+    "odsRecords": 2500,
+    "pythonWindowsAt1000Rows": [1000, 1000, 500],
+    "serverWholeParityRecords": 2000,
+    "formula": { "stored": "6", "mark": "formula_cached", "calculated": false },
+    "paddingRecords": 0,
+    "windowByteRegressionCeiling": 600,
+    "largePackage": "Valid ODS above 16 MiB, known and initially unknown lengths; original hash preserved.",
+    "job": "2500-row small ODS: queued profile job -> stored raw window -> schema-valid rows page with row hashes.",
+    "refusals": [
+      "WORKBOOK_SHEET_MISSING", "TABULAR_STREAM_ROWS", "TABULAR_STREAM_WINDOWS", "TABULAR_RECORD_BUDGET",
+      "ZIP_EXPANDED_LIMIT", "ZIP_RATIO_LIMIT", "TABULAR_SCRATCH_UNAVAILABLE", "TABULAR_ODS_LIMIT"
+    ]
+  },
+  "realInputs": [
+    {
+      "role": "good",
+      "path": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/home-office-hospitality-2021-q3.ods",
+      "sha256": "1c6a364fd20ff769835451a075de4654fc21e1499dfaf159081d3db089e591f6",
+      "classification": "test_only; UK; OGL-3.0, source details docs/evidence/usp/native-ods/sources.json",
+      "bytes": 5168,
+      "sheet": "Q2_Hospitality",
+      "records": 75,
+      "headers": 5,
+      "streamWindows": 1,
+      "wholeEqualsStream": true,
+      "cardNamesSheet": true,
+      "originalUnchanged": true
+    },
+    {
+      "role": "difficult",
+      "path": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/libreoffice-fdo43534test.ods",
+      "sha256": "576998ac8d4283964c329a4979579e81959d60ca5b4aecb7d673575b9007b288",
+      "classification": "test_only; LibreOffice regression corpus; input-specific licence unconfirmed",
+      "bytes": 18047,
+      "sheet": "Sheet1",
+      "wholeCode": "TABULAR_SCHEMA_DRIFT",
+      "streamCode": "TABULAR_SCHEMA_DRIFT",
+      "cardSheets": [],
+      "cardLimitation": "Namespace metadata profile unresolved; names absent, not guessed.",
+      "originalUnchanged": true
+    }
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <serverFiles>",
+      "serverFilesRoot": "packages/server/src/modules/usp/ingestion/",
+      "serverFiles": ["tabular-*.test.ts", "table-geojson.test.ts", "table-windows.test.ts", "intake-*.test.ts"],
+      "environment": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "exit": 0, "tests": 352, "passed": 352, "skipped": 0
+    },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-*.test.ts",
+      "exit": 0, "tests": 122, "passed": 122 },
+    {
+      "command": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -m pytest <pythonFiles> -q",
+      "pythonFiles": ["scripts/agent/test_read_workbook_windows.py", "services/geo/tests/test_native_workbook_xml.py"],
+      "basetemp": "E:/ulpin-tmp/od2-python-full",
+      "exit": 0, "passed": 10
+    },
+    {
+      "command": "pnpm exec vitest run <focusedFiles> --maxWorkers=1 --no-file-parallelism --testTimeout=20000",
+      "cwd": "apps/studio",
+      "focusedFilesRoot": "src/features/intake/",
+      "focusedFiles": [
+        "BatchTableSection.test.tsx", "upload-reader.test.tsx", "table/retain.test.ts", "upload.test.ts"
+      ],
+      "exit": 0, "files": 4, "passed": 35
+    },
+    { "command": "pnpm exec vitest run src/features/intake", "cwd": "apps/studio", "exit": 1,
+      "passed": 256, "failed": 2, "note": "Initial broad run: unchanged upload tests exceeded 5 seconds." },
+    { "command": "tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc", "exit": 0 },
+    { "command": "pnpm studio:api-types", "exit": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0 },
+    { "command": "python scripts/api/check.py", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 8a5b2795", "exit": 0 }
+  ],
+  "failureLedger": [
+    {
+      "signature": "Window bytes overshot ceiling; completed raw row bypassed XML budget; commented tags named sheets.",
+      "attempt": "Added bounded regressions before fixing; all three failed on resumed implementation.",
+      "result": "Preflight window size, closed-row size guard and narrow metadata tokenizer pass those regressions.",
+      "next": "Retain regression checks; no additional parser or dependency introduced."
+    },
+    {
+      "signature": "Broad Studio forks: timeouts and Windows process-start exit 3221225794 (0xc0000142).",
+      "attempt": "Reduced concurrency; focused four-file baseline passed 35/35. Broad forks still failed startup.",
+      "result": "Broad runs timed out at 160/300 seconds; one also hit unchanged upload waitFor timing.",
+      "comparison": "One-thread shared-module comparison finished: 248/259; module cache leaked across tests.",
+      "comparisonExit": 1,
+      "decision": "Shared-module run is invalid qualification. Isolated-thread comparison stopped at 180 seconds.",
+      "next": "No further broad retries here; rerun isolated Studio suite on a stable host. No unrelated tests changed."
+    },
+    {
+      "signature": "One Studio typecheck process also failed startup with 3221225794 during broad checks.",
+      "result": "Direct tsc passed; subsequent standard pnpm studio:typecheck and OpenAPI --check both exited 0.",
+      "next": "No source change for a host process-start fault."
+    }
+  ],
+  "uiDesignCheck": {
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": "Existing help/select components only; no new visual tokens, samples or theme changes.",
+    "accessibility": "Native sheet select and existing focus/keyboard/zoom layout retained.",
+    "scanScope": "Mechanical skill scan covers apps/web only (0 added lines); changed Studio files reviewed manually.",
+    "exit": 0
+  },
+  "hostReader": {
+    "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+    "newDependencies": [],
+    "repin": "No interpreter/package re-pin or NP1 native-reader rebuild required for the host workbook reader.",
+    "reason": "Workbook reader uses ULPIN_PROFILE_PYTHON and repo scripts; NP1 profiles cover DXF/CityGML/glTF/OBJ.",
+    "rollout": "Integrate scripts plus native_ods.py into the host checkout. No runtime paths or settings were read.",
+    "bytecode": "PYTHONDONTWRITEBYTECODE=1; no repository bytecode created to disturb native-reader cache inventories."
+  },
+  "next": [
+    "Review/integrate the task commits; never pushed from this worktree.",
+    "Rerun the isolated full Studio intake suite on a stable host.",
+    "Rehearse one long public ODS in the existing runtime: drop, choose known sheet, read, place and review."
+  ]
+}
