@@ -10,6 +10,7 @@ import { settings } from '../../../infrastructure/config';
 import { sha256 } from '../../../infrastructure/storage';
 import { ManualIngestionService, assertTableByteKind, prepareRetainedGeojsonTx } from './service';
 import { intakeReaderRoute } from './intake-draft';
+import { inspectTabularSource } from './tabular-source';
 import { probeOriginal } from './intake-probe';
 import { intakeNameWords } from './intake-text';
 import { geojsonFeatureCount } from './registry';
@@ -178,6 +179,19 @@ test('table selections are advisory: CSV as XLSX and PDF as CSV are refused befo
   await assert.rejects(assertTableByteKind(Buffer.from('Key,Value\nA,B\n'),
     { ...selection, format: 'xlsx', sheet: 'test_only' }), { code: 'TABLE_BYTE_KIND' });
   await assertTableByteKind(Buffer.from('Key,Value\nA,B\n'), selection);
+});
+
+test('a CSV selection reads tab-delimited and one-column text, never workbook or PDF bytes', async () => {
+  const selection = { format: 'csv' as const, sheet: 'csv', table: null, headerRows: [1] };
+  // Generated test_only header and value; not a building record.
+  for (const text of ['BIN\tName\n1001\tA\n', 'BIN\n1001\n']) {
+    const bytes = Buffer.from(text);
+    await assertTableByteKind(bytes, selection);
+    assert.equal(inspectTabularSource(bytes, selection).records, 1);
+  }
+  const workbook = readFileSync(root + 'datasets/messy-india/rbi-development-table-18/original.xlsx');
+  await assert.rejects(assertTableByteKind(workbook, selection), { code: 'TABLE_BYTE_KIND' });
+  await assert.rejects(assertTableByteKind(pdf, selection), { code: 'TABLE_BYTE_KIND' });
 });
 
 /** Only the existing retain protocol: committed source rows survive later reader failures. No PostgreSQL needed. */

@@ -21,7 +21,7 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { compileMapping, geojsonFeatureCount, GEOJSON_FEATURE_LIMIT, inspectedProfile } from './registry';
-import { detectIntakeKind } from './intake-signatures';
+import { decodeIntakeHead, detectIntakeKind } from './intake-signatures';
 import { probeOriginal } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
 import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
@@ -440,11 +440,23 @@ async function keepManualOriginal(context: RetainOriginalContext) {
 /** A selection asks for a reader; it cannot establish that the original contains that kind of table. */
 export async function assertTableByteKind(bytes: Uint8Array, selection: TabularSelection) {
   const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, '');
-  assertSelectedTableKind(card.format, selection);
+  assertSelectedTableKind(card.format, bytes.subarray(0, INTAKE_PROBE_LIMITS.headBytes), selection);
 }
 
-function assertSelectedTableKind(format: string, selection: TabularSelection) {
-  if (format !== selection.format) throw new AppError(422, 'TABLE_BYTE_KIND',
+/** Unrecognised bytes are plain text when their head decodes with no NUL, the probe's own test for text. */
+function plainText(head: Uint8Array) {
+  const { text } = decodeIntakeHead(head);
+  return Boolean(text) && !text.includes(' ');
+}
+
+/** A CSV selection reads the delimited-text family, including one-column text no signature names. */
+function selectionReads(format: string, head: Uint8Array, selection: TabularSelection) {
+  if (selection.format !== 'csv') return format === selection.format;
+  return format === 'csv' || format === 'tsv' || format === 'unknown' && plainText(head);
+}
+
+function assertSelectedTableKind(format: string, head: Uint8Array, selection: TabularSelection) {
+  if (!selectionReads(format, head, selection)) throw new AppError(422, 'TABLE_BYTE_KIND',
     `The selected ${selection.format.toUpperCase()} reader does not match these bytes (${format}). `
       + 'The original is kept, not read as the selected table kind.');
 }
@@ -452,9 +464,13 @@ function assertSelectedTableKind(format: string, selection: TabularSelection) {
 async function assertOriginalTableByteKind(row: any, selection: TabularSelection) {
   const size = Number(row.bytes), deadline = Date.now() + INTAKE_PROBE_LIMITS.budgetMs;
   const signal = AbortSignal.timeout(INTAKE_PROBE_LIMITS.budgetMs);
-  const card = await probeOriginal((start, end) =>
-    readObjectRange(row.object_key, start, end, size, deadline, signal), size, '');
-  assertSelectedTableKind(card.format, selection);
+  let head: Uint8Array = new Uint8Array();
+  const card = await probeOriginal(async (start, end) => {
+    const part = await readObjectRange(row.object_key, start, end, size, deadline, signal);
+    if (start === 0) head = part;
+    return part;
+  }, size, '');
+  assertSelectedTableKind(card.format, head, selection);
 }
 
 /** Attach the existing bounded adapter to the same durable upload, never changing its byte or source pins. */
