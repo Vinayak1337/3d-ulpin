@@ -359,7 +359,10 @@ async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,a
     'Only an original kept through the large upload is made a table here.');
   if(row.inspection?.largeOriginal?.operatorSubject!==actor)
     throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
-  if(row.inspection?.manualProfile)conflict('This original is already a table; open its table page.');
+  if(row.inspection?.manualProfile)throw new AppError(409,'STALE_REVISION',
+    'This original is already a table; open its table page.',isTableSource(row)?{
+      existingTable:{caseId,sourceId:row.id,tableId:row.id},
+    }:undefined);
   const latest=(await client.query('SELECT max(revision)::int revision FROM sources WHERE case_id=$1 ' +
     'AND family_id=$2',[caseId,row.family_id])).rows[0].revision;
   if(latest!==row.revision)conflict('This source revision has been superseded.');

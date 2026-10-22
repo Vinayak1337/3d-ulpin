@@ -33,8 +33,10 @@ const STOP = /^([A-Z][A-Z0-9_]{0,79}): (.+)$/s;
 export async function queueTableProfileTx(client: PoolClient, row: any, caseRevision: number,
   request: z.infer<typeof TableFromOriginalSchema>, subject: string) {
   const running = (await client.query(`SELECT id FROM jobs WHERE source_id=$1 AND operation='table-profile'
-    AND status IN ('queued','running')`, [row.id])).rowCount;
-  if (running) conflict('This original is already being read as a table; follow that read.');
+    AND status IN ('queued','running')`, [row.id])).rows[0];
+  if (running) throw new AppError(409, 'STALE_REVISION',
+    'This original is already being read as a table; follow that read.',
+    { existingTable: { caseId: row.case_id, sourceId: row.id, jobId: running.id } });
   const input = TableProfileInputSchema.parse({ version: 'table-profile/1',
     jobId: stableUuid(`table-profile/1:${row.id}:${row.revision}:${request.requestKey}`), caseId: row.case_id,
     caseRevision, sourceId: row.id, sourceRevision: row.revision, sourceSha256: row.sha256,

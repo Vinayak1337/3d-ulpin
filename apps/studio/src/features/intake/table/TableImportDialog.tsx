@@ -1,14 +1,29 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
+import { ApiError } from '@ulpin/api-client';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
 import { uploadWords, type UploadProgress } from '../upload-model';
 import { streamedImport, tableFormat } from './retain';
 import { TableRefusal } from './Progress';
-import { jobWords, type Opened } from './useFollowTable';
+import { jobWords, tablePath, type Opened } from './useFollowTable';
 import { useRetainTable } from './useRetainTable';
 import { TableSelectionFields, SourceCaseFields } from './TableImportFields';
 import type { TableJob } from './types';
 import styles from './Table.module.css';
+
+const isTableId = (value: unknown): value is string => typeof value === 'string'
+  && /^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(value);
+
+/** Error details are untyped in the contract; only a validated table reference replaces the refusal. */
+function existingTableOf(error: unknown) {
+  if (!(error instanceof ApiError) || error.status !== 409) return null;
+  const body = error.body as { error?: { details?: { existingTable?: Record<string, unknown> } } } | null;
+  const target = body?.error?.details?.existingTable;
+  if (!isTableId(target?.caseId) || !isTableId(target?.sourceId)) return null;
+  if (target.tableId !== target.sourceId) return null;
+  return { caseId: target.caseId, sourceId: target.sourceId };
+}
 
 export function TableImportDialog({ file, onClose, onBack, onImported }: {
   file: File; onClose: () => void; onBack: () => void; onImported?: (opened: Opened) => void;
@@ -42,6 +57,7 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
   job: TableJob | null; children: React.ReactNode;
 }) {
   const workbook = /\.xlsx$/i.test(file.name), reading = job ? jobWords(job, workbook ? 'workbook' : 'CSV') : null;
+  const existing = existingTableOf(error);
   return (
     <Dialog title="Import as a table" onClose={onClose} footer={(
       <><Button variant="ghost" onClick={onBack} disabled={pending}>Back to files</Button>
@@ -60,7 +76,11 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
         {upload ? <p role="status">{uploadWords(upload)}</p> : null}
         {upload?.phase === 'stopped' ? <div><Button onClick={retryUpload}>Retry upload</Button></div> : null}
         {reading ? <p role="status">{reading}</p> : null}
-        {error ? <TableRefusal error={error} /> : null}
+        {existing ? <div className="ul-stack" role="alert">
+          <Banner tone="warning">This file is already read as a table in this batch.</Banner>
+          <Link to={tablePath(existing)}>Open that table</Link>
+        </div> : null}
+        {error && !existing ? <TableRefusal error={error} /> : null}
       </div>
     </Dialog>
   );
