@@ -10,9 +10,9 @@ import { readObject, readObjectRange, sha256 } from '../../../infrastructure/sto
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo } from '../../areas/areas';
-import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSourcesTx,
+import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSourcesTx, openCellBatchesTx,
   type IntakeSourceRow } from './intake-context';
-import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt }
+import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt, cellFileRefs }
   from './intake-ledger';
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
@@ -58,6 +58,14 @@ async function itemContextTx(client: PoolClient, caseId: string, itemId: string)
   if (!parent?.source_id) throw new AppError(403, 'INTAKE_SOURCE_DENIED', 'No retained parent authority.');
   const { source } = await intakeSourceTx(client, caseId, parent.source_id);
   return { row, source };
+}
+
+/** CN1. A wide file's rows name which of its cell batches this officer may open; no row without one reads more. */
+async function withCellBatchesTx<T extends { plan_ref?: unknown }>(client: PoolClient, rows: T[]) {
+  const refs = rows.flatMap(row => cellFileRefs(row.plan_ref));
+  if (!refs.length) return rows;
+  const open = await openCellBatchesTx(client, refs);
+  return rows.map(row => cellFileRefs(row.plan_ref).length ? { ...row, cell_batches_open: open } : row);
 }
 
 async function notifyTx(client: PoolClient, source: IntakeSourceRow) {
@@ -202,7 +210,7 @@ export class IntakeService {
       assertIngestionBinding(scope.binding);
       // ZP2: the list folds enrolled members away; the authority read above still covered every queried row.
       const manifest: z.infer<typeof IntakeManifestSchema> = { caseId,
-        items: listedIntakeRows(rows).map(intakeItem) };
+        items: (await withCellBatchesTx(client, listedIntakeRows(rows))).map(intakeItem) };
       return manifest;
     }, undefined, 'repeatable_read_only');
   }
@@ -214,7 +222,7 @@ export class IntakeService {
       const scope = await intakeCaseTx(client, caseId);
       const { row } = await itemContextTx(client, caseId, itemId);
       assertIngestionBinding(scope.binding);
-      return intakeItem(row);
+      return intakeItem((await withCellBatchesTx(client, [row]))[0]);
     });
   }
 

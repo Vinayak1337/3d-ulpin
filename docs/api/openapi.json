@@ -370390,6 +370390,66 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
+          "cellBatches": {
+            "description": "CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with that item's current state. caseId, itemId, state and placement are null when this officer may not open that batch or it is unavailable. Absent for every other item.",
+            "maxItems": 64,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "cellKey": {
+                  "type": "string",
+                  "pattern": "^utm-[0-9]+-e-?[0-9]+-n-?[0-9]+-l[0-9]+-b[0-9]+(?:-feature-[0-9]+)?$"
+                },
+                "caseId": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "itemId": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "state": {
+                  "nullable": true,
+                  "type": "string",
+                  "enum": [
+                    "received",
+                    "probed",
+                    "planned",
+                    "reading",
+                    "read",
+                    "read_to_limit",
+                    "failed_part",
+                    "probe_failed"
+                  ]
+                },
+                "placement": {
+                  "nullable": true,
+                  "type": "string",
+                  "enum": [
+                    "undecided",
+                    "on_map",
+                    "attached",
+                    "waiting_for_anchor",
+                    "needs_answer",
+                    "not_understood"
+                  ]
+                }
+              },
+              "required": [
+                "cellKey",
+                "caseId",
+                "itemId",
+                "state",
+                "placement"
+              ],
+              "additionalProperties": false
+            }
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -371930,6 +371990,66 @@
                   "type": "string",
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "cellBatches": {
+                  "description": "CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with that item's current state. caseId, itemId, state and placement are null when this officer may not open that batch or it is unavailable. Absent for every other item.",
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "cellKey": {
+                        "type": "string",
+                        "pattern": "^utm-[0-9]+-e-?[0-9]+-n-?[0-9]+-l[0-9]+-b[0-9]+(?:-feature-[0-9]+)?$"
+                      },
+                      "caseId": {
+                        "nullable": true,
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "itemId": {
+                        "nullable": true,
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "state": {
+                        "nullable": true,
+                        "type": "string",
+                        "enum": [
+                          "received",
+                          "probed",
+                          "planned",
+                          "reading",
+                          "read",
+                          "read_to_limit",
+                          "failed_part",
+                          "probe_failed"
+                        ]
+                      },
+                      "placement": {
+                        "nullable": true,
+                        "type": "string",
+                        "enum": [
+                          "undecided",
+                          "on_map",
+                          "attached",
+                          "waiting_for_anchor",
+                          "needs_answer",
+                          "not_understood"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "cellKey",
+                      "caseId",
+                      "itemId",
+                      "state",
+                      "placement"
+                    ],
+                    "additionalProperties": false
+                  }
                 },
                 "createdAt": {
                   "type": "string",

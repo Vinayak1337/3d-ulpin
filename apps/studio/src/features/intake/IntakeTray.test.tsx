@@ -30,3 +30,25 @@ it('an item already in an area rests settled with its sentence and a link to tha
   expect(tray(unnamed)).toContain(words);
   expect(tray(unnamed)).not.toContain('/studio/areas/');
 });
+
+// CN1: a wide file's line, its cell files kept as separate batches; the second is one this officer may not open.
+const opened = { cellKey: 'utm-20-e5-n12-l231-b270', caseId: '10000000-0000-4000-8000-000000000101',
+  itemId: '10000000-0000-4000-8000-000000000103', state: 'read', placement: 'on_map' } as const;
+const closed = { cellKey: 'utm-20-e6-n12-l231-b270', caseId: null, itemId: null, state: null, placement: null };
+const wide = { ...captured.manifest.items[0], state: 'read', placement: 'on_map',
+  cellBatches: [opened, closed] } as unknown as IntakeItem;
+
+it('a wide file links each cell batch it may open and says the features there are not on this map', () => {
+  const html = tray(wide);
+  expect(html).toContain('The features of this file outside its first map area are in these separate batches, '
+    + 'each with its own layout and cards.');
+  expect(html).toContain(`href="/studio/work/cases/${opened.caseId}/intake"`);
+  expect(html).toContain(opened.cellKey);
+  expect(html).toContain('In that batch: Read · On the map');
+  expect(html).toContain(closed.cellKey);
+  expect(html).toContain('a separate batch');
+  expect(html.match(/href="\/studio\/work\/cases\//g)).toHaveLength(1);
+  expect(html).not.toMatch(/on (this|the current) map/i);
+  const { cellBatches: _cells, ...plain } = wide;
+  expect(tray(plain as IntakeItem)).not.toContain('separate batches');
+});

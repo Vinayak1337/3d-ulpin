@@ -6,6 +6,7 @@ import { DocumentOriginalSchema, RasterOriginalSchema, PointOriginalSchema, Larg
 import { AppError, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { ingestionBinding, assertIngestionBinding, type IngestionBinding } from './events';
+import type { CellFileRef, OpenCellBatch } from './intake-ledger';
 
 export type IntakeSourceRow = {
   id: string; case_id: string; family_id: string; revision: number; name: string; profile: string;
@@ -75,18 +76,51 @@ const sourceAuthoritySelect = `SELECT id,case_id,family_id,revision,name,profile
   CASE WHEN jsonb_typeof(inspection)='object' THEN (SELECT jsonb_object_agg(entry.key,entry.value)
     FROM jsonb_each(inspection) entry WHERE entry.key LIKE '%Original' OR entry.key='actor')
   ELSE inspection END inspection
-  FROM sources WHERE case_id=$1 AND id=ANY($2::uuid[])`;
+  FROM sources`;
 
 /** MF1. Every listed source checked in one read, in the order given, so the first refusal is the one it was. */
 export async function assertIntakeSourcesTx(client: PoolClient, caseId: string, binding: IngestionBinding,
   sourceIds: string[]) {
   if (!sourceIds.length) return;
-  const rows: IntakeSourceRow[] = (await client.query(sourceAuthoritySelect, [caseId, sourceIds])).rows;
+  const rows: IntakeSourceRow[] = (await client.query(
+    `${sourceAuthoritySelect} WHERE case_id=$1 AND id=ANY($2::uuid[])`, [caseId, sourceIds])).rows;
   const byId = new Map(rows.map(row => [row.id, row]));
   for (const sourceId of sourceIds) {
     const source = byId.get(sourceId) ?? notFound('Retained source not found in this case.');
     assertIntakeSource(source, binding);
   }
+}
+
+/**
+ * CN1. Which of a wide file's cell batches this officer may already open, and each one's current item state.
+ * Each child is checked as its own batch read checks it: its case exists and is not archived, and its source's
+ * receipt belongs to this officer's access context for that case. Two reads for any number of children; a child
+ * that fails any check is left out, so the caller shows only its cell key. Nothing here grants access.
+ */
+export async function openCellBatchesTx(client: PoolClient, refs: readonly CellFileRef[]) {
+  const open = new Map<string, OpenCellBatch>();
+  if (!refs.length) return open;
+  const items = new Map((await client.query(`SELECT i.item_id,i.case_id,i.source_id,i.state,i.placement,c.archived
+    FROM usp_intake_items i JOIN cases c ON c.id=i.case_id
+    WHERE i.item_id=ANY($1::uuid[]) AND i.parent_item_id IS NULL`, [refs.map(ref => ref.itemId)])).rows
+    .map(row => [row.item_id as string, row]));
+  const sources = new Map((await client.query(`${sourceAuthoritySelect} WHERE id=ANY($1::uuid[])`,
+    [refs.map(ref => ref.sourceId)])).rows.map((row: IntakeSourceRow) => [row.id, row]));
+  for (const ref of refs) {
+    const item = items.get(ref.itemId), source = sources.get(ref.sourceId);
+    if (!item || item.archived || item.case_id !== ref.caseId || item.source_id !== ref.sourceId
+      || source?.case_id !== ref.caseId) continue;
+    try {
+      const binding = ingestionBinding(ref.caseId);
+      assertIntakeSource(source, binding);
+      assertIngestionBinding(binding);
+    } catch (error) {
+      if (error instanceof AppError && error.status < 500) continue;
+      throw error;
+    }
+    open.set(ref.itemId, { state: item.state, placement: item.placement });
+  }
+  return open;
 }
 
 export function intakeSourcePin(source: IntakeSourceRow, binding: IngestionBinding) {

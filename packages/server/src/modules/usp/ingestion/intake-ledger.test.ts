@@ -61,3 +61,33 @@ test('a resting item names the area that already holds its bytes; nothing else n
     assert.equal('existingAreaId' in intakeItem({ ...row, plan_ref }), false);
   }
 });
+
+test('CN1: a wide file lists its cell batches; only a batch the officer may open is linked, with its state', () => {
+  const child = (n: number) => `10000000-0000-4000-8000-00000000010${n}`;
+  const refs = [1, 2].map(n => ({ cellKey: `utm-20-e${n}-n12-l231-b270`, caseId: child(n), itemId: child(n + 2),
+    sourceId: child(n + 4) }));
+  const plan = { recipeId: id, recipeRevision: 2, recipeState: 'executed', origin: 'officer', packageId: null };
+  const stored = { ...row, state: 'read', placement: 'on_map', plan_ref: { ...plan, cellFiles: refs } };
+  const open = new Map([[refs[0].itemId, { state: 'reading', placement: 'on_map' }]]);
+  const item = intakeItem({ ...stored, cell_batches_open: open });
+  assert.deepEqual(item.plan, plan);
+  assert.deepEqual(item.cellBatches, [
+    { cellKey: refs[0].cellKey, caseId: refs[0].caseId, itemId: refs[0].itemId, state: 'reading', placement: 'on_map' },
+    { cellKey: refs[1].cellKey, caseId: null, itemId: null, state: null, placement: null },
+  ]);
+  // A read that checked no child authority names no child case or item.
+  assert(intakeItem(stored).cellBatches?.every(batch => batch.caseId === null && batch.itemId === null));
+  // The stored source id is never projected.
+  assert.doesNotMatch(JSON.stringify(item), new RegExp(refs[0].sourceId));
+});
+
+test('CN1: a parent row written before cell references, or with unrecognized ones, still parses without them', () => {
+  const plan = { recipeId: id, recipeRevision: 1, recipeState: 'executed', origin: 'officer', packageId: null };
+  for (const plan_ref of [plan, null, { ...plan, cellFiles: [{ cellKey: 'not-a-cell' }] },
+    { ...plan, cellFiles: 'x' }, { ...plan, cellFiles: [] }]) {
+    const item = intakeItem({ ...row, state: 'read', placement: 'on_map', plan_ref,
+      limit_reason: '3 features went to 1 cell files, each its own item in its own batch case.' });
+    assert.equal(Object.hasOwn(item, 'cellBatches'), false);
+  }
+  assert.deepEqual(intakeItem({ ...row, plan_ref: { ...plan, cellFiles: 'x' } }).plan, plan);
+});

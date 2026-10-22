@@ -9,6 +9,7 @@ import { featureCell, featureExtent } from './intake-package-extent';
 import { CellFileCollector, cellFileChunks, cellFileWords, retainCellFiles,
   type CellFileDependencies } from './intake-cell-files';
 import { intakeReaderRoute } from './intake-draft';
+import { cellFileRefs, withCellFiles } from './intake-ledger';
 import { cellDerivativeWords } from './intake-text';
 import { putOriginalStream } from '../../../infrastructure/storage';
 import { settings } from '../../../infrastructure/config';
@@ -85,7 +86,7 @@ test('the cell cap keeps exact overflow counts and says why; no outside features
   assert.equal(collector.cells.size, 1);
   assert.equal(collector.heldFeatures, 2);
   assert.equal(collector.heldCells.size, 1);
-  assert.match(cellFileWords(7, { features: 1, files: 1, held: 2, heldCells: 1, cap: 1 }),
+  assert.match(cellFileWords(7, { features: 1, files: 1, held: 2, heldCells: 1, cap: 1, children: [] }),
     /7 features.*own area.*1 feature.*1 cell file.*each.*own item.*2 features.*1.*cell.*limit.*1/s);
   assert.equal(await retainCellFiles({} as never, new CellFileCollector({}), {}, {} as never)
     .then(result => result.files), 0);
@@ -153,7 +154,11 @@ function dependencies(original: Buffer) {
       return { caseId: cases.get(input.requestKey)! };
     },
     putSidecar: async (_ref: unknown, body: AsyncIterable<Uint8Array>) => { sidecars.push(await collect(body)); },
-    register: async (caseId: string, input: any) => { registered.push({ caseId, input }); },
+    // The batch lists an enrolled source as its own top-level item, whose id is the source id.
+    register: async (caseId: string, input: any) => {
+      registered.push({ caseId, input });
+      return { itemId: input.sourceId };
+    },
     beat: async () => {},
     large,
   } as unknown as CellFileDependencies;
@@ -232,11 +237,13 @@ test('a stop after finalize is found by lineage on retry, even without a complet
   const { original, collector } = control();
   const { deps, finals } = dependencies(original);
   let stopped = false;
-  deps.register = async () => {
+  const register = deps.register;
+  deps.register = async (caseId, input) => {
     if (!stopped) {
       stopped = true;
       throw new Error('Interrupted after retention');
     }
+    return register(caseId, input);
   };
   await assert.rejects(retainCellFiles(parent, collector, {}, deps), /Interrupted after retention/);
   assert.equal((await retainCellFiles(parent, collector, {}, deps)).files, 1);
@@ -246,4 +253,36 @@ test('a stop after finalize is found by lineage on retry, even without a complet
 test('a cell derivative takes the existing streamed GeoJSON route even if it is small', () => {
   assert.equal(intakeReaderRoute({ format: 'geojson', counts: { features: 1 } } as never,
     { bytes: 300, inspection: { cellDerivative: { version: 'cell-derivative/1' } } }), 'streamed_geojson');
+});
+
+test('CN1: each retained cell names its own case, source and item, and a replay stores none twice', async () => {
+  const { original, collector } = control(-60);
+  const { deps, registered, cases, sources } = dependencies(original);
+  const result = await retainCellFiles(parent, collector, {}, deps);
+  assert.equal(result.children.length, 2);
+  assert.deepEqual(result.children.map(child => child.cellKey), [...collector.cells.keys()]);
+  for (const child of result.children) {
+    assert.notEqual(child.caseId, parent.case_id);
+    assert.equal(sources.get(child.caseId)?.id, child.sourceId);
+    assert.equal(child.itemId, child.sourceId);
+    assert(registered.some(entry => entry.caseId === child.caseId && entry.input.sourceId === child.sourceId));
+  }
+  assert.equal(new Set(result.children.map(child => child.caseId)).size, cases.size);
+  const plan = { recipeId: parent.id, recipeRevision: 1, recipeState: 'approved', origin: 'officer', packageId: null };
+  const stored = withCellFiles(plan, result.children);
+  assert.deepEqual(cellFileRefs(stored), result.children);
+  const replay = await retainCellFiles(parent, collector, {}, deps);
+  assert.deepEqual(replay.children, result.children);
+  // The end result is replaced, never appended: a replay, or the same cell twice, keeps one entry per cell.
+  assert.deepEqual(withCellFiles(stored, replay.children), stored);
+  assert.equal(cellFileRefs(withCellFiles(plan, [...result.children, ...replay.children])).length, 2);
+  assert.equal(withCellFiles(plan, []), plan);
+  assert.equal(withCellFiles(null, undefined), null);
+});
+
+test('CN1: an enrolment that names no batch item is refused rather than linked to nothing', async () => {
+  const { original, collector } = control();
+  const { deps } = dependencies(original);
+  deps.register = async () => undefined;
+  await assert.rejects(retainCellFiles(parent, collector, {}, deps), /enrolled without its batch item/);
 });
