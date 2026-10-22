@@ -69,10 +69,11 @@ export async function completeStreamingReadTx(client:PoolClient,input:AnyStreami
   return status;
 }
 
-/** A single SQL watermark is the ordered publication authority; SSE cursors stay per subscriber. */
+/** A single SQL watermark publishes ordered parts. Collections stay private until root/CRS validation seals them. */
 export async function publishStreamingPrefixTx(client:PoolClient,input:AnyStreamingInput){
   while(true){
-    const state=(await client.query('SELECT next_publish_index FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
+    const state=(await client.query('SELECT next_publish_index,sealed_chunks FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
+    if(input.framing==='feature-collection'&&state.sealed_chunks===null)return;
     const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR UPDATE',
       [input.jobId,input.sourceRevision,state.next_publish_index])).rows[0];
     if(!slot||slot.published)break;
@@ -338,8 +339,11 @@ export async function runStreamingVectorJob(jobId:string){
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
-      if(state.records!==result.features||state.next_publish_index!==nextIndex)conflict('The published prefix does not close at semantic EOF.');
+      if(state.records!==result.features)conflict('The retained prefix does not close at semantic EOF.');
+      if(input.framing!=='feature-collection'&&state.next_publish_index!==nextIndex)
+        conflict('The published prefix does not close at semantic EOF.');
       await client.query('UPDATE usp_streaming_vector_imports SET sealed_chunks=$2,unknown_remainder=false,updated_at=now() WHERE job_id=$1',[jobId,nextIndex]);
+      if(input.framing==='feature-collection')await publishStreamingPrefixTx(client,input);
     });
     const manifestHash=fingerprint({version:limits.version,jobId,sourceSha256:input.sourceSha256,slots:nextIndex,features:result.features});
     await acceptUspJobAttempt(attempt,{assetId:`streaming-vector:${jobId}`,version:1,sha256:manifestHash},
@@ -361,7 +365,7 @@ export async function runStreamingVectorJob(jobId:string){
     const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
     try{
       if(kind==='final'){
-        // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
+        // A collection's retained parts stay private on refusal; sequence/tabular prefixes keep their publication.
         await parts.flush();await terminal(input,attempt,code,parts.index,nextFeatureIndex,false,words);
       }else if(kind==='stale')await terminal(input,attempt,'STREAMING_CONTEXT_STALE',parts.index,nextFeatureIndex,true);
       else if(attempt.number>=3)await terminal(input,attempt,code,parts.index,nextFeatureIndex);

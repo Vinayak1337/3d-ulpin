@@ -139,6 +139,15 @@ test('CRS, size and feature ceiling refusals use literal metadata and the existi
     + 'the most a map file may have for now; nothing was prepared from it.');
 });
 
+test('a missing or different root type has its own refusal without changing existing framing words', () => {
+  assert.equal(intakeLargeFailureReason('GEOJSON_COLLECTION_TYPE', 1),
+    'This file is missing a root type of FeatureCollection or declares a different root type; '
+    + 'nothing was prepared from it.');
+  assert.equal(intakeLargeFailureReason('GEOJSON_CONTAINER', 1),
+    'This file does not contain one complete GeoJSON feature collection in the required order; '
+    + 'nothing was prepared from it.');
+});
+
 test('known terminal failures and an unenumerated infrastructure failure never expose codes or hashes', () => {
   const codes = ['GEOJSON_JSON', 'GEOJSON_CONTAINER', 'GEOJSON_SEQUENCE', 'GEOJSON_METADATA',
     'GEOJSON_METADATA_BUDGET', 'GEOJSON_NESTING_BUDGET', 'GEOJSON_UNIT_BUDGET', 'STREAMING_CHUNK_BUDGET',

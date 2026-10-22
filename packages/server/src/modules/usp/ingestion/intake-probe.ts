@@ -27,8 +27,12 @@ export function intakeWave(card: IntakeMemberCard): 1 | 2 | 3 | 4 {
 }
 
 function initialCard(head: Uint8Array, name: string): IntakeCard {
-  const { detectedBy, ...detected } = detectIntakeKind(head, name);
+  const { detectedBy, rootTypePending, ...detected } = detectIntakeKind(head, name);
   const sidecar = /\.(?:shx|prj|cpg|tfw|jgw|pgw|wld)$/i.test(name);
+  const notes: string[] = [];
+  if (rootTypePending) notes.push('Root type not yet seen; the complete collection and its coordinate system '
+    + 'must be checked before anything is published.');
+  if (sidecar) notes.push('Loose sidecar kept at signature depth; grouping separate sources is out of scope.');
   if (detected.format === 'shapefile' && /\.shx$/i.test(name)) detected.format = 'shapefile-index';
   return { version: INTAKE_CARD_VERSION, ...detected, formatVersion: null,
     detectedBy: detected.format === 'shapefile-index' ? 'bytes_and_name' : detectedBy,
@@ -36,7 +40,7 @@ function initialCard(head: Uint8Array, name: string): IntakeCard {
     crs: { state: 'absent', code: null, sidecarSha256: null }, extent: { native: null, epsg4326: null },
     counts: { features: null, rows: null, pages: null, members: null, points: null, bands: null },
     geometryTypes: [], layers: [], sheets: [], members: [], columns: [],
-    limits: sidecar ? ['Loose sidecar kept at signature depth; grouping separate sources is out of scope.'] : [],
+    limits: notes,
     probeBytesRead: 0, probeMs: 0, drawableHint: false, delimiter: null, encrypted: null,
     raster: null, point: null, citations: [] };
 }

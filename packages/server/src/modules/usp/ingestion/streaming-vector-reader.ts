@@ -126,6 +126,7 @@ class Cursor {
 
 export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;
   valueIssueCode:string|null;rawSha256?:string};
+/** Callbacks stage unverified values; collection publication must wait for this closure and CRS validation. */
 export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
   const cursor=new Cursor(body);let index=0,metadataBytes=0;const metadata:Record<string,unknown>=Object.create(null);
   const feature=async()=>{
@@ -147,7 +148,6 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
       if(metadataBytes>limits.metadataBytes)throw new AppError(413,'GEOJSON_METADATA_BUDGET','Collection metadata exceeds this reader profile.');
       await cursor.expect(58);
       if(key==='features'){
-        if(!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','Collection type must precede the features array.');
         foundFeatures=true;await cursor.expect(91);
         if(await cursor.nonspace()!==93){while(true){await feature();const delim=await cursor.nonspace();if(delim===93)break;await cursor.expect(44);}}
         await cursor.expect(93);
@@ -159,7 +159,10 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
         metadata[key]=parsed.value;
       }
     }
-    if(!foundFeatures||!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','A FeatureCollection with complete features is required.');
+    if(!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')
+      throw new AppError(422,'GEOJSON_COLLECTION_TYPE',
+        'The root type must be FeatureCollection; nothing from this collection was published.');
+    if(!foundFeatures)throw new AppError(422,'GEOJSON_CONTAINER','A FeatureCollection with complete features is required.');
   }else{
     while(await cursor.nonspace()!==null){await cursor.expect(30);await feature();
       // RFC 7464 JSON text sequences require LF after each JSON text.

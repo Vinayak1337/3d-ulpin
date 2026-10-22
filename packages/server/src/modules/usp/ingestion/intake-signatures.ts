@@ -1,7 +1,7 @@
-import type { IntakeCard } from '@ulpin/contracts/usp';
+import { INTAKE_PROBE_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
 import { decodeDelimitedText } from './delimited-text';
 
-type Kind = { format: string; family: IntakeCard['family'] };
+type Kind = { format: string; family: IntakeCard['family']; rootTypePending?: true };
 type Detected = Kind & { detectedBy: IntakeCard['detectedBy'] };
 const kind = (format: string, family: Kind['family']): Kind => ({ format, family });
 
@@ -69,6 +69,7 @@ function rootJsonType(text: string): string | null {
     if (char === '"' && depth === 1) {
       const type = /^"type"\s*:\s*"(FeatureCollection|Feature|CityJSON|CityJSONFeature)"/.exec(text.slice(index));
       if (type) return type[1];
+      if (/^"type"\s*:/.test(text.slice(index))) return 'other';
       if (/^"asset"\s*:\s*\{[^}]*"version"\s*:\s*"\d+\.\d+"/.test(text.slice(index))) return 'glTF';
     }
     if (char === '"') inString = true;
@@ -76,6 +77,37 @@ function rootJsonType(text: string): string | null {
     if (char === '}' || char === ']') depth--;
   }
   return null;
+}
+
+/** A cut first feature is enough for routing, never for confirming the collection or placing its contents. */
+function featuresFirstHead(text: string): boolean {
+  const start = /^\s*\{\s*"features"\s*:\s*\[\s*\{/.exec(text);
+  if (!start) return false;
+  let depth = 1;
+  let inString = false;
+  let escaped = false;
+  let featureType = false;
+  let geometry = false;
+  for (let index = start[0].length; index < text.length; index++) {
+    const char = text[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"' && depth === 1) {
+      const rest = text.slice(index);
+      if (/^"type"\s*:\s*"Feature"(?=[\s,}])/.test(rest)) featureType = true;
+      if (/^"geometry"\s*:/.test(rest)) geometry = true;
+      if (featureType && geometry) return true;
+    }
+    if (char === '"') inString = true;
+    if (char === '{' || char === '[') depth++;
+    if (char === '}' || char === ']') depth--;
+    if (!depth) break;
+  }
+  return false;
 }
 
 function jsonKind(text: string): Kind | undefined {
@@ -86,9 +118,12 @@ function jsonKind(text: string): Kind | undefined {
   const type = rootJsonType(text);
   if (type === 'glTF') return kind('gltf', 'model3d');
   if (type === 'CityJSON' || type === 'CityJSONFeature') return kind('cityjson', 'model3d');
-  if (type) {
+  if (type === 'Feature' || type === 'FeatureCollection') {
     if (/^\s*\{[^\n]*\}\s*\n\s*\{/.test(text)) return kind('ndjson', 'vector');
     return kind('geojson', 'vector');
+  }
+  if (type === null && featuresFirstHead(text.slice(0, INTAKE_PROBE_LIMITS.headBytes))) {
+    return { ...kind('geojson', 'vector'), rootTypePending: true };
   }
   if (/^\s*\{[^\n]*\}\s*\n\s*\{/.test(text)) return kind('ndjson', 'table');
   return undefined;

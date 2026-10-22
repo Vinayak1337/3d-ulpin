@@ -89,24 +89,44 @@ test('GeoJSON root type after long crs, name and bbox within the 64 KiB head is 
   assert.equal(card.nameDisagrees, true);
 });
 
-test('GeoJSON root type beyond the head stays unknown even with a .geojson extension and a readable tail', async () => {
+test('GeoJSON features first is recognised provisionally without raising the fixed head or trusting its name', async () => {
   const text = '{"features":[{"type":"Feature","geometry":null,"properties":{"name":"'
     + 'test_only'.repeat(9000) + '"}}],"type":"FeatureCollection"}';
   const bytes = Buffer.from(text);
   assert.equal(JSON.parse(text).type, 'FeatureCollection');
   assert.ok(text.lastIndexOf('"type"') > INTAKE_PROBE_LIMITS.headBytes);
-  assert.equal(detectIntakeKind(bytes.subarray(0, INTAKE_PROBE_LIMITS.headBytes)).format, 'unknown');
+  const detected = detectIntakeKind(bytes.subarray(0, INTAKE_PROBE_LIMITS.headBytes));
+  assert.equal(detected.format, 'geojson');
+  assert.equal(detected.rootTypePending, true);
   assert.equal(detectIntakeKind(bytes).format, 'geojson');
+  assert.equal(detectIntakeKind(bytes).rootTypePending, undefined);
   const ranges: number[][] = [];
   const card = await probeOriginal(async (start, end) => {
     ranges.push([start, end]);
     return bytes.subarray(start, end);
-  }, bytes.length, 'test_only.geojson');
-  assert.equal(card.format, 'unknown');
-  assert.equal(card.family, 'unknown');
+  }, bytes.length, 'test_only.bin');
+  assert.equal(card.format, 'geojson');
+  assert.equal(card.family, 'vector');
+  assert.equal(card.nameDisagrees, true);
+  assert.ok(card.limits.includes('Root type not yet seen; the complete collection and its coordinate system '
+    + 'must be checked before anything is published.'));
   assert.equal(card.detectedBy, 'bytes');
   assert.equal(card.counts.features, null);
   assert.deepEqual(ranges, [[0, 65536], [65536, bytes.length]]);
+});
+
+test('features-first recognition requires direct Feature type and geometry members in the first object', () => {
+  const heads = [
+    '{"features":[{"properties":{"type":"Feature","geometry":null},"type":"Other"}',
+    '{"features":[{"type":"Feature","properties":{"geometry":null}}',
+    '{"features":[{"type":"Other","geometry":null}',
+    '{"features":[],"note":{"type":"Feature","geometry":null}',
+    '{"note":{"features":[{"type":"Feature","geometry":null}',
+    '{"features":[{"type":"Feature","geometry":null}],"type":"Other"}',
+  ];
+  for (const head of heads) assert.notEqual(detectIntakeKind(Buffer.from(head), 'test_only.geojson').format, 'geojson');
+  const head = '{"features":[{"geometry":{"type":"Point"},"properties":{"name":"test_only"},"type":"Feature"},';
+  assert.equal(detectIntakeKind(Buffer.from(head)).rootTypePending, true);
 });
 
 test('64 KiB comment and malformed XML heads complete in milliseconds without backtracking', context => {
