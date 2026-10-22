@@ -24,6 +24,12 @@ export async function permitsConfirmedRetainedTableSourceTx(client: PoolClient, 
   [source.case_id, binding.subject, JSON.stringify(included), JSON.stringify(decisions)])).rows.length > 0;
 }
 
+/** A batch drafts only from a retained GeoJSON recipe original, which stays needs_input once drafted. Its receipt
+ * identity admits it to the ordinary source read; record commit separately proves each cited feature committed. */
+export function permitsDraftedMapSource(source: Parameters<typeof isRetainedMapOriginal>[0]): boolean {
+  return source.profile === 'geojson-manual-v1' && isRetainedMapOriginal(source);
+}
+
 /** Native reference documents may evidence a manually reviewed party/use claim,
  * never coordinates or verified levels. The caller also checks site membership
  * and existence of the exact retained document part. */

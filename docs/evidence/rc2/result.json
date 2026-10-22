@@ -1,0 +1,138 @@
+{
+  "task": "RC2",
+  "title": "Why the cited act 1 card still stops on ulpin-reh-02, and the fix",
+  "at": "2026-10-22",
+  "branch": "task/rc2-card-source",
+  "base": "1a226949",
+  "fixCommit": "20851a3c",
+  "case": {
+    "caseId": "2398f7be-d1fb-4453-ae8d-4c688d85cfad",
+    "confirmationId": "c167989e-b6f3-4a42-85f0-cc41c7ba7525",
+    "evidenceConfirmationId": "ba6bde38-0875-4359-bddf-b1128124a1cd",
+    "targetId": "0098370d-b3cd-5e84-af85-637d96cd2f49",
+    "recordId": "decd35aa-9b0b-45e2-8551-ac198e168664",
+    "locator": "feature 1087575",
+    "registerRow": 168
+  },
+  "cause": [
+    "The card never reached its card step: it stopped at stage 3, the evidence-citation write",
+    "(writeEvidenceCitations -> amendConfirmedEvidenceTx -> currentTargetTx), which re-reads every source the",
+    "recorded building already cites through registrySourceTx; the building cites only the footprints source",
+    "06b5c8bc (geojson-manual-v1, status needs_input), and that row matches none of registrySourceTx's admissions,",
+    "while the CSV 6a1b77b5 is admitted by RC1's confirmation query."
+  ],
+  "diagnosis": {
+    "stoppedTarget": { "stage": 3, "readiness": "stopped", "blockedBy": ["REGISTRY_SOURCE_UNAVAILABLE"],
+      "artefacts": ["record"] },
+    "intakeRunJobs": [
+      { "id": "72d98b3a-d35f-4f38-8697-9be70d5c323e", "phase": "commit", "status": "succeeded" },
+      { "id": "4800963f-8558-4791-a98e-73a2ecf374f9", "targetId": "0098370d-b3cd-5e84-af85-637d96cd2f49",
+        "status": "failed", "error": "REGISTRY_SOURCE_UNAVAILABLE" }
+    ],
+    "recordEvidence": [{ "sourceId": "06b5c8bc-4cfa-49b3-8b66-f369c91ba8a0", "locator": "feature 1087575" }],
+    "recordRightsAndBindings": "none; no registryMetadata",
+    "registrySourceTx": {
+      "06b5c8bc-4cfa-49b3-8b66-f369c91ba8a0": { "profile": "geojson-manual-v1", "status": "needs_input",
+        "sameSite": true, "archived": false, "ownerIsOperator": true, "readyOrPartial": false, "nativeArea": false,
+        "isRetainedMapOriginal": true, "confirmedTable": "not evaluated: skipped for a retained map original",
+        "permitsReferenceRecordSource": false, "permitsReferenceRightSource": false,
+        "result": "409 REGISTRY_SOURCE_UNAVAILABLE (registry-metadata.ts status gate)" },
+      "6a1b77b5-0302-480e-8688-8a4e6b3f7c41": { "profile": "large-original-v1", "status": "needs_input",
+        "sameSite": true, "archived": false, "ownerIsOperator": true, "readyOrPartial": false, "nativeArea": false,
+        "isRetainedMapOriginal": false, "objectKeyMatchesReceipt": true, "objectEtag": true,
+        "confirmedTable": true, "permitsReferenceRecordSource": false, "permitsReferenceRightSource": false,
+        "result": "admitted" }
+    },
+    "rc1ConfirmationQuery": { "subject": "rehearsal-runtime-ulpin-reh-02", "rowsMatched": 1 },
+    "commitPathAlreadyAdmits": "registry.ts committedFeature: retained map original + committed feature 1087575 (1 row)"
+  },
+  "realShapes": {
+    "evidenceConfirmationPins": {
+      "targets[100]": ["targetId", "packageId", "packageRevision", "reviewFingerprint"],
+      "excluded": [],
+      "included[1]": ["bytes", "jobId", "itemId", "coverage{read,state,failed,unread,keyless,eligible}", "sourceId",
+        "resultSha256", "sourceSha256", "sourceRevision"],
+      "additions": ["kind", "decisions[100]", "linkManifestSha256"],
+      "decision": ["decision", "targetId", "candidateId", "candidateSha256", "evidence"],
+      "decision.evidence": ["kind", "caseId", "itemId", "sourceId", "sourceRevision", "sourceSha256", "rawJobId",
+        "rawInputSha256", "rawResultSha256", "acceptedFence", "selection{sheet,table,format,headerRows}",
+        "sourceRow", "rowSha256", "columnIndex", "columnHeader", "cell{state,value}"],
+      "other": ["profileId", "profileSha256", "requestKey", "acknowledgement"]
+    },
+    "footprintsSource": {
+      "columns": ["id", "case_id", "family_id", "revision", "name", "profile", "mime_type", "bytes", "sha256",
+        "object_key", "status", "inspection", "created_at"],
+      "inspection": ["actor", "gis", "issues", "manualProfile", "profile", "status", "summary"],
+      "manualProfile": ["crs{evidence,unit,value}", "featureCount", "format", "geometryTypes", "limitations", "paths",
+        "schemaFingerprint", "version"],
+      "gis": ["bytes", "crsEvidence", "crsUnit", "featureCount", "featureIdEligible", "featureIntegerIdEligible",
+        "fields", "format", "geometryTypes", "layer", "layers", "quarantine", "sourceCrs", "sourceSha256",
+        "suggestedIdField", "suggestedNameField", "suggestedNamespace", "suggestedTitle"]
+    },
+    "recordBody": ["alias", "evidence", "footprint (empty array)", "id", "identifier", "kind", "links", "name",
+      "representation (physical_exterior)", "revision", "rights", "siteId", "synthetic"],
+    "draftingPackage": { "id": "a263a626-8790-4505-ba19-f92210a87b62", "state": "COMMITTED", "geometryFree": null,
+      "caseIsAnotherCaseOfTheSameSite": true }
+  },
+  "fix": {
+    "files": ["packages/server/src/modules/registry/registry-reference-policy.ts",
+      "packages/server/src/modules/registry/registry-metadata.ts"],
+    "change": [
+      "permitsDraftedMapSource(source): profile geojson-manual-v1 and isRetainedMapOriginal (the GeoJSON recipe",
+      "receipt the batch drafts from). registrySourceTx's status gate admits it; nothing else changes."
+    ],
+    "unchanged": ["other operator", "other site", "archived case", "changed receipt bytes", "non-recipe profile",
+      "unconfirmed table (RC1)", "needs_input streamed map (RC1 test)"],
+    "rejectedAlternatives": [
+      "committed-package check: 1.2 s per call (package bodies detoasted, 105 rows)",
+      "committed-feature check: 1.0-3.4 s per call (183308 physical_features, no index)"
+    ],
+    "test": [
+      "registry-retained-table.test.ts: draftedFootprints() from the real row and record shapes; RC1's",
+      "confirmation fixture now carries the real pin keys. Without the fix the new test fails with",
+      "REGISTRY_SOURCE_UNAVAILABLE."
+    ]
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": ["npx tsx --tsconfig packages/server/tsconfig.json --test <server>/registry/*.test.ts",
+      "<server>/usp/packets/*.test.ts <server>/usp/ingestion/intake-evidence*.test.ts",
+      "<server>/usp/ingestion/intake-run.test.ts tests/registry-reference-policy.test.ts"],
+      "from": "repo root", "exit": 0, "tests": 233, "pass": 233,
+      "note": "run first from packages/server: 22 fail for cwd paths only (services/geo, docs/evidence)" }
+  ],
+  "runtime": {
+    "served": "20851a3c90122159b64724f855a01b10ea395dd5",
+    "rollSteps": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": 0 },
+    "action": "POST /ingestion/cases/{caseId}/confirmations/{confirmationId}/retry with {} (the Studio's retry)",
+    "retryStatus": 202,
+    "sourceRefusalGone": true,
+    "citationDraft": { "id": "67a63f62-f1dd-46e9-b8b0-b526a306e8b5", "status": "draft", "revision": 2,
+      "citation": { "version": "registry-table-row-citation/1", "sourceId": "6a1b77b5-0302-480e-8688-8a4e6b3f7c41",
+        "sourceRow": 168, "columnHeader": "bin", "targetRecordRevision": 1 } },
+    "after": { "stage": 3, "readiness": "stopped", "blockedBy": ["INTAKE_RUN_INPUT"],
+      "reason": "Too small: expected array to have >=3 items",
+      "jobId": "a4a54d22-d89a-4905-a217-0002cd845238" },
+    "card": null,
+    "cardMade": false
+  },
+  "secondCause": [
+    "With the source admitted, the draft and its table-row citation are written; prepareRegistryReview then",
+    "parses the proposed record with recordBodySchema (registry.ts evidenceChecks), which needs a footprint of",
+    "3+ points and has no representation key, so the exterior-only building (footprint [], physical_exterior)",
+    "cannot pass registry review. registryReviewInputs already drops current exterior-only records from the",
+    "geo relationship check; a proposed one is not dropped. Not fixed here: it changes registry review policy",
+    "for exterior-only buildings and may reach the services/geo validator (image)."
+  ],
+  "rehearsalStateLeft": {
+    "target": "0098370d now stopped with INTAKE_RUN_INPUT (was REGISTRY_SOURCE_UNAVAILABLE)",
+    "openDraft": "67a63f62 (intake request key; a later retry reuses it)",
+    "rolledBackTo": "1a226949521aa4c5dbde05d0e8a3e9c92bd41d74",
+    "rollBackSteps": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": 0,
+      "checkoutClean": true },
+    "stopped": "platform:stop exit 0; all six ulpin-reh-02 containers exited"
+  },
+  "demoDoctor": { "before": { "commit": "8d6e19fa", "result": "all checks passed", "health": 200 },
+    "after": { "commit": "8d6e19fa", "checkoutClean": true, "pass": 28, "result": "all checks passed",
+      "health": 200 } }
+}
