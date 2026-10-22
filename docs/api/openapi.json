@@ -116766,6 +116766,24 @@
                             "selection": {
                               "type": "object",
                               "properties": {
+                                "delimiter": {
+                                  "type": "string",
+                                  "enum": [
+                                    ",",
+                                    ";",
+                                    "\t",
+                                    "|"
+                                  ]
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "utf-8",
+                                    "utf-16le",
+                                    "utf-16be",
+                                    "windows-1252"
+                                  ]
+                                },
                                 "format": {
                                   "type": "string",
                                   "enum": [
@@ -132478,6 +132496,24 @@
                             "selection": {
                               "type": "object",
                               "properties": {
+                                "delimiter": {
+                                  "type": "string",
+                                  "enum": [
+                                    ",",
+                                    ";",
+                                    "\t",
+                                    "|"
+                                  ]
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "utf-8",
+                                    "utf-16le",
+                                    "utf-16be",
+                                    "windows-1252"
+                                  ]
+                                },
                                 "format": {
                                   "type": "string",
                                   "enum": [
@@ -148476,6 +148512,24 @@
                             "selection": {
                               "type": "object",
                               "properties": {
+                                "delimiter": {
+                                  "type": "string",
+                                  "enum": [
+                                    ",",
+                                    ";",
+                                    "\t",
+                                    "|"
+                                  ]
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "utf-8",
+                                    "utf-16le",
+                                    "utf-16be",
+                                    "windows-1252"
+                                  ]
+                                },
                                 "format": {
                                   "type": "string",
                                   "enum": [
@@ -237096,6 +237150,24 @@
                             "selection": {
                               "type": "object",
                               "properties": {
+                                "delimiter": {
+                                  "type": "string",
+                                  "enum": [
+                                    ",",
+                                    ";",
+                                    "\t",
+                                    "|"
+                                  ]
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "utf-8",
+                                    "utf-16le",
+                                    "utf-16be",
+                                    "windows-1252"
+                                  ]
+                                },
                                 "format": {
                                   "type": "string",
                                   "enum": [
@@ -372448,6 +372520,24 @@
                       "selection": {
                         "type": "object",
                         "properties": {
+                          "delimiter": {
+                            "type": "string",
+                            "enum": [
+                              ",",
+                              ";",
+                              "\t",
+                              "|"
+                            ]
+                          },
+                          "encoding": {
+                            "type": "string",
+                            "enum": [
+                              "utf-8",
+                              "utf-16le",
+                              "utf-16be",
+                              "windows-1252"
+                            ]
+                          },
                           "format": {
                             "type": "string",
                             "enum": [
@@ -372536,6 +372626,24 @@
                       "selection": {
                         "type": "object",
                         "properties": {
+                          "delimiter": {
+                            "type": "string",
+                            "enum": [
+                              ",",
+                              ";",
+                              "\t",
+                              "|"
+                            ]
+                          },
+                          "encoding": {
+                            "type": "string",
+                            "enum": [
+                              "utf-8",
+                              "utf-16le",
+                              "utf-16be",
+                              "windows-1252"
+                            ]
+                          },
                           "format": {
                             "type": "string",
                             "enum": [
@@ -372669,6 +372777,24 @@
               "profile": {
                 "type": "object",
                 "properties": {
+                  "delimiter": {
+                    "type": "string",
+                    "enum": [
+                      ",",
+                      ";",
+                      "\t",
+                      "|"
+                    ]
+                  },
+                  "encoding": {
+                    "type": "string",
+                    "enum": [
+                      "utf-8",
+                      "utf-16le",
+                      "utf-16be",
+                      "windows-1252"
+                    ]
+                  },
                   "version": {
                     "type": "string",
                     "enum": [
@@ -372908,6 +373034,24 @@
           "selection": {
             "type": "object",
             "properties": {
+              "delimiter": {
+                "type": "string",
+                "enum": [
+                  ",",
+                  ";",
+                  "\t",
+                  "|"
+                ]
+              },
+              "encoding": {
+                "type": "string",
+                "enum": [
+                  "utf-8",
+                  "utf-16le",
+                  "utf-16be",
+                  "windows-1252"
+                ]
+              },
               "format": {
                 "type": "string",
                 "enum": [
@@ -373736,6 +373880,24 @@
                           "selection": {
                             "type": "object",
                             "properties": {
+                              "delimiter": {
+                                "type": "string",
+                                "enum": [
+                                  ",",
+                                  ";",
+                                  "\t",
+                                  "|"
+                                ]
+                              },
+                              "encoding": {
+                                "type": "string",
+                                "enum": [
+                                  "utf-8",
+                                  "utf-16le",
+                                  "utf-16be",
+                                  "windows-1252"
+                                ]
+                              },
                               "format": {
                                 "type": "string",
                                 "enum": [
@@ -373824,6 +373986,24 @@
                           "selection": {
                             "type": "object",
                             "properties": {
+                              "delimiter": {
+                                "type": "string",
+                                "enum": [
+                                  ",",
+                                  ";",
+                                  "\t",
+                                  "|"
+                                ]
+                              },
+                              "encoding": {
+                                "type": "string",
+                                "enum": [
+                                  "utf-8",
+                                  "utf-16le",
+                                  "utf-16be",
+                                  "windows-1252"
+                                ]
+                              },
                               "format": {
                                 "type": "string",
                                 "enum": [
@@ -374767,6 +374947,24 @@
                           "selection": {
                             "type": "object",
                             "properties": {
+                              "delimiter": {
+                                "type": "string",
+                                "enum": [
+                                  ",",
+                                  ";",
+                                  "\t",
+                                  "|"
+                                ]
+                              },
+                              "encoding": {
+                                "type": "string",
+                                "enum": [
+                                  "utf-8",
+                                  "utf-16le",
+                                  "utf-16be",
+                                  "windows-1252"
+                                ]
+                              },
                               "format": {
                                 "type": "string",
                                 "enum": [
@@ -374855,6 +375053,24 @@
                           "selection": {
                             "type": "object",
                             "properties": {
+                              "delimiter": {
+                                "type": "string",
+                                "enum": [
+                                  ",",
+                                  ";",
+                                  "\t",
+                                  "|"
+                                ]
+                              },
+                              "encoding": {
+                                "type": "string",
+                                "enum": [
+                                  "utf-8",
+                                  "utf-16le",
+                                  "utf-16be",
+                                  "windows-1252"
+                                ]
+                              },
                               "format": {
                                 "type": "string",
                                 "enum": [
@@ -375806,6 +376022,24 @@
                             "selection": {
                               "type": "object",
                               "properties": {
+                                "delimiter": {
+                                  "type": "string",
+                                  "enum": [
+                                    ",",
+                                    ";",
+                                    "\t",
+                                    "|"
+                                  ]
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "utf-8",
+                                    "utf-16le",
+                                    "utf-16be",
+                                    "windows-1252"
+                                  ]
+                                },
                                 "format": {
                                   "type": "string",
                                   "enum": [
@@ -375894,6 +376128,24 @@
                             "selection": {
                               "type": "object",
                               "properties": {
+                                "delimiter": {
+                                  "type": "string",
+                                  "enum": [
+                                    ",",
+                                    ";",
+                                    "\t",
+                                    "|"
+                                  ]
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "enum": [
+                                    "utf-8",
+                                    "utf-16le",
+                                    "utf-16be",
+                                    "windows-1252"
+                                  ]
+                                },
                                 "format": {
                                   "type": "string",
                                   "enum": [
@@ -377029,6 +377281,24 @@
                           "selection": {
                             "type": "object",
                             "properties": {
+                              "delimiter": {
+                                "type": "string",
+                                "enum": [
+                                  ",",
+                                  ";",
+                                  "\t",
+                                  "|"
+                                ]
+                              },
+                              "encoding": {
+                                "type": "string",
+                                "enum": [
+                                  "utf-8",
+                                  "utf-16le",
+                                  "utf-16be",
+                                  "windows-1252"
+                                ]
+                              },
                               "format": {
                                 "type": "string",
                                 "enum": [
@@ -377436,6 +377706,24 @@
                         "selection": {
                           "type": "object",
                           "properties": {
+                            "delimiter": {
+                              "type": "string",
+                              "enum": [
+                                ",",
+                                ";",
+                                "\t",
+                                "|"
+                              ]
+                            },
+                            "encoding": {
+                              "type": "string",
+                              "enum": [
+                                "utf-8",
+                                "utf-16le",
+                                "utf-16be",
+                                "windows-1252"
+                              ]
+                            },
                             "format": {
                               "type": "string",
                               "enum": [
@@ -378001,6 +378289,24 @@
                 "selection": {
                   "type": "object",
                   "properties": {
+                    "delimiter": {
+                      "type": "string",
+                      "enum": [
+                        ",",
+                        ";",
+                        "\t",
+                        "|"
+                      ]
+                    },
+                    "encoding": {
+                      "type": "string",
+                      "enum": [
+                        "utf-8",
+                        "utf-16le",
+                        "utf-16be",
+                        "windows-1252"
+                      ]
+                    },
                     "format": {
                       "type": "string",
                       "enum": [
@@ -378152,6 +378458,24 @@
                     "selection": {
                       "type": "object",
                       "properties": {
+                        "delimiter": {
+                          "type": "string",
+                          "enum": [
+                            ",",
+                            ";",
+                            "\t",
+                            "|"
+                          ]
+                        },
+                        "encoding": {
+                          "type": "string",
+                          "enum": [
+                            "utf-8",
+                            "utf-16le",
+                            "utf-16be",
+                            "windows-1252"
+                          ]
+                        },
                         "format": {
                           "type": "string",
                           "enum": [
@@ -379869,6 +380193,24 @@
                                     "selection": {
                                       "type": "object",
                                       "properties": {
+                                        "delimiter": {
+                                          "type": "string",
+                                          "enum": [
+                                            ",",
+                                            ";",
+                                            "\t",
+                                            "|"
+                                          ]
+                                        },
+                                        "encoding": {
+                                          "type": "string",
+                                          "enum": [
+                                            "utf-8",
+                                            "utf-16le",
+                                            "utf-16be",
+                                            "windows-1252"
+                                          ]
+                                        },
                                         "format": {
                                           "type": "string",
                                           "enum": [
@@ -380555,6 +380897,24 @@
                                         "selection": {
                                           "type": "object",
                                           "properties": {
+                                            "delimiter": {
+                                              "type": "string",
+                                              "enum": [
+                                                ",",
+                                                ";",
+                                                "\t",
+                                                "|"
+                                              ]
+                                            },
+                                            "encoding": {
+                                              "type": "string",
+                                              "enum": [
+                                                "utf-8",
+                                                "utf-16le",
+                                                "utf-16be",
+                                                "windows-1252"
+                                              ]
+                                            },
                                             "format": {
                                               "type": "string",
                                               "enum": [
@@ -399059,6 +399419,24 @@
                       "selection": {
                         "type": "object",
                         "properties": {
+                          "delimiter": {
+                            "type": "string",
+                            "enum": [
+                              ",",
+                              ";",
+                              "\t",
+                              "|"
+                            ]
+                          },
+                          "encoding": {
+                            "type": "string",
+                            "enum": [
+                              "utf-8",
+                              "utf-16le",
+                              "utf-16be",
+                              "windows-1252"
+                            ]
+                          },
                           "format": {
                             "type": "string",
                             "enum": [
@@ -399147,6 +399525,24 @@
                       "selection": {
                         "type": "object",
                         "properties": {
+                          "delimiter": {
+                            "type": "string",
+                            "enum": [
+                              ",",
+                              ";",
+                              "\t",
+                              "|"
+                            ]
+                          },
+                          "encoding": {
+                            "type": "string",
+                            "enum": [
+                              "utf-8",
+                              "utf-16le",
+                              "utf-16be",
+                              "windows-1252"
+                            ]
+                          },
                           "format": {
                             "type": "string",
                             "enum": [
@@ -399519,6 +399915,24 @@
                   "selection": {
                     "type": "object",
                     "properties": {
+                      "delimiter": {
+                        "type": "string",
+                        "enum": [
+                          ",",
+                          ";",
+                          "\t",
+                          "|"
+                        ]
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": [
+                          "utf-8",
+                          "utf-16le",
+                          "utf-16be",
+                          "windows-1252"
+                        ]
+                      },
                       "format": {
                         "type": "string",
                         "enum": [
@@ -399607,6 +400021,24 @@
                   "selection": {
                     "type": "object",
                     "properties": {
+                      "delimiter": {
+                        "type": "string",
+                        "enum": [
+                          ",",
+                          ";",
+                          "\t",
+                          "|"
+                        ]
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": [
+                          "utf-8",
+                          "utf-16le",
+                          "utf-16be",
+                          "windows-1252"
+                        ]
+                      },
                       "format": {
                         "type": "string",
                         "enum": [
@@ -400039,6 +400471,24 @@
                   "selection": {
                     "type": "object",
                     "properties": {
+                      "delimiter": {
+                        "type": "string",
+                        "enum": [
+                          ",",
+                          ";",
+                          "\t",
+                          "|"
+                        ]
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": [
+                          "utf-8",
+                          "utf-16le",
+                          "utf-16be",
+                          "windows-1252"
+                        ]
+                      },
                       "format": {
                         "type": "string",
                         "enum": [
@@ -400127,6 +400577,24 @@
                   "selection": {
                     "type": "object",
                     "properties": {
+                      "delimiter": {
+                        "type": "string",
+                        "enum": [
+                          ",",
+                          ";",
+                          "\t",
+                          "|"
+                        ]
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": [
+                          "utf-8",
+                          "utf-16le",
+                          "utf-16be",
+                          "windows-1252"
+                        ]
+                      },
                       "format": {
                         "type": "string",
                         "enum": [
@@ -400369,6 +400837,24 @@
                   "selection": {
                     "type": "object",
                     "properties": {
+                      "delimiter": {
+                        "type": "string",
+                        "enum": [
+                          ",",
+                          ";",
+                          "\t",
+                          "|"
+                        ]
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": [
+                          "utf-8",
+                          "utf-16le",
+                          "utf-16be",
+                          "windows-1252"
+                        ]
+                      },
                       "format": {
                         "type": "string",
                         "enum": [
@@ -400457,6 +400943,24 @@
                   "selection": {
                     "type": "object",
                     "properties": {
+                      "delimiter": {
+                        "type": "string",
+                        "enum": [
+                          ",",
+                          ";",
+                          "\t",
+                          "|"
+                        ]
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": [
+                          "utf-8",
+                          "utf-16le",
+                          "utf-16be",
+                          "windows-1252"
+                        ]
+                      },
                       "format": {
                         "type": "string",
                         "enum": [
@@ -401331,6 +401835,24 @@
                       "selection": {
                         "type": "object",
                         "properties": {
+                          "delimiter": {
+                            "type": "string",
+                            "enum": [
+                              ",",
+                              ";",
+                              "\t",
+                              "|"
+                            ]
+                          },
+                          "encoding": {
+                            "type": "string",
+                            "enum": [
+                              "utf-8",
+                              "utf-16le",
+                              "utf-16be",
+                              "windows-1252"
+                            ]
+                          },
                           "format": {
                             "type": "string",
                             "enum": [
@@ -401419,6 +401941,24 @@
                       "selection": {
                         "type": "object",
                         "properties": {
+                          "delimiter": {
+                            "type": "string",
+                            "enum": [
+                              ",",
+                              ";",
+                              "\t",
+                              "|"
+                            ]
+                          },
+                          "encoding": {
+                            "type": "string",
+                            "enum": [
+                              "utf-8",
+                              "utf-16le",
+                              "utf-16be",
+                              "windows-1252"
+                            ]
+                          },
                           "format": {
                             "type": "string",
                             "enum": [
@@ -401526,6 +402066,24 @@
                   "profile": {
                     "type": "object",
                     "properties": {
+                      "delimiter": {
+                        "type": "string",
+                        "enum": [
+                          ",",
+                          ";",
+                          "\t",
+                          "|"
+                        ]
+                      },
+                      "encoding": {
+                        "type": "string",
+                        "enum": [
+                          "utf-8",
+                          "utf-16le",
+                          "utf-16be",
+                          "windows-1252"
+                        ]
+                      },
                       "version": {
                         "type": "string",
                         "enum": [
