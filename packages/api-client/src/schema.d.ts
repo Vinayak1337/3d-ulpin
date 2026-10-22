@@ -20983,6 +20983,21 @@ export interface components {
                         projectedIndices: number;
                         missingCompanionCount: number;
                         unsupportedPrimitiveCount: number;
+                        companions?: {
+                            /** @enum {string} */
+                            kind: "buffer" | "image";
+                            index: number;
+                            name: string;
+                            /** @enum {string} */
+                            state: "joined" | "missing" | "refused";
+                            reason: string | null;
+                            /** Format: uuid */
+                            sourceId: string | null;
+                            sha256: string | null;
+                            bytes: number | null;
+                        }[];
+                        joinedCompanionCount?: number;
+                        refusedCompanionCount?: number;
                         /** @enum {string} */
                         globalPlacement: "unknown";
                         /** @enum {string} */
@@ -38354,6 +38369,21 @@ export interface components {
                         projectedIndices: number;
                         missingCompanionCount: number;
                         unsupportedPrimitiveCount: number;
+                        companions?: {
+                            /** @enum {string} */
+                            kind: "buffer" | "image";
+                            index: number;
+                            name: string;
+                            /** @enum {string} */
+                            state: "joined" | "missing" | "refused";
+                            reason: string | null;
+                            /** Format: uuid */
+                            sourceId: string | null;
+                            sha256: string | null;
+                            bytes: number | null;
+                        }[];
+                        joinedCompanionCount?: number;
+                        refusedCompanionCount?: number;
                         /** @enum {string} */
                         globalPlacement: "unknown";
                         /** @enum {string} */
@@ -53955,6 +53985,21 @@ export interface components {
                         projectedIndices: number;
                         missingCompanionCount: number;
                         unsupportedPrimitiveCount: number;
+                        companions?: {
+                            /** @enum {string} */
+                            kind: "buffer" | "image";
+                            index: number;
+                            name: string;
+                            /** @enum {string} */
+                            state: "joined" | "missing" | "refused";
+                            reason: string | null;
+                            /** Format: uuid */
+                            sourceId: string | null;
+                            sha256: string | null;
+                            bytes: number | null;
+                        }[];
+                        joinedCompanionCount?: number;
+                        refusedCompanionCount?: number;
                         /** @enum {string} */
                         globalPlacement: "unknown";
                         /** @enum {string} */
@@ -56257,6 +56302,21 @@ export interface components {
                             projectedIndices: number;
                             missingCompanionCount: number;
                             unsupportedPrimitiveCount: number;
+                            companions?: {
+                                /** @enum {string} */
+                                kind: "buffer" | "image";
+                                index: number;
+                                name: string;
+                                /** @enum {string} */
+                                state: "joined" | "missing" | "refused";
+                                reason: string | null;
+                                /** Format: uuid */
+                                sourceId: string | null;
+                                sha256: string | null;
+                                bytes: number | null;
+                            }[];
+                            joinedCompanionCount?: number;
+                            refusedCompanionCount?: number;
                             /** @enum {string} */
                             globalPlacement: "unknown";
                             /** @enum {string} */
@@ -70516,6 +70576,21 @@ export interface components {
                                 projectedIndices: number;
                                 missingCompanionCount: number;
                                 unsupportedPrimitiveCount: number;
+                                companions?: {
+                                    /** @enum {string} */
+                                    kind: "buffer" | "image";
+                                    index: number;
+                                    name: string;
+                                    /** @enum {string} */
+                                    state: "joined" | "missing" | "refused";
+                                    reason: string | null;
+                                    /** Format: uuid */
+                                    sourceId: string | null;
+                                    sha256: string | null;
+                                    bytes: number | null;
+                                }[];
+                                joinedCompanionCount?: number;
+                                refusedCompanionCount?: number;
                                 /** @enum {string} */
                                 globalPlacement: "unknown";
                                 /** @enum {string} */
@@ -70938,6 +71013,21 @@ export interface components {
                                 projectedIndices: number;
                                 missingCompanionCount: number;
                                 unsupportedPrimitiveCount: number;
+                                companions?: {
+                                    /** @enum {string} */
+                                    kind: "buffer" | "image";
+                                    index: number;
+                                    name: string;
+                                    /** @enum {string} */
+                                    state: "joined" | "missing" | "refused";
+                                    reason: string | null;
+                                    /** Format: uuid */
+                                    sourceId: string | null;
+                                    sha256: string | null;
+                                    bytes: number | null;
+                                }[];
+                                joinedCompanionCount?: number;
+                                refusedCompanionCount?: number;
                                 /** @enum {string} */
                                 globalPlacement: "unknown";
                                 /** @enum {string} */
@@ -73482,6 +73572,21 @@ export interface components {
                     projectedIndices: number;
                     missingCompanionCount: number;
                     unsupportedPrimitiveCount: number;
+                    companions?: {
+                        /** @enum {string} */
+                        kind: "buffer" | "image";
+                        index: number;
+                        name: string;
+                        /** @enum {string} */
+                        state: "joined" | "missing" | "refused";
+                        reason: string | null;
+                        /** Format: uuid */
+                        sourceId: string | null;
+                        sha256: string | null;
+                        bytes: number | null;
+                    }[];
+                    joinedCompanionCount?: number;
+                    refusedCompanionCount?: number;
                     /** @enum {string} */
                     globalPlacement: "unknown";
                     /** @enum {string} */
