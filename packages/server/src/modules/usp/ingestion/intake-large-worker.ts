@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import type { MapArea } from '@ulpin/contracts';
+import { StreamingVectorGeometrySummarySchema } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange } from '../../../infrastructure/storage';
@@ -15,7 +16,7 @@ import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intake
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
-import { readIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
+import { readIntakeDraftTx, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
 import { IntakePackageCutter, type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import type { ProvedAreaPartInput } from './proved-area-part';
@@ -47,11 +48,39 @@ async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt,
   });
 }
 
+/** Only a complete, matching accepted summary supplies kind counts; multipart members are never guessed. */
+export function intakeLargeGeometryProjection(projection: IntakeLargeState, rawSummary: unknown,
+  rawJobId: string, accepted: number): IntakeLargeState {
+  const parsed = StreamingVectorGeometrySummarySchema.safeParse(rawSummary);
+  if (!parsed.success || parsed.data.rawJobId !== rawJobId) return projection;
+  const counts = parsed.data.counts;
+  if (Object.values(counts).reduce((total, count) => total + count, 0) !== accepted) return projection;
+  const nonFootprints = (['Point', 'MultiPoint', 'LineString', 'MultiLineString'] as const)
+    .filter(kind => counts[kind] !== undefined)
+    .map(kind => `${counts[kind]} ${kind} feature${counts[kind] === 1 ? '' : 's'}`);
+  if (!nonFootprints.length) return projection;
+  const words = `Read ${nonFootprints.join(' / ')}; they are not footprints.`;
+  const readOnly = !counts.Polygon && !counts.MultiPolygon
+    && projection.state === 'probed' && projection.placement === 'needs_answer';
+  return { ...projection, state: readOnly ? 'read' : projection.state,
+    limitReason: [words, projection.limitReason].filter(Boolean).join(' ') };
+}
+
+function geometryProjection(projection: IntakeLargeState, state: State): IntakeLargeState {
+  const raw = state.store.reader;
+  if (!raw || !intakeLargeRows(state.store, state.source).receiptVerified) return projection;
+  return intakeLargeGeometryProjection(projection, state.source.inspection?.streamedGeometrySummary,
+    raw.job_id, raw.records - raw.quarantined);
+}
+
 async function publishTx(client: PoolClient, input: IntakeLargeInput, state: State) {
   if (intakeLargeAtRest(state.item)) return;
   const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
+  const projection = intakeLargeProjection(phase, rows, state.store,
+    intakeLargeFailureContext(state.store, state.source));
+  const closed = !['start', 'read', 'failure'].includes(phase);
   await writeIntakeLargeTx(client, input.caseId, input.itemId,
-    intakeLargeProjection(phase, rows, state.store, intakeLargeFailureContext(state.store, state.source)));
+    closed ? geometryProjection(projection, state) : projection);
 }
 
 /** Every step ends here: the row shows its stored state and the transaction queues the next state's job. */
@@ -183,10 +212,11 @@ function heldThrough(fold: Fold, cut: IntakePackageCut | undefined): number {
 async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fold, state: State) {
   const parts = (await client.query(`SELECT count(*)::int n,COALESCE(sum((counts->>'accepted')::int),0)::int accepted
     FROM usp_intake_parts WHERE item_id=$1`, [input.itemId])).rows[0];
-  await writeIntakeLargeTx(client, input.caseId, input.itemId, intakeLargeEnd({ recordsRead: fold.recordsRead,
+  const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
     duplicates: fold.conflicts.size, oversized: fold.held + fold.pending.length },
-  intakeLargePlan(state.store.recipe)));
+  intakeLargePlan(state.store.recipe));
+  await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
 }
 
 /** One cut, one transaction: it drafts only while the fold's stored context is unchanged, and queues what follows.

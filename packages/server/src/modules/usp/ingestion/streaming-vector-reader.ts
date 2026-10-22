@@ -222,11 +222,46 @@ export function tabularSourceRecord(item: SourceFeature): StreamingVectorRecord 
     disposition: 'accepted', issueCode: null, feature: item.feature };
 }
 
-function ringIssue(value:unknown):string|null{
-  if(!Array.isArray(value)||value.length<4||value.length>2048)return 'RING_BUDGET_OR_SHAPE';
-  for(const item of value)if(!Array.isArray(item)||item.length<2||item.length>4||item.some(v=>typeof v!=='number'||!Number.isFinite(v)))return 'INVALID_COORDINATE';
-  const first=value[0] as number[],last=value.at(-1) as number[];
-  if(first[0]!==last[0]||first[1]!==last[1])return 'OPEN_RING';
+type Positions={count:number;dimensions:number|null};
+function positionIssue(value:unknown,positions:Positions):string|null{
+  if(!Array.isArray(value)||value.length<2||value.some(v=>typeof v!=='number'||!Number.isFinite(v)))
+    return 'INVALID_COORDINATE';
+  if(value.length>3)return 'UNSUPPORTED_COORDINATE_DIMENSION';
+  if(positions.dimensions!==null&&positions.dimensions!==value.length)return 'MIXED_COORDINATE_DIMENSIONS';
+  positions.dimensions=value.length;
+  positions.count++;
+  return positions.count>limits.featurePositions?'GEOMETRY_BUDGET':null;
+}
+function lineIssue(value:unknown,positions:Positions,ring=false):string|null{
+  const shapeIssue=ring?'RING_BUDGET_OR_SHAPE':'LINE_BUDGET_OR_SHAPE';
+  if(!Array.isArray(value)||value.length<(ring?4:2)||ring&&value.length>2048)return shapeIssue;
+  for(const item of value){const issue=positionIssue(item,positions);if(issue)return issue;}
+  if(ring){
+    const first=value[0] as number[],last=value.at(-1) as number[];
+    if(first[0]!==last[0]||first[1]!==last[1])return 'OPEN_RING';
+  }
+  return null;
+}
+function geometryIssue(g:Record<string,unknown>):string|null{
+  if(Object.hasOwn(g,'crs'))return 'FEATURE_CRS_OVERRIDE';
+  const positions:Positions={count:0,dimensions:null};
+  if(g.type==='Point')return positionIssue(g.coordinates,positions);
+  if(g.type==='LineString')return lineIssue(g.coordinates,positions);
+  if(g.type==='MultiPoint'||g.type==='MultiLineString'){
+    if(!Array.isArray(g.coordinates)||!g.coordinates.length)return 'GEOMETRY_BUDGET_OR_SHAPE';
+    for(const part of g.coordinates){
+      const issue=g.type==='MultiPoint'?positionIssue(part,positions):lineIssue(part,positions);
+      if(issue)return issue;
+    }
+    return null;
+  }
+  const polygons=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:null;
+  if(!Array.isArray(polygons))return 'UNSUPPORTED_GEOMETRY';
+  if(!polygons.length)return 'POLYGON_BUDGET_OR_SHAPE';
+  for(const polygon of polygons){
+    if(!Array.isArray(polygon)||polygon.length<1||polygon.length>128)return 'POLYGON_BUDGET_OR_SHAPE';
+    for(const ring of polygon){const issue=lineIssue(ring,positions,true);if(issue)return issue;}
+  }
   return null;
 }
 export function validateStreamingFeature(value:unknown):string|null{
@@ -238,18 +273,7 @@ export function validateStreamingFeature(value:unknown):string|null{
     (typeof feature.properties!=='object'||Array.isArray(feature.properties)))return 'INVALID_PROPERTIES';
   const geometry=feature.geometry;
   if(!geometry||typeof geometry!=='object'||Array.isArray(geometry))return 'MISSING_GEOMETRY';
-  const g=geometry as Record<string,unknown>;
-  const polygons=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:null;
-  if(!Array.isArray(polygons))return 'UNSUPPORTED_GEOMETRY';
-  if(!polygons.length)return 'POLYGON_BUDGET_OR_SHAPE';
-  let positions=0;
-  for(const polygon of polygons){
-    if(!Array.isArray(polygon)||polygon.length<1||polygon.length>128)return 'POLYGON_BUDGET_OR_SHAPE';
-    for(const ring of polygon){positions+=Array.isArray(ring)?ring.length:0;if(positions>limits.featurePositions)return 'GEOMETRY_BUDGET';
-      const issue=ringIssue(ring);if(issue)return issue;
-    }
-  }
-  return null;
+  return geometryIssue(geometry as Record<string,unknown>);
 }
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
   const issueCode=item.valueIssueCode??validateStreamingFeature(item.feature);
