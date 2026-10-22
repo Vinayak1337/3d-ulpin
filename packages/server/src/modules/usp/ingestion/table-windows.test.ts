@@ -13,6 +13,7 @@ import { createContractValidator } from '../../../../../../apps/studio/src/local
 import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
 import { settings } from '../../../infrastructure/config';
 import { transaction } from '../../../infrastructure/db';
+import { AppError } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import type { UspJobAttempt } from '../jobs';
 import { mapTableWindow, publishTableWindowTx } from './chunk-mapping-tabular';
@@ -359,7 +360,12 @@ test('TP1: a large CSV request queues one job and returns; a replay queues none;
     assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), queued, 'replayed');
     assert.equal(store.jobs.length, 1, 'a replay queues none');
     await assert.rejects(service.tableFromOriginal(store.caseId, store.sourceId,
-      { ...request, requestKey: randomUUID() }), { code: 'STALE_REVISION' }, 'one read of an original at a time');
+      { ...request, requestKey: randomUUID() }), {
+      status: 409, code: 'STALE_REVISION',
+      message: 'This original is already being read as a table; follow that read.',
+      details: { existingTable: { caseId: store.caseId, sourceId: store.sourceId, jobId: queued.jobId } },
+    }, 'one read of an original at a time, naming that read');
+    assert.equal(store.jobs.length, 1, 'the conflict queues no second read');
     await runTableProfileJob(queued.jobId);
     assert.equal(store.source.inspection.manualProfile.records, 200_000);
     assert.equal(store.caseRevision, 1);
@@ -454,6 +460,21 @@ async function keptTable(file: string, chosen: typeof selection | typeof workboo
   assert.deepEqual([store.jobs.length, store.caseRevision, store.source.profile], [0, 1, 'large-original-v1']);
   assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), profile, 'replayed');
   assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', profile), []);
+  mock.method(S3Client.prototype, 'send', async () => { throw new Error('The table must not be read twice.'); });
+  await assert.rejects(service.tableFromOriginal(store.caseId, store.sourceId,
+    { ...request, requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision }),
+  (error: unknown) => {
+    assert.ok(error instanceof AppError);
+    assert.equal(error.status, 409);
+    assert.deepEqual(error.details, { existingTable: {
+      caseId: store.caseId, sourceId: store.sourceId, tableId: store.sourceId,
+    } });
+    assert.deepEqual(validate('GET_demo_assets_real_nyc_asset_Response_400_application_json', {
+      error: { code: error.code, message: error.message, details: error.details, requestId: randomUUID() },
+    }), [], 'the table route uses this common error envelope for its 409');
+    return true;
+  });
+  assert.deepEqual([store.source.sha256, store.jobs.length, store.caseRevision], [sha(store.bytes), 0, 1]);
 }
 const workbook = { format: 'xlsx' as const, sheet: 'T_18', table: null, headerRows: [4, 5] };
 

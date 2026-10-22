@@ -1,0 +1,55 @@
+{
+  "task": "TL1",
+  "title": "A duplicate table read points to the existing table",
+  "gate": "TB2-open-1",
+  "branch": "task/tl1-table-again",
+  "base": "6323b054",
+  "runtime": "Offline only; no Docker, database, API listener or deployment.",
+  "report": {
+    "WORKS": "A completed-table 409 in the standalone import dialog offers Open that table, using the existing source-backed table page.",
+    "SEE IT": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/table/TableImportDialog.test.tsx",
+    "INPUTS": "mi-d10-02.csv; mi-d19-01.xlsx, RBI T_18 with header rows 4 and 5; existing generated test_only controls.",
+    "GAPS": "Live browser/navigation, keyboard traversal and zoom remain unqualified; no runtime used."
+  },
+  "refusals": [
+    { "at": "packages/server/src/modules/usp/ingestion/service.ts:362", "status": 409, "code": "STALE_REVISION", "message": "This original is already a table; open its table page.", "details": "existingTable: { caseId, sourceId, tableId }; this application's table ID is its source ID" },
+    { "at": "packages/server/src/modules/usp/ingestion/table-profile-worker.ts:37", "status": 409, "code": "STALE_REVISION", "message": "This original is already being read as a table; follow that read.", "details": "existingTable: { caseId, sourceId, jobId }; job ID is read from the existing queued/running job" }
+  ],
+  "design": [
+    "originalTableTx adds a table reference only after the existing case and operator checks and only for an actual table receipt. No source/object is copied, reread or written by the refusal.",
+    "queueTableProfileTx returns the existing read job in details without queuing another. Server status, codes and messages are unchanged.",
+    "TableImportDialog validates the completed table reference in the existing untyped error details and reuses tablePath for a router link. useRetainTable's existing 409 request-key reset is unchanged.",
+    "A queued read is not yet a table page: its dialog words remain unchanged. Other errors and malformed or absent details still use TableRefusal.",
+    "The common published 409 envelope already permits details. No route or schema changed; only two implementation source pins changed. OpenAPI and generated client output have no content diff."
+  ],
+  "inputs": [
+    { "path": "fixtures/usp/D8-messy-india/dev/d1b/mi-d10-02.csv", "role": "good real input", "result": "First read validates as a table; a new request for the same source returns 409 with its table reference. A second object read is forbidden by the test; hash, case revision and job count remain unchanged." },
+    { "path": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx", "role": "difficult real input", "selection": { "sheet": "T_18", "headerRows": [4, 5] }, "result": "Same duplicate-read assertions pass for the real multi-header RBI workbook; licence remains unconfirmed." }
+  ],
+  "safety": {
+    "preload": "C:/Users/kvina/AppData/Local/Temp/tl1-offline-jDVb5F/guard.cjs",
+    "environment": "Verification Node processes used NODE_OPTIONS=--require=<preload> to refuse .env, runtime and forbidden split-path filesystem access before application imports. No protected file was opened.",
+    "python": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe enabled the existing workbook tests. Scratch files stayed in the existing temporary-directory test paths."
+  },
+  "tests_first": {
+    "server": { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/table-batch-case.test.ts packages/server/src/modules/usp/ingestion/table-windows.test.ts", "exit": 1, "tests": 19, "failed": 2, "signature": "Completed and queued duplicate-read errors had no details." },
+    "studio": { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/table/TableImportDialog.test.tsx", "exit": 1, "tests": 4, "failed": 2, "signature": "The completed-table dialog had no plain words/link. The initial queued-link assertion was later narrowed to preserve unfinished-read words because that table page is not ready." }
+  },
+  "checks": [
+    { "command": "pnpm install --offline --ignore-scripts --frozen-lockfile", "exit": 0, "note": "Initial test launches returned 1 because dependencies were absent; offline install downloaded nothing." },
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/table-batch-case.test.ts packages/server/src/modules/usp/ingestion/table-windows.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts", "exit": 0, "tests": 317, "pass": 317, "fail": 0, "skipped": 0 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "exit": 0, "files": 48, "tests": 261, "pass": 261, "fail": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc", "exit": 0, "note": "The first openapi --check returned 1 for stale implementation pins, not schema drift." },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "operations": 329, "schemas": 372 },
+    { "command": "pnpm studio:api-types", "exit": 0, "note": "Generated client has no content change." },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 6323b054", "exit": 0, "report": "docs/evidence/tl1/ui-design-check.md", "note": "Scanner covers apps/web; Studio diff also checked directly." },
+    { "command": "git diff --check", "exit": 0 }
+  ],
+  "recovery": [
+    "An initial Studio schema import failed typecheck: that module has a deliberately narrow declaration surface. The dialog instead validates its untyped error-detail IDs locally without widening shared contracts or declarations.",
+    "The first full Studio run exposed an existing complete hook mock that did not include a new helper export. Keeping the error-detail reader private to the dialog removed that seam; the final full intake set passes."
+  ],
+  "next": "Review and integrate; qualify the link once on the lead-owned runtime. No push performed."
+}

@@ -6,6 +6,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import type { Pool } from 'pg';
 import { TabularSourceProfileSchema } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
+import { AppError } from '../../../infrastructure/errors';
 import { ManualIngestionService } from './service';
 
 const subject = 'tj1-batch-table-control';
@@ -107,6 +108,40 @@ test('TJ1: a table kept as an item of a site-bound batch case is read there alth
       .inspectAny(batch.caseId, batch.sourceId));
     assert.deepEqual(back.headers, ['Key', 'Note'], 'the read table is read back in the batch case');
   });
+
+test('TL1: the same original read twice in its case refuses with the existing table id, without another read',
+  async () => {
+    const batch = new Batch({ packaged: true, item: true, property: false }).install();
+    await read(batch);
+    const original = structuredClone(batch.source);
+    mock.method(S3Client.prototype, 'send', async () => { throw new Error('The original must not be read again.'); });
+    await assert.rejects(read(batch), (error: unknown) => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.status, 409);
+      assert.equal(error.code, 'STALE_REVISION');
+      assert.equal(error.message, 'This original is already a table; open its table page.');
+      assert.deepEqual(error.details, { existingTable: {
+        caseId: batch.caseId, sourceId: batch.sourceId, tableId: batch.sourceId,
+      } });
+      return true;
+    });
+    assert.deepEqual(batch.source, original, 'the same hash, object and table receipt are kept unchanged');
+    assert.equal(batch.written, 1, 'no second table receipt');
+  });
+
+test('TL1: an unrelated workspace conflict keeps its words and has no existing-table details', async () => {
+  const batch = new Batch({ packaged: false, item: true, property: false }).install();
+  await assert.rejects(new ManualIngestionService().tableFromOriginal(batch.caseId, batch.sourceId,
+    { requestKey: randomUUID(), expectedWorkspaceRevision: batch.caseRevision - 1, selection }),
+  (error: unknown) => {
+    assert.ok(error instanceof AppError);
+    assert.equal(error.status, 409);
+    assert.equal(error.message, 'The source workspace changed; refresh first.');
+    assert.equal(error.details, undefined);
+    return true;
+  });
+  assert.equal(batch.written, 0);
+});
 
 test('TJ1: a packaged case that does not keep the source as a batch item still refuses the table read', async () => {
   const batch = new Batch({ packaged: true, item: false, property: false }).install();
