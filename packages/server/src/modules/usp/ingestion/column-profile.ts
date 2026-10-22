@@ -384,12 +384,12 @@ export function readColumnCsv(text: string, maxRows = 2000, delimiter = chooseTa
 }
 
 function csvColumns(bytes: Uint8Array, name: string): ProfiledInput {
-  const { text, delimiter, encoding } = detectDelimitedReading(bytes, name);
+  const { text, delimiter, encoding, encodingBasis } = detectDelimitedReading(bytes, name);
   const { headers, rows: cells } = readColumnCsv(text, Number.MAX_SAFE_INTEGER, delimiter);
   if (headers.some(header => !header.trim())) throw new Error('COLUMN_CSV_INVALID');
   const rows = cells.map(row => Object.fromEntries(headers.map((header, column) => [header, row[column]])));
   return { rows, profile: {
-    ...profileColumns(rows, headers.map(header => ({ name: header })), 'tabular'), delimiter, encoding,
+    ...profileColumns(rows, headers.map(header => ({ name: header })), 'tabular'), delimiter, encoding, encodingBasis,
   } };
 }
 

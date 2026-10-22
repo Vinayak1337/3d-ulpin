@@ -352,14 +352,21 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
 }
 type TableInventory=ReturnType<typeof inspectTabularSource>|Awaited<ReturnType<typeof inspectTabularStream>>;
 /** G13: the original kept through the large upload, before it becomes a table; refusals that need no read. */
-async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,actor:string,lock:'SHARE'|'UPDATE'){
+async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,actor:string,lock:'SHARE'|'UPDATE',
+  selection?:TabularSelection,previousProfileFingerprint?:string|null){
   const row=(await client.query(`SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR ${lock}`,
     [sourceId,caseId])).rows[0]??notFound('Retained source not found in this workspace.');
-  if(row.profile!=='large-original-v1')throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
-    'Only an original kept through the large upload is made a table here.');
-  if(row.inspection?.largeOriginal?.operatorSubject!==actor)
-    throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
-  if(row.inspection?.manualProfile)throw new AppError(409,'STALE_REVISION',
+  const prior=row.inspection?.manualProfile;
+  const reread=selection?.format==='csv'&&selection.encodingBasis==='officer_stated'&&Boolean(selection.encoding)
+    &&prior?.version==='manual-tabular/1'&&prior.tabular?.selection?.format==='csv';
+  if(row.profile!=='large-original-v1'&&!(row.profile==='tabular-manual-v1'&&reread))
+    throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
+      'Only a kept original or a table with an officer-stated encoding is read here.');
+  const owner=row.profile==='large-original-v1'?row.inspection?.largeOriginal?.operatorSubject:row.inspection?.actor;
+  if(owner!==actor)throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
+  if(previousProfileFingerprint!==undefined&&(prior?.schemaFingerprint??null)!==previousProfileFingerprint)
+    conflict('The table reading changed while it was read; refresh first.');
+  if(prior&&!reread)throw new AppError(409,'STALE_REVISION',
     'This original is already a table; open its table page.',isTableSource(row)?{
       existingTable:{caseId,sourceId:row.id,tableId:row.id},
     }:undefined);
@@ -383,14 +390,16 @@ async function queueTableReadTx(client:PoolClient,table:TableRequest,row:any,rev
 }
 /** TB2: a whole read that met the reader's record bound is read again by the stream job, with the same selection
  * and pinned to the original it read; no record is cut to fit. */
-async function streamedTable(table:TableRequest,read:{sha256:string;revision:number;object_key:string})
+async function streamedTable(table:TableRequest,read:{sha256:string;revision:number;object_key:string;
+  inspection?:{manualProfile?:{schemaFingerprint:string}}})
   :Promise<AnySourceProfile|TableProfileJob>{
   return transaction(async client=>{
     const scope=await workspace(client,table.caseId,table.sourceId);
     const replay=await operation(client,table.caseId,table.key,table.digest);
     if(replay)return replay.jobId?tableJobTx(client,replay.jobId):replay as AnySourceProfile;
     if(scope.revision!==table.input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
-    const row=await originalTableTx(client,table.caseId,table.sourceId,table.actor,'UPDATE');
+    const row=await originalTableTx(client,table.caseId,table.sourceId,table.actor,'UPDATE',table.input.selection,
+      read.inspection?.manualProfile?.schemaFingerprint??null);
     if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
       conflict('The original changed while it was read.');
     return queueTableReadTx(client,table,row,scope.revision);
@@ -411,15 +420,17 @@ async function wholeOriginal(row:any):Promise<Uint8Array>{
 }
 /** TP1: the accepting step of the whole read and of the stream job: the table receipt on the same source row and
  * the source event. The whole read keeps the workspace revision its request pinned; the job (null) pins only its
- * source, still the latest revision of its family, unchanged and with no table receipt, so other files dropped in
- * the same workspace while it reads do not stop it. */
+ * source, still the latest revision of its family, and the prior table reading if this is an encoding re-read.
+ * Other files dropped in the same workspace while it reads do not stop it. */
 export async function attachTableTx(client:PoolClient,target:{caseId:string;sourceId:string;actor:string;
-  expectedWorkspaceRevision:number|null;read:{sha256:string;revision:number;object_key:string}},
+  expectedWorkspaceRevision:number|null;read:{sha256:string;revision:number;object_key:string;
+    inspection?:{manualProfile?:{schemaFingerprint:string}}}},
 inventory:TableInventory):Promise<AnySourceProfile>{
   const {caseId,sourceId,actor,read}=target,scope=await workspace(client,caseId,sourceId);
   if(target.expectedWorkspaceRevision!==null&&scope.revision!==target.expectedWorkspaceRevision)
     conflict('The source workspace changed; refresh first.');
-  const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
+  const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE',inventory.tabular.selection,
+    read.inspection?.manualProfile?.schemaFingerprint??null);
   if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
     conflict('The original changed while it was read.');
   const tabularProvenance='admission' in inventory.tabular?inventory.tabular.admission:null;
@@ -588,6 +599,8 @@ function assertRetainedTabularRequest(file: { name: string; bytes: Uint8Array },
   const stored = retained.inspection?.manualProfile?.tabular?.selection;
   const reading = stored?.delimiter !== undefined || stored?.encoding !== undefined ? 'detect' : 'pinned';
   const inventory = inspectTabularSource(file.bytes, input.selection, input, file.name, reading);
+  // Replays of pre-basis receipts must not silently gain new provenance or change their pin.
+  if (stored?.encodingBasis === undefined) delete inventory.tabular.selection.encodingBasis;
   assertTabularPin(inventory.tabular, retained);
 }
 
@@ -670,7 +683,7 @@ export class ManualIngestionService {
       const scope=await workspace(client,caseId,sourceId),replay=await operation(client,caseId,key,digest);
       if(replay)return replay.jobId?{job:await tableJobTx(client,replay.jobId)}:{profile:replay};
       if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
-      const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
+      const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE',input.selection);
       if(Number(row.bytes)<=TABULAR_LIMITS.bytes)return {row};
       await assertOriginalTableByteKind(row,input.selection);
       return {job:await queueTableReadTx(client,table,row,scope.revision)};
@@ -681,7 +694,7 @@ export class ManualIngestionService {
     await assertTableByteKind(bytes,input.selection);
     let inventory:ReturnType<typeof inspectTabularSource>;
     try{
-      inventory=inspectTabularSource(bytes,input.selection,input,read.name);
+      inventory=inspectTabularSource(bytes,input.selection,{...read.inspection?.tabularProvenance,...input},read.name);
     }catch(error){
       if(error instanceof AppError&&error.code===TABULAR_ROW_LIMIT)return streamedTable(table,read);
       throw error;

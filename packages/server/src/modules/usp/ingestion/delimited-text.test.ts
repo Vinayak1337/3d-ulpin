@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
-import type { TabularSelection } from '@ulpin/contracts/usp';
+import { ColumnProfileDocumentSchema } from '@ulpin/contracts';
+import { TabularSelectionSchema, type TabularSelection } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
 import { windowedTableRow } from '../../registry/registry-table-evidence';
 import { profileColumnFile, readColumnCsv } from './column-profile';
@@ -119,6 +120,8 @@ test('a late invalid UTF-8 byte selects Windows-1252 for every cell, not just th
   const read = await readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
     async window => { rows.push(...window.rows); });
   assert.equal(read.encoding, 'windows-1252');
+  assert.equal(read.encodingBasis, 'fallback_windows_1252');
+  assert.equal(decodeDelimitedText(bytes).encodingBasis, 'fallback_windows_1252');
   assert.deepEqual(rows.map(row => row.cells), [['A', 'cafÃ©'], ['B', 'é']]);
   assert.equal(decodeDelimitedText(bytes).encoding, read.encoding);
 });
@@ -159,6 +162,92 @@ test('invalid table text is refused with reader words rather than an internal er
 test('a single Windows-1252 byte still reaches the header refusal, not a decoder error', async () => {
   await assert.rejects(readTabularWindows(Readable.from([Buffer.from([0xe9])]), async () => assert.fail('no rows')),
     { code: 'TABULAR_HEADER_REQUIRED' });
+});
+
+test('UTF-8 validation and BOM choices record their basis without changing the reading', async () => {
+  for (const [bytes, basis] of [
+    [Buffer.from('key;note\nA;नगर\n'), 'utf8_valid'],
+    [Buffer.from('\uFEFFkey;note\nA;नगर\n'), 'bom'],
+    [Buffer.from('\uFEFFkey;note\nA;नगर\n', 'utf16le'), 'bom'],
+    [Buffer.from('\uFEFFkey;note\nA;नगर\n', 'utf16le').swap16(), 'bom'],
+  ] as const) {
+    const whole = inspectTabularSource(bytes, selection);
+    const stream = await inspectTabularStream(Readable.from([bytes]),
+      { bytes: bytes.length, sha256: sha(bytes) }, selection);
+    assert.equal(whole.profile.encodingBasis, basis);
+    assert.equal(whole.tabular.selection.encodingBasis, basis);
+    assert.deepEqual(stream.profile, whole.profile);
+    assert.deepEqual(stream.tabular.selection, whole.tabular.selection);
+    const stated = { ...whole.tabular.selection, encodingBasis: 'officer_stated' as const };
+    const reread = inspectTabularSource(bytes, stated);
+    const rereadStream = await inspectTabularStream(Readable.from([bytes]),
+      { bytes: bytes.length, sha256: sha(bytes) }, stated);
+    assert.equal(reread.profile.encodingBasis, 'officer_stated');
+    assert.deepEqual(rereadStream.profile, reread.profile);
+    assert.deepEqual(readTabularSource(bytes, reread.tabular.selection),
+      readTabularSource(bytes, whole.tabular.selection));
+  }
+});
+
+test('an officer-stated ISO-8859-1 re-read changes only the decode, never the byte ranges', async () => {
+  // test_only: 0x80 distinguishes true ISO-8859-1 from the Windows-1252 euro sign.
+  const bytes = Buffer.from('key;note\r\nA;\x80é\r\n', 'latin1');
+  const automatic = inspectTabularSource(bytes, selection);
+  const stated = { ...automatic.tabular.selection, encoding: 'iso-8859-1' as const,
+    encodingBasis: 'officer_stated' as const };
+  const whole = inspectTabularSource(bytes, stated);
+  const stream = await inspectTabularStream(Readable.from([bytes]),
+    { bytes: bytes.length, sha256: sha(bytes) }, stated);
+  assert.equal(automatic.profile.encodingBasis, 'fallback_windows_1252');
+  assert.equal(whole.profile.encoding, 'iso-8859-1');
+  assert.equal(whole.profile.encodingBasis, 'officer_stated');
+  assert.deepEqual(whole.tabular.selection, stated);
+  assert.deepEqual(stream.profile, whole.profile);
+  const before: StreamedTabularRow[] = [], after: StreamedTabularRow[] = [];
+  await readTabularWindows(Readable.from([bytes]), async window => { before.push(...window.rows); },
+    automatic.tabular.selection);
+  await readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
+    async window => { after.push(...window.rows); }, stated);
+  assert.deepEqual(before[0].cells, ['A', '€é']);
+  assert.deepEqual(after[0].cells, ['A', '\x80é']);
+  assert.deepEqual(readTabularSource(bytes, stated).rows, after.map(row => row.cells));
+  const ranges = (rows: StreamedTabularRow[]) => rows.map(({ cells: _cells, ...row }) => row);
+  assert.deepEqual(ranges(after), ranges(before));
+  const row = after[0], raw = bytes.subarray(row.byteStart, row.byteEnd);
+  const locator = { selection: stated, columnIndex: 0, columnHeader: 'key', cell: { state: 'literal', value: 'A' },
+    rowSha256: fingerprint(row.cells.map(value => ({ state: 'literal', value }))),
+    window: { index: 0, record: 0, byteStart: row.byteStart, byteEnd: row.byteEnd, sha256: sha(raw) } };
+  assert.equal(await windowedTableRow(locator as Parameters<typeof windowedTableRow>[0], ['key', 'note'], raw),
+    'key: A\nnote: \x80é');
+});
+
+test('unsupported stated encodings are refused with words and UTF-16 still requires a matching BOM', async () => {
+  const invalid = { ...selection, encoding: 'ISCII', encodingBasis: 'officer_stated' };
+  const parsed = TabularSelectionSchema.safeParse(invalid);
+  assert.equal(parsed.success, false);
+  if (!parsed.success) assert.match(parsed.error.message, /supported|UTF-8/);
+  const bytes = Buffer.from('key;note\nA;value\n');
+  assert.throws(() => inspectTabularSource(bytes, invalid as unknown as TabularSelection),
+    /supported|UTF-8/);
+  for (const encoding of ['utf-16le', 'utf-16be'] as const) {
+    const stated = { ...selection, encoding, encodingBasis: 'officer_stated' as const };
+    assert.throws(() => inspectTabularSource(bytes, stated), /BOM|byte order mark/);
+    await assert.rejects(inspectTabularStream(Readable.from([bytes]),
+      { bytes: bytes.length, sha256: sha(bytes) }, stated), /BOM|byte order mark/);
+  }
+});
+
+test('old stored profiles keep an unknown encoding basis instead of gaining a guess', async () => {
+  const profile = inspectTabularSource(Buffer.from('key\nvalue\n'), selection).profile;
+  const { encodingBasis: _basis, ...old } = profile;
+  assert.deepEqual(ColumnProfileDocumentSchema.parse(old), old);
+  assert.equal(ColumnProfileDocumentSchema.parse(old).encodingBasis, undefined);
+  const bytes = Buffer.from('key\nvalue\n');
+  for (const reading of [{ encoding: 'windows-1252' as const },
+    { encoding: 'windows-1252' as const, delimiter: ',' as const }]) {
+    const replay = await readTabularWindows(Readable.from([bytes]), async () => {}, reading);
+    assert.equal(replay.encodingBasis, undefined);
+  }
 });
 
 test('stored selections without a delimiter remain comma readings', () => {

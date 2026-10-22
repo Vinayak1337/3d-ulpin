@@ -455,7 +455,8 @@ async function keptTable(file: string, chosen: typeof selection | typeof workboo
   const profile = TabularSourceProfileSchema.parse(
     await service.tableFromOriginal(store.caseId, store.sourceId, request));
   assert.ok(profile.records > 0, file);
-  const expectedSelection = chosen.format === 'csv' ? { ...chosen, delimiter: ',', encoding: 'utf-8' } : chosen;
+  const expectedSelection = chosen.format === 'csv'
+    ? { ...chosen, delimiter: ',', encoding: 'utf-8', encodingBasis: 'bom' } : chosen;
   assert.deepEqual(profile.tabular.selection, expectedSelection);
   assert.deepEqual([store.jobs.length, store.caseRevision, store.source.profile], [0, 1, 'large-original-v1']);
   assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), profile, 'replayed');
@@ -476,6 +477,74 @@ async function keptTable(file: string, chosen: typeof selection | typeof workboo
   });
   assert.deepEqual([store.source.sha256, store.jobs.length, store.caseRevision], [sha(store.bytes), 0, 1]);
 }
+test('officer-stated encoding re-reads the same kept table through its existing route', async () => {
+  const bytes = Buffer.from('key;note\r\nA;\x80é\r\n', 'latin1'), store = new Store(bytes);
+  store.install();
+  const service = new ManualIngestionService();
+  const first = TabularSourceProfileSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection }));
+  const stated = { ...first.tabular.selection, encoding: 'iso-8859-1', encodingBasis: 'officer_stated' };
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision, selection: stated };
+  const reread = TabularSourceProfileSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId,
+    request));
+  assert.deepEqual(reread.tabular.selection, stated);
+  assert.equal(reread.profile.encodingBasis, 'officer_stated');
+  assert.notEqual(reread.source.schemaFingerprint, first.source.schemaFingerprint);
+  assert.deepEqual([reread.source.sourceId, reread.source.sourceRevision, reread.source.sourceSha256],
+    [first.source.sourceId, first.source.sourceRevision, sha(bytes)]);
+  assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), reread);
+  assert.equal(store.caseRevision, 2);
+  assert.equal(store.jobs.length, 0);
+  assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', reread), []);
+  // Older standalone tables have the same re-read path, not another retained original.
+  store.source.profile = 'tabular-manual-v1';
+  store.source.inspection.tabularProvenance.licence = 'restricted';
+  store.source.inspection.tabularProvenance.issuer = 'test_only source';
+  const older = TabularSourceProfileSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { ...request, requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision }));
+  assert.ok('admission' in older.tabular);
+  assert.equal(older.tabular.admission.licence, 'restricted');
+  assert.equal(older.tabular.admission.issuer, 'test_only source');
+  assert.equal(older.source.sourceSha256, sha(bytes));
+});
+
+test('a refused officer-stated re-read leaves the current profile and original unchanged', async () => {
+  const store = new Store(Buffer.from('key;note\nA;é\n', 'latin1'));
+  store.install();
+  const service = new ManualIngestionService();
+  await service.tableFromOriginal(store.caseId, store.sourceId,
+    { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection });
+  const original = structuredClone(store.source);
+  for (const encoding of ['utf-8', 'utf-16le', 'ISCII']) {
+    await assert.rejects(service.tableFromOriginal(store.caseId, store.sourceId,
+      { requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision,
+        selection: { ...selection, encoding, encodingBasis: 'officer_stated' } }),
+    /invalid|BOM|Unsupported table encoding/);
+    assert.deepEqual(store.source, original);
+    assert.equal(store.caseRevision, 1);
+  }
+});
+
+test('a streamed officer-stated re-read pins the previous reading and refuses a concurrent replacement', async () => {
+  const store = new Store(Buffer.from('key;note\n' + 'A;é\n'.repeat(2_001), 'latin1'));
+  store.install();
+  const service = new ManualIngestionService();
+  const first = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection }));
+  await runTableProfileJob(first.jobId);
+  const stated = { ...selection, encoding: 'iso-8859-1', encodingBasis: 'officer_stated' };
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision, selection: stated };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  await runTableProfileJob(queued.jobId);
+  assert.equal(store.source.inspection.manualProfile.profile.encoding, 'iso-8859-1');
+  assert.equal(store.source.inspection.manualProfile.profile.encodingBasis, 'officer_stated');
+  const next = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { ...request, requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision }));
+  store.source.inspection.manualProfile.schemaFingerprint = 'f'.repeat(64);
+  await assert.rejects(runTableProfileJob(next.jobId), { code: 'STALE_REVISION' });
+  assert.equal(store.source.sha256, sha(store.bytes));
+});
+
 const workbook = { format: 'xlsx' as const, sheet: 'T_18', table: null, headerRows: [4, 5] };
 
 test('TP1: a real CSV kept through the batch becomes a table in the request', () =>
@@ -594,7 +663,8 @@ test('TB2: a CSV under 16 MiB with more than 2,000 records is read by the stream
   await runTableProfileJob(queued.jobId);
   const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
   assert.equal(profile.records, 2_500, 'no record is cut to fit the whole-file bound');
-  assert.deepEqual(profile.tabular.selection, { ...selection, delimiter: ',', encoding: 'utf-8' });
+  assert.deepEqual(profile.tabular.selection,
+    { ...selection, delimiter: ',', encoding: 'utf-8', encodingBasis: 'utf8_valid' });
   assert.deepEqual([store.source.profile, store.source.object_key, store.caseRevision],
     ['large-original-v1', `large-originals/${store.sourceId}`, 1], 'the same kept original, read once');
   assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,

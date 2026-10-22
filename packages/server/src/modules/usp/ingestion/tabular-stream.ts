@@ -7,14 +7,14 @@ import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Transform, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
-import type { DelimitedReading, TableEncoding } from '@ulpin/contracts';
+import { TableEncodingSchema, type DelimitedReading, type TableEncoding } from '@ulpin/contracts';
 import { INTAKE_PROBE_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS as limits, TableCellMarkSchema,
   type TableCellMark, type TabularSelection } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { profileTabularChunk } from './chunk-mapping-agent';
-import { bomEncoding, chooseTableDelimiter } from './delimited-text';
+import { bomEncoding, chooseTableDelimiter, decodeTableBytes } from './delimited-text';
 import { readZipMember } from './intake-zip';
 import { odsLimit, workbookTable, type WorkbookTable } from './tabular-workbook';
 
@@ -42,11 +42,12 @@ const QUOTE = 0x22, LF = 0x0a, CR = 0x0d;
 const cellDecoders = {
   'utf-8': new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }),
   'windows-1252': new TextDecoder('windows-1252', { ignoreBOM: true }),
+  'iso-8859-1': { decode: (bytes: Uint8Array) => Buffer.from(bytes).toString('latin1') },
   'utf-16le': new TextDecoder('utf-16le', { fatal: true, ignoreBOM: true }),
   'utf-16be': new TextDecoder('utf-16be', { fatal: true, ignoreBOM: true }),
 };
 type ByteReading = { delimiter: NonNullable<DelimitedReading['delimiter']>;
-  encoding: keyof typeof cellDecoders };
+  encoding: keyof typeof cellDecoders; encodingBasis?: DelimitedReading['encodingBasis'] };
 const mib = (bytes: number) => Number((bytes / 1024 ** 2).toFixed(3));
 
 function malformed(sourceRow: number): never {
@@ -238,7 +239,7 @@ function decodeUtf16Window(data: Buffer, encoding: TableEncoding, final: boolean
 }
 
 /** Validate BOM-marked UTF-16 strictly; otherwise a late invalid UTF-8 byte changes the whole reading. */
-function csvProbe() {
+function csvProbe(stated?: TableEncoding) {
   let decoder: TextDecoder | undefined, bom: TableEncoding | undefined;
   let valid = true, head = Buffer.alloc(0), prefix = Buffer.alloc(0), bytes = 0;
   const take = (chunk: Buffer) => {
@@ -249,13 +250,19 @@ function csvProbe() {
       prefix = Buffer.concat([prefix, chunk]);
       if (prefix.length < 2) return;
       bom = bomEncoding(prefix);
-      decoder = new TextDecoder(bom ?? 'utf-8', { fatal: true });
+      if (stated?.startsWith('utf-16') && bom !== stated) {
+        throw new AppError(422, 'TABULAR_ENCODING',
+          'This table needs a matching UTF-16 byte order mark (BOM); the original is unchanged.');
+      }
+      decoder = new TextDecoder(stated ?? bom ?? 'utf-8', { fatal: true });
       chunk = prefix;
       prefix = Buffer.alloc(0);
     }
     if (valid) {
       try { decoder.decode(chunk, { stream: true }); } catch {
         if (bom) invalidUtf16();
+        if (stated) throw new AppError(422, 'TABULAR_ENCODING',
+          `This table has invalid ${stated} text; the original is unchanged.`);
         valid = false;
       }
     }
@@ -269,13 +276,23 @@ function csvProbe() {
         decoder.decode();
       } catch {
         if (bom) invalidUtf16();
+        if (stated) throw new AppError(422, 'TABULAR_ENCODING',
+          `This table has invalid ${stated} text; the original is unchanged.`);
         valid = false;
       }
     }
-    const encoding = bom ?? (valid ? 'utf-8' : 'windows-1252');
-    const start = head[0] === 0xef && head[1] === 0xbb && head[2] === 0xbf ? 3 : 0;
-    const text = new TextDecoder(encoding, { fatal: true }).decode(head.subarray(start), { stream: true });
-    return { encoding, delimiter: chooseTableDelimiter(text, name) };
+    const encoding = stated ?? bom ?? (valid ? 'utf-8' : 'windows-1252');
+    let encodingBasis: ByteReading['encodingBasis'] = 'utf8_valid';
+    if (stated) encodingBasis = 'officer_stated';
+    else if (!valid) encodingBasis = 'fallback_windows_1252';
+    else if (bom || head[0] === 0xef && head[1] === 0xbb && head[2] === 0xbf) encodingBasis = 'bom';
+    let text: string;
+    try { text = decodeTableBytes(head, encoding, true); } catch (error) {
+      const words = error instanceof Error && /BOM|byte order mark/.test(error.message) ? error.message
+        : `This table has invalid ${encoding} text or a binary null byte; the original is unchanged.`;
+      throw new AppError(422, 'TABULAR_ENCODING', words);
+    }
+    return { encoding, encodingBasis, delimiter: chooseTableDelimiter(text, name) };
   };
   return { take, finish };
 }
@@ -283,18 +300,25 @@ function csvProbe() {
 /** Unpinned reads need a private byte copy for full text validation. Pinned replays stream directly. */
 export async function readTabularWindows(body: Readable, onWindow: OnWindow<StreamedTabularRow>,
   reading: DelimitedReading = {}, name = '', sourceBytes = 0): Promise<StreamedTabularRead> {
+  if (reading.encoding && !TableEncodingSchema.safeParse(reading.encoding).success) {
+    throw new AppError(422, 'TABULAR_ENCODING', 'Unsupported table encoding. Choose UTF-8, Windows-1252, ' +
+      'ISO-8859-1, or UTF-16 LE/BE with a matching BOM.');
+  }
   if (reading.delimiter && reading.encoding) {
-    return readCsvWindows(body, onWindow, { delimiter: reading.delimiter, encoding: reading.encoding });
+    return readCsvWindows(body, onWindow, { delimiter: reading.delimiter, encoding: reading.encoding,
+      ...(reading.encodingBasis ? { encodingBasis: reading.encodingBasis } : {}) });
   }
   const folder = await scratchFolder(sourceBytes, 'csv');
   let copy: Readable | undefined;
   try {
-    const path = join(folder, 'original.csv'), probe = csvProbe();
+    const path = join(folder, 'original.csv'), probe = csvProbe(reading.encoding);
     await spool(body, path, probe.take);
     const detected = probe.finish(name);
     copy = createReadStream(path);
     const encoding = reading.encoding ?? detected.encoding;
-    return await readCsvWindows(copy, onWindow, { delimiter: reading.delimiter ?? detected.delimiter, encoding });
+    const encodingBasis = reading.encoding ? reading.encodingBasis : detected.encodingBasis;
+    return await readCsvWindows(copy, onWindow, { delimiter: reading.delimiter ?? detected.delimiter, encoding,
+      ...(encodingBasis ? { encodingBasis } : {}) });
   } finally {
     copy?.destroy();
     await rm(folder, { recursive: true, force: true, maxRetries: 3 });
@@ -535,8 +559,11 @@ export function readTableWindows(body: Readable, source: TableSource,
   onWindow: OnWindow<StreamedTabularRow | StreamedWorkbookRow>) {
   if (source.selection.format === 'ods') return readOdsWindows(body, source, onWindow);
   return source.selection.format === 'xlsx' ? readWorkbookWindows(body, source, onWindow)
-    : readTabularWindows(body, onWindow, source.detectReading ? {} : {
+    : readTabularWindows(body, onWindow, source.detectReading ? {
+      ...(source.selection.encodingBasis === 'officer_stated' ? source.selection : {}),
+    } : {
       delimiter: source.selection.delimiter ?? ',', encoding: source.selection.encoding ?? 'utf-8',
+      ...(source.selection.encodingBasis ? { encodingBasis: source.selection.encodingBasis } : {}),
     }, source.name, source.bytes);
 }
 
@@ -569,5 +596,6 @@ export async function profileTabularStream(body: Readable, source: TableSource) 
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: read.headers, rows: first,
     sourceRef: 'inventory', selection: source.selection }).profile;
   return { ...read, profile: { ...profile,
-    ...(read.delimiter ? { delimiter: read.delimiter, encoding: read.encoding } : {}) }, streamCounts: counts };
+    ...(read.delimiter ? { delimiter: read.delimiter, encoding: read.encoding,
+      ...(read.encodingBasis ? { encodingBasis: read.encodingBasis } : {}) } : {}) }, streamCounts: counts };
 }

@@ -83,6 +83,21 @@ test('a longitude/latitude CSV of 5 rows, one blank: 4 points with row locators 
   assert.deepEqual([read.reference.sourceCrs, read.reference.coordinateUnit], ['EPSG:4326', 'degree']);
 });
 
+test('officer-stated ISO-8859-1 placement uses the stated cells and cites unchanged original byte ranges', async () => {
+  const bytes = Buffer.from('label,x,y\r\n\x80é,77.5,12.9\r\n', 'latin1');
+  const table = plan(bytes, ['label', 'x', 'y'], { kind: 'columns', x: 1, y: 2 });
+  table.selection = { ...selection, encoding: 'iso-8859-1', encodingBasis: 'officer_stated' };
+  const { counts, geojson } = await written(bytes, table);
+  assert.equal(counts.features, 1);
+  const feature = JSON.parse(geojson.toString()).features[0];
+  assert.equal(feature.properties.label, '\x80é');
+  const { byteStart, byteEnd, rawSha256 } = feature.tableRow;
+  assert.equal(byteStart, Buffer.byteLength('label,x,y\r\n'));
+  assert.equal(byteEnd, bytes.length - 2);
+  assert.equal(rawSha256, sha(bytes.subarray(byteStart, byteEnd)));
+  assert.equal(table.source.sha256, sha(bytes));
+});
+
 test('a row whose coordinate cell is not a number is skipped and named so', async () => {
   const bytes = Buffer.from('id,x,y\na,77.5,12.9\nb,12.5 N,77.1\nc,,12.0\n');
   const { counts } = await written(bytes, plan(bytes, ['id', 'x', 'y'], { kind: 'columns', x: 1, y: 2 }));

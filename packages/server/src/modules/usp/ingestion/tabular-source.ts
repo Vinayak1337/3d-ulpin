@@ -150,11 +150,16 @@ export function inspectTabularSource(
   }
   if (selection.format === 'csv' && reading === 'detect') {
     try {
-      const { delimiter, encoding } = detectDelimitedReading(bytes, name);
-      selection = { ...selection, delimiter, encoding };
-    } catch {
-      throw new AppError(422, 'TABULAR_ENCODING',
-        'This table has invalid text or binary null bytes. The original is unchanged; provide a text table.');
+      const stated = selection.encodingBasis === 'officer_stated' ? selection.encoding : undefined;
+      const { delimiter, encoding, encodingBasis } = detectDelimitedReading(bytes, name, stated);
+      selection = { ...selection, delimiter: selection.delimiter ?? delimiter, encoding, encodingBasis };
+    } catch (error) {
+      let words = 'This table has invalid text or binary null bytes. The original is unchanged; provide a text table.';
+      if (selection.encodingBasis === 'officer_stated') {
+        words = `This table has invalid ${selection.encoding} text or a binary null byte; the original is unchanged.`;
+        if (error instanceof Error && /Unsupported|BOM|byte order mark/.test(error.message)) words = error.message;
+      }
+      throw new AppError(422, 'TABULAR_ENCODING', words);
     }
   }
   const table = readTabularSource(bytes, selection);
@@ -163,6 +168,7 @@ export function inspectTabularSource(
   if (selection.format === 'csv') {
     if (selection.delimiter) profile.delimiter = selection.delimiter;
     if (selection.encoding) profile.encoding = selection.encoding;
+    if (selection.encodingBasis) profile.encodingBasis = selection.encodingBasis;
   }
   const tabular = admittedPin(admitted, selection, bytes.length);
   return { tabular, headers: table.headers, records: table.rows.length, profile,
@@ -179,7 +185,8 @@ export async function inspectTabularStream(body: Readable, receipt: { sha256: st
     throw new AppError(422, 'TABULAR_FORMAT', 'Only a case original is read as a stream.');
   }
   const read = await profileTabularStream(body, { selection, bytes: receipt.bytes, detectReading: true, name });
-  if (selection.format === 'csv') selection = { ...selection, delimiter: read.delimiter, encoding: read.encoding };
+  if (selection.format === 'csv') selection = { ...selection, delimiter: read.delimiter, encoding: read.encoding,
+    ...(read.encodingBasis ? { encodingBasis: read.encodingBasis } : {}) };
   if (read.bytes !== receipt.bytes || read.sha256 !== receipt.sha256) {
     throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The original differs from its byte receipt.');
   }
