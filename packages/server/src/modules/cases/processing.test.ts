@@ -48,8 +48,13 @@ test("the dispatcher takes probes first, then each file's oldest job in its lane
     /PARTITION BY COALESCE\(lanes.lane,'other'\), COALESCE\(jobs.source_id::text,jobs.case_id::text\)/);
   assert.match(flat, /LEFT JOIN unnest\(\$1::text\[\],\$2::text\[\]\) AS lanes\(operation,lane\)/);
   assert.match(flat, /WHERE jobs.status IN \('queued','running'\) AND jobs.operation NOT LIKE 'usp:%'/);
+  assert.match(flat, /NOT jobs.id::text=ANY\(\$3::text\[\]\) AND NOT jobs.operation=ANY\(\$4::text\[\]\)/);
+  assert.match(flat, /NOT EXISTS \(SELECT 1 FROM usp_job_attempts a WHERE a.job_id=jobs.id/);
+  assert.match(flat, /a.state='active' AND a.lease_until>now\(\)/);
   assert.match(flat, /ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12$/);
-  const [operations, lanes] = values as [string[], string[]];
+  const [operations, lanes, held, unavailable] = values as [string[], string[], string[], string[]];
+  assert.deepEqual(held, []);
+  assert.deepEqual(unavailable, []);
   assert.equal(lanes[operations.indexOf('point-batch')], 'point');
   assert.equal(lanes[operations.indexOf('spatial-inference')], 'gpu');
 });
@@ -169,9 +174,12 @@ test('a refused job that no longer waits blocks nothing', () => {
   assert.ok(held.admit(job('small-2', 'geoparquet-native', 20), 1100, [], at(1000)));
 });
 
-type Tick = { rows: object[]; budget: string; packetPdf?: (jobId: string) => Promise<void>; elsewhere?: object[] };
+type Tick = { rows: object[]; budget: string; packetPdf?: (jobId: string) => Promise<void>; elsewhere?: object[];
+  document?: (jobId: string) => Promise<void>; privateMvt?: (jobId: string) => Promise<void>;
+  selected?: (selection: Sent) => void };
 /** One dispatcher tick with fake jobs and DISPATCH_MEMORY_MIB at `budget`; returns the jobs sent to the processor. */
-async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = [] }: Tick): Promise<string[]> {
+async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = [],
+  document, privateMvt, selected }: Tick): Promise<string[]> {
   const saved = ['DISPATCH_MEMORY_MIB', 'GEO_URL', 'GEO_SERVICE_TOKEN'].map(name => [name, process.env[name]] as const);
   const fetching = globalThis.fetch;
   const sentToProcessor: string[] = [];
@@ -183,8 +191,9 @@ async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = 
   };
   try {
     await withPool(sql => sql.includes('AS file_rank') ? rows
-      : sql.includes('dispatched_at IS NOT NULL') ? elsewhere : [], async () => {
-      assert.equal(await dispatchTick({ packetPdf }), rows.length);
+      : sql.includes('dispatched_at IS NOT NULL') ? elsewhere : [], async sent => {
+      assert.equal(await dispatchTick({ packetPdf, document, privateMvt }), rows.length);
+      selected?.(sent[0]);
     });
     return sentToProcessor;
   } finally {
@@ -226,11 +235,62 @@ test('an inference job the processor runs keeps a second one from being sent unt
   assert.deepEqual(await tickWith({ rows: [second], budget: '100000' }), ['chip-2']);
 });
 
-// The selection's meaning needs PostgreSQL; a temporary jobs table shadows any real one for this session only.
+test('a busy singleton and its queued followers leave the twelve-row ready window until it finishes', async () => {
+  let finish!: () => void;
+  const running = new Promise<void>(resolve => { finish = resolve; });
+  try {
+    await tickWith({ rows: [pdf], budget: '100000', packetPdf: () => running });
+    await tickWith({ rows: [odd], budget: '100000', selected: ({ values }) => {
+      assert.deepEqual(values[2], ['pdf-1']);
+      assert.deepEqual(values[3], ['packet-pdf']);
+    } });
+  } finally {
+    finish();
+    await settle();
+  }
+  await tickWith({ rows: [], budget: '100000', selected: ({ values }) => {
+    assert.deepEqual(values[2], []);
+    assert.deepEqual(values[3], []);
+  } });
+});
+
+for (const [operation, runner] of [['document-extraction', 'document'], ['private-mvt', 'privateMvt']] as const) {
+  test(`${operation} keeps its reservation but does not delay the next dispatcher tick`, async () => {
+    let finish!: () => void;
+    const running = new Promise<void>(resolve => { finish = resolve; });
+    const first = { ...job('background-1', operation), attempts: 0 };
+    const second = { ...job('background-2', operation, 1), attempts: 0 };
+    const started: string[] = [];
+    let began!: () => void;
+    const begun = new Promise<void>(resolve => { began = resolve; });
+    const run = (id: string) => { started.push(id); began(); return running; };
+    const tick = tickWith({ rows: [first], budget: '1000', [runner]: run });
+    try {
+      await begun;
+      const returned = await Promise.race([tick.then(() => true), settle().then(() => false)]);
+      assert.equal(returned, true, 'dispatch must return before the background job completes');
+      assert.deepEqual(started, ['background-1']);
+      assert.deepEqual(await tickWith({ rows: [second, odd], budget: '1000', [runner]: run,
+        selected: ({ values }) => {
+          assert.deepEqual(values[2], ['background-1']);
+          assert.deepEqual(values[3], [], 'non-singleton work must retain lane admission');
+        } }), []);
+      assert.deepEqual(started, ['background-1'], 'the held memory still bounds admission');
+    } finally {
+      finish();
+      await tick;
+      await settle();
+    }
+    assert.deepEqual(await tickWith({ rows: [odd], budget: '1000' }), ['odd-1']);
+  });
+}
+
+// The selection's meaning needs PostgreSQL; temporary tables shadow any real ones for this session only.
 const database = process.env.ULPIN_DISPATCH_TEST_DATABASE_URL;
 /** The ids the selection picks from the jobs `fill` adds to a temporary table. */
 async function picked(fill: (add: (id: string, operation: string, source: string | null, minutes: number,
-  status?: string, due?: number) => Promise<unknown>) => Promise<void>): Promise<string[]> {
+  status?: string, due?: number) => Promise<unknown>) => Promise<void>,
+  attempts: { jobId: string; state: string; seconds: number }[] = []): Promise<string[]> {
   const { sql, values } = await selection();
   const client = new Client({ connectionString: database });
   await client.connect();
@@ -238,9 +298,14 @@ async function picked(fill: (add: (id: string, operation: string, source: string
     await client.query(`CREATE TEMPORARY TABLE jobs (id text PRIMARY KEY, operation text NOT NULL,
       status text NOT NULL, next_attempt_at timestamptz NOT NULL, created_at timestamptz NOT NULL, source_id text,
       case_id text NOT NULL)`);
+    await client.query(`CREATE TEMPORARY TABLE usp_job_attempts
+      (job_id text NOT NULL, state text NOT NULL, lease_until timestamptz NOT NULL)`);
     await fill((id, operation, source, minutes, status = 'queued', due = 0) => client.query(
       `INSERT INTO jobs VALUES($1,$2,$3,now()+make_interval(mins=>$5),now()-make_interval(mins=>$4),$6,'case-1')`,
       [id, operation, status, minutes, due, source]));
+    for (const attempt of attempts) await client.query(
+      'INSERT INTO usp_job_attempts VALUES($1,$2,now()+make_interval(secs=>$3))',
+      [attempt.jobId, attempt.state, attempt.seconds]);
     return (await client.query(sql, values)).rows.map(job => job.id);
   } finally {
     await client.end();
@@ -263,6 +328,30 @@ test('211 parts of one point cloud cannot hold back a table, and a probe goes fi
   assert.deepEqual(ids, ['probe', 'vector', 'laz-0', 'other-0', 'odd', 'table', 'laz-1', 'other-1', 'laz-2', 'laz-3',
     'laz-4', 'laz-5']);
 });
+
+test('ready selection skips busy workers and live leases, but expired and fenced jobs stay eligible',
+  { skip: !database }, async () => {
+    let finish!: () => void;
+    const running = new Promise<void>(resolve => { finish = resolve; });
+    try {
+      await tickWith({ rows: [pdf], budget: '100000', packetPdf: () => running });
+      const ids = await picked(async add => {
+        for (let index = 0; index < 20; index++) await add(`pdf-${index}`, 'packet-pdf', `source-${index}`, 100);
+        await add('live', 'streaming-vector', 'raw', 5, 'running');
+        await add('expired', 'streaming-vector', 'raw-2', 4, 'running');
+        await add('fenced', 'streaming-vector', 'raw-3', 3, 'running');
+        await add('table', 'chunk-mapping', 'csv', 2);
+      }, [
+        { jobId: 'live', state: 'active', seconds: 180 },
+        { jobId: 'expired', state: 'active', seconds: -1 },
+        { jobId: 'fenced', state: 'fenced', seconds: 180 },
+      ]);
+      assert.deepEqual(ids, ['expired', 'fenced', 'table']);
+    } finally {
+      finish();
+      await settle();
+    }
+  });
 
 test('a lone file still offers twelve jobs when nothing else waits', { skip: !database }, async () => {
   const ids = await picked(async add => {

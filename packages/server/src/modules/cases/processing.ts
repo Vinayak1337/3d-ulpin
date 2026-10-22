@@ -235,7 +235,8 @@ export async function ingestJob(id: string, result: unknown) {
   });
 }
 
-export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={}): Promise<number> {
+export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;document?:typeof runDocumentJob;
+  privateMvt?:typeof runPrivateMvtJob}={}): Promise<number> {
   const pending = await query(
     // G22. Probe-lane jobs first; then each file's oldest job in a lane before any file's second, a file being the
     // job's source or, without one, its case: 211 parts of one point cloud cannot hold back a table, and a lone file
@@ -245,8 +246,11 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
         ORDER BY jobs.created_at) AS file_rank
       FROM jobs LEFT JOIN unnest($1::text[],$2::text[]) AS lanes(operation,lane) ON lanes.operation=jobs.operation
       WHERE jobs.status IN ('queued','running') AND jobs.operation NOT LIKE 'usp:%' AND jobs.next_attempt_at<=now()
+        AND NOT jobs.id::text=ANY($3::text[]) AND NOT jobs.operation=ANY($4::text[])
+        AND NOT EXISTS (SELECT 1 FROM usp_job_attempts a
+          WHERE a.job_id=jobs.id AND a.state='active' AND a.lease_until>now())
     ) ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12`,
-    dispatchLaneParameters(),
+    [...dispatchLaneParameters(),reservations.heldJobIds(),reservations.unavailableOperations()],
   );
   // G22. A job sent to the processor holds its lane and memory, for every dispatcher, until it leaves the queue there.
   const elsewhere=(await query<DispatchJob>(
@@ -448,15 +452,20 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
       }
       if(job.operation==='document-extraction'){
         if(!admit(job))return;
-        try{await runDocumentJob(job.id);}finally{reservations.release(job.id);}
+        // Lane admission holds memory until completion, without holding the dispatcher tick open for OCR.
+        void (runners.document??runDocumentJob)(job.id)
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{reservations.release(job.id);});
         return;
       }
       if(job.operation==='private-mvt'){
         if(!admit(job))return;
         // This allowlisted SQL runner owns fencing/recovery and never reaches geo
         // or the generic retry/error mutation below.
-        try{await runPrivateMvtJob(job.id);}catch{await failPrivateMvtJob(job.id,'MVT_PROCESSING_FAILED');}
-        finally{reservations.release(job.id);}
+        void (runners.privateMvt??runPrivateMvtJob)(job.id)
+          .catch(()=>failPrivateMvtJob(job.id,'MVT_PROCESSING_FAILED'))
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{reservations.release(job.id);});
         return;
       }
       // A dispatched job runs in the processor; this tick only reads its state, which starts nothing.

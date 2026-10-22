@@ -1,0 +1,315 @@
+{
+  "task": "IL1",
+  "gate": "GF5",
+  "qualification": "Offline scheduling checks pass; drop-to-map latency is not runtime-qualified.",
+  "repository": {
+    "worktree": "E:/Projects/ulpin-wt/il1",
+    "branch": "task/il1-intake-latency",
+    "base": "3a58e5791a6ad47250e4bc40f9ff299cf5c453f6",
+    "rehearsalEvidenceRef": "origin/task/reh14-rehearsal",
+    "rehearsalEvidenceCommit": "d4d547551b767ff413a8181d4e3c2b526b7ac43a"
+  },
+  "scope": {
+    "decision": "No ownership list supplied; edits limited to dispatcher scheduling, its tests and this receipt.",
+    "offline": true, "runtimeStarted": false, "processorChanged": false, "platformChanged": false,
+    "restrictedPathsOpened": false, "originalsModified": false, "pushed": false,
+    "testGuard": "C:/Users/kvina/AppData/Local/Temp/il1-offline-guard.cjs",
+    "guardPurpose": "Deny credential-file and restricted-path reads before configuration imports; disable DB tests."
+  },
+  "rehearsal": {
+    "source": "docs/evidence/runtime/reh14/result.json, act1.json and final-state.json at the evidence ref",
+    "servedCommit": "1e749518",
+    "zip2100": {"retainToLayoutSeconds": 543.78, "layoutToMapSeconds": 422.6, "retainToMapSeconds": 966.4},
+    "geojson26MB": {
+      "retainToProfileDoneSeconds": 351, "retainToLayoutSeconds": 491.7, "layoutToFirstMapSeconds": 413.5,
+      "profileWindow": ["2026-10-22T14:30:49Z", "2026-10-22T14:35:29Z"],
+      "profileWindowSeconds": 280, "profileDoneToLayoutSeconds": 140.7,
+      "partsAfter17Minutes": 4
+    },
+    "act1": {"confirmationToRecordedSeconds": 66.533, "confirmationToCardSeconds": [129.574, 152.244]},
+    "limitations": [
+      "No per-job created/start/finish/attempt timestamps are recorded in these receipts.",
+      "Layout timings include presenter navigation and approval; the tray had stale event-stream responses.",
+      "Several batches ran together; the receipt records host CPU at 85% and processor health checks timing out.",
+      "Two published packages are not two raw chunks: 2100 features require 21 chunks at the unchanged cap of 100."
+    ]
+  },
+  "conclusion": [
+    "There is no mandatory multi-minute sleep on the successful streamed path; 180 seconds is a recovery lease.",
+    "The 750 ms dispatcher poll and 1 s empty-source polls cannot alone establish the reported 966 s cause.",
+    "The dispatcher can waste its twelve-row window on occupied singleton operations and await unrelated long jobs.",
+    "Those scheduling barriers are removed, but their REH14 contribution is unknown, not an asserted speedup.",
+    "Serial geometry SQL, source-key writes, normalization and candidate persistence remain likely expensive work.",
+    "The streamed layout is officer-stated: it does not invoke the bounded-file teacher proposal path."
+  ],
+  "chain": [
+    {
+      "step": "retain and route",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/large-original.ts:447-541",
+        "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts:79-112",
+        "packages/server/src/modules/usp/ingestion/intake-service.ts:134-158",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:223-228,289-294"
+      ],
+      "operation": "large-original-storage for queued finalization; intake-zip-layers for ZIP members; intake-large",
+      "claimant": "Dispatcher singleton per operation; upload SQL fences storage, fenced attempts own ZIP fan-out.",
+      "fixedWaits": "750 ms dispatcher poll; storage lease 180 s, failure retry 10 s; no successful-path sleep.",
+      "estimatedShare": "At most 0.75 s per handoff (0.08% of ZIP total); transfer/hash/probe time is unallocated."
+    },
+    {
+      "step": "dispatch every queued phase",
+      "fileLines": [
+        "scripts/dispatcher.ts:22-34",
+        "packages/server/src/modules/cases/processing.ts:238-273",
+        "packages/server/src/modules/cases/dispatch-lanes.ts:24-43,193-230"
+      ],
+      "operation": "All non-usp: jobs; probe-first, oldest per file/lane, LIMIT 12",
+      "claimant": "Dispatcher selects/admit-reserves; each in-process runner claims its own fenced attempt.",
+      "fixedWaits": "750 ms after a tick; occupied singletons formerly consumed the ready window indefinitely.",
+      "estimatedShare": "750 ms per tick is small; queue starvation can span another job's duration, share unknown."
+    },
+    {
+      "step": "start raw reader and profile together",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:129-135,310-328",
+        "packages/server/src/modules/usp/ingestion/intake-large.ts:290-314"
+      ],
+      "operation": "intake-large enqueues streaming-vector and streamed-profile in the existing authority",
+      "claimant": "One intake-large runner per dispatcher; claimUspJobAttempt, then stable state-key wake-ups.",
+      "fixedWaits": "No sleep between enqueues; vector lane has two slots shared with reader/profile/drafting.",
+      "estimatedShare": "About 0-1.5 s for two idle handoffs; contention is not separable from retain-to-layout."
+    },
+    {
+      "step": "raw read, geometry validation and immutable chunk publication",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:98-118,248-289,312-356",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts:4-23",
+        "packages/contracts/src/usp/streaming-vector.ts:4-17"
+      ],
+      "operation": "streaming-vector",
+      "claimant": "Singleton reader claims fenced attempt; one awaited topology transaction per accepted geometry.",
+      "fixedWaits": "No per-feature sleep; chunks <=100 records/512 KiB; 30 s heartbeat; 180 s lease; retry 2 s.",
+      "estimatedShare": "Combined read/profile window: 280/351 s (79.8%) before the 26 MB profile completes.",
+      "qualification": "That window is not a raw-job execution timestamp; parsing alone was 2.353 s offline."
+    },
+    {
+      "step": "cumulative profile and sealed layout question",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts:61-129,169-218",
+        "packages/server/src/modules/usp/ingestion/intake-large.ts:130-141,414-428",
+        "packages/contracts/src/usp/streamed-profile.ts:7-8"
+      ],
+      "operation": "streamed-profile, followed by a state-key intake-large job",
+      "claimant": "Singleton profile runner claims fenced attempt; consumes already published raw slots in order.",
+      "fixedWaits": "1 s only when the next slot is absent; immediate continue on ready slots; 12 min wait ceiling.",
+      "estimatedShare": "Final empty-poll tail <=1 s plus dispatch handoff; most profiling overlaps the raw stream.",
+      "qualification": "Separate profile CPU/SQL share within ZIP's 543.78 s pre-layout is unknown."
+    },
+    {
+      "step": "teacher branch versus streamed officer layout",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:94-102,152-171",
+        "packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts:71-92",
+        "packages/server/src/modules/usp/ingestion/streamed-mapping.ts:109-151"
+      ],
+      "operation": "intake-draft only for the bounded-file memory/teacher branch; none for streamed teacher work",
+      "claimant": "Bounded draft runner has one process slot, teacher lane two; streamed authoring is an API command.",
+      "fixedWaits": "Bounded proposal deadline 45 s, not a sleep; streamed authoring has no teacher wait.",
+      "estimatedShare": "Teacher contributes 0 s on the streamed ZIP/26 MB path; do not assign 45 s to these files."
+    },
+    {
+      "step": "approval and mapping admission",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/streamed-mapping.ts:154-188",
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:139-149"
+      ],
+      "operation": "Officer approval command queues intake-large, which enqueues chunk-mapping",
+      "claimant": "Approval validates sealed profile and current recipe; mapping later claims its own fenced job.",
+      "fixedWaits": "No approval debounce or lease sleep; two dispatcher handoffs, each nominally <=750 ms idle.",
+      "estimatedShare": "26 MB profile-done to layout is 140.7 s (28.6% of pre-layout); human/queue/UI split unknown."
+    },
+    {
+      "step": "chunk mapping and global source-key closure",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:47-129,278-303,323-398",
+        "packages/contracts/src/usp/chunk-mapping.ts:12-13"
+      ],
+      "operation": "chunk-mapping",
+      "claimant": "One fenced mapping runner per dispatcher; table lane two, contract active limit one.",
+      "fixedWaits": "100 records/256 KiB per chunk, serial key writes; 1 s only if no next raw slot; retry 2 s.",
+      "estimatedShare": "Raw input is already sealed here, so empty-source polling should contribute 0 s.",
+      "qualification": "Mapping execution is an unknown portion of ZIP's 422.6 s post-approval, not 21 fixed waits."
+    },
+    {
+      "step": "fold mapped chunks and call the area normalizer",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:207-229,261-309",
+        "packages/server/src/modules/usp/ingestion/intake-part-draft.ts:24-42,67-92",
+        "packages/server/src/modules/areas/areas.ts:94-134,561-586,632-657",
+        "services/geo/geo/api.py:104-122",
+        "services/geo/geo/area.py:30-35,318-486"
+      ],
+      "operation": "intake-large; synchronous HTTP /internal/area/normalize, not a separate Celery job",
+      "claimant": "Fenced large runner; ordered cut/item/case locks, exact raw-byte and closed-key proofs.",
+      "fixedWaits": "No cut sleep; 60 s work slice, 30 s range-read and 60 s normalizer deadlines, not idle waits.",
+      "estimatedShare": "Unknown share of 422.6 s ZIP / 413.5 s large-file post-layout delay; no normalizer timing.",
+      "qualification": "First cut establishes the area frame; later cuts preserve it. Eight unreviewed packages stop."
+    },
+    {
+      "step": "persist drafts, publish on_map, prepare targets and draw",
+      "fileLines": [
+        "packages/server/src/modules/areas/areas.ts:661-1089",
+        "packages/server/src/modules/usp/ingestion/intake-ledger.ts:142-167",
+        "packages/server/src/modules/usp/ingestion/intake-targets.ts:71-89",
+        "apps/studio/src/features/intake/case-subscription.ts:39-45,68-75,91-105",
+        "apps/studio/src/api/queries.ts:228-253",
+        "apps/studio/src/features/map/MapWorkspace.tsx:71-73,125",
+        "apps/studio/src/features/map/ImportTray.tsx:30-36"
+      ],
+      "operation": "Draft publication in intake-large transaction; intake-run prepare is queued, not registry approval",
+      "claimant": "Publishing transaction owns the package and item; Studio reads proposals, never grants authority.",
+      "fixedWaits": "SSE normally refreshes immediately; batch/area fallback 5 s; package tray poll 700 ms.",
+      "estimatedShare": "Nominal visible tail 0-5.7 s (<0.6% of ZIP total); REH14 stale-stream delays are unallocated."
+    },
+    {
+      "step": "Act 1 confirmation to recorded building and verified card",
+      "fileLines": [
+        "packages/server/src/modules/usp/ingestion/intake-run.ts:84-93",
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:165-182,260-332,375,533-559"
+      ],
+      "operation": "intake-run commit, then prioritized target/evidence jobs",
+      "claimant": "Singleton run picks next ready non-leased job, LIMIT 1, then claims through the same authority.",
+      "fixedWaits": "750 ms dispatch tick; retry 2 s; lease 180 s; targets and card stages intentionally ordered.",
+      "estimatedShare": "One 750 ms handoff is <0.6% of 129.574 s; 66.533 s to recorded is 51.3% of that time.",
+      "qualification": "The remaining 63.041 s to first card, then 22.67 s to the second, lack per-stage timing."
+    }
+  ],
+  "changes": [
+    {
+      "where": "packages/server/src/modules/cases/processing.ts:244-253; dispatch-lanes.ts:218-230",
+      "before": "All due rows entered LIMIT 12, including held jobs, occupied singletons and live leased attempts.",
+      "after": "Held IDs, occupied singleton operations and active unexpired attempts consume zero ready rows.",
+      "unchanged": "LIMIT 12, probe/file ordering, admission, attempt claims and expired/fenced-job recovery."
+    },
+    {
+      "where": "packages/server/src/modules/cases/processing.ts:453-470",
+      "before": "Tick awaited document execution (deadline 120 s) and private tiles (default deadline 240 s).",
+      "after": "Zero waits for those executions in the tick; reserved background jobs release only on settlement.",
+      "unchanged": "Lane/memory admission and worker-local claims, deadlines, failure and publication handlers.",
+      "qualification": "These are removable cross-job barriers, not evidence those operations ran during REH14."
+    }
+  ],
+  "preservedLimits": {
+    "authority": "USP lease 180 s, heartbeat 30 s, maximum three attempts; source/access/review fences unchanged.",
+    "memory": "Configured DISPATCH_MEMORY_MIB or half physical RAM; pool max eight; scratch floor 2048 MiB.",
+    "lanes": "probe 8; GPU 1; vector/table/document/raster/point/model3d/link/teacher/other 2 each.",
+    "workers": "Existing per-operation singleton guards remain; documents and tiles retain their own admission.",
+    "parts": "Raw 100/512 KiB; mapped 100/256 KiB; cut 2000/16 MiB/100000 vertices; eight unfinished packages.",
+    "platform": "One dispatcher per runtime; compose concurrency 2, prefetch 1, late ack, visibility timeout 180 s.",
+    "platformRefs": ["scripts/platform/processes.mjs:8,51-67", "compose.yaml:110", "services/geo/geo/tasks.py:20"],
+    "platformWaits": "Startup 100 ms/health 1 s and shutdown 250 ms are process lifecycle waits, not per-file waits."
+  },
+  "realInputs": {
+    "method": "Read-only replay through readStreamingFeatures and StreamingPartWriter; no topology SQL or processor.",
+    "script": "C:/Users/kvina/AppData/Local/Temp/il1-real-inputs.mts",
+    "zipSha256": "cc05cb9a17aa55a016b93f7b40056ab2f9908405185c8a2242600d9753478abf",
+    "results": [
+      {"name": "Niagara_Falls_Condominiums", "records": 155, "parserQuarantined": 0, "rawChunks": 2,
+        "seconds": 0.052, "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c"},
+      {"name": "nyc-footprints-2100.geojson, REH14 ZIP member", "records": 2100, "parserQuarantined": 0,
+        "rawChunks": 21, "seconds": 0.187,
+        "sha256": "a13c14b7a742953c3f407f99ad1e0e76db88f6afced54680824503515feb8fed"},
+      {"name": "Niagara_Falls_Building_Footprints_2018", "records": 42247, "parserQuarantined": 435,
+        "rawChunks": 423, "seconds": 2.353,
+        "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521"}
+    ],
+    "qualification": "Unchanged reader timings, not a scheduling before/after or end-to-end runtime benchmark."
+  },
+  "tests": [
+    {"check": "pnpm typecheck:backend", "exit": 0},
+    {
+      "commandParts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/cases/processing.test.ts",
+        "packages/server/src/modules/cases/dispatch-scratch.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/streaming-*.test.ts",
+        "tests/intake-*.test.ts tests/adaptive-mapping.test.ts tests/streaming-later-receipt.test.ts",
+        "tests/manual-plan-later-receipt.test.ts tests/table-later-receipt.test.ts tests/tabular-admission.test.ts"
+      ],
+      "exit": 0, "tests": 479, "passed": 475, "failed": 0, "skipped": 4,
+      "skips": "Three PostgreSQL selections (offline); one optional local profile interpreter test.",
+      "regressions": "Busy singleton leaves ready window; documents/tiles return immediately with memory still held."
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "scripts/agent/a3-chunk.test.ts scripts/agent/a3d-completion.test.ts"
+      ],
+      "exit": 1, "tests": 5, "passed": 4, "failed": 1,
+      "failure": "Stage A contract extraction: default Python lacks sklearn; no dependency or interpreter was changed."
+    },
+    {"check": "Offline real-input reader/part replay", "exit": 0},
+    {"check": "git diff --check", "exit": 0},
+    {"check": "node --test scripts/platform/*.test.mjs", "exit": null, "reason": "No platform files changed."}
+  ],
+  "setupAndRecovery": [
+    {"command": "Initial dispatcher test command", "exit": 1, "reason": "Checkout had no installed tsx."},
+    {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0, "downloaded": 0},
+    {"command": "Initial real-input replay", "exit": 1, "reason": "Windows absolute ESM paths need file URLs."},
+    {"command": "Replay with file:/// imports", "exit": 0},
+    {"decision": "The missing sklearn check was not retried or bypassed; it remains an environment gap."}
+  ],
+  "openPoints": [
+    {
+      "place": "packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts:4-23",
+      "next": "Time per-feature BEGIN/SET LOCAL/geometry SELECT/COMMIT before considering bounded batch validation."
+    },
+    {
+      "place": "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:100-110,370-387",
+      "next": "Measure serial key reservations and object/SQL round trips; do not parallelize global duplicate closure."
+    },
+    {
+      "place": "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:207-229,261-309",
+      "next": "Time proof reads, first-frame cut and per-cut publication before changing sequential folding."
+    },
+    {
+      "place": "packages/server/src/modules/areas/areas.ts:579,632-657,875-1049",
+      "next": "Separate normalizer HTTP duration from candidate/target SQL under the cut transaction's locks."
+    },
+    {
+      "place": "services/geo/geo/area.py:318-486; services/geo/Dockerfile:13; compose.yaml:110",
+      "next": "Processor/image or pool changes need a separate resource-measured task; all current caps stay."
+    },
+    {
+      "place": "packages/server/src/modules/cases/processing.ts:244-253,475-564",
+      "next": "Run ready-selection SQL on PostgreSQL; measure full lanes and awaited processor transport/ingest."
+    },
+    {
+      "place": "apps/studio/src/features/intake/case-subscription.ts:68-118; apps/studio/src/api/queries.ts:228-253",
+      "next": "Correlate stale event-stream responses and area fetch/render times; no UI interval changes offline."
+    },
+    {
+      "place": "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:165-182,260-332,375",
+      "next": "Time package commit, citation, snapshot, plan, packet, card and verification separately in Act 1."
+    },
+    {
+      "place": "scripts/agent/a3-chunk.test.ts:81-90",
+      "next": "Supply an approved non-runtime interpreter with sklearn, then rerun this unchanged contract check."
+    }
+  ],
+  "reh15": [
+    "First run the PostgreSQL selection tests, including live/expired/fenced attempts and >12 blocked followers.",
+    "Time the unchanged 2100-feature ZIP member and 26 MB GeoJSON alone, then once with the same mixed-batch load.",
+    "Capture retain click, upload receipt, profile start/seal, layout shown, author/approve and first/all map frames.",
+    "For every source job capture created_at, dispatched_at, completed_at, next_attempt_at, attempts and lease state.",
+    "Separate queue delay, execution, retry/lease recovery, deliberate officer delay and browser refresh delay.",
+    "Record per-chunk topology SQL, profile publication, source-key reservations, object reads and mapping closure.",
+    "For each cut record proof start/end, normalizer HTTP start/end, persistence commit and on_map event receipt.",
+    "Capture ready-row selection, admitted/refused lane and memory counts, CPU/RAM, and cold/warm processor state.",
+    "Act 1: record the commit and each target/card stage so serialized useful work is not called a poll delay.",
+    "Proposed target: first map within 180 s, both ZIP parts within 240 s, excluding recorded officer time.",
+    "These targets are proposed acceptance criteria, not a prediction; stop after one isolated/loaded comparison."
+  ]
+}
