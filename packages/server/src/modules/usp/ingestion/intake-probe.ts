@@ -32,7 +32,9 @@ function initialCard(head: Uint8Array, name: string): IntakeCard {
   const notes: string[] = [];
   if (rootTypePending) notes.push('Root type not yet seen; the complete collection and its coordinate system '
     + 'must be checked before anything is published.');
-  if (sidecar) notes.push('Loose sidecar kept at signature depth; grouping separate sources is out of scope.');
+  if (sidecar) notes.push('Loose sidecar kept at signature depth; same-stem .shx, .prj and .cpg join a batch '
+    + 'shapefile set when its .shp, .shx and .dbf are present without duplicate parts; otherwise they wait or stay '
+    + 'separate, and loose world files stay separate.');
   if (detected.format === 'shapefile' && /\.shx$/i.test(name)) detected.format = 'shapefile-index';
   return { version: INTAKE_CARD_VERSION, ...detected, formatVersion: null,
     detectedBy: detected.format === 'shapefile-index' ? 'bytes_and_name' : detectedBy,

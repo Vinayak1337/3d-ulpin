@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,7 +12,7 @@ import { probeOriginal } from './intake-probe';
 import { readZipMember } from './intake-zip';
 import { readTabularSource } from './tabular-source';
 import { readTableWindows, type StreamedWorkbookRow } from './tabular-stream';
-import { workbookTable } from './tabular-workbook';
+import { rowLimit, workbookTable } from './tabular-workbook';
 import { zipMembers } from '../../../../../../tests/fixtures/xlsx-control';
 import { windowRows } from './table-windows';
 
@@ -22,6 +22,23 @@ process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
 const python = { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON) ? false : 'needs ULPIN_PROFILE_PYTHON' };
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 const pick = (format: 'xlsx' | 'ods'): TabularSelection => ({ format, sheet: 'Wards', table: null, headerRows: [1] });
+
+function nativeElementLimit(): string {
+  const source = readFileSync('services/geo/geo/native_workbook.py', 'utf8');
+  const rows = Number(/^MAX_ROWS = (\d+)$/m.exec(source)![1]);
+  const cells = Number(/^MAX_CELLS = (\d+)$/m.exec(source)![1]);
+  assert.equal(rows, cells, 'the shared XML element wording must name both native bounds');
+  return cells.toLocaleString('en-US');
+}
+
+test('the whole-reader refusal distinguishes XML elements from ODS repeat expansion', () => {
+  assert.throws(rowLimit, { code: 'TABULAR_ROW_LIMIT', message:
+    'This table holds more than the whole-file reader takes: '
+    + `${TABULAR_LIMITS.rows.toLocaleString('en-US')} records, a workbook's ${nativeElementLimit()} XML row or `
+    + 'cell elements, the ODS repeat-expansion check at '
+    + `${(TABULAR_LIMITS.rows * TABULAR_LIMITS.columns).toLocaleString('en-US')} cells, or the native sheet, text `
+    + 'or archive bounds. Kept through the upload, it is read as a stream instead; no record is cut to fit.' });
+});
 
 // test_only: coordinates and outlines typed for these tests, not records of any place. Neighbouring equal cells and
 // the two equal rows are what an ODS writes once with a repeat count.
@@ -122,7 +139,13 @@ test('an ODS is read in one window whose rows cite content.xml, as the whole rea
   assert.deepEqual(rows.map(row => row.sourceRow), whole.sourceRows);
   assert.deepEqual([rows[0]!.sheet, rows[0]!.byteStart, rows[0]!.byteEnd, rows[0]!.rawSha256],
     ['Wards', byteStart, byteEnd, sha(ods.bytes.subarray(byteStart, byteEnd))]);
-  assert.match(read.notes![0]!, /^This ODS sheet was read whole/);
+  assert.equal(read.notes![0], `This ODS sheet was read whole: the original is within `
+    + `${TABULAR_LIMITS.bytes / 1024 ** 2} MiB and the selected table within `
+    + `${TABULAR_LIMITS.rows.toLocaleString('en-US')} records and ${TABULAR_LIMITS.columns} header columns; `
+    + 'the native reader caps XML row and cell elements at '
+    + `${nativeElementLimit()} each across the workbook, and non-padding repeat expansion is checked against `
+    + `${(TABULAR_LIMITS.rows * TABULAR_LIMITS.columns).toLocaleString('en-US')} cells. `
+    + 'A larger one is read as a stream.');
 });
 
 test('an ODS above 16 MiB streams unchanged, including when the length was not known in advance', python,
