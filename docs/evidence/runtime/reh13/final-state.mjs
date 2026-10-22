@@ -32,8 +32,9 @@ const detail = await get(`/cases/${caseId}`);
 const manifest = await get(`${root}/intake`, intake.IntakeManifestSchema);
 const evidence = await get(`${root}/intake/evidence`, intake.IntakeEvidencePageSchema);
 writeFileSync('E:/BhuAayam-data/task-data/reh13/final-act1.json', JSON.stringify({ detail, evidence }), { flag: 'wx' });
-save('final-state.json', { at: new Date().toISOString(), caseId, contracts: 'IntakeManifest, IntakeEvidencePage: passed',
-  originalHashes: originalHashes(detail), evidence: { counts: evidence.counts,
+save('final-state.json', { at: new Date().toISOString(), caseId,
+  contracts: 'IntakeManifest, IntakeEvidencePage: passed', originalHashes: originalHashes(detail),
+  evidence: { counts: evidence.counts,
     confirmations: evidence.confirmations.map(row => ({ id: row.confirmationId ?? row.id,
       accepted: row.accepted?.length ?? null })) },
   items: manifest.items.map(({ name, state, placement, partsDone, partsPlanned, limitReason }) => ({
