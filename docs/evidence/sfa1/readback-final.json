@@ -1,0 +1,42 @@
+{ "at": "2026-10-22T10:06:18.153Z", "caseId": "1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6", "surfaces": [ {
+"itemId": "05bb6c32-d166-4bad-8528-c2b7e2d428ea", "name": "nyc-10013-lidar-2017.laz", "state": "reading",
+"placement": "on_map", "done": 4, "planned": 211, "words": [
+"Read 4 of 211 batches (1726222 points, EPSG:6347). Placed against the extent of this batch's drafted",
+" footprints; the area has no recorded extent yet. Vertical reference stated: NAVD88 height. Display ",
+"only: no height, measurement or record is taken from it." ], "jobsAssigned": 4, "failed": 0, "first": { "part": 0,
+"jobId": "77845faf-c9b3-5cad-bdd4-023ae622e26a", "originalHashMatches": true, "displaySchema": "passed",
+"placement": "placed", "vertical": { "status": "known", "name": "NAVD88 height" }, "artifact": { "status": 200,
+"hashMatches": true, "bytes": 245760 } } }, { "itemId": "bc94c915-89de-4ac3-87e5-5c229fa3c26c",
+"name": "nyc-10013-ortho-2018.tif", "state": "read", "placement": "on_map", "done": 9, "planned": 9, "words": [
+"Read 9 of 9 windows (768 × 768 pixels, 4 bands, EPSG:3857). Placed against the extent of this batch'",
+"s drafted footprints; the area has no recorded extent yet. The file states no vertical reference. Di",
+"splay only: no height, measurement or record is taken from it." ], "jobsAssigned": 9, "failed": 0, "first": {
+"part": 0, "jobId": "18511802-387f-5065-bddf-f7aa9ee34457", "originalHashMatches": true, "displaySchema": "passed",
+"placement": "placed", "vertical": { "status": "unknown", "name": null }, "artifact": { "status": 200,
+"hashMatches": true, "bytes": 95546 } } } ], "retained": [ { "name": "gpmc-yuvp.csv", "hashMatches": true }, {
+"name": "buildings-original.geojson", "hashMatches": true }, { "name": "nyc-10013-ortho-2018.tif", "hashMatches": true
+}, { "name": "nyc-10013-lidar-2017.laz", "hashMatches": true } ], "checks": [ {
+"path": "/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake", "status": 200 }, { "path": [
+"/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake/items/05bb6c32-d166-4bad-8528-c2b7e2d42",
+"8ea/parts?after=-1" ], "status": 200 }, { "path": [
+"/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake/items/05bb6c32-d166-4bad-8528-c2b7e2d42",
+"8ea/parts?after=63" ], "status": 200 }, { "path": [
+"/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake/items/05bb6c32-d166-4bad-8528-c2b7e2d42",
+"8ea/parts?after=127" ], "status": 200 }, { "path": [
+"/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake/items/05bb6c32-d166-4bad-8528-c2b7e2d42",
+"8ea/parts?after=191" ], "status": 200 }, { "path": [
+"/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake/items/05bb6c32-d166-4bad-8528-c2b7e2d42",
+"8ea/parts/0/display" ], "status": 200 }, { "path": [
+"/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake/items/bc94c915-89de-4ac3-87e5-5c229fa3c",
+"26c/parts?after=-1" ], "status": 200 }, { "path": [
+"/ingestion/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6/intake/items/bc94c915-89de-4ac3-87e5-5c229fa3c",
+"26c/parts/0/display" ], "status": 200 }, { "path": "/cases/1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6", "status": 200 } ],
+"crossCaseRead": 404, "jobCounts": { "raster-window": 9, "point-batch": 5 }, "firstJobs": [ {
+"id": "77845faf-c9b3-5cad-bdd4-023ae622e26a", "caseId": "1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6",
+"sourceId": "05bb6c32-d166-4bad-8528-c2b7e2d428ea", "operation": "point-batch", "status": "succeeded",
+"createdAt": "2026-10-22T09:57:31.158Z", "completedAt": "2026-10-22T09:58:20.595Z", "error": null,
+"inputFingerprint": "908349a2f0e5bc72b175acd6001ed1e28a7df4d73ffd71032edf3ab33dc79393" }, {
+"id": "18511802-387f-5065-bddf-f7aa9ee34457", "caseId": "1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6",
+"sourceId": "bc94c915-89de-4ac3-87e5-5c229fa3c26c", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T09:57:18.648Z", "completedAt": "2026-10-22T09:57:31.447Z", "error": null,
+"inputFingerprint": "97d0b1b733791d37b3fe7c6a675af02c38fd5186c4339a7eba8ee977834ada00" } ] }

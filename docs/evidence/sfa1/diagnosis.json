@@ -1,0 +1,21 @@
+{ "at": "2026-10-22T09:39:39.146Z", "parts": [ { "item_id": "255d2981-7ef3-4acf-b98b-69e6e398bf00", "state": "planned",
+"family": "point_cloud", "part_index": "0", "part_state": "planned", "job_id": null, "operation": null, "status": null,
+"error": null }, { "item_id": "cd4d161f-c6e6-471e-9641-70786ff53035", "state": "probed", "family": "table",
+"part_index": null, "part_state": null, "job_id": null, "operation": null, "status": null, "error": null }, {
+"item_id": "d524fb62-7bdf-4b12-8bf1-10f75cef2e3f", "state": "planned", "family": "raster", "part_index": "0",
+"part_state": "planned", "job_id": null, "operation": null, "status": null, "error": null }, {
+"item_id": "f95b2b3b-d875-45a2-ae0a-6487ad82a1ac", "state": "read", "family": "vector", "part_index": null,
+"part_state": null, "job_id": null, "operation": null, "status": null, "error": null } ], "jobs": [ {
+"operation": "intake-draft", "status": "succeeded", "error": null, "count": "2" }, { "operation": "intake-evidence",
+"status": "failed", "error": "STREAMING_ORIGINAL_REQUIRED", "count": "1" }, { "operation": "intake-run",
+"status": "succeeded", "error": null, "count": "3" } ], "lanes": { "exit": 0, "rows": [] }, "admission": { "exit": 0,
+"orderedRows": [ { "itemId": "c03403ea-27be-4b19-8f84-a589e3101a68", "caseId": "6650f974-7446-45bd-9d05-6a7b4713a055",
+"operation": "raster-window", "planned": false, "moved": true }, { "itemId": "35ffb328-1cff-4a39-a253-b8f045f93631",
+"caseId": "6650f974-7446-45bd-9d05-6a7b4713a055", "operation": "point-batch", "planned": false, "moved": true }, {
+"itemId": "c794511a-5893-4a48-be4e-344cb1efdf4a", "caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0",
+"operation": "raster-window", "planned": true, "moved": false }, { "itemId": "1f32e216-6326-49ce-a234-27392158e270",
+"caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "operation": "point-batch", "planned": true, "moved": false }, {
+"itemId": "d524fb62-7bdf-4b12-8bf1-10f75cef2e3f", "caseId": "76f1cdb3-1407-40b4-b9a2-20cea1c53380",
+"operation": "raster-window", "planned": true, "moved": false }, { "itemId": "255d2981-7ef3-4acf-b98b-69e6e398bf00",
+"caseId": "76f1cdb3-1407-40b4-b9a2-20cea1c53380", "operation": "point-batch", "planned": true, "moved": false } ] },
+"rawReceipt": "E:/BhuAayam-data/task-data/sfa1/raw-receipts/diagnosis.json" }
