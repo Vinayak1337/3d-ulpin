@@ -13,7 +13,8 @@ import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrast
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
 import {registerUspJobInputTx} from '../jobs';
-import {gltfConfig,assertGltfReadTools} from './gltf-config';
+import {gltfConfig,assertGltfReadTools,gltfReadReaderCompatible,GLTF_PRE_BUFFER_READER_SHA} from './gltf-config';
+import {gltfSummary} from './gltf-processor';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 import {assertBatchNativeSourceTx} from './intake-native-readers';
@@ -87,17 +88,19 @@ export async function gltfSourceTx(client:PoolClient,caseId:string,sourceId:stri
   return {current,source,binding,latest,context:fingerprint({frame:current.frame,context:current.context,siteId:current.site_id})};
 }
 export function nullableGltfTools(){try{return gltfConfig().pins;}catch(error){if(error instanceof AppError&&error.status===503)return null;throw error;}}
+/** Explicit tools preserve the recorded reader identity; execution checks still require the current reader. */
 export function gltfInput(ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,tools=nullableGltfTools(),sceneIndex:number|null=null,
   buffers?:GltfBufferBinding[]):GltfInput{
   return GltfInputSchema.parse({version:GLTF_VERSION,jobId,caseId:ctx.current.id,...(buffers?{buffers}:{}),
     caseRevision:ctx.current.revision,caseContextSha256:ctx.context,sourceId:ctx.source.id,
     sourceFamilyId:ctx.source.family_id,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
     sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,subject:ctx.binding.subject,
-    accessSha256:ctx.binding.access,readerSha256:gltfReaderSha(),tools,sceneIndex});
+    accessSha256:ctx.binding.access,readerSha256:tools?.readerSha256??gltfReaderSha(),tools,sceneIndex});
 }
-export async function assertGltfInputTx(client:PoolClient,input:GltfInput,lock=false){
-  const ctx=await gltfSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||!compareSourcePins(gltfInput(ctx,input.jobId,input.tools,input.sceneIndex,input.buffers),input).current)
+export async function assertGltfInputTx(client:PoolClient,input:GltfInput,lock=false,immutableRead=false){
+  const ctx=await gltfSourceTx(client,input.caseId,input.sourceId,lock),reader=gltfReaderSha();
+  const readerCurrent=immutableRead?gltfReadReaderCompatible(input.readerSha256,reader,input.tools):input.readerSha256===reader;
+  if(!ctx.latest||!readerCurrent||!compareSourcePins(gltfInput(ctx,input.jobId,input.tools,input.sceneIndex,input.buffers),input).current)
     conflict('The Gltf original, case, reader or private access context changed. Retry under current pins.');
   await assertGltfBuffersTx(client,input,ctx.binding);
   return ctx;
@@ -144,6 +147,11 @@ export async function readGltfResult(input:GltfInput,hash:string,size:number,sig
   const result=GltfResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==gltfArtifactKey(input.jobId,result.artifact.sha256))
     throw new AppError(422,'GLTF_RESULT_SCOPE','The inspection receipt belongs to another original or job.');
+  if(input.readerSha256===GLTF_PRE_BUFFER_READER_SHA){
+    const artifact=await boundedGltfObject(result.artifact.key,result.artifact.bytes,signal);
+    if(sha256(artifact)!==result.artifact.sha256||fingerprint(gltfSummary(artifact,input))!==fingerprint(result.summary))
+      throw new AppError(422,'GLTF_ARTIFACT_INTEGRITY','The private native Gltf records differ from their accepted receipt.');
+  }
   return result;
 }
 export async function gltfStatusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,lock=false){
@@ -155,7 +163,7 @@ export async function gltfStatusTx(client:PoolClient,caseId:string,sourceId:stri
   const input=GltfInputSchema.parse(job.payload);
   assertGltfJobRow(job,input);
   if(job.status==='succeeded')assertGltfJobRow(job,input,true);
-  let stale=false;try{await assertGltfInputTx(client,input,lock);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
+  let stale=false;try{await assertGltfInputTx(client,input,lock,job.status==='succeeded');}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
   return {ctx,job,input,stale};
 }
 function deadline(ms:number):DbDeadline{return {deadlineAt:Date.now()+ms,signal:AbortSignal.timeout(ms)};}

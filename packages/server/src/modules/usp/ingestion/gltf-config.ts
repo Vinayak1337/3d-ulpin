@@ -74,7 +74,8 @@ export function gltfConfig(deadlineAt=Date.now()+20_000){
       supervisorSha256:sha256(Buffer.concat([bytes(supervisor,1024*1024),bytes(profileHelper,1024*1024)])),
       dependencyLockSha256:sha256(bytes(dependencyLock,64*1024)),
       codeSha256:fingerprint(GLTF_CODE_FILES.map(p=>({path:p,sha256:sha256(bytes(join(repo,p),1024*1024))})))});
-    return {python,environmentRoot,scratchRoot,supervisor,profilePath,pins};
+    const nonRepositorySha256=fingerprint(actual.filter(entry=>entry.root!=='repository'));
+    return {python,environmentRoot,scratchRoot,supervisor,profilePath,pins,nonRepositorySha256};
   }catch(error){if(error instanceof AppError)throw error;return gltfUnavailable();}
 }
 export type GltfConfig=ReturnType<typeof gltfConfig>;
@@ -87,17 +88,44 @@ export function assertGltfTools(pins:GltfToolPins|null,deadlineAt?:number){
 // physical CODEFILES in both worker checkouts/staging. Current code/non-code
 // inventory remains mandatory; writers never use these aliases.
 const preObjReadCodeSha=new Set(["a65e70ab797791693b65d0d23c42389fe10248856022a1d9264210301908ba3b", "0dd2070c9001591fad9263e06203bc8d3f316f0277db8fb4552a9464a918514d", "a50cf2e380ad19770783ce9708ff76e10d90f68ab00962706b3a579dbfa060a2"]);
-export function gltfReadToolsCompatible(stored:GltfToolPins,current:GltfToolPins){
+// GB2: reviewed immutable reads from the pre-buffer profile only. The current full
+// inventory is still verified by gltfConfig; these pins never authorize a new run.
+export const GLTF_PRE_BUFFER_READER_SHA='92035c6c891d4e7c0e7a74a7c1980e9f0489d29f7046eadb639d9b6311ed9097';
+const preBufferReadTools:GltfToolPins={platform:'windows-x86_64',readerSha256:GLTF_PRE_BUFFER_READER_SHA,
+  pythonSha256:'d932e5e2f324d57f392e8fd063dcf6d0185be8a664c57c6d24e7762ed02c28ca',
+  profileSha256:'f9c7ec3af52ecb52f838aeb6e67777ebb399e83030e8dc1bac89720b6151a576',
+  supervisorSha256:'d3352a4dacc78f81f704a38c93976dec196112a1b8e915d0a4c0d075c8e5b339',
+  dependencyLockSha256:'4ff0c1de1f2eeffbf7f76abba947718f684006ce032f113af039280915388f6e',
+  codeSha256:'b3fe20ae29f1f9c8a210fd644be02838b879db0d56cd3093c7cf0f76b96140d1'};
+// The old profile's runtime/environment inventory (2,518 entries), excluding repository files.
+const preBufferNonRepositorySha='9697c86123f94e2fd04db7e8bccc7f6b840a96785ed04eb301de01c68c7ebc46';
+// GB1 physical CRLF and Git/LF native reader bytes; the CLI is intentionally CRLF in both.
+const bufferReadTransitions=new Map([
+  ['832ce7792d863e27957634ec19a11354f6a28f715b442bc0e7c9121b2ab8e6b5',
+    '35830e260b81df2ba147194c92608e18fff193376e982442314dcff12b2ee126'],
+  ['bb4ed225ac0ade6395dd8f3da62ca4ebb1d16dfa8939f9e0211799e95d71cef6',
+    'e96b8d93376d49efce413123e2cbf1653e45ce2853780366124f4b56325dc79e'],
+]);
+/** Provisional input comparison only; gltfSummary must also check the retained buffers. */
+export function gltfReadReaderCompatible(stored:string,current:string,tools:GltfToolPins|null){
+  return stored===current||(stored===GLTF_PRE_BUFFER_READER_SHA&&bufferReadTransitions.has(current)
+    &&fingerprint(tools)===fingerprint(preBufferReadTools));
+}
+export function gltfReadToolsCompatible(stored:GltfToolPins,current:GltfToolPins,nonRepositorySha256?:string){
   const old=GltfToolPinsSchema.safeParse(stored),live=GltfToolPinsSchema.safeParse(current);
   if(!old.success||!live.success)return false;
   if(fingerprint(old.data)===fingerprint(live.data))return true;
   const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
-  if(!preObjReadCodeSha.has(oldCode))return false;
+  const preBuffer=fingerprint(old.data)===fingerprint(preBufferReadTools)
+    &&nonRepositorySha256===preBufferNonRepositorySha
+    &&bufferReadTransitions.get(live.data.readerSha256)===live.data.supervisorSha256
+    &&live.data.pythonSha256===old.data.pythonSha256&&live.data.dependencyLockSha256===old.data.dependencyLockSha256;
+  if(!preBuffer&&!preObjReadCodeSha.has(oldCode))return false;
   const actualCode=fingerprint(GLTF_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
-  return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
+  return live.data.codeSha256===actualCode&&(preBuffer||fingerprint(oldTools)===fingerprint(currentTools));
 }
 /** Complete current profile first; comparison only, never launch configuration. */
 export function assertGltfReadTools(pins:GltfToolPins|null,deadlineAt?:number):void{
   if(!pins)gltfUnavailable();const current=gltfConfig(deadlineAt);
-  if(!gltfReadToolsCompatible(pins,current.pins))gltfUnavailable('GLTF_TOOL_CHANGED');
+  if(!gltfReadToolsCompatible(pins,current.pins,current.nonRepositorySha256))gltfUnavailable('GLTF_TOOL_CHANGED');
 }

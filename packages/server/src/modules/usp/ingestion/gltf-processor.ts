@@ -6,12 +6,14 @@ import {GLTF_COMPANION_LIMIT,GLTF_LIMITS,GltfSummarySchema,GltfSupervisionSchema
   from '../../../../../contracts/src/usp/gltf-ingestion';
 import {sha256} from '../../../infrastructure/storage';
 import {AppError} from '../../../infrastructure/errors';
-import {assertGltfTools,type GltfConfig} from './gltf-config';
+import {assertGltfTools,gltfUnavailable,GLTF_PRE_BUFFER_READER_SHA,type GltfConfig} from './gltf-config';
+import {gltfCompanionName} from './gltf-companions';
 
 const count=z.number().int().nonnegative(),declaredResource=z.object({declaration:z.object({uri:z.unknown().optional()}).optional(),
   dependency:z.object({kind:z.string().optional(),status:z.string(),fetched:z.literal(false).optional()}).optional()});
 const nativeBuffer=z.object({status:z.string(),fetched:z.literal(false),kind:z.string().optional(),uri:z.string().optional(),
-  reason:z.string().optional(),binding:z.object({sourceId:z.string().nullable().optional(),sha256:z.string().optional()}).optional()});
+  reason:z.string().optional(),sha256:z.string().nullable().optional(),
+  binding:z.object({sourceId:z.string().nullable().optional(),sha256:z.string().optional()}).optional()});
 const native=z.object({schemaVersion:z.literal('gltf-local-inspection/1'),status:GltfSummarySchema.shape.status,
   sourceSha256:GltfSummarySchema.shape.sourceSha256,sourceBytes:GltfSummarySchema.shape.sourceBytes,
   geometryProjectionStatus:GltfSummarySchema.shape.geometryProjectionStatus,representation:z.literal('context_mesh'),
@@ -50,10 +52,23 @@ function gltfCompanions(value:z.infer<typeof native>,input:GltfInput){
   return {companions:list.slice(0,GLTF_COMPANION_LIMIT),joinedCompanionCount:list.filter(c=>c.state==='joined').length,
     refusedCompanionCount:list.filter(c=>c.state==='refused').length};
 }
+/** GB2: historical missing buffers stay missing, even if a companion was retained later. */
+function assertPreBufferCitation(value:z.infer<typeof native>,input:GltfInput){
+  if(input.buffers?.length)gltfUnavailable('GLTF_TOOL_CHANGED');
+  for(const buffer of value.buffers){
+    if(buffer.binding)gltfUnavailable('GLTF_TOOL_CHANGED');
+    if(['glb_bin','embedded_base64','embedded_uri'].includes(buffer.kind??'')&&buffer.uri===undefined)continue;
+    if(buffer.kind!=='external_uri'||buffer.status!=='needs_input'||buffer.reason!=='EXTERNAL_BUFFER_NOT_RESOLVED'
+      ||buffer.sha256!==null||!buffer.uri||gltfCompanionName(buffer.uri)===null)
+      gltfUnavailable('GLTF_TOOL_CHANGED');
+  }
+}
 /** Derive small status from the actual unaltered native projection, not source labels. */
 export function gltfSummary(bytes:Buffer,input:GltfInput){
   if(bytes.length>GLTF_LIMITS.artifactBytes)throw new AppError(413,'GLTF_OUTPUT_LIMIT','Gltf native output exceeds its profile.');
   const value=native.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes))),c=value.counts;
+  const preBuffer=input.readerSha256===GLTF_PRE_BUFFER_READER_SHA;
+  if(preBuffer)assertPreBufferCitation(value,input);
   if(value.sourceSha256!==input.sourceSha256||value.sourceBytes!==input.sourceBytes||c.nodes!==value.nodes.length||c.primitives!==value.primitives.length
     ||c.projectedPositions!==value.primitives.reduce((n,p)=>n+(p.projection?.POSITION.values?.length??0),0)
     ||c.projectedIndices!==value.primitives.reduce((n,p)=>n+(p.projection?.indices.values?.length??0),0)
@@ -64,7 +79,7 @@ export function gltfSummary(bytes:Buffer,input:GltfInput){
     selectedSceneIndex:value.selectedScene.index,selectedSceneOrigin:value.selectedScene.origin,
     nodeCount:c.nodes,primitiveCount:c.primitives,projectedPositions:c.projectedPositions,projectedIndices:c.projectedIndices,
     missingCompanionCount:value.buffers.filter(b=>b.status==='needs_input').length+value.resources.images.filter(i=>i.dependency?.status==='needs_input').length,
-    ...gltfCompanions(value,input),
+    ...(preBuffer?{}:gltfCompanions(value,input)),
     unsupportedPrimitiveCount:value.primitives.filter(p=>p.status==='unsupported').length,
     globalPlacement:'unknown',accuracy:'not_assessed',validity:'not_assessed',canonicalIdentity:'not_assessed',
     analyticEligible:false,registryAdmission:false,measurements:false,learningLabels:false,rights:'not_assessed'});
