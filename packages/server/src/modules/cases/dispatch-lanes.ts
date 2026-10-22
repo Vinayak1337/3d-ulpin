@@ -6,7 +6,7 @@ import { TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 export type DispatchLane = 'probe' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d' | 'link' | 'gpu'
   | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
-type Hold = Cost & { scratchMiB: number };
+type Hold = Cost & { operation: string; scratchMiB: number };
 type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
 /** `workbook` names the table pin: workbooks and CSV reading detection use scratch; pinned CSV reads do not. */
 type OperationRow = { lane: DispatchLane; mib?: number; scratchMiB?: number; workbook?: 'request' | 'tabular';
@@ -169,7 +169,7 @@ export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
 export type DispatchJob = { id: string; operation: string; created_at: Date | string; payload?: unknown };
 const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
 const dispatchHold = (job: DispatchJob): Hold =>
-  ({ ...dispatchCost(job.operation), scratchMiB: dispatchScratchMiB(job) });
+  ({ ...dispatchCost(job.operation), operation: job.operation, scratchMiB: dispatchScratchMiB(job) });
 
 /** Memory fits what is unreserved, or nothing is held. Scratch fits what is unreserved, or the job writes none, or no
  * held job writes any, so a job larger than the whole scratch budget runs alone among the jobs that write scratch. */
@@ -213,6 +213,19 @@ export class DispatchReservations {
 
   release(jobId: string): void {
     this.held.delete(jobId);
+  }
+
+  /** In-flight jobs cannot consume the bounded ready window while their worker still owns them. */
+  heldJobIds(): string[] {
+    return [...this.held.keys()];
+  }
+
+  /** All in-process operations use a singleton worker except documents and tiles, which use lane admission. */
+  unavailableOperations(): string[] {
+    const singletons = dispatchInProcessOperations()
+      .filter(operation => operation !== 'document-extraction' && operation !== 'private-mvt');
+    return [...new Set([...this.held.values()].map(hold => hold.operation))]
+      .filter(operation => singletons.includes(operation));
   }
 
   refusedJobIds(): string[] {
