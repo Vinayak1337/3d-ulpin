@@ -1,0 +1,70 @@
+{ "at": "2026-10-22T13:36:22.061Z", "commit": "8d6e19fa91e1d08fa61d02946500b2f5227dd393", "checkoutClean": true,
+"servicesGeo": "eab382a5cdd44dd62df5789d46df12dc3937640d", "machine": { "processes": [ { "pid": 13100,
+"started": "2026-10-22T09:34:37.1344290Z", "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 8824,
+"started": "2026-10-22T09:34:37.7388100Z", "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ],
+"listeners": [], "freeGB": 637.323 }, "containers": [
+"48f99001b2a7 ulpin-demo-geo-1 ulpin-geo:git-a40b60238728 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"3e74d385c3f7 ulpin-demo-worker-1 ulpin-geo:git-a40b60238728 running" ], "health": "200", "doctor": { "command": [
+"pnpm platform:doctor --profile demo" ], "from": "E:/Projects/ulpin-wt/demo", "exit": 0,
+"startedAt": "2026-10-22T13:36:13.544Z", "endedAt": "2026-10-22T13:36:22.061Z", "seconds": 8.517, "output": [
+"> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\demo", "> node scripts/platform/doctor \"--profile\" \"demo\"", "",
+"  documentPagesConfigured: true", "  packetRegionsConfigured: true",
+"  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true", "PASS Document runtimes",
+"PASS Demo external configuration", "PASS Local document OCR paths available; eng+hin assets (runner uses eng).",
+"  enabled: true", "  policyHash: efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+"  providerKeyPresent: true", "  mappingTeacherAdapter: sarvam", "  dailyCapPresent: true", "  providerKeysNamed: 11",
+"  providerKeysPresent: 11", "PASS Model gateway state", "  Context: desktop-linux; engine: 29.8.0",
+"PASS Docker local Linux engine and context/socket", "  23 existing volumes; 6 ulpin-demo containers",
+"PASS Docker inventory readable", "PASS Existing ulpin-demo volume ownership and attachments",
+"PASS postgres container healthy", "PASS postgres restart policy", "PASS minio container healthy",
+"PASS minio restart policy", "PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy",
+"PASS geo restart policy", "PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "  Pinned: ulpin-geo:git-a40b60238728",
+"PASS Processors run the pinned image, built from this checkout's services/geo", "PASS API native process ownership",
+"PASS Dispatcher process ownership (liveness only)", "PASS API /api/v1/health",
+"PASS DB migrations applied (API structural admission)", "PASS API bound to the inspected ulpin-demo database",
+"Doctor: all checks passed (dispatcher liveness, not a job execution proof)." ], "error": null }, "doctorSummary": {
+"exit": 0, "pass": 28, "fail": [], "passLines": [ "PASS Document runtimes", "PASS Demo external configuration",
+"PASS Local document OCR paths available; eng+hin assets (runner uses eng).", "PASS Model gateway state",
+"PASS Docker local Linux engine and context/socket", "PASS Docker inventory readable",
+"PASS Existing ulpin-demo volume ownership and attachments", "PASS postgres container healthy",
+"PASS postgres restart policy", "PASS minio container healthy", "PASS minio restart policy",
+"PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy", "PASS geo restart policy",
+"PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "PASS Processors run the pinned image, built from this checkout's services/geo",
+"PASS API native process ownership", "PASS Dispatcher process ownership (liveness only)", "PASS API /api/v1/health",
+"PASS DB migrations applied (API structural admission)", "PASS API bound to the inspected ulpin-demo database" ] },
+"volumes": [ "ulpin-demo_minio-data", "ulpin-demo_postgres-data", "ulpin-demo_redis-data" ], "images": [ {
+"name": "ulpin-geo:git-a40b60238728", "present": true,
+"id": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9", "labels": {
+"org.opencontainers.image.revision": "a40b6023872819367ab4b3db43afbb7ffba892b0",
+"in.bhuaayam.ulpin.services-geo-tree": "eab382a5cdd44dd62df5789d46df12dc3937640d" } } ], "counts": {
+"at": "2026-10-22T13:36:25.187Z", "health": { "status": 200, "ok": true, "readiness": { "status": "structurally_ready",
+"ready": true, "missingRelations": [], "missingColumns": [], "missingMigrations": [], "data": { "sourceCount": 38,
+"importPackageCount": 7, "physicalFeatureCount": 67, "activeLegacyDatasetCount": 0 } } }, "cases": 11,
+"casesStatus": 200, "areas": 4, "areasStatus": 200, "sources": null, "packages": 0, "perCase": [ {
+"caseId": "1ada7796-4e8f-4a19-9b7f-4414e80114c4", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "4ad9cb6d-56c0-445e-a9b6-357d1dc1d452", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "6d183fef-bcaf-40f6-90dc-2694bc9873a5", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "b5860044-1e99-4701-8c6b-bb2e7b4bb134", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "74b08d92-6a77-4d64-85c7-dbec9f92984f", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "710a0ebf-ec42-46bf-8a79-50920e3ab3c8", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "06849e03-2423-4599-be7d-603aad9bdcac", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "fef196d1-351e-41d7-a31e-aba54424f93f", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "a73b66c7-8eca-4b29-893f-a46c06dba7bb", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "b4cf1142-7f1a-48c7-a492-d2e6afca80f8", "workspace": 200, "targets": 200, "sources": null, "packages": 0 }, {
+"caseId": "98adffd3-f78b-449a-b509-c9dc9acca22c", "workspace": 200, "targets": 200, "sources": null, "packages": 0 } ]
+}, "gateway": { "status": { "exit": 0, "lines": [ "enabled: true",
+"policyHash: efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721", "providerKeyPresent: true",
+"mappingTeacherAdapter: sarvam", "dailyCapPresent: true", "providerKeysNamed: 11", "providerKeysPresent: 11" ] },
+"keyMarks": { "exit": 0, "lines": [ "ULPIN_PROVIDER_KEY_SARVAM_01 in_use", "ULPIN_PROVIDER_KEY_SARVAM_02 waiting",
+"ULPIN_PROVIDER_KEY_SARVAM_03 waiting", "ULPIN_PROVIDER_KEY_SARVAM_04 waiting", "ULPIN_PROVIDER_KEY_SARVAM_05 waiting",
+"ULPIN_PROVIDER_KEY_SARVAM_06 waiting", "ULPIN_PROVIDER_KEY_SARVAM_07 waiting", "ULPIN_PROVIDER_KEY_SARVAM_08 waiting",
+"ULPIN_PROVIDER_KEY_SARVAM_09 waiting", "ULPIN_PROVIDER_KEY_SARVAM_10 waiting", "ULPIN_PROVIDER_KEY_SARVAM_11 waiting" ]
+} } }

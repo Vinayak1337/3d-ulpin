@@ -1,0 +1,166 @@
+{
+ "schemaVersion": "lp6-live-proof/1",
+ "task": "R10 part C (LP6)",
+ "date": "2026-10-22",
+ "claim": [
+  "The third live Sarvam run, on the demo rolled to 4ffd801a (SV1 reasoning off, SV2 pace and diagnostics). All",
+  "ten planned calls were sent and settled with HTTP 200 for Rs 1.25, with no stop and no cooldown. Three storey",
+  "answers passed validation and were recorded; five storey answers stopped at 2048 output tokens with zero",
+  "reasoning tokens, so the answer text itself ran past the budget; both mapping plans were refused, every one of",
+  "their 16 fields on its rationale (code custom)."
+ ],
+ "approval": "owner, 21 October: full permission; Sarvam approved",
+ "servedCommit": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab (docs/evidence/runtime/r10/result.json)",
+ "policy": {
+  "file": "E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.owner-confirmed-20261010.json (outside Git)",
+  "fileSha256": "2f6160ea02c81c6aeaca780f93ef9ed0f3afbeb73f89484e2d360ec2a485dbf3",
+  "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+  "maxOutputTokens": 2048,
+  "paceMs": 1500,
+  "changed": false,
+  "promptsChanged": false
+ },
+ "environment": [
+  "every live-proof command ran as LP5's: readDemo(ulpin-demo), safeEnvironment(), the isolated-env.cjs preload,",
+  "--import tsx, working directory the demo checkout, output through redact() into a log; launcher",
+  "E:/BhuAayam-data/task-data/s1/lp6-launcher/launch.mjs (LP5's, its first comment line changed), outside Git"
+ ],
+ "plan": {
+  "out": "E:/BhuAayam-data/task-data/s1/lp6-plan/plan.json",
+  "fileSha256": "ff1ca4e38e5d23737e84e64ee773bf346013f4d470dd02f22d2319d8f5c2eb45",
+  "policyHashMatchesExpected": true,
+  "steps": 15,
+  "calls": 10,
+  "estimateMicroInr": "1750875",
+  "requestBoundMicroInr": "3102105",
+  "atMostMicroInr": "7741440",
+  "keyMoves": { "keysInPolicy": 11, "extraAttemptsAtMost": 11 }
+ },
+ "dryRun": {
+  "out": "E:/BhuAayam-data/task-data/s1/lp6-dry-run/receipt.json",
+  "fileSha256": "865440defa9c7ef4eaeccc6061d93ee03cd15799bf6c492bb960fbf766a30cbd",
+  "summary": { "steps": 15, "gatewayAsks": 11, "providerDispatches": 0, "ledgerReservations": 0, "fetchAttempts": 0,
+   "requestsMatchingPlan": 10, "endStates": { "needs_input": 6, "teacher_unavailable": 9 } },
+  "stopped": null
+ },
+ "gatewayStatusBefore": {
+  "file": "E:/BhuAayam-data/task-data/s1/lp6-launcher/status.txt",
+  "fileSha256": "7bc2d70791638d13f8c3fe1c7f953b12c9cfee798f2e86853551bf03ecf51183",
+  "lines": [ "enabled: true", "policyHash: efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+   "providerKeyPresent: true", "mappingTeacherAdapter: sarvam", "dailyCapPresent: true", "providerKeysNamed: 11",
+   "providerKeysPresent: 11" ],
+  "fiveFactsAsRequired": true,
+  "keyCounts": "11 and 11"
+ },
+ "keyMarksBefore": "ULPIN_PROVIDER_KEY_SARVAM_01 in_use; _02 to _11 waiting (docs/evidence/runtime/r10/after.json)",
+ "live": {
+  "command": "live-proof.ts --live --tariff <policy> --gateway-state <status.txt> --out .../s1/lp6-live",
+  "runs": 1,
+  "startedAt": "2026-10-22T13:40:06Z",
+  "endedAt": "2026-10-22T13:41:47Z",
+  "seconds": 99.962,
+  "exit": 0,
+  "receiptFile": "E:/BhuAayam-data/task-data/s1/lp6-live/receipt.json",
+  "receiptSha256": "bffe4df4aa4d886ba6bf908c1a5fb58ceb8eba532c3a8ac51415181c46fd2d66",
+  "agentFiles": 8,
+  "stopped": null,
+  "notRun": 0,
+  "paceWaitMs": "0 on every step: each call took longer than the 1500 ms pace, so no wait was needed",
+  "report": "live-proof.ts --report <lp6-live> (SV2), log E:/BhuAayam-data/task-data/s1/lp6-launcher/report.log",
+  "ledgerRead": [
+   "usp_model_calls rows created after 13:40Z, one READ ONLY transaction through the demo checkout's pool",
+   "(lp6-launcher/ledger-read.mts, LP5's plus diagnostics IS NOT NULL and diagnostics->>'finishReason'): 10 rows,",
+   "all settled, attempt 1, HTTP 200, each with diagnostics stored and the same finish reason as the receipt;",
+   "budget blocked_reason null, cooldown_until null"
+  ]
+ },
+ "diagnostics": {
+  "columns": [ "step | id | end state | in | out | micro-INR | finishReason | contentChars | reasoningChars |",
+   "reasoningTokens" ],
+  "rows": [
+   "1 | storey-cf152f32 | TEACHER_INVALID_OUTPUT truncated_output | 652 | 2048 | 132660 | length | 3101 | 0 | 0",
+   "2 | replay of step 1 | TEACHER_REPLAY_UNAVAILABLE | no call | | | | | |",
+   "3 | curve-file1-chunk1 | TEACHER_INVALID_PLAN | 3462 | 924 | 107370 | stop | 3596 | 0 | 0",
+   "4, 5 | curve-file1-chunk2, 3 | TEACHER_INVALID_PLAN | no call (providerCalls 0) | | | | | |",
+   "6 | curve-file2-chunk1 | TEACHER_INVALID_PLAN | 3554 | 1355 | 134610 | stop | 5625 | 0 | 0",
+   "7, 8 | curve-file2-chunk2, 3 | TEACHER_INVALID_PLAN | no call (providerCalls 0) | | | | | |",
+   "9 | storey-0f793ce7 | candidate, validationIssues [] | 580 | 1699 | 110640 | stop | 4708 | 0 | 0",
+   "10 | storey-b6f0178b | TEACHER_INVALID_OUTPUT truncated_output | 1901 | 2048 | 151395 | length | 5103 | 0 | 0",
+   "11 | storey-2aadce88 | TEACHER_INVALID_OUTPUT truncated_output | 662 | 2048 | 132810 | length | 3684 | 0 | 0",
+   "12 | storey-2b9f8803 | candidate, validationIssues [] | 731 | 1471 | 99225 | stop | 3987 | 0 | 0",
+   "13 | storey-f8a55dc2 | candidate, validationIssues [] | 887 | 1330 | 93105 | stop | 3570 | 0 | 0",
+   "14 | storey-26c2d310 | TEACHER_INVALID_OUTPUT truncated_output | 1432 | 2048 | 144360 | length | 3092 | 0 | 0",
+   "15 | storey-f0dc0d56 | TEACHER_INVALID_OUTPUT truncated_output | 1218 | 2048 | 141150 | length | 5389 | 0 | 0"
+  ],
+  "validationIssues": {
+   "step3": "16 issues: fields.0.rationale to fields.15.rationale, each code custom; no other path or code",
+   "step6": "16 issues: fields.0.rationale to fields.15.rationale, each code custom; no other path or code",
+   "truncatedSteps": "null (a truncated answer is not validated)"
+  }
+ },
+ "truncation": {
+  "verdict": [
+   "5 of 8 storey answers truncated (steps 1, 10, 11, 14, 15). In every one reasoningTokens is 0 and reasoningChars",
+   "is 0 while reasoning_effort null was sent, so reasoning used none of the output budget: the answer itself was",
+   "longer than 2,048 tokens (finish length at exactly 2048 out, 3092 to 5389 characters of content). The three",
+   "valid storey answers used 1330 to 1699 output tokens."
+  ],
+  "reasoningMeasured": "0 is the provider's reported count (usage.completion_tokens_details), not an unmeasured null",
+  "variance": [
+   "the same request hashes as LP5 ended differently: step 9 truncated in LP5 and is valid here (1699 out); step 10",
+   "was valid in LP5 (120 out, empty) and is truncated here; answer length varies between runs of one request"
+  ]
+ },
+ "mapping": {
+  "verdict": [
+   "both mapping plans finished (stop, 924 and 1355 out) and were refused by the mapper for one reason: the",
+   "rationale of every one of the 16 fields failed a custom check. No duplicate, unmapped or type code appeared."
+  ],
+  "rule": [
+   "the only custom check on a field's rationale is packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+   "lines 99-103: refine(!/[0-9०-९]|EPSG|coordinates?/iu) 'No literal facts in explanations.' (length gives",
+   "too_small/too_big, not custom); so every rationale held a digit, 'EPSG' or 'coordinate(s)'"
+  ],
+  "notRead": "which of the three, per field, is not read: the rationale text is not opened here (no answer text)"
+ },
+ "spent": {
+  "actualMicroInr": "1247325",
+  "rupees": "Rs 1.25",
+  "check": "15079 input tokens x Rs 15/M + 17019 output tokens x Rs 60/M = 226185 + 1021140 = 1247325",
+  "estimateMicroInr": "1750875",
+  "atMostMicroInr": "7741440",
+  "ledgerTodayUtc": "10 calls, 1247325 micro-INR (Rs 1.25) of Rs 25 a day",
+  "ledgerAllTime": "25 calls, 3246045 micro-INR (Rs 3.25) of Rs 100: LP4 Rs 1.45, LP5 Rs 0.54, LP6 Rs 1.25",
+  "callsOfPersonDailyCap": "10 of 150"
+ },
+ "keyMarksAfter": {
+  "command": "node scripts/platform/demo-gateway.mjs key-marks",
+  "lines": [ "ULPIN_PROVIDER_KEY_SARVAM_01 in_use", "ULPIN_PROVIDER_KEY_SARVAM_02 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_03 waiting", "ULPIN_PROVIDER_KEY_SARVAM_04 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_05 waiting", "ULPIN_PROVIDER_KEY_SARVAM_06 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_07 waiting", "ULPIN_PROVIDER_KEY_SARVAM_08 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_09 waiting", "ULPIN_PROVIDER_KEY_SARVAM_10 waiting",
+   "ULPIN_PROVIDER_KEY_SARVAM_11 waiting" ]
+ },
+ "gatewayAfter": "left on: status unchanged (enabled true, efb90b3a..., 11 and 11); budget not blocked",
+ "doctorAfter": "28 PASS, 0 FAIL at 4ffd801a after the run",
+ "boxes": {
+  "closed": {
+   "AG-S1": "steps 9, 12, 13: live storey calls settled in the ledger, answers passed validation and were recorded"
+  },
+  "notClosed": {
+   "AG-S2": "the replay step replays step 1, which was truncated again",
+   "ML-D1": "3 valid storey answers of 8, not scored offline here; 5 truncated",
+   "ML-D3": "no registry scoring here",
+   "ML-L2": "no committed field; precision has no n",
+   "AG-E2": "both mapping plans TEACHER_INVALID_PLAN on fields.N.rationale (custom)",
+   "AG-D1": "the agent-to-proposal adapter is another task"
+  }
+ },
+ "forTheLead": [
+  "storey: the budget is spent by answer text, not reasoning; raising maxOutputTokens to 4096 or a shorter answer",
+  "shape are the lead's options; the policy and prompts are unchanged here",
+  "mapping: every rationale broke the no-literal-facts rule (a digit, EPSG or coordinate); prompt or rule is the lead's"
+ ],
+ "notIncluded": "no key, no env value, no prompt or answer text, no contact lines, no principal or credential hash"
+}
