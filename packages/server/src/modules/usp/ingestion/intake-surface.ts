@@ -23,7 +23,7 @@ type Operation = IntakeSurfaceLocator['operation'];
 type Header = { operation: Operation; crsStated: boolean; authority: string | null;
   vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number };
 type Plan = { version: typeof INTAKE_SURFACE_VERSION; operation: Operation; header: Header | null;
-  reread?: { pin: string; parts: number } };
+  reread?: { pin: string; parts: number }; admissionIssue?: string; admissionTriedAt?: string };
 type Item = { item_id: string; case_id: string; source_id: string; plan_ref: Plan };
 
 const readers = { 'raster-window': rasterReaderSha, 'point-batch': pointReaderSha };
@@ -170,10 +170,11 @@ async function markRereadTx(client: PoolClient, item: Item, pin: string, now: st
  * Admit the item's next part to its reader's existing job, inside the reader's caps: the lowest part that is planned,
  * or published from a job of another context (D1). The same source, part and context pin is the same job (D7). A
  * busy reader leaves the part as it is for the next tick; the earlier job and its read are kept (D2).
+ * Returns whether admission changed a part or the visible item.
  */
-async function admitSurfaceItemTx(client: PoolClient, item: Item) {
+async function admitSurfaceItemTx(client: PoolClient, item: Item): Promise<boolean> {
   const operation = item.plan_ref.operation;
-  if (await waitsForAreaTx(client, item.case_id)) return;
+  if (await waitsForAreaTx(client, item.case_id)) return false;
   let partIndex: number | undefined;
   try {
     // The case and source authority is taken before the admission lock, in the publishing transaction's order.
@@ -186,33 +187,46 @@ async function admitSurfaceItemTx(client: PoolClient, item: Item) {
       AND (p.state='planned' OR p.state='published' AND $2 AND ${elsewhere(3)})
       AND NOT EXISTS (SELECT 1 FROM usp_intake_parts q WHERE q.item_id=$1 AND q.state='queued')
       ORDER BY p.part_index LIMIT 1 FOR UPDATE OF p`, [item.item_id, ctx.latest, ...now])).rows[0];
-    if (!part) return;
+    if (!part) return false;
     partIndex = part.part_index as number;
     const { partKey: key, ...stored } = part.locator;
-    const locator = IntakeSurfaceLocatorSchema.parse(stored);
-    const pin = fingerprint({ context: ctx.context, access: ctx.binding.access });
+    const parsed = IntakeSurfaceLocatorSchema.safeParse(stored);
+    if (!parsed.success || parsed.data.operation !== operation)
+      throw new AppError(422, 'SURFACE_LOCATOR_INVALID', 'The stored part locator is invalid for its reader.');
+    const locator = parsed.data;
+    // Stored part keys keep their original reader; each new admission also pins the reader running now.
+    const pin = fingerprint({ context: ctx.context, access: ctx.binding.access, readerSha256: now[2] });
     const jobId = stableUuid(`${INTAKE_SURFACE_VERSION}:${item.item_id}:${ctx.source.revision}:${key}:${pin}`);
     if (locator.operation === 'raster-window') await enqueueRasterWindowTx(client, ctx, locator.window, jobId);
     else await enqueuePointBatchTx(client, ctx, locator.batch, jobId);
     // The same pin names the same job; one that already ended is not queued again under that pin.
     const job = (await client.query('SELECT status,error FROM jobs WHERE id=$1', [jobId])).rows[0];
-    if (['failed', 'stale'].includes(job?.status)) return quarantineTx(client, item.item_id, partIndex, job.error);
-    if (job?.status === 'succeeded') return currentAgainTx(client, item, partIndex, jobId, pin, now);
+    if (['failed', 'stale'].includes(job?.status)) {
+      await quarantineTx(client, item.item_id, partIndex, job.error);
+      return true;
+    }
+    if (job?.status === 'succeeded') {
+      await currentAgainTx(client, item, partIndex, jobId, pin, now);
+      return true;
+    }
     if (part.result_ref) await markRereadTx(client, item, pin, now);
     await client.query(`UPDATE usp_intake_parts SET state='queued',job_id=$3,updated_at=now()
       WHERE item_id=$1 AND part_index=$2`, [item.item_id, partIndex, jobId]);
     await settleSurfaceItemTx(client, item.item_id);
+    return true;
   } catch (error) {
     // A busy reader leaves the part as it is; a refusal of the reader's own authority rests on the part.
-    if (error instanceof AppError && error.code.endsWith('_WORKER_BUSY')) return;
+    if (error instanceof AppError && error.code.endsWith('_WORKER_BUSY')) return false;
     if (error instanceof AppError && partIndex === undefined && refusals.has(error.code)) {
       // The kept original is refused by its reader after enrolment: no later part is offered to it again.
       await client.query(`UPDATE usp_intake_parts SET state='quarantined',issue_code=$2,updated_at=now()
         WHERE item_id=$1 AND state='planned'`, [item.item_id, error.code]);
-      return settleSurfaceItemTx(client, item.item_id);
+      await settleSurfaceItemTx(client, item.item_id);
+      return true;
     }
     if (!(error instanceof AppError) || error.status === 500 || partIndex === undefined) throw error;
-    return quarantineTx(client, item.item_id, partIndex, error.code);
+    await quarantineTx(client, item.item_id, partIndex, error.code);
+    return true;
   }
 }
 
@@ -247,8 +261,59 @@ function readElsewhere(row: Due) {
   return row.pins.some(pin => pin.some((value, n) => value !== now[n]));
 }
 
+/** A failed admission is deferred, not attributed to a reader that may never have received the part. */
+const admissionWords = (code: string) => `Admission deferred (${code}); the original and any earlier reads are kept. `
+  + 'A later tick will check this item again.';
+
+/** Private scheduling only: a stalled attempt must not invalidate the officer's public updatedAt. */
+const touchAdmissionTx = (client: PoolClient, itemId: string) => client.query(
+  `UPDATE usp_intake_items SET plan_ref=jsonb_set(plan_ref,'{admissionTriedAt}',
+    to_jsonb(to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"')))
+    WHERE item_id=$1`, [itemId]);
+
+/** Record visible words outside the rolled-back admission, then yield its place in the next page. */
+async function recordAdmissionIssueTx(client: PoolClient, itemId: string, code: string) {
+  const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1 FOR UPDATE', [itemId])).rows[0];
+  if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
+  await writeIntakeLargeTx(client, item.case_id, itemId, { state: item.state, placement: item.placement,
+    planRef: { ...item.plan_ref, admissionIssue: code }, partsPlanned: item.parts_planned, partsDone: item.parts_done,
+    recordsSeen: Number(item.records_seen), limitReason: admissionWords(code) });
+  await touchAdmissionTx(client, itemId);
+}
+
+/** One item's rollback or failed issue recording must never end the remaining items' admissions. */
+async function admitDueSurface(row: Due) {
+  try {
+    await transaction(async client => {
+      const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [row.item_id])).rows[0];
+      if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
+      const hadIssue = Boolean(item.plan_ref.admissionIssue);
+      const progressed = (row.planned || readElsewhere(row)) && await admitSurfaceItemTx(client, item);
+      // Clear only after admission has taken source authority; never lock the item ahead of the source.
+      if (hadIssue) await client.query(`UPDATE usp_intake_items SET plan_ref=plan_ref-'admissionIssue'
+        WHERE item_id=$1`, [row.item_id]);
+      if (row.moved || hadIssue) await settleSurfaceItemTx(client, row.item_id);
+      if (!progressed && !row.moved && !hadIssue) await touchAdmissionTx(client, row.item_id);
+    });
+  } catch (error) {
+    const code = error instanceof AppError && /^[A-Z][A-Z0-9_]{0,127}$/.test(error.code)
+      ? error.code : 'SURFACE_ADMISSION_FAILED';
+    try { await transaction(client => recordAdmissionIssueTx(client, row.item_id, code)); }
+    catch {
+      // No exception text: it can include source content. The original transaction has already rolled back.
+      console.warn(`Surface admission issue ${code} for item ${row.item_id} could not be recorded; check deferred.`);
+    }
+  }
+}
+
+/** Keep a malformed stored item's pin check inside its own admission error boundary. */
+function surfaceDue(row: Due) {
+  try { return row.planned || row.moved || readElsewhere(row); }
+  catch { return true; }
+}
+
 /**
- * One dispatcher tick: each kept surface with none queued and a part to read, oldest first, one part each. A part to
+ * One dispatcher tick: each kept surface with none queued and a part to read, least recently tried first. A part to
  * read is planned, or published from a job of another context; the item's transaction checks that again. SF1 D2: an
  * item read under its area whose extent or drafted footprints moved since it was settled is settled again, so its
  * words and placement follow; no part is read again for it and every earlier read is kept.
@@ -265,17 +330,10 @@ export async function admitIntakeSurfaceParts() {
     FROM usp_intake_items i
     WHERE i.plan_ref->>'version'=$1 AND NOT EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id
       AND p.state='queued')
-    ORDER BY (SELECT max(p.updated_at) FROM usp_intake_parts p WHERE p.item_id=i.item_id)`,
+    ORDER BY i.plan_ref->>'admissionTriedAt' NULLS FIRST,i.item_id`,
   [INTAKE_SURFACE_VERSION])).rows;
-  const items = rows.filter(row => row.planned || readElsewhere(row) || row.moved)
-    .slice(0, INTAKE_SURFACE_LIMITS.page);
-  for (const row of items) await transaction(async client => {
-    const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [row.item_id])).rows[0];
-    if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
-    if (row.planned || readElsewhere(row)) await admitSurfaceItemTx(client, item);
-    // An unchanged settlement writes nothing, so one the admission has just written is not written twice.
-    if (row.moved) await settleSurfaceItemTx(client, row.item_id);
-  });
+  const items = rows.filter(surfaceDue).slice(0, INTAKE_SURFACE_LIMITS.page);
+  for (const row of items) await admitDueSurface(row);
 }
 
 function rasterPlan(result: RasterWindowResult) {
@@ -475,6 +533,8 @@ async function localPartsTx(client: PoolClient, frame: Frame, parts: number[][][
 
 function surfaceWords(header: Header | null, state: string, done: number, failed: string | null, where: string,
   again: string) {
+  if (failed === 'SURFACE_LOCATOR_INVALID') return 'A part was not sent to its reader because its stored locator '
+    + `is invalid (${failed}); the original and any earlier reads are kept.`;
   if (failed) return `A part could not be read (${failed}); the original is kept with its SHA-256.`;
   if (!header) return `The first part ${state === 'reading' ? 'is being read' : 'waits for its reader'}; `
     + 'its coordinate system and size are not read yet.';
@@ -540,7 +600,8 @@ export async function settleSurfaceItemTx(client: PoolClient, itemId: string) {
   const recordsSeen = parts.reduce((sum, part) => sum + Number(part.counts?.points ?? 0), 0);
   await writeIntakeLargeTx(client, item.case_id, itemId, { state, placement, planRef,
     partsPlanned: header?.planned ?? null, partsDone: done, recordsSeen,
-    limitReason: surfaceWords(header, state, done, failed, where, again) });
+    limitReason: plan.admissionIssue ? admissionWords(plan.admissionIssue)
+      : surfaceWords(header, state, done, failed, where, again) });
 }
 
 const partSelect = `SELECT p.*,i.source_id,i.plan_ref FROM usp_intake_parts p
