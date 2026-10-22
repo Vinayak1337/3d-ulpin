@@ -3,8 +3,9 @@ import { once } from 'node:events';
 import { PassThrough, type Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { IntakeTablePlacementSchema, STREAMING_VECTOR_LIMITS, TabularPinSchema, TabularSourceProfileSchema,
-  streamingReadMs } from '@ulpin/contracts/usp';
+import { IntakeTablePlacementSchema, STREAMING_VECTOR_LIMITS, TABLE_DERIVATIVE_LOCATOR, TABLE_GEOJSON_CONVERSION,
+  TABLE_PLACEMENT_SKIP_REASONS, TableDerivativeLineageSchema, TabularPinSchema, TabularSourceProfileSchema,
+  streamingReadMs, type TableDerivativeLineage } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { openObjectStream } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
@@ -22,7 +23,6 @@ import { coordinateText, geometryJson, parseWkt, type TableGeometry } from './wk
  * reading the table in windows. The derivative declares the officer's system, each feature cites its table row, and
  * it is kept as its own large original and enrolled like a dropped file, so the large GeoJSON path reads it unchanged.
  */
-export const TABLE_GEOJSON_CONVERSION = 'table_rows_to_geojson@1';
 const uuid = z.string().uuid();
 const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
 const count = z.number().int().nonnegative();
@@ -40,7 +40,8 @@ export const IntakeTableGeojsonInputSchema = z.strictObject({
 });
 export type IntakeTableGeojsonInput = z.infer<typeof IntakeTableGeojsonInputSchema>;
 
-const SKIP_WORDS = {
+type SkipReason = typeof TABLE_PLACEMENT_SKIP_REASONS[number];
+const SKIP_WORDS: Readonly<Record<SkipReason, string>> = {
   no_coordinates: 'had no coordinates',
   not_a_number: 'had text that is not a number',
   not_wkt: 'had text that is not WKT of a point, line or polygon',
@@ -50,24 +51,10 @@ const SKIP_WORDS = {
   too_large: 'had a shape larger than the map reader takes',
   inexact_number: 'had a number with more digits than the map reader keeps exactly',
   refused: 'had a shape the map reader refuses',
-} as const;
-type SkipReason = keyof typeof SKIP_WORDS;
+};
 const READER_ISSUES: Readonly<Record<string, SkipReason>> = { OPEN_RING: 'open_ring',
   RING_BUDGET_OR_SHAPE: 'too_large', POLYGON_BUDGET_OR_SHAPE: 'too_large', GEOMETRY_BUDGET: 'too_large',
   GEOJSON_UNIT_BUDGET: 'too_large', UNREPRESENTABLE_NUMBER: 'inexact_number' };
-const SkippedSchema = z.partialRecord(z.enum(Object.keys(SKIP_WORDS) as [SkipReason, ...SkipReason[]]),
-  z.number().int().positive());
-
-const LOCATOR = 'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.';
-/** The lineage the derivative keeps beside its receipt, in the shape of a native derivative's. */
-export const TableDerivativeLineageSchema = z.strictObject({
-  version: z.literal('table-derivative/1'), conversion: z.literal(TABLE_GEOJSON_CONVERSION), originalSourceId: uuid,
-  originalSourceRevision: z.number().int().positive(), originalSha256: hex64, originalItemId: uuid,
-  format: z.enum(['csv', 'xlsx']), layer: z.string().min(1).max(150), coordinates: Coordinates, crs: StatedCrs,
-  crsSource: z.literal('officer_stated'), features: count, notWritten: count, skipped: SkippedSchema,
-  locator: z.literal(LOCATOR),
-});
-type TableDerivativeLineage = z.infer<typeof TableDerivativeLineageSchema>;
 
 export type TablePlacementPlan = Pick<IntakeTableGeojsonInput, 'headers' | 'coordinates' | 'crs'> & {
   selection: IntakeTableGeojsonInput['tabular']['selection'];
@@ -289,21 +276,20 @@ async function keptChildTx(client: PoolClient, caseId: string, sha256: string, l
   [caseId, sha256, lineage.originalSha256])).rows[0]?.id ?? null;
 }
 
-/** Keeps the derivative as a large original named by its lineage; one an earlier attempt kept is found again. */
+/**
+ * Keeps the derivative as a large original whose lineage is written with its source in one transaction, so one an
+ * earlier attempt kept is always found again by that lineage and never kept twice.
+ */
 async function keepTableDerivative(input: IntakeTableGeojsonInput, source: IntakeSourceRow,
   plan: TablePlacementPlan, file: { name: string; bytes: number; sha256: string }, lineage: TableDerivativeLineage,
   dependencies: TableGeojsonDependencies): Promise<string> {
   const prior = await dependencies.transaction(client => keptChildTx(client, input.caseId, file.sha256, lineage));
   if (prior) return prior;
-  const sourceId = await fenced(input.caseId, dependencies, revision => {
+  return fenced(input.caseId, dependencies, revision => {
     const chunks = pulled(() => dependencies.open(source),
       (body, write) => writeTableGeojson(body, plan, write, dependencies.read));
-    return receiveLargeLayer(input.caseId, revision, file, byteParts(chunks), dependencies);
+    return receiveLargeLayer(input.caseId, revision, file, byteParts(chunks), dependencies, lineage);
   });
-  await dependencies.transaction(client => client.query(`UPDATE sources
-    SET inspection=inspection||jsonb_build_object('tableDerivative',$2::jsonb)
-    WHERE id=$1 AND profile='large-original-v1'`, [sourceId, lineage]));
-  return sourceId;
 }
 
 function derivativeName(source: IntakeSourceRow, input: IntakeTableGeojsonInput) {
@@ -341,7 +327,7 @@ export async function placeTableRows(input: IntakeTableGeojsonInput,
       originalSha256: source.sha256, originalItemId: input.itemId, format: plan.selection.format,
       layer: plan.selection.sheet, coordinates: input.coordinates, crs: input.crs, crsSource: 'officer_stated',
       features: measured.features, notWritten: measured.rows - measured.features, skipped: measured.skipped,
-      locator: LOCATOR });
+      locator: TABLE_DERIVATIVE_LOCATOR });
     const file = { name, bytes: measured.bytes, sha256: measured.sha256 };
     kept = await keepTableDerivative(input, source, plan, file, lineage, dependencies);
     code = await enrol(input, kept, dependencies);

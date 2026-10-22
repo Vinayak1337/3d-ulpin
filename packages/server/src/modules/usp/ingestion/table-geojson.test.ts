@@ -162,7 +162,6 @@ function ledger(original: ReturnType<typeof tableSource>) {
     ['SELECT * FROM sources', values => [sources.get(values[1])]],
     ['SELECT id FROM sources', values => [...sources.values()].filter(row => row.sha256 === values[1]
       && row.inspection.tableDerivative?.originalSha256 === values[2])],
-    ['UPDATE sources', values => { sources.get(values[0]).inspection.tableDerivative = values[1]; return []; }],
     ['SELECT state,placement,plan_ref', () => [item]],
     ['UPDATE usp_intake_items SET state=', values => { Object.assign(item, { state: values[2], placement: values[3],
       plan_ref: values[4], records_seen: values[5], limit_reason: values[6] }); return []; }],
@@ -223,11 +222,13 @@ function receipt(sources: Map<string, any>, kept: Map<string, Buffer>) {
       return { id: 'upload', revision: 1 + parts.length, currentCaseRevision: 4 };
     },
     failPart: async () => {},
-    finalize: async (_case: string, _id: string, input: { sha256: string }) => {
+    // As the receipt does, a table derivative's lineage is written with its source in one step.
+    finalize: async (_case: string, _id: string, input: { sha256: string }, lineage?: { version: string }) => {
       const bytes = Buffer.concat(parts);
       assert.equal(sha(bytes), input.sha256);
       const id = randomUUID();
-      sources.set(id, { id, sha256: input.sha256, name: file.filename, inspection: {} });
+      sources.set(id, { id, sha256: input.sha256, name: file.filename,
+        inspection: lineage?.version === 'table-derivative/1' ? { tableDerivative: lineage } : {} });
       kept.set(id, bytes);
       return { source: { sourceId: id } };
     },
@@ -276,6 +277,34 @@ function jobDependencies(client: PoolClient, large: TableGeojsonDependencies['la
     TableGeojsonDependencies['transaction'], open: async () => Readable.from([table]),
   register: async () => ({}), large, ...more };
 }
+
+test('a stop right after the receipt is final: the rerun finds the kept child by its lineage, never a second',
+  async () => {
+    const original = tableSource(WKT, ['plot', 'outline']);
+    const { client, sources, jobs } = ledger(original);
+    await queueTableGeojsonTx(client, original, { requestKey: randomUUID(), coordinates: { kind: 'wkt', column: 1 },
+      crs: 'EPSG:32643' });
+    const kept = new Map<string, Buffer>();
+    const large = receipt(sources, kept);
+    let finals = 0, stopped = false;
+    const counted = { ...large, finalize: async (...args: Parameters<typeof large.finalize>) => {
+      finals++;
+      return large.finalize(...args);
+    } } as typeof large;
+    // The process stops at its first transaction after the receipt is final.
+    const transaction = (async (work: (c: PoolClient) => unknown) => {
+      if (finals && !stopped) {
+        stopped = true;
+        throw new Error('The process stopped.');
+      }
+      return work(client);
+    }) as TableGeojsonDependencies['transaction'];
+    const dependencies = jobDependencies(client, counted, WKT, { transaction });
+    await assert.rejects(placeTableRows(jobs[0].payload, dependencies), /The process stopped/);
+    const [child] = await placeTableRows(jobs[0].payload, dependencies);
+    assert.deepEqual([finals, kept.size], [1, 1]);
+    assert.equal(sources.get(child).inspection.tableDerivative.originalSha256, sha(WKT));
+  });
 
 /** 2,000 typed lon/lat rows: more than a stream buffers, so an untaken read waits. */
 const MANY = Buffer.from(`id,lon,lat\n${Array.from({ length: 2000 }, (_, row) => `${row},77.${row},12.5\n`).join('')}`);
