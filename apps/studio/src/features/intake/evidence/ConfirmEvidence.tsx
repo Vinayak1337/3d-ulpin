@@ -11,7 +11,8 @@ import { acceptFile, closedReading, confirmInput, decidable, namedBuildings, que
   setReject, singleMatch, sourcesOf, type Choices, type EvidenceConfirmation, type EvidenceSource, type Exclusions,
   type FileSelection } from './confirm-model';
 import { buildingWords, coverageWords, evidenceWords, outcomeWords, type Candidate, type EvidencePage,
-  type KeyProfile } from './model';
+  type KeyProfile, type Outcome } from './model';
+import { useConfirmRefresh } from './confirm-refresh';
 import batch from '../Batch.module.css';
 import styles from './Evidence.module.css';
 
@@ -22,7 +23,8 @@ export const blankDraft: ConfirmDraft = { exclusions: {}, choices: {}, acknowled
 type Change = (patch: Partial<ConfirmDraft>) => void;
 /** A press either stores a confirmation or names, before any request, what is still missing. */
 export type PressResult = { confirmation: EvidenceConfirmation } | { missing: string };
-export interface ConfirmRead { page: EvidencePage; items: readonly IntakeItem[]; targets: readonly Target[] }
+export interface ConfirmRead { page: EvidencePage; items: readonly IntakeItem[]; targets: readonly Target[];
+  query?: { outcome: Outcome | ''; cursor: string | null } }
 /** "Accept every exact single match of this file": the file being read, each file's words and the read's refusal. */
 export interface FileAccepts { reading: string | null; words: Readonly<Record<string, string>>; error: Error | null;
   accept: (itemId: string) => void }
@@ -62,37 +64,70 @@ export function ConfirmEvidence({ caseId, profile, read, close, confirmed, store
   /** The candidates the confirmations stored from this section accepted. */
   confirmed: ReadonlySet<string>; stored: (confirmation: EvidenceConfirmation) => void;
 }) {
-  const client = useQueryClient();
   const [draft, setDraft] = useState(blankDraft);
-  const [words, setWords] = useState<Readonly<Record<string, string>>>({});
+  const [finished, setFinished] = useState(false);
+  const refresh = useConfirmRefresh(caseId, profile, read, draft, setDraft, finished);
+  const current = refresh.query.data;
+  const freshRead = current ? { ...read, page: current.page } : read;
+  const press = useConfirmPress(caseId, current?.profile ?? profile, freshRead, draft, (confirmation) => {
+    setFinished(true);
+    stored(confirmation);
+  }, refresh.refused);
+  const files = useFileAccepts(caseId, current?.profile ?? profile, draft, confirmed, setDraft);
+  const pending = press.isPending || files.reading !== null || refresh.pending;
+  return <>
+    {refresh.notice && !finished ? <p role="status" className="ul-help">{refresh.notice}</p> : null}
+    {refresh.query.error && !finished ? <div role="alert" className={batch.stack}>
+      <p>{refresh.query.error.message} Nothing can be confirmed until the evidence is read again.</p>
+      <Button variant="soft" onClick={() => void refresh.query.refetch()}>Read the current evidence again</Button>
+    </div> : null}
+    <ConfirmEvidenceForm profile={current?.profile ?? profile} read={freshRead} draft={draft}
+      pending={pending} blocked={Boolean(refresh.query.error)}
+      change={(patch) => setDraft((value) => ({ ...value, ...patch }))}
+      submit={() => { if (!pending && !refresh.query.error) press.mutate(); }} close={close}
+      result={press.data ?? null} error={press.error} files={files}
+      pendingWords={refresh.pending ? 'Reading the current evidence and package reviews…' : undefined} />
+  </>;
+}
+
+function useConfirmPress(caseId: string, profile: KeyProfile, read: ConfirmRead, draft: ConfirmDraft,
+  stored: (confirmation: EvidenceConfirmation) => void, refused: () => void) {
+  const client = useQueryClient();
   const [send] = useState(() => createEvidenceConfirmation(caseId));
-  const press = useMutation({
+  return useMutation({
     mutationFn: () => pressConfirm(caseId, profile, read, draft, send),
     onSuccess: (result) => {
       if (!('confirmation' in result)) return;
       stored(result.confirmation);
       void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
     },
-    onError: (error) => rereadAfterRefusal(client, caseId, error),
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 409) refused();
+      rereadAfterRefusal(client, caseId, error);
+    },
   });
+}
+
+function useFileAccepts(caseId: string, profile: KeyProfile, draft: ConfirmDraft, confirmed: ReadonlySet<string>,
+  change: (update: (draft: ConfirmDraft) => ConfirmDraft) => void): FileAccepts {
+  const [words, setWords] = useState<Readonly<Record<string, string>>>({});
   const accept = useMutation({
     mutationFn: (itemId: string) => pressAcceptFile(caseId, profile, itemId, draft.choices, confirmed),
     onSuccess: (selection, itemId) => {
-      setDraft((value) => ({ ...value, choices: selection.choices }));
+      change((value) => ({ ...value, choices: selection.choices }));
       setWords(({ [itemId]: _, ...rest }) => selection.words === null ? rest
         : { ...rest, [itemId]: selection.words });
     },
   });
-  const files: FileAccepts = { reading: accept.isPending ? accept.variables : null, words, error: accept.error,
+  return { reading: accept.isPending ? accept.variables : null, words, error: accept.error,
     accept: (itemId) => accept.mutate(itemId) };
-  return <ConfirmEvidenceForm profile={profile} read={read} draft={draft} pending={press.isPending || accept.isPending}
-    change={(patch) => setDraft((value) => ({ ...value, ...patch }))} submit={() => press.mutate()} close={close}
-    result={press.data ?? null} error={press.error} files={files} />;
 }
 
-export function ConfirmEvidenceForm({ profile, read, draft, change, pending, submit, close, result, error, files }: {
+export function ConfirmEvidenceForm({ profile, read, draft, change, pending, submit, close, result, error, files,
+  pendingWords = 'Confirming the evidence…', blocked = false }: {
   profile: KeyProfile; read: ConfirmRead; draft: ConfirmDraft; change: Change; pending: boolean; submit: () => void;
-  close: () => void; result: PressResult | null; error: Error | null; files: FileAccepts;
+  close: () => void; result: PressResult | null; error: Error | null; files: FileAccepts; pendingWords?: string;
+  blocked?: boolean;
 }) {
   if (result && 'confirmation' in result) return <ConfirmedWords confirmation={result.confirmation} close={close} />;
   const decided = Object.keys(draft.choices).length > 0;
@@ -122,15 +157,15 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       </label>
     </fieldset>
     <span className="ul-row">
-      <Button type="submit" variant="primary" disabled={pending || unavailable}>Confirm the evidence</Button>
+      <Button type="submit" variant="primary" disabled={pending || unavailable || blocked}>Confirm the evidence</Button>
       <Button variant="ghost" disabled={pending} onClick={close}>Cancel</Button>
     </span>
     {unavailable ? <p className="ul-help">This key cannot be confirmed while a source is unavailable.</p> : null}
-    {pending ? <p role="status">Confirming the evidence…</p> : null}
+    {pending ? <p role="status">{pendingWords}</p> : null}
     {result && 'missing' in result ? <p className="ul-error" role="alert">{result.missing}</p> : null}
     {error ? <TableRefusal error={error} /> : null}
     {error instanceof ApiError && error.status === 409
-      ? <p className="ul-help">The evidence and the buildings were read again; check them and confirm again.</p>
+      ? <p className="ul-help">Read the current evidence, check your selections and confirm again.</p>
       : null}
   </form>;
 }

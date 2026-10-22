@@ -74,6 +74,7 @@ export function listedIntakeRows<T extends ListedRow>(rows: readonly T[]): T[] {
 }
 
 export function intakeItem(row: any) {
+  const plan = intakePlan(row.plan_ref);
   const named = intakeNameWords(row.card, row.name ?? row.member_path ?? '');
   const takenOut = row.taken_out_of ? `Taken out of ${row.taken_out_of}.` : null;
   const wide = row.card?.limits?.includes(INTAKE_WIDE_GEOJSON_REASON) ? INTAKE_WIDE_GEOJSON_REASON : null;
@@ -85,7 +86,9 @@ export function intakeItem(row: any) {
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes), sizeClass: row.size_class,
     wave: row.wave, state: row.state,
     placement: row.placement, card: row.card, cardSha256: row.card_sha256, probeVersion: row.probe_version,
-    plan: intakePlan(row.plan_ref), streamedProfileJobId: row.streamed_profile_job_id ?? null,
+    plan, streamedProfileJobId: row.streamed_profile_job_id ?? null,
+    layoutQuestion: ['probed', 'read'].includes(row.state) && row.placement === 'needs_answer'
+      && !plan && (row.plan_ref?.layoutQuestion === true || Boolean(row.streamed_profile_job_id)),
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
     limitReason: reason, pinnedByOfficer: row.pinned_by_officer,
     ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}), ...pageImage(row.plan_ref),

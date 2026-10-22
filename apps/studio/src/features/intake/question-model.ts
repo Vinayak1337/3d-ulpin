@@ -26,17 +26,8 @@ const drawnAs: Partial<Record<Kind, string>> = { building: 'buildings', parcel: 
   public_land: 'public land' };
 const heldNouns = [['pins', ['Point', 'MultiPoint']], ['lines', ['LineString', 'MultiLineString']]] as const;
 const propertyPrefix = '/features/*/properties/';
-const questionReasons = [
-  'No approved layout matches this file. An officer states what each feature is and which field identifies it.',
-  'No approved layout matches this file. An officer chooses the identifier field.',
-];
-
-/** A large file's reason may first count the pins and lines it holds; the question follows those words. */
-const countedKinds = /^Read [^;]+; they are not footprints\. /;
-
 export function needsLayoutAnswer(item: IntakeItem): boolean {
-  return !item.plan && Boolean(item.sourceId) && item.placement === 'needs_answer'
-    && questionReasons.includes((item.limitReason ?? '').replace(countedKinds, ''));
+  return !item.plan && Boolean(item.sourceId) && item.placement === 'needs_answer' && item.layoutQuestion === true;
 }
 
 export function kindRefusal(kind: Kind, types: readonly string[]): string | null {

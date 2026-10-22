@@ -219,8 +219,8 @@ it('pins the inventory\'s case revision after the case has advanced', () => {
 });
 
 it('answers a large item from its streamed inventory and leaves a small item on its retained profile', () => {
-  const small = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
-  const large = { ...small, streamedProfileJobId: niagara.jobId };
+  const small = { ...captured.manifest.items[0], streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
+  const large = { ...small, streamedProfileJobId: niagara.jobId, layoutQuestion: true };
   expect(needsLayoutAnswer(large)).toBe(true);
   const sealed = panel(large);
   expect(sealed).toContain('OBJECTID (whole number)');

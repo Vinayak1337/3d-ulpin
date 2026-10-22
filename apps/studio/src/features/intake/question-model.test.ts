@@ -118,21 +118,21 @@ it('offers complete outline names without requiring pins to have them, but refus
   expect(questionBody(missing, { ...choices, name }, 0, key)).toBeNull();
 });
 
-it('opens the question when the reason first counts the pins and lines a large file holds', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
-  const counted = 'Read 2 Point features / 1 LineString feature; they are not footprints. '
-    + 'No approved layout matches this file. An officer states what each feature is and which field identifies it.';
-  expect(needsLayoutAnswer({ ...item, limitReason: counted })).toBe(true);
-  const question = counted.slice(counted.indexOf('No approved'));
-  expect(needsLayoutAnswer({ ...item, limitReason: `Drafting accepts at most 2000 features. ${question}` }))
-    .toBe(false);
+it('offers the same layout question for a plain item and a ZIP member regardless of display words', () => {
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: null,
+    layoutQuestion: true, recordsSeen: 2100 } as IntakeItem;
+  const member = { ...item, limitReason: `Taken out of layers.zip. ${item.limitReason}` };
+  expect(needsLayoutAnswer(item)).toBe(true);
+  expect(needsLayoutAnswer(member)).toBe(true);
+  expect(needsLayoutAnswer({ ...item, limitReason: 'Read 2 Point features; they are not footprints.' })).toBe(true);
+  expect(member.limitReason).toBe(`Taken out of layers.zip. ${item.limitReason}`);
 });
 
-it('asks only for the stored no-layout reason, not a bound/unsupported reason or a filename', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
-  expect(needsLayoutAnswer({ ...item, name: 'not-a-map.pdf' })).toBe(true);
-  expect(needsLayoutAnswer({ ...item, limitReason: 'Drafting accepts at most 2000 features.' })).toBe(false);
-  expect(needsLayoutAnswer({ ...item, limitReason: 'No reader is available.' })).toBe(false);
+it('uses the structured question, not a filename or reason, and never asks when no question is published', () => {
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
+  expect(needsLayoutAnswer({ ...item, name: 'not-a-map.pdf', limitReason: null })).toBe(true);
+  expect(needsLayoutAnswer({ ...item, layoutQuestion: false })).toBe(false);
+  expect(needsLayoutAnswer({ ...item, layoutQuestion: undefined })).toBe(false);
   expect(needsLayoutAnswer({ ...item, placement: 'undecided' })).toBe(false);
 });
 

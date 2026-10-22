@@ -41,7 +41,7 @@ vi.mock('./upload-command', () => ({
 const { BatchPage } = await import('./BatchPage');
 const caseId = '04000000-0000-4000-8000-000000000001';
 const waitingKey = `ulpin.batch-waiting.${caseId}`;
-const first = captured.manifest.items[0] as unknown as IntakeItem;
+const first = { ...captured.manifest.items[0], layoutQuestion: true } as unknown as IntakeItem;
 const second = { ...first, itemId: '04000000-0000-4000-8000-000000000003', name: 'second-copy.geojson' };
 const receipt = (id: string, filename: string, bytes: number): UploadEntry => ({ id, filename, bytes,
   sha256: 'a'.repeat(64), profile: 'large-original/1', state: 'receiving', receivedParts: 2, partCount: 4,

@@ -34,15 +34,25 @@ export async function readEvidence(caseId: string, outcome?: Outcome, cursor?: s
  */
 export async function readFileMatches(caseId: string, filter: EvidenceFilter,
   read: typeof readEvidence = readEvidence): Promise<FileMatches> {
+  const file = await readFileCandidates(caseId, filter, 'matched', read);
+  return { itemId: filter.itemId, matches: file.candidates.filter(singleMatch), more: file.more };
+}
+
+/** Refreshing decisions reads every outcome: a formerly matched row may now be a question or gone. */
+export async function readFileCandidates(caseId: string, filter: EvidenceFilter, outcome?: Outcome,
+  read: typeof readEvidence = readEvidence) {
   const most = INTAKE_EVIDENCE_LIMITS.page * INTAKE_EVIDENCE_LIMITS.decisions;
-  const matches: Candidate[] = [];
+  const candidates: Candidate[] = [];
+  const cursors = new Set<string>();
   let cursor: string | undefined, seen = 0;
   for (;;) {
-    const page = await read(caseId, 'matched', cursor, filter);
+    const page = await read(caseId, outcome, cursor, filter);
     seen += page.candidates.length;
-    matches.push(...page.candidates.filter((candidate) => candidate.key.profileId === filter.profileId
-      && candidate.evidence.itemId === filter.itemId && singleMatch(candidate)));
-    if (!page.nextCursor || seen >= most) return { itemId: filter.itemId, matches, more: page.nextCursor !== null };
+    candidates.push(...page.candidates.filter((candidate) => candidate.key.profileId === filter.profileId
+      && candidate.evidence.itemId === filter.itemId));
+    if (!page.nextCursor || seen >= most) return { candidates, more: page.nextCursor !== null };
+    if (cursors.has(page.nextCursor)) throw new Error('The evidence pages did not advance. Read them again.');
+    cursors.add(page.nextCursor);
     cursor = page.nextCursor;
   }
 }

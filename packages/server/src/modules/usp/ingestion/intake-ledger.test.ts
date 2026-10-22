@@ -35,6 +35,21 @@ test('an item kept from a ZIP member says which archive it was taken out of, bef
   assert.equal(intakeItem({ ...row, taken_out_of: null }).limitReason, null);
 });
 
+test('a ZIP member and a plain item publish the same layout question without changing their words', () => {
+  const reason = 'No approved layout matches this file. An officer chooses the identifier field.';
+  const waiting = { ...row, limit_reason: reason, records_seen: 2100, streamed_profile_job_id: id };
+  const plain = intakeItem(waiting);
+  const member = intakeItem({ ...waiting, taken_out_of: 'layers.zip' });
+  assert.equal(plain.layoutQuestion, true);
+  assert.equal(member.layoutQuestion, true);
+  assert.equal(intakeItem({ ...waiting, state: 'read' }).layoutQuestion, true);
+  assert.equal(member.limitReason, `Taken out of layers.zip. ${reason}`);
+  assert.equal(plain.limitReason, reason);
+  assert.equal(intakeItem({ ...row, plan_ref: { layoutQuestion: true } }).layoutQuestion, true);
+  assert.equal(intakeItem({ ...row, limit_reason: reason }).layoutQuestion, false);
+  assert.equal(intakeItem({ ...waiting, placement: 'not_understood' }).layoutQuestion, false);
+});
+
 test('an absent or unrecognized stored plan never makes the item read throw', () => {
   for (const plan_ref of [null, undefined, {}, { unrelated: id },
     { recipeId: id, recipeRevision: 0, recipeState: 'executed', origin: 'officer' },
