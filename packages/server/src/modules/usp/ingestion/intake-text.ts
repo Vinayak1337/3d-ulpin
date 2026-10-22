@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import { INTAKE_PROBE_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
+import { INTAKE_PROBE_LIMITS, CellDerivativeLineageSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { profileColumns } from './column-profile';
 import { decodeIntakeHead } from './intake-signatures';
 import { chooseTableDelimiter } from './delimited-text';
@@ -15,6 +15,14 @@ export function intakeNameWords(card: IntakeCard | null, name: string): string |
   if (!card.nameDisagrees && !(card.format === 'cityjson' && suffix === '.json')) return null;
   const kinds: Record<string, string> = { cityjson: 'CityJSON', pdf: 'PDF', geojson: 'GeoJSON' };
   return `Named ${suffix}, read as ${kinds[card.format] ?? card.format.toUpperCase()}.`;
+}
+
+/** Immutable source lineage keeps the parent/cell words visible after the child's own processing changes state. */
+export function cellDerivativeWords(value: unknown): string | null {
+  const parsed = CellDerivativeLineageSchema.safeParse(value);
+  if (!parsed.success) return null;
+  return `Derived from ${parsed.data.parentName}, cell ${parsed.data.cellKey}. `
+    + 'All features are candidates; every card needs officer confirmation.';
 }
 
 export function intakeColumns(rows: Record<string, unknown>[], names: string[]): IntakeCard['columns'] {

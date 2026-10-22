@@ -6,6 +6,7 @@ import {
   LARGE_ORIGINAL_LIMITS as limits, LARGE_ORIGINAL_V2_LIMITS as v2Limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
   LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard, type LargeUploadCreate, type LargeOriginalEvidence,
   ArchiveMemberLineageSchema, STREAMING_VECTOR_LIMITS, LargeUploadListSchema, TableDerivativeLineageSchema,
+  CellDerivativeLineageSchema,
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -24,8 +25,10 @@ export function storedUploadProvenance(value:LargeUploadCreate['provenance']):La
 export const LargeLayerLineageSchema=ArchiveMemberLineageSchema.extend({
   memberBytes:z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes)});
 /** The lineage a derived large original is published with, and the inspection member that keeps it. */
-const DerivedLineageSchema=z.discriminatedUnion('version',[LargeLayerLineageSchema,TableDerivativeLineageSchema]);
-const LINEAGE_MEMBER={'zip-layer/1':'archiveMember','table-derivative/1':'tableDerivative'} as const;
+const DerivedLineageSchema=z.discriminatedUnion('version',[
+  LargeLayerLineageSchema,TableDerivativeLineageSchema,CellDerivativeLineageSchema]);
+const LINEAGE_MEMBER={'zip-layer/1':'archiveMember','table-derivative/1':'tableDerivative',
+  'cell-derivative/1':'cellDerivative'} as const;
 
 const uuid=z.string().uuid(),lease=()=>new Date(Date.now()+limits.leaseSeconds*1000);
 type Upload=Record<string,any>;

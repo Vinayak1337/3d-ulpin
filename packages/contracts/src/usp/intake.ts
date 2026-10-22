@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
+import { STREAMING_VECTOR_LIMITS } from './streaming-vector';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -130,6 +131,33 @@ export const TableDerivativeLineageSchema = z.strictObject({
   locator: z.literal(TABLE_DERIVATIVE_LOCATOR),
 });
 export type TableDerivativeLineage = z.infer<typeof TableDerivativeLineageSchema>;
+/** Cell files partition only features outside the parent's first area; no feature is split or reprojected. */
+export const CELL_DERIVATIVE_RULE = Object.freeze({
+  version: 'area-cell/1' as const, metres: 40000, degrees: 0.5,
+  degreeOrigin: [-180.25, -90.25] as [number, number], sharedMetres: 9000, sharedDegrees: 0.25,
+  placement: 'extent_south_west' as const, edge: 'east_north' as const,
+  zone: 'extent_middle_wgs84_utm' as const, exceptional: 'single_feature' as const, cells: 64,
+});
+export const CellFeatureRangeSchema = z.strictObject({
+  featureIndex: z.number().int().nonnegative(), byteStart: z.number().int().nonnegative(),
+  byteEnd: z.number().int().positive(), rawSha256: hash,
+}).refine(value => value.byteEnd > value.byteStart, 'The feature range must be nonempty.');
+export const CellDerivativeLineageSchema = z.strictObject({
+  version: z.literal('cell-derivative/1'), parentSourceId: z.string().uuid(),
+  parentSourceRevision: z.number().int().positive(), parentSha256: hash, parentItemId: z.string().uuid(),
+  parentName: z.string().min(1).max(150),
+  cellKey: z.string().regex(/^utm-[0-9]+-e-?[0-9]+-n-?[0-9]+-l[0-9]+-b[0-9]+(?:-feature-[0-9]+)?$/),
+  rule: z.strictObject({ version: z.literal(CELL_DERIVATIVE_RULE.version), metres: z.literal(40000),
+    degrees: z.literal(0.5), degreeOrigin: z.tuple([z.literal(-180.25), z.literal(-90.25)]),
+    sharedMetres: z.literal(9000), sharedDegrees: z.literal(0.25), placement: z.literal('extent_south_west'),
+    edge: z.literal('east_north'), zone: z.literal('extent_middle_wgs84_utm'),
+    exceptional: z.literal('single_feature'), cells: z.literal(64) }),
+  features: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.features),
+  members: z.strictObject({ key: z.string().regex(/^large-originals\/[a-f0-9-]{36}\/[a-f0-9]{64}$/), sha256: hash,
+    bytes: z.number().int().positive().max(128 * 1024 * 1024), format: z.literal('cell-feature-ranges-jsonl/1') }),
+});
+export type CellFeatureRange = z.infer<typeof CellFeatureRangeSchema>;
+export type CellDerivativeLineage = z.infer<typeof CellDerivativeLineageSchema>;
 /** G23. A page image (JPEG, PNG, TIFF without georeference) in a batch: its first, native read and no more. */
 export const INTAKE_PAGE_IMAGE_LIMITS = Object.freeze({ originalBytes: 128 * 1024 ** 2, headBytes: 1024 ** 2,
   inputPixels: 250_000_000, previewSide: 1024, previewBytes: 8 * 1024 ** 2 });

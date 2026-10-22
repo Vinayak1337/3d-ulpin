@@ -1,3 +1,5 @@
+import { CELL_DERIVATIVE_RULE } from '@ulpin/contracts/usp';
+
 /** The map processor's bounded-area rule, measured before a package is cut, so no cut is refused for its extent.
  * `services/geo/geo/area.py` `normalize_area` takes a package only when (line 467) its EPSG:4326 extent spans at
  * most 1 degree each way, between latitudes -80 and 84 and longitudes -180 and 180; (line 473) its middle lies in
@@ -202,6 +204,27 @@ function withinMetres(metres: Bounds, origin: [number, number] | null): boolean 
   const limit = AREA_NORMALIZER_EXTENT.metres, [x, y] = origin ?? [metres[0], metres[1]];
   return metres[2] - metres[0] <= limit && metres[3] - metres[1] <= limit
     && [metres[0] - x, metres[1] - y, metres[2] - x, metres[3] - y].every(edge => Math.abs(edge) <= limit);
+}
+
+export type SpatialCell = { key: string };
+
+/** The intersection keeps every shared cell below both area bounds, even at high latitude.
+ * Larger or zone-crossing features get a stable singleton, never split or moved. */
+export function featureCell(feature: FeatureExtent, featureIndex: number): SpatialCell {
+  const rule = CELL_DERIVATIVE_RULE;
+  const zone = analysisZone(feature.bounds, null)!;
+  const [west, south, east, north] = feature.bounds;
+  const metres = projectedBounds(feature, zone);
+  const easting = Math.floor(metres[0] / rule.metres), northing = Math.floor(metres[1] / rule.metres);
+  const longitude = Math.floor((west - rule.degreeOrigin[0]) / rule.degrees);
+  const latitude = Math.floor((south - rule.degreeOrigin[1]) / rule.degrees);
+  const key = `utm-${zone}-e${easting}-n${northing}-l${longitude}-b${latitude}`;
+  const zoneWest = centralMeridian(zone) - 3;
+  const contained = west >= zoneWest && east <= zoneWest + 6
+    && (southern(zone) ? north <= 0 : south >= 0);
+  const shared = contained && east - west <= rule.sharedDegrees && north - south <= rule.sharedDegrees
+    && metres[2] - metres[0] <= rule.sharedMetres && metres[3] - metres[1] <= rule.sharedMetres;
+  return { key: shared ? key : `${key}-feature-${featureIndex}` };
 }
 
 /** One open cut's extent, as area.py would measure the package it becomes. */

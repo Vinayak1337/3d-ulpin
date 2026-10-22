@@ -4,6 +4,7 @@ import type { Readable } from 'node:stream';
 import test from 'node:test';
 import type { Pool } from 'pg';
 import { LargeOriginalService, largeOriginalStorage } from './large-original';
+import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema } from '@ulpin/contracts/usp';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'large-original-small-protocol';
 const caseId = '10000000-0000-4000-8000-000000000003';
@@ -24,7 +25,10 @@ function memoryPool() {
     if (sql.startsWith('UPDATE cases SET revision=revision+1')) { db.case.revision++; return result([]); }
     if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return result(db.sources);
     if (sql.startsWith('SELECT id FROM sources')) return result([]);
-    if (sql.startsWith('INSERT INTO sources')) { db.sources.push({ id: values[0], object_key: values[6] }); return result([]); }
+    if (sql.startsWith('INSERT INTO sources')) {
+      db.sources.push({ id: values[0], object_key: values[6], inspection: values[7] });
+      return result([]);
+    }
     if (sql.startsWith('UPDATE usp_outbox_streams')) return result([{ sequence: String(++sequence) }]);
     if (sql.includes('FROM usp_source_uploads WHERE case_id=$1 AND operator_subject')) return result([]);
     if (sql.includes('count(*) FILTER')) return result([{ held: 0, case_held: 0, operator_held: 0, held_bytes: '0',
@@ -87,6 +91,38 @@ function memoryStorage() {
   } as never;
   return { objects, storage };
 }
+
+test('a cell lineage is published with the original and exact finalization replay retains no second child', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const prior = globals.ulpinPool;
+  const { db, pool } = memoryPool();
+  globals.ulpinPool = pool;
+  try {
+    const service = new LargeOriginalService(memoryStorage().storage);
+    const bytes = Buffer.from('{"type":"FeatureCollection","features":[{"type":"Feature","geometry":null}]}');
+    const lineage = CellDerivativeLineageSchema.parse({ version: 'cell-derivative/1',
+      parentSourceId: randomUUID(), parentSourceRevision: 2, parentSha256: sha(Buffer.from('parent')),
+      parentItemId: randomUUID(), parentName: 'parent.geojson', cellKey: 'utm-32620-e12-n123-l234-b270',
+      rule: CELL_DERIVATIVE_RULE, features: 1, members: { key: `large-originals/${randomUUID()}/${sha(Buffer.from('ranges'))}`,
+        sha256: sha(Buffer.from('ranges')), bytes: 6, format: 'cell-feature-ranges-jsonl/1' } });
+    const created = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+      filename: 'cell.geojson', mediaType: 'application/octet-stream', sha256: sha(bytes), bytes: bytes.length,
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-22T00:00:00.000Z' } });
+    const claim = await service.claimPart(caseId, created.id, { requestKey: randomUUID(),
+      expectedRevision: created.revision, expectedCaseRevision: 0, partNumber: 1, sha256: sha(bytes) });
+    const received = await service.receivePart(claim, bytes);
+    const finalInput = { requestKey: randomUUID(), expectedRevision: received.revision,
+      expectedCaseRevision: 0, sha256: sha(bytes) };
+    const final = await service.finalize(caseId, created.id, finalInput, lineage);
+    assert.deepEqual(db.sources[0].inspection.cellDerivative, lineage);
+    assert.equal(db.sources[0].inspection.archiveMember, undefined);
+    const replay = await service.finalize(caseId, created.id, finalInput, lineage);
+    assert.equal(replay?.source?.sourceId, final?.source?.sourceId);
+    assert.equal(db.sources.length, 1);
+  } finally {
+    globals.ulpinPool = prior;
+  }
+});
 
 test('a 3 KB PDF is admitted, received as one part and retained as an original of its exact bytes', async () => {
   const globals = globalThis as unknown as { ulpinPool?: Pool };

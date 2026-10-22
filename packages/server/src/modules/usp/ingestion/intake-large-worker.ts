@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto';
+import { Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
 import { StreamingVectorGeometrySummarySchema } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
-import { readObjectRange } from '../../../infrastructure/storage';
+import { readObjectRange, putOriginalStream, verifyObjectStream } from '../../../infrastructure/storage';
+import { createSourceCase } from '../../cases/source-cases';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
@@ -20,6 +22,10 @@ import { readIntakeDraftTx, writeIntakeLargeTx, type IntakeLargeState } from './
 import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
   type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import type { AreaFrame } from './intake-package-extent';
+import { CellFileCollector, cellFileWords, readRawFeatureRanges, retainCellFiles,
+  type CellFileResult } from './intake-cell-files';
+import { LargeOriginalService } from './large-original';
+import { IntakeService } from './intake-service';
 import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
@@ -29,7 +35,7 @@ import { StreamingVectorService } from './streaming-vector';
 const reader = new StreamingVectorService();
 const profiler = new StreamedProfileService();
 const mapper = new ChunkMappingService();
-const DRAFT_STEP_MS = 60000, RANGE_BYTES = 1024 * 1024, RANGE_MS = 30000;
+const DRAFT_STEP_MS = 60000, RANGE_MS = 30000;
 type State = NonNullable<Awaited<ReturnType<typeof largeStateKey>>>;
 type Outcome = 'more' | 'pressure' | 'stale' | 'end';
 type Fold = {
@@ -215,16 +221,12 @@ async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): 
 /** The cut's original bytes in contiguous spans of at most 1 MiB; each feature is sliced from its span. */
 async function rawFeatures(fold: Fold, cut: IntakePackageCut): Promise<ProvedAreaPartInput['features']> {
   const features: ProvedAreaPartInput['features'] = [];
-  for (let first = 0; first < cut.features.length;) {
-    const start = cut.features[first].raw.byteStart;
-    let last = first;
-    while (last + 1 < cut.features.length && cut.features[last + 1].raw.byteEnd - start <= RANGE_BYTES) last++;
-    const bytes = await readObjectRange(fold.objectKey, start, cut.features[last].raw.byteEnd, fold.sourceBytes,
-      Date.now() + RANGE_MS, AbortSignal.timeout(RANGE_MS));
-    for (const item of cut.features.slice(first, last + 1)) features.push({
-      rawChunkIndex: item.mapped.geometryRef!.chunkIndex, featureIndex: item.raw.featureIndex,
-      rawBytes: bytes.subarray(item.raw.byteStart - start, item.raw.byteEnd - start) });
-    first = last + 1;
+  const read = async (start: number, end: number) => Buffer.from(await readObjectRange(fold.objectKey,
+    start, end, fold.sourceBytes, Date.now() + RANGE_MS, AbortSignal.timeout(RANGE_MS)));
+  let index = 0;
+  for await (const item of readRawFeatureRanges(cut.features.map(item => item.raw), read)) {
+    features.push({ rawChunkIndex: cut.features[index++].mapped.geometryRef!.chunkIndex,
+      featureIndex: item.range.featureIndex, rawBytes: item.bytes });
   }
   return features;
 }
@@ -243,7 +245,42 @@ function heldThrough(fold: Fold, cut: IntakePackageCut | undefined): IntakePartH
   return fold.held;
 }
 
-async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fold, state: State) {
+/** Revisit sealed pairs only at EOF, including holds before stored cuts. No parsed feature survives a chunk.
+ * The fixed first-area frame reproduces AREA_BOUND holds; the child range manifests are bounded by the reader. */
+async function deriveCellFiles(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold,
+  outside: number): Promise<CellFileResult | undefined> {
+  if (!outside) return undefined;
+  const collector = new CellFileCollector(fold.metadata), beat = heartbeat(input, attempt);
+  const cutter = new IntakePackageCutter(fold.metadata, undefined, fold.frame);
+  for (let index = 0; index < fold.chunks; index++) {
+    for (const item of await pairedChunk(input, { ...fold, after: -1 }, index)) {
+      if (cutter.consume(item).held?.code !== 'PART_FEATURE_AREA_BOUND') continue;
+      const { featureIndex, byteStart, byteEnd, rawSha256 } = item.raw;
+      collector.add(item.feature, { featureIndex, byteStart, byteEnd, rawSha256 });
+    }
+    await beat();
+  }
+  const counted = [...collector.cells.values()].reduce((sum, cell) => sum + cell.ranges.length, 0);
+  if (counted + collector.heldFeatures !== outside) conflict('The outside-area feature count changed.');
+  const parent = { id: input.sourceId, revision: input.sourceRevision, sha256: input.sourceSha256,
+    case_id: input.caseId, itemId: input.itemId, name: await sourceName(input) };
+  return retainCellFiles(parent, collector, fold.metadata, {
+    transaction, createCase: createSourceCase, large: new LargeOriginalService(),
+    register: (caseId, raw) => new IntakeService().register(caseId, raw),
+    beat: async () => { await beat(); await pinned(input, attempt, async () => {}); },
+    read: async (start, end) => Buffer.from(await readObjectRange(fold.objectKey, start, end, fold.sourceBytes,
+      Date.now() + RANGE_MS, AbortSignal.timeout(RANGE_MS))),
+    putSidecar: async (ref, chunks) => {
+      await putOriginalStream(ref.key, Readable.from(chunks, { objectMode: false }), ref.bytes,
+        'application/x-ndjson', ref.sha256, AbortSignal.timeout(RANGE_MS));
+      await verifyObjectStream(ref.key, ref.bytes, ref.sha256, RANGE_MS, undefined,
+        AbortSignal.timeout(RANGE_MS));
+    },
+  });
+}
+
+async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fold, state: State,
+  cells?: CellFileResult) {
   const parts = (await client.query(`SELECT count(*)::int n,COALESCE(sum((counts->>'accepted')::int),0)::int accepted
     FROM usp_intake_parts WHERE item_id=$1`, [input.itemId])).rows[0];
   const setAside = intakeLargeSetAside(fold.kind, state.source.inspection?.streamedGeometrySummary,
@@ -251,8 +288,10 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
   const held = countHeld(fold.held, fold.pending);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
-    duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide, outside: held.heldOutside, setAside },
-  intakeLargePlan(state.store.recipe));
+    duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide,
+    outside: cells ? 0 : held.heldOutside, setAside }, intakeLargePlan(state.store.recipe));
+  if (cells) projection.limitReason = [cellFileWords(parts.accepted, cells), projection.limitReason]
+    .filter(Boolean).join(' ');
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
 }
 
@@ -262,6 +301,8 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   cut: IntakePackageCut | undefined, end: boolean): Promise<Outcome> {
   const features = cut ? await rawFeatures(fold, cut) : [];
   const held = heldThrough(fold, cut);
+  const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
+    : undefined;
   return pinned(input, attempt, async (client, state) => {
     if (intakeLargeCutKey(state.store) !== fold.cutKey) {
       await queueIntakeLargeTx(client, input.sourceId);
@@ -270,7 +311,7 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
     if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
       { ...fold.part, cutIndex: cut.index, features }, held);
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
-    if (end) await writeEndTx(client, input, fold, after);
+    if (end) await writeEndTx(client, input, fold, after, cells);
     fold.cutKey = intakeLargeCutKey(after.store);
     await queueIntakeLargeTx(client, input.sourceId);
     if (end) return 'end';
