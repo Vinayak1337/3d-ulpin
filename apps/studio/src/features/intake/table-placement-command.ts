@@ -1,4 +1,5 @@
 import { ApiError, type Schemas } from '@ulpin/api-client';
+import { TABLE_PLACEMENT_UTF16 } from '@ulpin/contracts/usp';
 import { layerCrsCode } from './layer-crs-command';
 
 export type TablePlacementBody =
@@ -32,6 +33,11 @@ export function tablePlacementChoice(form: TablePlacementForm): Choice | string 
   if (!form.crs.trim()) return UNSTATED_CRS;
   const crs = layerCrsCode(form.crs);
   return crs ? { coordinates, crs } : 'Write the code as EPSG and its number, for example EPSG:32643.';
+}
+
+/** TB2: words that stop placement before any press. A UTF-16 table is read as a table, but its rows are not placed. */
+export function placementRefusal(selection: { format: string; encoding?: string }): string | null {
+  return selection.format === 'csv' && selection.encoding?.startsWith('utf-16') ? TABLE_PLACEMENT_UTF16 : null;
 }
 
 export function tablePlacementPress(state: TablePlacementState): string {

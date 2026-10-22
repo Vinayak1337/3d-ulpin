@@ -8,6 +8,7 @@ import { RecipeReview } from './RecipeReview';
 import { SourceHeader } from './SourceHeader';
 import { StaleNotice } from './StaleNotice';
 import { StartJobs } from './StartJobs';
+import { TablePlacement } from './TablePlacement';
 import { TableRows } from './TableRows';
 import { useTableData } from './useTableData';
 import type { ChunkMapping, MappingJob, Metrics, TableProfile } from './types';
@@ -28,15 +29,17 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
     return <div className={styles.page}><Banner tone="warning">This retained source is not a table.</Banner></div>;
   }
   const stale = staleReasons(freshness);
+  const name = sourceCase.data?.sources.find((source) => source.id === sourceId)?.name;
   return (
     <div className={styles.page}>
       <Link to="/studio/work">Batches</Link>
-      <SourceHeader profile={profile.data}
-        name={sourceCase.data?.sources.find((source) => source.id === sourceId)?.name} />
+      <SourceHeader profile={profile.data} name={name} />
       <Banner tone="info">
-        Tables produce mapped draft rows, not buildings. Nothing enters the registry or the map.
+        Tables produce mapped draft rows, not buildings. Nothing enters the registry; rows reach the map only when
+        you place them.
       </Banner>
       <StartJobs profile={profile.data} />
+      <TablePlacement caseId={caseId} sourceId={sourceId} name={name ?? 'this table'} profile={profile.data} />
       {stale ? <StaleNotice reasons={stale} /> : null}
       <Progress raw={jobs.raw.data} mapping={jobs.mapping.data} fallback={fallback} reconnect={reconnect}
         rawReason={sourceCase.data?.jobs.find((job) => job.id === state.rawJobId)?.error}

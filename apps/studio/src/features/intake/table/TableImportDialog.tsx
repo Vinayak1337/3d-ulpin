@@ -52,8 +52,8 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
       <div className={styles.form}>
         <p className="ul-id">{file.name}</p>
         <Banner tone="info">
-          Only exact public D8 development originals are admitted. Other files will be refused by the server.
-          Tables create mapped draft rows, not buildings; nothing enters the registry or appears on the map.
+          The file is kept unchanged first, then read as a table; a table of more than 2,000 records is read as a
+          stream. Tables create mapped draft rows, not buildings; nothing enters the registry.
         </Banner>
         {streamedImport(file) ? <StreamedHelp workbook={workbook} /> : null}
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>

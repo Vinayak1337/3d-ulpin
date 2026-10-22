@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { TABLE_PLACEMENT_UTF16 } from '@ulpin/contracts/usp';
+import { TABLE_PLACEMENT_UTF16, type TabularSelection } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { probeOriginal } from './intake-probe';
@@ -142,7 +142,7 @@ test('a table of 25,000 rows is read and written in windows, never whole', async
 });
 
 /** A source row as the batch keeps a table read as a table: its receipt and the table read's profile. */
-function tableSource(bytes: Buffer, headers: string[], profile = true, pin: Partial<typeof selection> = selection) {
+function tableSource(bytes: Buffer, headers: string[], profile = true, pin: Partial<TabularSelection> = selection) {
   return { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, bytes: bytes.length, sha256: sha(bytes),
     profile: 'tabular-manual-v1', object_key: `sources/${sourceId}`, name: 'plots.csv', status: 'needs_input',
     inspection: { actor: localOperatorSubject(), ...(profile ? { manualProfile: { version: 'manual-tabular/1',

@@ -107,8 +107,9 @@ function admittedPin(admitted: TabularAdmission, selection: TabularSelection, so
 export const TABULAR_ROW_LIMIT = 'TABULAR_ROW_LIMIT';
 
 function rowLimit(): never {
-  throw new AppError(422, TABULAR_ROW_LIMIT, 'This table holds more than the whole-file reader takes: 2,000 records, '
-    + 'or 2,000 cells of a workbook. Kept through the upload, it is read as a stream instead; no record is cut to fit.');
+  throw new AppError(422, TABULAR_ROW_LIMIT, 'This table holds more than the whole-file reader takes: 2,000 '
+    + 'records, or 2,000 cells of a workbook. Kept through the upload, it is read as a stream instead; no record is '
+    + 'cut to fit.');
 }
 
 function workbookParts(bytes: Uint8Array): Part[] {

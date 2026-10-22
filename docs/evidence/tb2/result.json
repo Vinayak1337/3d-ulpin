@@ -1,0 +1,44 @@
+{
+  "task": "TB2",
+  "branch": "task/tb2-table-bridge",
+  "base": "origin/task/int3-pre",
+  "runtime": "none: code and tests only, no Docker, no database, no runtime data read",
+  "gaps": {
+    "8_standalone_place_on_map": {
+      "result": "TablePage offers Place on the map; one press enrols the already kept original through POST /api/v1/ingestion/cases/{caseId}/intake/items (existing route), then opens the batch's own dialog. No second copy of the bytes; no coordinate column or system is chosen for the officer.",
+      "studio": "Every table dropped alone is now kept through the uploads route first, then read from that kept original; the multipart retain call is no longer used by the Studio."
+    },
+    "9_row_limit": {
+      "result": "A whole read of an original of 16 MiB or less that meets the 2,000-record bound (CSV) or the native workbook reader's 2,000-row or 2,000-cell bound is promoted to queueTableProfileTx with the same selection (sheet, header rows, encoding pins), pinned to the sha256, revision and object key it read. No row is truncated.",
+      "refusal_code": "TABULAR_ROW_LIMIT, kept for direct whole reads"
+    },
+    "11_utf16": {
+      "choice": "disable placement with actionable words, not UTF-16 row locators",
+      "words": "TABLE_PLACEMENT_UTF16 in packages/contracts/src/usp/intake.ts; refused at queue time (422 TABLE_PLACEMENT_ENCODING) and by the job for an older unpinned read; the Studio shows the words in place of the press"
+    }
+  },
+  "inputs": [
+    { "name": "generated 2,500-record CSV", "label": "test_only", "result": "promoted to the stream job; profile records 2500" },
+    { "name": "generated unclosed-quote small CSV", "label": "test_only", "result": "stays TABULAR_HEADER_OR_READER, no job" },
+    { "name": "controlWorkbook(3000) sheet", "label": "test_only", "result": "promoted with sheet and header rows" },
+    { "name": "generated UTF-16LE/BE tables", "label": "test_only", "result": "placement refused with the words, nothing queued" },
+    { "name": "mi-d10-02.csv profile answer", "origin": "docs/evidence/gf1/ui/f3a/table-responses.json", "result": "enrol request and answer validate against docs/api/openapi.json" }
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "tsx --test intake-*, table*, tabular*, csv-final-line, delimited-text, unit-table server tests", "exit": 0, "tests": 327, "pass": 326, "fail": 0, "skipped": 1, "skipNote": "pre-existing test that needs ULPIN_PROFILE_PYTHON" },
+    { "command": "tsx --test csv-final-line, table-windows, table-geojson (after final wrap)", "exit": 0, "tests": 38, "pass": 37, "fail": 0, "skipped": 1 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "exit": 0, "files": 44, "tests": 245, "fail": 0 },
+    { "command": "tsx scripts/api/openapi.ts --check", "exit": 0, "note": "329 operations, 372 named schemas; source-pins.json refreshed with refresh-contract.ts 26bc76fc" },
+    { "command": "pnpm studio:api-types", "exit": 0, "note": "no schema change" },
+    { "command": "ui-design-check scan-ui-diff.mjs ee99e231", "exit": 0, "note": "no candidates; the script scans apps/web, so the Studio diff was also checked by hand: no literal colours, fonts or styles, no new primary button" },
+    { "command": "git diff --check", "exit": 0 }
+  ],
+  "open": [
+    "A file already kept and read as a table in the same case answers 409 from the table read; the standalone dialog shows that refusal without a link to the existing table.",
+    "Workbook promotion keys off the native reader's NATIVE_WORKBOOK_LIMIT stderr code.",
+    "The multipart retain route still refuses a table past 2,000 records; no Studio caller uses it for tables now.",
+    "UTF-16 tables are read as tables but not placed; row locators for UTF-16 remain future work."
+  ]
+}
