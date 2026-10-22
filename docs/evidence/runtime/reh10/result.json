@@ -1,0 +1,117 @@
+{ "task": "REH10", "gates": [ "GF5", "GF4", "GF1" ], "servedCommit": "58559aa35f66289e0184a5c26e76a12004774c0f",
+"runtime": "ulpin-reh-02", "runtimeNotEmpty": true, "pinUnchanged": true, "schemaUnchanged": true, "roll": [ {
+"step": "b0-stop", "exit": 0, "seconds": 4.112 }, { "step": "b1-checkout", "exit": 0, "seconds": 0.187 }, {
+"step": "b1-install", "exit": 0, "seconds": 0.861 }, { "step": "b2-document-runtime", "exit": 0, "seconds": 30.862 }, {
+"step": "b3-start", "exit": 0, "seconds": 32.915 }, { "step": "b3-doctor", "exit": 0, "seconds": 6.592 } ], "resume": {
+"start": 27.022, "doctor": "28 PASS, 0 FAIL; gateway disabled" },
+"inputVerification": "act1-files.json and act2-files.json; every byte count and source hash matched", "retrospective": {
+"source": [ "Stopped-run screenshots, dress-log.jsonl and product readback; not re-observed live during", " that drop."
+], "caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "dropToDialogSeconds": 0.028, "retainToBatchSeconds": 2.083,
+"layout": "Remembered: a building; identifier bin; name and height not stated; new area buildings original.",
+"approveToDraftObservedSeconds": 23.385,
+"surfaceState": "Both first parts planned, no job; no surface drawn. Register retained as a batch item.", "key": [
+"The stopped run had already declared the integer BIN key; its job failed STREAMING_ORIGINA", "L_REQUIRED." ],
+"errors": { "consoleErrors": 2, "duplicateKeyWarnings": 0, "pageErrors": 0 }, "frames": { "batch": {
+"from": 1792536167726, "to": 1792536373360, "frames": 12241, "largestMs": 450, "over50": 5, "over100": 4,
+"longTasks": 4, "longestTaskMs": 122, "worst": [ [ 1792536197375, 117 ], [ 1792536197575, 150 ], [ 1792536298187, 200 ],
+[ 1792536368285, 450 ] ] }, "map": { "from": 1792536167793, "to": 1792536372096, "frames": 1302, "largestMs": 667,
+"over50": 559, "over100": 508, "longTasks": 568, "longestTaskMs": 652, "worst": [ [ 1792536168413, 450 ], [
+1792536173146, 200 ], [ 1792536185595, 133 ], [ 1792536185912, 117 ], [ 1792536186129, 117 ], [ 1792536186445, 117 ], [
+1792536186662, 117 ], [ 1792536186779, 117 ], [ 1792536186995, 117 ], [ 1792536187112, 117 ], [ 1792536187229, 117 ], [
+1792536187345, 117 ], [ 1792536187462, 117 ], [ 1792536187579, 117 ], [ 1792536187695, 117 ], [ 1792536187812, 117 ], [
+1792536187945, 133 ], [ 1792536188062, 117 ], [ 1792536188195, 133 ], [ 1792536188312, 117 ], [ 1792536188428, 117 ], [
+1792536188562, 133 ], [ 1792536188695, 133 ], [ 1792536188812, 117 ], [ 1792536188945, 133 ], [ 1792536189079, 133 ], [
+1792536189212, 133 ], [ 1792536189345, 133 ], [ 1792536189462, 117 ], [ 1792536189612, 150 ], [ 1792536189745, 133 ], [
+1792536189878, 133 ], [ 1792536190012, 133 ], [ 1792536190145, 133 ], [ 1792536190295, 150 ], [ 1792536190428, 133 ], [
+1792536190562, 133 ], [ 1792536190712, 150 ], [ 1792536190895, 183 ], [ 1792536191028, 133 ] ] } },
+"frameCaveat": "Original map opened the old HDB area, not the new NYC area; its 667 ms worst is not an SF1 test." },
+"act1": { "caseId": "76f1cdb3-1407-40b4-b9a2-20cea1c53380",
+"reasonForNewCase": "Old evidence job failed and surface parts had no job after restart; old case preserved.",
+"boundedComparison": { "hypothesis": "A fresh case removes stopped-run context as the cause of stalled reading.",
+"baseline": "Old case: failed evidence job, 0 surface parts read.",
+"success": "Fresh drop drafts footprints, starts both surface readers and closes evidence.",
+"outcome": "Same surface stall and evidence failure; no further retry and no product changes." },
+"retainToBatchSeconds": 2.592,
+"layoutApproval": "Approve layout as proposed: building, bin; name and height not stated.",
+"approveToDraftFinishedSeconds": 28.971, "register": { "retainedInBatch": true, "tableOpened": false,
+"screen": "CSV item has no Next step button, row selection or Read as a table action in a multi-file batch." },
+"surfaces": { "observedForSeconds": 532.099, "firstDrawnSeconds": null, "lastPartSeconds": null, "partsRead": 0,
+"placed": false, "openMapReloaded": false,
+"screen": "Display only. The first part waits for its reader; its coordinate system and size are not read yet.",
+"framesWhileDrawingSurfaces": null }, "evidence": {
+"namespace": "NYC building identification number (bin), as written in both files", "kind": "integer",
+"mapField": "buildings-original.geojson: /features/*/properties/bin", "tableColumn": "gpmc-yuvp.csv: column 0 bin",
+"jobSeconds": 43.157, "jobError": "STREAMING_ORIGINAL_REQUIRED", "coverage": [ {
+"itemId": "cd4d161f-c6e6-471e-9641-70786ff53035", "coverage": { "state": "partial", "read": 0, "eligible": null,
+"keyless": null, "unread": null, "failed": null } } ], "counts": { "matched": 0, "no_match": 0, "several": 0,
+"conflicting": 0 }, "acceptScreen": "This file has no exact single match under this key.", "acknowledgement": [
+"REH10 test_only: no row was read or matched. I accept no register citation; the key read h", "as not closed." ],
+"confirmPresses": 1, "storedConfirmations": 0, "storedNote": null, "refusal": [
+"gpmc-yuvp.csv can be confirmed when its reading closes. Exclude it with your reason to con",
+"firm this key without it." ],
+"hundredPerConfirmation": "Not exercised: no matches were read; no exclusion used to pretend success." },
+"fallbackCard": { "qualification": "Feature-only fallback, NOT a matched-evidence card.", "target": "feature 1001601",
+"record": { "id": "6b31f75f-be53-43a0-80c5-c6b576a979a7", "revision": 1 }, "card": {
+"id": "2614548e-a54b-40d5-bff2-84614f55ec7b", "revision": 1 }, "confirmationId": "f2f0bf55-7c01-48dc-8af4-81db2f9ed98e",
+"acknowledgement": [ "REH10 test_only: record the retained footprints and make one exterior card for feature 100",
+"1601. Register evidence failed; no register citation is accepted. Rights and ownership are", " not assessed." ],
+"counts": { "recorded": 1661, "carded": 1, "stopped": 0 }, "confirmToStoredCardSeconds": 42.748,
+"confirmToCardObservedSeconds": 43.627, "pdfBytes": 6897, "verificationSeconds": 1.142,
+"verification": "Consistent: 6 of 6 checks passed; signature not assessed (NO_TRUSTED_KEY_POLICY).",
+"citation": "buildings-original.geojson, feature 1001601", "registerRowQuoted": false, "registerExcerpt": null },
+"errors": { "consoleErrors": 1, "duplicateKeyWarnings": 0, "pageErrors": 0 }, "frames": { "batch": {
+"from": 1792660461029, "to": 1792660993221, "frames": 31691, "largestMs": 250, "over50": 15, "over100": 2,
+"longTasks": 88, "longestTaskMs": 254, "worst": [ [ 1792660527942, 150 ], [ 1792660907910, 250 ] ] }, "batchDrafting": {
+"from": 1792660477188, "to": 1792660527698, "frames": 3017, "largestMs": 67, "over50": 1, "over100": 0, "longTasks": 5,
+"longestTaskMs": 57, "worst": [] }, "map": { "from": 0, "to": 1792660993221, "frames": 26022, "largestMs": 467,
+"over50": 120, "over100": 6, "longTasks": 131, "longestTaskMs": 480, "worst": [ [ 1792660550624, 467 ], [ 1792660555174,
+317 ], [ 1792660565090, 117 ], [ 1792660567457, 117 ], [ 1792660567674, 117 ], [ 1792660567990, 117 ] ] }, "act2": {
+"from": 0, "to": 1792660993221, "frames": 19459, "largestMs": 467, "over50": 1, "over100": 1, "longTasks": 1,
+"longestTaskMs": 479, "worst": [ [ 1792660668903, 467 ] ] } } }, "act2": {
+"caseId": "559a6358-5f16-471b-b0cd-7f1105bdf3c0", "file": "lpc-register-two-records-test_only.csv",
+"provenance": "Header and first two records of the retained LPC register, byte-for-byte prefix, final LF.",
+"bytes": 302, "records": 2, "columns": 9, "outcome": "table", "retainToFirstProfileSeconds": 0.273,
+"completeObservedBySeconds": 60.081,
+"timingCaveat": "60 s is an observation bound: the browser wait used the wrong table URL pattern, not a service time.",
+"screen": "2 records · 9 columns; Raw rows completed; Field mapping completed; 0 teacher calls.",
+"limitation": "Mapping stays candidate/needs review; licence unconfirmed and personal-data state unknown." },
+"breaks": [ { "step": "2: register table action", "code": null, "route": "none: no selection action", "status": null,
+"words": "No Next step action on gpmc-yuvp.csv; Read as a table section is unreachable.",
+"evidence": "shots/r03-fresh-batch.png; r18-card-choice; IntakeTray.tsx:45-64" }, { "step": "2: surface readers",
+"code": null, "route": "GET /ingestion/cases/:caseId/intake/items/:itemId/parts", "status": 200,
+"words": "The first part waits for its reader; its coordinate system and size are not read yet.",
+"evidence": "readback.json: parts; shots/r10-map-tools.png; both old and fresh case" }, {
+"step": "2: evidence reading and confirmation", "code": "STREAMING_ORIGINAL_REQUIRED",
+"route": "GET /cases/:caseId: failed intake-evidence job; confirmation stopped by client", "status": 200,
+"words": "Job failed; UI remains Partial: 0 read. No stored confirmation or note.",
+"evidence": "readback.json; shots/r11-confirm-refused.png" }, { "step": "2: cited register row on card", "code": null,
+"route": "GET /usp/property-cards/:cardId/revisions/1", "status": 200,
+"words": "Fallback card quotes only its footprint feature; no register row or excerpt.",
+"evidence": "card-act1-feature-only.pdf and .txt in scratch; shots/r23-verification.png" } ], "needsCode": [ {
+"file": "apps/studio/src/features/intake/IntakeTray.tsx:45-64",
+"action": "Expose table item selection so BatchTableSection can render in a multi-file batch." }, {
+"file": "packages/server/src/modules/usp/ingestion/intake-evidence-worker.ts:40-45",
+"action": "retained() calls readObject on a kept large-originals key; storage.ts:52 refuses it, even at 85 KB." }, {
+"file": "packages/server/src/modules/usp/ingestion/intake-surface.ts:242-266",
+"action": "Diagnose admission: first planned parts never acquired jobs; root cause not proven without logs." }, {
+"file": "packages/server/src/modules/usp/ingestion/intake-evidence-worker.ts:291-320",
+"action": "Make the read expose the failed job instead of leaving unexplained partial coverage." } ], "console": {
+"original": { "consoleErrors": 2, "duplicateKeyWarnings": 0, "pageErrors": 0 }, "resumedBeforeShutdown": {
+"consoleErrors": 1, "duplicateKeyWarnings": 0, "pageErrors": 0 }, "resumedAfterShutdown": { "consoleErrors": 24,
+"duplicateKeyWarnings": 0, "pageErrors": 0 }, "note": [
+"3 pre-shutdown console errors total: one old-map context 422 and two unread-table profile ", "422s; 0 key warnings." ],
+"shutdownNote": "24 additional resource errors while browser video closure overlapped intentional API stop." },
+"demo": { "commit": "8d6e19fa91e1d08fa61d02946500b2f5227dd393", "doctorBeforeExit": 1, "doctorAfterExit": 1,
+"matchesResumeBaseline": true, "processIdsBefore": [], "processIdsAfter": [],
+"limitation": "Already down on resume: 23 PASS, 5 FAIL, health unavailable; same before and after. Not recovered.",
+"stoppedRunDifference": "Commit and container IDs unchanged; stopped-run native PIDs 33352/33728 now absent.",
+"guard": "Read only; state and watch ledger already reported start_limit_reached; no guard change." }, "end": {
+"runtime": "stopped; six containers exited, no native runtime processes; all records and volumes kept",
+"stopSeconds": 6.354, "studioStopped": true,
+"schemaAndHashChecks": "check.json: exit 0; nine product reads, response schemas and original hashes passed" },
+"scratch": [ "E:/BhuAayam-data/task-data/reh10", "E:/BhuAayam-data/task-data/reh10/resume-20261022" ], "videos": [ {
+"name": "page@b6220e8f51ed8d9cec80a368925ed884.webm", "bytes": 22317119 }, {
+"name": "page@b80433abd2d8511953803b414de8d246.webm", "bytes": 4510483 }, {
+"name": "page@beac5b4910974486320e366e7726597b.webm", "bytes": 45292312 }, {
+"name": "page@d91ef2ccbb8369e98f810828504a10c3.webm", "bytes": 26317819 } ], "verdict": [
+"NO: do not roll the demo to 58559aa3; table selection, evidence reading and surface admiss", "ion block the show." ] }

@@ -1,0 +1,15 @@
+{ "at": "2026-10-22T09:14:44.516Z", "status": 200, "jobs": [ { "id": "6b283a85-c490-53c0-8bd9-ee0a4b2cc439",
+"caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "sourceId": "89e76bc7-0dc2-4109-85ed-6a5f6dbb63ec",
+"operation": "intake-evidence", "status": "failed", "createdAt": "2026-10-20T22:47:50.398Z",
+"completedAt": "2026-10-20T22:48:44.701Z", "error": "STREAMING_ORIGINAL_REQUIRED",
+"inputFingerprint": "[omitted non-source digest]" }, { "id": "584bb7c2-93df-4712-b72a-36f9d22190cd",
+"caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "sourceId": "6575d9b8-4037-431c-8056-56ddbdb91a0b",
+"operation": "intake-run", "status": "succeeded", "createdAt": "2026-10-20T22:43:10.852Z",
+"completedAt": "2026-10-20T22:43:35.873Z", "error": null, "inputFingerprint": "[omitted non-source digest]" }, {
+"id": "a13e803c-3198-5523-923f-8927c75e5f31", "caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0",
+"sourceId": "6575d9b8-4037-431c-8056-56ddbdb91a0b", "operation": "intake-draft", "status": "succeeded",
+"createdAt": "2026-10-20T22:42:47.753Z", "completedAt": "2026-10-20T22:43:11.012Z", "error": null,
+"inputFingerprint": "[omitted non-source digest]" }, { "id": "6cbedead-2737-516e-9801-6e7ded7165fc",
+"caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "sourceId": "6575d9b8-4037-431c-8056-56ddbdb91a0b",
+"operation": "intake-draft", "status": "succeeded", "createdAt": "2026-10-20T22:42:06.049Z",
+"completedAt": "2026-10-20T22:42:24.407Z", "error": null, "inputFingerprint": "[omitted non-source digest]" } ] }

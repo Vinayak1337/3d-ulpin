@@ -11,13 +11,13 @@ const { chromium } = createRequire('E:/Projects/ulpin-wt/ulpin-reh-02/package.js
 // sent one at a time to a local control port as small scripts run against `page`; every step, its result, every API
 // exchange, page error and console error is appended to the scratch log, so the run can be read back step by step.
 // Nothing here writes to the API by itself: only the Studio's own buttons do.
-const scratch = 'E:/BhuAayam-data/task-data/reh10';
+const scratch = process.env.REH10_SCRATCH ?? 'E:/BhuAayam-data/task-data/reh10';
 const studio = 'http://127.0.0.1:5188';
 const control = 5399;
 mkdirSync(`${scratch}/video`, { recursive: true });
 mkdirSync(`${scratch}/shots`, { recursive: true });
 const log = (kind, value) => appendFileSync(`${scratch}/dress-log.jsonl`,
-  `${JSON.stringify({ at: Date.now(), kind, ...value })}\n`);
+  `${JSON.stringify({ at: Date.now(), ...value, kind })}\n`);
 
 function recorder() {
   const state = { frames: [], tasks: [] };
@@ -73,7 +73,7 @@ context.on('page', next => { if (!pages.some(entry => entry.page === next)) watc
 
 const helpers = {
   page, context, pages, marks, scratch,
-  mark(label, extra = {}) { const value = { at: Date.now(), label, ...extra }; marks.push(value); log('mark', value);
+  mark(label, extra = {}) { const value = { ...extra, at: Date.now(), label }; marks.push(value); log('mark', value);
     return value; },
   async shot(name, target = page) { const path = `${scratch}/shots/${name}.png`;
     await target.screenshot({ path, type: 'png' }); log('shot', { name }); return path; },
@@ -116,13 +116,13 @@ const server = createServer((request, response) => {
       result = { ok: false, error: String(error?.message ?? error).slice(0, 1500) };
     }
     log('result', { step, ...result, value: JSON.stringify(result.value ?? null).slice(0, 4000) });
-    response.writeHead(200, { 'content-type': 'application/json' });
-    response.end(JSON.stringify(result));
     if (step === 'close') {
       await context.close();
       await browser.close();
       server.close();
     }
+    response.writeHead(200, { 'content-type': 'application/json' });
+    response.end(JSON.stringify(result));
   });
 });
 server.listen(control, '127.0.0.1');
