@@ -3,8 +3,8 @@ export type FileRoute = 'intake' | 'table';
 /**
  * A successful opt-in development profile is handled before this production routing decision. CD1: a file of any
  * other kind is never refused for its kind. N01, XL1: CSV, XLSX and ODS keep their table import; every other file, a
- * GeoPackage and any ZIP included, joins the batch, where the server decides what a ZIP holds and converts a GeoPackage or a
- * shapefile set into layers.
+ * GeoPackage and any ZIP included, joins the batch, where the server decides what a ZIP holds and converts a
+ * GeoPackage or a shapefile set into layers.
  */
 export function fileRoute(name: string): FileRoute {
   return /\.(csv|xlsx|ods)$/i.test(name) ? 'table' : 'intake';

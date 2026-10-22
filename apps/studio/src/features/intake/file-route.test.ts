@@ -48,7 +48,7 @@ it('TJ1: on the batch page a CSV or XLSX joins the batch; dropped alone with no 
   expect(batchRouteWords('plan.pdf')).toBe(routeWords('plan.pdf'));
 });
 
-it('XL1: an ODS opens the table import as an XLSX does; a legacy .xls is kept and words that its cells are not read', () => {
+it('XL1: an ODS opens the table import as an XLSX does; a legacy .xls is kept, its cells unread', () => {
   expect(['wards.ods', 'Wards.ODS', 'old-list.xls', 'OLD.XLS'].map(fileRoute)).toEqual(['table', 'table', 'intake',
     'intake']);
   expect(['wards.ods', 'old-list.XLS'].map(routeWords)).toEqual(['Table · opens the table import',
