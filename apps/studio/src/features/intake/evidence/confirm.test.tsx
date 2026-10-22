@@ -17,6 +17,7 @@ import { acceptedIds, acceptFile, confirmedOf, decidable, reconcileChoices, setA
   type EvidenceConfirmation } from './confirm-model';
 import type { Candidate, EvidencePage, KeyProfile } from './model';
 import { refreshConfirmation } from './confirm-refresh';
+import { EvidenceRead } from './EvidenceRead';
 import { container, elements, propsOf, type FakeElement } from '../fake-dom';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
@@ -229,6 +230,42 @@ const targetsReadPins = (read11?: Package) => {
   return (caseValue: string, ids: readonly string[]) => readPackagePins(caseValue, ids, readTargets);
 };
 
+it('EV2: a newer reading is offered again and can be confirmed against the committed package review', async () => {
+  const newer: EvidencePage = { ...page, confirmations: [{ confirmationId: id(80), profileId: profile.profileId,
+    additions: 'citations', createdAt: at, expiresAt: at, newerSources: [], accepted: [first.candidateId],
+    superseded: true }], sources: page.sources.map(source => source.itemId === register.itemId
+      ? { ...source, jobId: id(90), resultSha256: sha('8') } : source) };
+  expect(validate(schemas.page, newer)).toEqual([]);
+  const show = (current: EvidencePage) => renderToStaticMarkup(<EvidenceRead page={current} items={items}
+    targets={targets} paging={{ outcome: '', first: true, loading: false, setOutcome: vi.fn(),
+      firstPage: vi.fn(), nextPage: null }} />);
+  expect(show(newer)).toContain('Confirm its current matches');
+  expect(show({ ...newer, confirmations: [...newer.confirmations, { ...newer.confirmations[0]!,
+    confirmationId: id(93), superseded: false }] })).not.toContain('Confirm its current matches');
+  const choices = acceptFile({}, { itemId: register.itemId, matches: [first], more: false },
+    confirmedOf(newer, profile)).choices;
+  expect(Object.keys(choices)).toEqual([first.candidateId]);
+  const earlierBody: ConfirmBody = { requestKey: id(92), acknowledgement: ready.acknowledgement,
+    profileId: profile.profileId, profileSha256: profile.profileSha256,
+    included: [{ itemId: register.itemId, sourceId: id(53), sourceRevision: 2, sourceSha256: sha('c'), bytes: 87,
+      jobId: id(40), resultSha256: sha('d'), coverage: closed }], excluded: [],
+    targets: [{ targetId: first.anchors[0]!.targetId, packageId: id(10), packageRevision: 3,
+      reviewFingerprint: sha('e') }],
+    additions: { kind: 'citations', decisions: [{ decision: 'accept', candidateId: first.candidateId,
+      candidateSha256: first.candidateSha256, targetId: first.anchors[0]!.targetId,
+      evidence: first.evidence as never }] } };
+  expect(confirmedOf(newer, profile, [stored(earlierBody)]).has(first.candidateId)).toBe(false);
+  const committed: Package = { ...pkg(10, 4, sha('e')), state: 'COMMITTED' };
+  const send = vi.fn(async (input) => stored({ ...input, requestKey: id(91) }));
+  const result = await pressConfirm(caseId, profile, { ...read, page: newer }, { ...ready, choices }, send,
+    async () => new Map([[committed.packageId, committed]]));
+  expect(result).toHaveProperty('confirmation');
+  expect(send).toHaveBeenCalledOnce();
+  expect(send.mock.calls[0]![0].targets).toEqual([{ targetId: first.anchors[0]!.targetId,
+    packageId: committed.packageId, packageRevision: 3, reviewFingerprint: sha('e') }]);
+  expect(send.mock.calls[0]![0].included[0].jobId).toBe(id(90));
+});
+
 it('sends closed sources with every pin, named buildings with fingerprints and the decisions, but no manifest hash',
   async () => {
     const choices = setReject(acceptRegister(), several,
@@ -408,7 +445,11 @@ it('after a reload the stored confirmations the read lists for the key are not o
     expect(next.words).toContain('100 were confirmed already here and are not offered again.');
     // A confirmation stored since the read is merged with the read's own.
     const since = await pressAcceptFile(caseId, profile, register.itemId, {},
-      confirmedOf(reloaded, profile, ids(100, 200)));
+      confirmedOf(reloaded, profile, [stored({ requestKey: id(92), profileId: profile.profileId,
+        profileSha256: profile.profileSha256, included: [], excluded: [], targets: [], acknowledgement: 'Checked.',
+        additions: { kind: 'citations', decisions: many.slice(100, 200).map(candidate => ({ decision: 'accept',
+          candidateId: candidate.candidateId, candidateSha256: candidate.candidateSha256,
+          targetId: candidate.anchors[0]!.targetId, evidence: candidate.evidence as never })) } })]));
     expect(Object.keys(since.choices)).toEqual(ids(200, 250));
   });
 

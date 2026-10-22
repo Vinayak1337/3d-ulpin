@@ -31,17 +31,28 @@ type Pending = PendingEvidence;
  * from the cited revision. Its earlier card stays stored exactly as it was. */
 export const CARRIED = ['snapshot', 'plan', 'planConfirmation', 'packet', 'card', 'verification'] as const;
 
-/** Stored citation confirmations that accept a candidate for this building and hold no receipt for it yet,
- * earliest first. */
+/** Stored citation confirmations with no receipt for this building, earliest first. A later officer confirmation
+ * supersedes one only if it explicitly accepts every earlier accepted candidate for this building under the key.
+ * The replacement still passes every pin and expiry check before any draft. */
 export async function pendingEvidenceTx(client: PoolClient,
   building: Pick<Building, 'caseId' | 'targetId'>): Promise<Pending[]> {
-  return (await client.query(`SELECT confirmation_id,pins,acknowledgement,expires_at,case_id,subject,created_at
+  const rows: (Pending & { written?: boolean })[] = (await client.query(`SELECT
+    confirmation_id,pins,acknowledgement,expires_at,case_id,subject,created_at,EXISTS (SELECT 1 FROM operations o
+      WHERE o.case_id=c.case_id AND o.kind=$3 AND o.operation_key=$3||':'||c.confirmation_id||':'||$4) AS written
     FROM usp_intake_evidence_confirmations c WHERE c.case_id=$1 AND c.additions='citations'
-    AND c.pins->'additions'->'decisions' @> $2::jsonb AND NOT EXISTS (SELECT 1 FROM operations o
-      WHERE o.case_id=c.case_id AND o.kind=$3 AND o.operation_key=$3||':'||c.confirmation_id||':'||$4)
+    AND c.pins->'additions'->'decisions' @> $2::jsonb
     ORDER BY c.created_at,c.confirmation_id`, [building.caseId,
     JSON.stringify([{ decision: 'accept', targetId: building.targetId }]), EVIDENCE_RECEIPT_KIND,
     building.targetId])).rows;
+  const accepted = (row: Pending) => row.pins.additions.kind === 'citations'
+    ? row.pins.additions.decisions.flatMap(decision => decision.decision === 'accept'
+      && decision.targetId === building.targetId ? [decision.candidateId] : []) : [];
+  return rows.filter((row, index) => !row.written && !rows.slice(index + 1).some(newer => {
+    if (newer.pins.profileId !== row.pins.profileId) return false;
+    const replaced = new Set(accepted(newer));
+    const earlier = accepted(row);
+    return earlier.length > 0 && earlier.every(candidateId => replaced.has(candidateId));
+  }));
 }
 
 /** D2: a confirmation is written only while every pin it names still holds and it has not expired. */

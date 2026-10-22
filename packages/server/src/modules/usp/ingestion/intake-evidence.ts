@@ -328,8 +328,9 @@ export async function anchorsDigestTx(client: PoolClient, caseId: string, anchor
  * G21: in the transaction where a package's buildings are drafted or decided at a new revision, every source read
  * under a profile anchored on their map item is read again, so a row keyed to a building drafted after it was read
  * can still match. A queued reading is left alone: its claim waits on the job rows locked here, so it reads the new
- * buildings. A reading queued under the same digest is not queued again. A running reading is replaced, and its
- * write is refused. Earlier jobs, results and candidates are kept; candidates come back under their stable ids.
+ * buildings. A completed reading's receipt names the snapshot it actually read, which can be newer than its queue
+ * pin. The same digest is not read again. A running reading is replaced, and its write is refused. Earlier jobs,
+ * results and candidates are kept; candidates come back under their stable ids.
  */
 export async function queueAnchorEvidenceTx(client: PoolClient, packageId: string) {
   const map = (await client.query(`SELECT case_id,anchor_item_id FROM usp_intake_targets WHERE package_id=$1
@@ -340,9 +341,12 @@ export async function queueAnchorEvidenceTx(client: PoolClient, packageId: strin
     JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
     WHERE c.case_id=$1 AND p.anchor_item_id=$2 ORDER BY j.id FOR SHARE OF j`, [map.case_id, map.anchor_item_id]);
   const readings = (await client.query(`SELECT p.profile_id,p.profile_sha256,c.item_id,
-    j.payload->>'anchorsSha256' AS anchors_sha256
+    COALESCE(o.result->>'anchorsSha256',j.payload->>'anchorsSha256') AS anchors_sha256
     FROM usp_intake_evidence_coverage c JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
-    LEFT JOIN jobs j ON j.id=c.job_id WHERE c.case_id=$1 AND p.anchor_item_id=$2
+    LEFT JOIN jobs j ON j.id=c.job_id
+    LEFT JOIN operations o ON o.case_id=c.case_id AND o.operation_key=c.job_id::text
+      AND o.kind='intake-evidence-anchors'
+    WHERE c.case_id=$1 AND p.anchor_item_id=$2
     AND j.status IS DISTINCT FROM 'queued' ORDER BY p.profile_id,c.item_id`,
   [map.case_id, map.anchor_item_id])).rows;
   if (!readings.length) return;
@@ -434,7 +438,8 @@ async function setCoverageTx(client: PoolClient, input: IntakeEvidenceInput, cov
 
 /** One reading's coverage and candidates replace that source's earlier candidates under the profile, together. */
 export async function writeIntakeEvidenceTx(client: PoolClient, input: IntakeEvidenceInput,
-  coverage: IntakeEvidenceCoverage, resultSha256: string, candidates: IntakeEvidenceCandidate[]) {
+  coverage: IntakeEvidenceCoverage, resultSha256: string, candidates: IntakeEvidenceCandidate[],
+  anchorsSha256?: string) {
   await ownCoverageTx(client, input);
   const ids = candidates.map(candidate => candidate.candidateId);
   await client.query(`DELETE FROM usp_intake_evidence_candidates WHERE profile_id=$1 AND item_id=$2
@@ -453,6 +458,10 @@ export async function writeIntakeEvidenceTx(client: PoolClient, input: IntakeEvi
       candidate_sha256=EXCLUDED.candidate_sha256`, [input.caseId, input.profileId, input.itemId,
     JSON.stringify(rows)]);
   await setCoverageTx(client, input, coverage, resultSha256);
+  // A queued reading may start after more buildings arrive. Keep its actual snapshot, not just its queue-time pin.
+  if (anchorsSha256 !== undefined) await client.query(`INSERT INTO operations(case_id,operation_key,kind,
+    payload_hash,result) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+  [input.caseId, input.jobId, 'intake-evidence-anchors', resultSha256, { anchorsSha256 }]);
 }
 
 /** A reading that stopped leaves its source unread (read 0, every other count unknown) and proposes nothing. */
@@ -604,9 +613,19 @@ export async function readIntakeEvidence(caseValue: string,
         additions: row.additions, createdAt: new Date(row.created_at).toISOString(),
         expiresAt: new Date(row.expires_at).toISOString(), newerSources: newerSources(row.pins,
           sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)),
-        accepted: acceptedCandidates(row.pins) })),
+        accepted: acceptedCandidates(row.pins), superseded: confirmationReadingChanged(row.pins,
+          sources.filter(source => source.profile_id === row.profile_id)) })),
       sources: sources.map(evidenceSourceReadView),
       candidates: page, counts, nextCursor: rows.length > page.length ? page.at(-1)!.candidateId : null });
+  });
+}
+
+/** A newer reading never inherits the earlier officer confirmation, even when candidate ids stay stable. */
+function confirmationReadingChanged(pins: IntakeEvidenceConfirm, sources: SourceCoverageRow[]) {
+  return pins.included.some(named => {
+    const row = sources.find(source => source.item_id === named.itemId);
+    return !row || row.job_id !== named.jobId || row.result_sha256 !== named.resultSha256
+      || fingerprint(coverageOf(row)) !== fingerprint(named.coverage);
   });
 }
 
@@ -674,7 +693,8 @@ export function evidenceConfirmationIssue(input: IntakeEvidenceConfirm, state: E
     const read = state.coverage.get(named.itemId);
     if (!read || read.jobId !== named.jobId || read.resultSha256 !== named.resultSha256
       || fingerprint(read.coverage) !== fingerprint(named.coverage)) {
-      return `Source item ${named.itemId} has another reading under this profile.`;
+      return `Source item ${named.itemId} has another reading under this profile. `
+        + 'Confirm the current evidence again, then try the stopped building again.';
     }
   }
   const named = new Set([...input.included, ...input.excluded].map(source => source.itemId));

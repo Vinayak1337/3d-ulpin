@@ -347,6 +347,7 @@ function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: 
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-evidence-protocol';
   const itemId = ids('register'), sourceId = ids(`source:${itemId}`);
   const jobs = new Map<string, QueuedJob>(), coverage = new Map<string, Coverage>();
+  const readAnchors = new Map<string, string>();
   const candidates = new Map<string, IntakeEvidenceCandidate>();
   const targets: DraftedTarget[] = [], revisions = new Map<string, number>();
   const handlers: [string, Handler][] = [
@@ -362,7 +363,7 @@ function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: 
     ['SELECT p.profile_id,p.profile_sha256,c.item_id', () => [...coverage]
       .filter(([, row]) => jobs.get(row.job_id)?.status !== 'queued')
       .map(([item, row]) => ({ profile_id: profileId, profile_sha256: profileSha256, item_id: item,
-        anchors_sha256: jobs.get(row.job_id)?.payload.anchorsSha256 ?? null }))],
+        anchors_sha256: readAnchors.get(row.job_id) ?? jobs.get(row.job_id)?.payload.anchorsSha256 ?? null }))],
     ['SELECT t.target_id,t.package_id', () => [...targets].sort((a, b) => a.target_id < b.target_id ? -1 : 1)
       .map(row => ({ ...row, revision: revisions.get(row.package_id) ?? 1 }))],
     ['SELECT target_id,case_id,feature_id', () => []],
@@ -380,6 +381,10 @@ function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: 
       bytes: bytes.length, object_key: 'test_only/register', profile: 'tabular-manual-v1',
       inspection: { actor: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT } }]],
     ['SELECT id FROM jobs', ([id]) => jobs.has(id) ? [{ id }] : []],
+    ['INSERT INTO operations', ([, jobId, , , result]) => {
+      readAnchors.set(jobId, result.anchorsSha256);
+      return [];
+    }],
     ['INSERT INTO jobs', ([id, , , revision, digest, payload]) => {
       jobs.set(id, { id, case_revision: revision, input_fingerprint: digest, payload, status: 'queued' });
       return [];
@@ -428,7 +433,8 @@ async function runReading(store: ReturnType<typeof evidenceStore>, jobId: string
   job.status = 'running';
   const candidates = close(reading!, anchors);
   const resultSha256 = fingerprint({ coverage: reading!.coverage, candidates: pinsOf(candidates) });
-  await writeIntakeEvidenceTx(store.client, job.payload, reading!.coverage, resultSha256, candidates);
+  await writeIntakeEvidenceTx(store.client, job.payload, reading!.coverage, resultSha256, candidates,
+    await anchorsDigestTx(store.client, caseId, mapItemId));
   job.status = 'succeeded';
 }
 
@@ -567,6 +573,42 @@ test('G21: footprints drafted after the register was read are matched by one rea
     assert.equal(await createIntakeTargetsTx(store.client, caseId, mapItemId, second, source.id), 0);
     await prepareIntakeTargetsTx(store.client, second);
     assert.equal(store.jobs.size, 2, 'a replayed draft or a decision under the same digest queues nothing');
+  });
+
+test('EV2 run a: prepare does not replace a completed reading that read the current buildings', { skip },
+  async () => {
+    const bytes = readFileSync(registerPath), buildings = readFileSync(buildingsPath);
+    const features = JSON.parse(buildings.toString('utf8')).features;
+    const source = { id: ids('buildings'), revision: 1, sha256: sha256(buildings) };
+    const store = evidenceStore({ state: 'completed' }, { sha256: sha256(bytes), length: bytes.length });
+    const half = Math.ceil(features.length / 2);
+    const first = drafted(features, 'early', 0, half), second = drafted(features, 'late', half, features.length);
+    await createIntakeTargetsTx(store.client, caseId, mapItemId, first, source.id);
+    const reading = await declare(store);
+    await createIntakeTargetsTx(store.client, caseId, mapItemId, second, source.id);
+    await runReading(store, reading, registerReading(bytes), anchorsNow(store, [first, second], source));
+    const confirmed = structuredClone(store.coverage.get(store.itemId))!;
+    const candidates = structuredClone(store.candidates);
+    const coverage = registerReading(bytes).coverage;
+    const { input, state } = confirmationOf([...candidates.values()], coverage);
+    Object.assign(input.included[0], { jobId: confirmed.job_id, resultSha256: confirmed.result_sha256,
+      bytes: bytes.length });
+    state.sources.set(store.itemId, { ...input.included[0], latest: true });
+    const accepted = [...candidates.values()].find(candidate => candidate.outcome === 'matched')!;
+    input.targets[0].packageId = accepted.anchors[0].packageId;
+    state.targets.set(input.targets[0].targetId, { ...input.targets[0] });
+    state.coverage.set(store.itemId, { jobId: confirmed.job_id, resultSha256: confirmed.result_sha256, coverage });
+    assert.equal(evidenceConfirmationIssue(input, state), null, 'the officer confirms while prepare still runs');
+    await prepareIntakeTargetsTx(store.client, second);
+    assert.equal(store.jobs.size, 1, 'same inputs: no second reading and no second confirmation');
+    assert.deepEqual(store.coverage.get(store.itemId), confirmed);
+    assert.deepEqual(store.candidates, candidates);
+    const current = store.coverage.get(store.itemId)!;
+    state.coverage.set(store.itemId, { jobId: current.job_id, resultSha256: current.result_sha256, coverage });
+    assert.equal(evidenceConfirmationIssue(input, state), null, 'the citation step accepts that same confirmation');
+    await prepareIntakeTargetsTx(store.client, first);
+    assert.equal(store.jobs.size, 1, 'run b: preparing before a later confirmation also changes nothing');
+    assert.equal(evidenceConfirmationIssue(input, state), null);
   });
 
 test('G21: a queued reading is left to read the new buildings; a running one is replaced and its write refused',

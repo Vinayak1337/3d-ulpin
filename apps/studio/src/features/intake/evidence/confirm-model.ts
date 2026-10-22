@@ -66,9 +66,14 @@ export function acceptedIds(confirmation: EvidenceConfirmation): string[] {
 
 /** The candidates confirmations of this key accepted: those the read lists, and those stored here since it. */
 export function confirmedOf(page: EvidencePage, profile: KeyProfile,
-  stored: Iterable<string> = []): ReadonlySet<string> {
-  return new Set([...page.confirmations.filter((confirmation) => confirmation.profileId === profile.profileId)
-    .flatMap((confirmation) => confirmation.accepted ?? []), ...stored]);
+  stored: Iterable<EvidenceConfirmation> = []): ReadonlySet<string> {
+  const current = [...stored].filter(confirmation => confirmation.input.profileId === profile.profileId
+    && confirmation.input.included.every(named => page.sources.some(source => source.itemId === named.itemId
+      && source.profileId === profile.profileId && source.jobId === named.jobId
+      && source.resultSha256 === named.resultSha256)));
+  return new Set([...page.confirmations.filter((confirmation) => confirmation.profileId === profile.profileId
+    && !confirmation.superseded)
+    .flatMap((confirmation) => confirmation.accepted ?? []), ...current.flatMap(acceptedIds)]);
 }
 
 /**
@@ -251,7 +256,9 @@ function targetsOf(state: ConfirmState): ConfirmInput['targets'] | string {
     if (pkg.reviewFingerprint === null) {
       return `${building.locator}: its package has no current review, so it cannot be named yet.`;
     }
-    targets.push({ targetId: building.targetId, packageId: pkg.packageId, packageRevision: pkg.revision,
+    // Commit advances the package once; evidence still names the reviewed revision the commit accepted.
+    const packageRevision = pkg.state === 'COMMITTED' ? pkg.revision - 1 : pkg.revision;
+    targets.push({ targetId: building.targetId, packageId: pkg.packageId, packageRevision,
       reviewFingerprint: pkg.reviewFingerprint });
   }
   return targets;

@@ -67579,6 +67579,8 @@ export interface components {
                 newerSources: string[];
                 /** @description The candidates the confirmation accepted, in the order of its stored decisions. */
                 accepted?: string[];
+                /** @description An included source has another reading. Its candidates must be confirmed again at the current pins. */
+                superseded?: boolean;
             }[];
             sources: {
                 /** Format: uuid */
