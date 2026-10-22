@@ -6,7 +6,7 @@ Read the [README](README.md) first for the frame, interaction model and states s
 
 ## GF2 — frame, intake, map and workspace
 
-Built by [UI-01 to UI-04](../../../usp-agent-handoffs/29-agent-task-cards.md#gf2--prove-spaces).
+Built by [UI-01 to UI-04](../../../archive/usp-agent-handoffs/29-agent-task-cards.md#gf2--prove-spaces).
 
 ### Frame (UI-01, UI-02)
 
@@ -36,7 +36,7 @@ Built by [UI-01 to UI-04](../../../usp-agent-handoffs/29-agent-task-cards.md#gf2
 - One inline question at a time from `files[].questions[]`, on an info-soft band: "<field> looks like <concept> in <from>. Convert to <to>?" with **Yes**, **No**, **Choose field**; once answered it shows a *Reviewed* badge with the outcome.
 - Provider down (`intake.provider = unavailable`): proposed mappings show *Manual* and a warning band "Automatic mapping unavailable. Map manually or save for later." with **Map manually**.
 - A muted line lists profiles that are *Planned* rather than hiding them.
-- Beneath the table, a "Needs input" list shows parked objects with the exact missing item and what it unlocks, and a "Kept as evidence" list shows files rejected for 3D with the reason ([H30](../../../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E). Questions never exceed five per batch.
+- Beneath the table, a "Needs input" list shows parked objects with the exact missing item and what it unlocks, and a "Kept as evidence" list shows files rejected for 3D with the reason ([H30](../../../archive/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E). Questions never exceed five per batch.
 - Footer: **Save and continue later** (ghost), **Start import** (primary).
 
 ### S3 Live import on map — `/studio/imports/:importPackageId`
@@ -82,7 +82,7 @@ Built by [UI-01 to UI-04](../../../usp-agent-handoffs/29-agent-task-cards.md#gf2
 
 ## GF3 — underground, evidence, findings, register and deviation
 
-Built by [UI-05](../../../usp-agent-handoffs/29-agent-task-cards.md#ui-05--register-evidence-deviation-and-underground-screens).
+Built by [UI-05](../../../archive/usp-agent-handoffs/29-agent-task-cards.md#ui-05--register-evidence-deviation-and-underground-screens).
 
 ### S6 Underground and impact screening
 
@@ -120,7 +120,7 @@ Built by [UI-05](../../../usp-agent-handoffs/29-agent-task-cards.md#ui-05--regis
 
 ## GF4 — card and verification
 
-Built by [PACK-01](../../../usp-agent-handoffs/29-agent-task-cards.md#pack-01--property-card-and-local-qr) with UI.
+Built by [PACK-01](../../../archive/usp-agent-handoffs/29-agent-task-cards.md#pack-01--property-card-and-local-qr) with UI.
 
 ### S14 Property Card — 960 px dialog from the inspector, toast or register
 

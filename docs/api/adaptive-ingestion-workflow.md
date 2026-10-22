@@ -2,7 +2,7 @@
 
 28 September 2026 · Design handoff for BhuAayam / 3D ULPIN.
 
-This document consolidates the user's workflow and the safeguards agreed during refinement. It describes the intended end-to-end system; it is not a claim that every stage is already implemented or deployed. The [execution plan](../orchestration/ADAPTIVE_INGESTION_EXECUTION.md) and [migration ledger](../orchestration/NESTJS_MIGRATION.md) retain implementation ownership, accepted increments and release status. The [API guide](README.md), [OpenAPI](openapi.json) and canonical contracts determine what clients can call today.
+This document consolidates the user's workflow and the safeguards agreed during refinement. It describes the intended end-to-end system; it is not a claim that every stage is already implemented or deployed. The [execution plan](../archive/orchestration/ADAPTIVE_INGESTION_EXECUTION.md) and [migration ledger](../archive/orchestration/NESTJS_MIGRATION.md) retain implementation ownership, accepted increments and release status. The [API guide](README.md), [OpenAPI](openapi.json) and canonical contracts determine what clients can call today.
 
 ## 1. Product outcome
 
@@ -221,4 +221,4 @@ This handoff was checked against staging 57fe894 on 28 September 2026. No servic
 | Demo normalization | The fixed multimodal demo adapters are a separate opt-in path. Their demonstrations do not prove the entire native workflow above. |
 | Scale and rendering | 1–7 GB end-to-end behavior, all-family normalization, concurrent learned handover and arbitrary scene representations remain separately qualified work. |
 
-For exact schemas and implementation status, read the [API guide](README.md), [OpenAPI](openapi.json), [learning notes](learning.md), [execution plan](../orchestration/ADAPTIVE_INGESTION_EXECUTION.md), [backend decisions](../usp-agent-handoffs/backend-streaming-plan.md) and [frontend goal](../frontend/GOAL.md). This document explains the agreed behavior without replacing those authorities or inventing endpoints.
+For exact schemas and implementation status, read the [API guide](README.md), [OpenAPI](openapi.json), [learning notes](learning.md), [execution plan](../archive/orchestration/ADAPTIVE_INGESTION_EXECUTION.md), [backend decisions](../archive/usp-agent-handoffs/backend-streaming-plan.md) and [frontend goal](../frontend/GOAL.md). This document explains the agreed behavior without replacing those authorities or inventing endpoints.

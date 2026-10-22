@@ -2,7 +2,7 @@
 
 ## New data work
 
-Follow [D0–D7 in handoff 00](../docs/usp-agent-handoffs/00-README.md#4-data-packs-acquire-before-implementing-against-imaginary-inputs) and the assigned feature's J tests. New `fixtures/usp/D0`–`D7` packs and acquisition scripts are implementation destinations, not datasets created by this cleanup. Preserve canonical `reference-neighborhood`, `complete-demo`, `studio/reference-v2`, Google/Uttam data and manifest-bound scene assets. Only a redundant expanded transfer-kit copy was removed; its canonical files and ZIP remain. Do not infer a format's capabilities or classification from its folder name.
+Follow [D0–D7 in handoff 00](../docs/archive/usp-agent-handoffs/00-README.md#4-data-packs-acquire-before-implementing-against-imaginary-inputs) and the assigned feature's J tests. New `fixtures/usp/D0`–`D7` packs and acquisition scripts are implementation destinations, not datasets created by this cleanup. Preserve canonical `reference-neighborhood`, `complete-demo`, `studio/reference-v2`, Google/Uttam data and manifest-bound scene assets. Only a redundant expanded transfer-kit copy was removed; its canonical files and ZIP remain. Do not infer a format's capabilities or classification from its folder name.
 
 ## Existing C-001 / C-002 teaching cases
 

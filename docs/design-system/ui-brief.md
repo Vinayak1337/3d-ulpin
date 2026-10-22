@@ -1,10 +1,10 @@
 # 3D ULPIN UI and UX brief
 
-**Frontend replacement:** Rebuild affected legacy screens from this design language as their existing plan cards are implemented, then remove the superseded UI. This is progressive work within the plan, not a separate redesign phase. Preserve shared runtime/data contracts and saved-link compatibility; mockup data/code must not be copied. See the [delivery policy](../usp-agent-handoffs/current-delivery-policy.md).
+**Frontend replacement:** Rebuild affected legacy screens from this design language as their existing plan cards are implemented, then remove the superseded UI. This is progressive work within the plan, not a separate redesign phase. Preserve shared runtime/data contracts and saved-link compatibility; mockup data/code must not be copied. See the [delivery policy](../archive/usp-agent-handoffs/current-delivery-policy.md).
 
-**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+**Current delivery:** [User scope policy](../archive/usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
 
-Which screens exist, what goes on each, how the map looks and where every feature lives. Repository copy of the team's UI brief, reconciled on 24 September 2026 with the finale handoffs ([H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) Z, [H97](../usp-agent-handoffs/97-review-findings-and-alignment.md)). Use it with the [design system](README.md) and the [Officer Studio reference mockups](mockups/officer-studio/README.md) (reference UIs, not production UI), which show every screen assembled.
+Which screens exist, what goes on each, how the map looks and where every feature lives. Repository copy of the team's UI brief, reconciled on 24 September 2026 with the finale handoffs ([H99](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md) Z, [H97](../archive/usp-agent-handoffs/97-review-findings-and-alignment.md)). Use it with the [design system](README.md) and the [Officer Studio reference mockups](mockups/officer-studio/README.md) (reference UIs, not production UI), which show every screen assembled.
 
 ## Rules for every screen
 
@@ -166,7 +166,7 @@ Each arrow is one click or one confirmed decision; the officer never retypes dat
 
 ## Screen specs
 
-Each screen's reference layout, components and data bindings are in the [reference mockup screens](mockups/officer-studio/screens.md), grouped by the gate that builds them. They guide design; they are not a production specification. They describe fields, not values: build every screen against the records the gate's qualified data provides ([H28](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md)).
+Each screen's reference layout, components and data bindings are in the [reference mockup screens](mockups/officer-studio/screens.md), grouped by the gate that builds them. They guide design; they are not a production specification. They describe fields, not values: build every screen against the records the gate's qualified data provides ([H28](../archive/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md)).
 
 ## States every screen needs
 
@@ -194,6 +194,6 @@ Build the default state of each finale screen, then these variants for S4, S5, S
 ## Sources
 
 - [Officer Studio reference mockups](mockups/officer-studio/README.md): the assembled screens from the team's Claude Design project, imported 25 September 2026. Reference only, not production UI.
-- Finale handoffs: [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md), [H26](../usp-agent-handoffs/26-identifiers-and-standard-exchange.md), [H17](../usp-agent-handoffs/17-infrastructure-impact-screening.md), [H10](../usp-agent-handoffs/10-scoped-evidence-packets.md), [H27](../usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md), [H97](../usp-agent-handoffs/97-review-findings-and-alignment.md).
+- Finale handoffs: [H99](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md), [H26](../api/identifiers-and-exchange.md), [H17](../archive/usp-agent-handoffs/17-infrastructure-impact-screening.md), [H10](../archive/usp-agent-handoffs/10-scoped-evidence-packets.md), [H27](../archive/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md), [H97](../archive/usp-agent-handoffs/97-review-findings-and-alignment.md).
 - Retired v2 design pack, kept in [Git history](https://github.com/Vinayak1337/3d-ulpin/blob/7472730980fd3d79e7364b5cac3e6c7ebff7dd3d/docs/v2-design/README.md) (forest green, rail and tray sizes).
 - [UX4G web design system](https://github.com/ux4g-negd/web_design_system) (MIT) and [Phosphor Icons](https://github.com/phosphor-icons/core) (MIT).

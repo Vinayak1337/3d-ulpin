@@ -1,16 +1,16 @@
 # Historical engineering plans and verification inputs
 
-**Current implementation starts at [USP handoff 00](../usp-agent-handoffs/00-README.md).**
-Use [01](../usp-agent-handoffs/01-shared-contracts-and-ownership.md) for shared
+**Background only (September). The plan is [docs/PLAN.md](../PLAN.md); the handoffs are archived, starting at [USP handoff 00](../archive/usp-agent-handoffs/00-README.md).**
+Use [01](../archive/usp-agent-handoffs/01-shared-contracts-and-ownership.md) for shared
 contracts, the assigned feature A–K file, and
-[99](../usp-agent-handoffs/99-ui-ux-and-integration.md) for the actual Studio UI.
+[99](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md) for the actual Studio UI.
 Do not resume an old task merely because it is marked next in this folder.
 
 This retained tree contains dated T-number plans/results and machine-readable
 acceptance history. Its validator, reference catalogue, legacy source copies,
 backlog and crosswalks still have local consumers. They preserve earlier coverage;
-the current gate and dependency order are in [H00](../usp-agent-handoffs/00-README.md)
-and [release-plan.json](../usp-agent-handoffs/release-plan.json).
+the current gate and dependency order are in [H00](../archive/usp-agent-handoffs/00-README.md)
+and [release-plan.json](../archive/usp-agent-handoffs/release-plan.json).
 
 Do not delete this tree recursively or reset accepted statuses. Migrate each
 consumer and preserve source hashes before retiring its input. The fixed

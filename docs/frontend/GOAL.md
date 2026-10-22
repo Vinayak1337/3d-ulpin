@@ -1,8 +1,8 @@
 # Frontend goal — BhuAayam Studio
 
-Owner: the user, with Claude as frontend lead. Written 26 September 2026 from the planning conversation, on branch `frontend/studio` (worktree `/Users/vinayak/Desktop/ulpin-frontend`, based on staging `3cc5790`). This is the frontend's own plan. The repository's other active plans are backend-only and say the UI is user-owned ([H99](../usp-agent-handoffs/99-ui-ux-and-integration.md), [backend streaming plan](../usp-agent-handoffs/backend-streaming-plan.md), [NestJS ledger](../orchestration/NESTJS_MIGRATION.md)).
+Owner: the user, with Claude as frontend lead. Written 26 September 2026 from the planning conversation, on branch `frontend/studio` (worktree `/Users/vinayak/Desktop/ulpin-frontend`, based on staging `3cc5790`). Background only: the plan is [docs/PLAN.md](../PLAN.md) (UI is step 7). The repository's other active plans are backend-only and say the UI is user-owned ([H99](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md), [backend streaming plan](../archive/usp-agent-handoffs/backend-streaming-plan.md), [NestJS ledger](../archive/orchestration/NESTJS_MIGRATION.md)).
 
-Read this first in every frontend session. Then read [the design system](../design-system/README.md), the [mockup reference](../design-system/mockups/officer-studio/README.md) and [screens](../design-system/mockups/officer-studio/screens.md), and the [API guide](../api/README.md).
+For UI work, read [the design system](../design-system/README.md), the [mockup reference](../design-system/mockups/officer-studio/README.md) and [screens](../design-system/mockups/officer-studio/screens.md), and the [API guide](../api/README.md).
 
 ## 1. What we are building
 
@@ -12,7 +12,7 @@ An evidence-linked 3D property workbench for SIH 26011, using the story **Identi
 - **Prove:** every fact opens its source (page, row, drawing region, survey point); geometry and quantities come from retained sources.
 - **Govern:** findings, deviation, carpet area, shares and underground screening, with explicit limits.
 
-The officer's outcome is a traceable property record and a scoped **3D Property Card** with a QR code. The map is the working view, not the product. Ingestion accepts any data family, understands unreliable data with an AI agent (the model only proposes mappings; deterministic code converts) and builds 3D only from what the evidence supports: fill, ask, park or reject ([H30](../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E).
+The officer's outcome is a traceable property record and a scoped **3D Property Card** with a QR code. The map is the working view, not the product. Ingestion accepts any data family, understands unreliable data with an AI agent (the model only proposes mappings; deterministic code converts) and builds 3D only from what the evidence supports: fill, ask, park or reject ([H30](../archive/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E).
 
 **Scale:** the same map must work for one building, a city or a state. We work **block by block**, but everything lands in **one global store in one earth frame**, so blocks render at their exact coordinates side by side and the full map exists from the first block ("mostly no data yet", shown honestly through coverage).
 
@@ -34,7 +34,7 @@ The revised hardening review (`~/Downloads/3D ULPIN Plan Review — Grand Finale
 
 ## 3. Non-negotiable data rules
 
-From [AGENTS.md](../../AGENTS.md) and the [delivery policy](../usp-agent-handoffs/current-delivery-policy.md):
+From [AGENTS.md](../../AGENTS.md) and the [delivery policy](../archive/usp-agent-handoffs/current-delivery-policy.md):
 
 - Screens show only values read from records. **No hard-coded sample content.** Nothing from the mockup's worked example ("Lake View", "Flat 704", its codes, numbers, files, dates or people) may enter code, fixtures, tests or captures.
 - Never label data "fictional", "demo" or "demonstration data". The scope strip shows the dataset's recorded classification; the fixed status words (*Draft*, *Needs evidence*, *Needs review*, *Reviewed*, *Recorded*, *Assigned*, *Retired*, *Cancelled*, *Unknown*, *Not assessed*, *Not comparable*, *Test fixture*, *Replayed*, *Estimated*, *Illustrative*) appear only where the record supports them.
@@ -56,7 +56,7 @@ apps/global              deferred (full product)
 
 | Concern | Choice |
 | --- | --- |
-| Routing | React Router (data router). Keep the existing URL scheme (`/studio/work`, `/studio/areas/:areaId?feature=…&record=…`, `/studio/properties/:buildingId/register`, and so on) so saved links survive. The URL is the source of truth for selection ([H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) selection, generation and cache rules) |
+| Routing | React Router (data router). Keep the existing URL scheme (`/studio/work`, `/studio/areas/:areaId?feature=…&record=…`, `/studio/properties/:buildingId/register`, and so on) so saved links survive. The URL is the source of truth for selection ([H99](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md) selection, generation and cache rules) |
 | Server state | TanStack Query: caching, retries, polling for import progress until SSE exists |
 | API types | `openapi-typescript` + `openapi-fetch`, generated from `docs/api/openapi.json`; regenerate whenever the backend republishes |
 | Styling | Plain CSS with the design-system `--ui-*` tokens ([tokens.css](../design-system/tokens.css), [fonts.css](../design-system/fonts.css)) and CSS modules. No component library. Self-hosted Noto Sans, Noto Sans Devanagari and Noto Sans Mono |
@@ -140,7 +140,7 @@ We build the whole Studio now, even where the API is missing, without breaking t
 
 Keep these in `packages/api-client/src/draft/` as TypeScript types and OpenAPI fragments, clearly marked as drafts, and hand them to the backend lanes:
 
-- SSE events: `chunk.validated`, `scene.manifest_published`, `batch.needs_input`, `batch.completed`, with cursor and replay ([H14](../usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md) F).
+- SSE events: `chunk.validated`, `scene.manifest_published`, `batch.needs_input`, `batch.completed`, with cursor and replay ([H14](../archive/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md) F).
 - Tile generation manifest and coverage: tileset URLs per profile (3D, vector, raster, terrain), generation ID, frame metadata, `recordId` lookup, cell coverage.
 - Sufficiency decisions and questions (H30 E): `outcome`, `missing[]`, `unlocks[]`, question with choices.
 - Readiness per named task (H11), deviation pair (H15), underground column (H17), Property Card and verify resolver (H10).
