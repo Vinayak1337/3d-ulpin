@@ -19,7 +19,10 @@ export function options(args: string[]) {
     const flag = args[index];
     assert(!seen.has(flag), `Repeated option ${flag}`);
     seen.add(flag);
-    if (flag === '--legacy') { result.legacy = true; continue; }
+    if (flag === '--legacy') {
+      result.legacy = true;
+      continue;
+    }
     assert(['--profile', '--case', '--output'].includes(flag), `Unknown option ${flag}`);
     const value = args[++index];
     assert(value && !value.startsWith('--'), `${flag} needs a value`);
@@ -38,7 +41,8 @@ function table(steps: Step[]) {
   console.log('STEP          STATE        WHAT WAS READ');
   for (const step of steps) {
     const observed = step.observed as { words?: string; reason?: string };
-    console.log(`${step.id.padEnd(13)} ${step.state.padEnd(12)} ${observed.words ?? observed.reason ?? step.title}`);
+    const words = (observed.words ?? observed.reason ?? step.title).replace(/\s+/g, ' ').slice(0, 96);
+    console.log(`${step.id.padEnd(13)} ${step.state.padEnd(12)} ${words}`);
     console.log(`  ${step.expected}`);
   }
 }

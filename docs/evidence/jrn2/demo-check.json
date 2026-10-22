@@ -1,0 +1,50 @@
+{ "task": "JRN2", "mode": "GET only", "api": "http://127.0.0.1:3194", "startedAt": "2026-10-22T09:38:14.003Z",
+"totalMs": 211, "requestedCaseId": null, "requests": 12, "steps": [ { "id": "batch", "title": "Latest batch case",
+"state": "skipped", "ms": 210, "expected": "/api/v1/ingestion/cases/{caseId}/intake", "observed": {
+"reason": "No active case has batch intake items yet; empty workspaces are not batches." }, "evidence": [ {
+"method": "GET", "route": [ "api", "v1", "cases" ], "params": {}, "query": {}, "reads": [ { "params": {}, "status": 200,
+"code": null, "bodySha256": "da025f967ae1b7ee6482f460df0044ff7c2ab715f207127835ccb49c4a613597" } ] }, { "method": "GET",
+"route": [ "api", "v1", "ingestion", "cases", "{caseId}", "intake" ], "params": {}, "query": {}, "reads": [ {
+"params": { "caseId": "1ada7796-4e8f-4a19-9b7f-4414e80114c4" }, "status": 200, "code": null,
+"bodySha256": "829a531fe416a3f3d83d740f923984a4ce6ffb0885561162dd30c9d654e70121" }, { "params": {
+"caseId": "4ad9cb6d-56c0-445e-a9b6-357d1dc1d452" }, "status": 200, "code": null,
+"bodySha256": "1e929803a4e92f6dc8c6dec1807efdc6a14c380c0e4289e699b4eddc830f6865" }, { "params": {
+"caseId": "6d183fef-bcaf-40f6-90dc-2694bc9873a5" }, "status": 200, "code": null,
+"bodySha256": "ab37f604b56266731e05371c8ec0e06cc5ce21755cca731f411bbcab8c22658a" }, { "params": {
+"caseId": "b5860044-1e99-4701-8c6b-bb2e7b4bb134" }, "status": 200, "code": null,
+"bodySha256": "97e2dafcdf6e90b0b180fbb2ecf27556971ae6e2e11f58dab3a9fdb1e39ff412" }, { "params": {
+"caseId": "74b08d92-6a77-4d64-85c7-dbec9f92984f" }, "status": 200, "code": null,
+"bodySha256": "a86f613b5a2d411c7428a9a03b8664d0db2961ca210b840b8602d56369da6212" }, { "params": {
+"caseId": "710a0ebf-ec42-46bf-8a79-50920e3ab3c8" }, "status": 200, "code": null,
+"bodySha256": "128bc0808d32289f095e4f6b0e374d2e0197eb167eabb78832e2a20b0207a5aa" }, { "params": {
+"caseId": "06849e03-2423-4599-be7d-603aad9bdcac" }, "status": 200, "code": null,
+"bodySha256": "053b292fdc11457ce47d0008b4041036ea65ef9bb3c8479de3da6e28a2aaee95" }, { "params": {
+"caseId": "fef196d1-351e-41d7-a31e-aba54424f93f" }, "status": 200, "code": null,
+"bodySha256": "dd4649a48f4c0789c1100f6bcc15d2a14cfd102104afdd3fe35a86e2215767b8" }, { "params": {
+"caseId": "a73b66c7-8eca-4b29-893f-a46c06dba7bb" }, "status": 200, "code": null,
+"bodySha256": "a61c54eac56ceecbbbc8a5369840375b26929d0d7bcdffb8b2fbe29e692efb6d" }, { "params": {
+"caseId": "b4cf1142-7f1a-48c7-a492-d2e6afca80f8" }, "status": 200, "code": null,
+"bodySha256": "34c170cdcc6610368b6a1f99bb04790feee520588985a203dfc28303a074f77a" }, { "params": {
+"caseId": "98adffd3-f78b-449a-b509-c9dc9acca22c" }, "status": 200, "code": null,
+"bodySha256": "58406cd082eee55a9c216eca2873b61cc131557c28410258089a11530bca8eb0" } ] } ], "promptId": "JRN2/GF5" }, {
+"id": "items", "title": "Retained items and reading state", "state": "skipped", "ms": 0,
+"expected": "/api/v1/ingestion/cases/{caseId}/intake", "observed": {
+"reason": "No batch manifest was readable; dependent read skipped." }, "evidence": [], "promptId": "JRN2/GF5" }, {
+"id": "table", "title": "Register table read", "state": "skipped", "ms": 0,
+"expected": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile", "observed": {
+"reason": "No batch manifest was readable; dependent read skipped." }, "evidence": [], "promptId": "JRN2/GF5" }, {
+"id": "surfaces", "title": "Surface parts placed or not placed", "state": "skipped", "ms": 0,
+"expected": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display", "observed": {
+"reason": "No batch manifest was readable; dependent read skipped." }, "evidence": [], "promptId": "JRN2/GF5" }, {
+"id": "evidence", "title": "Exact-key profiles and coverage", "state": "skipped", "ms": 0,
+"expected": "/api/v1/ingestion/cases/{caseId}/intake/evidence", "observed": {
+"reason": "No batch manifest was readable; dependent read skipped." }, "evidence": [], "promptId": "JRN2/GF5" }, {
+"id": "confirmation", "title": "Stored evidence confirmation", "state": "skipped", "ms": 0,
+"expected": "/api/v1/ingestion/cases/{caseId}/intake/evidence", "observed": { "reason": "No evidence page was readable."
+}, "evidence": [], "promptId": "JRN2/GF5" }, { "id": "card", "title": "Newest carried building card is consistent",
+"state": "skipped", "ms": 0, "expected": "/api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification",
+"observed": { "reason": "No batch manifest was readable; dependent read skipped." }, "evidence": [],
+"promptId": "JRN2/GF5" }, { "id": "citation", "title": "Register row excerpt quoted on the card", "state": "skipped",
+"ms": 0, "expected": "/api/v1/registry-records/{recordId}/revisions/{revision}/document-citations", "observed": {
+"reason": "No verified carried card and record pin yet." }, "evidence": [], "promptId": "JRN2/GF5" } ], "summary": {
+"pass": 0, "fail": 0, "undecidable": 0, "skipped": 8 } }
