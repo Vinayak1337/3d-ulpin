@@ -1,0 +1,345 @@
+import { createHash } from 'node:crypto';
+import { once } from 'node:events';
+import { PassThrough, type Readable } from 'node:stream';
+import type { PoolClient } from 'pg';
+import { z } from 'zod';
+import { IntakeTablePlacementSchema, STREAMING_VECTOR_LIMITS, TabularPinSchema, TabularSourceProfileSchema,
+  streamingReadMs } from '@ulpin/contracts/usp';
+import { AppError, conflict } from '../../../infrastructure/errors';
+import { openObjectStream } from '../../../infrastructure/storage';
+import { fingerprint } from '../../cases/domain';
+import { intakeCaseTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
+import { writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
+import { stableUuid } from './intake-run';
+import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
+import { readTableWindows, unavailableColumns, type StreamedTableWindow } from './tabular-stream';
+import { coordinateText, geometryJson, parseWkt, type TableGeometry } from './wkt';
+
+/**
+ * TC1. A kept table whose rows hold coordinates is placed on the map: the officer names the coordinate columns
+ * (x and y, or one WKT column) and the EPSG code they are in, and one job writes the rows as a GeoJSON derivative,
+ * reading the table in windows. The derivative declares the officer's system, each feature cites its table row, and
+ * it is kept as its own large original and enrolled like a dropped file, so the large GeoJSON path reads it unchanged.
+ */
+export const TABLE_GEOJSON_CONVERSION = 'table_rows_to_geojson@1';
+const uuid = z.string().uuid();
+const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
+const count = z.number().int().nonnegative();
+const Coordinates = IntakeTablePlacementSchema.shape.coordinates;
+const StatedCrs = IntakeTablePlacementSchema.shape.crs.unwrap();
+type TableCoordinates = z.infer<typeof Coordinates>;
+
+export const IntakeTableGeojsonInputSchema = z.strictObject({
+  version: z.literal('intake-table-geojson/1'), jobId: uuid, caseId: uuid, caseRevision: count, itemId: uuid,
+  sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hex64, sourcePin: hex64,
+  subject: z.string().min(1).max(256), accessSha256: hex64, sourceBytes: z.number().int().positive(),
+  // The table read the officer chose columns from; `tabular` also tells the dispatcher a workbook's scratch.
+  tabular: TabularPinSchema, headers: TabularSourceProfileSchema.shape.headers,
+  coordinates: Coordinates, crs: StatedCrs,
+});
+export type IntakeTableGeojsonInput = z.infer<typeof IntakeTableGeojsonInputSchema>;
+
+const SKIP_WORDS = {
+  no_coordinates: 'had no coordinates',
+  not_a_number: 'had text that is not a number',
+  not_wkt: 'had text that is not WKT of a point, line or polygon',
+  formula: 'had a coordinate cell holding a formula result, an error or no stored value',
+} as const;
+type SkipReason = keyof typeof SKIP_WORDS;
+const SkippedSchema = z.partialRecord(z.enum(Object.keys(SKIP_WORDS) as [SkipReason, ...SkipReason[]]),
+  z.number().int().positive());
+
+const LOCATOR = 'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.';
+/** The lineage the derivative keeps beside its receipt, in the shape of a native derivative's. */
+export const TableDerivativeLineageSchema = z.strictObject({
+  version: z.literal('table-derivative/1'), conversion: z.literal(TABLE_GEOJSON_CONVERSION), originalSourceId: uuid,
+  originalSourceRevision: z.number().int().positive(), originalSha256: hex64, originalItemId: uuid,
+  format: z.enum(['csv', 'xlsx']), layer: z.string().min(1).max(150), coordinates: Coordinates, crs: StatedCrs,
+  crsSource: z.literal('officer_stated'), features: count, notWritten: count, skipped: SkippedSchema,
+  locator: z.literal(LOCATOR),
+});
+type TableDerivativeLineage = z.infer<typeof TableDerivativeLineageSchema>;
+
+export type TablePlacementPlan = Pick<IntakeTableGeojsonInput, 'headers' | 'coordinates' | 'crs'> & {
+  selection: IntakeTableGeojsonInput['tabular']['selection'];
+  source: Pick<IntakeSourceRow, 'id' | 'revision' | 'sha256' | 'name' | 'bytes'>;
+};
+export type TablePlacementCounts = { rows: number; features: number; skipped: Partial<Record<SkipReason, number>> };
+type TableRow = StreamedTableWindow['rows'][number];
+
+/** Each header names its property; an empty or repeated header is named by its column too, so none is lost. */
+function propertyNames(headers: string[]): string[] {
+  const seen = new Set<string>();
+  return headers.map((header, index) => {
+    const name = header && !seen.has(header) ? header : `${header || 'column'} (column ${index + 1})`;
+    seen.add(name);
+    return name;
+  });
+}
+
+/** The row's geometry from the officer's columns, or why it is skipped; a skipped row is never placed at 0,0. */
+function rowGeometry(row: TableRow, unknown: Set<number>, coordinates: TableCoordinates)
+  : TableGeometry | SkipReason {
+  const columns = coordinates.kind === 'wkt' ? [coordinates.column] : [coordinates.x, coordinates.y];
+  if (columns.some(column => unknown.has(column))) return 'formula';
+  const cells = columns.map(column => row.cells[column]?.trim() ?? '');
+  if (coordinates.kind === 'wkt') {
+    const geometry = parseWkt(cells[0]);
+    if (geometry === 'empty') return 'no_coordinates';
+    return geometry ?? 'not_wkt';
+  }
+  if (cells.some(cell => !cell)) return 'no_coordinates';
+  const [x, y] = cells.map(coordinateText);
+  return x === null || y === null ? 'not_a_number' : { type: 'Point', coordinates: [x, y] };
+}
+
+function featureJson(row: TableRow, unknown: Set<number>, geometry: TableGeometry, names: string[],
+  plan: TablePlacementPlan) {
+  const properties = Object.fromEntries(names.map((name, column) =>
+    [name, unknown.has(column) ? null : row.cells[column] ?? null]));
+  const tableRow = { sourceId: plan.source.id, sourceRevision: plan.source.revision, sha256: plan.source.sha256,
+    row: row.sourceRow };
+  return `{"type":"Feature","tableRow":${JSON.stringify(tableRow)},"properties":${JSON.stringify(properties)},`
+    + `"geometry":${geometryJson(geometry)}}`;
+}
+
+function headersChanged(): never {
+  throw new AppError(409, 'TABLE_PLACEMENT_HEADERS',
+    'The columns of this table differ from those it was read with; read it as a table again.');
+}
+
+/**
+ * The one writer of the derivative: reads the table with the existing window reader and hands `write` the GeoJSON
+ * text one window at a time, so neither the table nor the derivative is ever held whole. The same original and
+ * plan always give the same bytes.
+ */
+export async function writeTableGeojson(body: Readable, plan: TablePlacementPlan,
+  write: (text: string) => Promise<void>, read = readTableWindows): Promise<TablePlacementCounts> {
+  const names = propertyNames(plan.headers);
+  const counts: TablePlacementCounts = { rows: 0, features: 0, skipped: {} };
+  await write(`{"type":"FeatureCollection","crs":{"type":"name","properties":{"name":${JSON.stringify(plan.crs)}}},`
+    + '"features":[');
+  const bytes = Number(plan.source.bytes);
+  const result = await read(body, { selection: plan.selection, bytes, name: plan.source.name },
+    async (window, headers) => {
+      if (window.index === 0 && fingerprint(headers) !== fingerprint(plan.headers)) headersChanged();
+      const features: string[] = [];
+      for (const row of window.rows) {
+        counts.rows++;
+        // As in the table read, a workbook cell the reader marked has no value.
+        const unknown = 'marks' in row ? unavailableColumns(row) : new Set<number>();
+        const geometry = rowGeometry(row, unknown, plan.coordinates);
+        if (typeof geometry === 'string') counts.skipped[geometry] = (counts.skipped[geometry] ?? 0) + 1;
+        else features.push((counts.features++ ? ',' : '') + featureJson(row, unknown, geometry, names, plan));
+      }
+      if (features.length) await write(features.join(''));
+    });
+  await write(']}');
+  if (result.bytes !== bytes || result.sha256 !== plan.source.sha256)
+    throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The original differs from its byte receipt.');
+  return counts;
+}
+
+/** The derivative's byte count and SHA-256, from a read that keeps none of its bytes. */
+async function measure(body: Readable, plan: TablePlacementPlan, read?: typeof readTableWindows) {
+  const hash = createHash('sha256');
+  let bytes = 0;
+  const counts = await writeTableGeojson(body, plan, async text => {
+    const chunk = Buffer.from(text);
+    bytes += chunk.length;
+    if (bytes > STREAMING_VECTOR_LIMITS.sourceBytes) throw new AppError(413, 'TABLE_PLACEMENT_BUDGET',
+      'The rows of this table would make a GeoJSON file larger than the 1 GiB the map reader takes.');
+    hash.update(chunk);
+  }, read);
+  return { ...counts, bytes, sha256: hash.digest('hex') };
+}
+
+/** The derivative's bytes as the receipt pulls them: the table is read again, each window waiting to be taken. */
+function pulled(produce: (write: (text: string) => Promise<void>) => Promise<unknown>): AsyncIterable<Uint8Array> {
+  const stream = new PassThrough();
+  const write = async (text: string) => {
+    if (stream.destroyed) throw new AppError(409, 'TABLE_PLACEMENT_STOPPED', 'The receipt stopped taking the rows.');
+    if (!stream.write(text)) await Promise.race([once(stream, 'drain'), once(stream, 'close')]);
+  };
+  produce(write).then(() => stream.end(), error => stream.destroy(error));
+  return stream;
+}
+
+const SITUATED = "SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL FOR UPDATE";
+
+function unstated(): never {
+  throw new AppError(422, 'TABLE_PLACEMENT_CRS_UNSTATED', 'Which coordinate system are these coordinates in? '
+    + 'State its EPSG code, for example EPSG:4326 for longitude and latitude; none is assumed.');
+}
+
+// The parts of a table read's profile a placement pins; the rest of the profile is the table view's.
+const TableReadSchema = z.object({ version: z.literal('manual-tabular/1'), tabular: TabularPinSchema,
+  headers: TabularSourceProfileSchema.shape.headers });
+
+/** The table read the columns are chosen from; a file not read as a table is refused. */
+function tableRead(source: IntakeSourceRow) {
+  const read = TableReadSchema.safeParse(source.inspection?.manualProfile);
+  if (!read.success) throw new AppError(409, 'TABLE_PLACEMENT_NOT_READ',
+    'Read this file as a table first; its rows are placed from the columns of that read.');
+  return read.data;
+}
+
+function checkColumns(coordinates: TableCoordinates, headers: string[]) {
+  const columns = coordinates.kind === 'wkt' ? [coordinates.column] : [coordinates.x, coordinates.y];
+  if (columns.some(column => column >= headers.length)) throw new AppError(422, 'TABLE_PLACEMENT_COLUMN',
+    `This table has ${headers.length} columns; choose the coordinate columns among them.`);
+}
+
+/**
+ * Queues the one job that places a kept table's rows, in the caller's transaction (it holds the case and has
+ * checked a stated code with the geo service). No code is refused with a question; none waits while one runs.
+ */
+export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSourceRow,
+  request: z.infer<typeof IntakeTablePlacementSchema>): Promise<string> {
+  if (!request.crs) unstated();
+  const read = tableRead(source);
+  checkColumns(request.coordinates, read.headers);
+  const item = (await client.query(SITUATED, [source.id])).rows[0];
+  if (!item) throw new AppError(409, 'TABLE_PLACEMENT_NOT_READ', 'This file has no item in the batch.');
+  if ((await client.query(`SELECT 1 FROM jobs WHERE source_id=$1 AND operation='intake-table-geojson'
+    AND status IN ('queued','running') LIMIT 1`, [source.id])).rowCount) conflict(
+    'The rows of this table are being placed on the map; follow that placement.');
+  const scope = await intakeCaseTx(client, source.case_id);
+  const input = IntakeTableGeojsonInputSchema.parse({ version: 'intake-table-geojson/1',
+    jobId: stableUuid(`intake-table-geojson/1:${source.id}:${source.revision}:${request.requestKey}`),
+    caseId: source.case_id, caseRevision: scope.current.revision, itemId: item.item_id, sourceId: source.id,
+    sourceRevision: source.revision, sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding),
+    subject: scope.binding.subject, accessSha256: scope.binding.access, sourceBytes: Number(source.bytes),
+    tabular: read.tabular, headers: read.headers, coordinates: request.coordinates, crs: request.crs });
+  const digest = fingerprint(input);
+  await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
+    VALUES($1,$2,$3,'intake-table-geojson',$4,$5,$6)`,
+  [input.jobId, input.caseId, input.sourceId, input.caseRevision, digest, input]);
+  const { registerUspJobInputTx } = await import('../jobs');
+  await registerUspJobInputTx(client, input.jobId,
+    { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
+  await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
+    planRef: item.plan_ref, recordsSeen: 0, limitReason: `Placing the rows of this table on the map in ${request.crs}, `
+      + 'as stated by the officer.' });
+  return input.jobId;
+}
+
+export type TableGeojsonDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
+  open: (source: IntakeSourceRow) => Promise<Readable>;
+  read?: typeof readTableWindows;
+};
+
+/** The original as a stream, pinned to the object its receipt verified. */
+export async function openTableOriginal(source: IntakeSourceRow): Promise<Readable> {
+  const bytes = Number(source.bytes);
+  return (await openObjectStream(source.object_key, bytes, streamingReadMs(bytes),
+    source.inspection?.largeOriginal?.objectEtag)).body;
+}
+
+const plural = (value: number, one: string) => `${value.toLocaleString('en-US')} ${value === 1 ? one : `${one}s`}`;
+
+/** Officer words: how many rows were placed, and how many were skipped and why. */
+export function tablePlacementWords(counts: TablePlacementCounts, kept: { name: string; crs: string } | null,
+  code: string | null = null): string {
+  const reasons = (Object.keys(SKIP_WORDS) as SkipReason[]).flatMap(reason => counts.skipped[reason]
+    ? [`${counts.skipped[reason]!.toLocaleString('en-US')} ${SKIP_WORDS[reason]}`] : []);
+  const skipped = counts.rows - counts.features;
+  const placed = counts.features ? `Placed ${plural(counts.features, 'row')} on the map`
+    : 'No row of this table was placed on the map';
+  const words = [`${placed}${skipped ? `; ${plural(skipped, 'row')} skipped: ${reasons.join(', ')}` : ''}.`];
+  if (kept && !code) words.push(`They are taken in as their own GeoJSON file, ${kept.name}, in ${kept.crs} as `
+    + 'stated by the officer.');
+  if (kept && code) words.push(`Their GeoJSON file, ${kept.name}, was kept but not taken in (${code}); place the `
+    + 'rows again to retry.');
+  return words.join(' ');
+}
+
+async function keptChildTx(client: PoolClient, caseId: string, sha256: string, lineage: TableDerivativeLineage) {
+  return (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND profile='large-original-v1' AND sha256=$2
+    AND inspection->'tableDerivative'->>'originalSha256'=$3 ORDER BY revision DESC LIMIT 1`,
+  [caseId, sha256, lineage.originalSha256])).rows[0]?.id ?? null;
+}
+
+/** Keeps the derivative as a large original named by its lineage; one an earlier attempt kept is found again. */
+async function keepTableDerivative(input: IntakeTableGeojsonInput, source: IntakeSourceRow,
+  plan: TablePlacementPlan, file: { name: string; bytes: number; sha256: string }, lineage: TableDerivativeLineage,
+  dependencies: TableGeojsonDependencies): Promise<string> {
+  const prior = await dependencies.transaction(client => keptChildTx(client, input.caseId, file.sha256, lineage));
+  if (prior) return prior;
+  const sourceId = await fenced(input.caseId, dependencies, async revision => {
+    const body = await dependencies.open(source);
+    try {
+      const chunks = pulled(write => writeTableGeojson(body, plan, write, dependencies.read));
+      return await receiveLargeLayer(input.caseId, revision, file, byteParts(chunks), dependencies);
+    } finally {
+      body.destroy();
+    }
+  });
+  await dependencies.transaction(client => client.query(`UPDATE sources
+    SET inspection=inspection||jsonb_build_object('tableDerivative',$2::jsonb)
+    WHERE id=$1 AND profile='large-original-v1'`, [sourceId, lineage]));
+  return sourceId;
+}
+
+function derivativeName(source: IntakeSourceRow, input: IntakeTableGeojsonInput) {
+  const stem = source.name.split(/[/\\]/).pop()!.replace(/\.[^.]+$/, '');
+  return input.tabular.selection.format === 'xlsx' ? `${stem} ${input.tabular.selection.sheet}.geojson`
+    : `${stem}.geojson`;
+}
+
+/** The job's source, still the table the officer chose columns from. */
+async function pinnedTableTx(client: PoolClient, input: IntakeTableGeojsonInput): Promise<IntakeSourceRow> {
+  const source: IntakeSourceRow = (await client.query('SELECT * FROM sources WHERE case_id=$1 AND id=$2',
+    [input.caseId, input.sourceId])).rows[0];
+  const read = source && tableRead(source);
+  if (!read || fingerprint(read.tabular) !== fingerprint(input.tabular)
+    || fingerprint(read.headers) !== fingerprint(input.headers)) conflict('The table read changed.');
+  return source;
+}
+
+/**
+ * The job: measures the derivative, keeps it (reading the table a second time into the receipt), enrols it, and
+ * writes the item's words. A table with no placeable row keeps nothing.
+ */
+export async function placeTableRows(input: IntakeTableGeojsonInput,
+  dependencies: TableGeojsonDependencies): Promise<string[]> {
+  const source = await dependencies.transaction(client => pinnedTableTx(client, input));
+  const plan: TablePlacementPlan = { source, selection: input.tabular.selection, headers: input.headers,
+    coordinates: input.coordinates, crs: input.crs };
+  const first = await dependencies.open(source);
+  const measured = await measure(first, plan, dependencies.read).finally(() => first.destroy());
+  const name = derivativeName(source, input);
+  let kept: string | null = null, code: string | null = null;
+  if (measured.features) {
+    const lineage = TableDerivativeLineageSchema.parse({ version: 'table-derivative/1',
+      conversion: TABLE_GEOJSON_CONVERSION, originalSourceId: source.id, originalSourceRevision: source.revision,
+      originalSha256: source.sha256, originalItemId: input.itemId, format: plan.selection.format,
+      layer: plan.selection.sheet, coordinates: input.coordinates, crs: input.crs, crsSource: 'officer_stated',
+      features: measured.features, notWritten: measured.rows - measured.features, skipped: measured.skipped,
+      locator: LOCATOR });
+    const file = { name, bytes: measured.bytes, sha256: measured.sha256 };
+    kept = await keepTableDerivative(input, source, plan, file, lineage, dependencies);
+    code = await enrol(input, kept, dependencies);
+  }
+  const words = tablePlacementWords(measured, kept ? { name, crs: input.crs } : null, code);
+  await dependencies.transaction(client => placedTx(client, input, measured.rows, words));
+  return kept ? [kept] : [];
+}
+
+/** Enrols the kept derivative like a dropped file; a refusal is kept as its code for the officer's words. */
+async function enrol(input: IntakeTableGeojsonInput, sourceId: string, dependencies: TableGeojsonDependencies) {
+  try {
+    await dependencies.register(input.caseId, { sourceId,
+      requestKey: stableUuid(`table-derivative/1:${input.itemId}:${sourceId}`) });
+    return null;
+  } catch (error) {
+    return error instanceof AppError ? error.code : 'TABLE_PLACEMENT_UNAVAILABLE';
+  }
+}
+
+async function placedTx(client: PoolClient, input: IntakeTableGeojsonInput, rows: number, limitReason: string) {
+  const item = (await client.query(SITUATED, [input.sourceId])).rows[0];
+  const state: IntakeDraftState = { state: 'read', placement: 'undecided', planRef: item?.plan_ref ?? null,
+    recordsSeen: rows, limitReason };
+  await writeIntakeDraftTx(client, input.caseId, input.itemId, state);
+}

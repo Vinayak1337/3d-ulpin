@@ -66,6 +66,8 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Objec
   // TP1/XW1/CSV2: table profiling copies CSV bytes for reading detection or a workbook for sheet windows.
   // Its payload pins the table under `request`; old jobs without a size reserve the largest original.
   'table-profile': { lane: 'table', workbook: 'request' },
+  // TC1: a kept table's rows written as GeoJSON, read twice in windows; only a workbook read copies to scratch.
+  'intake-table-geojson': { lane: 'table', workbook: 'tabular' },
   // document-ocr.ts copies the PDF, at most DOCUMENT_LIMITS.originalBytes 16 MiB, into the scratch root beside the
   // 128 KiB result and 64 KiB receipt it reads back.
   'document-extraction': { lane: 'document', scratchMiB: 17 },

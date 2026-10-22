@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SourcePathSchema, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
+import { SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
 
@@ -68,6 +68,21 @@ export const IntakeLayerCrsSchema = z.strictObject({
 });
 export const IntakeLayerCrsAnswerSchema = z.strictObject({
   crs: IntakeLayerCrsSchema.shape.crs, state: z.literal('officer_stated'), statedAt: z.string().datetime(),
+});
+const tableColumn = z.number().int().nonnegative().max(TABULAR_LIMITS.columns - 1)
+  .describe('A header position of the table as read, from 0.');
+/**
+ * TC1: the columns of a kept table that hold its coordinates (an x or longitude and a y or latitude column, or one
+ * WKT column) and the EPSG code they are in. A null code is refused with a question; no system is ever assumed.
+ */
+export const IntakeTablePlacementSchema = z.strictObject({
+  requestKey: z.string().uuid(),
+  coordinates: z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('columns'), x: tableColumn, y: tableColumn })
+      .refine(value => value.x !== value.y, 'The x and y columns are two different columns.'),
+    z.strictObject({ kind: z.literal('wkt'), column: tableColumn }),
+  ]),
+  crs: IntakeLayerCrsSchema.shape.crs.nullable(),
 });
 export const IntakeLargeRetryResultSchema = z.strictObject({
   itemId: z.string().uuid(), jobId: z.string().uuid(),
