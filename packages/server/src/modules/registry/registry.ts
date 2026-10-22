@@ -97,6 +97,10 @@ const exteriorRecordBodySchema = recordBodySchema.extend({
   footprint: z.array(pointSchema).length(0),
   representation: z.literal("physical_exterior"),
 });
+/** A committed body is read with the schema it was committed under: exterior-only keeps its empty footprint. */
+export function recordedBodySchema(body: Parameters<typeof isExteriorOnly>[0]) {
+  return isExteriorOnly(body) ? exteriorRecordBodySchema : recordBodySchema;
+}
 /** The ids of the current exterior-only records: only their corrections may keep an empty footprint. */
 function currentExteriorIds(current: RegistryRecord[]): ReadonlySet<string> {
   return new Set(current.filter(record => isExteriorOnly(record)).map(record => record.id));
