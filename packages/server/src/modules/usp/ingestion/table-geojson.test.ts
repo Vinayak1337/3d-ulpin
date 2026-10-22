@@ -357,6 +357,13 @@ test('a fault that is not a refusal stops a placement as TABLE_PLACEMENT_FAILED;
     assert.equal(stopCode(new AppError(422, 'TABULAR_ENCODING', 'invalid text'), tableGeojsonJob), 'TABULAR_ENCODING');
   });
 
+test('a stopped placement keeps the table\'s own words and writes its stop beside them', () => {
+  const placing = 'Kept as a CSV table. Map placement: Placing the rows of this table on the map in EPSG:4326, as '
+    + 'stated by the officer.';
+  assert.equal(tableGeojsonJob.stopped('TABLE_PLACEMENT_FAILED', placing), 'Kept as a CSV table. Map placement: '
+    + 'Placing the rows of this table on the map stopped (TABLE_PLACEMENT_FAILED); place them again to retry.');
+});
+
 const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
 test('a real workbook with two header rows is read in windows with the headers its bounded read pinned',
   { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },

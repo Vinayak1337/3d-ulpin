@@ -38,12 +38,12 @@ const defaults: NativeDerivativeDependencies = { ...derivativeKeeping, read: rea
 
 type DerivativeInput = IntakeSourcePins & { jobId: string };
 /**
- * A fenced job that writes derivatives of an item's original: its operation, payload, work and stop words, and the
- * code a fault that is not a refusal is labelled with.
+ * A fenced job that writes derivatives of an item's original: its operation, payload, work, stop words (given the
+ * item's words as they stand) and the code a fault that is not a refusal is labelled with.
  */
 export type DerivativeJob<Input extends DerivativeInput> = {
   operation: string; parse: (payload: unknown) => Input; run: (input: Input) => Promise<string[]>;
-  stopped: (code: string) => string; failedCode: string; refusedCode?: string;
+  stopped: (code: string, current: string | null) => string; failedCode: string; refusedCode?: string;
 };
 
 const pinned = (input: DerivativeInput) => (client: PoolClient) =>
@@ -54,7 +54,8 @@ async function stoppedTx<Input extends DerivativeInput>(client: PoolClient, inpu
   job: DerivativeJob<Input>) {
   const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
   await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, state: 'read',
-    placement: code === job.refusedCode ? 'not_understood' : 'undecided', limitReason: job.stopped(code) });
+    placement: code === job.refusedCode ? 'not_understood' : 'undecided',
+    limitReason: job.stopped(code, current.limitReason) });
   await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
     [input.jobId]);
   await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',

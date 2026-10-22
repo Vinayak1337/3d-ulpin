@@ -244,7 +244,7 @@ export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSour
 const PLACEMENT_WORDS = /(?:^|\s)Map placement: [\s\S]*$/;
 
 /** The table's own words with this placement's words beside them; an earlier placement's words are replaced. */
-function besideTableWords(current: string | null, words: string): string {
+export function besideTableWords(current: string | null, words: string): string {
   const placement = `Map placement: ${words}`;
   const own = (current ?? '').replace(PLACEMENT_WORDS, '').trim().slice(0, 2000 - placement.length - 1);
   return own ? `${own} ${placement}` : placement;
