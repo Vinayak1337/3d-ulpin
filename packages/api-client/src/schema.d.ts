@@ -72229,6 +72229,13 @@ export interface components {
                     absent: number;
                     unknown: number;
                     integers?: number;
+                    outline?: {
+                        types: ("string" | "number" | "boolean" | "object" | "array")[];
+                        values: number;
+                        explicitNull: number;
+                        absent: number;
+                        integers?: number;
+                    };
                 }[];
                 geometryTypes: string[];
                 quarantineLocators: {
@@ -72289,6 +72296,13 @@ export interface components {
                 absent: number;
                 unknown: number;
                 integers?: number;
+                outline?: {
+                    types: ("string" | "number" | "boolean" | "object" | "array")[];
+                    values: number;
+                    explicitNull: number;
+                    absent: number;
+                    integers?: number;
+                };
             }[];
             geometryTypes: string[];
             quarantineLocators: {

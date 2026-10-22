@@ -17,11 +17,12 @@ const hash = 'a'.repeat(64);
 const projection: IntakeLargeState = { state: 'probed', placement: 'needs_answer', planRef: null,
   recordsSeen: 3, partsPlanned: null, partsDone: 1, limitReason: 'State the kind of feature.' };
 
-// Synthetic test_only unit shapes, never operational records or evaluation truth.
-function recordsFor(geometries: unknown[]) {
+// Synthetic test_only unit shapes, never operational records or evaluation truth. An undefined key is absent.
+function recordsFor(geometries: unknown[], keyOf = (index: number): unknown => `synthetic-${index}`) {
   let start = 0;
   return geometries.map((geometry, index) => {
-    const feature = { type: 'Feature', properties: { sourceKey: `synthetic-${index}` }, geometry };
+    const key = keyOf(index);
+    const feature = { type: 'Feature', properties: key === undefined ? {} : { sourceKey: key }, geometry };
     const raw = Buffer.from(JSON.stringify(feature));
     const record = sourceRecord({ index, start, end: start + raw.length, raw, feature, valueIssueCode: null });
     start += raw.length + 1;
@@ -31,7 +32,11 @@ function recordsFor(geometries: unknown[]) {
 }
 
 function profileFor(...geometries: unknown[]) {
-  const { inventory } = advanceStreamedInventory(emptyInventory(), recordsFor(geometries));
+  return profileOf(recordsFor(geometries));
+}
+
+function profileOf(records: ReturnType<typeof recordsFor>) {
+  const { inventory } = advanceStreamedInventory(emptyInventory(), records);
   return StreamedProfileGenerationSchema.parse({ version: 'streamed-profile/1', jobId: profileJobId,
     rawJobId, source: { sourceId, familyId: sourceId, sourceRevision: 1, sourceSha256: hash,
       schemaFingerprint: hash }, readerSha256: hash, profilerSha256: hash, generation: 1,
@@ -45,13 +50,13 @@ const square = (x: number) => ({ type: 'Polygon', coordinates: [[[x, 0], [x + 1,
 const mixedGeometries = [square(0), { type: 'Point', coordinates: [0, 0] },
   { type: 'LineString', coordinates: [[0, 0], [1, 1]] }, square(2), { type: 'MultiPoint', coordinates: [[0, 0]] }];
 
-function planFor(profile: ReturnType<typeof profileFor>, kind: 'building' | 'road') {
+function planFor(profile: ReturnType<typeof profileFor>, kind: 'building' | 'parcel' | 'road',
+  conversionId: 'literal_identifier@1' | 'literal_integer_identifier@1' = 'literal_identifier@1') {
   return StreamedMappingPlanSchema.parse({ version: 'streamed-mapping/1', mode: 'streamed_mapping',
     scope: 'accepted_source_features', caseId: sourceId, caseRevision: 1, source: profile.source, rawJobId,
     profileJobId, profileGeneration: 1, profileHash: hash, kind, basis: 'officer_stated', semanticEvidence: [],
     operations: [
-      { target: 'feature.sourceKey', sourcePath: '/features/*/properties/sourceKey',
-        conversionId: 'literal_identifier@1' },
+      { target: 'feature.sourceKey', sourcePath: '/features/*/properties/sourceKey', conversionId },
       { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
     ] });
 }
@@ -74,12 +79,15 @@ test('read points and lines offer no building footprint mapping; an explicit com
 test('a mixed large file maps only its polygons as buildings and counts what it sets aside by kind', () => {
   const records = recordsFor(mixedGeometries), profile = profileFor(...mixedGeometries);
   const fold = { after: -1, conflicts: new Set<number>() };
+  const observedAs = (kind: 'building' | 'road') =>
+    normalizeMappedChunk(records, planFor(profile, kind), profile, rawJobId, 0, []).records;
+  const road = observedAs('road');
+  assert.deepEqual(road.map(item => item.disposition), Array(5).fill('observed'));
+  assert.deepEqual(observedAs('building').map(item => item.disposition),
+    ['observed', 'unresolved', 'unresolved', 'observed', 'unresolved']);
   for (const [kind, drawn] of [['building', [0, 3]], ['road', [0, 1, 2, 3, 4]]] as const) {
-    const plan = planFor(profile, kind);
-    const observed = normalizeMappedChunk(records, plan, profile, rawJobId, 0, []).records;
-    assert.deepEqual(observed.map(item => item.disposition), Array(5).fill('observed'));
-    const paired = pairMappedFeatures(records, observed, { ...fold, kind });
-    assert.deepEqual(paired.map(item => item.raw.featureIndex), drawn);
+    const paired = pairMappedFeatures(records, road, { ...fold, kind });
+    assert.deepEqual(paired.map(item => item.raw.featureIndex), drawn, 'the cut drops what the kind sets aside');
   }
   const summary = { rawJobId, counts: { Polygon: 2, Point: 1, LineString: 1, MultiPoint: 1 } };
   const setAside = intakeLargeSetAside('building', summary, rawJobId, 5);
@@ -90,6 +98,73 @@ test('a mixed large file maps only its polygons as buildings and counts what it 
     duplicates: 0, oversized: 0, setAside }),
   '5 records read; 2 in 1 packages. 2 pins and 1 line are kept in the original but not drawn as buildings.');
 });
+
+/** Keyed outlines among unkeyed pins and lines: the shape of the REH14 mixed file, not its values. */
+const unkeyedPins = (index: number) => [1, 2, 4].includes(index) ? undefined : `synthetic-${index}`;
+const identityRefusal = { status: 422, code: 'STREAMED_MAPPING_COVERAGE',
+  message: 'Source identity must be complete, unique, nonempty literal text.' };
+
+test('a streamed outline layout keys only the outlines it draws: unkeyed pins and lines lay out', () => {
+  const profile = profileOf(recordsFor(mixedGeometries, unkeyedPins));
+  const key = profile.paths.find(path => path.path === '/features/*/properties/sourceKey')!;
+  assert.deepEqual([key.values, key.absent], [2, 3]);
+  assert.deepEqual(key.outline, { types: ['string'], values: 2, explicitNull: 0, absent: 0, integers: 0 });
+  for (const kind of ['building', 'parcel'] as const)
+    assert.equal(compileStreamedMapping(planFor(profile, kind), profile).kind, kind);
+  assert.throws(() => compileStreamedMapping(planFor(profile, 'road'), profile), identityRefusal);
+  const numbered = profileOf(recordsFor(mixedGeometries, index => unkeyedPins(index) && 100 + index));
+  assert.equal(compileStreamedMapping(planFor(numbered, 'building', 'literal_integer_identifier@1'), numbered).kind,
+    'building');
+  assert.throws(() => compileStreamedMapping(planFor(numbered, 'road', 'literal_integer_identifier@1'), numbered),
+    { code: 'STREAMED_MAPPING_COVERAGE' });
+});
+
+test('streamed pins and lines are counted aside before any key check; only outlines reserve keys or are cut', () => {
+  const records = recordsFor(mixedGeometries, index => index === 1 ? 'synthetic-0' : unkeyedPins(index));
+  const profile = profileOf(records);
+  const result = normalizeMappedChunk(records, planFor(profile, 'building'), profile, rawJobId, 0, []);
+  assert.deepEqual(result.records.map(item => [item.disposition, item.issueCodes, item.sourceKey.state]), [
+    ['observed', [], 'known'], ['unresolved', ['GEOMETRY_KIND'], 'known'], ['unresolved', ['GEOMETRY_KIND'], 'absent'],
+    ['observed', [], 'known'], ['unresolved', ['GEOMETRY_KIND'], 'absent']]);
+  assert.deepEqual(result.keys.map(key => [key.value, key.laterIndex]), [['synthetic-0', null], ['synthetic-3', null]],
+    "a pin's key is reported, never reserved");
+  assert.equal(result.schemaDrift, false);
+  const fold = { after: -1, conflicts: new Set<number>(), kind: 'building' };
+  assert.deepEqual(pairMappedFeatures(records, result.records, fold).map(item => item.raw.featureIndex), [0, 3]);
+  const repeated = recordsFor(mixedGeometries, index => index === 3 ? 'synthetic-0' : unkeyedPins(index));
+  const twice = normalizeMappedChunk(repeated, planFor(profileOf(repeated), 'building'), profileOf(repeated),
+    rawJobId, 0, []).records[3];
+  assert.deepEqual([twice.disposition, twice.issueCodes], ['unresolved', ['DUPLICATE_SOURCE_KEY']]);
+});
+
+test('a streamed outline without its key still refuses; a road still keys every feature', () => {
+  for (const missing of [undefined, null]) {
+    const profile = profileOf(recordsFor(mixedGeometries, index => index === 3 ? missing : unkeyedPins(index)));
+    for (const kind of ['building', 'road'] as const)
+      assert.throws(() => compileStreamedMapping(planFor(profile, kind), profile), identityRefusal);
+  }
+});
+
+test('outline counts appear only for a mixed file, whatever its chunks; an older profile keeps the whole-file rule',
+  () => {
+    const records = recordsFor(mixedGeometries, unkeyedPins);
+    const whole = advanceStreamedInventory(emptyInventory(), records).inventory;
+    for (const cut of [1, 2, 3, 4]) {
+      const first = advanceStreamedInventory(emptyInventory(), records.slice(0, cut)).inventory;
+      assert.deepEqual(advanceStreamedInventory(first, records.slice(cut)).inventory, whole, `cut at ${cut}`);
+    }
+    const pinsFirst = recordsFor([mixedGeometries[1], mixedGeometries[2], square(0)], index => index === 2
+      ? 'synthetic-2' : undefined);
+    const opening = advanceStreamedInventory(emptyInventory(), pinsFirst.slice(0, 2)).inventory;
+    assert(opening.paths.every(path => !('outline' in path)));
+    assert.deepEqual(advanceStreamedInventory(opening, pinsFirst.slice(2)).inventory,
+      advanceStreamedInventory(emptyInventory(), pinsFirst).inventory);
+    for (const single of [profileFor(square(0), square(2)), profileFor(mixedGeometries[1], mixedGeometries[2])])
+      assert(single.paths.every(path => !('outline' in path)));
+    const profile = profileOf(records);
+    const older = { ...profile, paths: profile.paths.map(({ outline: _outline, ...path }) => path) };
+    assert.throws(() => compileStreamedMapping(planFor(older, 'building'), older), identityRefusal);
+  });
 
 test('an all-polygon large file pairs every observed feature and sets nothing aside, as before', () => {
   const polygons = [square(0), square(2)];
