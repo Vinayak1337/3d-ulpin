@@ -1,7 +1,7 @@
 import { QueryClient, QueryObserver } from '@tanstack/react-query';
 import { expect, it, vi } from 'vitest';
 import type { IntakeItem, IntakeManifest } from './batch-model';
-import { IntakeItemRefresh } from './item-refresh';
+import { IntakeItemRefresh, itemRefreshFor } from './item-refresh';
 
 // In-memory protocol controls standing in for the manifest and one-item routes; no record is invented.
 const item = (itemId: string, state: IntakeItem['state']) => ({ itemId, name: `${itemId}.csv`, wave: 1,
@@ -89,5 +89,37 @@ it('an item change waits for the manifest read in flight, and an item it left ou
   await new Promise((resolve) => setTimeout(resolve, 0));
   expect(run.items()?.map((entry) => entry.itemId)).toEqual(['a']);
   expect(run.manifestFn).toHaveBeenCalledOnce();
+  run.stop();
+});
+
+it('SL1: one client and batch share one refresh; another batch or client has its own', () => {
+  const client = new QueryClient();
+  const shared = itemRefreshFor(client, 'case');
+  expect(itemRefreshFor(client, 'case')).toBe(shared);
+  expect(itemRefreshFor(client, 'other')).not.toBe(shared);
+  expect(itemRefreshFor(new QueryClient(), 'case')).not.toBe(shared);
+});
+
+it('SL1: changes without an item in one turn (two consumers of one notification) give one manifest read', async () => {
+  const run = await loaded([item('a', 'read')]);
+  run.refresh.changed();
+  run.refresh.changed();
+  await vi.waitFor(() => expect(run.manifestFn).toHaveBeenCalledOnce());
+  await vi.waitFor(() => expect(run.client.isFetching()).toBe(0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(run.manifestFn).toHaveBeenCalledOnce();
+  // A change in a later turn, while that read is in flight, still asks for one more read after it (ZP2).
+  let answer = () => {};
+  run.manifestFn.mockImplementationOnce(() => new Promise((resolve) => {
+    answer = () => resolve({ caseId: 'case', items: [item('a', 'read')] } as unknown as IntakeManifest);
+  }));
+  run.refresh.changed();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  run.refresh.changed();
+  answer();
+  await vi.waitFor(() => expect(run.manifestFn).toHaveBeenCalledTimes(3));
+  await vi.waitFor(() => expect(run.client.isFetching()).toBe(0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(run.manifestFn).toHaveBeenCalledTimes(3);
   run.stop();
 });

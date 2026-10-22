@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
@@ -18,7 +18,7 @@ import { isSettled } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
 import { intakeKey, recipeKey, rereadQuery, useBatchPackages, useIntakeManifest } from './batch-queries';
-import { IntakeItemRefresh } from './item-refresh';
+import { itemRefreshFor } from './item-refresh';
 import { IntakeRunPanel } from './run';
 import { runKey } from './run/useTargets';
 import type { BatchLocationState } from './retain-batch';
@@ -38,7 +38,8 @@ function useBatchFacts(caseId: string) {
   const sourceCase = useSourceCase(caseId);
   const packages = useBatchPackages(caseId);
   const client = useQueryClient();
-  const itemRefresh = useMemo(() => new IntakeItemRefresh(client, caseId), [client, caseId]);
+  // SL1: the one refresh of this batch, shared with the map's layer.
+  const itemRefresh = itemRefreshFor(client, caseId);
   const others = () => {
     for (const queryKey of [recipeKey(caseId), [...runKey(caseId), 'summary']]) rereadQuery(client, queryKey);
   };

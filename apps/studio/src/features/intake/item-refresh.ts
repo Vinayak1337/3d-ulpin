@@ -12,12 +12,17 @@ type ReadItem = (caseId: string, itemId: string) => Promise<IntakeItem>;
  *
  * Changes to one item in the same turn share one read. A change during that item's read asks for one more read
  * after it. Item reads wait for a manifest read in flight, whose answer began before the change.
+ *
+ * SL1. Changes that ask for the manifest in the same turn share one manifest read: the consumers of one case (the
+ * tray and the map) each pass the same notification on in one turn, and a read asked in that turn answers all of
+ * them. A change in a later turn, while that read is in flight, still asks for one more read after it.
  */
 export class IntakeItemRefresh {
   private readonly key: string[];
   private readonly named = new Set<string>();
   private readonly reading = new Set<string>();
   private readonly again = new Set<string>();
+  private wholeAsked = false;
 
   constructor(private readonly client: QueryClient, private readonly caseId: string,
     private readonly read: ReadItem = readIntakeItem) {
@@ -40,6 +45,9 @@ export class IntakeItemRefresh {
 
   /** The manifest and every read under it, by ZP2's rule: at most one read in flight, and one more after it. */
   private whole() {
+    if (this.wholeAsked) return;
+    this.wholeAsked = true;
+    queueMicrotask(() => { this.wholeAsked = false; });
     rereadQuery(this.client, this.key);
   }
 
@@ -98,6 +106,20 @@ export class IntakeItemRefresh {
     const items = manifest.items.map((item) => item.itemId === next.itemId ? next : item);
     this.client.setQueryData<IntakeManifest>(this.key, { ...manifest, items });
   }
+}
+
+const shared = new WeakMap<QueryClient, Map<string, IntakeItemRefresh>>();
+
+/**
+ * SL1. The one refresh of a batch on this client: the tray and the map route a change to the same object, so its
+ * coalescing covers both and one change is read once. An entry lives as long as its client.
+ */
+export function itemRefreshFor(client: QueryClient, caseId: string): IntakeItemRefresh {
+  let batches = shared.get(client);
+  if (!batches) shared.set(client, batches = new Map());
+  let refresh = batches.get(caseId);
+  if (!refresh) batches.set(caseId, refresh = new IntakeItemRefresh(client, caseId));
+  return refresh;
 }
 
 /** The manifest orders by wave and name, and lists a member by its source; a change to either re-reads the list. */
