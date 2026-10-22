@@ -4,7 +4,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 // REH12's offline evidence hygiene and cross-receipt invariants for REH14; does not start or query any runtime.
 const directory = new URL('./', import.meta.url);
 const load = name => JSON.parse(readFileSync(new URL(name, directory), 'utf8'));
-const allowed = new Set(load('act1-files.json').files.flatMap(row => [row.sha256, row.recordedSha256]));
+const inputs = [...load('act1-files.json').files, ...load('act2-files.json').files];
+const allowed = new Set(inputs.flatMap(row => [row.sha256, row.recordedSha256]));
 for (const image of load('before.json').images) allowed.add(image.id.replace(/^sha256:/, ''));
 const failures = [];
 for (const name of readdirSync(directory)) {
@@ -24,7 +25,7 @@ for (const name of readdirSync(directory)) {
 const result = load('result.json');
 const act1 = load('act1.json');
 assert.equal(result.demo.unchanged, true);
-assert.equal(load('demo-after.json').matchesBaseline, true);
+assert.equal(load('demo-after-3.json').matchesBaseline, true);
 assert.equal(result.end.volumesUnchanged, true);
 assert.equal(act1.retryPressed, false);
 assert.equal(result.act1.cards.carded, 2);
@@ -34,5 +35,7 @@ assert.equal(act1.cited.card.id, result.act1.cards.cited.cardId);
 assert.equal(act1.footprintOnly.confirmedEvidence, 'none');
 assert.equal(load('journey-command.json').exit, result.journey.exit);
 assert.equal(result.console.duplicateKeyWarnings, 0);
+assert.equal(load('step-doctor-back.json').receipt.exit, 0);
+assert.equal(result.act2.length, 11);
 assert.deepEqual(failures, []);
 console.log(`${readdirSync(directory).length} evidence files: JSON, line limits, secret scan and invariants passed.`);
