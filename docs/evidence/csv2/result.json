@@ -1,0 +1,42 @@
+{
+  "task": "CSV2",
+  "gate": "G13/TP1 table reading, code-only",
+  "status": "checks_passed_integration_followups",
+  "readings": {"delimiters": [",", ";", "\t", "|"], "encodings": ["utf-8", "utf-16le", "utf-16be", "windows-1252"], "legacyDelimiter": ","},
+  "decisions": [
+    "Candidate order comma, semicolon, tab, pipe breaks ties; an inconsistent widest candidate falls back to comma. A TSV name prefers a consistent tab reading with at least two fields.",
+    "Delimiter and encoding are stored in the column profile and pinned table selection. Stored selections without a delimiter remain comma readings, including evidence read-back.",
+    "Full UTF-8 validation precedes streamed profiling; a late invalid byte selects Windows-1252 for the entire original. A private temporary byte copy is removed after the read; pinned windows and evidence stream without that copy.",
+    "UTF-16 BOMs work in whole-file reads. The byte-window reader refuses UTF-16 explicitly before publishing a window. Original bytes, ranges and range hashes are unchanged."
+  ],
+  "inputs": [
+    {"role": "good", "path": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy.csv", "provenance": "public foreign test_only", "bytes": 13321421, "records": 38309},
+    {"role": "difficult", "path": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint.csv", "provenance": "public foreign test_only; long quoted geometry cells", "bytes": 76920137, "records": 197392},
+    {"path": "fixtures/usp/D8-messy-india/dev/d1b/mi-d10-02.csv", "provenance": "public development test_only; BOM and CRLF; CSV1 regression"},
+    {"path": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx", "provenance": "public development test_only; unchanged workbook regression"}
+  ],
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe pnpm exec tsx --test packages/server/src/modules/usp/ingestion/column-profile.test.ts packages/server/src/modules/usp/ingestion/delimited-text.test.ts packages/server/src/modules/usp/ingestion/csv-final-line.test.ts packages/server/src/modules/usp/ingestion/tabular-stream.test.ts packages/server/src/modules/usp/ingestion/table-windows.test.ts packages/server/src/modules/usp/ingestion/table-batch-case.test.ts packages/server/src/modules/usp/ingestion/intake-evidence.test.ts packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts", "exit": 0, "passed": 58, "failed": 0, "skipped": 0},
+    {"command": "pnpm --filter @ulpin/studio test src/features/intake/table src/features/intake/BatchTableSection.test.tsx", "exit": 0, "passed": 58},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=services/geo E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -m pytest -p no:cacheprovider services/geo/tests/test_delimited_text.py services/geo/tests/test_inspection.py services/geo/tests/test_native_conversion.py -q", "exit": 0, "passed": 42},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts", "exit": 0},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "operations": 328, "schemas": 371},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging", "exit": 0, "report": "docs/evidence/csv2/ui-design-check.md"},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "resolvedDuringBuild": [
+    "Missing local dependencies: installed the frozen lockfile offline without lifecycle scripts.",
+    "Mixed leading line endings exposed Papa newline guessing during delimiter selection: each quoted logical head record is now parsed separately with an explicit candidate.",
+    "An existing selection assertion expected no reading metadata; it now expects the newly pinned reading.",
+    "OpenAPI generation requires the API tsconfig; source pins were regenerated after final source edits."
+  ],
+  "limitations": ["No Docker, live API, database writes or browser qualification was run.", "UTF-16 byte-window reads are intentionally refused, not decoded as single-byte text."],
+  "next": [
+    {"path": "packages/server/src/modules/cases/dispatch-lanes.ts", "action": "Outside ownership: reserve original size plus overhead for unpinned table-profile CSV jobs, which now use private scratch for full encoding validation. Pinned streaming-vector CSV jobs still read in place."},
+    {"paths": ["packages/server/src/modules/usp/ingestion/streaming-vector.ts", "packages/server/src/modules/usp/ingestion/chunk-mapping.ts", "packages/server/src/modules/usp/ingestion/document-native.ts"], "action": "Outside ownership: add delimited-text.ts to the streaming/converter file hash lists and delimited_text.py to the document reader file hash list."},
+    {"action": "After integration, run a judge-style upload through the live batch/table/evidence path; keep the existing originals and volumes."}
+  ]
+}

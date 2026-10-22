@@ -8,6 +8,8 @@ import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
 import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
 import { TableSelectionFields } from './table/TableImportFields';
+import { tableReadingWords } from './table/SourceHeader';
+import type { TableProfile } from './table/types';
 import { jobWords, tablePath, useFollowTable, type Opened } from './table/useFollowTable';
 import styles from './Batch.module.css';
 
@@ -20,10 +22,11 @@ type Follow = ReturnType<typeof useFollowTable>['follow'];
  */
 export function itemTableSource(item: IntakeItem, items: readonly IntakeItem[]): ItemTableSource | null {
   const card = item.card;
-  if (card?.family !== 'table' || (card.format !== 'csv' && card.format !== 'xlsx')) return null;
+  if (card?.family !== 'table' || !['csv', 'tsv', 'xlsx'].includes(card.format)) return null;
   const parent = items.find((row) => row.itemId === item.parentItemId);
   const sourceId = item.sourceId ?? (parent?.card?.format === 'xlsx' ? parent.sourceId : null);
-  return sourceId ? { sourceId, format: card.format, sheets: card.sheets.map((sheet) => sheet.name) } : null;
+  return sourceId ? { sourceId, format: card.format === 'xlsx' ? 'xlsx' : 'csv',
+    sheets: card.sheets.map((sheet) => sheet.name) } : null;
 }
 
 /**
@@ -57,17 +60,20 @@ export function BatchTableSection({ caseId, item, items }: {
 function ItemTable({ caseId, name, source }: { caseId: string; name: string; source: ItemTableSource }) {
   // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown.
   const profile = useTableProfile(caseId, source.sourceId);
-  const read = profile.data?.version === 'manual-tabular/1';
+  const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
   return <section className={styles.question} aria-label={`Table in ${name}`}>
     <h2 className="ul-heading">Table · {name}</h2>
-    {profile.isPending ? <Skeleton /> : read ? <ReadTable opened={{ caseId, sourceId: source.sourceId }} />
+    {profile.isPending ? <Skeleton /> : read ? <ReadTable opened={{ caseId, sourceId: source.sourceId }}
+      reading={read.profile} />
       : <ReadAsTable caseId={caseId} source={source} />}
   </section>;
 }
 
-export function ReadTable({ opened }: { opened: Opened }) {
+export function ReadTable({ opened, reading }: { opened: Opened; reading?: TableProfile['profile'] }) {
+  const words = reading ? tableReadingWords(reading) : null;
   return <>
     <p>This file is already read as a table.</p>
+    {words ? <p>{words}</p> : null}
     <div><Link className="ul-btn" to={tablePath(opened)}>Open the table</Link></div>
   </>;
 }
