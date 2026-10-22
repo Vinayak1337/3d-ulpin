@@ -15,7 +15,7 @@ import { fingerprint } from '../../cases/domain';
 import type { IntakeSourceRow } from './intake-context';
 import { probeOriginal } from './intake-probe';
 import { intakeItem } from './intake-ledger';
-import { nativeDerivativeFormat } from './intake-draft';
+import { nativeDerivativeFormat, queueIntakeDraftTx } from './intake-draft';
 import { convertNativeLayers, nativeParentState, NativeConversionSchema, queueNativeDerivativeTx, stateLayerCrsTx,
   NativeDerivativeLineageSchema, type NativeDerivativeDependencies } from './intake-native-derivative';
 import { IntakeService } from './intake-service';
@@ -616,7 +616,7 @@ test('a KML with no placemark geometry rests not understood, naming what it keep
       + 'original but not fetched or read: NetworkLink (2).' });
 });
 
-function derivativeProtocol(afterFinalize = () => {}) {
+function derivativeProtocol(afterFinalize = () => {}, layerNames = ['outlines']) {
   const original = retained(sourceId, 10, sha(Buffer.from('test_only parent')), 'outlines.gpkg');
   const state = ledger(original);
   const kept = new Map<string, Buffer>();
@@ -634,7 +634,7 @@ function derivativeProtocol(afterFinalize = () => {}) {
   const dependencies = { transaction: async (work: (client: PoolClient) => Promise<unknown>) => work(state.client),
     read: async (_key: string, start: number, end: number) => bytes.subarray(start, end),
     convert: async () => ({ conversion: 'native_gis_to_geojson@1', readerVersion: 'protocol/1', sourceId,
-      sourceSha256: original.sha256, layers: [layer] }),
+      sourceSha256: original.sha256, layers: layerNames.map((name, ordinal) => ({ ...layer, layer: name, ordinal })) }),
     register: async () => ({}), large: receipt(state.sources, kept, afterFinalize, () => { receipts++; }),
   } as NativeDerivativeDependencies;
   return { ...state, original, kept, bytes, lineage, dependencies, get receipts() { return receipts; } };
@@ -734,6 +734,90 @@ test('succeeded conversion is not queued again; queued and running are reused, f
     else assert.equal(result, id);
     assert.equal(state.jobs.length, status === 'failed' ? 2 : 1);
   }
+});
+
+test('re-enrolling a partial conversion retries the failed keep without a second receipt for the kept layer',
+  async () => {
+    const state = derivativeProtocol(() => {}, ['outlines', 'retry layer']);
+    const queue = () => queueIntakeDraftTx(state.client, state.original, state.item.card as IntakeCard);
+    const create = state.dependencies.large.create;
+    const attempts: string[] = [];
+    let failKeep = true;
+    state.dependencies.large.create = async (caseValue, input, parent) => {
+      const { filename } = input as { filename: string };
+      attempts.push(filename);
+      if (failKeep && filename === 'retry layer.geojson') {
+        throw new AppError(503, 'UPLOAD_QUOTA', 'Injected keep failure.');
+      }
+      return create(caseValue, input, parent);
+    };
+    const firstJob = await queue();
+    const [kept] = await convertNativeLayers(caseId, itemId, state.dependencies);
+    state.jobs[0].status = 'succeeded';
+    assert.match(state.item.limit_reason, /retry layer \(UPLOAD_QUOTA; enrol the file again to retry\)/);
+    assert.equal(state.kept.size, 1);
+    failKeep = false;
+
+    const retryJob = await queue();
+    assert.ok(retryJob, 'Re-enrolling must queue a retry despite the succeeded partial job.');
+    assert.notEqual(retryJob, firstJob);
+    assert.equal(state.jobs.length, 2);
+    assert.equal(await queue(), retryJob, 'A repeated enrolment reuses the queued retry.');
+    state.jobs[1].status = 'running';
+    assert.equal(await queue(), retryJob, 'A repeated enrolment reuses the running retry.');
+    const children = await convertNativeLayers(caseId, itemId, state.dependencies);
+    assert.equal(children[0], kept);
+    assert.equal(children.length, 2);
+    assert.equal(state.receipts, 2);
+    assert.equal(state.kept.size, 2);
+    assert.deepEqual(attempts, ['outlines.geojson', 'retry layer.geojson', 'retry layer.geojson']);
+    assert.match(state.item.limit_reason, /2 layers.*taken in/);
+    assert.doesNotMatch(state.item.limit_reason, /enrol the file again/);
+    state.jobs[1].status = 'succeeded';
+    assert.equal(await queue(), null, 'A complete retry must not be queued again.');
+    assert.equal(state.jobs.length, 2);
+  });
+
+test('a registration failure retries the kept child without another receipt, even if the next attempt fails',
+  async () => {
+    const state = derivativeProtocol();
+    const queue = () => queueIntakeDraftTx(state.client, state.original, state.item.card as IntakeCard);
+    await queue();
+    state.dependencies.register = async () => { throw new AppError(503, 'INTAKE_UNAVAILABLE', 'Injected failure.'); };
+    const [child] = await convertNativeLayers(caseId, itemId, state.dependencies);
+    state.jobs[0].status = 'succeeded';
+    assert.match(state.item.limit_reason, /INTAKE_UNAVAILABLE; enrol the file again to retry/);
+    assert.ok(await queue());
+    state.jobs[1].status = 'failed';
+    const retryJob = await queue();
+    assert.ok(retryJob, 'An older succeeded partial job must not block retrying a later failed job.');
+    assert.equal(state.jobs.length, 3);
+    state.dependencies.register = async (_case, input) => {
+      assert.equal((input as { sourceId: string }).sourceId, child);
+      return {};
+    };
+    assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [child]);
+    assert.equal(state.receipts, 1);
+    assert.equal(state.kept.size, 1);
+    state.jobs[2].status = 'succeeded';
+    assert.equal(await queue(), null);
+  });
+
+test('a successful conversion is not re-enrolled, but an officer CRS answer still queues it again', async () => {
+  const state = derivativeProtocol();
+  const card = state.item.card as IntakeCard;
+  const firstJob = await queueNativeDerivativeTx(state.client, state.original, card);
+  const children = await convertNativeLayers(caseId, itemId, state.dependencies);
+  state.jobs[0].status = 'succeeded';
+  assert.equal(children.length, 1);
+  assert.equal(await queueIntakeDraftTx(state.client, state.original, card), null);
+  assert.equal(state.jobs.length, 1);
+  state.item.plan_ref = { nativeLayers: { unstated: ['unstated'], answers: [] } };
+  await stateLayerCrsTx(state.client, state.original, itemId, { layer: 'unstated', crs: 'EPSG:28356' });
+  assert.equal(state.jobs.length, 2);
+  assert.notEqual(state.jobs[1].id, firstJob);
+  assert.equal(state.jobs[1].status, 'queued');
+  assert.equal(await queueNativeDerivativeTx(state.client, state.original, card), state.jobs[1].id);
 });
 
 test('publishing a KML or KMZ card queues its conversion job; any other vector card is not converted', async () => {
