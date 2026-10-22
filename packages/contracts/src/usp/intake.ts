@@ -14,7 +14,10 @@ export const IntakeFamilySchema = z.enum([
   'vector', 'table', 'raster', 'point_cloud', 'model3d', 'document', 'image', 'archive', 'unknown',
 ]);
 /** Table card formats a batch item is read from with "Open the table"; a TSV takes the delimited reader. */
-export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx']);
+export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx', 'ods']);
+/** XL1: an Excel 97-2003 workbook (`xls`) is recognised and kept; no reader takes its cells. */
+export const INTAKE_LEGACY_WORKBOOK_WORDS = 'It is kept as evidence; this version does not read its cells. Save it '
+  + 'as XLSX or ODS and add that file to place its rows on the map.';
 export const IntakeSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']);
 export const IntakeStateSchema = z.enum([
   'received', 'probed', 'planned', 'reading', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
@@ -130,7 +133,7 @@ export const TABLE_DERIVATIVE_LOCATOR =
 export const TableDerivativeLineageSchema = z.strictObject({
   version: z.literal('table-derivative/1'), conversion: z.literal(TABLE_GEOJSON_CONVERSION),
   originalSourceId: z.string().uuid(), originalSourceRevision: z.number().int().positive(), originalSha256: hash,
-  originalItemId: z.string().uuid(), format: z.enum(['csv', 'xlsx']), layer: z.string().min(1).max(150),
+  originalItemId: z.string().uuid(), format: z.enum(['csv', 'xlsx', 'ods']), layer: z.string().min(1).max(150),
   coordinates: IntakeTablePlacementSchema.shape.coordinates, crs: IntakeLayerCrsSchema.shape.crs,
   crsSource: z.literal('officer_stated'), features: z.number().int().nonnegative(),
   notWritten: z.number().int().nonnegative(),

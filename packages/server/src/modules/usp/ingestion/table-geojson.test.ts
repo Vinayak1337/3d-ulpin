@@ -21,6 +21,7 @@ import { nativeDerivativeJob, stopCode } from './intake-native-derivative-worker
 import { tableGeojsonJob } from './table-geojson-worker';
 import { readTabularSource } from './tabular-source';
 import { readTableWindows } from './tabular-stream';
+import { odsWorkbook } from '../../../../../../tests/fixtures/ods-control';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'table-geojson-protocol';
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
@@ -442,6 +443,28 @@ test('a real workbook with two header rows is read in windows with the headers i
     // The window reader refuses with TABLE_PLACEMENT_HEADERS before writing if its headers differ.
     const { counts } = await written(bytes, table);
     assert.deepEqual([headers.length, counts.rows], [8, 60]);
+  });
+
+test('XL1: an ODS table is placed like an XLSX one, its derivative named from its sheet',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async () => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    // test_only: typed coordinates, not records of any place.
+    const ods = odsWorkbook('Wards', [['ward', 'longitude', 'latitude'], ['Ward 1', '77.5946', '12.9716'],
+      ['Ward 2', '77.61', '12.98'], ['Ward 3', '', '']]).bytes;
+    const pin = { format: 'ods' as const, sheet: 'Wards', table: null, headerRows: [1] };
+    const original = { ...tableSource(ods, ['ward', 'longitude', 'latitude'], true, pin), name: 'wards.ods' };
+    const { client, sources, jobs } = ledger(original);
+    await queueTableGeojsonTx(client, original, { requestKey: randomUUID(),
+      coordinates: { kind: 'columns', x: 1, y: 2 }, crs: 'EPSG:4326' });
+    const kept = new Map<string, Buffer>();
+    const [child] = await placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, kept), ods));
+    assert.equal(sources.get(child).name, 'wards Wards.geojson');
+    const lineage = sources.get(child).inspection.tableDerivative;
+    assert.deepEqual([lineage.format, lineage.layer, lineage.features, lineage.skipped],
+      ['ods', 'Wards', 2, { no_coordinates: 1 }]);
+    const features = JSON.parse(kept.get(child)!.toString()).features;
+    assert.deepEqual(features.map((feature: any) => feature.geometry.coordinates), [[77.5946, 12.9716], [77.61, 12.98]]);
   });
 
 /** 2,000 typed lon/lat rows: more than a stream buffers, so an untaken read waits. */

@@ -122,7 +122,7 @@ export async function readPackagePins(caseId: string, packageIds: readonly strin
  */
 export function useReadTables(caseId: string, items: readonly IntakeItem[], enabled: boolean) {
   const sources = [...new Set(items.filter((item) => item.family === 'table' && item.sourceId
-    && (item.format === 'csv' || item.format === 'xlsx')).map((item) => item.sourceId!))];
+    && ['csv', 'xlsx', 'ods'].includes(item.format ?? '')).map((item) => item.sourceId!))];
   return useQueries({ queries: sources.map((sourceId) => ({ queryKey: [...tableKey(caseId, sourceId), 'profile'],
     retry: false, enabled, queryFn: async () => unwrap(await api.GET(
       '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile', { params: { path: { caseId, sourceId } } })),

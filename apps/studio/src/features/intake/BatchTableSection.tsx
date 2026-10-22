@@ -9,14 +9,14 @@ import { PlaceOnMap } from './PlaceOnMapDialog';
 import { placementRefusal } from './table-placement-command';
 import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
-import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
+import { formatSelection, readBatchCase, type TableFormat, type TableFromOriginalBody } from './table/retain';
 import { TableSelectionFields } from './table/TableImportFields';
 import { tableReadingWords } from './table/SourceHeader';
 import type { TableProfile } from './table/types';
 import { jobWords, tablePath, useFollowTable, type Opened } from './table/useFollowTable';
 import styles from './Batch.module.css';
 
-export interface ItemTableSource { sourceId: string; format: 'csv' | 'xlsx'; sheets: string[] }
+export interface ItemTableSource { sourceId: string; format: TableFormat; sheets: string[] }
 type Follow = ReturnType<typeof useFollowTable>['follow'];
 
 /**
@@ -28,7 +28,8 @@ export function itemTableSource(item: IntakeItem, items: readonly IntakeItem[]):
   if (card?.family !== 'table' || !INTAKE_TABLE_READER_FORMATS.includes(card.format)) return null;
   const parent = items.find((row) => row.itemId === item.parentItemId);
   const sourceId = item.sourceId ?? (parent?.card?.format === 'xlsx' ? parent.sourceId : null);
-  return sourceId ? { sourceId, format: card.format === 'xlsx' ? 'xlsx' : 'csv',
+  // A TSV is read by the delimited reader, as a CSV is.
+  return sourceId ? { sourceId, format: card.format === 'xlsx' || card.format === 'ods' ? card.format : 'csv',
     sheets: card.sheets.map((sheet) => sheet.name) } : null;
 }
 
@@ -98,7 +99,7 @@ function ReadAsTable({ caseId, source }: { caseId: string; source: ItemTableSour
     },
     onSuccess: open,
   });
-  const reading = press.isPending && job ? jobWords(job, source.format === 'xlsx' ? 'workbook' : 'CSV') : null;
+  const reading = press.isPending && job ? jobWords(job, source.format === 'csv' ? 'CSV' : 'workbook') : null;
   return <ReadAsTableForm source={source} sheet={sheet} setSheet={setSheet} rows={rows} setRows={setRows}
     pending={press.isPending} submit={() => press.mutate()} reading={reading} error={press.error} />;
 }

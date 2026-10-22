@@ -1,4 +1,5 @@
 import type { WorkItem } from '../../../api/queries';
+import type { TableFormat } from './retain';
 import styles from './Table.module.css';
 
 export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode, setMode, locked }: {
@@ -37,7 +38,7 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
 
 /** `sheets` are the sheet names a kept file's card states; without them the officer types the name. */
 export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, setRows }: {
-  format: 'csv' | 'xlsx'; sheets?: readonly string[]; sheet: string; setSheet: (value: string) => void;
+  format: TableFormat; sheets?: readonly string[]; sheet: string; setSheet: (value: string) => void;
   rows: string; setRows: (value: string) => void;
 }) {
   if (format === 'csv') return <p className="ul-help">CSV · sheet csv · header row 1</p>;

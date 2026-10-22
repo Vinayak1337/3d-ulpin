@@ -48,6 +48,15 @@ it('TJ1: on the batch page a CSV or XLSX joins the batch; dropped alone with no 
   expect(batchRouteWords('plan.pdf')).toBe(routeWords('plan.pdf'));
 });
 
+it('XL1: an ODS opens the table import as an XLSX does; a legacy .xls is kept, its cells unread', () => {
+  expect(['wards.ods', 'Wards.ODS', 'old-list.xls', 'OLD.XLS'].map(fileRoute)).toEqual(['table', 'table', 'intake',
+    'intake']);
+  expect(['wards.ods', 'old-list.XLS'].map(routeWords)).toEqual(['Table · opens the table import',
+    'Excel 97-2003 workbook · kept as evidence; its cells are not read']);
+  expect(dropState('wards.ods', false, true)).toBe('intake');
+  expect(batchRouteWords('wards.ods')).toBe('Table · kept in the batch, then read there as a table');
+});
+
 it('TJ1: a table dropped with footprints stays an item of their batch, kept before the footprints', () => {
   // File handles only; no bytes are read for the route.
   const [footprints, register, earlier] = ['footprints.geojson', 'register.csv', 'earlier.csv']

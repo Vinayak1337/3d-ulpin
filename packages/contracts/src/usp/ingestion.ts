@@ -132,7 +132,7 @@ export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows:
   recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
 export const TabularSelectionSchema = z.strictObject({
   ...DelimitedReadingSchema.shape,
-  format: z.enum(['csv', 'xlsx']), sheet: z.string().min(1).max(150), table: z.null(),
+  format: z.enum(['csv', 'xlsx', 'ods']), sheet: z.string().min(1).max(150), table: z.null(),
   headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),
 }).superRefine((value, ctx) => {
   if (new Set(value.headerRows).size !== value.headerRows.length ||
@@ -171,7 +171,7 @@ export const TabularSourceProfileSchema = z.strictObject({
 });
 export const AnySourceProfileSchema = z.union([SourceProfileSchema, TabularSourceProfileSchema]);
 export const AnyRetainSourceSchema = z.union([RetainGisSchema, z.strictObject({ ...RetainGisSchema.shape,
-  format: z.enum(['csv', 'xlsx']), selection: TabularSelectionSchema,
+  format: z.enum(['csv', 'xlsx', 'ods']), selection: TabularSelectionSchema,
   ...TabularProvenanceSchema.partial().shape,
 }).superRefine((value, ctx) => {
   if (value.format !== value.selection.format) {

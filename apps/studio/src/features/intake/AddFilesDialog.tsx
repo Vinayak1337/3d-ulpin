@@ -231,8 +231,8 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
             <span className="ul-heading">Drop files here, or choose files</span>
             <span className="ul-help">
               GeoJSON, GeoPackage and ZIP files are kept unchanged and checked in one batch, one item per layer;
-              the batch converts a GeoPackage or a shapefile set into layers. A CSV or XLSX dropped alone keeps its
-              table import; dropped with other files, it is kept in their batch and read there as a table. Every
+              the batch converts a GeoPackage or a shapefile set into layers. A CSV, XLSX or ODS dropped alone keeps
+              its table import; dropped with other files, it is kept in their batch and read there as a table. Every
               other file is kept unchanged as an original in the batch.
             </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />

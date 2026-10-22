@@ -2,16 +2,19 @@ import { api, unwrap } from '@ulpin/api-client';
 import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
 import type { Selection, TableJob, TableProfile } from './types';
 
+export type TableFormat = Selection['format'];
+
 /** The import dialog knows a dropped file only by its name; a batch item states its format on its card. */
-export function tableFormat(file: File): 'csv' | 'xlsx' {
-  return /\.csv$/i.test(file.name) ? 'csv' : 'xlsx';
+export function tableFormat(file: File): TableFormat {
+  if (/\.csv$/i.test(file.name)) return 'csv';
+  return /\.ods$/i.test(file.name) ? 'ods' : 'xlsx';
 }
 
 export function tableSelection(file: File, sheet: string, rows: string): Selection {
   return formatSelection(tableFormat(file), sheet, rows);
 }
 
-export function formatSelection(format: 'csv' | 'xlsx', sheet: string, rows: string): Selection {
+export function formatSelection(format: TableFormat, sheet: string, rows: string): Selection {
   if (format === 'csv') return { format: 'csv', sheet: 'csv', table: null, headerRows: [1] };
   const parts = rows.split(',').map((part) => part.trim());
   const headerRows = parts.map(Number);
@@ -20,7 +23,7 @@ export function formatSelection(format: 'csv' | 'xlsx', sheet: string, rows: str
         index > 0 && row <= headerRows[index - 1]!)) {
     throw new Error('Enter the exact sheet name and 1–5 increasing header row numbers, separated by commas.');
   }
-  return { format: 'xlsx', sheet, table: null, headerRows };
+  return { format, sheet, table: null, headerRows };
 }
 
 /** G13, XW1: a CSV or XLSX above 16 MiB is read on the server as a stream into a table by a job (TP1); a workbook's
@@ -28,6 +31,11 @@ export function formatSelection(format: 'csv' | 'xlsx', sheet: string, rows: str
  * route; this only chooses the dialog's words. */
 export function streamedImport(file: File) {
   return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
+}
+
+/** XL1: an ODS has no stream reader; one above 16 MiB is kept, and the server refuses to read it. */
+export function largeOds(file: File) {
+  return tableFormat(file) === 'ods' && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }

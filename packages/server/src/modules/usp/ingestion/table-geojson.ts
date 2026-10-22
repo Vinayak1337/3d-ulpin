@@ -311,7 +311,7 @@ async function keepTableDerivative(input: IntakeTableGeojsonInput, source: Intak
 
 function derivativeName(source: IntakeSourceRow, input: IntakeTableGeojsonInput) {
   const stem = source.name.split(/[/\\]/).pop()!.replace(/\.[^.]+$/, '');
-  return input.tabular.selection.format === 'xlsx' ? `${stem} ${input.tabular.selection.sheet}.geojson`
+  return input.tabular.selection.format !== 'csv' ? `${stem} ${input.tabular.selection.sheet}.geojson`
     : `${stem}.geojson`;
 }
 

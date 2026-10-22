@@ -357,7 +357,8 @@ export type ZipMemberLocation = Awaited<ReturnType<typeof locateZipMember>>;
 /**
  * Reads one whole member back out of a retained ZIP, for keeping it as its own original. The directory guards of the
  * probe apply; the member is found by its exact path, nothing past `maxBytes` is inflated, and the result must match
- * the directory's size and CRC-32. Errors carry a code only, never member text.
+ * the directory's size and CRC-32; `dataStart` is where its stored bytes begin. Errors carry a code only, never
+ * member text.
  */
 export async function readZipMember(read: IntakeRangeReader, size: number, path: string, maxBytes: number) {
   const { entry, ordinal, directoryOffset } = await locateZipMember(read, size, path);
@@ -373,7 +374,7 @@ export async function readZipMember(read: IntakeRangeReader, size: number, path:
   try { bytes = entry.method === 0 ? compressed : inflateRawSync(compressed, { maxOutputLength: maxBytes }); }
   catch { throw new Error('ZIP_MEMBER_INTEGRITY'); }
   if (bytes.length !== entry.size || crc32(bytes) !== entry.crc) throw new Error('ZIP_MEMBER_INTEGRITY');
-  return { bytes, ordinal, compressedBytes: entry.compressed, crc32: entry.crc };
+  return { bytes, ordinal, compressedBytes: entry.compressed, crc32: entry.crc, dataStart: start };
 }
 
 /**

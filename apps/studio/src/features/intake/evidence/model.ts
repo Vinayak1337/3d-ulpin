@@ -78,7 +78,7 @@ export function keyPaths(item: IntakeItem | undefined): string[] {
 export function tableChoices(items: readonly IntakeItem[],
   read: ReadonlyMap<string, ReadTable> = new Map()): TableChoice[] {
   return items.flatMap((item): TableChoice[] => {
-    if (item.family !== 'table' || !item.sourceId || item.format !== 'csv' && item.format !== 'xlsx') return [];
+    if (item.family !== 'table' || !item.sourceId || !['csv', 'xlsx', 'ods'].includes(item.format ?? '')) return [];
     const table = read.get(item.sourceId), named = { itemId: item.itemId, name: item.name };
     if (table?.headers.length && table.selection.format === item.format) return [{ ...named, ...table }];
     if (item.format !== 'csv' || !item.card?.columns.length) return [];

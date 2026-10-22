@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import { INTAKE_CARD_VERSION, INTAKE_PROBE_LIMITS as limits, IntakeCardSchema,
+import { INTAKE_CARD_VERSION, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PROBE_LIMITS as limits, IntakeCardSchema,
   type IntakeCard, type IntakeMemberCard } from '@ulpin/contracts/usp';
 import { detectIntakeKind, intakeNameDisagrees } from './intake-signatures';
 import { probeDelimited, probeJson } from './intake-text';
@@ -27,11 +27,11 @@ export function intakeWave(card: IntakeMemberCard): 1 | 2 | 3 | 4 {
 }
 
 function initialCard(head: Uint8Array, name: string): IntakeCard {
-  const detected = detectIntakeKind(head);
+  const { detectedBy, ...detected } = detectIntakeKind(head, name);
   const sidecar = /\.(?:shx|prj|cpg|tfw|jgw|pgw|wld)$/i.test(name);
   if (detected.format === 'shapefile' && /\.shx$/i.test(name)) detected.format = 'shapefile-index';
   return { version: INTAKE_CARD_VERSION, ...detected, formatVersion: null,
-    detectedBy: detected.format === 'shapefile-index' ? 'bytes_and_name' : 'bytes',
+    detectedBy: detected.format === 'shapefile-index' ? 'bytes_and_name' : detectedBy,
     nameDisagrees: intakeNameDisagrees(detected.format, name), depth: 'signature', encoding: null,
     crs: { state: 'absent', code: null, sidecarSha256: null }, extent: { native: null, epsg4326: null },
     counts: { features: null, rows: null, pages: null, members: null, points: null, bands: null },
@@ -51,7 +51,8 @@ function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8
   if (card.format === 'tiff') probeTiff(card, head, tail, size);
   if (card.format === 'parquet') probeParquet(card, tail);
   if (card.format === 'glb' && head.length >= 8) card.formatVersion = String(Buffer.from(head).readUInt32LE(4));
-  if (card.depth === 'signature' && card.format !== 'zip') {
+  if (card.format === 'xls') card.limits.push(`Excel 97-2003 workbook. ${INTAKE_LEGACY_WORKBOOK_WORDS}`);
+  else if (card.depth === 'signature' && card.format !== 'zip') {
     card.limits.push('Signature only; deeper structure requires the existing native reader.');
   }
 }

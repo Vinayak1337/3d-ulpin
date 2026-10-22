@@ -12,10 +12,12 @@ export declare function documentScannedPages(native: {
 }): number[];
 export declare const INTAKE_PAGE_IMAGE_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const INTAKE_TABLE_READER_FORMATS: readonly string[];
+export declare const INTAKE_LEGACY_WORKBOOK_WORDS: string;
 export declare const DXF_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const CITYGML_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const CITYJSON_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const GLTF_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const OBJ_LIMITS: Readonly<{ originalBytes: number }>;
+export declare const TABULAR_LIMITS: Readonly<{ bytes: number }>;
 export declare const TABULAR_STREAM_LIMITS: Readonly<{ bytes: number }>;
 export declare const NATIVE_GIS_LIMITS: Readonly<{ sourceBytes: number }>;
