@@ -5,7 +5,7 @@ import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { citeIntakeReceipt, saveIntakeCardTx, writeIntakeDraftTx, writeIntakeLargeTx,
+import { citeIntakeReceipt, readIntakeDraftTx, saveIntakeCardTx, writeIntakeDraftTx, writeIntakeLargeTx,
   type IntakeDraftState } from './intake-ledger';
 import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
 import { queuePageImageTx } from './intake-page-image';
@@ -15,7 +15,7 @@ import { stableUuid } from './intake-run';
 import { pageImageFormat } from './page-image-read';
 import { queueBatchDocumentTx } from './documents';
 import { GEOJSON_FEATURE_LIMIT } from './registry';
-import { prepareRetainedGeojsonTx } from './service';
+import { BOUNDED_READER_UNAVAILABLE, prepareRetainedGeojsonTx } from './service';
 import { isRetainedMapOriginal } from './retained-map-original';
 
 const uuid = z.string().uuid();
@@ -208,9 +208,23 @@ export function intakeReaderRoute(card: IntakeCard, source: Pick<IntakeSourceRow
   return count <= GEOJSON_FEATURE_LIMIT ? 'bounded_geojson' : 'streamed_geojson';
 }
 
+/** A small original once sent to the streaming reader stays there, so a later enrolment never starts a second one. */
+async function streamingReaderQueuedTx(client: PoolClient, sourceId: string): Promise<boolean> {
+  return (await client.query("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large' LIMIT 1",
+    [sourceId])).rows.length > 0;
+}
+
+/** The pre-RT1 route: the streaming reader needs no processor, and the item says why it was taken. */
+async function streamedWithReasonTx(client: PoolClient, item: DraftItem, reason: string) {
+  const current = await readIntakeDraftTx(client, item.case_id, item.item_id);
+  await writeIntakeDraftTx(client, item.case_id, item.item_id, { ...current, limitReason: reason });
+  return 'streamed' as const;
+}
+
 /** Inspect only an already-kept bounded original; invalid content rests with a reason, never loses its receipt. */
 async function retainedGeojsonAdapterTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow) {
   if (intakeReaderRoute(item.card!, source) === 'streamed_geojson') return 'streamed';
+  if (!source.inspection?.manualProfile && await streamingReaderQueuedTx(client, source.id)) return 'streamed';
   try {
     const prepared = Boolean(source.inspection?.manualProfile);
     if (!await prepareRetainedGeojsonTx(client, source)) return 'streamed';
@@ -220,6 +234,9 @@ async function retainedGeojsonAdapterTx(client: PoolClient, item: DraftItem, sou
     }
     return 'bounded';
   } catch (error) {
+    if (error instanceof AppError && error.code === BOUNDED_READER_UNAVAILABLE) {
+      return streamedWithReasonTx(client, item, error.message);
+    }
     if (!(error instanceof AppError) || ![413, 422].includes(error.status)) throw error;
     await writeIntakeDraftTx(client, item.case_id, item.item_id, {
       state: 'probed', placement: 'not_understood', planRef: null, recordsSeen: 0,

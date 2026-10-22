@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { Readable } from 'node:stream';
+import test, { mock } from 'node:test';
+import { S3Client } from '@aws-sdk/client-s3';
 import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
@@ -8,7 +10,9 @@ import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, 
   queueIntakeLargePackageTx, queueIntakeLargeTx, retryIntakeLargeItem, type IntakeLargeSource,
   type IntakeLargeStore } from './intake-large';
 import { fingerprint } from '../../cases/domain';
+import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
+import { sha256 } from '../../../infrastructure/storage';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
 import { localOperatorSubject } from '../principal';
@@ -68,6 +72,8 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
       && { source_id: tables.partOf });
     if (sql.startsWith("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'"))
       return one(jobs.has(values[0] as string) && { id: values[0] });
+    if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
+      return one([...jobs.values()].find(job => job.source_id === values[0]));
     if (sql.startsWith('SELECT id,revision,archived FROM cases')) return one({ id: caseId, revision: 3,
       archived: false });
     if (sql.startsWith('INSERT INTO jobs')) {
@@ -368,3 +374,38 @@ test('a file stopped by what it contains, a bounded file and a file not stopped 
     assert.equal(fixture.jobs.size, 0);
   }
 });
+
+/** The kept bytes the bounded reader would read, and a processor that answers with the given status. */
+function processorAnswers(bytes: Uint8Array, status: number) {
+  for (const name of ['s3Endpoint', 's3Region', 's3Bucket', 's3AccessKey', 's3SecretKey'] as const)
+    mock.getter(settings, name, () => 'test-only');
+  mock.method(S3Client.prototype, 'send', async () => ({ Body: Readable.from([bytes]), ContentLength: bytes.length,
+    ETag: 'protocol-etag' }));
+  mock.getter(settings, 'geoUrl', () => 'http://processor.invalid');
+  mock.getter(settings, 'geoToken', () => 'test-only');
+  return mock.method(globalThis, 'fetch', async () => Response.json({ detail: 'test_only' }, { status }));
+}
+
+test('a small kept GeoJSON whose processor is unavailable is enrolled on the streaming reader, with the reason',
+  async () => {
+    // Generated test_only collection; not a building record.
+    const bytes = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature',
+      properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }] }));
+    const fixture = store({ bytes: bytes.length });
+    const card = { family: 'vector', format: 'geojson', crs: { code: null }, counts: { features: null } };
+    fixture.tables.item!.card = card;
+    const source = { ...sourceRow(bytes.length), sha256: sha256(bytes) } as IntakeSourceRow;
+    const fetch = processorAnswers(bytes, 503);
+    try {
+      const jobId = await queueIntakeDraftTx(fixture.client, source, card as IntakeCard);
+      assert.equal(fixture.jobs.get(jobId!)?.operation, 'intake-large');
+      assert.equal(fetch.mock.callCount(), 1);
+      assert.match(String(fixture.tables.item!.limit_reason), /processor was unavailable \(AREA_PROCESSING\)/);
+      assert.equal(await queueIntakeDraftTx(fixture.client, source, card as IntakeCard), jobId,
+        'a later enrolment stays on the streaming reader');
+      assert.equal(fetch.mock.callCount(), 1);
+      assert.equal(fixture.jobs.size, 1);
+    } finally {
+      mock.restoreAll();
+    }
+  });

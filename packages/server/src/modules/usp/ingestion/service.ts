@@ -499,6 +499,25 @@ async function assertOriginalTableByteKind(row: any, selection: TabularSelection
   assertSelectedTableKind(card.format, head, selection);
 }
 
+export const BOUNDED_READER_UNAVAILABLE = 'BOUNDED_READER_UNAVAILABLE';
+
+function failureCode(error: unknown): string {
+  if (error instanceof AppError) return error.code;
+  return error instanceof Error ? error.name : 'Error';
+}
+
+/** The processor's 413/422 refusals stand. Any other failure names only its code: processor text may quote a value. */
+async function inspectRetainedGeojson(name: string, bytes: Uint8Array): Promise<GisInspection> {
+  try {
+    return await inspectGisBytes({ name, bytes }, null,
+      value => areaGeo<Omit<GisInspection, 'suggestedTitle' | 'suggestedNamespace'>>('inspect-gis', value));
+  } catch (error) {
+    if (error instanceof AppError && [413, 422].includes(error.status)) throw error;
+    throw new AppError(503, BOUNDED_READER_UNAVAILABLE,
+      `The bounded reader's processor was unavailable (${failureCode(error)}); the original is read in parts.`);
+  }
+}
+
 /** Attach the existing bounded adapter to the same durable upload, never changing its byte or source pins. */
 export async function prepareRetainedGeojsonTx(client: PoolClient, source: IntakeSourceRow): Promise<boolean> {
   if (source.profile !== 'large-original-v1' || Number(source.bytes) > 16 * 1024 * 1024) return false;
@@ -507,8 +526,7 @@ export async function prepareRetainedGeojsonTx(client: PoolClient, source: Intak
   if (detectIntakeKind(bytes).format !== 'geojson')
     throw new AppError(422, 'SOURCE_PROFILE', 'The retained bytes are not a GeoJSON collection.');
   if (geojsonFeatureCount(bytes) > GEOJSON_FEATURE_LIMIT) return false;
-  const gis = await inspectGisBytes({ name: source.name, bytes }, null,
-    value => areaGeo<Omit<GisInspection, 'suggestedTitle' | 'suggestedNamespace'>>('inspect-gis', value));
+  const gis = await inspectRetainedGeojson(source.name, bytes);
   const inspection = { manualProfile: inspectedProfile(bytes, gis), gis, actor: localOperatorSubject() };
   await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',
     [source.id, JSON.stringify(inspection)]);
