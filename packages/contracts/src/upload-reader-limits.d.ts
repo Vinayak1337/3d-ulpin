@@ -4,7 +4,8 @@ export declare const RASTER_WINDOW_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const POINT_BATCH_LIMITS: Readonly<{ originalBytes: number; sourcePoints: number }>;
 export declare const IFC_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const DOCUMENT_LIMITS: Readonly<{
-  nativeBytes: number; page: number; ocrPages: number; ocrMaxPage: number; ocrItems: number;
+  originalBytes: number; nativeBytes: number; page: number; jobs: number; ocrPages: number; ocrMaxPage: number;
+  ocrItems: number;
 }>;
 export declare function documentScannedPages(native: {
   format: string; status: string; warnings: readonly string[];
