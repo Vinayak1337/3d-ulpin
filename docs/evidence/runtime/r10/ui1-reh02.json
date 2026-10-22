@@ -1,0 +1,40 @@
+{
+ "at": "2026-10-22T13:33:24.015Z",
+ "studio": "http://127.0.0.1:5188",
+ "building": "a69cdab3-1b02-4dc1-b5aa-a11e3632d36a",
+ "feature": "1084419",
+ "ledger": {
+  "status": 200
+ },
+ "header": [
+  "Building 1084419",
+  "Reviewed",
+  "Parcel ULPIN not supplied",
+  "Back to map",
+  "Deviation check",
+  "Needs a sanctioned plan and an observed survey of this building",
+  "Export",
+  "Property Card",
+  "Card 93fd4362 · revision 1 · cites record revision 2"
+ ],
+ "documents": [
+  "Sources",
+  "2",
+  "gpmc-yuvp.csv",
+  "CSV logical row 444",
+  "gpmc-yuvp.csv",
+  "buildings-original.geojson",
+  "feature 1084419",
+  "buildings-original.geojson · r1 · 22 Oct 2026 · 1075…ac8e"
+ ],
+ "consoleErrors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "refused": [
+  "404 /api/v1/buildings/a69cdab3-1b02-4dc1-b5aa-a11e3632d36a/residents"
+ ],
+ "screenshots": [
+  "E:/BhuAayam-data/task-data/r10/ui1-header.png",
+  "E:/BhuAayam-data/task-data/r10/ui1-documents.png"
+ ]
+}
