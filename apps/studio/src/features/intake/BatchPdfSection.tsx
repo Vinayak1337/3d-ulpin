@@ -78,8 +78,8 @@ function PdfOcrAction({ reading, pending, submit }: {
   if (reading.status !== 'completed' || (reading.ocr && reading.ocr.outputStatus !== 'failed')) return null;
   const { scanned, selection } = pdfOcrChoice(reading);
   if (!scanned.length) return null;
-  if (!selection) return <p>{scanned.length} scanned pages remain unread. OCR supports pages
-    1–{DOCUMENT_LIMITS.ocrMaxPage} only.</p>;
+  if (!selection) return <p>{scanned.length} scanned {scanned.length === 1 ? 'page remains' : 'pages remain'} unread.
+    OCR supports pages 1–{DOCUMENT_LIMITS.ocrMaxPage} only.</p>;
   const remaining = scanned.length - 1;
   return <div className={styles.stack}>
     <p>Read page {selection.page}. This OCR job reads at most {DOCUMENT_LIMITS.ocrPages} scanned page.
