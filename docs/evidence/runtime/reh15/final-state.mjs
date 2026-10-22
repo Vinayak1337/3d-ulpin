@@ -6,7 +6,7 @@ import { save, serving } from './audit.mjs';
 // REH12's final product snapshot for the one act 1 case: the intake manifest against its contract, the evidence
 // page against its contract, and every source hash against the recorded original. No runtime or database access.
 const intake = await import(pathToFileURL(`${serving}/packages/contracts/src/usp/intake.ts`).href);
-const caseId = '0f993395-860b-4dae-8873-9f1a149d8be7';
+const caseId = '6e38560f-077a-4f70-bc0c-997e0c57e3ca';
 const root = `/ingestion/cases/${caseId}`;
 const expected = JSON.parse(readFileSync(new URL('./act1-files.json', import.meta.url), 'utf8')).files;
 

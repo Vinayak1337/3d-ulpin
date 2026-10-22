@@ -1,0 +1,9 @@
+{ "at": "2026-10-22T16:38:07.869Z", "caseId": "6e38560f-077a-4f70-bc0c-997e0c57e3ca", "source": "all", "jobs": 21,
+"span": { "firstCreated": "2026-10-22T16:25:22.07704+00:00", "lastCompleted": "2026-10-22T16:34:59.261444+00:00" },
+"queueSumS": 576.798, "execSumS": 182.328, "byOperation": { "intake-draft": { "jobs": 2, "queueMaxS": 34.232,
+"execMaxS": 16.5, "retries": 0, "notDone": 0 }, "streaming-vector": { "jobs": 1, "queueMaxS": 29.937,
+"execMaxS": 17.796, "retries": 0, "notDone": 0 }, "chunk-mapping": { "jobs": 1, "queueMaxS": 29.898, "execMaxS": 30.438,
+"retries": 0, "notDone": 0 }, "intake-run": { "jobs": 4, "queueMaxS": 68.017, "execMaxS": 67.878, "retries": 0,
+"notDone": 0 }, "intake-evidence": { "jobs": 2, "queueMaxS": 45.608, "execMaxS": 0.407, "retries": 0, "notDone": 0 },
+"raster-window": { "jobs": 9, "queueMaxS": 28.16, "execMaxS": 0.275, "retries": 0, "notDone": 0 }, "point-batch": {
+"jobs": 2, "queueMaxS": 38.422, "execMaxS": 0.158, "retries": 0, "notDone": 0 } } }

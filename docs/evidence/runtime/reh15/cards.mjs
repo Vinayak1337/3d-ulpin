@@ -4,11 +4,11 @@ import { save } from './audit.mjs';
 // The act 1 cards read back through the product API (as RC3's prove.mjs reads them): the confirmation's progress
 // for both targets, each card's facts, its verification and its PDF. Whole bodies stay in scratch.
 const api = 'http://127.0.0.1:21026/api/v1';
-const caseId = '0f993395-860b-4dae-8873-9f1a149d8be7';
-const confirmationId = '8db5dcbb-a9a7-46bc-8616-940056ec5b89';
+const caseId = '6e38560f-077a-4f70-bc0c-997e0c57e3ca';
+const confirmationId = '0e8fb724-424b-4563-ab1b-afcd4ea2667a';
 const scratch = 'E:/BhuAayam-data/task-data/reh15';
 const cards = {
-  cited: '87ed18b5-3ba5-4305-a09a-529be1645a0e', footprintOnly: '4187702b-dd23-4965-88b2-65402e31347a' };
+  cited: '06ec9d41-2fd4-4576-b375-70ee1543bc8b', footprintOnly: 'b26fad3c-2658-4e2c-9097-b7c55d55fd58' };
 
 async function call(path, body) {
   const options = body ? { method: 'POST', headers: { 'content-type': 'application/json' },
