@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
@@ -10,6 +13,7 @@ import { streamedSourceReference } from './streamed-map-receipt';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { placeTableRows, queueTableGeojsonTx, tablePlacementWords, writeTableGeojson,
   type IntakeTableGeojsonInput, type TableGeojsonDependencies, type TablePlacementPlan } from './table-geojson';
+import { readTabularSource } from './tabular-source';
 import { readTableWindows } from './tabular-stream';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'table-geojson-protocol';
@@ -135,11 +139,11 @@ test('a table of 25,000 rows is read and written in windows, never whole', async
 });
 
 /** A source row as the batch keeps a table read as a table: its receipt and the table read's profile. */
-function tableSource(bytes: Buffer, headers: string[], profile = true) {
+function tableSource(bytes: Buffer, headers: string[], profile = true, pin: Partial<typeof selection> = selection) {
   return { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, bytes: bytes.length, sha256: sha(bytes),
     profile: 'tabular-manual-v1', object_key: `sources/${sourceId}`, name: 'plots.csv', status: 'needs_input',
     inspection: { actor: localOperatorSubject(), ...(profile ? { manualProfile: { version: 'manual-tabular/1',
-      headers, tabular: { selection, sourceBytes: bytes.length, admission: { kind: 'case_original', issuer: null,
+      headers, tabular: { selection: pin, sourceBytes: bytes.length, admission: { kind: 'case_original', issuer: null,
         origin: 'officer_supplied', licence: 'unconfirmed', containsPersonalData: 'unknown' } } } } : {}) } };
 }
 
@@ -304,6 +308,38 @@ test('a stop right after the receipt is final: the rerun finds the kept child by
     const [child] = await placeTableRows(jobs[0].payload, dependencies);
     assert.deepEqual([finals, kept.size], [1, 1]);
     assert.equal(sources.get(child).inspection.tableDerivative.originalSha256, sha(WKT));
+  });
+
+test('a small Windows-1252 table whose read pinned no reading is decoded as the table reader decoded it',
+  async () => {
+    // test_only: "Café" in Windows-1252 (0xE9 is not UTF-8); the bounded reader decoded it so and split at commas.
+    const bytes = Buffer.concat([Buffer.from('ward,longitude,latitude\nCaf'), Buffer.from([0xe9]),
+      Buffer.from(',77.5946,12.9716\n')]);
+    const { delimiter: _delimiter, encoding: _encoding, ...unread } = selection;
+    const original = tableSource(bytes, ['ward', 'longitude', 'latitude'], true, unread);
+    const { client, sources, jobs } = ledger(original);
+    await queueTableGeojsonTx(client, original, { requestKey: randomUUID(),
+      coordinates: { kind: 'columns', x: 1, y: 2 }, crs: 'EPSG:4326' });
+    const kept = new Map<string, Buffer>();
+    const [child] = await placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, kept), bytes));
+    const features = JSON.parse(kept.get(child)!.toString()).features;
+    assert.deepEqual(features.map((feature: any) => feature.properties.ward), ['Café']);
+  });
+
+const geoPython = 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
+test('a real workbook with two header rows is read in windows with the headers its bounded read pinned',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async () => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-geojson-scratch');
+    // test_only: mi-d19-01.xlsx (fixtures/usp/D8-messy-india), sheet T_18, headers on rows 4 and 5.
+    const bytes = readFileSync('fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx');
+    const workbook = { format: 'xlsx' as const, sheet: 'T_18', table: null, headerRows: [4, 5] };
+    const headers = readTabularSource(bytes, workbook).headers;
+    const table = { ...plan(bytes, headers, { kind: 'columns', x: 0, y: 1 }), selection: workbook };
+    // The window reader refuses with TABLE_PLACEMENT_HEADERS before writing if its headers differ.
+    const { counts } = await written(bytes, table);
+    assert.deepEqual([headers.length, counts.rows], [8, 60]);
   });
 
 /** 2,000 typed lon/lat rows: more than a stream buffers, so an untaken read waits. */

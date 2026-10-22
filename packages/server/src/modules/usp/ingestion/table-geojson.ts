@@ -4,11 +4,12 @@ import { PassThrough, type Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { IntakeTablePlacementSchema, STREAMING_VECTOR_LIMITS, TABLE_DERIVATIVE_LOCATOR, TABLE_GEOJSON_CONVERSION,
-  TABLE_PLACEMENT_SKIP_REASONS, TableDerivativeLineageSchema, TabularPinSchema, TabularSourceProfileSchema,
-  streamingReadMs, type TableDerivativeLineage } from '@ulpin/contracts/usp';
+  TABLE_PLACEMENT_SKIP_REASONS, TABULAR_LIMITS, TableDerivativeLineageSchema, TabularPinSchema,
+  TabularSourceProfileSchema, streamingReadMs, type TableDerivativeLineage } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { openObjectStream } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
+import { decodeDelimitedText } from './delimited-text';
 import { intakeCaseTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { stableUuid } from './intake-run';
@@ -308,6 +309,40 @@ async function pinnedTableTx(client: PoolClient, input: IntakeTableGeojsonInput)
   return source;
 }
 
+type Selection = TablePlacementPlan['selection'];
+
+/**
+ * The reading the table was read with. A streamed read pins its detected delimiter and encoding. A CSV pin without
+ * an encoding was read whole by the bounded reader (16 MiB at most), which decoded it as UTF-8 or else
+ * Windows-1252 and split it at its stated delimiter or commas; the same decoding is taken here from the same bytes.
+ */
+async function pinnedReading(source: IntakeSourceRow, selection: Selection,
+  open: TableGeojsonDependencies['open']): Promise<Selection> {
+  if (selection.format !== 'csv' || selection.encoding) return selection;
+  if (Number(source.bytes) > TABULAR_LIMITS.bytes) {
+    conflict('The table read pins no encoding; read it as a table again.');
+  }
+  const body = await open(source);
+  const chunks: Buffer[] = [];
+  let bytes = 0;
+  try {
+    for await (const chunk of body) {
+      bytes += chunk.length;
+      if (bytes > TABULAR_LIMITS.bytes) throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY',
+        'The original differs from its byte receipt.');
+      chunks.push(chunk);
+    }
+  } finally {
+    body.destroy();
+  }
+  try {
+    return { ...selection, delimiter: selection.delimiter ?? ',',
+      encoding: decodeDelimitedText(Buffer.concat(chunks)).encoding };
+  } catch {
+    throw new AppError(422, 'TABULAR_ENCODING', 'This table has invalid text or binary null bytes.');
+  }
+}
+
 /**
  * The job: measures the derivative, keeps it (reading the table a second time into the receipt), enrols it, and
  * writes the item's words. A table with no placeable row keeps nothing.
@@ -315,8 +350,9 @@ async function pinnedTableTx(client: PoolClient, input: IntakeTableGeojsonInput)
 export async function placeTableRows(input: IntakeTableGeojsonInput,
   dependencies: TableGeojsonDependencies): Promise<string[]> {
   const source = await dependencies.transaction(client => pinnedTableTx(client, input));
-  const plan: TablePlacementPlan = { source, selection: input.tabular.selection, headers: input.headers,
-    coordinates: input.coordinates, crs: input.crs };
+  const selection = await pinnedReading(source, input.tabular.selection, dependencies.open);
+  const plan: TablePlacementPlan = { source, selection, headers: input.headers, coordinates: input.coordinates,
+    crs: input.crs };
   const first = await dependencies.open(source);
   const measured = await measure(first, plan, dependencies.read).finally(() => first.destroy());
   const name = derivativeName(source, input);
