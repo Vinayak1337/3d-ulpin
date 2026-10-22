@@ -9,7 +9,8 @@ export interface LiveStatus {
   error: string;
 }
 export interface Consumer {
-  refresh: () => void;
+  /** TR1. Given the one intake item a change names; called without one, every current fact is read again. */
+  refresh: (itemId?: string) => void;
   unsettled: () => boolean;
   status: (value: LiveStatus) => void;
 }
@@ -93,7 +94,7 @@ function connect(caseId: string, connection: Connection, read: typeof readCaseSt
     connection.state = next.state;
     if (next.refresh) {
       connection.lastActivity = Date.now();
-      for (const consumer of connection.consumers) consumer.refresh();
+      for (const consumer of connection.consumers) consumer.refresh(next.itemId);
     }
     if (next.reconnect) {
       connection.reconnecting = true;
