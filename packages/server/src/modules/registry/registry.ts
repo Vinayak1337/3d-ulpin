@@ -101,6 +101,17 @@ const exteriorRecordBodySchema = recordBodySchema.extend({
 export function recordedBodySchema(body: Parameters<typeof isExteriorOnly>[0]) {
   return isExteriorOnly(body) ? exteriorRecordBodySchema : recordBodySchema;
 }
+/** The row values some writers repeat inside a stored body (exterior-records.ts, source-building-records.ts). */
+export type RecordedEnvelope = { id: string; siteId: string; identifier: string; revision: number };
+/** A stored body without the envelope keys it repeats. A key is dropped only when it equals its row's value, so a
+ * differing value stays and the strict schema refuses it with any other unknown key. Returns the raw stored values. */
+export function recordedBody(body: Record<string, unknown>, envelope: RecordedEnvelope) {
+  const own = { ...body };
+  for (const key of Object.keys(envelope) as (keyof RecordedEnvelope)[])
+    if (Object.hasOwn(own, key) && own[key] === envelope[key]) delete own[key];
+  recordedBodySchema(own).parse(own);
+  return own;
+}
 /** The ids of the current exterior-only records: only their corrections may keep an empty footprint. */
 function currentExteriorIds(current: RegistryRecord[]): ReadonlySet<string> {
   return new Set(current.filter(record => isExteriorOnly(record)).map(record => record.id));
