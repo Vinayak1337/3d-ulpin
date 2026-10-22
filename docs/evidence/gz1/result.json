@@ -76,5 +76,20 @@
   ],
   "review": "Read the complete owned-path diff against staging and checked the task-base path list; changes are limited to owned paths. The inherited integration branch differs elsewhere from staging.",
   "safety": {"offline": true, "dockerUsed": false, "runtimeUsed": false, "imageBuilt": false, "envOrCredentialsRead": false, "originalsModified": false, "pushed": false},
+  "followUp": [
+    {
+      "task": "GZ1-b",
+      "base": "099196f8",
+      "factFound": "The remaining shapefile refusal still said Z, M or MultiPatch although 11/13/15 are now accepted.",
+      "change": "Refusal words now read: stores M or MultiPatch shapes, or its shapes and records differ in number. Same text in the test REFUSAL constant. rg found no other copy (no TS words, Studio, tests or evidence).",
+      "imageRebuildNeeded": true,
+      "note": "services/geo changes again in the commit that adds this entry; rebuild the processor image from that commit, not from servicesGeoCommit above.",
+      "checks": [
+        {"command": "rg -n -F \"Z, M or MultiPatch\" .", "exit": 1, "note": "No remaining copy after the change."},
+        {"command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=services/geo E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -m pytest -p no:cacheprovider services/geo/tests/test_native_gis_shapefile.py -o addopts= -q", "exit": 0, "passed": 12},
+        {"command": "git diff --check", "exit": 0}
+      ]
+    }
+  ],
   "next": ["Review and integrate; refresh shared source pins for intake-native-derivative.ts outside this task's ownership.", "Rebuild the processor image from the servicesGeoCommit before runtime rehearsal.", "Real Z shapefile and naturally difficult real input qualification remain unavailable locally; no runtime/UI claim is made."]
 }

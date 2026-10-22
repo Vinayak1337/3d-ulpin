@@ -17,7 +17,7 @@ TWEED = Path(
     "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/"
     "TSC_Buildings_OD_8831041243266425049.zip"
 )
-REFUSAL = "stores Z, M or MultiPatch shapes, or its shapes and records differ in number"
+REFUSAL = "stores M or MultiPatch shapes, or its shapes and records differ in number"
 # Clockwise exteriors, counterclockwise hole; each Z is only an unqualified source coordinate.
 OUTER = [[500000, 3100000, 10], [500000, 3100020, 11], [500020, 3100020, 12],
          [500020, 3100000, 13], [500000, 3100000, 10]]

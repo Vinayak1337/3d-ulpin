@@ -659,7 +659,7 @@ def _shapefile_parts(stopped: dict, read, place, folder: Path, origin: dict, sha
         return {**stopped, "reason": "could not be opened with its companions and encoding"}
     with reader:
         if reader.shapeType not in (0, 1, 3, 5, 8, 11, 13, 15) or reader.numShapes != reader.numRecords:
-            return {**stopped, "reason": "stores Z, M or MultiPatch shapes, or its shapes and records differ in number"}
+            return {**stopped, "reason": "stores M or MultiPatch shapes, or its shapes and records differ in number"}
         fields = [item[0] for item in reader.fields[1:]]
         derivative = _Derivative(folder, stopped["ordinal"], header, crs)
         try:
