@@ -1,0 +1,88 @@
+{
+  "task": "PO1",
+  "gate": "AUD4 N10",
+  "base": "d51f5c7f",
+  "implementationCommit": "4838b492",
+  "qualification": "Offline code, protocol and renderer checks only; no runtime gate passed.",
+  "auditVerified": [
+    {"path": "apps/studio/src/features/intake/pdf-reading.ts", "before": "pdfOcrOffer refused the whole PDF above eight total pages."},
+    {"path": "packages/server/src/modules/usp/ingestion/document-native.ts", "before": "Native extraction stops above DOCUMENT_LIMITS.nativeBytes (10 MiB)."},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-draft.ts", "before": "Batch PDF admission stops above DOCUMENT_LIMITS.originalBytes (16 MiB)."},
+    {"path": "services/geo/geo/usp_document_candidates/docling_tesseract.py", "before": "Choosing a page did not bypass the eight-total-page opening bound."}
+  ],
+  "bounds": {
+    "contract": "packages/contracts/src/document-pages.ts DOCUMENT_PAGE_LIMITS",
+    "totalPages": 400,
+    "originalBytes": 16777216,
+    "renderPixelsPerPage": 1600000,
+    "renderSidePixels": 1400,
+    "pagesPerJob": 1,
+    "shortPdfMultiPagePressCeiling": 8,
+    "unchanged": "Original bytes remain capped at 16 MiB because the existing supervised renderer has that same opening bound. Selecting a page does not bypass it. Whole-page OCR frame, rotation, region, process, output and job-history bounds remain unchanged."
+  },
+  "change": {
+    "studio": "pdfOcrOffer offers a single explicit page number for longer PDFs. createPdfOcrPress preflights the pinned private page route and sends singlePage:true above eight pages. Invalid numbers cannot enqueue. Existing short-PDF selection, retry keys and candidate citation opener remain.",
+    "job": "The existing document-extraction job skips whole-document native extraction for singlePage:true, states NATIVE_TEXT_NOT_REQUESTED, and runs the existing OCR bridge on the original. No second service, queue or original is created.",
+    "renderer": "The existing supervised renderer opts into the 400-page selected-page profile only for OCR and private viewing. It rasterizes only the chosen page; other callers retain their eight-page default. Source hash, revision, page number, frame and page-region citations keep the existing contract.",
+    "words": "The eight-page refusal becomes the per-page offer. PDF upload and unread-text-layer forecasts use the shared bounds; unrelated file-kind sentences and review warnings stay unchanged. Originals above the renderer byte bound still receive the existing kept/not-read words.",
+    "pins": "documentReaderSha now includes document-pages.ts because document input bounds depend on it. OpenAPI, source pins and API-client types were regenerated."
+  },
+  "testsFirst": {
+    "studio": {"exitCode": 1, "failed": 4, "passed": 9, "scope": "Long-PDF offer, selected-page queue and invalid-page controls failed before implementation."},
+    "backend": {"exitCode": 1, "scope": "The literal test_only twelve-page PDF could not queue page 11: ocrSelection.page maximum was 8."},
+    "python": {"exitCode": 2, "scope": "Initial collection found missing fitz; this is dependency setup, not a successful renderer baseline."}
+  },
+  "invariants": [
+    "A literal test_only 12-page PDF queues one selected page with the original SHA-256 and revision; the OCR result keeps page 11 and its exact top-left-points frame.",
+    "The selected-page job never invokes the whole-document native extractor; original storage bytes remain byte-identical and no records are created.",
+    "The actual PDF renderer draws only page 11; page 0, a page beyond the end, 401 total pages and an original above 16 MiB are refused.",
+    "Eight-page old/default and selected-profile rasters and their receipts are byte-identical; existing short-PDF Studio tests pass.",
+    "Both the long-PDF retry body and OCR status validate against the published schema. OCR passages remain candidates, not facts."
+  ],
+  "realInputs": [
+    {"kind": "good", "path": "E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-magnolia-sanctioned-layout-original.pdf", "bytes": 2455183, "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3", "selectedPage": 3, "framePointsRounded6": [578.159973, 824.400024], "pixels": [982, 1400], "permission": "unconfirmed", "use": "Actual selected-page render only; no OCR text or accuracy measured."},
+    {"kind": "difficult", "path": "E:/BhuAayam-data/datasets/rera-storeys/RERAP01282025205138-1/sanctioned-building-plan.pdf", "bytes": 28181151, "refusal": "source_missing_or_over_byte_limit", "use": "Actual renderer refusal before reading the original bytes; Studio's existing 26.9 MiB kept/not-read words are tested."}
+  ],
+  "verificationEnvironment": {
+    "temporaryRoot": "E:/ulpin-tmp",
+    "nodePreload": "E:/ulpin-tmp/po1-safe-io.cjs",
+    "nodeSafety": "The local preload blocks environment-file reads before dotenv can open them, and denies forbidden private data paths.",
+    "python": "E:/BhuAayam-data/task-data/d3/geo-py311/Scripts/python.exe",
+    "pythonPath": "E:/Projects/ulpin-wt/po1/services/geo;C:/Users/kvina/AppData/Local/uv/cache/archive-v0/wSIcjV-ZfAR6Li1K;C:/Users/kvina/AppData/Local/uv/cache/archive-v0/8T04kS3yh_R4ohXY",
+    "pythonSafety": "PYTHONDONTWRITEBYTECODE=1; missing fitz and psutil supplied by read-only ABI-compatible cached packages via PYTHONPATH. No existing environment or data file was modified."
+  },
+  "checks": [
+    {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exitCode": 0},
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "pnpm studio:typecheck", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-concurrency=1 tests/intake-*.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts tests/document-later-receipt.test.ts tests/document-ocr-boundary.test.ts tests/document-pages.test.ts", "exitCode": 0, "passed": 475, "failed": 0, "skipped": 0},
+    {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake --maxWorkers=1", "exitCode": 0, "files": 48, "passed": 268, "failed": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-pdf-batch.test.ts", "exitCode": 0, "passed": 8},
+    {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/BatchPdfSection.test.tsx src/features/intake/upload-reader.test.tsx --maxWorkers=1", "exitCode": 0, "passed": 19},
+    {"command": "E:/BhuAayam-data/task-data/d3/geo-py311/Scripts/python.exe -m pytest services/geo/tests/test_source_ocr_candidate.py tests/test_document_pages.py -q", "exitCode": 0, "passed": 16},
+    {"command": "E:/BhuAayam-data/task-data/d3/geo-py311/Scripts/python.exe docs/evidence/po1/real-inputs.py", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc", "exitCode": 0},
+    {"command": "pnpm studio:api-types", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exitCode": 0, "operations": 329, "schemas": 372},
+    {"command": "python scripts/api/check.py", "exitCode": 0},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs d51f5c7f", "exitCode": 0, "report": "docs/evidence/po1/ui-design-check.md"},
+    {"command": "git diff --check", "exitCode": 0}
+  ],
+  "failureLedger": [
+    {"signature": "Studio typecheck: optional array element not narrowed; forecast test expected eight-page words", "decision": "Narrow the optional element, update only the PDF forecast expectation, then rerun; both pass."},
+    {"signature": "Concurrent verification: one backend file ended with all assertions passing; Studio child exits 3221226505 and transient missing React module files that exist on disk", "hypothesis": "Concurrent broad suites exceeded host process/resource headroom, rather than exposing a deterministic assertion failure.", "baseline": "Earlier full runs passed 475 backend and 268 Studio tests; loaded rerun failed at process/file level.", "comparison": "One bounded rerun on unchanged code, suites sequential, backend test-concurrency=1 and Studio maxWorkers=1.", "successCriterion": "Both full requested sets end with zero failed tests and no child crashes.", "stopCondition": "No further unchanged retry if the bounded comparison fails.", "result": "475 backend and 268 Studio tests passed; no dependency reinstall or product change for these failures."}
+  ],
+  "refresh": {
+    "hostOcrProfileRequired": true,
+    "hostPageRuntimeProfileRequired": true,
+    "processorImageRequiredForThisPath": false,
+    "reason": "OCR and private page inspection run the changed scripts/helper on the configured host interpreter. Refresh the checkout-bound host document/OCR profiles for matching source pins before rehearsal; this selected-page path does not call the processor image. Legacy renderer callers retain the eight-page default."
+  },
+  "gaps": [
+    "No dispatcher/database, host OCR inference, frozen-profile activation, browser focus/200% zoom or live runtime rehearsal was run. Protocol OCR output is stubbed; actual page rendering is exercised.",
+    "No real 9-400-page scan was qualified. Use one after the host profile refresh; the long-PDF regression uses explicitly generated test_only originals.",
+    "PDFs above 16 MiB remain honestly refused because the existing renderer cannot open them within its profile. Large page frames still require the existing bounded-region workflow."
+  ],
+  "safety": {"offline": true, "dockerUsed": false, "runtimeStarted": false, "credentialsRead": false, "forbiddenDataPathsOpened": false, "originalsModified": false, "pushed": false},
+  "next": "Review and integrate; refresh the host OCR/page profiles, then rehearse one real long scan through upload, selected-page OCR and the original-pinned citation opener. No processor image refresh is needed specifically for PO1."
+}
