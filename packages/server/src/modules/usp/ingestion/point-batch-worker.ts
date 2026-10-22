@@ -125,7 +125,7 @@ async function executePointBatchJob(jobId:string,deps:Dependencies,bounds:DbDead
     if(stored.length!==artifact.bytes||sha256(stored)!==artifact.sha256)
       throw new AppError(422,'POINT_ARTIFACT_INTEGRITY','The staged native batch differs from its receipt.');
     const preflight=Object.freeze({inputSha256:fingerprint(input),resultSha256:hash,artifactSha256:sha256(stored),artifactBytes:stored.length});
-    const extent=pointRecordsExtent(stored,result.metadata.scale,result.metadata.offset);
+    const extent=pointRecordsExtent(stored,result.metadata.scale,result.metadata.offset,result.metadata.recordLength);
     pointPublicationLive(bounds);
     await acceptUspJobAttempt(owned,asset,async(client,currentJob,accepted)=>{
       pointPublicationLive(bounds);

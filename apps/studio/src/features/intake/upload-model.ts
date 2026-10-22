@@ -73,8 +73,9 @@ const evidenceOnly = 'Its reading is kept as evidence, not placed on the map.';
 const groundOutlines = 'Building ground outlines are placed on the map when the file states an EPSG system; '
   + 'otherwise its reading is kept as evidence.';
 const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes,
-  read: 'Points are read when the file is compressed LAZ of LAS 1.4 point format 6 with at most '
-    + `${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points`, note: 'Other point files are kept, not read.' };
+  read: 'Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most '
+    + `${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points`,
+  note: 'Waveform formats 4/5/9/10, extra dimensions and other versions or formats are kept, not read.' };
 const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes, note: evidenceOnly };
 const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes,
   note: 'Choose Read as a table after upload.' };

@@ -141691,30 +141691,42 @@
                             "lasVersion": {
                               "type": "string",
                               "enum": [
+                                "1.2",
+                                "1.3",
                                 "1.4"
                               ]
                             },
                             "pointFormatId": {
                               "type": "number",
                               "enum": [
-                                6
+                                0,
+                                1,
+                                2,
+                                3,
+                                6,
+                                7,
+                                8
                               ]
                             },
                             "recordLength": {
                               "type": "number",
                               "enum": [
-                                30
+                                20,
+                                28,
+                                26,
+                                34,
+                                30,
+                                36,
+                                38
                               ]
                             },
                             "recordEncoding": {
                               "type": "string",
-                              "enum": [
-                                "las-1.4-point-format-6-le"
-                              ]
+                              "pattern": "^las-1\\.[234]-point-format-[0123678]-le$"
                             },
                             "dimensions": {
-                              "minItems": 18,
-                              "maxItems": 18,
+                              "minItems": 15,
+                              "maxItems": 22,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -141813,6 +141825,7 @@
                               ]
                             },
                             "gpsTimeType": {
+                              "nullable": true,
                               "type": "string",
                               "enum": [
                                 "standard",
@@ -141854,7 +141867,7 @@
                                   "offset": {
                                     "type": "integer",
                                     "minimum": 0,
-                                    "maximum": 29
+                                    "maximum": 37
                                   },
                                   "dtype": {
                                     "type": "string",
@@ -141864,7 +141877,7 @@
                                     "type": "integer",
                                     "minimum": 0,
                                     "exclusiveMinimum": true,
-                                    "maximum": 30
+                                    "maximum": 38
                                   }
                                 },
                                 "required": [
@@ -230330,30 +230343,42 @@
                             "lasVersion": {
                               "type": "string",
                               "enum": [
+                                "1.2",
+                                "1.3",
                                 "1.4"
                               ]
                             },
                             "pointFormatId": {
                               "type": "number",
                               "enum": [
-                                6
+                                0,
+                                1,
+                                2,
+                                3,
+                                6,
+                                7,
+                                8
                               ]
                             },
                             "recordLength": {
                               "type": "number",
                               "enum": [
-                                30
+                                20,
+                                28,
+                                26,
+                                34,
+                                30,
+                                36,
+                                38
                               ]
                             },
                             "recordEncoding": {
                               "type": "string",
-                              "enum": [
-                                "las-1.4-point-format-6-le"
-                              ]
+                              "pattern": "^las-1\\.[234]-point-format-[0123678]-le$"
                             },
                             "dimensions": {
-                              "minItems": 18,
-                              "maxItems": 18,
+                              "minItems": 15,
+                              "maxItems": 22,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -230452,6 +230477,7 @@
                               ]
                             },
                             "gpsTimeType": {
+                              "nullable": true,
                               "type": "string",
                               "enum": [
                                 "standard",
@@ -230493,7 +230519,7 @@
                                   "offset": {
                                     "type": "integer",
                                     "minimum": 0,
-                                    "maximum": 29
+                                    "maximum": 37
                                   },
                                   "dtype": {
                                     "type": "string",
@@ -230503,7 +230529,7 @@
                                     "type": "integer",
                                     "minimum": 0,
                                     "exclusiveMinimum": true,
-                                    "maximum": 30
+                                    "maximum": 38
                                   }
                                 },
                                 "required": [
@@ -313981,30 +314007,42 @@
                             "lasVersion": {
                               "type": "string",
                               "enum": [
+                                "1.2",
+                                "1.3",
                                 "1.4"
                               ]
                             },
                             "pointFormatId": {
                               "type": "number",
                               "enum": [
-                                6
+                                0,
+                                1,
+                                2,
+                                3,
+                                6,
+                                7,
+                                8
                               ]
                             },
                             "recordLength": {
                               "type": "number",
                               "enum": [
-                                30
+                                20,
+                                28,
+                                26,
+                                34,
+                                30,
+                                36,
+                                38
                               ]
                             },
                             "recordEncoding": {
                               "type": "string",
-                              "enum": [
-                                "las-1.4-point-format-6-le"
-                              ]
+                              "pattern": "^las-1\\.[234]-point-format-[0123678]-le$"
                             },
                             "dimensions": {
-                              "minItems": 18,
-                              "maxItems": 18,
+                              "minItems": 15,
+                              "maxItems": 22,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -314103,6 +314141,7 @@
                               ]
                             },
                             "gpsTimeType": {
+                              "nullable": true,
                               "type": "string",
                               "enum": [
                                 "standard",
@@ -314144,7 +314183,7 @@
                                   "offset": {
                                     "type": "integer",
                                     "minimum": 0,
-                                    "maximum": 29
+                                    "maximum": 37
                                   },
                                   "dtype": {
                                     "type": "string",
@@ -314154,7 +314193,7 @@
                                     "type": "integer",
                                     "minimum": 0,
                                     "exclusiveMinimum": true,
-                                    "maximum": 30
+                                    "maximum": 38
                                   }
                                 },
                                 "required": [
@@ -324720,30 +324759,42 @@
                                 "lasVersion": {
                                   "type": "string",
                                   "enum": [
+                                    "1.2",
+                                    "1.3",
                                     "1.4"
                                   ]
                                 },
                                 "pointFormatId": {
                                   "type": "number",
                                   "enum": [
-                                    6
+                                    0,
+                                    1,
+                                    2,
+                                    3,
+                                    6,
+                                    7,
+                                    8
                                   ]
                                 },
                                 "recordLength": {
                                   "type": "number",
                                   "enum": [
-                                    30
+                                    20,
+                                    28,
+                                    26,
+                                    34,
+                                    30,
+                                    36,
+                                    38
                                   ]
                                 },
                                 "recordEncoding": {
                                   "type": "string",
-                                  "enum": [
-                                    "las-1.4-point-format-6-le"
-                                  ]
+                                  "pattern": "^las-1\\.[234]-point-format-[0123678]-le$"
                                 },
                                 "dimensions": {
-                                  "minItems": 18,
-                                  "maxItems": 18,
+                                  "minItems": 15,
+                                  "maxItems": 22,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
@@ -324842,6 +324893,7 @@
                                   ]
                                 },
                                 "gpsTimeType": {
+                                  "nullable": true,
                                   "type": "string",
                                   "enum": [
                                     "standard",
@@ -324883,7 +324935,7 @@
                                       "offset": {
                                         "type": "integer",
                                         "minimum": 0,
-                                        "maximum": 29
+                                        "maximum": 37
                                       },
                                       "dtype": {
                                         "type": "string",
@@ -324893,7 +324945,7 @@
                                         "type": "integer",
                                         "minimum": 0,
                                         "exclusiveMinimum": true,
-                                        "maximum": 30
+                                        "maximum": 38
                                       }
                                     },
                                     "required": [
@@ -406450,30 +406502,42 @@
                   "lasVersion": {
                     "type": "string",
                     "enum": [
+                      "1.2",
+                      "1.3",
                       "1.4"
                     ]
                   },
                   "pointFormatId": {
                     "type": "number",
                     "enum": [
-                      6
+                      0,
+                      1,
+                      2,
+                      3,
+                      6,
+                      7,
+                      8
                     ]
                   },
                   "recordLength": {
                     "type": "number",
                     "enum": [
-                      30
+                      20,
+                      28,
+                      26,
+                      34,
+                      30,
+                      36,
+                      38
                     ]
                   },
                   "recordEncoding": {
                     "type": "string",
-                    "enum": [
-                      "las-1.4-point-format-6-le"
-                    ]
+                    "pattern": "^las-1\\.[234]-point-format-[0123678]-le$"
                   },
                   "dimensions": {
-                    "minItems": 18,
-                    "maxItems": 18,
+                    "minItems": 15,
+                    "maxItems": 22,
                     "type": "array",
                     "items": {
                       "type": "string",
@@ -406572,6 +406636,7 @@
                     ]
                   },
                   "gpsTimeType": {
+                    "nullable": true,
                     "type": "string",
                     "enum": [
                       "standard",
@@ -406613,7 +406678,7 @@
                         "offset": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 29
+                          "maximum": 37
                         },
                         "dtype": {
                           "type": "string",
@@ -406623,7 +406688,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 30
+                          "maximum": 38
                         }
                       },
                       "required": [

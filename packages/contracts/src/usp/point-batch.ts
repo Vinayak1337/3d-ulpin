@@ -7,9 +7,20 @@ export const POINT_BATCH_LIMITS=Object.freeze({originalBytes:16*1024*1024,retain
   artifactBytes:512*1024,resultBytes:32*1024,jobsPerSource:611,active:2});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const positive=z.number().int().positive(),finite=z.number().finite();
+export const POINT_BATCH_RECORD_LENGTHS = Object.freeze({ 0: 20, 1: 28, 2: 26, 3: 34, 6: 30, 7: 36, 8: 38 });
+const FORMAT_0_DIMENSIONS = ['X', 'Y', 'Z', 'intensity', 'return_number', 'number_of_returns',
+  'scan_direction_flag', 'edge_of_flight_line', 'classification', 'synthetic', 'key_point', 'withheld',
+  'scan_angle_rank', 'user_data', 'point_source_id'];
 const FORMAT_6_DIMENSIONS=['X','Y','Z','intensity','return_number','number_of_returns','synthetic',
   'key_point','withheld','overlap','scanner_channel','scan_direction_flag','edge_of_flight_line',
   'classification','user_data','scan_angle','point_source_id','gps_time'];
+const RGB_DIMENSIONS = ['red', 'green', 'blue'];
+const POINT_DIMENSIONS = {
+  0: FORMAT_0_DIMENSIONS, 1: [...FORMAT_0_DIMENSIONS, 'gps_time'],
+  2: [...FORMAT_0_DIMENSIONS, ...RGB_DIMENSIONS], 3: [...FORMAT_0_DIMENSIONS, 'gps_time', ...RGB_DIMENSIONS],
+  6: FORMAT_6_DIMENSIONS, 7: [...FORMAT_6_DIMENSIONS, ...RGB_DIMENSIONS],
+  8: [...FORMAT_6_DIMENSIONS, ...RGB_DIMENSIONS, 'nir'],
+};
 export const PointBatchSelectionSchema=z.strictObject({start:rev.max(POINT_BATCH_LIMITS.sourcePoints-1),
   count:positive.max(POINT_BATCH_LIMITS.batchPoints)});
 export const PointLineageSchema=z.strictObject({kind:z.enum(['original','native_point_derivative','unknown']),
@@ -29,18 +40,28 @@ export const PointBatchInputSchema=z.strictObject({version:z.literal(POINT_BATCH
   subject:z.string().min(1).max(256),accessSha256:hash,readerSha256:hash,batch:PointBatchSelectionSchema.nullable()});
 export const PointArtifactSchema=z.strictObject({key:z.string().min(1).max(512),sha256:hash,
   bytes:positive.max(POINT_BATCH_LIMITS.artifactBytes),mediaType:z.literal('application/vnd.las.point-records')});
-export const PointBatchMetadataSchema=z.strictObject({lasVersion:z.literal('1.4'),pointFormatId:z.literal(6),
-  recordLength:z.literal(30),recordEncoding:z.literal('las-1.4-point-format-6-le'),
-  dimensions:z.array(z.string().max(64)).length(FORMAT_6_DIMENSIONS.length),
+export const PointBatchMetadataSchema=z.strictObject({lasVersion:z.enum(['1.2','1.3','1.4']),
+  pointFormatId:z.literal([0,1,2,3,6,7,8]),recordLength:z.literal([20,28,26,34,30,36,38]),
+  recordEncoding:z.string().regex(/^las-1\.[234]-point-format-[0123678]-le$/),
+  dimensions:z.array(z.string().max(64)).min(15).max(22),
   sourcePointCount:positive.max(POINT_BATCH_LIMITS.sourcePoints),
   scale:z.tuple([finite,finite,finite]),offset:z.tuple([finite,finite,finite]),
   sourceBounds:z.tuple([finite,finite,finite,finite,finite,finite]),
   crsWkt:z.string().max(8192).nullable(),horizontalAuthority:z.string().max(100).nullable(),
   verticalReference:z.string().max(500).nullable(),verticalReferenceStatus:z.enum(['known','unknown']),
-  gpsTimeType:z.enum(['standard','week_time']),batch:PointBatchSelectionSchema,
-  recordFields:z.array(z.strictObject({name:z.string().max(64),offset:rev.max(29),
-    dtype:z.string().max(16),bytes:positive.max(30)})).min(1).max(20),
-  globalPlacement:z.literal('not_qualified')});
+  gpsTimeType:z.enum(['standard','week_time']).nullable(),batch:PointBatchSelectionSchema,
+  recordFields:z.array(z.strictObject({name:z.string().max(64),offset:rev.max(37),
+    dtype:z.string().max(16),bytes:positive.max(38)})).min(1).max(20),
+  globalPlacement:z.literal('not_qualified')}).superRefine((m,ctx)=>{
+  const dimensions = POINT_DIMENSIONS[m.pointFormatId];
+  if((m.pointFormatId >= 6 && m.lasVersion !== '1.4') ||
+    m.recordLength !== POINT_BATCH_RECORD_LENGTHS[m.pointFormatId] ||
+    m.recordEncoding !== `las-${m.lasVersion}-point-format-${m.pointFormatId}-le` ||
+    m.dimensions.length !== dimensions.length || m.dimensions.some((name,index)=>name !== dimensions[index]) ||
+    (m.gpsTimeType !== null) !== dimensions.includes('gps_time') ||
+    m.recordFields.some(f=>f.offset+f.bytes>m.recordLength))
+    ctx.addIssue({code:'custom',message:'Point metadata must describe the source format without invented dimensions.'});
+});
 const ResultBase=z.strictObject({version:z.literal(POINT_BATCH_VERSION),input:PointBatchInputSchema,
   metadata:PointBatchMetadataSchema,artifact:PointArtifactSchema,createdAt:z.iso.datetime()});
 export const PointBatchResultSchema=ResultBase.superRefine((value,ctx)=>{
@@ -48,7 +69,6 @@ export const PointBatchResultSchema=ResultBase.superRefine((value,ctx)=>{
   if(m.verticalReferenceStatus==='known'!==Boolean(m.verticalReference)||
     m.batch.start+m.batch.count>m.sourcePointCount||
     m.batch.count*m.recordLength!==value.artifact.bytes||
-    m.dimensions.some((name,index)=>name!==FORMAT_6_DIMENSIONS[index])||
     m.recordFields.some(f=>f.offset+f.bytes>m.recordLength)||
     (value.input.batch!==null&&(m.batch.start!==value.input.batch.start||m.batch.count!==value.input.batch.count)))
     ctx.addIssue({code:'custom',message:'Point batch metadata does not describe the exact native records.'});

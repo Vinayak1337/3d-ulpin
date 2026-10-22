@@ -55,7 +55,7 @@ export async function nativePointBatch(input:PointBatchInput,bounds:DbDeadline,r
       throw new AppError(422,'POINT_BATCH_OUT_OF_BOUNDS','Select a batch within the retained point count. The original remains available.');
     if(text==='Point source hash or byte count differs from its retained receipt.'||text==='Point source exceeds its retained byte receipt.')
       throw new AppError(422,'POINT_SOURCE_INTEGRITY','The retained point differs from its source receipt. Re-upload the original.');
-    throw new AppError(422,'POINT_UNSUPPORTED','The retained LAZ/COPC or selected native batch is unsupported; the original remains available.');
+    throw new AppError(422,'POINT_UNSUPPORTED','The retained LAS/LAZ or selected native batch is unsupported; the original remains available.');
   }
   if(!response.ok){await response.body?.cancel().catch(()=>{});
     throw new AppError(503,'POINT_PROCESSOR_UNAVAILABLE','The bounded point reader is unavailable; retry the retained source.');}

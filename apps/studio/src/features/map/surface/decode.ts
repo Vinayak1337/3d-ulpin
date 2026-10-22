@@ -3,7 +3,7 @@ import { partPicture, type PartPicture } from './pixels';
 import { decodeTiff, SurfaceRefusal } from './tiff';
 
 export type DecodeRequest = { kind: 'raster'; bytes: ArrayBuffer }
-  | { kind: 'points'; bytes: ArrayBuffer; corners: PlacedCorners };
+  | { kind: 'points'; bytes: ArrayBuffer; corners: PlacedCorners; recordLength?: number };
 export type DecodeReply = { kind: 'raster'; picture: PartPicture }
   | ({ kind: 'points' } & ReturnType<typeof placeBatch>)
   | { refusal: string };
@@ -12,7 +12,7 @@ export type DecodeReply = { kind: 'raster'; picture: PartPicture }
 export async function decodePart(request: DecodeRequest): Promise<DecodeReply> {
   try {
     if (request.kind === 'raster') return { kind: 'raster', picture: partPicture(await decodeTiff(request.bytes)) };
-    return { kind: 'points', ...placeBatch(readLasRecords(request.bytes), request.corners) };
+    return { kind: 'points', ...placeBatch(readLasRecords(request.bytes, request.recordLength), request.corners) };
   } catch (error) {
     if (error instanceof SurfaceRefusal) return { refusal: error.message };
     throw error;

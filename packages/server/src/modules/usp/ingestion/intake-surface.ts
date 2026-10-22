@@ -1,5 +1,6 @@
 import type { PoolClient } from 'pg';
 import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, RASTER_WINDOW_LIMITS, POINT_BATCH_LIMITS,
+  POINT_BATCH_RECORD_LENGTHS,
   IntakeSurfaceLocatorSchema, IntakeSurfacePartPageSchema, IntakeSurfaceDisplaySchema, type IntakeCard,
   type IntakeSurfaceLocator, type RasterWindowResult, type PointBatchResult } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
@@ -42,6 +43,7 @@ export function surfaceReader(card: IntakeCard, bytes: number): { operation: Ope
   if (!kind) return null;
   const raster = kind === 'raster';
   const point = kind === 'point';
+  const pointFormat = card.point?.format ?? null;
   const noun = raster ? 'raster' : 'point cloud';
   const ceiling = (raster ? RASTER_WINDOW_LIMITS : POINT_BATCH_LIMITS).originalBytes;
   if (bytes > ceiling) return { limit: `Kept (${mib(bytes)}). The batch reads a ${noun} of at most `
@@ -52,9 +54,12 @@ export function surfaceReader(card: IntakeCard, bytes: number): { operation: Ope
     + `${card.raster.height}, ${kept}` };
   if (raster && (card.counts.bands ?? 0) > RASTER_WINDOW_LIMITS.sourceBands) return { limit: 'Kept. The batch reads '
     + `a raster of at most 4 bands; this one has ${card.counts.bands}, ${kept}` };
-  if (point && (card.format !== 'laz' || (card.formatVersion !== null && card.formatVersion !== '1.4')
-    || (card.point !== null && card.point.format !== 6))) return { limit: 'Kept. The batch point reader takes '
-    + `compressed LAZ of LAS 1.4 point format 6 only; this is ${card.format.toUpperCase()} `
+  if (point && ((card.formatVersion !== null && !['1.2', '1.3', '1.4'].includes(card.formatVersion))
+    || (pointFormat !== null && !Object.hasOwn(POINT_BATCH_RECORD_LENGTHS, pointFormat))
+    || (pointFormat !== null && pointFormat >= 6 && card.formatVersion !== null
+      && card.formatVersion !== '1.4'))) return { limit: 'Kept. The batch point reader takes '
+    + 'LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8; waveform formats 4/5/9/10 are not read; '
+    + `this is ${card.format.toUpperCase()} `
     + `${card.formatVersion ?? 'of an unread version'}${card.point ? ` format ${card.point.format}` : ''}, ${kept}` };
   if (point && (card.counts.points ?? 0) > POINT_BATCH_LIMITS.sourcePoints) return { limit: 'Kept. The batch reads '
     + `a point cloud of at most 5 million points; this one states `
@@ -81,7 +86,7 @@ async function insertPartsTx(client: PoolClient, itemId: string, source: { sha25
 }
 
 /**
- * D2. Beside the vector queue in the publishing transaction: a kept TIFF or LAZ plans its first part and admits
+ * D2. Beside the vector queue in the publishing transaction: a kept TIFF or LAS/LAZ plans its first part and admits
  * it when the reader has room. True when this helper owns the item; an enrolment replay changes nothing.
  */
 export async function queueIntakeSurfaceTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard) {
@@ -295,11 +300,11 @@ export function surfacePlan(result: { operation: 'raster-window'; value: RasterW
   return result.operation === 'raster-window' ? rasterPlan(result.value) : pointPlan(result.value);
 }
 
-/** The XY extent of native LAS 1.4 format-6 records: int32 X and Y at bytes 0 and 4, scaled and offset. */
-export function pointRecordsExtent(records: Uint8Array, scale: number[], offset: number[]) {
+/** Native LAS formats share int32 X and Y at bytes 0 and 4; the accepted metadata supplies their stride. */
+export function pointRecordsExtent(records: Uint8Array, scale: number[], offset: number[], recordLength = 30) {
   const view = new DataView(records.buffer, records.byteOffset, records.byteLength);
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let at = 0; at + 30 <= records.byteLength; at += 30) {
+  for (let at = 0; at + recordLength <= records.byteLength; at += recordLength) {
     const x = view.getInt32(at, true) * scale[0] + offset[0], y = view.getInt32(at + 4, true) * scale[1] + offset[1];
     minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
   }

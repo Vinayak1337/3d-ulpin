@@ -1,6 +1,7 @@
+import { POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp';
 import { SurfaceRefusal } from './tiff';
 
-/** The point reader's batch (services/geo/geo/point_batch.py): raw LAS 1.4 format-6 records, 30 bytes each. */
+/** Native LAS batches; format 6 remains the default for earlier stored display reads. */
 export const LAS_LIMITS = Object.freeze({ record: 30, points: 8192 });
 /** Drawn point size in metres. */
 export const POINT_SIZE_M = 0.6;
@@ -10,14 +11,16 @@ type XY = readonly [number, number];
 export type PlacedCorners = readonly [XY, XY, XY, XY];
 
 /** The raw X, Y and Z integers of a batch's records; scale and offset are the reader's, never applied here. */
-export function readLasRecords(buffer: ArrayBuffer) {
-  const count = buffer.byteLength / LAS_LIMITS.record;
-  if (!Number.isInteger(count) || count < 1) throw new SurfaceRefusal('This batch is not whole LAS format-6 records.');
+export function readLasRecords(buffer: ArrayBuffer, recordLength: number = LAS_LIMITS.record) {
+  if (!(Object.values(POINT_BATCH_RECORD_LENGTHS) as number[]).includes(recordLength))
+    throw new SurfaceRefusal('This batch has an unsupported LAS record length.');
+  const count = buffer.byteLength / recordLength;
+  if (!Number.isInteger(count) || count < 1) throw new SurfaceRefusal('This batch is not whole native LAS records.');
   if (count > LAS_LIMITS.points) throw new SurfaceRefusal(`This batch holds ${count} points; the reader writes `
     + `at most ${LAS_LIMITS.points}.`);
   const view = new DataView(buffer);
   const x = new Int32Array(count), y = new Int32Array(count), z = new Int32Array(count);
-  for (let n = 0, at = 0; n < count; n++, at += LAS_LIMITS.record) {
+  for (let n = 0, at = 0; n < count; n++, at += recordLength) {
     x[n] = view.getInt32(at, true);
     y[n] = view.getInt32(at + 4, true);
     z[n] = view.getInt32(at + 8, true);

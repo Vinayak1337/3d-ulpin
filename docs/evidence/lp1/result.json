@@ -1,0 +1,102 @@
+{
+  "task": "LP1",
+  "gate": "AUD3 gap 13 (points)",
+  "baseline": "6323b054",
+  "qualification": "Offline checks only; no runtime, Docker, network, deployment or runtime gate pass.",
+  "checkpoint": "Relevant uncommitted implementation and tests were present at entry; preserved and reviewed.",
+  "facts": {
+    "before": "The batch admitted only compressed LAS 1.4 point format 6, with native 30-byte records.",
+    "image_requirements": { "laspy": "2.6.1", "lazrs": "0.8.0" },
+    "backend": "LazrsParallel from the image's installed lazrs; uncompressed LAS needs no backend.",
+    "test_python": "E:/BhuAayam-data/task-data/d3/geo-py311/Scripts/python.exe",
+    "local_versions": { "laspy": "2.6.1", "lazrs": "0.8.0", "pyproj": "3.6.1", "pytest": "8.3.5" },
+    "limits_unchanged": { "source_bytes": 16777216, "source_points": 5000000,
+      "batch_points": 8192, "artifact_bytes": 524288, "result_bytes": 32768 }
+  },
+  "change": {
+    "versions": ["1.2", "1.3", "1.4"],
+    "formats": [0, 1, 2, 3, 6, 7, 8],
+    "new_formats_require": "Formats 6-8 require LAS 1.4.",
+    "compression": "Both LAS and LAZ; temp suffix follows the actual header compression bit, not a filename.",
+    "records": "Source-native bytes, classification/return bit fields, scales, offsets and XYZ remain unchanged.",
+    "missing_fields": "Missing RGB/GPS dimensions and record fields stay absent; GPS time type is null without GPS.",
+    "crs": "Only source WKT or GeoTIFF VLRs; missing CRS and vertical reference stay null/unknown.",
+    "downstream": "Contract accepts exact version/format/stride/dimension combinations; extents and map use stride.",
+    "generated": ["docs/api/openapi.json", "docs/api/source-pins.json", "packages/api-client/src/schema.d.ts"]
+  },
+  "words": {
+    "forecast": "LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, at most 5 million points / 16 MiB.",
+    "kept": "Waveform formats 4/5/9/10, extra dimensions and other versions or formats are kept, not read.",
+    "server": "Unsupported versions/formats and over-limit originals retain the original and explain the limit.",
+    "waveform_check": "A format-4 card stays probed/not_understood with words and no queued point part."
+  },
+  "inputs": {
+    "literal_sources": "test_only: tiny laspy-authored files; no survey or evaluation-truth claim.",
+    "regressions": ["1.2/1 LAS", "1.3/3 LAS with RGB", "1.4/6 LAZ unchanged", "format 0 without RGB/GPS",
+      "1.2/2 LAZ", "1.4/7 LAS", "1.4/8 LAZ", "no CRS", "waveform format 4", "limits and source integrity"],
+    "real_good": {
+      "path": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-lidar-2017.laz",
+      "scope": "Existing foreign test_only derivative; unchanged original receipt checked by existing tests.",
+      "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790",
+      "points": 1726222, "crs": "EPSG:6347",
+      "first_artifact_sha256": "83286b0b5d8edf731d469b0cce1b768ba5a9af22abcb905ab294cbbb6a8dcaec",
+      "tail": { "start": 1720320, "count": 5902, "bytes": 177060 }
+    },
+    "real_difficult": "The same real source, selecting its last point plus one: refused outside source count.",
+    "real_difficult_result": "Point batch is outside the retained source point count.",
+    "real_new_format_gap": "No public LAS 1.2 tile rehearsal; expanded formats are qualified by literal tests only."
+  },
+  "test_first": {
+    "method": "Execute the baseline Python module in memory, then run the new native-record regression tests.",
+    "exit": 1, "failed": 6, "passed": 1,
+    "signature": "Only standard LAS 1.4 point format 6 without extra dimensions is supported losslessly.",
+    "decision": "Keep the unchanged LAZ 1.4/6 case; widen source formats without padding missing dimensions."
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test", "args": [
+      "tests/point-batch-formats.test.ts", "packages/server/src/modules/usp/ingestion/intake-*.test.ts"],
+      "exit": 0, "passed": 302, "skipped": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test", "args": [
+      "tests/point-publication.test.ts", "tests/raster-point-later-receipt.test.ts",
+      "tests/source-fusion-point.test.ts", "tests/registry-point-citations.test.ts",
+      "tests/sufficiency-raster-point.test.ts"], "exit": 0, "passed": 18 },
+    { "cwd": "services/geo", "interpreter": "facts.test_python",
+      "command": "python -m pytest tests/test_point_batch.py tests/test_surface_readers.py -o addopts='' -q",
+      "exit": 0, "passed": 17, "warnings": "24 existing rasterio matrix-multiplication deprecations." },
+    { "command": "pnpm --filter @ulpin/studio test", "args": [
+      "src/features/intake/upload-reader.test.tsx", "src/features/map/surface/las.test.ts",
+      "src/features/map/surface/parts.test.ts"], "exit": 0, "passed": 18, "skipped": 1 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 0, "operations": 329, "schemas": 372 },
+    { "command": "Existing real-source first/tail/end-crossing offline reader check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs HEAD", "exit": 0 },
+    { "command": "Same design scan scoped in memory to apps/studio against 6323b054",
+      "exit": 0, "added_lines_scanned": 58, "candidates": 0 },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "New-file line-length check (120 columns)", "exit": 0 }
+  ],
+  "check_safety": "Node checks used a temporary preload blocking .env and forbidden private data paths before I/O.",
+  "corrected_check_failures": [
+    { "exit": 2, "cause": "Initial safety matcher blocked unrelated source filename area-acquisitions.ts.",
+      "decision": "Match prohibited directory components, not an unrelated source basename; typechecks then pass." },
+    { "exit": 1, "cause": "New waveform test double lacked the initial intake-item SELECT answer.",
+      "decision": "Reuse the existing ledger with that one SELECT answered; all 302 tests then pass." }
+  ],
+  "ui_design_check": {
+    "blocking": [], "design_system": [],
+    "checked_no_issue": [
+      "apps/studio/src/features/intake/upload-model.ts:73-79: truthful format, byte and point limits.",
+      "apps/studio/src/features/map/surface/{las,parts,decode}.ts: source stride, no invented geometry or values.",
+      "No layout, styling, controls, focus or zoom behavior changed; missing values are not padded with zero."
+    ],
+    "scope_note": "The repository scanner defaults to legacy UI; also applied its same rules to changed Studio lines.",
+    "browser": "Not run: offline-only task, no runtime."
+  },
+  "next": {
+    "processor_image_rebuild_required": true,
+    "rehearsal_input": "One public LAS 1.2 tile, within 16 MiB and 5 million points, with its own CRS VLRs.",
+    "action": "Rebuild the processor image, integrate, then rehearse intake and map display; no image pin changed."
+  }
+}
