@@ -14,19 +14,19 @@
   "modelRequirement": {"filename": "floor.onnx", "bytes": 69471289, "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520", "profile": "cubicasa-rooms-768-bilinear-pad64-contours-v2", "pinnedInManifest": true, "weightsBakedIntoDockerfile": false, "actualProcessorInstallation": "not inspected; readiness verifies the processor's local ML_MODEL_DIR artifact without downloading", "newProcessorImageRequired": true, "weightsRequiredForAction": true, "dependencyChange": "PyMuPDF==1.25.5 for the existing literal parser and OCR observation module imported by raster_plan; existing ONNX/PDF dependencies retained", "noModelBehavior": "No action; exact requested explanation. Missing, mismatched or unpinned artifacts and old/unavailable processor operations fail closed."},
   "change": [
     "GET item/plan-reader checks source access and processor readiness; PDF eligibility includes only accepted full-page OCR for the same source bytes/revision, with an unrotated known frame.",
-    "POST item/plan-readings returns 202. The existing request-key ledger and a stable item/source-revision/page job identity coalesce repeated presses. Non-JPEG/PNG/non-PDF items, absent models, images beyond page 1, unread PDF pages and originals above 16 MiB refuse without a job.",
+    "POST item/plan-readings returns 202. The request-key ledger replays the same request. A stable item/source-revision/page/attempt identity coalesces presses while a job is queued, running or succeeded; a failed or stale latest job allows a new officer press. Non-JPEG/PNG/non-PDF items, absent models, images beyond page 1, unread PDF pages and originals above 16 MiB refuse without a job.",
     "The existing dispatcher document lane runs intake-plan through fenced job attempts. Input pins include source/access, model hash and the accepted page OCR hash. Before/after-I/O checks fence changed originals, OCR or attempts.",
     "The existing areaGeo transport calls private plan-reading on the same processor, which reuses segment_bytes and panel_result. Output is stored in the item's existing plan_ref.planReadings projection, with no schema migration, new service, new queue authority or registry write.",
     "Each room keeps page-pixel Polygon/MultiPolygon geometry, candidate model class, contained OCR literals, nullable literalClass, unknown level and metric=null for no_scale. Source/model/page and overlay PNG hashes are validated. Contained labels must occur in the page's exact accepted OCR observations.",
     "Studio offers one selected-page press separately from OCR. The item line shows candidate room count, resolved scale with units or no scale, and a stored overlay link when present. Queued plan readings keep disconnected-update fallback active. The original OCR press and its words are unchanged."
   ],
-  "words": {"absentModel": "The plan reader's model is not installed in this build.", "press": "Read candidate rooms on the selected page", "noScale": "Page {page}: {count} candidate rooms · no scale. Review before use.", "scale": "scale from page dimensions: {stored factor} m per page point/pixel", "photoOcr": "Photo labels were not read by OCR; literal room classes are unknown.", "label": "It is kept as a labelled plan image. The separate plan reading can propose candidate rooms when its model is installed. Labelling alone creates no rooms, levels or units."},
+  "words": {"absentModel": "The plan reader's model is not installed in this build.", "press": "Read candidate rooms on the selected page", "againPress": "Read candidate rooms again on the selected page", "noScale": "Page {page}: {count} candidate rooms · no scale. Review before use.", "scale": "scale from page dimensions: {stored factor} m per page point/pixel", "photoOcr": "Photo labels were not read by OCR; literal room classes are unknown.", "label": "It is kept as a labelled plan image. The separate plan reading can propose candidate rooms when its model is installed. Labelling alone creates no rooms, levels or units."},
   "limitsAndGaps": [
     "No processor image was built or run, and no inference accuracy or successful real room extraction is claimed.",
     "The existing OCR runtime handles PDF pages, not standalone photos. Photo rooms therefore carry empty contained labels and null literalClass, explicitly reported as image_ocr_unavailable; model class is retained separately, never substituted as an OCR literal.",
     "No qualified dimension-line endpoint reader supplies this batch bridge, so its current jobs honestly return no_scale and null metric geometry. panel_result's verified-line path is tested for resolved scale, conflicts and missing-axis abstention; no scale is inferred from segmentation.",
     "Existing OCR PDF limits remain 16 MiB and at most eight total pages. This task does not extend long-PDF rendering or add world placement, room-to-level/unit association or registry acceptance.",
-    "An item/page has one logical reading, including a stopped reading. Automatic requeue after a changed build/model is not introduced; explicit retry/version policy is follow-up work.",
+    "Failed or stale jobs can be explicitly requested again, one job at a time per item/source revision/page. Studio offers the again-press only for a stored failed reading; there is no automatic requeue after a changed build or model.",
     "No browser keyboard/contrast/200%-zoom qualification was performed."
   ],
   "realInputs": [
@@ -54,5 +54,28 @@
     "Source and candidate tests were reviewed against the task base. Large OpenAPI/client changes are generated schema propagation; pinned sources were refreshed with the requested base."
   ],
   "rehearsal": {"performed": false, "input": "One provenance-kept public JPEG/PNG plan photo, at most 16 MiB and 40 million decoded pixels; owner/runtime operator supplies it, no new acquisition in this task.", "steps": ["Build and pin the combined geo image; install or read-only mount the manifest-matching floor.onnx in its configured ML_MODEL_DIR. Without it, verify the exact missing-model words and absence of the action.", "Upload the public plan photo to a fresh approved rehearsal batch, label it as a plan, then press Read candidate rooms on the selected page once. Verify one job, unchanged original hash, candidate pixel rooms, no scale and no registry/map/level/unit changes. Open the stored overlay and review omissions. Photo OCR labels must remain explicitly unavailable, not guessed.", "For a PDF comparison, run the existing OCR press on one selected page, then the separate room press. Verify contained literal labels against accepted OCR, repeat-press idempotency and reload persistence; check keyboard focus and 200% zoom."]},
-  "next": "Lead reviews/integrates; runtime owner builds/pins the processor and verifies installed weights before the public-plan rehearsal. Photo OCR and verified dimension-line acquisition remain explicit follow-ups, never silently inferred."
+  "reviewFix": {
+    "task": "PB1-FIX",
+    "base": "89999340",
+    "scope": "Offline regressions only; no Docker, runtime, database or external processor calls. All temporary outputs are under E:/ulpin-tmp. No real-source inference rerun or new data qualification.",
+    "changes": [
+      "Under the existing item advisory lock, select the latest job and count earlier jobs for the same item, original revision and page. Failed/stale jobs permit a new deterministic ordinal job id; other job states return their receipt. The request-key ledger still replays the original receipt even after its job stops.",
+      "readPlan obtains processor readiness before entering the case-lock transaction; the verified result is passed into queueIntakePlanTx.",
+      "Studio scopes pending/request-key state to the failed job being retried, so a stopped reading can be requested again without remounting. Unknown network outcomes retain the same key; successful presses suppress immediate duplicates while the item refreshes. Existing stopped words are unchanged."
+    ],
+    "testsFirst": {"backendExitCode": 1, "backendFailed": 3, "studioExitCode": 1, "studioFailed": 2, "signature": "Failed/stale jobs returned their old ids; readiness ran inside the transaction; Studio had no enabled again-press, including after failure in the same mounted section."},
+    "checks": [
+      {"command": "pnpm typecheck:backend", "exitCode": 0},
+      {"command": "pnpm studio:typecheck", "exitCode": 0},
+      {"command": "REPO_DATA=false PYTHONDONTWRITEBYTECODE=1 ULPIN_NR1_PYTHON=E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-*.test.ts apps/api/src/modules/ingestion/intake-plan.controller.test.ts tests/intake-*.test.ts", "exitCode": 0, "passed": 437, "failed": 0, "skipped": 0},
+      {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/plan-reading.test.tsx", "exitCode": 0, "passed": 7, "failed": 0},
+      {"command": "git diff --check", "exitCode": 0},
+      {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 89999340", "exitCode": 0, "report": "docs/evidence/pb1/ui-design-check.md"}
+    ],
+    "verificationNote": "A final fixture cleanup initially removed the job-registration helper's SELECT FOR UPDATE handler, causing Unexpected test SQL failures. Restored that exact handler after tracing registerUspJobInputTx; no production workaround.",
+    "contract": "No wire-contract change; OpenAPI regeneration/check not required.",
+    "realInputs": "The good Magnolia and difficult Tower 3 source receipts above are prior PB1 evidence, not rerun for this offline control-flow fix. Tests use explicit test-only protocol fixtures, never evaluation truth.",
+    "gaps": "No live PostgreSQL concurrency, processor or browser qualification. The existing serializing lock is retained; retry SQL and transaction order are exercised with protocol fakes."
+  },
+  "next": "Lead reviews/integrates; runtime owner rehearses a failed page followed by an explicit new press and confirms one active job plus unchanged originals. Existing processor installation, photo OCR and verified dimension-line gaps remain."
 }

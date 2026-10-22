@@ -70,6 +70,65 @@ it('hides the plan action when the model is absent and says why', async () => {
   await act(async () => { view.unmount(); client.clear(); });
 });
 
+it('offers reading again only for the selected failed page, retaining the stopped words', async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+  client.setQueryData(['intake', caseId, 'plan-reader', itemId, item.updatedAt],
+    { available: true, reason: null, modelSha256: 'a'.repeat(64), pages: [1, 2, 3, 4] });
+  const failed = { jobId: caseId, page: 1, status: 'failed' as const, error: 'PLAN_READ_FAILED', result: null };
+  const pdf: IntakeItem = { ...item, format: 'pdf', family: 'document', planReadings: [failed,
+    { ...failed, page: 2, status: 'queued', error: null }, { ...readings[0]!, page: 3 }] };
+  const root = container();
+  const view = createRoot(root as never);
+  await act(async () => view.render(<QueryClientProvider client={client}>
+    <PlanReadingSection caseId={caseId} item={pdf} refresh={() => {}} />
+    <PlanReadingSummary readings={pdf.planReadings!} />
+  </QueryClientProvider>));
+  const button = () => elements(root).find(node => node.tagName === 'BUTTON')!;
+  expect(button().textContent).toBe('Read candidate rooms again on the selected page');
+  expect(propsOf(button()).disabled).toBe(false);
+  expect(root.textContent).toContain('candidate room reading stopped (PLAN_READ_FAILED). Nothing was recorded.');
+  expect(root.textContent).not.toContain('it will not be queued again');
+  const select = elements(root).find(node => node.tagName === 'SELECT')!;
+  for (const page of [2, 3, 4]) {
+    await act(async () => propsOf(select).onChange?.({ target: { value: String(page) } }));
+    expect(button().textContent).toBe('Read candidate rooms on the selected page');
+    expect(propsOf(button()).disabled).toBe(page !== 4);
+  }
+  await act(async () => { view.unmount(); client.clear(); });
+});
+
+it('a stopped reading can be pressed again in the same mounted section with a fresh request key', async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+  client.setQueryData(['intake', caseId, 'plan-reader', itemId, item.updatedAt],
+    { available: true, reason: null, modelSha256: 'a'.repeat(64), pages: [1] });
+  const sent: { requestKey: string; page: number }[] = [];
+  vi.stubGlobal('fetch', async (request: Request) => {
+    sent.push(await request.json());
+    return Response.json({ jobId: sent.length === 1 ? caseId : itemId, itemId, page: 1 }, { status: 202 });
+  });
+  const root = container();
+  const view = createRoot(root as never);
+  const render = async (current: IntakeItem) => act(async () => view.render(<QueryClientProvider client={client}>
+    <PlanReadingSection caseId={caseId} item={current} refresh={() => {}} />
+  </QueryClientProvider>));
+  const button = () => elements(root).find(node => node.tagName === 'BUTTON')!;
+  await render(item);
+  await act(async () => propsOf(button()).onClick?.({}));
+  await flush();
+  const failed: IntakeItem = { ...item, planReadings: [{ jobId: caseId, page: 1, status: 'failed',
+    error: 'PLAN_READ_FAILED', result: null }] };
+  await render(failed);
+  expect(propsOf(button()).disabled).toBe(false);
+  await act(async () => propsOf(button()).onClick?.({}));
+  await flush();
+  expect(sent).toHaveLength(2);
+  expect(sent[1]!.requestKey).not.toBe(sent[0]!.requestKey);
+  expect(propsOf(button()).disabled).toBe(true);
+  await render({ ...failed, planReadings: [{ ...failed.planReadings![0]!, jobId: itemId }] });
+  expect(propsOf(button()).disabled).toBe(false);
+  await act(async () => { view.unmount(); client.clear(); });
+});
+
 it('one press queues the selected OCR page and prevents another press for that page', async () => {
   const pdf: IntakeItem = { ...item, format: 'pdf', family: 'document' };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });

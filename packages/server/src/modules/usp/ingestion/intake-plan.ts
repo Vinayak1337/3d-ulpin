@@ -41,7 +41,15 @@ function assertPlanPage(item: PlanItem, page: number, ocr: IntakePlanInput['ocr'
     'Read the words on this PDF page (OCR) before asking for candidate rooms.');
 }
 
-/** One logical job per original item and page, irrespective of the press's request key. */
+async function latestPlanJobTx(client: PoolClient, source: IntakeSourceRow, itemId: string, page: number) {
+  return (await client.query<{ id: string; status: string; attempts: number }>(
+    `SELECT id,status,count(*) OVER ()::int AS attempts FROM jobs
+      WHERE source_id=$1 AND operation='intake-plan' AND payload @> $2::jsonb
+      ORDER BY created_at DESC,id DESC LIMIT 1`,
+    [source.id, { itemId, sourceRevision: source.revision, page }])).rows[0];
+}
+
+/** One job at a time per original revision and page; stopped jobs need a new officer press. */
 export async function queueIntakePlanTx(client: PoolClient, source: IntakeSourceRow, item: PlanItem,
   page: number, model: IntakePlanModel, ocr: IntakePlanInput['ocr']) {
   assertPlanPage(item, page, ocr);
@@ -49,9 +57,12 @@ export async function queueIntakePlanTx(client: PoolClient, source: IntakeSource
   if (Number(source.bytes) > 16 * 1024 ** 2) throw new AppError(413, 'PLAN_SOURCE_LIMIT',
     'The plan reader takes an original of at most 16 MiB; the original stays kept.');
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-plan:${item.item_id}`]);
-  const jobId = stableUuid(`intake-plan/1:${item.item_id}:${source.revision}:${page}`);
+  const latest = await latestPlanJobTx(client, source, item.item_id, page);
+  if (latest && !['failed', 'stale'].includes(latest.status)) {
+    return { jobId: latest.id, itemId: item.item_id, page };
+  }
+  const jobId = stableUuid(`intake-plan/1:${item.item_id}:${source.revision}:${page}:${latest?.attempts ?? 0}`);
   const receipt = { jobId, itemId: item.item_id, page };
-  if ((await client.query('SELECT * FROM jobs WHERE id=$1', [jobId])).rows.length) return receipt;
   const scope = await intakeCaseTx(client, source.case_id);
   const input = IntakePlanInputSchema.parse({ version: 'intake-plan/1', ...receipt, caseId: source.case_id,
     caseRevision: scope.current.revision, sourceId: source.id, sourceRevision: source.revision,

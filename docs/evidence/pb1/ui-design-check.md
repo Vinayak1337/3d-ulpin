@@ -1,5 +1,24 @@
 # PB1 UI design check
 
+## PB1-FIX review
+
+Base: `89999340`. Offline source and component-test review.
+
+- **Blocking:** none found.
+- **Design system:** no new styling or component drift. Browser focus, contrast and 200% zoom remain unqualified.
+- **Checked, no issue:** `apps/studio/src/features/intake/PlanReadingSection.tsx:112-126` offers
+  `Read candidate rooms again on the selected page` only for that page's stored failed reading. Queued and
+  completed pages remain disabled; an unread page retains the original press. Existing stopped words in
+  `planReadingWords` are unchanged. The soft Button and labelled native select retain their existing anatomy.
+  [Content rules](../../design-system/README.md#content-rules) require a button to say exactly what happens.
+- `apps/studio/src/features/intake/plan-reading.test.tsx:70-131` checks selected-page eligibility, unchanged stopped
+  words, immediate duplicate suppression and a fresh request key after each stopped attempt, without remounting.
+
+Mechanical scan: `node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 89999340` — exit **0**.
+The scanner covers `apps/web` only (0 added lines); the changed Studio component was reviewed manually.
+
+## Original PB1 review
+
 Base: `6323b054`. Offline source and component-test review; no browser or runtime qualification.
 
 ## Blocking

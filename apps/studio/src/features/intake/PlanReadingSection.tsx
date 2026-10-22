@@ -49,20 +49,20 @@ function PlanOverlayLink({ overlay }: { overlay: NonNullable<NonNullable<Reading
 }
 
 function usePlanPress(caseId: string, itemId: string, refresh: () => void) {
-  const [keys] = useState(() => new Map<number, string>());
-  const [requested, setRequested] = useState<number[]>([]);
-  const press = useMutation({ mutationFn: async (page: number) => {
-    if (!keys.has(page)) keys.set(page, crypto.randomUUID());
+  const [keys] = useState(() => new Map<string, string>());
+  const [requested, setRequested] = useState<string[]>([]);
+  const press = useMutation({ mutationFn: async ({ page, attemptKey }: { page: number; attemptKey: string }) => {
+    if (!keys.has(attemptKey)) keys.set(attemptKey, crypto.randomUUID());
     try {
       return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/plan-readings', {
-        params: { path: { caseId, itemId } }, body: { requestKey: keys.get(page)!, page },
+        params: { path: { caseId, itemId } }, body: { requestKey: keys.get(attemptKey)!, page },
       }));
     } catch (error) {
-      if (error instanceof ApiError && error.status < 500 && error.status !== 429) keys.delete(page);
+      if (error instanceof ApiError && error.status < 500 && error.status !== 429) keys.delete(attemptKey);
       throw error;
     }
-  }, onSuccess: receipt => {
-    setRequested(current => [...current, receipt.page]);
+  }, onSuccess: (_receipt, { attemptKey }) => {
+    setRequested(current => [...current, attemptKey]);
     refresh();
   } });
   return { press, requested };
@@ -101,23 +101,25 @@ function CandidatePlanReading({ caseId, item, refresh }: {
 }
 
 function PlanPress({ item, pages, requested, press }: {
-  item: IntakeItem; pages: number[]; requested: number[]; press: ReturnType<typeof usePlanPress>['press'];
+  item: IntakeItem; pages: number[]; requested: string[]; press: ReturnType<typeof usePlanPress>['press'];
 }) {
   const [chosen, setChosen] = useState<number | null>(null);
   const page = chosen !== null && pages.includes(chosen) ? chosen : pages[0];
   if (!pages.length) return <p>{item.sizeBytes !== null && item.sizeBytes > 16 * 1024 ** 2
     ? 'This original is above the plan reader\'s 16 MiB limit.'
     : 'Read the words on a selected PDF page (OCR) first. Only an already-read page can propose rooms.'}</p>;
-  const already = item.planReadings?.some(reading => reading.page === page)
-    || (page !== undefined && requested.includes(page));
+  const reading = item.planReadings?.find(entry => entry.page === page);
+  const failed = reading?.status === 'failed';
+  const attemptKey = failed ? reading.jobId : String(page);
+  const already = Boolean(reading && !failed) || requested.includes(attemptKey);
   return <>
     <label>Plan page <select value={page} disabled={press.isPending}
       onChange={event => setChosen(Number(event.target.value))}>
       {pages.map(value => <option key={value} value={value}>Page {value}</option>)}
     </select></label>
     <div><Button variant="soft" disabled={press.isPending || already || page === undefined}
-      onClick={() => page !== undefined && press.mutate(page)}>
-      Read candidate rooms on the selected page
+      onClick={() => page !== undefined && press.mutate({ page, attemptKey })}>
+      {failed ? 'Read candidate rooms again on the selected page' : 'Read candidate rooms on the selected page'}
     </Button></div>
     {already ? <p>That page has a candidate room reading; it will not be queued again.</p> : null}
   </>;

@@ -313,6 +313,7 @@ export class IntakeService {
     const caseId = uuid.parse(caseValue);
     const itemId = uuid.parse(itemValue);
     const request = IntakePlanRequestSchema.parse(raw);
+    const model = await this.dependencies.planModel();
     return this.dependencies.transaction(async client => {
       await lockSourceCaseDestinationTx(client, caseId);
       const scope = await intakeCaseTx(client, caseId, true);
@@ -321,7 +322,6 @@ export class IntakeService {
       const digest = fingerprint({ request, itemId, access: scope.binding.access });
       const prior = await priorTx(client, caseId, key, digest);
       if (prior) return prior;
-      const model = await this.dependencies.planModel();
       const pages = row.card?.format === 'pdf' ? await this.dependencies.planOcrPages(client, source) : new Map();
       const receipt = await queueIntakePlanTx(client, source, row, request.page, model,
         pages.get(request.page) ?? null);

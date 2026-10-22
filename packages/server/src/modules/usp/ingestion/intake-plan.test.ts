@@ -42,6 +42,8 @@ function protocol(format = 'png', modelInstalled = true) {
   const jobs: any[] = [];
   const statements: string[] = [];
   const operations = new Map<string, { payload_hash: string; result: unknown }>();
+  const order: string[] = [];
+  let inTransaction = false;
   const client = { query: async (sql: string, values: any[] = []) => {
     statements.push(sql);
     let rows: any[] = [];
@@ -53,8 +55,12 @@ function protocol(format = 'png', modelInstalled = true) {
       operations.set(values[1], { payload_hash: values[2], result: values[3] });
     else if (sql.startsWith('SELECT id,revision,archived FROM cases'))
       rows = [{ id: caseId, revision: 0, archived: false }];
-    else if (sql.startsWith('SELECT * FROM jobs')) rows = jobs.filter(job => job.id === values[0]);
-    else if (sql.startsWith('SELECT state,placement,plan_ref')) rows = [projection];
+    else if (sql === 'SELECT * FROM jobs WHERE id=$1 FOR UPDATE') rows = jobs.filter(job => job.id === values[0]);
+    else if (sql.startsWith('SELECT id,status,count(*) OVER ()::int AS attempts FROM jobs')) {
+      const matching = jobs.filter(job => job.source_id === values[0]
+        && Object.entries(values[1]).every(([key, value]) => job.payload[key] === value));
+      rows = matching.slice(-1).map(job => ({ ...job, attempts: matching.length }));
+    } else if (sql.startsWith('SELECT state,placement,plan_ref')) rows = [projection];
     else if (sql.startsWith('SELECT item_id AS')) rows = [{ itemId: sourceId, state: 'read', family: 'image',
       format, sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
     else if (sql.startsWith('SELECT revision FROM cases')) rows = [{ revision: 0 }];
@@ -71,11 +77,21 @@ function protocol(format = 'png', modelInstalled = true) {
       throw new Error(`Unexpected test SQL: ${sql}`);
     return { rows, rowCount: rows.length };
   } } as unknown as PoolClient;
-  const service = new IntakeService({ transaction: (async (work: (client: PoolClient) => Promise<unknown>) =>
-    work(client)) as never, planModel: async () => modelInstalled ? ready
-      : { available: false, reason: "The plan reader's model is not installed in this build.", modelSha256: null },
-  planOcrPages: async () => new Map() });
-  return { client, source, item, jobs, statements, service, projection: () => projection };
+  const service = new IntakeService({ transaction: (async (work: (client: PoolClient) => Promise<unknown>) => {
+    order.push('transaction:start');
+    inTransaction = true;
+    try {
+      return await work(client);
+    } finally {
+      inTransaction = false;
+      order.push('transaction:end');
+    }
+  }) as never, planModel: async () => {
+    order.push(inTransaction ? 'model:inside' : 'model:outside');
+    return modelInstalled ? ready
+      : { available: false, reason: "The plan reader's model is not installed in this build.", modelSha256: null };
+  }, planOcrPages: async () => new Map() });
+  return { client, source, item, jobs, statements, service, order, projection: () => projection };
 }
 
 test('the officer press replays a request and coalesces different request keys for the same page', async () => {
@@ -87,6 +103,45 @@ test('the officer press replays a request and coalesces different request keys f
   await assert.rejects(fixture.service.readPlan(caseId, sourceId, { ...request, page: 2 }), /request key/);
   assert.equal(fixture.jobs.length, 1);
   assert.equal(fixture.jobs[0].input_fingerprint, fingerprint(fixture.jobs[0].payload));
+});
+
+for (const status of ['failed', 'stale']) {
+  test(`a ${status} page queues a new attempt while request-key replays stay idempotent`, async () => {
+    const fixture = protocol();
+    const firstRequest = { requestKey: caseId, page: 1 };
+    const first = await fixture.service.readPlan(caseId, sourceId, firstRequest);
+    fixture.jobs[0].status = status;
+    assert.deepEqual(await fixture.service.readPlan(caseId, sourceId, firstRequest), first);
+    const retryRequest = { requestKey: sourceId, page: 1 };
+    const second = await fixture.service.readPlan(caseId, sourceId, retryRequest);
+    assert.notEqual(second.jobId, first.jobId);
+    assert.deepEqual(await fixture.service.readPlan(caseId, sourceId, retryRequest), second);
+    assert.equal(fixture.jobs.length, 2);
+    assert.equal(fixture.projection().plan_ref.planReadings[0].jobId, second.jobId);
+    assert.equal(fixture.projection().plan_ref.planReadings[0].status, 'queued');
+    fixture.jobs[1].status = status;
+    assert.deepEqual(await fixture.service.readPlan(caseId, sourceId, retryRequest), second);
+    const third = await queueIntakePlanTx(fixture.client, fixture.source, fixture.item, 1, ready, null);
+    assert.notEqual(third.jobId, second.jobId);
+    assert.notEqual(third.jobId, first.jobId);
+    assert.equal(fixture.jobs.length, 3);
+  });
+}
+
+for (const status of ['queued', 'running', 'succeeded']) {
+  test(`a ${status} page returns its receipt without another job`, async () => {
+    const fixture = protocol();
+    const first = await fixture.service.readPlan(caseId, sourceId, { requestKey: caseId, page: 1 });
+    fixture.jobs[0].status = status;
+    assert.deepEqual(await fixture.service.readPlan(caseId, sourceId, { requestKey: sourceId, page: 1 }), first);
+    assert.equal(fixture.jobs.length, 1);
+  });
+}
+
+test('readPlan checks processor readiness before starting the case transaction', async () => {
+  const fixture = protocol();
+  await fixture.service.readPlan(caseId, sourceId, { requestKey: caseId, page: 1 });
+  assert.deepEqual(fixture.order, ['model:outside', 'transaction:start', 'transaction:end']);
 });
 
 test('the service explains an absent model and refuses the officer press without enqueuing', async () => {
