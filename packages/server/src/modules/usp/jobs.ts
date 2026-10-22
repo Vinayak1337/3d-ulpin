@@ -248,7 +248,8 @@ export async function claimUspJobAttempt(jobId: string, owner: string,beforeLock
       VALUES($1,$2,$3,$4,$5,now()+interval '180 seconds','active') RETURNING lease_until`,
       [jobId, number, fence, owner, meta.input_sha256])).rows[0];
     await client.query(`UPDATE usp_job_metadata SET logical_state='running',version=version+1 WHERE job_id=$1`, [jobId]);
-    await client.query(`UPDATE jobs SET status='running',attempts=$2 WHERE id=$1`, [jobId, number]);
+    await client.query(`UPDATE jobs SET status='running',attempts=$2,
+      dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1`, [jobId, number]);
     return { jobId, number, fence, owner, leaseUntil: new Date(row.lease_until).toISOString(), inputSha256: meta.input_sha256 };
   },deadline);
 }

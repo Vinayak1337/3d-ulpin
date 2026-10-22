@@ -189,6 +189,16 @@ export class DispatchReservations {
   private readonly held = new Map<string, Hold>();
   private readonly refused = new Map<string, { since: number; created: number }>();
 
+  constructor(private readonly onRelease: () => void = () => {}) {}
+
+  /** Full lanes cannot consume the ready window; processor state reads still bypass this filter. */
+  unavailableLanes(elsewhere: readonly DispatchJob[]): DispatchLane[] {
+    const outside = elsewhere.filter(job => !this.held.has(job.id)).map(dispatchHold);
+    const holding = [...this.held.values(), ...outside];
+    return (Object.keys(DISPATCH_LANES) as DispatchLane[]).filter(lane =>
+      holding.filter(hold => hold.lane === lane).length >= DISPATCH_LANES[lane].concurrency);
+  }
+
   /**
    * Reserves only when the job's lane is under its concurrency and its memory and scratch fit what is unreserved
    * (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
@@ -213,7 +223,7 @@ export class DispatchReservations {
   }
 
   release(jobId: string): void {
-    this.held.delete(jobId);
+    if (this.held.delete(jobId)) this.onRelease();
   }
 
   /** In-flight jobs cannot consume the bounded ready window while their worker still owns them. */
