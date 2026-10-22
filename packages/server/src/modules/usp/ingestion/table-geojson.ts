@@ -5,7 +5,7 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import type { TableEncoding } from '@ulpin/contracts';
 import { IntakeTablePlacementSchema, STREAMING_VECTOR_LIMITS, TABLE_DERIVATIVE_LOCATOR, TABLE_GEOJSON_CONVERSION,
-  TABLE_PLACEMENT_SKIP_REASONS, TABLE_PLACEMENT_UTF16, TABULAR_LIMITS, TableDerivativeLineageSchema, TabularPinSchema,
+  TABLE_PLACEMENT_SKIP_REASONS, TABULAR_LIMITS, TableDerivativeLineageSchema, TabularPinSchema,
   TabularSourceProfileSchema, streamingReadMs, type TableDerivativeLineage } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { openObjectStream } from '../../../infrastructure/storage';
@@ -96,7 +96,7 @@ function featureJson(row: TableRow, unknown: Set<number>, geometry: TableGeometr
   const properties = Object.fromEntries(names.map((name, column) =>
     [name, unknown.has(column) ? null : row.cells[column] ?? null]));
   const tableRow = { sourceId: plan.source.id, sourceRevision: plan.source.revision, sha256: plan.source.sha256,
-    row: row.sourceRow };
+    row: row.sourceRow, byteStart: row.byteStart, byteEnd: row.byteEnd, rawSha256: row.rawSha256 };
   return `{"type":"Feature","tableRow":${JSON.stringify(tableRow)},"properties":${JSON.stringify(properties)},`
     + `"geometry":${geometryJson(geometry)}}`;
 }
@@ -202,11 +202,6 @@ function tableRead(source: IntakeSourceRow) {
   return read.data;
 }
 
-/** TB2: a UTF-16 table is read as a table but its rows are not placed; see TABLE_PLACEMENT_UTF16. */
-function refuseUtf16(encoding: string | undefined) {
-  if (encoding?.startsWith('utf-16')) throw new AppError(422, 'TABLE_PLACEMENT_ENCODING', TABLE_PLACEMENT_UTF16);
-}
-
 function checkColumns(coordinates: TableCoordinates, headers: string[]) {
   const columns = coordinates.kind === 'wkt' ? [coordinates.column] : [coordinates.x, coordinates.y];
   if (columns.some(column => column >= headers.length)) throw new AppError(422, 'TABLE_PLACEMENT_COLUMN',
@@ -221,7 +216,6 @@ export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSour
   request: z.infer<typeof IntakeTablePlacementSchema>): Promise<string> {
   if (!request.crs) unstated();
   const read = tableRead(source);
-  if (read.tabular.selection.format === 'csv') refuseUtf16(read.tabular.selection.encoding);
   checkColumns(request.coordinates, read.headers);
   const item = (await client.query(SITUATED, [source.id])).rows[0];
   if (!item) throw new AppError(409, 'TABLE_PLACEMENT_NOT_READ', 'This file has no item in the batch.');
@@ -363,7 +357,6 @@ async function pinnedReading(source: IntakeSourceRow, selection: Selection,
   } catch {
     throw new AppError(422, 'TABULAR_ENCODING', 'This table has invalid text or binary null bytes.');
   }
-  refuseUtf16(encoding);
   return { ...selection, delimiter: selection.delimiter ?? ',', encoding };
 }
 

@@ -1,0 +1,94 @@
+{
+  "task": "U16",
+  "gate": "AUD3 gap 11",
+  "base": "6323b054",
+  "mode": "offline; no runtime, Docker or push",
+  "facts": [
+    "The bounded reader decoded BOM-marked UTF-16; row windows and placement refused it.",
+    "Before implementation, all 8 targeted tests failed at the existing refusals."
+  ],
+  "change": [
+    "BOM-marked LE and BE use fatal decoding and the existing quote state machine over decoded code units.",
+    "Offsets count two bytes per code unit, four per pair; ranges exclude the BOM and terminal line ending.",
+    "Offsets count the BOM; row, window and original hashes cover unchanged original bytes.",
+    "Odd lengths and unpaired high or low surrogates refuse with TABULAR_ENCODING and specific words.",
+    "Missing or mismatched BOMs refuse; unpinned no-BOM input keeps the existing binary-null refusal words.",
+    "Placement writes UTF-8 GeoJSON, adding byteStart, byteEnd and rawSha256 to existing tableRow fields.",
+    "table-derivative/1 and originalSha256 keep their shape. No API schema or Studio words changed."
+  ],
+  "test_only_controls": [
+    "Literal LE/BE TSVs: BOM, CRLF, quoted multiline text, escaped quotes, Devanagari, emoji and coordinates.",
+    "BMP values include lone 0A bytes; single-byte chunks and pinned replay retain exact even row ranges.",
+    "Row/window/original hashes match slices; 10001 rows close as windows of 10000 and 1, with an EOF emoji.",
+    "Odd bytes, unpaired high/low surrogates, missing BOM and wrong-endian BOM refuse, never replacing text.",
+    "Placement jobs and byte receipts keep UTF-8 output with original UTF-16 ranges and hashes.",
+    "Older unpinned UTF-16 reads place; existing UTF-8 and Windows-1252 controls pass.",
+    "A one-byte Windows-1252 input still reaches header-required refusal, not an internal decoder error."
+  ],
+  "real_inputs": [
+    {
+      "role": "good",
+      "root": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/",
+      "file": "opf-d02/seattle-energy.csv",
+      "classification": "public test_only foreign development register",
+      "bytes": 13321421,
+      "records": 38309,
+      "result": "Whole-file prefix parity and streamed inventory passed."
+    },
+    {
+      "role": "difficult",
+      "root": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/",
+      "file": "opf-d07/baton-footprint.csv",
+      "classification": "public test_only foreign development register",
+      "bytes": 76920137,
+      "records": 197392,
+      "result": "Long quoted geometry cells streamed with exact source hashes and row locators."
+    }
+  ],
+  "environment": {
+    "NODE_OPTIONS": "--require C:/Users/kvina/AppData/Local/Temp/u16-offline-guard.cjs",
+    "safety": "Temporary preload blocks environment-file and forbidden-path reads before I/O; REPO_DATA=false."
+  },
+  "checks": [
+    { "command": "pnpm exec tsx (before dependency setup)", "exit": 1, "result": "tsx absent; no tests ran" },
+    { "command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0, "downloads": 0 },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "filter": "--test-name-pattern='utf-16|BOMs|older UTF-16'",
+      "files": "tabular-stream.test.ts, delimited-text.test.ts, table-geojson.test.ts (ingestion directory)",
+      "before_exit": 1, "before_failed": 8, "after_exit": 0, "after_passed": 8
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "filter": "--test-name-pattern='utf-16|BOMs|older UTF-16|single Windows'",
+      "files": "tabular-stream.test.ts, delimited-text.test.ts, table-geojson.test.ts (ingestion directory)",
+      "exit": 0, "passed": 11, "failed": 0
+    },
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": [
+        "packages/server/src/modules/usp/ingestion/tabular-stream.test.ts",
+        "packages/server/src/modules/usp/ingestion/table-geojson.test.ts",
+        "packages/server/src/modules/usp/ingestion/delimited-text.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "tests/tabular-admission.test.ts",
+        "tests/table-later-receipt.test.ts",
+        "tests/intake-*.test.ts"
+      ],
+      "exit": 0, "tests": 492, "passed": 491, "failed": 0, "skipped": 1, "duration_ms": 44837,
+      "skip_reason": "Existing case-original local learner routing prerequisite unavailable."
+    },
+    { "command": "git diff --check", "exit": 0 }
+  ],
+  "scope_notes": [
+    "Tabular-source is covered by delimited-text, tabular-stream and admission tests.",
+    "table-derivative/1 lineage is covered by table-geojson; no separately named derivative test exists.",
+    "Studio and OpenAPI checks are not applicable: no UI words or API contract changed."
+  ],
+  "rehearsal": [
+    "Try one real Excel Save as Unicode Text export with lon/lat and a quoted multiline Unicode value.",
+    "Retain it, read its rows, state its EPSG and place it; compare ranges and hashes to original bytes.",
+    "No real UTF-16 export or live placement was qualified here."
+  ]
+}

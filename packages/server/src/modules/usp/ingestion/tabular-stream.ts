@@ -7,7 +7,7 @@ import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Transform, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
-import type { DelimitedReading } from '@ulpin/contracts';
+import type { DelimitedReading, TableEncoding } from '@ulpin/contracts';
 import { INTAKE_PROBE_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS as limits, TableCellMarkSchema,
   type TableCellMark, type TabularSelection } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
@@ -39,6 +39,8 @@ const QUOTE = 0x22, LF = 0x0a, CR = 0x0d;
 const cellDecoders = {
   'utf-8': new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }),
   'windows-1252': new TextDecoder('windows-1252', { ignoreBOM: true }),
+  'utf-16le': new TextDecoder('utf-16le', { fatal: true, ignoreBOM: true }),
+  'utf-16be': new TextDecoder('utf-16be', { fatal: true, ignoreBOM: true }),
 };
 type ByteReading = { delimiter: NonNullable<DelimitedReading['delimiter']>;
   encoding: keyof typeof cellDecoders };
@@ -70,9 +72,9 @@ function recordTooLarge(sourceRow: number): never {
     `Record ${sourceRow} of this table is larger than ${mib(limits.recordBytes)} MiB.`);
 }
 
-function decodeCell(bytes: Buffer, quoted: boolean, sourceRow: number, reading: ByteReading): string {
+function decodeCell(bytes: Buffer | string, quoted: boolean, sourceRow: number, reading: ByteReading): string {
   try {
-    const text = cellDecoders[reading.encoding].decode(bytes);
+    const text = typeof bytes === 'string' ? bytes : cellDecoders[reading.encoding].decode(bytes);
     if (text.includes('\0')) throw new Error('binary null');
     return quoted ? text.replaceAll('""', '"') : text;
   } catch {
@@ -81,35 +83,43 @@ function decodeCell(bytes: Buffer, quoted: boolean, sourceRow: number, reading: 
   }
 }
 
-/** Parses one record from `start`; null when the bytes end first and more may follow. */
-function parseRecord(data: Buffer, start: number, final: boolean, sourceRow: number, reading: ByteReading) {
+const unitAt = (data: Buffer | string, at: number) => typeof data === 'string' ? data.charCodeAt(at) : data[at];
+const sliceUnits = (data: Buffer | string, start: number, end: number) =>
+  typeof data === 'string' ? data.slice(start, end) : data.subarray(start, end);
+
+/** The same quote state machine for single-byte syntax and decoded UTF-16 code units. */
+function parseRecord(data: Buffer | string, start: number, final: boolean, sourceRow: number, reading: ByteReading) {
   const delimiter = reading.delimiter.charCodeAt(0);
   const cells: string[] = [];
   let at = start;
   while (true) {
     let end: number, next: number;
-    if (data[at] === QUOTE) {
+    if (unitAt(data, at) === QUOTE) {
       let close = at + 1;
       while (true) {
-        close = data.indexOf(QUOTE, close);
+        close = typeof data === 'string' ? data.indexOf('"', close) : data.indexOf(QUOTE, close);
         if (close < 0) return final ? malformed(sourceRow) : null;
-        if (data[close + 1] === QUOTE) { close += 2; continue; }
+        if (unitAt(data, close + 1) === QUOTE) { close += 2; continue; }
         if (close + 1 === data.length && !final) return null;
         break;
       }
-      cells.push(decodeCell(data.subarray(at + 1, close), true, sourceRow, reading));
-      end = close + 1; next = data[end] ?? -1;
+      cells.push(decodeCell(sliceUnits(data, at + 1, close), true, sourceRow, reading));
+      end = close + 1; next = end < data.length ? unitAt(data, end) : -1;
       if (next !== delimiter && next !== LF && next !== CR && next !== -1) malformed(sourceRow);
     } else {
       end = at;
-      while (end < data.length && data[end] !== delimiter && data[end] !== LF && data[end] !== CR) end++;
-      next = data[end] ?? -1;
+      while (end < data.length) {
+        const unit = unitAt(data, end);
+        if (unit === delimiter || unit === LF || unit === CR) break;
+        end++;
+      }
+      next = end < data.length ? unitAt(data, end) : -1;
       if (next === -1 && !final) return null;
-      cells.push(decodeCell(data.subarray(at, end), false, sourceRow, reading));
+      cells.push(decodeCell(sliceUnits(data, at, end), false, sourceRow, reading));
     }
     if (next === delimiter) { at = end + 1; continue; }
     if (next === CR && end + 1 === data.length && !final) return null;
-    const after = next === -1 ? end : next === CR && data[end + 1] === LF ? end + 2 : end + 1;
+    const after = next === -1 ? end : next === CR && unitAt(data, end + 1) === LF ? end + 2 : end + 1;
     return { cells, contentEnd: end, next: after };
   }
 }
@@ -131,6 +141,7 @@ async function readCsvWindows(
   body: Readable, onWindow: OnWindow<StreamedTabularRow>, reading: ByteReading,
 ): Promise<StreamedTabularRead> {
   const hash = createHash('sha256');
+  const width = reading.encoding.startsWith('utf-16') ? 2 : 1;
   let carry: Buffer = Buffer.alloc(0), carryStart = 0, bytes = 0, logical = 0, records = 0, windows = 0;
   let headers: string[] | null = null, rows: StreamedTabularRow[] = [], windowBytes = 0;
   let windowHash = createHash('sha256'), gap: Buffer[] = [], gapBytes = 0;
@@ -149,16 +160,15 @@ async function readCsvWindows(
     if (gapBytes > limits.recordBytes) await flush();
   };
   const take = async (data: Buffer, final: boolean) => {
-    let at = 0;
-    if (carryStart === 0 && data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf) at = 3;
-    if (carryStart === 0 && (data[0] === 0xff && data[1] === 0xfe || data[0] === 0xfe && data[1] === 0xff)) {
-      utf16WindowRefusal();
-    }
-    while (at < data.length) {
-      const record = parseRecord(data, at, final, logical + 1, reading);
+    if (width === 2 && carryStart === 0 && data.length < 2 && !final) { carry = data; return; }
+    const atBom = carryStart === 0 ? tableBomUnits(data, reading) : 0;
+    const units = width === 2 ? decodeUtf16Window(data, reading.encoding, final) : data;
+    let at = atBom;
+    while (at < units.length) {
+      const record = parseRecord(units, at, final, logical + 1, reading);
       if (!record) break;
       logical++;
-      if (record.next - at > limits.recordBytes) recordTooLarge(logical);
+      if ((record.next - at) * width > limits.recordBytes) recordTooLarge(logical);
       if (!headers && record.cells.some(cell => cell.trim())) headers = checkedHeaders(record.cells);
       else if (headers && record.cells.some(cell => cell.trim())) {
         if (record.cells.length > headers.length) {
@@ -166,21 +176,21 @@ async function readCsvWindows(
             `Record ${logical} of this table has more cells than its header names.`);
         }
         if (++records > limits.rows) tooManyRecords(bytes);
-        const content = data.subarray(at, record.contentEnd);
+        const content = data.subarray(at * width, record.contentEnd * width);
         for (const part of rows.length ? gap : []) windowHash.update(part);
         gap = []; gapBytes = 0;
         windowHash.update(content);
-        rows.push({ index: records - 1, sourceRow: logical, byteStart: carryStart + at,
-          byteEnd: carryStart + record.contentEnd, cells: record.cells,
+        rows.push({ index: records - 1, sourceRow: logical, byteStart: carryStart + at * width,
+          byteEnd: carryStart + record.contentEnd * width, cells: record.cells,
           rawSha256: createHash('sha256').update(content).digest('hex') });
-        windowBytes += record.next - at;
-        await between(data.subarray(record.contentEnd, record.next));
+        windowBytes += (record.next - at) * width;
+        await between(data.subarray(record.contentEnd * width, record.next * width));
         if (rows.length >= limits.windowRows || windowBytes >= limits.windowBytes) await flush();
-      } else await between(data.subarray(at, record.next));
+      } else await between(data.subarray(at * width, record.next * width));
       at = record.next;
     }
-    carry = data.subarray(at);
-    carryStart += at;
+    carry = data.subarray(at * width);
+    carryStart += at * width;
     if (carry.length > limits.recordBytes) recordTooLarge(logical + 1);
   };
   for await (const value of body) {
@@ -198,40 +208,79 @@ async function readCsvWindows(
   return { headers, records, windows, bytes, sha256: hash.digest('hex'), ...reading };
 }
 
-function utf16WindowRefusal(): never {
-  throw new AppError(422, 'TABULAR_ENCODING', 'This table is UTF-16; this reader cannot make byte-range row ' +
-    'windows for UTF-16. The original is unchanged; a whole-file table up to 16 MiB can read it.');
+function invalidUtf16(odd = false): never {
+  const reason = odd ? 'an odd byte length' : 'an unpaired surrogate';
+  throw new AppError(422, 'TABULAR_ENCODING', `This UTF-16 table has ${reason}; the original is unchanged.`);
 }
 
-/** Validate all bytes before choosing a single encoding; a late invalid UTF-8 byte changes the whole reading. */
+function tableBomUnits(data: Buffer, reading: ByteReading): number {
+  const bom = bomEncoding(data);
+  if (reading.encoding.startsWith('utf-16')) {
+    if (bom !== reading.encoding) throw new AppError(422, 'TABULAR_ENCODING',
+      'This table needs a matching UTF-16 byte order mark (BOM); the original is unchanged.');
+    return 1;
+  }
+  if (bom) throw new AppError(422, 'TABULAR_ENCODING', 'This table differs from its pinned text encoding.');
+  return data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf ? 3 : 0;
+}
+
+/** A partial odd byte or high surrogate stays in carry, never split into a replacement character. */
+function decodeUtf16Window(data: Buffer, encoding: TableEncoding, final: boolean): string {
+  if (final && data.length % 2) invalidUtf16(true);
+  try {
+    return new TextDecoder(encoding, { fatal: true, ignoreBOM: true }).decode(data, { stream: !final });
+  } catch {
+    invalidUtf16();
+  }
+}
+
+/** Validate BOM-marked UTF-16 strictly; otherwise a late invalid UTF-8 byte changes the whole reading. */
 function csvProbe() {
-  const decoder = new TextDecoder('utf-8', { fatal: true });
-  let valid = true, head = Buffer.alloc(0);
+  let decoder: TextDecoder | undefined, bom: TableEncoding | undefined;
+  let valid = true, head = Buffer.alloc(0), prefix = Buffer.alloc(0), bytes = 0;
   const take = (chunk: Buffer) => {
+    bytes += chunk.length;
     const remaining = 2 * limits.recordBytes + 4 - head.length;
     if (remaining > 0) head = Buffer.concat([head, chunk.subarray(0, remaining)]);
-    if (bomEncoding(head)) utf16WindowRefusal();
+    if (!decoder) {
+      prefix = Buffer.concat([prefix, chunk]);
+      if (prefix.length < 2) return;
+      bom = bomEncoding(prefix);
+      decoder = new TextDecoder(bom ?? 'utf-8', { fatal: true });
+      chunk = prefix;
+      prefix = Buffer.alloc(0);
+    }
     if (valid) {
-      try { decoder.decode(chunk, { stream: true }); } catch { valid = false; }
+      try { decoder.decode(chunk, { stream: true }); } catch {
+        if (bom) invalidUtf16();
+        valid = false;
+      }
     }
   };
   const finish = (name: string): ByteReading => {
+    if (bom && bytes % 2) invalidUtf16(true);
     if (valid) {
-      try { decoder.decode(); } catch { valid = false; }
+      try {
+        decoder ??= new TextDecoder('utf-8', { fatal: true });
+        decoder.decode(prefix, { stream: true });
+        decoder.decode();
+      } catch {
+        if (bom) invalidUtf16();
+        valid = false;
+      }
     }
-    const encoding = valid ? 'utf-8' : 'windows-1252';
+    const encoding = bom ?? (valid ? 'utf-8' : 'windows-1252');
     const start = head[0] === 0xef && head[1] === 0xbb && head[2] === 0xbf ? 3 : 0;
-    const text = new TextDecoder(encoding).decode(head.subarray(start), { stream: true });
+    const text = new TextDecoder(encoding, { fatal: true }).decode(head.subarray(start), { stream: true });
     return { encoding, delimiter: chooseTableDelimiter(text, name) };
   };
   return { take, finish };
 }
 
-/** Unpinned reads need a private byte copy for full UTF-8 validation. Pinned replays stream directly. */
+/** Unpinned reads need a private byte copy for full text validation. Pinned replays stream directly. */
 export async function readTabularWindows(body: Readable, onWindow: OnWindow<StreamedTabularRow>,
   reading: DelimitedReading = {}, name = '', sourceBytes = 0): Promise<StreamedTabularRead> {
-  if (reading.encoding?.startsWith('utf-16')) utf16WindowRefusal();
-  if (reading.delimiter && (reading.encoding === 'utf-8' || reading.encoding === 'windows-1252')) {
+  if (reading.delimiter && reading.encoding) {
     return readCsvWindows(body, onWindow, { delimiter: reading.delimiter, encoding: reading.encoding });
   }
   const folder = await scratchFolder(sourceBytes, 'csv');
@@ -242,7 +291,6 @@ export async function readTabularWindows(body: Readable, onWindow: OnWindow<Stre
     const detected = probe.finish(name);
     copy = createReadStream(path);
     const encoding = reading.encoding ?? detected.encoding;
-    if (encoding !== 'utf-8' && encoding !== 'windows-1252') utf16WindowRefusal();
     return await readCsvWindows(copy, onWindow, { delimiter: reading.delimiter ?? detected.delimiter, encoding });
   } finally {
     copy?.destroy();

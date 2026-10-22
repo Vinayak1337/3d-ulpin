@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { TABLE_PLACEMENT_UTF16, type TabularSelection } from '@ulpin/contracts/usp';
+import type { TabularSelection } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { assertIntakeDraftTx } from './intake-draft';
@@ -66,8 +66,11 @@ test('a longitude/latitude CSV of 5 rows, one blank: 4 points with row locators 
   assert.deepEqual(counts, { rows: 5, features: 4, skipped: { no_coordinates: 1 } });
   const features = JSON.parse(geojson.toString()).features;
   assert.deepEqual(features.map((feature: any) => feature.geometry.type), ['Point', 'Point', 'Point', 'Point']);
-  assert.deepEqual(features.map((feature: any) => feature.tableRow),
-    [2, 3, 5, 6].map(row => ({ sourceId, sourceRevision: 1, sha256: sha(LON_LAT), row })));
+  assert.deepEqual(features.map((feature: any) => {
+    const { byteStart, byteEnd, rawSha256, ...locator } = feature.tableRow;
+    assert.equal(rawSha256, sha(LON_LAT.subarray(byteStart, byteEnd)));
+    return locator;
+  }), [2, 3, 5, 6].map(row => ({ sourceId, sourceRevision: 1, sha256: sha(LON_LAT), row })));
   assert.deepEqual(features[1].properties, { ward: 'Ward 2', longitude: '77.6100', latitude: '12.9800' });
   // The numbers are the cells' own text; nothing is rounded, moved or placed at 0,0.
   assert.ok(geojson.includes('"coordinates":[77.6100,12.9800]'));
@@ -205,29 +208,48 @@ test('no coordinate system stated: refused with a question, nothing queued and n
   assert.deepEqual(statements, []);
 });
 
-test('TB2: a UTF-16 table is refused for placement with words saying what to do; nothing is queued', async () => {
-  for (const encoding of ['utf-16le', 'utf-16be'] as const) {
-    const original = tableSource(LON_LAT, ['ward', 'longitude', 'latitude'], true, { ...selection, encoding });
-    const { client, jobs } = ledger(original);
-    await assert.rejects(queueTableGeojsonTx(client, original, { requestKey: randomUUID(),
-      coordinates: { kind: 'columns', x: 1, y: 2 }, crs: 'EPSG:4326' }), (error: any) => error.status === 422
-      && error.code === 'TABLE_PLACEMENT_ENCODING' && error.message === TABLE_PLACEMENT_UTF16);
-    assert.deepEqual(jobs, []);
-  }
-  assert.match(TABLE_PLACEMENT_UTF16, /Save the table as CSV UTF-8 and add it again/);
-});
+for (const encoding of ['utf-16le', 'utf-16be'] as const) {
+  test(`${encoding} TSV placement keeps UTF-8 features citing exact original UTF-16 row bytes`, async () => {
+    // test_only literals, not records of a place; the newline and emoji are inside a quoted field.
+    const records = ['ward\tlongitude\tlatitude', '"नगर 😀\r\nऊ上"\t77.5\t12.9', 'नगर\t77.6\t13.0'];
+    const le = Buffer.from('\uFEFF' + records.join('\r\n') + '\r\n', 'utf16le');
+    const bytes = encoding === 'utf-16le' ? le : Buffer.from(le).swap16();
+    const original = tableSource(bytes, ['ward', 'longitude', 'latitude'], true,
+      { ...selection, delimiter: '\t', encoding });
+    const { client, sources, jobs } = ledger(original);
+    await queueTableGeojsonTx(client, original, { requestKey: randomUUID(),
+      coordinates: { kind: 'columns', x: 1, y: 2 }, crs: 'EPSG:4326' });
+    const kept = new Map<string, Buffer>();
+    const [child] = await placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, kept), bytes));
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(kept.get(child)!);
+    const features = JSON.parse(text).features;
+    assert.deepEqual(features.map((feature: any) => feature.properties.ward),
+      ['नगर 😀\r\nऊ上', 'नगर']);
+    let start = 2 + 2 * (records[0].length + 2);
+    features.forEach((feature: any, index: number) => {
+      const end = start + 2 * records[index + 1].length;
+      assert.deepEqual(feature.tableRow, { sourceId, sourceRevision: 1, sha256: sha(bytes), row: index + 2,
+        byteStart: start, byteEnd: end, rawSha256: sha(bytes.subarray(start, end)) });
+      assert.equal(new TextDecoder(encoding, { fatal: true }).decode(bytes.subarray(start, end)), records[index + 1]);
+      start = end + 4;
+    });
+    assert.equal(sources.get(child).inspection.tableDerivative.version, 'table-derivative/1');
+    assert.equal(sources.get(child).inspection.tableDerivative.originalSha256, sha(bytes));
+    assert.equal(sources.get(child).inspection.tableDerivative.features, 2);
+    assert.equal(sha(bytes), original.sha256, 'the original is never transcoded or changed');
+  });
+}
 
-test('TB2: an older UTF-16 table read that pinned no reading stops its placement with the same words', async () => {
-  // test_only: two rows written as UTF-16LE with its byte order mark; the bounded reader decoded them so.
-  const bytes = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from('ward,longitude,latitude\nW-1,77.5,12.9\n',
-    'utf16le')]);
+test('an older UTF-16 table read that pinned no reading is placed using its BOM', async () => {
+  const bytes = Buffer.from('\uFEFFward,longitude,latitude\nनगर 😀,77.5,12.9\n', 'utf16le');
   const { delimiter: _delimiter, encoding: _encoding, ...unread } = selection;
   const original = tableSource(bytes, ['ward', 'longitude', 'latitude'], true, unread);
   const { client, sources, jobs } = ledger(original);
   await queueTableGeojsonTx(client, original, { requestKey: randomUUID(),
     coordinates: { kind: 'columns', x: 1, y: 2 }, crs: 'EPSG:4326' });
-  await assert.rejects(placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, new Map()), bytes)),
-    { status: 422, code: 'TABLE_PLACEMENT_ENCODING', message: TABLE_PLACEMENT_UTF16 });
+  const kept = new Map<string, Buffer>();
+  const [child] = await placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, kept), bytes));
+  assert.equal(JSON.parse(kept.get(child)!.toString()).features[0].properties.ward, 'नगर 😀');
 });
 
 test('a stated system queues one job pinning the table read; a column past the table or an unread file is refused',

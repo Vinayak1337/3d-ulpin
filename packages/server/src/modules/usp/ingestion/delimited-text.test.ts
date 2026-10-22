@@ -58,7 +58,7 @@ test('a consistent delimiter wins over a wider but inconsistent header', () => {
   assert.equal(chooseTableDelimiter('Name;Area;Rate\nA;12,5;3,25\n'), ';');
 });
 
-test('BOMs and Windows-1252 are recorded; whole-file UTF-16 works and byte windows refuse it', async () => {
+test('BOMs and Windows-1252 are recorded consistently by whole-file and byte-window readers', async () => {
   const text = 'label;note\nA;café\n';
   const le = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, 'utf16le')]);
   const be = Buffer.concat([Buffer.from([0xfe, 0xff]), Buffer.from(text, 'utf16le').swap16()]);
@@ -76,11 +76,11 @@ test('BOMs and Windows-1252 are recorded; whole-file UTF-16 works and byte windo
       const path = join(directory, 'judge.csv');
       await writeFile(path, bytes);
       assert.equal(profileColumnFile(path).profile.encoding, encoding);
-      if (encoding.startsWith('utf-16')) {
-        await assert.rejects(readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
-          async () => assert.fail('UTF-16 must not publish a window')),
-        (error: Error) => /UTF-16.*byte-range row windows/s.test(error.message));
-      }
+      const rows: StreamedTabularRow[] = [];
+      const streamed = await readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
+        async window => { rows.push(...window.rows); });
+      assert.equal(streamed.encoding, encoding);
+      assert.deepEqual(rows.map(row => row.cells), table.rows);
     }
     const path = join(directory, 'judge.tsv');
     await writeFile(path, 'a,b,c\tz\n1,2,3\t4\n');
@@ -154,6 +154,11 @@ test('invalid table text is refused with reader words rather than an internal er
       (error: Error & { code?: string; status?: number }) => error.code === 'TABULAR_ENCODING'
         && error.status === 422 && error.message.includes('original is unchanged'));
   }
+});
+
+test('a single Windows-1252 byte still reaches the header refusal, not a decoder error', async () => {
+  await assert.rejects(readTabularWindows(Readable.from([Buffer.from([0xe9])]), async () => assert.fail('no rows')),
+    { code: 'TABULAR_HEADER_REQUIRED' });
 });
 
 test('stored selections without a delimiter remain comma readings', () => {
