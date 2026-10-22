@@ -31,7 +31,7 @@ const pythonKey = 'ULPIN_PACKET_REGIONS_PYTHON';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 /** The isolated child reuses server helpers without probing checkout .env or carrying service credentials. */
-function serverHelper(script, args = [], env = {}) {
+export function serverHelper(script, args = [], env = {}) {
   return execFileSync(process.execPath, [
     '--require', join(root, 'scripts/platform/isolated-env.cjs'), '--import', 'tsx', '-e', script, ...args,
   ], {
@@ -40,7 +40,7 @@ function serverHelper(script, args = [], env = {}) {
   }).trim();
 }
 
-function privateBuildDirectory(output) {
+export function privateBuildDirectory(output) {
   const helper = pathToFileURL(join(root, 'packages/server/src/modules/usp/ingestion/document-ocr.ts')).href;
   const script = 'import(process.argv[1]).then(async m => '
     + 'console.log(await m.privateOcrDirectory(process.argv[2], process.argv[3])))';
@@ -85,21 +85,23 @@ export function documentRuntimeReport(paths) {
  * A normal build writes into the named runtime's own folder, and only from that runtime's serving checkout
  * while that runtime's own recorded processes are stopped. The third argument is for tests.
  */
-export function runtimeBuildFolder(name = demoRuntime, output, { checkout = root, owned = ownedProcess } = {}) {
+export function runtimeBuildFolder(name = demoRuntime, output,
+  { checkout = root, owned = ownedProcess, what = 'document runtime' } = {}) {
   const runtime = definedRuntime(name);
   const whose = runtime.rehearsal ? runtime.name : 'demo';
   if (resolve(checkout).toLowerCase() !== resolve(runtime.servingCheckout).toLowerCase() || output !== undefined) {
-    throw new Error(`Normal document runtime build requires the ${whose} serving checkout; `
+    throw new Error(`Normal ${what} build requires the ${whose} serving checkout; `
       + 'use --dry-run --out elsewhere.');
   }
   if (['api', 'dispatcher'].some(label => owned(label, runtime))) {
-    throw new Error(`Stop the recorded ${whose} native processes before rebuilding document runtime keys.`);
+    throw new Error(`Stop the recorded ${whose} native processes before rebuilding ${what} keys.`);
   }
   return runtime.dir;
 }
 
-function assertBuildLocation(dryRun, output, runtime) {
-  if (!dryRun) return runtimeBuildFolder(runtime, output);
+/** A normal build goes to the runtime's own folder; a dry run only to an absolute folder outside every checkout. */
+export function assertBuildLocation(dryRun, output, runtime, what) {
+  if (!dryRun) return runtimeBuildFolder(runtime, output, what ? { what } : {});
   if (!output || !isAbsolute(output)) throw new Error('--dry-run requires --out with an absolute temporary folder.');
   let parent = resolve(output);
   while (!existsSync(parent) && dirname(parent) !== parent) parent = dirname(parent);

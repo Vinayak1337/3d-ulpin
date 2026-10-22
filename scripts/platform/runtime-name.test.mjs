@@ -1,7 +1,7 @@
 // Every file here is a temporary one with made-up values; no runtime's own folder or settings are opened.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import {
@@ -42,9 +42,11 @@ test('ulpin-demo resolves to the values it was created with, and the old names s
     marker: join(demoFolder, 'bootstrap.complete.json'), ocrFile: join(demoFolder, 'ocr-paths.json'),
     ocrProfileFile: join(demoFolder, 'ocr-paths-profile.json'),
     tabularFile: join(demoFolder, 'tabular-paths.json'),
-    documentFile: join(demoFolder, 'document-runtime-paths.json'), modelDir: `${demoFolder}/models`,
+    documentFile: join(demoFolder, 'document-runtime-paths.json'),
+    nativeReaderFile: join(demoFolder, 'native-reader-paths.json'), modelDir: `${demoFolder}/models`,
     servingCheckout: 'E:/Projects/ulpin-wt/demo', composeFile: 'scripts/platform/processors.compose.yaml',
-    processorImage: 'ulpin-geo:git-22003ea3d878',
+    // The one pinned image, read from the reviewed pin file: the same for the demo and every rehearsal.
+    processorImage: JSON.parse(readFileSync(new URL('./processor-image.json', import.meta.url), 'utf8')).image,
   };
   for (const definition of [runtimeDefinition(), runtimeDefinition('ulpin-demo'), definedRuntime()]) {
     assert.deepEqual({ ...definition, ports: { ...definition.ports } }, expected);
@@ -132,10 +134,11 @@ test('any other name is refused before anything is read', () => {
 test('a definition on a synthetic folder is the same runtime in another place', () => {
   const folder = mkdtempSync(join(tmpdir(), 'runtime-name-'));
   const synthetic = runtimeDefinition('ulpin-reh-01', folder);
-  const { dir, file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, modelDir, ...rest } = synthetic;
+  const { dir, file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, nativeReaderFile, modelDir,
+    ...rest } = synthetic;
   const real = runtimeDefinition('ulpin-reh-01');
   assert.equal(dir, `${folder}/ulpin-reh-01`);
-  for (const path of [file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, modelDir]) {
+  for (const path of [file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, nativeReaderFile, modelDir]) {
     assert.match(relative(dir, path), /^[a-z][a-z.-]+$/, path);
   }
   for (const [key, value] of Object.entries(rest)) assert.deepEqual(value, real[key], key);

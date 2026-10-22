@@ -20,6 +20,13 @@ Worker worktrees must never serve the demo: lazy imports would mix unreviewed ch
    It reuses the configured OCR interpreter (paths only), the existing frozen-profile builder and private ACL helper.
    If selecting an interpreter explicitly, append `--python <absolute existing interpreter file>`.
    It refuses a normal build outside `E:/Projects/ulpin-wt/demo` or while a recorded native process is running.
+5a. **On every rollout, right after step 5 and before step 6**, rebuild the batch's native reader profiles there
+   (DXF, CityGML, glTF/GLB, OBJ; [Native reader profiles](#native-reader-profiles)):
+   `node scripts/platform/demo-native-readers.mjs build`
+   then verify, still before startup: `node scripts/platform/demo-native-readers.mjs check`
+   Require build exit 0 and four `verified` lines from check (exit 0). Build exit 2 means the file was written
+   without the readers whose line says `unavailable (<reason>)`: those formats stay `<READER>_UNAVAILABLE` in a
+   batch; report the reason, do not retry. Build exit 1 writes nothing and leaves the previous file unchanged.
 6. Move the processors onto the pinned image ([The processor image](#the-processor-image)), which must already be
    built and rehearsed: `node scripts/platform/processor-image.mjs roll`
    It refuses unless that checkout's `services/geo` is the pinned tree, the image on the engine carries the pinned
@@ -116,6 +123,39 @@ A selected-region OCR result keeps every box as read: the render starts and ends
 pass the region by up to one rendered pixel (1.229 pt at the site plan's 0.814 px per pt), the result states
 this as `regionEdge` (`renderScalePxPerPt`, `boxesBeyondRegion`, `largestOverhangPt`), and a box further out
 refuses the whole result as `OCR_BOX_OUTSIDE_REGION`.
+
+## Native reader profiles
+
+A batch reads DXF, CityGML, glTF/GLB and OBJ through four local native readers. Each reader's own configuration
+(`packages/server/src/modules/usp/ingestion/<reader>-config.ts`) accepts a job only with `ULPIN_<READER>_PROFILE`
+and `ULPIN_<READER>_PROFILE_SHA256`, and then checks the profile hash, the full inventory of the interpreter,
+its environment and the serving checkout's reader code and caches. Without them every such file ends
+`<READER>_UNAVAILABLE` (REH14, act 2).
+
+`scripts/platform/demo-native-readers.mjs build` makes them for the checkout it runs from. It is a separate
+script from the document builder because its readers fail one at a time: a reader that cannot be built here is
+reported with its reason and left out, and the others still build. Each reader's own `scripts/usp/<reader>/profile.py`
+writes the profile, run by the base interpreter with `-I -S -B`; the reader's unchanged configuration then
+accepts it in an isolated child before the pointer is written. Each build makes a new private directory in the
+runtime's folder (named `document-ocr-...` by the shared private-directory helper; one folder per reader with
+its profile, its scratch and, for OBJ, its native lock) and replaces only the
+non-secret `native-reader-paths.json`. Old directories are kept. Output is key names and hashes, never paths.
+`readDemo()` passes the keys to the API and dispatcher; a reader is wholly configured or absent, and values never
+appear in a message. Dry runs: `build --dry-run --out <absolute temporary folder>` and
+`check --paths <that folder>/native-reader-paths.json`, from any checkout; never reuse a dry-run profile.
+
+| Reader | Interpreter (all four) | Environment | Locked packages checked before the build |
+| --- | --- | --- | --- |
+| DXF | `C:/Python313/python.exe`, or `--python` | `E:/BhuAayam-data/task-data/desktop-dxf-native/env` | `docs/evidence/usp/native-dxf/requirements.lock` (ezdxf, numpy, fonttools, pyparsing, typing_extensions) |
+| CityGML | the same | `E:/BhuAayam-data/task-data/desktop-citygml-native/env` | `scripts/usp/citygml/runtime-lock.json` (psutil 7.2.2) |
+| glTF/GLB | the same | `E:/BhuAayam-data/task-data/desktop-gltf-native/env` | none (standard library) |
+| OBJ | the same | none | none (standard library); a fresh native lock is written |
+
+The interpreter is the CPython 3.13.7 install the glTF and OBJ runtime scripts name; each environment must have
+been made from it (its `pyvenv.cfg` `home`). Nothing is installed. The profiles pin that install and any
+`__pycache__` in `scripts/usp` and `services/geo/geo` as they are at build time, so a **later FAIL after a
+PASS** (`<READER>_TOOL_CHANGED`) means the install was updated or a Python run without `-B` wrote bytecode
+there: rebuild at the next roll-out and state the cause.
 
 ## Changing the document interpreter
 
@@ -264,6 +304,8 @@ Run the commands from the rehearsal's own checkout, a worktree at a lead-reviewe
    image](#the-processor-image)). The document runtime is built:
    `node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-01`
    It writes `document-runtime-paths.json` and a new private profile directory in the rehearsal's folder.
+   Then the native readers: `node scripts/platform/demo-native-readers.mjs build --runtime ulpin-reh-01` and
+   `node scripts/platform/demo-native-readers.mjs check --runtime ulpin-reh-01` (four `verified`, exit 0).
 3. Start: `pnpm platform:start --profile demo --runtime ulpin-reh-01`
 4. Doctor: `pnpm platform:doctor --profile demo --runtime ulpin-reh-01`
 5. Stop: `pnpm platform:stop --profile demo --runtime ulpin-reh-01`

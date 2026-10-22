@@ -11,9 +11,21 @@ import { buildDocumentRuntime, runtimeBuildFolder, switchOcrPython } from './dem
 
 const rehearsals = ['ulpin-reh-01', 'ulpin-reh-02'];
 const runtimes = ['ulpin-demo', ...rehearsals];
-const pinned = 'ulpin-geo:git-22003ea3d878';
-const refusal = /never builds or tags a processor image: it runs the pinned ulpin-geo:git-22003ea3d878\./;
+// The expected image follows the reviewed pin file, which moves with each image change.
+const pinRecord = JSON.parse(readFileSync(new URL('./processor-image.json', import.meta.url), 'utf8'));
+const short = pinRecord.commit.slice(0, 12);
+const pinned = pinRecord.image;
+const literal = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const refusal = new RegExp(`never builds or tags a processor image: it runs the pinned ${literal(pinned)}\\.`);
 const stopped = () => null;
+
+test('the pinned image is named git-<12 hex> of the pinned commit', () => {
+  assert.match(pinRecord.commit, /^[0-9a-f]{40}$/);
+  assert.match(pinRecord.servicesTree, /^[0-9a-f]{40}$/);
+  assert.equal(pinned, `ulpin-geo:git-${short}`);
+  assert.match(pinned, /^ulpin-geo:git-[0-9a-f]{12}$/);
+  assert.deepEqual({ ...readPin() }, pinRecord);
+});
 
 test('for every runtime, the demo included, no compose step can build or tag an image', () => {
   const steps = [
@@ -73,10 +85,10 @@ test('the pinned image is checked by its labels before processors are created; a
   const good = { [revisionLabel]: pin.commit, [treeLabel]: pin.servicesTree, 'made-up': 'kept out' };
   assert.doesNotThrow(() => assertPinnedImage(engineWith(good), pin));
   assert.throws(() => assertPinnedImage(engineWith(undefined), pin),
-    /^Error: The pinned image ulpin-geo:git-22003ea3d878 is not on this engine; build it with processor-image\.mjs\.$/);
+    new RegExp(`^Error: The pinned image ${literal(pinned)} is not on this engine; build it with processor-image\\.mjs\\.$`));
   assert.throws(() => assertPinnedImage(engineWith(null), pin), /carries no build commit.*Nothing was created\.$/);
   assert.throws(() => assertPinnedImage(engineWith({ ...good, [treeLabel]: 'f'.repeat(40) }), pin),
-    /was built from 22003ea3d878, not the pinned 22003ea3d878\./);
+    new RegExp(`was built from ${short}, not the pinned ${short}\\.`));
 });
 
 test('the document runtime builder checks the named runtime\'s own checkout and its own process records', () => {

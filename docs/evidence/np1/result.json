@@ -1,0 +1,47 @@
+{
+  "task": "NP1",
+  "title": "Native reader profiles for the demo and rehearsal batch: DXF, CityGML, glTF/GLB, OBJ",
+  "base": "33e2fb6b",
+  "branch": "task/np1-native-profiles",
+  "failure": {
+    "source": "docs/evidence/runtime/reh14/result.json (k3 worktree), act2 e1 and e2",
+    "signature": "DXF_UNAVAILABLE and CITYGML_UNAVAILABLE at 36 s",
+    "cause": "the demo and rehearsal stacks never set ULPIN_<READER>_PROFILE and ULPIN_<READER>_PROFILE_SHA256"
+  },
+  "decision": "new scripts/platform/demo-native-readers.mjs rather than extending demo-document-runtime.mjs: four independent profiles that must fail one at a time (the document build is all-or-nothing), each with its own profile.py and environment; it reuses the document builder's location guard, private-directory helper and isolated server child, now exported",
+  "change": {
+    "build": "for each reader, scripts/usp/<reader>/profile.py run by the base interpreter with -I -S -B, then the reader's unchanged <reader>Config() accepts the new profile in an isolated child (profile hash, full runtime/environment/repository inventory, checkout binding, code pins) before native-reader-paths.json is written",
+    "pathsFile": "<runtime folder>/native-reader-paths.json; readDemo() merges it into the API and dispatcher environment; each reader wholly configured or absent; messages name keys only",
+    "partial": "a reader that cannot be built is reported with a closed reason and left out; the others build; nothing is written when no reader builds",
+    "check": "demo-native-readers.mjs check [--runtime <name> | --paths <file>] runs each reader's own configuration on the configured profile",
+    "verificationWeakened": false
+  },
+  "interpreters": {
+    "all": "C:/Python313/python.exe (CPython 3.13.7), the base named by scripts/usp/desktop-gltf-http-runtime.mjs and desktop-obj-http-runtime.mjs; --python replaces it; must sit beside python313.dll",
+    "dxf": "environment E:/BhuAayam-data/task-data/desktop-dxf-native/env; pyvenv.cfg home must be that base; packages per docs/evidence/usp/native-dxf/requirements.lock",
+    "citygml": "environment E:/BhuAayam-data/task-data/desktop-citygml-native/env; packages per scripts/usp/citygml/runtime-lock.json (psutil 7.2.2)",
+    "gltf": "environment E:/BhuAayam-data/task-data/desktop-gltf-native/env; standard library only",
+    "obj": "no environment; standard library only; profile.py writes a fresh native lock",
+    "prerequisites": "all present on this host (the dry run built and verified all four); nothing installed; the lv0 Python is not used by any reader"
+  },
+  "checks": [
+    {"command": "node --test scripts/platform/*.test.mjs", "exit": 1, "tests": 103, "pass": 96, "fail": 5, "skipped": 2,
+     "note": "the 5 failures are pre-existing at 33e2fb6b (confirmed on the unchanged base): runtime-image.test.mjs x4 and runtime-name.test.mjs:37 expect pin ulpin-geo:git-22003ea3d878, processor-image.json pins ulpin-geo:git-67689b17fc05. All 6 new tests pass; runtime-name tests updated for nativeReaderFile."},
+    {"command": "node --test scripts/platform/demo-native-readers.test.mjs scripts/platform/demo-document-runtime.test.mjs", "exit": 0, "tests": 23, "pass": 21, "skipped": 2},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "node scripts/platform/demo-native-readers.mjs build --dry-run --out <scratchpad>/np1-dry-final", "exit": 0, "seconds": 60,
+     "readers": {
+       "dxf": {"files": 6162, "ULPIN_DXF_PROFILE_SHA256": "bac54527d2615fa8dfd853120708bdfa2c31c44ef999cbaa3346bf253c7b6ed2"},
+       "citygml": {"files": 3409, "ULPIN_CITYGML_PROFILE_SHA256": "d319a3279a243674c0e6e42d746c3af4e0c7e0b1af6e0e6ac0ae8dc281bd702e"},
+       "gltf": {"files": 2523, "ULPIN_GLTF_PROFILE_SHA256": "ebb7e534c1511d1d97fc0b8be4712443736161ddf3d01331814ea128d5bb782c"},
+       "obj": {"files": 2525, "ULPIN_OBJ_PROFILE_SHA256": "41a2f192743e2c947ffde69ff4410e30ed4ef93b383aa428f8e9f16ccf94a481", "nativeLockSha256": "268a9b13fa64b14cbbf238a278b749d1846c6347ae89d894b7de56343511d914"}
+     },
+     "nativeReaderPathsSha256": "0c4ce8daad1c70a115574dc31d632dfa1a5c05c8acdb8737d253605bc4f4714f",
+     "note": "dry-run profiles are bound to this worker checkout and its temporary scratch; never reuse them"},
+    {"command": "node scripts/platform/demo-native-readers.mjs check --paths <scratchpad>/np1-dry-final/native-reader-paths.json", "exit": 0, "result": "four verified"},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "notRun": "no Docker, no runtime start, no profile on a real runtime folder, no batch journey: the lead's rehearsal runs step 5a and then the act-2 DXF/CityGML/GLB/OBJ drop",
+  "risk": "profiles pin C:/Python313 and any __pycache__ under scripts/usp and services/geo/geo at build time (the demo checkout has services/geo/geo/__pycache__); an interpreter update or a Python run without -B there turns a reader into <READER>_TOOL_CHANGED until rebuilt",
+  "runbook": "docs/backend/DEMO-RUNTIME.md step 5a and section Native reader profiles (docs/runtime/ does not exist at this base; DEMO-RUNTIME.md is the roll runbook)"
+}
