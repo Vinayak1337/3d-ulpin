@@ -468,14 +468,15 @@ const largePack = () => zipSync({ ...real, [largePath]: [large, { level: 0 }] })
  * lineage with the source, or, given a crash, fails once and keeps neither, as a rolled-back transaction does.
  */
 function receipts(ledger: Ledger, refusal?: AppError, crash?: AppError) {
-  const log = { created: [] as any[], parts: [] as number[], sourceId: randomUUID(), hash: createHash('sha256'),
-    aborted: 0 };
+  const log = { created: [] as any[], batches: [] as (string | undefined)[], parts: [] as number[],
+    sourceId: randomUUID(), hash: createHash('sha256'), aborted: 0 };
   const status = (revision: number) => ({ id: randomUUID(), revision, currentCaseRevision: ledger.revision });
   const service = {
-    create: async (_caseId: string, input: any) => {
+    create: async (_caseId: string, input: any, batchSourceId?: string) => {
       LargeUploadCreateSchema.parse(input);
       if (refusal) throw refusal;
       log.created.push(input);
+      log.batches.push(batchSourceId);
       return status(1);
     },
     claimPart: async (_caseId: string, _id: string, input: any) => input,
@@ -674,6 +675,8 @@ test('the general byte receipt stores a small PDF once and finalizes its lineage
       retainZipMemberOriginal(caseId, revision, file, member, { large: service } as never) });
     assert.deepEqual(log.parts, [pdf.length]);
     assert.equal(log.created[0].filename, 'plan.pdf');
+    // TC2: the member's receipt names the ZIP as its batch item.
+    assert.deepEqual(log.batches, [fixture.ledger.archiveId]);
     assert.equal(log.hash.digest('hex'), sha(pdf));
     assert.deepEqual(fixture.ledger.inspections.get(log.sourceId), lineage);
     assert.equal(fixture.ledger.member('docs/plan.pdf').source_id, log.sourceId);

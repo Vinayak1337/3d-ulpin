@@ -462,7 +462,8 @@ async function keepDerivative(caseId: string, layer: ConvertedLayer,
   const file = { name: `${layer.layer}.geojson`, bytes, sha256 };
   // The receipt hashes the parts again and refuses bytes that differ from the conversion's own hash.
   const sourceId = await fenced(caseId, dependencies, revision =>
-    receiveLargeLayer(caseId, revision, file, byteParts(ranges()), dependencies));
+    receiveLargeLayer(caseId, { revision, batchSourceId: lineage.originalSourceId }, file, byteParts(ranges()),
+      dependencies));
   await dependencies.transaction(client => client.query(`UPDATE sources
     SET inspection=inspection||jsonb_build_object('nativeDerivative',$2::jsonb)
     WHERE id=$1 AND profile='large-original-v1'`, [sourceId, lineage]));

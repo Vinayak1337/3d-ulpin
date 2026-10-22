@@ -424,7 +424,8 @@ async function keepLargeLayer(caseId: string, parentItemId: string, archive: Int
     memberPath: member.member_path, ordinal: located.ordinal, memberBytes: entry.size,
     compressedBytes: entry.compressed, crc32: entry.crc, memberSha256: file.sha256 });
   const sourceId = await fenced(caseId, dependencies, revision =>
-    receiveLargeLayer(caseId, revision, file, byteParts(stream()), dependencies, lineage));
+    receiveLargeLayer(caseId, { revision, batchSourceId: archive.id }, file, byteParts(stream()), dependencies,
+      lineage));
   await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
 }
@@ -456,22 +457,27 @@ export async function retainZipMemberOriginal(caseId: string, revision: number,
   async function* bytes() {
     yield file.bytes;
   }
-  return receiveLargeLayer(caseId, revision,
+  return receiveLargeLayer(caseId, { revision, batchSourceId: lineage.parentSourceId },
     { name: file.name, bytes: file.bytes.length, sha256: lineage.memberSha256 },
     byteParts(bytes()), dependencies, lineage);
 }
 
+/** The case revision a derived receipt is admitted at, and the batch item it derives from (TC2). */
+export type DerivedReceiptFence = { revision: number; batchSourceId: string };
+
 /**
  * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A ZIP member or a table
- * placement (TC1) passes its lineage, which finalize writes with the source. A failed receipt is aborted.
+ * placement (TC1) passes its lineage, which finalize writes with the source. A failed receipt is aborted. The
+ * receipt names its batch item, so packages the batch's own drafts made in the case do not refuse it (TC2).
  */
-export async function receiveLargeLayer(caseId: string, revision: number,
+export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFence,
   file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
   dependencies: Pick<ZipLayerDependencies, 'large'>, lineage?: ArchiveMemberLineage | TableDerivativeLineage)
   : Promise<string> {
-  let status = await dependencies.large.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: revision,
-    filename: file.name, mediaType: 'application/octet-stream', sha256: file.sha256, bytes: file.bytes,
-    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } });
+  let status = await dependencies.large.create(caseId, { requestKey: randomUUID(),
+    expectedCaseRevision: fence.revision, filename: file.name, mediaType: 'application/octet-stream',
+    sha256: file.sha256, bytes: file.bytes,
+    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } }, fence.batchSourceId);
   try {
     let partNumber = 0;
     for await (const bytes of parts) {

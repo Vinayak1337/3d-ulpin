@@ -42,8 +42,10 @@ const uuid = z.string().uuid();
  * rule keeps a case that a manual recipe made into a package, or a recorded property's case, in that context; no
  * recipe, receipt or retained original is added to it here. A batch's own streamed drafts are packages of the batch
  * case too, so a table the batch keeps as one of its items is still read in it: the read only adds a table receipt
- * to that source and makes mapped draft rows, never a package, registry record or site change. A property link
- * still refuses every caller, the table read included.
+ * to that source and makes mapped draft rows, never a package, registry record or site change. TC2: a derived
+ * original's byte receipt names its batch item the same way (a placed table, a ZIP, a converted file), so the batch's
+ * own drafts do not refuse a derivative that is enrolled in that batch. A property link still refuses every caller,
+ * the table read and derived receipts included.
  */
 async function workspace(client: PoolClient, caseId: string, batchTable?: string) {
   const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
