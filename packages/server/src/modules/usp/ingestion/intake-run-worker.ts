@@ -553,8 +553,14 @@ export async function runIntakeRunJob(jobId: string, steps: IntakeRunSteps = int
   }
 }
 
-/** The dispatcher entry: the run picks its own next job, a target opened first. */
-export async function runNextIntakeRunJob(steps: IntakeRunSteps = intakeRunSteps) {
-  const jobId = await nextIntakeRunJob();
-  if (jobId) await runIntakeRunJob(jobId, steps);
+/** Keep the dispatcher's one lane/memory reservation across at most three ready jobs, then yield.
+ * Each successor is selected afresh (priority, due time and lease) and claims its own fenced attempt.
+ * The injectable scheduler is internal only; no request can choose it or bypass admission. */
+export async function runNextIntakeRunJob(steps: IntakeRunSteps = intakeRunSteps,
+  scheduler = { next: nextIntakeRunJob, run: runIntakeRunJob }) {
+  for (let sent = 0; sent < 3; sent++) {
+    const jobId = await scheduler.next();
+    if (!jobId) return;
+    await scheduler.run(jobId, steps);
+  }
 }
