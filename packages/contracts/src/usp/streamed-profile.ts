@@ -12,12 +12,15 @@ export const StreamedProfileInputSchema=z.strictObject({version:z.literal(STREAM
   caseId:id,caseRevision:z.number().int().nonnegative(),sourceId:id,sourceRevision:z.number().int().positive(),
   sourceFamilyId:id,sourceSha256:hash,rawJobId:id,rawInputFingerprint:hash,readerSha256:hash,
   profilerSha256:hash,subject:z.string().min(1).max(300),accessBinding:hash,inputFingerprint:hash});
-export const StreamedProfilePathSchema=z.strictObject({path:SourcePathSchema,
-  types:z.array(z.enum(['string','number','boolean','object','array'])).max(5),
+const streamedCounts={types:z.array(z.enum(['string','number','boolean','object','array'])).max(5),
   values:z.number().int().nonnegative(),explicitNull:z.number().int().nonnegative(),
-  absent:z.number().int().nonnegative(),unknown:z.number().int().nonnegative(),
-  /** Values that are whole numbers within the exact integer range; absent in a generation that did not count them. */
-  integers:z.number().int().nonnegative().optional()});
+  absent:z.number().int().nonnegative()};
+/** Values that are whole numbers within the exact integer range; absent in a generation that did not count them. */
+const streamedIntegers=z.number().int().nonnegative().optional();
+export const StreamedProfilePathSchema=z.strictObject({path:SourcePathSchema,...streamedCounts,
+  unknown:z.number().int().nonnegative(),integers:streamedIntegers,
+  /** In a file of outlines with pins or lines, the same counts over the outlines an outline kind draws. */
+  outline:z.strictObject({...streamedCounts,integers:streamedIntegers}).optional()});
 export const StreamedProfileLocatorSchema=z.strictObject({featureIndex:z.number().int().nonnegative(),
   byteStart:z.number().int().nonnegative(),byteEnd:z.number().int().positive(),rawSha256:hash,issueCode:issue});
 export const StreamedProfileGenerationSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),

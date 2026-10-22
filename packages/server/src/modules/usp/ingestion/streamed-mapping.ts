@@ -20,16 +20,26 @@ const streamedCodes:Record<string,string>={MAPPING_PATH:'STREAMED_MAPPING_PATH',
   MAPPING_IDENTITY:'STREAMED_MAPPING_COVERAGE',MAPPING_NAME:'STREAMED_MAPPING_COVERAGE',
   MAPPING_GEOMETRY:'STREAMED_MAPPING_GEOMETRY',MAPPING_GEOMETRY_KIND:'STREAMED_MAPPING_GEOMETRY',
   MAPPING_CRS:'STREAMED_MAPPING_GEOMETRY'};
+type Counts=Omit<StreamedProfilePath,'path'|'unknown'|'outline'>;
+/** Every counted feature has a value of one type. */
+const complete=(counts:Counts,total:number,type:Counts['types'][number])=>counts.values===total
+  &&counts.explicitNull===0&&counts.absent===0&&counts.types.length===1&&counts.types[0]===type;
+/** The small layout's identity facts over the outlines of a file that also holds pins or lines; registry.ts
+ * keyFacts reads them for an outline kind. A profile stored without outline counts states none. */
+function outlineFacts({outline}:StreamedProfilePath){
+  if(!outline)return {};
+  const total=outline.values+outline.explicitNull+outline.absent;
+  return {outlineLiteralIdEligible:complete(outline,total,'string'),
+    outlineIntegerIdEligible:complete(outline,total,'number')&&outline.integers===outline.values};
+}
 /** A path qualifies when every accepted feature has a value of one type; uniqueness is the mapped worker's. */
 function layoutProfile(profile:StreamedProfileGeneration){
-  const complete=(path:StreamedProfilePath,type:StreamedProfilePath['types'][number])=>path.values===profile.accepted
-    &&path.explicitNull===0&&path.absent===0&&path.types.length===1&&path.types[0]===type;
   const {sourceCrs,evidence,unit}=profile.reference;
   // An unsealed profile has no receipt yet; no part is cut from it, and the sealed profile states the unit.
   return {geometryTypes:profile.geometryTypes,crs:{value:sourceCrs??'',evidence:evidence??'',unit:unit??'degree'},
-    paths:profile.paths.map(path=>({...path,literalIdEligible:complete(path,'string'),
-      literalTextEligible:complete(path,'string'),
-      integerIdEligible:complete(path,'number')&&path.integers===path.values}))};
+    paths:profile.paths.map(path=>({...path,literalIdEligible:complete(path,profile.accepted,'string'),
+      literalTextEligible:complete(path,profile.accepted,'string'),
+      integerIdEligible:complete(path,profile.accepted,'number')&&path.integers===path.values,...outlineFacts(path)}))};
 }
 /** Mechanical admission by the small layout's rules. Meaning is publisher-cited or officer-stated;
  * local approval remains required. */
