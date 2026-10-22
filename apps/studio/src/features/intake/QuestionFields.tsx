@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { fieldWords } from './batch-model';
-import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords } from './question-model';
+import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords, namePaths } from './question-model';
 import type { Choices, Kind, MapProfile } from './question-model';
 import styles from './Batch.module.css';
 
@@ -19,7 +19,7 @@ export function QuestionFields(props: Props) {
     <KindField {...props} geometryTypes={props.profile.geometryTypes} />
     <IdentifierField {...props} />
     <FieldChoice label="Which field is its name?" value={props.choices.name}
-      paths={props.profile.paths.filter(path => path.literalTextEligible)}
+      paths={namePaths(props.profile, props.choices.kind)}
       choose={value => props.choose('name', value)} optional />
     <ChoiceError {...props} field="name" />
     <HeightFields {...props} />

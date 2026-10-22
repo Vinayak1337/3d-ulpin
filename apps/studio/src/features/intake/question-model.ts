@@ -75,6 +75,16 @@ export function identifierWords(path: ProfilePath, kind: Kind | '' = ''): string
   return fieldWords(path.path) + (keyFacts(path, kind).integer ? ' (whole number)' : '');
 }
 
+/** Names follow the chosen kind's completeness rule; a stored profile without outline facts stays conservative. */
+export function namePaths(profile: MapProfile, kind: Kind | '' = ''): MapProfile['paths'] {
+  return profile.paths.filter(path => {
+    if (!path.path.startsWith(propertyPrefix)) return false;
+    if (kind && !outlineKinds.includes(kind)) return path.literalTextEligible;
+    const drawn = path.outlineLiteralTextEligible ?? path.literalTextEligible;
+    return kind ? drawn : path.literalTextEligible || drawn;
+  });
+}
+
 export function heightPaths(profile: MapProfile): MapProfile['paths'] {
   return profile.paths.filter(path => path.path.startsWith(propertyPrefix) && path.types.length > 0
     && path.types.every(type => ['number', 'string'].includes(type)));
@@ -85,7 +95,7 @@ export function questionBody(profile: MapProfile, choices: Choices, revision: nu
   if (!choices.kind || kindRefusal(choices.kind, profile.geometryTypes)) return null;
   const identifier = identifierPaths(profile, choices.kind).find(path => path.path === choices.identifier);
   if (!identifier) return null;
-  if (choices.name && !profile.paths.some(path => path.path === choices.name && path.literalTextEligible)) return null;
+  if (choices.name && !namePaths(profile, choices.kind).some(path => path.path === choices.name)) return null;
   if (!profile.paths.some(path => path.path === '/features/*/geometry')) return null;
   const height = heightMembers(profile, choices);
   if (height === null) return null;

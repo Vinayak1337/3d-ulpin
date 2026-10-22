@@ -45,7 +45,8 @@ function StreamedFields(props: {
       so no field can identify its features.</p> : null}
     <ChoiceError {...props} field="identifier" />
     <FieldChoice label="Which field is its name?" value={props.choices.name}
-      paths={streamedNamePaths(props.inventory)} choose={value => props.choose('name', value)} optional />
+      paths={streamedNamePaths(props.inventory, props.choices.kind)}
+      choose={value => props.choose('name', value)} optional />
     <ChoiceError {...props} field="name" />
   </div>;
 }

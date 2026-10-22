@@ -372838,6 +372838,9 @@
                     },
                     "outlineIntegerIdEligible": {
                       "type": "boolean"
+                    },
+                    "outlineLiteralTextEligible": {
+                      "type": "boolean"
                     }
                   },
                   "required": [

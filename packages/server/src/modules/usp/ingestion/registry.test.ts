@@ -308,6 +308,41 @@ test('a keyed mixed file and a single-kind file lay out as before', () => {
     'a profile stored before outline eligibility keeps the whole-file rule');
 });
 
+test('names require complete outline text in a mixed file, without changing whole-file facts', () => {
+  // test_only: literal fixture names, not operational source records.
+  const features = fixture.features.map((feature, index) => ({ ...feature,
+    properties: { ...feature.properties, name: `Fixture ${index}` } as Record<string, unknown> }));
+  const namePath = '/features/*/properties/name';
+  const named = MappingPlanSchema.parse({ ...stated('building'), operations: [...stated('building').operations,
+    { target: 'feature.name', sourcePath: namePath, conversionId: 'literal_text@1' }] });
+  const inventory = (mixed: boolean) => {
+    const rows = mixed ? [...features, { type: 'Feature', properties: { doitt_id: 'fixture-pin' },
+      geometry: { type: 'Point', coordinates: [-74, 40] } }] : features;
+    const bytes = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: rows, test_only: true }));
+    return inspectedProfile(bytes, { format: 'geojson', sourceSha256: sha256(bytes), featureCount: rows.length,
+      sourceCrs: 'EPSG:4326', crsEvidence: 'test_only fixture',
+      geometryTypes: mixed ? ['Polygon', 'Point'] : ['Polygon'],
+      fields: [{ name: 'doitt_id' }, { name: 'name' }] } as GisInspection);
+  };
+  const polygons = inventory(false);
+  assert.equal(compileMapping(named, polygons).nameField, 'name');
+  assert(!('outlineLiteralTextEligible' in polygons.paths.find(path => path.path === namePath)!));
+  const mixed = inventory(true);
+  const text = mixed.paths.find(path => path.path === namePath)!;
+  assert.equal(text.literalTextEligible, false);
+  assert.equal(text.outlineLiteralTextEligible, true);
+  assert.equal(compileMapping(named, mixed).nameField, 'name');
+  const road = { ...named, kind: 'road' as const };
+  assert.throws(() => compileMapping(road, mixed), { code: 'MAPPING_NAME' });
+  const { outlineLiteralTextEligible: _drawn, ...oldText } = text;
+  assert.throws(() => compileMapping(named, { ...mixed,
+    paths: mixed.paths.map(path => path === text ? oldText : path) }), { code: 'MAPPING_NAME' });
+  for (const value of [undefined, null, '', ' padded ', 7, 'x'.repeat(2049)]) {
+    features[1].properties.name = value;
+    assert.throws(() => compileMapping(named, inventory(true)), { code: 'MAPPING_NAME' });
+  }
+});
+
 test('additive integer eligibility does not enter the schema fingerprint', () => {
   const bytes = Buffer.from(JSON.stringify(fixture));
   const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,

@@ -24,12 +24,13 @@ type Counts=Omit<StreamedProfilePath,'path'|'unknown'|'outline'>;
 /** Every counted feature has a value of one type. */
 const complete=(counts:Counts,total:number,type:Counts['types'][number])=>counts.values===total
   &&counts.explicitNull===0&&counts.absent===0&&counts.types.length===1&&counts.types[0]===type;
-/** The small layout's identity facts over the outlines of a file that also holds pins or lines; registry.ts
- * keyFacts reads them for an outline kind. A profile stored without outline counts states none. */
+/** The small layout's identity and name facts over outlines in a file that also holds pins or lines.
+ * A profile stored without outline counts states none. */
 function outlineFacts({outline}:StreamedProfilePath){
   if(!outline)return {};
   const total=outline.values+outline.explicitNull+outline.absent;
   return {outlineLiteralIdEligible:complete(outline,total,'string'),
+    outlineLiteralTextEligible:total>0&&complete(outline,total,'string'),
     outlineIntegerIdEligible:complete(outline,total,'number')&&outline.integers===outline.values};
 }
 /** A path qualifies when every accepted feature has a value of one type; uniqueness is the mapped worker's. */

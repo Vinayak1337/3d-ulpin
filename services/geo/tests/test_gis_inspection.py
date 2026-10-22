@@ -275,6 +275,31 @@ def test_mixed_geojson_reports_integer_keys_over_the_outlines_an_outline_layout_
     assert field["outlineIntegerIdEligible"] is False
 
 
+@pytest.mark.parametrize("missing", [False, True])
+def test_mixed_names_are_suggested_only_when_every_outline_has_text(missing):
+    # test_only: literal geometry and labels, not operational records.
+    source = geojson([{"id": "A", "name": "First"}, {"id": "B", "name": "Second"}])
+    for feature in source["features"]:
+        feature["geometry"] = {"type": "Polygon", "coordinates": [
+            [[77, 28], [77.001, 28], [77.001, 28.001], [77, 28]]
+        ]}
+    if missing:
+        del source["features"][1]["properties"]["name"]
+    polygons = json_inspect(source)
+    assert polygons["suggestedNameField"] == (None if missing else "name")
+    assert all("outlineComplete" not in field for field in polygons["fields"])
+    source["features"].extend([
+        {"type": "Feature", "properties": {}, "geometry": {"type": "Point", "coordinates": [77, 28]}},
+        {"type": "Feature", "properties": {"name": {"not": "text"}}, "geometry": {
+            "type": "LineString", "coordinates": [[77, 28], [77.001, 28]]}},
+    ])
+    result = json_inspect(source)
+    field = next(field for field in result["fields"] if field["name"] == "name")
+    assert field["complete"] is False
+    assert field["outlineComplete"] is not missing
+    assert result["suggestedNameField"] == (None if missing else "name")
+
+
 def test_a_single_kind_geojson_carries_no_outline_flags():
     result = json_inspect(geojson([{"id": 7}, {"id": 8}]))
     assert "featureOutlineIntegerIdEligible" not in result
