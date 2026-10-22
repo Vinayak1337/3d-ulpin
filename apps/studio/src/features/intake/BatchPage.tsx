@@ -5,6 +5,7 @@ import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from './AddFilesDialog';
 import { BatchTableSection } from './BatchTableSection';
+import { BatchPdfSection, isBatchPdf } from './BatchPdfSection';
 import { DropOutcomes } from './IntakeDropDialog';
 import { EvidenceByKey } from './evidence/EvidenceByKey';
 import { IntakeTray } from './IntakeTray';
@@ -99,6 +100,7 @@ function ItemDetail({ caseId, item, items, refresh }: {
       <LayoutQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}
     {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
+    <BatchPdfSection caseId={caseId} item={item} />
     <BatchTableSection caseId={caseId} item={item} items={items} />
   </>;
 }
@@ -118,6 +120,11 @@ function BatchRecords({ batch, choose }: {
     {items.length ? <EvidenceProvider>
       <IntakeTray caseId={caseId} items={items} packages={listedPackages} choose={choose} refresh={refresh} />
     </EvidenceProvider> : null}
+    {items.some(isBatchPdf) ? <nav className="ul-row" aria-label="PDF readings">
+      {items.filter(isBatchPdf).map(item => <Button key={item.itemId} variant="soft" onClick={() => choose(item)}>
+        View PDF reading · {item.name}
+      </Button>)}
+    </nav> : null}
     {!manifest.isPending && !items.length ? <p>No files are enrolled in this batch.</p> : null}
   </>;
 }

@@ -319,7 +319,7 @@ const ascending = (pages: Iterable<number>) => [...new Set(pages)].sort((a, b) =
 /**
  * G10. What the page reader found, in an officer's words. Every page has either text parts or a no-text warning,
  * so their union is the page count. A passage naming floors or rooms is a candidate cited to its page and lines,
- * never a value; a page with no text layer is said to be scanned and unread, as no OCR runs in a batch.
+ * never a value. Scanned pages have no native text; their separate OCR reading is an officer's request.
  */
 export function batchPdfSettlement(native: DocumentResult['native']): PdfItemState {
   if (native.status === 'encrypted') return { state: 'read', placement: 'needs_answer', limitReason: 'This PDF is '
@@ -338,7 +338,7 @@ export function batchPdfSettlement(native: DocumentResult['native']): PdfItemSta
   if (textPages.length) words.push(`Text was found on ${pageWords(textPages)}.`);
   const one = scanned.length === 1;
   if (scanned.length) words.push(`${pageWords(scanned).replace(/^p/, 'P')} ${one ? 'has' : 'have'} no text layer `
-    + `(scanned), so the words on ${one ? 'it' : 'them'} are not read; no OCR runs in a batch.`);
+    + '(scanned). Open the PDF reading to request bounded OCR.');
   const named = new Map<string, number>();
   for (const part of native.parts) {
     if (!part.locator.page || !floorsOrRooms.test(part.text)) continue;
