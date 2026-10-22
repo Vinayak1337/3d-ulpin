@@ -7,6 +7,7 @@ import { needsLayoutAnswer } from './question-model';
 import { isPageImage } from './page-image-model';
 import { canRetryStopped } from './retry-command';
 import { StoppedRetry } from './StoppedRetry';
+import { PlanReadingSummary } from './PlanReadingSection';
 import { useSourceCase } from './table/queries';
 import { LayerCrsAnswers } from './LayerCrsAnswer';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
@@ -37,7 +38,10 @@ export function IntakeTray({ caseId, items, packages, choose, refresh }: {
       { header: 'Coordinate system', cell: (item) => crsWords(item.card) },
       { header: 'Extent as stated', cell: (item) => item.card?.extent.native?.join(', ') ?? 'Not known' },
       { header: 'Placement', cell: (item) => placementWords(item.placement) },
-      { header: 'Reason', cell: (item) => item.limitReason ?? null },
+      { header: 'Reason', cell: (item) => <>
+        {item.limitReason ?? null}
+        <PlanReadingSummary readings={item.planReadings ?? []} />
+      </> },
       { header: 'Next step', cell: (item) => <NextStep caseId={caseId} item={item} items={items} packages={packages}
         choose={choose} refresh={refresh} /> },
     ]} />

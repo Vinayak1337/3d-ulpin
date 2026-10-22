@@ -3403,6 +3403,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/plan-reader": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check the installed pinned plan model and pages eligible for candidate room reading */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_reader"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/plan-readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue one candidate-only room reading of a plan image or selected OCR PDF page; never records */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_readings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview": {
         parameters: {
             query?: never;
@@ -65492,6 +65526,134 @@ export interface components {
              * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
              */
             existingAreaId?: string | null;
+            /** @description Candidate rooms in page pixels, one reading per selected page; never world placement or registry records. */
+            planReadings?: {
+                /** Format: uuid */
+                jobId: string;
+                page: number;
+                /** @enum {string} */
+                status: "queued" | "completed" | "failed";
+                error: string | null;
+                result: ({
+                    /** @enum {string} */
+                    schemaVersion: "raster-plan-candidates/1";
+                    /** @enum {string} */
+                    state: "candidate";
+                    level: {
+                        /** @enum {string} */
+                        state: "unknown";
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    panel: string;
+                    sourceCitation: {
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            page: number;
+                            /** @enum {string} */
+                            unit: "pt" | "pixel";
+                        } & {
+                            [key: string]: unknown;
+                        };
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    model: {
+                        sha256: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    overlay?: {
+                        /** @enum {string} */
+                        mediaType: "image/png";
+                        sha256: string;
+                        base64: string;
+                        bytes: number;
+                        width: number;
+                        height: number;
+                    } | null;
+                    scale: {
+                        /** @enum {string} */
+                        state: "no_scale" | "candidate";
+                        metresPerPoint: number | null;
+                        pairs: {
+                            [key: string]: unknown;
+                        }[];
+                        reason?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    rooms: ({
+                        /** @enum {string} */
+                        state: "candidate";
+                        level: {
+                            /** @enum {string} */
+                            state: "unknown";
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        className: string;
+                        literalClass: string | null;
+                        geometryPagePixels: {
+                            /** @enum {string} */
+                            type: "Polygon";
+                            coordinates: (number)[][][];
+                        } | {
+                            /** @enum {string} */
+                            type: "MultiPolygon";
+                            coordinates: (number)[][][][];
+                        };
+                        containedOcrLiterals: ({
+                            literal: string;
+                            bboxPt: (number)[];
+                            method: string;
+                            tile: number;
+                            item: number;
+                            /** @enum {string} */
+                            state: "candidate";
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        metric: ({
+                            geometry: {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                coordinates: (number)[][][][];
+                            };
+                            areaM2: number;
+                            /** @enum {string} */
+                            unit: "m";
+                            frame: string;
+                            /** @enum {string} */
+                            state: "candidate";
+                        } & {
+                            [key: string]: unknown;
+                        }) | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    ocrObservations: ({
+                        literal: string;
+                        bboxPt: (number)[];
+                        method: string;
+                        tile: number;
+                        item: number;
+                        /** @enum {string} */
+                        state: "candidate";
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    gaps: string[];
+                } & {
+                    [key: string]: unknown;
+                }) | null;
+            }[];
             /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
             pageImage?: {
                 /** @enum {string} */
@@ -65782,6 +65944,134 @@ export interface components {
                  * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
                  */
                 existingAreaId?: string | null;
+                /** @description Candidate rooms in page pixels, one reading per selected page; never world placement or registry records. */
+                planReadings?: {
+                    /** Format: uuid */
+                    jobId: string;
+                    page: number;
+                    /** @enum {string} */
+                    status: "queued" | "completed" | "failed";
+                    error: string | null;
+                    result: ({
+                        /** @enum {string} */
+                        schemaVersion: "raster-plan-candidates/1";
+                        /** @enum {string} */
+                        state: "candidate";
+                        level: {
+                            /** @enum {string} */
+                            state: "unknown";
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        panel: string;
+                        sourceCitation: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                page: number;
+                                /** @enum {string} */
+                                unit: "pt" | "pixel";
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        model: {
+                            sha256: string;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        overlay?: {
+                            /** @enum {string} */
+                            mediaType: "image/png";
+                            sha256: string;
+                            base64: string;
+                            bytes: number;
+                            width: number;
+                            height: number;
+                        } | null;
+                        scale: {
+                            /** @enum {string} */
+                            state: "no_scale" | "candidate";
+                            metresPerPoint: number | null;
+                            pairs: {
+                                [key: string]: unknown;
+                            }[];
+                            reason?: string;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        rooms: ({
+                            /** @enum {string} */
+                            state: "candidate";
+                            level: {
+                                /** @enum {string} */
+                                state: "unknown";
+                            } & {
+                                [key: string]: unknown;
+                            };
+                            className: string;
+                            literalClass: string | null;
+                            geometryPagePixels: {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                coordinates: (number)[][][][];
+                            };
+                            containedOcrLiterals: ({
+                                literal: string;
+                                bboxPt: (number)[];
+                                method: string;
+                                tile: number;
+                                item: number;
+                                /** @enum {string} */
+                                state: "candidate";
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            metric: ({
+                                geometry: {
+                                    /** @enum {string} */
+                                    type: "Polygon";
+                                    coordinates: (number)[][][];
+                                } | {
+                                    /** @enum {string} */
+                                    type: "MultiPolygon";
+                                    coordinates: (number)[][][][];
+                                };
+                                areaM2: number;
+                                /** @enum {string} */
+                                unit: "m";
+                                frame: string;
+                                /** @enum {string} */
+                                state: "candidate";
+                            } & {
+                                [key: string]: unknown;
+                            }) | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        ocrObservations: ({
+                            literal: string;
+                            bboxPt: (number)[];
+                            method: string;
+                            tile: number;
+                            item: number;
+                            /** @enum {string} */
+                            state: "candidate";
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        gaps: string[];
+                    } & {
+                        [key: string]: unknown;
+                    }) | null;
+                }[];
                 /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
                 pageImage?: {
                     /** @enum {string} */
@@ -66000,6 +66290,24 @@ export interface components {
             requestKey: string;
             /** @enum {string} */
             label: "plan" | "elevation" | "photo" | "other";
+        };
+        GET_ingestion_cases_caseId_intake_items_itemId_plan_reader_Response_200_application_json: {
+            available: boolean;
+            reason: string | null;
+            modelSha256: string | null;
+            pages: number[];
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            page: number;
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Response_202_application_json: {
+            /** Format: uuid */
+            jobId: string;
+            /** Format: uuid */
+            itemId: string;
+            page: number;
         };
         POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json: {
             /** Format: uuid */
@@ -94156,6 +94464,236 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_reader: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_plan_reader_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_readings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Response_202_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

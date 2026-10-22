@@ -46,6 +46,7 @@ export function opensPages(item: IntakeItem) {
 }
 
 export function isSettled(item: IntakeItem) {
+  if (item.planReadings?.some(reading => reading.status === 'queued')) return false;
   if (['read', 'read_to_limit', 'failed_part', 'probe_failed'].includes(item.state)) return true;
   return ['needs_answer', 'not_understood', 'waiting_for_anchor'].includes(item.placement);
 }

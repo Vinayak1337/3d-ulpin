@@ -54,7 +54,10 @@ function usePdfOcr(caseId: string, sourceId: string, reading: PdfReading | undef
   const [run] = useState(() => createPdfOcrRun(caseId, sourceId));
   const leaving = useRef(new AbortController());
   useEffect(() => () => leaving.current.abort(), []);
-  const refresh = () => { void client.invalidateQueries({ queryKey: ['source-case', caseId] }); };
+  const refresh = () => {
+    void client.invalidateQueries({ queryKey: ['source-case', caseId] });
+    void client.invalidateQueries({ queryKey: ['intake', caseId, 'plan-reader'] });
+  };
   const press = useMutation({
     mutationFn: (pages: number[]) => run(reading!, pages, leaving.current.signal, value => {
       setProgress(value);
