@@ -1,0 +1,95 @@
+{
+  "task": "GZ1",
+  "gate": "P0 hygiene / AUD2 gap 7; offline only, no runtime gate passed",
+  "branch": "task/gz1-shapefile-z",
+  "base": "26bc76fc",
+  "sourceCommit": "8e4d5a8c501b6944ddec13ef24dba7661ba71f5d",
+  "imageRebuildNeeded": true,
+  "servicesGeoCommit": "8e4d5a8c501b6944ddec13ef24dba7661ba71f5d",
+  "parts": {
+    "unresolvablePrj": {
+      "factFound": "statesCrs=true is not answerable: nativeLayers.unstated and stateLayerCrsTx admit only layers whose file states no CRS. Existing words falsely promised conversion after an answer.",
+      "change": "nativeParentState words only: missing CRS keeps its existing sentence; unresolved CRS says Kept, not converted, followed by the layer and its stated reason. Placement and answer eligibility are unchanged.",
+      "tests": ["TS words for an unresolved-only conversion and one mixed with an actually missing CRS", "Python refuses an officer override of an unresolvable .prj", "Real Tweed copy with only its .prj replaced is not converted"],
+      "exits": {"typescript": 0, "pythonFocused": 0},
+      "limitation": "The existing placement remains needs_answer even for an unanswerable stated CRS; changing state or offering a replacement CRS was outside the words-only scope."
+    },
+    "shapefileZ": {
+      "factFound": "The windowed reader refused 11/13/15. Pyshp's GeoJSON interface omits Z. GeoJSON normalization already keeps third coordinates in sourceGeometry and sourceHeights with unit/reference null while emitting x,y outlines.",
+      "change": "Accept 11/13/15 through the existing ZIP/loose-parts helper. Preserve Z per position in the GeoJSON derivative; reuse GeoJSON normalization unchanged. Reuse pyshp ring grouping on x,y before restoring each ring's own Z. Refuse populated M on Z shapes, mixed non-null shape types, and incomplete/nonfinite Z arrays. M types and MultiPatch retain their existing refusal words; ArcGIS Z stays refused.",
+      "tests": ["Generated PolygonZ with a hole and a second exterior, through conversion and normalization", "PointZ and multipart PolyLineZ", "M types 21/23/25 and MultiPatch 31", "PolygonZ with populated M", "2D record under a Z layer header", "Existing GeoJSON mixed/M and ArcGIS Z regressions in test_area.py", "Real 2D Tweed conversion and record locators"],
+      "exits": {"pythonFocused": 0, "pythonSelectionWithUnrelatedModulesExcluded": 0},
+      "observed": {"polygonPositions": 15, "sourceHeightsMin": 10, "sourceHeightsMax": 43, "unit": null, "reference": null, "heightState": "unknown", "heightValue": null, "outlineDimensions": 2},
+      "realZShapefile": "Not found in the permitted dataset folders; no real PolygonZ qualification claimed."
+    }
+  },
+  "inputs": [
+    {
+      "role": "good real original, foreign public test_only",
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip",
+      "sha256": "5e8b07aa6e6121070766a5ecbea28b8f136655ada60e58662897c422c825bf2e",
+      "bytes": 12849,
+      "issuer": "Tweed Shire Council",
+      "licence": "CC BY, version unstated; attribution required",
+      "result": "88 features converted under EPSG:28356, with sequence record locators; source hash unchanged"
+    },
+    {
+      "role": "difficult derived negative, not a naturally difficult real input",
+      "source": "Tweed original above",
+      "mutation": "Test-local ZIP copy with only .prj replaced by unresolvable text",
+      "result": "crs_unstated, statesCrs=true; no derivative even with an officer answer"
+    },
+    {
+      "role": "synthetic parser regression only, not survey evidence",
+      "path": "services/geo/tests/test_native_gis_shapefile.py",
+      "result": "Test writes its own tiny PolygonZ ZIP and other refusal fixtures in temporary storage"
+    },
+    {
+      "role": "existing real Z GeoJSON regression source, foreign public test_only; not a Z shapefile",
+      "path": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+      "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+      "bytes": 26660992,
+      "use": "Existing native-conversion regressions write its first 2500 real outlines into a test-local GeoPackage"
+    }
+  ],
+  "datasetSearch": {
+    "root": "E:/BhuAayam-data/datasets/",
+    "excludedDirectories": ["*heldout*", "*holdout*", "*evaluator*", "*acquisitions*", "*provisional*"],
+    "method": "Read-only filename traversal for .shp/.zip, followed by .shp member-header inspection of the two ZIPs found",
+    "looseShapefiles": 0,
+    "archives": [
+      {"path": "map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip", "shapeTypes": [5]},
+      {"path": "nyc-10013/nyc-10013-multimodal.zip", "shapeTypes": []}
+    ],
+    "realZShapefiles": 0
+  },
+  "checks": [
+    {"command": "python -c \"import shapely\"", "exit": 1, "note": "Default C:/Python313 lacks Shapely; used the existing geo environment, no dependencies downloaded."},
+    {"command": "pnpm typecheck:backend", "initialExit": 1, "exit": 0, "note": "Initial checkout had no node_modules/tsc; passed after offline install."},
+    {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0, "note": "No lockfile/source changes."},
+    {"command": "ULPIN_GEO_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-derivative.test.ts", "initialExit": 1, "exit": 0, "passed": 9, "skipped": 0, "note": "Initial checkout lacked tsx; passed after offline install."},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=services/geo E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -m pytest -p no:cacheprovider services/geo/tests/test_native_gis_shapefile.py services/geo/tests/test_native_conversion.py services/geo/tests/test_area.py -o addopts= -q", "exit": 0, "passed": 131, "skipped": 0},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=services/geo E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -m pytest -p no:cacheprovider services/geo/tests -k \"native_gis or shapefile\" -q", "exit": 2, "note": "Collection blocked by unrelated imports: torch in test_learning_lora, fitz in test_packet_regions/test_source_ocr_candidate, laspy in test_surface_readers."},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=services/geo E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -m pytest -p no:cacheprovider services/geo/tests -k \"native_gis or shapefile\" --ignore=services/geo/tests/test_learning_lora.py --ignore=services/geo/tests/test_packet_regions.py --ignore=services/geo/tests/test_source_ocr_candidate.py --ignore=services/geo/tests/test_surface_readers.py -o addopts= -q", "exit": 0, "passed": 30, "deselected": 646},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "awk 'length>120 {print FILENAME \":\" FNR \":\" length}' services/geo/tests/test_native_gis_shapefile.py", "exit": 0, "note": "No long lines."}
+  ],
+  "review": "Read the complete owned-path diff against staging and checked the task-base path list; changes are limited to owned paths. The inherited integration branch differs elsewhere from staging.",
+  "safety": {"offline": true, "dockerUsed": false, "runtimeUsed": false, "imageBuilt": false, "envOrCredentialsRead": false, "originalsModified": false, "pushed": false},
+  "followUp": [
+    {
+      "task": "GZ1-b",
+      "base": "099196f8",
+      "factFound": "The remaining shapefile refusal still said Z, M or MultiPatch although 11/13/15 are now accepted.",
+      "change": "Refusal words now read: stores M or MultiPatch shapes, or its shapes and records differ in number. Same text in the test REFUSAL constant. rg found no other copy (no TS words, Studio, tests or evidence).",
+      "imageRebuildNeeded": true,
+      "note": "services/geo changes again in the commit that adds this entry; rebuild the processor image from that commit, not from servicesGeoCommit above.",
+      "checks": [
+        {"command": "rg -n -F \"Z, M or MultiPatch\" .", "exit": 1, "note": "No remaining copy after the change."},
+        {"command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=services/geo E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -m pytest -p no:cacheprovider services/geo/tests/test_native_gis_shapefile.py -o addopts= -q", "exit": 0, "passed": 12},
+        {"command": "git diff --check", "exit": 0}
+      ]
+    }
+  ],
+  "next": ["Review and integrate; refresh shared source pins for intake-native-derivative.ts outside this task's ownership.", "Rebuild the processor image from the servicesGeoCommit before runtime rehearsal.", "Real Z shapefile and naturally difficult real input qualification remain unavailable locally; no runtime/UI claim is made."]
+}

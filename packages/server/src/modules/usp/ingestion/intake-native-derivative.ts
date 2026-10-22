@@ -317,8 +317,13 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
   if (taken.length) sentences.push(`${taken.length === 1 ? '1 layer' : `${taken.length} layers`} of this `
     + `${kind(format)} ${taken.length === 1 ? 'is' : 'are'} converted to GeoJSON and taken in as `
     + `${taken.length === 1 ? 'its own file' : 'their own files'}: ${listWords(taken, 500)}.`);
-  if (unstated.length) sentences.push(`Not converted until its coordinate reference system is stated: `
-    + `${listWords(unstated, 500)}.`);
+  const missingCrs = conversion.layers.flatMap(layer => layer.state === 'crs_unstated' && !layer.statesCrs
+    ? [`${layer.layer} (${layer.reason})`] : []);
+  const unresolvedCrs = conversion.layers.flatMap(layer => layer.state === 'crs_unstated' && layer.statesCrs
+    ? [`${layer.layer} (${layer.reason})`] : []);
+  if (missingCrs.length) sentences.push(`Not converted until its coordinate reference system is stated: `
+    + `${listWords(missingCrs, 500)}.`);
+  if (unresolvedCrs.length) sentences.push(`Kept, not converted: ${listWords(unresolvedCrs, 500)}.`);
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
   if (parts.length) sentences.push(`Read as one shapefile from its parts: ${listWords(parts, 300)}.`);

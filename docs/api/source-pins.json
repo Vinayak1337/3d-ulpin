@@ -450,7 +450,7 @@
     "packages/server/src/modules/usp/ingestion/intake-ledger.ts": "4d454b72d275ea8ad2d33a870206c668cfb2704bd528ec1235b3cb86e4bf533b",
     "packages/server/src/modules/usp/ingestion/intake-migration.ts": "47e5f5406224a3b3b2071a6628ae2ff9cb90ab6ce26487ca94dffd08c5935557",
     "packages/server/src/modules/usp/ingestion/intake-native-derivative-worker.ts": "df6c9f4a3ee686d323fe047cdfb588197001defa54cc72364cf43125e4363f92",
-    "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts": "83791879e25431f3ccccc6f1f865c5ad875ce3ac97c269376eb5000ad105c086",
+    "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts": "113dc5a4fc861032b5753ea402503c5552671478c4630dd53ef3de6b84426ccb",
     "packages/server/src/modules/usp/ingestion/intake-native-readers.ts": "f04e05e9e3aee702aef9c0c271e3b67d3f4d259ffa33f04703d92a00601929a3",
     "packages/server/src/modules/usp/ingestion/intake-package-cuts.ts": "37e7110f27fcfa94d0953b4d93dd000960924daceab7f1dc9c6b0eb7479da83f",
     "packages/server/src/modules/usp/ingestion/intake-package-extent.ts": "e7206ee0f0fe40889fbb7459c7c0cd3c2dedaba52fd660cf75e3baa3d0da5702",
