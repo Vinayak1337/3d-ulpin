@@ -13,6 +13,7 @@ import { countWords, crsWords, familyWords, formatWords, placementWords, sizeCla
   stateWords, packagePath, partProgressWords, opensPages } from './batch-model';
 import type { IntakeItem } from './batch-model';
 import { isIfcItem } from './ifc/structure-model';
+import { opensReading } from './native/reading-model';
 import styles from './Batch.module.css';
 
 export function IntakeTray({ caseId, items, packages, choose, refresh }: {
@@ -59,6 +60,8 @@ function NextStep({ caseId, item, items, packages, choose, refresh }: {
     {itemTableSource(item, items) ? <Button variant="soft" onClick={() => choose(item)}
       aria-label={`Open the table: ${item.name}`}>Open the table</Button> : null}
     {isIfcItem(item) ? <Button variant="soft" onClick={() => choose(item)}>View structure</Button> : null}
+    {opensReading(item) ? <Button variant="soft" onClick={() => choose(item)}
+      aria-label={`Open the reading: ${item.name}`}>Open the reading</Button> : null}
     {isPageImage(item) ? <Button variant="soft" onClick={() => choose(item)}
       aria-label={`View page image: ${item.name}`}>View page image</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}

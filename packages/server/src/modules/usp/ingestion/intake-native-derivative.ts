@@ -356,7 +356,7 @@ const featureCount = (value: number) => value.toLocaleString('en-US');
 
 /**
  * Gap 6. Each converted layer's written and not-written features. A feature not written stays in the original; the
- * layer's stored locator sidecar names its position there and why, so the words point to it, not to a new route.
+ * layer's stored locator sidecar names its position there and why. NO1: the item's reading lists them from it.
  */
 function featureCountWords(conversion: NativeConversion): string[] {
   const converted = conversion.layers.filter((layer): layer is ConvertedLayer => layer.state === 'converted');
@@ -365,7 +365,8 @@ function featureCountWords(conversion: NativeConversion): string[] {
     + `${featureCount(layer.notWritten)} not written)`);
   const words = [`Features per converted layer: ${listWords(counts, 300)}.`];
   if (converted.some(layer => layer.notWritten)) words.push('A feature not written is not in that layer\'s GeoJSON; '
-    + 'the stored locator file kept beside that GeoJSON names its position in the original and why.');
+    + 'the stored locator file kept beside that GeoJSON names its position in the original and why. '
+    + 'Open the reading of this file to see them listed.');
   return words;
 }
 

@@ -237,6 +237,38 @@ export const IntakeItemSchema = z.strictObject({
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });
+
+/**
+ * NO1. The features a native conversion did not write, per converted layer, read from each layer's stored locator
+ * file under the original item's authority. At most `perLayer` are listed with the layer's total; at most
+ * `scanBytes` of locator files are read in one request.
+ */
+export const INTAKE_OMISSION_LIMITS = Object.freeze({ perLayer: 50, layers: 100, scanBytes: 16 * 1024 * 1024 });
+export const IntakeOmissionSchema = z.strictObject({
+  position: z.union([z.number().int(), z.string().min(1).max(1000)]).describe(
+    'Where the feature is in the original, as the converter states it (row id, record or element sequence, or a '
+    + 'CityJSON object pointer); its kind is the layer\'s positionKind.'),
+  reason: z.string().min(1).max(1000).describe('Why the converter did not write it, as stated.'),
+});
+export const IntakeOmissionLayerSchema = z.strictObject({
+  layer: text, ordinal: z.number().int().nonnegative(),
+  derivativeSourceId: z.string().uuid().describe('The GeoJSON derivative kept for this layer.'),
+  positionKind: z.string().max(100).nullable(),
+  written: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(),
+  listed: z.array(IntakeOmissionSchema).max(INTAKE_OMISSION_LIMITS.perLayer),
+  scan: z.enum(['none_left_out', 'whole', 'partial', 'not_read']).describe(
+    'none_left_out: no feature was left out, so the locator file is not read; whole: it was read to its end and '
+    + 'matched its kept SHA-256 and counts; partial: only its first bytes were read, so the list is not checked '
+    + 'against that hash; not_read: the request\'s read budget was spent.'),
+  sidecarSha256: hash,
+});
+export const IntakeNativeOmissionsSchema = z.strictObject({
+  version: z.literal('intake-native-omissions/1'), caseId: z.string().uuid(), itemId: z.string().uuid(),
+  sourceId: z.string().uuid(), sourceRevision: z.number().int().positive(), sourceSha256: hash,
+  layers: z.array(IntakeOmissionLayerSchema).max(INTAKE_OMISSION_LIMITS.layers),
+  words: z.string().min(1).max(2000),
+});
+export type IntakeNativeOmissions = z.infer<typeof IntakeNativeOmissionsSchema>;
 export type IntakeCard = z.infer<typeof IntakeCardSchema>;
 export type IntakeMemberCard = z.infer<typeof IntakeMemberCardSchema>;
 export type IntakeMember = z.infer<typeof IntakeMemberSchema>;
