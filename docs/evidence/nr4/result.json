@@ -43,5 +43,35 @@
     "database": "protocol doubles only",
     "imageRebuildNeeded": false,
     "note": "Both readers are pinned Windows-host profiles (gltf-config/obj-config). Where no profile is configured the job queues with tools null; when a dispatcher runs it, the worker settles the item as stopped with its code (for example GLTF_UNSUPPORTED_PLATFORM). Dispatch of gltf-native/obj-native jobs on a runtime was not qualified here. GLTF_CODE_FILES/OBJ code pins include the changed files, so jobs pinned before this change read as changed tools."
+  },
+  "followUp": {
+    "task": "NR4-b",
+    "base": "5482dec7",
+    "codeCommits": ["8da387f6"],
+    "status": "studio_forecast_and_words_passed_offline",
+    "limits": "packages/contracts/src/upload-reader-limits(.ts/.d.ts) export GLTF_LIMITS and OBJ_LIMITS, re-exported from usp/gltf-ingestion and usp/obj-ingestion (originalBytes 16 MiB each); no new numbers.",
+    "studio": "upload-model readers: glb and gltf -> glTF, obj -> OBJ, each with its originalBytes limit and the note 'Its reading is kept as evidence, not placed on the map.' Replaces the NR4 decision that left these forecast as 'Kind not known yet'.",
+    "contract": "IntakeItemSchema.nativeReaderJobId description names DXF, CityGML, CityJSON, glTF/GLB or OBJ; openapi.json, source-pins.json (refresh-contract base 26bc76fc, which also repinned the NR4 gltf/obj server files) and packages/api-client schema.d.ts regenerated.",
+    "words": {
+      "rule": "Tables keyed by the contract's value types (GltfSummary globalPlacement; ObjSummary axes, units, crs) so a new contract value fails typecheck until it has words. Every value today is 'unknown' and reads 'not stated'; nothing implies a value the reader did not state.",
+      "gltfBefore": "Global placement: unknown. A glTF states no coordinate reference system, so the model stays unplaced.",
+      "gltfAfter": "Placement on the earth: not stated. A glTF states no coordinate reference system, so the model stays unplaced.",
+      "objBefore": "Axes: unknown; units: unknown; coordinate reference system: unknown, so the model stays unplaced.",
+      "objAfter": "Axes: not stated; units: not stated; coordinate reference system: not stated, so the model stays unplaced.",
+      "wordsGood": "The glTF reading is complete. It states 2 nodes and 1 mesh primitive; they are candidates. Positions read: 24; companion files named but not supplied: 0; unsupported primitives: 0. Placement on the earth: not stated. A glTF states no coordinate reference system, so the model stays unplaced. The reading is kept as evidence and is not on the map yet; no record or card target is created.",
+      "wordsDifficultObj": "The OBJ reading is partial. It states 76 vertices and 18 polygons; they are candidates. Unsupported statements: 0; companion declarations not supplied: 10. Axes: not stated; units: not stated; coordinate reference system: not stated, so the model stays unplaced. The reading is kept as evidence and is not on the map yet; no record or card target is created."
+    },
+    "checks": [
+      {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts", "exit": 0},
+      {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc", "exit": 0},
+      {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "note": "329 operations, 372 named schemas"},
+      {"command": "pnpm studio:api-types", "exit": 0},
+      {"command": "pnpm typecheck:backend", "exit": 0},
+      {"command": "pnpm studio:typecheck", "exit": 0},
+      {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts tests/upload-reader-limits.test.ts", "exit": 0, "tests": 42, "pass": 42},
+      {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "exit": 0, "files": 42, "tests": 232, "pass": 232},
+      {"command": "git diff --check", "exit": 0}
+    ],
+    "runtime": {"qualified": false, "docker": "not used", "imageRebuildNeeded": false}
   }
 }
