@@ -4,7 +4,7 @@ import { createReadStream, createWriteStream } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { mkdir, mkdtemp, realpath, rm, statfs } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { Transform, type Readable } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
 import type { DelimitedReading } from '@ulpin/contracts';
@@ -16,7 +16,7 @@ import { sha256 } from '../../../infrastructure/storage';
 import { profileTabularChunk } from './chunk-mapping-agent';
 import { bomEncoding, chooseTableDelimiter } from './delimited-text';
 import { readZipMember } from './intake-zip';
-import { odsLimit, workbookTable, type WorkbookTable } from './tabular-workbook';
+import { TABULAR_ODS_LIMIT, TABULAR_ROW_LIMIT, workbookTable, type WorkbookTable } from './tabular-workbook';
 
 /** One CSV record: its logical record number (the header is 1) and its byte range in the unchanged original,
  * the line ending excluded. Cells are the bytes as written, decoded; a cell past the end of a short row is absent. */
@@ -24,9 +24,11 @@ export type StreamedTabularRow = { index: number; sourceRow: number; byteStart: 
   rawSha256: string; cells: string[] };
 /** One workbook record: its physical sheet row, its sheet and the SHA-256 of the sheet's XML as read; its byte
  * range is the sheet's stored bytes in the ZIP and `rawSha256` is of exactly those bytes. A missing cell is null;
- * a marked cell says how its text was read, and is unknown wherever it is mapped or cited. */
+ * a marked cell says how its text was read, and is unknown wherever it is mapped or cited. OD2: a streamed ODS row
+ * also names its row element's ordinal in the sheet and the SHA-256 of that element's XML as read. */
 export type StreamedWorkbookRow = Omit<StreamedTabularRow, 'cells'> & { sheet: string; sheetSha256: string;
-  cells: (string | null)[]; marks?: { column: number; mark: TableCellMark }[] };
+  cells: (string | null)[]; marks?: { column: number; mark: TableCellMark }[]; rowElement?: number;
+  rowSha256?: string };
 /** A CSV window's byte range runs from its first record's start to its last record's end; its SHA-256 is of exactly
  * those bytes of the original, the line endings and skipped blank records between its records included. A
  * workbook window's byte range is its sheet's stored bytes in the ZIP, and its SHA-256 is of exactly those bytes. */
@@ -258,6 +260,7 @@ const ReaderLineSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('sheet'), sheet: z.string(), member: z.string(), memberSha256: hex64,
     memberBytes: count, byteStart: count, byteEnd: count, storedSha256: hex64, headers: z.array(z.string()) }),
   z.strictObject({ kind: z.literal('window'), index: count, rows: z.array(z.strictObject({ row: z.number().int(),
+    rowElement: z.number().int().positive().optional(), rowSha256: hex64.optional(),
     cells: z.array(z.string().nullable()), marks: z.array(z.tuple([count, TableCellMarkSchema])).optional() })) }),
   z.strictObject({ kind: z.literal('end'), records: count, windows: count,
     marks: z.record(TableCellMarkSchema, count), mergedRanges: z.boolean(), sharedStrings: count }),
@@ -285,13 +288,25 @@ const WORKBOOK_WORDS: Record<string, (row: number | null) => string> = {
   COLUMN_WORKBOOK_LIMIT: () => 'This workbook has more than 512 parts; it was not read.',
   NATIVE_WORKBOOK_LIMIT: row => `${atRow(row)} passes the workbook reader's sheet or cell text bounds.`,
   NATIVE_WORKBOOK_INVALID: row => `${atRow(row)} is not valid workbook XML, or it declares a document type.`,
+  NATIVE_ODS_LIMIT: () => 'A repeat or a cell of this ODS sheet passes the workbook reader\'s bounds.',
+  NATIVE_ODS_INVALID: () => 'This ODS workbook has an invalid repeat, cell type or package manifest.',
+  ODS_STRUCTURE_UNSUPPORTED: () => 'This file does not have the parts of an ODS spreadsheet, or a row holds '
+    + 'something other than cells.',
+  ODS_STRUCTURE_AMBIGUOUS: () => 'This package also declares another document family; it is kept unchanged but '
+    + 'not read.',
+  ODS_SCRIPTS_UNSUPPORTED: () => 'This ODS workbook carries scripts; it is kept unchanged but not read.',
+  DOCUMENT_ENCRYPTED: () => 'This ODS workbook is encrypted; it is kept unchanged but not read.',
 };
 
-function workbookRefusal(code: string, row: number | null, bytes: number): never {
+function workbookRefusal(code: string, row: number | null, bytes: number, format: TabularSelection['format']): never {
   if (code === 'TABULAR_STREAM_ROWS') tooManyRecords(bytes);
   if (code === 'TABULAR_STREAM_WINDOWS') tooManyWindows();
   const words = WORKBOOK_WORDS[code];
   if (!words) readerStopped();
+  if (format === 'ods' && ['NATIVE_ODS_LIMIT', 'NATIVE_WORKBOOK_LIMIT'].includes(code)) {
+    throw new AppError(413, TABULAR_ODS_LIMIT, `${words(row)} It cannot be read as a stream either; `
+      + 'the original is unchanged and no record is cut to fit.', { readerCode: code });
+  }
   throw new AppError(code.startsWith('ZIP_') || code.endsWith('_LIMIT') ? 413 : 422, code, words(row));
 }
 
@@ -384,8 +399,8 @@ function workbookArguments(path: string, selection: TabularSelection) {
     '--ratio', String(INTAKE_PROBE_LIMITS.compressionRatio)];
 }
 
-/** Reads one sheet of an XLSX original as a stream in windows of 10,000 rows, never whole. The original is copied
- * to a private scratch file (a ZIP is read from its directory at the end), then the native window reader is
+/** Reads one sheet of an XLSX or ODS original as a stream in windows of 10,000 rows, never whole. The original is
+ * copied to a private scratch file (a ZIP is read from its directory at the end), then the native window reader is
  * started once; each window is passed to `onWindow` before the next line is read, so the reader runs at most one
  * window ahead. Cells are the text the file stores; nothing is calculated or reformatted. */
 export async function readWorkbookWindows(body: Readable, { selection, bytes }: TableSource,
@@ -393,7 +408,7 @@ export async function readWorkbookWindows(body: Readable, { selection, bytes }: 
   const scratch = await scratchFolder(bytes);
   let reader: ChildProcess | undefined, closed: Promise<number | null> = Promise.resolve(null);
   try {
-    const path = join(scratch, 'original.xlsx'), receipt = await spool(body, path);
+    const path = join(scratch, `original.${selection.format}`), receipt = await spool(body, path);
     const child = reader = spawn(process.env.ULPIN_PROFILE_PYTHON ?? 'python', workbookArguments(path, selection),
       { stdio: ['ignore', 'pipe', 'ignore'], env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
     closed = new Promise(resolve => { child.once('error', () => resolve(null)); child.once('close', resolve); });
@@ -401,7 +416,7 @@ export async function readWorkbookWindows(body: Readable, { selection, bytes }: 
     let records = 0, windows = 0;
     for await (const line of readerLines(child.stdout!)) {
       const item = readerLine(line);
-      if (item.kind === 'refused') workbookRefusal(item.code, item.row, receipt.bytes);
+      if (item.kind === 'refused') workbookRefusal(item.code, item.row, receipt.bytes, selection.format);
       if (item.kind === 'sheet') head = { ...item, headers: checkedHeaders(item.headers) };
       if (item.kind === 'end') end = item;
       if (item.kind !== 'window') continue;
@@ -409,6 +424,7 @@ export async function readWorkbookWindows(body: Readable, { selection, bytes }: 
       const { sheet, memberSha256: sheetSha256, byteStart, byteEnd, storedSha256: sha256 } = head;
       const rows = item.rows.map(row => ({ index: records++, sourceRow: row.row, byteStart, byteEnd,
         rawSha256: sha256, sheet, sheetSha256, cells: row.cells,
+        ...(row.rowElement ? { rowElement: row.rowElement, rowSha256: row.rowSha256 } : {}),
         ...(row.marks ? { marks: row.marks.map(([column, mark]) => ({ column, mark })) } : {}) }));
       await onWindow({ index: item.index, rows, byteStart, byteEnd, sha256 }, head.headers);
     }
@@ -425,36 +441,63 @@ export async function readWorkbookWindows(body: Readable, { selection, bytes }: 
 }
 
 type OdsContent = { byteStart: number; byteEnd: number; storedSha256: string; xmlSha256: string };
+type OdsOriginal = { whole: Buffer } | { stream: Readable };
 
-/** XL1: an ODS has no stream reader. It is read whole, up to 16 MiB and the whole reader's bound, and handed on as
- * one window of a workbook: content.xml holds every sheet of an ODS, so each row cites its stored bytes in the ZIP
- * and the SHA-256 of its XML as read. A larger ODS is refused, never cut. */
-export async function readOdsWindows(body: Readable, { selection }: TableSource,
+/** XL1, OD2: an ODS up to 16 MiB whose sheet the whole reader takes is read whole and handed on as one window;
+ * content.xml holds every sheet of an ODS, so each row cites its stored bytes in the ZIP and the SHA-256 of its XML
+ * as read. A larger ODS, or one past the whole reader's bound, is read as a stream instead, as an XLSX is. */
+export async function readOdsWindows(body: Readable, source: TableSource,
   onWindow: OnWindow<StreamedWorkbookRow>): Promise<StreamedTabularRead> {
-  const bytes = await wholeOds(body);
-  const table = workbookTable(bytes, selection, 'ods');
-  if (table.rows.length > TABULAR_LIMITS.rows) odsLimit();
+  if (source.bytes > TABULAR_LIMITS.bytes) return readWorkbookWindows(body, source, onWindow);
+  const original = await odsOriginal(body);
+  if ('stream' in original) return readWorkbookWindows(original.stream, source, onWindow);
+  const stream = () => readWorkbookWindows(Readable.from([original.whole]), { ...source,
+    bytes: original.whole.length }, onWindow);
+  let table: WorkbookTable;
+  try {
+    table = workbookTable(original.whole, source.selection, 'ods');
+  } catch (error) {
+    if (error instanceof AppError && error.code === TABULAR_ROW_LIMIT) return stream();
+    throw error;
+  }
+  if (table.rows.length > TABULAR_LIMITS.rows) return stream();
+  return wholeOdsWindow(original.whole, table, source.selection.sheet, onWindow);
+}
+
+/** The original whole when it is at most 16 MiB; otherwise the same bytes as one stream, the part read first. */
+async function odsOriginal(body: Readable): Promise<OdsOriginal> {
+  const parts: Buffer[] = [], chunks = body[Symbol.asyncIterator]();
+  let size = 0;
+  for (let next = await chunks.next(); !next.done; next = await chunks.next()) {
+    parts.push(next.value as Buffer);
+    size += (next.value as Buffer).length;
+    if (size > TABULAR_LIMITS.bytes) return { stream: Readable.from(replayed(parts, chunks)) };
+  }
+  return { whole: Buffer.concat(parts, size) };
+}
+
+async function* replayed(parts: Buffer[], rest: AsyncIterator<unknown>) {
+  try {
+    yield* parts;
+    parts.length = 0;
+    for (let next = await rest.next(); !next.done; next = await rest.next()) yield next.value as Buffer;
+  } finally {
+    await rest.return?.();
+  }
+}
+
+async function wholeOdsWindow(bytes: Buffer, table: WorkbookTable, sheet: string,
+  onWindow: OnWindow<StreamedWorkbookRow>): Promise<StreamedTabularRead> {
   if (!table.rows.length) {
     throw new AppError(422, 'TABULAR_HEADER_REQUIRED', 'This table needs a header record and at least one record.');
   }
   const headers = checkedHeaders(table.headers);
   const content = await odsContent(bytes);
-  const rows = table.rows.map((_row, index) => odsRow(table, index, selection.sheet, content));
+  const rows = table.rows.map((_row, index) => odsRow(table, index, sheet, content));
   await onWindow({ index: 0, rows, byteStart: content.byteStart, byteEnd: content.byteEnd,
     sha256: content.storedSha256 }, headers);
   return { headers, records: rows.length, windows: 1, bytes: bytes.length, sha256: sha256(bytes),
     notes: odsNotes(table) };
-}
-
-async function wholeOds(body: Readable): Promise<Buffer> {
-  const parts: Buffer[] = [];
-  let size = 0;
-  for await (const chunk of body) {
-    size += (chunk as Buffer).length;
-    if (size > TABULAR_LIMITS.bytes) odsLimit();
-    parts.push(chunk as Buffer);
-  }
-  return Buffer.concat(parts, size);
 }
 
 async function odsContent(bytes: Buffer): Promise<OdsContent> {
@@ -477,7 +520,8 @@ function odsRow(table: WorkbookTable, index: number, sheet: string, content: Ods
 function odsNotes(table: WorkbookTable): string[] {
   const marks = Object.fromEntries(TableCellMarkSchema.options.map(mark => [mark, 0])) as ReaderEnd['marks'];
   for (const mark of table.marks.flat()) if (mark) marks[mark]++;
-  return ['An ODS workbook is read whole, never as a stream: up to 16 MiB, 2,000 records and 2,000 cells.',
+  return ['This ODS sheet was read whole: it is within 16 MiB, 2,000 records and 2,000 cells. A larger one is read '
+    + 'as a stream.',
     ...workbookNotes({ kind: 'end', records: table.rows.length, windows: 1, marks, mergedRanges: false,
       sharedStrings: 0 })];
 }

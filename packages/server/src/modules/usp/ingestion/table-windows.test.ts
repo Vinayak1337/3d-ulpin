@@ -11,6 +11,7 @@ import { TABULAR_LIMITS, TableProfileJobSchema, TabularSourceProfileSchema, type
   type ChunkMappingInput, type TabularMappingPlan, type TabularSourceProfile } from '@ulpin/contracts/usp';
 import { createContractValidator } from '../../../../../../apps/studio/src/local/contract';
 import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
+import { odsWorkbook } from '../../../../../../tests/fixtures/ods-control';
 import { settings } from '../../../infrastructure/config';
 import { transaction } from '../../../infrastructure/db';
 import { fingerprint } from '../../cases/domain';
@@ -19,7 +20,7 @@ import { mapTableWindow, publishTableWindowTx } from './chunk-mapping-tabular';
 import { manualTeacherPlan } from './mapping-teacher';
 import { ManualIngestionService } from './service';
 import { TableProfileInputSchema, runTableProfileJob } from './table-profile-worker';
-import { TableRowsService, readTableWindowTx, writeTableWindowTx } from './table-windows';
+import { TableRowsService, isWindowedTable, readTableWindowTx, writeTableWindowTx } from './table-windows';
 import { officerMappingMethod, validateStreamedTabularRecipe } from './tabular-recipe';
 import { readTableWindows, readTabularWindows } from './tabular-stream';
 
@@ -579,6 +580,39 @@ test('TB2: a CSV under 16 MiB with more than 2,000 records is read by the stream
   assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,
     'succeeded');
 });
+
+test('an ODS below 16 MiB with 2,500 rows takes the profile job and raw windows, not the whole read',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async () => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-windows');
+    // test_only: repeatable literal rows keep the package small while crossing the whole reader's record bound.
+    const bytes = odsWorkbook('Register', [['key', 'note'], ...Array.from({ length: 2500 }, () => ['K', 'kept'])]).bytes;
+    const chosen = { format: 'ods' as const, sheet: 'Register', table: null, headerRows: [1] };
+    const store = new Store(bytes);
+    store.source.mime_type = 'application/vnd.oasis.opendocument.spreadsheet';
+    store.install();
+    const service = new ManualIngestionService();
+    const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: chosen };
+    const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    assert.equal(queued.status, 'queued');
+    await runTableProfileJob(queued.jobId);
+    const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
+    assert.equal(profile.records, 2500);
+    assert.ok(isWindowedTable({ framing: 'tabular', tabular: profile.tabular, sourceBytes: bytes.length }));
+    const attempt = { number: 1, fence: 1, inputSha256: store.raw.input_sha256 } as UspJobAttempt;
+    const input = { jobId: store.rawJobId, caseId: store.caseId, sourceId: store.sourceId, sourceRevision: 1,
+      subject } as AnyStreamingInput;
+    await readTableWindows(store.stream(), { selection: chosen, bytes: bytes.length }, async (window, headers) => {
+      await transaction(client => writeTableWindowTx(client, input, attempt, window, headers));
+    });
+    assert.equal(store.raw.records, 2500);
+    const page = await new TableRowsService().page(store.caseId, store.sourceId, { after: -1, limit: 10 });
+    assert.equal(page.rows[0]!.rowElement, 2);
+    assert.match(page.rows[0]!.rowSha256!, /^[a-f0-9]{64}$/);
+    assert.deepEqual(validate('GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json',
+      page), []);
+  });
 
 test('TB2: a small CSV refused for its text, not its length, stays refused and queues no job', async () => {
   // test_only: a generated register whose second record opens a quote that never closes.
