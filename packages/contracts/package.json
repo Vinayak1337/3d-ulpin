@@ -8,7 +8,11 @@
     ".": "./src/index.ts",
     "./usp": "./src/usp/index.ts",
     "./gis-quarantine": "./src/gis-quarantine.ts",
-    "./canonical-scene": "./src/canonical/building-scene.ts"
+    "./canonical-scene": "./src/canonical/building-scene.ts",
+    "./upload-reader-limits": {
+      "types": "./src/upload-reader-limits.d.ts",
+      "default": "./src/upload-reader-limits.ts"
+    }
   },
   "type": "module",
   "dependencies": {

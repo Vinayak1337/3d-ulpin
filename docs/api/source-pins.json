@@ -162,6 +162,8 @@
     "packages/contracts/src/spatial/types.ts": "986c98dc58fe51a7c17aca50bcf2d4930e1a3cdbf9ad85f6e282be0a347e0526",
     "packages/contracts/src/spatial/validate.ts": "98d2163d7b10db72983df834334763af02b4ee18071d2c9d37d3cce6453fcea6",
     "packages/contracts/src/survey-report.ts": "88487f42837d4b55258f3e4f9b3befbb328f9c2bcef8e7f83d49943095743f25",
+    "packages/contracts/src/upload-reader-limits.d.ts": "39a64b5ac70ae38b29f4bb80daa09cb759266cbf5b3cf3449ba180b1d199854a",
+    "packages/contracts/src/upload-reader-limits.ts": "16cef38650f0a6c79378c3969e3c0c929c828652b87e2457f61511725ce1ab78",
     "packages/contracts/src/usp/adaptive-mapping.ts": "543f32e154ae5a66b7019bf3fd03f62093a74b55070648ca567ca1bb4cd2c750",
     "packages/contracts/src/usp/chunk-mapping.ts": "200b9851110532ffdd70f89cf76371acd42fc83a399ca0494958806e2e248cd1",
     "packages/contracts/src/usp/citygml-ingestion.ts": "ddd1f520619e3c015c5ee0369ac9d0315cc0401e963c9302b98abe24f0293ba3",

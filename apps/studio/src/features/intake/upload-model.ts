@@ -1,4 +1,7 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
+import { DOCUMENT_LIMITS, IFC_LIMITS, INTAKE_PAGE_IMAGE_LIMITS, NATIVE_GIS_LIMITS,
+  POINT_BATCH_LIMITS, RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS,
+  TABULAR_STREAM_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
 export type UploadLimits = GetResponse<'/api/v1/ingestion/upload-limits'>;
 export type UploadReceipt = Schemas['POST_ingestion_cases_caseId_uploads_Response_201_application_json'];
@@ -54,6 +57,39 @@ export function sizeWords(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1).replace(/\.0$/, '')} GiB`;
   if (bytes >= 1024 ** 2) return `${MiB(bytes)} MiB`;
   return `${Math.max(1, Math.round(bytes / 1024))} KiB`;
+}
+
+const readers: Record<string, { name: string; bytes: number; note?: string }> = {
+  geojson: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes },
+  gpkg: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
+  kml: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
+  kmz: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
+  shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
+    note: 'A complete shapefile set is needed.' },
+  ifc: { name: 'IFC structure', bytes: IFC_LIMITS.originalBytes },
+  pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes },
+  tif: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
+  tiff: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
+  laz: { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes },
+  png: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
+  jpg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
+  jpeg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
+  csv: { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes, note: 'Choose Read as a table after upload.' },
+  xlsx: { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes, note: 'Choose Read as a table after upload.' },
+};
+
+/** The dialog does not read file headers: this is a name-based size forecast, never a routing decision. */
+export function readerEligibility(file: { name: string; size: number }) {
+  const extension = /\.([^.]+)$/.exec(file.name)?.[1]?.toLowerCase() ?? '';
+  const reader = Object.hasOwn(readers, extension) ? readers[extension] : undefined;
+  if (!reader) return { reader: null, ceilingBytes: null, withinCeiling: null,
+    words: 'Kind not known yet: will be kept and recognised after upload' };
+  const withinCeiling = file.size <= reader.bytes;
+  const words = withinCeiling
+    ? `Will be read by the ${reader.name} reader (within ${sizeWords(reader.bytes)})`
+    : `Will be kept, not read: larger than the ${sizeWords(reader.bytes)} ${reader.name} reader`;
+  return { reader: reader.name, ceilingBytes: reader.bytes, withinCeiling,
+    words: withinCeiling && reader.note ? `${words}. ${reader.note}` : words };
 }
 
 /** D3. A file not added or still to add, kept as words only: never its bytes. */
