@@ -1,0 +1,247 @@
+{
+  "task": "SG1",
+  "gate": "AUD3 gap 15",
+  "base": "6323b054",
+  "scope": "Offline byte signatures; existing readers and the 65536-byte head limit unchanged.",
+  "testsFirst": {
+    "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <signature test below>",
+    "baseline": { "tests": 21, "passed": 5, "failed": 16, "exit": 1 },
+    "rootMatcherRegression": { "tests": 22, "passed": 20, "failed": 2, "exit": 1 },
+    "fixtures": "Literal test_only protocol strings, not property facts or evaluation data."
+  },
+  "variants": [
+    {
+      "variant": "DXF leading 999 comment pairs and whitespace around group codes",
+      "before": "unknown", "after": "dxf",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:154",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:12",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "DXF empty comment line and CRLF",
+      "before": "unknown", "after": "dxf",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:154",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:13",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "DXF CLASSES first section",
+      "before": "unknown", "after": "dxf",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:154",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:14",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "DXF TABLES first section",
+      "before": "unknown", "after": "dxf",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:154",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:15",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "DXF BLOCKS first section",
+      "before": "unknown", "after": "dxf",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:154",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:16",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "DXF OBJECTS first section",
+      "before": "unknown", "after": "dxf",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:154",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:17",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "OBJ fourth homogeneous coordinate",
+      "before": "unknown", "after": "obj",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:163",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:30",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "OBJ three vertex colour values",
+      "before": "unknown", "after": "obj",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:163",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:31",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "OBJ exponent coordinates",
+      "before": "unknown", "after": "obj",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:163",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:32",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "OBJ comments, o, g, s, mtllib and usemtl before geometry",
+      "before": "unknown", "after": "obj",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:163",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:33",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "XML external DOCTYPE after declaration",
+      "before": "unknown", "after": "kml",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:97",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:50",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "XML internal subset with quoted greater-than and bracket characters",
+      "before": "unknown", "after": "kml",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:97",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:51",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "XML quoted greater-than in root attribute",
+      "before": "unknown before root matcher fix", "after": "gml",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:144",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:52",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "XML stylesheet processing instruction after declaration",
+      "before": "unknown", "after": "citygml",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:118",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:54",
+      "exits": { "before": 1, "after": 0 }
+    },
+    {
+      "variant": "XML mixed comments, instruction and DOCTYPE",
+      "before": "gml", "after": "gml",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:118",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:56",
+      "exits": { "before": 0, "after": 0 }
+    },
+    {
+      "variant": "UTF-8 BOM before XML declaration",
+      "before": "kml; decoder already removes BOM", "after": "kml; decoder unchanged",
+      "file:line": "packages/server/src/modules/usp/ingestion/delimited-text.ts:11",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:64",
+      "exits": { "before": 0, "after": 0 }
+    },
+    {
+      "variant": "GeoJSON root type after long crs/name/bbox within head",
+      "before": "geojson", "after": "geojson",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:56",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:80",
+      "bytes": 45145, "rootTypeByteOffset": 45104,
+      "exits": { "before": 0, "after": 0 }
+    },
+    {
+      "variant": "GeoJSON root type after features array longer than head",
+      "before": "unknown", "after": "unknown; bounded detection deliberately unchanged",
+      "file:line": "packages/server/src/modules/usp/ingestion/intake-probe.ts:88",
+      "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:92",
+      "bytes": 81101, "rootTypeByteOffset": 81074,
+      "exits": { "before": 0, "after": 0 }
+    }
+  ],
+  "negativeCases": {
+    "results": "Mid-file SECTION, letter coordinates, missing OBJ companion and html root remain unknown.",
+    "additionalBugs": "HEADERNOTES, a dot-only coordinate and html with a GML namespace now stay unknown.",
+    "tests": [
+      "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:23",
+      "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:40",
+      "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:72"
+    ],
+    "afterExit": 0
+  },
+  "boundedness": {
+    "headBytes": 65536,
+    "file:line": "packages/contracts/src/usp/intake.ts:9",
+    "tests": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts:112",
+    "maximumTestMs": 250,
+    "afterMs": {
+      "DXFComments": 3.249, "OBJComments": 1.883,
+      "DXFAfterComments": 0.706, "OBJAfterComments": 5.017, "malformedXMLName": 0.998
+    },
+    "malformedXMLNameBeforeMs": 2108.239,
+    "fix": "Root-name delimiter and disjoint quoted-attribute alternatives prevent quadratic rescanning.",
+    "exits": { "malformedBefore": 1, "after": 0 }
+  },
+  "lateJsonRouting": {
+    "extension": ".geojson does not promote an unknown byte signature.",
+    "tail": "Read for the probe, but not used by rootJsonType; nested Feature type never selects GeoJSON.",
+    "reader": "Unknown routes to kept-only, probed/not_understood, no GeoJSON reader job; original retained.",
+    "references": [
+      "packages/server/src/modules/usp/ingestion/intake-probe.ts:30",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:221",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:279",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:330",
+      "packages/server/src/modules/usp/ingestion/intake-draft.test.ts:339"
+    ]
+  },
+  "realInputs": [
+    {
+      "role": "good",
+      "path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf",
+      "bytes": 82846, "format": "dxf", "crs": "absent", "probeBytes": 82846, "exit": 0
+    },
+    {
+      "role": "difficult: R12 drawing with absent units",
+      "path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/ASCII_R12.dxf",
+      "bytes": 6766, "format": "dxf", "crs": "absent", "probeBytes": 6766, "exit": 0
+    }
+  ],
+  "studio": {
+    "search": "rg SECTION, OBJ pattern, detectIntakeKind and intake-signatures under apps/studio/src",
+    "result": "Only unrelated INTERSECTION labels matched; no duplicated detection rules, no Studio edits."
+  },
+  "checks": [
+    { "command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0 },
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <signature test> tests/intake-probe.test.ts",
+      "signatureTest": "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts",
+      "passed": 78, "failed": 0, "skipped": 0, "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-concurrency=2 <intake globs>",
+      "globs": [
+        "tests/intake-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "apps/api/src/modules/ingestion/intake-*.test.ts"
+      ],
+      "preload": "C:/Users/kvina/AppData/Local/Temp/sg1-offline-guard.mjs",
+      "environment": "REPO_DATA=false; NODE_OPTIONS=--import=file:///<preload>",
+      "passed": 445, "failed": 0, "skipped": 0, "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json <read-only real-input check>",
+      "script": "C:/Users/kvina/AppData/Local/Temp/sg1-real-check.ts",
+      "exit": 0
+    },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "awk length>120 on new signature test and evidence", "violations": 0, "exit": 0 }
+  ],
+  "checkRecovery": [
+    {
+      "signature": "Inline safety preload quoting failed before test startup twice (exit 1).",
+      "decision": "Stopped that approach; used an escape-free source, then a standalone temporary preload."
+    },
+    {
+      "signature": "Safety preload blocked in-process provenance HTTP fixture (two suite exits 1).",
+      "comparison": "An attempted ephemeral-port allowlist timed out at 30 seconds.",
+      "decision": "Exempt only the reviewed provenance fixture process from TCP blocking; preserve file guards.",
+      "result": "Provenance test exit 0; final full intake run 445 passed, exit 0."
+    },
+    {
+      "signature": "Inline real-input command exited 0 without observable output; not counted as evidence.",
+      "decision": "Use explicit temporary script with read-only file descriptors and asserted byte counts.",
+      "result": "Two observed real-input receipts above, exit 0."
+    }
+  ],
+  "safety": {
+    "files": "No credentials, runtime data or restricted split paths opened; originals opened read-only.",
+    "services": "No Docker, provider or runtime services; only an ephemeral HTTP fixture with a fake service.",
+    "preload": "Blocks environment files and forbidden paths before reads; TCP blocked outside provenance fixture.",
+    "git": "Repository identity; no push. Existing detection tests unchanged."
+  },
+  "gaps": [
+    "Root type beyond the fixed head remains unknown; no extension-only fallback or larger head added.",
+    "Runtime and UI qualification were outside this offline task."
+  ]
+}
