@@ -445,7 +445,7 @@ async function localPartsTx(client: PoolClient, frame: Frame, parts: number[][][
       array_agg(ST_Y(t.p) ORDER BY c.n) ys,ST_Intersects(ST_SetSRID(ST_Envelope(ST_Collect(t.p)),0),
       ST_MakeEnvelope($8,$9,$10,$11,0)) meets
     FROM unnest($1::float8[],$2::float8[],$3::int[]) WITH ORDINALITY c(x,y,part,n),
-      LATERAL (SELECT ST_Translate(ST_Transform(ST_SetSRID(ST_MakePoint(c.x,c.y),$4),$5),
+      LATERAL (SELECT ST_Translate(ST_Transform(ST_SetSRID(ST_MakePoint(c.x,c.y),$4),$5::integer),
         -($6::float8),-($7::float8)) p) t
     GROUP BY c.part ORDER BY c.part`,
   [flat.map(c => c[0]), flat.map(c => c[1]), flat.map(c => c[2]), frame.from, frame.to, ox, oy, x0, y0, x1, y1]))
