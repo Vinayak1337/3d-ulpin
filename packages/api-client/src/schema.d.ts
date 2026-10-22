@@ -19742,7 +19742,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -37114,7 +37114,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -53201,7 +53201,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -55504,7 +55504,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -70724,7 +70724,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -71146,7 +71146,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -73227,7 +73227,7 @@ export interface components {
                     referenceCount: number;
                     unsupportedElementCount: number;
                     unresolvedReferenceCount: number;
-                    findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                    findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                     /** @enum {string} */
                     accuracy: "not_assessed";
                     /** @enum {string} */

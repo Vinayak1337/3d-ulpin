@@ -17,11 +17,12 @@ import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/eve
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
+import {CITYGML_JOURNEY_ROOT} from './citygml-journey';
 
 // Unchanged accepted envelopes/native/original/document bytes. Source/fence/SQL,
 // object transport and tool assertions below are explicitly memory-only controls.
 // These checks prevent selection expansion and stale/denied partial disclosure.
-const root=process.env.ULPIN_CITYGML_FUSION_TEST_ROOT??'E:/BhuAayam-data/task-data/desktop-citygml-private-api/journey-01';
+const root=process.env.ULPIN_CITYGML_FUSION_TEST_ROOT??CITYGML_JOURNEY_ROOT;
 const documentRoot=process.env.ULPIN_REFERENCE_DOCUMENT_TEST_ROOT??'E:/BhuAayam-data/task-data/desktop-reference-document-enrollment';
 const labels=['Building_and_garage_LOD2-EPSG25832.gml','Building_LOD1-LocalEngineeringCRS.gml'] as const;
 const present=labels.every(name=>existsSync(root+'/'+name+'.native.json')&&existsSync(root+'/'+name+'.journey.json'))&&

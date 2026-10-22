@@ -139134,13 +139134,14 @@
                               "maximum": 25000
                             },
                             "findingCodes": {
-                              "maxItems": 4,
+                              "maxItems": 5,
                               "type": "array",
                               "items": {
                                 "type": "string",
                                 "enum": [
                                   "UNSUPPORTED_CONTENT",
                                   "REFERENCES_NOT_COMPOSED",
+                                  "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
                                   "COORDINATE_DECLARATION_INCOMPLETE"
                                 ]
@@ -139392,7 +139393,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 4,
+                          "maxItems": 5,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -227772,13 +227773,14 @@
                               "maximum": 25000
                             },
                             "findingCodes": {
-                              "maxItems": 4,
+                              "maxItems": 5,
                               "type": "array",
                               "items": {
                                 "type": "string",
                                 "enum": [
                                   "UNSUPPORTED_CONTENT",
                                   "REFERENCES_NOT_COMPOSED",
+                                  "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
                                   "COORDINATE_DECLARATION_INCOMPLETE"
                                 ]
@@ -228030,7 +228032,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 4,
+                          "maxItems": 5,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -312498,13 +312500,14 @@
                               "maximum": 25000
                             },
                             "findingCodes": {
-                              "maxItems": 4,
+                              "maxItems": 5,
                               "type": "array",
                               "items": {
                                 "type": "string",
                                 "enum": [
                                   "UNSUPPORTED_CONTENT",
                                   "REFERENCES_NOT_COMPOSED",
+                                  "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
                                   "COORDINATE_DECLARATION_INCOMPLETE"
                                 ]
@@ -312756,7 +312759,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 4,
+                          "maxItems": 5,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -323236,13 +323239,14 @@
                                   "maximum": 25000
                                 },
                                 "findingCodes": {
-                                  "maxItems": 4,
+                                  "maxItems": 5,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
                                     "enum": [
                                       "UNSUPPORTED_CONTENT",
                                       "REFERENCES_NOT_COMPOSED",
+                                      "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
                                       "COORDINATE_DECLARATION_INCOMPLETE"
                                     ]
@@ -323494,7 +323498,7 @@
                               }
                             },
                             "findings": {
-                              "maxItems": 4,
+                              "maxItems": 5,
                               "type": "array",
                               "items": {
                                 "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -396360,13 +396364,14 @@
                                   "maximum": 25000
                                 },
                                 "findingCodes": {
-                                  "maxItems": 4,
+                                  "maxItems": 5,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
                                     "enum": [
                                       "UNSUPPORTED_CONTENT",
                                       "REFERENCES_NOT_COMPOSED",
+                                      "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
                                       "COORDINATE_DECLARATION_INCOMPLETE"
                                     ]
@@ -398418,13 +398423,14 @@
                                   "maximum": 25000
                                 },
                                 "findingCodes": {
-                                  "maxItems": 4,
+                                  "maxItems": 5,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
                                     "enum": [
                                       "UNSUPPORTED_CONTENT",
                                       "REFERENCES_NOT_COMPOSED",
+                                      "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
                                       "COORDINATE_DECLARATION_INCOMPLETE"
                                     ]
@@ -408776,13 +408782,14 @@
                     "maximum": 25000
                   },
                   "findingCodes": {
-                    "maxItems": 4,
+                    "maxItems": 5,
                     "type": "array",
                     "items": {
                       "type": "string",
                       "enum": [
                         "UNSUPPORTED_CONTENT",
                         "REFERENCES_NOT_COMPOSED",
+                        "ENVELOPE_CONFLICT",
                         "DIMENSION_ABSENT",
                         "COORDINATE_DECLARATION_INCOMPLETE"
                       ]
