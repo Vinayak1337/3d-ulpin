@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
-import type { TabularSelection } from '@ulpin/contracts/usp';
+import { TABULAR_LIMITS, type TabularSelection } from '@ulpin/contracts/usp';
 import { UspTextPacketPlanInputSchema } from '../../../../../contracts/src/usp/packets';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { tableRowCitation, tableRowExcerpt } from '../../registry/registry-table-evidence';
 import { rowCells } from '../ingestion/intake-evidence';
 import { readTabularSource } from '../ingestion/tabular-source';
-import { generatePropertyCard } from './card-service';
+import { generatePropertyCard, readPropertyCard } from './card-service';
+import { verifyPropertyCard } from './card-verification';
 import { uuid, withFeaturePlan, type FeaturePlanStore } from './feature-plan.test-fixture';
 import { evidenceCardValue } from './plan-citation-authority';
 import { confirmPacketPlan, createPacketPlan, executePacketPlan } from './plan-service';
@@ -55,19 +56,28 @@ test('a building with no confirmed evidence is carded exactly as before', { skip
   }));
 
 /** The first footprint whose BIN is on exactly one register row, and that row. */
-function registerRowOfFeature(bytes: Buffer) {
+function registerRowOfFeature(bytes: Buffer, bin?: string) {
   const table = readTabularSource(bytes, csv), column = table.headers.indexOf('bin');
   const bins = table.rows.map(row => row[column]);
   const features = JSON.parse(readFileSync(buildingsPath, 'utf8')).features as { properties: { bin?: unknown } }[];
-  const feature = features.findIndex(item => bins.filter(bin => bin === item.properties.bin).length === 1);
+  const feature = features.findIndex(item => (bin === undefined || item.properties.bin === bin)
+    && bins.filter(bin => bin === item.properties.bin).length === 1);
   return { table, column, feature, row: bins.indexOf(features[feature].properties.bin) };
 }
 
 /** The register retained as a source of the building's case, and the record citing one row of it. */
-function citeRegisterRow(store: FeaturePlanStore, bytes: Buffer, found: ReturnType<typeof registerRowOfFeature>) {
+function citeRegisterRow(store: FeaturePlanStore, bytes: Buffer, found: ReturnType<typeof registerRowOfFeature>,
+  retained = false) {
   const { table, column, row } = found, literal = String(table.rows[row][column]);
   const register = { ...store.source, id: uuid(21), name: 'gpmc-yuvp.csv', sha256: sha256(bytes),
     bytes: bytes.length, object_key: 'memory-register-original', profile: 'csv-reference-v2' };
+  if (retained) Object.assign(register, { profile: 'large-original-v1', status: 'needs_input',
+    object_key: `large-originals/${register.id}/${register.sha256}`,
+    inspection: { status: 'needs_input', referenceParts: [],
+      largeOriginal: { uploadId: uuid(27), operatorSubject: store.ctx.principal.subject, objectEtag: register.sha256,
+        verifiedSha256: register.sha256, verifiedBytes: bytes.length, conversion: 'unsupported',
+        bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed',
+        provenance: { origin: 'not_stated', acquiredAt: '2026-10-21T00:00:00.000Z', state: 'not_stated' } } } });
   const evidence = { kind: 'table_row' as const, itemId: uuid(22), caseId: store.source.case_id, sourceId: register.id,
     sourceRevision: 1, sourceSha256: register.sha256, rawJobId: uuid(23), rawInputSha256: fingerprint('test_only:in'),
     rawResultSha256: fingerprint(table), acceptedFence: 1, selection: csv, sourceRow: table.sourceRows[row],
@@ -79,19 +89,36 @@ function citeRegisterRow(store: FeaturePlanStore, bytes: Buffer, found: ReturnTy
   { excerpt: tableRowExcerpt(table, row, column), accessSha256: fingerprint('test_only:access') },
   { recordId: store.record.id, revision: 1, bodySha256: fingerprint(store.record.body) }, 'test_only:officer');
   store.record.body.documentCitations = [citation];
-  const fixture = store as unknown as { bodies(): unknown[]; rows(sql: string, values: unknown[]): unknown[] | null };
-  const bodies = fixture.bodies.bind(store), rows = fixture.rows.bind(store), read = store.io.read;
-  fixture.bodies = () => [...bodies(), { pin: { ref: { namespace: 'source_revision', id: register.id }, revision: 1 },
-    body: register, authority: 'source' }];
-  fixture.rows = (sql, values) => sql.startsWith('SELECT * FROM sources') && values[0] === register.id ? [register]
-    : rows(sql, values);
-  store.io.read = async key => key === register.object_key ? bytes : read(key);
+  const access = installRegisterSource(store, register, bytes, retained);
   const locator = `CSV logical row ${evidence.sourceRow}`;
   const entry: Entry = { pointer: { ...store.pointer, sourceRevision: { ref: { namespace: 'source_revision',
     id: register.id }, revision: 1 }, locator: { kind: 'verbatim', locator }, legacyLocator: locator },
   required: true, inclusionReason: 'Confirmed by the officer by an exact key',
   review: { kind: 'direct', reviewed: true } };
-  return { citation, entry, locator };
+  return { citation, entry, locator, register, access };
+}
+
+/** Snapshot and live source rows are separate; access can be withdrawn without rewriting the capture. */
+function installRegisterSource(store: FeaturePlanStore, register: Record<string, any>, bytes: Buffer,
+  retained: boolean) {
+  const fixture = store as unknown as { bodies(): unknown[]; rows(sql: string, values: unknown[]): unknown[] | null };
+  const bodies = fixture.bodies.bind(store), rows = fixture.rows.bind(store), read = store.io.read;
+  const access = { confirmed: true, archived: false, siteId: store.scope.scopeId };
+  const captured = structuredClone(register);
+  fixture.bodies = () => [...bodies(), { pin: { ref: { namespace: 'source_revision', id: register.id }, revision: 1 },
+    body: captured, authority: 'source' }];
+  fixture.rows = (sql, values) => {
+    if (retained && sql.startsWith('SELECT 1 FROM usp_intake_evidence_confirmations')) {
+      return access.confirmed ? [{}] : [];
+    }
+    if (retained && sql.startsWith('SELECT 1 FROM import_packages')) return [];
+    if (retained && sql.startsWith('SELECT s.*,c.site_id') && values[0] === register.id) {
+      return [{ ...register, source_site_id: access.siteId, source_archived: access.archived }];
+    }
+    return sql.startsWith('SELECT * FROM sources') && values[0] === register.id ? [register] : rows(sql, values);
+  };
+  store.io.read = async key => key === register.object_key ? bytes : read(key);
+  return access;
 }
 
 test('a confirmed register row is quoted on the card exactly, with its file, row and the officer line', { skip },
@@ -108,6 +135,49 @@ test('a confirmed register row is quoted on the card exactly, with its file, row
       assert(citation.excerpt!.includes(`bin: ${citation.key.literal}`));
     });
   });
+
+test('a batch-kept CSV quotes row 702 on a card through the bounded original reader, then reads and verifies',
+  { skip }, async () => {
+    const bytes = readFileSync(registerPath), found = registerRowOfFeature(bytes, '1001960');
+    await withFeaturePlan(found.feature, async store => {
+      const { citation, entry, locator, register, access } = citeRegisterRow(store, bytes, found, true);
+      assert.equal(citation.row.sourceRow, 702);
+      const read = store.io.read, reads: unknown[][] = [];
+      store.io.read = async key => {
+        assert(!key.startsWith('large-originals/'), 'a retained CSV must never reach readObject');
+        return read(key);
+      };
+      store.io.original = async (...args) => {
+        reads.push(args);
+        assert.deepEqual(args.slice(0, 4), [register.object_key, bytes.length, register.sha256, TABULAR_LIMITS.bytes]);
+        return bytes;
+      };
+      const card = await cardOf(store, [entry], 'rc1');
+      assert(reads.length > 0, 'the plan reads its register through readRetainedOriginal');
+      assert.equal(card.facts.find(fact => fact.key === 'evidence_citation_1')?.value,
+        evidenceCardValue(citation.excerpt!, 'gpmc-yuvp.csv', locator));
+      await readPropertyCard(store.ctx, { cardId: card.cardId, revision: 1 }, store.cards.io);
+      const verified = await verifyPropertyCard(store.ctx, { cardId: card.cardId, revision: 1 }, store.cards.io);
+      assert.equal(verified.report.result, 'consistent');
+      await assertRetainedCardRefusals(store, card.cardId, register, access);
+    });
+  });
+
+async function assertRetainedCardRefusals(store: FeaturePlanStore, cardId: string, register: Record<string, any>,
+  access: ReturnType<typeof installRegisterSource>) {
+  const readCard = () => readPropertyCard(store.ctx, { cardId, revision: 1 }, store.cards.io);
+  access.confirmed = false;
+  await assert.rejects(readCard, { code: 'REGISTRY_SOURCE_UNAVAILABLE' });
+  access.confirmed = true;
+  access.archived = true;
+  await assert.rejects(readCard, { code: 'REGISTRY_SOURCE_DENIED' });
+  access.archived = false;
+  register.inspection.largeOriginal.operatorSubject = 'another-operator';
+  await assert.rejects(readCard, { code: 'REGISTRY_SOURCE_DENIED' });
+  register.inspection.largeOriginal.operatorSubject = store.ctx.principal.subject;
+  register.inspection.largeOriginal.verifiedSha256 = '0'.repeat(64);
+  await assert.rejects(readCard, { code: 'INTAKE_SOURCE_INTEGRITY' });
+}
 
 test('a stored excerpt that is not the row read again refuses the plan', { skip }, async () => {
   const bytes = readFileSync(registerPath), found = registerRowOfFeature(bytes);
