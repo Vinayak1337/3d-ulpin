@@ -11,6 +11,7 @@ import {assertGltfTools} from './gltf-config';
 import {processGltf} from './gltf-processor';
 import {assertGltfInputTx,assertGltfJobRow,gltfResultKey,gltfArtifactKey,readGltfResult,boundedGltfObject} from './gltf';
 import {appendCaseIngestionTx} from './events';
+import {settleIntakeNativeReaderTx} from './intake-native-readers';
 
 export function gltfFailureCode(error:unknown){
   if(error instanceof AppError){
@@ -41,6 +42,7 @@ export async function failGltfJob(jobId:string,caseId:string,code:string,attempt
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     const status=code==='GLTF_INPUT_STALE'?'stale':'failed';
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,status,code]);
+    await settleIntakeNativeReaderTx(client,caseId,jobId,{format:'gltf',status,code});
     // Do not publish a private event using a revoked or unavailable binding.
     const parsed=GltfInputSchema.safeParse(job.payload);
     if(parsed.success){
@@ -127,6 +129,7 @@ async function executeGltfJob(jobId:string,deadline:DbDeadline,controller:AbortC
         throw new AppError(422,'GLTF_ARTIFACT_INTEGRITY','Staged Gltf bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
+      await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'gltf',summary:native.summary});
       await appendCaseIngestionTx(client,input.caseId,{kind:'gltf-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:native.summary.status==='inspected_partial'?'partial':'completed'},input.subject);
     },deadline);

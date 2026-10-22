@@ -6,8 +6,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { afterEach, beforeEach, test } from 'node:test';
 import type { Pool, PoolClient } from 'pg';
 import {
-  CITYGML_LIMITS, CITYJSON_LIMITS, DXF_LIMITS, CityGMLInputSchema, CityJSONInputSchema, CityJSONSummarySchema,
-  DXFInputSchema, IntakeItemSchema, type CityJSONResult, type IntakeCard,
+  CITYGML_LIMITS, CITYJSON_LIMITS, DXF_LIMITS, GLTF_LIMITS, OBJ_LIMITS, CityGMLInputSchema, CityJSONInputSchema,
+  CityJSONSummarySchema, DXFInputSchema, GltfInputSchema, IntakeItemSchema, ObjInputSchema, type CityJSONResult,
+  type IntakeCard,
 } from '@ulpin/contracts/usp';
 import { sha256 } from '../../../infrastructure/storage';
 import { citygmlSourceTx } from './citygml';
@@ -19,26 +20,46 @@ import { dxfSourceTx } from './dxf';
 import { failDXFJob } from './dxf-worker';
 import { dxfSummary } from './dxf-processor';
 import { ingestionBinding } from './events';
+import { gltfSourceTx } from './gltf';
+import { failGltfJob } from './gltf-worker';
+import { gltfSummary } from './gltf-processor';
 import type { IntakeSourceRow } from './intake-context';
 import { queueIntakeDraftTx } from './intake-draft';
 import { intakeItem } from './intake-ledger';
 import { batchNativeReader, intakeNativeReaderJobId, intakeNativeReadWords, outlinesConverted,
   settleIntakeNativeReaderTx, type IntakeNativeReaderEnd } from './intake-native-readers';
 import { probeOriginal } from './intake-probe';
+import { objSourceTx } from './obj';
+import { failObjJob } from './obj-worker';
+import { objSummary } from './obj-processor';
 
-type Format = 'dxf' | 'citygml' | 'cityjson';
+/** A probed card format; glb and gltf both go to the one glTF reader. */
+type Format = 'dxf' | 'citygml' | 'cityjson' | 'glb' | 'gltf' | 'obj';
 const dxfRoot = process.env.ULPIN_DXF_TEST_ROOT ?? 'E:/BhuAayam-data/task-data/desktop-dxf-native';
 const gmlRoot = process.env.ULPIN_CITYGML_TEST_ROOT ?? 'E:/BhuAayam-data/task-data/desktop-citygml-native';
+const gltfRoot = process.env.ULPIN_GLTF_TEST_ROOT ?? 'E:/BhuAayam-data/task-data/desktop-gltf-native';
+const objRoot = process.env.ULPIN_OBJ_TEST_ROOT ?? 'E:/BhuAayam-data/task-data/desktop-obj-native';
 const cityjsonPath = new URL('../../../../../../fixtures/usp/D1/single-roof/original.json', import.meta.url);
+const gltfReader = { reader: 'gltf' as const, limit: GLTF_LIMITS.originalBytes, schema: GltfInputSchema,
+  source: gltfSourceTx, fail: (id: string, caseId: string, code: string) => failGltfJob(id, caseId, code) };
 const inputs = {
-  dxf: { path: `${dxfRoot}/sources/1_polylines.dxf`, limit: DXF_LIMITS.originalBytes, schema: DXFInputSchema,
-    source: dxfSourceTx, fail: (id: string, caseId: string, code: string) => failDXFJob(id, caseId, code) },
-  citygml: { path: `${gmlRoot}/originals/Building_and_garage_LOD2-EPSG25832.gml`,
+  dxf: { reader: 'dxf', path: `${dxfRoot}/sources/1_polylines.dxf`, limit: DXF_LIMITS.originalBytes,
+    schema: DXFInputSchema, source: dxfSourceTx,
+    fail: (id: string, caseId: string, code: string) => failDXFJob(id, caseId, code) },
+  citygml: { reader: 'citygml', path: `${gmlRoot}/originals/Building_and_garage_LOD2-EPSG25832.gml`,
     limit: CITYGML_LIMITS.originalBytes, schema: CityGMLInputSchema, source: citygmlSourceTx,
     fail: (id: string, caseId: string, code: string) => failCityGMLJob(id, caseId, code) },
-  cityjson: { path: cityjsonPath, limit: CITYJSON_LIMITS.originalBytes, schema: CityJSONInputSchema,
-    source: cityjsonSourceTx, fail: (id: string, _caseId: string, code: string) => failCityJSONJob(id, code) },
-};
+  cityjson: { reader: 'cityjson', path: cityjsonPath, limit: CITYJSON_LIMITS.originalBytes,
+    schema: CityJSONInputSchema, source: cityjsonSourceTx,
+    fail: (id: string, _caseId: string, code: string) => failCityJSONJob(id, code) },
+  // NR4: the glTF and OBJ authority tests' own originals and saved native readings.
+  glb: { ...gltfReader, path: `${gltfRoot}/originals/Box.glb`, reading: `${gltfRoot}/final-glb/gltf.json` },
+  gltf: { ...gltfReader, path: `${gltfRoot}/originals/Box.gltf`,
+    reading: `${gltfRoot}/final-external-gltf/gltf.json` },
+  obj: { reader: 'obj', path: `${objRoot}/no_material.obj`, reading: `${objRoot}/complete-run01/obj.json`,
+    limit: OBJ_LIMITS.originalBytes, schema: ObjInputSchema, source: objSourceTx,
+    fail: (id: string, caseId: string, code: string) => failObjJob(id, caseId, code) },
+} as const;
 const globals = globalThis as unknown as { ulpinPool?: Pool };
 let previousPool: Pool | undefined;
 let previousSubject: string | undefined;
@@ -65,19 +86,19 @@ function sourceBytes(format: Format): Buffer {
 
 function sourceRow(format: Format, raw: Buffer, profile: string, bytes = raw.length): IntakeSourceRow {
   const id = randomUUID(), caseId = randomUUID(), hash = sha256(raw), binding = ingestionBinding(caseId);
-  const large = profile === 'large-original-v1';
+  const large = profile === 'large-original-v1', reader = inputs[format].reader;
   const receipt = large ? { uploadId: randomUUID(), operatorSubject: binding.subject, objectEtag: 'protocol-etag',
     verifiedSha256: hash, verifiedBytes: bytes,
     provenance: { state: 'not_stated', origin: 'not_stated', acquiredAt: '2026-10-01T00:00:00.000Z' },
     conversion: 'unsupported', bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed' }
-    : { version: `${format}-native/1`, subject: binding.subject, accessSha256: binding.access,
+    : { version: `${reader}-native/1`, subject: binding.subject, accessSha256: binding.access,
       sha256: hash, bytes, receivedAt: '2026-10-01T00:00:00.000Z', lineageState: 'caller_declared',
       lineage: { issuer: null, originalUrl: null, acquiredAt: null, permissionReference: null,
         geography: null, limitations: ['test_only source and SQL protocol control'] } };
   const name = format === 'cityjson' ? 'city.json' : `file.${format}`;
   return { id, case_id: caseId, family_id: id, revision: 1, name,
     profile, bytes, sha256: hash, object_key: `${large ? 'large-originals' : 'sources'}/${id}/${hash}`,
-    status: 'needs_input', inspection: { [large ? 'largeOriginal' : `${format}Original`]: receipt } };
+    status: 'needs_input', inspection: { [large ? 'largeOriginal' : `${reader}Original`]: receipt } };
 }
 
 // SQL is a protocol double: no property, source, job or geometry is persisted by these tests.
@@ -113,7 +134,7 @@ class BatchProtocol {
   itemQuery(sql: string, args: any[]): any[] | undefined {
     if (sql.includes("plan_ref->>'nativeReaderJobId'=$2")) {
       const match = args[0] === this.source.case_id && args[1] === this.item.plan_ref?.nativeReaderJobId
-        && args[2] === this.item.format;
+        && args[2].includes(this.item.format);
       return match ? [{ item_id: this.item.item_id, source_id: this.item.source_id, card: this.item.card }] : [];
     }
     if (sql.startsWith('SELECT item_id,case_id,plan_ref') || sql.startsWith('SELECT state,placement,plan_ref')
@@ -133,8 +154,7 @@ class BatchProtocol {
   jobQuery(sql: string, args: any[]): any[] | undefined {
     const derivative = "operation='intake-native-derivative'";
     if (sql.startsWith('INSERT INTO jobs')) {
-      const operation = sql.includes("'intake-native-derivative'") ? 'intake-native-derivative'
-        : `${this.card.format}-native`;
+      const operation = /VALUES\(\$1,\$2,\$3,'([a-z-]+)'/.exec(sql)![1];
       this.jobs.set(args[0], { id: args[0], case_id: args[1], source_id: args[2],
         operation, case_revision: args[3], input_fingerprint: args[4],
         payload: args[5], status: 'queued' });
@@ -211,11 +231,16 @@ function acceptedEnd(format: Format, fixture: BatchProtocol, jobId: string): Int
     readFileSync(`${dxfRoot}/runs/declared-final/drawing.json`), input) };
   if (format === 'citygml') return { format, summary: citygmlSummary(
     readFileSync(`${gmlRoot}/run-02-lod2/projection.json`), input) };
+  if (format === 'glb' || format === 'gltf') {
+    return { format: 'gltf', summary: gltfSummary(readFileSync(inputs[format].reading), input) };
+  }
+  if (format === 'obj') return { format, summary: objSummary(readFileSync(inputs.obj.reading), input) };
   return { format, summary: cityjsonSummary(sourceBytes(format)) };
 }
 
 for (const format of Object.keys(inputs) as Format[]) {
   const input = inputs[format];
+  const reader = input.reader;
   const present = existsSync(input.path);
 
   test(`${format}: batch receipt queues one native job; either replay finds the same job`, { skip: !present },
@@ -223,7 +248,7 @@ for (const format of Object.keys(inputs) as Format[]) {
       const fixture = await batch(format);
       const { source, card, item, client, jobs, events } = fixture;
       const jobId = await queueIntakeDraftTx(client, source, card);
-      assert.equal(jobId, intakeNativeReaderJobId(item.item_id, source, format));
+      assert.equal(jobId, intakeNativeReaderJobId(item.item_id, source, reader));
       assert.equal(jobs.size, 1);
       const payload = input.schema.parse(jobs.get(jobId!).payload);
       assert.deepEqual([payload.sourceId, payload.sourceSha256, payload.sourceBytes, payload.objectKey],
@@ -231,18 +256,18 @@ for (const format of Object.keys(inputs) as Format[]) {
       assert.deepEqual([item.state, item.placement, item.plan_ref, item.limit_reason],
         ['reading', 'undecided', { nativeReaderJobId: jobId }, null]);
       assert.equal(IntakeItemSchema.parse(intakeItem(item)).nativeReaderJobId, jobId);
-      assert.ok(events.some(event => event.change.kind === `${format}-native.changed`));
+      assert.ok(events.some(event => event.change.kind === `${reader}-native.changed`));
       const published = events.length;
       assert.equal(await queueIntakeDraftTx(client, source, card), jobId);
       assert.equal(events.length, published);
       item.plan_ref = null;
       assert.equal(await queueIntakeDraftTx(client, source, card), jobId);
       assert.equal(jobs.size, 1);
-      assert.notEqual(intakeNativeReaderJobId(item.item_id, { ...source, revision: 2 }, format), jobId);
+      assert.notEqual(intakeNativeReaderJobId(item.item_id, { ...source, revision: 2 }, reader), jobId);
     });
 
   test(`${format}: a bounded native-profile receipt can also enrol in a batch`, { skip: !present }, async () => {
-    const fixture = await batch(format, `${format}-native-v1`);
+    const fixture = await batch(format, `${reader}-native-v1`);
     assert.ok(await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card));
     assert.equal(fixture.jobs.size, 1);
     assert.equal(batchNativeReader({ ...fixture.source, profile: 'geojson-manual-v1' }, fixture.card), false);
@@ -264,7 +289,7 @@ for (const format of Object.keys(inputs) as Format[]) {
     const receipt = source.inspection!.largeOriginal;
     assert.equal((await input.source(client, source.case_id, source.id)).source.id, source.id);
     item.card = { ...fixture.card, format: 'unknown' };
-    await assert.rejects(input.source(client, source.case_id, source.id), { code: `${format.toUpperCase()}_DENIED` });
+    await assert.rejects(input.source(client, source.case_id, source.id), { code: `${reader.toUpperCase()}_DENIED` });
     item.card = fixture.card;
     for (const patch of [{ operatorSubject: 'another-operator' }, { verifiedSha256: '0'.repeat(64) },
       { verifiedBytes: Number(source.bytes) + 1 }]) {
@@ -297,8 +322,9 @@ for (const format of Object.keys(inputs) as Format[]) {
       assert.ok(item.limit_reason.includes(
         'kept as evidence and is not on the map yet; no record or card target is created'));
       assert.doesNotMatch(item.limit_reason, /No reader in a batch|\d+ (?:layers|surfaces|floors|units)/);
-      const counts = { dxf: 'recordCount', citygml: 'elementCount', cityjson: 'objectCount' };
-      assert.equal(item.records_seen, (end.summary as any)[counts[format]]);
+      const counts = { dxf: 'recordCount', citygml: 'elementCount', cityjson: 'objectCount', gltf: 'nodeCount',
+        obj: 'polygonCount' };
+      assert.equal(item.records_seen, (end.summary as any)[counts[reader]]);
       assert.equal(intakeItem(item).nativeReaderJobId, jobId);
       const published = fixture.events.length;
       await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
@@ -314,7 +340,7 @@ for (const format of Object.keys(inputs) as Format[]) {
         const fixture = await batch(format), { client, source, item, jobs } = fixture;
         const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
         globals.ulpinPool = { connect: async () => client, query: client.query } as unknown as Pool;
-        const code = `${format.toUpperCase()}_${status === 'stale' ? 'INPUT_STALE' : 'PROCESSING_FAILED'}`;
+        const code = `${reader.toUpperCase()}_${status === 'stale' ? 'INPUT_STALE' : 'PROCESSING_FAILED'}`;
         if (status === 'stale') fixture.current.context = { changed: true };
         await input.fail(jobId, source.case_id, code);
         assert.deepEqual([jobs.get(jobId).status, item.state, item.placement], [status, 'read', 'not_understood']);
@@ -377,4 +403,37 @@ test('the difficult real R12 DXF keeps absent units absent, not zero or a guesse
   assert.match(intakeNativeReadWords(summary), /Drawing units: absent/);
   assert.match(intakeNativeReadWords(summary), /summary states no coordinate reference system/);
   assert.doesNotMatch(intakeNativeReadWords(summary), /EPSG|0 metres/);
+});
+
+test('a GLB reading states its node and primitive counts and stays unplaced: a glTF states no CRS', {
+  skip: !existsSync(inputs.glb.reading),
+}, async () => {
+  const fixture = await batch('glb'), { client, source, item } = fixture;
+  const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+  const end = acceptedEnd('glb', fixture, jobId) as Extract<IntakeNativeReaderEnd, { format: 'gltf' }>;
+  await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
+  assert.deepEqual([end.summary.nodeCount, end.summary.primitiveCount, end.summary.projectedPositions], [2, 1, 24]);
+  assert.ok(item.limit_reason.startsWith('The glTF reading is complete. It states 2 nodes and 1 mesh primitive; '
+    + 'they are candidates. Positions read: 24;'));
+  assert.equal(item.records_seen, 2);
+  assert.match(item.limit_reason, /Global placement: unknown\. A glTF states no coordinate reference system, /);
+  assert.match(item.limit_reason, /so the model stays unplaced/);
+  assert.doesNotMatch(item.limit_reason, /EPSG|metres|buildings?\b/);
+});
+
+test('the difficult external-buffer glTF and an OBJ missing its material settle as partial readings', {
+  skip: !existsSync(inputs.gltf.reading) || !existsSync(`${objRoot}/partial-run01/obj.json`),
+}, async () => {
+  const gltf = await batch('gltf');
+  const gltfJob = (await queueIntakeDraftTx(gltf.client, gltf.source, gltf.card))!;
+  await settleIntakeNativeReaderTx(gltf.client, gltf.source.case_id, gltfJob, acceptedEnd('gltf', gltf, gltfJob));
+  assert.match(gltf.item.limit_reason,
+    /reading is partial\. .* Positions read: 0; companion files named but not supplied: 1;/);
+  const raw = readFileSync(`${objRoot}/missing_material_file.obj`);
+  const summary = objSummary(readFileSync(`${objRoot}/partial-run01/obj.json`),
+    { sourceSha256: sha256(raw), sourceBytes: raw.length } as any);
+  const words = intakeNativeReadWords(summary);
+  assert.match(words, /^The OBJ reading is partial\./);
+  assert.ok(words.includes(`companion declarations not supplied: ${summary.missingCompanionDeclarationCount}.`));
+  assert.match(words, /Axes: unknown; units: unknown; coordinate reference system: unknown, so the model stays/);
 });
