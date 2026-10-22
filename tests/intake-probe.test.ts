@@ -59,6 +59,16 @@ test('GeoPackage, LAZ, DBF and shapefile header signatures', () => {
   assert.equal(detectIntakeKind(shp).format, 'shapefile');
 });
 
+test('loose sidecar words distinguish complete shapefile sets from separate world files', async () => {
+  const words = 'Loose sidecar kept at signature depth; same-stem .shx, .prj and .cpg join a batch '
+    + 'shapefile set when its .shp, .shx and .dbf are present without duplicate parts; otherwise they wait or stay '
+    + 'separate, and loose world files stay separate.';
+  for (const extension of ['shx', 'prj', 'cpg', 'tfw', 'jgw', 'pgw', 'wld']) {
+    const card = await probe(head(100), `layer.${extension}`);
+    assert.ok(card.limits.includes(words), extension);
+  }
+});
+
 test('bytes defeat a misleading name and no cell value is serialized', async () => {
   const card = await probe(bytes('latitude,owner\n12.34,PRIVATE_PERSON_SENTINEL\n'), 'input.geojson');
   assert.equal(card.format, 'csv');

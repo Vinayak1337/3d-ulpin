@@ -1,0 +1,124 @@
+{
+  "task": "WD3",
+  "gate": "P0 hygiene; wording only, no runtime qualification",
+  "base": "5e6d5c94",
+  "behaviourChanged": false,
+  "verifiedBounds": {
+    "commonWholeRead": {
+      "sources": ["tabular-source.ts", "tabular-workbook.ts", "read_workbook_cells.py", "native_workbook.py"],
+      "originalBytes": 16777216,
+      "archiveMembers": 512,
+      "archiveExpandedBytesTotal": 20000000,
+      "eachOpenedXmlBytes": 5242880,
+      "sheets": 16,
+      "xmlRowElementsAcrossWorkbook": 2000,
+      "xmlCellElementsAcrossWorkbook": 2000,
+      "nativeCellTextCharactersAcrossWorkbook": 250000,
+      "cellTextCharacters": 32767,
+      "physicalRowMaximum": 1048576,
+      "physicalColumnMaximum": 16384,
+      "sheetNameCharacters": 128,
+      "cellTypeCharacters": [1, 20],
+      "selectedSheetDataRecords": 2000,
+      "selectedSheetHeaderColumns": 256,
+      "headerTextCharacters": 400,
+      "headerRows": "1 to 5 ordered distinct rows, each numbered 1 through 2000",
+      "dataCells": "No cell beyond the header width; at least one header and data record required.",
+      "nativeProcessTimeoutMs": 30000,
+      "nativeProcessOutputBufferBytes": 8388608
+    },
+    "xlsxWholeRead": {
+      "source": "services/geo/geo/native_workbook.py",
+      "sharedStrings": 10000,
+      "sharedStringCharactersTotal": 250000,
+      "sheetIdRange": [1, 4294967295],
+      "counts": "XML row/cell counts include headers, across all read worksheets, not per sheet."
+    },
+    "odsWholeRead": {
+      "sources": ["native_ods.py", "tabular-workbook.ts:odsCells", "tabular-stream.ts:odsContent"],
+      "mimetypeBytes": 128,
+      "rowRepeatAndCoveredRowMaximum": 1048576,
+      "columnRepeatAndCoveredColumnMaximum": 16384,
+      "repeatLexicalDigits": 8,
+      "columnDeclarationElementsPerSheet": 2000,
+      "declaredColumnsAfterRepeatsPerSheet": 16384,
+      "formulaCharacters": 4096,
+      "spaceRepeatLexicalDigits": 5,
+      "spaceRepeat": "Positive; within the remaining 32767-character cell text allowance.",
+      "textBudget": "250000 includes native cell text and formula characters before repeat expansion.",
+      "repeatExpansionCheckCells": 512000,
+      "repeatExpansionScope": [
+        "Before selecting a sheet, each non-padding repeated block checks current cells plus its expanded block",
+        "against rows times columns. Empty cells and repeated empty/whitespace padding are skipped.",
+        "Singleton pushes do not perform this check. This is not a final total-cell cap."
+      ],
+      "xmlCounts": "Native 2000 row/cell limits count XML elements across the workbook, not expanded repeats.",
+      "contentCitationRead": {
+        "sources": ["intake-zip.ts:locateZipMember/readZipMember", "INTAKE_PROBE_LIMITS"],
+        "directoryBytes": 1048576,
+        "directoryMembers": 2000,
+        "memberExpandedBytes": 16777216,
+        "memberCompressedBytes": 17825792,
+        "memberExpansionRatio": 100,
+        "note": "Original/native bounds above are tighter where applicable; CRC and directory sizes must agree."
+      }
+    },
+    "streamContrast": {
+      "sources": ["read_workbook_windows.py:stream_ods/OdsSheet", "TABULAR_STREAM_LIMITS"],
+      "note": [
+        "ODS streaming builds each chosen XML row and expands its repeats; it does not enforce the whole reader's",
+        "2000 XML row/cell element caps or the TypeScript 512000-cell repeat-expansion check."
+      ],
+      "originalBytes": 7516192768,
+      "records": 1000000,
+      "windowRows": 10000,
+      "recordBytes": 1048576,
+      "windowBytes": 16777216,
+      "windows": 4096,
+      "qualification": "Larger ODS inputs fall back to streaming; stream bounds and words are unchanged."
+    }
+  },
+  "sidecars": {
+    "sources": ["intake-service.ts:publish", "intake-native-derivative.ts:queueShapefileSetTx/stemPartsTx/setGaps"],
+    "grouped": ".shx/.prj/.cpg join a batch shapefile set; folder-preserving stems compare without case.",
+    "complete": "Latest enrolled originals, agreeing byte kinds, no duplicate extensions; .shp/.shx/.dbf required.",
+    "incomplete": "With .shp/.shx, missing parts wait; duplicates refuse grouping; lone .prj/.cpg stay apart.",
+    "worldFiles": "Loose .tfw/.jgw/.pgw/.wld stay separate; only ZIP-member grouping handles those companions."
+  },
+  "inputs": {
+    "good": "Existing RBI development table 18 original.xlsx, T_18: stream equals whole read.",
+    "difficult": "Public Tweed Council_Buildings loose parts without .prj: asks for CRS before conversion.",
+    "controls": "Existing repeated/oversized ODS/XLSX and missing/duplicate shapefile parts; exact wording assertions."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {
+      "argv": [
+        "pnpm", "exec", "tsx", "--tsconfig", "apps/api/tsconfig.json", "--test", "--test-concurrency=2",
+        "packages/server/src/modules/usp/ingestion/tabular-{stream,workbook}.test.ts",
+        "packages/server/src/modules/usp/ingestion/table-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "tests/intake-*.test.ts", "tests/table-*.test.ts"
+      ],
+      "exit": 0,
+      "tests": 566,
+      "passed": 566,
+      "failed": 0,
+      "skipped": 0
+    },
+    {"command": "rg changed wording in apps/studio tests", "exit": 1, "meaning": "No matching assertions."},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "environment": {
+    "offline": true,
+    "temporaryRoot": "E:/ulpin-tmp",
+    "safety": "Preload blocks .env, runtime and excluded evaluation/acquisition paths; REPO_DATA=false.",
+    "dependencies": [
+      "Initial typecheck exit 1: no dependencies; main-checkout package directories were empty.",
+      "Reused installed int3 dependencies through ignored junctions; workspace packages point here.",
+      "Typecheck exit 2: missing Studio-only dependencies; linked those too, then final checks passed."
+    ],
+    "logs": ["E:/ulpin-tmp/wd3-typecheck.log", "E:/ulpin-tmp/wd3-tests.log"]
+  },
+  "gaps": "No behaviour change, Docker, live services or push; loose raster sidecars still are not grouped."
+}

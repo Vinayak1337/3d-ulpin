@@ -592,8 +592,12 @@ function odsRow(table: WorkbookTable, index: number, sheet: string, content: Ods
 function odsNotes(table: WorkbookTable): string[] {
   const marks = Object.fromEntries(TableCellMarkSchema.options.map(mark => [mark, 0])) as ReaderEnd['marks'];
   for (const mark of table.marks.flat()) if (mark) marks[mark]++;
-  return ['This ODS sheet was read whole: it is within 16 MiB, 2,000 records and 2,000 cells. A larger one is read '
-    + 'as a stream.',
+  return [`This ODS sheet was read whole: the original is within ${mib(TABULAR_LIMITS.bytes)} MiB and the selected `
+    + `table within ${TABULAR_LIMITS.rows.toLocaleString('en-US')} records and ${TABULAR_LIMITS.columns} `
+    + 'header columns; '
+    + 'the native reader caps XML row and cell elements at 2,000 each across the workbook, and non-padding repeat '
+    + `expansion is checked against ${(TABULAR_LIMITS.rows * TABULAR_LIMITS.columns).toLocaleString('en-US')} cells. `
+    + 'A larger one is read as a stream.',
     ...workbookNotes({ kind: 'end', records: table.rows.length, windows: 1, marks, mergedRanges: false,
       sharedStrings: 0 })];
 }
