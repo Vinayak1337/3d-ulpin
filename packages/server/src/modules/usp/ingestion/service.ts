@@ -44,8 +44,9 @@ const uuid = z.string().uuid();
  * case too, so a table the batch keeps as one of its items is still read in it: the read only adds a table receipt
  * to that source and makes mapped draft rows, never a package, registry record or site change. TC2: a derived
  * original's byte receipt names its batch item the same way (a placed table, a ZIP, a converted file), so the batch's
- * own drafts do not refuse a derivative that is enrolled in that batch. A property link still refuses every caller,
- * the table read and derived receipts included.
+ * own drafts do not refuse a derivative that is enrolled in that batch. Small ZIP members name that same source
+ * through their worker-only lineage in retain. A property link still refuses every caller, the table read and
+ * derived receipts included.
  */
 async function workspace(client: PoolClient, caseId: string, batchTable?: string) {
   const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
@@ -401,15 +402,16 @@ inventory:TableInventory):Promise<AnySourceProfile>{
 type RetainOriginalContext = {
   caseId: string; input: z.infer<typeof AnyRetainSourceSchema>; file: { name: string; bytes: Uint8Array };
   profileName: string; hash: string; digest: string; actor: string; lineage?: ArchiveMemberLineage;
+  batchSourceId?: string;
 };
 
 /** The source row commits before its receipt is attached, so a later failure cannot orphan or remove it. */
 async function keepManualOriginal(context: RetainOriginalContext) {
-  const { caseId, input, file, profileName, hash, digest, actor, lineage } = context;
+  const { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId } = context;
   const key = `manual-gis:${input.requestKey}:original`;
   const sourceId = randomUUID(), objectKey = `sources/${sourceId}/${hash}`;
   return originalAttempt('sources', sourceId, rememberOriginal => transaction(async client => {
-    const scope = await workspace(client, caseId), replay = await operation(client, caseId, key, digest);
+    const scope = await workspace(client, caseId, batchSourceId), replay = await operation(client, caseId, key, digest);
     if (replay) return replay as { id: string; revision: number };
     const duplicate = (await client.query('SELECT id,revision FROM sources WHERE case_id=$1 AND sha256=$2 '
       + 'AND profile=$3 ORDER BY revision DESC LIMIT 1', [caseId, hash, profileName])).rows[0];
@@ -547,10 +549,11 @@ function assertRetainedTabularRequest(file: { name: string; bytes: Uint8Array },
 }
 
 export class ManualIngestionService {
-  /** `lineage` is set only by the ZIP layer fan-out: the member's archive pins, kept beside the receipt. */
+  /** Only the ZIP layer fan-out sets `lineage`; its parent source names the batch item for every package check. */
   async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array},
     lineage?: ArchiveMemberLineage): Promise<AnySourceProfile> {
     const caseId=uuid.parse(caseIdValue), input=AnyRetainSourceSchema.parse(inputValue), actor=localOperatorSubject();
+    const batchSourceId=lineage?uuid.parse(lineage.parentSourceId):undefined;
     const profileName=input.format==='geojson'?'geojson-manual-v1':'tabular-manual-v1';
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
       throw new AppError(413,'FILE_SIZE',
@@ -558,7 +561,7 @@ export class ManualIngestionService {
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor,...(lineage?{lineage}:{})}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
-      const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+      const scope=await workspace(client,caseId,batchSourceId),replay=await operation(client,caseId,key,digest);
       if(replay){
         if(input.format!=='geojson')
           assertRetainedTabularRequest(file,input,await source(client,caseId,replay.source.sourceId));
@@ -576,14 +579,14 @@ export class ManualIngestionService {
     });
     if(previous)return previous;
     // A new original is kept once every refusal is decided, and before its receipt is attached.
-    const context = { caseId, input, file, profileName, hash, digest, actor, lineage };
+    const context = { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId };
     const { tabular, inspection, inventory } = await readManualOriginal(context);
     const retained = await keepManualOriginal(context);
     const sourceId=retained.id;
     const mime=input.format==='geojson'?'application/geo+json':input.format==='csv'?'text/csv'
       :'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     return transaction(async client=>{
-      const scope=await workspace(client,caseId);
+      const scope=await workspace(client,caseId,batchSourceId);
       const replay=await operation(client,caseId,key,digest);
       if(replay){
         if(input.format!=='geojson')
@@ -603,7 +606,7 @@ export class ManualIngestionService {
         [sourceId,mime,JSON.stringify({manualProfile:inventory,...(inspection?{gis:inspection}:{}),
           summary:'Original retained; a pinned recipe requires review.',
           ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),actor})]);
-      const fresh=await workspace(client,caseId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
+      const fresh=await workspace(client,caseId,batchSourceId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
       await remember(client,caseId,key,digest,result);
       await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,
         sourceRevision:retained.revision,status:'needs_input'},actor);

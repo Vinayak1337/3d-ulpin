@@ -330,6 +330,8 @@ test('the job keeps and enrols every independent member, including a README with
     assert.notEqual(retry, jobId);
     await run(retry);
     assert.deepEqual(order, kept.map(id => `register:${id}`));
+    assert.equal(retained.length, kept.length, 'retry retains no second member original');
+    assert.equal(ledger.rows.size, ledger.card.members.length + 1, 'retry adds no second member item');
     assert.equal(ledger.member('uttam/block-boundary.geojson').limit_reason, null);
     assert.equal(await queue(), null);
   }));

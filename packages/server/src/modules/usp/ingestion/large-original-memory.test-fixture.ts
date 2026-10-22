@@ -11,12 +11,13 @@ export type MemoryCase = { id: string; revision: number; archived: boolean; pack
   batchSources: Set<string> };
 
 /**
- * Only the statements one v1 byte receipt sends, over one case; anything else fails the test. `sources` may be a
- * caller's map, so a job's own ledger finds the originals the receipt keeps.
+ * Only the statements v1 byte and manual receipts send, over one case; anything else fails the test. `sources`
+ * may be a caller's map, so a job's own ledger finds the originals the receipt keeps.
  */
 export function memoryPool(caseId: string, sources = new Map<string, Row>()) {
   const db = { case: { id: caseId, revision: 0, archived: false, packages: [], properties: [],
-    batchSources: new Set() } as MemoryCase, uploads: [] as Row[], parts: [] as Row[], sources };
+    batchSources: new Set() } as MemoryCase, uploads: [] as Row[], parts: [] as Row[], sources,
+    operations: new Map<string, Row>() };
   let sequence = 0;
   const result = (rows: Row[]) => ({ rows, rowCount: rows.length });
   const run = async (sql: string, values: any[] = []) => {
@@ -24,16 +25,47 @@ export function memoryPool(caseId: string, sources = new Map<string, Row>()) {
     const part = () => db.parts.filter(row => row.upload_id === values[0] && row.part_number === values[1]);
     if (/^(BEGIN|START|COMMIT|ROLLBACK|SET)|pg_advisory_xact_lock|INSERT INTO usp_outbox/.test(sql)) return result([]);
     if (sql.includes('FROM registry_case_feature_mappings')) return result(db.case.properties.map(id => ({ id })));
+    if (sql.startsWith('SELECT a.name FROM cases c JOIN map_areas')) return result([]);
     if (sql.includes('FROM import_packages')) return result(db.case.packages.map(id => ({ id })));
     if (sql.startsWith('SELECT 1 FROM usp_intake_items WHERE case_id=$1 AND source_id=$2'))
       return result(db.case.batchSources.has(values[1]) ? [{}] : []);
     if (sql.includes('FROM cases WHERE id=$1')) return result([db.case]);
     if (sql.startsWith('UPDATE cases SET revision=revision+1')) { db.case.revision++; return result([]); }
     if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return result([...db.sources.values()]);
+    if (sql.startsWith('SELECT payload_hash,result FROM operations')) {
+      const prior = db.operations.get(values[1]);
+      return result(prior ? [prior] : []);
+    }
+    if (sql.startsWith('INSERT INTO operations')) {
+      db.operations.set(values[1], { payload_hash: values[2], result: values[3] });
+      return result([]);
+    }
+    if (/^SELECT (?:id|id,revision|\*) FROM sources WHERE case_id=/.test(sql)) {
+      return result([...db.sources.values()].filter(row => row.case_id === values[0] && row.sha256 === values[1]
+        && row.profile === values[2] && (!sql.includes("inspection ? 'manualProfile'")
+          || row.inspection?.manualProfile)));
+    }
+    if (sql.startsWith('SELECT * FROM sources WHERE id=') || sql.startsWith('SELECT id FROM sources WHERE id=')) {
+      const row = db.sources.get(values[0]);
+      return result(row ? [row] : []);
+    }
+    if (sql.startsWith('SELECT max(revision)')) return result([{ revision: 1 }]);
     if (sql.startsWith('SELECT id FROM sources')) return result([]);
     if (sql.startsWith('INSERT INTO sources')) {
-      db.sources.set(values[0], { id: values[0], name: values[2], sha256: values[5], object_key: values[6],
-        inspection: values[7] });
+      if (values.length === 11) {
+        const keys = ['id', 'case_id', 'family_id', 'revision', 'name', 'profile', 'mime_type', 'bytes',
+          'sha256', 'object_key', 'inspection'];
+        db.sources.set(values[0], Object.fromEntries(keys.map((key, index) => [key, values[index]])));
+      } else {
+        db.sources.set(values[0], { id: values[0], name: values[2], sha256: values[5], object_key: values[6],
+          inspection: values[7] });
+      }
+      return result([]);
+    }
+    if (sql.startsWith('UPDATE sources SET mime_type=')) {
+      const row = db.sources.get(values[0])!;
+      row.mime_type = values[1];
+      row.inspection = { ...row.inspection, ...JSON.parse(values[2]) };
       return result([]);
     }
     if (sql.startsWith('UPDATE usp_outbox_streams')) return result([{ sequence: String(++sequence) }]);
