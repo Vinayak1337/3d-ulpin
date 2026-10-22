@@ -1,0 +1,28 @@
+{ "receipt": { "command": [
+"set \"NODE_OPTIONS=--require E:/Projects/ulpin-wt/k5/docs/evidence/runtime/r10/journey-targ",
+"et.cjs\" && pnpm journey:check --case 08cb4df7-baf9-462d-afaf-70450a2a5997 --output E:/BhuA",
+"ayam-data/task-data/r10/journey-reh02.json" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 0,
+"startedAt": "2026-10-22T13:29:36.727Z", "endedAt": "2026-10-22T13:30:08.252Z", "seconds": 31.525, "output": [
+"> 3d-ulpin@ journey:check E:\\Projects\\ulpin-wt\\ulpin-reh-02",
+"> tsx --tsconfig scripts/agent/tsconfig.json scripts/golden-journey/run.ts --profile demo ",
+"\"--case\" \"08cb4df7-baf9-462d-afaf-70450a2a5997\" \"--output\" \"E:/BhuAayam-data/task-data/r10",
+"/journey-reh02.json\"", "", "STEP          STATE        WHAT WAS READ",
+"batch         pass         Batch 08cb4df7-baf9-462d-afaf-70450a2a5997: 4 retained items.",
+"  /api/v1/ingestion/cases/{caseId}/intake",
+"items         pass         4 items; reading states reported without replacing unknown coun", "ts.",
+"  /api/v1/ingestion/cases/{caseId}/intake",
+"table         pass         1 of 1 tables have a stored reading; unread counts stay null.",
+"  /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile",
+"surfaces      pass         12 published surface parts read; placement is not measurement.",
+"  /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display",
+"evidence      pass         1 key profiles; 1 sources; coverage retained as read.",
+"  /api/v1/ingestion/cases/{caseId}/intake/evidence",
+"confirmation  pass         1 stored evidence confirmations; no confirmation sent.",
+"  /api/v1/ingestion/cases/{caseId}/intake/evidence",
+"card          pass         Newest carried target 0b1d491d-9bcd-56ac-9f1e-a1af7bdc3079, car",
+"d revision 1: consistent.", "  /api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification",
+"citation      pass         1 register row excerpts found on the exact card PDF.",
+"  /api/v1/registry-records/{recordId}/revisions/{revision}/document-citations",
+"{\"pass\":8,\"fail\":0,\"undecidable\":0,\"skipped\":0}", "JSON: E:\\BhuAayam-data\\task-data\\r10\\journey-reh02.json"
+], "error": null }, "summary": { "pass": 8, "fail": 0, "undecidable": 0, "skipped": 0 },
+"served": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab" }

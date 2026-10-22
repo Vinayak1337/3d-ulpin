@@ -197,6 +197,51 @@ reads only the file it is given and sends nothing:
 pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf-ai/gateway/gk2/check-policy.ts <policy.json>
 ```
 
+## LP6 follow-up: shorter teacher answers (offline only)
+
+SV3 chooses **(a), a shorter storey wire answer**, not a higher global budget. No policy, gateway, caps or demo
+settings changed. LP6's eight storey calls had these `(step: contentChars / outputTokens / finish)` measures:
+`1: 3101/2048/length`, `9: 4708/1699/stop`, `10: 5103/2048/length`, `11: 3684/2048/length`,
+`12: 3987/1471/stop`, `13: 3570/1330/stop`, `14: 3092/2048/length`, `15: 5389/2048/length`.
+All reported zero reasoning tokens. Character count alone is not a token bound: a valid 4708-character answer
+used fewer tokens than a truncated 3092-character answer. Diagnostics contain no field lengths or answer text;
+they establish answer-text pressure, not which field actually dominated any LP6 answer.
+
+`document-storey/1.1` asks for compact JSON and citation **part ID strings only**. The server restores each quote
+from the exact selected source line before product validation, diagnostics, recording validation and proposal use.
+The provider no longer regenerates that redundant free text. All fact fields, list capacities, conflicts and
+multiple citations remain available. Existing full-shape software controls remain valid. Template/replay keys
+change so an older recording cannot silently stand in for the changed request.
+
+Reader audit (`rg` over `packages/server/src/modules/ai` and `scripts/agent`):
+
+| Output fields | Product reader in `storey-document-proposals.ts` |
+|---|---|
+| `storeyCount`, `basementCount`, including values and expressions | `factsOf`, `literalOf`, `unknownsOf` |
+| `floorExpressions`, including scope | `factsOf`, `literalOf`, `packetConflicts` |
+| `labels`, `heights`, `unitCounts`, including kinds, units and scope | `factsOf`, `literalOf` |
+| Fact citations (part ID and quote) | `citationsOf`, `populations`, `proposal`; quotes restored locally |
+| `conflicts.field`, `conflicts.expressions` | `packetConflicts`; no alternative is chosen |
+| `conflicts.citations` | validated/retained; not used by `packetConflicts`; restored rather than removed |
+| `abstain`, `abstainReason` | `extractStoreyFacts`, `unknownsOf` |
+
+The retained D2 software-control answer shrinks from **416 to 360 JSON characters (13.5%)**, with two citations.
+This is a format comparison, not a prediction of LP6 tokens or extraction accuracy. Longer quotes save more:
+each old citation repeats a quote of up to 240 characters plus object keys. No field the product reads is lost;
+quotes now identify the whole selected line, and the existing quote/value-at-locator verifier still runs.
+Offline proof of the compact shape, exact quote restoration, invalid-ID refusal and replay is in
+`docs/evidence/sv3/result.json`. A later authorised run must establish whether this removes live truncation;
+**it is not yet qualified at 2048 tokens**. Do not increase the demo policy on this evidence alone.
+
+The output maximum stays 2048: its output-price component at ₹60/M is ₹0.12288 per call. With the existing
+34816-token input bound, ₹15/M input and 20% cushion, the total conservative reservation stays ₹0.774144.
+There is no per-request budget override and no later policy step for this choice.
+
+The mapping prompt (`mapping-teacher/2.2`) now states the existing rationale rule explicitly, with allowed and
+refused made-up examples: no literal facts in explanations, no digits (ASCII or Devanagari), no `EPSG`, and no
+`coordinate` or `coordinates`. The validator's regex is unchanged. Longer instructions may reduce the number
+of masked samples in requests already close to the input bound; every column is still sent.
+
 ## Fail-closed behaviour
 
 - **One key at a time.** Only the keys the policy names are ever used, in the owner's order, never in turn and

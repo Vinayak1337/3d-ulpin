@@ -31,7 +31,7 @@ import {
 import { MAPPING_TEACHER_SYSTEM_PROMPT } from './mapping-teacher-prompt';
 import { lookupMappingMemory } from './mapping-memory';
 
-export const MAPPING_TEACHER_TEMPLATE = 'mapping-teacher/2.1';
+export const MAPPING_TEACHER_TEMPLATE = 'mapping-teacher/2.2';
 export const MAPPING_TEACHER_MODEL = 'sarvam-105b';
 export const MAPPING_TEACHER_METHOD = 'model:sarvam-105b@2026-10-10';
 /** The request is over the gateway's size bound: with no samples left, the gateway is not asked. */

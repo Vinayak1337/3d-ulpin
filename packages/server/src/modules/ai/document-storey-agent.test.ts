@@ -62,6 +62,59 @@ test('request: closed schema whose citations can only name parts that were sent'
   assert.equal(JSON.parse(request.messages[1].content).parts.length, 3);
 });
 
+/** Protocol control only: turn the existing full answer into the compact provider wire shape. */
+function wireAnswer() {
+  const full = answer();
+  const compact = <Item extends { citations: { partId: string }[] }>(
+    item: Item,
+  ): Omit<Item, 'citations'> & { citations: string[] } => ({
+    ...item, citations: item.citations.map(citation => citation.partId),
+  });
+  return { ...full, storeyCount: compact(full.storeyCount), basementCount: compact(full.basementCount),
+    floorExpressions: full.floorExpressions.map(compact), labels: full.labels.map(compact),
+    heights: full.heights.map(compact), unitCounts: full.unitCounts.map(compact),
+    conflicts: full.conflicts.map(compact) };
+}
+
+test('wire: citations carry only sent IDs, no quote field; prompt asks for compact JSON', () => {
+  const request = storeyRequest(PARTS);
+  const schema = request.schema as any;
+  const citation = schema.properties.floorExpressions.items.properties.citations.items;
+  assert.equal(citation.type, 'string');
+  assert.deepEqual(citation.enum, PARTS.map(part => part.partId));
+  assert(!JSON.stringify(schema).includes('"quote"'));
+  const prompt = minimizeMessages(request.messages)[0].content;
+  assert(prompt.includes('Do not copy quotes or source lines'));
+  assert(prompt.includes('no indentation'));
+  assert(prompt.includes('no repeated identical facts'));
+  assert(JSON.stringify(wireAnswer()).length < JSON.stringify(answer()).length);
+});
+
+test('wire: full source citations survive recording, replay and strict product validation', async () => {
+  const recordings = new TeacherRecordings(mkdtempSync(join(tmpdir(), 'sv3-storey-')));
+  const { gateway } = gatewayReturning(wireAnswer());
+  const result = await extractStoreyFacts(PARTS, optionsFor(gateway, recordings));
+  assert.equal(result.state, 'candidate');
+  assert(validateStoreyOutput(result.output, PARTS).success);
+  assert.deepEqual(result.output?.floorExpressions.map(item => item.citations), [
+    [{ partId: 'p1-l0', quote: PARTS[0].text }], [{ partId: 'p2-l0', quote: PARTS[2].text }],
+  ]);
+  assert.deepEqual(result.output?.conflicts[0].expressions, ['G+41', 'G+42']);
+  const adapter = new ReplayAdapter(key => recordings.replay(key));
+  const replay = new ModelGateway(controlConfig(), new ControlLedger(), adapter);
+  const replayed = await extractStoreyFacts(PARTS, optionsFor(replay));
+  assert.equal(replayed.replayed, true);
+  assert.deepEqual(replayed.output, result.output);
+});
+
+test('wire: an unsent citation ID fails closed rather than acquiring a quote', async () => {
+  const invalid = wireAnswer();
+  invalid.floorExpressions[0].citations = ['not-sent'];
+  const { gateway } = gatewayReturning(invalid);
+  const result = await extractStoreyFacts(PARTS, optionsFor(gateway));
+  assert.deepEqual([result.state, result.code, result.output], ['teacher_unavailable', 'TEACHER_INVALID_OUTPUT', null]);
+});
+
 test('validation: a citation to an unsent part, an extra key or a negative height is rejected', () => {
   assert(validateStoreyOutput(answer(), PARTS).success);
   const foreign = answer({ labels: [{ label: 'X', kind: 'ground', citations: [{ partId: 'p9-l9', quote: 'X' }] }] });

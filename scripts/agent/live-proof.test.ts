@@ -65,12 +65,19 @@ test('plan: a line left out of a storey call is named under its own reason; a ma
   }
 });
 
-test('plan: the two mapping and eight storey request hashes remain exactly those measured in S5', () => {
+test('plan: changed teacher prompts keep the S5 input order but invalidate every old request hash', () => {
   const baseline = JSON.parse(readFileSync('docs/evidence/gf-agent/s5/step0.json', 'utf8'));
   const expected = baseline.point4_tenRequestHashes.hashes as { id: string; requestHash: string }[];
   const requests = buildPlan(readTariff()).steps.filter(step => step.request)
     .map(step => ({ id: step.id, requestHash: step.request!.requestHash }));
-  assert.deepEqual(requests, expected.map(({ id, requestHash }) => ({ id, requestHash })));
+  assert.deepEqual(requests.map(request => request.id), expected.map(request => request.id));
+  for (const [index, request] of requests.entries()) {
+    assert.match(request.requestHash, /^[a-f0-9]{64}$/);
+    assert.notEqual(request.requestHash, expected[index].requestHash);
+  }
+  const rebuilt = buildPlan(readTariff()).steps.filter(step => step.request)
+    .map(step => ({ id: step.id, requestHash: step.request!.requestHash }));
+  assert.deepEqual(rebuilt, requests);
 });
 
 test('plan: it follows the tariff it is given, and stops where a cap would be crossed', () => {

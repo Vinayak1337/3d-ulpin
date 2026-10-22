@@ -1,6 +1,7 @@
 # Studio live-demo presenter runbook
 
-> This guide matches staging `4c278323` and later; if the demo still serves `8d6e19fa`, use `git show c610922f:docs/STUDIO_DEMO_GUIDE.md`.
+> The demo serves `4ffd801a`; R10 rolled it from `8d6e19fa`, with doctor **28 PASS, 0 FAIL** after the roll.
+> This guide matches that commit. [R10]
 
 This replaces the September source-to-record walkthrough, its Lake View fictional example,
 legacy local-app address, and old intake limits. It is not a prepared-record tour.
@@ -12,11 +13,13 @@ confirmation press to a cited, verified card and a footprint-only card, with no 
 REH11's stop (`REGISTRY_SOURCE_UNAVAILABLE`) was not seen. REH10 receipts now exist, but that run did not
 prove the linked card or surface drawing. [H10] [H11] [H13] [Card13]
 
-REH13 left the served demo unchanged at `8d6e19fa` (doctor **28 PASS, 0 FAIL** before and after) and rolled
-its runtime back to `1a226949`. Its staging rehearsal is not a demo roll or proof of a clean start.
-RC1 is merged and REH12 ran; the next roll candidate is `4c278323` (RC2, RC3). Before that roll, the registry
-citation read checked by `journey:check` must stop refusing exterior-only records (HTTP 422 `INVALID_INPUT`);
-the Studio does not call that read. [H13]
+R10 rolled the served demo from `8d6e19fa` to `4ffd801a`: doctor **28 PASS, 0 FAIL** after the roll, about
+61 s without `/health`, and the same counts of cases, sources, packages and features before and after.
+Before the roll, on `ulpin-reh-02` at `4ffd801a`, `journey:check` passed **8 of 8**, including the citation
+step that REH13 saw refused (HTTP 422 `INVALID_INPUT`). On that runtime the cited building's record page
+showed **“Card 93fd4362 · revision 1 · cites record revision 2”**, and its Documents tab listed the register
+row (`gpmc-yuvp.csv`, CSV logical row 444) beside `buildings-original.geojson` feature 1084419. That page was
+read on the rehearsal runtime, not on the demo. [R10]
 The architecture describes the intended flow, not a receipt that every part works. [Arch]
 
 ## 1. Thirty minutes before — check, do not rebuild
@@ -202,13 +205,12 @@ Say: **“A shared key proposes a link. This confirms evidence, not registry rec
     verified · 0 stopped”**; a card row reads **“Its property card is made and verified. Open card PDF ·
     Verification · Card consistent”**. [Card13] [Act13] [H13]
 
-**Card step: proved on staging `4c278323` at REH13, not yet on the served demo.**
+**Card step: proved on staging `4c278323` at REH13; the demo now serves `4ffd801a` (R10).** [R10]
 The cited card (feature 1084419) quotes LPC register row **444** of `gpmc-yuvp.csv` (`bin 1084419`,
 **83 Leonard Street**, Italianate, 1860–1865) beside its footprint citation; the quoted row matches line 444
 of the original CSV, all 9 fields. Its verification page says **Consistent**, **6 of 6 passed**, snapshot
 same revision, signature **not assessed**. The footprint-only card (feature 1077455) cites only
-`buildings-original.geojson` and is also **Consistent, 6 of 6 passed**. Both card PDFs were served.
-On the served demo `8d6e19fa` the card step was last proved at REH9, citing only the footprint. [Act13] [Card13] [H9]
+`buildings-original.geojson` and is also **Consistent, 6 of 6 passed**. Both card PDFs were served. [Act13] [Card13]
 
 Say: **“One confirmation recorded the buildings and made two cards. This one quotes the confirmed register
 row beside its footprint, and its verification is consistent; the signature is not assessed. The register row
@@ -216,10 +218,6 @@ is evidence; it states no right or owner.”**
 
 ### What the presenter will see that is not finished
 
-- The cited building's record page shows **“Building 1084419 · Reviewed”** with **“Property Card: Blocked:
-  select a unit with an assigned proposed code”**, and its Documents tab lists only
-  `buildings-original.geojson` feature 1084419, not the register row. Both are being fixed on a separate
-  branch. Open the card from the batch's **Open card PDF** and **Verification** instead. [Act13]
 - The confirmation progress shows the cited record at revision **1**, while the card is built on revision
   **2**, the revision that carries the confirmed evidence. Read the revision from the card. [Act13]
 - The card PDF's QR code resolves only on the machine that made it; the PDF says so. Do not invite judges
@@ -331,11 +329,15 @@ Older failures remain historical boundaries, not REH11's outcome. Use the runtim
   **617 ms**. No zero-stall claim. [Frames13]
 - **“Area: not supplied by the record”**, or buildings shown under an unexpected area name.
   Read the source citation; do not infer legal or geographical membership from that label. REH8 saw this. [H8]
-- **“Property Card: Blocked: select a unit with an assigned proposed code”** despite a completed batch card.
-  Use the card result and verification link from the batch. Do not invent a unit or assign a code to bypass it.
+- **“Property Card: Blocked: select a unit with an assigned proposed code”** on a record page. Since UI1, a
+  building whose batch made a card shows that card instead
+  (**“Card … · revision … · cites record revision …”**); R10 read this on `ulpin-reh-02` at `4ffd801a`.
+  The line stays when no unit is selected and the building has no batch card, and
+  **“Blocked: assign a proposed code first”** shows when a selected unit has no code and no listed card.
+  Then use the card result and verification link from the batch, if it made one. Do not invent a unit or
+  assign a code to bypass it. [UI1] [R10]
   REH8's card also printed **“Unavailable: Not supplied by the executed text/CSV profile”** for geometry;
   that wording did not establish geometry from its map source. [H8] [Act8]
-  REH13 saw the same blocked line on the cited building's record page. [Act13]
 - **REGISTRY_SOURCE_UNAVAILABLE — “Work stopped; the completed steps are kept. A cited source is not
   currently available.”** REH11 stopped here; REH13 did not see it. If it appears, do not retry.
   Say the completed steps are kept and show the confirmed evidence instead. Preserve the batch address
@@ -386,6 +388,9 @@ A kept file, a proposal and a recorded fact are deliberately different.”**
 
 Receipt fields (each reference below names its file and JSON field):
 
+[UI1]: evidence/ui1/result.json "items; tests"
+[R10]: evidence/runtime/r10/result.json
+  "to; after.doctor; after.counts; downtime.seconds; a0.journey.summary; a0.ui1.header; a0.ui1.documents"
 [H13]: evidence/runtime/reh13/result.json "servedCommit; rolledBackTo; demo; failures; runbookCorrections; verdict"
 [Card13]: evidence/runtime/reh13/result.json "act1.cards; act1.retryPressed; act1.confirmationsPressed"
 [Act13]: evidence/runtime/reh13/act1.json "steps; cited; footprintOnly; recordPage; surfacesAtCards"
