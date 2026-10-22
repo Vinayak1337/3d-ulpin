@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
-import { TABULAR_LIMITS } from '@ulpin/contracts/usp';
+import { TABULAR_LIMITS, type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { sha256 } from '../../infrastructure/storage';
 import { fingerprint } from '../cases/domain';
 import { ingestionBinding } from '../usp/ingestion/events';
 import { rowCells } from '../usp/ingestion/intake-evidence';
+import { assertIntakeSource } from '../usp/ingestion/intake-context';
+import { isRetainedMapOriginal } from '../usp/ingestion/retained-map-original';
+import { sealedMapReceipt } from '../usp/ingestion/streamed-map-receipt';
 import { readTabularSource } from '../usp/ingestion/tabular-source';
 import { registryDocumentSourceAccessTx, registryRecordedSourceTx, registrySourceTx } from './registry-metadata';
 import { attributed, recordedSourceControl, refusal, subject } from './registry-recorded-source.test-fixture';
@@ -64,6 +67,58 @@ function retainedRegister() {
   };
   return { f, source, bytes, row, state, confirmation };
 }
+
+/** Protocol-only receipt shape from intake-large-steps.test.ts; no map bytes or semantic records are created. */
+function retainedStreamedMap() {
+  const f = recordedSourceControl(), id = randomUUID(), bytes = 43263076, hash = 'c'.repeat(64);
+  const input = { version: 'geojson-stream/2', jobId: randomUUID(), caseId: f.caseRow.id, sourceId: id,
+    sourceRevision: 1, sourceBytes: bytes, sourceSha256: hash, framing: 'feature-collection',
+    objectKey: `large-originals/${id}/${hash}` } as StreamingVectorInput;
+  const receipt = sealedMapReceipt(input, { bytes, sha256: hash, features: 1,
+    metadata: { type: 'FeatureCollection' } }, [{ chunk_index: 0, first_feature_index: 0, last_feature_index: 0,
+    records: 1, accepted: 1, quarantined: 0, published: true, result_sha256: hash }]);
+  const source = { id, case_id: f.caseRow.id, family_id: id, revision: 1, name: 'protocol-streamed.geojson',
+    profile: 'large-original-v1', status: 'ready', bytes, sha256: hash, object_key: input.objectKey,
+    inspection: { status: 'needs_input', streamedMapReceipt: receipt, largeOriginal: {
+      uploadId: randomUUID(), operatorSubject: subject, objectEtag: hash, verifiedSha256: hash, verifiedBytes: bytes,
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-21T00:00:00.000Z', state: 'not_stated' },
+      conversion: 'unsupported', bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed' } } };
+  const state = { confirmationLookups: 0 };
+  f.sources.set(id, source);
+  f.state.extra = sql => {
+    if (!sql.includes('FROM usp_intake_evidence_confirmations')) return null;
+    state.confirmationLookups++;
+    return [];
+  };
+  assert(isRetainedMapOriginal(source));
+  assertIntakeSource(source, ingestionBinding(source.case_id));
+  return { f, source, state };
+}
+
+test('retained streamed map sources keep ordinary and citation access without a table confirmation',
+  () => attributed(async () => {
+    const { f, source, state } = retainedStreamedMap();
+    for (const status of ['ready', 'partial']) {
+      source.status = status;
+      assert.equal((await registrySourceTx(f.client, f.siteId, source.id)).sha256, source.sha256);
+      assert.equal((await registryDocumentSourceAccessTx(f.client, f.siteId, source.id)).sha256, source.sha256);
+    }
+    source.status = 'needs_input';
+    assert.equal((await registryDocumentSourceAccessTx(f.client, f.siteId, source.id)).sha256, source.sha256);
+    await assert.rejects(() => registrySourceTx(f.client, f.siteId, source.id),
+      refusal(409, 'REGISTRY_SOURCE_UNAVAILABLE'), 'the pre-existing ordinary status gate is unchanged');
+    assert.equal(state.confirmationLookups, 0);
+  }));
+
+test('a geometry-free package pinning a streamed map keeps its original-only authority path',
+  () => attributed(async () => {
+    const { f, source, state } = retainedStreamedMap();
+    f.pinned.add(source.id);
+    // As before RC1, a map receipt alone does not grant document-original access to a geometry-free package.
+    await assert.rejects(() => registryRecordedSourceTx(f.client, f.siteId, source.id),
+      refusal(403, 'DOCUMENT_DENIED'));
+    assert.equal(state.confirmationLookups, 0);
+  }));
 
 test('the batch-kept register with an accepted table row is available to the card and recorded-source read',
   { skip }, () => attributed(async () => {

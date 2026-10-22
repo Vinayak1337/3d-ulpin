@@ -7,6 +7,7 @@ import {documentAuthorityTx, documentResultFreshnessTx, type DocumentPins} from 
 import {assertSourceBuildingPackageAuthorityTx, isGeometryFreePackage,
   sourceBuildingOriginalAccessTx} from '../usp/ingestion/source-building-review';
 import {ingestionBinding, assertIngestionBinding} from '../usp/ingestion/events';
+import {isRetainedMapOriginal} from '../usp/ingestion/retained-map-original';
 import {permitsConfirmedRetainedTableSourceTx, permitsReferenceRecordSource,
   permitsReferenceRightSource} from './registry-reference-policy';
 
@@ -19,12 +20,12 @@ async function registrySourceContextTx(client:PoolClient,siteId:string,sourceId:
   const binding=ingestionBinding(source.case_id);
   const owners=[source.inspection?.actor,source.inspection?.largeOriginal?.operatorSubject,source.inspection?.documentOriginal?.subject];
   if(owners.some(owner=>owner&&owner!==binding.subject))denied();
-  const confirmedTable=await permitsConfirmedRetainedTableSourceTx(client,source,binding);
+  const confirmedTable=!isRetainedMapOriginal(source)&&await permitsConfirmedRetainedTableSourceTx(client,source,binding);
   return {source,binding,confirmedTable};
 }
 async function registrySourceAuthorityTx(client:PoolClient,
   {source,binding,confirmedTable}:Awaited<ReturnType<typeof registrySourceContextTx>>,pins:DocumentPins='current') {
-  if(source.profile==='large-original-v1'&&!confirmedTable)
+  if(source.profile==='large-original-v1'&&!isRetainedMapOriginal(source)&&!confirmedTable)
     throw new AppError(409,'REGISTRY_SOURCE_UNAVAILABLE','A cited source is not currently available.');
   await documentAuthorityTx(client,source,'snapshot',new Set(),false,pins);
   assertIngestionBinding(binding);
@@ -55,8 +56,8 @@ export async function registryRecordedSourceTx(client:PoolClient,siteId:string,s
     "SELECT 1 FROM import_packages WHERE body->>'geometryFree'='true' AND body->'sourceRevisionIds' ? $1 LIMIT 1",
     [sourceId])).rows.length>0;
   // A retained table has upload/confirmation authority, never document-original authority.
-  const retainedTable=pinned&&(await client.query('SELECT profile FROM sources WHERE id=$1',[sourceId]))
-    .rows[0]?.profile==='large-original-v1';
+  const pinnedSource=pinned?(await client.query('SELECT * FROM sources WHERE id=$1',[sourceId])).rows[0]:undefined;
+  const retainedTable=pinnedSource?.profile==='large-original-v1'&&!isRetainedMapOriginal(pinnedSource);
   const source=pinned&&!retainedTable?await sourceBuildingOriginalAccessTx(client,siteId,sourceId)
     :await registrySourceTx(client,siteId,sourceId,'retained');
   const freshness=await documentResultFreshnessTx(client,source);

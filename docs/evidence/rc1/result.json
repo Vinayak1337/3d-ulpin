@@ -2,7 +2,8 @@
   "task": "RC1",
   "gate": "GF-T21",
   "baseCommit": "4e385e19",
-  "qualification": "Real originals; in-memory SQL and storage transports. No Docker or live database.",
+  "reviewRound": 2,
+  "qualification": "Real originals plus protocol-only streamed receipts; in-memory SQL/storage. No Docker/live DB.",
   "reproduction": {
     "test": "packages/server/src/modules/registry/registry-retained-table.test.ts",
     "beforeFix": {"exitCode": 1, "passed": 1, "failed": 1, "status": 409, "code": "REGISTRY_SOURCE_UNAVAILABLE"},
@@ -31,7 +32,8 @@
     "authority": [
       "registrySourceTx and registryDocumentSourceAccessTx share the guarded context before documentAuthorityTx.",
       "registryRecordedSourceTx keeps upload/confirmation authority, even if an original-only package names it.",
-      "sourceBuildingOriginalAccessTx stays document-only and unchanged; table access does not require it."
+      "sourceBuildingOriginalAccessTx stays document-only and unchanged; table access does not require it.",
+      "Retained maps bypass table-specific checks and retain their previous status and package-pin gates."
     ],
     "packet": [
       "Whole retained-table excerpts use readRetainedOriginal with TABULAR_LIMITS.bytes and byte/hash recheck.",
@@ -51,7 +53,35 @@
     ],
     "unchanged": "Legacy recorded documents, retained maps, uncited cards, late history and conflict refusal pass."
   },
+  "round2": {
+    "reviewedCommit": "77ba8b75",
+    "regressionBeforeFix": {"exitCode": 1, "passed": 4, "failed": 2, "code": "REGISTRY_SOURCE_UNAVAILABLE"},
+    "focusedAfterFix": {"exitCode": 0, "passed": 6, "failed": 0, "skipped": 0},
+    "streamedFixture": "Protocol-only sealed map/upload receipts, reusing intake-large-steps.test.ts's shape.",
+    "mapAccess": "ready/partial maps pass registrySourceTx and registryDocumentSourceAccessTx without confirmation.",
+    "statusGate": "needs_input maps keep citation-only access; ordinary reads still refuse, as on staging.",
+    "pinnedMap": "Keeps sourceBuildingOriginalAccessTx; without a document receipt it returns DOCUMENT_DENIED.",
+    "table": "An unconfirmed kept CSV still returns REGISTRY_SOURCE_UNAVAILABLE; prior card regressions pass."
+  },
   "checks": [
+    {"command": ["pnpm", "typecheck:backend"], "exitCode": 0},
+    {
+      "command": ["pnpm", "exec", "tsx", "--test",
+        "packages/server/src/modules/registry/registry-retained-table.test.ts"],
+      "exitCode": 0, "passed": 6, "failed": 0, "skipped": 0
+    },
+    {
+      "command": ["pnpm", "exec", "tsx", "--tsconfig", "apps/api/tsconfig.json", "--test",
+        "packages/server/src/modules/registry/*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft.test.ts",
+        "packages/server/src/modules/usp/packets/*.test.ts", "tests/intake-*.test.ts"],
+      "exitCode": 0, "passed": 345, "failed": 0, "skipped": 0,
+      "groups": {"registry": 45, "intakeEvidenceAndDraft": 173, "packets": 127}
+    },
+    {"command": ["git", "diff", "--check"], "exitCode": 0}
+  ],
+  "round1Checks": [
     {"command": ["pnpm", "typecheck:backend"], "exitCode": 0},
     {
       "command": ["pnpm", "exec", "tsx", "--test", "packages/server/src/modules/registry/*.test.ts"],
@@ -98,7 +128,8 @@
     ],
     "doNot": "Do not import the CSV alone, reset data, reseed, or substitute an earlier ready table source.",
     "expected": "Card quotes the original bin: 1001960 line; verification reports consistent.",
-    "runtimeExecutedHere": false
+    "runtimeExecutedHere": false,
+    "additionalStep": "Act 2: record and card a streamed footprint file above 16 MiB; retain its prior source gates."
   },
   "gaps": [
     "Live PostgreSQL/object-storage rehearsal remains the lead's step.",
