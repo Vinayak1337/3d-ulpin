@@ -472,7 +472,7 @@ export async function assertTableByteKind(bytes: Uint8Array, selection: TabularS
 /** Unrecognised bytes are plain text when their head decodes with no NUL, the probe's own test for text. */
 function plainText(head: Uint8Array) {
   const { text } = decodeIntakeHead(head);
-  return Boolean(text) && !text.includes(' ');
+  return Boolean(text) && !text.includes('\u0000');
 }
 
 /** A CSV selection reads the delimited-text family, including one-column text no signature names. */
