@@ -1,0 +1,47 @@
+{
+  "task": "NR4",
+  "gate": "AUD2 not-ranked: glTF/GLB and OBJ kept although readers exist; no runtime gate claimed",
+  "base": "d69df453",
+  "codeCommits": ["14481f40"],
+  "status": "server_bridge_passed_offline",
+  "objReader": "exists: obj.ts, obj-worker.ts, services/geo/geo/native_obj.py; wired like glTF",
+  "delivery": {
+    "readers": {"gltf": {"cardFormats": ["glb", "gltf"], "limitMiB": 16}, "obj": {"cardFormats": ["obj"], "limitMiB": 16}},
+    "profiles": ["large-original-v1", "gltf-native-v1", "obj-native-v1"],
+    "queue": "intake-native-readers.ts reader table gains gltf and obj with the card formats each takes; item, reader and source revision/hash name a stable job; exact replay queues nothing new.",
+    "authority": "gltfSourceTx/objSourceTx accept large-original-v1 only through assertBatchNativeSourceTx (operator receipt, exact hash/size/key, probed root card of that reader). Native receipt validation unchanged.",
+    "insert": "insertGltfJobTx/insertObjJobTx split from enqueueTx as NR1 did for DXF; the batch path takes the stable job id.",
+    "settlement": "failGltfJob/failObjJob and the accepted transaction settle the item. Words and recordsSeen come only from summary fields (glTF nodeCount/primitiveCount/projectedPositions/missingCompanionCount/unsupportedPrimitiveCount/globalPlacement; OBJ vertexCount/polygonCount/unsupportedStatementCount/missingCompanionDeclarationCount/axes/units/crs). Stopped words carry the reader code.",
+    "boundary": "Readings stay candidate evidence, unplaced: no geometry layer, record, package, card target, measurement or right. A glTF has no CRS field and its summary states globalPlacement unknown; an OBJ summary states crs unknown; the words say the model stays unplaced and why."
+  },
+  "decisions": [
+    "recordsSeen is the glTF nodeCount and the OBJ polygonCount, as DXF uses recordCount.",
+    "The settle lookup matches the item's card format against the reader's card formats (glb or gltf for one glTF job).",
+    "Existing DXF/CityGML/CityJSON job ids are unchanged: the reader key equals their card format.",
+    "No processor change: the glTF/OBJ host readers receive bytes the Node worker reads from storage; no Python key pattern exists. imageRebuildNeeded false.",
+    "Studio forecast left unchanged: upload-reader-limits (packages/contracts) exports no GLTF_LIMITS/OBJ_LIMITS and is outside NR4 ownership. .glb/.gltf/.obj still forecast 'Kind not known yet: will be kept and recognised after upload', which stays true."
+  ],
+  "inputs": [
+    {"path": "E:/BhuAayam-data/task-data/desktop-gltf-native/originals/Box.glb", "sha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e", "role": "good real input; probe glb, queue/replay, authority, settled from final-glb/gltf.json: 2 nodes, 1 mesh primitive, 24 positions, complete"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-gltf-native/originals/Box.gltf", "sha256": "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9", "role": "difficult real input; external buffer not supplied: partial, 0 positions, 1 companion not supplied"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-obj-native/no_material.obj", "sha256": "a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c", "role": "good real input; complete-run01/obj.json: 76 vertices, 18 polygons"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-obj-native/missing_material_file.obj", "sha256": "0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988", "role": "difficult real input; partial-run01/obj.json: partial, 10 companion declarations not supplied"}
+  ],
+  "wordsGood": "The glTF reading is complete. It states 2 nodes and 1 mesh primitive; they are candidates. Positions read: 24; companion files named but not supplied: 0; unsupported primitives: 0. Global placement: unknown. A glTF states no coordinate reference system, so the model stays unplaced. The reading is kept as evidence and is not on the map yet; no record or card target is created.",
+  "checks": [
+    {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts (before the code change)", "exit": 1, "tests": 41, "pass": 21, "fail": 20},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts", "exit": 0, "tests": 41, "pass": 41},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-ledger.test.ts tests/gltf-ingestion.test.ts tests/obj-ingestion.test.ts tests/gltf-shared-read-compatibility.test.ts tests/obj-shared-read-compatibility.test.ts", "exit": 0, "tests": 20, "pass": 18, "skip": 2, "note": "Configured native-bridge tests skip without the local profile."},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-*.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts packages/server/src/modules/usp/ingestion/retain-routing.test.ts", "exit": 0, "tests": 379, "pass": 379},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "runtime": {
+    "qualified": false,
+    "docker": "not used",
+    "database": "protocol doubles only",
+    "imageRebuildNeeded": false,
+    "note": "Both readers are pinned Windows-host profiles (gltf-config/obj-config). Where no profile is configured the job queues with tools null; when a dispatcher runs it, the worker settles the item as stopped with its code (for example GLTF_UNSUPPORTED_PLATFORM). Dispatch of gltf-native/obj-native jobs on a runtime was not qualified here. GLTF_CODE_FILES/OBJ code pins include the changed files, so jobs pinned before this change read as changed tools."
+  }
+}
