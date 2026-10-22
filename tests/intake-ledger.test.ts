@@ -386,6 +386,29 @@ test('the manifest names a large item\'s streamed profile job from its one item 
   });
 });
 
+test('the one-item read answers each listed row exactly as the manifest lists it; a member hidden stays out', async () => {
+  await configured(async () => {
+    const f = fixture();
+    await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+    const kept = f.rows.get(f.sourceId);
+    // The fake stands in for the joined archive name; the words are the service's own.
+    kept.taken_out_of = 'layers.zip';
+    const member = (memberPath: string, sourceId: string | null) => ({ ...kept, item_id: randomUUID(),
+      source_id: sourceId, parent_item_id: f.sourceId, member_path: memberPath, name: memberPath,
+      taken_out_of: null });
+    const waiting = member('c.csv', null);
+    const hidden = member('b.csv', f.sourceId);
+    for (const row of [waiting, hidden]) f.rows.set(row.item_id, row);
+    const manifest = await f.service.manifest(f.caseId);
+    assert.deepEqual(manifest.items.map(item => item.itemId).sort(), [f.sourceId, waiting.item_id].sort());
+    for (const listed of manifest.items) assert.deepEqual(await f.service.one(f.caseId, listed.itemId), listed);
+    const keptItem = manifest.items.find(item => item.itemId === f.sourceId)!;
+    assert.match(keptItem.limitReason!, /^Taken out of layers\.zip\./);
+    // The route still answers the hidden member; the tray merges only an item its manifest holds.
+    assert.equal((await f.service.one(f.caseId, hidden.item_id)).parentItemId, f.sourceId);
+  });
+});
+
 // Real public layers kept in the repository (OSM / Google Open Buildings, test_only); zipped here, never committed.
 async function layerZipCard() {
   const pack = zipSync(Object.fromEntries(['01-google-building-footprints.geojson', 'block-boundary.geojson',

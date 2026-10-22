@@ -125,6 +125,20 @@ it('reads on recipe/item/target notifications, deduplicates frames and bounds qu
   leave();
 });
 
+it('an intake.item change hands its item to the consumers; a target change and the quiet read name none', async () => {
+  const run = harness();
+  const tray = run.consumer();
+  const leave = run.subscriptions.subscribe('case', tray);
+  const itemId = '0f6e2a5c-58c4-4d0e-9b7c-0d9d6a1e2f11';
+  run.streams[0]!.frame({ kind: 'ingestion.change', id: '11',
+    data: { kind: 'change', sequence: '1', change: { kind: 'intake.item', itemId } } });
+  run.streams[0]!.frame({ kind: 'ingestion.change', id: '12',
+    data: { kind: 'change', sequence: '2', change: { kind: 'intake.target', targetId: itemId } } });
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(tray.refresh.mock.calls).toEqual([[itemId], [undefined], []]);
+  leave();
+});
+
 it('parses complete SSE frames and preserves a chunk boundary; refused HTTP reads retain exact error words', async () => {
   const parsed = takeFrames(': heartbeat\n\nevent: ready\nid: 12\ndata: {"kind":"ready"}\n\nevent: resync\n');
   expect(parsed.frames).toEqual([{ kind: 'ready', id: '12', data: { kind: 'ready' } }]);

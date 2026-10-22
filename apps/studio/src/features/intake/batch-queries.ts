@@ -1,5 +1,6 @@
-import { useQuery, type QueryClient, type QueryKey } from '@tanstack/react-query';
+import { useQuery, type QueryClient, type QueryFilters, type QueryKey } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
+import type { IntakeItem } from './batch-model';
 import type { Recipe } from './layout-model';
 import type { AuthorBody } from './question-model';
 import type { Schemas } from '@ulpin/api-client';
@@ -11,6 +12,8 @@ import type { LayerCrsBody } from './layer-crs-command';
 import type { TablePlacementBody } from './table-placement-command';
 
 export const recipeKey = (caseId: string) => ['batch-recipes', caseId];
+/** The batch's manifest; the reads of its items' sections sit under the same prefix. */
+export const intakeKey = (caseId: string) => ['intake', caseId];
 
 export function useBatchPackages(caseId: string) {
   return useQuery({ queryKey: [...runKey(caseId), 'summary'], retry: false,
@@ -38,21 +41,29 @@ export async function approveLayout(caseId: string, receipt: Recipe,
 }
 
 export function useIntakeManifest(caseId: string) {
-  return useQuery({ queryKey: ['intake', caseId], retry: false,
+  return useQuery({ queryKey: intakeKey(caseId), retry: false,
     queryFn: async () => unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/intake', {
       params: { path: { caseId } },
     })),
   });
 }
 
+/** TR1. One item as the manifest lists it, by the existing one-item route. */
+export async function readIntakeItem(caseId: string, itemId: string): Promise<IntakeItem> {
+  return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}', {
+    params: { path: { caseId, itemId } },
+  }));
+}
+
 /**
  * ZP2. A notification that arrives while a read is in flight asks for one more read after it: that read began
  * before the change, and without a second one its answer would stand as current until the next notification.
  */
-export function rereadQuery(client: QueryClient, queryKey: QueryKey) {
-  const inFlight = client.isFetching({ queryKey }) > 0;
-  const read = client.invalidateQueries({ queryKey }, { cancelRefetch: false });
-  if (inFlight) void read.then(() => client.invalidateQueries({ queryKey }, { cancelRefetch: false }));
+export function rereadQuery(client: QueryClient, queryKey: QueryKey, predicate?: QueryFilters['predicate']) {
+  const filters = { queryKey, predicate };
+  const inFlight = client.isFetching(filters) > 0;
+  const read = client.invalidateQueries(filters, { cancelRefetch: false });
+  if (inFlight) void read.then(() => client.invalidateQueries(filters, { cancelRefetch: false }));
 }
 
 export async function retryStoppedItem(caseId: string, itemId: string, requestKey: string): Promise<RetryResult> {

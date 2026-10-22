@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
@@ -17,7 +17,8 @@ import { isPageImage } from './page-image-model';
 import { isSettled } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
-import { recipeKey, rereadQuery, useBatchPackages, useIntakeManifest } from './batch-queries';
+import { intakeKey, recipeKey, rereadQuery, useBatchPackages, useIntakeManifest } from './batch-queries';
+import { IntakeItemRefresh } from './item-refresh';
 import { IntakeRunPanel } from './run';
 import { runKey } from './run/useTargets';
 import type { BatchLocationState } from './retain-batch';
@@ -37,14 +38,22 @@ function useBatchFacts(caseId: string) {
   const sourceCase = useSourceCase(caseId);
   const packages = useBatchPackages(caseId);
   const client = useQueryClient();
+  const itemRefresh = useMemo(() => new IntakeItemRefresh(client, caseId), [client, caseId]);
+  const others = () => {
+    for (const queryKey of [recipeKey(caseId), [...runKey(caseId), 'summary']]) rereadQuery(client, queryKey);
+  };
   const refresh = () => {
-    for (const queryKey of [['intake', caseId], recipeKey(caseId), [...runKey(caseId), 'summary']]) {
-      rereadQuery(client, queryKey);
-    }
+    rereadQuery(client, intakeKey(caseId));
+    others();
+  };
+  // TR1: a change naming one item the tray holds reads that item alone; any other change reads the manifest.
+  const changed = (itemId?: string) => {
+    itemRefresh.changed(itemId);
+    others();
   };
   // ZP2: the server lists a ZIP member taken out as its own item once, as that item; every listed row shows.
   const items = manifest.data?.items ?? NO_ITEMS;
-  const stream = useBatchStream(caseId, items.some((item) => !isSettled(item)), refresh);
+  const stream = useBatchStream(caseId, items.some((item) => !isSettled(item)), changed);
   return { caseId, manifest, sourceCase, packages, items, stream, refresh };
 }
 
