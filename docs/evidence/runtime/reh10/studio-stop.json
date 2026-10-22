@@ -1,0 +1,9 @@
+{ "command": [ "powershell.exe -NoProfile -File E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh10/stop-s", "tudio.ps1"
+], "from": "E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh10", "exit": 0, "seconds": 0.536, "output": [
+"SUCCESS: The process with PID 5052 (child process of PID 14400) has been terminated.",
+"SUCCESS: The process with PID 14400 (child process of PID 26784) has been terminated.",
+"SUCCESS: The process with PID 26784 (child process of PID 5172) has been terminated.",
+"SUCCESS: The process with PID 18976 (child process of PID 2808) has been terminated.",
+"SUCCESS: The process with PID 5172 (child process of PID 2808) has been terminated.",
+"SUCCESS: The process with PID 2808 (child process of PID 21928) has been terminated.",
+"SUCCESS: The process with PID 21928 (child process of PID 6232) has been terminated." ], "error": null }
