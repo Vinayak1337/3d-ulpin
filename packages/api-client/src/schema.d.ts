@@ -66979,12 +66979,25 @@ export interface components {
                 } | null;
                 /**
                  * Format: uuid
-                 * @description The item's current retained source; with its revision, SHA-256 and bytes, the pins an evidence confirmation names for this item.
+                 * @description The item's current retained source; with its revision, SHA-256 and bytes, the pins an evidence confirmation names for this item. All pins are null when unavailable.
                  */
-                sourceId: string;
-                sourceRevision: number;
-                sourceSha256: string;
-                bytes: number;
+                sourceId: string | null;
+                sourceRevision: number | null;
+                sourceSha256: string | null;
+                bytes: number | null;
+                /**
+                 * @default {
+                 *       "state": "retained"
+                 *     }
+                 */
+                source: {
+                    /** @enum {string} */
+                    state: "retained";
+                } | {
+                    /** @enum {string} */
+                    state: "unavailable";
+                    reason: string;
+                };
             }[];
             candidates: {
                 /** @enum {string} */

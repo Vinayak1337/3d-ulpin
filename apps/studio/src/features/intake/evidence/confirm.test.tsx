@@ -75,13 +75,14 @@ const absent = candidate(65, 'no_match', '12/8', row(10, '12/8'), []);
 const page: EvidencePage = { caseId, confirmations: [], profiles: [profile],
   sources: [
     { itemId: register.itemId, profileId: profile.profileId, family: 'table', jobId: id(40), resultSha256: sha('d'),
-      coverage: closed, sourceId: id(53), sourceRevision: 2, sourceSha256: sha('c'), bytes: 87 },
+      coverage: closed, sourceId: id(53), sourceRevision: 2, sourceSha256: sha('c'), bytes: 87,
+      source: { state: 'retained' } },
     { itemId: late.itemId, profileId: profile.profileId, family: 'table', jobId: id(43), resultSha256: null,
       coverage: { state: 'reading', read: 40, eligible: null, keyless: null, unread: null, failed: null },
-      sourceId: id(54), sourceRevision: 1, sourceSha256: sha('7'), bytes: 900 },
+      sourceId: id(54), sourceRevision: 1, sourceSha256: sha('7'), bytes: 900, source: { state: 'retained' } },
     { itemId: letter.itemId, profileId: profile.profileId, family: 'document', jobId: id(41), resultSha256: sha('2'),
       coverage: { state: 'closed', read: 1, eligible: 1, keyless: 0, unread: 0, failed: 0 }, sourceId: id(56),
-      sourceRevision: 1, sourceSha256: sha('1'), bytes: 22 }],
+      sourceRevision: 1, sourceSha256: sha('1'), bytes: 22, source: { state: 'retained' } }],
   candidates: [first, second, conflicting, several, absent],
   counts: { matched: 2, no_match: 1, several: 1, conflicting: 1 }, nextCursor: null };
 const read: ConfirmRead = { page, items, targets };
@@ -170,6 +171,32 @@ it('accepts every exact single match of a file in one press; each stays unselect
     expect(html).toContain('Your decisions: 1 accepted, 0 rejected');
     expect(html).toContain('aria-label="Undo the decision on 12/5, register.csv, column “House no”, row 8"');
   });
+
+it('lists an unavailable file without accept or exclude controls and never sends its confirmation', async () => {
+  const reason = 'The item no longer has a retained source in this batch.';
+  const unavailable: EvidencePage = { ...page, sources: page.sources.map((source) =>
+    source.itemId === register.itemId ? { ...source, sourceId: null, sourceRevision: null, sourceSha256: null,
+      bytes: null, source: { state: 'unavailable', reason } } : source) };
+  expect(validate(schemas.page, unavailable)).toEqual([]);
+  expect(decidable(unavailable, profile)).toEqual([several]);
+  const readUnavailable = { ...read, page: unavailable };
+  const html = form(ready, { read: readUnavailable });
+  expect(html).toContain(reason);
+  expect(html).not.toContain('Accept 12/4');
+  expect(html).not.toContain('Accept 12/5');
+  expect(html).not.toContain('Exclude register.csv');
+  expect(html.match(/>Accept every exact single match of this file<\/button>/g)).toHaveLength(2);
+  expect(html).toContain('>Exclude letter.pdf');
+  expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Confirm the evidence<\/button>/);
+  const send = vi.fn();
+  const draft = { ...ready, choices: acceptRegister() };
+  expect(await pressConfirm(caseId, profile, readUnavailable, draft, send, targetsReadPins()))
+    .toEqual({ missing: 'register.csv: this key cannot be confirmed while a source is unavailable.' });
+  expect(await pressConfirm(caseId, profile, readUnavailable,
+    { ...draft, exclusions: { ...draft.exclusions, [register.itemId]: 'Source gone.' } }, send, targetsReadPins()))
+    .toEqual({ missing: 'register.csv: this key cannot be confirmed while a source is unavailable.' });
+  expect(send).not.toHaveBeenCalled();
+});
 
 it('never accepts a conflicting or several candidate; the officer may reject one with reason words', async () => {
   for (const question of [conflicting, several]) {

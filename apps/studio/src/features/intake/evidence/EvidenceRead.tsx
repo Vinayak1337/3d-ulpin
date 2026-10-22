@@ -39,6 +39,7 @@ function ProfileCoverage({ profile, page, items }: {
       {sources.map((source) => <li key={source.itemId}>
         {items.find((item) => item.itemId === source.itemId)?.name ?? 'A file no longer listed'}
         {' '}({familyWords(source.family)}). {coverageWords(source.coverage)}
+        {source.source?.state === 'unavailable' ? ` ${source.source.reason}` : null}
       </li>)}
     </ul> : <p>No source is read under this key yet.</p>}
   </section>;

@@ -3,7 +3,8 @@ import { afterEach, beforeEach, test } from 'node:test';
 import type { Pool } from 'pg';
 import { IntakeEvidencePageSchema, type IntakeEvidenceConfirm, type IntakeTableRowLocator } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
-import { closeEvidence, confirmIntakeEvidence, evidenceLinkManifest, readIntakeEvidence } from './intake-evidence';
+import { closeEvidence, confirmIntakeEvidence, evidenceLinkManifest, evidenceSourceView,
+  readIntakeEvidence } from './intake-evidence';
 import { stableUuid } from './intake-run';
 
 // test_only: one case's evidence stores, built to the published contract; no real record is named.
@@ -117,14 +118,49 @@ test('a link manifest hash that is not the decisions\' own is refused and nothin
   assert.equal(stored(seen), undefined);
 });
 
-test('the page read carries each source\'s current pins; an item without a retained source is refused', async () => {
-  install([{ source_id: sourceId, source_revision: 2, source_sha256: sourceSha256, source_bytes: '87' }]);
-  const page = IntakeEvidencePageSchema.parse(await readIntakeEvidence(caseId, {}));
-  assert.deepEqual(page.sources, [{ itemId, profileId, family: 'table', jobId, resultSha256, coverage, sourceId,
-    sourceRevision: 2, sourceSha256, bytes: 87 }]);
-  const { family: _family, profileId: _profile, ...read } = page.sources[0];
-  assert.deepEqual(read, body.included[0], 'a closed source read is the included pins a confirmation names');
-  install([{ source_id: null, source_revision: null, source_sha256: null, source_bytes: null }]);
-  await assert.rejects(readIntakeEvidence(caseId, {}), (error: { status: number; code: string }) =>
-    error.status === 422 && error.code === 'INTAKE_EVIDENCE_ITEM');
+test('the page lists both coverage rows when one source is gone; a confirmation naming it is still refused',
+  async () => {
+    const missingId = ids('missing-item');
+    const seen = install([
+      { source_id: sourceId, source_revision: 2, source_sha256: sourceSha256, source_bytes: '87' },
+      { item_id: missingId, source_id: null, source_revision: null, source_sha256: null, source_bytes: null },
+    ]);
+    const page = IntakeEvidencePageSchema.parse(await readIntakeEvidence(caseId, {}));
+    assert.deepEqual(page.sources, [
+      { itemId, profileId, family: 'table', jobId, resultSha256, coverage, sourceId,
+        sourceRevision: 2, sourceSha256, bytes: 87, source: { state: 'retained' } },
+      { itemId: missingId, profileId, family: 'table', jobId, resultSha256, coverage, sourceId: null,
+        sourceRevision: null, sourceSha256: null, bytes: null, source: { state: 'unavailable',
+          reason: 'The item no longer has a retained source in this batch.' } },
+    ]);
+    const { family: _family, profileId: _profile, source: _source, ...read } = page.sources[0];
+    assert.deepEqual(read, body.included[0], 'retained read pins are unchanged');
+    assert.deepEqual(page.candidates, [candidate]);
+    assert.equal(IntakeEvidencePageSchema.safeParse({ ...page, sources: [{ ...page.sources[1],
+      source: { state: 'retained' } }] }).success, false, 'retained cannot name null pins');
+    assert.equal(IntakeEvidencePageSchema.safeParse({ ...page, sources: [{ ...page.sources[0],
+      source: page.sources[1].source }] }).success, false, 'unavailable cannot carry current pins');
+    assert.ok(seen.some(statement => statement.sql === 'COMMIT'), 'the read succeeds, without a 422');
+    const input = { ...body, included: [...body.included, { ...body.included[0], itemId: missingId }] };
+    await assert.rejects(confirmIntakeEvidence(caseId, input), (error: { status: number; code: string;
+      message: string }) => error.status === 409 && error.code === 'INTAKE_EVIDENCE_STALE'
+      && error.message === `Source item ${missingId} is not a retained source of this case.`);
+    await assert.rejects(confirmIntakeEvidence(caseId, { ...body, excluded: [{ itemId: missingId, sourceId,
+      sourceRevision: 2, sourceSha256, bytes: 87, reason: 'The source is gone.' }] }),
+      (error: { status: number; code: string }) => error.status === 409 && error.code === 'INTAKE_EVIDENCE_STALE');
+    assert.equal(stored(seen), undefined);
+  });
+
+test('each missing source pin is unavailable on read, but the strict source view still refuses it', async () => {
+  const retained = { source_id: sourceId, source_revision: 2, source_sha256: sourceSha256, source_bytes: '87' };
+  for (const pin of Object.keys(retained)) {
+    install([{ ...retained, [pin]: null }]);
+    const page = await readIntakeEvidence(caseId, {});
+    const source = page.sources[0];
+    assert.equal(source.source.state, 'unavailable', pin);
+    assert.deepEqual([source.sourceId, source.sourceRevision, source.sourceSha256, source.bytes],
+      [null, null, null, null]);
+    assert.throws(() => evidenceSourceView({ ...retained, [pin]: null, item_id: itemId, family: 'table' } as never),
+      (error: { status: number; code: string }) => error.status === 422 && error.code === 'INTAKE_EVIDENCE_ITEM');
+  }
 });
