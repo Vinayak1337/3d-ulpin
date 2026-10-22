@@ -311,6 +311,23 @@ test('a kept batch CSV names its table reader instead of claiming no batch reade
   assert.equal(fixture.jobs.length, 0);
 });
 
+for (const [format, expected] of [
+  ['xlsx', 'Kept as an XLSX table (85 KB). Read it as a table with "Open the table"; the original is kept with '
+    + 'its SHA-256.'],
+  ['ods', 'Kept as an ODS table (85 KB). It is not read as a table today; the original is kept with its SHA-256.'],
+] as const) {
+  test(`a kept batch ${format} names "Open the table" only when the batch offers it`, async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.bytes = 87352;
+    fixture.src.inspection = {};
+    fixture.tray.family = 'table';
+    fixture.tray.card = { format, family: 'table', crs: { state: 'not_applicable' } } as DraftItem['card'];
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(fixture.state.projection.limit_reason, expected);
+  });
+}
+
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';
 for (const [format, family, bytes, expected] of [

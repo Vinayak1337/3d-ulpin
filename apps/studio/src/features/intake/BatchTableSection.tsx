@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
 import { Button, Skeleton } from '@ulpin/ui';
+import { INTAKE_TABLE_READER_FORMATS } from '@ulpin/contracts/upload-reader-limits';
 import type { IntakeItem } from './batch-model';
 import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
@@ -22,7 +23,7 @@ type Follow = ReturnType<typeof useFollowTable>['follow'];
  */
 export function itemTableSource(item: IntakeItem, items: readonly IntakeItem[]): ItemTableSource | null {
   const card = item.card;
-  if (card?.family !== 'table' || !['csv', 'tsv', 'xlsx'].includes(card.format)) return null;
+  if (card?.family !== 'table' || !INTAKE_TABLE_READER_FORMATS.includes(card.format)) return null;
   const parent = items.find((row) => row.itemId === item.parentItemId);
   const sourceId = item.sourceId ?? (parent?.card?.format === 'xlsx' ? parent.sourceId : null);
   return sourceId ? { sourceId, format: card.format === 'xlsx' ? 'xlsx' : 'csv',
