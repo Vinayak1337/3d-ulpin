@@ -11,7 +11,7 @@ import { openObjectStream } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { decodeDelimitedText } from './delimited-text';
 import { intakeCaseTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
+import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
 import { streamedFeatureIssue } from './streaming-vector-reader';
@@ -236,9 +236,18 @@ export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSour
   await registerUspJobInputTx(client, input.jobId,
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
-    planRef: item.plan_ref, recordsSeen: 0, limitReason: `Placing the rows of this table on the map in ${request.crs}, `
-      + 'as stated by the officer.' });
+    planRef: item.plan_ref, recordsSeen: Number(item.records_seen), limitReason: besideTableWords(item.limit_reason,
+      `Placing the rows of this table on the map in ${request.crs}, as stated by the officer.`) });
   return input.jobId;
+}
+
+const PLACEMENT_WORDS = /(?:^|\s)Map placement: [\s\S]*$/;
+
+/** The table's own words with this placement's words beside them; an earlier placement's words are replaced. */
+function besideTableWords(current: string | null, words: string): string {
+  const placement = `Map placement: ${words}`;
+  const own = (current ?? '').replace(PLACEMENT_WORDS, '').trim().slice(0, 2000 - placement.length - 1);
+  return own ? `${own} ${placement}` : placement;
 }
 
 export type TableGeojsonDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
@@ -369,7 +378,7 @@ export async function placeTableRows(input: IntakeTableGeojsonInput,
     code = await enrol(input, kept, dependencies);
   }
   const words = tablePlacementWords(measured, kept ? { name, crs: input.crs } : null, code);
-  await dependencies.transaction(client => placedTx(client, input, measured.rows, words));
+  await dependencies.transaction(client => placedTx(client, input, words));
   return kept ? [kept] : [];
 }
 
@@ -384,9 +393,9 @@ async function enrol(input: IntakeTableGeojsonInput, sourceId: string, dependenc
   }
 }
 
-async function placedTx(client: PoolClient, input: IntakeTableGeojsonInput, rows: number, limitReason: string) {
-  const item = (await client.query(SITUATED, [input.sourceId])).rows[0];
-  const state: IntakeDraftState = { state: 'read', placement: 'undecided', planRef: item?.plan_ref ?? null,
-    recordsSeen: rows, limitReason };
-  await writeIntakeDraftTx(client, input.caseId, input.itemId, state);
+/** The table's own count and words stay; the placement's words are written beside them. */
+async function placedTx(client: PoolClient, input: IntakeTableGeojsonInput, words: string) {
+  const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+  await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, state: 'read',
+    limitReason: besideTableWords(current.limitReason, words) });
 }

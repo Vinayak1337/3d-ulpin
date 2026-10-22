@@ -152,7 +152,7 @@ function ledger(original: ReturnType<typeof tableSource>) {
   const sources = new Map<string, any>([[original.id, original]]);
   const jobs: any[] = [];
   const item = { item_id: itemId, case_id: caseId, source_id: original.id, parent_item_id: null, plan_ref: null,
-    state: 'probed', placement: 'undecided', records_seen: 0, limit_reason: 'Kept as a CSV table.' };
+    state: 'probed', placement: 'undecided', records_seen: 5, limit_reason: 'Kept as a CSV table.' };
   const answers: [string, (values: any[]) => any[]][] = [
     ['SELECT * FROM usp_intake_items', () => [item]],
     ['SELECT 1 FROM jobs', () => jobs.filter(job => ['queued', 'running'].includes(job.status))],
@@ -204,8 +204,9 @@ test('a stated system queues one job pinning the table read; a column past the t
     const jobId = await queueTableGeojsonTx(client, original, request);
     assert.deepEqual(jobs.map(job => [job.id, job.payload.crs, job.payload.headers, job.payload.tabular.selection]),
       [[jobId, 'EPSG:32643', ['plot', 'outline'], selection]]);
-    assert.equal(item.limit_reason,
-      'Placing the rows of this table on the map in EPSG:32643, as stated by the officer.');
+    // The table's own count and words stay; the placement's words are added beside them.
+    assert.deepEqual([item.state, item.records_seen, item.limit_reason], ['reading', 5, 'Kept as a CSV table. '
+      + 'Map placement: Placing the rows of this table on the map in EPSG:32643, as stated by the officer.']);
     await assert.rejects(queueTableGeojsonTx(client, original, { ...request, requestKey: randomUUID() }),
       { status: 409 });
   });
@@ -265,14 +266,16 @@ test('the job keeps the derivative once with its lineage, enrols it and words th
     locator: 'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.' });
   assert.deepEqual(registered.map(entry => entry.sourceId), [child]);
   assert.equal(JSON.parse(kept.get(child)!.toString()).features.length, 2);
-  assert.deepEqual([item.state, item.records_seen], ['read', 3]);
-  assert.equal(item.limit_reason, 'Placed 2 rows on the map; 1 row skipped: 1 had text that is not WKT of a point, '
-    + 'line or polygon. They are taken in as their own GeoJSON file, plots.geojson, in EPSG:32643 as stated by '
-    + 'the officer.');
+  const placedWords = 'Kept as a CSV table. Map placement: Placed 2 rows on the map; 1 row skipped: 1 had text '
+    + 'that is not WKT of a point, line or polygon. They are taken in as their own GeoJSON file, plots.geojson, in '
+    + 'EPSG:32643 as stated by the officer.';
+  assert.deepEqual([item.state, item.records_seen, item.limit_reason], ['read', 5, placedWords]);
   // The table is read twice, to measure and to keep; a rerun finds the kept child by its lineage and hash.
   assert.equal(opened, 2);
   assert.deepEqual(await placeTableRows(input, dependencies), [child]);
   assert.equal(kept.size, 1);
+  // A second placement's words replace the first's; the table's own words are kept once.
+  assert.equal(item.limit_reason, placedWords);
 });
 
 function jobDependencies(client: PoolClient, large: TableGeojsonDependencies['large'], table: Buffer,
