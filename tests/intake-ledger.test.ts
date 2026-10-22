@@ -31,9 +31,7 @@ class LedgerControl {
     this.queries.push(sql);
     if (sql.startsWith('SET TRANSACTION')) return { rows: [] };
     if (sql.includes('FROM cases')) return { rows: values[0] === this.caseId ? [this.current] : [] };
-    if (sql.includes('FROM sources')) {
-      return { rows: values[0] === this.caseId && values[1] === this.sourceId ? [this.source] : [] };
-    }
+    if (sql.includes('FROM sources')) return this.sources(sql, values);
     if (sql.startsWith('SELECT payload_hash')) {
       const prior = this.operations.get(values[1]);
       return { rows: prior ? [prior] : [] };
@@ -69,6 +67,16 @@ class LedgerControl {
       return { rows: values[0] === this.caseId ? matching : [] };
     }
     throw new Error(`Unexpected protocol SQL: ${sql}`);
+  }
+
+  // MF1 reads every listed source at once with id=ANY($2) and only the receipt keys of `inspection`.
+  private sources(sql: string, values: any[]) {
+    if (values[0] !== this.caseId) return { rows: [] };
+    if (!sql.includes('id=ANY($2::uuid[])')) return { rows: values[1] === this.sourceId ? [this.source] : [] };
+    if (!values[1].includes(this.sourceId)) return { rows: [] };
+    const receiptKeys = Object.entries(this.source.inspection)
+      .filter(([key]) => key.endsWith('Original') || key === 'actor');
+    return { rows: [{ ...this.source, inspection: Object.fromEntries(receiptKeys) }] };
   }
 
   private outbox(sql: string, values: any[]) {
