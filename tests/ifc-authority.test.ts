@@ -138,6 +138,8 @@ test('accepted native summary retains natural missing reference and metadata sem
   const ctx=await ifcSourceTx(f.client as any,f.caseId,f.sourceId),input=ifcInput(ctx,randomUUID(),'complete_bounded_source',null),bytes=readFileSync(root+'/outputs/final/ifc2x3.json'),summary=ifcSummary(bytes,input);
   assert.equal(summary.entityCount,2046);assert.equal(summary.recordCount,45);assert.equal(summary.georeferenceState,'missing_or_unqualified');
   assert.equal(summary.spaceCount,2);assert.equal(summary.storeysAreLegalUnits,false);assert.equal(summary.geometry,'unsupported');
+  assert.equal(fingerprint(summary),fingerprint(JSON.parse(JSON.stringify(summary))),
+    'An absent pre-scan structure must not change the summary hash across object storage.');
   const raw4=readFileSync(root+'/originals/ifc4-building-architecture.ifc'),bytes4=readFileSync(root+'/outputs/final/ifc4.json'),
     summary4=ifcSummary(bytes4,{...input,sourceSha256:sha256(raw4),sourceBytes:raw4.length});
   assert.equal(summary4.schema,'IFC4');assert.equal(summary4.recordCount,56);assert.equal(summary4.georeferenceState,'supplied_unqualified');

@@ -35,7 +35,7 @@ export function ifcSummary(bytes:Buffer,input:IFCInput){
     buildingCount:count('IfcBuilding'),storeyCount:count('IfcBuildingStorey'),spaceCount:count('IfcSpace'),
     georeferenceState:value.georeference.state,inspectionFrame:'source_local',metadataOnly:true,geometry:'unsupported',
     globalPlacement:'not_qualified',unitConversionApplied:false,storeysAreLegalUnits:false,rights:'not_assessed',
-    structure:value.structure});
+    ...(value.structure?{structure:value.structure}:{})});
 }
 const controlledCode=z.string().regex(/^IFC_[A-Z_]{1,60}$/);
 function reapIFC(config:IFCConfig,pid:number,scratch:string){
