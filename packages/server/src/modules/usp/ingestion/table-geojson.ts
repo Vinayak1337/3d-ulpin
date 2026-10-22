@@ -303,7 +303,8 @@ async function keepTableDerivative(input: IntakeTableGeojsonInput, source: Intak
   return fenced(input.caseId, dependencies, revision => {
     const chunks = pulled(() => dependencies.open(source),
       (body, write) => writeTableGeojson(body, plan, write, dependencies.read));
-    return receiveLargeLayer(input.caseId, revision, file, byteParts(chunks), dependencies, lineage);
+    return receiveLargeLayer(input.caseId, { revision, batchSourceId: source.id }, file, byteParts(chunks),
+      dependencies, lineage);
   });
 }
 

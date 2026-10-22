@@ -143,7 +143,9 @@ function receipt(sources: Map<string, any>, kept: Map<string, Buffer>) {
   let parts: Buffer[] = [];
   let file: { filename: string; sha256: string; bytes: number };
   return {
-    create: async (_case: string, input: any) => {
+    create: async (_case: string, input: any, batchSourceId?: string) => {
+      // TC2: each layer's receipt names the converted file as its batch item.
+      assert.equal(batchSourceId, sourceId);
       file = input;
       parts = [];
       return { id: randomUUID(), revision: 1, currentCaseRevision: 4 };

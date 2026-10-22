@@ -8,7 +8,10 @@ import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
+import { assertIntakeDraftTx } from './intake-draft';
 import { probeOriginal } from './intake-probe';
+import { LargeOriginalService } from './large-original';
+import { memoryPool, memoryStorage, withPool } from './large-original-memory.test-fixture';
 import { streamedSourceReference } from './streamed-map-receipt';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { placeTableRows, queueTableGeojsonTx, tablePlacementWords, writeTableGeojson,
@@ -149,17 +152,24 @@ function tableSource(bytes: Buffer, headers: string[], profile = true, pin: Part
         origin: 'officer_supplied', licence: 'unconfirmed', containsPersonalData: 'unknown' } } } } : {}) } };
 }
 
-/** The statements the queue and the job issue, over in-memory rows; any other statement fails the test. */
-function ledger(original: ReturnType<typeof tableSource>) {
-  const sources = new Map<string, any>([[original.id, original]]);
+/**
+ * The statements the queue and the job issue, over in-memory rows; any other statement fails the test. The case row
+ * may be shared with a byte receipt's own memory, and `family.latest` is the newest revision of the table's family.
+ */
+function ledger(original: ReturnType<typeof tableSource>, sources = new Map<string, any>(),
+  cases = { id: caseId, revision: 4, archived: false }) {
+  sources.set(original.id, original);
+  const family = { latest: original.revision };
   const jobs: any[] = [];
   const item = { item_id: itemId, case_id: caseId, source_id: original.id, parent_item_id: null, plan_ref: null,
     state: 'probed', placement: 'undecided', records_seen: 5, limit_reason: 'Kept as a CSV table.' };
   const answers: [string, (values: any[]) => any[]][] = [
     ['SELECT * FROM usp_intake_items', () => [item]],
     ['SELECT 1 FROM jobs', () => jobs.filter(job => ['queued', 'running'].includes(job.status))],
-    ['SELECT id,revision,archived FROM cases', () => [{ id: caseId, revision: 4, archived: false }]],
-    ['SELECT revision FROM cases', () => [{ revision: 4 }]],
+    ['SELECT id,revision,archived FROM cases', () => [cases]],
+    ['SELECT revision FROM cases', () => [{ revision: cases.revision }]],
+    ['SELECT pg_advisory_xact_lock', () => []],
+    ['SELECT max(revision)', () => [{ revision: family.latest }]],
     ['INSERT INTO jobs', values => { jobs.push({ id: values[0], case_id: values[1], source_id: values[2],
       operation: 'intake-table-geojson', case_revision: values[3], input_fingerprint: values[4], payload: values[5],
       status: 'queued' }); return []; }],
@@ -183,7 +193,7 @@ function ledger(original: ReturnType<typeof tableSource>) {
     const rows = answer[1](values);
     return { rows, rowCount: rows.length };
   } } as unknown as PoolClient;
-  return { client, sources, item, jobs, statements };
+  return { client, sources, item, jobs, statements, family };
 }
 
 test('no coordinate system stated: refused with a question, nothing queued and none assumed', async () => {
@@ -412,4 +422,50 @@ test('a receipt refused once with 409 is retried; no table read waits untaken an
   assert.equal(JSON.parse(kept.get(child)!.toString()).features.length, 2000);
   // One read to measure and one into the receipt that was taken; the refused receipt started none.
   assert.deepEqual(children, { started: 2, ended: 2 });
+});
+
+test('TC2: another item of the batch drafting between queue and run does not stale the placement; a replay keeps '
+  + 'no second derivative', async () => {
+  const original = tableSource(LON_LAT, ['ward', 'longitude', 'latitude']);
+  const { db, pool } = memoryPool(caseId);
+  db.case.revision = 4;
+  db.case.batchSources.add(original.id);
+  const { client, sources, jobs, item } = ledger(original, db.sources, db.case);
+  await queueTableGeojsonTx(client, original, { requestKey: randomUUID(), coordinates: { kind: 'columns', x: 1, y: 2 },
+    crs: 'EPSG:4326' });
+  const input: IntakeTableGeojsonInput = jobs[0].payload;
+  // The batch's GeoJSON drafts a part, a package of the batch case, and sibling keeps move the case revision on.
+  db.case.packages.push(randomUUID());
+  db.case.revision += 3;
+  const large = new LargeOriginalService(memoryStorage().storage);
+  const derivatives = () => [...sources.values()].filter(row => row.inspection?.tableDerivative);
+  await withPool(pool, async () => {
+    // The pins the job is claimed, renewed and accepted under hold: the table, its read, its item.
+    await assertIntakeDraftTx(client, input);
+    const [child] = await placeTableRows(input, jobDependencies(client, large, LON_LAT));
+    assert.equal(sources.get(child).inspection.tableDerivative.originalSourceId, original.id);
+    assert.match(item.limit_reason, /Map placement: Prepared 4 rows as a GeoJSON file, plots\.geojson, in EPSG:4326 as stated by the officer; 1 row skipped/);
+    assert.deepEqual(await placeTableRows(input, jobDependencies(client, large, LON_LAT)), [child]);
+  });
+  assert.deepEqual([db.uploads.length, derivatives().length], [1, 1]);
+});
+
+test('TC2: a newer revision of the table, other bytes, or the table read again with other columns still stale the '
+  + 'placement', async () => {
+  const original = tableSource(LON_LAT, ['ward', 'longitude', 'latitude']);
+  const { client, sources, jobs, family } = ledger(original);
+  await queueTableGeojsonTx(client, original, { requestKey: randomUUID(), coordinates: { kind: 'columns', x: 1, y: 2 },
+    crs: 'EPSG:4326' });
+  const input: IntakeTableGeojsonInput = jobs[0].payload;
+  family.latest = 2;
+  await assert.rejects(assertIntakeDraftTx(client, input), { code: 'STALE_REVISION' });
+  family.latest = 1;
+  sources.set(original.id, { ...original, sha256: 'b'.repeat(64) });
+  await assert.rejects(assertIntakeDraftTx(client, input), { code: 'STALE_REVISION' });
+  // The stated columns are positions in the read the officer chose them from; another read refuses them.
+  sources.set(original.id, tableSource(LON_LAT, ['ward', 'lat', 'longitude']));
+  const kept = new Map<string, Buffer>();
+  await assert.rejects(placeTableRows(input, jobDependencies(client, receipt(sources, kept), LON_LAT)),
+    { code: 'STALE_REVISION' });
+  assert.equal(kept.size, 0);
 });
