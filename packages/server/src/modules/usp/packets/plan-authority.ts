@@ -4,7 +4,8 @@ import { observedFeatureExtract, capturedSourceRange, readFeatureRangeBytes, fea
   type NativeRecordDecoder } from './feature-extract';
 import { permitsDecodedFeatureCitation } from '../../registry/registry-reference-policy';
 import { isRetainedMapOriginal } from '../ingestion/retained-map-original';
-import type { RequestContext, TargetPin, EvidencePointer, DeclarationEvidence } from '@ulpin/contracts/usp';
+import { TABULAR_LIMITS, type RequestContext, type TargetPin, type EvidencePointer,
+  type DeclarationEvidence } from '@ulpin/contracts/usp';
 import { z } from 'zod';
 import type { PacketPlan, PacketPlanInput, PacketPlanEntry,AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
 import {isPdfPlan} from './plan-store';
@@ -12,7 +13,8 @@ import {protectPdfPlanTx,authorizePdfPlanTx,assertPdfPlanActor,plannedBindings} 
 import { UspPacketPlanEntrySchema } from '../../../../../contracts/src/usp/packets';
 import { canonical, fingerprint } from '../../cases/domain';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
+import { readObject, readObjectRange, readRetainedOriginal, sha256 } from '../../../infrastructure/storage';
+import { registryRecordedSourceTx } from '../../registry/registry-metadata';
 import { assertLocalUsp } from '../snapshots';
 import { scopedManifestTx } from '../commands';
 import { assertDeclarationEvidenceTx, assertPopulationTx, declarationEvidence, equalPin } from '../declarations/authority';
@@ -105,6 +107,14 @@ export async function protectPlanDisclosureTx(client: PoolClient, ctx: RequestCo
   if (canonical(await disclosureDependenciesTx(client, plan)) !== canonical(dependencies))
     conflict('Source authorization dependencies changed. Retry this exact historical read.');
 }
+/** The upload receipt and officer confirmation remain private authority on card/QR reads too. */
+async function assertRetainedTableAccessTx(client: PoolClient, siteId: string, source: Record<string, any>) {
+  if (source.profile !== 'large-original-v1') return;
+  const current = await registryRecordedSourceTx(client, siteId, source.id);
+  if (['case_id', 'revision', 'sha256', 'object_key'].some(field => source[field] !== current[field])
+    || Number(source.bytes) !== Number(current.bytes)) conflict('The retained table original changed.');
+}
+
 /** Caller holds case-first/recording protection. Check current original access,
  * never current extraction/old revision eligibility, and retain locks until commit. */
 export async function authorizePlanTx(client: PoolClient, ctx: RequestContext, plan: AnyPacketPlan, protect = false) {
@@ -117,6 +127,15 @@ export async function authorizePlanTx(client: PoolClient, ctx: RequestContext, p
   if (['retired', 'cancelled_error'].includes(current.project_status))
     throw new AppError(403, 'PACKET_PLAN_TARGET_ACCESS', 'The selected target is unavailable.');
   await assertDeclarationEvidenceTx(client, ctx, plan.input.scope, await planEvidenceTx(client, plan), protect, 'replay');
+  const target = await capturedTx(client, plan.input.scope.manifestId, plan.input.target);
+  const tables = evidenceCitationBindings(target.body.body).filter(item =>
+    item.citation.version === 'registry-table-row-citation/1');
+  for (const id of new Set(tables.map(item => item.sourceId))) {
+    const entry = plan.entries.find(item => item.selection.pointer.sourceRevision.ref.id === id);
+    if (!entry) continue;
+    const source = await capturedTx(client, plan.input.scope.manifestId, entry.selection.pointer.sourceRevision);
+    await assertRetainedTableAccessTx(client, plan.input.scope.scopeId, source.body);
+  }
   assertPlanActor(ctx, plan);
 }
 function samePart(a: EvidencePointer, b: EvidencePointer) {
@@ -190,7 +209,8 @@ export class PlanSourceReadBudget {
 }
 export async function assessPlanTx(client: PoolClient, ctx: RequestContext, input: PacketPlanInput,
   readBytes: typeof readObject = readObject, shared?: SharedAuthority, decode: NativeRecordDecoder = decodeNativeRecord,
-  readRange: typeof readObjectRange = readObjectRange) {
+  readRange: typeof readObjectRange = readObjectRange,
+  readOriginal: typeof readRetainedOriginal = readRetainedOriginal) {
   assertLocalUsp(ctx);
   const manifest = await scopedManifestTx(client, ctx, input.scope);
   if (manifest.selection.kind !== 'targets' || manifest.selection.pins.length !== 1
@@ -267,6 +287,9 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
       ? confirmed.find(b => b.sourceId === id && b.sourceRevision === pointer.sourceRevision.revision
         && b.locator === locator.locator) : undefined;
     const citedRange = cited ? evidenceRange(cited) : null;
+    if (cited?.citation.version === 'registry-table-row-citation/1') {
+      await assertRetainedTableAccessTx(client, input.scope.scopeId, source.body);
+    }
     const nativeSupported = ['shapefile_zip-area-v2', 'gpkg-area-v2'].includes(source.body.profile)
       && source.body.status === 'inspected' && source.body.inspection?.status === 'interpreted';
     const featureSupported = target.kind === 'building' && !pointer.assetRevision && !pointer.partRevision
@@ -315,7 +338,10 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     if (cited && citedRange && !reasonCode) {
       excerpt = await evidenceExcerptTx(client, cited, source.body as EvidenceOriginal, { table: tableReads });
     } else if (cited && !reasonCode) {
-      const bytes = await readBytes(source.body.object_key);
+      const bytes = source.body.profile === 'large-original-v1'
+        ? await readOriginal(source.body.object_key, Number(source.body.bytes), source.body.sha256,
+          TABULAR_LIMITS.bytes)
+        : await readBytes(source.body.object_key);
       if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256) {
         throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY',
           'The selected original does not match its byte receipt.');
