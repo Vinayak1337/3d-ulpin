@@ -948,6 +948,9 @@ test('one dispatcher tick admits a new TIF and LAZ beside a pre-LP1 item, withou
     const from = old.db.statements.length;
     await withSurfaces([{ world: old }, { world: tif }, { world: fresh }], async () => {
       assert.equal(await dispatchTick(), 0);
+      // LQ1: the tick starts its one surface admission pass without awaiting it; let that pass finish here.
+      for (let turn = 0; turn < 100 && [old, tif, fresh].some(world => !queued(world.parts).length); turn++)
+        await new Promise(resolve => setImmediate(resolve));
     });
     assert.deepEqual(queued(tif.parts), [0]);
     assert.deepEqual(queued(fresh.parts), [0]);
