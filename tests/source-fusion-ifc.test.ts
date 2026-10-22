@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
 import {Readable} from 'node:stream';
-import {DocumentResultSchema,IFCOriginalSchema,IFCResultSchema} from '../packages/contracts/src/usp';
+import {DocumentResultSchema,IFCOriginalSchema,IFCResultSchema,IFC_LIMITS} from '../packages/contracts/src/usp';
 import {SourceFusionRequestSchema,type SourceFusionSelection} from '../packages/contracts/src/source-fusion';
 import {assembleSourceFusion,fusionContextProjection,type SourceFusionDependencies} from '../packages/server/src/modules/usp/ingestion/source-fusion';
 import {fusionAuthorityBatch,readFusionResult,readFusionObject,type FusionAuthority,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
@@ -132,7 +132,7 @@ test('IFC wrong selection and accepted pins deny; revocation during later docume
   await assert.rejects(()=>acceptedFusionIFCTx(client as any,{...f.ifcSelection.pin,resultSha256:hash}),(error:any)=>error.status===409);
   const request={sources:[f.ifcSelection,f.docSelection]};
   for(const stepIds of [[],[25,25],[25.5]])assert(!SourceFusionRequestSchema.safeParse({sources:[{...f.ifcSelection,stepIds},f.docSelection]}).success);
-  assert(!SourceFusionRequestSchema.safeParse({sources:[{...f.ifcSelection,pin:{...f.ifcSelection.pin,resultBytes:16385}},f.docSelection]}).success);
+  assert(!SourceFusionRequestSchema.safeParse({sources:[{...f.ifcSelection,pin:{...f.ifcSelection.pin,resultBytes:IFC_LIMITS.resultBytes+1}},f.docSelection]}).success);
   assert.throws(()=>fusionIFCMetadataProjection([7],f.native,f.result.summary,f.result.artifact),(error:any)=>error.status===422);
   assert.throws(()=>fusionIFCMetadataProjection([999999],f.native,f.result.summary,f.result.artifact),(error:any)=>error.status===422);
   const authorityDeps={transaction:async(action:any)=>{transactions++;active=true;try{return await action(client);}finally{active=false;}},
