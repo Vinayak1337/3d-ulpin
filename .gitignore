@@ -29,3 +29,7 @@ output/studio-review/
 
 # Local official NYC upload pack; canonical originals stay in task-data.
 /apps/studio/datasets/nyc-10013/
+
+# Local Claude Code settings and agent worktrees
+.claude/settings.local.json
+.claude/worktrees/
