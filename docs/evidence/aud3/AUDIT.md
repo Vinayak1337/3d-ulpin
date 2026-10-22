@@ -278,7 +278,8 @@ The matrix composes these shared chains rather than repeating the same front doo
   N I/`obj-worker.ts:57-58,112,132` → B I/`obj-processor.ts:86` `processObj` →
   B G/`native_obj.py:122` `inspect_obj`; N's settlement is at N I/`obj-worker.ts:132`.
 - **CJ:** ND-JSON terminal acceptance → `outlinesConverted` → `queueNativeDerivativeTx` → V →
-  `convert_native_file` → `convert_cityjson_file` → `_placement`/`_features`/`_outline_faces`/`_polygon` → GL → K.
+  `convert_native_file` → `convert_cityjson_file` →
+  `_placement`/`_features`/`_outline_faces`/`_polygon` → GL → K.
   N I/`intake-native-readers.ts:235-250`; J I/`intake-native-derivative.ts:81-99,230-269`;
   J G/`native_gis.py:1100-1124`; `cityjson_outline.py:36-51,68-110,113-151`.
 - **SURFACE:** D → `surfaceReader`/`queueIntakeSurfaceTx` → `admitSurfaceItemTx` →

@@ -73,6 +73,7 @@
     {"command": "inline source-citation, fact-anchor, row/rank and line-length checks", "exitCode": 0},
     {"command": "python -m json.tool docs/evidence/aud3/result.json", "exitCode": 0},
     {"command": "git diff --cached --check", "exitCode": 0},
+    {"command": "awk 'length>120 {exit 1}' docs/evidence/aud3/{AUDIT.md,result.json}", "exitCode": 0},
     {"command": "owned-path and attribution checks on staged evidence", "exitCode": 0},
     {"command": "git diff staging...HEAD -- docs/evidence/aud3/ (self-review)", "exitCode": 0}
   ],
