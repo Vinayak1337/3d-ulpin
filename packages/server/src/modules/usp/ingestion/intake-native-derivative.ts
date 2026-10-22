@@ -224,9 +224,10 @@ export async function queueShapefileSetTx(client: PoolClient, source: IntakeSour
 
 /**
  * Publishing the card queues one fenced conversion job in the publishing transaction. None is queued while one
- * waits or runs, or once one finished; a failed job is queued again by enrolling the file again. An officer's
- * coordinate system answer (`answered`) queues it again after one finished. N05: a shapefile set's job is counted
- * among those of the same members, its id taken from the .shp item and the members' sorted SHA-256s, so parts
+ * waits or runs, or once the last succeeded without layer failures; a failed job or partial conversion is queued
+ * again by enrolling the file again. An officer's coordinate system answer (`answered`) queues it again after one
+ * finished. N05: a shapefile set's job is counted among those of the same members, its id taken from the .shp item
+ * and the members' sorted SHA-256s, so parts
  * published in any order queue the same job; none is queued while the set is not whole.
  */
 export async function queueNativeDerivativeTx(client: PoolClient, source: IntakeSourceRow,
@@ -243,8 +244,9 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
   const jobs = (await client.query(`SELECT id,status,payload FROM jobs WHERE source_id=$1
     AND operation='intake-native-derivative' ORDER BY created_at`, [source.id])).rows
     .filter(job => fingerprint(job.payload?.members ?? null) === fingerprint(members ?? null));
-  const open = jobs.find(job => ['queued', 'running', ...(answered ? [] : ['succeeded'])].includes(job.status));
-  if (open) return open.status === 'succeeded' ? null : open.id;
+  const open = jobs.find(job => ['queued', 'running'].includes(job.status));
+  if (open) return open.id;
+  if (!answered && item.plan_ref?.nativeDerivativeRetry !== true && jobs.at(-1)?.status === 'succeeded') return null;
   const scope = await intakeCaseTx(client, source.case_id);
   const key = members ? `shapefile_set:${item.item_id}:${members.map(member => member.sha256).sort().join(',')}`
     : `${item.item_id}:${source.revision}`;
@@ -458,7 +460,10 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
   await dependencies.transaction(async client => {
     if (parts && !await pinnedSetTx(client, source, memberPins(parts))) return;
     const state = nativeParentState(format, conversion, outcomes, answers, parts?.map(part => fileName(part.name)));
-    await writeIntakeDraftTx(client, caseId, itemId, { ...state, planRef: withReading(state.planRef, stored) });
+    const planRef = withReading(state.planRef, stored);
+    // A caught layer fault still completes the job; keep re-enrolment retryable without automatic retries.
+    await writeIntakeDraftTx(client, caseId, itemId, { ...state,
+      planRef: outcomes.some(outcome => outcome.code) ? { ...planRef, nativeDerivativeRetry: true } : planRef });
   });
   return outcomes.flatMap(outcome => outcome.sourceId ? [outcome.sourceId] : []);
 }
