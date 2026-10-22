@@ -236,8 +236,14 @@ export class SurfaceParts {
     let reply: DecodeReply;
     try {
       const bytes = await this.io.artifact(display, signal);
-      reply = await this.io.decode(display.artifact.mediaType === 'image/tiff'
-        ? { kind: 'raster', bytes } : { kind: 'points', bytes, corners }, signal);
+      if (display.artifact.mediaType === 'image/tiff') {
+        reply = await this.io.decode({ kind: 'raster', bytes }, signal);
+      } else {
+        if (display.read.operation !== 'point-batch' || !display.read.batch)
+          throw new Error('The point display read does not state its exact batch count.');
+        const recordLength = display.artifact.bytes / display.read.batch.count;
+        reply = await this.io.decode({ kind: 'points', bytes, corners, recordLength }, signal);
+      }
     } catch (error) {
       if (signal.aborted) throw error;
       reply = { refusal: `its content could not be read: ${words(error)}` };

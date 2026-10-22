@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SurfacePartInput } from '@ulpin/scene';
-import type { DecodeReply } from './decode';
+import { decodePart, type DecodeReply } from './decode';
 import { SHADED, SURFACE_LIMITS, SurfaceParts, type IntakeItem, type PartDisplay, type PartPage, type SurfaceIo,
   type SurfaceLine } from './parts';
 
@@ -51,6 +51,24 @@ function layer(io: SurfaceIo) {
 }
 
 describe('the read parts of a batch\'s kept surfaces', () => {
+  it('passes a native LAS stride from the accepted artifact and batch to the map decoder', async () => {
+    const fake = fakeIo(() => 1, () => ({ ...placed,
+      artifact: { mediaType: 'application/vnd.las.point-records', bytes: 56 },
+      read: { operation: 'point-batch', batch: { start: 0, count: 2 } },
+    } as PartDisplay));
+    const records = new DataView(new ArrayBuffer(56));
+    records.setInt32(28, 100, true);
+    records.setInt32(32, 100, true);
+    fake.io.artifact = async () => records.buffer;
+    fake.io.decode = vi.fn(async request => decodePart(request));
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(1, 'read', { family: 'point_cloud', name: 'literal.las' })]);
+    await vi.waitFor(() => expect(view.parts[0]?.points).toBeDefined());
+    expect(fake.io.decode).toHaveBeenCalledWith(expect.objectContaining({ kind: 'points', recordLength: 28 }),
+      expect.any(AbortSignal));
+    expect(Array.from(view.parts[0]!.points!.positions)).toEqual([0, 0, 0, 10, 10, 0]);
+  });
+
   it('counts a part not placed in the placement\'s own words and never draws it', async () => {
     const { io } = fakeIo(() => 3, (n) => (n === 1 ? outside : placed));
     const { parts, view } = layer(io);

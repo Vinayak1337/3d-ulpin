@@ -20326,13 +20326,12 @@ export interface components {
                     selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                     metadata: {
                         /** @enum {string} */
-                        lasVersion: "1.4";
+                        lasVersion: "1.2" | "1.3" | "1.4";
                         /** @enum {number} */
-                        pointFormatId: 6;
+                        pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                         /** @enum {number} */
-                        recordLength: 30;
-                        /** @enum {string} */
-                        recordEncoding: "las-1.4-point-format-6-le";
+                        recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                        recordEncoding: string;
                         dimensions: string[];
                         sourcePointCount: number;
                         scale: (number)[];
@@ -20343,8 +20342,8 @@ export interface components {
                         verticalReference: string | null;
                         /** @enum {string} */
                         verticalReferenceStatus: "known" | "unknown";
-                        /** @enum {string} */
-                        gpsTimeType: "standard" | "week_time";
+                        /** @enum {string|null} */
+                        gpsTimeType: "standard" | "week_time" | null;
                         batch: {
                             start: number;
                             count: number;
@@ -37698,13 +37697,12 @@ export interface components {
                     selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                     metadata: {
                         /** @enum {string} */
-                        lasVersion: "1.4";
+                        lasVersion: "1.2" | "1.3" | "1.4";
                         /** @enum {number} */
-                        pointFormatId: 6;
+                        pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                         /** @enum {number} */
-                        recordLength: 30;
-                        /** @enum {string} */
-                        recordEncoding: "las-1.4-point-format-6-le";
+                        recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                        recordEncoding: string;
                         dimensions: string[];
                         sourcePointCount: number;
                         scale: (number)[];
@@ -37715,8 +37713,8 @@ export interface components {
                         verticalReference: string | null;
                         /** @enum {string} */
                         verticalReferenceStatus: "known" | "unknown";
-                        /** @enum {string} */
-                        gpsTimeType: "standard" | "week_time";
+                        /** @enum {string|null} */
+                        gpsTimeType: "standard" | "week_time" | null;
                         batch: {
                             start: number;
                             count: number;
@@ -53542,13 +53540,12 @@ export interface components {
                     selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                     metadata: {
                         /** @enum {string} */
-                        lasVersion: "1.4";
+                        lasVersion: "1.2" | "1.3" | "1.4";
                         /** @enum {number} */
-                        pointFormatId: 6;
+                        pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                         /** @enum {number} */
-                        recordLength: 30;
-                        /** @enum {string} */
-                        recordEncoding: "las-1.4-point-format-6-le";
+                        recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                        recordEncoding: string;
                         dimensions: string[];
                         sourcePointCount: number;
                         scale: (number)[];
@@ -53559,8 +53556,8 @@ export interface components {
                         verticalReference: string | null;
                         /** @enum {string} */
                         verticalReferenceStatus: "known" | "unknown";
-                        /** @enum {string} */
-                        gpsTimeType: "standard" | "week_time";
+                        /** @enum {string|null} */
+                        gpsTimeType: "standard" | "week_time" | null;
                         batch: {
                             start: number;
                             count: number;
@@ -55845,13 +55842,12 @@ export interface components {
                         selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                         metadata: {
                             /** @enum {string} */
-                            lasVersion: "1.4";
+                            lasVersion: "1.2" | "1.3" | "1.4";
                             /** @enum {number} */
-                            pointFormatId: 6;
+                            pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                             /** @enum {number} */
-                            recordLength: 30;
-                            /** @enum {string} */
-                            recordEncoding: "las-1.4-point-format-6-le";
+                            recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                            recordEncoding: string;
                             dimensions: string[];
                             sourcePointCount: number;
                             scale: (number)[];
@@ -55862,8 +55858,8 @@ export interface components {
                             verticalReference: string | null;
                             /** @enum {string} */
                             verticalReferenceStatus: "known" | "unknown";
-                            /** @enum {string} */
-                            gpsTimeType: "standard" | "week_time";
+                            /** @enum {string|null} */
+                            gpsTimeType: "standard" | "week_time" | null;
                             batch: {
                                 start: number;
                                 count: number;
@@ -72711,13 +72707,12 @@ export interface components {
                 version: "point-batch/1";
                 metadata: {
                     /** @enum {string} */
-                    lasVersion: "1.4";
+                    lasVersion: "1.2" | "1.3" | "1.4";
                     /** @enum {number} */
-                    pointFormatId: 6;
+                    pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                     /** @enum {number} */
-                    recordLength: 30;
-                    /** @enum {string} */
-                    recordEncoding: "las-1.4-point-format-6-le";
+                    recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                    recordEncoding: string;
                     dimensions: string[];
                     sourcePointCount: number;
                     scale: (number)[];
@@ -72728,8 +72723,8 @@ export interface components {
                     verticalReference: string | null;
                     /** @enum {string} */
                     verticalReferenceStatus: "known" | "unknown";
-                    /** @enum {string} */
-                    gpsTimeType: "standard" | "week_time";
+                    /** @enum {string|null} */
+                    gpsTimeType: "standard" | "week_time" | null;
                     batch: {
                         start: number;
                         count: number;
