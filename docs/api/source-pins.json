@@ -431,7 +431,7 @@
     "packages/server/src/modules/usp/ingestion/gltf-worker.ts": "9549d25b473a2681f633380fda5ea24a8d532a20d2a4b4f26dc35bc92fd8f4fe",
     "packages/server/src/modules/usp/ingestion/gltf.ts": "089ee7af5b0a4d34c56d55311b126de31a32beeba4787404152a665b921daf8d",
     "packages/server/src/modules/usp/ingestion/ifc-config.ts": "f38182451f694e18337372c0ee3ee827988a446fceb8ae7c3ca0cd8e391826c3",
-    "packages/server/src/modules/usp/ingestion/ifc-processor.ts": "038600a6ac91e6dae25b2c915aaa64a8dc3c7bbc939e0354bdc68a20c3d8f732",
+    "packages/server/src/modules/usp/ingestion/ifc-processor.ts": "6a68d421848734ea9b34cfb21f115f013a6c4d10f467abc4fe2b117efcb61601",
     "packages/server/src/modules/usp/ingestion/ifc-worker.ts": "7dce9a53576ce3b51aceb104b9777232f02d072c3ed8930176c6d33a9f191ed1",
     "packages/server/src/modules/usp/ingestion/ifc.ts": "832f06140915518d3cb7e52841dbbed8db6f1e2d43861ca619d148551cb917ef",
     "packages/server/src/modules/usp/ingestion/intake-confirmations.ts": "c29d974c7a1a33bee823823b5b4505c1c9e6283bcb6a1fbc8fe4c3b07ae5bf60",
