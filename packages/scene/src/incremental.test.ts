@@ -164,6 +164,34 @@ describe('whole-list incremental building reconciliation', () => {
     expect(engine.applyCamera).toHaveBeenCalledOnce();
   });
 
+  it('queues all 1661 synthetic footprints and drains at most 4 ms of building work per call', () => {
+    const engine = engineFixture();
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    const original = engine.addBuilding.bind(engine);
+    vi.spyOn(engine, 'addBuilding').mockImplementation((...args: unknown[]) => {
+      const result = original(...args);
+      clock += 2;
+      return result;
+    });
+    // Synthetic test-only grid, not product geometry. Two fake milliseconds per atomic building.
+    const inputs = Array.from({ length: 1661 }, (_, index) =>
+      square(`synthetic:${index}`, (index % 50) * 20, Math.floor(index / 50) * 20));
+    engine.setBuildings(inputs);
+    expect(engine.buildingInputs.size).toBe(0);
+    let frames = 0;
+    let largestWorkMs = 0;
+    while (engine.buildingQueue.size) {
+      const started = clock;
+      draw(engine);
+      largestWorkMs = Math.max(largestWorkMs, clock - started);
+      frames++;
+    }
+    expect(largestWorkMs).toBe(4);
+    expect(frames).toBe(831);
+    expect(engine.drawnBuildings().count).toBe(1661);
+  });
+
   it('replaces queued truth and never builds an id removed before its frame', () => {
     const engine = engineFixture();
     engine.setBuildings([building('a')]);

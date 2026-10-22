@@ -1,5 +1,6 @@
 import type { SceneEngine } from '@ulpin/scene';
 import type { SceneLabel } from './labels';
+import { useViewFrame, type ViewFrames } from './viewFrames';
 import styles from './MapWorkspace.module.css';
 
 /** Place names show once their place is at least this wide on screen. */
@@ -13,8 +14,10 @@ const overlaps = (a: Rect, b: Rect) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1
  * Place names (kind `street`) yield: they hide while their place is too small to read, and never overlap
  * another label; larger places win.
  */
-export function SceneLabels({ engine, labels, tick }: { engine: SceneEngine | null; labels: SceneLabel[]; tick: number }) {
-  void tick;
+export function SceneLabels({ engine, labels, frames }: {
+  engine: SceneEngine | null; labels: SceneLabel[]; frames: ViewFrames;
+}) {
+  useViewFrame(frames);
   if (!engine) return null;
   const placed: Rect[] = [];
   const shown: { label: SceneLabel; x: number; y: number }[] = [];
