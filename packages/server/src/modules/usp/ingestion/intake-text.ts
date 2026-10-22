@@ -3,6 +3,19 @@ import { INTAKE_PROBE_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
 import { profileColumns } from './column-profile';
 import { decodeIntakeHead } from './intake-signatures';
 
+/** Explain a name/content disagreement without treating the suffix as evidence or claiming an unavailable reader. */
+export function intakeNameWords(card: IntakeCard | null, name: string): string | null {
+  const suffix = /\.[^.]+$/.exec(name)?.[0].toLowerCase();
+  if (!card || !suffix) return null;
+  if (card.format === 'unknown') {
+    const kind = suffix === '.pdf' ? 'a PDF' : 'a recognised kind';
+    return `Named ${suffix}, its bytes are not ${kind}: kept, not read.`;
+  }
+  if (!card.nameDisagrees && !(card.format === 'cityjson' && suffix === '.json')) return null;
+  const kinds: Record<string, string> = { cityjson: 'CityJSON', pdf: 'PDF', geojson: 'GeoJSON' };
+  return `Named ${suffix}, read as ${kinds[card.format] ?? card.format.toUpperCase()}.`;
+}
+
 export function intakeColumns(rows: Record<string, unknown>[], names: string[]): IntakeCard['columns'] {
   const bounded = names.slice(0, INTAKE_PROBE_LIMITS.columns);
   try {

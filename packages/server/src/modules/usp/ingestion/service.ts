@@ -8,19 +8,22 @@ import {
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
   STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, streamingReadMs, type TableProfileJob,
-  type TabularSelection,
+  type TabularSelection, INTAKE_PROBE_LIMITS,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { openObjectStream, putOriginal, readObject, sha256 } from '../../../infrastructure/storage';
+import { openObjectStream, putOriginal, readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { inspectGisBytes } from '../../cases/gis-inspection';
 import { originalAttempt } from '../../cases/original-attempt';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
-import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
+import { compileMapping, geojsonFeatureCount, GEOJSON_FEATURE_LIMIT, inspectedProfile } from './registry';
+import { detectIntakeKind } from './intake-signatures';
+import { probeOriginal } from './intake-probe';
+import type { IntakeSourceRow } from './intake-context';
 import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
   from './intake-destination';
 import { assertAreaRowLive } from '../../areas/area-retire';
@@ -30,6 +33,7 @@ import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPla
 import { readTableWindows } from './tabular-stream';
 import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
+import { isRetainedMapOriginal } from './retained-map-original';
 
 const uuid = z.string().uuid();
 /**
@@ -63,7 +67,8 @@ async function remember(client: PoolClient, caseId: string, key: string, digest:
 async function source(client: PoolClient, caseId: string, sourceId: string) {
   const row = (await client.query('SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR SHARE', [sourceId,caseId])).rows[0];
   if (!row) notFound('Retained source not found in this workspace.');
-  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile) && !isTableSource(row)
+  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile)
+    && !isRetainedMapOriginal(row) && !isTableSource(row)
     || !row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','Retain a supported original through the manual receipt operation.');
   if(row.inspection.actor!==localOperatorSubject()){
@@ -81,7 +86,8 @@ function profile(row: any, scope: {revision: number; fingerprint: string}): AnyS
 }
 /** Reuse the manual inventory contract after a caller has locked case then source. */
 export async function manualProfileForLockedSourceTx(client:PoolClient,caseId:string,caseRevision:number,row:any):Promise<SourceProfile>{
-  if(row.case_id!==caseId||row.profile!=='geojson-manual-v1'||!row.inspection?.manualProfile)
+  if (row.case_id !== caseId || (row.profile !== 'geojson-manual-v1' && !isRetainedMapOriginal(row))
+    || !row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','This source has no qualified manual GeoJSON inventory.');
   const sources=(await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id',[caseId])).rows;
   const scope={revision:caseRevision,fingerprint:fingerprint({caseId,revision:caseRevision,sources})};
@@ -113,7 +119,7 @@ async function validate(client: PoolClient,
     validateStreamedTabularRecipe(plan,current,await firstWindow(row,plan.tabular.selection));
     return {row,bytes:new Uint8Array(),mapping:undefined};
   }
-  const bytes = await readObject(row.object_key);
+  const bytes = row.profile === 'large-original-v1' ? await wholeOriginal(row) : await readObject(row.object_key);
   if (bytes.length !== Number(row.bytes) || sha256(bytes) !== row.sha256)
     throw new AppError(422,'SOURCE_INTEGRITY','The retained original failed its byte/hash check.');
   if(plan.version==='manual-tabular/1'){
@@ -389,6 +395,85 @@ inventory:TableInventory):Promise<AnySourceProfile>{
     status:'needs_input'},actor);
   return result;
 }
+type RetainOriginalContext = {
+  caseId: string; input: z.infer<typeof AnyRetainSourceSchema>; file: { name: string; bytes: Uint8Array };
+  profileName: string; hash: string; digest: string; actor: string; lineage?: ArchiveMemberLineage;
+};
+
+/** The source row commits before inspection, so a reader failure cannot orphan or remove an original. */
+async function keepManualOriginal(context: RetainOriginalContext) {
+  const { caseId, input, file, profileName, hash, digest, actor, lineage } = context;
+  const key = `manual-gis:${input.requestKey}:original`;
+  const sourceId = randomUUID(), objectKey = `sources/${sourceId}/${hash}`;
+  return originalAttempt('sources', sourceId, rememberOriginal => transaction(async client => {
+    const scope = await workspace(client, caseId), replay = await operation(client, caseId, key, digest);
+    if (replay) return replay as { id: string; revision: number };
+    const duplicate = (await client.query('SELECT id,revision FROM sources WHERE case_id=$1 AND sha256=$2 '
+      + 'AND profile=$3 ORDER BY revision DESC LIMIT 1', [caseId, hash, profileName])).rows[0];
+    if (duplicate) return duplicate as { id: string; revision: number };
+    if (scope.revision !== input.expectedWorkspaceRevision)
+      conflict('The source workspace changed; refresh before retaining another original.');
+    let familyId: string = sourceId, revision = 1;
+    if (input.familyId) {
+      const prior = (await client.query('SELECT * FROM sources WHERE case_id=$1 AND family_id=$2 '
+        + 'ORDER BY revision DESC LIMIT 1 FOR SHARE', [caseId, input.familyId])).rows[0];
+      if (!prior || prior.profile !== profileName || prior.revision !== input.expectedSourceRevision)
+        conflict('The source family changed; refresh before retaining a revision.');
+      familyId = input.familyId;
+      revision = prior.revision + 1;
+    }
+    rememberOriginal(objectKey);
+    await putOriginal(objectKey, file.bytes, 'application/octet-stream');
+    await client.query('INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,'
+      + "object_key,status,inspection) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'needs_input',$11)",
+    [sourceId, caseId, familyId, revision, file.name, profileName, 'application/octet-stream', file.bytes.length,
+      hash, objectKey, { profile: profileName, status: 'needs_input', issues: [], actor,
+        summary: 'Original retained; its reader is not yet established.',
+        ...(lineage ? { archiveMember: lineage } : {}) }]);
+    await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1', [caseId]);
+    const result = { id: sourceId, revision };
+    await remember(client, caseId, key, digest, result);
+    return result;
+  }));
+}
+
+/** A selection asks for a reader; it cannot establish that the original contains that kind of table. */
+export async function assertTableByteKind(bytes: Uint8Array, selection: TabularSelection) {
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, '');
+  assertSelectedTableKind(card.format, selection);
+}
+
+function assertSelectedTableKind(format: string, selection: TabularSelection) {
+  if (format !== selection.format) throw new AppError(422, 'TABLE_BYTE_KIND',
+    `The selected ${selection.format.toUpperCase()} reader does not match these bytes (${format}). `
+      + 'The original is kept, not read as the selected table kind.');
+}
+
+async function assertOriginalTableByteKind(row: any, selection: TabularSelection) {
+  const size = Number(row.bytes), deadline = Date.now() + INTAKE_PROBE_LIMITS.budgetMs;
+  const signal = AbortSignal.timeout(INTAKE_PROBE_LIMITS.budgetMs);
+  const card = await probeOriginal((start, end) =>
+    readObjectRange(row.object_key, start, end, size, deadline, signal), size, '');
+  assertSelectedTableKind(card.format, selection);
+}
+
+/** Attach the existing bounded adapter to the same durable upload, never changing its byte or source pins. */
+export async function prepareRetainedGeojsonTx(client: PoolClient, source: IntakeSourceRow): Promise<boolean> {
+  if (source.profile !== 'large-original-v1' || Number(source.bytes) > 16 * 1024 * 1024) return false;
+  if (source.inspection?.manualProfile?.version === 'manual-geojson/1') return true;
+  const bytes = await wholeOriginal(source);
+  if (detectIntakeKind(bytes).format !== 'geojson')
+    throw new AppError(422, 'SOURCE_PROFILE', 'The retained bytes are not a GeoJSON collection.');
+  if (geojsonFeatureCount(bytes) > GEOJSON_FEATURE_LIMIT) return false;
+  const gis = await inspectGisBytes({ name: source.name, bytes }, null,
+    value => areaGeo<Omit<GisInspection, 'suggestedTitle' | 'suggestedNamespace'>>('inspect-gis', value));
+  const inspection = { manualProfile: inspectedProfile(bytes, gis), gis, actor: localOperatorSubject() };
+  await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',
+    [source.id, JSON.stringify(inspection)]);
+  source.inspection = { ...source.inspection, ...inspection };
+  return true;
+}
+
 export class ManualIngestionService {
   /** `lineage` is set only by the ZIP layer fan-out: the member's archive pins, kept beside the receipt. */
   async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array},
@@ -398,36 +483,45 @@ export class ManualIngestionService {
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
       throw new AppError(413,'FILE_SIZE',
         'Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
-    const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection,input);
-    if(input.format==='geojson')geojsonInventory(file.bytes);
+    // A duplicate's bytes are already durable; a new original is committed before any reader runs.
+    let tabular: ReturnType<typeof inspectTabularSource> | null = null;
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor,...(lineage?{lineage}:{})}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
       if(replay){
-        if(tabular)assertTabularPin(tabular.tabular,await source(client,caseId,replay.source.sourceId));
+        if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input).tabular,
+          await source(client,caseId,replay.source.sourceId));
         return replay;
       }
       const duplicateSql='SELECT id FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
-        'ORDER BY revision DESC LIMIT 1';
+        "AND inspection ? 'manualProfile' ORDER BY revision DESC LIMIT 1";
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(!duplicate)return undefined;
       await refuseRetiredFileAreaTx(client,caseId,hash);
       const retained=await source(client,caseId,duplicate.id);
-      if(tabular)assertTabularPin(tabular.tabular,retained);
+      if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input).tabular,
+        retained);
       const result=profile(retained,scope);
       await remember(client,caseId,key,digest,result);return result;
     });
     if(previous)return previous;
-    // Inspection is the existing bounded GIS reader; no model or new parser authority.
+    const retained = await keepManualOriginal({ caseId, input, file, profileName, hash, digest, actor, lineage });
+    if (input.format !== 'geojson') {
+      await assertTableByteKind(file.bytes, input.selection);
+      tabular = inspectTabularSource(file.bytes, input.selection, input);
+    } else {
+      geojsonFeatureCount(file.bytes);
+    }
+    // Inspection is the existing bounded GIS reader, now behind a durable receipt.
     const inspection=input.format==='geojson'
       ?await inspectGisBytes(file,null,
         value=>areaGeo<Omit<GisInspection,'suggestedTitle'|'suggestedNamespace'>>('inspect-gis',value)):null;
     const inventory=tabular?{version:'manual-tabular/1',...tabular}:inspectedProfile(file.bytes,inspection!);
-    const sourceId=randomUUID(), objectKey=`sources/${sourceId}/${hash}`;
+    const sourceId=retained.id;
     const mime=input.format==='geojson'?'application/geo+json':input.format==='csv'?'text/csv'
       :'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    return originalAttempt('sources',sourceId,async rememberOriginal=>transaction(async client=>{
+    return transaction(async client=>{
       const scope=await workspace(client,caseId);
       const replay=await operation(client,caseId,key,digest);
       if(replay){
@@ -435,7 +529,7 @@ export class ManualIngestionService {
         return replay;
       }
       const duplicateSql='SELECT * FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
-        'ORDER BY revision DESC LIMIT 1';
+        "AND inspection ? 'manualProfile' ORDER BY revision DESC LIMIT 1";
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(duplicate) {
         await refuseRetiredFileAreaTx(client,caseId,hash);
@@ -443,31 +537,16 @@ export class ManualIngestionService {
         const result=profile(await source(client,caseId,duplicate.id),scope);
         await remember(client,caseId,key,digest,result);return result;
       }
-      if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh before retaining another original.');
-      let familyId:string=sourceId,revision=1;
-      if(input.familyId){
-        const prior=(await client.query('SELECT * FROM sources WHERE case_id=$1 AND family_id=$2 ORDER BY revision DESC LIMIT 1 FOR SHARE',[caseId,input.familyId])).rows[0];
-        if(!prior || prior.profile!==profileName || prior.revision!==input.expectedSourceRevision){
-          conflict('The source family changed; refresh before retaining a revision.');
-        }
-        familyId=input.familyId;revision=prior.revision+1;
-      }
-      rememberOriginal(objectKey);await putOriginal(objectKey,file.bytes,mime);
-      const insertSql='INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,'+
-        "object_key,status,inspection) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'needs_input',$11)";
-      await client.query(insertSql,
-        [sourceId,caseId,familyId,revision,file.name,profileName,mime,file.bytes.length,hash,objectKey,
-          {profile:profileName,status:'needs_input',issues:[],
-            summary:'Original retained; a pinned recipe requires review.',
-            manualProfile:inventory,...(inspection?{gis:inspection}:{}),
-            ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),
-            ...(lineage?{archiveMember:lineage}:{}),actor}]);
-      await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
+      await client.query('UPDATE sources SET mime_type=$2,inspection=inspection||$3::jsonb WHERE id=$1',
+        [sourceId,mime,JSON.stringify({manualProfile:inventory,...(inspection?{gis:inspection}:{}),
+          summary:'Original retained; a pinned recipe requires review.',
+          ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),actor})]);
       const fresh=await workspace(client,caseId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
       await remember(client,caseId,key,digest,result);
-      await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:revision,status:'needs_input'},actor);
+      await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,
+        sourceRevision:retained.revision,status:'needs_input'},actor);
       return result;
-    }));
+    });
   }
   /** G13: an original retained through the large upload becomes a table source. Its row keeps its bytes, object and
    * identity; the table receipt is added beside the upload receipt. TP1: up to 16 MiB, a CSV or workbook is read
@@ -485,13 +564,16 @@ export class ManualIngestionService {
       if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
       const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
       if(Number(row.bytes)<=TABULAR_LIMITS.bytes)return {row};
+      await assertOriginalTableByteKind(row,input.selection);
       const jobId=await queueTableProfileTx(client,row,scope.revision,input,actor);
       await remember(client,caseId,key,digest,{jobId});
       return {job:await tableProfileJobTx(client,jobId)};
     });
     if('job' in admitted)return admitted.job;
     if('profile' in admitted)return admitted.profile;
-    const read=admitted.row,inventory=inspectTabularSource(await wholeOriginal(read),input.selection,input);
+    const read=admitted.row,bytes=await wholeOriginal(read);
+    await assertTableByteKind(bytes,input.selection);
+    const inventory=inspectTabularSource(bytes,input.selection,input);
     return transaction(async client=>{
       await workspace(client,caseId,sourceId);
       const replay=await operation(client,caseId,key,digest);

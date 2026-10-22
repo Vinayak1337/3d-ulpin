@@ -1,17 +1,21 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { DOCUMENT_LIMITS, STREAMING_VECTOR_LIMITS, type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
-import { conflict, notFound } from '../../../infrastructure/errors';
+import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { writeIntakeDraftTx, writeIntakeLargeTx, type IntakeDraftState } from './intake-ledger';
+import { citeIntakeReceipt, saveIntakeCardTx, writeIntakeDraftTx, writeIntakeLargeTx,
+  type IntakeDraftState } from './intake-ledger';
 import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
 import { queuePageImageTx } from './intake-page-image';
 import { batchIfc, queueIntakeIfcTx } from './intake-ifc';
 import { stableUuid } from './intake-run';
 import { pageImageFormat } from './page-image-read';
 import { queueBatchDocumentTx } from './documents';
+import { GEOJSON_FEATURE_LIMIT } from './registry';
+import { prepareRetainedGeojsonTx } from './service';
+import { isRetainedMapOriginal } from './retained-map-original';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -130,7 +134,8 @@ export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): stri
   }
   if (Number.isSafeInteger(count) && count > 2000)
     return `Drafting accepts at most 2000 features; this receipt has ${count} features.`;
-  if (source.profile !== 'geojson-manual-v1' || source.inspection?.manualProfile?.version !== 'manual-geojson/1'
+  if (source.profile !== 'geojson-manual-v1' && !isRetainedMapOriginal(source)
+    || source.inspection?.manualProfile?.version !== 'manual-geojson/1'
     || source.inspection?.manualProfile?.format !== 'geojson')
     return 'Drafting accepts only a retained GeoJSON recipe original.';
   if (!Number.isSafeInteger(count) || count < 1)
@@ -158,6 +163,36 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
   return active?.id ?? null;
 }
 
+/** Byte-probed kinds select readers; a small byte count alone never selects the bounded feature adapter. */
+export function intakeReaderRoute(card: IntakeCard, source: Pick<IntakeSourceRow, 'bytes' | 'inspection'>): string {
+  if (card.format !== 'geojson') return card.format;
+  if (source.inspection?.nativeDerivative || Number(source.bytes) > 16 * 1024 * 1024) return 'streamed_geojson';
+  const count = source.inspection?.manualProfile?.featureCount ?? card.counts.features;
+  if (count === null || count === undefined) return 'inspect_geojson';
+  return count <= GEOJSON_FEATURE_LIMIT ? 'bounded_geojson' : 'streamed_geojson';
+}
+
+/** Inspect only an already-kept bounded original; invalid content rests with a reason, never loses its receipt. */
+async function retainedGeojsonAdapterTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow) {
+  if (intakeReaderRoute(item.card!, source) === 'streamed_geojson') return 'streamed';
+  try {
+    const prepared = Boolean(source.inspection?.manualProfile);
+    if (!await prepareRetainedGeojsonTx(client, source)) return 'streamed';
+    if (!prepared) {
+      item.card = citeIntakeReceipt(structuredClone(item.card!), source);
+      await saveIntakeCardTx(client, item.item_id, item.card);
+    }
+    return 'bounded';
+  } catch (error) {
+    if (!(error instanceof AppError) || ![413, 422].includes(error.status)) throw error;
+    await writeIntakeDraftTx(client, item.case_id, item.item_id, {
+      state: 'probed', placement: 'not_understood', planRef: null, recordsSeen: 0,
+      limitReason: `The original is kept, not read: ${error.message}`.slice(0, 2000),
+    });
+    return 'kept';
+  }
+}
+
 /** Caller holds the case; enrollment and probe/approval publication share its transaction. */
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
@@ -177,7 +212,10 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (!item || item.parent_item_id || item.family !== 'vector'
     || !['probed', 'planned', 'reading'].includes(item.state)) return null;
   if (publishedCard && item.plan_ref) return null;
-  if (source.profile === 'large-original-v1' && item.card?.format === 'geojson') {
+  const retainedGeojson = source.profile === 'large-original-v1' && item.card?.format === 'geojson';
+  const adapter = retainedGeojson ? await retainedGeojsonAdapterTx(client, item, source) : null;
+  if (adapter === 'kept') return null;
+  if (adapter === 'streamed') {
     // A large GeoJSON is read in parts by its own chain of step jobs; above the reader's ceiling it rests.
     if (Number(source.bytes) <= STREAMING_VECTOR_LIMITS.sourceBytes) return queueIntakeLargeTx(client, source.id);
     await writeIntakeLargeTx(client, item.case_id, item.item_id, {

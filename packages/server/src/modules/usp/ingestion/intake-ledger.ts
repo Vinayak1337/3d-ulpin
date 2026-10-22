@@ -8,6 +8,7 @@ import type { IntakeSourceRow } from './intake-context';
 import { conflict, notFound } from '../../../infrastructure/errors';
 import type { ImportPackage } from '@ulpin/contracts';
 import { appendIntakeItemTx } from './events';
+import { intakeNameWords } from './intake-text';
 
 /** Metadata registration only. It adds/changes no source and deliberately does not advance case revision. */
 export async function registerIntakeItemTx(client: PoolClient, source: IntakeSourceRow) {
@@ -61,6 +62,8 @@ function layerCrs(value: unknown) {
 }
 
 export function intakeItem(row: any) {
+  const named = intakeNameWords(row.card, row.name ?? row.member_path ?? '');
+  const reason = [named, row.limit_reason].filter(Boolean).join(' ').slice(0, 2000) || null;
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
     memberPath: row.member_path, name: row.name ?? row.member_path, family: row.family, format: row.format,
@@ -69,7 +72,7 @@ export function intakeItem(row: any) {
     placement: row.placement, card: row.card, cardSha256: row.card_sha256, probeVersion: row.probe_version,
     plan: intakePlan(row.plan_ref), streamedProfileJobId: row.streamed_profile_job_id ?? null,
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
-    limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
+    limitReason: reason, pinnedByOfficer: row.pinned_by_officer,
     ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}), ...pageImage(row.plan_ref),
     ...layerCrs(row.plan_ref),
     ...(IntakeItemSchema.shape.ifcJobId.unwrap().safeParse(row.plan_ref?.ifcJobId).success
