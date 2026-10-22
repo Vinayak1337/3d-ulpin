@@ -24,17 +24,31 @@ export const limitations = [
 const escape = (key: string) => key.replaceAll('~', '~0').replaceAll('/', '~1');
 const unescape = (key: string) => key.replaceAll('~1', '/').replaceAll('~0', '~');
 type Feature = {id?: unknown; properties?: Record<string, unknown> | null; geometry?: unknown};
-export function geojsonInventory(bytes: Uint8Array): Feature[] {
+export const GEOJSON_FEATURE_LIMIT = 2000;
+
+function geojsonFeatures(bytes: Uint8Array): Feature[] {
   let source;
   try { source = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)); }
   catch { throw new AppError(422, 'INVALID_JSON', 'Choose valid GeoJSON source bytes.'); }
   if (source?.type !== 'FeatureCollection' || !Array.isArray(source.features))
     throw new AppError(422, 'UNSUPPORTED_PROFILE', 'Manual mapping currently supports GeoJSON FeatureCollection originals only.');
-  if (source.features.length > 2000)
-    throw new AppError(413, 'RECORD_LIMIT', 'Split this source into complete feature collections of at most 2000 records with source metadata and original lineage retained. No records were truncated.');
   if (!source.features.length) throw new AppError(422, 'EMPTY_SOURCE', 'Choose a nonempty complete feature collection.');
   return source.features;
 }
+
+/** Count retained, bounded bytes before deciding between the small adapter and the streaming reader. */
+export function geojsonFeatureCount(bytes: Uint8Array): number {
+  return geojsonFeatures(bytes).length;
+}
+
+export function geojsonInventory(bytes: Uint8Array): Feature[] {
+  const features = geojsonFeatures(bytes);
+  if (features.length > GEOJSON_FEATURE_LIMIT)
+    throw new AppError(413, 'RECORD_LIMIT', 'Split this source into complete feature collections of at most 2000 '
+      + 'records with source metadata and original lineage retained. No records were truncated.');
+  return features;
+}
+
 export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
   const rows = geojsonInventory(bytes);
   if (inspection.format !== 'geojson' || inspection.sourceSha256 !== sha256(bytes) || inspection.featureCount !== rows.length

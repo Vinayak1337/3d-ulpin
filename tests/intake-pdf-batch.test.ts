@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { randomUUID } from 'node:crypto';
+import { Readable } from 'node:stream';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import type { Pool } from 'pg';

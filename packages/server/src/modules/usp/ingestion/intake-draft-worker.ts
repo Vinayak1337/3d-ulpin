@@ -71,7 +71,9 @@ export async function lookupIntakeMemory(profile: SourceProfile, subject: string
   const parsedExact = MappingReceiptSchema.safeParse(exact?.body);
   if (parsedExact.success && memoryPlan(profile, parsedExact.data)) return parsedExact.data;
   const recent = await lookup(`SELECT r.body,s.inspection->'manualProfile' AS manual_profile
-    FROM usp_mapping_recipes r LEFT JOIN sources s ON s.id=r.source_id AND s.profile='geojson-manual-v1'
+    FROM usp_mapping_recipes r LEFT JOIN sources s ON s.id=r.source_id
+    AND s.profile IN ('geojson-manual-v1','large-original-v1')
+    AND s.inspection->'manualProfile'->>'version'='manual-geojson/1'
     WHERE r.state IN ('approved','executed') AND r.body->'approval'->>'subject'=$1
     AND r.body->'plan'->>'version'='manual-geojson/1'
     ORDER BY r.body->'approval'->>'at' DESC,r.id DESC LIMIT 50`, [subject]);

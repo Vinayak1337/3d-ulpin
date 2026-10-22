@@ -222,6 +222,12 @@ class Store {
       mock.getter(settings, name, () => value);
     mock.method(S3Client.prototype, 'send', async (command: { constructor: { name: string }; input: any }) => {
       assert.equal(command.constructor.name, 'GetObjectCommand');
+      if (command.input.Range) {
+        const [, start, end] = /^bytes=(\d+)-(\d+)$/.exec(command.input.Range)!;
+        const bytes = this.bytes.subarray(Number(start), Number(end) + 1);
+        return { Body: Readable.from([bytes]), ContentLength: bytes.length,
+          ContentRange: `bytes ${start}-${end}/${this.bytes.length}`, $metadata: { httpStatusCode: 206 } };
+      }
       assert.equal(command.input.IfMatch, '"g13-control"');
       this.whileReading();
       return { Body: this.stream(), ContentLength: this.bytes.length, ETag: '"g13-control"' };
