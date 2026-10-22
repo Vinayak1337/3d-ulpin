@@ -273,7 +273,8 @@ test('loose Tweed parts dropped .dbf, .shp, .shx: one job, read as one shapefile
       ['shapefile_set', 'Council_Buildings', 'EPSG:28356', 'stated', idOf('source', shp)]);
     assert.deepEqual(lineage.members, job.payload.members);
     assert.deepEqual(words(ledger)[shp], ['read', 'undecided', '1 layer of this shapefile is converted to '
-      + 'GeoJSON and taken in as its own file: Council_Buildings. Read as one shapefile from its parts: '
+      + 'GeoJSON and taken in as its own file: Council_Buildings. Features per converted layer: Council_Buildings '
+      + '(88 written, 0 not written). Read as one shapefile from its parts: '
       + 'Council_Buildings.shp, Council_Buildings.shx, Council_Buildings.dbf, Council_Buildings.prj, '
       + 'Council_Buildings.cpg.']);
   });
