@@ -77,6 +77,7 @@ export const NativeDerivativeLineageSchema = z.strictObject({
   members: SetMembersSchema.optional(),
 }).refine(lineage => (lineage.format === 'shapefile_set') === Boolean(lineage.members),
   'Only a shapefile set names its members, and it names every one.');
+export type NativeDerivativeLineage = z.infer<typeof NativeDerivativeLineageSchema>;
 
 /** The existing GIS conversions and each 3D format's own building ground outlines. */
 function derivativeFormat(card: IntakeCard | null, name: string):
@@ -242,8 +243,8 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
   const jobs = (await client.query(`SELECT id,status,payload FROM jobs WHERE source_id=$1
     AND operation='intake-native-derivative' ORDER BY created_at`, [source.id])).rows
     .filter(job => fingerprint(job.payload?.members ?? null) === fingerprint(members ?? null));
-  const open = jobs.find(job => ['queued', 'running', ...(answered ? [] : ['completed'])].includes(job.status));
-  if (open) return open.status === 'completed' ? null : open.id;
+  const open = jobs.find(job => ['queued', 'running', ...(answered ? [] : ['succeeded'])].includes(job.status));
+  if (open) return open.status === 'succeeded' ? null : open.id;
   const scope = await intakeCaseTx(client, source.case_id);
   const key = members ? `shapefile_set:${item.item_id}:${members.map(member => member.sha256).sort().join(',')}`
     : `${item.item_id}:${source.revision}`;
@@ -322,8 +323,11 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
   const named = (layer: string) =>
     officer.has(layer) ? `${layer} (${officer.get(layer)}, stated by the officer)` : layer;
   const taken = outcomes.filter(outcome => outcome.sourceId && !outcome.code).map(outcome => named(outcome.layer));
-  const failed = outcomes.filter(outcome => outcome.code)
-    .map(outcome => `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
+  const failed = outcomes.filter(outcome => outcome.code).map(outcome =>
+    outcome.code === 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED'
+      ? `${outcome.layer} (an earlier retained original is left unchanged; its bytes and receipt lineage `
+        + 'could not be matched uniquely and exactly)'
+      : `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
   const stopped = (state: StoppedLayer['state']) => conversion.layers
     .filter((layer): layer is StoppedLayer => layer.state === state).map(layer => `${layer.layer} (${layer.reason})`);
   const refused = stopped('not_converted');
@@ -461,15 +465,65 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
 
 /** A replay finds the child an earlier attempt kept by its lineage and hash, so nothing is retained twice. */
 async function keptChildTx(client: PoolClient, caseId: string, layer: ConvertedLayer,
-  lineage: z.infer<typeof NativeDerivativeLineageSchema>): Promise<string | null> {
-  return (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND profile='large-original-v1' AND sha256=$2
-    AND inspection->'nativeDerivative'->>'originalSha256'=$3 AND inspection->'nativeDerivative'->>'layer'=$4
-    ORDER BY revision DESC LIMIT 1`, [caseId, layer.geojson.sha256, lineage.originalSha256, layer.layer]))
-    .rows[0]?.id ?? null;
+  lineage: NativeDerivativeLineage): Promise<string | null> {
+  const kept = (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND profile='large-original-v1'
+    AND sha256=$2 AND inspection->'nativeDerivative'=$3::jsonb AND bytes=$4
+    ORDER BY created_at,id LIMIT 1`, [caseId, layer.geojson.sha256, lineage, layer.geojson.bytes])).rows[0];
+  if (kept) {
+    await intakeSourceTx(client, caseId, kept.id);
+    return kept.id;
+  }
+  return recoverOrphanTx(client, caseId, layer, lineage);
+}
+
+/** Old receipts pin the parent and layer name. Recomputed bytes must agree with every retained receipt fact. */
+async function recoverOrphanTx(client: PoolClient, caseId: string, layer: ConvertedLayer,
+  lineage: NativeDerivativeLineage): Promise<string | null> {
+  const candidates = (await client.query(`SELECT s.id,u.body,u.operator_subject FROM sources s
+    JOIN usp_source_uploads u ON u.source_id=s.id AND u.case_id=s.case_id
+      AND u.id::text=s.inspection->'largeOriginal'->>'uploadId'
+    WHERE s.case_id=$1 AND s.profile='large-original-v1' AND u.state='retained'
+      AND u.body->>'batchSourceId'=$2 AND (s.name=$3 OR s.sha256=$4)
+      AND NOT (s.inspection ? 'nativeDerivative') ORDER BY s.created_at,s.id LIMIT 2 FOR UPDATE OF s,u`,
+  [caseId, lineage.originalSourceId, `${layer.layer}.geojson`, layer.geojson.sha256])).rows;
+  if (!candidates.length) return null;
+  if (candidates.length !== 1) orphanUnlinked();
+  const candidate = candidates[0];
+  const { source, binding } = await orphanSourceTx(client, caseId, candidate.id);
+  const parent = (await intakeSourceTx(client, caseId, lineage.originalSourceId)).source;
+  const item = (await client.query(`SELECT * FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
+    AND source_id=$3 AND parent_item_id IS NULL`, [caseId, lineage.originalItemId, parent.id])).rows[0];
+  const { input, verified } = candidate.body;
+  if (!item || parent.revision !== lineage.originalSourceRevision || parent.sha256 !== lineage.originalSha256
+    || candidate.operator_subject !== binding.subject || source.name !== `${layer.layer}.geojson`
+    || input?.filename !== source.name || input?.sha256 !== layer.geojson.sha256
+    || Number(input?.bytes) !== layer.geojson.bytes || verified?.sha256 !== layer.geojson.sha256
+    || Number(verified?.bytes) !== layer.geojson.bytes || source.sha256 !== layer.geojson.sha256
+    || Number(source.bytes) !== layer.geojson.bytes
+    || source.object_key !== `large-originals/${source.id}/${source.sha256}`
+    || ['archiveMember', 'tableDerivative', 'cellDerivative'].some(key => source.inspection?.[key])) orphanUnlinked();
+  await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('nativeDerivative',$2::jsonb)
+    WHERE id=$1 AND profile='large-original-v1'`, [source.id, lineage]);
+  return source.id;
+}
+
+async function orphanSourceTx(client: PoolClient, caseId: string, sourceId: string) {
+  try { return await intakeSourceTx(client, caseId, sourceId); }
+  catch (error) {
+    if (error instanceof AppError && ['INTAKE_SOURCE_DENIED', 'INTAKE_SOURCE_INTEGRITY'].includes(error.code)) {
+      orphanUnlinked();
+    }
+    throw error;
+  }
+}
+
+function orphanUnlinked(): never {
+  throw new AppError(409, 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED',
+    'An earlier retained original is left unchanged because its bytes and receipt lineage do not match exactly.');
 }
 
 async function keepDerivative(caseId: string, layer: ConvertedLayer,
-  lineage: z.infer<typeof NativeDerivativeLineageSchema>, dependencies: NativeDerivativeDependencies) {
+  lineage: NativeDerivativeLineage, dependencies: NativeDerivativeDependencies) {
   const prior = await dependencies.transaction(client => keptChildTx(client, caseId, layer, lineage));
   if (prior) return prior;
   // The copy's deadline grows with the layer's size, as the large reader's does.
@@ -484,11 +538,7 @@ async function keepDerivative(caseId: string, layer: ConvertedLayer,
   }
   const file = { name: `${layer.layer}.geojson`, bytes, sha256 };
   // The receipt hashes the parts again and refuses bytes that differ from the conversion's own hash.
-  const sourceId = await fenced(caseId, dependencies, revision =>
+  return fenced(caseId, dependencies, revision =>
     receiveLargeLayer(caseId, { revision, batchSourceId: lineage.originalSourceId }, file, byteParts(ranges()),
-      dependencies));
-  await dependencies.transaction(client => client.query(`UPDATE sources
-    SET inspection=inspection||jsonb_build_object('nativeDerivative',$2::jsonb)
-    WHERE id=$1 AND profile='large-original-v1'`, [sourceId, lineage]));
-  return sourceId;
+      dependencies, lineage));
 }

@@ -19,6 +19,7 @@ import { detectIntakeKind } from './intake-signatures';
 import { locateZipMember, readZipMember, streamZipMember } from './intake-zip';
 import { LargeLayerLineageSchema, type LargeOriginalService } from './large-original';
 import { lockUnassignedSourceCase } from './service';
+import type { NativeDerivativeLineage } from './intake-native-derivative';
 
 export const ZIP_ARCHIVE_PROFILE = 'zip-manual-v1';
 const uuid = z.string().uuid();
@@ -470,14 +471,14 @@ export async function retainZipMemberOriginal(caseId: string, revision: number,
 export type DerivedReceiptFence = { revision: number; batchSourceId?: string };
 
 /**
- * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A ZIP member or a table
- * placement (TC1) passes its lineage, which finalize writes with the source. A failed receipt is aborted. The
+ * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. Archive, table, cell and native
+ * derivatives pass their lineage, which finalize writes with the source. A failed receipt is aborted. The
  * receipt names its batch item, so packages the batch's own drafts made in the case do not refuse it (TC2).
  */
 export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFence,
   file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
   dependencies: Pick<ZipLayerDependencies, 'large'>,
-  lineage?: ArchiveMemberLineage | TableDerivativeLineage | CellDerivativeLineage)
+  lineage?: ArchiveMemberLineage | TableDerivativeLineage | CellDerivativeLineage | NativeDerivativeLineage)
   : Promise<string> {
   let status = await dependencies.large.create(caseId, { requestKey: randomUUID(),
     expectedCaseRevision: fence.revision, filename: file.name, mediaType: 'application/octet-stream',
