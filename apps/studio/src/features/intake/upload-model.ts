@@ -1,7 +1,7 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
-import { CITYGML_LIMITS, CITYJSON_LIMITS, DOCUMENT_LIMITS, DXF_LIMITS, IFC_LIMITS, INTAKE_PAGE_IMAGE_LIMITS,
-  INTAKE_TABLE_READER_FORMATS, NATIVE_GIS_LIMITS, POINT_BATCH_LIMITS, RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS,
-  TABULAR_STREAM_LIMITS } from '@ulpin/contracts/upload-reader-limits';
+import { CITYGML_LIMITS, CITYJSON_LIMITS, DOCUMENT_LIMITS, DXF_LIMITS, GLTF_LIMITS, IFC_LIMITS,
+  INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
+  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_STREAM_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
 export type UploadLimits = GetResponse<'/api/v1/ingestion/upload-limits'>;
 export type UploadReceipt = Schemas['POST_ingestion_cases_caseId_uploads_Response_201_application_json'];
@@ -69,6 +69,7 @@ const evidenceOnly = 'Its reading is kept as evidence, not placed on the map.';
 const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes,
   read: 'Points are read when the file is compressed LAZ of LAS 1.4 point format 6 with at most '
     + `${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points`, note: 'Other point files are kept, not read.' };
+const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes, note: evidenceOnly };
 const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes,
   note: 'Choose Read as a table after upload.' };
 
@@ -78,6 +79,9 @@ const readers: Record<string, ReaderForecast> = {
     read: 'Read as GeoJSON or CityJSON once its bytes are checked',
     note: `A CityJSON is read up to ${sizeWords(CITYJSON_LIMITS.originalBytes)}; other JSON is kept, not read.` },
   dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes, note: evidenceOnly },
+  glb: gltfReader,
+  gltf: gltfReader,
+  obj: { name: 'OBJ', bytes: OBJ_LIMITS.originalBytes, note: evidenceOnly },
   gml: { name: 'CityGML', bytes: CITYGML_LIMITS.originalBytes,
     read: 'Read by the CityGML reader when its bytes show a CityGML city model',
     note: 'Other GML is kept, not read. A CityGML reading is kept as evidence, not placed on the map.' },

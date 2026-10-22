@@ -416,9 +416,10 @@ test('a GLB reading states its node and primitive counts and stays unplaced: a g
   assert.ok(item.limit_reason.startsWith('The glTF reading is complete. It states 2 nodes and 1 mesh primitive; '
     + 'they are candidates. Positions read: 24;'));
   assert.equal(item.records_seen, 2);
-  assert.match(item.limit_reason, /Global placement: unknown\. A glTF states no coordinate reference system, /);
+  assert.match(item.limit_reason,
+    /Placement on the earth: not stated\. A glTF states no coordinate reference system, /);
   assert.match(item.limit_reason, /so the model stays unplaced/);
-  assert.doesNotMatch(item.limit_reason, /EPSG|metres|buildings?\b/);
+  assert.doesNotMatch(item.limit_reason, /EPSG|metres|buildings?\b|unknown/);
 });
 
 test('the difficult external-buffer glTF and an OBJ missing its material settle as partial readings', {
@@ -435,5 +436,7 @@ test('the difficult external-buffer glTF and an OBJ missing its material settle 
   const words = intakeNativeReadWords(summary);
   assert.match(words, /^The OBJ reading is partial\./);
   assert.ok(words.includes(`companion declarations not supplied: ${summary.missingCompanionDeclarationCount}.`));
-  assert.match(words, /Axes: unknown; units: unknown; coordinate reference system: unknown, so the model stays/);
+  assert.ok(words.includes('Axes: not stated; units: not stated; coordinate reference system: not stated, '
+    + 'so the model stays unplaced.'));
+  assert.doesNotMatch(words, /unknown/);
 });

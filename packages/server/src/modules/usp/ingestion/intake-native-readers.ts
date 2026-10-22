@@ -164,23 +164,32 @@ const meshStatus = (status: 'inspected_local' | 'inspected_partial') =>
   status === 'inspected_local' ? 'complete' : 'partial';
 const counted = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`;
 
+type GltfSummary = GltfResult['summary'];
+type ObjSummary = ObjResult['summary'];
+// Keyed by the contract's own value types, so a value added there fails here until it has words. The readers
+// state none of these today: each contract value is 'unknown', and its words say only that the file does not state it.
+const gltfPlacementWords: Record<GltfSummary['globalPlacement'], string> = { unknown: 'not stated' };
+const objAxesWords: Record<ObjSummary['axes'], string> = { unknown: 'not stated' };
+const objUnitsWords: Record<ObjSummary['units'], string> = { unknown: 'not stated' };
+const objCrsWords: Record<ObjSummary['crs'], string> = { unknown: 'not stated, so the model stays unplaced' };
+
 /** A glTF has no coordinate reference system field: its positions are local to the model. */
-function gltfWords(summary: GltfResult['summary']): string {
+function gltfWords(summary: GltfSummary): string {
   return `The glTF reading is ${meshStatus(summary.status)}. It states ${counted(summary.nodeCount, 'node')} and `
     + `${counted(summary.primitiveCount, 'mesh primitive')}; they are candidates. `
     + `Positions read: ${summary.projectedPositions}; companion files named but not supplied: `
     + `${summary.missingCompanionCount}; unsupported primitives: ${summary.unsupportedPrimitiveCount}. `
-    + `Global placement: ${summary.globalPlacement}. `
+    + `Placement on the earth: ${gltfPlacementWords[summary.globalPlacement]}. `
     + 'A glTF states no coordinate reference system, so the model stays unplaced.';
 }
 
-function objWords(summary: ObjResult['summary']): string {
+function objWords(summary: ObjSummary): string {
   return `The OBJ reading is ${meshStatus(summary.status)}. It states ${summary.vertexCount} vertices and `
     + `${counted(summary.polygonCount, 'polygon')}; they are candidates. Unsupported statements: `
     + `${summary.unsupportedStatementCount}; companion declarations not supplied: `
     + `${summary.missingCompanionDeclarationCount}. `
-    + `Axes: ${summary.axes}; units: ${summary.units}; coordinate reference system: ${summary.crs}, `
-    + 'so the model stays unplaced.';
+    + `Axes: ${objAxesWords[summary.axes]}; units: ${objUnitsWords[summary.units]}; `
+    + `coordinate reference system: ${objCrsWords[summary.crs]}.`;
 }
 
 function summaryWords(summary: NativeSummary): string {
