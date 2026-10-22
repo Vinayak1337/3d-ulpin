@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { authorizeLedgerSources, boundedLedgerRows, currentParcelSql, currentSourceProposal, documentCitationLocators,
-  ledgerSourceLocators, parcelUlpinCoverage } from './building-ledger';
+import { AppError } from '../../infrastructure/errors';
+import { authorizeCitedSources, authorizeLedgerSources, boundedLedgerRows, citedOnlyLocators, citedSourceNotes,
+  currentParcelSql, currentSourceProposal, documentCitationLocators, ledgerSourceLocators,
+  parcelUlpinCoverage } from './building-ledger';
 import { relatedRegistryRecordQuery } from './officer';
 
 test('revision-zero ledger read requires the exact active site/source/package binding', () => {
@@ -73,11 +75,45 @@ test('a recorded revision\'s document citations are cited by their source and lo
   // A stored citation that no longer reads is counted, and its neighbours are still listed.
   assert.deepEqual(documentCitationLocators([{ ...row, version: 'registry-unknown/1' }, row]),
     { cited: [{ sourceId: csv, locator: 'CSV logical row 444' }], unreadable: 1 });
-  const locators = ledgerSourceLocators({ sourceRevisionId: 'root-source', sourceKey: '1084419' }, [], [], [], [],
-    documentCitationLocators([row]).cited);
-  assert.deepEqual([...locators.keys()], ['root-source', csv]);
-  assert.deepEqual([...locators.get(csv)!], ['CSV logical row 444']);
+  const locators = ledgerSourceLocators({ sourceRevisionId: 'root-source', sourceKey: '1084419' }, [], [], [], []);
+  const cited = citedOnlyLocators(locators, documentCitationLocators([row]).cited);
+  assert.deepEqual([...locators.keys()], ['root-source']);
+  assert.deepEqual([...cited.get(csv)!], ['CSV logical row 444']);
 });
+
+test('a source only a document citation names is authorized apart: a refusal is counted, the rest stays readable',
+  async () => {
+    const base = ledgerSourceLocators({ sourceRevisionId: 'geojson', sourceKey: '1084419' }, [], [], [], []);
+    const cited = citedOnlyLocators(base, [{ sourceId: 'csv', locator: 'CSV logical row 444' },
+      { sourceId: 'geojson', locator: 'Page 1' }, { sourceId: 'pdf', locator: 'Page 3' }]);
+    // A source the strict locators already cite keeps the strict read and gains the citation's locator.
+    assert.deepEqual([...base.get('geojson')!], ['feature:1084419', 'Page 1']);
+    assert.deepEqual([...cited.keys()], ['csv', 'pdf']);
+
+    const strict: string[] = [];
+    const sources = await authorizeLedgerSources(base.keys(), async id => { strict.push(id); return { id }; });
+    const read = await authorizeCitedSources(cited.keys(), async id => {
+      if (id === 'csv') throw new AppError(409, 'REGISTRY_SOURCE_UNAVAILABLE', 'A cited source is not currently available.');
+      return { id };
+    });
+    assert.deepEqual(strict, ['geojson']);
+    assert.deepEqual(sources.map(item => item.id), ['geojson']);
+    assert.deepEqual(read, { sources: [{ id: 'pdf', source: { id: 'pdf' } }], refused: 1 });
+    assert.deepEqual(citedSourceNotes(read.refused), ['1 cited source is not available to this read and is not listed.']);
+    assert.deepEqual(citedSourceNotes(2), ['2 cited sources are not available to this read and are not listed.']);
+    assert.deepEqual(citedSourceNotes(0), []);
+    for (const status of [403, 404, 422]) {
+      assert.deepEqual(await authorizeCitedSources(['csv'], async () => {
+        throw new AppError(status, 'REFUSED', 'Refused.');
+      }), { sources: [], refused: 1 });
+    }
+    // Any other fault is not a refusal of this source and still fails the read.
+    await assert.rejects(authorizeCitedSources(['csv'], async () => { throw new Error('connection reset'); }),
+      /connection reset/);
+    await assert.rejects(authorizeCitedSources(['csv'], async () => {
+      throw new AppError(503, 'UNAVAILABLE', 'Storage is unavailable.');
+    }), /Storage is unavailable/);
+  });
 
 test('an inaccessible projected edge source rejects the entire authorized ledger source set', async () => {
   const lookedUp: string[] = [];

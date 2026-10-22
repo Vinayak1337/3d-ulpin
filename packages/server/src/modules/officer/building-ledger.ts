@@ -70,7 +70,7 @@ type IdentifierEvidence = { source_id: string; evidence: { sourceRevisionId?: st
  * or registrySourceTx while the building is still an unrecorded proposal. */
 export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey?: string; evidence?: SourceLocator[] },
   records: Array<Pick<RegistryRecord, 'evidence'>>, detailEdges: Edge[], parcels: ParcelEvidence[],
-  identifiers: IdentifierEvidence[], citations: CitationLocator[] = []): Map<string, Set<string>> {
+  identifiers: IdentifierEvidence[]): Map<string, Set<string>> {
   const locators = new Map<string, Set<string>>();
   const cite = (sourceId: string | undefined, locator: string) => {
     if (!sourceId) throw new AppError(409, 'LEDGER_SOURCE_EVIDENCE', 'A projected fact has no source revision.');
@@ -98,7 +98,6 @@ export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey
       throw new AppError(409, 'LEDGER_IDENTIFIER_EVIDENCE', 'An official parcel identifier lacks its exact source locator.');
     cite(item.source_id, item.evidence.locator);
   }
-  for (const item of citations) cite(item.sourceId, item.locator);
   return locators;
 }
 
@@ -120,6 +119,51 @@ export async function authorizeLedgerSources<T>(sourceIds: Iterable<string>, aut
   const sources: Array<{ id: string; source: T }> = [];
   for (const id of [...sourceIds].sort()) sources.push({ id, source: await authorize(id) });
   return sources;
+}
+
+/**
+ * Splits document citations by the authority their source is read under. A source the strict locators already cite
+ * keeps that strict read and gains the citation's locator in `strict`; a source only citations name is returned apart,
+ * to be read by authorizeCitedSources.
+ */
+export function citedOnlyLocators(strict: Map<string, Set<string>>, citations: CitationLocator[]):
+  Map<string, Set<string>> {
+  const cited = new Map<string, Set<string>>();
+  for (const { sourceId, locator } of citations) {
+    const into = strict.has(sourceId) ? strict : cited;
+    if (!into.has(sourceId)) into.set(sourceId, new Set());
+    into.get(sourceId)!.add(locator);
+  }
+  return cited;
+}
+
+/** The statuses with which a source read refuses this source: denied, absent, unavailable or not readable as stored. */
+const REFUSED = new Set([403, 404, 409, 422]);
+
+/**
+ * The sources only document citations name, each read under the same authority as the ledger's other sources. A
+ * refusal leaves that source out and is counted, so a cited row the reader may not read never costs the rest of the
+ * ledger; any other fault still fails the read.
+ */
+export async function authorizeCitedSources<T>(sourceIds: Iterable<string>, authorize: (id: string) => Promise<T>):
+  Promise<{ sources: Array<{ id: string; source: T }>; refused: number }> {
+  const sources: Array<{ id: string; source: T }> = [];
+  let refused = 0;
+  for (const id of [...sourceIds].sort()) {
+    try {
+      sources.push({ id, source: await authorize(id) });
+    } catch (error) {
+      if (!(error instanceof AppError) || !REFUSED.has(error.status)) throw error;
+      refused++;
+    }
+  }
+  return { sources, refused };
+}
+
+/** The ledger's word on cited sources it left out. */
+export function citedSourceNotes(refused: number): string[] {
+  return refused ? [`${refused} cited source${refused > 1 ? 's are' : ' is'} not available to this read and ${
+    refused > 1 ? 'are' : 'is'} not listed.`] : [];
 }
 
 export const currentParcelSql = `SELECT p.id,p.revision,p.body,a.body association FROM property_associations a
@@ -175,10 +219,14 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       [records.map(record => record.id)])).rows.map(row => documentCitationLocators(row.citations)) : [];
     const citations = stored.flatMap(read => read.cited);
     const unreadableCitations = stored.reduce((total, read) => total + read.unreadable, 0);
-    const locatorMap = ledgerSourceLocators(root.body, records, detailEdges, parcelRows, identifiers, citations);
-    if (locatorMap.size > 1000) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'Too many cited sources for one ledger read.');
+    const locatorMap = ledgerSourceLocators(root.body, records, detailEdges, parcelRows, identifiers);
+    const citedMap = citedOnlyLocators(locatorMap, citations);
+    if (locatorMap.size + citedMap.size > 1000) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'Too many cited sources for one ledger read.');
     const readSource = root.revision > 0 ? registryRecordedSourceTx : registrySourceTx;
-    const authorized = await authorizeLedgerSources(locatorMap.keys(), id => readSource(client, root.site_id, id));
+    const strict = await authorizeLedgerSources(locatorMap.keys(), id => readSource(client, root.site_id, id));
+    const cited = await authorizeCitedSources(citedMap.keys(), id => readSource(client, root.site_id, id));
+    for (const [id, locators] of citedMap) locatorMap.set(id, locators);
+    const authorized = [...strict, ...cited.sources].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const sources: BuildingLedger['sources'] = authorized.map(({ id, source }) => ({
       id, revision: source.revision, name: source.name, sha256: source.sha256,
       fileUrl: `/api/v1/sources/${id}/file`, locators: [...locatorMap.get(id)!].sort(),
@@ -196,6 +244,7 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       ...movedOnDocumentNotes(authorized),
       ...(unreadableCitations ? [`${unreadableCitations} stored document citation${unreadableCitations > 1 ? 's do'
         : ' does'} not read in the current citation form and ${unreadableCitations > 1 ? 'are' : 'is'} not listed.`] : []),
+      ...citedSourceNotes(cited.refused),
       'Technical readiness, rights and deviation are not assessed by this ledger.',
     ];
     return {
