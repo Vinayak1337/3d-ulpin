@@ -105,12 +105,19 @@ class NativeCityGMLTests(unittest.TestCase):
             self.assertEqual(before[field], result[field], field)
         # The coordinate guard is unchanged; no opaque body values are decoded.
         expected_coordinates = [dict(c, buildingElement=None) for c in before["coordinates"]]
-        self.assertEqual(expected_coordinates, result["coordinates"])
+        actual_coordinates = json.loads(json.dumps(result["coordinates"]))
+        for coordinate in actual_coordinates:
+            for field in ("srsName", "srsDimension"):
+                coordinate["referenceDeclarations"][field].pop("effectiveDeclaration")
+        self.assertEqual(expected_coordinates, actual_coordinates)
         originals = Path(os.environ["CITYGML_ORIGINALS"])
         for name, saved in (("Building_and_garage_LOD2-EPSG25832.gml", "run-02-lod2"),
                             ("Building_LOD1-LocalEngineeringCRS.gml", "run-02-local")):
-            self.assertEqual((originals.parent/saved/"projection.json").read_bytes(),
-                             encode_result(extract((originals/name).read_bytes())), name)
+            previous = json.loads((originals.parent/saved/"projection.json").read_bytes())
+            current = extract((originals/name).read_bytes())
+            # CG1 changes effective systems/dimensions and findings, not any original literal or locator.
+            for field in ("source", "elements", "namespaces", "identifiers", "references", "buildings", "counts"):
+                self.assertEqual(previous[field], current[field], (name, field))
 
     @unittest.skipUnless(os.environ.get("CITYGML_ORIGINALS"), "Set CITYGML_ORIGINALS to the retained unchanged OGC originals")
     def test_retained_ogc_literals_and_byte_locators(self):
@@ -122,7 +129,11 @@ class NativeCityGMLTests(unittest.TestCase):
         self.assertEqual(result["buildings"][0]["element"], result["buildings"][1]["parentBuildingElement"])
         first = next(c for c in result["coordinates"] if c["kind"] == "posList")
         self.assertEqual(["458875.0", "5438350.0", "112.0"], [v["literal"] for v in first["values"][:3]])
-        self.assertIsNone(first["tupleDimension"])
+        self.assertEqual(3, first["tupleDimension"])
+        declaration = first["referenceDeclarations"]["srsName"]
+        self.assertIsNone(declaration["nearestAncestorDeclaration"])
+        self.assertEqual("urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783",
+                         declaration["effectiveDeclaration"]["value"])
         for node in result["elements"]:
             span = node["locator"]
             self.assertTrue(raw[span["byteStart"]:span["byteEnd"]].startswith(b"<"))

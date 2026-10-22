@@ -168,12 +168,14 @@ function stoppedWords(end: Extract<IntakeNativeReaderEnd, { status: string }>): 
 }
 
 /**
- * B3D1. A CityJSON reading whose file states a reference system has its building ground outlines converted to
- * GeoJSON by SH2's derivative job; each converted layer then takes the GeoJSON map path, and the officer still
- * confirms every card. Any other reading stays unplaced evidence.
+ * CityJSON with a declared system and accepted CityGML readings take the ground-outline derivative job.
+ * The CityGML summary has no system field: its converter checks each geometry's literal/envelope declaration.
+ * Only placed outlines take the GeoJSON map path; the officer still confirms every card.
  */
 export function outlinesConverted(end: IntakeNativeReaderEnd): boolean {
-  return 'summary' in end && end.format === 'cityjson' && end.summary.referenceSystemState === 'declared';
+  if (!('summary' in end)) return false;
+  if (end.format === 'citygml') return true;
+  return end.format === 'cityjson' && end.summary.referenceSystemState === 'declared';
 }
 
 /** Called inside the native worker's terminal transaction, after its accepted-attempt fences. */

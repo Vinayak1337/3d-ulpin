@@ -21,6 +21,7 @@ from pyproj import CRS
 from pyproj.exceptions import CRSError
 from shapely import from_wkb
 
+from .citygml_outline import OUTLINE_READER as CITYGML_OUTLINE_READER, convert_citygml_file
 from .cityjson_outline import OUTLINE_READER, convert_cityjson_file
 from .validation import InputError
 
@@ -1117,9 +1118,10 @@ def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str,
                         answers: dict | None = None) -> list[dict]:
     """Every layer of one original on scratch disk, each converted or stopped with words naming why. `answers` maps
     a layer whose file states no CRS to the EPSG code an officer stated for it (CR1). B3D1: a CityJSON gives one
-    layer of building ground outlines."""
-    if fmt == "cityjson":
-        return convert_cityjson_file(path, source_sha256, lambda header, crs: _Derivative(
+    layer of building ground outlines. CG1: CityGML uses the same path and its literal reader's envelope system."""
+    if fmt in ("cityjson", "citygml"):
+        convert = convert_citygml_file if fmt == "citygml" else convert_cityjson_file
+        return convert(path, source_sha256, lambda header, crs: _Derivative(
             folder, 0, {"version": "native-gis-locators/1", "conversion": CONVERSION, **header}, crs),
             _horizontal_epsg)
     if fmt == "gpkg":
@@ -1232,6 +1234,7 @@ def convert_native(data: dict, s3=None) -> dict:
                 entry["objectKey"] = f"native-derivatives/{digest}/{layer['ordinal']}/{name}-{entry['sha256']}"
                 client.upload_file(entry.pop("path"), settings.S3_BUCKET, entry["objectKey"],
                                    ExtraArgs={"ContentType": kind, "Metadata": {"sha256": entry["sha256"]}})
-    reader = {"cityjson": OUTLINE_READER, **dict.fromkeys(KML_FORMATS, KML_READER)}.get(fmt, WINDOW_READER)
+    reader = {"cityjson": OUTLINE_READER, "citygml": CITYGML_OUTLINE_READER,
+              **dict.fromkeys(KML_FORMATS, KML_READER)}.get(fmt, WINDOW_READER)
     return {"conversion": CONVERSION, "readerVersion": reader, "sourceId": source_id,
             "sourceSha256": digest, "layers": layers, **({"notRead": not_read} if not_read else {})}
