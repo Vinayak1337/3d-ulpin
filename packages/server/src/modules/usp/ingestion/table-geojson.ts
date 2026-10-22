@@ -12,6 +12,7 @@ import { intakeCaseTx, intakeSourcePin, type IntakeSourceRow } from './intake-co
 import { writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
+import { streamedFeatureIssue } from './streaming-vector-reader';
 import { readTableWindows, unavailableColumns, type StreamedTableWindow } from './tabular-stream';
 import { coordinateText, geometryJson, parseWkt, type TableGeometry } from './wkt';
 
@@ -44,8 +45,16 @@ const SKIP_WORDS = {
   not_a_number: 'had text that is not a number',
   not_wkt: 'had text that is not WKT of a point, line or polygon',
   formula: 'had a coordinate cell holding a formula result, an error or no stored value',
+  // What the large GeoJSON reader would quarantine is never written, so the placed count is what it accepts.
+  open_ring: 'had a polygon ring that does not end where it starts',
+  too_large: 'had a shape larger than the map reader takes',
+  inexact_number: 'had a number with more digits than the map reader keeps exactly',
+  refused: 'had a shape the map reader refuses',
 } as const;
 type SkipReason = keyof typeof SKIP_WORDS;
+const READER_ISSUES: Readonly<Record<string, SkipReason>> = { OPEN_RING: 'open_ring',
+  RING_BUDGET_OR_SHAPE: 'too_large', POLYGON_BUDGET_OR_SHAPE: 'too_large', GEOMETRY_BUDGET: 'too_large',
+  GEOJSON_UNIT_BUDGET: 'too_large', UNREPRESENTABLE_NUMBER: 'inexact_number' };
 const SkippedSchema = z.partialRecord(z.enum(Object.keys(SKIP_WORDS) as [SkipReason, ...SkipReason[]]),
   z.number().int().positive());
 
@@ -103,6 +112,12 @@ function featureJson(row: TableRow, unknown: Set<number>, geometry: TableGeometr
     + `"geometry":${geometryJson(geometry)}}`;
 }
 
+/** The feature as the large GeoJSON reader accepts it, or why that reader would quarantine it; then it is left out. */
+function accepted(feature: string): { feature: string } | SkipReason {
+  const issue = streamedFeatureIssue(Buffer.from(feature));
+  return issue === null ? { feature } : READER_ISSUES[issue] ?? 'refused';
+}
+
 function headersChanged(): never {
   throw new AppError(409, 'TABLE_PLACEMENT_HEADERS',
     'The columns of this table differ from those it was read with; read it as a table again.');
@@ -129,8 +144,10 @@ export async function writeTableGeojson(body: Readable, plan: TablePlacementPlan
         // As in the table read, a workbook cell the reader marked has no value.
         const unknown = 'marks' in row ? unavailableColumns(row) : new Set<number>();
         const geometry = rowGeometry(row, unknown, plan.coordinates);
-        if (typeof geometry === 'string') counts.skipped[geometry] = (counts.skipped[geometry] ?? 0) + 1;
-        else features.push((counts.features++ ? ',' : '') + featureJson(row, unknown, geometry, names, plan));
+        const placed = typeof geometry === 'string' ? geometry
+          : accepted(featureJson(row, unknown, geometry, names, plan));
+        if (typeof placed === 'string') counts.skipped[placed] = (counts.skipped[placed] ?? 0) + 1;
+        else features.push((counts.features++ ? ',' : '') + placed.feature);
       }
       if (features.length) await write(features.join(''));
     });

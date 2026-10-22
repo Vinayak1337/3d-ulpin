@@ -90,6 +90,25 @@ test('a WKT column stated in EPSG:32643 gives polygons in that declared system, 
   assert.deepEqual([read.reference.sourceCrs, read.reference.coordinateUnit], ['EPSG:32643', 'unknown']);
 });
 
+test('a feature the map reader would quarantine is skipped by its own reason; Placed N is what the reader accepts',
+  async () => {
+    const square = '0 0, 1 0, 1 1, 0 1, 0 0';
+    // A closed ring of n positions; the reader takes at most 2,048 positions a ring and 128 rings a polygon.
+    const ring = (n: number) => [...Array.from({ length: n - 1 }, (_, i) => `${i} ${i % 2}`), '0 0'].join(', ');
+    const cells = [`POLYGON ((${square}))`, 'POLYGON ((0 0, 1 0, 1 1, 0 1))', `POLYGON ((${ring(2049)}))`,
+      `POLYGON (${Array.from({ length: 129 }, () => `(${square})`).join(', ')})`, `POLYGON ((${ring(2048)}))`,
+      'POINT (77.12345678901234567890 12.5)'];
+    const bytes = Buffer.from(`plot,outline\n${cells.map((cell, row) => `P-${row},"${cell}"\n`).join('')}`);
+    const { counts, geojson } = await written(bytes, plan(bytes, ['plot', 'outline'], { kind: 'wkt', column: 1 }));
+    assert.deepEqual(counts, { rows: 6, features: 2,
+      skipped: { open_ring: 1, too_large: 2, inexact_number: 1 } });
+    const read = await largePath(geojson, 'plots.geojson');
+    assert.deepEqual([read.features, read.accepted], [counts.features, counts.features]);
+    assert.equal(tablePlacementWords(counts, null), 'Placed 2 rows on the map; 4 rows skipped: '
+      + '1 had a polygon ring that does not end where it starts, 2 had a shape larger than the map reader takes, '
+      + '1 had a number with more digits than the map reader keeps exactly.');
+  });
+
 test('a table of 25,000 rows is read and written in windows, never whole', async () => {
   const rows = 25_000;
   function* chunks() {
