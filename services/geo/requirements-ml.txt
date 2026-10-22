@@ -1,5 +1,3 @@
 # Optional local CPU inference; install alongside requirements.txt. No paid API.
 onnxruntime==1.19.2
 pypdfium2==4.30.0
-# Shared literal dimension parsers and OCR observation types used by the raster plan reader.
-PyMuPDF==1.25.5
