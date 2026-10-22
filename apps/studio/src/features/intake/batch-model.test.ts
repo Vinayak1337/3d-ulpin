@@ -1,19 +1,9 @@
 import { expect, it } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
-import { countWords, crsWords, fieldWords, isSettled, opensPages, partProgressWords, placementWords, stateWords,
-  trayItems } from './batch-model';
+import { countWords, crsWords, fieldWords, isSettled, opensPages, partProgressWords, placementWords, stateWords }
+  from './batch-model';
 import { intakeRefreshFrame, silenceDelay } from './batch-events';
 import type { IntakeItem } from './batch-model';
-
-it('lists a kept layer once: its member row under the ZIP gives way to its own item', () => {
-  const base = { ...controls.manifest.items[0], plan: null, streamedProfileJobId: null } as IntakeItem;
-  const archive = { ...base, itemId: 'a', sourceId: 'zip', parentItemId: null, memberPath: null };
-  const kept = { ...base, itemId: 'm1', sourceId: 'layer', parentItemId: 'a', memberPath: 'roads.geojson' };
-  const readme = { ...base, itemId: 'm2', sourceId: null, parentItemId: 'a', memberPath: 'README.md' };
-  const layer = { ...base, itemId: 'l', sourceId: 'layer', parentItemId: null, memberPath: null };
-  expect(trayItems([archive, kept, readme, layer]).map(item => item.itemId)).toEqual(['a', 'm2', 'l']);
-  expect(isSettled({ ...archive, state: 'read', placement: 'undecided' })).toBe(true);
-});
 
 it('keeps a question distinct from state and renders unknown counts without zero', () => {
   const item = { ...controls.manifest.items[0], plan: null, streamedProfileJobId: null } as IntakeItem;
@@ -21,6 +11,7 @@ it('keeps a question distinct from state and renders unknown counts without zero
   expect(placementWords(item.placement)).toBe('Needs an answer');
   expect(isSettled(item)).toBe(true);
   expect(isSettled({ ...item, state: 'reading', placement: 'undecided' })).toBe(false);
+  expect(isSettled({ ...item, state: 'read', placement: 'undecided' })).toBe(true);
   expect(stateWords('read_to_limit')).toBe('Read to the limit');
   expect(stateWords('probe_failed')).toBe('File could not be checked');
   expect(countWords(null)).toBe('Not known');

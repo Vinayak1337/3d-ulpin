@@ -14,10 +14,10 @@ import { isIfcItem } from './ifc/structure-model';
 import { LayoutQuestion } from './LayoutQuestion';
 import { PageImageQuestion } from './PageImageQuestion';
 import { isPageImage } from './page-image-model';
-import { isSettled, trayItems } from './batch-model';
+import { isSettled } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
-import { recipeKey, useBatchPackages, useIntakeManifest } from './batch-queries';
+import { recipeKey, rereadQuery, useBatchPackages, useIntakeManifest } from './batch-queries';
 import { IntakeRunPanel } from './run';
 import { runKey } from './run/useTargets';
 import type { BatchLocationState } from './retain-batch';
@@ -39,10 +39,11 @@ function useBatchFacts(caseId: string) {
   const client = useQueryClient();
   const refresh = () => {
     for (const queryKey of [['intake', caseId], recipeKey(caseId), [...runKey(caseId), 'summary']]) {
-      void client.invalidateQueries({ queryKey }, { cancelRefetch: false });
+      rereadQuery(client, queryKey);
     }
   };
-  const items = trayItems(manifest.data?.items ?? []);
+  // ZP2: the server lists a ZIP member taken out as its own item once, as that item; every listed row shows.
+  const items = manifest.data?.items ?? NO_ITEMS;
   const stream = useBatchStream(caseId, items.some((item) => !isSettled(item)), refresh);
   return { caseId, manifest, sourceCase, packages, items, stream, refresh };
 }
@@ -60,7 +61,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
   const [left, setLeft] = useState<{ key: string; files: File[] } | null>(null);
   // D3. The drop's files not yet routed: the navigation's, until the dialog continuing them reports fewer.
   const remainingFiles = left?.key === location.key ? left.files : state?.remainingFiles ?? NO_FILES;
-  const waiting = useWaitingFiles(caseId, state, remainingFiles, batch.manifest.data?.items ?? NO_ITEMS);
+  const waiting = useWaitingFiles(caseId, state, remainingFiles, items);
   const current = items.find((item) => item.itemId === selected?.itemId) ?? (items.length === 1 ? items[0] : null);
   return <div className={styles.page}>
     <Link to="/studio/work">Batches</Link>

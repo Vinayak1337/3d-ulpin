@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type QueryClient, type QueryKey } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import type { Recipe } from './layout-model';
 import type { AuthorBody } from './question-model';
@@ -43,6 +43,16 @@ export function useIntakeManifest(caseId: string) {
       params: { path: { caseId } },
     })),
   });
+}
+
+/**
+ * ZP2. A notification that arrives while a read is in flight asks for one more read after it: that read began
+ * before the change, and without a second one its answer would stand as current until the next notification.
+ */
+export function rereadQuery(client: QueryClient, queryKey: QueryKey) {
+  const inFlight = client.isFetching({ queryKey }) > 0;
+  const read = client.invalidateQueries({ queryKey }, { cancelRefetch: false });
+  if (inFlight) void read.then(() => client.invalidateQueries({ queryKey }, { cancelRefetch: false }));
 }
 
 export async function retryStoppedItem(caseId: string, itemId: string, requestKey: string): Promise<RetryResult> {

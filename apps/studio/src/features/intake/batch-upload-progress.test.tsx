@@ -15,7 +15,8 @@ vi.mock('./upload-api', () => ({
   uploadTransport: () => facts.transport!, listUploads: async () => ({ uploads: [] }),
 }));
 vi.mock('./hash-file', () => ({ hashFile: async () => 'a'.repeat(64) }));
-vi.mock('./batch-queries', () => ({
+vi.mock('./batch-queries', async original => ({
+  ...await original<typeof import('./batch-queries')>(),
   useIntakeManifest: () => ({ data: { items: [] }, isPending: false, error: null }),
   useBatchPackages: () => ({ data: { packages: [] }, error: null }),
   recipeKey: (id: string) => ['intake', id, 'recipe'],
