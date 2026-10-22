@@ -69,10 +69,12 @@ export async function completeStreamingReadTx(client:PoolClient,input:AnyStreami
   return status;
 }
 
-/** A single SQL watermark is the ordered publication authority; SSE cursors stay per subscriber. */
-export async function publishStreamingPrefixTx(client:PoolClient,input:AnyStreamingInput){
+/** A single SQL watermark publishes ordered parts; only late-type collections wait for the seal. */
+export async function publishStreamingPrefixTx(client:PoolClient,input:AnyStreamingInput,
+  holdCollection=input.framing==='feature-collection'){
   while(true){
-    const state=(await client.query('SELECT next_publish_index FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
+    const state=(await client.query('SELECT next_publish_index,sealed_chunks FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
+    if(holdCollection&&state.sealed_chunks===null)return;
     const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR UPDATE',
       [input.jobId,input.sourceRevision,state.next_publish_index])).rows[0];
     if(!slot||slot.published)break;
@@ -133,7 +135,8 @@ async function storeChunk(input:AnyStreamingInput,index:number,records:Streaming
 }
 
 /** `progress` also refreshes a batch row's reading counts from the slot's own transaction. */
-async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slot,progress=false){
+async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slot,progress:boolean,
+  holdCollection:boolean){
   await transaction(async client=>{
     await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
@@ -157,7 +160,7 @@ async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slo
         slot.accepted,slot.quarantined,slot.bytes,slot.ref?.key??null,slot.ref?.sha256??null,slot.issueCode,slot.resultSha256,attempt.number,attempt.fence]);
     await client.query('UPDATE usp_streaming_vector_imports SET records=records+$2,accepted=accepted+$3,quarantined=quarantined+$4,updated_at=now() WHERE job_id=$1',
       [input.jobId,slot.records,slot.accepted,slot.quarantined]);
-    await publishStreamingPrefixTx(client,input);
+    await publishStreamingPrefixTx(client,input,holdCollection);
     if(progress)await writeIntakeLargeReadTx(client,input.sourceId);
   });
 }
@@ -166,11 +169,11 @@ type ImportRow={records:number;sealed_chunks:number|null;next_publish_index:numb
 type Marker={index:number;featureIndex:number;attempt:number;fence:number};
 
 /** Before the seal a failure's ordered issue marker closes the published prefix (a stale end writes none). After
- * the seal the sealed prefix stays as the seal left it: no slot past it, nothing published, its remainder known. */
+ * the seal the sealed prefix stays as the seal left it. Held collections never publish a failure marker. */
 export async function endImportTx(client:PoolClient,input:AnyStreamingInput,row:ImportRow,code:string,
-  stale:boolean,marker:Marker|null){
+  stale:boolean,marker:Marker|null,holdCollection=input.framing==='feature-collection'){
   const sealed=row.sealed_chunks!==null&&row.sealed_chunks===row.next_publish_index;
-  if(marker&&!sealed){
+  if(marker&&!sealed&&!holdCollection){
     if(row.records!==marker.featureIndex)conflict('The terminal source position differs from the committed prefix.');
     const hash=fingerprint({version:limits.version,jobId:input.jobId,sourceRevision:input.sourceRevision,
       chunkIndex:marker.index,code});
@@ -178,7 +181,7 @@ export async function endImportTx(client:PoolClient,input:AnyStreamingInput,row:
       first_feature_index,last_feature_index,records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
       VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
       [input.jobId,input.sourceRevision,marker.index,marker.featureIndex,code,hash,marker.attempt,marker.fence]);
-    await publishStreamingPrefixTx(client,input);
+    await publishStreamingPrefixTx(client,input,holdCollection);
   }
   const status=stale?'stale':'failed';
   await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
@@ -198,7 +201,7 @@ async function keepCrsRefusalTx(client:PoolClient,input:AnyStreamingInput,words:
 }
 
 async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,
-  nextIndex:number,nextFeatureIndex:number,stale=false,words:string|null=null){
+  nextIndex:number,nextFeatureIndex:number,holdCollection:boolean,stale=false,words:string|null=null){
   await transaction(async client=>{
     if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertStreamingInputTx(client,input);
@@ -208,7 +211,7 @@ async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:strin
     await client.query('UPDATE usp_job_attempts SET state=$3 WHERE job_id=$1 AND number=$2',[input.jobId,attempt.number,'fenced']);
     if(words)await keepCrsRefusalTx(client,input,words);
     await endImportTx(client,input,state,code,stale,stale?null:{index:nextIndex,featureIndex:nextFeatureIndex,
-      attempt:attempt.number,fence:attempt.fence});
+      attempt:attempt.number,fence:attempt.fence},holdCollection);
   });
 }
 
@@ -270,7 +273,9 @@ export async function runStreamingVectorJob(jobId:string){
         const last=(await client.query('SELECT number,fence FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',[jobId])).rows[0];
         marker={index,featureIndex:row.records,attempt:last.number,fence:last.fence};
       }
-      await endImportTx(client,input,row,code,stale,marker);
+      // With no attempt left to reread, only an already-published prefix proves it was not held.
+      const holdCollection=input.framing==='feature-collection'&&row.next_publish_index===0;
+      await endImportTx(client,input,row,code,stale,marker,holdCollection);
     });
     return;
   }
@@ -282,6 +287,7 @@ export async function runStreamingVectorJob(jobId:string){
       sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);
   });
   let nextFeatureIndex=0,lastHeartbeat=Date.now(),lastProgress=0;
+  let holdCollection=input.framing==='feature-collection';
   const setAside:Record<string,number>={};
   const geometryCounts:StreamingVectorGeometrySummary['counts']={};
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
@@ -293,7 +299,7 @@ export async function runStreamingVectorJob(jobId:string){
     if(input.framing!=='tabular')for(const record of records)tallyAcceptedGeometry(geometryCounts,record);
     // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
     const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
-    await acceptSlot(input,attempt,slot,progress);
+    await acceptSlot(input,attempt,slot,progress,holdCollection);
   });
   // G13: a window is written by its own transaction; the part index follows the windows so the seal counts them.
   type WindowsInput=Parameters<typeof readTableWindows>;
@@ -314,6 +320,7 @@ export async function runStreamingVectorJob(jobId:string){
     let result;
     try{
       const consume=async(item:SourceFeature)=>{
+        if(input.framing==='feature-collection')holdCollection=item.collectionTypeBeforeFeatures!==true;
         await pulse();const record=input.framing==='tabular'?tabularSourceRecord(item):sourceRecord(item);
         nextFeatureIndex=item.index+1;
         if(record.disposition==='accepted'&&input.framing!=='tabular'){
@@ -338,8 +345,11 @@ export async function runStreamingVectorJob(jobId:string){
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
-      if(state.records!==result.features||state.next_publish_index!==nextIndex)conflict('The published prefix does not close at semantic EOF.');
+      if(state.records!==result.features)conflict('The retained prefix does not close at semantic EOF.');
+      if(!holdCollection&&state.next_publish_index!==nextIndex)
+        conflict('The published prefix does not close at semantic EOF.');
       await client.query('UPDATE usp_streaming_vector_imports SET sealed_chunks=$2,unknown_remainder=false,updated_at=now() WHERE job_id=$1',[jobId,nextIndex]);
+      if(holdCollection)await publishStreamingPrefixTx(client,input,holdCollection);
     });
     const manifestHash=fingerprint({version:limits.version,jobId,sourceSha256:input.sourceSha256,slots:nextIndex,features:result.features});
     await acceptUspJobAttempt(attempt,{assetId:`streaming-vector:${jobId}`,version:1,sha256:manifestHash},
@@ -361,10 +371,11 @@ export async function runStreamingVectorJob(jobId:string){
     const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
     try{
       if(kind==='final'){
-        // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
-        await parts.flush();await terminal(input,attempt,code,parts.index,nextFeatureIndex,false,words);
-      }else if(kind==='stale')await terminal(input,attempt,'STREAMING_CONTEXT_STALE',parts.index,nextFeatureIndex,true);
-      else if(attempt.number>=3)await terminal(input,attempt,code,parts.index,nextFeatureIndex);
+        // Held parts stay private on refusal; type-first, sequence and tabular prefixes keep their publication.
+        await parts.flush();await terminal(input,attempt,code,parts.index,nextFeatureIndex,holdCollection,false,words);
+      }else if(kind==='stale')
+        await terminal(input,attempt,'STREAMING_CONTEXT_STALE',parts.index,nextFeatureIndex,holdCollection,true);
+      else if(attempt.number>=3)await terminal(input,attempt,code,parts.index,nextFeatureIndex,holdCollection);
       else await retry(input,attempt,code);
     }catch(failure){
       // A newer fence owns this job; it alone may change durable state.

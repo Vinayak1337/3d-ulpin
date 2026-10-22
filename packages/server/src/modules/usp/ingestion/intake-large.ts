@@ -24,6 +24,7 @@ const nothing = '; nothing was prepared from it.';
 const terminalSentences: Readonly<Record<string, string>> = {
   GEOJSON_JSON: 'This file contains text that is not complete valid JSON',
   GEOJSON_CONTAINER: 'This file does not contain one complete GeoJSON feature collection in the required order',
+  GEOJSON_COLLECTION_TYPE: 'This file is missing a root type of FeatureCollection or declares a different root type',
   GEOJSON_SEQUENCE: 'This file has an incomplete sequence of GeoJSON records',
   GEOJSON_METADATA: 'This file has ambiguous collection metadata',
   GEOJSON_METADATA_BUDGET: 'This file has more collection metadata than can be read for now',
