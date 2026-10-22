@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import test from 'node:test';
+import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema } from '@ulpin/contracts/usp';
 import { byteParts, receiveLargeLayer } from './intake-zip-layers';
 import { LargeOriginalService } from './large-original';
 import { memoryPool, memoryStorage, withPool } from './large-original-memory.test-fixture';
@@ -8,6 +9,34 @@ import { memoryPool, memoryStorage, withPool } from './large-original-memory.tes
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'large-original-small-protocol';
 const caseId = '10000000-0000-4000-8000-000000000003';
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+
+test('a cell lineage is published with the original and exact finalization replay retains no second child', async () => {
+  const { db, pool } = memoryPool(caseId);
+  await withPool(pool, async () => {
+    const service = new LargeOriginalService(memoryStorage().storage);
+    const bytes = Buffer.from('{"type":"FeatureCollection","features":[{"type":"Feature","geometry":null}]}');
+    const lineage = CellDerivativeLineageSchema.parse({ version: 'cell-derivative/1',
+      parentSourceId: randomUUID(), parentSourceRevision: 2, parentSha256: sha(Buffer.from('parent')),
+      parentItemId: randomUUID(), parentName: 'parent.geojson', cellKey: 'utm-32620-e12-n123-l234-b270',
+      rule: CELL_DERIVATIVE_RULE, features: 1, members: { key: `large-originals/${randomUUID()}/${sha(Buffer.from('ranges'))}`,
+        sha256: sha(Buffer.from('ranges')), bytes: 6, format: 'cell-feature-ranges-jsonl/1' } });
+    const created = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+      filename: 'cell.geojson', mediaType: 'application/octet-stream', sha256: sha(bytes), bytes: bytes.length,
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-22T00:00:00.000Z' } });
+    const claim = await service.claimPart(caseId, created.id, { requestKey: randomUUID(),
+      expectedRevision: created.revision, expectedCaseRevision: 0, partNumber: 1, sha256: sha(bytes) });
+    const received = await service.receivePart(claim, bytes);
+    const finalInput = { requestKey: randomUUID(), expectedRevision: received.revision,
+      expectedCaseRevision: 0, sha256: sha(bytes) };
+    const final = await service.finalize(caseId, created.id, finalInput, lineage);
+    const [source] = [...db.sources.values()];
+    assert.deepEqual(source!.inspection.cellDerivative, lineage);
+    assert.equal(source!.inspection.archiveMember, undefined);
+    const replay = await service.finalize(caseId, created.id, finalInput, lineage);
+    assert.equal(replay?.source?.sourceId, final?.source?.sourceId);
+    assert.equal(db.sources.size, 1);
+  });
+});
 
 test('a 3 KB PDF is admitted, received as one part and retained as an original of its exact bytes', async () => {
   const { db, pool } = memoryPool(caseId);

@@ -221,7 +221,8 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
 export function intakeReaderRoute(card: IntakeCard, source: Pick<IntakeSourceRow, 'bytes' | 'inspection'>): string {
   if (card.format !== 'geojson') return card.format;
   // A derivative (a native layer, TC1's table rows) takes the large path whatever its size, as a dropped large file.
-  const derivative = source.inspection?.nativeDerivative || source.inspection?.tableDerivative;
+  const derivative = source.inspection?.nativeDerivative || source.inspection?.tableDerivative
+    || source.inspection?.cellDerivative;
   if (derivative || Number(source.bytes) > 16 * 1024 * 1024) return 'streamed_geojson';
   const count = source.inspection?.manualProfile?.featureCount ?? card.counts.features;
   if (count === null || count === undefined) return 'inspect_geojson';

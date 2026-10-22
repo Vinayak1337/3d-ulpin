@@ -3,7 +3,8 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { ArchiveMemberLineageSchema, IntakeArchiveReceiptSchema, IntakeArchiveRetainSchema, LARGE_ORIGINAL_LIMITS,
   INTAKE_PROBE_LIMITS, STREAMING_VECTOR_LIMITS, ZIP_LAYER_LIMITS, streamingReadMs, type AnySourceProfile,
-  type ArchiveMemberLineage, type IntakeCard, type TableDerivativeLineage } from '@ulpin/contracts/usp';
+  type ArchiveMemberLineage, type IntakeCard, type TableDerivativeLineage,
+  type CellDerivativeLineage } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { putOriginal, readObjectRange, sha256 } from '../../../infrastructure/storage';
@@ -462,8 +463,11 @@ export async function retainZipMemberOriginal(caseId: string, revision: number,
     byteParts(bytes()), dependencies, lineage);
 }
 
-/** The case revision a derived receipt is admitted at, and the batch item it derives from (TC2). */
-export type DerivedReceiptFence = { revision: number; batchSourceId: string };
+/**
+ * The case revision a derived receipt is admitted at, and the batch item it derives from (TC2). A CW3 cell child is
+ * received into its own new case, which has no packages yet, so it names no batch item.
+ */
+export type DerivedReceiptFence = { revision: number; batchSourceId?: string };
 
 /**
  * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A ZIP member or a table
@@ -472,7 +476,8 @@ export type DerivedReceiptFence = { revision: number; batchSourceId: string };
  */
 export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFence,
   file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
-  dependencies: Pick<ZipLayerDependencies, 'large'>, lineage?: ArchiveMemberLineage | TableDerivativeLineage)
+  dependencies: Pick<ZipLayerDependencies, 'large'>,
+  lineage?: ArchiveMemberLineage | TableDerivativeLineage | CellDerivativeLineage)
   : Promise<string> {
   let status = await dependencies.large.create(caseId, { requestKey: randomUUID(),
     expectedCaseRevision: fence.revision, filename: file.name, mediaType: 'application/octet-stream',
