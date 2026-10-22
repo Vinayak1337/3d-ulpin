@@ -30,7 +30,7 @@
     "'Card 93fd4362 · revision 1 · cites record revision 2' (REH13: 'Blocked: select a unit ...')" ],
    "documents": [ "Documents 2: gpmc-yuvp.csv, CSV logical row 444; buildings-original.geojson, feature 1084419",
     "(REH13: only the GeoJSON); building ledger GET 200" ],
-   "consoleErrors": "1: 404 GET /api/v1/buildings/{id}/residents (no residents route for this building), not the tab",
+   "consoleErrors": "1: the residents read GET /api/v1/buildings/{id}/residents answered 404; not the Documents tab",
    "verdict": "the Documents tab loads; no stop before the demo"
   },
   "back": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": "0, 28 PASS 0 FAIL",
