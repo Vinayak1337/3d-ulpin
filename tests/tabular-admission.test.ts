@@ -16,7 +16,7 @@ import { AppError } from '../packages/server/src/infrastructure/errors';
 import { sha256 } from '../packages/server/src/infrastructure/storage';
 import { fingerprint } from '../packages/server/src/modules/cases/domain';
 import {
-  admitTabularSource, assertTabularPin, inspectTabularSource, readTabularSource,
+  TABULAR_ROW_LIMIT, admitTabularSource, assertTabularPin, inspectTabularSource, readTabularSource,
 } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { ManualIngestionService } from '../packages/server/src/modules/usp/ingestion/service';
 import { readStreamingTabular } from '../packages/server/src/modules/usp/ingestion/streaming-vector-reader';
@@ -395,7 +395,8 @@ test('case-original routing still invokes the existing local learner without tra
 test('the existing row and column bounds still refuse oversized case-original test controls', () => {
   const table = readTabularSource(originalBytes, selection);
   const oversizedRows = Buffer.concat([originalBytes, originalBytes.subarray(originalBytes.indexOf(10) + 1)]);
-  assert.throws(() => inspectTabularSource(oversizedRows, selection), /2,000 rows/);
+  assert.throws(() => inspectTabularSource(oversizedRows, selection), { code: TABULAR_ROW_LIMIT,
+    message: /more than the whole-file reader takes: 2,000 records.*read as a stream instead; no record is cut/ });
   const control = `${Array(257).fill(table.headers[0]).join(',')}\n${Array(257).fill('').join(',')}\n`;
   assert.throws(() => inspectTabularSource(Buffer.from(control), selection), /256 columns/);
 });
