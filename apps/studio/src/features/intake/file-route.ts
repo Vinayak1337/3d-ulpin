@@ -2,17 +2,17 @@ export type FileRoute = 'intake' | 'table';
 
 /**
  * A successful opt-in development profile is handled before this production routing decision. CD1: a file of any
- * other kind is never refused for its kind. N01: CSV and XLSX keep their table import; every other file, a GeoPackage
- * and any ZIP included, joins the batch, where the server decides what a ZIP holds and converts a GeoPackage or a
+ * other kind is never refused for its kind. N01, XL1: CSV, XLSX and ODS keep their table import; every other file, a
+ * GeoPackage and any ZIP included, joins the batch, where the server decides what a ZIP holds and converts a GeoPackage or a
  * shapefile set into layers.
  */
 export function fileRoute(name: string): FileRoute {
-  return /\.(csv|xlsx)$/i.test(name) ? 'table' : 'intake';
+  return /\.(csv|xlsx|ods)$/i.test(name) ? 'table' : 'intake';
 }
 
 /**
  * A dropped file's first state: only the opt-in profile reads map files and LAZ/TIFF here; the rest are routed.
- * TJ1: dropped into a batch (`inBatch`, the batch page), a CSV or XLSX joins it as its own item, read there.
+ * TJ1: dropped into a batch (`inBatch`, the batch page), a CSV, XLSX or ODS joins it as its own item, read there.
  */
 export function dropState(name: string, profile: boolean, inBatch = false): 'inspecting' | 'intake' | 'not-gis' {
   if (profile && /\.(geojson|json|gpkg|zip|laz|tif|tiff)$/i.test(name)) return 'inspecting';
@@ -48,6 +48,8 @@ export function routeWords(name: string): string {
   if (/\.(geojson|json|gpkg|kml|kmz)$/i.test(name)) return 'Map file · joins the batch';
   if (/\.(shp|shx|dbf|prj|cpg)$/i.test(name)) return 'Shapefile part · read with its other parts as one shapefile';
   if (/\.(pdf|docx?)$/i.test(name)) return 'Document · joins the batch';
+  // XL1: an Excel 97-2003 workbook is kept; this version reads no cells of it.
+  if (/\.xls$/i.test(name)) return 'Excel 97-2003 workbook · kept as evidence; its cells are not read';
   // An orthophoto, terrain or a page image: the batch decides which.
   if (/\.tiff?$/i.test(name)) return 'Image or raster · joins the batch';
   if (/\.(png|jpe?g|webp)$/i.test(name)) return 'Image · joins the batch';

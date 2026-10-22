@@ -3497,7 +3497,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Retain a pinned GeoJSON or public D8 CSV/XLSX original in an existing source case */
+        /** Retain a pinned GeoJSON or public D8 CSV/XLSX/ODS original in an existing source case */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources"];
         delete?: never;
         options?: never;
@@ -15296,7 +15296,7 @@ export interface components {
                             /** @enum {string} */
                             encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -18442,7 +18442,7 @@ export interface components {
                             /** @enum {string} */
                             encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -21783,7 +21783,7 @@ export interface components {
                             /** @enum {string} */
                             encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -39155,7 +39155,7 @@ export interface components {
                             /** @enum {string} */
                             encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -66049,7 +66049,7 @@ export interface components {
             /** Format: binary */
             file: string;
             /** @enum {string} */
-            format: "geojson" | "csv" | "xlsx";
+            format: "geojson" | "csv" | "xlsx" | "ods";
             /** @description JSON tabular selection: format, sheet, table:null, ordered headerRows */
             selection?: string;
             /** Format: uuid */
@@ -66121,7 +66121,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -66142,7 +66142,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -66216,7 +66216,7 @@ export interface components {
                 /** @enum {string} */
                 encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                 /** @enum {string} */
-                format: "csv" | "xlsx";
+                format: "csv" | "xlsx" | "ods";
                 sheet: string;
                 /** @enum {string|null} */
                 table: null;
@@ -66380,7 +66380,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66401,7 +66401,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66598,7 +66598,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66619,7 +66619,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66816,7 +66816,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66837,7 +66837,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -67059,7 +67059,7 @@ export interface components {
                             /** @enum {string} */
                             encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -67176,7 +67176,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -67306,7 +67306,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -67345,7 +67345,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -67759,7 +67759,7 @@ export interface components {
                             /** @enum {string} */
                             encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -67918,7 +67918,7 @@ export interface components {
                                 /** @enum {string} */
                                 encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                                 /** @enum {string} */
-                                format: "csv" | "xlsx";
+                                format: "csv" | "xlsx" | "ods";
                                 sheet: string;
                                 /** @enum {string|null} */
                                 table: null;
@@ -71468,7 +71468,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71489,7 +71489,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71567,7 +71567,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71588,7 +71588,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71677,7 +71677,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71698,7 +71698,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71756,7 +71756,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71777,7 +71777,7 @@ export interface components {
                     /** @enum {string} */
                     encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71952,7 +71952,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -71973,7 +71973,7 @@ export interface components {
                         /** @enum {string} */
                         encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;

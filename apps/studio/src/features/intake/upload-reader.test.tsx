@@ -3,7 +3,8 @@ import { basename, resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
 import { CITYJSON_LIMITS, DOCUMENT_LIMITS, GLTF_LIMITS, IFC_LIMITS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
-  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS } from '@ulpin/contracts/upload-reader-limits';
+  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS,
+} from '@ulpin/contracts/upload-reader-limits';
 import { DropOutcomes } from './IntakeDropDialog';
 import { readerEligibility } from './upload-model';
 
@@ -37,6 +38,14 @@ it('uses each reader ceiling inclusively', () => {
     expect(readerEligibility({ name: `source.${extension}`, size: bytes + 1 }).withinCeiling).toBe(false);
   }
   expect(readerEligibility({ name: 'archive.zip', size: 1024 }).withinCeiling).toBeNull();
+  // XL1: an ODS is read whole, so its ceiling is the whole reader's; an XLSX is read as a stream past it.
+  expect(readerEligibility({ name: 'wards.ods', size: TABULAR_LIMITS.bytes + 1 }).words)
+    .toBe('Will be kept, not read: larger than the 16 MiB ODS table reader');
+  expect(readerEligibility({ name: 'wards.xlsx', size: TABULAR_LIMITS.bytes + 1 }).ceilingBytes)
+    .toBe(TABULAR_STREAM_LIMITS.bytes);
+  expect(readerEligibility({ name: 'old-list.XLS', size: 1024 })).toEqual({ reader: null, ceilingBytes: null,
+    withinCeiling: null, words: 'Excel 97-2003 workbook. It is kept as evidence; this version does not read its '
+      + 'cells. Save it as XLSX or ODS and add that file to place its rows on the map.' });
   expect(readerEligibility({ name: 'source.__proto__', size: 1024 }).reader).toBeNull();
   expect(readerEligibility({ name: 'source.constructor', size: 1024 }).withinCeiling).toBeNull();
 });

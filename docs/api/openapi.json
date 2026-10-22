@@ -39804,7 +39804,7 @@
             }
           }
         },
-        "summary": "Retain a pinned GeoJSON or public D8 CSV/XLSX original in an existing source case",
+        "summary": "Retain a pinned GeoJSON or public D8 CSV/XLSX/ODS original in an existing source case",
         "tags": [
           "manual ingestion"
         ],
@@ -117093,7 +117093,8 @@
                                   "type": "string",
                                   "enum": [
                                     "csv",
-                                    "xlsx"
+                                    "xlsx",
+                                    "ods"
                                   ]
                                 },
                                 "sheet": {
@@ -132823,7 +132824,8 @@
                                   "type": "string",
                                   "enum": [
                                     "csv",
-                                    "xlsx"
+                                    "xlsx",
+                                    "ods"
                                   ]
                                 },
                                 "sheet": {
@@ -148840,7 +148842,8 @@
                                   "type": "string",
                                   "enum": [
                                     "csv",
-                                    "xlsx"
+                                    "xlsx",
+                                    "ods"
                                   ]
                                 },
                                 "sheet": {
@@ -237479,7 +237482,8 @@
                                   "type": "string",
                                   "enum": [
                                     "csv",
-                                    "xlsx"
+                                    "xlsx",
+                                    "ods"
                                   ]
                                 },
                                 "sheet": {
@@ -372633,7 +372637,8 @@
             "enum": [
               "geojson",
               "csv",
-              "xlsx"
+              "xlsx",
+              "ods"
             ]
           },
           "selection": {
@@ -372945,7 +372950,8 @@
                             "type": "string",
                             "enum": [
                               "csv",
-                              "xlsx"
+                              "xlsx",
+                              "ods"
                             ]
                           },
                           "sheet": {
@@ -373051,7 +373057,8 @@
                             "type": "string",
                             "enum": [
                               "csv",
-                              "xlsx"
+                              "xlsx",
+                              "ods"
                             ]
                           },
                           "sheet": {
@@ -373459,7 +373466,8 @@
                 "type": "string",
                 "enum": [
                   "csv",
-                  "xlsx"
+                  "xlsx",
+                  "ods"
                 ]
               },
               "sheet": {
@@ -374305,7 +374313,8 @@
                                 "type": "string",
                                 "enum": [
                                   "csv",
-                                  "xlsx"
+                                  "xlsx",
+                                  "ods"
                                 ]
                               },
                               "sheet": {
@@ -374411,7 +374420,8 @@
                                 "type": "string",
                                 "enum": [
                                   "csv",
-                                  "xlsx"
+                                  "xlsx",
+                                  "ods"
                                 ]
                               },
                               "sheet": {
@@ -375372,7 +375382,8 @@
                                 "type": "string",
                                 "enum": [
                                   "csv",
-                                  "xlsx"
+                                  "xlsx",
+                                  "ods"
                                 ]
                               },
                               "sheet": {
@@ -375478,7 +375489,8 @@
                                 "type": "string",
                                 "enum": [
                                   "csv",
-                                  "xlsx"
+                                  "xlsx",
+                                  "ods"
                                 ]
                               },
                               "sheet": {
@@ -376447,7 +376459,8 @@
                                   "type": "string",
                                   "enum": [
                                     "csv",
-                                    "xlsx"
+                                    "xlsx",
+                                    "ods"
                                   ]
                                 },
                                 "sheet": {
@@ -376553,7 +376566,8 @@
                                   "type": "string",
                                   "enum": [
                                     "csv",
-                                    "xlsx"
+                                    "xlsx",
+                                    "ods"
                                   ]
                                 },
                                 "sheet": {
@@ -377706,7 +377720,8 @@
                                 "type": "string",
                                 "enum": [
                                   "csv",
-                                  "xlsx"
+                                  "xlsx",
+                                  "ods"
                                 ]
                               },
                               "sheet": {
@@ -378209,7 +378224,8 @@
                               "type": "string",
                               "enum": [
                                 "csv",
-                                "xlsx"
+                                "xlsx",
+                                "ods"
                               ]
                             },
                             "sheet": {
@@ -378822,7 +378838,8 @@
                       "type": "string",
                       "enum": [
                         "csv",
-                        "xlsx"
+                        "xlsx",
+                        "ods"
                       ]
                     },
                     "sheet": {
@@ -378991,7 +379008,8 @@
                           "type": "string",
                           "enum": [
                             "csv",
-                            "xlsx"
+                            "xlsx",
+                            "ods"
                           ]
                         },
                         "sheet": {
@@ -380756,7 +380774,8 @@
                                           "type": "string",
                                           "enum": [
                                             "csv",
-                                            "xlsx"
+                                            "xlsx",
+                                            "ods"
                                           ]
                                         },
                                         "sheet": {
@@ -381490,7 +381509,8 @@
                                               "type": "string",
                                               "enum": [
                                                 "csv",
-                                                "xlsx"
+                                                "xlsx",
+                                                "ods"
                                               ]
                                             },
                                             "sheet": {
@@ -400042,7 +400062,8 @@
                             "type": "string",
                             "enum": [
                               "csv",
-                              "xlsx"
+                              "xlsx",
+                              "ods"
                             ]
                           },
                           "sheet": {
@@ -400148,7 +400169,8 @@
                             "type": "string",
                             "enum": [
                               "csv",
-                              "xlsx"
+                              "xlsx",
+                              "ods"
                             ]
                           },
                           "sheet": {
@@ -400538,7 +400560,8 @@
                         "type": "string",
                         "enum": [
                           "csv",
-                          "xlsx"
+                          "xlsx",
+                          "ods"
                         ]
                       },
                       "sheet": {
@@ -400644,7 +400667,8 @@
                         "type": "string",
                         "enum": [
                           "csv",
-                          "xlsx"
+                          "xlsx",
+                          "ods"
                         ]
                       },
                       "sheet": {
@@ -401094,7 +401118,8 @@
                         "type": "string",
                         "enum": [
                           "csv",
-                          "xlsx"
+                          "xlsx",
+                          "ods"
                         ]
                       },
                       "sheet": {
@@ -401200,7 +401225,8 @@
                         "type": "string",
                         "enum": [
                           "csv",
-                          "xlsx"
+                          "xlsx",
+                          "ods"
                         ]
                       },
                       "sheet": {
@@ -401460,7 +401486,8 @@
                         "type": "string",
                         "enum": [
                           "csv",
-                          "xlsx"
+                          "xlsx",
+                          "ods"
                         ]
                       },
                       "sheet": {
@@ -401566,7 +401593,8 @@
                         "type": "string",
                         "enum": [
                           "csv",
-                          "xlsx"
+                          "xlsx",
+                          "ods"
                         ]
                       },
                       "sheet": {
@@ -402458,7 +402486,8 @@
                             "type": "string",
                             "enum": [
                               "csv",
-                              "xlsx"
+                              "xlsx",
+                              "ods"
                             ]
                           },
                           "sheet": {
@@ -402564,7 +402593,8 @@
                             "type": "string",
                             "enum": [
                               "csv",
-                              "xlsx"
+                              "xlsx",
+                              "ods"
                             ]
                           },
                           "sheet": {

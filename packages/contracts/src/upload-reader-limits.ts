@@ -10,7 +10,7 @@ export { CITYGML_LIMITS } from './usp/citygml-ingestion';
 export { CITYJSON_LIMITS } from './usp/cityjson-ingestion';
 export { GLTF_LIMITS } from './usp/gltf-ingestion';
 export { OBJ_LIMITS } from './usp/obj-ingestion';
-export { TABULAR_STREAM_LIMITS } from './usp/ingestion';
+export { TABULAR_LIMITS, TABULAR_STREAM_LIMITS } from './usp/ingestion';
 
 /** Native GIS conversion's source/set ceiling (services/geo/geo/native_gis.py: MAX_SOURCE_BYTES). */
 export const NATIVE_GIS_LIMITS = Object.freeze({ sourceBytes: 128 * 1024 ** 2 });

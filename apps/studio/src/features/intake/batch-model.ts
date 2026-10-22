@@ -75,7 +75,7 @@ export function sizeClassWords(sizeClass: IntakeItem['sizeClass']) {
 export function formatWords(format: IntakeItem['format']) {
   if (!format) return 'Not known';
   const words: Record<string, string> = { geojson: 'GeoJSON', gpkg: 'GeoPackage', shapefile_zip: 'Shapefile ZIP',
-    csv: 'CSV', xlsx: 'Excel workbook' };
+    csv: 'CSV', xlsx: 'Excel workbook', ods: 'OpenDocument spreadsheet', xls: 'Excel 97-2003 workbook' };
   return words[format] ?? format;
 }
 
