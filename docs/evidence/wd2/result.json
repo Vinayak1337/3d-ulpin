@@ -1,0 +1,176 @@
+{
+  "task": "WD2",
+  "title": "Honest placement words and lossless table properties",
+  "gate": "P0 hygiene; AUD4 N1, N2, N3, N4, W4; offline checks only",
+  "base": "b1a4bd80",
+  "branch": "task/wd2-judge-words",
+  "report": {
+    "WORKS": "BOM UTF-16 tables offer placement; words distinguish preparation from mapping; cells survive headers.",
+    "SEE IT": "pnpm --filter @ulpin/studio test src/features/intake/table/TablePlacement.test.tsx",
+    "INPUTS": "Tweed public test_only shapefile ZIP; a temporary copy with an unresolvable .prj.",
+    "GAPS": "No live map, browser, database, processor-image or combined-runtime qualification."
+  },
+  "verified_base_locations": {
+    "N1": [
+      "apps/studio/src/features/intake/table-placement-command.ts:38-41",
+      "packages/contracts/src/usp/intake.ts:120-126",
+      "apps/studio/src/features/intake/BatchTableSection.tsx:69-76",
+      "apps/studio/src/features/intake/table/TablePlacement.tsx:52-63"
+    ],
+    "N2": "apps/studio/src/features/intake/upload-model.ts:74-75,87-90",
+    "N3": "apps/studio/src/features/intake/table/TablePlacement.tsx:65-67",
+    "N4": "packages/server/src/modules/usp/ingestion/table-geojson.ts:69-76,94-97",
+    "W4": "services/geo/geo/native_gis.py:663-664"
+  },
+  "before_after_words": {
+    "N1": {
+      "before": [
+        "This table is UTF-16 text. Its rows are placed on the map only from UTF-8 or ",
+        "Windows-1252 text, so that each placed row cites its exact bytes. Save the table as CSV UTF-8 and add it ",
+        "again; this original stays kept unchanged."
+      ],
+      "after": "Place on the map",
+      "change": "Removed both obsolete gates, their helper, constant and Studio declaration.",
+      "unchanged": "Server BOM-less UTF-16 refusal and byte-range checks; LE/BE regressions pass."
+    },
+    "N2_cityjson_citygml": {
+      "before": [
+        "Building ground outlines are placed on the map when the file states an EPSG system; ",
+        "otherwise its reading is kept as evidence."
+      ],
+      "after": [
+        "Building ground outlines may be prepared when the file states a usable horizontal EPSG system ",
+        "and holds supported ground geometry. The outline file's own line says whether it reaches the map; ",
+        "otherwise its reading is kept as evidence."
+      ]
+    },
+    "N2_json": {
+      "before": [
+        "CityJSON building ground outlines are placed on the map when the file states an EPSG system; ",
+        "otherwise, and for glTF, the reading is kept as evidence."
+      ],
+      "after": [
+        "CityJSON building ground outlines may be prepared when the file states a usable horizontal EPSG system ",
+        "and holds supported ground geometry. The outline file's own line says whether it reaches the map; ",
+        "otherwise, and for glTF, the reading is kept as evidence."
+      ]
+    },
+    "N3": {
+      "before": "Its line in the batch says how many rows were placed and how many were skipped, and why.",
+      "after": [
+        "Its line in the batch says how many rows were prepared and how many were skipped, and why. ",
+        "That GeoJSON file is then taken in as its own item in this batch, and its own line says whether it is ",
+        "on the map."
+      ]
+    },
+    "W4": {
+      "before": "stores M or MultiPatch shapes, or its shapes and records differ in number",
+      "after_type_18": "stores unsupported shape type 18 (MULTIPOINTZ)",
+      "after_count_mismatch": "its shapes and records differ in number",
+      "unchanged": "Type 18 remains not_converted; M/MultiPatch remain refused; supported Z geometry stays intact."
+    }
+  },
+  "N4": {
+    "before": "A generated fallback could overwrite another source cell or take a later literal header's name.",
+    "after": "Reserve every original header, then allocate against reserved and previously used property names.",
+    "controls": [
+      ["key", "key (column 3)", "key", "x", "y"],
+      ["key", "key", "key (column 2)", "x", "y"],
+      ["key", "key", "key (column 2)", "key (column 2) (2)", "x", "y"],
+      ["", "column (column 1)", "", "x", "y"]
+    ],
+    "assertions": "Every cell survives, order and first literal names stay, output is deterministic."
+  },
+  "tests_first": {
+    "studio": { "exit": 1, "passed": 16, "failed": 6, "reason": "Both gates and old N2/N3 words reproduced." },
+    "table_geojson": { "exit": 1, "passed": 21, "failed": 4, "reason": "Both collision directions reproduced." },
+    "shapefile": { "exit": 1, "passed": 8, "failed": 6, "reason": "Unsupported-type and count words reproduced." }
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test ",
+        "packages/server/src/modules/usp/ingestion/table-geojson.test.ts ",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts ",
+        "packages/server/src/modules/usp/ingestion/tabular-stream.test.ts"
+      ],
+      "exit": 0, "passed": 360, "failed": 0, "skipped": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake --maxWorkers=2 --testTimeout=20000",
+      "exit": 0, "files": 48, "passed": 269, "failed": 0
+    },
+    {
+      "command": [
+        "E:/BhuAayam-data/task-data/d3/geo-py311/Scripts/python.exe -m pytest ",
+        "services/geo/tests/test_native_gis_shapefile.py services/geo/tests/test_native_conversion.py ",
+        "--basetemp=E:/ulpin-tmp/wd2-pytest-native-gis -o addopts= -q"
+      ],
+      "exit": 0, "passed": 35, "failed": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc",
+      "exit": 0,
+      "result": "Only intake.ts and table-geojson.ts source pins change; wire schema is unchanged."
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 0, "operations": 329, "schemas": 372
+    },
+    { "command": "pnpm studio:api-types", "exit": 0, "result": "Generated types unchanged." },
+    {
+      "command": [
+        "pnpm --filter @ulpin/studio exec vitest run src/features/intake/table/TablePlacement.test.tsx ",
+        "src/features/intake/BatchTableSection.test.tsx src/features/intake/upload-reader.test.tsx --maxWorkers=2"
+      ],
+      "exit": 0, "passed": 22, "failed": 0,
+      "result": "Final self-review tightened the standalone test to prove both unenrolled and enrolled branches."
+    },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs b1a4bd80", "exit": 0 }
+  ],
+  "execution_notes": [
+    "TMP, TEMP and TMPDIR were E:/ulpin-tmp; scratch and pytest directories were on E:.",
+    "Missing local dependencies first prevented Studio/TS execution (exit 1).",
+    "pnpm install --offline --frozen-lockfile --ignore-scripts succeeded (exit 0), with zero downloads.",
+    "Initial simultaneous typechecks exceeded 120 seconds; child exit was 3221225794. Serial reruns passed.",
+    "Initial default-parallel Studio suite: exit 1, 267 passed, 2 upload timing failures in 1 of 48 files.",
+    "Bounded comparison: two workers and 20-second test ceiling; all 269 passed, no product-code change.",
+    "Passing options to pnpm test was rejected (exit 1); invoking vitest through pnpm exec accepted them.",
+    "Extra test_native_kml.py run: exit 1, seven failures from missing defusedxml in supplied Python environment.",
+    "Required native_gis suites pass without that unrelated dependency; no environment or dependency changes.",
+    "A temporary NODE_OPTIONS preload disabled dotenv.config for verification; no credentials were read.",
+    "ULPIN_PROFILE_PYTHON, ULPIN_GEO_PYTHON and ULPIN_NR1_PYTHON used the supplied d3 Python for backend checks.",
+    "PYTHONDONTWRITEBYTECODE=1 was set for final Python and backend runs."
+  ],
+  "real_inputs": {
+    "good": {
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip",
+      "role": "Public foreign test_only original; unchanged bytes, 88 converted features with record locators.",
+      "crs": "EPSG:28356"
+    },
+    "difficult": {
+      "source": "Same Tweed original, copied only into pytest scratch with an unresolvable .prj.",
+      "result": "crs_unstated; officer answer cannot replace the source's unresolved declaration; no GeoJSON."
+    },
+    "table": {
+      "path": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx",
+      "result": "Real two-header-row workbook: 8 columns, 60 rows, window headers match the bounded read."
+    },
+    "controls": "UTF-16 LE/BE profiles and byte controls, colliding headers and MultiPointZ are test_only controls."
+  },
+  "ui_design_check": "docs/evidence/wd2/ui-design-check.md",
+  "self_review": [
+    "Reviewed every task diff against b1a4bd80; only requested sentences and gates changed.",
+    "staging...HEAD includes 271 inherited files; the task base avoids claiming or modifying inherited work.",
+    "Corrected the standalone profile test's captured source-id mismatch; both enrolment branches now asserted.",
+    "New evidence files have no lines above 120 characters; result.json parses; git diff --check passes."
+  ],
+  "next": [
+    "Review and integrate, rebuild the geo processor for its changed refusal words, then rehearse the combined build.",
+    "Verify actual UTF-16 placement and child GeoJSON map status in an authorised browser/runtime session.",
+    "The extra KML suite needs defusedxml in the supplied Python environment before broader KML qualification."
+  ]
+}

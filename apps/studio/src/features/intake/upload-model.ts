@@ -71,7 +71,8 @@ interface ReaderForecast {
 }
 
 const evidenceOnly = 'Its reading is kept as evidence, not placed on the map.';
-const groundOutlines = 'Building ground outlines are placed on the map when the file states an EPSG system; '
+const groundOutlines = 'Building ground outlines may be prepared when the file states a usable horizontal EPSG '
+  + 'system and holds supported ground geometry. The outline file\'s own line says whether it reaches the map; '
   + 'otherwise its reading is kept as evidence.';
 const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes,
   read: 'Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most '
@@ -87,8 +88,9 @@ const readers: Record<string, ReaderForecast> = {
     read: 'Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked',
     note: `A CityJSON is read up to ${sizeWords(CITYJSON_LIMITS.originalBytes)} and glTF JSON up to `
       + `${sizeWords(GLTF_LIMITS.originalBytes)}; other JSON is kept, not read. CityJSON building ground outlines `
-      + 'are placed on the map when the file states an EPSG system; otherwise, and for glTF, the reading is kept as '
-      + 'evidence.' },
+      + 'may be prepared when the file states a usable horizontal EPSG system and holds supported ground geometry. '
+      + 'The outline file\'s own line says whether it reaches the map; otherwise, and for glTF, the reading is kept '
+      + 'as evidence.' },
   cityjson: { name: 'CityJSON', bytes: CITYJSON_LIMITS.originalBytes,
     read: 'Read by the CityJSON reader when its bytes show a CityJSON city model', note: groundOutlines },
   dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes, note: evidenceOnly },

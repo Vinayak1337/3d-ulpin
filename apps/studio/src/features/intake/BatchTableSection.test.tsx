@@ -3,11 +3,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createContractValidator } from '../../local/contract';
 import type { IntakeItem } from './batch-model';
 import { BatchTableSection, createItemTableRead, itemTableSource, ReadAsTableForm, ReadTable,
   type ItemTableSource } from './BatchTableSection';
+import { tableKey } from './table/queries';
 import type { TableFromOriginalBody } from './table/retain';
 import type { TableJob } from './table/types';
 import { followTable, jobWords, tablePath } from './table/useFollowTable';
@@ -184,6 +186,20 @@ it('a workbook item names its stated sheet and refuses header rows before any re
   expect(html).toContain('<option value="T_18">');
   expect(html).toContain('The file&#x27;s card states this sheet: T_18.');
   expect(html).toMatch(/<button type="submit"[^>]*>Read as a table<\/button>/);
+});
+
+it.each(['utf-16le', 'utf-16be'] as const)('a batch BOM %s table offers placement', encoding => {
+  // Protocol control: the BOM reader's pinned encoding on the captured table profile.
+  const client = new QueryClient();
+  client.setQueryData([...tableKey(caseId, sourceId), 'profile'], { ...profile,
+    tabular: { ...profile.tabular, selection: { ...profile.tabular.selection, encoding } } });
+  const html = renderToStaticMarkup(<QueryClientProvider client={client}><MemoryRouter>
+    <BatchTableSection caseId={caseId} item={csv} items={items} />
+  </MemoryRouter></QueryClientProvider>);
+  expect(html).toContain('>Place on the map</button>');
+  expect(html).toContain('>Open the table</a>');
+  expect(html).not.toContain('Save the table as CSV UTF-8');
+  client.clear();
 });
 
 it('an item whose source is already a table links to its table page', () => {

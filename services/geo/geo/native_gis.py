@@ -660,8 +660,11 @@ def _shapefile_parts(stopped: dict, read, place, folder: Path, origin: dict, sha
     except (shapefile.ShapefileException, LookupError, OSError):
         return {**stopped, "reason": "could not be opened with its companions and encoding"}
     with reader:
-        if reader.shapeType not in (0, 1, 3, 5, 8, 11, 13, 15) or reader.numShapes != reader.numRecords:
-            return {**stopped, "reason": "stores M or MultiPatch shapes, or its shapes and records differ in number"}
+        if reader.shapeType not in (0, 1, 3, 5, 8, 11, 13, 15):
+            shape_name = shapefile.SHAPETYPE_LOOKUP.get(reader.shapeType, "unknown")
+            return {**stopped, "reason": f"stores unsupported shape type {reader.shapeType} ({shape_name})"}
+        if reader.numShapes != reader.numRecords:
+            return {**stopped, "reason": "its shapes and records differ in number"}
         fields = [item[0] for item in reader.fields[1:]]
         derivative = _Derivative(folder, stopped["ordinal"], header, crs)
         try:

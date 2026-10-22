@@ -67,9 +67,16 @@ type TableRow = StreamedTableWindow['rows'][number];
 
 /** Each header names its property; an empty or repeated header is named by its column too, so none is lost. */
 function propertyNames(headers: string[]): string[] {
+  const reserved = new Set(headers);
   const seen = new Set<string>();
   return headers.map((header, index) => {
-    const name = header && !seen.has(header) ? header : `${header || 'column'} (column ${index + 1})`;
+    let name = header;
+    if (!header || seen.has(header)) {
+      const base = `${header || 'column'} (column ${index + 1})`;
+      name = base;
+      let suffix = 2;
+      while (reserved.has(name) || seen.has(name)) name = `${base} (${suffix++})`;
+    }
     seen.add(name);
     return name;
   });

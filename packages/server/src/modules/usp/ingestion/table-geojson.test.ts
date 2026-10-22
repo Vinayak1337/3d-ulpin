@@ -83,6 +83,32 @@ test('a longitude/latitude CSV of 5 rows, one blank: 4 points with row locators 
   assert.deepEqual([read.reference.sourceCrs, read.reference.coordinateUnit], ['EPSG:4326', 'degree']);
 });
 
+for (const headers of [
+  ['key', 'key (column 3)', 'key', 'x', 'y'],
+  ['key', 'key', 'key (column 2)', 'x', 'y'],
+  ['key', 'key', 'key (column 2)', 'key (column 2) (2)', 'x', 'y'],
+  ['', 'column (column 1)', '', 'x', 'y'],
+]) {
+  test(`colliding headers preserve every cell in column order: ${JSON.stringify(headers)}`, async () => {
+    // test_only header/cell controls for the observed overwrite, not operational records.
+    const cells = headers.map((_, index) => `cell-${index + 1}`);
+    cells.splice(-2, 2, '77.5', '12.9');
+    const bytes = Buffer.from(`${headers.join(',')}\n${cells.join(',')}\n`);
+    const table = plan(bytes, headers, { kind: 'columns', x: headers.length - 2, y: headers.length - 1 });
+    const { counts, geojson } = await written(bytes, table);
+    assert.equal(counts.features, 1);
+    const properties = JSON.parse(geojson.toString()).features[0].properties;
+    assert.equal(Object.keys(properties).length, headers.length);
+    assert.deepEqual(Object.values(properties), cells);
+    const seen = new Set<string>();
+    headers.forEach((header, index) => {
+      if (header && !seen.has(header)) assert.equal(properties[header], cells[index]);
+      seen.add(header);
+    });
+    assert.equal((await written(bytes, table)).geojson.toString(), geojson.toString());
+  });
+}
+
 test('a row whose coordinate cell is not a number is skipped and named so', async () => {
   const bytes = Buffer.from('id,x,y\na,77.5,12.9\nb,12.5 N,77.1\nc,,12.0\n');
   const { counts } = await written(bytes, plan(bytes, ['id', 'x', 'y'], { kind: 'columns', x: 1, y: 2 }));

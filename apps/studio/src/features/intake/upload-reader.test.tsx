@@ -80,9 +80,11 @@ it('forecasts only what the name and size settle: points, JSON, CityJSON, DXF, g
     .toBe('Will be kept, not read: larger than the 16 MiB point cloud reader');
   expect(words('city.json')).toBe('Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked '
     + '(within 1 GiB). A CityJSON is read up to 8 MiB and glTF JSON up to 16 MiB; other JSON is kept, not read. '
-    + 'CityJSON building ground outlines are placed on the map when the file states an EPSG system; otherwise, '
-    + 'and for glTF, the reading is kept as evidence.');
-  const outlines = 'Building ground outlines are placed on the map when the file states an EPSG system; '
+    + 'CityJSON building ground outlines may be prepared when the file states a usable horizontal EPSG system '
+    + 'and holds supported ground geometry. The outline file\'s own line says whether it reaches the map; '
+    + 'otherwise, and for glTF, the reading is kept as evidence.');
+  const outlines = 'Building ground outlines may be prepared when the file states a usable horizontal EPSG system '
+    + 'and holds supported ground geometry. The outline file\'s own line says whether it reaches the map; '
     + 'otherwise its reading is kept as evidence.';
   expect(words('city.cityjson')).toBe('Read by the CityJSON reader when its bytes show a CityJSON city model '
     + `(within 8 MiB). ${outlines}`);

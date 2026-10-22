@@ -6,7 +6,6 @@ import { Button, Skeleton } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
 import { useIntakeManifest } from '../batch-queries';
 import { PlaceOnMap } from '../PlaceOnMapDialog';
-import { placementRefusal } from '../table-placement-command';
 import { TableRefusal } from './Progress';
 import type { TableProfile } from './types';
 
@@ -50,21 +49,21 @@ export function TablePlacement({ caseId, sourceId, name, profile }: {
   if (manifest.isPending) return <Skeleton />;
   const itemId = tableItemId(manifest.data?.items ?? [], sourceId) ?? enrol.data ?? null;
   return <PlacementBody caseId={caseId} itemId={itemId} name={name} headers={profile.headers}
-    refusal={placementRefusal(profile.tabular.selection)} opened={enrol.isSuccess}
+    opened={enrol.isSuccess}
     enrol={{ press: () => enrol.mutate(), pending: enrol.isPending, error: enrol.error }} />;
 }
 
-export function PlacementBody({ caseId, itemId, name, headers, refusal, opened, enrol }: {
-  caseId: string; itemId: string | null; name: string; headers: readonly string[]; refusal: string | null;
+export function PlacementBody({ caseId, itemId, name, headers, opened, enrol }: {
+  caseId: string; itemId: string | null; name: string; headers: readonly string[];
   opened: boolean; enrol: Enrol;
 }) {
   let body: React.ReactNode;
-  if (refusal) body = <p className="ul-help">{refusal}</p>;
-  else if (itemId) body = <>
+  if (itemId) body = <>
     <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={headers} opened={opened} />
     <p className="ul-help">
       This file is an item of its case&apos;s batch. <Link to={`/studio/work/cases/${caseId}/intake`}>Its line in
-      the batch</Link> says how many rows were placed and how many were skipped, and why.
+      the batch</Link> says how many rows were prepared and how many were skipped, and why. That GeoJSON file is
+      then taken in as its own item in this batch, and its own line says whether it is on the map.
     </p>
   </>;
   else body = <>
