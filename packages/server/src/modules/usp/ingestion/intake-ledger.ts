@@ -61,9 +61,21 @@ function layerCrs(value: unknown) {
   }) };
 }
 
+type ListedRow = { parent_item_id: string | null; source_id: string | null };
+
+/**
+ * ZP2. A ZIP member taken out and enrolled as its own item is listed once, as that item. A member not taken out, or
+ * kept but not enrolled, stays listed as the member with its own words; the archive's row keeps its member summary.
+ */
+export function listedIntakeRows<T extends ListedRow>(rows: readonly T[]): T[] {
+  const enrolled = new Set(rows.filter(row => !row.parent_item_id && row.source_id).map(row => row.source_id));
+  return rows.filter(row => !row.parent_item_id || !row.source_id || !enrolled.has(row.source_id));
+}
+
 export function intakeItem(row: any) {
   const named = intakeNameWords(row.card, row.name ?? row.member_path ?? '');
-  const reason = [named, row.limit_reason].filter(Boolean).join(' ').slice(0, 2000) || null;
+  const takenOut = row.taken_out_of ? `Taken out of ${row.taken_out_of}.` : null;
+  const reason = [takenOut, named, row.limit_reason].filter(Boolean).join(' ').slice(0, 2000) || null;
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
     memberPath: row.member_path, name: row.name ?? row.member_path, family: row.family, format: row.format,

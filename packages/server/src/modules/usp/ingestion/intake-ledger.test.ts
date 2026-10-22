@@ -29,6 +29,12 @@ test('the item names the streamed profile job its read joined, and null when it 
   assert.equal(intakeItem({ ...row, plan_ref: null }).streamedProfileJobId, null);
 });
 
+test('an item kept from a ZIP member says which archive it was taken out of, before its reader words', () => {
+  const item = intakeItem({ ...row, taken_out_of: 'layers.zip', limit_reason: 'Kept as a CSV table (23 KB).' });
+  assert.equal(item.limitReason, 'Taken out of layers.zip. Kept as a CSV table (23 KB).');
+  assert.equal(intakeItem({ ...row, taken_out_of: null }).limitReason, null);
+});
+
 test('an absent or unrecognized stored plan never makes the item read throw', () => {
   for (const plan_ref of [null, undefined, {}, { unrelated: id },
     { recipeId: id, recipeRevision: 0, recipeState: 'executed', origin: 'officer' },

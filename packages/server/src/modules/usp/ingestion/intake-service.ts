@@ -11,7 +11,8 @@ import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo } from '../../areas/areas';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { registerIntakeItemTx, intakeItem, saveIntakeCardTx, citeIntakeReceipt } from './intake-ledger';
+import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt }
+  from './intake-ledger';
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
 import { queueIntakeDraftTx } from './intake-draft';
@@ -22,8 +23,12 @@ import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './in
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
-const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id
+// ZP2: an item kept from a ZIP member names the archive its lineage was retained from.
+const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id,
+  archive.name taken_out_of
   FROM usp_intake_items i LEFT JOIN sources s ON s.id=i.source_id
+  LEFT JOIN sources archive ON i.parent_item_id IS NULL AND archive.case_id=s.case_id
+    AND archive.id::text=s.inspection->'archiveMember'->>'parentSourceId'
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
@@ -193,7 +198,7 @@ export class IntakeService {
       const sources = new Set(rows.map(row => row.source_id).filter(Boolean));
       for (const sourceId of sources) await intakeSourceTx(client, caseId, sourceId);
       assertIngestionBinding(scope.binding);
-      return IntakeManifestSchema.parse({ caseId, items: rows.map(intakeItem) });
+      return IntakeManifestSchema.parse({ caseId, items: listedIntakeRows(rows).map(intakeItem) });
     });
   }
 
