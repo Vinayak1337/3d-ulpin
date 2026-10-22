@@ -382,7 +382,7 @@ test('each converted layer tells its written and not-written features and where 
     assert.equal(state.limitReason, '2 layers of this GeoPackage are converted to GeoJSON and taken in as their own '
       + 'files: plots, roads. Features per converted layer: plots (1,200 written, 3 not written), roads (7 written, '
       + '0 not written). A feature not written is not in that layer\'s GeoJSON; the stored locator file kept beside '
-      + 'that GeoJSON names its position in the original and why.');
+      + 'that GeoJSON names its position in the original and why. Open the reading of this file to see them listed.');
   });
 
 test('an unresolvable stated CRS is kept, not converted, without promising a CRS answer', () => {

@@ -286,6 +286,27 @@ export class IntakeService {
     return { bytes, sha256: preview.sha256 };
   }
 
+  /**
+   * NO1. A native conversion's features not written, per layer, under the original item's authority: its derivatives
+   * are found by their stored lineage and each layer's locator file is read within one bounded budget.
+   */
+  async omissions(caseValue: string, itemValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const { omissionFormat, omissionLayersTx, readOmissions } = await import('./intake-native-omissions');
+    const scope = await this.dependencies.transaction(async client => {
+      const binding = (await intakeCaseTx(client, caseId)).binding;
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      assertIngestionBinding(binding);
+      if (row.parent_item_id || row.source_id !== source.id || !omissionFormat(row.card, source.name)) {
+        throw new AppError(409, 'INTAKE_OMISSIONS_NOT_NATIVE', 'Only a GeoPackage, shapefile, KML, KMZ, CityJSON '
+          + 'or CityGML kept in this batch has converted layers with a list of features not written.');
+      }
+      return { caseId, itemId, source, layers: await omissionLayersTx(client, caseId, itemId, source) };
+    });
+    return readOmissions(scope, this.dependencies.read);
+  }
+
   /** G23. The officer's answer to what a read page image shows, kept as a candidate label; one stored request. */
   async labelPageImage(caseValue: string, itemValue: string, raw: unknown) {
     const caseId = uuid.parse(caseValue);

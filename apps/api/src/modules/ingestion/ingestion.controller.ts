@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Inject, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, HttpCode, Inject, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-servic
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
   IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema,
   IntakeLayerCrsSchema, IntakeTablePlacementSchema, IntakePlanOfferSchema, IntakePlanRequestSchema,
-  IntakePlanReceiptSchema } from '@ulpin/contracts/usp';
+  IntakePlanReceiptSchema, IntakeNativeOmissionsSchema } from '@ulpin/contracts/usp';
 import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
   IntakeSurfaceDisplaySchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
@@ -148,6 +148,16 @@ export class IngestionController {
     response.set({'Content-Type':'image/png','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff',
       'Content-Length':String(preview.bytes.length),'X-Content-SHA256':preview.sha256});
     response.send(Buffer.from(preview.bytes));
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/omissions')
+  @Header('Cache-Control','private, no-store') @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_omissions',
+    summary:'List, per converted layer, the features a native conversion did not write: at most 50 each with the '
+      +'total, read from the kept locator file under the original item authority; read-only'})
+  @wireResponse(200,IntakeNativeOmissionsSchema)
+  omissions(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
+    return this.intake.omissions(caseId,itemId);
   }
 
   @Post('cases/:caseId/intake/items/:itemId/retry')
