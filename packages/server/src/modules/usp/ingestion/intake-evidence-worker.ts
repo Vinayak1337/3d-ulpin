@@ -6,7 +6,7 @@ import { DocumentInputSchema, TABULAR_LIMITS, type DocumentInput, type DocumentR
   type TabularSelection } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
-import { readObject, sha256 } from '../../../infrastructure/storage';
+import { readRetainedOriginal } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
 import { assertDocumentAcceptedResultTx, readDocumentResult } from './documents';
@@ -38,11 +38,7 @@ const pinned = (input: IntakeEvidenceInput) => (client: PoolClient) =>
   assertIntakeEvidenceInputTx(client, input).then(() => {});
 
 async function retained(source: Retained) {
-  const bytes = await readObject(source.object_key);
-  if (bytes.length !== Number(source.bytes) || sha256(bytes) !== source.sha256) {
-    throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original differs from its pins.');
-  }
-  return bytes;
+  return readRetainedOriginal(source.object_key, Number(source.bytes), source.sha256, TABULAR_LIMITS.bytes);
 }
 
 /** D4: a table the profile does not name is read like the named table whose header row it repeats exactly.

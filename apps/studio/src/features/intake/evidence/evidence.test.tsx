@@ -222,6 +222,18 @@ it('reads coverage in words, a null count as not known yet, the counts and a pag
   expect(html).not.toContain('First page');
 });
 
+it('shows a stopped reading’s state, code and server words beside that source’s unknown counts', () => {
+  const failure = { state: 'failed' as const, code: 'INTAKE_SOURCE_INTEGRITY',
+    message: 'The retained original differs from its pinned byte count or SHA-256. Nothing was read.' };
+  const failed: EvidencePage = { ...page, sources: [page.sources[0]!, { ...page.sources[1]!,
+    coverage: { ...page.sources[1]!.coverage!, failure } }] };
+  expect(validate(schemas.page, failed)).toEqual([]);
+  const html = renderToStaticMarkup(<EvidenceRead page={failed} items={items} targets={targets} paging={paging} />);
+  expect(html).toContain('Reading failed (INTAKE_SOURCE_INTEGRITY): ' + failure.message);
+  expect(html).toContain('letter.pdf (Document). Partial: 0 read, not known yet with a key');
+  expect(html).toContain('register.csv (Table). Closed: 3 read');
+});
+
 it('keeps both coverage rows and the candidates visible when one retained source is unavailable', () => {
   const reason = 'The item no longer has a retained source in this batch.';
   const mixed: EvidencePage = { ...page, sources: [page.sources[0]!, { ...page.sources[1]!,

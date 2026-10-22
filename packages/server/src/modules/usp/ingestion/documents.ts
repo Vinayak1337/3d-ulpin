@@ -6,7 +6,7 @@ import {DocumentRetainSchema,DocumentRetrySchema,DocumentReceiptSchema,DocumentI
   type DocumentResult} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
-import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
+import {putOriginal,readObject,readRetainedOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {originalAttempt} from '../../cases/original-attempt';
 import {documentCaseTx,documentSourceTx,documentInput,assertDocumentInputTx} from './document-context';
@@ -196,8 +196,8 @@ export class DocumentIngestionService{
   }
   async original(caseValue:string,sourceValue:string){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),ctx=await transaction(client=>documentSourceTx(client,caseId,sourceId));
-    const bytes=await readObject(ctx.source.object_key);
-    if(bytes.length!==Number(ctx.source.bytes)||sha256(bytes)!==ctx.source.sha256)throw new AppError(422,'SOURCE_INTEGRITY','The original differs from its retained receipt.');
+    const bytes=await readRetainedOriginal(ctx.source.object_key,Number(ctx.source.bytes),ctx.source.sha256,
+      DOCUMENT_LIMITS.originalBytes);
     await transaction(client=>documentSourceTx(client,caseId,sourceId));return {bytes,name:ctx.source.name,mimeType:ctx.source.mime_type};
   }
 }

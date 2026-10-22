@@ -337,8 +337,11 @@ export const IntakeEvidenceOutcomeSchema = z.enum(['matched', 'no_match', 'sever
 export const IntakeEvidenceCoverageSchema = z.strictObject({
   state: z.enum(['reading', 'partial', 'closed']), read: count, eligible: count, keyless: count,
   unread: count, failed: count,
+  failure: z.strictObject({ state: z.enum(['failed', 'stale', 'cancelled']), code: words(120), message: words(500) })
+    .optional().describe('The reading job stopped; counts remain unknown, never inferred from this failure.'),
 }).refine(value => value.state !== 'closed'
-  || ([value.read, value.eligible, value.keyless, value.failed].every(n => n !== null) && value.unread === 0),
+  || (!value.failure && [value.read, value.eligible, value.keyless, value.failed].every(n => n !== null)
+    && value.unread === 0),
 'Closed coverage states every count and leaves nothing unread.');
 export const IntakeEvidenceSourceSchema = z.strictObject({
   itemId: uuid, profileId: uuid, family: z.enum(['table', 'document']), jobId: uuid.nullable(),

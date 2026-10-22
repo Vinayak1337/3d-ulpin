@@ -377264,6 +377264,36 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 9007199254740991
+                    },
+                    "failure": {
+                      "description": "The reading job stopped; counts remain unknown, never inferred from this failure.",
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "failed",
+                            "stale",
+                            "cancelled"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -377889,6 +377919,36 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 9007199254740991
+                    },
+                    "failure": {
+                      "description": "The reading job stopped; counts remain unknown, never inferred from this failure.",
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "failed",
+                            "stale",
+                            "cancelled"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -379703,6 +379763,36 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 9007199254740991
+                    },
+                    "failure": {
+                      "description": "The reading job stopped; counts remain unknown, never inferred from this failure.",
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "failed",
+                            "stale",
+                            "cancelled"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -380389,6 +380479,36 @@
                           "type": "integer",
                           "minimum": 0,
                           "maximum": 9007199254740991
+                        },
+                        "failure": {
+                          "description": "The reading job stopped; counts remain unknown, never inferred from this failure.",
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "failed",
+                                "stale",
+                                "cancelled"
+                              ]
+                            },
+                            "code": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "message": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 500
+                            }
+                          },
+                          "required": [
+                            "state",
+                            "code",
+                            "message"
+                          ],
+                          "additionalProperties": false
                         }
                       },
                       "required": [

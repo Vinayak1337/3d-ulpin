@@ -49,7 +49,9 @@ export function coverageWords(coverage: Coverage | null) {
   if (!coverage) return 'Not read yet: every count is not known yet.';
   return `${coverageStates[coverage.state]}: ${knownWords(coverage.read)} read, ${knownWords(coverage.eligible)} `
     + `with a key, ${knownWords(coverage.keyless)} without a key, ${knownWords(coverage.unread)} unread, `
-    + `${knownWords(coverage.failed)} could not be read.`;
+    + `${knownWords(coverage.failed)} could not be read.`
+    + (coverage.failure ? ` Reading ${coverage.failure.state} (${coverage.failure.code}): `
+      + coverage.failure.message : '');
 }
 
 /** Map items of the batch with drafted buildings: a package of the targets read names the item and counts some. */

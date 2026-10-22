@@ -2,9 +2,9 @@ import {createHash} from 'node:crypto';
 import {Readable} from 'node:stream';
 import type {PoolClient} from 'pg';
 import {RegistryTableRowCitationSchema,type RegistryTableRowCitation} from '@ulpin/contracts';
-import {streamingReadMs,type IntakeTableRowLocator,type TableWindowRow} from '@ulpin/contracts/usp';
+import {TABULAR_LIMITS,streamingReadMs,type IntakeTableRowLocator,type TableWindowRow} from '@ulpin/contracts/usp';
 import {conflict} from '../../infrastructure/errors';
-import {readObject,readObjectRange,sha256} from '../../infrastructure/storage';
+import {readRetainedOriginal,readObjectRange,sha256} from '../../infrastructure/storage';
 import {fingerprint} from '../cases/domain';
 import {rowCells} from '../usp/ingestion/intake-evidence';
 import {readTableWindowTx,windowRows} from '../usp/ingestion/table-windows';
@@ -17,7 +17,8 @@ import {registryDocumentSourceAccessTx} from './registry-metadata';
  * native document citations and checked the same way: the retained original is read again at its pins and the row,
  * its key cell, its excerpt and the citation id must be exactly what that read gives. A row of a streamed CSV is
  * read again from its own byte range only; a streamed workbook row proves its sheet's stored bytes unchanged and
- * takes its cells from the stored window. A large original is never read whole. No cell becomes a field.
+ * takes its cells from the stored window. Only originals within the tabular memory bound are read whole.
+ * No cell becomes a field.
  */
 const EXCERPT_CHARS=2048;
 const SLICE_BYTES=1024*1024;
@@ -30,7 +31,7 @@ type Original={object_key:string;bytes:number|string;inspection?:{manualProfile?
 /** The cited row read again: its exact excerpt and the access pin it was read under. */
 export type CitedRow={excerpt:string;accessSha256:string};
 /** `reads` holds what one write or check call already read, so an original or a sheet range is read once in it. */
-export type TableEvidenceDependencies={source?:typeof registryDocumentSourceAccessTx;bytes?:typeof readObject;
+export type TableEvidenceDependencies={source?:typeof registryDocumentSourceAccessTx;bytes?:typeof readRetainedOriginal;
   range?:typeof readObjectRange;reads?:Map<string,Promise<unknown>>};
 
 /** A row's text cells, one 'header: value' line each in column order and a marked cell as 'header: unknown', under
@@ -180,7 +181,8 @@ export async function citedRowTx(client:PoolClient,siteId:string,row:IntakeTable
   const job=(await client.query('SELECT accepted_fence FROM usp_job_metadata WHERE job_id=$1',[row.rawJobId])).rows[0];
   if(Number(job?.accepted_fence)!==row.acceptedFence)conflict('The accepted reading of the cited table changed.');
   const bytes=await once(dependencies,`whole\n${source.object_key}`,
-    ()=>(dependencies.bytes??readObject)(source.object_key));
+    ()=>(dependencies.bytes??readRetainedOriginal)(source.object_key,Number(source.bytes),row.sourceSha256,
+      TABULAR_LIMITS.bytes));
   if(bytes.length!==Number(source.bytes)||sha256(bytes)!==row.sourceSha256)
     conflict('The retained table original differs from its pins.');
   return {excerpt:wholeTableRow(row,bytes),accessSha256:source.accessSha256};
