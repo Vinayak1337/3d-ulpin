@@ -22,7 +22,8 @@ export const StreamingVectorGeometryKindSchema=z.enum([
 ]);
 export const StreamingVectorGeometrySummarySchema=z.strictObject({
   rawJobId:id,
-  counts:z.partialRecord(StreamingVectorGeometryKindSchema,z.number().int().positive().max(STREAMING_VECTOR_LIMITS.features)),
+  counts:z.partialRecord(StreamingVectorGeometryKindSchema,
+    z.number().int().positive().max(STREAMING_VECTOR_LIMITS.features)),
 });
 export type StreamingVectorGeometrySummary=z.infer<typeof StreamingVectorGeometrySummarySchema>;
 export const StreamingVectorFramingSchema=z.enum(['feature-collection','geojson-seq-rs']);

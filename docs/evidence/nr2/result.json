@@ -1,0 +1,121 @@
+{
+  "task": "NR2",
+  "base": "ad64f5db",
+  "gate": "GF-RECOVERY",
+  "audit": "AUD1 gap 7, part 2",
+  "status": "offline_checks_passed_runtime_pending",
+  "canonicalAuthority": "services/geo/geo/area.py:_geometry",
+  "acceptedKinds": ["Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"],
+  "summary": {
+    "location": "sources.inspection.streamedGeometrySummary",
+    "schema": "StreamingVectorGeometrySummarySchema",
+    "scope": "One retained source/layer, pinned by rawJobId; accepted feature counts, not multipart members.",
+    "closure": "Written inside fenced sealed acceptance; totals must equal the stored accepted count.",
+    "rejections": "Topology and payload-budget rejections are excluded; absent historical summaries stay unknown.",
+    "compatibility": "compileStreamedMapping -> compileMapping remains the kind authority, not the reader.",
+    "mixed": "Mixed layers read successfully; a mixed nonpolygon layer still cannot map wholesale as a building.",
+    "words": "intake-large-worker projects counts to the existing limitReason; no map display or UI change."
+  },
+  "preserved": [
+    "1 GiB source; 500000 features; 5000 parts; 100 features and 512 KiB per part",
+    "1 MiB feature; 10000 positions per feature; 2048 positions per ring; 128 rings per polygon",
+    "JSON framing, nesting, exact-number and duplicate-key policies; source hashes and byte locators",
+    "Collection CRS resolution; per-feature and per-geometry CRS overrides refused",
+    "Uniform XY or XYZ accepted unchanged; fourth/M ordinates and mixed XY/XYZ refused",
+    "Polygon record and part serialization, sealed map receipt, and polygon-only tray projection",
+    "No registry write, approval transfer, geometry-role inference or height/datum inference"
+  ],
+  "inputs": [
+    {
+      "role": "good real input; public fixture used test_only",
+      "path": "fixtures/usp/D4/gf0-context-v1/osm-road-centrelines.geojson",
+      "provenance": "Adjacent D4 manifest: OpenStreetMap contributors, ODbL 1.0.",
+      "bytes": 8838, "records": 9, "acceptedByKind": {"LineString": 9},
+      "rejectedByCode": {}, "sourceUnchanged": true, "topology": "not_run"
+    },
+    {
+      "role": "difficult real input; Delhi-wide community boundary, not a parcel; used test_only",
+      "path": "fixtures/uttam-nagar/delhi-boundary.geojson",
+      "provenance": "SOURCE_NOTES.md: OSM relation 1942586 via Nominatim, ODbL 1.0.",
+      "bytes": 70960, "records": 1, "acceptedByKind": {"Polygon": 1},
+      "rejectedByCode": {}, "sourceUnchanged": true, "topology": "not_run",
+      "limit": "Structural read only; no local-frame/domain, footprint, parcel or registry qualification."
+    }
+  ],
+  "checks": {
+    "backend": {"command": "pnpm typecheck:backend", "exit": 0},
+    "testPrefix": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+    "streaming": {
+      "files": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-large-geometry.test.ts"
+      ],
+      "exit": 0, "tests": 16, "pass": 16,
+      "scale": {"features": 500000, "parts": 5000, "sourceBytes": 80388954, "retainedGrowthMiB": 0.1}
+    },
+    "focusedFinal": {
+      "files": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-geometry.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-large-geometry.test.ts"
+      ],
+      "exit": 0, "tests": 9, "pass": 9
+    },
+    "intake": {
+      "files": ["tests/intake-*.test.ts", "packages/server/src/modules/usp/ingestion/intake-*.test.ts"],
+      "exit": 1, "tests": 285, "pass": 281, "fail": 4,
+      "failures": [
+        "intake-ledger: expected GLB words omit RT1's new name/content-disagreement prefix.",
+        "intake-migration: test assumes streamed-profile immediately precedes intake; capacity SQL intervenes.",
+        "intake-pdf-batch: native text-layer PDF ends failed, not succeeded.",
+        "intake-pdf-batch: scanned PDF ends failed_part, not read."
+      ],
+      "diagnosis": [
+        "All failing tests and their implementation files are unchanged relative to ad64f5db.",
+        "RT1 already records both PDF failures: readObject refuses upload-backed large-originals keys.",
+        "Ledger expectation and migration adjacency are stale; no unowned file was changed to hide failures."
+      ]
+    },
+    "relatedRegression": {
+      "files": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-geometry.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-large-geometry.test.ts",
+        "packages/server/src/modules/usp/ingestion/registry.test.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-map-receipt.test.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-mapping-basis.test.ts",
+        "tests/streaming-later-receipt.test.ts"
+      ],
+      "exit": 0, "tests": 40, "pass": 40
+    },
+    "realInputs": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/nr2/check-real-inputs.ts",
+      "exit": 0
+    },
+    "openapi": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 1,
+      "result": "docs/api/openapi.json matched; docs/api/source-pins.json is stale. Generated pins are unowned."
+    },
+    "diff": {"command": "git diff --check", "exit": 0},
+    "newFileLengths": {"result": "All new TypeScript and evidence lines at most 120 characters.", "exit": 0}
+  },
+  "diagnostics": [
+    {
+      "signature": "tsx unavailable in this fresh worktree",
+      "decision": "pnpm install --offline --frozen-lockfile --ignore-scripts; exit 0; no lockfile change."
+    },
+    {
+      "signature": "Initial focused run: 8 passed, one test plan refused by layoutTargetsIssue before mapping.",
+      "decision": "Explicit stated kinds require generic feature targets. Corrected the test; final checks pass."
+    }
+  ],
+  "runtime": {
+    "qualified": false, "docker": "not used", "postgis": "mocked SQL protocol only",
+    "required": "One real point GeoPackage or KML layer through conversion, retention, read and tray rehearsal.",
+    "verify": "Check sealed accepted counts, not-a-footprint words and refused building mapping; no registry write."
+  },
+  "next": [
+    "Regenerate source pins after integration; rerun OpenAPI check.",
+    "Integrate the upload-backed PDF reader fix and resolve the unrelated ledger/migration expectations.",
+    "Run the authorized native point-layer rehearsal; no runtime gate or complete unseen-file import is claimed."
+  ]
+}

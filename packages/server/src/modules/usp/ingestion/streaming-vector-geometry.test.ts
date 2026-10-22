@@ -104,12 +104,12 @@ test('topology uses point validity, positive line length and the unchanged posit
     return { rows: statement.startsWith('SELECT ST_IsValid') ? [row] : [] };
   } }) };
   try {
-    for (const [dimension, area, length, expected] of [
-      [0, 0, 0, null], [1, 0, 1, null], [1, 0, 0, 'INVALID_GEOMETRY'],
-      [2, 1, 0, null], [2, 0, 0, 'INVALID_GEOMETRY'],
+    for (const [geometry, dimension, area, length, expected] of [
+      [point, 0, 0, 0, null], [line, 1, 0, 1, null], [line, 1, 0, 0, 'INVALID_GEOMETRY'],
+      [polygon, 2, 1, 0, null], [polygon, 2, 0, 0, 'INVALID_GEOMETRY'],
     ] as const) {
       row = { dimension, area, length, valid: true, empty: false };
-      assert.equal(await validateStreamingTopology(dimension === 0 ? point : line), expected);
+      assert.equal(await validateStreamingTopology(geometry), expected);
     }
     row = { dimension: 0, valid: true, empty: true };
     assert.equal(await validateStreamingTopology(point), 'INVALID_GEOMETRY');
