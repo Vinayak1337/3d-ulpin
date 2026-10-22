@@ -119,7 +119,10 @@ class ReceiptProtocol {
       return [{ id, family_id, revision, sha256: digest }];
     }
     if (sql.includes('FROM cases')) return [{ id: this.caseId, revision: this.caseRevision }];
-    if (sql.includes('FROM sources')) return this.source ? [this.source] : [];
+    if (sql.includes('FROM sources')) {
+      if (sql.includes("inspection ? 'manualProfile'") && !this.source?.inspection.manualProfile) return [];
+      return this.source ? [this.source] : [];
+    }
     if (sql.includes('FROM usp_mapping_recipes')) return [{ body: this.receipt }];
     throw new Error(`Unexpected protocol read: ${sql}`);
   }
@@ -140,6 +143,9 @@ class ReceiptProtocol {
         name: String(args[4]), profile: String(args[5]), bytes: Number(args[7]), sha256: String(args[8]),
         object_key: String(args[9]), inspection: args[10] as SourceRow['inspection'],
       };
+    } else if (sql.startsWith('UPDATE sources SET mime_type=')) {
+      assert(this.source);
+      Object.assign(this.source.inspection, JSON.parse(String(args[2])));
     } else if (sql.startsWith('UPDATE cases SET revision=')) this.caseRevision++;
     else if (sql.startsWith('UPDATE usp_outbox_streams')) rows = [{ sequence: String(++this.sequence) }];
     else if (sql.startsWith('SELECT')) rows = this.reads(sql);
@@ -161,7 +167,8 @@ class ReceiptProtocol {
         return {};
       }
       assert.equal(command.constructor.name, 'GetObjectCommand');
-      return { Body: { transformToByteArray: async () => this.bytes } };
+      return { Body: Object.assign(Readable.from([this.bytes]), { transformToByteArray: async () => this.bytes }),
+        ContentLength: this.bytes.length, ETag: 'protocol-control' };
     });
   }
 }
@@ -178,11 +185,12 @@ async function retained(provenance = {}, bytes = originalBytes, name = 'edmonton
   return { protocol, request, service, profile };
 }
 
-test('development pin and old manual-tabular profile parse and fingerprint unchanged', () => {
+test('new development pins state the reading while old manual-tabular pins parse and fingerprint unchanged', () => {
   const inventory = inspectTabularSource(developmentBytes, selection);
   const oldPin = { selection, sourceBytes: developmentBytes.length,
     developmentAssetId: development.id, developmentFamily: development.family };
-  assert.deepEqual(inventory.tabular, oldPin);
+  assert.deepEqual(inventory.tabular, { ...oldPin,
+    selection: { ...selection, delimiter: ',', encoding: 'utf-8' } });
   assert.equal(fingerprint(TabularPinSchema.parse(oldPin)), fingerprint(oldPin));
   const oldProfile = { version: 'manual-tabular/1', ...inventory,
     source: { sourceId: randomUUID(), familyId: randomUUID(), sourceRevision: 1,
@@ -193,6 +201,28 @@ test('development pin and old manual-tabular profile parse and fingerprint uncha
   assert.deepEqual(tabularTeacherPolicy(inventory.tabular), {
     dataPolicy: { dataClass: 'public', split: 'development' },
   });
+});
+
+test('a legacy comma receipt replays and deduplicates without acquiring new reading metadata', async () => {
+  const { protocol, request, service, profile } = await retained();
+  const legacy = structuredClone(profile);
+  delete legacy.tabular.selection.delimiter;
+  delete legacy.tabular.selection.encoding;
+  delete legacy.profile.delimiter;
+  delete legacy.profile.encoding;
+  const inventory = protocol.source!.inspection.manualProfile;
+  inventory.tabular = legacy.tabular;
+  inventory.profile = legacy.profile;
+  inventory.schemaFingerprint = fingerprint({ selection, headers: legacy.headers,
+    layout: legacy.profile.layoutFingerprint });
+  legacy.source.schemaFingerprint = inventory.schemaFingerprint;
+  const operation = protocol.operations.get(`manual-gis:${request.requestKey}`)!;
+  operation.result = legacy;
+  const file = { name: 'edmonton-heritage.csv', bytes: originalBytes };
+  assert.deepEqual(await service.retain(protocol.caseId, request, file), legacy);
+  assert.deepEqual(await service.retain(protocol.caseId, { ...request, requestKey: randomUUID() }, file), legacy);
+  assert.deepEqual(protocol.source!.inspection.manualProfile.tabular, legacy.tabular);
+  assert.equal(protocol.puts, 1);
 });
 
 test('known hash with a wrong size cannot use officer provenance to bypass development checks', () => {

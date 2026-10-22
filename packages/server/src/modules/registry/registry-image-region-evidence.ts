@@ -44,10 +44,10 @@ function assertValidation(addition:RegistryImageRegionAddition,proof:RegistryIma
     Buffer.byteLength(JSON.stringify(proof))>limits.provenanceBytes)
     conflict('The image-region validation differs from its exact original frame, selection, transform or display profile.');
 }
-const imageRegionService=new PacketImageRegionService();
 /** Server-only crop preparation; never called while mutation locks are held. */
 export async function prepareRegistryImageRegion(addition:RegistryImageRegionAddition,
-  source:RegistryImageRegionPrepared['source'],extract:PacketImageRegionService['extract']=imageRegionService.extract.bind(imageRegionService)){
+  source:RegistryImageRegionPrepared['source'],
+  extract:PacketImageRegionService['extract']=(...args)=>new PacketImageRegionService().extract(...args)){
   const result=await extract(addition.document.sourceId,{revision:String(addition.document.sourceRevision),
     sha256:addition.document.sourceSha256,purpose:'private_source_preview',selection:addition.region});
   const proof=PacketImageRegionProvenanceSchema.parse(result.provenance);

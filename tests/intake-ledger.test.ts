@@ -450,10 +450,11 @@ test('enrolling a shapefile ZIP also queues independent members without blocking
 test('a probed GLB and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
   await configured(async () => {
     for (const [bytes, expected] of [
-      [Buffer.from('glTF\x02\0\0\0\x0c\0\0\0', 'latin1'), 'Kept as a GLB 3D model (18 bytes). No reader in a '
-        + 'batch takes this kind of file yet, so it is not on the map; the original is kept with its SHA-256.'],
-      [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Kept (18 bytes); its kind was not recognised from its first and '
-        + 'last bytes.'],
+      [Buffer.from('glTF\x02\0\0\0\x0c\0\0\0', 'latin1'), 'Named .csv, read as GLB. '
+        + 'Kept as a GLB 3D model (18 bytes). No reader in a batch takes this kind of file yet, so it is not on '
+        + 'the map; the original is kept with its SHA-256.'],
+      [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Named .csv, its bytes are not a recognised kind: kept, not read. '
+        + 'Kept (18 bytes); its kind was not recognised from its first and last bytes.'],
     ] as const) {
       const f = fixture();
       f.useBytes(bytes);

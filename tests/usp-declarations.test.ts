@@ -71,7 +71,8 @@ class ControlDb {
   extraSources: typeof this.source[] = [];
   archivedCases = new Set<string>();
   records = [targetA, targetB].map(p => ({ id: p.ref.id, site_id: siteId, revision: 1, kind: 'space',
-    label: 'Technical control record', body: {}, project_status: null }));
+    label: 'Technical control record',
+    body: { evidence: [{ sourceId, locator: 'CONTROL declaration instrument' }] }, project_status: null }));
   client = { release: () => { this.releases++; }, query: async (sql: string, v: any[] = []) => this.query(sql, v) } as unknown as PoolClient;
   baseline?: State;
   pool = { connect: async () => { this.connects++; return this.client; } } as unknown as Pool;

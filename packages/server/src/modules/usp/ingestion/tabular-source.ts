@@ -184,6 +184,7 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
 
 export function inspectTabularSource(
   bytes: Uint8Array, selection: TabularSelection, provenance: TabularProvenance = {}, name = '',
+  reading: 'detect' | 'pinned' = 'detect',
 ) {
   const admitted = admitTabularSource(sha256(bytes), bytes.length, provenance);
   const expected = selection.format === 'csv' ? 'text/csv' :
@@ -191,7 +192,7 @@ export function inspectTabularSource(
   if (admitted.kind === 'development' && admitted.asset.mediaType !== expected) {
     throw new AppError(422, 'TABULAR_FORMAT', 'The manifest and selected format differ.');
   }
-  if (selection.format === 'csv') {
+  if (selection.format === 'csv' && reading === 'detect') {
     try {
       const { delimiter, encoding } = detectDelimitedReading(bytes, name);
       selection = { ...selection, delimiter, encoding };
@@ -204,8 +205,8 @@ export function inspectTabularSource(
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: table.headers,
     rows: table.rows.slice(0, 100), sourceRef: 'inventory', selection }).profile;
   if (selection.format === 'csv') {
-    profile.delimiter = selection.delimiter;
-    profile.encoding = selection.encoding;
+    if (selection.delimiter) profile.delimiter = selection.delimiter;
+    if (selection.encoding) profile.encoding = selection.encoding;
   }
   const tabular = admittedPin(admitted, selection, bytes.length);
   return { tabular, headers: table.headers, records: table.rows.length, profile,

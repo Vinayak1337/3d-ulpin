@@ -474,6 +474,16 @@ export async function prepareRetainedGeojsonTx(client: PoolClient, source: Intak
   return true;
 }
 
+/** Old receipts keep their original selection; replay must not add detection fields or reinterpret their bytes. */
+function assertRetainedTabularRequest(file: { name: string; bytes: Uint8Array },
+  input: z.infer<typeof AnyRetainSourceSchema>, retained: any) {
+  if (input.format === 'geojson') return;
+  const stored = retained.inspection?.manualProfile?.tabular?.selection;
+  const reading = stored?.delimiter !== undefined || stored?.encoding !== undefined ? 'detect' : 'pinned';
+  const inventory = inspectTabularSource(file.bytes, input.selection, input, file.name, reading);
+  assertTabularPin(inventory.tabular, retained);
+}
+
 export class ManualIngestionService {
   /** `lineage` is set only by the ZIP layer fan-out: the member's archive pins, kept beside the receipt. */
   async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array},
@@ -490,8 +500,8 @@ export class ManualIngestionService {
     const previous=await transaction(async client=>{
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
       if(replay){
-        if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input,file.name).tabular,
-          await source(client,caseId,replay.source.sourceId));
+        if(input.format!=='geojson')
+          assertRetainedTabularRequest(file,input,await source(client,caseId,replay.source.sourceId));
         return replay;
       }
       const duplicateSql='SELECT id FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
@@ -500,8 +510,7 @@ export class ManualIngestionService {
       if(!duplicate)return undefined;
       await refuseRetiredFileAreaTx(client,caseId,hash);
       const retained=await source(client,caseId,duplicate.id);
-      if(input.format!=='geojson')assertTabularPin(inspectTabularSource(file.bytes,input.selection,input,file.name).tabular,
-        retained);
+      if(input.format!=='geojson')assertRetainedTabularRequest(file,input,retained);
       const result=profile(retained,scope);
       await remember(client,caseId,key,digest,result);return result;
     });
@@ -525,7 +534,8 @@ export class ManualIngestionService {
       const scope=await workspace(client,caseId);
       const replay=await operation(client,caseId,key,digest);
       if(replay){
-        if(tabular)assertTabularPin(tabular.tabular,await source(client,caseId,replay.source.sourceId));
+        if(input.format!=='geojson')
+          assertRetainedTabularRequest(file,input,await source(client,caseId,replay.source.sourceId));
         return replay;
       }
       const duplicateSql='SELECT * FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
@@ -533,7 +543,7 @@ export class ManualIngestionService {
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(duplicate) {
         await refuseRetiredFileAreaTx(client,caseId,hash);
-        if(tabular)assertTabularPin(tabular.tabular,duplicate);
+        if(input.format!=='geojson')assertRetainedTabularRequest(file,input,duplicate);
         const result=profile(await source(client,caseId,duplicate.id),scope);
         await remember(client,caseId,key,digest,result);return result;
       }
