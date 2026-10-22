@@ -11,10 +11,14 @@ function parcelUlpin(published: PublishedLedger): string | null {
   return published.parcelUlpin.state === 'recorded' && values.length === 1 ? (values[0] ?? null) : null;
 }
 
+/** A table row a document citation names, in the native reader's words: 'CSV logical row 444' or 'Sheet S, row 9'. */
+const CITED_ROW = /^(CSV logical row \d+|Sheet .+, row \d+)$/;
+
 /** What kind of retained source a locator points into. */
 function sourceKind(locator: string | undefined): Source['kind'] {
   if (locator?.startsWith('feature:')) return 'feature';
-  return locator?.startsWith('row:') || locator?.startsWith('cell:') ? 'table' : 'document';
+  return locator?.startsWith('row:') || locator?.startsWith('cell:') || CITED_ROW.test(locator ?? '')
+    ? 'table' : 'document';
 }
 
 function sourceOf(source: PublishedLedger['sources'][number]): Source {

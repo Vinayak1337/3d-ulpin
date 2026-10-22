@@ -276,7 +276,7 @@
     "packages/server/src/modules/model-gateway/runtime.ts": "412e968654534f84110fe9263a48612be17b471d60c33ff9f47c8718ff1ef2ed",
     "packages/server/src/modules/officer/block-export.ts": "d9dc1c2d50eb790b3618181ac22453b2f9199d1f207c73f1cd2e3a2072f98fe8",
     "packages/server/src/modules/officer/building-ledger-history.ts": "3b45ed2889e69d8666faf215c71be0ce669d7358f9f6d42882e84770d122887b",
-    "packages/server/src/modules/officer/building-ledger.ts": "d0bf3f9464f40c7e730b028b04e7fdc96d8693a271ad82c493a6f420d994e295",
+    "packages/server/src/modules/officer/building-ledger.ts": "ffc2006f6c7dffa326b8bd120674b960c5a6c2a113e1a70f5acd36eb51796389",
     "packages/server/src/modules/officer/canonical-conflict-decisions.ts": "b0c462dba473af28538ac960d1cad37d5f641ac03d455e4e2c045a43645cd630",
     "packages/server/src/modules/officer/consolidated-register-html.ts": "5b0b450ce46319271d6077724c51004eb98fd10a7185342282dfa822ac3c4a6f",
     "packages/server/src/modules/officer/consolidated-register.ts": "7c8d431dc382af34b742b5f555d67416017c01db086e11c53644a2499506cf7d",

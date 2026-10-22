@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
-import { DownloadSimple, FilePlus, Intersect, MapTrifold, QrCode, WarningCircle } from '@phosphor-icons/react';
+import { useQuery } from '@tanstack/react-query';
+import { DownloadSimple, FilePlus, Intersect, MapTrifold, WarningCircle } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { DeviationInput, MultiPolygon, Pick, SceneEngine, SceneState } from '@ulpin/scene';
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
@@ -16,6 +17,8 @@ import { buildingModel, type LevelModel, type SpaceModel } from '../../model/bui
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
+import { readTargetByFeature } from '../intake/run/api';
+import { buildingTargetKey } from '../map/inspector/BuildingCard';
 import { levelSummary } from '../map/inspector/BuildingInspector';
 import { ledgerSpace, ledgerStatus, revisionChain, revisionKey } from '../map/ledger';
 import { polygonsOf } from '../map/footprints';
@@ -26,6 +29,7 @@ import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { cityJson, download, fileStem } from './exporters';
 import { NoGeometry } from './NoGeometry';
+import { PropertyCardAction, cardOffer } from './PropertyCardAction';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
 import {
@@ -157,8 +161,11 @@ function Register({ register }: { register: BuildingRegister }) {
 
   // A card the registry lists for the selected unit opens whether or not this browser holds a draft code.
   const registryCard = Boolean(useUnitCards(property.id, record?.id).data?.snapshotCreatedAt);
-  const cardBlocked = !record ? 'Blocked: select a unit with an assigned proposed code'
-    : !recordWorkflow?.code && !registryCard ? 'Blocked: assign a proposed code first' : null;
+  // The card the batch made for this building, read from the intake target that names it (as the map does).
+  const buildingTarget = useQuery({ queryKey: buildingTargetKey(property.id), retry: false,
+    queryFn: () => readTargetByFeature(property.id) }).data;
+  const offer = cardOffer({ unitSelected: Boolean(record), unitCode: recordWorkflow?.code, registryCard,
+    target: buildingTarget });
   const stem = fileStem(register);
   const [exportError, setExportError] = useState<string | null>(null);
   /** Every export starts from the API's consolidated registry report, then adds the register's measurements. */
@@ -226,10 +233,7 @@ function Register({ register }: { register: BuildingRegister }) {
             { label: 'Consolidated registry (JSON)', onSelect: () => void exportAs('json') },
             { label: 'CityJSON 2.0', disabled: !model.levels.length, onSelect: () => download(`${stem}.city.json`, cityJson(register, model, ledger, workflowMap), 'application/city+json') },
           ]} />
-          <div className={styles.primary}>
-            <Button variant="primary" icon={QrCode} disabled={Boolean(cardBlocked)} onClick={() => setCardOpen(true)}>Property Card</Button>
-            {cardBlocked ? <span className={styles.blocked}>{cardBlocked}</span> : null}
-          </div>
+          <PropertyCardAction offer={offer} buildingName={property.name} onOpenUnit={() => setCardOpen(true)} />
         </header>
 
         {exportError ? <Banner tone="danger">{exportError}</Banner> : null}

@@ -1,0 +1,103 @@
+{
+  "task": "UI1",
+  "branch": "task/ui1-record-page-card",
+  "base": "4c278323",
+  "source": "REH13 act 1 record page (docs/evidence/runtime/reh13/act1.json on task/reh13-rehearsal): building 1084419, record a69cdab3 revision 2, card 93fd4362 revision 1, register row 'gpmc-yuvp.csv, CSV logical row 444'",
+  "items": [
+    {
+      "item": "Property Card: Blocked: select a unit with an assigned proposed code",
+      "cause": [
+        "apps/studio/src/features/register/RegisterPage.tsx computed the line in Studio from the unit selection only: with no unit selected it was always Blocked.",
+        "The page never read the building's own card. The batch card step writes it on the building's intake target (artefacts.card, artefacts.evidence.record), which only the map inspector (BuildingCard) read."
+      ],
+      "fix": [
+        "New apps/studio/src/features/register/PropertyCardAction.tsx: cardOffer() reads the intake target by feature (the same query key and read as the map inspector). A carded target offers its card: 'Card <id> · revision <n> · cites record revision <m>', where the record revision is artefacts.evidence.record, or artefacts.record when the card has no confirmed evidence.",
+        "The Property Card button opens the existing BuildingCardDialog (Open card PDF, Verification, Card consistent).",
+        "The Blocked line stays only when no card exists and no unit is selected, or when a selected unit has no code and no listed card. The server was not changed for this item; no card state is invented."
+      ]
+    },
+    {
+      "item": "Documents tab lists only buildings-original.geojson feature 1084419, not the register row",
+      "cause": [
+        "The tab lists ledger.sources from GET /api/v1/buildings/{id}/ledger.",
+        "packages/server/src/modules/officer/building-ledger.ts cited the root feature, record evidence, edges, parcels and identifiers. Its records come through publicRegistryBody, which withholds documentCitations, so the confirmed register row on revision 2 was never cited."
+      ],
+      "fix": [
+        "Server, building-ledger.ts: documentCitationLocators() reads body.documentCitations stored on the current revision of the building's related records. Each citation is cited by its source and locator in words: a table row by tableRowLocatorWords ('CSV logical row 444'), a native part by its locator label, any other kind by its source and citation id.",
+        "Those sources go through the same authorizeLedgerSources / registryRecordedSourceTx path as every ledger source. Pins, quotes and excerpts do not leave the read. A stored citation that does not parse is counted in the ledger's missing notes and is not listed.",
+        "Studio, api/ledger.ts: a cited row locator ('CSV logical row N' or 'Sheet S, row N') is a table source. The existing SourceList and EvidenceChip show it with its source name and locator.",
+        "The API contract shape is unchanged (sources[].locators gains entries), so neither openapi nor studio:api-types was needed."
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "file": "apps/studio/src/features/register/PropertyCardAction.test.tsx",
+      "cases": [
+        "a building with a card shows that card, its revision and the record revision it cites; no Blocked line (REH13 ids)",
+        "a card made with no confirmed evidence cites the revision its target records (captured E3B target)",
+        "a building with no card and no unit code keeps the Blocked line and a disabled button",
+        "a selected unit keeps its own card flow"
+      ],
+      "written": "before the component; failed on import, then passed"
+    },
+    {
+      "file": "apps/studio/src/features/register/SourceList.test.tsx",
+      "cases": [
+        "lists the register row a recorded revision cites beside its footprint source, with its locator"
+      ],
+      "written": "before the change; failed (kind document), then passed"
+    },
+    {
+      "file": "packages/server/src/modules/officer/building-ledger.test.ts",
+      "cases": [
+        "a recorded revision's document citations are cited by their source and locator in words (table row 444 and a native part; an unreadable citation is counted)"
+      ],
+      "written": "before the change; failed (no export), then passed"
+    }
+  ],
+  "checks": {
+    "pnpm studio:typecheck": 0,
+    "pnpm --filter @ulpin/studio exec vitest run": {
+      "exit": 0,
+      "files": 97,
+      "passed": 606,
+      "skipped": 2
+    },
+    "pnpm typecheck:backend": 0,
+    "tsx --test building-ledger.test.ts building-ledger-history.test.ts": {
+      "exit": 0,
+      "passed": 10
+    },
+    "ui-design-check scan (node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging)": 0,
+    "openapi check / studio:api-types": "not run: the contract did not change"
+  },
+  "notRun": [
+    "recorded-building-reads.test.ts and building-snapshots.test.ts call buildingLedger against a database; no runtime in this task.",
+    "Live proof on a runtime: the cited CSV source must pass registryRecordedSourceTx for the ledger to list it. RC3's review path reads it under the same source context (confirmed retained table), but this is not yet seen on a runtime."
+  ],
+  "limits": [
+    "A source cited at several rows shows its first locator in the Documents tab, as for every ledger source (one entry per source).",
+    "GET /registry-records/{id}/revisions/{rev}/document-citations still refuses exterior-only records with 422 (REH13 failure); this task does not change that route."
+  ],
+  "commits": [
+    "1f25067dedf5d6f0bfcdb54f55ef3b686fa11e89 fix(ui1): the record page offers the batch's building card and lists the register row its revision cites"
+  ],
+  "review": {
+    "change": "Lead review: a source that only document citations name is authorized apart. A 403/404/409/422 AppError leaves it out and is counted in the ledger's missing notes ('1 cited source is not available to this read and is not listed.'). Any other fault still fails the read. Sources the strict locators already cite keep today's strict read and gain the citation locator.",
+    "functions": "building-ledger.ts: citedOnlyLocators, authorizeCitedSources, citedSourceNotes; ledgerSourceLocators no longer takes citations",
+    "test": "building-ledger.test.ts: 'a source only a document citation names is authorized apart: a refusal is counted, the rest stays readable'. Written first and failed (no export). Now passes: a 409 on the CSV leaves the PDF and the strict GeoJSON read, refused 1. 403/404/422 are counted too. A plain Error and a 503 AppError still reject."
+  },
+  "registryRecordedSourceTx": {
+    "answer": "yes, for the officer who confirmed the row; no (403, now counted rather than fatal) for any other reader",
+    "trace": [
+      "registry-metadata.ts:56-63: the CSV is not pinned by a geometry-free package, and even if it were, line 61 sends a large-original-v1 retained table back to the ordinary path. Either way it reaches registrySourceTx(client, siteId, id, 'retained').",
+      "registry-metadata.ts:19: the case's site must be the building's site and not archived, which holds for one batch case.",
+      "registry-metadata.ts:20-21: the source's owners (largeOriginal.operatorSubject) must equal the reader's binding subject, or 403 REGISTRY_SOURCE_DENIED.",
+      "registry-metadata.ts:22 calls registry-reference-policy.ts:12 (profile large-original-v1 and status needs_input, so a batch-kept CSV passes), :13 assertIntakeSource, :14-17 object key large-originals/<id>/<sha256> with an objectEtag, and :21-24 a usp_intake_evidence_confirmations row of the same case and subject with additions='citations' whose pins include this source and an accepted table_row decision on it. That is the confirmed row, so confirmedTable is true.",
+      "registry-metadata.ts:44: the status gate is passed by confirmedTable even though the status is needs_input.",
+      "registry-metadata.ts:27-28: large-original-v1 with confirmedTable passes. document-authority.ts:42-44, 69, 79: a CSV with no documentOriginal or copiedFrom returns false without refusal, and documentResultFreshnessTx returns null.",
+      "So it admits the CSV only after an evidence confirmation accepted one of its rows, and only to the same officer. Not proven on a runtime."
+    ]
+  }
+}
