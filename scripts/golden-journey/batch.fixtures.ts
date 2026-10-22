@@ -113,6 +113,26 @@ export function fixturePdf(excerpt = fixtureExcerpt) {
   return new Uint8Array(pdf.output('arraybuffer'));
 }
 
+export function addFootprintCard(fixtures: Record<string, unknown>, newer: boolean) {
+  const page = fixtures[route + '/targets?readiness=carded'] as ReturnType<typeof targetPage>;
+  const target = structuredClone(page.items[0]);
+  target.targetId = fixtureId(50);
+  target.featureId = fixtureId(51);
+  target.artefacts = { record: { id: fixtureId(51), revision: 1 }, card: { id: fixtureId(52), revision: 1 },
+    verification: 'consistent' } as typeof target.artefacts;
+  target.updatedAt = newer ? '2026-10-21T12:00:00.000Z' : '2026-10-19T12:00:00.000Z';
+  page.items.unshift(target);
+  page.counts.carded++;
+  const report = verification();
+  report.data.cardId = fixtureId(52);
+  report.data.snapshot.cardTargetRevision = 1;
+  report.data.snapshot.currentTargetRevision = 1;
+  fixtures[`/api/v1/usp/property-cards/${fixtureId(52)}/revisions/1/verification`] = report;
+  fixtures[`/api/v1/registry-records/${fixtureId(51)}/revisions/1/document-citations`] = {
+    ...citation(), recordId: fixtureId(51), recordRevision: 1, currentRecordRevision: 1, citations: [],
+  };
+}
+
 export function fixtureResponses(): Record<string, unknown> {
   const first = surface(4, true);
   const second = surface(5, false);

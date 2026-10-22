@@ -55,7 +55,7 @@ function EvidenceSection({ caseId, items, targets }: {
         setOutcome(value);
         setCursor(null);
       }, firstPage: () => setCursor(null), nextPage: next ? () => setCursor(next) : null }} />
-    <ConfirmSection caseId={caseId} read={{ page: page.data, items, targets }} />
+    <ConfirmSection caseId={caseId} read={{ page: page.data, items, targets, query: { outcome, cursor } }} />
   </>;
 }
 

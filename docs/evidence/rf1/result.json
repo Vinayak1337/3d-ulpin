@@ -1,0 +1,52 @@
+{
+  "task": "RF1",
+  "gate": "JRN2/GF5",
+  "base": "b1a4bd80",
+  "implementationCommit": "28ba0429",
+  "mode": "offline only; no listener, Docker or runtime operations",
+  "result": "Three regressions fixed and verified offline; live rehearsal remains unqualified.",
+  "inputs": {
+    "good": {
+      "path": "E:/BhuAayam-data/task-data/reh15/final-act1.json",
+      "use": "Read-only saved evidence: exact BIN 1001543, CSV source row 458, candidate 002bf86c-780d-5085-b763-d0c84676a877. Regression keeps the unchanged candidate and explicitly drops missing evidence.",
+      "provenance": "REH15 NYC test_only; no operational claim"
+    },
+    "difficult": {
+      "receipts": ["E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh15/result.json", "E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh15/act1.json", "E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh15/act2-list.json", "E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh15/journey-command.json", "E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh15/cc1-timing.json"],
+      "scratch": ["E:/BhuAayam-data/task-data/reh15/l-zp-alone.json", "E:/BhuAayam-data/task-data/reh15/watch-zp-alone.jsonl"],
+      "use": "Read-only failure evidence: 2,100-feature ZIP member has archive-prefixed reason; package review changes candidate pins after key closure; newer footprint-only card hides the citation. Protocol fixtures reproduce these facts, never operational records."
+    }
+  },
+  "changes": {
+    "layout": "Optional layoutQuestion contract field. Ledger derives streamed questions from reader/state facts; small-file draft writes a structured plan-ref marker. Studio no longer parses display words. ZIP provenance words unchanged; read-only point/line questions remain answerable.",
+    "confirmation": "Existing batch evidence invalidation refreshes the open form's visible page, all selected source pages and package pins. Same candidate/evidence/building decisions survive with fresh candidate snapshots; disappeared or changed decisions are dropped with words. Changed readings or a 409 clear acknowledgement and require a new officer press. Unchanged batch updates preserve acknowledgement. Failed refresh blocks submission with a retry action; no automatic confirmation and strict server checks unchanged.",
+    "journey": "General card selection unchanged. Citation independently walks newest-first carded targets, reads exact card-record citations and verifies the newest register-cited PDF. No register-cited card or no stored excerpt fails with words, not a skip."
+  },
+  "checks": [
+    {"command": "pnpm install --offline --frozen-lockfile", "exit": 0},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-*.test.ts tests/intake-*.test.ts", "exit": 0, "passed": 444, "failed": 0, "skipped": 0},
+    {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake --maxWorkers=2 --testTimeout=15000", "exit": 0, "files": 48, "passed": 273, "failed": 0, "skipped": 0},
+    {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/evidence --maxWorkers=2 --testTimeout=15000", "exit": 0, "files": 2, "passed": 23, "failed": 0, "note": "Final focused rerun after splitting test setup; real saved-row regression ran, not skipped."},
+    {"command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json --test scripts/golden-journey/batch.test.ts", "exit": 0, "passed": 10, "failed": 0, "skipped": 0},
+    {"command": "pnpm exec tsc --noEmit -p scripts/golden-journey/tsconfig.json", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "operations": 329, "schemas": 372},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs b1a4bd80", "exit": 0, "report": "docs/evidence/rf1/ui-design-check.md", "qualification": "Mechanical scan covers legacy web only; changed Studio controls reviewed manually."},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "git diff b1a4bd80...HEAD --check", "exit": 0},
+    {"command": "awk 'length>120 {print FILENAME \":\" FNR \":\" length; failed=1} END {exit failed}' apps/studio/src/features/intake/evidence/confirm-refresh.ts", "exit": 0}
+  ],
+  "attempts": [
+    {"signature": "Initial contract and journey commands could not find tsx", "exit": 1, "decision": "Dependencies absent in new worktree; one offline frozen-lockfile installation, then checks passed."},
+    {"signature": "First journey regression expected one verification read sequence, but citation now independently retains its own cached read pins", "exit": 1, "decision": "Updated expectation to preserve both immutable evidence sequences; all 10 tests passed."},
+    {"signature": "Initial Studio typecheck lacked required streamedProfileJobId in changed captured test fixtures", "exit": 2, "decision": "Completed fixture contract facts; typecheck passed."},
+    {"signature": "Initial full Studio set: two historical fixtures lacked the new structured question; one unrelated upload exceeded 5 seconds under parallel load", "exit": 1, "decision": "Updated question fixtures; bounded comparison with two workers and 15-second timeout passed 273/273, no production timeout changes."},
+    {"signature": "pnpm test rejected maxWorkers/testTimeout before forwarding", "exit": 1, "decision": "Invoked the existing test runner through pnpm exec; bounded full set passed."}
+  ],
+  "review": "Reviewed task delta against b1a4bd80. staging...HEAD also includes 280+ inherited integration files, outside this task's changes; no unrelated files edited. Repository author and committer identity retained, no attribution lines, no push.",
+  "gaps": ["No live runtime replay, browser keyboard/200% zoom screenshots or new 8/8 runtime receipt: explicitly offline-only.", "Existing historical small-file questions without the new structured marker are not backfilled; the normal next draft run publishes it. Existing streamed questions qualify immediately from their current reader facts."],
+  "next": "Review and integrate; rerun REH15 ZIP layout, package-review evidence race and cited journey on an approved rehearsal runtime. Runtime stability and queue delays remain separate tasks."
+}

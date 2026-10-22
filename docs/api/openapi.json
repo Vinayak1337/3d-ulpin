@@ -370698,6 +370698,10 @@
             ],
             "additionalProperties": false
           },
+          "layoutQuestion": {
+            "description": "True only while the map reader asks the officer to state a layout; independent of display reasons.",
+            "type": "boolean"
+          },
           "streamedProfileJobId": {
             "nullable": true,
             "description": "Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.",
@@ -372927,6 +372931,10 @@
                     "packageId"
                   ],
                   "additionalProperties": false
+                },
+                "layoutQuestion": {
+                  "description": "True only while the map reader asks the officer to state a layout; independent of display reasons.",
+                  "type": "boolean"
                 },
                 "streamedProfileJobId": {
                   "nullable": true,

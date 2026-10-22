@@ -1,5 +1,8 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ApiError } from '@ulpin/api-client';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -8,11 +11,13 @@ import type { IntakeItem } from '../batch-model';
 import type { Package, Target, TargetPage } from '../run/model';
 import { runKey } from '../run/useTargets';
 import { createEvidenceConfirmation, evidenceKey, readPackagePins } from './api';
-import { blankDraft, ConfirmEvidenceForm, pressAcceptFile, pressConfirm, rereadAfterRefusal, type ConfirmDraft,
-  type ConfirmRead, type FileAccepts } from './ConfirmEvidence';
-import { acceptedIds, acceptFile, confirmedOf, decidable, setAccept, setReject, type ConfirmBody,
+import { blankDraft, ConfirmEvidence, ConfirmEvidenceForm, pressAcceptFile, pressConfirm, rereadAfterRefusal,
+  type ConfirmDraft, type ConfirmRead, type FileAccepts } from './ConfirmEvidence';
+import { acceptedIds, acceptFile, confirmedOf, decidable, reconcileChoices, setAccept, setReject, type ConfirmBody,
   type EvidenceConfirmation } from './confirm-model';
 import type { Candidate, EvidencePage, KeyProfile } from './model';
+import { refreshConfirmation } from './confirm-refresh';
+import { container, elements, propsOf, type FakeElement } from '../fake-dom';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
 const validate = createContractValidator(JSON.parse(readFileSync(resolve(root, 'docs/api/openapi.json'), 'utf8')));
@@ -310,7 +315,7 @@ it('a refusal shows the server\'s words and code and reads the evidence again; t
       const html = form(draft, { error });
       expect(html).toContain('role="alert"');
       expect(html).toContain(`${refusal.message} (${refusal.code})`);
-      expect(html).toContain('The evidence and the buildings were read again; check them and confirm again.');
+      expect(html).toContain('Read the current evidence, check your selections and confirm again.');
       client.invalidateQueries.mockClear();
       rereadAfterRefusal(client, caseId, error);
       expect(client.invalidateQueries.mock.calls).toEqual([[{ queryKey: evidenceKey(caseId) }],
@@ -406,3 +411,163 @@ it('after a reload the stored confirmations the read lists for the key are not o
       confirmedOf(reloaded, profile, ids(100, 200)));
     expect(Object.keys(since.choices)).toEqual(ids(200, 250));
   });
+
+it('refreshes selected candidates from later pages, keeps re-pinned evidence and drops disappeared rows in words',
+  async () => {
+    const repinned = { ...first, candidateSha256: sha('8'), anchors: [{ ...first.anchors[0]!, packageRevision: 4 }] };
+    const changed = { ...page, candidates: [repinned], nextCursor: null };
+    const reads = vi.fn(async (_case: string, _outcome?: unknown, cursor?: string, filter?: unknown) => {
+      if (!filter) return { ...changed, candidates: [], nextCursor: 'other-page' };
+      return cursor ? changed : { ...changed, candidates: [], nextCursor: 'selected-page' };
+    });
+    const draft = { ...ready, choices: acceptRegister() };
+    const visible = { ...read, query: { outcome: 'matched' as const, cursor: 'visible-page' } };
+    const refreshed = await refreshConfirmation(caseId, profile, draft, visible, reads, targetsReadPins());
+    expect(refreshed.choices).toEqual({ [first.candidateId]: { decision: 'accept', candidate: repinned } });
+    expect(refreshed.words).toContain('The package review or evidence reading changed for: 12/4');
+    expect(refreshed.words).toContain('Selections removed: 12/5');
+    expect(refreshed.words).toContain('candidate disappeared');
+    expect(reads.mock.calls.map(call => call[2])).toEqual(['visible-page', undefined, 'selected-page']);
+    expect(reads.mock.calls[0]![1]).toBe('matched');
+  });
+
+it('drops a former match if its row, building or outcome changed instead of transferring the decision', () => {
+  const choices = setAccept({}, first, true);
+  const changed = [
+    { ...first, evidence: row(99, '12/4') } as Candidate,
+    { ...first, anchors: [anchor(21, '12/4')] },
+    { ...first, outcome: 'several' as const },
+  ];
+  for (const candidate of changed) {
+    expect(reconcileChoices(choices, [candidate]).choices).toEqual({});
+  }
+});
+
+const flushForm = () => act(() => new Promise(resolve => setTimeout(resolve, 20)));
+const pressNode = (node: FakeElement) => act(async () => { propsOf(node).onClick?.({}); });
+const namedButton = (root: FakeElement, words: string) => elements(root)
+  .find(node => node.tagName === 'BUTTON' && node.textContent === words)!;
+const acknowledgement = (root: FakeElement) => elements(root).find(node => node.tagName === 'TEXTAREA')!;
+const checkFile = (root: FakeElement, words: string) => elements(root)
+  .find(node => node.tagName === 'LABEL' && node.textContent === words)!
+  .childNodes.find(node => node.nodeName === 'INPUT') as FakeElement;
+const typeAcknowledgement = (root: FakeElement) => act(async () => {
+  propsOf(acknowledgement(root)).onChange?.({ target: { value: ready.acknowledgement } });
+});
+const submitForm = (root: FakeElement) => act(async () => {
+  const form = elements(root).find(node => node.tagName === 'FORM')!;
+  propsOf(form).onSubmit?.({ preventDefault() {} });
+});
+
+/** An offline server that may advance its reading while the officer form stays open. */
+function advancingEvidence(refuseOnce: boolean) {
+  let currentPage = page;
+  const bodies: ConfirmBody[] = [];
+  vi.stubGlobal('fetch', async (request: Request) => {
+    const url = new URL(request.url);
+    if (request.method === 'POST') {
+      const body = await request.json() as ConfirmBody;
+      bodies.push(body);
+      if (refuseOnce && bodies.length === 1) {
+        currentPage = { ...page, candidates: page.candidates.map(candidate => ({ ...candidate,
+          candidateSha256: sha('8'), anchors: candidate.anchors.map(anchor => ({ ...anchor, packageRevision: 4 })) })) };
+        return Response.json({ error: { code: 'INTAKE_EVIDENCE_STALE', message: 'The package review changed.' } },
+          { status: 409 });
+      }
+      return Response.json(stored(body), { status: 202 });
+    }
+    if (url.pathname.endsWith('/targets')) return Response.json({ caseId, items: targets, counts, nextCursor: null,
+      packages: [pkg(10, currentPage === page ? 3 : 4, sha('e')), pkg(11, 4, sha('9'))],
+      packagesTruncated: false, packagesNextCursor: null });
+    expect(url.pathname).toBe(`/api/v1/ingestion/cases/${caseId}/intake/evidence`);
+    return Response.json({ ...currentPage, candidates: currentPage.candidates.filter(candidate =>
+      (!url.searchParams.has('itemId') || candidate.evidence.itemId === url.searchParams.get('itemId'))
+      && (!url.searchParams.has('outcome') || candidate.outcome === url.searchParams.get('outcome'))) });
+  });
+  return { bodies, changePage: (value: EvidencePage) => { currentPage = value; } };
+}
+
+async function liveForm(refuseOnce: boolean) {
+  const server = advancingEvidence(refuseOnce);
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const root = container();
+  const view = createRoot(root as never);
+  await act(async () => view.render(<QueryClientProvider client={client}>
+    <ConfirmEvidence caseId={caseId} profile={profile} read={read} close={vi.fn()} confirmed={new Set()}
+      stored={vi.fn()} />
+  </QueryClientProvider>));
+  await flushForm();
+  await pressNode(namedButton(root, 'Accept every exact single match of this file'));
+  await flushForm();
+  await act(async () => propsOf(checkFile(root, 'Exclude late.csv')).onChange?.({ target: { checked: true } }));
+  const reason = elements(root).find(node => node.tagName === 'INPUT'
+    && node.parentNode?.textContent === 'Reason for excluding late.csv')!;
+  await act(async () => propsOf(reason).onChange?.({ target: { value: ready.exclusions[late.itemId] } }));
+  await typeAcknowledgement(root);
+  return { root, client, ...server,
+    unmount: () => act(async () => { view.unmount(); client.clear(); }) };
+}
+
+it('a stale 409 rereads the mounted form, preserves selections and requires a new press with fresh pins', async () => {
+  const form = await liveForm(true);
+  try {
+    await submitForm(form.root);
+    await flushForm();
+    await flushForm();
+    expect(form.bodies).toHaveLength(1);
+    expect(form.root.textContent).toContain('The package review or evidence reading changed for: 12/4, 12/5');
+    expect(form.root.textContent).toContain('Check your selections and confirm again');
+    expect(form.root.textContent).toContain('Your decisions: 2 accepted, 0 rejected');
+    expect(propsOf(acknowledgement(form.root)).value).toBe('');
+    await typeAcknowledgement(form.root);
+    await submitForm(form.root);
+    await flushForm();
+    expect(form.bodies).toHaveLength(2);
+    const body = form.bodies[1]!;
+    expect(body.requestKey).not.toBe(form.bodies[0]!.requestKey);
+    expect(body.targets[0]!.packageRevision).toBe(4);
+    expect(body.additions.kind === 'citations' && body.additions.decisions.every(decision =>
+      decision.candidateSha256 === sha('8'))).toBe(true);
+    expect(form.root.textContent).toContain('Confirmation');
+  } finally { await form.unmount(); }
+});
+
+it('an unrelated batch update does not erase the officer acknowledgement or change selections', async () => {
+  const form = await liveForm(false);
+  try {
+    await act(async () => { await form.client.invalidateQueries({ queryKey: ['intake', caseId] }); });
+    await flushForm();
+    expect(propsOf(acknowledgement(form.root)).value).toBe(ready.acknowledgement);
+    expect(form.root.textContent).toContain('Your decisions: 2 accepted, 0 rejected');
+    expect(form.root.textContent).not.toContain('nothing was confirmed automatically');
+    expect(form.bodies).toHaveLength(0);
+  } finally { await form.unmount(); }
+});
+
+const rehearsalRead = 'E:/BhuAayam-data/task-data/reh15/final-act1.json';
+it.skipIf(!existsSync(rehearsalRead))('keeps the real rehearsal register row and drops it if its evidence is gone',
+  () => {
+    const saved = JSON.parse(readFileSync(rehearsalRead, 'utf8')).evidence as EvidencePage;
+    const candidate = saved.candidates.find(single => single.outcome === 'matched' && single.anchors.length === 1)!;
+    expect(candidate.evidence.kind).toBe('table_row');
+    const choices = setAccept({}, candidate, true);
+    expect(reconcileChoices(choices, [candidate])).toEqual({ choices, words: '' });
+    const removed = reconcileChoices(choices, []);
+    expect(removed.choices).toEqual({});
+    expect(removed.words).toContain(`Selections removed: ${candidate.key.literal}`);
+  });
+
+it('a batch-stream refresh drops a disappeared selection and asks the officer again without sending', async () => {
+  const form = await liveForm(false);
+  try {
+    form.changePage({ ...page, candidates: [first] });
+    await act(async () => { await form.client.invalidateQueries({ queryKey: ['intake', caseId] }); });
+    await flushForm();
+    expect(form.bodies).toHaveLength(0);
+    expect(form.root.textContent).toContain('Selections removed: 12/5');
+    expect(form.root.textContent).toContain('candidate disappeared');
+    expect(form.root.textContent).toContain('Your decisions: 1 accepted, 0 rejected');
+    expect(form.root.textContent).toContain('confirm again');
+    expect(propsOf(acknowledgement(form.root)).value).toBe('');
+  } finally { await form.unmount(); }
+});

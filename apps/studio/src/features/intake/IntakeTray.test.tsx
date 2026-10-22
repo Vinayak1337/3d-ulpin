@@ -52,3 +52,13 @@ it('a wide file links each cell batch it may open and says the features there ar
   const { cellBatches: _cells, ...plain } = wide;
   expect(tray(plain as IntakeItem)).not.toContain('separate batches');
 });
+
+it('a 2,100-feature ZIP member offers View layout while keeping the archive prefix in its reason', () => {
+  const reason = 'No approved layout matches this file. An officer chooses the identifier field.';
+  const item = { ...rested, name: 'nyc-footprints-2100.geojson', recordsSeen: 2100,
+    state: 'probed', placement: 'needs_answer', existingAreaId: undefined, layoutQuestion: true,
+    limitReason: `Taken out of zp1-geojson-kml-csv.zip. ${reason}` } as IntakeItem;
+  expect(tray(item)).toContain('>View layout</button>');
+  expect(tray(item)).toContain(item.limitReason);
+  expect(tray({ ...item, limitReason: reason })).toContain('>View layout</button>');
+});

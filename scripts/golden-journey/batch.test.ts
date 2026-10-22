@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { runBatch } from './batch';
 import { Reader } from './read';
 import { options } from './run';
-import { fixtureCase, fixtureId, fixtureResponses, fixturePdf } from './batch.fixtures';
+import { addFootprintCard, fixtureCase, fixtureId, fixtureResponses, fixturePdf } from './batch.fixtures';
 
 async function offline(responses: Record<string, unknown>, caseId?: string) {
   const requests: string[] = [];
@@ -84,7 +84,8 @@ test('partial coverage preserves unknown counts, and missing confirmation and ca
   assert(JSON.stringify(steps.find(step => step.id === 'evidence')!.observed).includes('"unread":null'));
   assert.equal(steps.find(step => step.id === 'confirmation')!.state, 'skipped');
   assert.equal(steps.find(step => step.id === 'card')!.state, 'skipped');
-  assert.equal(steps.find(step => step.id === 'citation')!.state, 'skipped');
+  assert.equal(steps.find(step => step.id === 'citation')!.state, 'fail');
+  assert.match(JSON.stringify(steps.find(step => step.id === 'citation')!.observed), /no card.*register citation/);
 });
 
 test('inconsistent verification or a PDF quoting another row fails; authorization stays undecidable', async () => {
@@ -133,19 +134,46 @@ test('carried target pages are followed and the stored card advances to its newe
   assert.equal(steps.find(step => step.id === 'card')!.state, 'pass');
   assert.equal(steps.find(step => step.id === 'citation')!.state, 'pass');
   const pins = reader.reads.filter(read => read.route.at(-1) === 'verification').map(read => read.params.revision);
-  assert.deepEqual(pins, [1, 2], 'Advancing a card must not rewrite the earlier read evidence pin');
+  assert.deepEqual(pins, [1, 2, 1, 2], 'Each card and citation check retains the earlier read evidence pin');
   assert(requests.includes(prefix + '2/verification'));
   assert(requests.includes(prefix + '2'));
 });
 
-test('an older citation without a stored excerpt skips rather than inventing or failing a quote', async () => {
+test('a citation without a stored excerpt fails rather than skipping or inventing a quote', async () => {
   const fixtures = fixtureResponses();
   const path = `/api/v1/registry-records/${fixtureId(27)}/revisions/2/document-citations`;
   const record = fixtures[path] as { citations: { pin: { excerpt?: string } }[] };
   delete record.citations[0].pin.excerpt;
   const { steps, requests } = await offline(fixtures);
-  assert.equal(steps.find(step => step.id === 'citation')!.state, 'skipped');
+  assert.equal(steps.find(step => step.id === 'citation')!.state, 'fail');
+  assert.match(JSON.stringify(steps.find(step => step.id === 'citation')!.observed), /no stored row excerpt/);
   assert(!requests.includes(`/api/v1/usp/property-cards/${fixtureId(29)}/revisions/1`));
+});
+
+test('citation uses the newest register-cited card in either order of card creation', async () => {
+  for (const footprintNewer of [true, false]) {
+    const fixtures = fixtureResponses();
+    addFootprintCard(fixtures, footprintNewer);
+    const { steps } = await offline(fixtures, fixtureCase);
+    assert(steps.every(step => step.state === 'pass'), JSON.stringify(steps));
+    const card = steps.find(step => step.id === 'card')!.observed as { targetId: string };
+    const citation = steps.find(step => step.id === 'citation')!.observed as { targetId: string };
+    assert.equal(card.targetId, fixtureId(footprintNewer ? 50 : 25));
+    assert.equal(citation.targetId, fixtureId(25));
+  }
+});
+
+test('a case with only footprint cards fails the citation step with words', async () => {
+  const fixtures = fixtureResponses();
+  addFootprintCard(fixtures, true);
+  const path = `/api/v1/ingestion/cases/${fixtureCase}/targets?readiness=carded`;
+  const page = fixtures[path] as { items: { targetId: string }[] };
+  page.items = page.items.filter(target => target.targetId === fixtureId(50));
+  const { steps } = await offline(fixtures, fixtureCase);
+  assert.equal(steps.find(step => step.id === 'card')!.state, 'pass');
+  const citation = steps.find(step => step.id === 'citation')!;
+  assert.equal(citation.state, 'fail');
+  assert.match(JSON.stringify(citation.observed), /no card with a confirmed register citation/);
 });
 
 test('GET-only reader and CLI reject writes and invalid selection before any request', async () => {

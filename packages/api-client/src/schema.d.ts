@@ -65580,6 +65580,8 @@ export interface components {
                 /** Format: uuid */
                 packageId: string | null;
             } | null;
+            /** @description True only while the map reader asks the officer to state a layout; independent of display reasons. */
+            layoutQuestion?: boolean;
             /**
              * Format: uuid
              * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.
@@ -66010,6 +66012,8 @@ export interface components {
                     /** Format: uuid */
                     packageId: string | null;
                 } | null;
+                /** @description True only while the map reader asks the officer to state a layout; independent of display reasons. */
+                layoutQuestion?: boolean;
                 /**
                  * Format: uuid
                  * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.

@@ -210,6 +210,8 @@ export const IntakeItemSchema = z.strictObject({
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
   placement: IntakePlacementSchema, card: IntakeCardSchema.nullable(), cardSha256: hash.nullable(),
   plan: IntakeItemPlanSchema.nullable(),
+  layoutQuestion: z.boolean().optional().describe(
+    'True only while the map reader asks the officer to state a layout; independent of display reasons.'),
   streamedProfileJobId: z.string().uuid().nullable().describe(
     'Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; '
     + 'null otherwise.'),

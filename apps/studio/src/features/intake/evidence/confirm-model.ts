@@ -125,6 +125,43 @@ export function setReject(choices: Choices, candidate: Candidate, reason: string
     ? { ...rest, [candidate.candidateId]: { decision: 'reject', candidate, reason } } : rest;
 }
 
+/** Reader jobs and review revisions may advance; the selected source row or document part must not change. */
+function evidenceIdentity(candidate: Candidate) {
+  const evidence = candidate.evidence;
+  const source = [evidence.kind, evidence.itemId, evidence.sourceId, evidence.sourceRevision, evidence.sourceSha256];
+  if (evidence.kind === 'document_part') {
+    return JSON.stringify([...source, evidence.partId, evidence.partSha256, evidence.quote]);
+  }
+  return JSON.stringify([...source, evidence.selection, evidence.sourceRow, evidence.rowSha256,
+    evidence.columnIndex, evidence.cell]);
+}
+
+/** Keep only the same evidence and building decision; new matches are never automatically selected. */
+export function reconcileChoices(choices: Choices, candidates: readonly Candidate[]) {
+  const current = new Map(candidates.map(candidate => [candidate.candidateId, candidate]));
+  const next: Record<string, Choice> = {};
+  const updated: string[] = [], dropped: string[] = [];
+  for (const choice of Object.values(choices)) {
+    const before = choice.candidate;
+    const candidate = current.get(before.candidateId);
+    const sameTargets = candidate && JSON.stringify(candidate.anchors.map(anchor => anchor.targetId).sort())
+      === JSON.stringify(before.anchors.map(anchor => anchor.targetId).sort());
+    const allowed = candidate && (choice.decision === 'accept' ? singleMatch(candidate) : question(candidate));
+    if (!candidate || !allowed || !sameTargets || evidenceIdentity(candidate) !== evidenceIdentity(before)) {
+      dropped.push(before.key.literal);
+      continue;
+    }
+    next[candidate.candidateId] = { ...choice, candidate };
+    if (candidate.candidateSha256 !== before.candidateSha256) updated.push(candidate.key.literal);
+  }
+  const words: string[] = [];
+  if (updated.length) words.push(`The package review or evidence reading changed for: ${updated.join(', ')}. `
+    + 'Your selections remain.');
+  if (dropped.length) words.push(`Selections removed: ${dropped.join(', ')}. The candidate disappeared or its `
+    + 'evidence, building or outcome changed.');
+  return { choices: next as Choices, words: words.join(' ') };
+}
+
 const anchorOf = (candidate: Candidate): NamedBuilding[] => candidate.anchors.map((anchor) =>
   ({ targetId: anchor.targetId, packageId: anchor.packageId, locator: anchor.locator }));
 

@@ -198,7 +198,7 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
     await writeIntakeDraftTx(client, input.caseId, input.itemId, {
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-        origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : null,
+        origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : { layoutQuestion: true },
       recordsSeen: pkg?.features.length ?? 0,
       limitReason: receipt ? setAsideWords(pkg?.quarantine?.setAside) : noLayout,
     });
