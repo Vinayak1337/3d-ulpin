@@ -33,6 +33,16 @@ export function streamedImport(file: File) {
   return /\.(csv|xlsx|ods)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
+export function officerEncodingSelection(selection: Selection, encoding: string): Selection {
+  const supported = ['utf-8', 'windows-1252', 'iso-8859-1', 'utf-16le', 'utf-16be'] as const;
+  const stated = supported.find((value) => value === encoding);
+  if (selection.format !== 'csv' || !stated) {
+    throw new Error('Unsupported table encoding. Choose UTF-8, Windows-1252, ISO-8859-1, ' +
+      'or UTF-16 LE/BE with a matching BOM.');
+  }
+  return { ...selection, encoding: stated, encodingBasis: 'officer_stated' };
+}
+
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }
 
 /** A kept original up to 16 MiB answers its table profile; a larger CSV or workbook answers its read job. Sending

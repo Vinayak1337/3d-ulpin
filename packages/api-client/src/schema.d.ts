@@ -15345,7 +15345,9 @@ export interface components {
                             /** @enum {string} */
                             delimiter?: "," | ";" | "\t" | "|";
                             /** @enum {string} */
-                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                             /** @enum {string} */
                             format: "csv" | "xlsx" | "ods";
                             sheet: string;
@@ -18491,7 +18493,9 @@ export interface components {
                             /** @enum {string} */
                             delimiter?: "," | ";" | "\t" | "|";
                             /** @enum {string} */
-                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                             /** @enum {string} */
                             format: "csv" | "xlsx" | "ods";
                             sheet: string;
@@ -21846,7 +21850,9 @@ export interface components {
                             /** @enum {string} */
                             delimiter?: "," | ";" | "\t" | "|";
                             /** @enum {string} */
-                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                             /** @enum {string} */
                             format: "csv" | "xlsx" | "ods";
                             sheet: string;
@@ -39232,7 +39238,9 @@ export interface components {
                             /** @enum {string} */
                             delimiter?: "," | ";" | "\t" | "|";
                             /** @enum {string} */
-                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                             /** @enum {string} */
                             format: "csv" | "xlsx" | "ods";
                             sheet: string;
@@ -66566,7 +66574,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -66587,7 +66597,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -66618,7 +66630,9 @@ export interface components {
                 /** @enum {string} */
                 delimiter?: "," | ";" | "\t" | "|";
                 /** @enum {string} */
-                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                /** @enum {string} */
+                encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                 /** @enum {string} */
                 version: "column-profile/1";
                 /** @enum {string} */
@@ -66661,7 +66675,9 @@ export interface components {
                 /** @enum {string} */
                 delimiter?: "," | ";" | "\t" | "|";
                 /** @enum {string} */
-                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                /** @enum {string} */
+                encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                 /** @enum {string} */
                 format: "csv" | "xlsx" | "ods";
                 sheet: string;
@@ -66827,7 +66843,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -66848,7 +66866,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -67045,7 +67065,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -67066,7 +67088,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -67263,7 +67287,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -67284,7 +67310,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -67506,7 +67534,9 @@ export interface components {
                             /** @enum {string} */
                             delimiter?: "," | ";" | "\t" | "|";
                             /** @enum {string} */
-                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                             /** @enum {string} */
                             format: "csv" | "xlsx" | "ods";
                             sheet: string;
@@ -67623,7 +67653,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -67753,7 +67785,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -67792,7 +67826,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -68206,7 +68242,9 @@ export interface components {
                             /** @enum {string} */
                             delimiter?: "," | ";" | "\t" | "|";
                             /** @enum {string} */
-                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                             /** @enum {string} */
                             format: "csv" | "xlsx" | "ods";
                             sheet: string;
@@ -68365,7 +68403,9 @@ export interface components {
                                 /** @enum {string} */
                                 delimiter?: "," | ";" | "\t" | "|";
                                 /** @enum {string} */
-                                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                                /** @enum {string} */
+                                encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                                 /** @enum {string} */
                                 format: "csv" | "xlsx" | "ods";
                                 sheet: string;
@@ -71945,7 +71985,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -71966,7 +72008,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -72044,7 +72088,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -72065,7 +72111,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -72154,7 +72202,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -72175,7 +72225,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -72233,7 +72285,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -72254,7 +72308,9 @@ export interface components {
                     /** @enum {string} */
                     delimiter?: "," | ";" | "\t" | "|";
                     /** @enum {string} */
-                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                     /** @enum {string} */
                     format: "csv" | "xlsx" | "ods";
                     sheet: string;
@@ -72429,7 +72485,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -72450,7 +72508,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         format: "csv" | "xlsx" | "ods";
                         sheet: string;
@@ -72476,7 +72536,9 @@ export interface components {
                         /** @enum {string} */
                         delimiter?: "," | ";" | "\t" | "|";
                         /** @enum {string} */
-                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         version: "column-profile/1";
                         /** @enum {string} */

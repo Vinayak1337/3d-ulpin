@@ -123,10 +123,14 @@ export const ColumnProfileSchema = z.strictObject({
   // Do not pad small inputs with fabricated examples: fewer than five observed cells is explicit.
   maskedSamples: z.array(z.string().max(256)).max(20),
 });
-/** Omitted fields preserve older readings; an omitted delimiter means comma. */
+export const TableEncodingSchema = z.enum(['utf-8', 'utf-16le', 'utf-16be', 'windows-1252', 'iso-8859-1'], {
+  error: 'Unsupported table encoding. Choose UTF-8, Windows-1252, ISO-8859-1, or UTF-16 LE/BE with a matching BOM.',
+});
+/** Omitted fields preserve older readings; an omitted basis is unknown, never inferred from the decoder. */
 export const DelimitedReadingSchema = z.strictObject({
   delimiter: z.enum([',', ';', '\t', '|']).optional(),
-  encoding: z.enum(['utf-8', 'utf-16le', 'utf-16be', 'windows-1252']).optional(),
+  encoding: TableEncodingSchema.optional(),
+  encodingBasis: z.enum(['bom', 'utf8_valid', 'fallback_windows_1252', 'officer_stated']).optional(),
 });
 export type DelimitedReading = z.infer<typeof DelimitedReadingSchema>;
 export type TableEncoding = NonNullable<DelimitedReading['encoding']>;

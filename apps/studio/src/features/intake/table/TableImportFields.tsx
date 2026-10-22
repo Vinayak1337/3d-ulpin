@@ -1,5 +1,6 @@
 import type { WorkItem } from '../../../api/queries';
 import type { TableFormat } from './retain';
+import type { Selection } from './types';
 import styles from './Table.module.css';
 
 export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode, setMode, locked }: {
@@ -36,12 +37,36 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
   );
 }
 
-/** `sheets` are the sheet names a kept file's card states; without them the officer types the name. */
-export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, setRows }: {
-  format: TableFormat; sheets?: readonly string[]; sheet: string; setSheet: (value: string) => void;
-  rows: string; setRows: (value: string) => void;
+export const encodingLabels: Record<NonNullable<Selection['encoding']>, string> = {
+  'utf-8': 'UTF-8', 'windows-1252': 'Windows-1252', 'iso-8859-1': 'ISO-8859-1',
+  'utf-16le': 'UTF-16 LE', 'utf-16be': 'UTF-16 BE',
+};
+
+function DelimitedSelectionFields({ encoding, setEncoding }: {
+  encoding?: string; setEncoding?: (value: string) => void;
 }) {
-  if (format === 'csv') return <p className="ul-help">CSV · sheet csv · header row 1</p>;
+  return <>
+    <p className="ul-help">CSV · sheet csv · header row 1</p>
+    {setEncoding ? <label className="ul-field">
+      <span className="ul-label">Officer-stated encoding</span>
+      <select className="ul-input" value={encoding ?? ''} required
+        onChange={(event) => setEncoding(event.target.value)}>
+        <option value="">Choose the encoding stated for this file</option>
+        {Object.entries(encodingLabels).map(([value, label]) =>
+          <option key={value} value={value}>{label}</option>)}
+      </select>
+      <span className="ul-help">UTF-16 LE/BE needs a matching BOM. Other encodings, including Indic legacy
+        encodings, are not supported or inferred. The original stays unchanged.</span>
+    </label> : null}
+  </>;
+}
+
+/** `sheets` are the sheet names a kept file's card states; without them the officer types the name. */
+export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, setRows, encoding, setEncoding }: {
+  format: TableFormat; sheets?: readonly string[]; sheet: string; setSheet: (value: string) => void;
+  rows: string; setRows: (value: string) => void; encoding?: string; setEncoding?: (value: string) => void;
+}) {
+  if (format === 'csv') return <DelimitedSelectionFields encoding={encoding} setEncoding={setEncoding} />;
   return (
     <div className={styles.fields}>
       <label className="ul-field">
