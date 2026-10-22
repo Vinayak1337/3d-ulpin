@@ -1,0 +1,48 @@
+{
+  "task": "PL1",
+  "gate": "AUD2 gap 4 (offline slice)",
+  "scope": "Scanned plans stop early: PDFs above 10 MiB, one OCR page per press, image plans. Offline; no runtime gate passed.",
+  "routesChanged": false,
+  "gaps": [
+    {
+      "gap": 1,
+      "fact": "The 10 MiB bound is the native text reader's own input bound (services/geo/geo/area.py MAX_DOCUMENT_BYTES = 10 MiB, mirrored as DOCUMENT_LIMITS.nativeBytes; document-native.ts returns NATIVE_READER_BYTE_LIMIT before calling it). It protects a real runtime limit and stays. The OCR runtime has its own bounds: an original of at most 16 MiB (docling_tesseract.py MAX_SOURCE_BYTES, DOCUMENT_LIMITS.originalBytes) and a PDF of at most 8 pages (MAX_SOURCE_PAGES; it refuses the whole document above that). queueBatchPdfTx already queues a document job for any PDF up to 16 MiB, and the worker runs OCR on the original even when the native read stopped on its byte bound.",
+      "change": "pdf-reading.ts pdfOcrOffer: when the text layer stopped on NATIVE_READER_BYTE_LIMIT, every page is offered to OCR, once the page count (existing private /sources/{id}/pages metadata) is at most 8. A PDF of more than 8 pages is told OCR cannot open it instead of being offered a job the runtime refuses. pdfOcrWords says the text layer was not read at 10 MiB and that OCR takes up to 16 MiB. pdfNoReadingWords: a PDF above 16 MiB (no job is ever made) is said to be kept and not read, never 'not available yet'.",
+      "tests": ["BatchPdfSection.test.tsx: a PDF above the page reader byte bound offers every page to OCR, within the OCR page bound", "BatchPdfSection.test.tsx: says a PDF above the document runtime byte bound is kept and not read"],
+      "needsRehearsal": "A real 10-16 MiB scanned PDF through upload, native byte-limit receipt, page metadata and OCR on the document runtime. No such PDF exists under E:/BhuAayam-data/datasets (searched by size; only a 28 MiB plan and an unrelated guideline PDF are above 10 MiB)."
+    },
+    {
+      "gap": 2,
+      "fact": "Per-call bounds found, none invented: the OCR job reads one page (DocumentOcrSelectionSchema single page, 1-8); the runtime opens a PDF of at most 8 pages; the server keeps one active document job per source (documents.ts enqueue: a different selection while one is active is a conflict; the same selection reuses it), one active OCR job globally (document-worker.ts), and at most DOCUMENT_LIMITS.jobs = 32 document jobs of history per source (DOCUMENT_JOB_HISTORY_LIMIT).",
+      "change": "createPdfOcrRun: one press reads the officer's selected pages one job after another (any page of an OCR-readable PDF, not just the first), following each job until it ends; a page whose job does not complete stops the press with words naming it, and the pages after it are not requested. readPdfOcrRuns reads each page's newest finished OCR job from the source's own job history; pagesToRead skips pages already read, so the same selection twice reads once. The press is limited to the source's remaining job history. Each page says queued, reading, read with its candidate passage count, or not read with the runtime's issues; passages stay candidates with page-and-region citations.",
+      "tests": ["reads the pages the officer picks, one job each, says per page whether it read, and reads a page once", "a press stops at a page whose job fails; later pages are not requested and earlier ones stay read", "the same selection twice reads once", "shows a page OCR did not read rather than claiming an empty successful reading", "keeps the same request key after a lost enqueue response"],
+      "needsRehearsal": "Sequential OCR jobs on the document runtime with the dispatcher; the global one-OCR-worker lock leaves a queued job waiting, which the press follows every 5 seconds."
+    },
+    {
+      "gap": 3,
+      "fact": "No plan reader takes a page image in the application: the native document reader returns needs_ocr/OCR_TOOL_UNAVAILABLE for PNG/JPEG, the OCR job renders PDF pages only, and services/geo/geo/raster_plan.py is called only by offline scripts under scripts/plans. The review workspace does not read page-image labels.",
+      "change": "page-image-read.ts pageImageWords: after a 'plan' label the item says it is kept as a labelled plan image and is not read, so no text, rooms, levels or units come from it; other labels say it is kept and not read.",
+      "tests": ["page-image.test.ts: above the byte bound ... (label words for plan and photo)"],
+      "needsRehearsal": "none for words; a real plan reader for page images is new work"
+    }
+  ],
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "pnpm studio:typecheck", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/page-image.test.ts packages/server/src/modules/usp/ingestion/intake-draft.test.ts packages/server/src/modules/usp/ingestion/intake-page-image-preview.test.ts tests/intake-pdf-batch.test.ts tests/document-ocr-boundary.test.ts", "exitCode": 0, "passed": 63, "failed": 0},
+    {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "exitCode": 0, "files": 42, "passed": 236},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging", "exitCode": 0, "report": "docs/evidence/pl1/ui-design-check.md"},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exitCode": 1, "schemaMatched": true, "failure": "docs/api/source-pins.json is stale for exactly the two touched pinned files (upload-reader-limits.d.ts, page-image-read.ts); no route or wire schema changed, so pnpm studio:api-types was not needed. Regenerate pins at integration."}
+  ],
+  "realInputs": [
+    {"kind": "good", "path": "E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-magnolia-sanctioned-layout-original.pdf", "bytes": 2455183, "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3", "pages": 6, "scannedPages": [3, 4, 5, 6], "use": "Retained G10 scanned-page coverage drives the multi-page press test; all four scanned pages are offered (6 pages, within the OCR bound of 8)."},
+    {"kind": "difficult", "path": "E:/BhuAayam-data/datasets/rera-storeys/RERAP01282025205138-1/sanctioned-building-plan.pdf", "bytes": 28181151, "sha256": "b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d", "use": "Above both the 10 MiB text reader and the 16 MiB document/OCR bound; read-only stat and hash; the section says it is kept and not read."}
+  ],
+  "realInputQualification": "Byte counts and hashes read-only; originals unchanged; no OCR text or accuracy measured; no acquisition.",
+  "outsideOwnedPaths": "packages/contracts/src/upload-reader-limits.d.ts: the browser type surface of DOCUMENT_LIMITS gained originalBytes and jobs (types only).",
+  "openPoints": [
+    "intake-draft.ts batchPdfSettlement (not owned): the tray words for NATIVE_READER_BYTE_LIMIT still end at 'so this one is not read'; add 'Open the PDF reading to request OCR of its pages (a PDF of at most 8 pages).' so the tray points to the offer.",
+    "Regenerate docs/api/source-pins.json at integration.",
+    "Runtime rehearsal of a multi-page press and of a 10-16 MiB scanned PDF on the document runtime; no browser focus/zoom check was run."
+  ]
+}

@@ -5,7 +5,7 @@ import { readBatchCase } from './table/retain';
 export type PdfReading = GetResponse<
   '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}'
 >;
-export type OcrPassage = NonNullable<PdfReading['ocrItems']>[number];
+type OcrPassage = NonNullable<PdfReading['ocrItems']>[number];
 /** One page's newest OCR job and every passage it returned. */
 export interface OcrPageRun { page: number; reading: PdfReading; passages: OcrPassage[] }
 /** A page this press is waiting on; its result arrives as an `OcrPageRun` when its job ends. */
@@ -33,7 +33,7 @@ export function pdfJobsLeft(jobs: readonly CaseJob[], sourceId: string) {
 }
 
 /** The page reader stopped on its own byte bound; the OCR runtime takes the larger original. */
-export function pdfTextLayerUnread(reading: PdfReading | undefined) {
+function pdfTextLayerUnread(reading: PdfReading | undefined) {
   return reading?.native?.code === 'NATIVE_READER_BYTE_LIMIT';
 }
 
@@ -63,7 +63,7 @@ export function pagesToRead(selected: readonly number[], runs: readonly OcrPageR
   return [...new Set(selected)].filter(page => !read.has(page)).sort((left, right) => left - right);
 }
 
-export async function readPdfStatus(caseId: string, sourceId: string, jobId: string, ocrPage?: number) {
+async function readPdfStatus(caseId: string, sourceId: string, jobId: string, ocrPage?: number) {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}', {
     params: { path: { caseId, sourceId, jobId }, query: ocrPage === undefined ? {} : { ocrPage } },
   })) as PdfReading;
@@ -147,8 +147,8 @@ async function followPdfJob(caseId: string, sourceId: string, jobId: string, sig
 
 /**
  * One press reads the selected pages one after another: the OCR runtime reads one page per job and the server keeps
- * one active document job per source. A page already read is skipped; a page whose job does not complete stops the
- * press, and the pages read before it stay read.
+ * one active document job per source. The caller passes only pages not yet read (`pagesToRead`); a page whose job
+ * does not complete stops the press, and the pages read before it stay read.
  */
 export function createPdfOcrRun(caseId: string, sourceId: string, wait: typeof pause = pause) {
   const send = createPdfOcrPress(caseId, sourceId);
