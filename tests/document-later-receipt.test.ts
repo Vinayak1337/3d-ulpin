@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
+import { Readable } from 'node:stream';
 import type { Pool } from 'pg';
 import { DocumentIngestionService } from '../packages/server/src/modules/usp/ingestion/documents';
 import { runDocumentJob } from '../packages/server/src/modules/usp/ingestion/document-worker';
@@ -149,7 +150,9 @@ class DocumentControl {
     const bytes = this.objects.get(key)!;
     assert(bytes);
     this.objectReads++;
-    return { Body: { transformToByteArray: async () => bytes } };
+    const stream = Readable.from([bytes]);
+    return { Body: Object.assign(stream, { transformToByteArray: async () => bytes }),
+      ContentLength: bytes.length, ETag: 'protocol-only-etag' };
   };
 }
 

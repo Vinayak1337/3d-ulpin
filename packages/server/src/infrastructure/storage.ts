@@ -191,6 +191,39 @@ export async function openObjectStream(key: string, bytes: number, timeoutMs: nu
   } catch(error) {const timedOut=controller.signal.aborted;clearTimeout(timer);signal?.removeEventListener('abort',parentAbort);controller.abort();
     if(timedOut)throw new AppError(503,'STORAGE_TIMEOUT','The bounded object read was interrupted or timed out.');throw error;}
 }
+/** Whole retained originals use the native stream only after their pinned size fits the caller's memory bound. */
+export async function readRetainedOriginal(key: string, bytes: number, expectedHash: string, maxBytes: number,
+  timeoutMs = 30_000, signal?: AbortSignal): Promise<Uint8Array> {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || !Number.isSafeInteger(timeoutMs) || timeoutMs < 1)
+    throw new AppError(500, 'STORAGE_READ_BOUNDS', 'Positive finite retained-original read bounds are required.');
+  if (!Number.isSafeInteger(bytes) || bytes < 1 || !/^[a-f0-9]{64}$/.test(expectedHash))
+    throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original has invalid byte/hash pins.');
+  if (bytes > maxBytes) throw new AppError(413, 'INTAKE_SOURCE_LIMIT',
+    `This original has ${bytes} bytes; this reader holds at most ${maxBytes} bytes. Use a streamed reader.`);
+  let object: Awaited<ReturnType<typeof openObjectStream>> | undefined;
+  try {
+    object = await openObjectStream(key, bytes, timeoutMs, undefined, signal);
+    const chunks: Buffer[] = [], hash = createHash('sha256');
+    let count = 0;
+    for await (const value of object.body) {
+      if (typeof value !== 'string' && !(value instanceof Uint8Array))
+        throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original returned a non-byte stream.');
+      count += typeof value === 'string' ? Buffer.byteLength(value) : value.byteLength;
+      if (count > bytes) throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY',
+        'The retained original exceeds its pinned byte count.');
+      const chunk = Buffer.from(value);
+      hash.update(chunk);
+      chunks.push(chunk);
+    }
+    if (count !== bytes || hash.digest('hex') !== expectedHash)
+      throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original differs from its byte/hash pins.');
+    return Buffer.concat(chunks, count);
+  } catch (error) {
+    if (error instanceof AppError && error.code === 'SOURCE_INTEGRITY')
+      throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original differs from its byte/hash pins.');
+    throw error;
+  } finally { object?.body.destroy(); }
+}
 export async function verifyObjectStream(key: string, bytes: number, expectedHash: string, timeoutMs: number, etag?: string,signal?:AbortSignal,onProgress?:(bytesRead:number)=>Promise<void>) {
   const object=await openObjectStream(key,bytes,timeoutMs,etag,signal),hash=createHash('sha256');let count=0;
   let reported=0,lastProgress=Date.now();

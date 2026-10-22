@@ -88,6 +88,15 @@ test('coverage may be null; unread coverage is never absence and closed coverage
   assert(ok(IntakeEvidenceCandidateSchema, { ...candidate, outcome: 'conflicting', conflictGroup: other }));
 });
 
+test('a failed reading carries job state, code and words without inventing coverage or closing it', () => {
+  const pins = { sourceId: id, sourceRevision: 1, sourceSha256: hash, bytes: 10 };
+  const failure = { state: 'failed', code: 'INTAKE_SOURCE_INTEGRITY', message: 'The original differs from its pins.' };
+  const source = { itemId: id, profileId: id, family: 'table', jobId: id, resultSha256: null, ...pins,
+    coverage: { state: 'partial', read: 0, eligible: null, keyless: null, unread: null, failed: null, failure } };
+  assert(ok(IntakeEvidenceSourceSchema, source));
+  assert(!ok(IntakeEvidenceSourceSchema, { ...source, resultSha256: hash, coverage: { ...closed, failure } }));
+});
+
 test('the evidence read may name one key profile and one file; each is a uuid and no other field is taken', () => {
   assert(ok(IntakeEvidenceQuerySchema, {}));
   assert(ok(IntakeEvidenceQuerySchema, { outcome: 'matched', cursor: id, profileId: id, itemId: other }));

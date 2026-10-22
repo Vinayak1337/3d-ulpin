@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {DocumentInputSchema,DocumentResultSchema,DOCUMENT_LIMITS,type DocumentResult} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
-import {readObject,putOriginal,sha256} from '../../../infrastructure/storage';
+import {readRetainedOriginal,putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx} from '../jobs';
 import {assertDocumentInputTx} from './document-context';
@@ -47,8 +47,8 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
   };
   try{
     await authorize();
-    const original=await readObject(input.objectKey);
-    if(original.length!==input.sourceBytes || sha256(original)!==input.sourceSha256)throw new AppError(422,'SOURCE_INTEGRITY','The retained original differs from its receipt.');
+    const original=await readRetainedOriginal(input.objectKey,input.sourceBytes,input.sourceSha256,
+      DOCUMENT_LIMITS.originalBytes,Math.max(1,deadline-Date.now()));
     const native=await (dependencies.extract??extractSourceDocument)(input,original);
     await authorize();
     const ocr=input.ocrSelection?await (dependencies.ocr??runSourceOcr)(input,original,deadline):undefined;

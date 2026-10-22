@@ -2,12 +2,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { PoolClient } from 'pg';
-import { TabularMappingReceiptSchema, TabularSourceProfileSchema,
+import { TABULAR_LIMITS, TabularMappingReceiptSchema, TabularSourceProfileSchema,
   type TabularMappingReceipt, type TabularSourceProfile } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { query } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
-import { readObject, sha256 } from '../../../infrastructure/storage';
+import { readRetainedOriginal, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { assertTeacherOutputOutsideGit } from '../../model-gateway/recordings';
 import { localOperatorSubject } from '../principal';
@@ -166,10 +166,8 @@ export async function learnApprovedTabularTx(client: PoolClient, value: unknown,
   if ('developmentFamily' in receipt.plan.tabular && receipt.plan.tabular.developmentFamily === 'mi-d03') {
     throw new AppError(422, 'TABULAR_CALIBRATION_DENIED', 'The frozen calibration family cannot be fitted online.');
   }
-  const bytes = Buffer.from(await readObject(source.object_key));
-  if (bytes.length !== Number(source.bytes) || sha256(bytes) !== source.sha256) {
-    conflict('The original changed before learning.');
-  }
+  const bytes = Buffer.from(await readRetainedOriginal(source.object_key, Number(source.bytes), source.sha256,
+    TABULAR_LIMITS.bytes));
   if ('admission' in current.tabular) return rememberCaseOriginalTx(client, key, receipt, current, bytes);
   const examples = persistOfficerBatch(receipt, current, bytes);
   const result = trainOfficerBatch(examples, await activeTabularLearner(client));

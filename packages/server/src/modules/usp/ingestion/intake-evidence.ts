@@ -466,13 +466,34 @@ export async function stopIntakeEvidenceTx(client: PoolClient, input: IntakeEvid
 type CoverageRow = { profile_id: string; item_id: string; family: 'table' | 'document'; job_id: string | null;
   result_sha256: string | null; state: IntakeEvidenceCoverage['state']; read_count: string | null;
   eligible_count: string | null; keyless_count: string | null; unread_count: string | null;
-  failed_count: string | null };
+  failed_count: string | null; job_status?: string | null; job_error?: string | null };
 type SourceCoverageRow = CoverageRow & { source_id: string | null; source_revision: number | null;
   source_sha256: string | null; source_bytes: string | number | null };
 const counted = (value: string | null) => value === null ? null : Number(value);
+const FAILURE_WORDS: Record<string, string> = {
+  INTAKE_SOURCE_INTEGRITY: 'The retained original differs from its pinned byte count or SHA-256. Nothing was read.',
+  INTAKE_SOURCE_LIMIT: 'The original exceeds this reader’s memory limit. Use its streamed table reader.',
+  STREAMING_ORIGINAL_REQUIRED: 'The reading used an unbounded original reader. Read this source again after the '
+    + 'bounded streaming reader is available.',
+  STORAGE_TIMEOUT: 'The original download was interrupted or timed out. Its unread counts remain unknown.',
+  STALE_REVISION: 'The reading’s source, key profile or building pins changed. Read it again at the current pins.',
+};
+
+/** Only the job currently named by this source's coverage can explain why its reading stopped. */
+function coverageFailure(row: CoverageRow): IntakeEvidenceCoverage['failure'] {
+  const state = row.job_status;
+  if (state !== 'failed' && state !== 'stale' && state !== 'cancelled') return undefined;
+  const reason = row.job_error ?? '';
+  const code = /^[A-Z][A-Z0-9_]{0,119}$/.test(reason) ? reason : 'INTAKE_EVIDENCE_STOPPED';
+  return { state, code, message: FAILURE_WORDS[code]
+    ?? 'The evidence reading stopped without a complete result. Unread counts remain unknown; no absence is proved.' };
+}
+
 export function coverageOf(row: CoverageRow): IntakeEvidenceCoverage {
+  const failure = coverageFailure(row);
   return { state: row.state, read: counted(row.read_count), eligible: counted(row.eligible_count),
-    keyless: counted(row.keyless_count), unread: counted(row.unread_count), failed: counted(row.failed_count) };
+    keyless: counted(row.keyless_count), unread: counted(row.unread_count), failed: counted(row.failed_count),
+    ...(failure ? { failure } : {}) };
 }
 
 type ConfirmationRow = { confirmation_id: string; case_id: string; input_sha256: string; profile_id: string;
@@ -561,9 +582,11 @@ export async function readIntakeEvidence(caseValue: string,
     const profiles: ProfileRow[] = (await client.query(`SELECT * FROM usp_intake_key_profiles WHERE case_id=$1
       ORDER BY created_at,profile_id LIMIT $2`, [caseId, limit])).rows;
     const sources: SourceCoverageRow[] = (await client.query(`SELECT c.*,s.id source_id,s.revision source_revision,
-      s.sha256 source_sha256,s.bytes source_bytes FROM usp_intake_evidence_coverage c
+      s.sha256 source_sha256,s.bytes source_bytes,j.status job_status,j.error job_error
+      FROM usp_intake_evidence_coverage c
       LEFT JOIN usp_intake_items i ON i.case_id=c.case_id AND i.item_id=c.item_id
       LEFT JOIN sources s ON s.case_id=c.case_id AND s.id=i.source_id
+      LEFT JOIN jobs j ON j.id=c.job_id AND j.case_id=c.case_id AND j.operation='intake-evidence'
       WHERE c.case_id=$1 ORDER BY c.profile_id,c.item_id LIMIT $2`, [caseId, limit])).rows;
     const confirmations: ConfirmationRow[] = (await client.query(`SELECT * FROM usp_intake_evidence_confirmations
       WHERE case_id=$1 ORDER BY created_at,confirmation_id LIMIT $2`, [caseId, limit])).rows;

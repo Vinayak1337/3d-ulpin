@@ -66976,6 +66976,13 @@ export interface components {
                     keyless: number | null;
                     unread: number | null;
                     failed: number | null;
+                    /** @description The reading job stopped; counts remain unknown, never inferred from this failure. */
+                    failure?: {
+                        /** @enum {string} */
+                        state: "failed" | "stale" | "cancelled";
+                        code: string;
+                        message: string;
+                    };
                 } | null;
                 /**
                  * Format: uuid
@@ -67116,6 +67123,13 @@ export interface components {
                     keyless: number | null;
                     unread: number | null;
                     failed: number | null;
+                    /** @description The reading job stopped; counts remain unknown, never inferred from this failure. */
+                    failure?: {
+                        /** @enum {string} */
+                        state: "failed" | "stale" | "cancelled";
+                        code: string;
+                        message: string;
+                    };
                 } | null;
                 /** @enum {string} */
                 state: "candidate";
@@ -67540,6 +67554,13 @@ export interface components {
                     keyless: number | null;
                     unread: number | null;
                     failed: number | null;
+                    /** @description The reading job stopped; counts remain unknown, never inferred from this failure. */
+                    failure?: {
+                        /** @enum {string} */
+                        state: "failed" | "stale" | "cancelled";
+                        code: string;
+                        message: string;
+                    };
                 };
             }[];
             excluded: {
@@ -67688,6 +67709,13 @@ export interface components {
                         keyless: number | null;
                         unread: number | null;
                         failed: number | null;
+                        /** @description The reading job stopped; counts remain unknown, never inferred from this failure. */
+                        failure?: {
+                            /** @enum {string} */
+                            state: "failed" | "stale" | "cancelled";
+                            code: string;
+                            message: string;
+                        };
                     };
                 }[];
                 excluded: {
