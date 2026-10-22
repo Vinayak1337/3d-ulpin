@@ -6,7 +6,7 @@ import { useBatchPackages } from '../batch-queries';
 import type { Target } from '../run/model';
 import { evidenceKey, useEvidencePage, useReadTables } from './api';
 import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
-import { acceptedIds, confirmedOf } from './confirm-model';
+import { confirmedOf, type EvidenceConfirmation } from './confirm-model';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead } from './EvidenceRead';
 import { anchorItems, documentChoices, tableChoices, type Outcome } from './model';
@@ -66,14 +66,14 @@ function EvidenceSection({ caseId, items, targets }: {
  */
 function ConfirmSection({ caseId, read }: { caseId: string; read: ConfirmRead }) {
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState<ReadonlySet<string>>(() => new Set());
+  const [confirmed, setConfirmed] = useState<readonly EvidenceConfirmation[]>([]);
   const open = read.page.profiles.find((profile) => profile.profileId === profileId);
   if (!read.page.profiles.length) return null;
   return <section className={batch.stack} aria-labelledby="confirm-evidence">
     <h3 className="ul-heading" id="confirm-evidence">Confirm the evidence of a key</h3>
     {open ? <ConfirmEvidence key={open.profileId} caseId={caseId} profile={open} read={read}
       close={() => setProfileId(null)} confirmed={confirmedOf(read.page, open, confirmed)}
-      stored={(confirmation) => setConfirmed((ids) => new Set([...ids, ...acceptedIds(confirmation)]))} />
+      stored={(confirmation) => setConfirmed((previous) => [...previous, confirmation])} />
       : <ul className={styles.list}>
       {read.page.profiles.map((profile) => <li key={profile.profileId}>
         <Button variant="soft" onClick={() => setProfileId(profile.profileId)}>

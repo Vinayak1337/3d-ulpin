@@ -284,6 +284,8 @@ async function packageFactsTx(client: PoolClient, caseId: string, ids: string[],
   const rows = (await client.query(`WITH packages AS (
     SELECT p.id,p.body->>'areaId' AS area_id,(p.body->>'revision')::int AS revision,
       p.body->>'state' AS state,CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision'
+        OR p.body->>'state'='COMMITTED'
+          AND (p.body->'review'->>'packageRevision')::int=(p.body->>'revision')::int-1
         THEN p.body->'review' ELSE NULL END AS review,
       CASE WHEN i.review_refusal_code IS NULL THEN NULL ELSE jsonb_build_object(
         'code',i.review_refusal_code,'message',i.review_refusal_message) END AS review_refusal

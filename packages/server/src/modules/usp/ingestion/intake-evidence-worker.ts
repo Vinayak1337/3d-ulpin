@@ -11,7 +11,7 @@ import { fingerprint } from '../../cases/domain';
 import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
 import { assertDocumentAcceptedResultTx, readDocumentResult } from './documents';
 import { IntakeEvidenceInputSchema, NOT_READ, assertIntakeEvidenceInputTx, closeEvidence, documentAssertions,
-  evidenceAnchorsTx, stopIntakeEvidenceTx, tableAssertions, windowAssertions, writeIntakeEvidenceTx,
+  anchorsDigestTx, evidenceAnchorsTx, stopIntakeEvidenceTx, tableAssertions, windowAssertions, writeIntakeEvidenceTx,
   type EvidenceAssertion, type IntakeEvidenceInput } from './intake-evidence';
 import type { IntakeSourceRow } from './intake-context';
 import { latestTableJobTx, readTableWindowTx } from './table-windows';
@@ -255,7 +255,7 @@ async function readAsSetPart(input: IntakeEvidenceInput, attempt: UspJobAttempt)
 }
 
 async function complete(input: IntakeEvidenceInput, attempt: UspJobAttempt, reading: Reading,
-  candidates: IntakeEvidenceCandidate[]) {
+  candidates: IntakeEvidenceCandidate[], anchorsSha256: string) {
   const resultSha256 = fingerprint({ coverage: reading.coverage,
     candidates: candidates.map(candidate => [candidate.candidateId, candidate.candidateSha256]) });
   await acceptUspJobAttempt(attempt,
@@ -263,14 +263,16 @@ async function complete(input: IntakeEvidenceInput, attempt: UspJobAttempt, read
     async (client, job) => {
       if (fingerprint(job.payload) !== fingerprint(input)) conflict('The evidence reading job changed.');
       if (reading.document) await assertDocumentAcceptedResultTx(client, reading.document, reading.documentResult!);
-      await writeIntakeEvidenceTx(client, input, reading.coverage, resultSha256, candidates);
+      await writeIntakeEvidenceTx(client, input, reading.coverage, resultSha256, candidates, anchorsSha256);
     }, pinned(input));
 }
 
 async function read(input: IntakeEvidenceInput, attempt: UspJobAttempt, family: string) {
-  const { profile, source, anchors } = await transaction(async client => {
+  const { profile, source, anchors, anchorsSha256 } = await transaction(async client => {
+    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
     const pins = await assertIntakeEvidenceInputTx(client, input);
-    return { ...pins, anchors: await evidenceAnchorsTx(client, input.caseId, pins.profile.profile) };
+    return { ...pins, anchors: await evidenceAnchorsTx(client, input.caseId, pins.profile.profile),
+      anchorsSha256: await anchorsDigestTx(client, input.caseId, pins.profile.profile.map.anchorItemId) };
   });
   const literals = new Set(anchors.map(anchor => anchor.literal));
   // With no building holding the key, nothing can be matched and absence is not shown: the source stays unread.
@@ -280,7 +282,7 @@ async function read(input: IntakeEvidenceInput, attempt: UspJobAttempt, family: 
   const candidates = closeEvidence({ caseId: input.caseId, anchors, assertions: reading.assertions,
     coverage: reading.coverage, createdAt: new Date().toISOString(), key: { profileId: input.profileId,
       profileSha256: input.profileSha256, namespace: profile.profile.namespace, kind: profile.profile.kind } });
-  return { reading, candidates };
+  return { reading, candidates, anchorsSha256 };
 }
 
 /** AU4-B2: one fenced reading of one table or document under one key profile, in the existing job authority. */
@@ -301,8 +303,8 @@ export async function runIntakeEvidenceJob(jobId: string) {
   }
   try {
     if (await readAsSetPart(input, attempt)) return;
-    const { reading, candidates } = await read(input, attempt, job.family);
-    await complete(input, attempt, reading, candidates);
+    const { reading, candidates, anchorsSha256 } = await read(input, attempt, job.family);
+    await complete(input, attempt, reading, candidates, anchorsSha256);
   } catch (error) {
     await stopped(input, error instanceof AppError ? error.code : 'INTAKE_EVIDENCE_FAILED', attempt);
     throw error;

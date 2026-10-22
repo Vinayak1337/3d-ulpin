@@ -82,6 +82,8 @@ class EvidenceStore {
       return [this.source];
     if (sql.startsWith('SELECT * FROM usp_intake_key_profiles')) return [this.profile];
     if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return [{ source_id: sourceId }];
+    if (sql.startsWith('SELECT t.target_id,t.package_id')) return [{ target_id: ids('target'),
+      package_id: ids('package'), revision: 1 }];
     if (sql.startsWith('SELECT target_id,anchor_item_id')) return [{ target_id: ids('target'),
       anchor_item_id: ids('map'), package_id: ids('package'), feature_id: ids('feature'),
       locator: 'test_only:feature' }];
@@ -125,6 +127,12 @@ class EvidenceStore {
       const fields = ['state', 'result_sha256', 'read_count', 'eligible_count', 'keyless_count',
         'unread_count', 'failed_count'];
       fields.forEach((field, index) => { this.coverage[field] = args[index + 2]; });
+      return [];
+    }
+    if (sql.startsWith('INSERT INTO operations')) {
+      assert.equal(args[2], 'intake-evidence-anchors');
+      assert.deepEqual(args[4], { anchorsSha256: fingerprint([{ targetId: ids('target'),
+        packageId: ids('package'), packageRevision: 1 }]) });
       return [];
     }
     if (sql.startsWith('INSERT INTO usp_outbox')) return [];

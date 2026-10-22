@@ -42,7 +42,8 @@ beforeEach(() => { saved = globals.ulpinPool; });
 afterEach(() => { globals.ulpinPool = saved; });
 
 /** The stores answer exactly the statements the confirm and the page read issue; any other statement fails. */
-function install(sources: Record<string, unknown>[]) {
+function install(sources: Record<string, unknown>[], confirmations: Record<string, unknown>[] = [],
+  target: Record<string, unknown> = {}) {
   const seen: Statement[] = [];
   const coverageRow = { profile_id: profileId, item_id: itemId, case_id: caseId, family: 'table', job_id: jobId,
     result_sha256: resultSha256, state: 'closed', read_count: '2', eligible_count: '1', keyless_count: '1',
@@ -52,7 +53,7 @@ function install(sources: Record<string, unknown>[]) {
     ['SELECT id,revision,archived FROM cases', () => [{ id: caseId, revision: 4, archived: false }]],
     ['SELECT revision FROM cases', () => [{ revision: 4 }]],
     ['SELECT * FROM usp_intake_evidence_confirmations WHERE case_id=$1 AND request_key', () => []],
-    ['SELECT * FROM usp_intake_evidence_confirmations WHERE case_id=$1 ORDER BY', () => []],
+    ['SELECT * FROM usp_intake_evidence_confirmations WHERE case_id=$1 ORDER BY', () => confirmations],
     ['SELECT profile_sha256 FROM usp_intake_key_profiles', () => [{ profile_sha256: profileSha256 }]],
     ['SELECT * FROM usp_intake_key_profiles', () => []],
     ['SELECT i.item_id,s.id', () => [{ item_id: itemId, id: sourceId, revision: 2, sha256: sourceSha256,
@@ -60,7 +61,7 @@ function install(sources: Record<string, unknown>[]) {
     ['SELECT * FROM usp_intake_evidence_coverage', () => [coverageRow]],
     ['SELECT c.*,s.id source_id', () => sources.map(source => ({ ...coverageRow, ...source }))],
     ['SELECT t.target_id', () => [{ target_id: targetId, package_id: packageId, revision: 3, review,
-      committed: null }]],
+      committed: null, ...target }]],
     ['SELECT candidate_id,item_id', () => [{ candidate_id: candidate.candidateId, item_id: itemId,
       candidate_sha256: candidate.candidateSha256, target_ids: [targetId], outcome: 'matched',
       evidence: structuredClone(candidate.evidence) }]],
@@ -150,6 +151,31 @@ test('the page lists both coverage rows when one source is gone; a confirmation 
       (error: { status: number; code: string }) => error.status === 409 && error.code === 'INTAKE_EVIDENCE_STALE');
     assert.equal(stored(seen), undefined);
   });
+
+test('EV2: a new evidence confirmation may name only the review a committed package was recorded from', async () => {
+  const committed = { revision: 4, review: null, committed: { packageRevision: 3, inputFingerprint: review } };
+  install([], [], committed);
+  const confirmed = await confirmIntakeEvidence(caseId, body);
+  assert.equal(confirmed.input.targets[0].packageRevision, 3);
+  const seen = install([], [], committed);
+  await assert.rejects(confirmIntakeEvidence(caseId, { ...body,
+    targets: [{ ...body.targets[0], packageRevision: 4 }] }), /not at the package pins named/);
+  assert.equal(stored(seen), undefined);
+});
+
+test('EV2: the evidence read marks the historical acceptance superseded only when its reading changes', async () => {
+  const confirmation = { confirmation_id: ids('confirmed'), profile_id: profileId, additions: 'citations',
+    pins: body, created_at: new Date(at), expires_at: new Date(Date.now() + 3_600_000) };
+  const source = { source_id: sourceId, source_revision: 2, source_sha256: sourceSha256, source_bytes: '87' };
+  install([source], [confirmation]);
+  const before = await readIntakeEvidence(caseId, {});
+  assert.equal(before.confirmations[0].superseded, false);
+  install([{ ...source, job_id: ids('new-reading'), result_sha256: fingerprint('test_only:new-result') }],
+    [confirmation]);
+  const after = await readIntakeEvidence(caseId, {});
+  assert.equal(after.confirmations[0].superseded, true);
+  assert.deepEqual(after.confirmations[0].accepted, [candidate.candidateId], 'history is not rewritten');
+});
 
 test('each missing source pin is unavailable on read, but the strict source view still refuses it', async () => {
   const retained = { source_id: sourceId, source_revision: 2, source_sha256: sourceSha256, source_bytes: '87' };

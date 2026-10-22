@@ -521,6 +521,8 @@ export const IntakeEvidenceConfirmationStateSchema = z.strictObject({
     .describe('Sources read under the profile after it that the confirmation neither includes nor excludes.'),
   accepted: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.decisions).optional()
     .describe('The candidates the confirmation accepted, in the order of its stored decisions.'),
+  superseded: z.boolean().optional()
+    .describe('An included source has another reading. Its candidates must be confirmed again at the current pins.'),
 });
 export const IntakeEvidencePageSchema = z.strictObject({
   caseId: uuid, profiles: z.array(IntakeKeyProfileSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
