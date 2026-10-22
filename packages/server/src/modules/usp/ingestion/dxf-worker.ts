@@ -11,6 +11,7 @@ import {assertDXFTools} from './dxf-config';
 import {processDXF} from './dxf-processor';
 import {assertDXFInputTx,assertDXFJobRow,dxfResultKey,dxfArtifactKey,readDXFResult,boundedDXFObject} from './dxf';
 import {appendCaseIngestionTx} from './events';
+import {settleIntakeNativeReaderTx} from './intake-native-readers';
 
 export function dxfFailureCode(error:unknown){
   if(error instanceof AppError){
@@ -41,6 +42,7 @@ export async function failDXFJob(jobId:string,caseId:string,code:string,attempt?
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     const status=code==='DXF_INPUT_STALE'?'stale':'failed';
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,status,code]);
+    await settleIntakeNativeReaderTx(client,caseId,jobId,{format:'dxf',status,code});
     // Do not publish a private event using a revoked or unavailable binding.
     const parsed=DXFInputSchema.safeParse(job.payload);
     if(parsed.success){
@@ -127,6 +129,7 @@ async function executeDXFJob(jobId:string,deadline:DbDeadline,controller:AbortCo
         throw new AppError(422,'DXF_ARTIFACT_INTEGRITY','Staged DXF bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
+      await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'dxf',summary:result.summary});
       await appendCaseIngestionTx(client,input.caseId,{kind:'dxf-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
     },deadline);

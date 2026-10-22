@@ -15,6 +15,7 @@ import {compareSourcePins} from './source-pin';
 import {originalAttempt} from '../../cases/original-attempt';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {assertBatchNativeSourceTx} from './intake-native-readers';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -58,9 +59,10 @@ export async function cityjsonSourceTx(client:PoolClient,caseId:string,sourceId:
   if(current.archived)throw new AppError(403,'CITYJSON_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('CityJSON source not found in this case.');
   const original=CityJSONOriginalSchema.safeParse(source.inspection?.cityjsonOriginal);
-  if(source.profile!=='cityjson-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
+  if(source.profile==='large-original-v1')await assertBatchNativeSourceTx(client,source,binding,'cityjson');
+  else if(source.profile!=='cityjson-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
     throw new AppError(403,'CITYJSON_DENIED','This retained CityJSON is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  else if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
     throw new AppError(422,'CITYJSON_SOURCE_INTEGRITY','The CityJSON receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -85,7 +87,13 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof cityjso
   if(jobs>=CITYJSON_LIMITS.jobsPerSource)throw new AppError(429,'CITYJSON_HISTORY_LIMIT','The bounded selection history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='cityjson-native' AND status IN ('queued','running')")).rows[0].n);
   if(active>=CITYJSON_LIMITS.active)throw new AppError(429,'CITYJSON_WORKER_BUSY','The bounded CityJSON workers are occupied.');
-  const jobId=randomUUID(),input=cityjsonInput(ctx,jobId,selection),inputHash=fingerprint(input);
+  return insertCityJSONJobTx(client,ctx,randomUUID(),selection);
+}
+/** One pinned native job; a batch may supply its stable replay key. */
+export async function insertCityJSONJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof cityjsonSourceTx>>,jobId:string,
+  selection:CityJSONInput['selection']='complete_bounded_source'){
+  if(!ctx.latest)conflict('This CityJSON source has a newer retained revision.');
+  const input=cityjsonInput(ctx,jobId,selection),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'cityjson-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);

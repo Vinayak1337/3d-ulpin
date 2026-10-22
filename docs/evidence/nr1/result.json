@@ -1,0 +1,67 @@
+{
+  "task": "NR1",
+  "gate": "AUD1 gap 7, part 1; no runtime gate claimed",
+  "base": "ad64f5db",
+  "codeCommits": ["1344d9b4", "23afe022"],
+  "status": "server_bridge_passed_offline_cityjson_upload_processor_blocked",
+  "delivery": {
+    "formats": ["dxf", "citygml", "cityjson"],
+    "profiles": ["large-original-v1", "dxf-native-v1", "citygml-native-v1", "cityjson-native-v1"],
+    "limitsMiB": {"dxf": 16, "citygml": 32, "cityjson": 8},
+    "queue": "One table selects the existing reader source/insert functions; item, format and source revision/hash name a stable job. Exact replay queues nothing new.",
+    "authority": "The reader source functions also accept a batch upload only with its valid operator-bound receipt, exact hash/size/key and matching probed root card. Existing native receipt validation is unchanged.",
+    "projection": "One optional nativeReaderJobId is carried from plan_ref through IntakeItem. Existing accepted-result citation keys are reused unchanged.",
+    "settlement": "Accepted, failed and stale workers settle the item in their existing terminal transaction. Accepted words and recordsSeen come only from the summary; missing layer/surface/building totals and CRS codes are never inferred.",
+    "boundary": "Readings stay candidate evidence, unplaced. No geometry layer, registry record, package, card target, measurement or right is created. Original bytes, source profile and object key are unchanged."
+  },
+  "decisions": [
+    "Minimal source-admission changes are necessary as well as insert exports: all three source functions previously rejected large-original-v1. The shared helper follows IFC3 rather than forging a native receipt or duplicating SQL.",
+    "DXF/CityGML original-object classification now includes large-originals/. CityGML otherwise incorrectly applies its 16 MiB artifact ceiling to originals allowed up to 32 MiB.",
+    "tests/fixtures contains no DXF/CityGML/CityJSON files in this checkout. Tests reuse the same outside-Git DXF/CityGML sources and saved reader outputs used by the existing authority tests, plus the existing D1 CityJSON fixture.",
+    "The real D1 API envelope has no root type and is not recognised by the batch probe. The CityJSON queue test uses a standalone in-memory control assembled from its unchanged header/feature literals, with no invented geometry. The existing native Python reader actually reads that control into a summary; this is not a live batch/processor qualification."
+  ],
+  "inputs": [
+    {"path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf", "role": "good real development input; probe, receipt pins, queue/replay and summary from runs/declared-final/drawing.json"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/ASCII_R12.dxf", "role": "difficult real development input; saved native reading retains absent units and unsupported findings"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_and_garage_LOD2-EPSG25832.gml", "role": "real OGC example; queue and accepted-summary projection using run-02-lod2/projection.json"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_LOD1-LocalEngineeringCRS.gml", "role": "difficult real OGC example; partial reading and finding codes preserved from run-02-local/projection.json"},
+    {"path": "fixtures/usp/D1/single-roof/original.json", "role": "real Dutch 3DBAG development input; source literals reused in standalone CityJSON control, not an operational Indian record"}
+  ],
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm exec tsx --test packages/server/src/modules/usp/ingestion/intake-ifc.test.ts packages/server/src/modules/usp/ingestion/retain-routing.test.ts", "exit": 0, "tests": 16, "pass": 16},
+    {"command": "pnpm exec tsx --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts", "exit": 0, "tests": 20, "pass": 20},
+    {"command": "node -e: JSON.parse docs/evidence/nr1/result.json; assert task NR1 and runtime.qualified false", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts packages/server/src/modules/usp/ingestion/intake-ifc.test.ts packages/server/src/modules/usp/ingestion/retain-routing.test.ts", "exit": 0, "tests": 36, "pass": 36, "skip": 0},
+    {"command": "pnpm exec tsx --test tests/intake-*.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts packages/server/src/modules/usp/ingestion/retain-routing.test.ts", "exit": 1, "tests": 312, "pass": 306, "fail": 6},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-api.test.ts tests/intake-upload-provenance.test.ts", "exit": 0, "tests": 2, "pass": 2},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-*.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts packages/server/src/modules/usp/ingestion/retain-routing.test.ts", "exit": 1, "tests": 313, "pass": 309, "fail": 4, "skip": 0},
+    {"command": "pnpm exec tsx --test tests/dxf-authority.test.ts tests/citygml-authority.test.ts tests/cityjson-authority.test.ts", "exit": 0, "tests": 14, "pass": 12, "skip": 2, "note": "Configured supervised-worker tests remain skipped. Older native authority protocol doubles log deferred bookkeeping because they do not model the new intake lookup; this is not accepted-worker runtime evidence."},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 1, "reason": "docs/api/openapi.json is stale. Source-pins comparison was not reached; changed contract/source pins need regeneration by the integration owner. Generated files are outside NR1 ownership."},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "awk 'length>120 {print FILENAME \":\" FNR; bad=1} END {exit bad}' packages/server/src/modules/usp/ingestion/intake-native-readers{,.test}.ts", "exit": 0}
+  ],
+  "remainingBroadFailures": [
+    {"file": "tests/intake-ledger.test.ts", "signature": "GLB words now include Named .csv, read as GLB, but the old expectation omits it", "decision": "Inherited RT1 name/content projection; no NR1 logic handles GLB. Test is outside ownership."},
+    {"file": "tests/intake-migration.test.ts", "signature": "Immediate predecessor is now the G16 parts-ceiling migration, not streamed-profile SQL", "decision": "Migration order and test unchanged by NR1; outside ownership."},
+    {"file": "tests/intake-pdf-batch.test.ts", "signature": "Text-layer read failed instead of succeeded; scanned read failed_part instead of read", "decision": "Same two failures already diagnosed in docs/evidence/rt1/result.json: readObject rejects large-originals/ before storage access. Await EVF1 integration; no PDF/storage edit."}
+  ],
+  "diagnostics": [
+    {"signature": "Initial new test run: 16 pass, 3 fail reading event.change", "exit": 1, "cause": "Protocol double matched INSERT INTO usp_outbox_streams as INSERT INTO usp_outbox and stored an undefined event", "decision": "Narrowed the double to INSERT INTO usp_outbox(; focused checks pass."},
+    {"signature": "Initial broad run had two decorator transform failures", "exit": 1, "comparison": "Use apps/api/tsconfig.json; success criterion is removing both transform failures without changing code", "result": "Both API tests pass; corrected broad run has only the four inherited failures. No further broad retry."},
+    {"command": "python -B: import geo.cityjson_processing and call process_cityjson with a large-originals/ key", "exit": 1, "signature": "ModuleNotFoundError: shapely", "decision": "No install or service start. Use one dependency-free comparison of the exact processor KEY expression instead."},
+    {"command": "python -B: parse services/geo/geo/cityjson_processing.py with ast, compile its exact KEY expression, compare sources/<id>/<sha> and large-originals/<id>/<sha>", "exit": 0, "result": "sources/ matches; large-originals/ does not. Source-level prerequisite confirmed; no storage or runtime call made."}
+  ],
+  "setup": {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0, "note": "Cached dependencies only; no lockfile change."},
+  "runtime": {
+    "qualified": false,
+    "docker": "not used",
+    "database": "protocol doubles only; no database or populated volume accessed",
+    "cityjsonBlocker": "services/geo/geo/cityjson_processing.py KEY accepts sources/<id>/<sha> only. Batch uploads use large-originals/<id>/<sha>, so the current processor will refuse them with CITYJSON_SOURCE_PINS. This file is explicitly outside NR1 ownership; queueing and honest terminal failure work, but successful upload-backed CityJSON reading is not delivered end to end.",
+    "rehearsalRequired": [
+      "Authorize the processor to accept the canonical large-originals/<sourceId>/<sha256> key with the same exact id/hash/size/private-access checks; add its processor regression under a separately owned task.",
+      "On an authorized rehearsal runtime, upload/enrol 1_polylines.dxf and one actual standalone CityJSON .json. Verify one job each, accepted terminal words, reload/replay identity, immutable originals and no map/card target.",
+      "Also qualify the CityGML host reader/profile and its partial result on that runtime. No configured host supervisor, object store, dispatcher or PostgreSQL terminal transaction was qualified here."
+    ]
+  }
+}
