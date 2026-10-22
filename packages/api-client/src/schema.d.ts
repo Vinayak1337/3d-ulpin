@@ -15251,6 +15251,10 @@ export interface components {
                         acceptedFence: number;
                         selection: {
                             /** @enum {string} */
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            /** @enum {string} */
                             format: "csv" | "xlsx";
                             sheet: string;
                             /** @enum {string|null} */
@@ -18392,6 +18396,10 @@ export interface components {
                         rawResultSha256: string;
                         acceptedFence: number;
                         selection: {
+                            /** @enum {string} */
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
                             format: "csv" | "xlsx";
                             sheet: string;
@@ -21729,6 +21737,10 @@ export interface components {
                         rawResultSha256: string;
                         acceptedFence: number;
                         selection: {
+                            /** @enum {string} */
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
                             format: "csv" | "xlsx";
                             sheet: string;
@@ -39097,6 +39109,10 @@ export interface components {
                         rawResultSha256: string;
                         acceptedFence: number;
                         selection: {
+                            /** @enum {string} */
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                             /** @enum {string} */
                             format: "csv" | "xlsx";
                             sheet: string;
@@ -65501,6 +65517,11 @@ export interface components {
              * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
              */
             ifcJobId?: string;
+            /**
+             * Format: uuid
+             * @description A DXF, CityGML or CityJSON kept in a batch: its native reading job; absent for every other item.
+             */
+            nativeReaderJobId?: string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -65786,6 +65807,11 @@ export interface components {
                  * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
                  */
                 ifcJobId?: string;
+                /**
+                 * Format: uuid
+                 * @description A DXF, CityGML or CityJSON kept in a batch: its native reading job; absent for every other item.
+                 */
+                nativeReaderJobId?: string;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -66030,6 +66056,10 @@ export interface components {
             tabular: {
                 selection: {
                     /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
                     /** @enum {string|null} */
@@ -66046,6 +66076,10 @@ export interface components {
                 };
             } | {
                 selection: {
+                    /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
@@ -66073,6 +66107,10 @@ export interface components {
             headers: string[];
             records: number;
             profile: {
+                /** @enum {string} */
+                delimiter?: "," | ";" | "\t" | "|";
+                /** @enum {string} */
+                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                 /** @enum {string} */
                 version: "column-profile/1";
                 /** @enum {string} */
@@ -66112,6 +66150,10 @@ export interface components {
             requestKey: string;
             expectedWorkspaceRevision: number;
             selection: {
+                /** @enum {string} */
+                delimiter?: "," | ";" | "\t" | "|";
+                /** @enum {string} */
+                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                 /** @enum {string} */
                 format: "csv" | "xlsx";
                 sheet: string;
@@ -66273,6 +66315,10 @@ export interface components {
                 tabular: {
                     selection: {
                         /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
                         /** @enum {string|null} */
@@ -66289,6 +66335,10 @@ export interface components {
                     };
                 } | {
                     selection: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
@@ -66483,6 +66533,10 @@ export interface components {
                 tabular: {
                     selection: {
                         /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
                         /** @enum {string|null} */
@@ -66499,6 +66553,10 @@ export interface components {
                     };
                 } | {
                     selection: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
@@ -66693,6 +66751,10 @@ export interface components {
                 tabular: {
                     selection: {
                         /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
                         /** @enum {string|null} */
@@ -66709,6 +66771,10 @@ export interface components {
                     };
                 } | {
                     selection: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
@@ -66928,6 +66994,10 @@ export interface components {
                         itemId: string;
                         selection: {
                             /** @enum {string} */
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            /** @enum {string} */
                             format: "csv" | "xlsx";
                             sheet: string;
                             /** @enum {string|null} */
@@ -67040,6 +67110,10 @@ export interface components {
                     rawResultSha256: string;
                     acceptedFence: number;
                     selection: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
@@ -67167,6 +67241,10 @@ export interface components {
                 itemId: string;
                 selection: {
                     /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
                     /** @enum {string|null} */
@@ -67201,6 +67279,10 @@ export interface components {
                     /** Format: uuid */
                     itemId: string;
                     selection: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
@@ -67612,6 +67694,10 @@ export interface components {
                         acceptedFence: number;
                         selection: {
                             /** @enum {string} */
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                            /** @enum {string} */
                             format: "csv" | "xlsx";
                             sheet: string;
                             /** @enum {string|null} */
@@ -67766,6 +67852,10 @@ export interface components {
                             rawResultSha256: string;
                             acceptedFence: number;
                             selection: {
+                                /** @enum {string} */
+                                delimiter?: "," | ";" | "\t" | "|";
+                                /** @enum {string} */
+                                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                                 /** @enum {string} */
                                 format: "csv" | "xlsx";
                                 sheet: string;
@@ -71305,6 +71395,10 @@ export interface components {
             tabular: {
                 selection: {
                     /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
                     /** @enum {string|null} */
@@ -71321,6 +71415,10 @@ export interface components {
                 };
             } | {
                 selection: {
+                    /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
@@ -71396,6 +71494,10 @@ export interface components {
             tabular?: {
                 selection: {
                     /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
                     /** @enum {string|null} */
@@ -71412,6 +71514,10 @@ export interface components {
                 };
             } | {
                 selection: {
+                    /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
@@ -71498,6 +71604,10 @@ export interface components {
             tabular?: {
                 selection: {
                     /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
                     /** @enum {string|null} */
@@ -71514,6 +71624,10 @@ export interface components {
                 };
             } | {
                 selection: {
+                    /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
@@ -71569,6 +71683,10 @@ export interface components {
             tabular?: {
                 selection: {
                     /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                    /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
                     /** @enum {string|null} */
@@ -71585,6 +71703,10 @@ export interface components {
                 };
             } | {
                 selection: {
+                    /** @enum {string} */
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                     /** @enum {string} */
                     format: "csv" | "xlsx";
                     sheet: string;
@@ -71757,6 +71879,10 @@ export interface components {
                 tabular?: {
                     selection: {
                         /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
+                        /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
                         /** @enum {string|null} */
@@ -71773,6 +71899,10 @@ export interface components {
                     };
                 } | {
                     selection: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
                         format: "csv" | "xlsx";
                         sheet: string;
@@ -71795,6 +71925,10 @@ export interface components {
                 };
                 mapping?: {
                     profile: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252";
                         /** @enum {string} */
                         version: "column-profile/1";
                         /** @enum {string} */
