@@ -1,0 +1,121 @@
+{
+  "task": "cw2-area-cells",
+  "gate": "AUD2-gap-5",
+  "status": "blocked_pending_scope_expansion",
+  "integrationReady": false,
+  "branch": "task/cw2-area-cells",
+  "base": "90237d7f",
+  "implementationCommit": "b418f88e",
+  "design": "docs/evidence/cw2/DESIGN.md",
+  "works": "Offline deterministic cell folding routes every reader-accepted Halifax feature without outside holds.",
+  "qualification": "Protocol-only mapping and extent checks; no normalizer, database, map or card was exercised.",
+  "cellRule": {
+    "utmSideMetres": 40000,
+    "degreeSide": 0.5,
+    "degreeGridOrigin": [-180.25, -90.25],
+    "placement": "Extent south-west corner; an exact grid edge belongs east/north.",
+    "zone": "Declared CRS transformed to degrees; feature extent middle selects WGS 84 UTM zone and hemisphere.",
+    "sharedFeatureMaximum": { "metres": 9000, "degrees": 0.25 },
+    "wholeCellMaximum": { "metres": 49000, "degrees": 0.75 },
+    "zoneCrossingOrLargerFeature": "Stable single-feature cell, if individually admissible; never split or moved.",
+    "wideFeature": "PART_FEATURE_EXTENT_BOUND and its existing 50 km/1 degree hold words remain unchanged.",
+    "openCuts": 12,
+    "eviction": "Least recently used cell; existing size and vertex limits still close individual cuts.",
+    "resume": "Part locator stores consumed cursor, ordered open feature-index lists and destination; no new table.",
+    "legacy": "Already stored CW1 parts and unsupported CRS keep their existing fold."
+  },
+  "realInputs": {
+    "nyc": {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "features": 1662,
+      "before": { "packages": 1, "held": 0 },
+      "after": { "packages": 1, "areas": 1, "routed": 1662, "held": 0 },
+      "digest": "76e4e298e07b3c51be2d12d80517b97ea36067d145c0a34c8d7767d1a35e766e",
+      "sameDigestAsCw1Base": true
+    },
+    "halifax": {
+      "directory": "E:/BhuAayam-data/datasets/map-formats/halifax-regional-municipality",
+      "filename": "Buildings_4912564227567820355.geojson",
+      "use": "test_only foreign geography; originals read only, nothing placed or recorded",
+      "features": 172409,
+      "readerNotAccepted": 1,
+      "before": { "packages": 2778, "routed": 159013, "heldOutside": 13395 },
+      "after": { "packages": 549, "areas": 24, "routed": 172408, "heldOutside": 0, "heldWide": 0 },
+      "everyCutFitsFirstRetainedCellOrigin": true,
+      "digest": "1a0e53b8d85811b8001c777d6048a004ca6751d2e89f2d53dcea8630b9cf2d37",
+      "finalRunSeconds": 66
+    }
+  },
+  "boundedComparisons": [
+    { "gridKm": 20, "degreeGrid": 0.25, "openCuts": 4, "exit": 1,
+      "failure": "Package-count assertion failed; count was not emitted, so it remains unknown." },
+    { "gridKm": 40, "degreeGrid": 0.5, "openCuts": 8, "packages": 3129, "areas": 24, "heldOutside": 0,
+      "exit": 1, "diagnosticExit": 0, "failure": "LRU eviction still exceeds the 2778-package target." },
+    { "hypothesis": "Retain half the observed 24-cell working set instead of one third, without changing cuts.",
+      "baselinePackages": 3129, "openCuts": 12, "successCriterion": "Fewer than 2778 packages, zero outside holds.",
+      "stopCondition": "One full offline fold; no further partition tuning if it misses.",
+      "packages": 549, "heldOutside": 0, "exit": 0, "decision": "Keep K=12; stop partition tuning." }
+  ],
+  "tests": {
+    "writtenBeforeImplementation": ["Cell/grid and UTM edges", "LRU and stored-cut resume equality", "Cell name words"],
+    "redCoreExit": 1,
+    "redCoreReason": "New cell exports were absent on the base.",
+    "redWordsExit": 1,
+    "redWordsReason": "Cell-area summary returned null before its implementation.",
+    "finalCoverage": [
+      "Metric and degree grid edges, UTM zone edges, equator and longitude endpoints",
+      "Resume equality after every LRU cut, size cut and EOF-draining cut; held features remain identical",
+      "Stored open-state bound, exact source rehydration and locator replay refusal",
+      "NYC unchanged digest, wide feature code/words, literal cell labels and candidate-review words",
+      "Current single-site binding returns 403 and hides a secondary cell proposal: blocker, not gate success"
+    ],
+    "correctedCheckFailures": [
+      { "check": "typecheck:backend", "exit": 2, "fix": "Give the test cut collection an explicit type." },
+      { "check": "intake tests", "exit": 1, "fix": "Set and restore the protocol test's local subject." }
+    ]
+  },
+  "checks": {
+    "offlineDependencyInstall": { "command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0 },
+    "backend": { "command": "pnpm typecheck:backend", "exit": 0 },
+    "intake": {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "glob": "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+      "includes": ["package-cuts", "package-extent", "intake-large", "destination", "part-draft"],
+      "exit": 0, "tests": 248, "pass": 248, "fail": 0, "skipped": 0
+    },
+    "wideFiles": {
+      "runner": "./node_modules/.bin/tsx --tsconfig apps/api/tsconfig.json",
+      "script": "docs/evidence/cw2/wide-files.ts",
+      "priorPnpmRunnerExit": 0,
+      "postReviewPnpmTimeoutSeconds": 120,
+      "recovery": "Direct installed executable completed with identical counts and digests under host load.",
+      "arguments": "NYC path, then Halifax directory/filename above.",
+      "exit": 0
+    },
+    "diffCheck": { "command": "git diff --check", "exit": 0 },
+    "newFileLineLengths": { "maximum": 120, "exit": 0 },
+    "review": "Task diff reviewed against 90237d7f; staging comparison also contains earlier unrelated work.",
+    "dockerOrRuntimeUsed": false,
+    "credentialsOrRuntimeFilesRead": false,
+    "pushed": false
+  },
+  "blocker": {
+    "code": "AREA_SOURCE_DENIED",
+    "finding": "A retained source case has one site; the second cell area has another site.",
+    "proofFile": "intake-part-draft.test.ts",
+    "proofTest": "current one-site source authority blocks a second cell area and its map proposal",
+    "whyNoAreasHelper": "One helper cannot safely fix the independently enforced display and citation policies.",
+    "outsideOwnedPaths": [
+      "packages/server/src/modules/areas/areas.ts: bindRetainedCaseTx and persistPreparedAreaImport",
+      "packages/server/src/modules/areas/area-display-proposals.ts: source.site_id must equal area.siteId",
+      "packages/server/src/modules/areas/package-authority.ts: quarantine source/site equality",
+      "packages/server/src/modules/registry/registry-metadata.ts: registry source/site access"
+    ],
+    "unchanged": "All of these authority checks remain intact. This checkpoint must not be activated unchanged."
+  },
+  "next": [
+    "Expand ownership to implement exact retained-source/package authority across cell areas, not a blanket bypass.",
+    "Then rehearse drafting, map proposals, review, citations and cards in more than one cell, including quarantine.",
+    "Rehearse restart after every stored cut, eight-package review pressure, SQL rehydration and memory admission."
+  ]
+}
