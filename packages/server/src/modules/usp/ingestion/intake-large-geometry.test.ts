@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { StreamedMappingPlanSchema, StreamedProfileGenerationSchema } from '@ulpin/contracts/usp';
-import { intakeLargeGeometryProjection } from './intake-large-worker';
+import { normalizeMappedChunk } from './chunk-mapping-normalizer';
+import { intakeLargeHoldsReason } from './intake-large';
+import { intakeLargeGeometryProjection, intakeLargeSetAside } from './intake-large-worker';
 import type { IntakeLargeState } from './intake-ledger';
+import { pairMappedFeatures } from './intake-package-cuts';
 import { compileStreamedMapping } from './streamed-mapping';
 import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
 import { sourceRecord } from './streaming-vector-reader';
@@ -15,12 +18,20 @@ const projection: IntakeLargeState = { state: 'probed', placement: 'needs_answer
   recordsSeen: 3, partsPlanned: null, partsDone: 1, limitReason: 'State the kind of feature.' };
 
 // Synthetic test_only unit shapes, never operational records or evaluation truth.
-function profileFor(geometry: unknown) {
-  const feature = { type: 'Feature', properties: { sourceKey: 'synthetic' }, geometry };
-  const raw = Buffer.from(JSON.stringify(feature));
-  const record = sourceRecord({ index: 0, start: 0, end: raw.length, raw, feature, valueIssueCode: null });
-  assert.equal(record.disposition, 'accepted');
-  const { inventory } = advanceStreamedInventory(emptyInventory(), [record]);
+function recordsFor(geometries: unknown[]) {
+  let start = 0;
+  return geometries.map((geometry, index) => {
+    const feature = { type: 'Feature', properties: { sourceKey: `synthetic-${index}` }, geometry };
+    const raw = Buffer.from(JSON.stringify(feature));
+    const record = sourceRecord({ index, start, end: start + raw.length, raw, feature, valueIssueCode: null });
+    start += raw.length + 1;
+    assert.equal(record.disposition, 'accepted');
+    return record;
+  });
+}
+
+function profileFor(...geometries: unknown[]) {
+  const { inventory } = advanceStreamedInventory(emptyInventory(), recordsFor(geometries));
   return StreamedProfileGenerationSchema.parse({ version: 'streamed-profile/1', jobId: profileJobId,
     rawJobId, source: { sourceId, familyId: sourceId, sourceRevision: 1, sourceSha256: hash,
       schemaFingerprint: hash }, readerSha256: hash, profilerSha256: hash, generation: 1,
@@ -29,6 +40,10 @@ function profileFor(geometry: unknown) {
     reference: { sourceCrs: 'EPSG:4326', evidence: 'Synthetic protocol', unit: 'degree',
       globalPlacement: 'not_qualified' } });
 }
+
+const square = (x: number) => ({ type: 'Polygon', coordinates: [[[x, 0], [x + 1, 0], [x + 1, 1], [x, 0]]] });
+const mixedGeometries = [square(0), { type: 'Point', coordinates: [0, 0] },
+  { type: 'LineString', coordinates: [[0, 0], [1, 1]] }, square(2), { type: 'MultiPoint', coordinates: [[0, 0]] }];
 
 function planFor(profile: ReturnType<typeof profileFor>, kind: 'building' | 'road') {
   return StreamedMappingPlanSchema.parse({ version: 'streamed-mapping/1', mode: 'streamed_mapping',
@@ -50,11 +65,39 @@ test('read points and lines offer no building footprint mapping; an explicit com
       { status: 422, code: 'STREAMED_MAPPING_GEOMETRY' });
     assert.equal(compileStreamedMapping(planFor(profile, 'road'), profile).kind, 'road');
   }
-  const profile = profileFor({ type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] });
+  const profile = profileFor(square(0));
   assert.equal(compileStreamedMapping(planFor(profile, 'building'), profile).kind, 'building');
   const mixed = { ...profile, geometryTypes: ['Point', 'Polygon'] };
-  assert.throws(() => compileStreamedMapping(planFor(mixed, 'building'), mixed),
-    { code: 'STREAMED_MAPPING_GEOMETRY' });
+  assert.equal(compileStreamedMapping(planFor(mixed, 'building'), mixed).kind, 'building');
+});
+
+test('a mixed large file maps only its polygons as buildings and counts what it sets aside by kind', () => {
+  const records = recordsFor(mixedGeometries), profile = profileFor(...mixedGeometries);
+  const fold = { after: -1, conflicts: new Set<number>() };
+  for (const [kind, drawn] of [['building', [0, 3]], ['road', [0, 1, 2, 3, 4]]] as const) {
+    const plan = planFor(profile, kind);
+    const observed = normalizeMappedChunk(records, plan, profile, rawJobId, 0, []).records;
+    assert.deepEqual(observed.map(item => item.disposition), Array(5).fill('observed'));
+    const paired = pairMappedFeatures(records, observed, { ...fold, kind });
+    assert.deepEqual(paired.map(item => item.raw.featureIndex), drawn);
+  }
+  const summary = { rawJobId, counts: { Polygon: 2, Point: 1, LineString: 1, MultiPoint: 1 } };
+  const setAside = intakeLargeSetAside('building', summary, rawJobId, 5);
+  assert.deepEqual(setAside, { kind: 'building', counts: { Point: 1, LineString: 1, MultiPoint: 1 } });
+  assert.equal(intakeLargeSetAside('road', summary, rawJobId, 5), undefined);
+  assert.equal(intakeLargeSetAside('building', summary, rawJobId, 4), undefined, 'a summary short of a record');
+  assert.equal(intakeLargeHoldsReason({ recordsRead: 5, accepted: 2, packages: 1, readerRejected: 0,
+    duplicates: 0, oversized: 0, setAside }),
+  '5 records read; 2 in 1 packages. 2 pins and 1 line are kept in the original but not drawn as buildings.');
+});
+
+test('an all-polygon large file pairs every observed feature and sets nothing aside, as before', () => {
+  const polygons = [square(0), square(2)];
+  const records = recordsFor(polygons), profile = profileFor(...polygons);
+  const observed = normalizeMappedChunk(records, planFor(profile, 'building'), profile, rawJobId, 0, []).records;
+  const paired = pairMappedFeatures(records, observed, { after: -1, conflicts: new Set(), kind: 'building' });
+  assert.deepEqual(paired, records.map((raw, index) => ({ raw, mapped: observed[index], feature: raw.feature })));
+  assert.equal(intakeLargeSetAside('building', { rawJobId, counts: { Polygon: 2 } }, rawJobId, 2), undefined);
 });
 
 test('officer words count accepted features by kind from the matching summary only', () => {

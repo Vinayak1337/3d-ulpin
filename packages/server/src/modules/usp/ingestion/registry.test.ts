@@ -7,7 +7,7 @@ import { validateAdaptiveMapping } from './adaptive-mapping';
 import type { GisInspection } from '@ulpin/contracts';
 import { fingerprint } from '../../cases/domain';
 import { sha256 } from '../../../infrastructure/storage';
-import { compileMapping, inspectedProfile } from './registry';
+import { compileMapping, inspectedProfile, setAsideGeometryTypes } from './registry';
 import { legacyPlanToV2, mappingContextFromGisProfile } from './mapping-plan-v2';
 
 const id = '10000000-0000-4000-8000-000000000001';
@@ -111,6 +111,29 @@ test('stated kind requires generic targets; line roads compile and line building
   assert(!MappingPlanSchema.safeParse({ ...stated('road'), kind: undefined }).success);
   const height = MappingPlanSchema.parse({ ...stated('building'), ...statedHeight });
   assert.equal(compileMapping(height, profile()).heightUnit, 'ft');
+});
+
+test('an outline kind over polygons with pins and lines compiles the polygon layout and sets the rest aside', () => {
+  const mixed = { ...profile(), geometryTypes: ['Polygon', 'Point', 'LineString'] };
+  for (const plan of [MappingPlanSchema.parse(legacy), MappingPlanSchema.parse(stated('building'))]) {
+    assert.deepEqual(compileMapping(plan, mixed), compileMapping(plan, profile()));
+  }
+  assert.deepEqual(setAsideGeometryTypes('building', mixed.geometryTypes), ['Point', 'LineString']);
+  assert.deepEqual(setAsideGeometryTypes('parcel', ['MultiPolygon', 'MultiPoint']), ['MultiPoint']);
+  assert.deepEqual(setAsideGeometryTypes('road', mixed.geometryTypes), []);
+  assert.deepEqual(setAsideGeometryTypes('building', ['Polygon']), []);
+  assert.equal(validateAdaptiveMapping({ decision: 'propose', reason: 'none', operations: legacy.operations },
+    mixed).status, 'needs_input', 'only an officer-stated layout sets features aside');
+});
+
+test('pins and lines with no polygon still refuse an outline kind with the same words', () => {
+  for (const geometryTypes of [['Point'], ['Point', 'LineString'], ['Polygon', 'GeometryCollection']]) {
+    const source = { ...profile(), geometryTypes };
+    const refused = geometryTypes.filter(type => type !== 'Polygon').join(', ');
+    assert.throws(() => compileMapping(MappingPlanSchema.parse(stated('building')), source), {
+      status: 422, code: 'MAPPING_GEOMETRY_KIND', message: `The layout states building, which does not accept `
+        + `${refused} geometry. Choose a compatible kind; no kind is inferred.` });
+  }
 });
 
 test('the legacy building adapter refuses stated kinds and generic targets instead of creating building facts', () => {

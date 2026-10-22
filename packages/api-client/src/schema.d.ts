@@ -6199,6 +6199,14 @@ export interface components {
                     code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                     reason: string;
                 }[];
+                /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                setAside?: {
+                    /** @enum {string} */
+                    kind: "building" | "parcel" | "public_land";
+                    counts: {
+                        [key: string]: number;
+                    };
+                };
                 /** @enum {string} */
                 version: "gis-quarantine/1";
                 sourceSha256: string;
@@ -6792,6 +6800,14 @@ export interface components {
                     code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                     reason: string;
                 }[];
+                /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                setAside?: {
+                    /** @enum {string} */
+                    kind: "building" | "parcel" | "public_land";
+                    counts: {
+                        [key: string]: number;
+                    };
+                };
                 /** @enum {string} */
                 version: "gis-quarantine/1";
                 sourceSha256: string;
@@ -8534,6 +8550,14 @@ export interface components {
                     code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                     reason: string;
                 }[];
+                /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                setAside?: {
+                    /** @enum {string} */
+                    kind: "building" | "parcel" | "public_land";
+                    counts: {
+                        [key: string]: number;
+                    };
+                };
                 /** @enum {string} */
                 version: "gis-quarantine/1";
                 sourceSha256: string;
@@ -69035,6 +69059,14 @@ export interface components {
                             code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                             reason: string;
                         }[];
+                        /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                        setAside?: {
+                            /** @enum {string} */
+                            kind: "building" | "parcel" | "public_land";
+                            counts: {
+                                [key: string]: number;
+                            };
+                        };
                         /** @enum {string} */
                         version: "gis-quarantine/1";
                         sourceSha256: string;

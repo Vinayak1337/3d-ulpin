@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import type { MapArea } from '@ulpin/contracts';
+import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
 import { StreamingVectorGeometrySummarySchema } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
@@ -17,9 +17,11 @@ import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intake
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
 import { readIntakeDraftTx, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
-import { IntakePackageCutter, type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
+import { IntakePackageCutter, pairMappedFeatures, type IntakePackageCut,
+  type MappedPartFeature } from './intake-package-cuts';
 import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import type { ProvedAreaPartInput } from './proved-area-part';
+import { setAsideGeometryTypes } from './registry';
 import { StreamedProfileService } from './streamed-profile';
 import { StreamingVectorService } from './streaming-vector';
 
@@ -33,7 +35,7 @@ type Fold = {
   readerJobId: string; mappingJobId: string; chunks: number; firstChunk: number; after: number; parts: number;
   cutKey: string; held: number; pending: number[]; conflicts: Set<number>; metadata: Record<string, unknown>;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
-  recordsRead: number; readerRejected: number; started: number;
+  recordsRead: number; readerRejected: number; started: number; kind: string;
 };
 
 /** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
@@ -49,12 +51,28 @@ async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt,
 }
 
 /** Only a complete, matching accepted summary supplies kind counts; multipart members are never guessed. */
+function acceptedKindCounts(rawSummary: unknown, rawJobId: string, accepted: number) {
+  const parsed = StreamingVectorGeometrySummarySchema.safeParse(rawSummary);
+  if (!parsed.success || parsed.data.rawJobId !== rawJobId) return null;
+  const counts = parsed.data.counts;
+  return Object.values(counts).reduce((total, count) => total + count, 0) === accepted ? counts : null;
+}
+
+/** The pins and lines an outline layout sets aside, as the reader counted them; none without that count. */
+export function intakeLargeSetAside(kind: string, rawSummary: unknown, rawJobId: string,
+  accepted: number): GisSetAside | undefined {
+  const counts = acceptedKindCounts(rawSummary, rawJobId, accepted);
+  const outline = GisSetAsideSchema.shape.kind.safeParse(kind);
+  if (!counts || !outline.success) return undefined;
+  const setAside = Object.fromEntries(setAsideGeometryTypes(kind, Object.keys(counts))
+    .map(type => [type, counts[type as keyof typeof counts]]));
+  return Object.keys(setAside).length ? { kind: outline.data, counts: setAside } : undefined;
+}
+
 export function intakeLargeGeometryProjection(projection: IntakeLargeState, rawSummary: unknown,
   rawJobId: string, accepted: number): IntakeLargeState {
-  const parsed = StreamingVectorGeometrySummarySchema.safeParse(rawSummary);
-  if (!parsed.success || parsed.data.rawJobId !== rawJobId) return projection;
-  const counts = parsed.data.counts;
-  if (Object.values(counts).reduce((total, count) => total + count, 0) !== accepted) return projection;
+  const counts = acceptedKindCounts(rawSummary, rawJobId, accepted);
+  if (!counts) return projection;
   const nonFootprints = (['Point', 'MultiPoint', 'LineString', 'MultiLineString'] as const)
     .filter(kind => counts[kind] !== undefined)
     .map(kind => `${counts[kind]} ${kind} feature${counts[kind] === 1 ? '' : 's'}`);
@@ -151,16 +169,16 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
     const conflicts = (await client.query(`SELECT first_feature_index,later_feature_index
       FROM usp_chunk_mapping_conflicts WHERE job_id=$1`, [mapping!.job_id])).rows
       .flatMap(row => [Number(row.first_feature_index), Number(row.later_feature_index)]);
-    const layoutHash = (await client.query("SELECT body->>'planHash' hash FROM usp_mapping_recipes WHERE id=$1",
-      [recipe!.id])).rows[0].hash;
+    const layout = (await client.query(`SELECT body->>'planHash' hash,body->'plan'->>'kind' kind
+      FROM usp_mapping_recipes WHERE id=$1`, [recipe!.id])).rows[0];
     return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id, chunks: Number(raw!.sealed_chunks),
       firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: state.store.parts,
       cutKey: intakeLargeCutKey(state.store), held: Number(last?.counts.held ?? 0), pending: [],
       conflicts: new Set(conflicts), metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
       part: { sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
-        readerVersion: 'geojson-stream/2', layoutHash, destination },
+        readerVersion: 'geojson-stream/2', layoutHash: layout.hash, destination },
       objectKey: state.source.object_key, sourceBytes: Number(state.source.bytes), recordsRead: raw!.records,
-      readerRejected: raw!.quarantined, started: Date.now() };
+      readerRejected: raw!.quarantined, started: Date.now(), kind: layout.kind ?? 'building' };
   });
 }
 
@@ -168,20 +186,12 @@ async function sourceName(input: IntakeLargeInput): Promise<string> {
   return (await query('SELECT name FROM sources WHERE id=$1', [input.sourceId])).rows[0].name;
 }
 
-/** One sealed raw part and its mapped part, as the cutter takes them: accepted, observed, keyed, not duplicated. */
 async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): Promise<MappedPartFeature[]> {
   const raw = await reader.chunk(input.caseId, input.sourceId, fold.readerJobId, index);
   const mapped = await mapper.chunk(input.caseId, input.sourceId, fold.mappingJobId, index);
   if (!raw.current || !raw.sourceComplete || raw.unknownRemainder || !raw.payload || !mapped.current || !mapped.payload)
     conflict('A sealed part of this file is unavailable.');
-  const observed = new Map(mapped.payload.records.map(record => [record.featureIndex, record]));
-  return raw.payload.records.flatMap(record => {
-    const match = observed.get(record.featureIndex);
-    if (record.featureIndex <= fold.after || record.disposition !== 'accepted'
-      || fold.conflicts.has(record.featureIndex) || match?.disposition !== 'observed'
-      || match.sourceKey.state !== 'known' || !match.geometryRef) return [];
-    return [{ raw: record, mapped: match, feature: record.feature as Record<string, unknown> }];
-  });
+  return pairMappedFeatures(raw.payload.records, mapped.payload.records, fold);
 }
 
 /** The cut's original bytes in contiguous spans of at most 1 MiB; each feature is sliced from its span. */
@@ -212,9 +222,11 @@ function heldThrough(fold: Fold, cut: IntakePackageCut | undefined): number {
 async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fold, state: State) {
   const parts = (await client.query(`SELECT count(*)::int n,COALESCE(sum((counts->>'accepted')::int),0)::int accepted
     FROM usp_intake_parts WHERE item_id=$1`, [input.itemId])).rows[0];
+  const setAside = intakeLargeSetAside(fold.kind, state.source.inspection?.streamedGeometrySummary,
+    fold.readerJobId, fold.recordsRead - fold.readerRejected);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
-    duplicates: fold.conflicts.size, oversized: fold.held + fold.pending.length },
+    duplicates: fold.conflicts.size, oversized: fold.held + fold.pending.length, setAside },
   intakeLargePlan(state.store.recipe));
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
 }

@@ -1,6 +1,6 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { fieldWords } from './batch-model';
-import { kindRefusal, kindWords, type Choices } from './question-model';
+import { kindRefusal, kindWords, setAsideWords, type Choices } from './question-model';
 
 export type ProfileStatus =
   GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}'>;
@@ -73,11 +73,12 @@ export function streamedQuestionBody(inventory: Inventory, choices: Choices, pin
   } };
 }
 
-export function streamedSummary(choices: Choices): string {
+export function streamedSummary(choices: Choices, types: readonly string[] = []): string {
   if (!choices.kind || !choices.identifier) return 'Choose what each feature is and which field identifies it.';
   const name = choices.name ? fieldWords(choices.name) : 'not stated';
-  return `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
+  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
     + `Name: ${name}.`;
+  return [summary, setAsideWords(choices.kind, types)].filter(Boolean).join(' ');
 }
 
 export function isStreamedBody(body: { plan: { version: string } }): body is StreamedAuthorBody {
