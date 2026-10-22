@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { basename, join } from 'node:path';
 import type { Readable } from 'node:stream';
 import { TABULAR_LIMITS, TabularPinSchema, type TabularSelection, type TabularPin } from '@ulpin/contracts/usp';
@@ -11,10 +10,10 @@ import { COLUMN_CSV_ROW_LIMIT, decodeColumnText, readColumnCsv } from './column-
 import { profileTabularChunk } from './chunk-mapping-agent';
 import { profileTabularStream } from './tabular-stream';
 import { decodeTableBytes, detectDelimitedReading } from './delimited-text';
+import { rowLimit, workbookLimit, workbookTable, type TabularTable } from './tabular-workbook';
 
-type Part = { text: string; locator: { sheet: string; row: number; column: number; cellState: string } };
-export type TabularTable = { headers: string[]; rows: unknown[][]; sourceRows: number[];
-  cellStates?: ('literal' | 'absent' | 'unknown')[][] };
+export { TABULAR_ROW_LIMIT, type TabularTable } from './tabular-workbook';
+
 type DevelopmentAsset = { id: string; family: string; split: string; mediaType: string;
   privacy?: string; permission: { state: string }; original: { sha256: string; bytes: number };
   derivativeOf?: { originalSha256: string; version: 'json-table-csv/1' } };
@@ -24,6 +23,9 @@ type CaseAdmission = Extract<TabularPin, { admission: unknown }>['admission'];
 export type TabularProvenance = Partial<Omit<CaseAdmission, 'kind'>>;
 type TabularAdmission = { kind: 'development'; asset: DevelopmentAsset } |
   { kind: 'case_original'; admission: CaseAdmission };
+const MEDIA_TYPES: Readonly<Record<TabularSelection['format'], string>> = { csv: 'text/csv',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ods: 'application/vnd.oasis.opendocument.spreadsheet' };
 const JSON_TABLE_GENERATORS = new Set([
   '63821f68526c441aa10a1614f5f92febee05a2536a3b6f13ff470c478eeee263',
   '62d8248ccd5b45e705d21984bbce5926a62e0a4e80fd69502ff3a81b2d8b50ea',
@@ -103,68 +105,6 @@ function admittedPin(admitted: TabularAdmission, selection: TabularSelection, so
     ...(asset.derivativeOf ? { derivativeOf: asset.derivativeOf } : {}) });
 }
 
-/** TB2: the code of a refusal at the whole-file reader's size bound; the same bytes can still be read as a stream. */
-export const TABULAR_ROW_LIMIT = 'TABULAR_ROW_LIMIT';
-
-function rowLimit(): never {
-  throw new AppError(422, TABULAR_ROW_LIMIT, 'This table holds more than the whole-file reader takes: 2,000 '
-    + 'records, or 2,000 cells of a workbook. Kept through the upload, it is read as a stream instead; no record is '
-    + 'cut to fit.');
-}
-
-function workbookParts(bytes: Uint8Array): Part[] {
-  const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
-    join(settings.repositoryRoot, 'scripts/agent/read_workbook_cells.py'),
-    join(settings.repositoryRoot, 'services/geo'), '-',
-  ], { input: Buffer.from(bytes).toString('base64'), encoding: 'utf8', timeout: 30000,
-    maxBuffer: 8 * 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
-  // The native reader names its own size bound; any other stop stays its refusal.
-  if (run.status !== 0 && /\bNATIVE_WORKBOOK_LIMIT\b/.test(run.stderr ?? '')) rowLimit();
-  if (run.status !== 0) {
-    throw new AppError(422, 'TABULAR_NATIVE_READER', 'The unchanged native workbook bounds refused it.');
-  }
-  const output = JSON.parse(run.stdout);
-  if (output.format !== 'xlsx') throw new AppError(422, 'TABULAR_FORMAT', 'Choose a native XLSX workbook.');
-  return output.parts;
-}
-
-function workbookTable(bytes: Uint8Array, selection: TabularSelection): TabularTable {
-  const parts = workbookParts(bytes).filter(part => part.locator.sheet === selection.sheet);
-  const headerParts = parts.filter(part => selection.headerRows.includes(part.locator.row));
-  const width = Math.max(0, ...headerParts.map(part => part.locator.column));
-  if (!width || width > TABULAR_LIMITS.columns || selection.headerRows.some(row =>
-    !headerParts.some(part => part.locator.row === row))) {
-    throw new AppError(422, 'TABULAR_HEADER_REQUIRED',
-      'Pin existing header rows in exactly one native sheet, within 256 columns.');
-  }
-  const headers = Array.from({ length: width }, (_, index) => headerParts.filter(part =>
-    part.locator.column === index + 1 && part.locator.cellState === 'literal').map(part => part.text).join(' / '));
-  const records = workbookRows(parts, selection, width);
-  return { headers, ...records };
-}
-
-function workbookRows(parts: Part[], selection: TabularSelection, width: number) {
-  const records = new Map<number, unknown[]>();
-  const states = new Map<number, ('literal' | 'absent' | 'unknown')[]>();
-  for (const part of parts) {
-    if (part.locator.row <= Math.max(...selection.headerRows)) continue;
-    if (part.locator.column > width) {
-      throw new AppError(422, 'TABULAR_SCHEMA_DRIFT', 'A cell exceeds the pinned headers.');
-    }
-    if (!records.has(part.locator.row)) {
-      records.set(part.locator.row, []);
-      states.set(part.locator.row, Array(width).fill('absent'));
-    }
-    const literal = ['literal', 'whitespace', 'empty_string'].includes(part.locator.cellState);
-    states.get(part.locator.row)![part.locator.column - 1] = literal ? 'literal' : 'unknown';
-    if (literal) records.get(part.locator.row)![part.locator.column - 1] =
-      part.locator.cellState === 'empty_string' ? '' : part.text;
-  }
-  const ordered = [...records].sort(([left], [right]) => left - right);
-  return { rows: ordered.map(([, row]) => row), sourceRows: ordered.map(([row]) => row),
-    cellStates: ordered.map(([row]) => states.get(row)!) };
-}
-
 /** Native parsing is bounded; formulas, caches and absent cells never acquire values. */
 export function readTabularSource(bytes: Uint8Array, selection: TabularSelection): TabularTable {
   if (!bytes.length || bytes.length > TABULAR_LIMITS.bytes) {
@@ -172,8 +112,10 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
   }
   let table: TabularTable;
   try {
-    if (selection.format === 'xlsx') table = workbookTable(bytes, selection);
-    else {
+    if (selection.format !== 'csv') {
+      const { marks: _marks, ...read } = workbookTable(bytes, selection, selection.format);
+      table = read;
+    } else {
       const text = selection.encoding
         ? decodeTableBytes(bytes, selection.encoding)
         : decodeColumnText(bytes);
@@ -186,7 +128,10 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
     throw new AppError(422, 'TABULAR_HEADER_OR_READER',
       'The literal reader requires valid headers, at most 2,000 rows and 256 columns.');
   }
-  if (table.rows.length > TABULAR_LIMITS.rows) rowLimit();
+  if (table.rows.length > TABULAR_LIMITS.rows) {
+    if (selection.format !== 'csv') workbookLimit(selection.format);
+    rowLimit();
+  }
   if (!table.rows.length || !table.headers.some(header => header.trim()) ||
       table.headers.length > TABULAR_LIMITS.columns || table.headers.some(header => header.length > 400)) {
     throw new AppError(422, 'TABULAR_HEADER_REQUIRED',
@@ -200,9 +145,7 @@ export function inspectTabularSource(
   reading: 'detect' | 'pinned' = 'detect',
 ) {
   const admitted = admitTabularSource(sha256(bytes), bytes.length, provenance);
-  const expected = selection.format === 'csv' ? 'text/csv' :
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  if (admitted.kind === 'development' && admitted.asset.mediaType !== expected) {
+  if (admitted.kind === 'development' && admitted.asset.mediaType !== MEDIA_TYPES[selection.format]) {
     throw new AppError(422, 'TABULAR_FORMAT', 'The manifest and selected format differ.');
   }
   if (selection.format === 'csv' && reading === 'detect') {

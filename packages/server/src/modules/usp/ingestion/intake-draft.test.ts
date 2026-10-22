@@ -316,7 +316,10 @@ test('a kept batch CSV names its table reader instead of claiming no batch reade
 for (const [format, expected] of [
   ['xlsx', 'Kept as an XLSX table (85 KB). Read it as a table with "Open the table"; the original is kept with '
     + 'its SHA-256.'],
-  ['ods', 'Kept as an ODS table (85 KB). It is not read as a table today; the original is kept with its SHA-256.'],
+  ['ods', 'Kept as an ODS table (85 KB). Read it as a table with "Open the table"; the original is kept with '
+    + 'its SHA-256.'],
+  ['xls', 'Excel 97-2003 workbook (85 KB). It is kept as evidence; this version does not read its cells. Save it as '
+    + 'XLSX or ODS and add that file to place its rows on the map.'],
 ] as const) {
   test(`a kept batch ${format} names "Open the table" only when the batch offers it`, async () => {
     const fixture = protocol();

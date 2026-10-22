@@ -1,7 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { DOCUMENT_LIMITS, INTAKE_TABLE_READER_FORMATS, STREAMING_VECTOR_LIMITS, type DocumentResult,
-  type IntakeCard } from '@ulpin/contracts/usp';
+import { DOCUMENT_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_TABLE_READER_FORMATS, STREAMING_VECTOR_LIMITS,
+  type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
@@ -162,6 +162,7 @@ function keptOnly(card: IntakeCard, source: IntakeSourceRow): boolean {
 function keptWords(card: IntakeCard, bytes: number): string {
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
+  if (card.format === 'xls') return `Excel 97-2003 workbook (${sizeWords(bytes)}). ${INTAKE_LEGACY_WORKBOOK_WORDS}`;
   const kind = `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
   const kept = `Kept as ${/^[AEIOX]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}).`;
   if (batchTable(card)) return `${kept} Read it as a table with "Open the table"; the original is kept with its `

@@ -2,6 +2,7 @@ import type { IntakeCard } from '@ulpin/contracts/usp';
 import { decodeDelimitedText } from './delimited-text';
 
 type Kind = { format: string; family: IntakeCard['family'] };
+type Detected = Kind & { detectedBy: IntakeCard['detectedBy'] };
 const kind = (format: string, family: Kind['family']): Kind => ({ format, family });
 
 export function decodeIntakeHead(bytes: Uint8Array): { text: string; encoding: string | null } {
@@ -103,8 +104,43 @@ function xmlKind(text: string): Kind | undefined {
   return undefined;
 }
 
-export function detectIntakeKind(bytes: Uint8Array): Kind {
-  const binary = binaryKind(Buffer.from(bytes));
+const OLE2 = Buffer.from('d0cf11e0a1b11ae1', 'hex');
+const WORKBOOK_STREAMS = new Set(['Workbook', 'Book']);
+
+/** The stream names in the compound file's first directory sector, when the head holds it; nothing more is parsed. */
+function ole2StreamNames(head: Buffer): string[] {
+  if (head.length < 512) return [];
+  const sectorBytes = 2 ** head.readUInt16LE(30);
+  const start = (head.readUInt32LE(48) + 1) * sectorBytes;
+  if ((sectorBytes !== 512 && sectorBytes !== 4096) || start + sectorBytes > head.length) return [];
+  const names: string[] = [];
+  for (let entry = start; entry < start + sectorBytes; entry += 128) {
+    const length = head.readUInt16LE(entry + 64);
+    if (length >= 2 && length <= 64) names.push(head.toString('utf16le', entry, entry + length - 2));
+  }
+  return names;
+}
+
+/**
+ * XL1: an Excel 97-2003 workbook is an OLE2 compound file named .xls, or one whose first directory sector names a
+ * Workbook or Book stream. Another compound file (.doc, .msg) stays unknown.
+ */
+function legacyWorkbook(head: Buffer, name: string): Detected['detectedBy'] | null {
+  if (!head.subarray(0, 8).equals(OLE2)) return null;
+  if (ole2StreamNames(head).some(stream => WORKBOOK_STREAMS.has(stream))) return 'bytes';
+  return /\.xls$/i.test(name) ? 'bytes_and_name' : null;
+}
+
+/** `detectedBy` is how the kind was established: by bytes alone, or for a legacy workbook by its name as well. */
+export function detectIntakeKind(bytes: Uint8Array, name = ''): Detected {
+  const head = Buffer.from(bytes);
+  const legacy = legacyWorkbook(head, name);
+  if (legacy) return { ...kind('xls', 'table'), detectedBy: legacy };
+  return { ...detectBytes(head), detectedBy: 'bytes' };
+}
+
+function detectBytes(bytes: Buffer): Kind {
+  const binary = binaryKind(bytes);
   if (binary) return binary;
   const { text } = decodeIntakeHead(bytes);
   if (!text || text.includes('\0')) return kind('unknown', 'unknown');
@@ -134,7 +170,7 @@ const extensions: Record<string, string[]> = {
   shapefile: ['shp', 'shx'], dbf: ['dbf'], geopackage: ['gpkg'], sqlite: ['sqlite', 'db'],
   parquet: ['parquet', 'geoparquet'], geoparquet: ['parquet', 'geoparquet'],
   tiff: ['tif', 'tiff'], bigtiff: ['tif', 'tiff'],
-  xlsx: ['xlsx'], docx: ['docx'], ods: ['ods'], kmz: ['kmz'], geotiff: ['tif', 'tiff'],
+  xlsx: ['xlsx'], xls: ['xls'], docx: ['docx'], ods: ['ods'], kmz: ['kmz'], geotiff: ['tif', 'tiff'],
   'shapefile-index': ['shx'], csv: ['csv'], tsv: ['tsv'], png: ['png'], jpeg: ['jpg', 'jpeg'],
   las: ['las'], laz: ['laz'],
   pdf: ['pdf'], ifc: ['ifc'], citygml: ['gml', 'xml'], gml: ['gml', 'xml'], kml: ['kml', 'xml'],

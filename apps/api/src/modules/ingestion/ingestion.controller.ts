@@ -167,9 +167,9 @@ export class IngestionController {
   @HttpCode(201)
   @param('caseId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources',
-    summary:'Retain a pinned GeoJSON or public D8 CSV/XLSX original in an existing source case'})
+    summary:'Retain a pinned GeoJSON or public D8 CSV/XLSX/ODS original in an existing source case'})
   @multipartBody(['file','format','requestKey','expectedWorkspaceRevision'],{
-    format:{type:'string',enum:['geojson','csv','xlsx']},
+    format:{type:'string',enum:['geojson','csv','xlsx','ods']},
     selection:{type:'string',description:'JSON tabular selection: format, sheet, table:null, ordered headerRows'},
     requestKey:{type:'string',format:'uuid'},expectedWorkspaceRevision:{type:'integer',minimum:0},
     familyId:{type:'string',format:'uuid'},expectedSourceRevision:{type:'integer',minimum:1},

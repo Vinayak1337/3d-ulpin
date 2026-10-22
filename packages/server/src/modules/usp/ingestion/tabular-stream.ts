@@ -12,8 +12,11 @@ import { INTAKE_PROBE_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS as limits, T
   type TableCellMark, type TabularSelection } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
+import { sha256 } from '../../../infrastructure/storage';
 import { profileTabularChunk } from './chunk-mapping-agent';
 import { bomEncoding, chooseTableDelimiter } from './delimited-text';
+import { readZipMember } from './intake-zip';
+import { odsLimit, workbookTable, type WorkbookTable } from './tabular-workbook';
 
 /** One CSV record: its logical record number (the header is 1) and its byte range in the unchanged original,
  * the line ending excluded. Cells are the bytes as written, decoded; a cell past the end of a short row is absent. */
@@ -421,9 +424,68 @@ export async function readWorkbookWindows(body: Readable, { selection, bytes }: 
   }
 }
 
+type OdsContent = { byteStart: number; byteEnd: number; storedSha256: string; xmlSha256: string };
+
+/** XL1: an ODS has no stream reader. It is read whole, up to 16 MiB and the whole reader's bound, and handed on as
+ * one window of a workbook: content.xml holds every sheet of an ODS, so each row cites its stored bytes in the ZIP
+ * and the SHA-256 of its XML as read. A larger ODS is refused, never cut. */
+export async function readOdsWindows(body: Readable, { selection }: TableSource,
+  onWindow: OnWindow<StreamedWorkbookRow>): Promise<StreamedTabularRead> {
+  const bytes = await wholeOds(body);
+  const table = workbookTable(bytes, selection, 'ods');
+  if (table.rows.length > TABULAR_LIMITS.rows) odsLimit();
+  if (!table.rows.length) {
+    throw new AppError(422, 'TABULAR_HEADER_REQUIRED', 'This table needs a header record and at least one record.');
+  }
+  const headers = checkedHeaders(table.headers);
+  const content = await odsContent(bytes);
+  const rows = table.rows.map((_row, index) => odsRow(table, index, selection.sheet, content));
+  await onWindow({ index: 0, rows, byteStart: content.byteStart, byteEnd: content.byteEnd,
+    sha256: content.storedSha256 }, headers);
+  return { headers, records: rows.length, windows: 1, bytes: bytes.length, sha256: sha256(bytes),
+    notes: odsNotes(table) };
+}
+
+async function wholeOds(body: Readable): Promise<Buffer> {
+  const parts: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of body) {
+    size += (chunk as Buffer).length;
+    if (size > TABULAR_LIMITS.bytes) odsLimit();
+    parts.push(chunk as Buffer);
+  }
+  return Buffer.concat(parts, size);
+}
+
+async function odsContent(bytes: Buffer): Promise<OdsContent> {
+  const member = await readZipMember(async (start, end) => bytes.subarray(start, end), bytes.length, 'content.xml',
+    TABULAR_LIMITS.bytes);
+  const byteEnd = member.dataStart + member.compressedBytes;
+  return { byteStart: member.dataStart, byteEnd, storedSha256: sha256(bytes.subarray(member.dataStart, byteEnd)),
+    xmlSha256: sha256(member.bytes) };
+}
+
+/** A cell the whole reader did not read as literal text is null; a marked one keeps how it was stored. */
+function odsRow(table: WorkbookTable, index: number, sheet: string, content: OdsContent): StreamedWorkbookRow {
+  const values = table.rows[index];
+  const cells = table.cellStates![index].map((state, column) => state === 'literal' ? String(values[column]) : null);
+  const marks = table.marks[index].flatMap((mark, column) => mark ? [{ column, mark }] : []);
+  return { index, sourceRow: table.sourceRows[index], byteStart: content.byteStart, byteEnd: content.byteEnd,
+    rawSha256: content.storedSha256, sheet, sheetSha256: content.xmlSha256, cells, ...(marks.length ? { marks } : {}) };
+}
+
+function odsNotes(table: WorkbookTable): string[] {
+  const marks = Object.fromEntries(TableCellMarkSchema.options.map(mark => [mark, 0])) as ReaderEnd['marks'];
+  for (const mark of table.marks.flat()) if (mark) marks[mark]++;
+  return ['An ODS workbook is read whole, never as a stream: up to 16 MiB, 2,000 records and 2,000 cells.',
+    ...workbookNotes({ kind: 'end', records: table.rows.length, windows: 1, marks, mergedRanges: false,
+      sharedStrings: 0 })];
+}
+
 /** The pinned selection chooses the reader: a CSV's own bytes, or one sheet of a workbook. */
 export function readTableWindows(body: Readable, source: TableSource,
   onWindow: OnWindow<StreamedTabularRow | StreamedWorkbookRow>) {
+  if (source.selection.format === 'ods') return readOdsWindows(body, source, onWindow);
   return source.selection.format === 'xlsx' ? readWorkbookWindows(body, source, onWindow)
     : readTabularWindows(body, onWindow, source.detectReading ? {} : {
       delimiter: source.selection.delimiter ?? ',', encoding: source.selection.encoding ?? 'utf-8',
