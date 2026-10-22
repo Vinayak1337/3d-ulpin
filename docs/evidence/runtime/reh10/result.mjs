@@ -151,8 +151,7 @@ const result = {
     schemaAndHashChecks: 'check.json: exit 0; nine product reads, response schemas and original hashes passed' },
   scratch: [scratch, resumed],
   videos: readdirSync(`${resumed}/video`).map(name => ({ name, bytes: statSync(`${resumed}/video/${name}`).size })),
-  verdict: 'NO: do not roll the demo to 58559aa3; table selection, evidence reading and surface admission '
-    + 'block the show.',
+  verdict: 'NO: 58559aa3 is blocked by table selection, evidence reading and surface admission.',
 };
 save('result.json', JSON.parse(safe(JSON.stringify(result))));
 console.log(result.verdict);

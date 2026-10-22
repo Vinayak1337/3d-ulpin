@@ -40,7 +40,7 @@ Verdict: NO roll to 58559aa3: table selection, evidence reading and surface admi
 - Owner/runtime owner: separately diagnose the already-down demo; this task did not recover it.
 
 ## Checks
-- Start, rehearsal doctor, schema/hash readback, PDF extraction, rehearsal stop and identity-checked Studio stop: exit 0.
+- Start, rehearsal doctor, schema/hash readback, PDF extraction, rehearsal stop and checked Studio stop: exit 0.
 - `check.mjs`: nine product GETs, seven response-schema checks, four retained hashes, no stored refused confirmation.
 - Demo doctor: exit 1 before and after, unchanged unavailable baseline; not a passing demo qualification.
 - Syntax checks, JSON parsing, evidence/secret/line-length scan and `git diff --check`: exit 0.
