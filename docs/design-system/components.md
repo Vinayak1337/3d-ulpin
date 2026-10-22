@@ -1,6 +1,6 @@
 # Components
 
-**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+**Current delivery:** [User scope policy](../archive/usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
 
 Thirty-two components, the same set as the team's design system in Claude Design, each with its reference CSS classes in [reference/components.css](reference/components.css). The first twenty-three come from the design system artifact; Panel, DataTable, DescriptionList, Tabs, Toggle, Icon, Wordmark, MapCanvas and MapPatterns were added in Claude Design and are used throughout the [reference mockups](mockups/officer-studio/README.md). "Data from" names the producer handoff whose contract feeds it. UI owns the component; the producer owns the data. Port a component into the owning feature's CSS with `--ui-*` tokens; do not add a component library.
 

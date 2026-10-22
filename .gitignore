@@ -1,7 +1,6 @@
 node_modules/
 .next/
-.env
-.env.*
+.env*
 !.env.example
 .vercel/
 __pycache__/

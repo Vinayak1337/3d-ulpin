@@ -1,12 +1,12 @@
 # Surfaces and layout
 
-**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+**Current delivery:** [User scope policy](../archive/usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
 
 Three surfaces share tokens but not layouts. The **Officer Studio** is the finale product. The **Public Portal** and **Admin Console** are full_product (FP-PUBLIC and later); their rules are here so the Studio does not paint them into a corner.
 
 ## Officer Studio (finale_v1)
 
-Routes are fixed by [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) section 3. The frame:
+Routes are fixed by [H99](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md) section 3. The frame:
 
 | Zone | Size | Contents |
 | --- | --- | --- |

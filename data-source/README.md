@@ -1,6 +1,6 @@
 # Lake View — complete import demo
 
-> **Direction note — 23 September 2026:** These are existing labelled source packages, not the newly prepared D0–D7 packs. Keep their originals, ZIPs and identities; do not reseed or reset data for cleanup. Current implementation and data/testing assignments are in [USP handoff 00](../docs/usp-agent-handoffs/00-README.md) and the assigned feature file.
+> **Direction note — 23 September 2026:** These are existing labelled source packages, not the newly prepared D0–D7 packs. Keep their originals, ZIPs and identities; do not reseed or reset data for cleanup. Current implementation and data/testing assignments are in [USP handoff 00](../docs/archive/usp-agent-handoffs/00-README.md) and the assigned feature file.
 
 Import **lake-view-complete.zip**. Leave it zipped. [The canonical unpacked originals](../design/reference-map-v5/data/lake-view-complete/) are available for inspection. The redundant `lake-view-files/` copy was removed; do not upload the originals again as a second dataset.
 

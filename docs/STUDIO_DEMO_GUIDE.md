@@ -421,6 +421,6 @@ Receipt fields (each reference below names its file and JSON field):
 [Guard]: backend/DOCKER-GUARD.md
 [Live]: backend/LIVE-PROOF.md
 [Gateway]: backend/DEMO-GATEWAY.md
-[Arch]: next-steps/INGESTION-ARCHITECTURE.md
-[Board]: STATUS.md
+[Arch]: design/INGESTION-ARCHITECTURE.md
+[Board]: archive/STATUS-2026-10-22.md
 [Audit]: evidence/m1/AUDIT.md
