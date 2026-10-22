@@ -56,7 +56,8 @@ function delimiterFields(text: string, delimiter: string) {
   return { first, consistent };
 }
 
-/** Candidate order breaks ties; only two non-blank logical records participate, never Papa's guesser. */
+/** The widest consistent candidate wins and candidate order breaks ties; only two non-blank logical records
+ * participate, never Papa's guesser. */
 export function chooseTableDelimiter(text: string, name = ''): NonNullable<DelimitedReading['delimiter']> {
   const literal = text.replace(/^\uFEFF/, '');
   const candidates = ([',', ';', '\t', '|'] as const).map(delimiter => ({
@@ -64,8 +65,9 @@ export function chooseTableDelimiter(text: string, name = ''): NonNullable<Delim
   }));
   const tab = candidates[2];
   if (/\.tsv$/i.test(name) && tab.first >= 2 && tab.consistent) return '\t';
-  const best = candidates.reduce((left, right) => right.first > left.first ? right : left);
-  return best.first >= 2 && best.consistent ? best.delimiter : ',';
+  const consistent = candidates.filter(candidate => candidate.first >= 2 && candidate.consistent);
+  if (!consistent.length) return ',';
+  return consistent.reduce((left, right) => right.first > left.first ? right : left).delimiter;
 }
 
 export function detectDelimitedReading(bytes: Uint8Array, name = '') {

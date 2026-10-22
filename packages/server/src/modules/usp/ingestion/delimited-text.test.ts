@@ -52,6 +52,12 @@ test('all table readers use deterministic delimiters, including CSV1 and a singl
   assert.equal(chooseTableDelimiter('a,b,c\tz\n1,2,3\t4\n', 'judge.tsv'), '\t');
 });
 
+test('a consistent delimiter wins over a wider but inconsistent header', () => {
+  assert.equal(chooseTableDelimiter('Name;Area, sq m, gross;Id\nA;12,5;1\n'), ';');
+  assert.equal(chooseTableDelimiter('label,note,id\nA,value,1\n'), ',');
+  assert.equal(chooseTableDelimiter('Name;Area;Rate\nA;12,5;3,25\n'), ';');
+});
+
 test('BOMs and Windows-1252 are recorded; whole-file UTF-16 works and byte windows refuse it', async () => {
   const text = 'label;note\nA;café\n';
   const le = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, 'utf16le')]);

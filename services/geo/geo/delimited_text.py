@@ -35,8 +35,10 @@ def choose_delimiter(text: str, name: str = "") -> str:
     tab = candidates[2]
     if name.lower().endswith(".tsv") and tab[1] >= 2 and tab[2]:
         return "\t"
-    best = max(candidates, key=lambda item: item[1])
-    return best[0] if best[1] >= 2 and best[2] else ","
+    consistent = [item for item in candidates if item[1] >= 2 and item[2]]
+    if not consistent:
+        return ","
+    return max(consistent, key=lambda item: item[1])[0]
 
 
 def table_reading(raw: bytes, name: str = "") -> tuple[str, dict[str, str]]:

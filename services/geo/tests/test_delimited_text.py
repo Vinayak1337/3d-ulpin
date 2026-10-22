@@ -18,6 +18,11 @@ class DelimitedTextTest(unittest.TestCase):
         self.assertEqual(choose_delimiter("\n\na;b\n1;2\n"), ";")
         self.assertEqual(choose_delimiter(";;\na;b\n1;2\n"), ";")
 
+    def test_consistent_delimiter_wins_over_wider_header(self) -> None:
+        self.assertEqual(choose_delimiter("Name;Area, sq m, gross;Id\nA;12,5;1\n"), ";")
+        self.assertEqual(choose_delimiter("label,note,id\nA,value,1\n"), ",")
+        self.assertEqual(choose_delimiter("Name;Area;Rate\nA;12,5;3,25\n"), ";")
+
     def test_encodings_and_boms(self) -> None:
         text = "clé;note\nA;café\n"
         controls = [
