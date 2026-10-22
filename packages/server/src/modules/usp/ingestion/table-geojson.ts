@@ -154,15 +154,27 @@ async function measure(body: Readable, plan: TablePlacementPlan, read?: typeof r
   return { ...counts, bytes, sha256: hash.digest('hex') };
 }
 
-/** The derivative's bytes as the receipt pulls them: the table is read again, each window waiting to be taken. */
-function pulled(produce: (write: (text: string) => Promise<void>) => Promise<unknown>): AsyncIterable<Uint8Array> {
+/**
+ * The derivative's bytes as the receipt pulls them. The table is opened and read again only when the first part is
+ * asked for, each window waiting to be taken; a receipt that stops early ends the read and waits for its cleanup
+ * (a workbook's reader child and scratch copy) before a retry.
+ */
+async function* pulled(open: () => Promise<Readable>,
+  produce: (body: Readable, write: (text: string) => Promise<void>) => Promise<unknown>) {
+  const body = await open();
   const stream = new PassThrough();
   const write = async (text: string) => {
     if (stream.destroyed) throw new AppError(409, 'TABLE_PLACEMENT_STOPPED', 'The receipt stopped taking the rows.');
     if (!stream.write(text)) await Promise.race([once(stream, 'drain'), once(stream, 'close')]);
   };
-  produce(write).then(() => stream.end(), error => stream.destroy(error));
-  return stream;
+  const read = produce(body, write).then(() => { stream.end(); }, error => { stream.destroy(error); });
+  try {
+    yield* stream as AsyncIterable<Uint8Array>;
+  } finally {
+    stream.destroy();
+    await read;
+    body.destroy();
+  }
 }
 
 const SITUATED = "SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL FOR UPDATE";
@@ -266,14 +278,10 @@ async function keepTableDerivative(input: IntakeTableGeojsonInput, source: Intak
   dependencies: TableGeojsonDependencies): Promise<string> {
   const prior = await dependencies.transaction(client => keptChildTx(client, input.caseId, file.sha256, lineage));
   if (prior) return prior;
-  const sourceId = await fenced(input.caseId, dependencies, async revision => {
-    const body = await dependencies.open(source);
-    try {
-      const chunks = pulled(write => writeTableGeojson(body, plan, write, dependencies.read));
-      return await receiveLargeLayer(input.caseId, revision, file, byteParts(chunks), dependencies);
-    } finally {
-      body.destroy();
-    }
+  const sourceId = await fenced(input.caseId, dependencies, revision => {
+    const chunks = pulled(() => dependencies.open(source),
+      (body, write) => writeTableGeojson(body, plan, write, dependencies.read));
+    return receiveLargeLayer(input.caseId, revision, file, byteParts(chunks), dependencies);
   });
   await dependencies.transaction(client => client.query(`UPDATE sources
     SET inspection=inspection||jsonb_build_object('tableDerivative',$2::jsonb)

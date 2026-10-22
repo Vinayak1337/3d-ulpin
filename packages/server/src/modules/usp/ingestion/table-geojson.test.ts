@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
+import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { probeOriginal } from './intake-probe';
 import { streamedSourceReference } from './streamed-map-receipt';
@@ -248,4 +249,39 @@ test('the job keeps the derivative once with its lineage, enrols it and words th
   assert.equal(opened, 2);
   assert.deepEqual(await placeTableRows(input, dependencies), [child]);
   assert.equal(kept.size, 1);
+});
+
+function jobDependencies(client: PoolClient, large: TableGeojsonDependencies['large'], table: Buffer,
+  more: Partial<TableGeojsonDependencies> = {}): TableGeojsonDependencies {
+  return { transaction: (async (work: (c: PoolClient) => unknown) => work(client)) as
+    TableGeojsonDependencies['transaction'], open: async () => Readable.from([table]),
+  register: async () => ({}), large, ...more };
+}
+
+/** 2,000 typed lon/lat rows: more than a stream buffers, so an untaken read waits. */
+const MANY = Buffer.from(`id,lon,lat\n${Array.from({ length: 2000 }, (_, row) => `${row},77.${row},12.5\n`).join('')}`);
+
+test('a receipt refused once with 409 is retried; no table read waits untaken and every read ends', async () => {
+  const original = tableSource(MANY, ['id', 'lon', 'lat']);
+  const { client, sources, jobs } = ledger(original);
+  await queueTableGeojsonTx(client, original, { requestKey: randomUUID(), coordinates: { kind: 'columns', x: 1, y: 2 },
+    crs: 'EPSG:4326' });
+  const kept = new Map<string, Buffer>();
+  const large = receipt(sources, kept);
+  let creates = 0;
+  const refusedOnce = { ...large, create: async (...args: Parameters<typeof large.create>) => {
+    if (!creates++) throw new AppError(409, 'CONFLICT', 'The case moved on.');
+    return large.create(...args);
+  } } as typeof large;
+  // Stands in for a workbook's reader child: one starts with each read and is ended when that read ends.
+  const children = { started: 0, ended: 0 };
+  const read: typeof readTableWindows = async (body, source, onWindow) => {
+    children.started++;
+    try { return await readTableWindows(body, source, onWindow); } finally { children.ended++; }
+  };
+  const [child] = await placeTableRows(jobs[0].payload, jobDependencies(client, refusedOnce, MANY, { read }));
+  assert.equal(creates, 2);
+  assert.equal(JSON.parse(kept.get(child)!.toString()).features.length, 2000);
+  // One read to measure and one into the receipt that was taken; the refused receipt started none.
+  assert.deepEqual(children, { started: 2, ended: 2 });
 });
