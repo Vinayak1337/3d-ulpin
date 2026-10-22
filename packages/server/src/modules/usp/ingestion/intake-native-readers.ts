@@ -45,7 +45,7 @@ function nativeFormat(format?: string): format is NativeReaderFormat {
 /** Both bounded native receipts and /uploads originals keep their existing source authority. */
 export function batchNativeReader(source: IntakeSourceRow, card?: IntakeCard): boolean {
   return nativeFormat(card?.format)
-    && [ `${card.format}-native-v1`, 'large-original-v1' ].includes(source.profile);
+    && [`${card.format}-native-v1`, 'large-original-v1'].includes(source.profile);
 }
 
 /** Same admission as IFC3: a valid private upload receipt plus its probed root card, not a filename. */
@@ -135,7 +135,8 @@ function citygmlWords(summary: CityGMLResult['summary']): string {
 function cityjsonWords(summary: CityJSONResult['summary']): string {
   const crs = summary.referenceSystemState === 'declared'
     ? 'declared (the summary gives no code)' : summary.referenceSystemState;
-  return `The CityJSON reading is ${summary.status}. It states ${summary.objectCount} objects, `
+  const status = summary.status === 'supported' ? 'supported' : 'partial: some geometry is unsupported';
+  return `The CityJSON reading is ${status}. It states ${summary.objectCount} objects, `
     + `${summary.supportedGeometryCount} supported geometries and ${summary.unsupportedGeometryCount} unsupported `
     + `geometries; they are candidates. Coordinate reference system: ${crs}. Global placement is not qualified.`;
 }
