@@ -106,6 +106,18 @@ it('offers a kept CSV or workbook by its card, a workbook sheet through its work
   }
 });
 
+it('an ODS card offers its stated sheets through the parent original, as an XLSX card does', () => {
+  const ods = { ...workbook, format: 'ods', card: card('ods', 'table', ['Wards', 'Notes']) } as IntakeItem;
+  const child = { ...sheet, format: 'ods', memberPath: 'Wards', card: card('ods', 'table', ['Wards']) } as IntakeItem;
+  const source = itemTableSource(child, [ods, child])!;
+  expect(source).toEqual({ sourceId: workbook.sourceId, format: 'ods', sheets: ['Wards'] });
+  expect(itemTableSource(ods, [ods, child])?.sheets).toEqual(['Wards', 'Notes']);
+  const html = renderToStaticMarkup(<ReadAsTableForm source={source} sheet="Wards" rows="1" setSheet={vi.fn()}
+    setRows={vi.fn()} pending={false} submit={vi.fn()} reading={null} error={null} />);
+  expect(html).toContain('<option value="Wards">');
+  expect(html).toContain('The file&#x27;s card states this sheet: Wards.');
+});
+
 it('a CSV item reads as a table in one request with a fresh key and the workspace revision, then opens', async () => {
   expect(validate(schemas.table, profile)).toEqual([]);
   const bodies = stubServer([{ status: 201, body: profile }]);

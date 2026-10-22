@@ -1,7 +1,7 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { CITYGML_LIMITS, CITYJSON_LIMITS, DOCUMENT_LIMITS, DXF_LIMITS, GLTF_LIMITS, IFC_LIMITS,
   INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
-  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS,
+  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_STREAM_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS,
 } from '@ulpin/contracts/upload-reader-limits';
 
 export type UploadLimits = GetResponse<'/api/v1/ingestion/upload-limits'>;
@@ -115,8 +115,6 @@ const readers: Record<string, ReaderForecast> = {
   jpg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
   jpeg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
   ...Object.fromEntries(INTAKE_TABLE_READER_FORMATS.map((format) => [format, tableReader])),
-  // XL1: an ODS is read whole, never as a stream.
-  ods: { ...tableReader, name: 'ODS table', bytes: TABULAR_LIMITS.bytes },
 };
 
 /** The dialog does not read file headers: this is a name-based size forecast, never a routing decision. */

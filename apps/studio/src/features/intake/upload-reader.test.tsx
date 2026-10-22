@@ -38,9 +38,10 @@ it('uses each reader ceiling inclusively', () => {
     expect(readerEligibility({ name: `source.${extension}`, size: bytes + 1 }).withinCeiling).toBe(false);
   }
   expect(readerEligibility({ name: 'archive.zip', size: 1024 }).withinCeiling).toBeNull();
-  // XL1: an ODS is read whole, so its ceiling is the whole reader's; an XLSX is read as a stream past it.
-  expect(readerEligibility({ name: 'wards.ods', size: TABULAR_LIMITS.bytes + 1 }).words)
-    .toBe('Will be kept, not read: larger than the 16 MiB ODS table reader');
+  // Both native workbook formats stream beyond the whole-file ceiling.
+  expect(readerEligibility({ name: 'wards.ods', size: TABULAR_LIMITS.bytes + 1 }))
+    .toEqual(readerEligibility({ name: 'wards.xlsx', size: TABULAR_LIMITS.bytes + 1 }));
+  expect(readerEligibility({ name: 'wards.ods', size: TABULAR_STREAM_LIMITS.bytes + 1 }).withinCeiling).toBe(false);
   expect(readerEligibility({ name: 'wards.xlsx', size: TABULAR_LIMITS.bytes + 1 }).ceilingBytes)
     .toBe(TABULAR_STREAM_LIMITS.bytes);
   expect(readerEligibility({ name: 'old-list.XLS', size: 1024 })).toEqual({ reader: null, ceilingBytes: null,
