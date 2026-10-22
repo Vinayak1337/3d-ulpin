@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SourcePathSchema, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
+import { SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
 
@@ -71,6 +71,21 @@ export const IntakeLayerCrsSchema = z.strictObject({
 export const IntakeLayerCrsAnswerSchema = z.strictObject({
   crs: IntakeLayerCrsSchema.shape.crs, state: z.literal('officer_stated'), statedAt: z.string().datetime(),
 });
+const tableColumn = z.number().int().nonnegative().max(TABULAR_LIMITS.columns - 1)
+  .describe('A header position of the table as read, from 0.');
+/**
+ * TC1: the columns of a kept table that hold its coordinates (an x or longitude and a y or latitude column, or one
+ * WKT column) and the EPSG code they are in. A null code is refused with a question; no system is ever assumed.
+ */
+export const IntakeTablePlacementSchema = z.strictObject({
+  requestKey: z.string().uuid(),
+  coordinates: z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('columns'), x: tableColumn, y: tableColumn })
+      .refine(value => value.x !== value.y, 'The x and y columns are two different columns.'),
+    z.strictObject({ kind: z.literal('wkt'), column: tableColumn }),
+  ]),
+  crs: IntakeLayerCrsSchema.shape.crs.nullable(),
+});
 export const IntakeLargeRetryResultSchema = z.strictObject({
   itemId: z.string().uuid(), jobId: z.string().uuid(),
   retry: z.number().int().positive().describe('How many officer retries this item has, this one included.'),
@@ -95,6 +110,26 @@ export const ArchiveMemberLineageSchema = z.strictObject({
   memberSha256: hash,
 });
 export type ArchiveMemberLineage = z.infer<typeof ArchiveMemberLineageSchema>;
+export const TABLE_GEOJSON_CONVERSION = 'table_rows_to_geojson@1';
+export const TABLE_PLACEMENT_SKIP_REASONS = ['no_coordinates', 'not_a_number', 'not_wkt', 'formula', 'open_ring',
+  'too_large', 'inexact_number', 'refused'] as const;
+export const TABLE_DERIVATIVE_LOCATOR =
+  'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.';
+/**
+ * TC1: where a table placement's GeoJSON came from: the table original, the officer's columns and system, and how
+ * many rows were written and skipped. It is written with the derivative's source, as an archive member's lineage is.
+ */
+export const TableDerivativeLineageSchema = z.strictObject({
+  version: z.literal('table-derivative/1'), conversion: z.literal(TABLE_GEOJSON_CONVERSION),
+  originalSourceId: z.string().uuid(), originalSourceRevision: z.number().int().positive(), originalSha256: hash,
+  originalItemId: z.string().uuid(), format: z.enum(['csv', 'xlsx']), layer: z.string().min(1).max(150),
+  coordinates: IntakeTablePlacementSchema.shape.coordinates, crs: IntakeLayerCrsSchema.shape.crs,
+  crsSource: z.literal('officer_stated'), features: z.number().int().nonnegative(),
+  notWritten: z.number().int().nonnegative(),
+  skipped: z.partialRecord(z.enum(TABLE_PLACEMENT_SKIP_REASONS), z.number().int().positive()),
+  locator: z.literal(TABLE_DERIVATIVE_LOCATOR),
+});
+export type TableDerivativeLineage = z.infer<typeof TableDerivativeLineageSchema>;
 /** G23. A page image (JPEG, PNG, TIFF without georeference) in a batch: its first, native read and no more. */
 export const INTAKE_PAGE_IMAGE_LIMITS = Object.freeze({ originalBytes: 128 * 1024 ** 2, headBytes: 1024 ** 2,
   inputPixels: 250_000_000, previewSide: 1024, previewBytes: 8 * 1024 ** 2 });

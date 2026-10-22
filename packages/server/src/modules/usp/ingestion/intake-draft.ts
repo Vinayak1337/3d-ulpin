@@ -220,7 +220,9 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
 /** Byte-probed kinds select readers; a small byte count alone never selects the bounded feature adapter. */
 export function intakeReaderRoute(card: IntakeCard, source: Pick<IntakeSourceRow, 'bytes' | 'inspection'>): string {
   if (card.format !== 'geojson') return card.format;
-  if (source.inspection?.nativeDerivative || Number(source.bytes) > 16 * 1024 * 1024) return 'streamed_geojson';
+  // A derivative (a native layer, TC1's table rows) takes the large path whatever its size, as a dropped large file.
+  const derivative = source.inspection?.nativeDerivative || source.inspection?.tableDerivative;
+  if (derivative || Number(source.bytes) > 16 * 1024 * 1024) return 'streamed_geojson';
   const count = source.inspection?.manualProfile?.featureCount ?? card.counts.features;
   if (count === null || count === undefined) return 'inspect_geojson';
   return count <= GEOJSON_FEATURE_LIMIT ? 'bounded_geojson' : 'streamed_geojson';

@@ -275,6 +275,15 @@ export function validateStreamingFeature(value:unknown):string|null{
   if(!geometry||typeof geometry!=='object'||Array.isArray(geometry))return 'MISSING_GEOMETRY';
   return geometryIssue(geometry as Record<string,unknown>);
 }
+/**
+ * TC1. The issue this reader records for one feature written as `raw` (null when it accepts it), so a writer can
+ * leave out what would be quarantined; a feature over the byte limit would stop the whole read.
+ */
+export function streamedFeatureIssue(raw:Buffer):string|null{
+  if(raw.length>limits.featureBytes)return 'GEOJSON_UNIT_BUDGET';
+  const parsed=parseSourceValue(raw);
+  return parsed.issueCode??validateStreamingFeature(parsed.value);
+}
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
   const issueCode=item.valueIssueCode??validateStreamingFeature(item.feature);
   return {featureIndex:item.index,byteStart:item.start,byteEnd:item.end,

@@ -828,6 +828,19 @@
       "batch": "CR1"
     },
     {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/table-placement",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_table_placement",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeTablePlacementSchema",
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "TC1"
+    },
+    {
       "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts",
       "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts",

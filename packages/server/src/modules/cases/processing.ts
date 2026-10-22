@@ -23,6 +23,7 @@ import {runIntakePageImageJob} from '../usp/ingestion/intake-page-image-worker';
 import {runIntakeNativeDerivativeJob} from '../usp/ingestion/intake-native-derivative-worker';
 import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
 import {runTableProfileJob} from '../usp/ingestion/table-profile-worker';
+import {runIntakeTableGeojsonJob} from '../usp/ingestion/table-geojson-worker';
 import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
@@ -51,6 +52,7 @@ let intakePageImageWorker:Promise<void>|undefined;
 let intakeNativeDerivativeWorker:Promise<void>|undefined;
 let intakeEvidenceWorker:Promise<void>|undefined;
 let tableProfileWorker:Promise<void>|undefined;
+let tableGeojsonWorker:Promise<void>|undefined;
 let intakeRunWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
@@ -420,6 +422,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
           // The fenced attempt owns retry; the accepting transaction attaches the table receipt once.
           .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{tableProfileWorker=undefined;reservations.release(job.id);});
+        return;
+      }
+      if(job.operation==='intake-table-geojson'){
+        if(!tableGeojsonWorker&&admit(job))tableGeojsonWorker=runIntakeTableGeojsonJob(job.id)
+          // The fenced attempt and the child's lineage own recovery; a rerun keeps the derivative once.
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{tableGeojsonWorker=undefined;reservations.release(job.id);});
         return;
       }
       if(job.operation==='intake-run'){

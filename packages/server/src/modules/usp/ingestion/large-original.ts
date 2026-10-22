@@ -5,7 +5,7 @@ import { z } from 'zod';
 import {
   LARGE_ORIGINAL_LIMITS as limits, LARGE_ORIGINAL_V2_LIMITS as v2Limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
   LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard, type LargeUploadCreate, type LargeOriginalEvidence,
-  ArchiveMemberLineageSchema, STREAMING_VECTOR_LIMITS, LargeUploadListSchema,
+  ArchiveMemberLineageSchema, STREAMING_VECTOR_LIMITS, LargeUploadListSchema, TableDerivativeLineageSchema,
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -23,6 +23,9 @@ export function storedUploadProvenance(value:LargeUploadCreate['provenance']):La
 /** ZL1. A large archive layer's zip-layer/1 lineage, bounded by the large GeoJSON reader's ceiling. */
 export const LargeLayerLineageSchema=ArchiveMemberLineageSchema.extend({
   memberBytes:z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes)});
+/** The lineage a derived large original is published with, and the inspection member that keeps it. */
+const DerivedLineageSchema=z.discriminatedUnion('version',[LargeLayerLineageSchema,TableDerivativeLineageSchema]);
+const LINEAGE_MEMBER={'zip-layer/1':'archiveMember','table-derivative/1':'tableDerivative'} as const;
 
 const uuid=z.string().uuid(),lease=()=>new Date(Date.now()+limits.leaseSeconds*1000);
 type Upload=Record<string,any>;
@@ -286,14 +289,17 @@ export class LargeOriginalService {
       if(failed.rowCount){upload.revision++;upload.body.lastError='PART_INTERRUPTED_OR_REJECTED';await save(client,upload);}
     });
   }
-  /** ZL2. An archive layer's lineage is written with its source in one transaction; /uploads passes none. */
-  async finalize(caseIdValue:string,idValue:string,value:unknown,archiveMember?:unknown){
+  /**
+   * ZL2. A derived layer's lineage (an archive member's, or TC1's table placement) is written with its source in one
+   * transaction; /uploads passes none.
+   */
+  async finalize(caseIdValue:string,idValue:string,value:unknown,derivedLineage?:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadFinalizeSchema.parse(value),inputHash=fingerprint(input);
-    const lineage=archiveMember===undefined?undefined:LargeLayerLineageSchema.parse(archiveMember);
+    const lineage=derivedLineage===undefined?undefined:DerivedLineageSchema.parse(derivedLineage);
     const claim=await transaction(async client=>{
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);
       if(lineage&&v2(upload))
-        throw new AppError(422,'ARCHIVE_MEMBER_PROFILE','An archive layer is finalized through a v1 receipt only.');
+        throw new AppError(422,'ARCHIVE_MEMBER_PROFILE','A derived layer is finalized through a v1 receipt only.');
       if(upload.state==='retained' && upload.body.finalizeInputHash===inputHash)return {receipt:await status(client,upload,current.revision)};
       if(v2(upload)&&upload.state==='finalizing'&&upload.body.finalizeInputHash===inputHash)
         return {receipt:await status(client,upload,current.revision)};
@@ -356,7 +362,7 @@ export class LargeOriginalService {
         const inspection={profile:'large-original-v1',status:'needs_input',issues:[],summary:'Original bytes retained and hash-verified. Conversion is unsupported; no parsing, placement, approval or publication of semantic records occurred.',
           largeOriginal:LargeOriginalEvidenceSchema.parse({uploadId:id,operatorSubject:fresh.operator_subject,objectEtag:verified!.etag,verifiedSha256:verified!.sha256,verifiedBytes:verified!.bytes,
             provenance:storedUploadProvenance(fresh.body.input.provenance),conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed'})};
-        if(lineage)Object.assign(inspection,{archiveMember:lineage});
+        if(lineage)Object.assign(inspection,{[LINEAGE_MEMBER[lineage.version]]:lineage});
         await client.query("INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,'large-original-v1',$4,$5,$6,$7,'needs_input',$8)",
           [fresh.source_id,caseId,fresh.body.input.filename,fresh.body.input.mediaType,fresh.original_bytes,verified!.sha256,key,inspection]);
         await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);

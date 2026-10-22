@@ -168,6 +168,32 @@ test('a layer lineage is stored with its large original; a finalize failing afte
   }finally{globals.ulpinPool=prior;}
 });
 
+test('TC1: a table derivative\'s lineage is stored in the same insert as its large original',async()=>{
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT??='large-original-lineage';
+  const caseId='10000000-0000-4000-8000-000000000005';
+  const globals=globalThis as unknown as {ulpinPool?:Pool},prior=globals.ulpinPool;
+  const {control,pool}=receiptPool(caseId);globals.ulpinPool=pool;
+  try{
+    const bytes=new Uint8Array(2048).map((_,index)=>index%239),sha=digest(bytes);
+    const service=new LargeOriginalService(receiptStorage());
+    const created=await service.create(caseId,{requestKey:randomUUID(),expectedCaseRevision:0,filename:'plots.geojson',
+      mediaType:'application/octet-stream',sha256:sha,bytes:bytes.length,
+      provenance:{origin:'not_stated',acquiredAt:'2026-10-22T00:00:00.000Z'}});
+    const claim=await service.claimPart(caseId,created.id,{requestKey:randomUUID(),expectedRevision:created.revision,
+      expectedCaseRevision:0,partNumber:1,sha256:sha});
+    const received=await service.receivePart(claim,bytes);
+    const lineage={version:'table-derivative/1',conversion:'table_rows_to_geojson@1',originalSourceId:randomUUID(),
+      originalSourceRevision:1,originalSha256:'b'.repeat(64),originalItemId:randomUUID(),format:'csv',layer:'csv',
+      coordinates:{kind:'wkt',column:1},crs:'EPSG:32643',crsSource:'officer_stated',features:2,notWritten:1,
+      skipped:{not_wkt:1},
+      locator:'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.'};
+    const final=await service.finalize(caseId,created.id,{requestKey:randomUUID(),expectedRevision:received.revision,
+      expectedCaseRevision:0,sha256:sha},lineage);
+    assert.deepEqual(control.db().sources.map(source=>[source.id,source.inspection.tableDerivative,
+      source.inspection.archiveMember]),[[final?.source?.sourceId,lineage,undefined]]);
+  }finally{globals.ulpinPool=prior;}
+});
+
 /** The NWIC district GeoJSON ZIP (datasets.json) is the real original these quota cases reserve. */
 const nwicBytes=71238839;
 const idle:UploadQuota={held:0,caseHeld:0,operatorHeld:0,heldBytes:0,caseBytes:0,freesAt:null,caseFreesAt:null,

@@ -8,6 +8,7 @@ import { runKey } from './run/useTargets';
 import type { RetryResult } from './retry-command';
 import type { PageImageBody } from './page-image-model';
 import type { LayerCrsBody } from './layer-crs-command';
+import type { TablePlacementBody } from './table-placement-command';
 
 export const recipeKey = (caseId: string) => ['batch-recipes', caseId];
 
@@ -65,6 +66,12 @@ export async function readPageImagePreview(caseId: string, itemId: string, bytes
   if (!result.response.ok || !result.data) throw new ApiError(result.response.status, PREVIEW, result.error);
   if (result.data.size !== bytes) throw new Error('The preview differs from the size kept on this file.');
   return result.data;
+}
+
+export async function placeTableOnMap(caseId: string, itemId: string, body: TablePlacementBody) {
+  return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/table-placement', {
+    params: { path: { caseId, itemId } }, body,
+  }));
 }
 
 export async function stateLayerCrs(caseId: string, itemId: string, body: LayerCrsBody) {

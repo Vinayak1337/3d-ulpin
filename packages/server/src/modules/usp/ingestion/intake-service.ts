@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
-  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, type IntakeCard } from '@ulpin/contracts/usp';
+  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, IntakeTablePlacementSchema,
+  type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
@@ -288,15 +289,39 @@ export class IntakeService {
     const itemId = uuid.parse(itemValue);
     const request = IntakeLayerCrsSchema.parse(raw);
     await knownCrs(request.crs, this.dependencies.resolve);
+    return this.answerItem(caseId, itemId, `intake-layer-crs:${request.requestKey}`, request,
+      async (client, source) => {
+        const { stateLayerCrsTx } = await import('./intake-native-derivative');
+        await stateLayerCrsTx(client, source, itemId, request);
+      });
+  }
+
+  /**
+   * TC1. Places a kept table's rows on the map from the coordinate columns and the EPSG code the officer states;
+   * a stated code must be one the geo service knows, and a missing one is asked for, never assumed.
+   */
+  async placeTable(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakeTablePlacementSchema.parse(raw);
+    if (request.crs) await knownCrs(request.crs, this.dependencies.resolve);
+    return this.answerItem(caseId, itemId, `intake-table-placement:${request.requestKey}`, request,
+      async (client, source) => {
+        const { queueTableGeojsonTx } = await import('./table-geojson');
+        await queueTableGeojsonTx(client, source, request);
+      });
+  }
+
+  /** One officer answer on an item, idempotent by its request key, acted on while the case is held. */
+  private async answerItem(caseId: string, itemId: string, key: string, request: unknown,
+    act: (client: PoolClient, source: IntakeSourceRow) => Promise<void>) {
     await this.dependencies.transaction(async client => {
       await lockSourceCaseDestinationTx(client, caseId);
       const scope = await intakeCaseTx(client, caseId, true);
       const { source } = await itemContextTx(client, caseId, itemId);
-      const key = `intake-layer-crs:${request.requestKey}`;
       const digest = fingerprint({ request, itemId, access: scope.binding.access });
       if (await priorTx(client, caseId, key, digest)) return;
-      const { stateLayerCrsTx } = await import('./intake-native-derivative');
-      await stateLayerCrsTx(client, source, itemId, request);
+      await act(client, source);
       await rememberTx(client, caseId, key, digest, { itemId });
       assertIngestionBinding(scope.binding);
     });

@@ -3,7 +3,7 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { ArchiveMemberLineageSchema, IntakeArchiveReceiptSchema, IntakeArchiveRetainSchema, LARGE_ORIGINAL_LIMITS,
   INTAKE_PROBE_LIMITS, STREAMING_VECTOR_LIMITS, ZIP_LAYER_LIMITS, streamingReadMs, type AnySourceProfile,
-  type ArchiveMemberLineage, type IntakeCard } from '@ulpin/contracts/usp';
+  type ArchiveMemberLineage, type IntakeCard, type TableDerivativeLineage } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { putOriginal, readObjectRange, sha256 } from '../../../infrastructure/storage';
@@ -462,12 +462,13 @@ export async function retainZipMemberOriginal(caseId: string, revision: number,
 }
 
 /**
- * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A ZIP member passes its lineage,
- * which finalize writes with the source. A failed receipt is aborted.
+ * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A ZIP member or a table
+ * placement (TC1) passes its lineage, which finalize writes with the source. A failed receipt is aborted.
  */
 export async function receiveLargeLayer(caseId: string, revision: number,
   file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
-  dependencies: Pick<ZipLayerDependencies, 'large'>, lineage?: ArchiveMemberLineage): Promise<string> {
+  dependencies: Pick<ZipLayerDependencies, 'large'>, lineage?: ArchiveMemberLineage | TableDerivativeLineage)
+  : Promise<string> {
   let status = await dependencies.large.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: revision,
     filename: file.name, mediaType: 'application/octet-stream', sha256: file.sha256, bytes: file.bytes,
     provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } });

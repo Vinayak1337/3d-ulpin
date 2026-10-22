@@ -5,6 +5,7 @@ import { ApiError } from '@ulpin/api-client';
 import { Button, Skeleton } from '@ulpin/ui';
 import { INTAKE_TABLE_READER_FORMATS } from '@ulpin/contracts/upload-reader-limits';
 import type { IntakeItem } from './batch-model';
+import { PlaceOnMap } from './PlaceOnMapDialog';
 import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
 import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
@@ -55,18 +56,21 @@ export function BatchTableSection({ caseId, item, items }: {
   caseId: string; item: IntakeItem; items: readonly IntakeItem[];
 }) {
   const source = itemTableSource(item, items);
-  return source ? <ItemTable caseId={caseId} name={item.name} source={source} /> : null;
+  return source ? <ItemTable caseId={caseId} itemId={item.itemId} name={item.name} source={source} /> : null;
 }
 
-function ItemTable({ caseId, name, source }: { caseId: string; name: string; source: ItemTableSource }) {
+function ItemTable({ caseId, itemId, name, source }: {
+  caseId: string; itemId: string; name: string; source: ItemTableSource;
+}) {
   // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown.
   const profile = useTableProfile(caseId, source.sourceId);
   const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
   return <section className={styles.question} aria-label={`Table in ${name}`}>
     <h2 className="ul-heading">Table · {name}</h2>
-    {profile.isPending ? <Skeleton /> : read ? <ReadTable opened={{ caseId, sourceId: source.sourceId }}
-      reading={read.profile} />
-      : <ReadAsTable caseId={caseId} source={source} />}
+    {profile.isPending ? <Skeleton /> : read ? <>
+      <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />
+      <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={read.headers} />
+    </> : <ReadAsTable caseId={caseId} source={source} />}
   </section>;
 }
 

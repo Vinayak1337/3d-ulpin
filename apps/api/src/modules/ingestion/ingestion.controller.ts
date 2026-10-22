@@ -10,7 +10,7 @@ import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/serv
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
   IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema,
-  IntakeLayerCrsSchema } from '@ulpin/contracts/usp';
+  IntakeLayerCrsSchema, IntakeTablePlacementSchema } from '@ulpin/contracts/usp';
 import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
   IntakeSurfaceDisplaySchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
@@ -147,6 +147,15 @@ export class IngestionController {
   @jsonBody(IntakeLayerCrsSchema) @wireResponse(200,IntakeItemSchema)
   async layerCrs(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
     return this.intake.layerCrs(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Post('cases/:caseId/intake/items/:itemId/table-placement')
+  @HttpCode(200) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_table_placement',
+    summary:'Place a kept table\'s rows on the map from its coordinate columns and the EPSG code the officer states'})
+  @jsonBody(IntakeTablePlacementSchema) @wireResponse(200,IntakeItemSchema)
+  async placeTable(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.placeTable(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 
   @Get('conversions')
