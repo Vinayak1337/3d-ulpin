@@ -67,6 +67,7 @@ let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
 let packetPdfWorker:Promise<void>|undefined;
+let surfaceAdmission:Promise<void>|undefined;
 const processorWorkers=new Map<string,Promise<void>>();
 const processorReservations=new Set<string>();
 let wakeVersion=0;
@@ -310,6 +311,14 @@ async function readProcessorJob(job:QueryResultRow){
   if(result.status==='succeeded'||result.status==='failed')wakeDispatcher();
 }
 
+/** Surface planning can wait on older batches' locks; one pass runs independently of ready-job dispatch. */
+function admitSurfaces(){
+  if(surfaceAdmission)return;
+  surfaceAdmission=admitIntakeSurfaceParts()
+    .catch(keepWorkerError('intake-surface','admission'))
+    .finally(()=>{surfaceAdmission=undefined;});
+}
+
 export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;document?:typeof runDocumentJob;
   privateMvt?:typeof runPrivateMvtJob}={}): Promise<number> {
   // Transfer completed submissions only against a snapshot begun after they settled; an older snapshot may
@@ -322,20 +331,30 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
   )).rows;
   for(const id of settled){processorReservations.delete(id);reservations.release(id);}
   const pending = await query(
-    // G22. Probe-lane jobs first; then each file's oldest job in a lane before any file's second, a file being the
-    // job's source or, without one, its case: 211 parts of one point cloud cannot hold back a table, and a lone file
-    // still gets up to 12 parallel jobs when nothing else waits.
-    `SELECT * FROM (SELECT jobs.*, COALESCE(lanes.lane,'other') AS lane, row_number() OVER (
+    // Reorder only a batch's layout/profile preparation at its earliest G22 position. Bulk part jobs retain file
+    // fairness. Waves, layout work and item FIFO survive state-key handoffs without promoting a whole new batch.
+    `WITH ready AS (SELECT jobs.*, COALESCE(lanes.lane,'other') AS lane, row_number() OVER (
         PARTITION BY COALESCE(lanes.lane,'other'), COALESCE(jobs.source_id::text,jobs.case_id::text)
-        ORDER BY jobs.created_at) AS file_rank
+        ORDER BY jobs.created_at,jobs.id) AS file_rank,
+        CASE WHEN jobs.operation IN ('intake-large','streaming-vector','streamed-profile','chunk-mapping',
+          'table-profile','intake-draft') THEN i.case_id END AS intake_case_id,i.created_at AS item_created_at,
+        i.wave AS item_wave,
+        COALESCE(i.placement='needs_answer' OR i.plan_ref->>'recipeState'='approved',false) AS item_waiting
       FROM jobs LEFT JOIN unnest($1::text[],$2::text[]) AS lanes(operation,lane) ON lanes.operation=jobs.operation
+      LEFT JOIN usp_intake_items i ON i.source_id=jobs.source_id AND i.case_id=jobs.case_id
+        AND i.parent_item_id IS NULL
       WHERE jobs.status IN ('queued','running') AND jobs.operation NOT LIKE 'usp:%' AND jobs.next_attempt_at<=now()
         AND NOT jobs.id::text=ANY($3::text[]) AND NOT jobs.operation=ANY($4::text[])
         AND ((jobs.dispatched_at IS NOT NULL AND NOT jobs.operation=ANY($6::text[]))
           OR NOT COALESCE(lanes.lane,'other')=ANY($5::text[]))
         AND NOT EXISTS (SELECT 1 FROM usp_job_attempts a
           WHERE a.job_id=jobs.id AND a.state='active' AND a.lease_until>now())
-    ) ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12`,
+    ), fifo AS (SELECT ready.*,row_number() OVER (
+        ORDER BY lane='probe' DESC,file_rank,created_at,id) AS fifo_rank FROM ready),
+    ranked AS (SELECT fifo.*,min(fifo_rank) OVER (
+        PARTITION BY COALESCE(intake_case_id::text,id::text),lane='probe') AS batch_rank FROM fifo)
+    SELECT * FROM ranked ORDER BY lane='probe' DESC,batch_rank,item_wave,
+      item_waiting DESC NULLS LAST,item_created_at,created_at,id LIMIT 12`,
     [...dispatchLaneParameters(),[...new Set([...reservations.heldJobIds(),...processorWorkers.keys()])],
       reservations.unavailableOperations(),reservations.unavailableLanes(elsewhere),dispatchInProcessOperations()],
   );
@@ -348,8 +367,8 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
   const now=Date.now();
   const admit=(job:QueryResultRow)=>reservations.admit({id:job.id,operation:job.operation,created_at:job.created_at,
     payload:job.payload},budget,elsewhere,now,scratch);
-  // SB1: a kept TIFF or LAZ of a batch admits its next planned part within its reader's own caps, one per file.
-  await admitIntakeSurfaceParts().catch(keepWorkerError('intake-surface', 'admission'));
+  // SB1 keeps its reader caps and one pass at a time, but never delays unrelated selected jobs.
+  admitSurfaces();
   await Promise.all(
     pending.rows.map(async (job) => {
       if(job.operation==='packet-pdf'){
