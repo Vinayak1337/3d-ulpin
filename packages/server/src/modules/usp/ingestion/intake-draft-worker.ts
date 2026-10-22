@@ -12,7 +12,7 @@ import { intakeDestination, intakeCaseArea } from './intake-destination';
 export { intakeDestination } from './intake-destination';
 import { ManualIngestionService } from './service';
 import { AdaptiveMappingService } from './adaptive-mapping-service';
-import { compileMapping } from './registry';
+import { compileMapping, setAsideWords } from './registry';
 import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntakeDraftTx,
   type IntakeDraftInput } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
@@ -199,7 +199,8 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
         origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : null,
-      recordsSeen: pkg?.features.length ?? 0, limitReason: receipt ? null : noLayout,
+      recordsSeen: pkg?.features.length ?? 0,
+      limitReason: receipt ? setAsideWords(pkg?.quarantine?.setAside) : noLayout,
     });
     if (state === 'read' && pkg) await createIntakeTargetsTx(client, input.caseId, input.itemId, pkg, input.sourceId);
   });

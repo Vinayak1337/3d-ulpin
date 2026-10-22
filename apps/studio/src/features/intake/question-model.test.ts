@@ -62,6 +62,33 @@ it('disables outline kinds for lines, allows road/utility, and never coerces ide
   expect(questionBody(noIdentifier, choices, 0, key)).toBeNull();
 });
 
+it('takes an outline kind over a file with outlines, pins and lines, and says the rest stays in the original', () => {
+  const mixed = { ...profile, geometryTypes: ['Polygon', 'Point', 'LineString'] };
+  for (const kind of ['building', 'parcel', 'public_land'] as const) {
+    expect(kindRefusal(kind, mixed.geometryTypes)).toBeNull();
+    expect(questionBody(mixed, { ...choices, kind }, 0, key)?.plan.kind).toBe(kind);
+  }
+  expect(answerSummary(choices, mixed.geometryTypes)).toBe(`${answerSummary(choices)} `
+    + 'Pins and lines in this file are kept in the original but not drawn as buildings.');
+  expect(answerSummary({ ...choices, kind: 'parcel' }, ['MultiPolygon', 'MultiPoint']))
+    .toMatch(/ Pins in this file are kept in the original but not drawn as land parcels\.$/);
+  expect(answerSummary({ ...choices, kind: 'road' }, mixed.geometryTypes)).toBe(answerSummary({ ...choices,
+    kind: 'road' }));
+  expect(answerSummary(choices, profile.geometryTypes)).toBe(answerSummary(choices));
+  expect(kindRefusal('building', ['Point', 'LineString']))
+    .toBe('This file does not hold outlines only; a building must be an outline.');
+});
+
+it('opens the question when the reason first counts the pins and lines a large file holds', () => {
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
+  const counted = 'Read 2 Point features / 1 LineString feature; they are not footprints. '
+    + 'No approved layout matches this file. An officer states what each feature is and which field identifies it.';
+  expect(needsLayoutAnswer({ ...item, limitReason: counted })).toBe(true);
+  const question = counted.slice(counted.indexOf('No approved'));
+  expect(needsLayoutAnswer({ ...item, limitReason: `Drafting accepts at most 2000 features. ${question}` }))
+    .toBe(false);
+});
+
 it('asks only for the stored no-layout reason, not a bound/unsupported reason or a filename', () => {
   const item = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
   expect(needsLayoutAnswer({ ...item, name: 'not-a-map.pdf' })).toBe(true);

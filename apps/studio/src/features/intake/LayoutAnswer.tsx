@@ -27,7 +27,8 @@ export function LayoutAnswer({ caseId, sourceId, receipt, command }: {
 }
 
 function QuestionForm({ profile, receipt, command }: { profile: MapProfile; receipt?: Recipe; command: Command }) {
-  return <AnswerForm receipt={receipt} command={command} summary={answerSummary}
+  return <AnswerForm receipt={receipt} command={command}
+    summary={choices => answerSummary(choices, profile.geometryTypes)}
     body={choices => questionBody(profile, choices, receipt?.revision ?? 0, '')}
     help={choices => choices.height ? null : 'No height is stated; heights stay unknown.'}
     fields={(choices, choose) => <QuestionFields profile={profile} choices={choices} choose={choose}

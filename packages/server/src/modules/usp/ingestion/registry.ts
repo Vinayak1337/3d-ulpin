@@ -1,4 +1,4 @@
-import type { GisInspection } from '@ulpin/contracts';
+import type { GisInspection, GisSetAside } from '@ulpin/contracts';
 import { INGESTION_VERSION, type MappingPlan, type SourceProfile } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
@@ -15,6 +15,7 @@ export const CONVERSIONS = [
   {id: 'geojson_geometry@1', target: 'feature.geometry', inputUnit: 'as_declared', outputUnit: 'm', semantics: 'Read unchanged GeoJSON geometry in the coordinate system the file declares through the existing area normalizer; the stated kind governs compatible geometry. Geometry role stays unknown.'},
 ] as const;
 const geometryTypes = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
+const polygonTypes = ['Polygon', 'MultiPolygon'];
 const polygonKinds = ['building', 'parcel', 'public_land'];
 export const limitations = [
   'Only bounded GeoJSON is supported by this manual profile; the layout states one kind for the whole file.',
@@ -92,13 +93,40 @@ function heightMapping(plan: Pick<MappingPlan, 'heightField' | 'heightUnit' | 'h
     throw new AppError(422, 'MAPPING_HEIGHT', 'Choose an inspected numeric or text height attribute; null and absent values remain unknown.');
   return {heightField: field, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning};
 }
+/** An outline kind draws only polygons. The pins and lines of a file that also holds polygons are set aside:
+ * kept in the original, never mapped, converted, buffered or inferred into an outline. */
+export function setAsideGeometryTypes(kind: string, types: readonly string[]): string[] {
+  if (!polygonKinds.includes(kind)) return [];
+  return types.filter(type => geometryTypes.includes(type) && !polygonTypes.includes(type));
+}
+
+const setAsideNouns = [['pin', ['Point', 'MultiPoint']], ['line', ['LineString', 'MultiLineString']]] as const;
+const drawnAs: Record<GisSetAside['kind'], string> = {
+  building: 'buildings', parcel: 'land parcels', public_land: 'public land',
+};
+
+/** The officer's words for what a layout sets aside, from counted features only. */
+export function setAsideWords(setAside: GisSetAside | undefined): string | null {
+  if (!setAside) return null;
+  const counted = setAsideNouns.map(([noun, types]) => {
+    const count = types.reduce((sum, type) => sum + (setAside.counts[type] ?? 0), 0);
+    return { count, words: `${count} ${noun}${count === 1 ? '' : 's'}` };
+  }).filter(item => item.count > 0);
+  if (!counted.length) return null;
+  const verb = counted.reduce((sum, item) => sum + item.count, 0) === 1 ? 'is' : 'are';
+  return `${counted.map(item => item.words).join(' and ')} ${verb} kept in the original `
+    + `but not drawn as ${drawnAs[setAside.kind]}.`;
+}
+
 type LayoutPlan = Pick<MappingPlan, 'kind' | 'operations' | 'heightField' | 'heightUnit' | 'heightMeaning'>;
 type LayoutProfile = Pick<SourceProfile, 'paths' | 'geometryTypes' | 'crs'>;
 /** The one meaning of a layout; a large file's streamed profile reaches it through `compileStreamedMapping`. */
 export function compileMapping(plan: LayoutPlan, profile: LayoutProfile): Mapping {
   const kind = plan.kind ?? 'building';
-  const accepted = polygonKinds.includes(kind) ? ['Polygon', 'MultiPolygon'] : geometryTypes;
-  const refused = profile.geometryTypes.filter(type => !accepted.includes(type));
+  const accepted = polygonKinds.includes(kind) ? polygonTypes : geometryTypes;
+  const drawn = profile.geometryTypes.some(type => accepted.includes(type));
+  const setAside = drawn ? setAsideGeometryTypes(kind, profile.geometryTypes) : [];
+  const refused = profile.geometryTypes.filter(type => !accepted.includes(type) && !setAside.includes(type));
   if (refused.length) throw new AppError(422, 'MAPPING_GEOMETRY_KIND',
     `The layout states ${kind}, which does not accept ${refused.join(', ')} geometry. Choose a compatible kind; no kind is inferred.`);
   const mapping: Mapping = {kind, geometryRole: 'unknown', ...heightMapping(plan, profile)};

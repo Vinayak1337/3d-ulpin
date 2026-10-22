@@ -9,7 +9,7 @@ import {
   lockSourceBuildingCasesTx, reviewSourceBuildings,
 } from '../usp/ingestion/source-building-review';
 import type {GisGeometryDisposition} from '@ulpin/contracts';
-import {gisQuarantine} from './gis-quarantine';
+import {gisQuarantine,withSetAside} from './gis-quarantine';
 import {displayAreaProposals,proposalRuleBody,type RuleCondition} from './area-display-proposals';
 import { documentProfileFormats, documentLimitMiB } from "../../shared/document-formats";
 import { areaSceneAssets } from "../spatial/scene-assets";
@@ -628,8 +628,9 @@ async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "na
   return "siteId" in existingArea ? existingArea as MapArea : areaFrom(existingArea);
 }
 
+/** The normalizer rejects an outline kind's pins and lines one by one; the package counts them by kind. */
 async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?: MapArea) {
-  return areaGeo<Normalized>("normalize", {
+  const normalized = await areaGeo<Normalized>("normalize", {
     format: input.format,
     data,
     ...(["gpkg", "shapefile_zip"].includes(input.format)
@@ -652,6 +653,8 @@ async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?:
         ? { reference: { sourceCrs: input.sourceCrs } }
         : {}),
   });
+  const disposition = withSetAside(normalized.disposition, input.mapping.kind, data);
+  return disposition === normalized.disposition ? normalized : { ...normalized, disposition };
 }
 
 /** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */

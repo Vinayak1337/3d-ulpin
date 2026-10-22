@@ -2,6 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import type { StreamingVectorRecord, ChunkMappingObservation } from '@ulpin/contracts/usp';
 import type { SourceRangeReference } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
+import { setAsideGeometryTypes } from './registry';
 
 /** Mirror services/geo/geo/area.py's compact ensure_ascii source JSON ceiling. */
 export const AREA_NORMALIZER_SOURCE_JSON_LIMIT = 20 * 1024 * 1024;
@@ -67,6 +68,22 @@ function assertPair(item: MappedPartFeature, previous: number) {
     || raw.disposition !== 'accepted' || mapped.geometryRef?.featureIndex !== raw.featureIndex
     || mapped.geometryRef?.rawSha256 !== raw.rawSha256)
     throw new AppError(422, 'PART_RECORD_MISMATCH', 'The mapped record does not name this exact ordered raw feature.');
+}
+
+/** One sealed raw part and its mapped part, as the cutter takes them: accepted, observed, keyed, not duplicated.
+ * A feature the layout's kind sets aside stays in the original and joins no package. */
+export function pairMappedFeatures(raw: readonly StreamingVectorRecord[], mapped: readonly ChunkMappingObservation[],
+  fold: { after: number; conflicts: ReadonlySet<number>; kind: string }): MappedPartFeature[] {
+  const observed = new Map(mapped.map(record => [record.featureIndex, record]));
+  return raw.flatMap(record => {
+    const match = observed.get(record.featureIndex);
+    const geometry = (record.feature as { geometry?: { type?: unknown } } | null)?.geometry;
+    const setAside = setAsideGeometryTypes(fold.kind, [String(geometry?.type)]).length > 0;
+    if (record.featureIndex <= fold.after || record.disposition !== 'accepted'
+      || fold.conflicts.has(record.featureIndex) || match?.disposition !== 'observed'
+      || match.sourceKey.state !== 'known' || !match.geometryRef || setAside) return [];
+    return [{ raw: record, mapped: match, feature: record.feature as Record<string, unknown> }];
+  });
 }
 
 /** Recheck scheduler bounds at the import door without making a synthetic mapping record. */

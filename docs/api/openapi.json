@@ -71731,6 +71731,34 @@
                   "additionalProperties": false
                 }
               },
+              "setAside": {
+                "description": "The GEOMETRY_KIND rejections counted by kind; absent when none.",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "public_land"
+                    ]
+                  },
+                  "counts": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "counts"
+                ],
+                "additionalProperties": false
+              },
               "version": {
                 "type": "string",
                 "enum": [
@@ -74516,6 +74544,34 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "setAside": {
+                "description": "The GEOMETRY_KIND rejections counted by kind; absent when none.",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "public_land"
+                    ]
+                  },
+                  "counts": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "counts"
+                ],
+                "additionalProperties": false
               },
               "version": {
                 "type": "string",
@@ -82631,6 +82687,34 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "setAside": {
+                "description": "The GEOMETRY_KIND rejections counted by kind; absent when none.",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "public_land"
+                    ]
+                  },
+                  "counts": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "counts"
+                ],
+                "additionalProperties": false
               },
               "version": {
                 "type": "string",
@@ -386702,6 +386786,34 @@
                           ],
                           "additionalProperties": false
                         }
+                      },
+                      "setAside": {
+                        "description": "The GEOMETRY_KIND rejections counted by kind; absent when none.",
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "building",
+                              "parcel",
+                              "public_land"
+                            ]
+                          },
+                          "counts": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            }
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "counts"
+                        ],
+                        "additionalProperties": false
                       },
                       "version": {
                         "type": "string",

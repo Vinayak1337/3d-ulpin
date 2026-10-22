@@ -21,21 +21,30 @@ export const kindWords: Record<Kind, string> = {
 };
 const geometries = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
 const outlines = ['Polygon', 'MultiPolygon'];
+const outlineKinds: readonly Kind[] = ['building', 'parcel', 'public_land'];
+const drawnAs: Partial<Record<Kind, string>> = { building: 'buildings', parcel: 'land parcels',
+  public_land: 'public land' };
+const heldNouns = [['pins', ['Point', 'MultiPoint']], ['lines', ['LineString', 'MultiLineString']]] as const;
 const propertyPrefix = '/features/*/properties/';
 const questionReasons = [
   'No approved layout matches this file. An officer states what each feature is and which field identifies it.',
   'No approved layout matches this file. An officer chooses the identifier field.',
 ];
 
+/** A large file's reason may first count the pins and lines it holds; the question follows those words. */
+const countedKinds = /^Read [^;]+; they are not footprints\. /;
+
 export function needsLayoutAnswer(item: IntakeItem): boolean {
   return !item.plan && Boolean(item.sourceId) && item.placement === 'needs_answer'
-    && questionReasons.includes(item.limitReason ?? '');
+    && questionReasons.includes((item.limitReason ?? '').replace(countedKinds, ''));
 }
 
 export function kindRefusal(kind: Kind, types: readonly string[]): string | null {
-  const polygonOnly = ['building', 'parcel', 'public_land'].includes(kind);
+  const polygonOnly = outlineKinds.includes(kind);
   const accepted = polygonOnly ? outlines : geometries;
   if (types.length && types.every(type => accepted.includes(type))) return null;
+  if (polygonOnly && types.some(type => outlines.includes(type))
+    && types.every(type => geometries.includes(type))) return null;
   const linesOnly = types.length && types.every(type => ['LineString', 'MultiLineString'].includes(type));
   if (polygonOnly && linesOnly) return `This file holds lines; ${kindWords[kind]} must be an outline.`;
   if (polygonOnly) return `This file does not hold outlines only; ${kindWords[kind]} must be an outline.`;
@@ -99,7 +108,18 @@ export function choicesFromRecipe(receipt: Recipe): Choices {
   return { ...stated, height, unit: plan.heightUnit ?? '', meaning: plan.heightMeaning ?? '' };
 }
 
-export function answerSummary(choices: Choices): string {
+/** An outline kind over a file that also holds pins or lines: those stay in the original, never drawn. */
+export function setAsideWords(kind: Kind | '', types: readonly string[]): string | null {
+  const drawn = kind ? drawnAs[kind] : undefined;
+  if (!drawn || !types.some(type => outlines.includes(type))) return null;
+  const named = heldNouns.filter(([, kinds]) => kinds.some(held => types.includes(held))).map(([noun]) => noun);
+  if (!named.length) return null;
+  const subject = named.join(' and ');
+  return `${subject.charAt(0).toUpperCase()}${subject.slice(1)} in this file are kept in the original `
+    + `but not drawn as ${drawn}.`;
+}
+
+export function answerSummary(choices: Choices, types: readonly string[] = []): string {
   if (!choices.kind || !choices.identifier) return 'Choose what each feature is and which field identifies it.';
   const name = choices.name ? fieldWords(choices.name) : 'not stated';
   let height = 'not stated';
@@ -108,7 +128,8 @@ export function answerSummary(choices: Choices): string {
     if (choices.unit) unit = choices.unit === 'm' ? 'metres' : 'feet';
     height = `${fieldWords(choices.height)}, in ${unit}: ${choices.meaning || 'meaning not stated'}`;
   }
-  return `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
+  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
     + `Name: ${name}. Height: ${height}. It goes to this batch's area, `
     + 'or to a new area named after the file if the batch has none.';
+  return [summary, setAsideWords(choices.kind, types)].filter(Boolean).join(' ');
 }

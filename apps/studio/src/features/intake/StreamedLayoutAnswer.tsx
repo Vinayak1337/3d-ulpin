@@ -25,7 +25,7 @@ export function StreamedLayoutAnswer({ caseId, item, receipt, command }: {
     {status.error ? <Banner tone="danger">{status.error.message}</Banner> : null}
     {waiting ? <p>{waiting}</p> : null}
     {inventory && pin ? <AnswerForm receipt={receipt} command={command}
-      summary={streamedSummary} help={() => noHeight}
+      summary={choices => streamedSummary(choices, inventory.geometryTypes)} help={() => noHeight}
       body={choices => streamedQuestionBody(inventory, choices, pin, receipt?.revision ?? 0, '')}
       fields={(choices, choose) => <StreamedFields inventory={inventory} choices={choices} choose={choose}
         error={command.state.error} concern={command.state.concern} />} /> : null}
