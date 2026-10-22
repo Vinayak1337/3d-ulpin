@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { intakeItem } from './intake-ledger';
+import { probeOriginal } from './intake-probe';
 
 const id = '10000000-0000-4000-8000-000000000001';
 const row = {
@@ -34,6 +35,16 @@ test('an absent or unrecognized stored plan never makes the item read throw', ()
     { recipeId: id, recipeRevision: 1, recipeState: 'proposed', origin: 'other' }]) {
     assert.equal(intakeItem({ ...row, plan_ref }).plan, null);
   }
+});
+
+test('the API item says how wrong-suffix bytes were read without replacing the stored reader reason', async () => {
+  const bytes = Buffer.from('%PDF-1.7\n% test_only header\n%%EOF');
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'plan.json');
+  const stored = { ...row, name: 'plan.json', format: 'pdf', family: 'document', card,
+    limit_reason: 'Reading the text layer of each page.' };
+  assert.equal(intakeItem(stored).limitReason,
+    'Named .json, read as PDF. Reading the text layer of each page.');
+  assert.equal(stored.limit_reason, 'Reading the text layer of each page.');
 });
 
 test('a resting item names the area that already holds its bytes; nothing else names one', () => {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { randomUUID } from 'node:crypto';
+import { Readable } from 'node:stream';
 import { createRequire } from 'node:module';
 import type { Pool } from 'pg';
 import type { IntakeCard } from '@ulpin/contracts/usp';
@@ -136,14 +137,16 @@ class BatchControl {
     }
     assert.equal(command.constructor.name, 'GetObjectCommand', 'No network, cleanup or other storage operation.');
     const bytes = this.objects.get(key)!;
-    return { Body: { transformToByteArray: async () => bytes } };
+    return { Body: Object.assign(Readable.from([bytes]), { transformToByteArray: async () => bytes }),
+      ContentLength: bytes.length, ETag: '"batch-control"' };
   };
 
   /** A PDF kept through the uploads route and probed into the batch: a large original, not a document receipt. */
   retainPdf(bytes: Buffer, declaredBytes = bytes.length): IntakeSourceRow {
     const id = randomUUID();
     const source = { id, case_id: this.current.id, family_id: id, revision: 1, name: 'control.pdf',
-      profile: 'large-original-v1', bytes: declaredBytes, sha256: sha256(bytes), object_key: `sources/${id}/original`,
+      profile: 'large-original-v1', bytes: declaredBytes, sha256: sha256(bytes),
+      object_key: `large-originals/${id}/original`,
       status: 'needs_input', inspection: { profile: 'large-original-v1' } };
     this.sources.set(id, source);
     this.objects.set(source.object_key, bytes);

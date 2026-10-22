@@ -298,6 +298,38 @@ test('oversized GeoJSON names retention only and does not promise a larger direc
   assert.equal(fixture.jobs.length, 0);
 });
 
+test('a small retained collection over 2,000 features queues the streaming path, not a bounded refusal', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.bytes = 50000;
+  fixture.src.inspection = {};
+  fixture.tray.card = { format: 'geojson', family: 'vector', counts: { features: 2500 } } as DraftItem['card'];
+  let streamed = 0;
+  const query = fixture.client.query.bind(fixture.client);
+  fixture.client.query = (async (sql: string, values: any[]) => {
+    if (!sql.startsWith('SELECT item_id,case_id,state,placement')) return query(sql, values);
+    streamed++;
+    return { rows: [], rowCount: 0 };
+  }) as typeof fixture.client.query;
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(streamed, 1);
+  assert.equal(fixture.state.projection.limit_reason, null);
+});
+
+test('a small retained GeoJSON with its bounded receipt queues the same draft authority as a manual original',
+  async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.inspection!.gis = { sourceSha256: hash };
+    fixture.src.inspection!.largeOriginal = { verifiedSha256: hash, verifiedBytes: Number(fixture.src.bytes) };
+    fixture.tray.card = { format: 'geojson', family: 'vector', crs: { state: 'stated' },
+      counts: { features: 1 } } as DraftItem['card'];
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(fixture.jobs.length, 1);
+    assert.equal(fixture.jobs[0].id, jobId);
+    assert.equal(fixture.jobs[0].operation, 'intake-draft');
+  });
+
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';
 for (const [format, family, bytes, expected] of [

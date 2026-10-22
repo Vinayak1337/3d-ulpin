@@ -37,6 +37,21 @@ for (const [name, patch] of [
     assert(!permitsFeatureRecordSource(source, 'record'));
   });
 }
+test('a bounded adapter on an upload keeps exact upload byte authority and still grants record purpose only', () => {
+  const manual = receipt();
+  const source = { ...manual, profile: 'large-original-v1', bytes: 1024,
+    inspection: { ...manual.inspection, largeOriginal: { verifiedBytes: 1024, verifiedSha256: manual.sha256 } } };
+  assert(isRetainedMapOriginal(source));
+  assert(permitsFeatureRecordSource(source, 'record'));
+  assert(!permitsFeatureRecordSource(source, 'geometry'));
+  assert(!permitsFeatureRecordSource(source, 'right'));
+  assert(!isRetainedMapOriginal({ ...source, bytes: 1025 }));
+  assert(!isRetainedMapOriginal({ ...source, sha256: 'b'.repeat(64) }));
+  assert(!isRetainedMapOriginal({ ...source, bytes: 16 * 1024 * 1024 + 1,
+    inspection: { ...source.inspection,
+      largeOriginal: { verifiedBytes: 16 * 1024 * 1024 + 1, verifiedSha256: manual.sha256 } } }));
+});
+
 test('missing and malformed inspection never match by absent hash equality', () => {
   assert(!isRetainedMapOriginal({ profile: 'geojson-manual-v1' }));
   assert(!isRetainedMapOriginal({ ...receipt(), inspection: [] }));
