@@ -3,11 +3,12 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, PointBatchInputSchema,
+import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, POINT_BATCH_LIMITS, PointBatchInputSchema,
   type PointBatchResult, type RasterWindowResult } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { dispatchTick } from '../../cases/processing';
 import { stableUuid } from './intake-run';
+import { intakeItem } from './intake-ledger';
 import { pointReaderSha } from './point-batch';
 import { probeOriginal } from './intake-probe';
 import { fingerprint } from '../../cases/domain';
@@ -391,7 +392,7 @@ function lazBatch(n: number, points?: number) {
 function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'point-batch') {
   const original = operation === 'point-batch' ? laz
     : recorded.find(file => file.file === 'nyc-10013-ortho-2018.tif')!;
-  const db = { drafting: false, jobs: new Map<string, Record<string, any>>(), statements: [] as string[],
+  const db = { clock: 0, drafting: false, jobs: new Map<string, Record<string, any>>(), statements: [] as string[],
     recorded: [-200, -200, 200, 200] as number[] | null, drafted: null as number[] | null,
     current: { id: caseId, revision: 3, archived: false, frame: null as unknown, context: null,
       site_id: null as string | null } };
@@ -407,7 +408,9 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
     records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0,
     family: operation === 'point-batch' ? 'point_cloud' : 'raster',
     format: operation === 'point-batch' ? 'laz' : 'geotiff',
-    size_class: 'M', wave: 2 };
+    size_class: 'M', wave: 2, parent_item_id: null, member_path: null, name: original.file,
+    size_bytes: original.bytes, card: null, card_sha256: null, probe_version: null, pinned_by_officer: false,
+    created_at: '2026-10-11T00:00:00.000Z', updated_at: '2026-10-11T00:00:00.000Z' };
   const parts = new Map<number, Record<string, any>>([[0, { item_id: itemId, part_index: 0, state: 'planned',
     job_id: null, locator: { operation, ...operation === 'point-batch' ? { batch: null } : { window: null },
       partKey: 'a'.repeat(64) }, counts: null,
@@ -477,7 +480,12 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
       marked.forEach(part => { part.result_ref = { ...part.result_ref, rereadPin: values[1] }; });
       return { rows: [], rowCount: marked.length };
     }
-    if (sql.startsWith('UPDATE usp_intake_items SET updated_at=clock_timestamp()')) return one({});
+    if (sql.startsWith('UPDATE usp_intake_items SET plan_ref=jsonb_set')) {
+      assert.doesNotMatch(sql, /updated_at/);
+      assert.match(sql, /admissionTriedAt/);
+      item.plan_ref.admissionTriedAt = new Date(Date.UTC(2026, 9, 11) + ++db.clock).toISOString();
+      return one({});
+    }
     if (sql.startsWith("UPDATE usp_intake_items SET plan_ref=plan_ref-'admissionIssue'")) {
       delete item.plan_ref.admissionIssue;
       return one({});
@@ -537,6 +545,8 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
   };
   const client = { query: async (sql: string, values: any[] = []) => {
     db.statements.push(sql);
+    if (sql.startsWith('UPDATE usp_intake_items') && sql.includes('updated_at='))
+      item.updated_at = new Date(Date.UTC(2026, 9, 11) + ++db.clock).toISOString();
     return answer(sql, values);
   }, release: () => undefined } as unknown as PoolClient;
   /** One dispatcher tick over this pool; the statements it sent. */
@@ -836,7 +846,7 @@ test('SF1 real NYC: the orthophoto read before its footprints are drafted is pla
   }
 });
 
-type AdmissionItem = { world: ReturnType<typeof batch>; failure?: unknown; attempted?: number;
+type AdmissionItem = { world: ReturnType<typeof batch>; failure?: unknown;
   failAfterEnqueue?: boolean; failIssueWrite?: boolean };
 
 /** Restore the SQL double's item, parts and jobs when the owning transaction rolls back. */
@@ -853,7 +863,7 @@ function surfaceRollback(entry: AdmissionItem) {
   };
 }
 
-function surfaceConnection(entries: AdmissionItem[], clock: () => number) {
+function surfaceConnection(entries: AdmissionItem[]) {
   let entry: AdmissionItem | undefined, rollback: (() => void) | undefined;
   return { release: () => {}, query: async (sql: string, values: any[] = []) => {
     if (/^(BEGIN|COMMIT|ROLLBACK)$/.test(sql)) {
@@ -868,7 +878,6 @@ function surfaceConnection(entries: AdmissionItem[], clock: () => number) {
     assert.ok(entry, 'Each transaction addresses its own item.');
     if (entry.failure && (entry.failAfterEnqueue ? sql.startsWith('SELECT status,error FROM jobs')
       : sql.startsWith('SELECT * FROM sources'))) throw entry.failure;
-    if (sql.startsWith('UPDATE usp_intake_items SET updated_at=clock_timestamp()')) entry.attempted = clock();
     if (sql.startsWith('SELECT count(*)::int n FROM jobs WHERE operation')) {
       const operation = entry.world.item.plan_ref.operation;
       const n = entries.flatMap(value => [...value.world.db.jobs.values()])
@@ -883,22 +892,22 @@ function surfaceConnection(entries: AdmissionItem[], clock: () => number) {
 async function withSurfaces(entries: AdmissionItem[], run: () => Promise<void>) {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
   const previous = globals.ulpinPool;
-  let clock = 0;
   const query = async (sql: string, values: any[] = []) => {
     if (sql.startsWith('SELECT i.item_id,i.case_id')) {
       const rows = [];
       for (const [index, entry] of entries.entries()) {
         const due = await entry.world.client.query(sql, values);
-        rows.push(...due.rows.map(row => ({ ...row, item_id: `due-${index}` })));
+        rows.push(...due.rows.map(row => ({ ...row, item_id: `due-${String(index).padStart(4, '0')}` })));
       }
-      if (sql.includes('ORDER BY i.updated_at')) rows.sort((a, b) =>
-        (entries[Number(a.item_id.slice(4))].attempted ?? 0)
-        - (entries[Number(b.item_id.slice(4))].attempted ?? 0));
+      if (sql.includes("ORDER BY i.plan_ref->>'admissionTriedAt' NULLS FIRST,i.item_id")) rows.sort((a, b) => {
+        const marker = (id: string) => entries[Number(id.slice(4))].world.item.plan_ref.admissionTriedAt ?? '';
+        return marker(a.item_id).localeCompare(marker(b.item_id)) || a.item_id.localeCompare(b.item_id);
+      });
       return { rows, rowCount: rows.length };
     }
     return { rows: [], rowCount: 0 };
   };
-  globals.ulpinPool = { query, connect: async () => surfaceConnection(entries, () => ++clock) };
+  globals.ulpinPool = { query, connect: async () => surfaceConnection(entries) };
   try { await run(); }
   finally {
     if (previous === undefined) delete globals.ulpinPool;
@@ -936,6 +945,7 @@ test('one dispatcher tick admits a new TIF and LAZ beside a pre-LP1 item, withou
   async () => {
     const old = await preLp1Point(), tif = batch(undefined, 'raster-window'), fresh = batch();
     const earlier = [...old.db.jobs.values()].map(job => structuredClone(job));
+    const from = old.db.statements.length;
     await withSurfaces([{ world: old }, { world: tif }, { world: fresh }], async () => {
       assert.equal(await dispatchTick(), 0);
     });
@@ -946,11 +956,18 @@ test('one dispatcher tick admits a new TIF and LAZ beside a pre-LP1 item, withou
     assert.equal(old.db.jobs.size, earlier.length + 1);
     for (const job of earlier) assert.deepEqual(old.db.jobs.get(job.id), job);
     assert.equal(old.parts.size, 211);
+    for (const world of [old, tif, fresh]) {
+      assert.equal(world.item.plan_ref.admissionTriedAt, undefined);
+      const statements = world.db.statements.slice(world === old ? from : 0);
+      assert.ok(!statements.some(sql => sql.startsWith('UPDATE') && /admissionTriedAt|clock_timestamp/.test(sql)),
+        'Progress adds no fairness or timestamp write beyond admission itself.');
+    }
   });
 
 for (const failure of [new Error('PRIVATE_SOURCE_TEXT'), new AppError(500, 'SURFACE_TEST_FAULT', 'PRIVATE_TEXT')]) {
   test(`an ${failure.name} on one item records an admission issue and still admits later surfaces`, async () => {
     const old = await preLp1Point(), tif = batch(undefined, 'raster-window'), fresh = batch();
+    const before = intakeItem(old.item);
     await withSurfaces([{ world: old, failure }, { world: tif }, { world: fresh }], admitIntakeSurfaceParts);
     assert.deepEqual(queued(tif.parts), [0]);
     assert.deepEqual(queued(fresh.parts), [0]);
@@ -959,6 +976,10 @@ for (const failure of [new Error('PRIVATE_SOURCE_TEXT'), new AppError(500, 'SURF
     assert.equal(old.item.plan_ref.admissionIssue,
       failure instanceof AppError ? 'SURFACE_TEST_FAULT' : 'SURFACE_ADMISSION_FAILED');
     assert.match(old.item.limit_reason, /Admission deferred/);
+    const after = intakeItem(old.item);
+    assert.notEqual(after.limitReason, before.limitReason);
+    assert.notEqual(after.updatedAt, before.updatedAt);
+    assert.ok(Date.parse(old.item.plan_ref.admissionTriedAt));
     assert.doesNotMatch(old.item.limit_reason, /PRIVATE|unsupported|could not be read/);
   });
 }
@@ -1013,6 +1034,50 @@ test('an invalid stored locator is quarantined as an admission defect, not a rea
   assert.match(old.item.limit_reason, /stored locator is invalid/);
   assert.doesNotMatch(old.item.limit_reason, /unsupported|could not be read/);
   assert.equal(old.db.jobs.size, 0);
+});
+
+test('a no-progress tick changes only its private fairness marker, not the public item or updatedAt', async () => {
+  const world = batch();
+  world.db.drafting = true;
+  const before = intakeItem(world.item), updated = world.item.updated_at;
+  for (let n = 0; n < 2; n++) {
+    const statements = await world.tick();
+    assert.equal(world.item.updated_at, updated);
+    assert.deepEqual(intakeItem(world.item), before);
+    assert.equal(world.item.plan_ref.admissionTriedAt,
+      new Date(Date.UTC(2026, 9, 11) + n + 1).toISOString());
+    assert.equal(statements.filter(sql => /^(INSERT|UPDATE)/.test(sql)).length, 1);
+    assert.ok(!statements.some(sql => sql.includes('updated_at=')));
+  }
+});
+
+test('a busy reader changes only the private marker and keeps the planned part', async () => {
+  const world = batch();
+  for (let n = 0; n < POINT_BATCH_LIMITS.active; n++)
+    world.db.jobs.set(`busy-${n}`, { status: 'running' });
+  const before = intakeItem(world.item);
+  await world.tick();
+  assert.deepEqual(intakeItem(world.item), before);
+  assert.ok(Date.parse(world.item.plan_ref.admissionTriedAt));
+  assert.equal(world.parts.get(0)!.state, 'planned');
+  assert.equal(world.db.jobs.size, POINT_BATCH_LIMITS.active);
+});
+
+test('oldest private markers go first, with item id breaking ties rather than public updatedAt', async () => {
+  const newer = '2026-10-11T00:00:00.000Z', older = '2026-10-10T00:00:00.000Z';
+  const entries = Array.from({ length: INTAKE_SURFACE_LIMITS.page + 1 }, () => {
+    const world = batch();
+    world.db.drafting = true;
+    world.item.plan_ref.admissionTriedAt = newer;
+    return { world };
+  });
+  entries.at(-1)!.world.item.plan_ref.admissionTriedAt = older;
+  // Public recency must not determine scheduling.
+  entries.at(-1)!.world.item.updated_at = '2026-10-12T00:00:00.000Z';
+  await withSurfaces(entries, admitIntakeSurfaceParts);
+  assert.notEqual(entries.at(-1)!.world.item.plan_ref.admissionTriedAt, older);
+  assert.notEqual(entries[0].world.item.plan_ref.admissionTriedAt, newer);
+  assert.equal(entries.at(-2)!.world.item.plan_ref.admissionTriedAt, newer);
 });
 
 test('a full page of items waiting for an area yields to new surfaces on the next tick', async () => {

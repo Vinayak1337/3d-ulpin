@@ -4,7 +4,19 @@
   "base": "70560f89",
   "comparisonBase": "6323b054",
   "mode": "offline; SQL doubles, retained real originals and historical code; no Docker or runtime",
-  "verdict": "Admission regressions fixed offline; runtime qualification remains open.",
+  "verdict": "Admission regressions and public timestamp churn fixed offline; runtime qualification remains open.",
+  "reviewFix": {
+    "task": "SA1-FIX",
+    "base": "8fb0da3e",
+    "finding": "Every attempted item advanced public updatedAt, causing refresh churn without visible progress.",
+    "scheduling": "Only stalled or failed attempts write private plan_ref.admissionTriedAt, in canonical UTC ISO time.",
+    "order": "Missing marker first, then oldest marker, then item_id; public updated_at is not used.",
+    "progress": "Successful admission or visible resettlement adds no fairness or timestamp write.",
+    "projection": "intake-ledger.ts intakeItem selects explicit facts; its strict plan schema rejects surface plans. The marker is not published.",
+    "visibleIssues": "recordAdmissionIssueTx still uses writeIntakeLargeTx to update visible words and updated_at, then records the private marker.",
+    "regressions": "Area wait and busy reader preserve the entire public item; issue recording changes words and updatedAt; missing/oldest/tied marker fairness passes.",
+    "testsFirst": { "exit": 1, "passed": 26, "failed": 5, "expected": "timestamp churn, redundant progress write, missing failure marker and starvation reproduced" }
+  },
   "rootCauses": [
     {
       "kind": "cross-item abort",
@@ -30,8 +42,8 @@
       "atBase": "packages/server/src/modules/usp/ingestion/intake-surface.ts:268-271",
       "finding": "Ordering by part update time leaves no-progress items at the front of every 64-item page.",
       "evidence": "A full page waiting for an area blocks fresh items on two base ticks; fixed tick two admits them.",
-      "fix": "Order by item update time and id; touch each attempted item even on busy or area-wait returns.",
-      "now": "packages/server/src/modules/usp/ingestion/intake-surface.ts:258-268,320-323"
+      "fix": "Order by private admissionTriedAt and id; mark only stalled or failed attempts, without changing public updatedAt.",
+      "now": "packages/server/src/modules/usp/ingestion/intake-surface.ts:touchAdmissionTx,admitDueSurface,admitIntakeSurfaceParts"
     }
   ],
   "historicalCompatibility": {
@@ -76,9 +88,9 @@
   ],
   "checks": {
     "testsFirst": { "exit": 1, "passed": 23, "failed": 5, "expected": "new regressions fail before the fix" },
-    "surface": { "exit": 0, "passed": 30, "failed": 0, "skipped": 0 },
+    "surface": { "exit": 0, "passed": 33, "failed": 0, "skipped": 0 },
     "backendTypecheck": { "command": "pnpm typecheck:backend", "exit": 0 },
-    "requiredSuite": { "exit": 0, "passed": 547, "failed": 0, "skipped": 4 },
+    "requiredSuite": { "exit": 0, "passed": 550, "failed": 0, "skipped": 4 },
     "diffCheck": { "command": "git diff --check", "exit": 0 }
   },
   "testCommandPrefix": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
