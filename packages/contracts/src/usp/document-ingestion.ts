@@ -3,11 +3,22 @@ import {GisQuarantineSchema} from '../gis-quarantine';
 export const DOCUMENT_VERSION='source-document/1' as const;
 export const DOCUMENT_POLICY='source-document-native/1' as const;
 export const DOCUMENT_LIMITS=Object.freeze({originalBytes:16*1024*1024,nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
-  characters:250000,parts:10000,partCharacters:4096,page:25,candidates:40,modelCharacters:12000,modelParts:12,jobs:32});
+  characters:250000,parts:10000,partCharacters:4096,page:25,candidates:40,modelCharacters:12000,modelParts:12,jobs:32,
+  ocrPages:1,ocrMaxPage:8,ocrItems:64});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(),z.number().finite()])
   .refine(([x0,y0,x1,y1])=>x0>=0&&y0>=0&&x1>x0&&y1>y0);
-export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(8),region:ocrBox.optional()});
+export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(DOCUMENT_LIMITS.ocrMaxPage),
+  region:ocrBox.optional()});
+/** Native PDF warnings identify scanned pages; one existing OCR job can read one of pages 1–8. */
+export function documentScannedPages(native: { format: string; status: string; warnings: readonly string[] }) {
+  if (native.format !== 'pdf' || !['extracted', 'needs_ocr'].includes(native.status)) return [];
+  const pages = native.warnings.flatMap(warning => {
+    const match = /^PDF page ([1-9]\d*) has no native text/.exec(warning);
+    return match ? [Number(match[1])] : [];
+  });
+  return [...new Set(pages)].filter(Number.isSafeInteger).sort((left, right) => left - right);
+}
 export const DocumentArchiveSelectionSchema=z.strictObject({ordinal:z.number().int().min(0).max(255),
   memberSha256:hash,memberBytes:z.number().int().min(1).max(8*1024*1024)});
 export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','ods','html','png','jpeg','archive','unsupported']);
@@ -109,7 +120,7 @@ const DocumentOcrBaseSchema=z.strictObject({sourceSha256:hash,sourceRevision:z.n
   method:z.enum(['ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned','ocr:tesseract-cli-5.5.1:sparse-tsv-v1']),
   toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
   textCompleteness:z.literal('unverified'),issues:z.array(z.string().min(1).max(200)).max(32),
-  items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional(),
+  items:z.array(DocumentOcrItemSchema).max(DOCUMENT_LIMITS.ocrItems),execution:DocumentOcrExecutionSchema.optional(),
   // Stated only when the worker stated its render scale. The 0.5 floor is the lead's bound (K9d), not a
   // measured one: it keeps the allowance at or under 2 pt. The allowance is derived below, never stored.
   regionEdge:z.strictObject({renderScalePxPerPt:z.number().finite().min(0.5),

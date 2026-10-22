@@ -4,7 +4,9 @@ import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import type { Pool } from 'pg';
+import { documentScannedPages, DocumentStatusSchema } from '../packages/contracts/src/usp/document-ingestion';
 import type { IntakeCard } from '@ulpin/contracts/usp';
+import { DocumentIngestionService } from '../packages/server/src/modules/usp/ingestion/documents';
 import { queueIntakeDraftTx, pageWords } from '../packages/server/src/modules/usp/ingestion/intake-draft';
 import type { IntakeSourceRow } from '../packages/server/src/modules/usp/ingestion/intake-context';
 import { failDocumentJob, runDocumentJob } from '../packages/server/src/modules/usp/ingestion/document-worker';
@@ -28,13 +30,14 @@ class BatchControl {
   readonly jobs = new Map<string, Row>();
   readonly objects = new Map<string, Buffer>();
   readonly events: Row[] = [];
+  readonly operations = new Map<string, Row>();
   item: Row | null = null;
 
   query = async (sql: string, args: any[] = []) => {
     if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql) || sql.startsWith('SET TRANSACTION')
       || sql.includes('pg_advisory_xact_lock')) return { rows: [], rowCount: 0 };
     const rows = this.itemQuery(sql, args) ?? this.sourceQuery(sql, args) ?? this.jobQuery(sql, args)
-      ?? this.outboxQuery(sql, args);
+      ?? this.operationQuery(sql, args) ?? this.outboxQuery(sql, args);
     if (!rows) throw new Error(`Unexpected G10 protocol query: ${sql}`);
     return { rows: structuredClone(rows), rowCount: rows.length };
   };
@@ -118,6 +121,16 @@ class BatchControl {
     }
     if (sql.includes('lease_until>now()') && job?.attempt?.state !== 'active') return [];
     return job?.attempt ? [job.attempt] : [];
+  }
+
+  private operationQuery(sql: string, args: any[]): Row[] | null {
+    if (sql.includes('FROM operations')) {
+      const prior = this.operations.get(args[1]);
+      return prior ? [prior] : [];
+    }
+    if (!sql.startsWith('INSERT INTO operations')) return null;
+    this.operations.set(args[1], { payload_hash: args[3], result: args[4] });
+    return [];
   }
 
   private outboxQuery(sql: string, args: any[]): Row[] | null {
@@ -225,8 +238,8 @@ test('a batch PDF is read by the document reader on its text layer, and its item
     assert.equal(done.status, 'succeeded');
     assert.deepEqual([control.item!.state, control.item!.placement], ['read', 'undecided']);
     assert.equal(control.item!.limit_reason, '6 pages read. Text was found on pages 1–2. Pages 3–6 have no text '
-      + 'layer (scanned), so the words on them are not read; no OCR runs in a batch. 2 passages on pages 1–2 name '
-      + 'floors, storeys, levels or rooms: candidates cited to their page and lines, for your review. Nothing is '
+      + 'layer (scanned). Open the PDF reading to request bounded OCR. 2 passages on pages 1–2 name floors, '
+      + 'storeys, levels or rooms: candidates cited to their page and lines, for your review. Nothing is '
       + 'recorded until you confirm it.');
     const accepted = control.sources.get(source.id)!.inspection.documentAccepted;
     assert.deepEqual([accepted.nativeStatus, accepted.modelStatus], ['extracted', 'not_requested']);
@@ -240,8 +253,8 @@ test('a scanned PDF with no text layer is said to be unread, and nothing is prop
     const jobId = (await queueIntakeDraftTx(clientOf(control), source, card))!;
     await readWith(control, jobId, scannedSheet);
     assert.deepEqual([control.item!.state, control.item!.placement, control.item!.limit_reason], ['read',
-      'not_understood', '1 page read. Page 1 has no text layer (scanned), so the words on it are not read; no OCR '
-        + 'runs in a batch. Nothing is recorded until you confirm it.']);
+      'not_understood', '1 page read. Page 1 has no text layer (scanned). Open the PDF reading to request '
+        + 'bounded OCR. Nothing is recorded until you confirm it.']);
   });
 });
 
@@ -260,6 +273,60 @@ test('a PDF above the reader bound rests kept in words, and a stopped read says 
       'not_understood',
       'The page reader stopped before it finished; the original is kept unchanged with its SHA-256.']);
   });
+});
+
+test('the officer can OCR a batch PDF through the existing retry route, without a second active job', async () => {
+  await isolated(async control => {
+    const source = control.retainPdf(pdfBytes('scanned selection'));
+    const nativeJob = (await queueIntakeDraftTx(clientOf(control), source, card))!;
+    await readWith(control, nativeJob, twoTextPages);
+    const service = new DocumentIngestionService();
+    const reading = DocumentStatusSchema.parse(await service.status(control.current.id, source.id, nativeJob));
+    const scanned = documentScannedPages(reading.native!);
+    assert.deepEqual(scanned, [3, 4, 5, 6]);
+    const request = { requestKey: randomUUID(), expectedCaseRevision: reading.currentCaseRevision,
+      expectedSourceRevision: reading.sourceRevision, sourceSha256: reading.sourceSha256,
+      mode: 'native_only', ocrSelection: { page: scanned[0] } };
+    const first = await service.retry(control.current.id, source.id, request);
+    const job = control.jobs.get(first.jobId)!;
+    assert.deepEqual(job.payload.ocrSelection, { page: 3 });
+    assert.equal(job.payload.mode, 'native_only');
+    assert.equal(job.payload.gatewayPolicySha256, null);
+    for (const state of ['queued', 'running']) {
+      job.status = state;
+      const again = await service.retry(control.current.id, source.id, { ...request, requestKey: randomUUID() });
+      assert.equal(again.jobId, first.jobId);
+      assert.equal(control.jobs.size, 2, 'One native job and one OCR job, even with a second request key.');
+    }
+    await runDocumentJob(first.jobId, {
+      extract: (input, bytes) => extractSourceDocument(input, bytes, async () => ({
+        format: 'pdf', status: 'ready', sourceSha256: input.sourceSha256, ...twoTextPages,
+      })),
+      ocr: async input => ({ sourceSha256: input.sourceSha256, sourceRevision: input.sourceRevision,
+        sourcePage: 3, requestedRegion: null,
+        sourcePageFrame: { kind: 'pdf_display_page_top_left_points', rotation: 0, width: 612, height: 792 },
+        method: 'ocr:tesseract-cli-5.5.1:sparse-tsv-v1', toolStatus: 'complete', outputStatus: 'complete',
+        textCompleteness: 'unverified', issues: [], items: [{ text: 'test_only control passage', label: 'line',
+          method: 'ocr:tesseract-cli-sparse-tsv', sourcePageBoxes: [{ pageNumber: 3,
+            frame: 'pdf_display_page_top_left_points', box: [10, 20, 80, 40],
+            derivedFrom: 'tesseract_tsv_pixels_via_mupdf_pixel_origin' }] }] }),
+    });
+    const result = DocumentStatusSchema.parse(await service.status(control.current.id, source.id, first.jobId));
+    assert.equal(result.status, 'completed');
+    assert.equal(result.ocr?.sourcePage, 3);
+    assert.equal(result.ocrItems?.length, 1);
+    assert.deepEqual(result.ocrItems?.[0].sourcePageBoxes[0].box, [10, 20, 80, 40]);
+    assert.equal(control.sources.get(source.id)!.sha256, source.sha256);
+    assert.equal(control.item!.records_seen, 0, 'OCR text never becomes a record field or a room.');
+  });
+});
+
+test('only native no-text PDF warnings identify scanned pages, sorted and without duplicates', () => {
+  const native = { format: 'pdf', status: 'extracted', warnings: [noText(9), noText(3), noText(3), 'other'] };
+  assert.deepEqual(documentScannedPages(native), [3, 9]);
+  assert.deepEqual(documentScannedPages({ ...native, warnings: [] }), []);
+  assert.deepEqual(documentScannedPages({ ...native, status: 'encrypted' }), []);
+  assert.deepEqual(documentScannedPages({ ...native, format: 'text' }), []);
 });
 
 test('page numbers read as runs', () => {

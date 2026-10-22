@@ -3,7 +3,7 @@ export { STREAMING_VECTOR_LIMITS } from './usp/streaming-vector';
 export { RASTER_WINDOW_LIMITS } from './usp/raster-window';
 export { POINT_BATCH_LIMITS } from './usp/point-batch';
 export { IFC_LIMITS } from './usp/ifc-ingestion';
-export { DOCUMENT_LIMITS } from './usp/document-ingestion';
+export { DOCUMENT_LIMITS, documentScannedPages } from './usp/document-ingestion';
 export { INTAKE_PAGE_IMAGE_LIMITS } from './usp/intake';
 export { TABULAR_STREAM_LIMITS } from './usp/ingestion';
 

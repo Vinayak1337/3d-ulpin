@@ -146,6 +146,22 @@ it.each(['csv', 'xlsx'] as const)('TS2: a map + unread %s batch opens the table 
   }
 });
 
+it('PDF1: a PDF reading can be selected in a multi-file batch without changing the tray', async () => {
+  const pdf = { ...second, sourceId: second.itemId, name: 'scanned-plan.pdf', format: 'pdf',
+    family: 'document', state: 'read', plan: null } as IntakeItem;
+  facts.items = [first, pdf];
+  facts.uploads = [];
+  const page = await renderBatch([]);
+  try {
+    expect(elements(page.root).some(node => node.getAttribute('aria-label') === `PDF reading in ${pdf.name}`))
+      .toBe(false);
+    await press(button(page.root, `View PDF reading · ${pdf.name}`));
+    expect(elements(page.root).some(node => node.getAttribute('aria-label') === `PDF reading in ${pdf.name}`))
+      .toBe(true);
+    expect(keyWarnings()).toEqual([]);
+  } finally { await page.unmount(); }
+});
+
 it('D2: after a reload the notice drops each file once resumed and finished, cancelled, or in the batch', async () => {
   facts.items = [first];
   const resumed = receipt('04000000-0000-4000-8000-0000000000b1', 'resumed.geojson', 26_660_992);
