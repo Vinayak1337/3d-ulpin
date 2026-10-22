@@ -1,0 +1,113 @@
+{
+  "task": "NR3",
+  "gate": "AUD1-7 native batch-reader prerequisite; offline only, no runtime gate passed",
+  "base": "5761865a",
+  "status": "scoped checks passed; processor image rebuild and live qualification required",
+  "productionChange": "Only cityjson_processing.py KEY now allows sources/ and large-originals/.",
+  "readerPins": {
+    "previousSha256": "377edfe71f3d08e0a1f4fb710441022b9a26fdadd0efa70724d0d1dea0f3d398",
+    "currentSha256": "057c16a653468637ddb30c9d777cd642e0478db6d5b0006b43478044bf5818e8",
+    "computedFrom": ["services/geo/geo/native_cityjson.py", "services/geo/geo/cityjson_processing.py"],
+    "algorithm": "SHA-256 of concatenated raw file bytes in the listed order; no newline normalization",
+    "typescript": "cityjson.ts cityjsonReaderSha() computes the pin dynamically; no literal TS pin to change.",
+    "pythonParity": true,
+    "oldPinRejected": true,
+    "search": "Checked readerSha256, CITYJSON_READER, both reader filenames and the previous combined digest.",
+    "sourcePins": "docs/api/source-pins.json has no Python reader entry; historical receipts remain unchanged.",
+    "otherPins": "desktop-cityjson-read.py hashes native_cityjson.py only; that file is unchanged."
+  },
+  "nativePathAudit": {
+    "dxf": "Already allows upload originals in boundedDXFObject; no further allowlist change needed.",
+    "citygml": "Already allows upload originals in boundedCityGMLObject; no allowlist change needed.",
+    "authority": "assertBatchNativeSourceTx binds the exact large-originals/id/sha key, receipt and format.",
+    "transport": "Both workers use bounded openObjectStream, which does not reject large-originals/ keys.",
+    "processor": "Both TS processors verify bytes/hash, write owned scratch files and pass local paths to Python.",
+    "python": "scripts/usp/{dxf,citygml}/server.py and their native readers consume paths/bytes, not object keys.",
+    "largerIssue": "No additional key-path blocker found; configured host runtime execution is not qualified."
+  },
+  "inputs": [
+    {
+      "path": "fixtures/usp/D1/single-roof/original.json",
+      "role": "Real Dutch 3DBAG test-only input: pin checks and actual native reader/oracle checks.",
+      "difficultControls": "Existing malformed-index, duplicate-key, nonfinite and missing-frame copies; not originals."
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf",
+      "role": "Real source bytes in existing batch protocol tests; saved native projection reused."
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/ASCII_R12.dxf",
+      "role": "Difficult real absent-unit drawing; saved native projection compared with unchanged byte pins."
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_and_garage_LOD2-EPSG25832.gml",
+      "role": "Real OGC source bytes in batch protocol tests; saved native projection reused."
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_LOD1-LocalEngineeringCRS.gml",
+      "role": "Difficult real OGC source; saved partial projection and honest findings preserved."
+    }
+  ],
+  "checks": [
+    {
+      "command": "PYTHONPATH=services/geo python -B -m unittest discover",
+      "args": ["-s", "services/geo/tests", "-p", "test_cityjson_processing_pins.py", "-v"],
+      "exit": 0,
+      "passed": 4,
+      "scope": "Actual AST-extracted pin guards only, before storage; no Shapely stubs or storage claims."
+    },
+    {
+      "command": "PYTHONPATH=services/geo python -B -m unittest discover",
+      "args": ["-s", "services/geo/tests", "-p", "test_native_cityjson.py", "-v"],
+      "exit": 0,
+      "passed": 6
+    },
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {
+      "command": "pnpm exec tsx --test",
+      "args": [
+        "docs/evidence/nr3/reader-pins.test.ts",
+        "tests/cityjson-*.test.ts",
+        "tests/source-pin.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts"
+      ],
+      "exit": 0,
+      "passed": 40,
+      "skipped": 0
+    },
+    {
+      "command": "pnpm exec tsx --test tests/dxf-authority.test.ts tests/citygml-authority.test.ts",
+      "exit": 0,
+      "passed": 10,
+      "skipped": 2,
+      "skipReason": "Configured-host actual supervised worker checks are not enabled locally."
+    },
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "setupAndBaseline": [
+    {"command": "python -m pytest --version", "exit": 1, "reason": "pytest is not installed."},
+    {"command": "python -c 'import shapely'", "exit": 1, "reason": "Shapely is not installed."},
+    {
+      "command": "Pin unit test against unchanged baseline KEY",
+      "exit": 1,
+      "reason": "Expected reproduction: large-originals/ rejected with CITYJSON_SOURCE_PINS."
+    },
+    {
+      "command": "Initial pnpm typecheck:backend and focused TS tests",
+      "exit": 1,
+      "reason": "Fresh worktree lacked node_modules, so tsc and tsx were unavailable."
+    },
+    {
+      "command": "pnpm install --offline --frozen-lockfile --ignore-scripts",
+      "exit": 0,
+      "reason": "Cached dependencies only; lockfile unchanged; checks then passed."
+    }
+  ],
+  "gaps": [
+    "Full process_cityjson transport/subprocess suite not run: local Shapely is absent.",
+    "No Docker, image build, live DB operation, provider call, push or external-original modification.",
+    "The processor image must be rebuilt before this runs; deploy matching TS and Python file bytes together.",
+    "Existing jobs keep old immutable reader pins and may be stale; no saved jobs or receipts were rewritten.",
+    "Live upload/enrol/accepted-worker/reload rehearsal remains the authorized runtime owner's step."
+  ]
+}
