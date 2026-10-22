@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { constants, copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { save } from './audit.mjs';
 
@@ -14,7 +14,7 @@ const short = `${scratch}/lpc-register-two-records-test_only.csv`;
 const originalShort = 'E:/BhuAayam-data/task-data/reh10/lpc-register-two-records-test_only.csv';
 const archive = `${scratch}/nyc-map-and-report-test_only.zip`;
 const { zipSync } = createRequire('E:/Projects/ulpin-wt/ulpin-reh-02/package.json')('fflate');
-copyFileSync(originalShort, short);
+copyFileSync(originalShort, short, constants.COPYFILE_EXCL);
 const table = readFileSync(short);
 assert.equal(table.at(-1), 10, 'Short CSV must end in LF');
 const members = { 'buildings-original.geojson': readFileSync(geojson), '2537.pdf': readFileSync(lpc) };

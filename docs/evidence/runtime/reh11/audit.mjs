@@ -10,11 +10,8 @@ export const demo = 'E:/Projects/ulpin-wt/demo';
 export const runtime = 'ulpin-reh-02';
 const runtimeRoot = 'E:/BhuAayam-data/runtime';
 export const pinnedImage = 'ulpin-geo:git-a40b60238728';
-export const ports = [21021, 21022, 21023, 21024, 21025, 21026];
 // Recorded SHA-256 of the source originals; image ids are added once read.
 const kept = new Set([
-  'c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da',
-  '31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521',
   '107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e',
   '3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b',
   'c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716',

@@ -90,16 +90,6 @@ const helpers = {
         worst: state.frames.filter(([at, ms]) => at >= from && at <= to && ms > 100).slice(0, 40) };
     }, [from, to]);
   },
-  /** Waits until the page's text matches, polling every 250 ms; returns the epoch time it was first seen. */
-  async until(pattern, timeout = 300000, target = page) {
-    const end = Date.now() + timeout;
-    while (Date.now() < end) {
-      const body = await target.locator('body').innerText().catch(() => '');
-      if (pattern.test(body)) return Date.now();
-      await target.waitForTimeout(250);
-    }
-    return null;
-  },
 };
 
 const AsyncFunction = (async () => {}).constructor;
