@@ -18,7 +18,7 @@ import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intake
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
-import { readIntakeDraftTx, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
+import { readIntakeDraftTx, withCellFiles, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
 import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
   type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import type { AreaFrame } from './intake-package-extent';
@@ -291,7 +291,8 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
     duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide,
     outside: cells ? 0 : held.heldOutside, unmeasured: held.heldUnmeasured, setAside },
-  intakeLargePlan(state.store.recipe));
+  // CN1: each retained cell's own case, source and item, kept beside the plan in the same end transaction.
+  withCellFiles(intakeLargePlan(state.store.recipe), cells?.children));
   if (cells) projection.limitReason = [cellFileWords(parts.accepted, cells), projection.limitReason]
     .filter(Boolean).join(' ');
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));

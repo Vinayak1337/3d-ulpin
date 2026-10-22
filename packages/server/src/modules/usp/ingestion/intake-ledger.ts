@@ -1,7 +1,8 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, IntakeLayerCrsSchema,
-  IntakeLayerCrsAnswerSchema, IntakePageImageReadSchema, type IntakeCard } from '@ulpin/contracts/usp';
+import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema, INTAKE_CARD_VERSION, IntakeItemSchema,
+  IntakeItemPlanSchema, IntakeLayerCrsSchema, IntakeLayerCrsAnswerSchema, IntakePageImageReadSchema,
+  type IntakeCard, type IntakeCellBatch } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
 import { intakeSizeClass, intakeWave } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
@@ -24,7 +25,8 @@ export async function registerIntakeItemTx(client: PoolClient, source: IntakeSou
 /** Unknown stored projections must not make the rest of the tray unreadable. */
 function intakePlan(value: unknown) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const stored = value as Record<string, unknown>;
+  // CN1: a wide file's cell batches are kept beside its plan, not in it.
+  const { cellFiles: _cells, ...stored } = value as Record<string, unknown>;
   const plan = IntakeItemPlanSchema.safeParse({ ...stored, packageId: stored.packageId ?? null });
   return plan.success ? plan.data : null;
 }
@@ -62,6 +64,43 @@ function layerCrs(value: unknown) {
   }) };
 }
 
+const uuid = z.string().uuid();
+/** CN1. Each cell file of a wide file, as retained and enrolled: its own case, source and item, at most the cell cap.
+ * Kept in the parent item's plan_ref beside its end result; no second table. */
+export const CellFileRefSchema = z.strictObject({ cellKey: CellDerivativeLineageSchema.shape.cellKey,
+  caseId: uuid, itemId: uuid, sourceId: uuid });
+export type CellFileRef = z.infer<typeof CellFileRefSchema>;
+const CellFileRefsSchema = z.array(CellFileRefSchema).max(CELL_DERIVATIVE_RULE.cells);
+
+/** A row written before CN1, or an unrecognized value, names no cell batch; it never makes the item unreadable. */
+export function cellFileRefs(value: unknown): CellFileRef[] {
+  const stored = CellFileRefsSchema.safeParse((value as { cellFiles?: unknown } | null)?.cellFiles);
+  return stored.success ? stored.data : [];
+}
+
+/** The end result's plan with the retained cell files beside it, one entry per cell key; none leaves it as it was. */
+export function withCellFiles(planRef: Record<string, unknown> | null, refs: readonly CellFileRef[] | undefined) {
+  if (!refs?.length) return planRef;
+  const byKey = new Map(refs.map(ref => [ref.cellKey, CellFileRefSchema.parse(ref)]));
+  return { ...(planRef ?? {}), cellFiles: CellFileRefsSchema.parse([...byKey.values()]) };
+}
+
+/** A child's current state, present only for a child whose batch the reader already checked this officer may open. */
+export type OpenCellBatch = { state: string; placement: string };
+
+/** The stored cell files, each linked only when its batch was opened under the officer's own authority. */
+function cellBatches(row: any) {
+  const refs = cellFileRefs(row.plan_ref);
+  if (!refs.length) return {};
+  const open: ReadonlyMap<string, OpenCellBatch> = row.cell_batches_open ?? new Map();
+  return { cellBatches: refs.map((ref): IntakeCellBatch => {
+    const child = open.get(ref.itemId);
+    if (!child) return { cellKey: ref.cellKey, caseId: null, itemId: null, state: null, placement: null };
+    return { cellKey: ref.cellKey, caseId: ref.caseId, itemId: ref.itemId,
+      state: child.state as IntakeCellBatch['state'], placement: child.placement as IntakeCellBatch['placement'] };
+  }) };
+}
+
 type ListedRow = { parent_item_id: string | null; source_id: string | null };
 
 /**
@@ -94,6 +133,7 @@ export function intakeItem(row: any) {
       ? { ifcJobId: row.plan_ref.ifcJobId } : {}),
     ...(IntakeItemSchema.shape.nativeReaderJobId.unwrap().safeParse(row.plan_ref?.nativeReaderJobId).success
       ? { nativeReaderJobId: row.plan_ref.nativeReaderJobId } : {}),
+    ...cellBatches(row),
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
 }

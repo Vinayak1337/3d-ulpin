@@ -86,3 +86,57 @@ test('one source of another access context or missing from the case still refuse
     await assert.rejects(missing.service.manifest(caseId), refused(404, 'NOT_FOUND'));
   });
 });
+
+/** CN1 protocol control: one wide parent whose cell files went to four child batches, each a different outcome. */
+function cellControl() {
+  const at = new Date('2026-10-22T00:00:00Z');
+  const child = (n: number) => ({ cellKey: `utm-20-e${n}-n12-l231-b270`, caseId: id(5, n), itemId: id(6, n),
+    sourceId: id(6, n) });
+  const refs = [1, 2, 3, 4].map(child);
+  const parent = { case_id: caseId, item_id: id(1, 0), source_id: id(1, 0), parent_item_id: null, member_path: null,
+    name: 'wide.geojson', family: 'vector', format: 'geojson', size_bytes: '4096', size_class: 'S', wave: 1,
+    state: 'read', placement: 'on_map', card: null, card_sha256: null, probe_version: null,
+    plan_ref: { recipeId: id(4, 1), recipeRevision: 1, recipeState: 'executed', origin: 'officer', packageId: null,
+      cellFiles: refs },
+    parts_planned: 1, parts_done: 1, records_seen: '9', limit_reason: null, pinned_by_officer: false,
+    created_at: at, updated_at: at };
+  // 1 opens; 2 belongs to another access context; 3's case is archived; 4 is no longer listed.
+  const childItems = refs.slice(0, 3).map((ref, index) => ({ item_id: ref.itemId, case_id: ref.caseId,
+    source_id: ref.sourceId, state: 'read', placement: 'on_map', archived: index === 2 }));
+  const childSources = refs.slice(0, 3).map((ref, index) => ({ ...sourceRow(ref.sourceId, index === 1
+    ? 'another-operator' : subject), case_id: ref.caseId }));
+  const statements: string[] = [];
+  const client = { query: async (sql: string, values: unknown[]) => {
+    statements.push(sql);
+    if (sql.includes('FROM cases')) return { rows: [{ id: caseId, revision: 1, archived: false }] };
+    if (sql.startsWith('SELECT i.*')) return { rows: [parent] };
+    if (sql.includes('JOIN cases c')) {
+      return { rows: childItems.filter(row => (values[0] as string[]).includes(row.item_id)) };
+    }
+    if (sql.includes('FROM sources') && values.length === 1) {
+      return { rows: childSources.filter(row => (values[0] as string[]).includes(row.id)) };
+    }
+    if (sql.includes('FROM sources')) return { rows: [sourceRow(parent.source_id, subject)] };
+    throw new Error(`Unexpected protocol SQL: ${sql}`);
+  } } as unknown as PoolClient;
+  return { service: new IntakeService({ transaction: async action => action(client) }), statements, refs };
+}
+
+test('CN1: a wide file links only the cell batches this officer may already open, in two more reads', async () => {
+  await configured(async () => {
+    const { service, statements, refs } = cellControl();
+    const manifest = await service.manifest(caseId);
+    assert.deepEqual(IntakeManifestSchema.parse(manifest), manifest);
+    const [item] = manifest.items;
+    assert.deepEqual(item.cellBatches, [
+      { cellKey: refs[0].cellKey, caseId: refs[0].caseId, itemId: refs[0].itemId, state: 'read', placement: 'on_map' },
+      ...refs.slice(1).map(ref => ({ cellKey: ref.cellKey, caseId: null, itemId: null, state: null,
+        placement: null })),
+    ]);
+    assert.equal(statements.length, 5);
+    assert.equal(item.plan?.recipeState, 'executed');
+    statements.length = 0;
+    const one = await service.one(caseId, id(1, 0));
+    assert.deepEqual(one.cellBatches, item.cellBatches);
+  });
+});

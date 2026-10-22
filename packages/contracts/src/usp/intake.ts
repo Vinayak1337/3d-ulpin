@@ -200,6 +200,14 @@ export const IntakeItemPlanSchema = z.strictObject({
   recipeState: z.enum(['proposed', 'approved', 'executed']),
   origin: z.enum(['memory', 'teacher', 'officer']).nullable(), packageId: z.string().uuid().nullable(),
 });
+/** CN1. One cell file of a wide file, kept as its own item in its own batch case. The case and item are named only
+ * when the officer may already open that batch; otherwise the entry names the cell and that it is a separate batch. */
+export const IntakeCellBatchSchema = z.strictObject({
+  cellKey: CellDerivativeLineageSchema.shape.cellKey,
+  caseId: z.string().uuid().nullable(), itemId: z.string().uuid().nullable(),
+  state: IntakeStateSchema.nullable(), placement: IntakePlacementSchema.nullable(),
+});
+export type IntakeCellBatch = z.infer<typeof IntakeCellBatchSchema>;
 export const IntakeItemSchema = z.strictObject({
   itemId: z.string().uuid(), sourceId: z.string().uuid().nullable(), caseId: z.string().uuid(),
   parentItemId: z.string().uuid().nullable(), memberPath: text.nullable(), name: text,
@@ -234,6 +242,10 @@ export const IntakeItemSchema = z.strictObject({
   nativeReaderJobId: z.string().uuid().optional().describe(
     'A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other '
     + 'item.'),
+  cellBatches: z.array(IntakeCellBatchSchema).max(CELL_DERIVATIVE_RULE.cells).optional().describe(
+    'CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with '
+    + 'that item\'s current state. caseId, itemId, state and placement are null when this officer may not open '
+    + 'that batch or it is unavailable. Absent for every other item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });

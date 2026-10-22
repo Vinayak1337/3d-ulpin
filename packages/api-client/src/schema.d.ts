@@ -65563,6 +65563,18 @@ export interface components {
              * @description A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other item.
              */
             nativeReaderJobId?: string;
+            /** @description CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with that item's current state. caseId, itemId, state and placement are null when this officer may not open that batch or it is unavailable. Absent for every other item. */
+            cellBatches?: {
+                cellKey: string;
+                /** Format: uuid */
+                caseId: string | null;
+                /** Format: uuid */
+                itemId: string | null;
+                /** @enum {string|null} */
+                state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                /** @enum {string|null} */
+                placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
+            }[];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -65853,6 +65865,18 @@ export interface components {
                  * @description A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other item.
                  */
                 nativeReaderJobId?: string;
+                /** @description CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with that item's current state. caseId, itemId, state and placement are null when this officer may not open that batch or it is unavailable. Absent for every other item. */
+                cellBatches?: {
+                    cellKey: string;
+                    /** Format: uuid */
+                    caseId: string | null;
+                    /** Format: uuid */
+                    itemId: string | null;
+                    /** @enum {string|null} */
+                    state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                    /** @enum {string|null} */
+                    placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
+                }[];
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */

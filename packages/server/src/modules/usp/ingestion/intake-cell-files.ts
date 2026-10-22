@@ -3,15 +3,17 @@ import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema, LARGE_ORIGINAL_LIMIT
   type CellDerivativeLineage } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { featureCell, featureExtent, measurableCrs, type SourceCrs } from './intake-package-extent';
+import type { CellFileRef } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
 
 export type CellFile = { key: string; ranges: CellFeatureRange[] };
 type RangeRead = (start: number, end: number) => Promise<Buffer>;
 type Parent = { id: string; revision: number; sha256: string; name: string; case_id: string; itemId: string };
+/** CN1: `children` names each retained cell's own case, source and item, so the parent's line can link them. */
 export type CellFileResult = {
   files: number; features: number; held: number; heldCells: number; cap: number;
-  byteHeld?: number; largeCells?: number;
+  byteHeld?: number; largeCells?: number; children: CellFileRef[];
 };
 export type CellFileDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: RangeRead;
@@ -151,6 +153,7 @@ async function keepCell(parent: Parent, cell: CellFile, caseId: string, name: st
 export async function retainCellFiles(parent: Parent, collector: CellFileCollector,
   metadata: Record<string, unknown>, dependencies: CellFileDependencies): Promise<CellFileResult> {
   let features = 0, files = 0, byteHeld = 0, largeCells = 0;
+  const children: CellFileRef[] = [];
   for (const cell of collector.cells.values()) {
     if (cellBytes(cell, metadata) > LARGE_ORIGINAL_LIMITS.maxOriginalBytes) {
       byteHeld += cell.ranges.length;
@@ -163,12 +166,17 @@ export async function retainCellFiles(parent: Parent, collector: CellFileCollect
     const { caseId } = await dependencies.createCase({ requestKey: key, name });
     const sourceId = await keepCell(parent, cell, caseId, name, metadata, dependencies);
     await dependencies.beat();
-    await dependencies.register(caseId, { sourceId, requestKey: key });
+    const registered = await dependencies.register(caseId, { sourceId, requestKey: key });
+    // The enrolment's own item, as its batch lists it; one per cell, at most the collector's cap.
+    const itemId = (registered as { itemId?: unknown } | null)?.itemId;
+    if (typeof itemId !== 'string') conflict('The cell file was enrolled without its batch item.');
+    children.push({ cellKey: cell.key, caseId, itemId, sourceId });
     features += cell.ranges.length;
     files++;
   }
   return { files, features, held: collector.heldFeatures + byteHeld,
-    heldCells: collector.heldCells.size, cap: collector.cap, ...(largeCells ? { byteHeld, largeCells } : {}) };
+    heldCells: collector.heldCells.size, cap: collector.cap, ...(largeCells ? { byteHeld, largeCells } : {}),
+    children };
 }
 
 export function cellFileWords(placed: number, result: CellFileResult) {

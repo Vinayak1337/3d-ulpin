@@ -32,6 +32,16 @@ export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned
   return null;
 }
 
+/** CN1. A wide file's features outside its first map area are kept in separate batches; never on this map. */
+export const CELL_BATCHES_WORDS = 'The features of this file outside its first map area are in these separate '
+  + 'batches, each with its own layout and cards.';
+export type CellBatch = NonNullable<IntakeItem['cellBatches']>[number];
+
+/** Only a batch the server named for this officer opens; any other shows its cell and that it is separate. */
+export function cellBatchPath(batch: CellBatch): string | null {
+  return batch.caseId ? `/studio/work/cases/${batch.caseId}/intake` : null;
+}
+
 export function stateWords(state: IntakeItem['state']) {
   return states[state];
 }

@@ -10,8 +10,8 @@ import { StoppedRetry } from './StoppedRetry';
 import { useSourceCase } from './table/queries';
 import { LayerCrsAnswers } from './LayerCrsAnswer';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
-  stateWords, packagePath, partProgressWords, opensPages } from './batch-model';
-import type { IntakeItem } from './batch-model';
+  stateWords, packagePath, partProgressWords, opensPages, CELL_BATCHES_WORDS, cellBatchPath } from './batch-model';
+import type { CellBatch, IntakeItem } from './batch-model';
 import { isIfcItem } from './ifc/structure-model';
 import styles from './Batch.module.css';
 
@@ -64,6 +64,24 @@ function NextStep({ caseId, item, items, packages, choose, refresh }: {
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
     {opensPages(item) ? <ReviewPages caseId={caseId} item={item} /> : null}
     {item.layerCrs?.length ? <LayerCrsAnswers caseId={caseId} item={item} refresh={refresh} /> : null}
+    {item.cellBatches?.length ? <CellBatches item={item} batches={item.cellBatches} /> : null}
+  </div>;
+}
+
+/** CN1. A wide file's cell files, each its own batch with its own layout and cards; none is on this batch's map. */
+function CellBatches({ item, batches }: { item: IntakeItem; batches: readonly CellBatch[] }) {
+  return <div className={styles.stack}>
+    <p className="ul-help">{CELL_BATCHES_WORDS}</p>
+    <ul aria-label={`Separate cell batches of ${item.name}`}>{batches.map((batch) => {
+      const path = cellBatchPath(batch);
+      const cell = <span className="ul-mono">{batch.cellKey}</span>;
+      return <li key={batch.cellKey}>
+        {path ? <Link to={path}>Open the batch of cell {cell}</Link> : <>Cell {cell}: a separate batch</>}
+        {batch.state && batch.placement
+          ? <p className="ul-help">In that batch: {stateWords(batch.state)} · {placementWords(batch.placement)}</p>
+          : null}
+      </li>;
+    })}</ul>
   </div>;
 }
 
