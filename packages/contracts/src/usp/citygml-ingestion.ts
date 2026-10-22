@@ -27,7 +27,7 @@ export const CityGMLSummarySchema=z.strictObject({schemaVersion:z.literal('ulpin
   elementCount:positive.max(25000),buildingAndPartCount:rev.max(25000),coordinateDeclarationCount:rev.max(25000),
   decodedCoordinateValueCount:rev.max(100000),referenceCount:rev.max(25000),unsupportedElementCount:rev.max(25000),
   unresolvedReferenceCount:rev.max(25000),findingCodes:z.array(z.enum(['UNSUPPORTED_CONTENT','REFERENCES_NOT_COMPOSED',
-    'DIMENSION_ABSENT','COORDINATE_DECLARATION_INCOMPLETE'])).max(4),
+    'ENVELOPE_CONFLICT','DIMENSION_ABSENT','COORDINATE_DECLARATION_INCOMPLETE'])).max(5),
   accuracy:z.literal('not_assessed'),validity:z.literal('not_assessed'),canonicalIdentity:z.literal('not_assessed'),
   analyticEligible:z.literal(false),registryAdmission:z.literal(false),learningLabels:z.literal(false),rights:z.literal('not_assessed')});
 /** Actual accepted CLI observations, kept separate from source-native projection. */

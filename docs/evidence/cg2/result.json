@@ -2,44 +2,188 @@
   "task": "CG2",
   "title": "CityGML protocol fixtures read by the current reader",
   "base": "3a58e579",
-  "status": "offline checks passed; no product code changed",
+  "status": "offline checks passed; CG2 changed no product code; CG2-b fixes the ENVELOPE_CONFLICT refusal",
   "cause": "CG1 (eaf43a25, 82a43559) changed services/geo/geo/native_citygml.py, so citygmlReaderSha() differs from the reader pin in journey-01; CityGMLResultSchema rightly refuses a result made by the old reader.",
   "fix": "journey-02 made by the current reader through the product path; the three tests read it through tests/citygml-journey.ts; journey-01 untouched",
   "journey": {
     "root": "E:/BhuAayam-data/task-data/desktop-citygml-private-api/journey-02",
     "readme": "E:/BhuAayam-data/task-data/desktop-citygml-private-api/journey-02/README.md",
-    "readerSha256": {"old": "8f3dc47b5ecbab65e3124b88684202f1119599c9bf617ec75fb63ab4a3d76511", "new": "ec3ddaedf8410cc13d94e0e2934b03fee1be86edbd2130a85b5ae670229e0166"},
-    "codeSha256": {"old": "319041a906b31bca05e1386c992e5a5ca8bad15062930d9b9ab0880e8074408d", "new": "d94c3d1881c2704711a633b2434a207ea68316f4d5ca58705667a86bac6b3c6e"},
-    "profile": {"path": "E:/BhuAayam-data/task-data/desktop-citygml-private-api/profile-02.json", "sha256": "5bbfdf2e8eb54f8e2a06037fd700b4e2e3689805c085779c9e497556fb6bea6e", "files": 3411},
+    "readerSha256": {
+      "old": "8f3dc47b5ecbab65e3124b88684202f1119599c9bf617ec75fb63ab4a3d76511",
+      "new": "ec3ddaedf8410cc13d94e0e2934b03fee1be86edbd2130a85b5ae670229e0166"
+    },
+    "codeSha256": {
+      "old": "319041a906b31bca05e1386c992e5a5ca8bad15062930d9b9ab0880e8074408d",
+      "new": "d94c3d1881c2704711a633b2434a207ea68316f4d5ca58705667a86bac6b3c6e"
+    },
+    "profile": {
+      "path": "E:/BhuAayam-data/task-data/desktop-citygml-private-api/profile-02.json",
+      "sha256": "5bbfdf2e8eb54f8e2a06037fd700b4e2e3689805c085779c9e497556fb6bea6e",
+      "files": 3411
+    },
     "command": "ULPIN_CITYGML_LOCAL_PROCESS=1 ULPIN_CITYGML_TEST_ROOT=<private-api>/reader-02 ULPIN_CITYGML_PROOF_DIR=<private-api>/journey-02 ULPIN_CITYGML_PROFILE=<private-api>/profile-02.json ULPIN_CITYGML_PROFILE_SHA256=5bbfdf2e... pnpm exec tsx --test --test-name-pattern \"two unchanged OGC\" tests/citygml-authority.test.ts",
     "commandExit": 0,
     "productArtifactEqualsDirectReaderRun": true
   },
   "samples": [
-    {"original": "Building_and_garage_LOD2-EPSG25832.gml", "role": "good", "sourceSha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a", "sourceBytes": 19499,
-      "artifact": {"old": "c075f2a686e45c80e0ef155a3d3b911346a4e3c0d9e73a5ed45722f59b707dd6", "new": "c2629e34133739db81aa1541d7114f4da3e862e4b79d3aba79aa52513b34a00a"},
-      "artifactBytes": {"old": 167401, "new": 179749}},
-    {"original": "Building_LOD1-LocalEngineeringCRS.gml", "role": "difficult", "sourceSha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e", "sourceBytes": 11158,
-      "artifact": {"old": "0c1061c377bd318efb7e27ba774f2990afc0b9ad9e53204d8cdd782ce795ce6f", "new": "0e3ffeb7fd5ba393a0254704f655a49f793e5ce141d0e7325d4c979e7d48efc4"},
-      "artifactBytes": {"old": 92114, "new": 96673}}
+    {
+      "original": "Building_and_garage_LOD2-EPSG25832.gml",
+      "role": "good",
+      "sourceSha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a",
+      "sourceBytes": 19499,
+      "artifact": {
+        "old": "c075f2a686e45c80e0ef155a3d3b911346a4e3c0d9e73a5ed45722f59b707dd6",
+        "new": "c2629e34133739db81aa1541d7114f4da3e862e4b79d3aba79aa52513b34a00a"
+      },
+      "artifactBytes": {
+        "old": 167401,
+        "new": 179749
+      }
+    },
+    {
+      "original": "Building_LOD1-LocalEngineeringCRS.gml",
+      "role": "difficult",
+      "sourceSha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e",
+      "sourceBytes": 11158,
+      "artifact": {
+        "old": "0c1061c377bd318efb7e27ba774f2990afc0b9ad9e53204d8cdd782ce795ce6f",
+        "new": "0e3ffeb7fd5ba393a0254704f655a49f793e5ce141d0e7325d4c979e7d48efc4"
+      },
+      "artifactBytes": {
+        "old": 92114,
+        "new": 96673
+      }
+    }
   ],
   "differences": [
-    {"original": "Building_and_garage_LOD2-EPSG25832.gml", "summary": "findingCodes [UNSUPPORTED_CONTENT, DIMENSION_ABSENT] -> [UNSUPPORTED_CONTENT]; status, counts and every other summary field unchanged",
-      "native": "13 of 28 coordinate declarations: tupleDimensionState absent -> declared, tupleDimension null -> 3 (inherited from the building envelope srsDimension 3)"},
-    {"original": "Building_LOD1-LocalEngineeringCRS.gml", "summary": "unchanged; DIMENSION_ABSENT remains (15 of 18 declarations have no effective srsDimension)",
-      "native": "no tuple dimension changes"},
-    {"original": "both", "summary": "unchanged by these", "native": "each coordinate srsName/srsDimension declaration gains effectiveDeclaration; semantics.referencePolicy text describes envelope inheritance; buildings and counts unchanged"}
+    {
+      "original": "Building_and_garage_LOD2-EPSG25832.gml",
+      "summary": "findingCodes [UNSUPPORTED_CONTENT, DIMENSION_ABSENT] -> [UNSUPPORTED_CONTENT]; status, counts and every other summary field unchanged",
+      "native": "13 of 28 coordinate declarations: tupleDimensionState absent -> declared, tupleDimension null -> 3 (inherited from the building envelope srsDimension 3)"
+    },
+    {
+      "original": "Building_LOD1-LocalEngineeringCRS.gml",
+      "summary": "unchanged; DIMENSION_ABSENT remains (15 of 18 declarations have no effective srsDimension)",
+      "native": "no tuple dimension changes"
+    },
+    {
+      "original": "both",
+      "summary": "unchanged by these",
+      "native": "each coordinate srsName/srsDimension declaration gains effectiveDeclaration; semantics.referencePolicy text describes envelope inheritance; buildings and counts unchanged"
+    }
   ],
   "checks": [
-    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/registry-citygml-citations.test.ts", "exit": 0, "pass": 2, "fail": 0},
-    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/source-fusion-citygml.test.ts", "exit": 0, "pass": 3, "fail": 0},
-    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/sufficiency-xml.test.ts", "exit": 0, "pass": 3, "fail": 0},
-    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test 'tests/*citygml*.test.ts'", "exit": 0, "pass": 13, "fail": 0, "skipped": 1, "skippedReason": "unconfigured native journey in citygml-authority.test.ts"},
-    {"command": "pnpm typecheck:backend", "exit": 0},
-    {"command": "git diff --check", "exit": 0}
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/registry-citygml-citations.test.ts",
+      "exit": 0,
+      "pass": 2,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/source-fusion-citygml.test.ts",
+      "exit": 0,
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/sufficiency-xml.test.ts",
+      "exit": 0,
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test 'tests/*citygml*.test.ts'",
+      "exit": 0,
+      "pass": 13,
+      "fail": 0,
+      "skipped": 1,
+      "skippedReason": "unconfigured native journey in citygml-authority.test.ts"
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
   ],
   "gaps": [
-    "tests/citygml-authority.test.ts configured native journey still compares against desktop-citygml-native/run-02-* (old reader) by default; it passes only with ULPIN_CITYGML_TEST_ROOT pointed at reader-02",
-    "citygml-processor native schema accepts only four finding codes; a file that yields CG1's ENVELOPE_CONFLICT finding would be refused at the summary step (not exercised by these two originals)"
-  ]
+    "test_native_citygml opaque-ADE test stays skipped: it needs the CITYGML_REVIEW_CONTROL reviewer folder, not named for this task",
+    "profile-02.json pins the worktree reader files and caches; an integrated checkout needs its own fresh profile"
+  ],
+  "followUp": {
+    "task": "CG2-b",
+    "envelopeConflict": {
+      "bug": "native_citygml.py (CG1) emits ENVELOPE_CONFLICT, but the CityGML summary enum lacked it and capped findings at 4, so citygmlSummary refused any such reading with a ZodError before acceptance",
+      "changed": [
+        "packages/contracts/src/usp/citygml-ingestion.ts: findingCodes enum adds ENVELOPE_CONFLICT, max 4 -> 5",
+        "packages/server/src/modules/usp/ingestion/citygml-processor.ts: native findings max 4 -> 5",
+        "packages/server/src/modules/usp/ingestion/source-fusion-citygml.ts: native findings max 4 -> 5",
+        "packages/contracts/src/source-fusion.ts: SourceFusionCityGMLSchema findings max 4 -> 5",
+        "docs/api/openapi.json, docs/api/source-pins.json, packages/api-client/src/schema.d.ts regenerated"
+      ],
+      "findingsSchemas": "processor native findings are z.object (extra elements/locators pass); source-fusion findings are literal JSON objects (elements array passes); sufficiency-xml reads CityGMLResultSchema",
+      "testFirst": {
+        "test": "packages/server/src/modules/usp/ingestion/citygml-processor.test.ts",
+        "input": "test-written test_only CityGML control: one Building with two envelopes (EPSG:25832, EPSG:28992)",
+        "before": "fail: ZodError invalid_value at findings[0].code in citygmlSummary",
+        "after": "pass: supervised reader CLI -> citygmlSummary -> CityGMLResultSchema (real supervision receipt) -> fusionCityGMLSourceProjection keeps the finding with its elements; outline not_converted with CG1 words (more than one envelope, stay unplaced)"
+      }
+    },
+    "authorityRoot": "tests/citygml-authority.test.ts default root -> CITYGML_READER_ROOT (reader-02); ULPIN_CITYGML_TEST_ROOT override kept; run-02 and journey-01 untouched",
+    "checks": [
+      {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc",
+        "exit": 0
+      },
+      {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+        "exit": 0,
+        "operations": 329,
+        "schemas": 372
+      },
+      {
+        "command": "pnpm studio:api-types",
+        "exit": 0
+      },
+      {
+        "command": "pnpm typecheck:backend",
+        "exit": 0
+      },
+      {
+        "command": "pnpm studio:typecheck",
+        "exit": 0
+      },
+      {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test 'tests/*citygml*.test.ts'",
+        "exit": 0,
+        "pass": 13,
+        "fail": 0,
+        "skipped": 1,
+        "skippedReason": "unconfigured native journey"
+      },
+      {
+        "command": "ULPIN_CITYGML_LOCAL_PROCESS=1 ULPIN_CITYGML_PROFILE=<private-api>/profile-02.json ULPIN_CITYGML_PROFILE_SHA256=5bbfdf2e... pnpm exec tsx --test --test-name-pattern \"two unchanged OGC\" tests/citygml-authority.test.ts (default root, no proof dir)",
+        "exit": 0,
+        "pass": 1
+      },
+      {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/citygml-processor.test.ts intake-native-derivative.test.ts intake-native-readers.test.ts",
+        "exit": 0,
+        "pass": 56,
+        "fail": 0
+      },
+      {
+        "command": "CITYGML_ORIGINALS=<originals> lv0 python -B -m pytest services/geo/tests/test_native_citygml.py services/geo/tests/test_citygml_outline.py",
+        "exit": 0,
+        "pass": 18,
+        "skipped": 1
+      },
+      {
+        "command": "git diff --check",
+        "exit": 0
+      }
+    ]
+  }
 }

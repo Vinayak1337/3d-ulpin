@@ -19,7 +19,7 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
   references:z.array(z.object({state:z.string(),cycleState:z.string()})).max(25000),
   counts:z.object({elements:count.max(25000),buildingsAndParts:count.max(25000),coordinateDeclarations:count.max(25000),
     decodedCoordinateValues:count.max(100000),references:count.max(25000)}),
-  findings:z.array(z.object({code:CityGMLSummarySchema.shape.findingCodes.element})).max(4),
+  findings:z.array(z.object({code:CityGMLSummarySchema.shape.findingCodes.element})).max(5),
   semantics:z.object({globalTransformApplied:z.literal(false),measurement:z.literal('not_assessed'),validity:z.literal('not_assessed'),
     canonicalIdentity:z.literal('not_assessed'),rights:z.literal('not_assessed'),floorsOrUnitsInferred:z.literal(false),externalResourcesResolved:z.literal(false)})});
 /** Derive small status from the actual unaltered native projection, not source labels. */
