@@ -1,5 +1,6 @@
 import { button, container, elements, propsOf, type FakeElement } from './fake-dom';
 import { act } from 'react';
+import { readFileSync } from 'node:fs';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router';
@@ -20,12 +21,12 @@ vi.mock('./batch-queries', async (original) => ({
 }));
 vi.mock('./table/queries', async (original) => ({
   ...await original<typeof import('./table/queries')>(), useSourceCase: () => ({ data: undefined, error: null }),
+  useTableProfile: () => ({ data: undefined, isPending: false }),
 }));
 vi.mock('./useBatchStream', () => ({ useBatchStream: () => ({ disconnected: false, error: '', reconnect() {} }) }));
 vi.mock('./LayoutQuestion', () => ({ LayoutQuestion: () => <section aria-label="Layout">Layout</section> }));
 vi.mock('./ifc/IfcStructure', () => ({ IfcStructure: () => <section aria-label="Structure">Structure</section> }));
 vi.mock('./PageImageQuestion', () => ({ PageImageQuestion: () => <section aria-label="Page image">Page</section> }));
-vi.mock('./BatchTableSection', () => ({ BatchTableSection: () => <section aria-label="Table">Table</section> }));
 vi.mock('./evidence/EvidenceByKey', () => ({ EvidenceByKey: () => <section aria-label="Evidence">Evidence</section> }));
 vi.mock('./run', () => ({ IntakeRunPanel: () => <p>Recording</p> }));
 vi.mock('./upload-api', () => ({
@@ -90,14 +91,59 @@ it('D1: the batch with several items, an item open and waiting words shows no Re
   const page = await renderBatch([twice, { ...twice }, { name: 'later.csv', sizeBytes: 1_024, words: null }]);
   await press(buttons(page.root, 'View layout')[0]!);
   const sections = elements(page.root).map((node) => node.getAttribute('aria-label'));
-  // The open item has its layout and table sections side by side: before D1 both carried the item id as key.
-  expect(sections).toEqual(expect.arrayContaining(['Files in this batch', 'Layout', 'Table', 'Evidence',
+  // Before D1, the layout and table section components both carried the item id as key.
+  expect(sections).toEqual(expect.arrayContaining(['Files in this batch', 'Layout', 'Evidence',
     'Files waiting before the reload']));
   expect(elements(page.root).filter((node) => node.tagName === 'LI' && node.textContent.includes('refused.geojson')))
     .toHaveLength(2);
   await press(buttons(page.root, 'View layout')[1]!);
   expect(keyWarnings()).toEqual([]);
   await page.unmount();
+});
+
+// test_only cards around real development files; no probe or ingestion result is asserted here.
+function tableItem(format: 'csv' | 'xlsx'): IntakeItem {
+  const name = format === 'csv' ? 'mi-d10-02.csv' : 'mi-d19-01.xlsx';
+  const bytes = readFileSync(new URL(`../../../../../fixtures/usp/D8-messy-india/dev/d1b/${name}`, import.meta.url));
+  return { ...second, sourceId: second.itemId, name, family: 'table', format, sizeBytes: bytes.length,
+    cardSha256: null, plan: null, placement: 'undecided', limitReason: null,
+    card: { ...first.card!, family: 'table', format, columns: [], geometryTypes: [], layers: [],
+      crs: { state: 'not_applicable', code: null, sidecarSha256: null },
+      extent: { native: null, epsg4326: null }, encoding: null, delimiter: format === 'csv' ? ',' : null,
+      counts: { features: null, rows: null, pages: null, members: null, points: null, bands: null },
+      citations: [], limits: [], probeBytesRead: 0, probeMs: 0,
+      sheets: format === 'xlsx' ? [{ name: 'T_18', count: null }] : [] } };
+}
+
+it.each(['csv', 'xlsx'] as const)('TS2: a map + unread %s batch opens the table without reading it', async (format) => {
+  const table = tableItem(format);
+  facts.items = [first, table];
+  facts.uploads = [];
+  const requests = vi.fn();
+  vi.stubGlobal('fetch', requests);
+  const page = await renderBatch([]);
+  try {
+    expect(buttons(page.root, 'Read as a table')).toHaveLength(0);
+    const row = elements(page.root).find((node) => node.tagName === 'TR' && node.textContent.includes(table.name))!;
+    const open = buttons(row, 'Open the table');
+    expect(open).toHaveLength(1);
+    expect(buttons(page.root, 'Open the table')).toHaveLength(1);
+    expect(open[0]!.getAttribute('aria-label')).toBe(`Open the table: ${table.name}`);
+    expect(open[0]!.getAttribute('type')).toBe('button');
+    expect(open[0]!.getAttribute('disabled')).toBeNull();
+    await press(open[0]!);
+    expect(elements(page.root).some((node) => node.getAttribute('aria-label') === `Table in ${table.name}`))
+      .toBe(true);
+    expect(buttons(page.root, 'Read as a table')).toHaveLength(1);
+    if (format === 'xlsx') {
+      const headers = elements(page.root).find((node) => node.getAttribute('aria-label') === 'Header row numbers')!;
+      expect(propsOf(headers).value).toBe('');
+      expect(page.root.textContent).toContain('T_18');
+    }
+    expect(requests).not.toHaveBeenCalled();
+  } finally {
+    await page.unmount();
+  }
 });
 
 it('D2: after a reload the notice drops each file once resumed and finished, cancelled, or in the batch', async () => {

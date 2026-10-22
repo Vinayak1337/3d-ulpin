@@ -2,6 +2,7 @@ import { Button, DataTable } from '@ulpin/ui';
 import { Link } from 'react-router';
 import { useOpenEvidence } from '../evidence/EvidenceContext';
 import type { Package } from './run/model';
+import { itemTableSource } from './BatchTableSection';
 import { needsLayoutAnswer } from './question-model';
 import { isPageImage } from './page-image-model';
 import { canRetryStopped } from './retry-command';
@@ -37,14 +38,15 @@ export function IntakeTray({ caseId, items, packages, choose, refresh }: {
       { header: 'Extent as stated', cell: (item) => item.card?.extent.native?.join(', ') ?? 'Not known' },
       { header: 'Placement', cell: (item) => placementWords(item.placement) },
       { header: 'Reason', cell: (item) => item.limitReason ?? null },
-      { header: 'Next step', cell: (item) => <NextStep caseId={caseId} item={item} packages={packages}
+      { header: 'Next step', cell: (item) => <NextStep caseId={caseId} item={item} items={items} packages={packages}
         choose={choose} refresh={refresh} /> },
     ]} />
   </div>;
 }
 
-function NextStep({ caseId, item, packages, choose, refresh }: {
-  caseId: string; item: IntakeItem; packages: readonly Package[]; choose: (item: IntakeItem) => void;
+function NextStep({ caseId, item, items, packages, choose, refresh }: {
+  caseId: string; item: IntakeItem; items: readonly IntakeItem[]; packages: readonly Package[];
+  choose: (item: IntakeItem) => void;
   refresh: () => void;
 }) {
   const path = packagePath(item, packages);
@@ -54,6 +56,8 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
     {item.existingAreaId ? <Link to={`/studio/areas/${item.existingAreaId}`}>Open that area</Link> : null}
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
+    {itemTableSource(item, items) ? <Button variant="soft" onClick={() => choose(item)}
+      aria-label={`Open the table: ${item.name}`}>Open the table</Button> : null}
     {isIfcItem(item) ? <Button variant="soft" onClick={() => choose(item)}>View structure</Button> : null}
     {isPageImage(item) ? <Button variant="soft" onClick={() => choose(item)}
       aria-label={`View page image: ${item.name}`}>View page image</Button> : null}

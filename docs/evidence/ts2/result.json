@@ -1,0 +1,43 @@
+{
+  "task": "TS2",
+  "gate": "P0 hygiene; AUD1 gap 1 Studio regression, no runtime gate claimed",
+  "base": "0af36554c1ac5efb43aa266777a943e46599981e",
+  "baseline": {
+    "command": "pnpm --filter @ulpin/studio test -- src/features/intake/batch-page.test.tsx",
+    "exit": 1,
+    "passed": 3,
+    "failed": 2,
+    "signature": "CSV and XLSX: expected Open the table row actions length 1, received 0",
+    "production_code_changed_at_reproduction": false
+  },
+  "change": {
+    "file": "apps/studio/src/features/intake/IntakeTray.tsx",
+    "behavior": "NextStep reuses itemTableSource(item, items) and opens eligible table details with choose(item)",
+    "accessibility": "Shared soft native button; filename-specific accessible name; existing focus styles",
+    "unchanged": ["BatchPage selection", "BatchTableSection", "table panel", "reader and approval commands"]
+  },
+  "inputs": {
+    "directory": "fixtures/usp/D8-messy-india/dev/d1b",
+    "good": "mi-d10-02.csv: real file metadata in a test_only table card, alongside captured GeoJSON facts",
+    "difficult": "mi-d19-01.xlsx: sheet T_18, no columns or selected header rows, alongside captured GeoJSON facts",
+    "scope": "Component regression controls around real development files, not live enrollment or byte parsing"
+  },
+  "verification": {
+    "regression": {"exit": 0, "passed": 5, "failed": 0},
+    "pnpm studio:typecheck": {"exit": 0},
+    "pnpm --filter @ulpin/studio test -- src/features/intake": {"exit": 0, "files": 37, "passed": 196},
+    "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging": {"exit": 0},
+    "git diff --check": {"exit": 0},
+    "invariants": [
+      "Only eligible table rows offer the new action in the map/table batches",
+      "No table is selected automatically in either multi-file regression",
+      "Selecting a table exposes the actual Read as a table form without any fetch request",
+      "Unread XLSX header rows remain empty; no read or mapping approval is submitted"
+    ],
+    "contract_scope": "No API changes; existing intake contract and BatchTableSection request tests pass",
+    "ui_report": "docs/evidence/ts2/ui-design-check.md"
+  },
+  "setup": "Initial test exit 1: missing node_modules; offline frozen install with scripts disabled exited 0",
+  "limits": "No Docker or live runtime used; browser keyboard/zoom and read-to-cited-card path not qualified",
+  "next": "Review and integrate; runtime owner to rehearse a mixed batch and officer-initiated table reading"
+}
