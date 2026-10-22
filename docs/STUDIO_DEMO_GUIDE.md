@@ -1,22 +1,22 @@
 # Studio live-demo presenter runbook
 
-> **Which runbook to use.** This version follows REH11's rehearsal of staging `065a323f` and later. While the demo
-> still serves `8d6e19fa` (check `git -C E:/Projects/ulpin-wt/demo log --oneline -1`), use the earlier runbook:
-> `git show c610922f:docs/STUDIO_DEMO_GUIDE.md`, where Act 1 imports the CSV separately and the footprint card is
-> proven (REH9).
+> This guide matches staging `4c278323` and later; if the demo still serves `8d6e19fa`, use `git show c610922f:docs/STUDIO_DEMO_GUIDE.md`.
 
 This replaces the September source-to-record walkthrough, its Lake View fictional example,
 legacy local-app address, and old intake limits. It is not a prepared-record tour.
 
 **Evidence boundary.** The owner wants a cleaned Studio, one drop of the NYC files, a cited card after
 one officer confirmation, then judges' unknown files without a code change.
-The committed rehearsal proves less. REH10 receipts now exist, but that run did not prove the linked card
-or surface drawing. REH11 rehearsed `065a323f`: the register joined the batch, exact-key evidence was
-confirmed and surfaces drew, but the cited card stopped with `REGISTRY_SOURCE_UNAVAILABLE`.
-Its runtime was not empty; no cited card or verification was produced. [H10] [H11]
+REH13 rehearsed staging `4c278323` on `ulpin-reh-02`: one drop went through the table, key evidence and one
+confirmation press to a cited, verified card and a footprint-only card, with no retry and no stop.
+REH11's stop (`REGISTRY_SOURCE_UNAVAILABLE`) was not seen. REH10 receipts now exist, but that run did not
+prove the linked card or surface drawing. [H10] [H11] [H13] [Card13]
 
-REH11 left the served demo unchanged. Its staging rehearsal is not a demo roll or proof of a clean start.
-The card fix (RC1) is in progress; REH12 will rehearse the next roll. [H11]
+REH13 left the served demo unchanged at `8d6e19fa` (doctor **28 PASS, 0 FAIL** before and after) and rolled
+its runtime back to `1a226949`. Its staging rehearsal is not a demo roll or proof of a clean start.
+RC1 is merged and REH12 ran; the next roll candidate is `4c278323` (RC2, RC3). Before that roll, the registry
+citation read checked by `journey:check` must stop refusing exterior-only records (HTTP 422 `INVALID_INPUT`);
+the Studio does not call that read. [H13]
 The architecture describes the intended flow, not a receipt that every part works. [Arch]
 
 ## 1. Thirty minutes before — check, do not rebuild
@@ -115,7 +115,7 @@ E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-lidar-2017.laz
 Say: **“These are public NYC development inputs, labelled test_only. We keep each original,
 show what it supports, and ask an officer before recording.”** [H9] [Arch]
 
-The timings below are REH11's separate measured intervals, not a promised total. [H11]
+The timings below are REH11's separate measured intervals, not a promised total; step 14 gives REH13's. [H11] [Act13]
 
 ### A. Work queue → retention dialog → batch
 
@@ -165,8 +165,8 @@ LAZ full completion was not qualified. Do not reuse REH9 completion times or wai
 
 10. Choose **Open the table: gpmc-yuvp.csv → Read as a table**, without choosing a separate case.
     After **0.165 s**: **“753 records · 9 columns”**, **“Draft”**, **“Needs review”**.
-    Tables produce mapped draft rows, not buildings. The tray's **“No reader in a batch takes this kind
-    of file yet”** is stale for this CSV; the table reading succeeded. [Table11]
+    Tables produce mapped draft rows, not buildings. The tray reads **“Kept as a CSV table (85 KB). Read it
+    as a table with "Open the table"; the original is kept with its SHA-256.”** [Table11] [Act13]
 11. Choose **Link a register by a key**. State namespace **“NYC building identification number (bin),
     as written in both files”**, kind **integer**, map field `/features/*/properties/bin`, table
     `gpmc-yuvp.csv` column **0**, `bin`; press **Declare the key**. Wait for
@@ -183,22 +183,47 @@ Say: **“A shared key proposes a link. This confirms evidence, not registry rec
 
 ### E. Ready targets → officer confirmation → card → verification
 
-12. Return to ready targets. Inspect package scope and exceptions, then tick a matched building whose
-    evidence was confirmed. REH11 chose **feature 1001960**, register **column bin, row 702**. [Card11]
+12. Return to ready targets. Inspect package scope and exceptions. The list first shows **200** of the
+    **1,661** buildings, one `feature <bin>` row each. Tick a building whose key is among the **100** accepted
+    in step 11: before confirming the evidence, note one key from the **Your decisions** list, then find
+    `feature <that key>` here. Press **Show more** if it is not in the first 200. A building outside the 100
+    can also be ticked, but its card cites only the footprint. REH13 ticked **feature 1084419** (accepted,
+    register row **444**) and **feature 1077455** (not among the 100). [H13] [Act13]
 13. In **Your acknowledgement**, state the source, scope, selected feature and `test_only` purpose.
     The confirmation button is **Record packages and make chosen cards**. [H8]
     Packages are recorded; chosen buildings are offered cards; other ready buildings in those packages
     are recorded without cards. Recording is not limited to the ticked building. [Act8]
-14. Press once after checking the full list. REH11 had **1,661 ready and 1,661 recorded**, but
-    **0 carded, 1 stopped**. The job stopped after **71.487 s**; stop words were observed by **96.512 s**:
-    **“Work stopped; the completed steps are kept. A cited source is not currently available.”**
-    Code: **REGISTRY_SOURCE_UNAVAILABLE**. No card, quoted register row or verification resulted. [Card11]
+    REH13 read **“The 2 chosen buildings will then get a snapshot, an evidence plan and packet, and a property
+    card made and verified without another press. 1661 ready buildings will be recorded.”** [Act13]
+14. Press once after checking the full list. REH13 pressed once, with no retry: **1,661 recorded,
+    2 carded, 0 stopped**. Recorded showed **94.709 s** after the press, the first card **115.841 s**, both
+    cards **212.291 s**. On the server, confirmation to card took **188.74 s** (cited) and **112.023 s**
+    (footprint-only). The batch ended at **“0 being prepared · 0 ready · 1659 recorded · 2 card made and
+    verified · 0 stopped”**; a card row reads **“Its property card is made and verified. Open card PDF ·
+    Verification · Card consistent”**. [Card13] [Act13] [H13]
 
-**Card step: last proved at REH9 on the served demo commit; REH12 will re-prove it on the next roll**.
-That historical card cited only the footprint, not the LPC register. Do not claim the cited card works on
-staging. RC1 is in progress; do not retry this structural refusal or substitute a feature-only card. [H9] [Card11]
+**Card step: proved on staging `4c278323` at REH13, not yet on the served demo.**
+The cited card (feature 1084419) quotes LPC register row **444** of `gpmc-yuvp.csv` (`bin 1084419`,
+**83 Leonard Street**, Italianate, 1860–1865) beside its footprint citation; the quoted row matches line 444
+of the original CSV, all 9 fields. Its verification page says **Consistent**, **6 of 6 passed**, snapshot
+same revision, signature **not assessed**. The footprint-only card (feature 1077455) cites only
+`buildings-original.geojson` and is also **Consistent, 6 of 6 passed**. Both card PDFs were served.
+On the served demo `8d6e19fa` the card step was last proved at REH9, citing only the footprint. [Act13] [Card13] [H9]
 
-Say: **“The completed steps are kept. Here is the confirmed evidence; the cited card step stopped.”**
+Say: **“One confirmation recorded the buildings and made two cards. This one quotes the confirmed register
+row beside its footprint, and its verification is consistent; the signature is not assessed. The register row
+is evidence; it states no right or owner.”**
+
+### What the presenter will see that is not finished
+
+- The cited building's record page shows **“Building 1084419 · Reviewed”** with **“Property Card: Blocked:
+  select a unit with an assigned proposed code”**, and its Documents tab lists only
+  `buildings-original.geojson` feature 1084419, not the register row. Both are being fixed on a separate
+  branch. Open the card from the batch's **Open card PDF** and **Verification** instead. [Act13]
+- The confirmation progress shows the cited record at revision **1**, while the card is built on revision
+  **2**, the revision that carries the confirmed evidence. Read the revision from the card. [Act13]
+- The card PDF's QR code resolves only on the machine that made it; the PDF says so. Do not invite judges
+  to scan it. [Act13]
 
 ## 3. Act 2 — judges' unknown data, without a code change
 
@@ -301,17 +326,20 @@ Older failures remain historical boundaries, not REH11's outcome. Use the runtim
   Do not truncate the source. Use the batch's package and card results; move closer if the map offers it. [H8]
 - **“Showing 15,000 buildings in view, the most drawn at once; move closer to see the rest.”**
   Say the view is bounded, not the source. Heavy-map stalls were observed with software WebGL. [Act8]
-  Return to the batch if drawing stalls. REH11's whole-map worst frame was **467 ms**;
-  after map open it was **183 ms**, with **2 frames over 100 ms**. No zero-stall claim. [Frames11]
+  Return to the batch if drawing stalls. REH13's worst frame after map open was **167 ms**, with
+  **10 frames over 100 ms**; over the whole run the batch page's worst was **850 ms** and the map page's
+  **617 ms**. No zero-stall claim. [Frames13]
 - **“Area: not supplied by the record”**, or buildings shown under an unexpected area name.
   Read the source citation; do not infer legal or geographical membership from that label. REH8 saw this. [H8]
 - **“Property Card: Blocked: select a unit with an assigned proposed code”** despite a completed batch card.
   Use the card result and verification link from the batch. Do not invent a unit or assign a code to bypass it.
   REH8's card also printed **“Unavailable: Not supplied by the executed text/CSV profile”** for geometry;
   that wording did not establish geometry from its map source. [H8] [Act8]
+  REH13 saw the same blocked line on the cited building's record page. [Act13]
 - **REGISTRY_SOURCE_UNAVAILABLE — “Work stopped; the completed steps are kept. A cited source is not
-  currently available.”** Do not retry. Say the completed steps are kept and show the confirmed evidence
-  instead. Preserve the batch address for the runtime owner. No rehearsed Studio recovery produced a card. [Card11]
+  currently available.”** REH11 stopped here; REH13 did not see it. If it appears, do not retry.
+  Say the completed steps are kept and show the confirmed evidence instead. Preserve the batch address
+  for the runtime owner. In REH11 no card, quoted register row or verification resulted. [Card11] [H13]
 - **Live connection churn or console warnings.** There may be no useful on-screen error.
   REH8 fell back to polling; REH9 logged **“Encountered two children with the same key”**.
   Stay on the batch if saved progress moves. Do not re-confirm or re-import to cure a display problem. [H8] [H9]
@@ -340,22 +368,29 @@ the gap. Truncated or invalid model output is not a candidate fact to approve. [
   Rights remain **“Not assessed”**. [Act8]
 - **“Consistent”** is the implemented verification result, not a trusted-signature verdict.
   Keep **“signature not assessed”** visible. [H9]
-- Do not claim LAZ full completion: it stopped at **6 of 211 batches**. Do not claim all frames stayed below
-  **100 ms**: worst after map open was **183 ms**, with **2 frames over 100 ms**. [Surface11] [Frames11]
+- Do not claim LAZ full completion: when REH13's cards showed it had read **1 of 211 batches** (**2 of 211**
+  at its final read). Do not claim all frames stayed below **100 ms**: REH13's worst after map open was
+  **167 ms**, with **10 frames over 100 ms**. [Act13] [State13] [Frames13]
 - Do not claim one evidence confirmation accepts the whole file: only the first **100** exact matches per
   confirmation; REH11 left **512** unconfirmed, plus conflicts and unmatched rows unresolved. [Key11]
-- Do not say “any format, any size”, “everything entered in one drop”, “nothing froze”,
-  “empty start proved” or “LPC evidence on this card”.
+- Do not say “any format, any size”, “everything entered in one drop”, “nothing froze”
+  or “empty start proved”. Say “LPC evidence on this card” only for the cited card: it quotes the LPC row
+  as officer-confirmed evidence that states no right or owner. The footprint-only card has none.
   Only make a scoped claim that today's retained results establish.
-  [H8] [H9]
+  [H8] [H9] [H13]
 
 Close with: **“We showed what the sources support, what the officer reviewed, and what remains unknown.
 A kept file, a proposal and a recorded fact are deliberately different.”**
 
 ## Evidence key
 
-REH11 receipt fields (each reference below names its file and JSON field):
+Receipt fields (each reference below names its file and JSON field):
 
+[H13]: evidence/runtime/reh13/result.json "servedCommit; rolledBackTo; demo; failures; runbookCorrections; verdict"
+[Card13]: evidence/runtime/reh13/result.json "act1.cards; act1.retryPressed; act1.confirmationsPressed"
+[Act13]: evidence/runtime/reh13/act1.json "steps; cited; footprintOnly; recordPage; surfacesAtCards"
+[State13]: evidence/runtime/reh13/final-state.json "items"
+[Frames13]: evidence/runtime/reh13/result.json "frames.afterMapOpen; frames.batchPage; frames.mapPage"
 [H10]: evidence/runtime/reh10/report.md
 [H11]: evidence/runtime/reh11/result.json "servedCommit; runtimeNotEmpty; roll.gateway; demo; verdict"
 [Demo11]: evidence/runtime/reh11/demo-after.json "doctor.output; doctor.exit"
