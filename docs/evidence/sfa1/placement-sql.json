@@ -1,0 +1,4 @@
+{ "before": { "exit": 3, "targetParameterType": "text", "error": [ "ERROR:  could not parse proj string '32618'",
+"CONTEXT:  SQL function \"st_transform\" statement 1" ] }, "after": { "exit": 0, "targetParameterType": "integer",
+"placed": true, "xs": [ -97.40420058276504, 159.10579941479955 ], "ys": [ 141.38551485911012, -144.47448514495045 ] },
+"rawReceipt": "E:/BhuAayam-data/task-data/sfa1/raw-receipts/placement-sql.json" }

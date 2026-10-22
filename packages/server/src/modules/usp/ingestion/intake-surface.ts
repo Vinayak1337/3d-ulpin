@@ -385,14 +385,20 @@ const older = 'This part was read under an older batch context, so it is not sho
 /**
  * SF1 D1. The bounds of the batch's drafted footprint packages in its area, in the area's local frame: the
  * package extent the recording step merges into the area's extent (areas.ts commitPackage). Recorded packages are
- * already in that extent; source workspaces, quarantined and geometry-free packages give none. No package gives
- * null, never a zero box.
+ * already in that extent; source workspaces and packages with no accepted geometry give none. A package's
+ * reconstruction case may differ from the intake case: follow its item/part link, as the target listing does.
+ * Partial quarantine keeps the accepted features' bounds. No package gives null, never a zero box.
  */
 const draftedBounds = `LEFT JOIN LATERAL (SELECT CASE WHEN count(*)>0 THEN jsonb_build_array(
     min((p.body->'extent'->>0)::float8),min((p.body->'extent'->>1)::float8),
     max((p.body->'extent'->>2)::float8),max((p.body->'extent'->>3)::float8)) END AS extent
-  FROM import_packages p WHERE p.case_id=c.id AND p.area_id=a.id AND p.state<>'COMMITTED'
-    AND NOT p.body ? 'sourceWorkspace' AND NOT p.body ? 'quarantine'
+  FROM import_packages p WHERE p.area_id=a.id AND p.state<>'COMMITTED' AND EXISTS (
+    SELECT 1 FROM usp_intake_items anchor WHERE anchor.case_id=c.id AND (
+      anchor.plan_ref->>'packageId'=p.id::text OR EXISTS (
+        SELECT 1 FROM usp_intake_parts part WHERE part.item_id=anchor.item_id
+          AND part.state='published' AND part.result_ref->>'packageId'=p.id::text)))
+    AND NOT p.body ? 'sourceWorkspace'
+    AND (NOT p.body ? 'quarantine' OR (p.body->'quarantine'->>'accepted')::integer>0)
     AND CASE WHEN jsonb_typeof(p.body->'extent')='array' THEN jsonb_array_length(p.body->'extent')=4
       AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(p.body->'extent') v WHERE jsonb_typeof(v)<>'number')
       ELSE false END) d ON true`;
@@ -445,7 +451,7 @@ async function localPartsTx(client: PoolClient, frame: Frame, parts: number[][][
       array_agg(ST_Y(t.p) ORDER BY c.n) ys,ST_Intersects(ST_SetSRID(ST_Envelope(ST_Collect(t.p)),0),
       ST_MakeEnvelope($8,$9,$10,$11,0)) meets
     FROM unnest($1::float8[],$2::float8[],$3::int[]) WITH ORDINALITY c(x,y,part,n),
-      LATERAL (SELECT ST_Translate(ST_Transform(ST_SetSRID(ST_MakePoint(c.x,c.y),$4),$5),
+      LATERAL (SELECT ST_Translate(ST_Transform(ST_SetSRID(ST_MakePoint(c.x,c.y),$4),$5::integer),
         -($6::float8),-($7::float8)) p) t
     GROUP BY c.part ORDER BY c.part`,
   [flat.map(c => c[0]), flat.map(c => c[1]), flat.map(c => c[2]), frame.from, frame.to, ox, oy, x0, y0, x1, y1]))

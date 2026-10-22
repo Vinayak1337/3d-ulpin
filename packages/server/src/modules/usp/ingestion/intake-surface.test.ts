@@ -221,6 +221,45 @@ test('a part whose corners meet the batch area is on the map; the item follows',
   assert.deepEqual(placed.corners.map((c: number[]) => c.map(v => Math.round(v))), [[-97, 141], [159, -144]]);
 });
 
+test('placement binds the target EPSG code as an integer, never as a PROJ definition', async () => {
+  const { client, item } = ledger(area([-200, -200, 200, 200]));
+  await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value: lazFirstBatch(), extent: lazBox });
+  let transformed = false;
+  const checked = { query: (sql: string, values: unknown[]) => {
+    if (sql.startsWith('SELECT c.part,array_agg')) {
+      // PostgreSQL resolves an untyped second ST_Transform argument to text, not the EPSG integer overload.
+      assert.match(sql, /ST_Transform\(ST_SetSRID\(ST_MakePoint\(c\.x,c\.y\),\$4\),\$5::integer\)/);
+      assert.equal(values[4], 6347);
+      transformed = true;
+    }
+    return client.query(sql, values);
+  } } as unknown as PoolClient;
+  const placed = await surfacePartPlacementTx(checked, caseId, item.plan_ref.header,
+    [[lazBox[0], lazBox[3]], [lazBox[2], lazBox[1]]]);
+  assert.equal(placed.state, 'placed');
+  assert.equal(transformed, true);
+});
+
+test('drafted bounds follow the intake package link and keep partially accepted geometry', async () => {
+  const { client, item } = ledger({ ...area([0, 0, 0, 0]), extent: null, drafted: [-200, -200, 200, 200] });
+  await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value: lazFirstBatch(), extent: lazBox });
+  const checked = { query: (sql: string, values: unknown[]) => {
+    if (sql.startsWith('SELECT a.id')) {
+      assert.doesNotMatch(sql, /p\.case_id=c\.id/);
+      assert.match(sql, /anchor\.case_id=c\.id/);
+      assert.match(sql, /anchor\.plan_ref->>'packageId'=p\.id::text/);
+      assert.match(sql, /part\.state='published' AND part\.result_ref->>'packageId'=p\.id::text/);
+      assert.match(sql, /NOT p\.body \? 'quarantine' OR \(p\.body->'quarantine'->>'accepted'\)::integer>0/);
+    }
+    return client.query(sql, values);
+  } } as unknown as PoolClient;
+  const placed = await surfacePartPlacementTx(checked, caseId, item.plan_ref.header,
+    [[lazBox[0], lazBox[3]], [lazBox[2], lazBox[1]]]);
+  assert.equal(placed.state, 'placed');
+});
+
 test('a part read outside the batch area is not on the map, and says so', async () => {
   const { client, item } = ledger(area([5000, 5000, 6000, 6000]));
   await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
