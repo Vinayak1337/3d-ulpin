@@ -13,6 +13,7 @@ import { locateZipMember, readZipMember, streamZipMember }
 import { queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE }
   from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
+import { listedIntakeRows } from '../packages/server/src/modules/usp/ingestion/intake-ledger';
 import { AppError } from '../packages/server/src/infrastructure/errors';
 import { geojsonInventory } from '../packages/server/src/modules/usp/ingestion/registry';
 
@@ -917,3 +918,43 @@ test('a KMZ whose overlay image its KML references queues no fan-out; the image 
   assert.equal(await fixture.queue(), null);
   assert.equal(fixture.retained.length, 0);
 });
+
+/** ZP2. Enrolment as intake registration writes it: the kept source's own top-level item, keyed by the source. */
+function enrolInto(ledger: Ledger, refuse = (_sourceId: string) => false) {
+  return async (_caseId: string, input: { sourceId: string }) => {
+    if (refuse(input.sourceId)) throw new AppError(503, 'INTAKE_BUSY', 'not stored');
+    ledger.rows.set(input.sourceId, { item_id: input.sourceId, case_id: ledger.caseId, source_id: input.sourceId,
+      parent_item_id: null, member_path: null, state: 'probed' });
+    return {};
+  };
+}
+
+test('a ZIP with three members taken out lists three items plus the archive, not six', () =>
+  configured(async () => {
+    const files = { 'a.kml': Buffer.from('<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>'),
+      'b.geojson': real['uttam/block-boundary.geojson'], 'c.csv': Buffer.from('key,value\na,b\n') };
+    const fixture = await layersJob(zipSync(files));
+    await fixture.run((await fixture.queue())!, { register: enrolInto(fixture.ledger) });
+    const rows = [...fixture.ledger.rows.values()];
+    assert.equal(rows.length, 7);
+    const listed = listedIntakeRows(rows).map(row => row.item_id);
+    assert.deepEqual(listed.sort(), [fixture.ledger.itemId, ...fixture.retained.map(file => file.sourceId)].sort());
+    assert.match(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason, /^3 members\. .* taken out/);
+  }));
+
+test('a member not taken out, or kept but not enrolled, lists once with its own words', () =>
+  configured(async () => {
+    const files = { 'a.csv': Buffer.from('key,value\na,b\n'),
+      'b.geojson': real['uttam/block-boundary.geojson'], 'c.csv': Buffer.from('key,value\nc,d\n') };
+    const fixture = await layersJob(zipSync(files), { failRetain: name =>
+      name === 'b.geojson' ? new AppError(422, 'GEOJSON_INVALID', 'not stored') : null });
+    const named = (sourceId: string) => fixture.retained.find(file => file.sourceId === sourceId)?.name;
+    await fixture.run((await fixture.queue())!,
+      { register: enrolInto(fixture.ledger, sourceId => named(sourceId) === 'c.csv') });
+    const listed = listedIntakeRows([...fixture.ledger.rows.values()]);
+    const [kept, refused, unenrolled] = ['a.csv', 'b.geojson', 'c.csv'].map(path => fixture.ledger.member(path));
+    assert.deepEqual(listed.map(row => row.item_id).sort(),
+      [fixture.ledger.itemId, kept.source_id, refused.item_id, unenrolled.item_id].sort());
+    assert.match(refused.limit_reason, /^GEOJSON_INVALID: this member stays inside the archive/);
+    assert.match(unenrolled.limit_reason, /^INTAKE_BUSY: this member is kept as its own original but was not/);
+  }));

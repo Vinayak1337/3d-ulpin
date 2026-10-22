@@ -1,5 +1,8 @@
+import { QueryClient, QueryObserver } from '@tanstack/react-query';
 import { ApiError } from '@ulpin/api-client';
 import { afterEach, expect, it, vi } from 'vitest';
+import { resumeDelay } from './batch-events';
+import { rereadQuery } from './batch-queries';
 import { createCaseSubscriptions } from './case-subscription';
 import { readCaseStream, takeFrames, type CaseFrame } from './stream-reader';
 
@@ -129,4 +132,44 @@ it('parses complete SSE frames and preserves a chunk boundary; refused HTTP read
   vi.stubGlobal('fetch', vi.fn(async () => Response.json({ error: { message: 'Reader occupied.' } }, { status: 429 })));
   await expect(readCaseStream('/events', new AbortController().signal, vi.fn(), vi.fn()))
     .rejects.toMatchObject({ status: 429, message: 'Reader occupied.' });
+});
+
+it('a refused cursor (409) re-reads the batch at once and resumes at the head, never waiting over five seconds',
+  async () => {
+    const run = harness();
+    const tray = run.consumer();
+    const leave = run.subscriptions.subscribe('case', tray);
+    run.streams[0]!.opened();
+    run.streams[0]!.frame({ kind: 'resync', id: '', data: { kind: 'resync', headCursor: '71' } });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(run.streams[1]!.path).toBe('/api/v1/ingestion/cases/case/events?cursor=71');
+    const reads = tray.refresh.mock.calls.length;
+    run.streams[1]!.fail(new ApiError(409, '', { error: { code: 'INGESTION_RESYNC',
+      message: 'Refresh the current case records before opening a new stream.' } }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(tray.refresh).toHaveBeenCalledTimes(reads + 1);
+    expect(tray.status).not.toHaveBeenCalledWith(expect.objectContaining({ disconnected: true }));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(run.streams[2]!.path).toBe('/api/v1/ingestion/cases/case/events');
+    expect([0, 1, 2, 3, 9].map(resumeDelay)).toEqual([1000, 2000, 4000, 5000, 5000]);
+    leave();
+  });
+
+it('a change during a read in flight is read again after it, so the tray shows the new state', async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  let server = 'member listed twice';
+  const answers: (() => void)[] = [];
+  const queryFn = () => new Promise<string>(resolve => {
+    const seen = server;
+    answers.push(() => resolve(seen));
+  });
+  const observer = new QueryObserver(client, { queryKey: ['intake', 'case'], queryFn });
+  const stop = observer.subscribe(() => {});
+  server = 'member listed once';
+  rereadQuery(client, ['intake', 'case']);
+  answers[0]!();
+  await vi.waitFor(() => expect(answers).toHaveLength(2));
+  answers[1]!();
+  await vi.waitFor(() => expect(client.getQueryData(['intake', 'case'])).toBe('member listed once'));
+  stop();
 });

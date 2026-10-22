@@ -23,3 +23,8 @@ export const INTAKE_SILENCE_MS = 5000;
 export function silenceDelay(lastEventAt: number, now: number) {
   return Math.max(INTAKE_SILENCE_MS - (now - lastEventAt), 0);
 }
+
+/** ZP2. The wait before a stream that refused its cursor opens again: 1, 2 and 4 seconds, then never over 5. */
+export function resumeDelay(attempt: number) {
+  return Math.min(1000 * 2 ** attempt, INTAKE_SILENCE_MS);
+}
