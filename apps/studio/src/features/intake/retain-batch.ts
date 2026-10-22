@@ -2,7 +2,7 @@ import { api, ApiError, unwrap } from '@ulpin/api-client';
 import { createSourceCase } from './table/retain';
 import { createUploadCommand } from './upload-command';
 import { uploadTransport } from './upload-api';
-import { type UploadProgress } from './upload-model';
+import { LARGE_UPLOAD_MINIMUM, type UploadProgress } from './upload-model';
 
 export interface FileOutcome {
   name: string;
@@ -29,9 +29,31 @@ export async function batchCase(mode: 'existing' | 'create', caseId: string, nam
   return detail.case.id;
 }
 
-/** Every batch file is kept through /uploads; only the server reads its stored bytes to choose a reader. */
-export function viaUpload(_file: File) {
-  return true;
+async function retainMap(caseId: string, file: File) {
+  const detail = unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } }));
+  const body = new FormData();
+  body.set('file', file);
+  body.set('requestKey', crypto.randomUUID());
+  body.set('expectedWorkspaceRevision', String(detail.case.revision));
+  // A ZIP of layers is kept whole; enrolling it keeps each GeoJSON member as its own original and item.
+  if (/\.zip$/i.test(file.name)) {
+    return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/archives', {
+      params: { path: { caseId } }, body: body as never,
+      bodySerializer: (value) => value as unknown as FormData,
+    })).sourceId;
+  }
+  body.set('format', 'geojson');
+  const profile = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources', {
+    params: { path: { caseId } }, body: body as never,
+    bodySerializer: (value) => value as unknown as FormData,
+  }));
+  if (profile.version !== 'manual-geojson/1') throw new Error('The server did not return a map file profile.');
+  return profile.source.sourceId;
+}
+
+/** A small GeoJSON or ZIP keeps its bounded route; every other original, of any size, is kept through /uploads. */
+export function viaUpload(file: File) {
+  return file.size >= LARGE_UPLOAD_MINIMUM || !/\.(geojson|json|zip)$/i.test(file.name);
 }
 
 interface RetainOptions {
@@ -40,7 +62,14 @@ interface RetainOptions {
 }
 
 async function retainOriginal(caseId: string, file: File, progress: (upload: UploadProgress) => void,
-  options?: RetainOptions) {
+  onRefusal: (message: string) => void, options?: RetainOptions) {
+  if (!viaUpload(file)) {
+    try { return await retainMap(caseId, file); }
+    catch (error) {
+      if (!(error instanceof ApiError) || ![413, 422].includes(error.status)) throw error;
+      onRefusal(error.message);
+    }
+  }
   const command = createUploadCommand({ file, acquiredAt: options?.acquiredAt ?? new Date().toISOString(),
     transport: uploadTransport(caseId), publish: progress });
   options?.active(command);
@@ -60,9 +89,13 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
       sourceId = await retainOriginal(caseId, file, upload => {
         rows[index] = { ...rows[index]!, upload };
         publish([...rows]);
+      }, message => {
+        rows[index] = { ...rows[index]!, message };
+        publish([...rows]);
       }, options);
       if (!sourceId) {
-        rows[index] = { ...rows[index]!, state: 'not_enrolled', message: 'Upload cancelled.' };
+        rows[index] = { ...rows[index]!, state: 'not_enrolled',
+          message: [rows[index]!.message, 'Upload cancelled.'].filter(Boolean).join(' ') };
         publish([...rows]);
         continue;
       }
@@ -74,7 +107,8 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
       // A lost response is not a refusal and must never be described as one.
       const refused = !sourceId && error instanceof ApiError && error.status >= 400 && error.status < 500;
       rows[index] = { ...rows[index]!, sourceId, state: refused ? 'refused' : 'not_enrolled',
-        message: error instanceof Error ? error.message : 'The file outcome is not known.' };
+        message: [rows[index]!.message, error instanceof Error ? error.message : 'The file outcome is not known.']
+          .filter(Boolean).join(' ') };
     }
     publish([...rows]);
   }

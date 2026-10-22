@@ -2,31 +2,35 @@
   "task": "RT1",
   "gate": "GF1 / AUD1 gap 4",
   "base": "0af36554",
-  "status": "unit_and_protocol_checks_passed_runtime_unwalked",
-  "commits": ["e165cf2f", "2a2910f4"],
+  "reviewRound": 2,
+  "reviewBase": "6a1d09a0",
+  "status": "round2_routing_passed_pdf_checks_wait_for_evf1_runtime_unwalked",
+  "priorCommits": ["e165cf2f", "2a2910f4", "6a1d09a0"],
   "delivery": {
-    "batch": "Every filename uses uploads, finalizes its immutable original, then enrolls its source.",
-    "reader": "The existing stored-byte probe selects the family; names are hints, never browser reader choices.",
+    "batch": "Small GeoJSON/JSON keeps /sources; small ZIP keeps /intake/archives. Only a 413/422 refusal falls back to /uploads, then enrolls the same file.",
+    "refusal": "The first refusal's words are published on the row and survive upload progress, enrollment, cancellation or a later error. Other errors and lost responses never switch routes.",
+    "reader": "For uploaded originals the existing stored-byte probe selects the family; names are hints, never reader evidence.",
     "bounded": "A retained GeoJSON of at most 16 MiB and 2000 features reuses the existing bounded profile.",
-    "dense": "A small 2500-feature collection bypasses bounded refusal and queues the existing streaming chain.",
+    "dense": "A small 2500-feature collection queues the existing streaming chain after the bounded route's refusal and upload fallback.",
     "tables": "Table selections require matching byte kind before either the bounded parser or stream job.",
     "words": "The item response prefixes the stored reader reason with the name/content disagreement.",
-    "authority": "Upload source, profile, object key and original evidence stay unchanged; metadata adds the adapter."
+    "authority": "Upload source, profile, object key and original evidence stay unchanged; metadata adds the adapter. Successful /sources intake still produces geojson-manual-v1."
   },
   "studioSeam": {
     "file": "apps/studio/src/features/intake/retain-batch.ts",
-    "lines": "5, 32-35 and removal of the name-route branch at the start of retainOriginal (42-44)",
-    "note": "The former retainMap block was removed. The retainBatch progress loop is unchanged."
+    "restored": "retainMap and viaUpload are identical to the merge-base versions.",
+    "changed": "retainOriginal catches only ApiError 413/422 before using uploads. retainBatch publishes the first refusal message and preserves it beside later outcome words.",
+    "unchanged": "Upload progress, command activation, sequential retention and enrollment behavior are unchanged. No DOM or CSS changes."
   },
   "ancillarySeams": {
     "intake-ledger.ts": "Expose disagreement words through the existing limitReason field, without stored rewrites.",
     "retained-map-original.ts": "Admit the bounded adapter only with matching upload hash and byte authority.",
     "intake-draft-worker.ts": "Keep contained-layout memory available for bounded originals retained through uploads.",
-    "document-worker.ts": "Read bounded upload-backed PDFs through storage streams; readObject rejects their keys."
+    "document-worker.ts": "Restored exactly to git merge-base HEAD origin/staging (0af36554); no net diff. EVF1's storage readRetainedOriginal integration is deliberately left to the lead's merge."
   },
   "inputs": [
     {"path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
-      "role": "good real input; bounded GeoJSON reader unchanged"},
+      "role": "good real input; 1103282 bytes; Studio still posts /sources and enrolls without uploading; server bounded reader unchanged"},
     {"path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
       "role": "REH9 CSV table reader unchanged; bounded retain and replay executed with protocol storage"},
     {"path": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-ortho-2018.tif",
@@ -35,24 +39,27 @@
       "role": "REH9 point-batch selection unchanged"},
     {"path": "E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/",
       "filename": "bihar-magnolia-sanctioned-layout-original.pdf",
-      "role": "difficult real input; identical bytes probed under plan.json and offered as a CSV table"}
+      "role": "difficult real input; identical bytes named plan.json, mocked /sources INVALID_JSON refusal then upload; server byte probe and advisory table rejection"}
   ],
   "testOnlyControls": [
-    "Empty CityJSON structure named .json; no fabricated city record or model extraction claim.",
-    "2500 repeated unchanged NYC features in memory; not a publisher original or independent records.",
+    "Empty CityJSON structure named .json; mocked /sources UNSUPPORTED_PROFILE refusal; no fabricated city record or model extraction claim.",
+    "2500 repeated unchanged NYC features in memory; mocked /sources RECORD_LIMIT refusal; not a publisher original or independent records.",
+    "ZIP transport control; existing archive route success and 422 fallback both tested, no invented archive reader output claim.",
     "Point, LineString and Polygon protocol shapes named .txt; processor replies mocked, not evaluation truth.",
     "Unrecognised text named .pdf; explicit kept-not-read words."
   ],
   "invariants": [
+    "Act 1 footprints keep /sources and its existing manual source profile; small ZIP keeps /intake/archives.",
+    "Only 413/422 switches a bounded route to uploads; 400, 403, 409, 500 and a lost response do not.",
+    "Fallback sends the original filename and identical bytes, refreshes the case revision, and preserves the first refusal message.",
     "The manual receipt commits before inventory or a table-kind refusal; a failed read leaves the original kept.",
     "Repeating a refused table read stores no second original and creates no table receipt.",
     "Stored original hashes match after refusal; no DeleteObjectCommand is accepted by the protocol test.",
     "A bounded upload adapter grants record-source eligibility only, never geometry or rights eligibility.",
     "Rehearsal reader semantics stay bounded GeoJSON, CSV table, raster-window and point-batch.",
-    "The NYC upload transport intentionally changes from sources to uploads; its semantic adapter does not."
+    "document-worker.ts has no net diff from the origin/staging merge base; no merge or rebase was performed."
   ],
   "checks": {
-    "install": {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0},
     "backendTypecheck": {"command": "pnpm typecheck:backend", "exit": 0},
     "studioTypecheck": {"command": "pnpm studio:typecheck", "exit": 0},
     "server": {
@@ -69,35 +76,49 @@
         "tests/intake-pdf-batch.test.ts", "tests/intake-probe.test.ts", "tests/intake-api.test.ts",
         "tests/manual-ingestion.test.ts", "tests/manual-author.test.ts", "tests/manual-plan-later-receipt.test.ts"
       ],
-      "exit": 0, "tests": 160, "pass": 159, "fail": 0, "skip": 1,
+      "exit": 1, "tests": 160, "pass": 157, "fail": 2, "skip": 1,
+      "failures": [
+        "tests/intake-pdf-batch.test.ts: batch PDF text-layer read returns failed instead of succeeded.",
+        "tests/intake-pdf-batch.test.ts: scanned PDF rests failed_part instead of read."
+      ],
+      "failureReason": "The requested worker revert restores readObject, which rejects large-originals/ keys with STREAMING_ORIGINAL_REQUIRED. The accurate upload-backed fixture is unchanged. Both PDF reads need EVF1 after integration; no retry or duplicate reader was added.",
       "skipReason": "The real bounded XLSX test has no configured geo-compatible ULPIN_PROFILE_PYTHON."
     },
     "studio": {"command": "pnpm --filter @ulpin/studio test -- src/features/intake",
-      "exit": 0, "files": 37, "tests": 194, "pass": 194},
+      "exit": 0, "files": 37, "tests": 204, "pass": 204},
+    "studioRouting": {"command": "pnpm --filter @ulpin/studio test -- src/features/intake/retain-batch.test.ts",
+      "exit": 0, "tests": 14, "pass": 14},
     "routing": {"command": "pnpm exec tsx --test packages/server/src/modules/usp/ingestion/retain-routing.test.ts",
       "exit": 0, "tests": 11, "pass": 11},
+    "pdfDiagnosis": {"command": "pnpm exec tsx -e \"import assert from 'node:assert/strict'; import {readObject} from './packages/server/src/infrastructure/storage'; assert.rejects(readObject('large-originals/test-only/original'), {code:'STREAMING_ORIGINAL_REQUIRED'}).then(() => console.log('Confirmed: reverted document worker reader rejects upload-backed PDF keys before storage access.'));\"",
+      "exit": 0, "result": "The reverted reader rejects upload-backed keys before storage access, confirming the EVF1 integration dependency."},
+    "workerMergeBase": {"command": "git diff $(git merge-base HEAD origin/staging) -- packages/server/src/modules/usp/ingestion/document-worker.ts",
+      "exit": 0, "result": "empty diff"},
     "uiDesign": {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging", "exit": 0},
     "diff": {"command": "git diff --check", "exit": 0}
   },
   "diagnostics": [
-    {"signature": "Missing tsc, tsx and vitest", "exit": 1,
+    {"round": 2, "signature": "Focused Studio test: 11 pass, 3 fail (absent property and large byte-array equality timeout)",
+      "exit": 1, "decision": "Assert an absent optional message with toBeUndefined. Compare complete byte payloads by SHA-256 rather than Vitest's multi-megabyte element equality; the full intake suite then passes without a raised timeout."},
+    {"round": 2, "signature": "PDF worker checks fail after the requested base restore", "exit": 1,
+      "decision": "Confirmed readObject rejects upload-backed keys before storage access. Preserve the fixture and defer to EVF1's readRetainedOriginal; no merge, rebase, storage edit or repeated test command."},
+    {"round": 1, "signature": "Missing tsc, tsx and vitest", "exit": 1,
       "decision": "Installed cached dependencies offline, without scripts or lockfile changes; checks then ran."},
-    {"signature": "UUID inference mismatch, TS2322", "exit": 2,
+    {"round": 1, "signature": "UUID inference mismatch, TS2322", "exit": 2,
       "decision": "Keep the source-family variable typed as string; both typechecks pass."},
-    {"signature": "Upload-refusal test waited for officer retry and timed out", "exit": 1,
+    {"round": 1, "signature": "Upload-refusal test waited for officer retry and timed out", "exit": 1,
       "decision": "Respect existing upload pause semantics; test failed enrollment after durable retention instead."},
-    {"signature": "Old protocol fixtures lacked new range metadata or separated receipt phases", "exit": 1,
+    {"round": 1, "signature": "Old protocol fixtures lacked range metadata or separated receipt phases", "exit": 1,
       "decision": "Updated the touched range/PDF fixtures and added focused two-phase retention controls."},
-    {"signature": "Parameter decorators disabled when running the API contract with root tsconfig", "exit": 1,
+    {"round": 1, "signature": "Parameter decorators disabled with root tsconfig", "exit": 1,
       "decision": "Run server/contract checks with apps/api/tsconfig.json; contract passes."},
-    {"signature": "Optional A3B diagnostic: 82 tests, 79 pass, 3 fail", "exit": 1,
-      "files": ["scripts/agent/a3b-wiring.test.ts",
-        "tests/intake-zip-layers.test.ts",
+    {"round": 1, "signature": "Optional A3B diagnostic: 82 tests, 79 pass, 3 fail", "exit": 1,
+      "files": ["scripts/agent/a3b-wiring.test.ts", "tests/intake-zip-layers.test.ts",
         "packages/server/src/modules/usp/ingestion/streamed-map-receipt.test.ts",
         "packages/server/src/modules/usp/packets/feature-plan.test.ts",
         "packages/server/src/modules/registry/feature-reference.test.ts",
         "packages/server/src/modules/usp/ingestion/intake-large-steps.test.ts"],
-      "decision": "No retry or out-of-scope edits. ZIP, receipt, packet and large-step checks all passed.",
+      "decision": "Not rerun in round 2. No out-of-scope edits; ZIP, receipt, packet and large-step checks passed in round 1.",
       "failures": [
         "A3B pool returns the just-kept, unprofiled source despite the manualProfile SQL predicate.",
         "T1_NATIVE_READER_UNAVAILABLE for its native XLSX dependency.",
@@ -106,15 +127,15 @@
   ],
   "uiDesignReport": {
     "blocking": [], "designSystem": [],
-    "checked": "Routing-only Studio change; no DOM, CSS, tokens, sample values or focus behavior changed.",
+    "checked": "Routing and row-message changes only; server refusal words use the existing Reason column. No DOM, CSS, tokens, sample values or focus changes.",
     "qualification": "The mechanical scanner covers apps/web, not Studio; no visual/browser qualification claimed."
   },
   "runtime": {
     "docker": "not used",
     "database": "Existing backend tests use in-process mocked PoolClient protocols, as recorded by TB1.",
-    "processor": "No running processor was started; retained-profile tests mock its bounded inspection reply.",
+    "processor": "No processor was started; retained-profile tests mock its bounded inspection reply.",
     "qualified": false,
-    "next": "Authorized empty-runtime drop/review/card rehearsal after integration; no deployment performed."
+    "next": "Lead merges EVF1 and RT1, reruns the PDF checks, then performs an authorized empty-runtime drop/review/card rehearsal. No deployment or push performed."
   },
-  "scope": "No ZIP reader, column-profile, tabular-stream, contract, migration or shared progress-loop edits."
+  "scope": "No ZIP reader, column-profile, tabular-stream, storage, contract, migration or UI rendering edits."
 }

@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {DocumentInputSchema,DocumentResultSchema,DOCUMENT_LIMITS,type DocumentResult} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
-import {readObject,openObjectStream,putOriginal,sha256} from '../../../infrastructure/storage';
+import {readObject,putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx} from '../jobs';
 import {assertDocumentInputTx} from './document-context';
@@ -13,19 +13,6 @@ import {inspectDocumentArchive} from './document-archive';
 import {documentResultKey,readDocumentResult} from './documents';
 import {appendCaseIngestionTx} from './events';
 import {settleBatchPdfTx,stopBatchPdfTx} from './intake-draft';
-
-/** Upload originals keep their streaming object key even when the document reader accepts a bounded PDF. */
-async function readDocumentOriginal(input: {objectKey:string;sourceBytes:number}) {
-  if (!input.objectKey.startsWith('large-originals/')) return readObject(input.objectKey);
-  if (input.sourceBytes > DOCUMENT_LIMITS.originalBytes)
-    throw new AppError(413,'FILE_SIZE','This document exceeds the bounded original reader.');
-  const object = await openObjectStream(input.objectKey,input.sourceBytes,120000);
-  const chunks: Buffer[] = [];
-  try {
-    for await (const chunk of object.body) chunks.push(Buffer.from(chunk));
-    return Buffer.concat(chunks);
-  } finally { object.body.destroy(); }
-}
 
 type Dependencies={extract?:typeof extractSourceDocument;propose?:typeof proposeDocument;ocr?:typeof runSourceOcr;archive?:typeof inspectDocumentArchive};
 export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
@@ -60,7 +47,7 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
   };
   try{
     await authorize();
-    const original=await readDocumentOriginal(input);
+    const original=await readObject(input.objectKey);
     if(original.length!==input.sourceBytes || sha256(original)!==input.sourceSha256)throw new AppError(422,'SOURCE_INTEGRITY','The retained original differs from its receipt.');
     const native=await (dependencies.extract??extractSourceDocument)(input,original);
     await authorize();
