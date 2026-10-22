@@ -71,24 +71,26 @@ export const NativeDerivativeLineageSchema = z.strictObject({
   version: z.literal('native-derivative/1'), conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION),
   readerVersion: z.string().min(1).max(64), originalSourceId: uuid, originalSourceRevision: z.number().int().positive(),
   originalSha256: hex64, originalItemId: uuid,
-  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz', 'cityjson']),
+  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz', 'cityjson', 'citygml']),
   layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
   members: SetMembersSchema.optional(),
 }).refine(lineage => (lineage.format === 'shapefile_set') === Boolean(lineage.members),
   'Only a shapefile set names its members, and it names every one.');
 
-/** B3D1. The format an item's original is converted from: SH2's GIS formats, or a CityJSON's ground outlines. */
-function derivativeFormat(card: IntakeCard | null, name: string) {
-  return card?.format === 'cityjson' ? 'cityjson' as const : nativeDerivativeFormat(card, name);
+/** The existing GIS conversions and each 3D format's own building ground outlines. */
+function derivativeFormat(card: IntakeCard | null, name: string):
+  ReturnType<typeof nativeDerivativeFormat> | 'cityjson' | 'citygml' {
+  if (card?.format === 'cityjson' || card?.format === 'citygml') return card.format;
+  return nativeDerivativeFormat(card, name);
 }
 
 type NativeFormat = NonNullable<ReturnType<typeof derivativeFormat>>;
 const kinds: Record<NativeFormat, string> = { gpkg: 'GeoPackage', shapefile_zip: 'shapefile ZIP',
-  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ', cityjson: 'CityJSON' };
+  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ', cityjson: 'CityJSON', citygml: 'CityGML' };
 const kind = (format: NativeFormat) => kinds[format];
 
-/** B3D1. The reading a CityJSON's outlines are converted after stays cited beside its item. */
+/** The native reading the outlines are converted after stays cited beside its item. */
 function withReading(planRef: Record<string, unknown> | null, stored: unknown): Record<string, unknown> | null {
   const jobId = (stored as { nativeReaderJobId?: unknown } | null)?.nativeReaderJobId;
   return typeof jobId === 'string' ? { ...planRef, nativeReaderJobId: jobId } : planRef;

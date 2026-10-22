@@ -305,7 +305,7 @@ for (const format of Object.keys(inputs) as Format[]) {
     assert.equal(fixture.jobs.size, 0);
   });
 
-  test(`${format}: accepted summary settles as unplaced candidate evidence, with no target`, { skip: !present },
+  test(`${format}: accepted summary remains candidate evidence, with no direct target`, { skip: !present },
     async () => {
       const fixture = await batch(format), { client, source, item } = fixture;
       const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
@@ -316,6 +316,12 @@ for (const format of Object.keys(inputs) as Format[]) {
         (end.summary as CityJSONResult['summary']).referenceSystemState = 'absent';
       }
       await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
+      assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
+      if (format === 'citygml') {
+        assert.deepEqual([item.state, item.placement], ['reading', 'undecided']);
+        assert.equal(fixture.jobs.size, 2);
+        return;
+      }
       assert.deepEqual([item.state, item.placement], ['read', 'undecided']);
       assert.equal(item.limit_reason, intakeNativeReadWords(end.summary));
       assert.match(item.limit_reason, /they are candidates/);
@@ -355,31 +361,35 @@ for (const format of Object.keys(inputs) as Format[]) {
     });
 }
 
-test('a CityJSON reading that states its reference system queues its outline conversion, citing the reading', {
-  skip: !existsSync(inputs.cityjson.path),
-}, async () => {
-  const fixture = await batch('cityjson'), { client, source, item, jobs } = fixture;
-  const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
-  const end = acceptedEnd('cityjson', fixture, jobId);
-  assert.equal((end as { summary: CityJSONResult['summary'] }).summary.referenceSystemState, 'declared');
-  assert.ok(outlinesConverted(end));
-  await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
-  const [conversion] = [...jobs.values()].filter(job => job.operation === 'intake-native-derivative');
-  assert.deepEqual([conversion.source_id, conversion.payload.itemId, conversion.payload.sourceSha256],
-    [source.id, item.item_id, source.sha256]);
-  assert.deepEqual([item.state, item.placement, item.plan_ref], ['reading', 'undecided', { nativeReaderJobId: jobId }]);
-  assert.equal(item.limit_reason, 'The layers of this CityJSON are being converted to GeoJSON, '
-    + 'each to be taken in as its own file.');
-  assert.equal(intakeItem(item).nativeReaderJobId, jobId);
-  const published = fixture.events.length;
-  await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
-  assert.equal(jobs.size, 2);
-  assert.equal(fixture.events.length, published);
-  assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
-  for (const format of ['dxf', 'citygml'] as const) {
-    assert.equal(outlinesConverted({ format, summary: { referenceSystemState: 'declared' } } as never), false);
-  }
-});
+for (const format of ['cityjson', 'citygml'] as const) {
+  test(`${format}: an accepted reading queues its outline conversion, citing the reading`, {
+    skip: !existsSync(inputs[format].path),
+  }, async () => {
+    const fixture = await batch(format), { client, source, item, jobs } = fixture;
+    const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+    const end = acceptedEnd(format, fixture, jobId);
+    if (format === 'cityjson') {
+      assert.equal((end as { summary: CityJSONResult['summary'] }).summary.referenceSystemState, 'declared');
+    }
+    assert.ok(outlinesConverted(end));
+    await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
+    const [conversion] = [...jobs.values()].filter(job => job.operation === 'intake-native-derivative');
+    assert.deepEqual([conversion.source_id, conversion.payload.itemId, conversion.payload.sourceSha256],
+      [source.id, item.item_id, source.sha256]);
+    assert.deepEqual([item.state, item.placement, item.plan_ref], ['reading', 'undecided', { nativeReaderJobId: jobId }]);
+    const name = format === 'citygml' ? 'CityGML' : 'CityJSON';
+    assert.equal(item.limit_reason, `The layers of this ${name} are being converted to GeoJSON, `
+      + 'each to be taken in as its own file.');
+    assert.equal(intakeItem(item).nativeReaderJobId, jobId);
+    const published = fixture.events.length;
+    await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
+    assert.equal(jobs.size, 2);
+    assert.equal(fixture.events.length, published);
+    assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
+    assert.equal(outlinesConverted({ format: 'dxf', summary: {} } as never), false);
+    assert.equal(outlinesConverted({ format: 'citygml', status: 'failed', code: 'CITYGML_PROCESSING_FAILED' }), false);
+  });
+}
 
 test('a partial CityGML summary stays partial and never invents a surface count or CRS', {
   skip: !existsSync(`${gmlRoot}/run-02-local/projection.json`),

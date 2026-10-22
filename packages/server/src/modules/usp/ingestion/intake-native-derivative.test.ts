@@ -15,7 +15,7 @@ import { probeOriginal } from './intake-probe';
 import { intakeItem } from './intake-ledger';
 import { nativeDerivativeFormat } from './intake-draft';
 import { convertNativeLayers, nativeParentState, NativeConversionSchema, queueNativeDerivativeTx, stateLayerCrsTx,
-  type NativeDerivativeDependencies } from './intake-native-derivative';
+  NativeDerivativeLineageSchema, type NativeDerivativeDependencies } from './intake-native-derivative';
 import { IntakeService } from './intake-service';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { streamedSourceReference } from './streamed-map-receipt';
@@ -428,7 +428,7 @@ test('a KML of folders: each folder with placemarks kept and enrolled, read with
 
 // B3D1. The real D1 3DBAG CityJSON (test_only), converted by the real outline reader after its CityJSON reading.
 const cityjsonD1 = new URL('../../../../../../fixtures/usp/D1/single-roof/original.json', import.meta.url);
-const cityjsonScript = `
+const outlineScript = `
 import hashlib, json, sys, tempfile
 from pathlib import Path
 sys.path.insert(0, 'services/geo')
@@ -437,11 +437,11 @@ path = Path(sys.argv[1])
 raw = path.read_bytes()
 digest = hashlib.sha256(raw).hexdigest()
 print(json.dumps({'bytes': len(raw), 'sha256': digest,
-  'layers': convert_native_file(path, 'cityjson', Path(tempfile.mkdtemp()), digest)}))`;
+  'layers': convert_native_file(path, sys.argv[2], Path(tempfile.mkdtemp()), digest)}))`;
 
 test('a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 and read by the large path',
   { skip: !existsSync(python) }, async () => {
-    const result = JSON.parse(execFileSync(python, ['-B', '-c', cityjsonScript, fileURLToPath(cityjsonD1)],
+    const result = JSON.parse(execFileSync(python, ['-B', '-c', outlineScript, fileURLToPath(cityjsonD1), 'cityjson'],
       { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
     const files = new Map<string, Buffer>();
     const layers = stored(result, files);
@@ -485,6 +485,72 @@ test('a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 a
     assert.deepEqual([closure.features, accepted], [1, 1]);
     assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:28992');
   });
+
+const citygmlOriginals = 'E:/BhuAayam-data/task-data/desktop-citygml-native/originals';
+
+async function assertPlacedCitygml(child: any, bytes: Buffer, originalSha256: string) {
+  const lineage = NativeDerivativeLineageSchema.parse(child.inspection.nativeDerivative);
+  assert.deepEqual([child.name, lineage.format, lineage.readerVersion, lineage.crs, lineage.features],
+    ['building ground outlines.geojson', 'citygml', 'citygml-ground-outline/1', 'EPSG:25832', 1]);
+  assert.deepEqual([lineage.originalSourceId, lineage.originalSha256], [sourceId, originalSha256]);
+  assert.match(lineage.crsBasis!, /horizontal part/);
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, child.name);
+  assert.deepEqual([card.format, card.crs.state], ['geojson', 'stated']);
+  let accepted = 0;
+  const closure = await readStreamingFeatures(Readable.from([bytes]), 'feature-collection', async entry => {
+    accepted += Number(sourceRecord(entry).disposition === 'accepted');
+  });
+  assert.deepEqual([closure.features, accepted], [1, 1]);
+  assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:25832');
+}
+
+for (const [name, expected] of [
+  ['Building_and_garage_LOD2-EPSG25832.gml', 1], ['Building_LOD1-LocalEngineeringCRS.gml', 0],
+] as const) {
+  test(`CityGML ${name}: converted outline or honest unplaced words through the derivative path`, {
+    skip: !existsSync(python) || !existsSync(join(citygmlOriginals, name)),
+  }, async () => {
+    const result = JSON.parse(execFileSync(python, ['-B', '-c', outlineScript, join(citygmlOriginals, name), 'citygml'],
+      { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
+    const files = new Map<string, Buffer>();
+    const layers = stored(result, files);
+    const original = retained(sourceId, result.bytes, result.sha256, name);
+    const { client, sources, item } = ledger(original);
+    item.card = { format: 'citygml', family: 'model3d' };
+    const readerJobId = '30000000-0000-4000-8000-000000000004';
+    item.plan_ref = { nativeReaderJobId: readerJobId };
+    const kept = new Map<string, Buffer>();
+    const registered: string[] = [];
+    const dependencies: NativeDerivativeDependencies = {
+      transaction: (async (work: (c: PoolClient) => unknown) => work(client)) as
+        NativeDerivativeDependencies['transaction'],
+      read: async (key, start, end) => files.get(key)!.subarray(start, end),
+      convert: async request => {
+        assert.equal(request.format, 'citygml');
+        return { conversion: 'native_gis_to_geojson@1', readerVersion: 'citygml-ground-outline/1', sourceId,
+          sourceSha256: result.sha256, layers };
+      },
+      register: async (_case, input) => {
+        registered.push((input as { sourceId: string }).sourceId);
+        return {};
+      },
+      large: receipt(sources, kept),
+    };
+    const children = await convertNativeLayers(caseId, itemId, dependencies);
+    assert.equal(children.length, expected);
+    assert.deepEqual(registered, children);
+    assert.deepEqual(item.plan_ref, { nativeReaderJobId: readerJobId });
+    if (!expected) {
+      assert.deepEqual([item.state, item.placement, kept.size], ['read', 'not_understood', 0]);
+      assert.match(item.limit_reason, /stay unplaced/);
+      assert.match(item.limit_reason, /#local-CRS-1/);
+      return;
+    }
+    await assertPlacedCitygml(sources.get(children[0]), kept.get(children[0])!, original.sha256);
+    assert.deepEqual(await convertNativeLayers(caseId, itemId, dependencies), children);
+    assert.equal(kept.size, 1);
+  });
+}
 
 test('a CityJSON whose outlines cannot be placed rests read, in the words saying why', () => {
   const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1',
