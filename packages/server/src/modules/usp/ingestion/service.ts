@@ -29,7 +29,7 @@ import { authoredIntakeDestination, caseScopedDestination, intakeDestination, re
   from './intake-destination';
 import { assertAreaRowLive } from '../../areas/area-retire';
 import { appendCaseIngestionTx } from './events';
-import { inspectTabularSource, inspectTabularStream, assertTabularPin } from './tabular-source';
+import { inspectTabularSource, inspectTabularStream, assertTabularPin, TABULAR_ROW_LIMIT } from './tabular-source';
 import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
 import { readTableWindows } from './tabular-stream';
 import { isTableSource } from './table-windows';
@@ -361,6 +361,34 @@ async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,a
   if(latest!==row.revision)conflict('This source revision has been superseded.');
   return row;
 }
+type TableRequest={caseId:string;sourceId:string;input:z.infer<typeof TableFromOriginalSchema>;actor:string;
+  key:string;digest:string};
+async function tableJobTx(client:PoolClient,jobId:string){
+  const {tableProfileJobTx}=await import('./table-profile-worker');
+  return tableProfileJobTx(client,jobId);
+}
+/** TP1: the one stream read of the original for this request, remembered under its key; it answers that job. */
+async function queueTableReadTx(client:PoolClient,table:TableRequest,row:any,revision:number){
+  const {queueTableProfileTx}=await import('./table-profile-worker');
+  const jobId=await queueTableProfileTx(client,row,revision,table.input,table.actor);
+  await remember(client,table.caseId,table.key,table.digest,{jobId});
+  return tableJobTx(client,jobId);
+}
+/** TB2: a whole read that met the reader's record bound is read again by the stream job, with the same selection
+ * and pinned to the original it read; no record is cut to fit. */
+async function streamedTable(table:TableRequest,read:{sha256:string;revision:number;object_key:string})
+  :Promise<AnySourceProfile|TableProfileJob>{
+  return transaction(async client=>{
+    const scope=await workspace(client,table.caseId,table.sourceId);
+    const replay=await operation(client,table.caseId,table.key,table.digest);
+    if(replay)return replay.jobId?tableJobTx(client,replay.jobId):replay as AnySourceProfile;
+    if(scope.revision!==table.input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
+    const row=await originalTableTx(client,table.caseId,table.sourceId,table.actor,'UPDATE');
+    if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
+      conflict('The original changed while it was read.');
+    return queueTableReadTx(client,table,row,scope.revision);
+  });
+}
 /** TP1: an original of at most 16 MiB is read whole from its object and checked against its byte receipt. */
 async function wholeOriginal(row:any):Promise<Uint8Array>{
   const bytes=Number(row.bytes),parts:Buffer[]=[];
@@ -611,29 +639,33 @@ export class ManualIngestionService {
   /** G13: an original retained through the large upload becomes a table source. Its row keeps its bytes, object and
    * identity; the table receipt is added beside the upload receipt. TP1: up to 16 MiB, a CSV or workbook is read
    * whole here; above that a CSV, or one sheet of a workbook (XW1), is read as a stream by one queued job, and the
-   * request answers that job. A replay of the same request answers the same job as it stands. */
+   * request answers that job. A replay of the same request answers the same job as it stands. TB2: a whole read
+   * that meets the reader's record bound takes that job too. */
   async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown):Promise<AnySourceProfile|TableProfileJob>{
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=TableFromOriginalSchema.parse(value);
     const actor=localOperatorSubject(),digest=fingerprint({input,sourceId,actor});
-    const key=`table-original:${input.requestKey}`;
-    const {queueTableProfileTx,tableProfileJobTx}=await import('./table-profile-worker');
+    const key=`table-original:${input.requestKey}`,table={caseId,sourceId,input,actor,key,digest};
     type Admitted={job:TableProfileJob}|{profile:AnySourceProfile}|{row:any};
     const admitted=await transaction(async (client):Promise<Admitted>=>{
       const scope=await workspace(client,caseId,sourceId),replay=await operation(client,caseId,key,digest);
-      if(replay)return replay.jobId?{job:await tableProfileJobTx(client,replay.jobId)}:{profile:replay};
+      if(replay)return replay.jobId?{job:await tableJobTx(client,replay.jobId)}:{profile:replay};
       if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
       const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
       if(Number(row.bytes)<=TABULAR_LIMITS.bytes)return {row};
       await assertOriginalTableByteKind(row,input.selection);
-      const jobId=await queueTableProfileTx(client,row,scope.revision,input,actor);
-      await remember(client,caseId,key,digest,{jobId});
-      return {job:await tableProfileJobTx(client,jobId)};
+      return {job:await queueTableReadTx(client,table,row,scope.revision)};
     });
     if('job' in admitted)return admitted.job;
     if('profile' in admitted)return admitted.profile;
     const read=admitted.row,bytes=await wholeOriginal(read);
     await assertTableByteKind(bytes,input.selection);
-    const inventory=inspectTabularSource(bytes,input.selection,input,read.name);
+    let inventory:ReturnType<typeof inspectTabularSource>;
+    try{
+      inventory=inspectTabularSource(bytes,input.selection,input,read.name);
+    }catch(error){
+      if(error instanceof AppError&&error.code===TABULAR_ROW_LIMIT)return streamedTable(table,read);
+      throw error;
+    }
     return transaction(async client=>{
       await workspace(client,caseId,sourceId);
       const replay=await operation(client,caseId,key,digest);

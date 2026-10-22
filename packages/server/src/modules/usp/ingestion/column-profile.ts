@@ -359,20 +359,24 @@ export function decodeColumnText(bytes: Uint8Array): string {
   return decodeDelimitedText(bytes).text;
 }
 
+/** TB2: the reader stopped at its record bound, not at invalid text; a caller may read the same bytes as a stream. */
+export const COLUMN_CSV_ROW_LIMIT = 'COLUMN_CSV_ROW_LIMIT';
+
 /** Literal positional records for admission and raw chunks. Blanks are skipped without losing logical source
  * row numbers. An empty cell stays empty text. */
 export function readColumnCsv(text: string, maxRows = 2000, delimiter = chooseTableDelimiter(text)) {
-  let headers: string[] | undefined, sourceRow = 0, invalid = false;
+  let headers: string[] | undefined, sourceRow = 0, stop = null as string | null;
   const rows: string[][] = [], sourceRows: number[] = [];
   Papa.parse<string[]>(text, { dynamicTyping: false, delimiter, step: (result, parser) => {
     sourceRow++;
-    if (result.errors.length || rows.length >= maxRows && result.data.some(cell => cell.trim())) {
-      invalid = true;
+    const written = result.data.some(cell => cell.trim());
+    if (result.errors.length || headers && written && rows.length >= maxRows) {
+      stop = result.errors.length ? 'COLUMN_CSV_INVALID' : COLUMN_CSV_ROW_LIMIT;
       parser.abort();
-    } else if (!headers && result.data.some(cell => cell.trim())) headers = result.data;
-    else if (result.data.some(cell => cell.trim())) { rows.push(result.data); sourceRows.push(sourceRow); }
+    } else if (!headers && written) headers = result.data;
+    else if (written) { rows.push(result.data); sourceRows.push(sourceRow); }
   } });
-  if (invalid) throw new Error('COLUMN_CSV_LIMIT_OR_INVALID');
+  if (stop) throw new Error(stop);
   if (!headers?.length || !headers.some(header => header.trim()) || rows.some(row => row.length > headers!.length)) {
     throw new Error('COLUMN_HEADER_NEEDS_INPUT');
   }
