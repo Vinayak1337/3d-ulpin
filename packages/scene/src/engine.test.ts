@@ -131,16 +131,23 @@ describe('the read parts of a kept surface', () => {
     // Synthetic test-only raster and point shapes; matches the rehearsal's 9 pictures and 6 point parts.
     const parts: SurfacePartInput[] = Array.from({ length: 15 }, (_, index) => ({
       id: `synthetic:${index}`, corners: square,
-      ...(index < 9 ? { image: {} as HTMLCanvasElement } : {
+      ...(index < 9 ? { image: { width: 256, height: 256 } as HTMLCanvasElement } : {
         points: { positions: new Float32Array(8192 * 3), colors: new Float32Array(8192 * 3), sizeM: 0.6 },
       }),
     }));
+    const started = performance.now();
     engine.setSurfaceParts(parts);
+    const synchronousMs = performance.now() - started;
     expect(surface.children).toHaveLength(0);
+    let largestConstructionMs = 0;
     for (let frame = 1; frame <= parts.length; frame++) {
+      const frameStarted = performance.now();
       engine.drainSurfaceQueue();
+      largestConstructionMs = Math.max(largestConstructionMs, performance.now() - frameStarted);
       expect(surface.children).toHaveLength(frame);
     }
+    const timing = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.PF1_TIMING;
+    if (timing) console.info(JSON.stringify({ synchronousMs, largestConstructionMs, parts: parts.length }));
     const drawn = [...surface.children];
     engine.setSurfaceParts([...parts, { id: 'synthetic:next', corners: square }]);
     expect(surface.children).toEqual(drawn);
