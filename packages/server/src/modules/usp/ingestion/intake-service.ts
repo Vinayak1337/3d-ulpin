@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
-  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, IntakeTablePlacementSchema,
+  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, IntakeTablePlacementSchema, IntakePlanRequestSchema,
   type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -19,6 +19,8 @@ import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } fro
 import { queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
 import { labelPageImageTx } from './intake-page-image';
+import { planImage, planModel, queueIntakePlanTx } from './intake-plan';
+import { planOcrPagesTx } from './intake-plan-processor';
 import { queueLateIntakeEvidenceTx } from './intake-evidence';
 import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
 
@@ -33,7 +35,8 @@ const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_i
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
-const defaults = { transaction, read: readObjectRange, probe: probeOriginal, object: readObject,
+const defaults = { transaction, read: readObjectRange, probe: probeOriginal, object: readObject, planModel,
+  planOcrPages: planOcrPagesTx,
   resolve: (collection: Record<string, unknown>) =>
     areaGeo<{ authority: string }>('resolve-geojson-crs', { collection }) };
 
@@ -299,6 +302,42 @@ export class IntakeService {
       assertIngestionBinding(scope.binding);
     });
     return this.one(caseId, itemId);
+  }
+
+  /** Availability is checked against the processor's verified model, not a host-side assumption. */
+  async planOffer(caseValue: string, itemValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const pages = await this.dependencies.transaction(async client => {
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      if (Number(source.bytes) > 16 * 1024 ** 2) return [];
+      if (planImage(row)) return [1];
+      if (row.card?.format !== 'pdf' || row.parent_item_id) return [];
+      return [...(await this.dependencies.planOcrPages(client, source)).keys()].sort((left, right) => left - right);
+    });
+    return { ...await this.dependencies.planModel(), pages };
+  }
+
+  async readPlan(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakePlanRequestSchema.parse(raw);
+    const model = await this.dependencies.planModel();
+    return this.dependencies.transaction(async client => {
+      await lockSourceCaseDestinationTx(client, caseId);
+      const scope = await intakeCaseTx(client, caseId, true);
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      const key = `intake-plan:${request.requestKey}`;
+      const digest = fingerprint({ request, itemId, access: scope.binding.access });
+      const prior = await priorTx(client, caseId, key, digest);
+      if (prior) return prior;
+      const pages = row.card?.format === 'pdf' ? await this.dependencies.planOcrPages(client, source) : new Map();
+      const receipt = await queueIntakePlanTx(client, source, row, request.page, model,
+        pages.get(request.page) ?? null);
+      await rememberTx(client, caseId, key, digest, receipt);
+      assertIngestionBinding(scope.binding);
+      return receipt;
+    });
   }
 
   /** CR1. The officer states the EPSG code of a layer whose file states none; the conversion is queued again. */

@@ -74,6 +74,7 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Objec
   'packet-pdf': { lane: 'document' },
   // INTAKE_PAGE_IMAGE_LIMITS.inputPixels 250,000,000 decoded at 4 bytes a pixel.
   'intake-page-image': { lane: 'document', mib: 954 },
+  'intake-plan': { lane: 'document', mib: 2048 },
   'raster-window': { lane: 'raster' },
   'point-batch': { lane: 'point' },
   build: { lane: 'model3d', processor: true },

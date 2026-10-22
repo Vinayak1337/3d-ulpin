@@ -803,6 +803,32 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/plan-reader",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_reader",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "IntakePlanOfferSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "PB1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/plan-readings",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_readings",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakePlanRequestSchema",
+      "responseSchema": "IntakePlanReceiptSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "PB1"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview",
       "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview",
       "disposition": "added",

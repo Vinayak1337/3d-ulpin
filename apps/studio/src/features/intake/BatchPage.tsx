@@ -13,6 +13,7 @@ import { IfcStructure } from './ifc/IfcStructure';
 import { isIfcItem } from './ifc/structure-model';
 import { LayoutQuestion } from './LayoutQuestion';
 import { PageImageQuestion } from './PageImageQuestion';
+import { PlanReadingSection } from './PlanReadingSection';
 import { isPageImage } from './page-image-model';
 import { isSettled } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
@@ -112,6 +113,7 @@ function ItemDetail({ caseId, item, items, refresh }: {
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}
     {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
     <BatchPdfSection caseId={caseId} item={item} />
+    <PlanReadingSection caseId={caseId} item={item} refresh={refresh} />
     <BatchTableSection caseId={caseId} item={item} items={items} />
   </>;
 }

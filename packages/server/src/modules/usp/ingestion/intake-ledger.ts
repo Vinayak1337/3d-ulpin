@@ -42,6 +42,13 @@ function pageImage(value: unknown) {
   return parsed.success ? { pageImage: parsed.data } : {};
 }
 
+/** Room candidates are kept beside other item facts; a malformed old projection remains unreadable. */
+export function storedPlanReadings(value: unknown) {
+  const stored = (value as { planReadings?: unknown } | null)?.planReadings;
+  const parsed = IntakeItemSchema.shape.planReadings.safeParse(stored);
+  return parsed.success ? parsed.data ?? [] : [];
+}
+
 const layer = IntakeLayerCrsSchema.shape.layer;
 /** CR1. Beside a GeoPackage or shapefile ZIP's item: its layers stating no system, and the officer's answers. */
 export const NativeLayersRefSchema = z.strictObject({ unstated: z.array(layer).max(100),
@@ -116,6 +123,7 @@ export function intakeItem(row: any) {
   const named = intakeNameWords(row.card, row.name ?? row.member_path ?? '');
   const takenOut = row.taken_out_of ? `Taken out of ${row.taken_out_of}.` : null;
   const wide = row.card?.limits?.includes(INTAKE_WIDE_GEOJSON_REASON) ? INTAKE_WIDE_GEOJSON_REASON : null;
+  const planReadings = storedPlanReadings(row.plan_ref);
   const reason = [takenOut, cellDerivativeWords(row.cell_derivative), named, wide, row.limit_reason]
     .filter(Boolean).join(' ').slice(0, 2000) || null;
   return IntakeItemSchema.parse({
@@ -129,6 +137,7 @@ export function intakeItem(row: any) {
     limitReason: reason, pinnedByOfficer: row.pinned_by_officer,
     ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}), ...pageImage(row.plan_ref),
     ...layerCrs(row.plan_ref),
+    ...(planReadings.length ? { planReadings } : {}),
     ...(IntakeItemSchema.shape.ifcJobId.unwrap().safeParse(row.plan_ref?.ifcJobId).success
       ? { ifcJobId: row.plan_ref.ifcJobId } : {}),
     ...(IntakeItemSchema.shape.nativeReaderJobId.unwrap().safeParse(row.plan_ref?.nativeReaderJobId).success

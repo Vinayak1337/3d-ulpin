@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { IntakePlanReadingSchema } from './intake-plan';
 import { SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
@@ -224,6 +225,8 @@ export const IntakeItemSchema = z.strictObject({
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
   existingAreaId: z.string().uuid().nullable().optional().describe(
     'The area whose source already holds this file\'s exact bytes; present only when the item rests for that reason.'),
+  planReadings: z.array(IntakePlanReadingSchema).max(8).optional().describe(
+    'Candidate rooms in page pixels, one reading per selected page; never world placement or registry records.'),
   pageImage: IntakePageImageReadSchema.optional().describe(
     'G23. A page image\'s first read and the officer\'s candidate label; present only once a page image is read.'),
   layerCrs: z.array(z.strictObject({ layer: IntakeLayerCrsSchema.shape.layer,
