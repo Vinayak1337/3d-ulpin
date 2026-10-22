@@ -1,0 +1,133 @@
+{
+  "task": "DG1",
+  "gate": "GF5",
+  "scope": "Documentation only; no Docker, runtime, provider calls, originals or credentials accessed.",
+  "baseCommit": "e9c12699",
+  "source": "docs/evidence/runtime/reh11/result.json",
+  "supportingReceipts": [
+    "docs/evidence/runtime/reh11/report.md",
+    "docs/evidence/runtime/reh11/demo-after.json",
+    "docs/evidence/runtime/reh10/report.md"
+  ],
+  "runbook": "docs/STUDIO_DEMO_GUIDE.md",
+  "lineConvention": "One-based inclusive ranges in the resulting runbook; ranges include the changed text.",
+  "corrections": [
+    {
+      "id": 1,
+      "correction": "Evidence boundary: REH10 files now exist on staging; do not state their receipts are absent.",
+      "runbookLines": [[8, 16]],
+      "requiredWords": ["REH10 receipts now exist", "REGISTRY_SOURCE_UNAVAILABLE", "served demo unchanged"]
+    },
+    {
+      "id": 2,
+      "correction": [
+        "Act 1 A: reader forecasts and explicit limits appear before upload; ",
+        "batch opens while files are sent."
+      ],
+      "runbookLines": [[117, 125]],
+      "requiredWords": ["within 1 GiB", "within 7 GiB", "within 16 MiB", "batch opens before upload finishes"]
+    },
+    {
+      "id": 3,
+      "correction": "Act 1 A/D: CSV is retained in the same batch, not held back for Continue with other files.",
+      "runbookLines": [[121, 125], [161, 164]],
+      "requiredWords": ["CSV stays in this batch", "without choosing a separate case"]
+    },
+    {
+      "id": 4,
+      "correction": [
+        "Act 1 C: Open package → Done → Tools/Layers reveals the drawn surface counts. ",
+        "No reload needed."
+      ],
+      "runbookLines": [[146, 154]],
+      "requiredWords": ["Open package → Done → Tools → Layers", "without reload", "parts drawn"]
+    },
+    {
+      "id": 5,
+      "correction": [
+        "Act 1 C: read/placed distinction remains valid, ",
+        "but both surfaces now place against drafted footprints."
+      ],
+      "runbookLines": [[146, 157]],
+      "requiredWords": ["Both surfaces place against the drafted footprints", "Read and placed are different"]
+    },
+    {
+      "id": 6,
+      "correction": "Act 1 C: do not reuse REH9 completion times; this LAZ remained partial when rehearsal stopped.",
+      "runbookLines": [[148, 157], [338, 339]],
+      "requiredWords": ["467.538 s", "Read 6 of 211 batches", "LAZ full completion was not qualified"]
+    },
+    {
+      "id": 7,
+      "correction": "Act 1 D: Open the table → Read as a table opens 753 rows without selecting a separate case.",
+      "runbookLines": [[161, 164]],
+      "requiredWords": ["Open the table: gpmc-yuvp.csv → Read as a table", "753 records · 9 columns", "0.165 s"]
+    },
+    {
+      "id": 8,
+      "correction": [
+        "Act 1 D: Link a register by a key → namespace/integer/map BIN/table BIN → Declare the key; ",
+        "wait for Closed coverage, then confirm. First 100 exact matches only per confirmation."
+      ],
+      "runbookLines": [[165, 175], [340, 341]],
+      "requiredWords": ["Link a register by a key", "Declare the key", "Closed: 753 read", "one confirmation takes 100"]
+    },
+    {
+      "id": 9,
+      "correction": [
+        "Act 1 E: matched feature 1001960 stopped on unavailable cited source; ",
+        "cited card/QR success is not proved."
+      ],
+      "runbookLines": [[181, 196], [307, 309]],
+      "requiredWords": ["feature 1001960", "REGISTRY_SOURCE_UNAVAILABLE", "Do not retry.", "confirmed evidence"]
+    },
+    {
+      "id": 10,
+      "correction": "Act 1 E: ready and recorded counts were both 1661, not the unexplained REH9 1661/1660 difference.",
+      "runbookLines": [[138, 139], [186, 190]],
+      "requiredWords": ["1,661 ready and 1,661 recorded", "0 carded, 1 stopped"]
+    },
+    {
+      "id": 11,
+      "correction": "Act 2: alone, a CSV uses Import as a table, not the multi-file Retain files dialog.",
+      "runbookLines": [[232, 237]],
+      "requiredWords": ["Import as a table", "not the multi-file", "Retain files", "21.218 s"]
+    },
+    {
+      "id": 12,
+      "correction": [
+        "Act 2: this mixed ZIP fans out unchanged GeoJSON/PDF members; ",
+        "PDF read all 18 pages, not kept unread."
+      ],
+      "runbookLines": [[210, 225]],
+      "requiredWords": ["GeoJSON and PDF members unchanged", "18 pages", "44.398 s", "Do not call that PDF unread"]
+    },
+    {
+      "id": 13,
+      "correction": [
+        "Preflight: current demo doctor is 28 PASS with gateway enabled; ",
+        "health is not a live-answer receipt."
+      ],
+      "runbookLines": [[31, 32], [47, 53]],
+      "requiredWords": ["28 PASS, 0 FAIL", "gateway enabled", "Health is not a live-answer receipt"]
+    }
+  ],
+  "additionalCorrections": {
+    "layoutTimings": {"runbookLines": [[131, 139]], "field": "act1.layout"},
+    "frameBoundary": {"runbookLines": [[299, 300], [338, 339]], "field": "act1.surfaces.framesAfterMapOpen"},
+    "receiptFieldKey": {"runbookLines": [[350, 368]], "note": "REH11 references name JSON fields in link titles."}
+  },
+  "inputs": {
+    "good": "Committed same-batch NYC register reading and closed-key evidence: act1.register; act1.evidence.",
+    "difficult": "Committed stopped cited-card carry and partial LAZ: act1.card; act1.surfaces."
+  },
+  "checks": [
+    {"command": "python docs/evidence/dg1/check.py", "exit": 0},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "awk 'length>120 {bad=1} END {exit bad}' docs/evidence/dg1/*", "exit": 0}
+  ],
+  "gaps": [
+    "RC1 and REH12 are pending task-direction follow-ups, not completed receipts.",
+    "No cited-card success, full LAZ completion, smoothness or empty-runtime qualification added."
+  ]
+}

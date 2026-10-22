@@ -1,17 +1,22 @@
 # Studio live-demo presenter runbook
 
+> **Which runbook to use.** This version follows REH11's rehearsal of staging `065a323f` and later. While the demo
+> still serves `8d6e19fa` (check `git -C E:/Projects/ulpin-wt/demo log --oneline -1`), use the earlier runbook:
+> `git show c610922f:docs/STUDIO_DEMO_GUIDE.md`, where Act 1 imports the CSV separately and the footprint card is
+> proven (REH9).
+
 This replaces the September source-to-record walkthrough, its Lake View fictional example,
 legacy local-app address, and old intake limits. It is not a prepared-record tour.
 
 **Evidence boundary.** The owner wants a cleaned Studio, one drop of the NYC files, a cited card after
 one officer confirmation, then judges' unknown files without a code change.
-The committed rehearsal proves less. REH9 reached cards, but its register did not join the batch and its
-surfaces were not placed. Its runtime was not empty. [H9]
-REH10 is listed as running in STATUS; `docs/evidence/runtime/reh10/` has no committed files here.
-There are no REH10 screen words, seconds or completion receipt to use. [Board]
+The committed rehearsal proves less. REH10 receipts now exist, but that run did not prove the linked card
+or surface drawing. REH11 rehearsed `065a323f`: the register joined the batch, exact-key evidence was
+confirmed and surfaces drew, but the cited card stopped with `REGISTRY_SOURCE_UNAVAILABLE`.
+Its runtime was not empty; no cited card or verification was produced. [H10] [H11]
 
-R9 is the latest committed demo roll receipt in these sources. It predates the newer register, surface
-and evidence-screen work listed in STATUS. Do not present those merges as a completed rehearsal. [R9] [Board]
+REH11 left the served demo unchanged. Its staging rehearsal is not a demo roll or proof of a clean start.
+The card fix (RC1) is in progress; REH12 will rehearse the next roll. [H11]
 The architecture describes the intended flow, not a receipt that every part works. [Arch]
 
 ## 1. Thirty minutes before — check, do not rebuild
@@ -29,7 +34,7 @@ node scripts/platform/demo-gateway.mjs status
 ```
 
 **Doctor PASS:** `Doctor: all checks passed (dispatcher liveness, not a job execution proof).`
-R9 recorded **28 PASS, 0 FAIL**. Require these lines, not just a running browser: [After]
+REH11's demo check recorded **28 PASS, 0 FAIL**. Require these lines, not just a running browser: [Demo11]
 
 - `PASS Document runtimes`
 - `PASS Model gateway state`
@@ -46,9 +51,9 @@ Its JSON lists container state and health. Engine silence is not PASS. [Guard]
 
 **Gateway PASS for the live-teacher claim:** `enabled: true`, `providerKeyPresent: true`,
 `mappingTeacherAdapter: sarvam`, `dailyCapPresent: true`, and the approved policy hash.
-The named and present key counts must agree. R9 recorded **11 named and 11 present**. [After] [Live]
-Status does not prove remaining credit or a successful model answer. [Gateway]
-A healthy replay-only runtime is not proof of a live teacher. REH9 passed doctor with the gateway off. [Doctor]
+The named and present key counts must agree. REH11's demo check recorded **11 named and 11 present**,
+with the gateway enabled. Health is not a live-answer receipt or proof of remaining credit. [Demo11] [Gateway]
+The rehearsal itself used the gateway disabled; do not confuse it with the demo check. [H11]
 If the state differs, ask the owner. Do not enable, replace keys, raise caps or run the paid proof as a preflight fix.
 
 ### The bounded recoveries
@@ -110,94 +115,90 @@ E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-lidar-2017.laz
 Say: **“These are public NYC development inputs, labelled test_only. We keep each original,
 show what it supports, and ask an officer before recording.”** [H9] [Arch]
 
-The timings below are separate measured intervals, not a promised total.
-REH9 dropped a larger mixed selection. There is no measured duration for just today's selected NYC drop. [H9]
+The timings below are REH11's separate measured intervals, not a promised total. [H11]
 
 ### A. Work queue → retention dialog → batch
 
-1. Choose **Add files**. Drop the NYC originals together. [H9]
-2. In **Retain files**, use **Source case / New case name** to create an unassigned source case.
-   Give the work an honest `test_only` name. Retain the files. [H8]
-3. Watch which files are actually listed. REH9's dialog said:
-   **“Other files stay separate. Continue with them from the batch after these files are retained.”**
-   Its CSV and workbook were held back from retention. The dialog appeared after **0.03 s**;
-   retention press to batch was **8.8 s**, for that mixed selection only. [H9]
+1. Choose the **Add files** link. Drop the NYC originals together. [Upload11]
+2. Before upload, inspect the forecasts: GeoJSON **“within 1 GiB”**, table **“within 7 GiB”**,
+   raster and point cloud each **“within 16 MiB”**. The table forecast says
+   **“Choose Read as a table after upload.”** Forecast appeared after **0.209 s**. [Upload11]
+3. In **Retain files**, use **Source case / New case name** for an unassigned `test_only` case. [H8]
+   Read **“The batch opens before upload finishes. Keep its page open to send the files and see progress.”**
+   The CSV stays in this batch, not **Continue with other files**. The first batch read was **0.251 s**
+   after retention; final upload finished at **2.118 s**. Network order proves early opening; the first
+   navigation observer used the wrong URL. Visible uploading was separately captured in Act 2. [Upload11]
 
-Say: **“Receipt is not recording. The batch tells us which files entered and which still need a route.”**
-Do not say the register entered the batch if the screen holds it back.
-The newer batch-table route is listed in STATUS, but its complete browser rehearsal is missing here. [Board]
+Say: **“Receipt is not recording. We keep this page open while the files arrive.”**
 
 ### B. Batch → footprint layout
 
-4. Select `buildings-original.geojson`. REH9 showed **“Layout proposed”** and
-   **“Remembered from an approved layout of the same columns”**.
-   It proposed a building, identifier `bin`, no stated name or height, and a new area. [H9]
-5. Inspect the proposal. Press **Approve layout** only if it matches the file. [H9]
+4. Select `buildings-original.geojson`. REH11 showed **“Remembered from an approved layout of the same
+   columns”**: a building; identifier `bin`; name and height not stated; new area `buildings original`. [Layout11]
+5. Inspect the proposal. Press **Approve layout** only if it matches the file. [Layout11]
    On a cleaned runtime there may be no remembered layout. If it says **“Needs an answer”**, answer
    **“What is each feature”** and **“Which field identifies each one”** from the source:
    a building; `bin`; name and height not stated. Press **Use this layout**. [H8] [Arch] (§13.1)
    That is a layout decision, separate from the final recording confirmation.
-6. Watch the batch prepare the footprint package. REH9 measured **10.6 s** from approval to
-   read-on-map state and **16.9 s** to all ready; it listed **1,661 ready**. [H9]
+6. Approval to finished draft job was **27.9 s**, to ready job **54.395 s**: **1,661 ready**,
+   **1 skipped**, **“INVALID_GEOMETRY: Ring Self-intersection”**. Original unchanged, no repair. [Layout11]
 
 Say: **“The identifier comes from the file. No height is supplied here, so no height is invented.”**
 A fresh layout's duration is not measured in this rehearsal. Do not silently promise the memory-path time.
 
 ### C. Batch → TIFF and LAZ holdings → map
 
-7. Select the TIFF, then the LAZ. Read the holdings words before opening the batch's area map.
-   The exact map-opening button label was not preserved in the committed REH9 result or harness.
-   Use the visible area link; do not promise an unrecorded button name. [H9] [Harness]
-8. In REH9 the TIFF said **“Read 9 of 9 windows”** and the LAZ said
-   **“Read 211 of 211 batches”**. The TIFF finished in **under 107 s** from retention;
-   the LAZ finished in **440 s**. These are background-read timings, not map-placement timings. [H9]
-9. Both said **“Read but not placed: the batch area has no extent yet.”**
-   Both also said **“Display only: no height, measurement or record is taken from it.”**
-   The map drew buildings but no surface parts in that rehearsal. [H9]
+7. Inspect the TIFF and LAZ holdings, then **Open package → Done → Tools → Layers**.
+   Both surfaces place against the drafted footprints; the same open map updates without reload. [Surface11]
+8. First published parts appeared **94.521 s** (TIFF) and **123.398 s** (LAZ) after retention;
+   drawn words were observed by **285.792 s**. TIFF's last part read finished at **467.538 s**.
+   These are different milestones, not interchangeable completion times. [Surface11]
+9. Holdings reached **“Read 9 of 9 windows”** (TIFF), but only **“Read 6 of 211 batches”** (LAZ).
+   Layers said TIFF **“9 parts drawn and 0 not placed, of 9 read parts”** and LAZ
+   **“6 parts drawn and 0 not placed, of 6 read parts”**, **“Coloured by height as written, not measured.”**
+   Both retain **“Display only: no height, measurement or record is taken from it.”** [Surface11]
 
 Say: **“Read and placed are different. This display is not a surveyed height or a legal measurement.”**
-If today's map draws the surface, describe only what is visible. Surface-placement changes are in STATUS,
-not a completed REH10 receipt in this checkout. No rehearsed seconds for that newer drawing are available. [Board]
-Do not wait for the LAZ to finish before explaining the ready footprint card.
+LAZ full completion was not qualified. Do not reuse REH9 completion times or wait for LAZ before continuing. [Surface11]
 
 ### D. Register → evidence checkpoint
 
-10. If offered, choose **Continue with other files** for `gpmc-yuvp.csv`. [H9]
-    REH9 refused the batch destination with **“Choose an active, unassigned source case.
-    This table cannot be attached to a site.”** It reached a separate table page after **1 s**
-    from the import press, but that did not attach evidence to the buildings. [H9]
-11. If today's build offers the newer in-batch table and evidence controls, inspect the exact key,
-    source row, proposed matches and conflicts before any evidence confirmation. Never resolve a conflict
-    by picking the convenient value. The intended review rule is in the architecture. [Arch]
-    Exact newer control labels, click order and durations are **not recorded in REH9**;
-    REH10 evidence is absent. Do not improvise API commands to fill that gap. [H9] [Board]
+10. Choose **Open the table: gpmc-yuvp.csv → Read as a table**, without choosing a separate case.
+    After **0.165 s**: **“753 records · 9 columns”**, **“Draft”**, **“Needs review”**.
+    Tables produce mapped draft rows, not buildings. The tray's **“No reader in a batch takes this kind
+    of file yet”** is stale for this CSV; the table reading succeeded. [Table11]
+11. Choose **Link a register by a key**. State namespace **“NYC building identification number (bin),
+    as written in both files”**, kind **integer**, map field `/features/*/properties/bin`, table
+    `gpmc-yuvp.csv` column **0**, `bin`; press **Declare the key**. Wait for
+    **“Closed: 753 read, 753 with a key, 0 without a key, 0 unread, 0 could not be read.”** [Key11]
+    Declare to closed job was **37.404 s**; closed words observed by **88.984 s**. Inspect source rows:
+    **612 matched, 81 conflicting, 60 no_match, 0 several**. Never pick a convenient conflict value. [Key11]
+    Choose **Accept every exact single match of this file**. Read **“This file has 612 exact single matches;
+    one confirmation takes 100. Confirm these, then accept the next 100.”** Acknowledge the actual scope.
+    REH11 confirmed only the first **100**; **512** remained, with no conflicting rows accepted. [Key11]
+    Stored words appeared after **10.834 s**: **“Stored with every pin it names. Nothing was written to the
+    registry: the citation step adds accepted rows and parts to recorded buildings under this confirmation.”** [Key11]
 
-Say: **“A shared key proposes a link. Only reviewed evidence may be cited; an ambiguous match stays open.”**
-If that screen is absent, name the gap and continue with a footprint-only card.
-Do not claim that card quotes the LPC register. REH9's chosen building had no register row citation. [H9]
+Say: **“A shared key proposes a link. This confirms evidence, not registry records; conflicts remain open.”**
 
 ### E. Ready targets → officer confirmation → card → verification
 
-12. Return to the batch's ready targets. Inspect the package scope and exceptions.
-    Tick the building that should receive a card. REH9 selected feature **1002204**. [H9]
-    That is a historical example, not a required live selection and not a register-linked example.
-13. In **Your acknowledgement**, state the actual source, scope, selected feature and `test_only` purpose.
-    The exact confirmation button is **Record packages and make chosen cards**. [H8]
-    Read the warning: the packages are recorded; chosen buildings get cards; other ready buildings in those
-    packages are recorded without cards. Recording is not limited to the ticked building. [Act8]
-14. Press that button once, only after checking the full list. Do not press it again while work continues.
-    REH9 measured **44.6 s** from confirmation to the selected NYC card. It reports **1,660 recorded**,
-    distinct from its earlier **1,661 ready**; the result does not explain that difference. [H9]
-    Read today's counts instead of correcting or promising them.
-15. Open the resulting card and its verification link. REH9 retained a PDF and verified the card as
-    **“Consistent, 6 of 6 checks passed”**, with signature **“not assessed (NO_TRUSTED_KEY_POLICY)”**. [H9]
-    Exact card-opening, PDF-download and verification-link button labels were not preserved in the committed
-    result. No separate click timings are recorded. Do not substitute the old guide's labels.
-16. Point to the citation. REH9 printed **“buildings-original.geojson, feature 1002204”**,
-    not an LPC row. Stop at whatever citation today's card actually carries. [H9]
+12. Return to ready targets. Inspect package scope and exceptions, then tick a matched building whose
+    evidence was confirmed. REH11 chose **feature 1001960**, register **column bin, row 702**. [Card11]
+13. In **Your acknowledgement**, state the source, scope, selected feature and `test_only` purpose.
+    The confirmation button is **Record packages and make chosen cards**. [H8]
+    Packages are recorded; chosen buildings are offered cards; other ready buildings in those packages
+    are recorded without cards. Recording is not limited to the ticked building. [Act8]
+14. Press once after checking the full list. REH11 had **1,661 ready and 1,661 recorded**, but
+    **0 carded, 1 stopped**. The job stopped after **71.487 s**; stop words were observed by **96.512 s**:
+    **“Work stopped; the completed steps are kept. A cited source is not currently available.”**
+    Code: **REGISTRY_SOURCE_UNAVAILABLE**. No card, quoted register row or verification resulted. [Card11]
 
-Say: **“The officer confirmed this scope. The card cites the original feature.
-Consistent means these recorded checks passed; it does not establish ownership or a trusted signature.”**
+**Card step: last proved at REH9 on the served demo commit; REH12 will re-prove it on the next roll**.
+That historical card cited only the footprint, not the LPC register. Do not claim the cited card works on
+staging. RC1 is in progress; do not retry this structural refusal or substitute a feature-only card. [H9] [Card11]
+
+Say: **“The completed steps are kept. Here is the confirmed evidence; the cited card step stopped.”**
 
 ## 3. Act 2 — judges' unknown data, without a code change
 
@@ -211,16 +212,20 @@ Private or restricted documents must not go to an external teacher. [Arch] (§§
   A source read, a map observation and a registry record are different things. [Arch]
 - **Read in parts.** Show the actual progress and any held parts.
   Say: **“The file is being read in bounded parts. This count is what has been read, not a claim of completeness.”**
-  The HDB GeoJSON in REH9 reached its first package **39.3 s** after **Use this layout** and all ready
-  after **351.9 s**. Its card took **174 s** after confirmation. These are examples, not a deadline
-  for the judges' file. The same set was unseen in REH8; REH9 was a regression, no longer unseen. [H9] [H8]
+  REH11's mixed ZIP kept its GeoJSON and PDF members unchanged, as their own items, in **15.074 s**.
+  The GeoJSON's **Approve layout** to draft was **44.057 s**, to **1,661 ready** **67.881 s**;
+  one invalid geometry was skipped unchanged. It was not recorded. These were team-chosen public foreign
+  `test_only` files, not unseen judges' data or a deadline for their file. [Judges11]
 - **Read in part, rest kept.** Show the actual limit and locator of what was not read.
   Say: **“This result covers only the stated portion. The remainder is kept, not silently treated as empty.”**
   `read_to_limit` is an architecture state, not proof that every format reaches it today. [Arch] (§9)
 - **Kept but not read.** Show **“Not understood”** or **“Part could not be read”**.
   Point to the retained-original words.
   Say: **“We have kept this original. This reader has not established its contents, so no facts are recorded
-  from the unread part.”** The PDF produced that outcome in the rehearsals. [H8] [H9]
+  from the unread part.”** REH11's Markdown said **“Not understood. Kept (13 KB); its kind was not
+  recognised from its first and last bytes.”** Its PDF instead read **18 pages** in **44.398 s**, with
+  **7 passages on pages 5–8, 10 and 16** naming floors, storeys, levels or rooms: page-and-line candidates
+  for review, not recorded facts. Do not call that PDF unread. [Judges11]
 - **Needs an answer.** Read the actual question.
   Say: **“The source does not settle this for the system. We need evidence or an officer's stated answer.”**
   Do not guess a CRS, a worksheet name, a floor or an identifier. [H8] [Arch]
@@ -229,6 +234,13 @@ Private or restricted documents must not go to an external teacher. [Arch] (§§
   The reason is visible; other accepted files can continue.”** REH9 refused the large parcel upload and
   the HDB CSV. Those were limitations, not successful ingestion. [H9]
 
+**CSV alone:** use **Import as a table → Create an unassigned source case → Retain table and start mapping**,
+not the multi-file **Retain files** dialog. REH11's final-newline CSV showed **2 records · 9 columns** in
+**0.175 s**, raw rows and mapping complete in **21.218 s**: **Draft; Needs review**, **0 teacher calls**,
+**7 unanswered**, **9 open questions**, **CASE_ORIGINAL_TEACHER_REFUSED**. Completion is not accepted facts
+or a live-teacher answer. Its source panel said `officer_supplied`, licence unconfirmed, personal-data state
+unknown; the `test_only` case name did not make it an evaluation asset. [Short11]
+
 A refusal shows the safety boundary working. It does not prove the intended reader or capacity is complete.
 No code change, secret change or runtime reconfiguration is part of this act.
 If the teacher is unavailable, use the offered officer questions or keep the result unresolved. [Live] [Arch]
@@ -236,7 +248,7 @@ If the teacher is unavailable, use the offered officer questions or keep the res
 ## 4. If something goes wrong mid-demo
 
 These are observed failures and presenter moves, not promises that newer merges fixed them.
-REH10 adds no committed observations here. Use the runtime owner for service recovery from section 1.
+Older failures remain historical boundaries, not REH11's outcome. Use the runtime owner for service recovery.
 
 ### Receipt and navigation
 
@@ -259,7 +271,8 @@ REH10 adds no committed observations here. Use the runtime owner for service rec
 
 - **“Choose an active, unassigned source case. This table cannot be attached to a site.”**
   Say the table has not joined these buildings. A separate unassigned table case was the rehearsed workaround,
-  not a linked-register success. If the evidence screen is absent, finish only the supported footprint path. [H9]
+  not a linked-register success. REH11 instead opened the table in its batch; do not create a separate
+  case to bypass a missing evidence screen. [H9] [Table11]
 - **“The literal reader requires valid headers, at most 2,000 rows and 256 columns.”**
   Stop this import and preserve the error. Do not silently truncate the judges' table or claim all rows read. [H9]
 - **“Exact sheet name. The API cannot list sheets. Enter the name from the workbook.”**
@@ -277,24 +290,28 @@ REH10 adds no committed observations here. Use the runtime owner for service rec
   Answer only a supported kind and key. REH8 left unsupported layer kinds unanswered; it did not call them
   buildings to get past the question. [H8]
 - **“Reading file”** without a count, or slow package preparation. Stay on the batch and narrate only visible
-  progress. HDB took **351.9 s** to all ready in REH9 versus **164.9 s** to the last package in REH8.
-  Do not promise a countdown or rerun an active read. [H9]
-- **“Read but not placed: the batch area has no extent yet.”** Stay with the footprint/card path.
-  Say the surface read succeeded but placement did not; do not supply a guessed frame or height. [H9]
+  progress. REH11's footprint ready job finished **54.395 s** after approval, not a promised countdown.
+  Do not rerun an active read. [Layout11]
+- **“Read but not placed: the batch area has no extent yet.”** Say placement has not succeeded;
+  do not supply a guessed frame or height. REH11 placed both surfaces against drafted footprints;
+  read the current holdings and Layers counts rather than repeating the older unplaced outcome. [H9] [Surface11]
 - **“The buildings in view could not be read. A local service could not complete this operation.”**
   Return to the batch. REH8 saw a failed display read; it is not evidence that source buildings are absent. [H8]
 - **“Choose an area with at most 10,000 display features.”** This is a map-context limit.
   Do not truncate the source. Use the batch's package and card results; move closer if the map offers it. [H8]
 - **“Showing 15,000 buildings in view, the most drawn at once; move closer to see the rest.”**
   Say the view is bounded, not the source. Heavy-map stalls were observed with software WebGL. [Act8]
-  Return to the batch if drawing stalls. REH9's map-load worst frame was **467 ms**; smooth batch streaming
-  is not proof of a universally smooth map. [H9]
+  Return to the batch if drawing stalls. REH11's whole-map worst frame was **467 ms**;
+  after map open it was **183 ms**, with **2 frames over 100 ms**. No zero-stall claim. [Frames11]
 - **“Area: not supplied by the record”**, or buildings shown under an unexpected area name.
   Read the source citation; do not infer legal or geographical membership from that label. REH8 saw this. [H8]
 - **“Property Card: Blocked: select a unit with an assigned proposed code”** despite a completed batch card.
   Use the card result and verification link from the batch. Do not invent a unit or assign a code to bypass it.
   REH8's card also printed **“Unavailable: Not supplied by the executed text/CSV profile”** for geometry;
   that wording did not establish geometry from its map source. [H8] [Act8]
+- **REGISTRY_SOURCE_UNAVAILABLE — “Work stopped; the completed steps are kept. A cited source is not
+  currently available.”** Do not retry. Say the completed steps are kept and show the confirmed evidence
+  instead. Preserve the batch address for the runtime owner. No rehearsed Studio recovery produced a card. [Card11]
 - **Live connection churn or console warnings.** There may be no useful on-screen error.
   REH8 fell back to polling; REH9 logged **“Encountered two children with the same key”**.
   Stay on the batch if saved progress moves. Do not re-confirm or re-import to cure a display problem. [H8] [H9]
@@ -323,6 +340,10 @@ the gap. Truncated or invalid model output is not a candidate fact to approve. [
   Rights remain **“Not assessed”**. [Act8]
 - **“Consistent”** is the implemented verification result, not a trusted-signature verdict.
   Keep **“signature not assessed”** visible. [H9]
+- Do not claim LAZ full completion: it stopped at **6 of 211 batches**. Do not claim all frames stayed below
+  **100 ms**: worst after map open was **183 ms**, with **2 frames over 100 ms**. [Surface11] [Frames11]
+- Do not claim one evidence confirmation accepts the whole file: only the first **100** exact matches per
+  confirmation; REH11 left **512** unconfirmed, plus conflicts and unmatched rows unresolved. [Key11]
 - Do not say “any format, any size”, “everything entered in one drop”, “nothing froze”,
   “empty start proved” or “LPC evidence on this card”.
   Only make a scoped claim that today's retained results establish.
@@ -333,6 +354,21 @@ A kept file, a proposal and a recorded fact are deliberately different.”**
 
 ## Evidence key
 
+REH11 receipt fields (each reference below names its file and JSON field):
+
+[H10]: evidence/runtime/reh10/report.md
+[H11]: evidence/runtime/reh11/result.json "servedCommit; runtimeNotEmpty; roll.gateway; demo; verdict"
+[Demo11]: evidence/runtime/reh11/demo-after.json "doctor.output; doctor.exit"
+[Upload11]: evidence/runtime/reh11/result.json
+  "act1.readerForecast; act1.dropToForecastSeconds; act1.upload; harnessQualifications; act2.judges"
+[Layout11]: evidence/runtime/reh11/result.json "act1.layout"
+[Table11]: evidence/runtime/reh11/result.json "act1.register"
+[Surface11]: evidence/runtime/reh11/result.json "act1.surfaces"
+[Key11]: evidence/runtime/reh11/result.json "act1.evidence"
+[Card11]: evidence/runtime/reh11/result.json "act1.card; act1.layout.ready; failures"
+[Judges11]: evidence/runtime/reh11/result.json "act2.judges"
+[Short11]: evidence/runtime/reh11/result.json "act2.shortCsv"
+[Frames11]: evidence/runtime/reh11/result.json "frames.map; act1.surfaces.framesAfterMapOpen; frameQualification"
 [H9]: evidence/runtime/reh9/result.json
 [H8]: evidence/runtime/reh8/result.json
 [Act8]: evidence/runtime/reh8/act1.json
