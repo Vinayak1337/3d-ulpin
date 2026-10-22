@@ -21,7 +21,7 @@ import { IntakeRunPanel } from './run';
 import { runKey } from './run/useTargets';
 import type { BatchLocationState } from './retain-batch';
 import { useSourceCase } from './table/queries';
-import { UnfinishedUploads } from './UnfinishedUploads';
+import { BatchUploadProgress } from './BatchUploadProgress';
 import { keepWaiting, readWaiting, sizeWords, type UploadEntry, type WaitingFile } from './upload-model';
 import { useBatchStream } from './useBatchStream';
 import styles from './Batch.module.css';
@@ -75,7 +75,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       {stream.error || 'Live updates are disconnected.'} The batch is checked no more than once every five seconds.
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
     </Banner> : null}
-    <UnfinishedUploads caseId={caseId} refresh={refresh} settled={waiting.settle} />
+    <BatchUploadProgress caseId={caseId} refresh={refresh} settled={waiting.settle} />
     <FilesNotAdded state={state} />
     <WaitingFiles files={waiting.files} dismiss={waiting.dismiss} />
     {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh} />

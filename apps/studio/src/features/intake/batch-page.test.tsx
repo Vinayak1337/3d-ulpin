@@ -2,7 +2,7 @@ import { button, container, elements, propsOf, type FakeElement } from './fake-d
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, expect, it, vi, type MockInstance } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import type { IntakeItem, IntakeManifest } from './batch-model';
@@ -66,10 +66,10 @@ async function renderBatch(waiting: WaitingFile[]) {
   client.setQueryData(uploadsKey(caseId), { uploads: facts.uploads });
   const root = container();
   const view = createRoot(root as never);
+  const router = createMemoryRouter([{ path: '/studio/work/cases/:caseId/intake', element: <BatchPage /> }],
+    { initialEntries: [`/studio/work/cases/${caseId}/intake`] });
   await act(async () => view.render(<QueryClientProvider client={client}>
-    <MemoryRouter initialEntries={[`/studio/work/cases/${caseId}/intake`]}>
-      <Routes><Route path="/studio/work/cases/:caseId/intake" element={<BatchPage />} /></Routes>
-    </MemoryRouter>
+    <RouterProvider router={router} />
   </QueryClientProvider>));
   return { root, client, unmount: () => act(async () => view.unmount()) };
 }
