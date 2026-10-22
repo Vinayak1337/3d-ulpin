@@ -16,6 +16,7 @@ import {registerUspJobInputTx} from '../jobs';
 import {gltfConfig,assertGltfReadTools} from './gltf-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {assertBatchNativeSourceTx} from './intake-native-readers';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -29,7 +30,7 @@ export const gltfArtifactKey=(jobId:string,hash:string)=>`gltf-native/${jobId}/$
 
 /** Exact object length is enforced before collecting a bounded original/artifact. */
 export async function boundedGltfObject(key:string,size:number,signal?:AbortSignal){
-  const cap=key.startsWith('sources/')?GLTF_LIMITS.originalBytes:GLTF_LIMITS.artifactBytes;
+  const cap=/^(?:sources|large-originals)\//.test(key)?GLTF_LIMITS.originalBytes:GLTF_LIMITS.artifactBytes;
   if(!Number.isSafeInteger(size)||size<1||size>cap)
     throw new AppError(422,'GLTF_OBJECT_LIMIT','Stored Gltf object exceeds its private profile.');
   const {body}=await openObjectStream(key,size,30_000,undefined,signal),parts:Buffer[]=[];let total=0;
@@ -61,9 +62,10 @@ export async function gltfSourceTx(client:PoolClient,caseId:string,sourceId:stri
   if(current.archived)throw new AppError(403,'GLTF_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('Gltf source not found in this case.');
   const original=GltfOriginalSchema.safeParse(source.inspection?.gltfOriginal);
-  if(source.profile!=='gltf-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
+  if(source.profile==='large-original-v1')await assertBatchNativeSourceTx(client,source,binding,'gltf');
+  else if(source.profile!=='gltf-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
     throw new AppError(403,'GLTF_DENIED','This retained Gltf is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  else if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
     throw new AppError(422,'GLTF_SOURCE_INTEGRITY','The Gltf receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -89,7 +91,13 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSou
   if(jobs>=GLTF_LIMITS.jobsPerSource)throw new AppError(429,'GLTF_HISTORY_LIMIT','The bounded inspection history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='gltf-native' AND status IN ('queued','running')")).rows[0].n);
   if(active>=GLTF_LIMITS.active)throw new AppError(429,'GLTF_WORKER_BUSY','The bounded Gltf workers are occupied.');
-  const jobId=randomUUID(),input=gltfInput(ctx,jobId,nullableGltfTools(),sceneIndex),inputHash=fingerprint(input);
+  return insertGltfJobTx(client,ctx,randomUUID(),sceneIndex);
+}
+/** One pinned native job; a batch may supply its stable replay key. */
+export async function insertGltfJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,
+  sceneIndex:number|null=null){
+  if(!ctx.latest)conflict('This Gltf source has a newer retained revision.');
+  const input=gltfInput(ctx,jobId,nullableGltfTools(),sceneIndex),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'gltf-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);

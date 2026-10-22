@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
-import { DOCUMENT_LIMITS, IFC_LIMITS, NATIVE_GIS_LIMITS, POINT_BATCH_LIMITS,
+import { DOCUMENT_LIMITS, GLTF_LIMITS, IFC_LIMITS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
   RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { DropOutcomes } from './IntakeDropDialog';
 import { readerEligibility } from './upload-model';
@@ -29,6 +29,7 @@ it('uses each reader ceiling inclusively, including the native PDF limit rather 
     ['geojson', STREAMING_VECTOR_LIMITS.sourceBytes], ['ifc', IFC_LIMITS.originalBytes],
     ['pdf', DOCUMENT_LIMITS.nativeBytes], ['tif', RASTER_WINDOW_LIMITS.originalBytes],
     ['laz', POINT_BATCH_LIMITS.originalBytes], ['gpkg', NATIVE_GIS_LIMITS.sourceBytes],
+    ['glb', GLTF_LIMITS.originalBytes], ['gltf', GLTF_LIMITS.originalBytes], ['obj', OBJ_LIMITS.originalBytes],
   ] as const;
   for (const [extension, bytes] of limits) {
     expect(readerEligibility({ name: `source.${extension.toUpperCase()}`, size: bytes }))
@@ -40,7 +41,7 @@ it('uses each reader ceiling inclusively, including the native PDF limit rather 
   expect(readerEligibility({ name: 'source.constructor', size: 1024 }).withinCeiling).toBeNull();
 });
 
-it('forecasts only what the name and size settle: the point rule, JSON, DXF and GML kinds', () => {
+it('forecasts only what the name and size settle: the point rule, JSON, DXF, glTF, OBJ and GML kinds', () => {
   const words = (name: string, size = 1024) => readerEligibility({ name, size }).words;
   const points = 'Points are read when the file is compressed LAZ of LAS 1.4 point format 6 with at most '
     + '5 million points (within 16 MiB). Other point files are kept, not read.';
@@ -52,9 +53,19 @@ it('forecasts only what the name and size settle: the point rule, JSON, DXF and 
     + 'A CityJSON is read up to 8 MiB; other JSON is kept, not read.');
   expect(words('plan.dxf')).toBe('Will be read by the DXF reader (within 16 MiB). '
     + 'Its reading is kept as evidence, not placed on the map.');
+  for (const name of ['model.glb', 'model.gltf']) {
+    expect(words(name)).toBe('Will be read by the glTF reader (within 16 MiB). '
+      + 'Its reading is kept as evidence, not placed on the map.');
+  }
+  expect(words('model.glb', GLTF_LIMITS.originalBytes + 1))
+    .toBe('Will be kept, not read: larger than the 16 MiB glTF reader');
+  expect(words('mesh.obj')).toBe('Will be read by the OBJ reader (within 16 MiB). '
+    + 'Its reading is kept as evidence, not placed on the map.');
+  expect(words('mesh.obj', OBJ_LIMITS.originalBytes + 1))
+    .toBe('Will be kept, not read: larger than the 16 MiB OBJ reader');
   expect(words('city.gml')).toBe('Read by the CityGML reader when its bytes show a CityGML city model '
     + '(within 32 MiB). Other GML is kept, not read. A CityGML reading is kept as evidence, not placed on the map.');
-  for (const name of ['scan.laz', 'city.json', 'plan.dxf', 'city.gml']) {
+  for (const name of ['scan.laz', 'city.json', 'plan.dxf', 'model.glb', 'model.gltf', 'mesh.obj', 'city.gml']) {
     expect(words(name)).not.toContain('Kind not known');
   }
 });

@@ -8,6 +8,8 @@ export { INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS } from './usp/int
 export { DXF_LIMITS } from './usp/dxf-ingestion';
 export { CITYGML_LIMITS } from './usp/citygml-ingestion';
 export { CITYJSON_LIMITS } from './usp/cityjson-ingestion';
+export { GLTF_LIMITS } from './usp/gltf-ingestion';
+export { OBJ_LIMITS } from './usp/obj-ingestion';
 export { TABULAR_STREAM_LIMITS } from './usp/ingestion';
 
 /** Native GIS conversion's source/set ceiling (services/geo/geo/native_gis.py: MAX_SOURCE_BYTES). */

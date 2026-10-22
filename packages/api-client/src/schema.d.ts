@@ -65560,7 +65560,7 @@ export interface components {
             ifcJobId?: string;
             /**
              * Format: uuid
-             * @description A DXF, CityGML or CityJSON kept in a batch: its native reading job; absent for every other item.
+             * @description A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other item.
              */
             nativeReaderJobId?: string;
             /** Format: date-time */
@@ -65850,7 +65850,7 @@ export interface components {
                 ifcJobId?: string;
                 /**
                  * Format: uuid
-                 * @description A DXF, CityGML or CityJSON kept in a batch: its native reading job; absent for every other item.
+                 * @description A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other item.
                  */
                 nativeReaderJobId?: string;
                 /** Format: date-time */

@@ -5,6 +5,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard } from '@ulpin/contracts/usp';
@@ -424,6 +425,76 @@ test('a KML of folders: each folder with placemarks kept and enrolled, read with
     assert.deepEqual([closure.features, accepted], [4, 4]);
     assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:4326');
   });
+
+// B3D1. The real D1 3DBAG CityJSON (test_only), converted by the real outline reader after its CityJSON reading.
+const cityjsonD1 = new URL('../../../../../../fixtures/usp/D1/single-roof/original.json', import.meta.url);
+const cityjsonScript = `
+import hashlib, json, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, 'services/geo')
+from geo.native_gis import convert_native_file
+path = Path(sys.argv[1])
+raw = path.read_bytes()
+digest = hashlib.sha256(raw).hexdigest()
+print(json.dumps({'bytes': len(raw), 'sha256': digest,
+  'layers': convert_native_file(path, 'cityjson', Path(tempfile.mkdtemp()), digest)}))`;
+
+test('a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 and read by the large path',
+  { skip: !existsSync(python) }, async () => {
+    const result = JSON.parse(execFileSync(python, ['-B', '-c', cityjsonScript, fileURLToPath(cityjsonD1)],
+      { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
+    const files = new Map<string, Buffer>();
+    const layers = stored(result, files);
+    const original = retained(sourceId, result.bytes, result.sha256, 'city.json');
+    const { client, sources, item } = ledger(original);
+    const readerJobId = '30000000-0000-4000-8000-000000000004';
+    item.card = { format: 'cityjson', family: 'model3d' };
+    item.plan_ref = { nativeReaderJobId: readerJobId };
+    const kept = new Map<string, Buffer>();
+    const dependencies: NativeDerivativeDependencies = {
+      transaction: (async (work: (c: PoolClient) => unknown) => work(client)) as
+        NativeDerivativeDependencies['transaction'],
+      read: async (key, start, end) => files.get(key)!.subarray(start, end),
+      convert: async request => {
+        assert.equal(request.format, 'cityjson');
+        return { conversion: 'native_gis_to_geojson@1', readerVersion: 'cityjson-ground-outline/1', sourceId,
+          sourceSha256: result.sha256, layers };
+      },
+      register: async () => ({}),
+      large: receipt(sources, kept),
+    };
+    const [child] = await convertNativeLayers(caseId, itemId, dependencies);
+    const lineage = sources.get(child).inspection.nativeDerivative;
+    assert.deepEqual([sources.get(child).name, lineage.format, lineage.crs, lineage.crsSource, lineage.features,
+      lineage.notWritten], ['building ground outlines.geojson', 'cityjson', 'EPSG:28992', 'stated', 1, 0]);
+    assert.deepEqual([item.state, item.placement, item.plan_ref], ['read', 'undecided',
+      { nativeReaderJobId: readerJobId }]);
+    assert.equal(item.limit_reason, '1 layer of this CityJSON is converted to GeoJSON and taken in as its own file: '
+      + 'building ground outlines. Coordinate system: EPSG:28992, the horizontal part of the EPSG:7415 the file '
+      + 'states.');
+
+    // The large GeoJSON path takes the child unchanged: one 3D outline, accepted under EPSG:28992.
+    const bytes = kept.get(child)!;
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length,
+      'outlines.geojson');
+    assert.deepEqual([card.family, card.format, card.crs.state], ['vector', 'geojson', 'stated']);
+    let accepted = 0;
+    const closure = await readStreamingFeatures(Readable.from([bytes]), 'feature-collection', async entry => {
+      accepted += Number(sourceRecord(entry).disposition === 'accepted');
+    });
+    assert.deepEqual([closure.features, accepted], [1, 1]);
+    assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:28992');
+  });
+
+test('a CityJSON whose outlines cannot be placed rests read, in the words saying why', () => {
+  const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1',
+    readerVersion: 'cityjson-ground-outline/1', sourceId, sourceSha256: 'a'.repeat(64),
+    layers: [{ layer: 'building ground outlines', ordinal: 0, state: 'not_converted', reason: 'states EPSG:4979, '
+      + 'which has no two-dimensional horizontal system the reader knows, so its outlines stay unplaced' }] });
+  assert.deepEqual(nativeParentState('cityjson', conversion, []), { state: 'read', placement: 'not_understood',
+    planRef: null, recordsSeen: 0, limitReason: 'Not converted: building ground outlines (states EPSG:4979, which '
+      + 'has no two-dimensional horizontal system the reader knows, so its outlines stay unplaced).' });
+});
 
 test('a KML with no placemark geometry rests not understood, naming what it keeps but does not read', () => {
   const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1',

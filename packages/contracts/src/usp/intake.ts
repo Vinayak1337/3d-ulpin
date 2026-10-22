@@ -194,7 +194,8 @@ export const IntakeItemSchema = z.strictObject({
   ifcJobId: z.string().uuid().optional().describe(
     'An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.'),
   nativeReaderJobId: z.string().uuid().optional().describe(
-    'A DXF, CityGML or CityJSON kept in a batch: its native reading job; absent for every other item.'),
+    'A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other '
+    + 'item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });
