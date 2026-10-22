@@ -20,6 +20,7 @@ import {runIntakeDraftJob} from '../usp/ingestion/intake-draft-worker';
 import {runIntakeLargeJob} from '../usp/ingestion/intake-large-worker';
 import {runIntakeZipLayersJob} from '../usp/ingestion/intake-zip-layers-worker';
 import {runIntakePageImageJob} from '../usp/ingestion/intake-page-image-worker';
+import {runIntakePlanJob} from '../usp/ingestion/intake-plan-worker';
 import {runIntakeNativeDerivativeJob} from '../usp/ingestion/intake-native-derivative-worker';
 import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
 import {runTableProfileJob} from '../usp/ingestion/table-profile-worker';
@@ -400,8 +401,9 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
           .finally(()=>{intakeZipLayersWorker=undefined;reservations.release(job.id);});
         return;
       }
-      if(job.operation==='intake-page-image'){
-        if(!intakePageImageWorker&&admit(job))intakePageImageWorker=runIntakePageImageJob(job.id)
+      if(job.operation==='intake-page-image'||job.operation==='intake-plan'){
+        const read=job.operation==='intake-plan'?runIntakePlanJob:runIntakePageImageJob;
+        if(!intakePageImageWorker&&admit(job))intakePageImageWorker=read(job.id)
           // The fenced attempt owns retry; a rerun stores the same content-addressed preview.
           .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{intakePageImageWorker=undefined;reservations.release(job.id);});

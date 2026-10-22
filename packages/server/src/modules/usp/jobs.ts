@@ -148,15 +148,16 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||inputSha256!==fingerprint(input))
       throw new AppError(422,'INTAKE_ZIP_LAYERS_INPUT_SCOPE',
         'ZIP layer jobs must pin their retained archive and intake revision.');
-  } else if(job.operation==='intake-page-image'){
-    const {IntakePageImageInputSchema}=await import('./ingestion/intake-page-image');
-    const input=IntakePageImageInputSchema.parse(job.payload);
+  } else if(job.operation==='intake-page-image'||job.operation==='intake-plan'){
+    const input=job.operation==='intake-plan'
+      ?(await import('./ingestion/intake-plan')).IntakePlanInputSchema.parse(job.payload)
+      :(await import('./ingestion/intake-page-image')).IntakePageImageInputSchema.parse(job.payload);
     if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
       ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
       ||inputSha256!==fingerprint(input))
       throw new AppError(422,'INTAKE_PAGE_IMAGE_INPUT_SCOPE',
-        'Page image jobs must pin their retained image and intake revision.');
+        'Page image and plan jobs must pin their retained original and intake revision.');
   } else if(job.operation==='intake-native-derivative'||job.operation==='intake-table-geojson'){
     // TC1: a table's rows written as a GeoJSON derivative pin their table as a conversion pins its original.
     const input=job.operation==='intake-table-geojson'

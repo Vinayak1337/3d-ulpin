@@ -10,7 +10,8 @@ import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/serv
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
   IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema,
-  IntakeLayerCrsSchema, IntakeTablePlacementSchema } from '@ulpin/contracts/usp';
+  IntakeLayerCrsSchema, IntakeTablePlacementSchema, IntakePlanOfferSchema, IntakePlanRequestSchema,
+  IntakePlanReceiptSchema } from '@ulpin/contracts/usp';
 import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
   IntakeSurfaceDisplaySchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
@@ -115,6 +116,24 @@ export class IngestionController {
   @jsonBody(IntakePageImageAnswerSchema) @wireResponse(200,IntakeItemSchema)
   async labelPageImage(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
     return this.intake.labelPageImage(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/plan-reader')
+  @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_reader',
+    summary:'Check the installed pinned plan model and pages eligible for candidate room reading'})
+  @wireResponse(200,IntakePlanOfferSchema)
+  planOffer(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
+    return this.intake.planOffer(caseId,itemId);
+  }
+
+  @Post('cases/:caseId/intake/items/:itemId/plan-readings')
+  @HttpCode(202) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_readings',
+    summary:'Queue one candidate-only room reading of a plan image or selected OCR PDF page; never records'})
+  @jsonBody(IntakePlanRequestSchema) @wireResponse(202,IntakePlanReceiptSchema)
+  async readPlan(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.readPlan(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 
   @Get('cases/:caseId/intake/items/:itemId/page-image-preview')

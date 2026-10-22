@@ -93,7 +93,7 @@ export const AREA_PROCESSOR_OPERATION = "AREA_PROCESSOR_OPERATION";
 
 export async function areaGeo<T>(
   operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis" | "inspect-archive-member"
-    | "build-prisms" | "resolve-geojson-crs",
+    | "build-prisms" | "resolve-geojson-crs" | "plan-readiness" | "plan-reading",
   input: unknown,
   maxResultBytes?: number,
 ): Promise<T> {

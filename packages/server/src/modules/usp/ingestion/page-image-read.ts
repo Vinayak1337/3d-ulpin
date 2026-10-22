@@ -200,11 +200,11 @@ const FORMAT_WORDS: Record<PageImageFormat, string> = { jpeg: 'JPEG', png: 'PNG'
 const labelWords: Record<IntakePageImageLabel, string> = { plan: 'a plan', elevation: 'an elevation',
   photo: 'a photo', other: 'something else' };
 
-/** What follows a label: no reader in the application takes a plan (or anything else) from a page image. */
+/** Labelling never extracts rooms; the separate plan press must first check its installed model. */
 function labelNextWords(label: IntakePageImageLabel): string {
-  if (label !== 'plan') return 'It is kept as a labelled page image and is not read.';
-  return 'It is kept as a labelled plan image and is not read: no plan reader in a batch takes a page image yet, '
-    + 'so no text, rooms, levels or units come from it.';
+  if (label !== 'plan') return 'It is kept as a labelled page image. Labelling alone extracts no rooms.';
+  return 'It is kept as a labelled plan image. The separate plan reading can propose candidate rooms when its '
+    + 'model is installed. Labelling alone creates no rooms, levels or units.';
 }
 
 /** D3. What it is, in an officer's words, from the read alone, and the question it rests on. */

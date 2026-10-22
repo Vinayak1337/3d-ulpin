@@ -116,11 +116,10 @@ test('above the byte bound only the first bytes are read and the item says why n
     + 'show: a plan, an elevation, a photo or something else?');
   const answered = { ...read!, label: { value: 'plan' as const, state: 'candidate' as const,
     answeredAt: '2026-10-21T00:00:00.000Z' } };
-  // No reader in the application takes a plan from a page image: the words say it is kept and not read.
   assert.ok(pageImageWords(answered).endsWith('it shows a plan; this is a candidate label, not reviewed. It is kept '
-    + 'as a labelled plan image and is not read: no plan reader in a batch takes a page image yet, so no text, '
-    + 'rooms, levels or units come from it.'));
+    + 'as a labelled plan image. The separate plan reading can propose candidate rooms when its model is '
+    + 'installed. Labelling alone creates no rooms, levels or units.'));
   const photo = { ...answered, label: { ...answered.label, value: 'photo' as const } };
   assert.ok(pageImageWords(photo).endsWith('it shows a photo; this is a candidate label, not reviewed. It is kept '
-    + 'as a labelled page image and is not read.'));
+    + 'as a labelled page image. Labelling alone extracts no rooms.'));
 });
