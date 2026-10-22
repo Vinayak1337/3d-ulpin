@@ -62,8 +62,9 @@ it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page 
 
 it('forecasts only what the name and size settle: points, JSON, CityJSON, DXF, glTF, OBJ and GML kinds', () => {
   const words = (name: string, size = 1024) => readerEligibility({ name, size }).words;
-  const points = 'Points are read when the file is compressed LAZ of LAS 1.4 point format 6 with at most '
-    + '5 million points (within 16 MiB). Other point files are kept, not read.';
+  const points = 'Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most '
+    + '5 million points (within 16 MiB). Waveform formats 4/5/9/10, extra dimensions and other versions or formats '
+    + 'are kept, not read.';
   expect(words('scan.laz')).toBe(points);
   expect(words('scan.las')).toBe(points);
   expect(words('scan.laz', POINT_BATCH_LIMITS.originalBytes + 1))

@@ -34,6 +34,19 @@ describe('a batch of LAS records', () => {
     expect(positions.filter((_, i) => i % 3 === 2).every((z) => z === 0)).toBe(true);
   });
 
+  it('uses the source record stride for ordinary LAS and RGB/NIR formats', () => {
+    for (const length of [20, 26, 28, 30, 34, 36, 38]) {
+      const view = new DataView(new ArrayBuffer(2 * length));
+      view.setInt32(0, 125, true);
+      view.setInt32(length, 250, true);
+      view.setInt32(length + 4, -50, true);
+      const read = readLasRecords(view.buffer, length);
+      expect(Array.from(read.x)).toEqual([125, 250]);
+      expect(Array.from(read.y)).toEqual([0, -50]);
+    }
+    expect(() => readLasRecords(new ArrayBuffer(44), 22)).toThrow(SurfaceRefusal);
+  });
+
   it('colours by Z rank within the batch and never lets Z move a point', () => {
     const low = placeBatch(readLasRecords(records([[0, 0, -50], [10, 10, 7], [5, 5, 3]])), turned);
     const high = placeBatch(readLasRecords(records([[0, 0, 900000], [10, 10, 1000000], [5, 5, 950000]])), turned);

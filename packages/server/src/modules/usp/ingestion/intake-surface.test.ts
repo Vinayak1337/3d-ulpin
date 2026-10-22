@@ -49,13 +49,53 @@ test('the DEM signature-only probe is not yet read, never a missing coordinate s
   assert.equal(dem.verticalReference, null);
 });
 
+test('ordinary LAS and LAZ versions and non-waveform formats use the point reader', () => {
+  for (const version of ['1.2', '1.3', '1.4']) {
+    const formats = version === '1.4' ? [0, 1, 2, 3, 6, 7, 8] : [0, 1, 2, 3];
+    for (const format of formats) for (const compression of ['las', 'laz']) {
+      const card = { family: 'point_cloud', format: compression, formatVersion: version,
+        point: { format, scale: null }, counts: { points: 10 }, raster: null } as never;
+      assert.deepEqual(surfaceReader(card, 1024), { operation: 'point-batch' }, `${compression} ${version}/${format}`);
+    }
+  }
+});
+
 test('above a reader limit the original is kept and the limit is named', () => {
-  const card = { family: 'point_cloud', format: 'laz', formatVersion: '1.2', point: { format: 1, scale: null },
-    counts: { points: 10 }, raster: null } as never;
-  const reader = surfaceReader(card, 1024) as { limit: string };
-  assert.match(reader.limit, /LAS 1\.4 point format 6 only; this is LAZ 1\.2 format 1/);
+  const card = { family: 'point_cloud', format: 'las', formatVersion: '1.3', point: { format: 4, scale: null },
+    counts: { points: 10 }, raster: null };
+  for (const format of [4, 5, 9, 10]) {
+    const reader = surfaceReader({ ...card, point: { format, scale: null } } as never, 1024) as { limit: string };
+    assert.match(reader.limit, /waveform formats 4\/5\/9\/10 are not read/);
+    assert.match(reader.limit, new RegExp(`this is LAS 1\\.3 format ${format}`));
+  }
+  for (const formatVersion of ['1.1', '1.5']) {
+    const reader = surfaceReader({ ...card, formatVersion, point: { format: 1 } } as never, 1024);
+    assert.match((reader as { limit: string }).limit, /LAS 1\.2, 1\.3 or 1\.4/);
+  }
+  const invalid = surfaceReader({ ...card, point: { format: 6 } } as never, 1024);
+  assert.match((invalid as { limit: string }).limit, /this is LAS 1\.3 format 6/);
+  const oversized = surfaceReader({ ...card, point: { format: 1 } } as never, 17 * 1024 ** 2);
+  assert.match((oversized as { limit: string }).limit, /point cloud of at most 16 MiB/);
+  const over = surfaceReader({ ...card, point: { format: 1 }, counts: { points: 5_000_001 } } as never, 1024);
+  assert.match((over as { limit: string }).limit, /at most 5 million points/);
   const big = surfaceReader({ family: 'raster', format: 'geotiff', raster: null, counts: {} } as never, 17 * 1024 ** 2);
   assert.match((big as { limit: string }).limit, /^Kept \(17 MiB\)\. The batch reads a raster of at most 16 MiB/);
+});
+
+test('a waveform source stays kept with words and queues no point part', async () => {
+  const { client, item, parts } = ledger();
+  item.plan_ref = null;
+  parts.clear();
+  const source = { id: itemId, case_id: caseId, profile: 'large-original-v1', bytes: 1024 } as IntakeSourceRow;
+  const card = { family: 'point_cloud', format: 'las', formatVersion: '1.3',
+    point: { format: 4, scale: null }, counts: { points: 2 }, raster: null } as never;
+  const keptClient = { query: (sql: string, values: unknown[]) => sql.startsWith('SELECT * FROM usp_intake_items')
+    ? { rows: [item], rowCount: 1 } : client.query(sql, values) } as unknown as PoolClient;
+  assert.equal(await queueIntakeSurfaceTx(keptClient, source, card), true);
+  assert.deepEqual([item.state, item.placement, item.plan_ref], ['probed', 'not_understood', null]);
+  assert.match(item.limit_reason, /waveform formats 4\/5\/9\/10 are not read/);
+  assert.match(item.limit_reason, /the original is kept with its SHA-256/);
+  assert.equal(parts.size, 0);
 });
 
 test('a native format-6 batch gives the XY extent of its records', () => {
@@ -64,6 +104,13 @@ test('a native format-6 batch gives the XY extent of its records', () => {
   records.writeInt32LE(300, 30); records.writeInt32LE(20, 34);
   assert.deepEqual(pointRecordsExtent(records, [0.5, 0.5, 0.5], [500, 4000, 0]), [550, 3975, 650, 4010]);
   assert.equal(pointRecordsExtent(new Uint8Array(0), [1, 1, 1], [0, 0, 0]), null);
+  for (const length of [20, 26, 28, 34, 36, 38]) {
+    const native = Buffer.alloc(2 * length);
+    native.writeInt32LE(100, 0); native.writeInt32LE(-50, 4);
+    native.writeInt32LE(300, length); native.writeInt32LE(20, length + 4);
+    assert.deepEqual(pointRecordsExtent(native, [0.5, 0.5, 0.5], [500, 4000, 0], length),
+      [550, 3975, 650, 4010]);
+  }
 });
 
 /** The double's answer to the placement statement; the transform is the identity (same EPSG code). */
