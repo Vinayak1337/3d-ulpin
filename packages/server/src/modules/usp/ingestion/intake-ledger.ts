@@ -77,6 +77,8 @@ export function intakeItem(row: any) {
     ...layerCrs(row.plan_ref),
     ...(IntakeItemSchema.shape.ifcJobId.unwrap().safeParse(row.plan_ref?.ifcJobId).success
       ? { ifcJobId: row.plan_ref.ifcJobId } : {}),
+    ...(IntakeItemSchema.shape.nativeReaderJobId.unwrap().safeParse(row.plan_ref?.nativeReaderJobId).success
+      ? { nativeReaderJobId: row.plan_ref.nativeReaderJobId } : {}),
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
 }

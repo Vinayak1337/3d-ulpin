@@ -16,6 +16,7 @@ import {registerUspJobInputTx} from '../jobs';
 import {citygmlConfig,assertCityGMLReadTools} from './citygml-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {assertBatchNativeSourceTx} from './intake-native-readers';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -29,7 +30,7 @@ export const citygmlArtifactKey=(jobId:string,hash:string)=>`citygml-native/${jo
 
 /** Exact object length is enforced before collecting a bounded original/artifact. */
 export async function boundedCityGMLObject(key:string,size:number,signal?:AbortSignal){
-  const cap=key.startsWith('sources/')?CITYGML_LIMITS.originalBytes:CITYGML_LIMITS.artifactBytes;
+  const cap=/^(?:sources|large-originals)\//.test(key)?CITYGML_LIMITS.originalBytes:CITYGML_LIMITS.artifactBytes;
   if(!Number.isSafeInteger(size)||size<1||size>cap)
     throw new AppError(422,'CITYGML_OBJECT_LIMIT','Stored CityGML object exceeds its private profile.');
   const {body}=await openObjectStream(key,size,30_000,undefined,signal),parts:Buffer[]=[];let total=0;
@@ -61,9 +62,10 @@ export async function citygmlSourceTx(client:PoolClient,caseId:string,sourceId:s
   if(current.archived)throw new AppError(403,'CITYGML_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('CityGML source not found in this case.');
   const original=CityGMLOriginalSchema.safeParse(source.inspection?.citygmlOriginal);
-  if(source.profile!=='citygml-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
+  if(source.profile==='large-original-v1')await assertBatchNativeSourceTx(client,source,binding,'citygml');
+  else if(source.profile!=='citygml-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
     throw new AppError(403,'CITYGML_DENIED','This retained CityGML is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  else if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
     throw new AppError(422,'CITYGML_SOURCE_INTEGRITY','The CityGML receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -89,7 +91,12 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof citygml
   if(jobs>=CITYGML_LIMITS.jobsPerSource)throw new AppError(429,'CITYGML_HISTORY_LIMIT','The bounded inspection history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='citygml-native' AND status IN ('queued','running')")).rows[0].n);
   if(active>=CITYGML_LIMITS.active)throw new AppError(429,'CITYGML_WORKER_BUSY','The bounded CityGML workers are occupied.');
-  const jobId=randomUUID(),input=citygmlInput(ctx,jobId),inputHash=fingerprint(input);
+  return insertCityGMLJobTx(client,ctx,randomUUID());
+}
+/** One pinned native job; a batch may supply its stable replay key. */
+export async function insertCityGMLJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof citygmlSourceTx>>,jobId:string){
+  if(!ctx.latest)conflict('This CityGML source has a newer retained revision.');
+  const input=citygmlInput(ctx,jobId),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'citygml-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);

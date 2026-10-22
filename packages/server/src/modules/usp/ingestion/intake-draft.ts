@@ -10,6 +10,7 @@ import { citeIntakeReceipt, saveIntakeCardTx, writeIntakeDraftTx, writeIntakeLar
 import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
 import { queuePageImageTx } from './intake-page-image';
 import { batchIfc, queueIntakeIfcTx } from './intake-ifc';
+import { batchNativeReader, queueIntakeNativeReaderTx } from './intake-native-readers';
 import { stableUuid } from './intake-run';
 import { pageImageFormat } from './page-image-read';
 import { queueBatchDocumentTx } from './documents';
@@ -200,6 +201,7 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (publishedCard?.format === 'pdf' && publishedCard.family === 'document') return queueBatchPdfTx(client, source);
   if (publishedCard && pageImageFormat(publishedCard)) return readPageImageTx(client, source, publishedCard);
   if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
+  if (batchNativeReader(source, publishedCard)) return queueIntakeNativeReaderTx(client, source, publishedCard!);
   if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
   if (nativeDerivativeFormat(publishedCard ?? null)) {
     // SH2: converted into GeoJSON layers by its own job; each layer then takes the large GeoJSON path.

@@ -9,6 +9,7 @@ import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
+import {settleIntakeNativeReaderTx} from './intake-native-readers';
 import {assertCityJSONInputTx,cityjsonArtifactKey,cityjsonResultKey,readCityJSONResult,boundedCityJSONObject} from './cityjson';
 
 const reply=z.strictObject({summary:CityJSONSummarySchema,readerSha256:z.string().regex(/^[a-f0-9]{64}$/),artifactBase64:z.string().max(Math.ceil(CITYJSON_LIMITS.artifactBytes/3)*4),
@@ -49,6 +50,7 @@ export async function failCityJSONJob(jobId:string,code:string,attempt?:UspJobAt
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[jobId]);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,stale?'stale':'failed',code]);
+    await settleIntakeNativeReaderTx(client,job.case_id,jobId,{format:'cityjson',status:stale?'stale':'failed',code});
     if(job.payload.subject===process.env.ULPIN_LOCAL_OPERATOR_SUBJECT)
       await appendCaseIngestionTx(client,job.case_id,{kind:'cityjson-native.changed',sourceId:job.source_id,
         sourceRevision:job.payload.sourceRevision,jobId,status:stale?'stale':'failed'},job.payload.subject);
@@ -91,6 +93,7 @@ export async function runCityJSONJob(jobId:string){
         throw new AppError(422,'CITYJSON_ARTIFACT_INTEGRITY','The staged native artifact differs from its receipt.');
       await assertCityJSONInputTx(client,input);
     },beforeLocks,async client=>{
+      await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'cityjson',summary:result.summary});
       await appendCaseIngestionTx(client,input.caseId,{kind:'cityjson-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
     });

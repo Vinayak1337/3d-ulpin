@@ -11,6 +11,7 @@ import {assertCityGMLTools} from './citygml-config';
 import {processCityGML} from './citygml-processor';
 import {assertCityGMLInputTx,assertCityGMLJobRow,citygmlResultKey,citygmlArtifactKey,readCityGMLResult,boundedCityGMLObject} from './citygml';
 import {appendCaseIngestionTx} from './events';
+import {settleIntakeNativeReaderTx} from './intake-native-readers';
 
 export function citygmlFailureCode(error:unknown){
   if(error instanceof AppError){
@@ -41,6 +42,7 @@ export async function failCityGMLJob(jobId:string,caseId:string,code:string,atte
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     const status=code==='CITYGML_INPUT_STALE'?'stale':'failed';
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,status,code]);
+    await settleIntakeNativeReaderTx(client,caseId,jobId,{format:'citygml',status,code});
     // Do not publish a private event using a revoked or unavailable binding.
     const parsed=CityGMLInputSchema.safeParse(job.payload);
     if(parsed.success){
@@ -127,6 +129,7 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,controller:Abo
         throw new AppError(422,'CITYGML_ARTIFACT_INTEGRITY','Staged CityGML bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
+      await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'citygml',summary:result.summary});
       await appendCaseIngestionTx(client,input.caseId,{kind:'citygml-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
     },deadline);
