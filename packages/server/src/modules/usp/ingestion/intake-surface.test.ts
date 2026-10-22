@@ -3,7 +3,12 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { INTAKE_SURFACE_VERSION, type PointBatchResult, type RasterWindowResult } from '@ulpin/contracts/usp';
+import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, PointBatchInputSchema,
+  type PointBatchResult, type RasterWindowResult } from '@ulpin/contracts/usp';
+import { AppError } from '../../../infrastructure/errors';
+import { dispatchTick } from '../../cases/processing';
+import { stableUuid } from './intake-run';
+import { pointReaderSha } from './point-batch';
 import { probeOriginal } from './intake-probe';
 import { fingerprint } from '../../cases/domain';
 import { acceptIntakeSurfacePartTx, admitIntakeSurfaceParts, failIntakeSurfacePartTx, pointRecordsExtent,
@@ -383,23 +388,29 @@ function lazBatch(n: number, points?: number) {
  * One kept LAZ of a batch behind a fake pool, with its part rows and reader jobs. Each statement of the tick, the
  * reader's source check and enqueue, the acceptance and the tray is answered as the database would answer it.
  */
-function batch(points?: number) {
+function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'point-batch') {
+  const original = operation === 'point-batch' ? laz
+    : recorded.find(file => file.file === 'nyc-10013-ortho-2018.tif')!;
   const db = { drafting: false, jobs: new Map<string, Record<string, any>>(), statements: [] as string[],
     recorded: [-200, -200, 200, 200] as number[] | null, drafted: null as number[] | null,
     current: { id: caseId, revision: 3, archived: false, frame: null as unknown, context: null,
       site_id: null as string | null } };
   const source = { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, profile: 'large-original-v1',
-    sha256: laz.sha256, bytes: String(laz.bytes), object_key: `large-originals/${sourceId}/${laz.sha256}`,
+    sha256: original.sha256, bytes: String(original.bytes),
+    object_key: `large-originals/${sourceId}/${original.sha256}`,
     inspection: { largeOriginal: { uploadId: sourceId, operatorSubject: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT,
-      objectEtag: 'test_only', verifiedSha256: laz.sha256, verifiedBytes: laz.bytes,
+      objectEtag: 'test_only', verifiedSha256: original.sha256, verifiedBytes: original.bytes,
       provenance: { origin: 'not_stated', acquiredAt: '2026-10-10T00:00:00.000Z', state: 'not_stated' },
       conversion: 'unsupported', bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed' } } };
   const item: Record<string, any> = { item_id: itemId, case_id: caseId, source_id: sourceId, state: 'planned',
-    placement: 'undecided', plan_ref: { version: INTAKE_SURFACE_VERSION, operation: 'point-batch', header: null },
-    records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0, family: 'point_cloud', format: 'laz',
+    placement: 'undecided', plan_ref: { version: INTAKE_SURFACE_VERSION, operation, header: null },
+    records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0,
+    family: operation === 'point-batch' ? 'point_cloud' : 'raster',
+    format: operation === 'point-batch' ? 'laz' : 'geotiff',
     size_class: 'M', wave: 2 };
   const parts = new Map<number, Record<string, any>>([[0, { item_id: itemId, part_index: 0, state: 'planned',
-    job_id: null, locator: { operation: 'point-batch', batch: null, partKey: 'a'.repeat(64) }, counts: null,
+    job_id: null, locator: { operation, ...operation === 'point-batch' ? { batch: null } : { window: null },
+      partKey: 'a'.repeat(64) }, counts: null,
     result_ref: null }]]);
   const one = (row: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
   const sorted = () => [...parts.values()].sort((a, b) => a.part_index - b.part_index);
@@ -418,7 +429,7 @@ function batch(points?: number) {
     if (sql.startsWith('SELECT i.item_id,i.case_id')) {
       if (sorted().some(part => part.state === 'queued')) return one(null);
       const published = sorted().filter(part => part.state === 'published');
-      return one({ item_id: itemId, case_id: caseId, operation: 'point-batch',
+      return one({ item_id: itemId, case_id: caseId, operation,
         planned: sorted().some(part => part.state === 'planned'),
         case_now: [db.current.frame, db.current.context, db.current.site_id, db.current.archived],
         moved: Boolean(item.plan_ref.header) && (item.plan_ref.placedOn ?? null) !== (area()?.key ?? null),
@@ -442,7 +453,7 @@ function batch(points?: number) {
       .filter(job => ['queued', 'running'].includes(job.status)).length });
     if (sql.startsWith('INSERT INTO jobs(')) {
       const [id, case_id, source_id, case_revision, input_fingerprint, payload] = values;
-      db.jobs.set(id, { id, case_id, source_id, operation: 'point-batch', case_revision, input_fingerprint, payload,
+      db.jobs.set(id, { id, case_id, source_id, operation, case_revision, input_fingerprint, payload,
         status: 'queued', error: null });
       return one({});
     }
@@ -465,6 +476,11 @@ function batch(points?: number) {
         && (part.state !== 'published' || elsewhere(part, values.slice(2))));
       marked.forEach(part => { part.result_ref = { ...part.result_ref, rereadPin: values[1] }; });
       return { rows: [], rowCount: marked.length };
+    }
+    if (sql.startsWith('UPDATE usp_intake_items SET updated_at=clock_timestamp()')) return one({});
+    if (sql.startsWith("UPDATE usp_intake_items SET plan_ref=plan_ref-'admissionIssue'")) {
+      delete item.plan_ref.admissionIssue;
+      return one({});
     }
     if (sql.startsWith('UPDATE usp_intake_items SET plan_ref=$2')) {
       item.plan_ref = values[1];
@@ -818,4 +834,200 @@ test('SF1 real NYC: the orthophoto read before its footprints are drafted is pla
     if (placed.state !== 'placed') return;
     assert.deepEqual(placed.corners, corners.map(([x, y]) => [x - origin[0], y - origin[1]]));
   }
+});
+
+type AdmissionItem = { world: ReturnType<typeof batch>; failure?: unknown; attempted?: number;
+  failAfterEnqueue?: boolean; failIssueWrite?: boolean };
+
+/** Restore the SQL double's item, parts and jobs when the owning transaction rolls back. */
+function surfaceRollback(entry: AdmissionItem) {
+  const { item, parts, db } = entry.world;
+  const saved = structuredClone({ item, parts, jobs: db.jobs });
+  return () => {
+    for (const key of Object.keys(item)) delete item[key];
+    Object.assign(item, saved.item);
+    parts.clear();
+    for (const [index, part] of saved.parts) parts.set(index, part);
+    db.jobs.clear();
+    for (const [id, job] of saved.jobs) db.jobs.set(id, job);
+  };
+}
+
+function surfaceConnection(entries: AdmissionItem[], clock: () => number) {
+  let entry: AdmissionItem | undefined, rollback: (() => void) | undefined;
+  return { release: () => {}, query: async (sql: string, values: any[] = []) => {
+    if (/^(BEGIN|COMMIT|ROLLBACK)$/.test(sql)) {
+      if (sql === 'ROLLBACK') rollback?.();
+      return { rows: [], rowCount: 0 };
+    }
+    if (sql.startsWith('SELECT * FROM usp_intake_items')) {
+      entry = entries[Number(values[0].slice(4))];
+      rollback = surfaceRollback(entry);
+      if (sql.endsWith('FOR UPDATE') && entry.failIssueWrite) throw new Error('PRIVATE_ISSUE_TEXT');
+    }
+    assert.ok(entry, 'Each transaction addresses its own item.');
+    if (entry.failure && (entry.failAfterEnqueue ? sql.startsWith('SELECT status,error FROM jobs')
+      : sql.startsWith('SELECT * FROM sources'))) throw entry.failure;
+    if (sql.startsWith('UPDATE usp_intake_items SET updated_at=clock_timestamp()')) entry.attempted = clock();
+    if (sql.startsWith('SELECT count(*)::int n FROM jobs WHERE operation')) {
+      const operation = entry.world.item.plan_ref.operation;
+      const n = entries.flatMap(value => [...value.world.db.jobs.values()])
+        .filter(job => job.operation === operation && ['queued', 'running'].includes(job.status)).length;
+      return { rows: [{ n }], rowCount: 1 };
+    }
+    return entry.world.client.query(sql, values);
+  } };
+}
+
+/** Multiplex the existing SQL double into independent items; reader capacity is shared across them. */
+async function withSurfaces(entries: AdmissionItem[], run: () => Promise<void>) {
+  const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
+  const previous = globals.ulpinPool;
+  let clock = 0;
+  const query = async (sql: string, values: any[] = []) => {
+    if (sql.startsWith('SELECT i.item_id,i.case_id')) {
+      const rows = [];
+      for (const [index, entry] of entries.entries()) {
+        const due = await entry.world.client.query(sql, values);
+        rows.push(...due.rows.map(row => ({ ...row, item_id: `due-${index}` })));
+      }
+      if (sql.includes('ORDER BY i.updated_at')) rows.sort((a, b) =>
+        (entries[Number(a.item_id.slice(4))].attempted ?? 0)
+        - (entries[Number(b.item_id.slice(4))].attempted ?? 0));
+      return { rows, rowCount: rows.length };
+    }
+    return { rows: [], rowCount: 0 };
+  };
+  globals.ulpinPool = { query, connect: async () => surfaceConnection(entries, () => ++clock) };
+  try { await run(); }
+  finally {
+    if (previous === undefined) delete globals.ulpinPool;
+    else globals.ulpinPool = previous;
+  }
+}
+
+/** Stored by 6323b054: the reader hash, locator key and stable id predate LP1; input has no recordLength. */
+async function preLp1Point() {
+  const world = batch();
+  await world.readThree();
+  const reader = '2d53cd71d81e62199948a52d73fd4dddd4dc6e408743d9dccee25524b968e763';
+  const jobs = [...world.db.jobs.values()];
+  world.db.jobs.clear();
+  for (const part of world.parts.values()) {
+    const { partKey: _old, ...locator } = part.locator;
+    part.locator.partKey = fingerprint({ version: INTAKE_SURFACE_VERSION, sourceSha256: laz.sha256,
+      readerSha256: reader, locator });
+    if (part.state !== 'published') continue;
+    const job = jobs.find(job => job.id === part.job_id)!;
+    const pin = fingerprint({ context: job.payload.caseContextSha256, access: job.payload.accessSha256 });
+    const id = stableUuid(`${INTAKE_SURFACE_VERSION}:${itemId}:1:${part.locator.partKey}:${pin}`);
+    job.id = id;
+    job.payload = PointBatchInputSchema.parse({ ...job.payload, jobId: id, readerSha256: reader });
+    assert.equal(Object.hasOwn(job.payload, 'recordLength'), false);
+    job.input_fingerprint = fingerprint(job.payload);
+    part.job_id = id;
+    part.result_ref.jobId = id;
+    world.db.jobs.set(id, job);
+  }
+  return world;
+}
+
+test('one dispatcher tick admits a new TIF and LAZ beside a pre-LP1 item, without reusing its old reader job',
+  async () => {
+    const old = await preLp1Point(), tif = batch(undefined, 'raster-window'), fresh = batch();
+    const earlier = [...old.db.jobs.values()].map(job => structuredClone(job));
+    await withSurfaces([{ world: old }, { world: tif }, { world: fresh }], async () => {
+      assert.equal(await dispatchTick(), 0);
+    });
+    assert.deepEqual(queued(tif.parts), [0]);
+    assert.deepEqual(queued(fresh.parts), [0]);
+    assert.deepEqual(queued(old.parts), [0]);
+    assert.equal(old.db.jobs.get(old.parts.get(0)!.job_id)!.payload.readerSha256, pointReaderSha());
+    assert.equal(old.db.jobs.size, earlier.length + 1);
+    for (const job of earlier) assert.deepEqual(old.db.jobs.get(job.id), job);
+    assert.equal(old.parts.size, 211);
+  });
+
+for (const failure of [new Error('PRIVATE_SOURCE_TEXT'), new AppError(500, 'SURFACE_TEST_FAULT', 'PRIVATE_TEXT')]) {
+  test(`an ${failure.name} on one item records an admission issue and still admits later surfaces`, async () => {
+    const old = await preLp1Point(), tif = batch(undefined, 'raster-window'), fresh = batch();
+    await withSurfaces([{ world: old, failure }, { world: tif }, { world: fresh }], admitIntakeSurfaceParts);
+    assert.deepEqual(queued(tif.parts), [0]);
+    assert.deepEqual(queued(fresh.parts), [0]);
+    assert.equal(old.parts.get(3)!.state, 'planned');
+    assert.equal(old.db.jobs.size, 3);
+    assert.equal(old.item.plan_ref.admissionIssue,
+      failure instanceof AppError ? 'SURFACE_TEST_FAULT' : 'SURFACE_ADMISSION_FAILED');
+    assert.match(old.item.limit_reason, /Admission deferred/);
+    assert.doesNotMatch(old.item.limit_reason, /PRIVATE|unsupported|could not be read/);
+  });
+}
+
+test('a failure after enqueue rolls back the new job and keeps a deferred item retryable', async () => {
+  const old = batch(), tif = batch(undefined, 'raster-window'), fresh = batch();
+  const entry: AdmissionItem = { world: old, failure: new Error('PRIVATE_ENQUEUE_TEXT'), failAfterEnqueue: true };
+  await withSurfaces([entry, { world: tif }, { world: fresh }], async () => {
+    await admitIntakeSurfaceParts();
+    assert.equal(old.db.jobs.size, 0);
+    assert.equal(old.parts.get(0)!.state, 'planned');
+    assert.equal(old.item.plan_ref.admissionIssue, 'SURFACE_ADMISSION_FAILED');
+    assert.deepEqual(queued(tif.parts), [0]);
+    assert.deepEqual(queued(fresh.parts), [0]);
+    entry.failure = undefined;
+    const from = old.db.statements.length;
+    await admitIntakeSurfaceParts();
+    const recovery = old.db.statements.slice(from);
+    const authority = recovery.findIndex(sql => sql.startsWith('SELECT * FROM sources'));
+    const clear = recovery.findIndex(sql => sql.includes("plan_ref=plan_ref-'admissionIssue'"));
+    assert.ok(authority >= 0 && clear > authority, 'Recovery preserves source-before-item lock order.');
+  });
+  assert.equal(old.db.jobs.size, 1);
+  assert.deepEqual(queued(old.parts), [0]);
+  assert.equal(old.item.plan_ref.admissionIssue, undefined);
+  assert.doesNotMatch(old.item.limit_reason, /deferred|PRIVATE|could not be read/);
+});
+
+test('even failed issue recording does not block later surfaces or log exception content', async () => {
+  const old = batch(), tif = batch(undefined, 'raster-window'), fresh = batch();
+  const messages: string[] = [], warn = console.warn;
+  console.warn = message => messages.push(String(message));
+  try {
+    await withSurfaces([{ world: old, failure: new Error('PRIVATE_SOURCE_TEXT'), failIssueWrite: true },
+      { world: tif }, { world: fresh }], admitIntakeSurfaceParts);
+  } finally { console.warn = warn; }
+  assert.deepEqual(queued(tif.parts), [0]);
+  assert.deepEqual(queued(fresh.parts), [0]);
+  assert.equal(messages.length, 1);
+  assert.match(messages[0], /SURFACE_ADMISSION_FAILED.*could not be recorded/);
+  assert.doesNotMatch(messages[0], /PRIVATE/);
+});
+
+test('an invalid stored locator is quarantined as an admission defect, not a reader refusal', async () => {
+  const old = batch(), tif = batch(undefined, 'raster-window'), fresh = batch();
+  old.parts.get(0)!.locator.batch = { start: -1, count: 8192 };
+  await withSurfaces([{ world: old }, { world: tif }, { world: fresh }], admitIntakeSurfaceParts);
+  assert.deepEqual(queued(tif.parts), [0]);
+  assert.deepEqual(queued(fresh.parts), [0]);
+  assert.equal(old.parts.get(0)!.issue_code, 'SURFACE_LOCATOR_INVALID');
+  assert.equal(old.item.state, 'failed_part');
+  assert.match(old.item.limit_reason, /stored locator is invalid/);
+  assert.doesNotMatch(old.item.limit_reason, /unsupported|could not be read/);
+  assert.equal(old.db.jobs.size, 0);
+});
+
+test('a full page of items waiting for an area yields to new surfaces on the next tick', async () => {
+  const waiting = Array.from({ length: INTAKE_SURFACE_LIMITS.page }, () => {
+    const world = batch();
+    world.db.drafting = true;
+    return { world };
+  });
+  const tif = batch(undefined, 'raster-window'), fresh = batch();
+  await withSurfaces([...waiting, { world: tif }, { world: fresh }], async () => {
+    await admitIntakeSurfaceParts();
+    assert.equal(tif.db.jobs.size + fresh.db.jobs.size, 0);
+    await admitIntakeSurfaceParts();
+  });
+  assert.deepEqual(queued(tif.parts), [0]);
+  assert.deepEqual(queued(fresh.parts), [0]);
+  assert.ok(waiting.every(entry => entry.world.parts.get(0)!.state === 'planned'));
 });
