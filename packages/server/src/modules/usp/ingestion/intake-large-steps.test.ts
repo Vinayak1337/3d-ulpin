@@ -241,6 +241,9 @@ test('each stored state has its row: question, proposed and approved layout, map
   assert.deepEqual(project(drafting), { state: 'reading', placement: 'on_map', planRef: project(approved).planRef,
     partsPlanned: null, partsDone: 3, recordsSeen: 48686, limitReason: null });
   assert.equal(project(drafting).planRef!.packageId, null);
+  const waiting = { ...drafting, parts: 8, unreviewed: 8 };
+  assert.deepEqual(project(waiting), { ...project(drafting), partsDone: 8, limitReason: '8 packages of this file '
+    + 'wait for review. The rest of the file is cut into packages as these are reviewed.' });
 });
 
 test('a reader that refuses the declared system rests the row in the resolution\'s own words', () => {
