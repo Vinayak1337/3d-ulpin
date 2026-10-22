@@ -40,3 +40,9 @@ test('an empty geometry is told apart from text that is not WKT; other kinds and
     assert.equal(parseWkt(text), null, text);
   }
 });
+
+test('a point names one position: a point or a multipoint member with more is not WKT, never cut to its first', () => {
+  for (const text of ['POINT (1 2, 3 4)', 'MULTIPOINT ((1 2, 3 4))', 'MULTIPOINT ((1 2), (3 4, 5 6))']) {
+    assert.equal(parseWkt(text), null, text);
+  }
+});

@@ -81,14 +81,21 @@ class Reader {
   line = () => this.list(() => this.position(), 2);
   ring = () => this.list(() => this.position(), 4);
   polygon = () => this.list(this.ring);
+  /** `( x y )`: exactly one position. */
+  single = (): Position => {
+    this.take('(');
+    const position = this.position();
+    this.take(')');
+    return position;
+  };
   // A multipoint's points are written with or without their own brackets.
-  point = () => this.peek() === '(' ? this.list(() => this.position()).at(0)! : this.position();
+  point = () => this.peek() === '(' ? this.single() : this.position();
 }
 
 const KINDS = ['POINT', 'LINESTRING', 'POLYGON', 'MULTIPOINT', 'MULTILINESTRING', 'MULTIPOLYGON'];
 
 function body(reader: Reader, type: string): TableGeometry {
-  if (type === 'POINT') return { type: 'Point', coordinates: reader.list(() => reader.position()).at(0)! };
+  if (type === 'POINT') return { type: 'Point', coordinates: reader.single() };
   if (type === 'LINESTRING') return { type: 'LineString', coordinates: reader.line() };
   if (type === 'POLYGON') return { type: 'Polygon', coordinates: reader.polygon() };
   if (type === 'MULTIPOINT') return { type: 'MultiPoint', coordinates: reader.list(reader.point) };
