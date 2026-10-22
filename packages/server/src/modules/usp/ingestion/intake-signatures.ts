@@ -93,14 +93,87 @@ function jsonKind(text: string): Kind | undefined {
   return undefined;
 }
 
+// Skip declarations only: no entity expansion, external resolution or document-body inspection.
+function doctypeEnd(text: string, start: number): number {
+  let quote = '';
+  let subsetDepth = 0;
+  for (let index = start; index < text.length; index++) {
+    const char = text[index];
+    if (quote) {
+      if (char === quote) quote = '';
+      continue;
+    }
+    if (text.startsWith('<!--', index)) {
+      const end = text.indexOf('-->', index + 4);
+      if (end < 0) return -1;
+      index = end + 2;
+    } else if (char === '"' || char === "'") quote = char;
+    else if (char === '[') subsetDepth++;
+    else if (char === ']') subsetDepth--;
+    else if (char === '>' && subsetDepth === 0) return index + 1;
+  }
+  return -1;
+}
+
+function xmlRootStart(text: string): number {
+  let index = 0;
+  while (index < text.length) {
+    if (/\s/.test(text[index])) {
+      index++;
+      continue;
+    }
+    if (text.startsWith('<?', index)) {
+      const end = text.indexOf('?>', index + 2);
+      if (end < 0) return -1;
+      index = end + 2;
+    } else if (text.startsWith('<!--', index)) {
+      const end = text.indexOf('-->', index + 4);
+      if (end < 0) return -1;
+      index = end + 3;
+    } else if (text.startsWith('<!DOCTYPE', index)) {
+      index = doctypeEnd(text, index + 9);
+      if (index < 0) return -1;
+    } else return index;
+  }
+  return -1;
+}
+
 function xmlKind(text: string): Kind | undefined {
-  const root = /^\s*(?:<\?xml[^>]*>\s*)?(?:<!--[\s\S]*?-->\s*)*<([\w:.-]+)\b([^>]*)>/.exec(text);
+  const start = xmlRootStart(text);
+  if (start < 0) return undefined;
+  const root = /^<([\w:.-]+)(?=[\s/>])((?:"[^"]*"|'[^']*'|[^"'<>])*)>/.exec(text.slice(start));
   if (!root) return undefined;
   const local = root[1].split(':').pop()?.toLowerCase();
+  if (local === 'html') return undefined;
   if (local === 'kml') return kind('kml', 'vector');
   if (local === 'citymodel' && /citygml/i.test(root[2])) return kind('citygml', 'model3d');
   if (/opengis.net\/gml/.test(root[2])) return kind('gml', 'vector');
   return undefined;
+}
+
+function asciiDxf(text: string): boolean {
+  const lines = text.trimStart().split(/\r?\n/);
+  let index = 0;
+  while (lines[index]?.trim() === '999' && index + 1 < lines.length) index += 2;
+  return lines[index]?.trim() === '0' && lines[index + 1]?.trim() === 'SECTION'
+    && lines[index + 2]?.trim() === '2'
+    && /^(?:HEADER|ENTITIES|CLASSES|TABLES|BLOCKS|OBJECTS)$/.test(lines[index + 3]?.trim() ?? '');
+}
+
+function asciiObj(text: string): boolean {
+  const number = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
+  let vertex = false;
+  let companion = false;
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (/^(?:f|vn|vt)[ \t]+/.test(trimmed)) companion = true;
+    if (/^v[ \t]+/.test(trimmed)) {
+      const values = trimmed.split(/[ \t]+/).slice(1);
+      if ([3, 4, 6].includes(values.length) && values.every(value => number.test(value))) vertex = true;
+    }
+    if (vertex && companion) return true;
+  }
+  return false;
 }
 
 export function detectIntakeKind(bytes: Uint8Array): Kind {
@@ -116,11 +189,8 @@ export function detectIntakeKind(bytes: Uint8Array): Kind {
   if (/^ply\r?\nformat (ascii|binary_little_endian|binary_big_endian) 1\.0/.test(text)) {
     return kind('ply', 'point_cloud');
   }
-  if (/^\s*0\s*\r?\nSECTION\s*\r?\n\s*2\s*\r?\n(?:HEADER|ENTITIES)/.test(text)) {
-    return kind('dxf', 'model3d');
-  }
-  if (/^v\s+[+-]?[\d.]+\s+[+-]?[\d.]+\s+[+-]?[\d.]+\s*$/m.test(text)
-    && /^(?:f|vn|vt)\s+/m.test(text)) return kind('obj', 'model3d');
+  if (asciiDxf(text)) return kind('dxf', 'model3d');
+  if (asciiObj(text)) return kind('obj', 'model3d');
   const lines = text.trimStart().split(/\r?\n/, 3);
   if (lines.length >= 2 && lines[0].includes('\t') && lines[1].includes('\t')) return kind('tsv', 'table');
   if (lines.length >= 2 && [',', ';', '|'].some(value => lines[0].includes(value) && lines[1].includes(value))) {
