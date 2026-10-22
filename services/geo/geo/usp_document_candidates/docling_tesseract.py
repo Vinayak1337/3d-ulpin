@@ -22,6 +22,8 @@ from PIL import Image
 
 MAX_SOURCE_BYTES = 16 * 1024**2
 MAX_SOURCE_PAGES = 8
+# Selected-page profile matches DOCUMENT_PAGE_LIMITS.pages; all other callers retain the eight-page bound.
+MAX_SELECTED_SOURCE_PAGES = 400
 MAX_PAGE_SIDE_POINTS = 2_000
 MAX_SELECTED_SOURCE_PAGE_SIDE_POINTS = 14_400
 # Viewing only (K9e): a page over the whole-page limit is drawn whole only while its bounded scale keeps a
@@ -179,7 +181,7 @@ def whole_page_view_scale(page: fitz.Page) -> float | None:
 
 def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
                          region: list[float] | None, png_path: Path, *,
-                         viewing: bool = False) -> dict[str, Any]:
+                         viewing: bool = False, selected_page: bool = False) -> dict[str, Any]:
     """Render once inside the supervised worker; expose its exact pixel affine."""
     # Open exactly the bytes we hash. A path hash followed by a second parser
     # open could cite a replacement file if the path changes between them.
@@ -202,7 +204,8 @@ def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
             raise SourceOcrError("pdf_object_count_unsupported", unsupported=True)
         if document.needs_pass:
             raise SourceOcrError("encrypted_pdf_unsupported", unsupported=True)
-        if len(document) > MAX_SOURCE_PAGES or page_number > len(document):
+        page_limit = MAX_SELECTED_SOURCE_PAGES if selected_page else MAX_SOURCE_PAGES
+        if len(document) > page_limit or page_number > len(document):
             raise SourceOcrError("page_count_or_selection_unsupported", unsupported=True)
         page = document[page_number - 1]
         clip, selected = _selection(page, region, viewing=viewing)
@@ -428,7 +431,7 @@ def extract_source_page(source: Path, expected_sha256: str, page_number: int,
     """Run one source-bound OCR selection inside an externally supervised tree."""
     started = time.monotonic()
     assets = verify_assets(models, tesseract, tessdata)
-    frame = render_pdf_selection(source, expected_sha256, page_number, region, png_path)
+    frame = render_pdf_selection(source, expected_sha256, page_number, region, png_path, selected_page=True)
     if region is None:
         items, issues, partial = extract_sparse_tsv(png_path, tesseract, tessdata, frame,
                                                   max_items, max_seconds - (time.monotonic()-started) - 2)

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
-import { DOCUMENT_LIMITS } from '@ulpin/contracts/upload-reader-limits';
+import { DOCUMENT_LIMITS, DOCUMENT_PAGE_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { pageFailure } from '../evidence/citedPage';
 import type { IntakeItem } from './batch-model';
@@ -90,22 +90,47 @@ function PdfOcrPages({ sourceId, reading, ocr }: {
   if (offer.refusal) return <p>{offer.refusal}</p>;
   if (!offer.pages.length) return null;
   if (ocr.runs.isPending) return <Skeleton />;
-  const selected = ocr.chosen ?? pagesToRead(offer.pages, runs).slice(0, ocr.left);
+  const selected = ocr.chosen ?? (offer.singlePage ? [] : pagesToRead(offer.pages, runs).slice(0, ocr.left));
   const toggle = (page: number, on: boolean) => ocr.setChosen(on ? [...selected, page] : selected
     .filter(value => value !== page));
   return <div className={styles.stack}>
+    {offer.singlePage ? <SingleOcrPage sourceId={sourceId} count={ocr.pageCount.data!} selected={selected}
+      eligible={offer.pages} choose={page => ocr.setChosen(page)} pending={ocr.press.isPending} runs={runs}
+      progress={ocr.progress} /> : <>
     <p>Pick the pages to read. One press reads them one after another, one OCR job per page; a page already read
-      is not read again. OCR opens a PDF of at most {DOCUMENT_LIMITS.ocrMaxPage} pages.</p>
+      is not read again. OCR opens a PDF of at most {DOCUMENT_LIMITS.ocrBatchPages} pages.</p>
     <ul aria-label="Pages OCR can read">{offer.pages.map(page => <li key={page}>
       <label><input type="checkbox" checked={selected.includes(page)} disabled={ocr.press.isPending}
         onChange={event => toggle(page, event.target.checked)} /> {pdfOcrPageWords(page,
         runs.find(run => run.page === page), ocr.progress?.page === page ? ocr.progress : undefined)}</label>
-    </li>)}</ul>
-    <OcrPress selected={selected} runs={runs} left={ocr.left} pending={ocr.press.isPending}
-      submit={pages => ocr.press.mutate(pages)} />
+    </li>)}</ul></>}
+    <OcrPress selected={selected.filter(page => offer.pages.includes(page))} runs={runs} left={ocr.left}
+      pending={ocr.press.isPending} submit={pages => ocr.press.mutate(pages)} />
     {runs.filter(run => run.reading.ocr?.outputStatus !== 'failed').map(run => <OcrPassages key={run.page}
       sourceId={sourceId} run={run} />)}
   </div>;
+}
+
+function SingleOcrPage({ sourceId, count, selected, eligible, choose, pending, runs, progress }: {
+  sourceId: string; count: number; selected: number[]; eligible: number[]; choose: (pages: number[]) => void;
+  pending: boolean; runs: OcrPageRun[]; progress: OcrPageProgress | null;
+}) {
+  const page = selected[0];
+  const valid = page !== undefined && Number.isInteger(page) && eligible.includes(page);
+  const helpId = `pdf-page-help-${sourceId}`;
+  return <>
+    <p id={helpId}>Choose one page number from this {count}-page PDF. One press reads only that page, up to{' '}
+      {DOCUMENT_PAGE_LIMITS.pixels.toLocaleString('en-IN')} pixels. The renderer opens originals of at most{' '}
+      {DOCUMENT_PAGE_LIMITS.pages} pages and {DOCUMENT_PAGE_LIMITS.originalBytes / 1024 ** 2} MiB.</p>
+    <label>Page number <input type="number" min={1} max={count} step={1} value={page ?? ''}
+      disabled={pending} aria-describedby={helpId} aria-invalid={page !== undefined && !valid}
+      onChange={event => choose(event.target.value === ''
+        ? [] : [Number(event.target.value)])} /></label>
+    {page !== undefined ? <p role="status">{valid ? pdfOcrPageWords(page, runs.find(run => run.page === page),
+      progress?.page === page ? progress : undefined)
+      : `Choose a page number from 1 to ${count} without a text-layer reading.`}</p>
+      : null}
+  </>;
 }
 
 function OcrPress({ selected, runs, left, pending, submit }: {

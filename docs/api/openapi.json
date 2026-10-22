@@ -111284,7 +111284,7 @@
                             "page": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "region": {
                               "type": "array",
@@ -111306,6 +111306,12 @@
                               },
                               "minItems": 4,
                               "maxItems": 4
+                            },
+                            "singlePage": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
                             }
                           },
                           "required": [
@@ -111350,7 +111356,7 @@
                                   "pageNumber": {
                                     "type": "integer",
                                     "minimum": 1,
-                                    "maximum": 8
+                                    "maximum": 400
                                   },
                                   "frame": {
                                     "type": "string",
@@ -111420,7 +111426,7 @@
                             "sourcePage": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "requestedRegion": {
                               "nullable": true,
@@ -127015,7 +127021,7 @@
                             "page": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "region": {
                               "type": "array",
@@ -127037,6 +127043,12 @@
                               },
                               "minItems": 4,
                               "maxItems": 4
+                            },
+                            "singlePage": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
                             }
                           },
                           "required": [
@@ -127081,7 +127093,7 @@
                                   "pageNumber": {
                                     "type": "integer",
                                     "minimum": 1,
-                                    "maximum": 8
+                                    "maximum": 400
                                   },
                                   "frame": {
                                     "type": "string",
@@ -127151,7 +127163,7 @@
                             "sourcePage": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "requestedRegion": {
                               "nullable": true,
@@ -137287,7 +137299,7 @@
                             "page": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "region": {
                               "type": "array",
@@ -137309,6 +137321,12 @@
                               },
                               "minItems": 4,
                               "maxItems": 4
+                            },
+                            "singlePage": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
                             }
                           },
                           "required": [
@@ -137353,7 +137371,7 @@
                                   "pageNumber": {
                                     "type": "integer",
                                     "minimum": 1,
-                                    "maximum": 8
+                                    "maximum": 400
                                   },
                                   "frame": {
                                     "type": "string",
@@ -137423,7 +137441,7 @@
                             "sourcePage": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "requestedRegion": {
                               "nullable": true,
@@ -137743,7 +137761,7 @@
                               "pageNumber": {
                                 "type": "integer",
                                 "minimum": 1,
-                                "maximum": 8
+                                "maximum": 400
                               },
                               "frame": {
                                 "type": "string",
@@ -226018,7 +226036,7 @@
                             "page": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "region": {
                               "type": "array",
@@ -226040,6 +226058,12 @@
                               },
                               "minItems": 4,
                               "maxItems": 4
+                            },
+                            "singlePage": {
+                              "type": "boolean",
+                              "enum": [
+                                true
+                              ]
                             }
                           },
                           "required": [
@@ -226084,7 +226108,7 @@
                                   "pageNumber": {
                                     "type": "integer",
                                     "minimum": 1,
-                                    "maximum": 8
+                                    "maximum": 400
                                   },
                                   "frame": {
                                     "type": "string",
@@ -226154,7 +226178,7 @@
                             "sourcePage": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "requestedRegion": {
                               "nullable": true,
@@ -226474,7 +226498,7 @@
                               "pageNumber": {
                                 "type": "integer",
                                 "minimum": 1,
-                                "maximum": 8
+                                "maximum": 400
                               },
                               "frame": {
                                 "type": "string",
@@ -310163,7 +310187,7 @@
                                 "page": {
                                   "type": "integer",
                                   "minimum": 1,
-                                  "maximum": 8
+                                  "maximum": 400
                                 },
                                 "region": {
                                   "type": "array",
@@ -310185,6 +310209,12 @@
                                   },
                                   "minItems": 4,
                                   "maxItems": 4
+                                },
+                                "singlePage": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    true
+                                  ]
                                 }
                               },
                               "required": [
@@ -310221,7 +310251,7 @@
                             "sourcePage": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 8
+                              "maximum": 400
                             },
                             "requestedRegion": {
                               "nullable": true,
@@ -310602,7 +310632,7 @@
                                         "pageNumber": {
                                           "type": "integer",
                                           "minimum": 1,
-                                          "maximum": 8
+                                          "maximum": 400
                                         },
                                         "frame": {
                                           "type": "string",
@@ -320993,7 +321023,7 @@
                                     "page": {
                                       "type": "integer",
                                       "minimum": 1,
-                                      "maximum": 8
+                                      "maximum": 400
                                     },
                                     "region": {
                                       "type": "array",
@@ -321015,6 +321045,12 @@
                                       },
                                       "minItems": 4,
                                       "maxItems": 4
+                                    },
+                                    "singlePage": {
+                                      "type": "boolean",
+                                      "enum": [
+                                        true
+                                      ]
                                     }
                                   },
                                   "required": [
@@ -321051,7 +321087,7 @@
                                 "sourcePage": {
                                   "type": "integer",
                                   "minimum": 1,
-                                  "maximum": 8
+                                  "maximum": 400
                                 },
                                 "requestedRegion": {
                                   "nullable": true,
@@ -321432,7 +321468,7 @@
                                             "pageNumber": {
                                               "type": "integer",
                                               "minimum": 1,
-                                              "maximum": 8
+                                              "maximum": 400
                                             },
                                             "frame": {
                                               "type": "string",
@@ -386822,7 +386858,7 @@
               "sourcePage": {
                 "type": "integer",
                 "minimum": 1,
-                "maximum": 8
+                "maximum": 400
               },
               "requestedRegion": {
                 "nullable": true,
@@ -387123,7 +387159,7 @@
                       "pageNumber": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 8
+                        "maximum": 400
                       },
                       "frame": {
                         "type": "string",
@@ -387640,7 +387676,7 @@
               "page": {
                 "type": "integer",
                 "minimum": 1,
-                "maximum": 8
+                "maximum": 400
               },
               "region": {
                 "type": "array",
@@ -387662,6 +387698,12 @@
                 },
                 "minItems": 4,
                 "maxItems": 4
+              },
+              "singlePage": {
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
               }
             },
             "required": [

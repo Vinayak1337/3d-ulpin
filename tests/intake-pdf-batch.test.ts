@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import type { Pool } from 'pg';
-import { DOCUMENT_LIMITS, documentScannedPages, DocumentStatusSchema }
+import { DOCUMENT_LIMITS, documentScannedPages, DocumentStatusSchema, type DocumentInput, type DocumentResult }
   from '../packages/contracts/src/usp/document-ingestion';
 import type { IntakeCard } from '@ulpin/contracts/usp';
 import { DocumentIngestionService } from '../packages/server/src/modules/usp/ingestion/documents';
@@ -284,10 +284,22 @@ test('a PDF above the page reader byte bound says its text layer was not read, a
     + 'original is kept with its SHA-256.';
   assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes), { state: 'failed_part',
     placement: 'not_understood', limitReason: `${unread} Its pages can be read by OCR from the PDF reading, for a `
-      + 'PDF of at most 8 pages. Nothing read is a fact until you confirm it.' });
+      + 'PDF of at most 400 pages; above 8 pages, choose one page number. '
+      + 'Nothing read is a fact until you confirm it.' });
   assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes + 1), { state: 'failed_part',
     placement: 'not_understood', limitReason: unread });
 });
+
+function ocrPage(input: DocumentInput, page: number): NonNullable<DocumentResult['ocr']> {
+  return { sourceSha256: input.sourceSha256, sourceRevision: input.sourceRevision,
+    sourcePage: page, requestedRegion: null,
+    sourcePageFrame: { kind: 'pdf_display_page_top_left_points', rotation: 0, width: 612, height: 792 },
+    method: 'ocr:tesseract-cli-5.5.1:sparse-tsv-v1', toolStatus: 'complete', outputStatus: 'complete',
+    textCompleteness: 'unverified', issues: [], items: [{ text: 'test_only control passage', label: 'line',
+      method: 'ocr:tesseract-cli-sparse-tsv', sourcePageBoxes: [{ pageNumber: page,
+        frame: 'pdf_display_page_top_left_points', box: [10, 20, 80, 40],
+        derivedFrom: 'tesseract_tsv_pixels_via_mupdf_pixel_origin' }] }] };
+}
 
 test('the officer can OCR a batch PDF through the existing retry route, without a second active job', async () => {
   await isolated(async control => {
@@ -316,14 +328,7 @@ test('the officer can OCR a batch PDF through the existing retry route, without 
       extract: (input, bytes) => extractSourceDocument(input, bytes, async () => ({
         format: 'pdf', status: 'ready', sourceSha256: input.sourceSha256, ...twoTextPages,
       })),
-      ocr: async input => ({ sourceSha256: input.sourceSha256, sourceRevision: input.sourceRevision,
-        sourcePage: 3, requestedRegion: null,
-        sourcePageFrame: { kind: 'pdf_display_page_top_left_points', rotation: 0, width: 612, height: 792 },
-        method: 'ocr:tesseract-cli-5.5.1:sparse-tsv-v1', toolStatus: 'complete', outputStatus: 'complete',
-        textCompleteness: 'unverified', issues: [], items: [{ text: 'test_only control passage', label: 'line',
-          method: 'ocr:tesseract-cli-sparse-tsv', sourcePageBoxes: [{ pageNumber: 3,
-            frame: 'pdf_display_page_top_left_points', box: [10, 20, 80, 40],
-            derivedFrom: 'tesseract_tsv_pixels_via_mupdf_pixel_origin' }] }] }),
+      ocr: async input => ocrPage(input, 3),
     });
     const result = DocumentStatusSchema.parse(await service.status(control.current.id, source.id, first.jobId));
     assert.equal(result.status, 'completed');
@@ -332,6 +337,61 @@ test('the officer can OCR a batch PDF through the existing retry route, without 
     assert.deepEqual(result.ocrItems?.[0].sourcePageBoxes[0].box, [10, 20, 80, 40]);
     assert.equal(control.sources.get(source.id)!.sha256, source.sha256);
     assert.equal(control.item!.records_seen, 0, 'OCR text never becomes a record field or a room.');
+  });
+});
+
+/** A literal test_only PDF, not a record or a claimed scan transcription. */
+function twelvePagePdf() {
+  const objects = ['<< /Type /Catalog /Pages 2 0 R >>',
+    `<< /Type /Pages /Count 12 /Kids [${Array.from({ length: 12 }, (_, at) => `${at + 3} 0 R`).join(' ')}] >>`,
+    ...Array.from({ length: 12 }, () => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>')];
+  let text = '%PDF-1.4\n% test_only twelve-page control\n';
+  const offsets = [0];
+  objects.forEach((object, at) => {
+    offsets.push(Buffer.byteLength(text));
+    text += `${at + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xref = Buffer.byteLength(text);
+  text += `xref\n0 ${offsets.length}\n0000000000 65535 f \n`;
+  text += offsets.slice(1).map(offset => `${String(offset).padStart(10, '0')} 00000 n \n`).join('');
+  return Buffer.from(`${text}trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+}
+
+test('a literal 12-page test_only PDF queues one selected OCR page with unchanged source pins and frame', async () => {
+  await isolated(async control => {
+    const original = twelvePagePdf();
+    const source = control.retainPdf(original);
+    const nativeJob = (await queueIntakeDraftTx(clientOf(control), source, card))!;
+    const reply = { parts: [], warnings: Array.from({ length: 12 }, (_, at) => noText(at + 1)) };
+    await readWith(control, nativeJob, reply);
+    const service = new DocumentIngestionService();
+    const request = { requestKey: randomUUID(), expectedCaseRevision: control.current.revision,
+      expectedSourceRevision: 1, sourceSha256: source.sha256, mode: 'native_only',
+      ocrSelection: { page: 11, singlePage: true } };
+    await assert.rejects(service.retry(control.current.id, source.id, { ...request, ocrSelection: { page: 0 } }));
+    const queued = await service.retry(control.current.id, source.id, request);
+    assert.deepEqual(control.jobs.get(queued.jobId)!.payload.ocrSelection, { page: 11, singlePage: true });
+    const pages: number[] = [];
+    await runDocumentJob(queued.jobId, {
+      extract: async () => { throw new Error('A selected-page OCR job must not read native text on other pages.'); },
+      ocr: async (input, bytes) => {
+        pages.push(input.ocrSelection!.page);
+        assert.deepEqual(bytes, original);
+        return ocrPage(input, 11);
+      },
+    });
+    const result = await service.status(control.current.id, source.id, queued.jobId);
+    assert.equal(result.status, 'completed');
+    assert.deepEqual(pages, [11]);
+    assert.equal(result.ocr?.sourceSha256, sha256(original));
+    assert.equal(result.ocr?.sourceRevision, 1);
+    assert.equal(result.ocrItems?.[0].sourcePageBoxes[0].pageNumber, 11);
+    assert.deepEqual(result.ocr?.sourcePageFrame,
+      { kind: 'pdf_display_page_top_left_points', rotation: 0, width: 612, height: 792 });
+    assert.deepEqual(control.objects.get(source.object_key), original);
+    assert.equal(result.native?.code, 'NATIVE_TEXT_NOT_REQUESTED');
+    assert.equal(control.jobs.size, 2);
+    assert.equal(control.item!.records_seen, 0);
   });
 });
 

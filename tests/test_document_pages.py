@@ -63,6 +63,24 @@ class WholePageViewing(unittest.TestCase):
                 "cropBox": [0.0, 0.0, float(width), float(height)],
                 "boxConvention": "pymupdf_page_rectangles/1", "renderSupport": support}
 
+    def test_long_pdf_lists_and_draws_only_the_selected_page(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            source = folder / "test_only-twelve-pages.pdf"
+            with fitz.open() as document:
+                for _ in range(12):
+                    document.new_page(width=612, height=792)
+                document.save(source)
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            result = pages.inspect_pages(source, digest, 10, 1, 11, folder)
+            self.assertEqual(result["pageCount"], 12)
+            self.assertEqual(result["pages"], [{**self.info(612, 792, "supported"), "page": 11, "label": "Page 11"}])
+            self.assertEqual(result["render"]["page"], 11)
+            self.assertEqual(result["sourceSha256"], digest)
+            for page in [0, 13]:
+                with self.assertRaisesRegex(pages.PageError, "DOCUMENT_PAGE_NOT_FOUND"):
+                    pages.inspect_pages(source, digest, 0, 1, page, folder)
+
     def test_page_within_the_limit_answers_with_exactly_the_fields_it_had(self):
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory)

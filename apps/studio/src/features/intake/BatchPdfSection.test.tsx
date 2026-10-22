@@ -45,8 +45,11 @@ function unreadTextLayer(): PdfReading {
 
 function completedOcr(page: number, outputStatus: 'complete' | 'failed' = 'complete'): PdfReading {
   const failed = outputStatus === 'failed';
-  return { ...reading(magnolia), jobId: ocrJob(page), ocr: { sourceSha256: sha, sourceRevision: 1, sourcePage: page,
-    requestedRegion: null, sourcePageFrame: { kind: 'pdf_display_page_top_left_points', rotation: 0,
+  const native = reading(magnolia).native!;
+  if (page > 8) Object.assign(native, { code: 'NATIVE_TEXT_NOT_REQUESTED', status: 'needs_ocr', warnings: [] });
+  return { ...reading(magnolia), native, jobId: ocrJob(page), ocr: {
+    sourceSha256: sha, sourceRevision: 1, sourcePage: page, requestedRegion: null,
+    sourcePageFrame: { kind: 'pdf_display_page_top_left_points', rotation: 0,
       width: 612, height: 792 }, method: 'ocr:tesseract-cli-5.5.1:sparse-tsv-v1', toolStatus: 'complete',
     outputStatus, textCompleteness: 'unverified', issues: failed ? ['OCR_RUNTIME_UNAVAILABLE'] : [] },
   ocrItems: failed ? [] : [{
@@ -109,8 +112,9 @@ function stubOcrServer(pageCount: number, failing: number[] = []) {
       jobs.push(job(ocrJob(body.ocrSelection.page), jobs.length));
       return Response.json(receipt(ocrJob(body.ocrSelection.page)), { status: 201 });
     }
-    if (path.endsWith('/pages')) return Response.json({ pageCount, pages: [{ page: 1 }] });
-    const page = [...Array(9).keys()].find(at => path.endsWith(`/jobs/${ocrJob(at)}`));
+    if (path.endsWith('/pages')) return Response.json({ pageCount,
+      pages: [{ page: Number(new URL(request.url).searchParams.get('offset') ?? 0) + 1 }] });
+    const page = [...Array(pageCount + 1).keys()].find(at => path.endsWith(`/jobs/${ocrJob(at)}`));
     if (page !== undefined && failing.includes(page)) {
       return Response.json({ ...reading(magnolia), jobId: ocrJob(page), status: 'failed', code: 'DOCUMENT_DEADLINE' });
     }
@@ -181,14 +185,15 @@ it('a PDF above the page reader byte bound offers every page to OCR, within the 
   } finally { await page.unmount(); }
   const long = await render(unread, { pageCount: 12 });
   try {
-    expect(long.root.textContent).toContain('OCR opens a PDF of at most 8 pages; this one has 12, so no page of it '
-      + 'can be read by OCR.');
-    expect(action(long.root)).toBeUndefined();
+    expect(long.root.textContent).toContain('Choose one page number');
+    expect(boxes(long.root)).toHaveLength(1);
+    expect(propsOf(action(long.root)!).disabled).toBe(true);
   } finally { await long.unmount(); }
 });
 
-it('offers nothing for a text-only PDF and refuses a scanned PDF beyond the OCR page bound in words', async () => {
-  expect(pdfOcrOffer(reading([9, 10]), 10).refusal).toContain('this one has 10');
+it('offers one selected page of a long scan and refuses beyond the renderer page bound in words', async () => {
+  expect(pdfOcrOffer(reading([9, 10]), 10)).toMatchObject({ pages: [9, 10], singlePage: true, refusal: '' });
+  expect(pdfOcrOffer(unreadTextLayer(), 401).refusal).toContain('at most 400 pages');
   expect(pdfOcrOffer(reading([]), 4)).toEqual({ pages: [], refusal: '' });
   const textOnly = await render(reading([]), { pageCount: 4 });
   expect(action(textOnly.root)).toBeUndefined();
@@ -258,10 +263,42 @@ it('reads all three bounded OCR status pages so passages beyond the first 25 are
   expect(result.passages).toHaveLength(64);
 });
 
+it('queues only the chosen page of a 12-page scan with the original pins', async () => {
+  const page = await render(reading(Array.from({ length: 12 }, (_, at) => at + 1)), { pageCount: 12 });
+  const bodies = stubOcrServer(12);
+  try {
+    for (const value of ['0', '13']) {
+      await act(async () => propsOf(boxes(page.root)[0]!).onChange?.({ target: { value } }));
+      expect(propsOf(action(page.root)!).disabled).toBe(true);
+      expect(propsOf(boxes(page.root)[0]!)['aria-invalid']).toBe(true);
+    }
+    await act(async () => propsOf(boxes(page.root)[0]!).onChange?.({ target: { value: '11' } }));
+    await press(action(page.root)!);
+    for (let at = 0; at < 10; at++) await flush();
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).toMatchObject({ expectedSourceRevision: 1, sourceSha256: sha,
+      ocrSelection: { page: 11, singlePage: true }, mode: 'native_only' });
+    expect(validate(requestSchema, bodies[0])).toEqual([]);
+    expect(page.root.textContent).toContain('Page 11 · region [10.00, 20.00, 80.00, 40.00] pt');
+    expect(page.root.textContent).toContain('Page 11: read; 1 candidate passage');
+    expect(page.root.textContent).toContain('Only the selected page was requested for OCR; '
+      + 'the text layer was not read.');
+    expect(validate(statusSchema, completedOcr(11))).toEqual([]);
+  } finally { await page.unmount(); }
+});
+
+it('refuses page zero or past the actual end before enqueueing', async () => {
+  const bodies = stubOcrServer(12);
+  const send = createPdfOcrPress(caseId, sourceId);
+  for (const page of [0, 13]) await expect(send(unreadTextLayer(), { page })).rejects.toThrow('page');
+  expect(bodies).toEqual([]);
+});
+
 it('keeps the same request key after a lost enqueue response', async () => {
   const keys: string[] = [];
   vi.stubGlobal('fetch', async (request: Request) => {
-    if (request.method === 'GET') return Response.json({ case: { revision: 7, archived: false } });
+    if (request.method === 'GET') return Response.json({ case: { revision: 7, archived: false },
+      pageCount: 1, pages: [{ page: 1 }] });
     keys.push((await request.json()).requestKey);
     if (keys.length === 1) throw new TypeError('Response lost');
     return Response.json(receipt(ocrJob(1)), { status: 201 });
