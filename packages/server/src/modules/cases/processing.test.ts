@@ -4,19 +4,21 @@ import test from 'node:test';
 import { Client } from 'pg';
 import { AppError } from '../../infrastructure/errors';
 import { DISPATCH_HEAD_OF_LINE_MS, DISPATCH_OPERATIONS, DispatchReservations, dispatchCost } from './dispatch-lanes';
-import { dispatchTick } from './processing';
+import { dispatchTick, dispatchWakeVersion, waitForDispatch } from './processing';
 
 type Sent = { sql: string; values: unknown[] };
 /** Runs `run` on a pool that answers each statement with `answer`'s rows. */
-async function withPool<T>(answer: (sql: string) => object[], run: (sent: Sent[]) => Promise<T>): Promise<T> {
+async function withPool<T>(answer: (sql: string, values: unknown[]) => object[] | Promise<object[]>,
+  run: (sent: Sent[]) => Promise<T>): Promise<T> {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
   const previous = globals.ulpinPool;
   const sent: Sent[] = [];
-  globals.ulpinPool = { query: async (sql: string, values: unknown[] = []) => {
+  const query = async (sql: string, values: unknown[] = []) => {
     sent.push({ sql, values });
-    const rows = answer(sql);
+    const rows = await answer(sql, values);
     return { rows, rowCount: rows.length };
-  } };
+  };
+  globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
   try {
     return await run(sent);
   } finally {
@@ -31,14 +33,14 @@ async function selection(): Promise<Sent> {
     assert.equal(await dispatchTick(), 0);
     return sent;
   });
-  // The selection, the jobs the processor holds, then the kept surfaces' part admission (SB1).
+  // Read occupied lanes before selection, then admit kept surfaces' parts (SB1).
   assert.equal(sent.length, 3);
-  assert.match(sent[1].sql.replace(/\s+/g, ' '),
+  assert.match(sent[0].sql.replace(/\s+/g, ' '),
     /AND NOT operation=ANY\(\$1::text\[\]\) AND \(status='running' OR \(status='queued' AND dispatched_at IS NOT NULL/);
-  const inProcess = sent[1].values[0] as string[];
+  const inProcess = sent[0].values[0] as string[];
   assert.ok(inProcess.includes('point-batch') && !inProcess.includes('spatial-inference'));
   assert.match(sent[2].sql, /FROM usp_intake_items i\s+WHERE i.plan_ref->>'version'=\$1/);
-  return sent[0];
+  return sent[1];
 }
 
 test("the dispatcher takes probes first, then each file's oldest job in its lane", async () => {
@@ -51,6 +53,8 @@ test("the dispatcher takes probes first, then each file's oldest job in its lane
   assert.match(flat, /NOT jobs.id::text=ANY\(\$3::text\[\]\) AND NOT jobs.operation=ANY\(\$4::text\[\]\)/);
   assert.match(flat, /NOT EXISTS \(SELECT 1 FROM usp_job_attempts a WHERE a.job_id=jobs.id/);
   assert.match(flat, /a.state='active' AND a.lease_until>now\(\)/);
+  assert.match(flat, /jobs.dispatched_at IS NOT NULL AND NOT jobs.operation=ANY\(\$6::text\[\]\)/);
+  assert.match(flat, /OR NOT COALESCE\(lanes.lane,'other'\)=ANY\(\$5::text\[\]\)/);
   assert.match(flat, /ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12$/);
   const [operations, lanes, held, unavailable] = values as [string[], string[], string[], string[]];
   assert.deepEqual(held, []);
@@ -193,7 +197,9 @@ async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = 
     await withPool(sql => sql.includes('AS file_rank') ? rows
       : sql.includes('dispatched_at IS NOT NULL') ? elsewhere : [], async sent => {
       assert.equal(await dispatchTick({ packetPdf, document, privateMvt }), rows.length);
-      selected?.(sent[0]);
+      selected?.(sent[1]);
+      await Promise.resolve();
+      await Promise.resolve();
     });
     return sentToProcessor;
   } finally {
@@ -289,20 +295,22 @@ for (const [operation, runner] of [['document-extraction', 'document'], ['privat
 const database = process.env.ULPIN_DISPATCH_TEST_DATABASE_URL;
 /** The ids the selection picks from the jobs `fill` adds to a temporary table. */
 async function picked(fill: (add: (id: string, operation: string, source: string | null, minutes: number,
-  status?: string, due?: number) => Promise<unknown>) => Promise<void>,
-  attempts: { jobId: string; state: string; seconds: number }[] = []): Promise<string[]> {
+  status?: string, due?: number, dispatched?: boolean) => Promise<unknown>) => Promise<void>,
+  attempts: { jobId: string; state: string; seconds: number }[] = [], fullLanes: string[] = []): Promise<string[]> {
   const { sql, values } = await selection();
+  values[4] = fullLanes;
   const client = new Client({ connectionString: database });
   await client.connect();
   try {
     await client.query(`CREATE TEMPORARY TABLE jobs (id text PRIMARY KEY, operation text NOT NULL,
       status text NOT NULL, next_attempt_at timestamptz NOT NULL, created_at timestamptz NOT NULL, source_id text,
-      case_id text NOT NULL)`);
+      case_id text NOT NULL, dispatched_at timestamptz)`);
     await client.query(`CREATE TEMPORARY TABLE usp_job_attempts
       (job_id text NOT NULL, state text NOT NULL, lease_until timestamptz NOT NULL)`);
-    await fill((id, operation, source, minutes, status = 'queued', due = 0) => client.query(
-      `INSERT INTO jobs VALUES($1,$2,$3,now()+make_interval(mins=>$5),now()-make_interval(mins=>$4),$6,'case-1')`,
-      [id, operation, status, minutes, due, source]));
+    await fill((id, operation, source, minutes, status = 'queued', due = 0, dispatched = false) => client.query(
+      `INSERT INTO jobs VALUES($1,$2,$3,now()+make_interval(mins=>$5),now()-make_interval(mins=>$4),$6,'case-1',
+        CASE WHEN $7::boolean THEN now() ELSE NULL END)`,
+      [id, operation, status, minutes, due, source, dispatched]));
     for (const attempt of attempts) await client.query(
       'INSERT INTO usp_job_attempts VALUES($1,$2,now()+make_interval(secs=>$3))',
       [attempt.jobId, attempt.state, attempt.seconds]);
@@ -358,4 +366,228 @@ test('a lone file still offers twelve jobs when nothing else waits', { skip: !da
     for (let index = 0; index < 15; index++) await add(`chip-${index}`, 'spatial-inference', 'tif', 100 - index);
   });
   assert.deepEqual(ids, Array.from({ length: 12 }, (_, index) => `chip-${index}`));
+});
+
+test('full-lane followers cannot hide short jobs or block processor polls', { skip: !database }, async () => {
+  const ids = await picked(async add => {
+    for (let index = 0; index < 20; index++) await add(`vector-${index}`, 'kml-native', `source-${index}`, 100);
+    await add('poll', 'projected-vector', 'sent', 101, 'running', 0, true);
+    await add('short', 'intake-run', 'batch', 1);
+  }, [], ['vector']);
+  assert.deepEqual(ids, ['poll', 'short']);
+});
+
+test('two occupied vector slots leave room in selection for a short link job without increasing capacity', () => {
+  const held = new DispatchReservations();
+  const big = 100000;
+  assert.ok(held.admit(job('raw', 'streaming-vector'), big, [], at(0)));
+  assert.ok(held.admit(job('profile', 'streamed-profile'), big, [], at(0)));
+  assert.deepEqual(held.unavailableLanes([]), ['vector']);
+  assert.equal(held.admit(job('conductor', 'intake-large'), big, [], at(233)), false);
+  assert.ok(held.admit(job('short', 'intake-run'), big, [], at(233)));
+  held.release('raw');
+  assert.deepEqual(held.unavailableLanes([]), []);
+  assert.ok(held.admit(job('conductor', 'intake-large'), big, [], at(234)));
+});
+
+test('a full vector lane cannot spend all twelve ready rows ahead of a short document job on fakes', async () => {
+  let finish!: () => void;
+  const running = new Promise<void>(resolve => { finish = resolve; });
+  const holders = [job('tile-1', 'private-mvt'), job('tile-2', 'private-mvt')];
+  try {
+    await tickWith({ rows: holders, budget: '100000', privateMvt: () => running });
+    const ready = Array.from({ length: 20 }, (_, index) => job(`vector-${index}`, 'projected-vector'));
+    ready.push(pdf);
+    const started: string[] = [];
+    // Fake only row selection, using the real tick's excluded-lane parameter before its LIMIT 12.
+    await withPool((sql, values) => {
+      if (!sql.includes('AS file_rank')) return [];
+      const full = (values[4] ?? []) as string[];
+      return ready.filter(row => !full.includes(dispatchCost(row.operation).lane)).slice(0, 12);
+    }, async () => {
+      assert.equal(await dispatchTick({ packetPdf: async id => { started.push(id); } }), 1);
+      assert.deepEqual(started, ['pdf-1']);
+      await settle();
+    });
+  } finally {
+    finish();
+    await settle();
+  }
+});
+
+test('durable processor holdings close a lane once, even during its local transport reservation', () => {
+  const held = new DispatchReservations();
+  const first = job('first', 'projected-vector');
+  assert.ok(held.admit(first, 100000, [], at(0)));
+  assert.deepEqual(held.unavailableLanes([first]), []);
+  assert.deepEqual(held.unavailableLanes([first, job('second', 'projected-vector')]), ['vector']);
+});
+
+async function withProcessorFetch(fetching: typeof fetch, run: () => Promise<void>) {
+  const savedFetch = globalThis.fetch;
+  const saved = ['GEO_URL', 'GEO_SERVICE_TOKEN'].map(name => [name, process.env[name]] as const);
+  Object.assign(process.env, { GEO_URL: 'http://processor.invalid', GEO_SERVICE_TOKEN: 'protocol' });
+  globalThis.fetch = fetching;
+  try {
+    await run();
+  } finally {
+    globalThis.fetch = savedFetch;
+    for (const [name, value] of saved) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+}
+
+type StalledProcessor = { begun: Promise<void>; finish: () => void; calls: () => number };
+async function withStalledProcessor(run: (processor: StalledProcessor) => Promise<void>) {
+  let finish!: () => void;
+  let calls = 0;
+  const blocked = new Promise<Response>((_resolve, reject) => {
+    finish = () => reject(new Error('fake transport stopped'));
+  });
+  let began!: () => void;
+  const begun = new Promise<void>(resolve => { began = resolve; });
+  const fetching = () => {
+    calls++;
+    began();
+    return blocked;
+  };
+  await withProcessorFetch(fetching, () => run({ begun, finish, calls: () => calls }));
+}
+
+for (const dispatched of [false, true]) {
+  test(`a stalled processor ${dispatched ? 'poll' : 'submission'} cannot delay a short job or start twice`, async t => {
+    t.mock.timers.enable({ apis: ['Date'], now: at(0) });
+    await withStalledProcessor(async processor => {
+      const row = { ...odd, dispatched_at: dispatched ? new Date(at(0)) : null };
+      let rows: object[] = [row];
+      await withPool(sql => sql.includes('AS file_rank') ? rows : [], async sent => {
+        const tick = dispatchTick();
+        try {
+          await processor.begun;
+          assert.equal(await Promise.race([tick.then(() => true), settle().then(() => false)]), true);
+          t.mock.timers.tick(233000);
+          rows = [row, pdf];
+          const started: string[] = [];
+          await dispatchTick({ packetPdf: async id => { started.push(id); } });
+          assert.deepEqual(started, ['pdf-1'], 'short work starts before the long transport returns');
+          assert.equal(processor.calls(), 1, 'no duplicate submission or poll while in flight');
+          const selections = sent.filter(statement => statement.sql.includes('AS file_rank'));
+          assert.ok((selections[1].values[2] as string[]).includes(row.id));
+        } finally {
+          processor.finish();
+          await tick;
+          await settle();
+        }
+      });
+    });
+  });
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>(done => { resolve = done; });
+  return { promise, resolve };
+}
+
+function submissionSnapshotFixture() {
+  const submission = deferred<Response>();
+  const snapshot = deferred<object[]>();
+  const snapshotBegan = deferred<void>();
+  const row = { ...odd, created_at: new Date() };
+  const state = { blockSnapshot: false, active: false, rows: [row] as object[] };
+  const fetching: typeof fetch = async (_url, init) => init?.method === 'POST' ? submission.promise
+    : new Response(JSON.stringify({ jobId: row.id, status: 'queued' }));
+  const answer = (sql: string) => {
+    if (sql.includes('AS file_rank')) return state.rows;
+    if (sql.startsWith('UPDATE jobs SET status=$2')) state.active = true;
+    if (!sql.includes('dispatched_at IS NOT NULL')) return [];
+    if (!state.blockSnapshot) return state.active ? [row] : [];
+    snapshotBegan.resolve();
+    return snapshot.promise;
+  };
+  return { submission, snapshot, snapshotBegan, row, state, fetching, answer };
+}
+
+test('submission resources remain reserved across a stale durable snapshot, then transfer without a capacity gap',
+  async () => {
+    const fixture = submissionSnapshotFixture();
+    const { state, row } = fixture;
+    const budget = process.env.DISPATCH_MEMORY_MIB;
+    process.env.DISPATCH_MEMORY_MIB = '1000';
+    const started: string[] = [];
+    const packetPdf = async (id: string) => { started.push(id); };
+    try {
+      await withProcessorFetch(fixture.fetching, () => withPool(fixture.answer, async sent => {
+        await dispatchTick();
+        state.blockSnapshot = true;
+        state.rows = [pdf];
+        const tick = dispatchTick({ packetPdf });
+        await fixture.snapshotBegan.promise;
+        fixture.submission.resolve(new Response(JSON.stringify({ jobId: row.id, status: 'queued' })));
+        await settle();
+        fixture.snapshot.resolve([]);
+        await tick;
+        const selected = sent.filter(statement => statement.sql.includes('AS file_rank')).at(-1)!;
+        assert.ok((selected.values[2] as string[]).includes(row.id), 'old snapshot cannot release the local hold');
+        assert.deepEqual(started, []);
+        state.blockSnapshot = false;
+        await dispatchTick({ packetPdf });
+        assert.deepEqual(started, [], 'fresh durable holding still consumes memory');
+        state.active = false;
+        await dispatchTick({ packetPdf });
+        assert.deepEqual(started, ['pdf-1']);
+        await settle();
+      }));
+    } finally {
+      if (budget === undefined) delete process.env.DISPATCH_MEMORY_MIB;
+      else process.env.DISPATCH_MEMORY_MIB = budget;
+    }
+  });
+
+test('completion wakes selection before the 750 ms poll and a completion during a tick is not lost', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: at(0) });
+  let finish!: () => void;
+  const running = new Promise<void>(resolve => { finish = resolve; });
+  try {
+    await tickWith({ rows: [pdf], budget: '100000', packetPdf: () => running });
+    const version = dispatchWakeVersion();
+    let woke = false;
+    const waiting = waitForDispatch(version).then(() => { woke = true; });
+    await Promise.resolve();
+    assert.equal(woke, false);
+    finish();
+    await settle();
+    await waiting;
+    assert.equal(Date.now(), at(0), 'no poll interval elapsed');
+    await waitForDispatch(version);
+  } finally {
+    finish();
+    await settle();
+  }
+});
+
+test('a nonterminal processor poll does not wake a busy loop', async () => {
+  const row = { ...odd, created_at: new Date(), dispatched_at: new Date() };
+  const reply = async () => new Response(JSON.stringify({ jobId: row.id, status: 'running' }));
+  await withProcessorFetch(reply, async () => {
+    const version = dispatchWakeVersion();
+    await withPool(sql => sql.includes('AS file_rank') ? [row] : [], async () => {
+      await dispatchTick();
+      await settle();
+    });
+    assert.equal(dispatchWakeVersion(), version);
+  });
+});
+
+test('idle dispatch still waits for the fallback poll', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let woke = false;
+  const waiting = waitForDispatch(dispatchWakeVersion()).then(() => { woke = true; });
+  t.mock.timers.tick(749);
+  await Promise.resolve();
+  assert.equal(woke, false);
+  t.mock.timers.tick(1);
+  await waiting;
 });

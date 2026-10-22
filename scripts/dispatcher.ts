@@ -1,4 +1,4 @@
-import { dispatchTick } from "@ulpin/server/modules/cases/processing";
+import { dispatchTick, dispatchWakeVersion, waitForDispatch } from "@ulpin/server/modules/cases/processing";
 import { closePool } from "@ulpin/server/infrastructure/db";
 import { closeStorageClient } from "@ulpin/server/infrastructure/storage";
 import { localOperatorSubject } from "@ulpin/server/modules/usp/principal";
@@ -21,6 +21,7 @@ async function run() {
   let reportedError = false;
   try {
     while (!stopping) {
+      const wake = dispatchWakeVersion();
       try {
         await dispatchTick();
         reportedError = false;
@@ -31,7 +32,7 @@ async function run() {
           );
         reportedError = true;
       }
-      await new Promise((resolve) => setTimeout(resolve, 750));
+      await waitForDispatch(wake);
     }
   } finally {
     try { await closePool(); }

@@ -66,7 +66,28 @@ let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
 let packetPdfWorker:Promise<void>|undefined;
-const reservations=new DispatchReservations();
+const processorWorkers=new Map<string,Promise<void>>();
+const processorReservations=new Set<string>();
+let wakeVersion=0;
+const wakeListeners=new Set<()=>void>();
+function wakeDispatcher(){
+  wakeVersion++;
+  for(const wake of wakeListeners)wake();
+}
+const reservations=new DispatchReservations(wakeDispatcher);
+
+/** Observe before a tick, so a completion during the tick cannot be lost before its wait begins. */
+export function dispatchWakeVersion(){return wakeVersion;}
+
+/** Completion wakes the next selection immediately; the poll remains the fallback for externally queued work. */
+export function waitForDispatch(since:number,milliseconds=750):Promise<void>{
+  if(since!==wakeVersion)return Promise.resolve();
+  return new Promise(resolve=>{
+    const finish=()=>{clearTimeout(timer);wakeListeners.delete(finish);resolve();};
+    const timer=setTimeout(finish,milliseconds);
+    wakeListeners.add(finish);
+  });
+}
 /** Keeps the code a background worker's error carries, never its message: messages can carry file content. */
 function keepWorkerError(operation:string,jobId:string){
   return (error:unknown)=>{
@@ -235,8 +256,70 @@ export async function ingestJob(id: string, result: unknown) {
   });
 }
 
+async function dispatchProcessorJob(job:QueryResultRow){
+  try{
+    if(!job.dispatched_at){
+      if(job.operation==='spatial-inference'&&!(await admitSpatialMlDispatch(job.id)))return;
+      const reply=await geo('/internal/jobs',{method:'POST',body:JSON.stringify({jobId:job.id,
+        operation:isInference(job.operation)?'spatial-inference':job.operation,input:job.payload})});
+      if(reply.jobId!==job.id)throw new Error('Processor acknowledged a different job.');
+      if(job.operation==='projected-vector')await markProjectedRunning(job.id);
+      else await transaction(async client=>{
+        await client.query(
+          `UPDATE jobs SET status=$2,dispatched_at=now(),next_attempt_at=now(),error=NULL
+            WHERE id=$1 AND status IN ('queued','running')`,
+          [job.id,isInference(job.operation)?'queued':'running']);
+        if(job.source_id&&!isInference(job.operation))await client.query(
+          "UPDATE sources SET status='processing' WHERE id=$1 AND status='received'",[job.source_id]);
+      });
+    }
+    await readProcessorJob(job);
+  }catch(error){
+    const message=error instanceof Error?error.message:'Processing service unavailable.';
+    const attempts=job.attempts+1;
+    if(attempts>=5)await failJob(job.id,message);
+    else await query(
+      `UPDATE jobs SET attempts=$2,next_attempt_at=now()+interval '2 seconds',error=$3
+        WHERE id=$1 AND status IN ('queued','running')`,
+      [job.id,attempts,message.slice(0,600)]);
+  }
+}
+
+async function readProcessorJob(job:QueryResultRow){
+  const result=await geo(`/internal/jobs/${job.id}`);
+  if(result.jobId!==job.id)throw new Error('Processor returned a different job.');
+  if(result.status==='succeeded')await ingestJob(job.id,result.result);
+  else if(result.status==='failed'){
+    if(job.operation==='spatial-inference')await failSpatialMlJob(job.id,
+      result.error||'Local inference failed. Retry this item after checking its source and model.',result.errorCode);
+    else await failJob(job.id,result.error||'Processing failed. Inspect the source and retry.');
+  }else if(isInference(job.operation)){
+    // Queue residence is not inference execution time.
+    if(result.status!=='running')return;
+    if(job.operation==='dataset-spatial-inference')await markDatasetMlRunning(job.id);
+    else await markSpatialMlRunning(job.id);
+    if(job.started_at&&Date.now()-new Date(job.started_at).getTime()>120000){
+      const message='Local inference exceeded its two-minute execution limit. '
+        +'The original remains available; retry this item.';
+      if(job.operation==='spatial-inference')await failSpatialMlJob(job.id,message,'INFERENCE_TIMEOUT');
+      else await failJob(job.id,message);
+    }
+  }else if(Date.now()-new Date(job.created_at).getTime()>120000)
+    await failJob(job.id,'Processing exceeded two minutes. Check the worker and retry.');
+  if(result.status==='succeeded'||result.status==='failed')wakeDispatcher();
+}
+
 export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;document?:typeof runDocumentJob;
   privateMvt?:typeof runPrivateMvtJob}={}): Promise<number> {
+  // Transfer completed submissions only against a snapshot begun after they settled; an older snapshot may
+  // predate their durable running row. Until then the local reservation must continue to count their resources.
+  const settled=[...processorReservations].filter(id=>!processorWorkers.has(id));
+  const elsewhere=(await query<DispatchJob>(
+    `SELECT id::text AS id, operation, created_at FROM jobs WHERE operation NOT LIKE 'usp:%'
+      AND NOT operation=ANY($1::text[]) AND (status='running' OR (status='queued' AND dispatched_at IS NOT NULL))`,
+    [dispatchInProcessOperations()],
+  )).rows;
+  for(const id of settled){processorReservations.delete(id);reservations.release(id);}
   const pending = await query(
     // G22. Probe-lane jobs first; then each file's oldest job in a lane before any file's second, a file being the
     // job's source or, without one, its case: 211 parts of one point cloud cannot hold back a table, and a lone file
@@ -247,17 +330,14 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
       FROM jobs LEFT JOIN unnest($1::text[],$2::text[]) AS lanes(operation,lane) ON lanes.operation=jobs.operation
       WHERE jobs.status IN ('queued','running') AND jobs.operation NOT LIKE 'usp:%' AND jobs.next_attempt_at<=now()
         AND NOT jobs.id::text=ANY($3::text[]) AND NOT jobs.operation=ANY($4::text[])
+        AND ((jobs.dispatched_at IS NOT NULL AND NOT jobs.operation=ANY($6::text[]))
+          OR NOT COALESCE(lanes.lane,'other')=ANY($5::text[]))
         AND NOT EXISTS (SELECT 1 FROM usp_job_attempts a
           WHERE a.job_id=jobs.id AND a.state='active' AND a.lease_until>now())
     ) ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12`,
-    [...dispatchLaneParameters(),reservations.heldJobIds(),reservations.unavailableOperations()],
+    [...dispatchLaneParameters(),[...new Set([...reservations.heldJobIds(),...processorWorkers.keys()])],
+      reservations.unavailableOperations(),reservations.unavailableLanes(elsewhere),dispatchInProcessOperations()],
   );
-  // G22. A job sent to the processor holds its lane and memory, for every dispatcher, until it leaves the queue there.
-  const elsewhere=(await query<DispatchJob>(
-    `SELECT id::text AS id, operation, created_at FROM jobs WHERE operation NOT LIKE 'usp:%'
-      AND NOT operation=ANY($1::text[]) AND (status='running' OR (status='queued' AND dispatched_at IS NOT NULL))`,
-    [dispatchInProcessOperations()],
-  )).rows;
   const refused=reservations.refusedJobIds();
   if(refused.length)reservations.keepRefused((await query<{id:string}>(
     "SELECT id::text AS id FROM jobs WHERE id::text=ANY($1::text[]) AND status IN ('queued','running')",[refused],
@@ -468,72 +548,17 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
           .finally(()=>{reservations.release(job.id);});
         return;
       }
-      // A dispatched job runs in the processor; this tick only reads its state, which starts nothing.
+      // Transport and result acceptance must not hold the tick open for unrelated ready work.
+      if(processorWorkers.has(job.id))return;
       const starting=!job.dispatched_at;
       if(starting&&!admit(job))return;
-      try {
-        if (!job.dispatched_at) {
-          if (job.operation === 'spatial-inference' && !(await admitSpatialMlDispatch(job.id))) return;
-          const reply = await geo("/internal/jobs", {
-            method: "POST",
-            body: JSON.stringify({
-              jobId: job.id,
-              operation: isInference(job.operation)?"spatial-inference":job.operation,
-              input: job.payload,
-            }),
-          });
-          if (reply.jobId !== job.id)
-            throw new Error("Processor acknowledged a different job.");
-          if(job.operation==='projected-vector')await markProjectedRunning(job.id);
-          else await transaction(async (client) => {
-            await client.query(
-              "UPDATE jobs SET status=$2,dispatched_at=now(),next_attempt_at=now(),error=NULL WHERE id=$1 AND status IN ('queued','running')",
-              [job.id, isInference(job.operation) ? "queued" : "running"],
-            );
-            if (job.source_id && !isInference(job.operation))
-              await client.query(
-                "UPDATE sources SET status='processing' WHERE id=$1 AND status='received'",
-                [job.source_id],
-              );
-          });
-        }
-        const result = await geo(`/internal/jobs/${job.id}`);
-        if (result.jobId !== job.id)
-          throw new Error("Processor returned a different job.");
-        if (result.status === "succeeded")
-          await ingestJob(job.id, result.result);
-        else if (result.status === "failed") {
-          if (job.operation === "spatial-inference") await failSpatialMlJob(job.id, result.error || "Local inference failed. Retry this item after checking its source and model.", result.errorCode);
-          else await failJob(job.id, result.error || "Processing failed. Inspect the source and retry.");
-        } else if (isInference(job.operation)) {
-          // Waiting behind another batch item is not inference execution time.
-          if (result.status === "running") {
-            if(job.operation==='dataset-spatial-inference')await markDatasetMlRunning(job.id);else await markSpatialMlRunning(job.id);
-            if (job.started_at && Date.now() - new Date(job.started_at).getTime() > 120000) {
-              const message="Local inference exceeded its two-minute execution limit. The original remains available; retry this item.";
-              if(job.operation==='spatial-inference')await failSpatialMlJob(job.id,message,'INFERENCE_TIMEOUT');else await failJob(job.id,message);
-            }
-          }
-        } else if (Date.now() - new Date(job.created_at).getTime() > 120000)
-          await failJob(
-            job.id,
-            "Processing exceeded two minutes. Check the worker and retry.",
-          );
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Processing service unavailable.";
-        const attempts = job.attempts + 1;
-        if (attempts >= 5) await failJob(job.id, message);
-        else
-          await query(
-            "UPDATE jobs SET attempts=$2,next_attempt_at=now()+interval '2 seconds',error=$3 WHERE id=$1 AND status IN ('queued','running')",
-            [job.id, attempts, message.slice(0, 600)],
-          );
-      } finally {
-        if (starting) reservations.release(job.id);
-      }
+      if(starting)processorReservations.add(job.id);
+      processorWorkers.set(job.id,dispatchProcessorJob(job)
+        .catch(keepWorkerError(job.operation,job.id))
+        .finally(()=>{
+          processorWorkers.delete(job.id);
+          if(starting)wakeDispatcher();
+        }));
     }),
   );
   return pending.rowCount ?? 0;
