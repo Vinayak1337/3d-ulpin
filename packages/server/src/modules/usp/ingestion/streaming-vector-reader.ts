@@ -125,15 +125,16 @@ class Cursor {
 }
 
 export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;
-  valueIssueCode:string|null;rawSha256?:string};
-/** Callbacks stage unverified values; collection publication must wait for this closure and CRS validation. */
+  valueIssueCode:string|null;rawSha256?:string;collectionTypeBeforeFeatures?:boolean};
+/** Late-type collections stage privately until closure; type-first collections can publish while reading. */
 export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
-  const cursor=new Cursor(body);let index=0,metadataBytes=0;const metadata:Record<string,unknown>=Object.create(null);
+  const cursor=new Cursor(body);let index=0,metadataBytes=0,collectionTypeBeforeFeatures=false;
+  const metadata:Record<string,unknown>=Object.create(null);
   const feature=async()=>{
     const value=await cursor.value(limits.featureBytes);
     const parsed=parseSourceValue(value.bytes);
     await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,
-      feature:parsed.value,valueIssueCode:parsed.issueCode});
+      feature:parsed.value,valueIssueCode:parsed.issueCode,collectionTypeBeforeFeatures});
   };
   if(framing==='feature-collection'){
     await cursor.expect(123);const keys=new Set<string>();let foundFeatures=false;
@@ -148,6 +149,7 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
       if(metadataBytes>limits.metadataBytes)throw new AppError(413,'GEOJSON_METADATA_BUDGET','Collection metadata exceeds this reader profile.');
       await cursor.expect(58);
       if(key==='features'){
+        collectionTypeBeforeFeatures=metadata.type==='FeatureCollection';
         foundFeatures=true;await cursor.expect(91);
         if(await cursor.nonspace()!==93){while(true){await feature();const delim=await cursor.nonspace();if(delim===93)break;await cursor.expect(44);}}
         await cursor.expect(93);

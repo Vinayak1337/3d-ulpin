@@ -55,6 +55,7 @@ function dbfHeader(head: Buffer): boolean {
 }
 
 function rootJsonType(text: string): string | null {
+  let pendingCollection = false;
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -71,24 +72,26 @@ function rootJsonType(text: string): string | null {
       if (type) return type[1];
       if (/^"type"\s*:/.test(text.slice(index))) return 'other';
       if (/^"asset"\s*:\s*\{[^}]*"version"\s*:\s*"\d+\.\d+"/.test(text.slice(index))) return 'glTF';
+      const features = /^"features"\s*:\s*\[\s*\{/.exec(text.slice(index));
+      if (features && /^\s*\{/.test(text)) {
+        pendingCollection = firstFeatureHead(text.slice(0, INTAKE_PROBE_LIMITS.headBytes), index + features[0].length);
+      }
     }
     if (char === '"') inString = true;
     if (char === '{' || char === '[') depth++;
     if (char === '}' || char === ']') depth--;
   }
-  return null;
+  return pendingCollection ? 'pending-feature-collection' : null;
 }
 
 /** A cut first feature is enough for routing, never for confirming the collection or placing its contents. */
-function featuresFirstHead(text: string): boolean {
-  const start = /^\s*\{\s*"features"\s*:\s*\[\s*\{/.exec(text);
-  if (!start) return false;
+function firstFeatureHead(text: string, start: number): boolean {
   let depth = 1;
   let inString = false;
   let escaped = false;
   let featureType = false;
   let geometry = false;
-  for (let index = start[0].length; index < text.length; index++) {
+  for (let index = start; index < text.length; index++) {
     const char = text[index];
     if (inString) {
       if (escaped) escaped = false;
@@ -122,7 +125,7 @@ function jsonKind(text: string): Kind | undefined {
     if (/^\s*\{[^\n]*\}\s*\n\s*\{/.test(text)) return kind('ndjson', 'vector');
     return kind('geojson', 'vector');
   }
-  if (type === null && featuresFirstHead(text.slice(0, INTAKE_PROBE_LIMITS.headBytes))) {
+  if (type === 'pending-feature-collection') {
     return { ...kind('geojson', 'vector'), rootTypePending: true };
   }
   if (/^\s*\{[^\n]*\}\s*\n\s*\{/.test(text)) return kind('ndjson', 'table');

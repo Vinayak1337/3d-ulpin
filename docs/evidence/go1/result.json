@@ -1,5 +1,6 @@
 {
   "task": "GO1",
+  "reviewTask": "GO1-FIX",
   "gate": "AUD4 N8",
   "baseCommit": "b1a4bd80",
   "status": "passed_offline",
@@ -9,11 +10,19 @@
     "intake-probe.ts:88-91 reads the fixed head; its 65536-byte limit is unchanged."
   ],
   "design": {
-    "recognition": "Direct Feature type and geometry members in a features-first root establish provisional GeoJSON.",
+    "recognition": "The depth-1 scan recognises features before root type even after name, crs or other metadata.",
     "marker": "rootTypePending is internal; its warning uses the existing card limits array.",
-    "publication": "Slots stay private until root closure, original integrity and the existing CRS resolver pass.",
-    "seal": "The fenced transaction seals and publishes retained slots with unchanged source ranges and hashes.",
-    "refusal": "GEOJSON_COLLECTION_TYPE distinguishes a missing or different root type; existing words are unchanged."
+    "ordering": "SourceFeature.collectionTypeBeforeFeatures is recomputed from byte zero on every read.",
+    "publication": "Type-first collections publish each accepted slot while reading, with the original pre-seal watermark check.",
+    "seal": "Only late-type collections hold slots until root closure, original integrity and CRS validation pass.",
+    "refusal": "Held collections publish no parts or terminal marker; GEOJSON_COLLECTION_TYPE words stay unchanged.",
+    "exhaustion": "Without another read, a published prefix permits its usual failure marker; no prefix fails closed."
+  },
+  "reviewRegressions": {
+    "usualOrder": {"midReadChunkEvents": 1, "sealedChunks": null, "remainingBytesAvailable": false},
+    "lateType": {"cases": 2, "stagedParts": 2, "beforeSealChunkEvents": 0, "afterSealChunkEvents": 2},
+    "refused": {"cases": 3, "chunkEvents": 0, "terminalMarkerInserts": 0},
+    "metadataBeforeFeatures": {"recognised": true, "headBytes": 65536}
   },
   "checks": [
     {"command": "pnpm install --offline --frozen-lockfile", "exitCode": 0, "downloaded": 0},
@@ -35,7 +44,7 @@
         "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
         "tests/intake-*.test.ts"
       ],
-      "exitCode": 0, "tests": 465, "passed": 465, "failed": 0
+      "stage": "GO1-FIX", "exitCode": 0, "tests": 469, "passed": 469, "failed": 0
     },
     {
       "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json E:/ulpin-tmp/go1-real-inputs.mts",
@@ -67,7 +76,10 @@
     "The first typecheck exceeded 120 seconds; the completed rerun used a 300-second bound.",
     "The temporary input comparison needed file URLs and both metadata segments (two distinct exit-1 corrections).",
     "DA6 already declares crs after features. These harness corrections did not change product code.",
-    "Input reordering moved root framing in memory. No feature was reserialised and no derivative was saved."
+    "Input reordering moved root framing in memory. No feature was reserialised and no derivative was saved.",
+    "GO1-FIX real-input reads confirm true ordering flags on originals and false on metadata-before-features variants.",
+    "GO1-FIX focused checks passed 110/110; the final full set includes one further type-first failure-marker regression.",
+    "GO1-FIX changes no schema, column or head budget; all verification stayed offline with temporary files on E:."
   ],
   "limitations": [
     "Offline only; no database, storage service, live CRS resolution, placement or runtime qualification.",

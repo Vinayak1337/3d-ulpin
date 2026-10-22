@@ -32,6 +32,8 @@ test('features before type and crs retain the same literal features and exact so
   assert.deepEqual(reordered.closure.metadata, usual.closure.metadata);
   assert.equal(reordered.closure.features, 2);
   assert.deepEqual(reordered.items.map(item => item.feature), usual.items.map(item => item.feature));
+  assert.deepEqual(usual.items.map(item => item.collectionTypeBeforeFeatures), [true, true]);
+  assert.deepEqual(reordered.items.map(item => item.collectionTypeBeforeFeatures), [false, false]);
   for (const result of [usual, reordered]) {
     assert.equal(result.closure.bytes, result.bytes.length);
     assert.equal(result.closure.sha256, createHash('sha256').update(result.bytes).digest('hex'));
@@ -43,6 +45,17 @@ test('features before type and crs retain the same literal features and exact so
       assert.equal(item.end, item.start + literal.length);
       assert.equal(sourceRecord(item).disposition, 'accepted');
     }
+  }
+});
+
+test('each read recomputes whether root type preceded features, regardless of earlier metadata', async () => {
+  const prefix = `"name":"test_only",${crs},`;
+  for (const before of [true, false, true, false]) {
+    const members = before
+      ? `${prefix}"type":"FeatureCollection","features":[${features.join(',')}]`
+      : `${prefix}"features":[${features.join(',')}],"type":"FeatureCollection"`;
+    const result = await read(`{${members}}`);
+    assert.deepEqual(result.items.map(item => item.collectionTypeBeforeFeatures), [before, before]);
   }
 });
 

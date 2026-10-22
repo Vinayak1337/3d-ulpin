@@ -115,6 +115,27 @@ test('GeoJSON features first is recognised provisionally without raising the fix
   assert.deepEqual(ranges, [[0, 65536], [65536, bytes.length]]);
 });
 
+test('GeoJSON with metadata before features and type beyond the fixed head is recognised provisionally', async () => {
+  const prefix = '{"name":"test_only features \\"type\\": \\"Other\\"",'
+    + '"crs":{"type":"name","properties":{"name":"EPSG:2958"}},"bbox":[1,2,3,4],';
+  const text = prefix + '"features":[{"type":"Feature","geometry":null,"properties":{"name":"'
+    + 'test_only'.repeat(9000) + '"}}],"type":"FeatureCollection"}';
+  const bytes = Buffer.from(text);
+  assert.equal(JSON.parse(text).type, 'FeatureCollection');
+  assert.ok(text.lastIndexOf('"type"') > INTAKE_PROBE_LIMITS.headBytes);
+  const head = bytes.subarray(0, INTAKE_PROBE_LIMITS.headBytes);
+  assert.equal(detectIntakeKind(head).format, 'geojson');
+  assert.equal(detectIntakeKind(head).rootTypePending, true);
+  const ranges: number[][] = [];
+  const card = await probeOriginal(async (start, end) => {
+    ranges.push([start, end]);
+    return bytes.subarray(start, end);
+  }, bytes.length, 'test_only.bin');
+  assert.equal(card.format, 'geojson');
+  assert.equal(card.counts.features, null);
+  assert.deepEqual(ranges, [[0, 65536], [65536, bytes.length]]);
+});
+
 test('features-first recognition requires direct Feature type and geometry members in the first object', () => {
   const heads = [
     '{"features":[{"properties":{"type":"Feature","geometry":null},"type":"Other"}',
@@ -123,6 +144,9 @@ test('features-first recognition requires direct Feature type and geometry membe
     '{"features":[],"note":{"type":"Feature","geometry":null}',
     '{"note":{"features":[{"type":"Feature","geometry":null}',
     '{"features":[{"type":"Feature","geometry":null}],"type":"Other"}',
+    '{"name":"test_only","nested":{"features":[{"type":"Feature","geometry":null}]}}',
+    '{"name":"test_only","features":[{"properties":{"type":"Feature","geometry":null}}',
+    '{"name":"test_only","features":[{"type":"Feature","properties":{"geometry":null}}',
   ];
   for (const head of heads) assert.notEqual(detectIntakeKind(Buffer.from(head), 'test_only.geojson').format, 'geojson');
   const head = '{"features":[{"geometry":{"type":"Point"},"properties":{"name":"test_only"},"type":"Feature"},';
