@@ -1,0 +1,170 @@
+{
+  "task": "ZIP2",
+  "gate": "GF-STREAM",
+  "qualification": "Partial: member fan-out protocol and byte integrity; no live runtime qualification",
+  "baseCommit": "0af36554",
+  "implementationCommit": "b6a97076",
+  "implementation": {
+    "fencedJob": "intake-zip-layers/1",
+    "receipt": "large-original/1 for every copied member, including small GeoJSON",
+    "enrolment": "Existing IntakeService.register in the same case, after all copies",
+    "lineage": "Parent source/revision/hash/item, exact member path/ordinal/size/CRC and SHA-256",
+    "nestingDepth": 2,
+    "deeperZip": "Copied and linked; not enrolled or read; ZIP_NESTING_LIMIT on its member row",
+    "memberCount": 2000,
+    "smallCopyBytes": 16777216,
+    "largeCopyRangeBytes": 1048576,
+    "unchangedGuards": ["unsafe paths", "ratio 100", "7 GiB expanded", "directory size", "CRC and size"],
+    "parentWords": "Actual linked originals, grouped shapefiles, pending members and kept-not-read reasons",
+    "intakeDraftOwnedOriginalLines": [64, 87],
+    "intakeDraftOwnedFinalLines": [64, 116]
+  },
+  "checks": [
+    {"command": ["bash docs/evidence/zip2/verify.sh"], "exitCode": 0},
+    {
+      "command": ["pnpm typecheck:backend"],
+      "exitCode": 0,
+      "scope": "Server and API TypeScript"
+    },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "tests/intake-zip-layers.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-zip-layers.test.ts"
+      ],
+      "exitCode": 0,
+      "tests": 26,
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "tests/intake-*.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts"
+      ],
+      "exitCode": 1,
+      "tests": 287,
+      "passed": 286,
+      "failed": 1,
+      "note": "Earlier complete run; unchanged intake-migration immediate-predecessor assertion failed"
+    },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "tests/intake-*.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "with only tests/intake-migration.test.ts excluded"
+      ],
+      "exitCode": 0,
+      "tests": 289,
+      "passed": 289,
+      "failed": 0,
+      "skipped": 0,
+      "note": "Final code; includes strict API request/response schema checks"
+    },
+    {"command": ["git diff --check"], "exitCode": 0},
+    {
+      "command": [
+        "git diff --quiet origin/staging -- tests/intake-migration.test.ts",
+        "packages/server/src/modules/usp/migrations.ts database/sql/60-usp"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "inputs": [
+    {
+      "role": "good",
+      "paths": [
+        "fixtures/google-uttam/01-google-building-footprints.geojson",
+        "fixtures/google-uttam/02-osm-road-centrelines.geojson",
+        "fixtures/google-uttam/block-boundary.geojson",
+        "fixtures/google-uttam/README.md"
+      ],
+      "use": "Unchanged repository bytes zipped in memory and copied by the fenced job",
+      "qualification": "Public Google model detections and OSM-derived context, test_only; not official truth",
+      "independentOriginals": 4,
+      "originalHashesPreserved": true
+    },
+    {
+      "role": "difficult",
+      "root": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/",
+      "files": [
+        {
+          "name": "TSC_Buildings_OD_-1703359794462598529.gpkg",
+          "bytes": 151552,
+          "sha256": "c1156f7a95e5d9d1d7c912aac6b764db948b523b4cb1bb719caf54f1c2e1e635"
+        },
+        {
+          "name": "TSC_Buildings_OD_8831041243266425049.zip",
+          "bytes": 12849,
+          "sha256": "5e8b07aa6e6121070766a5ecbea28b8f136655ada60e58662897c422c825bf2e"
+        }
+      ],
+      "use": "Untouched public originals packed together in memory; separate retained/enrolled children",
+      "qualification": "Australia test_only, CC BY version unstated; existing DA1 receipts, no acquisition",
+      "independentOriginals": 2,
+      "originalHashesPreserved": true
+    },
+    {
+      "role": "additional repository fixture, not real operational data",
+      "path": "fixtures/lake-view-complete-inputs.zip",
+      "bytes": 876540,
+      "sha256": "f3f54b2285e25759607dfbbda8ad447e8314bac2ba8b34f00451d51476b41d39",
+      "members": 38,
+      "formatsByExtension": {"glb": 10, "json": 4, "md": 2, "csv": 1, "pdf": 6, "png": 15}
+    }
+  ],
+  "builtArchiveChecks": [
+    "Grouped SHP/SHX/DBF plus independent PDF, CSV, PNG and GeoJSON",
+    "GeoJSON and GeoPackage",
+    "Nested ZIP jobs at depths 0, 1 and 2; retained but unenrolled depth 3",
+    "Traversal member refused while safe sibling is copied",
+    "Expanded-byte directory refusal with ZIP_EXPANDED_LIMIT parent words",
+    "65 independent members, above the old GeoJSON-only layer ceiling",
+    "Long/padded basenames admitted without losing exact lineage paths",
+    "Large member CRC mismatch, receipt failure, interruption recovery and no duplicate original"
+  ],
+  "failureLedger": [
+    {
+      "signature": "Initial tsc command unavailable",
+      "cause": "Worktree dependencies absent",
+      "decision": "pnpm install --offline --frozen-lockfile --ignore-scripts; exit 0; no tracked lock changes"
+    },
+    {
+      "signature": "Initial ZIP tests expected GeoJSON-only words and ignored README",
+      "cause": "Intentional old behavior assertions and missing general-receipt harness adapter",
+      "decision": "Updated protocol harness and expectations; final ZIP checks all pass"
+    },
+    {
+      "signature": "Parameter decorators disabled in two intake API tests",
+      "cause": "First broad run omitted API tsconfig",
+      "decision": "Used apps/api/tsconfig.json; both API tests pass"
+    },
+    {
+      "signature": "Intake migration predecessor is G16 widening, not streamed-profile schema",
+      "cause": "Unchanged test asserts outdated immediate adjacency; implementation still runs ledger once",
+      "decision": "No unowned edit or further unchanged retries; final suite excludes this one baseline test"
+    },
+    {
+      "signature": "Self-review found relative member names invalid for upload filename schema",
+      "cause": "Byte receipt accepts trimmed basenames of at most 150 characters",
+      "decision": "Bounded display basename; exact path in lineage; receipt schema checked in regression"
+    }
+  ],
+  "runtime": {
+    "docker": false,
+    "database": "In-memory SQL protocol harness only",
+    "objectStore": "Receipt/storage protocol doubles only",
+    "providers": "No calls",
+    "needed": "Authorized PostgreSQL/object-store/dispatcher and native-reader rehearsal for runtime gate"
+  },
+  "sharedSeamFollowups": [
+    "intake-zip.ts omits orphan/raster sidecars from card.members; those cannot be copied here",
+    "Native shapefile conversion can overwrite mixed-parent summary when it completes after fan-out",
+    "Existing probe classifies a ZIP containing KML as KMZ, bypassing generic mixed-member fan-out",
+    "Depth fence prevents ZIP jobs; explicit deeper-shapefile re-enrolment needs pre-reader admission fence",
+    "CSV is retained/enrolled like a drop, but still needs existing Read as a table selection",
+    "Coordinate with adapter-choice changes: small GeoJSON members now use large-original-v1 receipts",
+    "Empty members stay inside the immutable archive: existing receipt/lineage require positive bytes"
+  ]
+}
