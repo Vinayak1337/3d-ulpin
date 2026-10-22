@@ -32,6 +32,8 @@ export const SourceProfileSchema = z.strictObject({
     literalIdEligible: z.boolean(), literalTextEligible: z.boolean(), integerIdEligible: z.boolean().optional(),
     /** In a file of outlines with pins or lines, the same identity facts over the outlines an outline kind draws. */
     outlineLiteralIdEligible: z.boolean().optional(), outlineIntegerIdEligible: z.boolean().optional(),
+    /** Complete literal text over those same outlines; older stored profiles keep their whole-file rule. */
+    outlineLiteralTextEligible: z.boolean().optional(),
   })),
   limitations: z.array(z.string()),
 });

@@ -84,6 +84,22 @@ it('offers text or whole-number identifiers and text names; mixed and uncounted 
   expect(streamedIdentifierWords(control('TEXT_CONTROL', ['string']))).toBe('TEXT_CONTROL');
 });
 
+it('offers streamed names complete over outlines only and refuses a missing outline name', () => {
+  // test_only counts: a pin holds a non-text name; two outlines hold text.
+  const name = field('TEXT_CONTROL');
+  const text = control('TEXT_CONTROL', ['string', 'number'], { values: 3,
+    outline: { types: ['string'], values: 2, explicitNull: 0, absent: 0 } });
+  const mixed = { ...inventory, accepted: 3, geometryTypes: ['Polygon', 'Point'],
+    paths: [...inventory.paths.filter(path => path.path !== name), text] } as Inventory;
+  expect(streamedNamePaths(mixed, 'building').map(path => path.path)).toContain(name);
+  expect(streamedNamePaths(mixed, 'road').map(path => path.path)).not.toContain(name);
+  expect(streamedQuestionBody(mixed, { ...choices, name }, pin, 0, key)?.plan.operations[2]?.sourcePath).toBe(name);
+  const missing = { ...mixed, paths: mixed.paths.map(path => path.path === name
+    ? { ...path, outline: { types: ['string'] as const, values: 1, explicitNull: 0, absent: 1 } } : path) };
+  expect(streamedNamePaths(missing as Inventory, 'building').map(path => path.path)).not.toContain(name);
+  expect(streamedQuestionBody(missing as Inventory, { ...choices, name }, pin, 0, key)).toBeNull();
+});
+
 it('authors a sealed-inventory plan for a building and a parcel that the contract accepts, with no height', () => {
   for (const kind of ['building', 'parcel'] as const satisfies readonly Kind[]) {
     const body = streamedQuestionBody(inventory, { ...choices, kind }, pin, 0, key)!;

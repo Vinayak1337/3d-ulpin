@@ -5,7 +5,7 @@ import ts from 'typescript';
 import { expect, it } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import { answerSummary, blankChoices, choicesFromRecipe, heightPaths, identifierPaths, identifierWords, kindRefusal,
-  kindWords, needsLayoutAnswer, questionBody } from './question-model';
+  kindWords, namePaths, needsLayoutAnswer, questionBody } from './question-model';
 import type { Choices, Kind, MapProfile } from './question-model';
 import { layoutLines, type Recipe } from './layout-model';
 import type { IntakeItem } from './batch-model';
@@ -101,6 +101,21 @@ it('offers a key the outlines hold when the pins and lines carry none, and only 
     .toBe('literal_integer_identifier@1');
   expect(identifierWords(numbered.paths.find(path => path.path === choices.identifier)!, 'building'))
     .toMatch(/\(whole number\)$/);
+});
+
+it('offers complete outline names without requiring pins to have them, but refuses missing outline names', () => {
+  // test_only profile facts: no operational labels.
+  const name = choices.identifier;
+  const mixed = { ...profile, geometryTypes: ['Polygon', 'Point'], paths: profile.paths.map(path =>
+    path.path === name ? { ...path, literalTextEligible: false, outlineLiteralTextEligible: true } : path) };
+  for (const kind of ['', 'building', 'parcel', 'public_land'] as const) {
+    expect(namePaths(mixed, kind).map(path => path.path)).toContain(name);
+  }
+  expect(namePaths(mixed, 'road').map(path => path.path)).not.toContain(name);
+  expect(questionBody(mixed, { ...choices, name }, 0, key)?.plan.operations[2]?.sourcePath).toBe(name);
+  const missing = { ...mixed, paths: mixed.paths.map(path => path.path === name
+    ? { ...path, outlineLiteralTextEligible: false } : path) };
+  expect(questionBody(missing, { ...choices, name }, 0, key)).toBeNull();
 });
 
 it('opens the question when the reason first counts the pins and lines a large file holds', () => {

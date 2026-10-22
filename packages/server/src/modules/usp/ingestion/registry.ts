@@ -65,6 +65,13 @@ function identityFacts(entry: ProfileEntry, rows: Feature[], integerTokens: bool
   };
 }
 
+function textEligible(entry: ProfileEntry, rows: Feature[]): boolean {
+  return rows.every(row => {
+    const {present, value} = entry.get(row);
+    return present && typeof value === 'string' && value.length > 0 && value.length <= 2048 && value.trim() === value;
+  });
+}
+
 /** The rows an outline kind draws, when the file also holds pins or lines it sets aside; otherwise null. */
 function outlineRows(rows: Feature[]): Feature[] | null {
   const drawn = rows.filter(row => !setAsideGeometryTypes('building',
@@ -95,13 +102,13 @@ export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
   const paths = entries.map(entry => {
     const items = rows.map(entry.get), values = items.filter(item => item.present && item.value !== null);
     const types = [...new Set(values.map(({value}) => Array.isArray(value) ? 'array' : typeof value))].sort() as SourceProfile['paths'][number]['types'];
-    const ids = values.map(item => item.value);
     const whole = identityFacts(entry, rows, entry.integerIdEligible);
     const drawn = outline && identityFacts(entry, outline, entry.outlineIntegerIdEligible);
     return {path: entry.path, types, values: values.length, explicitNull: items.filter(item => item.present && item.value === null).length,
       absent: items.filter(item => !item.present).length,
       literalIdEligible: whole.literal,
-      literalTextEligible: ids.length === rows.length && ids.every(v => typeof v === 'string' && v.length > 0 && v.length <= 2048 && v.trim() === v),
+      literalTextEligible: textEligible(entry, rows),
+      ...(outline ? {outlineLiteralTextEligible: textEligible(entry, outline)} : {}),
       ...(whole.integer === undefined ? {} : {integerIdEligible: whole.integer}),
       ...(drawn ? {outlineLiteralIdEligible: drawn.literal} : {}),
       ...(drawn && drawn.integer !== undefined ? {outlineIntegerIdEligible: drawn.integer} : {})};
@@ -194,8 +201,12 @@ export function compileMapping(plan: LayoutPlan, profile: LayoutProfile): Mappin
         if (operation.sourcePath !== '/features/*/id' && !field) throw new AppError(422, 'MAPPING_IDENTITY', 'Choose a source attribute or retained Feature.id.');
         if (field) mapping.idField = field;
       } else {
-        if (!field || !path.literalTextEligible)
-          throw new AppError(422, 'MAPPING_NAME', 'A name mapping requires a complete text attribute; null and absent values stay distinct in the profile.');
+        const text = setAside.length > 0
+          ? path.outlineLiteralTextEligible ?? path.literalTextEligible : path.literalTextEligible;
+        if (!field || !text)
+          throw new AppError(422, 'MAPPING_NAME',
+            'A name mapping requires a complete text attribute for every feature drawn by the layout; '
+            + 'null and absent values stay distinct in the profile.');
         mapping.nameField = field;
       }
     }

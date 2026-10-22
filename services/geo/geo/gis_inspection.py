@@ -47,6 +47,15 @@ def _eligible_ids(values):
     return bool(values and all(isinstance(value, (str, int, float)) and not isinstance(value, bool) and (not isinstance(value, float) or math.isfinite(value)) and str(value).strip() and len(str(value)) <= 256 for value in values) and len({str(value).strip() for value in values}) == len(values))
 
 
+def _complete(values: list[object]) -> bool:
+    return all(
+        isinstance(value, (str, int, float, bool))
+        and (not isinstance(value, float) or math.isfinite(value))
+        and bool(str(value).strip())
+        for value in values
+    )
+
+
 def _fields(rows, integer_tokens: bool = False, outline: list[int] | None = None):
     names = sorted({name for row in rows for name in row})
     if len(names) > 256:
@@ -60,11 +69,20 @@ def _fields(rows, integer_tokens: bool = False, outline: list[int] | None = None
         unique = bool(complete and len(set(normalized)) == len(rows))
         id_eligible = bool(len(name) <= 80 and name.strip() == name and _eligible_ids(values))
         fields.append({"name": name, "complete": bool(complete), "unique": unique, "idEligible": id_eligible,
+                       **({"outlineComplete": _complete([values[index] for index in outline])}
+                          if outline is not None else {}),
                        **({"integerIdEligible": _integer_ids(values)} if integer_tokens else {}),
                        **({"outlineIntegerIdEligible": _integer_ids([values[index] for index in outline])}
                           if integer_tokens and outline is not None else {})})
     ids = [field["name"] for field in fields if field["idEligible"] and (field["name"].lower() in ("id", "fid", "oid", "objectid", "globalid") or field["name"].lower().endswith("_id") or re.search(r"[a-z0-9](?:Id|ID)$", field["name"]))]
-    labels = [field["name"] for field in fields if field["complete"] and len(field["name"]) <= 80 and re.search(r"(^|_)(name|title|label)$", field["name"], re.I) and all(isinstance(row.get(field["name"]), str) and len(row[field["name"]]) <= 2048 for row in rows)]
+    name_rows = rows if outline is None else [rows[index] for index in outline]
+    complete_key = "complete" if outline is None else "outlineComplete"
+    labels = [
+        field["name"] for field in fields
+        if field[complete_key] and len(field["name"]) <= 80
+        and re.search(r"(^|_)(name|title|label)$", field["name"], re.I)
+        and all(isinstance(row.get(field["name"]), str) and len(row[field["name"]]) <= 2048 for row in name_rows)
+    ]
     return fields, ids[0] if len(ids) == 1 else None, labels[0] if len(labels) == 1 else None
 
 

@@ -101,6 +101,38 @@ test('the mapped worker copies a whole-number key as its digits and reserves it 
     [['17', 0, null], ['17', 0, 2]]);
 });
 
+test('streamed mixed names use every outline across chunks and leave set-aside names unknown', () => {
+  // test_only: literal polygons, pin and line; no operational records.
+  const records = ['Polygon', 'Point', 'Polygon', 'LineString'].map((type, featureIndex) => ({
+    featureIndex, byteStart: featureIndex * 10, byteEnd: featureIndex * 10 + 9, rawSha256: hash,
+    disposition: 'accepted', issueCode: null, feature: { type: 'Feature', geometry: { type, coordinates: [] },
+      properties: { OBJECTID: featureIndex, ...(type === 'Polygon' ? { NAME: 'Fixture outline' } : {}) } },
+  })) as StreamingVectorRecord[];
+  const named = plan({ operations: [key, geometry,
+    { target: 'feature.name', sourcePath: '/features/*/properties/NAME', conversionId: 'literal_text@1' }] });
+  const inventoried = () => {
+    const first = advanceStreamedInventory(emptyInventory(), records.slice(0, 2)).inventory;
+    return profile(advanceStreamedInventory(first, records.slice(2)).inventory);
+  };
+  const mixed = inventoried();
+  assert.equal(compileStreamedMapping(named, mixed).nameField, 'NAME');
+  assert.throws(() => compileStreamedMapping({ ...named, kind: 'road' }, mixed),
+    { code: 'STREAMED_MAPPING_COVERAGE' });
+  const line = records[3].feature as { properties: Record<string, unknown> };
+  line.properties.NAME = 'Fixture line name that must not be copied';
+  const mapped = normalizeMappedChunk(records, named, inventoried(), ids.rawJobId, 0, []);
+  assert.deepEqual(mapped.records.map(record => [record.name.state, record.name.value]),
+    [['known', 'Fixture outline'], ['unknown', null], ['known', 'Fixture outline'], ['unknown', null]]);
+  assert.deepEqual(mapped.records.filter(record => record.name.state === 'unknown')
+    .map(record => record.issueCodes.includes('GEOMETRY_KIND')), [true, true]);
+  const properties = (records[2].feature as { properties: Record<string, unknown> }).properties;
+  for (const value of [undefined, null, 7]) {
+    properties.NAME = value;
+    if (value === undefined) delete properties.NAME;
+    assert.throws(() => compileStreamedMapping(named, inventoried()), { code: 'STREAMED_MAPPING_COVERAGE' });
+  }
+});
+
 test('a part refuses a whole-number key the file does not write as plain digits', () => {
   const raw = (token: string) => Buffer.from(`{"type":"Feature","properties":{"OBJECTID":${token}},"geometry":null}`);
   assert.doesNotThrow(() => assertIntegerKeyTokens(plan(), [raw('12'), raw('-3'), raw('0')]));

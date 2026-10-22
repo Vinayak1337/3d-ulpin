@@ -66100,6 +66100,7 @@ export interface components {
                 integerIdEligible?: boolean;
                 outlineLiteralIdEligible?: boolean;
                 outlineIntegerIdEligible?: boolean;
+                outlineLiteralTextEligible?: boolean;
             }[];
             limitations: string[];
         } | {

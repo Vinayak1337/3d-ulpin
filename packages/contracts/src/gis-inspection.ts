@@ -15,6 +15,8 @@ export interface GisInspection {
   fields: {
     name: string;
     complete: boolean;
+    /** Completeness over the outlines only, when the file also holds pins or lines. */
+    outlineComplete?: boolean;
     unique: boolean;
     idEligible: boolean;
     /** Complete, unique safe integer tokens in the unchanged GeoJSON bytes, not parsed floats. */

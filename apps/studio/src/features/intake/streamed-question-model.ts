@@ -1,6 +1,6 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { fieldWords } from './batch-model';
-import { kindRefusal, kindWords, setAsideWords, type Choices } from './question-model';
+import { kindRefusal, kindWords, setAsideWords, type Choices, type Kind } from './question-model';
 
 export type ProfileStatus =
   GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}'>;
@@ -41,8 +41,18 @@ export function streamedIdentifierPaths(inventory: Inventory): InventoryPath[] {
     && (holdsOnly(path, 'string') || holdsWholeNumbers(path)));
 }
 
-export function streamedNamePaths(inventory: Inventory): InventoryPath[] {
-  return inventory.paths.filter(path => holdsOnly(path, 'string'));
+export function streamedNamePaths(inventory: Inventory, kind: Kind | '' = ''): InventoryPath[] {
+  return inventory.paths.filter(path => {
+    if (!path.path.startsWith(propertyPrefix)) return false;
+    const whole = path.values === inventory.accepted && path.explicitNull === 0 && path.absent === 0
+      && holdsOnly(path, 'string');
+    if (kind && !['building', 'parcel', 'public_land'].includes(kind)) return whole;
+    if (!path.outline) return whole;
+    const counts = path.outline;
+    const drawn = counts.values > 0 && counts.explicitNull === 0 && counts.absent === 0
+      && counts.types.length === 1 && counts.types[0] === 'string';
+    return kind ? drawn : whole || drawn;
+  });
 }
 
 export function streamedIdentifierWords(path: InventoryPath): string {
@@ -55,7 +65,7 @@ export function streamedQuestionBody(inventory: Inventory, choices: Choices, pin
   if (!choices.kind || kindRefusal(choices.kind, inventory.geometryTypes)) return null;
   const identifier = streamedIdentifierPaths(inventory).find(path => path.path === choices.identifier);
   if (!identifier) return null;
-  if (choices.name && !streamedNamePaths(inventory).some(path => path.path === choices.name)) return null;
+  if (choices.name && !streamedNamePaths(inventory, choices.kind).some(path => path.path === choices.name)) return null;
   if (!inventory.paths.some(path => path.path === geometryPath)) return null;
   const operations = [
     { target: 'feature.sourceKey' as const, sourcePath: identifier.path,
