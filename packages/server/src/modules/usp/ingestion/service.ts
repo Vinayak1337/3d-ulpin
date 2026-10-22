@@ -20,7 +20,8 @@ import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
-import { compileMapping, geojsonFeatureCount, GEOJSON_FEATURE_LIMIT, inspectedProfile } from './registry';
+import { compileMapping, geojsonFeatureCount, geojsonInventory, GEOJSON_FEATURE_LIMIT, inspectedProfile }
+  from './registry';
 import { decodeIntakeHead, detectIntakeKind } from './intake-signatures';
 import { probeOriginal } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
@@ -400,7 +401,7 @@ type RetainOriginalContext = {
   profileName: string; hash: string; digest: string; actor: string; lineage?: ArchiveMemberLineage;
 };
 
-/** The source row commits before inspection, so a reader failure cannot orphan or remove an original. */
+/** The source row commits before its receipt is attached, so a later failure cannot orphan or remove it. */
 async function keepManualOriginal(context: RetainOriginalContext) {
   const { caseId, input, file, profileName, hash, digest, actor, lineage } = context;
   const key = `manual-gis:${input.requestKey}:original`;
@@ -435,6 +436,31 @@ async function keepManualOriginal(context: RetainOriginalContext) {
     await remember(client, caseId, key, digest, result);
     return result;
   }));
+}
+
+/** Every 413/422 refusal is decided before the original is kept, so a refused file leaves no row or object. */
+async function manualInventory(file: { name: string; bytes: Uint8Array },
+  input: z.infer<typeof AnyRetainSourceSchema>) {
+  if (input.format !== 'geojson') {
+    await assertTableByteKind(file.bytes, input.selection);
+    const tabular = inspectTabularSource(file.bytes, input.selection, input, file.name);
+    return { tabular, inspection: null, inventory: { version: 'manual-tabular/1', ...tabular } };
+  }
+  geojsonInventory(file.bytes);
+  // Inspection is the existing bounded GIS reader.
+  const inspection = await inspectGisBytes(file, null,
+    value => areaGeo<Omit<GisInspection, 'suggestedTitle' | 'suggestedNamespace'>>('inspect-gis', value));
+  return { tabular: null, inspection, inventory: inspectedProfile(file.bytes, inspection) };
+}
+
+/** A processor or storage failure is not a refusal: the original is still kept before the failure answers. */
+async function readManualOriginal(context: RetainOriginalContext) {
+  try {
+    return await manualInventory(context.file, context.input);
+  } catch (error) {
+    if (!(error instanceof AppError) || ![413, 422].includes(error.status)) await keepManualOriginal(context);
+    throw error;
+  }
 }
 
 /** A selection asks for a reader; it cannot establish that the original contains that kind of table. */
@@ -509,8 +535,6 @@ export class ManualIngestionService {
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
       throw new AppError(413,'FILE_SIZE',
         'Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
-    // A duplicate's bytes are already durable; a new original is committed before any reader runs.
-    let tabular: ReturnType<typeof inspectTabularSource> | null = null;
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor,...(lineage?{lineage}:{})}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
@@ -531,18 +555,10 @@ export class ManualIngestionService {
       await remember(client,caseId,key,digest,result);return result;
     });
     if(previous)return previous;
-    const retained = await keepManualOriginal({ caseId, input, file, profileName, hash, digest, actor, lineage });
-    if (input.format !== 'geojson') {
-      await assertTableByteKind(file.bytes, input.selection);
-      tabular = inspectTabularSource(file.bytes, input.selection, input, file.name);
-    } else {
-      geojsonFeatureCount(file.bytes);
-    }
-    // Inspection is the existing bounded GIS reader, now behind a durable receipt.
-    const inspection=input.format==='geojson'
-      ?await inspectGisBytes(file,null,
-        value=>areaGeo<Omit<GisInspection,'suggestedTitle'|'suggestedNamespace'>>('inspect-gis',value)):null;
-    const inventory=tabular?{version:'manual-tabular/1',...tabular}:inspectedProfile(file.bytes,inspection!);
+    // A new original is kept once every refusal is decided, and before its receipt is attached.
+    const context = { caseId, input, file, profileName, hash, digest, actor, lineage };
+    const { tabular, inspection, inventory } = await readManualOriginal(context);
+    const retained = await keepManualOriginal(context);
     const sourceId=retained.id;
     const mime=input.format==='geojson'?'application/geo+json':input.format==='csv'?'text/csv'
       :'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';

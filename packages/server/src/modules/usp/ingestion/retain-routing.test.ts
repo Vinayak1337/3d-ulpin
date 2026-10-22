@@ -43,6 +43,13 @@ afterEach(() => {
   mock.restoreAll();
 });
 
+/** Test-only repetition of unchanged real NYC geometries; not a publisher original or independent records. */
+function repeatedNyc(features: number) {
+  const original = JSON.parse(nyc.toString('utf8'));
+  return Buffer.from(JSON.stringify({ ...original,
+    features: Array.from({ length: features }, (_, index) => original.features[index % original.features.length]) }));
+}
+
 async function probe(bytes: Uint8Array, name: string): Promise<IntakeCard> {
   return probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, name);
 }
@@ -95,10 +102,7 @@ test('CityJSON named .json is recognised as CityJSON, never sent to the GeoJSON 
 });
 
 test('a small 2,500-feature collection uses streaming instead of the bounded feature refusal', async () => {
-  // Test-only repetition of unchanged real geometries; not a publisher original or independent records.
-  const original = JSON.parse(nyc.toString('utf8'));
-  const bytes = Buffer.from(JSON.stringify({ ...original,
-    features: Array.from({ length: 2500 }, (_, index) => original.features[index % original.features.length]) }));
+  const bytes = repeatedNyc(2500);
   assert(bytes.length < 16 * 1024 * 1024);
   assert.equal(geojsonFeatureCount(bytes), 2500);
   const source = stored(bytes, 'dense.geojson');
@@ -258,7 +262,7 @@ class RetainStore {
   }
 }
 
-test('the table dialog keeps wrong-kind bytes first, including on replay, without a table receipt or deletion',
+test('the table dialog refuses wrong-kind bytes, including on replay, without a source row or object',
   async () => {
     const io = storage(pdf), store = new RetainStore();
     store.install();
@@ -267,14 +271,9 @@ test('the table dialog keeps wrong-kind bytes first, including on replay, withou
     const read = () => new ManualIngestionService().retain(caseId, request, { name: 'misnamed.csv', bytes: pdf });
     await assert.rejects(read(), { code: 'TABLE_BYTE_KIND' });
     await assert.rejects(read(), { code: 'TABLE_BYTE_KIND' });
-    assert.equal(store.sources.length, 1);
-    assert.equal(store.revision, 1);
-    assert.equal(store.sources[0].inspection.manualProfile, undefined);
-    assert.equal(io.objects.size, 1);
-    assert.equal(sha256([...io.objects.values()][0]), sha256(pdf));
-    assert.equal(io.calls.filter(call => call === 'PutObjectCommand').length, 1);
-    const inserted = store.statements.findIndex(sql => sql.startsWith('INSERT INTO sources'));
-    assert(store.statements.indexOf('COMMIT', inserted) > inserted);
+    assert.equal(store.sources.length, 0);
+    assert.equal(store.revision, 0);
+    assert.equal(io.objects.size, 0);
   });
 
 test('the LPC register still gets a bounded table receipt after retention, and replays without a second original',
@@ -295,15 +294,35 @@ test('the LPC register still gets a bounded table receipt after retention, and r
     assert.equal(store.revision, 1);
   });
 
-test('GeoJSON inventory runs only after the durable receipt, even for CityJSON named .json', async () => {
-  const bytes = Buffer.from('{"type":"CityJSON","version":"2.0","CityObjects":{},"vertices":[]}');
-  const io = storage(bytes), store = new RetainStore();
+for (const [label, name, bytes, code] of [
+  ['CityJSON named .json', 'city.json',
+    Buffer.from('{"type":"CityJSON","version":"2.0","CityObjects":{},"vertices":[]}'), 'UNSUPPORTED_PROFILE'],
+  ['GeoJSON over the feature limit', 'dense.geojson', repeatedNyc(2001), 'RECORD_LIMIT'],
+] as const) {
+  test(`a refused small ${label} leaves no source row, object or case revision for /uploads to repeat`,
+    async () => {
+      const io = storage(bytes), store = new RetainStore();
+      store.install();
+      await assert.rejects(new ManualIngestionService().retain(caseId,
+        { requestKey: crypto.randomUUID(), expectedWorkspaceRevision: 0, format: 'geojson' },
+        { name, bytes }), { code });
+      assert.equal(store.sources.length, 0);
+      assert.equal(store.revision, 0);
+      assert.equal(io.objects.size, 0);
+    });
+}
+
+test('an unavailable processor still keeps the small GeoJSON original once, before answering', async () => {
+  const io = storage(nyc), store = new RetainStore();
   store.install();
+  mock.getter(settings, 'geoUrl', () => 'http://rt1.invalid');
+  mock.getter(settings, 'geoToken', () => 'test-only');
+  mock.method(globalThis, 'fetch', async () => Response.json({}, { status: 503 }));
   await assert.rejects(new ManualIngestionService().retain(caseId,
     { requestKey: crypto.randomUUID(), expectedWorkspaceRevision: 0, format: 'geojson' },
-    { name: 'city.json', bytes }), { code: 'UNSUPPORTED_PROFILE' });
+    { name: 'buildings.geojson', bytes: nyc }), { code: 'AREA_PROCESSING' });
   assert.equal(store.sources.length, 1);
-  assert.equal(io.objects.size, 1);
   assert.equal(store.sources[0].inspection.manualProfile, undefined);
-  assert.equal(sha256([...io.objects.values()][0]), sha256(bytes));
+  assert.equal(store.revision, 1);
+  assert.equal(sha256([...io.objects.values()][0]), sha256(nyc));
 });
