@@ -233,6 +233,81 @@ test('integer conversion is feature-only, requires the inspected fact, and never
   assert.throws(() => compileMapping(plan, profile()), /unique whole-number tokens/);
 });
 
+/** Synthetic outlines, one pin and one line: the shape of the REH14 mixed file, not its values. */
+function mixedSource(polygonKeys: (string | number | null)[], pinKey?: string, ringOf = polygonKeys[0]) {
+  const square = (x: number) => ({ type: 'Polygon',
+    coordinates: [[[x, 40], [x + 0.0001, 40], [x + 0.0001, 40.0001], [x, 40]]] });
+  const features = [
+    ...polygonKeys.map((key, index) => ({ type: 'Feature', properties: key === null ? {} : { bin: key },
+      geometry: square(-74 + index * 0.001) })),
+    { type: 'Feature', properties: pinKey === undefined ? { address: 'Fixture pin' } : { bin: pinKey },
+      geometry: { type: 'Point', coordinates: [-73.99, 40] } },
+    { type: 'Feature', properties: { ring_of: ringOf },
+      geometry: { type: 'LineString', coordinates: [[-73.98, 40], [-73.9799, 40.0001]] } },
+  ];
+  const bytes = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features }));
+  const integers = polygonKeys.every(key => typeof key === 'number');
+  const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: features.length,
+    sourceCrs: 'EPSG:4326', crsEvidence: 'Fixture CRS declaration', geometryTypes: ['LineString', 'Point', 'Polygon'],
+    fields: ['address', 'bin', 'ring_of'].map(name => ({ name, integerIdEligible: false,
+      outlineIntegerIdEligible: name === 'bin' && integers })) } as GisInspection;
+  const { schemaFingerprint, ...inventory } = inspectedProfile(bytes, inspection);
+  return SourceProfileSchema.parse({ ...inventory, source: { ...pin, schemaFingerprint }, caseId: id,
+    workspaceRevision: 1, workspaceFingerprint: legacy.workspaceFingerprint });
+}
+function keyedBy(kind: string, field: string, conversionId = 'literal_identifier@1') {
+  const plan = MappingPlanSchema.parse(stated(kind));
+  plan.operations[0] = { ...plan.operations[0], sourcePath: `/features/*/properties/${field}`,
+    conversionId: conversionId as typeof plan.operations[0]['conversionId'] };
+  return plan;
+}
+
+test('an outline kind keys only the outlines it draws: unkeyed pins and lines no longer block the layout', () => {
+  const source = mixedSource(['B1', 'B2']);
+  const bin = source.paths.find(path => path.path.endsWith('/bin'))!;
+  assert.equal(bin.literalIdEligible, false, 'the pin and the line carry no bin');
+  assert.equal(bin.outlineLiteralIdEligible, true);
+  assert.deepEqual(compileMapping(keyedBy('building', 'bin'), source),
+    { kind: 'building', geometryRole: 'unknown', idField: 'bin' });
+  assert.equal(compileMapping(keyedBy('parcel', 'bin'), source).idField, 'bin');
+  assert.throws(() => compileMapping(keyedBy('road', 'bin'), source),
+    { code: 'MAPPING_IDENTITY', message: 'Source identity must be complete, unique, nonempty literal text.' });
+  assert.throws(() => compileMapping(keyedBy('building', 'ring_of'), source), { code: 'MAPPING_IDENTITY' });
+  const numbered = mixedSource([101, 102]);
+  assert.equal(compileMapping(keyedBy('building', 'bin', 'literal_integer_identifier@1'), numbered).idField, 'bin');
+  assert.throws(() => compileMapping(keyedBy('road', 'bin', 'literal_integer_identifier@1'), numbered),
+    /unique whole-number tokens/);
+});
+
+test('an outline without its key, or with a repeated key, still refuses with the same words', () => {
+  for (const keys of [['B1', null], ['B1', 'B1'], ['B1', '']]) {
+    const source = mixedSource(keys);
+    assert.equal(source.paths.find(path => path.path.endsWith('/bin'))!.outlineLiteralIdEligible, false);
+    assert.throws(() => compileMapping(keyedBy('building', 'bin'), source),
+      { code: 'MAPPING_IDENTITY', message: 'Source identity must be complete, unique, nonempty literal text.' });
+  }
+  const repeatedNumber = mixedSource([101, 101]);
+  assert.throws(() => compileMapping(keyedBy('building', 'bin', 'literal_integer_identifier@1'), repeatedNumber),
+    /unique whole-number tokens/);
+});
+
+test('a keyed mixed file and a single-kind file lay out as before', () => {
+  const keyed = mixedSource(['B1', 'B2'], 'P1', 'B3');
+  const bin = keyed.paths.find(path => path.path.endsWith('/bin'))!;
+  assert.equal(bin.literalIdEligible, false, 'the line carries no bin in this fixture');
+  const everyKey = SourceProfileSchema.parse({ ...keyed, paths: keyed.paths.map(path => path === bin
+    ? { ...path, literalIdEligible: true } : path) });
+  for (const kind of ['building', 'road']) {
+    assert.deepEqual(compileMapping(keyedBy(kind, 'bin'), everyKey),
+      { kind, geometryRole: 'unknown', idField: 'bin' });
+  }
+  assert(profile().paths.every(path => !('outlineLiteralIdEligible' in path) && !('outlineIntegerIdEligible' in path)));
+  const { outlineLiteralIdEligible: _ignored, ...older } = bin;
+  const olderProfile = { ...keyed, paths: keyed.paths.map(path => path === bin ? older : path) };
+  assert.throws(() => compileMapping(keyedBy('building', 'bin'), olderProfile), { code: 'MAPPING_IDENTITY' },
+    'a profile stored before outline eligibility keeps the whole-file rule');
+});
+
 test('additive integer eligibility does not enter the schema fingerprint', () => {
   const bytes = Buffer.from(JSON.stringify(fixture));
   const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,

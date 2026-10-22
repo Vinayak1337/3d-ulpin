@@ -30,6 +30,8 @@ export const SourceProfileSchema = z.strictObject({
     path: SourcePathSchema, types: z.array(z.enum(['string', 'number', 'boolean', 'object', 'array'])),
     values: z.number().int().nonnegative(), explicitNull: z.number().int().nonnegative(), absent: z.number().int().nonnegative(),
     literalIdEligible: z.boolean(), literalTextEligible: z.boolean(), integerIdEligible: z.boolean().optional(),
+    /** In a file of outlines with pins or lines, the same identity facts over the outlines an outline kind draws. */
+    outlineLiteralIdEligible: z.boolean().optional(), outlineIntegerIdEligible: z.boolean().optional(),
   })),
   limitations: z.array(z.string()),
 });

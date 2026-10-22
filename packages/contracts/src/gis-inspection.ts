@@ -19,10 +19,13 @@ export interface GisInspection {
     idEligible: boolean;
     /** Complete, unique safe integer tokens in the unchanged GeoJSON bytes, not parsed floats. */
     integerIdEligible?: boolean;
+    /** The same fact over the outlines an outline kind draws, when the file also holds pins or lines. */
+    outlineIntegerIdEligible?: boolean;
   }[];
   /** True only for complete, unique retained top-level GeoJSON Feature.id values. */
   featureIdEligible: boolean;
   featureIntegerIdEligible?: boolean;
+  featureOutlineIntegerIdEligible?: boolean;
   suggestedIdField: string | null;
   suggestedNameField: string | null;
   suggestedTitle: string;

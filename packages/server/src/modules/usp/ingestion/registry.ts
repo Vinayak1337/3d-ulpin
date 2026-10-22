@@ -50,6 +50,28 @@ export function geojsonInventory(bytes: Uint8Array): Feature[] {
   return features;
 }
 
+type ProfileEntry = {path: string; integerIdEligible?: boolean; outlineIntegerIdEligible?: boolean;
+  get: (row: Feature) => {present: boolean; value: unknown}};
+
+/** Complete, unique literal text or whole-number identity over the rows a layout keys. Integer spelling is the
+ * inspection's fact; without it no integer eligibility is stated. */
+function identityFacts(entry: ProfileEntry, rows: Feature[], integerTokens: boolean | undefined) {
+  const ids = rows.map(entry.get).filter(item => item.present && item.value !== null).map(item => item.value);
+  const keyed = ids.length === rows.length && new Set(ids).size === ids.length;
+  return {
+    literal: keyed && ids.every(v => typeof v === 'string' && v.length > 0 && v.length <= 256 && v.trim() === v),
+    integer: integerTokens === undefined ? undefined
+      : integerTokens && keyed && ids.every(v => Number.isSafeInteger(v)),
+  };
+}
+
+/** The rows an outline kind draws, when the file also holds pins or lines it sets aside; otherwise null. */
+function outlineRows(rows: Feature[]): Feature[] | null {
+  const drawn = rows.filter(row => !setAsideGeometryTypes('building',
+    [String((row.geometry as {type?: unknown} | null | undefined)?.type)]).length);
+  return drawn.length > 0 && drawn.length < rows.length ? drawn : null;
+}
+
 export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
   const rows = geojsonInventory(bytes);
   if (inspection.format !== 'geojson' || inspection.sourceSha256 !== sha256(bytes) || inspection.featureCount !== rows.length
@@ -58,21 +80,31 @@ export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
     throw new AppError(422, 'SOURCE_PROFILE', 'The inspected source does not match the supported GeoJSON profile.');
   if (inspection.geometryTypes.some(type => !geometryTypes.includes(type)))
     throw new AppError(422, 'UNSUPPORTED_GEOMETRY', 'Choose point, line or polygon GeoJSON geometry supported by the area normalizer; no geometry role is inferred.');
-  const entries: {path: string; integerIdEligible?: boolean; get: (row: Feature) => {present: boolean; value: unknown}}[] = [
+  const entries: ProfileEntry[] = [
     {path: '/features/*/geometry', get: row => ({present: Object.hasOwn(row, 'geometry'), value: row.geometry})},
-    ...(rows.some(row => Object.hasOwn(row, 'id')) ? [{path: '/features/*/id', integerIdEligible: inspection.featureIntegerIdEligible, get: (row: Feature) => ({present: Object.hasOwn(row, 'id'), value: row.id})}] : []),
-    ...inspection.fields.map(field => ({path: `/features/*/properties/${escape(field.name)}`, integerIdEligible: field.integerIdEligible, get: (row: Feature) => ({present: Object.hasOwn(row.properties || {}, field.name), value: row.properties?.[field.name]})})),
+    ...(rows.some(row => Object.hasOwn(row, 'id')) ? [{path: '/features/*/id',
+      integerIdEligible: inspection.featureIntegerIdEligible,
+      outlineIntegerIdEligible: inspection.featureOutlineIntegerIdEligible,
+      get: (row: Feature) => ({present: Object.hasOwn(row, 'id'), value: row.id})}] : []),
+    ...inspection.fields.map(field => ({path: `/features/*/properties/${escape(field.name)}`,
+      integerIdEligible: field.integerIdEligible, outlineIntegerIdEligible: field.outlineIntegerIdEligible,
+      get: (row: Feature) => ({present: Object.hasOwn(row.properties || {}, field.name),
+        value: row.properties?.[field.name]})})),
   ];
+  const outline = outlineRows(rows);
   const paths = entries.map(entry => {
     const items = rows.map(entry.get), values = items.filter(item => item.present && item.value !== null);
     const types = [...new Set(values.map(({value}) => Array.isArray(value) ? 'array' : typeof value))].sort() as SourceProfile['paths'][number]['types'];
     const ids = values.map(item => item.value);
+    const whole = identityFacts(entry, rows, entry.integerIdEligible);
+    const drawn = outline && identityFacts(entry, outline, entry.outlineIntegerIdEligible);
     return {path: entry.path, types, values: values.length, explicitNull: items.filter(item => item.present && item.value === null).length,
       absent: items.filter(item => !item.present).length,
-      literalIdEligible: ids.length === rows.length && ids.every(v => typeof v === 'string' && v.length > 0 && v.length <= 256 && v.trim() === v) && new Set(ids).size === ids.length,
+      literalIdEligible: whole.literal,
       literalTextEligible: ids.length === rows.length && ids.every(v => typeof v === 'string' && v.length > 0 && v.length <= 2048 && v.trim() === v),
-      ...(entry.integerIdEligible === undefined ? {} : {integerIdEligible: entry.integerIdEligible
-        && ids.length === rows.length && ids.every(v => Number.isSafeInteger(v)) && new Set(ids).size === ids.length})};
+      ...(whole.integer === undefined ? {} : {integerIdEligible: whole.integer}),
+      ...(drawn ? {outlineLiteralIdEligible: drawn.literal} : {}),
+      ...(drawn && drawn.integer !== undefined ? {outlineIntegerIdEligible: drawn.integer} : {})};
   });
   const unit = inspection.crsUnit ?? (inspection.sourceCrs === 'EPSG:4326' ? 'degree' : null);
   if (typeof unit !== 'string' || !unit.trim() || unit.length > 80)
@@ -118,6 +150,14 @@ export function setAsideWords(setAside: GisSetAside | undefined): string | null 
     + `but not drawn as ${drawnAs[setAside.kind]}.`;
 }
 
+/** An outline kind over a file with pins or lines keys only the outlines it draws. A profile stored before
+ * outline facts were inspected keeps the whole-file facts, which hold for every outline too. */
+function keyFacts(path: SourceProfile['paths'][number], outline: boolean) {
+  if (!outline) return {literal: path.literalIdEligible, integer: path.integerIdEligible};
+  return {literal: path.outlineLiteralIdEligible ?? path.literalIdEligible,
+    integer: path.outlineIntegerIdEligible ?? path.integerIdEligible};
+}
+
 type LayoutPlan = Pick<MappingPlan, 'kind' | 'operations' | 'heightField' | 'heightUnit' | 'heightMeaning'>;
 type LayoutProfile = Pick<SourceProfile, 'paths' | 'geometryTypes' | 'crs'>;
 /** The one meaning of a layout; a large file's streamed profile reaches it through `compileStreamedMapping`. */
@@ -144,10 +184,11 @@ export function compileMapping(plan: LayoutPlan, profile: LayoutProfile): Mappin
       const field = operation.sourcePath.startsWith(prefix) ? unescape(operation.sourcePath.slice(prefix.length)) : undefined;
       if (field && (field.length > 80 || field.trim() !== field)) throw new AppError(422, 'MAPPING_FIELD', 'The existing area adapter cannot map this field name verbatim.');
       if (operation.target === 'building.sourceKey' || operation.target === 'feature.sourceKey') {
+        const keys = keyFacts(path, setAside.length > 0);
         if (operation.conversionId === 'literal_integer_identifier@1') {
-          if (path.integerIdEligible !== true) throw new AppError(422, 'MAPPING_IDENTITY',
+          if (keys.integer !== true) throw new AppError(422, 'MAPPING_IDENTITY',
             'Source identity must be complete, unique whole-number tokens within the exact integer range.');
-        } else if (!path.literalIdEligible) {
+        } else if (!keys.literal) {
           throw new AppError(422, 'MAPPING_IDENTITY', 'Source identity must be complete, unique, nonempty literal text.');
         }
         if (operation.sourcePath !== '/features/*/id' && !field) throw new AppError(422, 'MAPPING_IDENTITY', 'Choose a source attribute or retained Feature.id.');

@@ -4,8 +4,8 @@ import { resolve } from 'node:path';
 import ts from 'typescript';
 import { expect, it } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
-import { answerSummary, blankChoices, choicesFromRecipe, heightPaths, kindRefusal, kindWords,
-  needsLayoutAnswer, questionBody } from './question-model';
+import { answerSummary, blankChoices, choicesFromRecipe, heightPaths, identifierPaths, identifierWords, kindRefusal,
+  kindWords, needsLayoutAnswer, questionBody } from './question-model';
 import type { Choices, Kind, MapProfile } from './question-model';
 import { layoutLines, type Recipe } from './layout-model';
 import type { IntakeItem } from './batch-model';
@@ -77,6 +77,30 @@ it('takes an outline kind over a file with outlines, pins and lines, and says th
   expect(answerSummary(choices, profile.geometryTypes)).toBe(answerSummary(choices));
   expect(kindRefusal('building', ['Point', 'LineString']))
     .toBe('This file does not hold outlines only; a building must be an outline.');
+});
+
+it('offers a key the outlines hold when the pins and lines carry none, and only for an outline kind', () => {
+  const mixed = { ...profile, geometryTypes: ['LineString', 'Point', 'Polygon'], paths: profile.paths.map(path =>
+    path.path === choices.identifier ? { ...path, literalIdEligible: false, outlineLiteralIdEligible: true } : path) };
+  for (const kind of ['', 'building', 'parcel', 'public_land'] as const) {
+    expect(identifierPaths(mixed, kind).map(path => path.path)).toContain(choices.identifier);
+  }
+  expect(identifierPaths(mixed, 'road').map(path => path.path)).not.toContain(choices.identifier);
+  expect(questionBody(mixed, choices, 0, key)?.plan.operations[0]).toEqual({ target: 'feature.sourceKey',
+    sourcePath: choices.identifier, conversionId: 'literal_identifier@1' });
+  expect(answerSummary(choices, mixed.geometryTypes))
+    .toMatch(/ Pins and lines in this file are kept in the original but not drawn as buildings\.$/);
+  expect(questionBody(mixed, { ...choices, kind: 'road' }, 0, key)).toBeNull();
+  const unkeyed = { ...mixed, paths: mixed.paths.map(path => path.path === choices.identifier
+    ? { ...path, outlineLiteralIdEligible: false } : path) };
+  expect(identifierPaths(unkeyed, 'building').map(path => path.path)).not.toContain(choices.identifier);
+  expect(questionBody(unkeyed, choices, 0, key)).toBeNull();
+  const numbered = { ...mixed, paths: mixed.paths.map(path => path.path === choices.identifier
+    ? { ...path, outlineLiteralIdEligible: false, integerIdEligible: false, outlineIntegerIdEligible: true } : path) };
+  expect(questionBody(numbered, choices, 0, key)?.plan.operations[0]?.conversionId)
+    .toBe('literal_integer_identifier@1');
+  expect(identifierWords(numbered.paths.find(path => path.path === choices.identifier)!, 'building'))
+    .toMatch(/\(whole number\)$/);
 });
 
 it('opens the question when the reason first counts the pins and lines a large file holds', () => {
