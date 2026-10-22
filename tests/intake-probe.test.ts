@@ -116,12 +116,64 @@ test('DOCX, ODS and KMZ container kinds come from directory plus bytes', async (
   for (const [format, files] of packs) assert.equal((await probe(zipSync(files))).format, format);
 });
 
-test('a KMZ with doc.kml at its root and its images or models stays a KMZ', async () => {
-  const kml = strToU8('<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>');
+test('a KMZ with doc.kml at its root and the images or models it references stays a KMZ', async () => {
+  const kml = strToU8('<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Style><IconStyle><Icon>'
+    + '<href>files/icon.png</href></Icon></IconStyle></Style><Placemark><Model><Link>'
+    + '<href>./models/house.dae</href></Link></Model></Placemark></Document></kml>');
   const icon = Buffer.from('89504e470d0a1a0a', 'hex');
   const kmz = await probe(zipSync({ 'doc.kml': kml, 'files/icon.png': icon, 'models/house.dae': bytes('<COLLADA/>') }),
     'ward.kmz');
   assert.deepEqual([kmz.format, kmz.family], ['kmz', 'vector']);
+  assert.ok(!kmz.limits.some(line => /not read as a KMZ/.test(line)));
+});
+
+// AUD3 gap 5. A KMZ is one KML and what it references; anything else in the ZIP is its own item.
+const kmlText = (body = '') =>
+  strToU8(`<kml xmlns="http://www.opengis.net/kml/2.2"><Document>${body}</Document></kml>`);
+const jpeg = Buffer.from('ffd8ffe000104a46494600', 'hex');
+
+test('a KMZ whose ground overlay references its image keeps the image with the KMZ', async () => {
+  const overlay = '<GroundOverlay><Icon><href>files/overlay.jpg</href></Icon></GroundOverlay>';
+  const kmz = await probe(zipSync({ 'doc.kml': kmlText(overlay), 'files/overlay.jpg': jpeg }), 'ward.kmz');
+  assert.deepEqual([kmz.format, kmz.family], ['kmz', 'vector']);
+});
+
+test('a ZIP holding two KML documents stays a ZIP and lists both as KML', async () => {
+  const card = await probe(zipSync({ 'doc.kml': kmlText(), 'wards/east.kml': kmlText() }), 'wards.kmz');
+  assert.deepEqual([card.format, card.family], ['zip', 'archive']);
+  assert.deepEqual(card.members.map(member => [member.name, member.format]),
+    [['doc.kml', 'kml'], ['wards/east.kml', 'kml']]);
+  assert.ok(card.limits.includes('Not read as a KMZ: it holds 2 KML documents; '
+    + 'each member is taken out as its own item.'));
+});
+
+test('a ZIP of a KML and a plan photo it does not reference keeps the photo as an image, not a footprint',
+  async () => {
+    const card = await probe(zipSync({ 'doc.kml': kmlText('<Placemark><name>Plot</name></Placemark>'),
+      'plan.jpg': jpeg }), 'site.zip');
+    assert.deepEqual([card.format, card.family], ['zip', 'archive']);
+    assert.deepEqual(card.members.map(member => [member.name, member.format, member.family]),
+      [['doc.kml', 'kml', 'vector'], ['plan.jpg', 'jpeg', 'image']]);
+    assert.ok(card.limits.includes('Not read as a KMZ: plan.jpg is not an image or model its KML references; '
+      + 'each member is taken out as its own item.'));
+  });
+
+test('a referenced name in a different folder, a web link or a lookalike path does not claim a member',
+  async () => {
+    const links = '<Icon><href>https://example.org/images/plan.jpg</href></Icon><Icon><href>plan.jpg</href></Icon>'
+      + '<Icon><href>images/plan.jpg.bak</href></Icon>';
+    const card = await probe(zipSync({ 'doc.kml': kmlText(links), 'images/plan.jpg': jpeg }), 'site.zip');
+    assert.equal(card.format, 'zip');
+  });
+
+test('an image in the files folder the KML references stays with the KMZ; a document there does not', async () => {
+  const icon = '<Style><IconStyle><Icon><href>files/icon.png</href></Icon></IconStyle></Style>';
+  const png = Buffer.from('89504e470d0a1a0a', 'hex');
+  const kmz = await probe(zipSync({ 'doc.kml': kmlText(icon), 'files/icon.png': png, 'files/icon-hover.png': png }));
+  assert.equal(kmz.format, 'kmz');
+  const zip = await probe(zipSync({ 'doc.kml': kmlText(icon), 'files/icon.png': png,
+    'files/notes.pdf': bytes('%PDF-1.7\n') }));
+  assert.equal(zip.format, 'zip');
 });
 
 test('a ZIP holding a KML beside other files stays a ZIP and lists every member', async () => {

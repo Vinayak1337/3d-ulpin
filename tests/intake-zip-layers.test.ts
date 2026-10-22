@@ -875,3 +875,40 @@ test('a ZIP of a KML, a GeoJSON and a CSV takes out all three as their own items
     assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
       '3 members. 1 kml file, 1 GeoJSON layer, 1 CSV taken out as their own items: a.kml, b.geojson, c.csv.');
   }));
+
+// AUD3 gap 5. A second KML or a photo the KML does not reference is its own item, never hidden inside a KMZ.
+const kmlText = (name: string) =>
+  Buffer.from(`<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${name}</name></Document></kml>`);
+const jpeg = Buffer.from('ffd8ffe000104a46494600', 'hex');
+
+test('a ZIP of two KML documents takes out both as their own items for the KML reader', () =>
+  configured(async () => {
+    const files = { 'doc.kml': kmlText('west'), 'wards/east.kml': kmlText('east') };
+    const fixture = await layersJob(zipSync(files));
+    assert.equal(fixture.card.format, 'zip');
+    await fixture.run((await fixture.queue())!);
+    assert.deepEqual(fixture.retained.map(file => [file.name, sha(file.bytes)]),
+      [['doc.kml', sha(files['doc.kml'])], ['east.kml', sha(files['wards/east.kml'])]]);
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '2 members. 2 kml files taken out as their own items: doc.kml, wards/east.kml.');
+  }));
+
+test('a ZIP of a KML and a plan photo it does not reference takes out both; the photo is a page image', () =>
+  configured(async () => {
+    const fixture = await layersJob(zipSync({ 'doc.kml': kmlText('site'), 'plan.jpg': jpeg }));
+    assert.equal(fixture.card.format, 'zip');
+    await fixture.run((await fixture.queue())!);
+    assert.deepEqual(fixture.retained.map(file => [file.name, file.profile]),
+      [['doc.kml', 'large-original-v1'], ['plan.jpg', 'large-original-v1']]);
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '2 members. 1 kml file, 1 jpeg file taken out as their own items: doc.kml, plan.jpg.');
+  }));
+
+test('a KMZ whose overlay image its KML references queues no fan-out; the image stays with the KMZ', async () => {
+  const kml = Buffer.from('<kml xmlns="http://www.opengis.net/kml/2.2"><Document><GroundOverlay><Icon>'
+    + '<href>files/overlay.jpg</href></Icon></GroundOverlay></Document></kml>');
+  const fixture = await layersJob(zipSync({ 'doc.kml': kml, 'files/overlay.jpg': jpeg }));
+  assert.equal(fixture.card.format, 'kmz');
+  assert.equal(await fixture.queue(), null);
+  assert.equal(fixture.retained.length, 0);
+});
