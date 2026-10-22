@@ -44,5 +44,39 @@
     "Different horizontal systems within an outline or across otherwise placeable buildings stop the single layer; no reprojection or CRS guessing is added.",
     "Public foreign test_only inputs establish this conversion behaviour, not Indian operational qualification."
   ],
-  "next": "Requalify CityGML profile pins, rebuild the geo/processor image with matching API bytes, then rehearse both inputs through batch intake. Verify one EPSG:25832 child, unchanged originals, streamed package/targets, retained reading citation and replay, officer confirmation, and the local file's unplaced words."
+  "next": "Requalify CityGML profile pins, rebuild the geo/processor image with matching API bytes, then rehearse both inputs through batch intake. Verify one EPSG:25832 child, unchanged originals, streamed package/targets, retained reading citation and replay, officer confirmation, and the local file's unplaced words.",
+  "followUp": [
+    {
+      "task": "CG1-b",
+      "base": "68a8c224",
+      "why": "eaf43a25 failed the whole CityGML reading with ENVELOPE_CONFLICT when one feature stated more than one gml:boundedBy/gml:Envelope; before that commit the same file was read, so odd files regressed.",
+      "change": "native_citygml.py no longer fails. A feature with more than one envelope supplies no inherited srsName or srsDimension and stops inheritance there, so neither envelope nor an outer one is chosen. The reading records a finding {code: ENVELOPE_CONFLICT, status: needs_input, elements, locators} with the feature's element ordinal and byte span, and its status is partial. citygml_outline.py leaves geometry under that feature without its own declaration unplaced, in words saying the feature states more than one envelope; a sibling building with one envelope is still placed.",
+      "pins": "native_citygml.py bytes changed again, so citygmlReaderSha() and the CityGML profile pins change automatically; the profile owner requalifies them with the CG1 bytes. No pin list was edited.",
+      "tests": [
+        {
+          "command": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest -p no:cacheprovider services/geo/tests/test_native_citygml.py services/geo/tests/test_citygml_outline.py -q",
+          "exit": 0,
+          "pass": 17,
+          "skip": 2,
+          "skipReason": "Retained-original and opaque-ADE comparisons need CITYGML_ORIGINALS / CITYGML_REVIEW_CONTROL."
+        },
+        {
+          "command": "CITYGML_REVIEW_CONTROL='' CITYGML_ORIGINALS='E:/BhuAayam-data/task-data/desktop-citygml-native/originals' E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest -p no:cacheprovider services/geo/tests/test_native_citygml.py services/geo/tests/test_citygml_outline.py -q -o addopts=''",
+          "exit": 0,
+          "pass": 18,
+          "skip": 1,
+          "skipReason": "Optional opaque-ADE comparison requires a separately configured control directory; it was not opened."
+        },
+        {
+          "command": "git diff --check",
+          "exit": 0
+        }
+      ],
+      "newTests": [
+        "test_native_citygml.py::test_conflicting_envelopes_on_one_feature_are_a_finding_not_a_failure",
+        "test_citygml_outline.py::test_two_envelopes_on_one_building_leave_it_unplaced_and_its_sibling_placed",
+        "test_citygml_outline.py::test_two_envelopes_on_the_only_building_say_so_in_words"
+      ]
+    }
+  ]
 }

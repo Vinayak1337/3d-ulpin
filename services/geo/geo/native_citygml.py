@@ -86,9 +86,13 @@ def key(uri, local):
     return f"{{{uri}}}{local}" if uri else local
 
 
-def _envelope_fields(nodes: list[dict]) -> dict[int, dict]:
-    """Only a feature's own gml:boundedBy/Envelope supplies inherited system fields."""
-    fields = {}
+def _envelope_fields(nodes: list[dict]) -> tuple[dict[int, dict | None], list[int]]:
+    """Only a feature's own gml:boundedBy/Envelope supplies inherited system fields.
+
+    A feature with more than one envelope supplies none (None): neither envelope is chosen and inheritance
+    stops there, so geometry below it without its own declaration has no effective system.
+    """
+    fields, conflicts = {}, []
     for node in nodes:
         if node["namespace"] != GML or node["localName"] != "Envelope" or node["parent"] is None:
             continue
@@ -97,26 +101,31 @@ def _envelope_fields(nodes: list[dict]) -> dict[int, dict]:
             continue
         owner = boundary["parent"]
         if owner in fields:
-            fail("ENVELOPE_CONFLICT", "Multiple envelopes on one feature cannot supply an unambiguous system.")
+            if fields[owner] is not None:
+                conflicts.append(owner)
+            fields[owner] = None
+            continue
         fields[owner] = {attr["name"]: attr for attr in node["attributes"]
                          if attr["name"] in ("srsName", "srsDimension")}
-    return fields
+    return fields, conflicts
 
 
-def _effective_field(nodes: list[dict], envelopes: dict[int, dict], element: int, field: str) -> dict | None:
+def _effective_field(nodes: list[dict], envelopes: dict[int, dict | None], element: int, field: str) -> dict | None:
     while element is not None:
         node = nodes[element]
         own = next((attr for attr in node["attributes"] if attr["name"] == field), None)
         if own is not None:
             return own
-        if field in envelopes.get(element, {}):
+        if element in envelopes and envelopes[element] is None:
+            return None
+        if field in (envelopes.get(element) or {}):
             return envelopes[element][field]
         element = node["parent"]
     return None
 
 
-def _coordinate_systems(nodes: list[dict], coordinates: list[dict]) -> None:
-    envelopes = _envelope_fields(nodes)
+def _coordinate_systems(nodes: list[dict], coordinates: list[dict]) -> list[int]:
+    envelopes, conflicts = _envelope_fields(nodes)
     for coordinate in coordinates:
         for field in ("srsName", "srsDimension"):
             declaration = _effective_field(nodes, envelopes, coordinate["element"], field)
@@ -133,6 +142,7 @@ def _coordinate_systems(nodes: list[dict], coordinates: list[dict]) -> None:
         count = len(coordinate["values"])
         if count % int(value) or coordinate["kind"] != "posList" and count != int(value):
             coordinate["state"], coordinate["reason"] = "malformed", "declared_dimension_count_conflict"
+    return sorted(conflicts)
 
 
 def extract(raw: bytes, limits=DEFAULT_LIMITS):
@@ -387,7 +397,7 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
         fail("XML_MALFORMED", "XML is not well formed; no projection is published.", locator={"byteStart": parser.ErrorByteIndex})
     if not nodes:
         fail("XML_MALFORMED", "Empty XML input.")
-    _coordinate_systems(nodes, coordinates)
+    envelope_conflicts = _coordinate_systems(nodes, coordinates)
     # Reference graph follows actual XML containment and unique local XLinks.
     # Inventory only: no expansion, geometry composition or external I/O.
     graph = {n["ordinal"]: [] for n in nodes}
@@ -460,6 +470,11 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
     if duplicates or cycles or any(r["state"] != "local_target_inventory" for r in references):
         findings.append({"code": "REFERENCES_NOT_COMPOSED", "status": "needs_input",
                          "message": "Unresolved, duplicate, external or cyclic references remain unexpanded."})
+    if envelope_conflicts:
+        findings.append({"code": "ENVELOPE_CONFLICT", "status": "needs_input", "elements": envelope_conflicts,
+                         "locators": [locator(nodes[owner]) for owner in envelope_conflicts],
+                         "message": "A feature states more than one envelope; neither supplies an inherited "
+                                    "srsName or srsDimension, and nothing is guessed."})
     if any(c["tupleDimensionState"] == "absent" for c in coordinates if c["state"] == "available"):
         findings.append({"code": "DIMENSION_ABSENT", "status": "needs_input", "message": "Flat coordinate values are retained; tuple dimension is not guessed."})
     incomplete_coordinates = [c["element"] for c in coordinates if c["state"] not in ("available", "unsupported")]
@@ -483,7 +498,8 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
               "validity": "not_assessed", "canonicalIdentity": "not_assessed", "rights": "not_assessed",
               "floorsOrUnitsInferred": False, "externalResourcesResolved": False,
               "referencePolicy": "literal ancestor declarations retained; effective srsName/srsDimension inherit from "
-              "the nearest containing feature's boundedBy/Envelope unless overridden; no CRS/dimension/unit defaults",
+              "the nearest containing feature's boundedBy/Envelope unless overridden; a feature with more than one "
+              "envelope supplies none and stops inheritance; no CRS/dimension/unit defaults",
               "unprojectedContent": "retained_in_unchanged_original"}}
     return result
 

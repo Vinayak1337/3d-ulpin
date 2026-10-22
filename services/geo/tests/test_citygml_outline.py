@@ -125,6 +125,35 @@ def test_dimension_is_inherited_only_when_stated_and_geometry_dimension_wins(tmp
     assert layer["state"] == "not_converted" and "dimensions" in layer["reason"]
 
 
+def test_two_envelopes_on_one_building_leave_it_unplaced_and_its_sibling_placed(tmp_path: Path) -> None:
+    first = '<gml:boundedBy><gml:Envelope srsName="EPSG:25832" srsDimension="3"/></gml:boundedBy>'
+    second = '<gml:boundedBy><gml:Envelope srsName="EPSG:28992" srsDimension="3"/></gml:boundedBy>'
+    path = control(tmp_path, building_envelope=first + second)
+    raw = path.read_text("utf-8")
+    member = raw[raw.index("<cityObjectMember>"):raw.index("</cityObjectMember>") + len("</cityObjectMember>")]
+    sibling = member.replace('gml:id="xml-control"', 'gml:id="sibling"').replace(first + second, first)
+    path.write_text(raw.replace("</CityModel>", sibling + "</CityModel>"), encoding="utf-8")
+    reading = extract(path.read_bytes())
+    conflicted, placed = (building["element"] for building in reading["buildings"])
+    assert [f["elements"] for f in reading["findings"] if f["code"] == "ENVELOPE_CONFLICT"] == [[conflicted]]
+    layer = convert(path, tmp_path / "out")
+    assert [layer[key] for key in ("state", "crs", "features", "notWritten")] == ["converted", "EPSG:25832", 1, 1]
+    collection, sidecar = written(layer)
+    assert [feature["properties"]["gml:id"] for feature in collection["features"]] == ["sibling"]
+    [refused] = [row for row in sidecar[1:] if row["feature"] is None]
+    assert refused["position"] == conflicted
+    assert "more than one envelope" in refused["reason"] and "stay unplaced" in refused["reason"]
+    assert {"feature": 0, "position": placed} in sidecar[1:]
+
+
+def test_two_envelopes_on_the_only_building_say_so_in_words(tmp_path: Path) -> None:
+    envelope = '<gml:boundedBy><gml:Envelope srsName="EPSG:25832" srsDimension="3"/></gml:boundedBy>'
+    path = control(tmp_path, 'srsDimension="3"', building_envelope=envelope + envelope.replace("25832", "28992"))
+    layer = convert(path, tmp_path / "out")
+    assert layer["state"] == "not_converted"
+    assert "more than one envelope" in layer["reason"] and "stay unplaced" in layer["reason"]
+
+
 def test_roof_edge_and_building_parts_are_never_used_as_building_footprints(tmp_path: Path) -> None:
     path = control(tmp_path)
     raw = path.read_text("utf-8").replace("lod0FootPrint", "lod0RoofEdge")

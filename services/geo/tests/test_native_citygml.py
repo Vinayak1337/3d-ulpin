@@ -119,6 +119,39 @@ class NativeCityGMLTests(unittest.TestCase):
             for field in ("source", "elements", "namespaces", "identifiers", "references", "buildings", "counts"):
                 self.assertEqual(previous[field], current[field], (name, field))
 
+    def test_conflicting_envelopes_on_one_feature_are_a_finding_not_a_failure(self):
+        raw = (b'<CityModel xmlns="http://www.opengis.net/citygml/2.0" xmlns:gml="http://www.opengis.net/gml"'
+               b' xmlns:bldg="http://www.opengis.net/citygml/building/2.0">'
+               b'<gml:boundedBy><gml:Envelope srsName="EPSG:25832" srsDimension="3"/></gml:boundedBy>'
+               b'<cityObjectMember><bldg:Building gml:id="two">'
+               b'<gml:boundedBy><gml:Envelope srsName="EPSG:25832" srsDimension="3"/></gml:boundedBy>'
+               b'<gml:boundedBy><gml:Envelope srsName="EPSG:28992" srsDimension="2"/></gml:boundedBy>'
+               b'<bldg:lod0FootPrint><gml:MultiSurface><gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing>'
+               b'<gml:posList>0 0 7 2 0 7 2 2 7 0 0 7</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>'
+               b'</gml:surfaceMember></gml:MultiSurface></bldg:lod0FootPrint></bldg:Building></cityObjectMember>'
+               b'<cityObjectMember><bldg:Building gml:id="one">'
+               b'<gml:boundedBy><gml:Envelope srsName="EPSG:25832" srsDimension="3"/></gml:boundedBy>'
+               b'<bldg:lod0FootPrint><gml:MultiSurface><gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing>'
+               b'<gml:posList>0 0 7 2 0 7 2 2 7 0 0 7</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>'
+               b'</gml:surfaceMember></gml:MultiSurface></bldg:lod0FootPrint></bldg:Building></cityObjectMember>'
+               b'</CityModel>')
+        result = extract(raw)
+        two, one = (b["element"] for b in result["buildings"])
+        [finding] = [f for f in result["findings"] if f["code"] == "ENVELOPE_CONFLICT"]
+        self.assertEqual("partial", result["status"])
+        self.assertEqual([two], finding["elements"])
+        [locator] = finding["locators"]
+        self.assertEqual(result["elements"][two]["locator"], {k: locator[k] for k in ("byteStart", "byteEnd")})
+        self.assertTrue(raw[locator["byteStart"]:locator["byteEnd"]].startswith(b'<bldg:Building gml:id="two"'))
+        rows = {c["buildingElement"]: c for c in result["coordinates"]}
+        for field in ("srsName", "srsDimension"):
+            # Neither envelope is chosen and the CityModel envelope is not reached past the conflict.
+            self.assertIsNone(rows[two]["referenceDeclarations"][field]["effectiveDeclaration"])
+        self.assertEqual("absent", rows[two]["tupleDimensionState"])
+        self.assertIsNone(rows[two]["tupleDimension"])
+        self.assertEqual("EPSG:25832", rows[one]["referenceDeclarations"]["srsName"]["effectiveDeclaration"]["value"])
+        self.assertEqual(3, rows[one]["tupleDimension"])
+
     @unittest.skipUnless(os.environ.get("CITYGML_ORIGINALS"), "Set CITYGML_ORIGINALS to the retained unchanged OGC originals")
     def test_retained_ogc_literals_and_byte_locators(self):
         source = Path(os.environ["CITYGML_ORIGINALS"])/"Building_and_garage_LOD2-EPSG25832.gml"

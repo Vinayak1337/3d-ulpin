@@ -17,6 +17,8 @@ from .validation import InputError
 OUTLINE_READER = "citygml-ground-outline/1"
 _COMPOUND = re.compile(r"urn:ogc:def:crs,crs:EPSG:[0-9.]*:([1-9][0-9]{0,8}),crs:EPSG:[0-9.]*:([1-9][0-9]{0,8})")
 _WRAPPERS = {"MultiSurface", "CompositeSurface", "surfaceMember", "surfaceMembers"}
+ENVELOPE_CONFLICT = ("is under a feature that states more than one envelope, so its outline has no stated system "
+                     "or dimension; its outlines stay unplaced")
 
 
 @dataclass
@@ -24,6 +26,7 @@ class Projection:
     elements: list[dict]
     children: dict[int, list[int]]
     coordinates: dict[int, dict]
+    envelope_conflicts: set[int]
 
     @classmethod
     def from_reading(cls, reading: dict) -> Projection:
@@ -31,7 +34,9 @@ class Projection:
         for node in reading["elements"]:
             if node["parent"] is not None:
                 children[node["parent"]].append(node["ordinal"])
-        return cls(reading["elements"], children, {row["element"]: row for row in reading["coordinates"]})
+        conflicts = {element for finding in reading["findings"] if finding["code"] == "ENVELOPE_CONFLICT"
+                     for element in finding["elements"]}
+        return cls(reading["elements"], children, {row["element"]: row for row in reading["coordinates"]}, conflicts)
 
     def named(self, element: int, namespace: str, local: str) -> bool:
         node = self.elements[element]
@@ -39,6 +44,17 @@ class Projection:
 
     def below(self, element: int, namespace: str, local: str) -> list[int]:
         return [child for child in self.children[element] if self.named(child, namespace, local)]
+
+    def under_envelope_conflict(self, row: dict, field: str) -> bool:
+        """The reader stopped inheritance at a feature with more than one envelope; say so, not "no system"."""
+        if row["referenceDeclarations"][field]["effectiveDeclaration"] is not None:
+            return False
+        element = row["element"]
+        while element is not None:
+            if element in self.envelope_conflicts:
+                return True
+            element = self.elements[element]["parent"]
+        return False
 
 
 def _placement(literal: str | None, horizontal: Callable[[int], str | None]) -> tuple[str | None, str | None, str]:
@@ -105,6 +121,8 @@ def _ring(projection: Projection, element: int) -> tuple[list[list[float]], list
     for row in coordinates:
         dimension = row["tupleDimension"]
         if row["state"] != "available" or dimension not in (2, 3):
+            if projection.under_envelope_conflict(row, "srsDimension"):
+                raise InputError(ENVELOPE_CONFLICT)
             raise InputError("has outline coordinates without usable stated dimensions; its outlines stay unplaced")
         values = [value["value"] for value in row["values"]]
         positions.extend([values[index:index + dimension] for index in range(0, len(values), dimension)])
@@ -143,7 +161,7 @@ def _feature(projection: Projection, building: dict, horizontal: Callable) -> tu
             literal = declaration["value"] if declaration is not None else None
             crs, crs_basis, words = _placement(literal, horizontal)
             if crs is None:
-                raise InputError(words)
+                raise InputError(ENVELOPE_CONFLICT if projection.under_envelope_conflict(row, "srsName") else words)
             systems.add(crs)
             if crs_basis:
                 bases.add(crs_basis)
@@ -179,8 +197,9 @@ def _rows(reading: dict, horizontal: Callable) -> tuple[list[tuple], str | None,
 
 
 def _no_outlines(reading: dict, rows: list[tuple], horizontal: Callable) -> str:
+    projection = Projection.from_reading(reading)
     for coordinate in reading["coordinates"]:
-        if coordinate["buildingElement"] is None:
+        if coordinate["buildingElement"] is None or projection.under_envelope_conflict(coordinate, "srsName"):
             continue
         declaration = coordinate["referenceDeclarations"]["srsName"]["effectiveDeclaration"]
         _, _, words = _placement(declaration["value"] if declaration else None, horizontal)
