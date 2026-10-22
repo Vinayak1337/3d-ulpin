@@ -200,6 +200,13 @@ const FORMAT_WORDS: Record<PageImageFormat, string> = { jpeg: 'JPEG', png: 'PNG'
 const labelWords: Record<IntakePageImageLabel, string> = { plan: 'a plan', elevation: 'an elevation',
   photo: 'a photo', other: 'something else' };
 
+/** What follows a label: no reader in the application takes a plan (or anything else) from a page image. */
+function labelNextWords(label: IntakePageImageLabel): string {
+  if (label !== 'plan') return 'It is kept as a labelled page image and is not read.';
+  return 'It is kept as a labelled plan image and is not read: no plan reader in a batch takes a page image yet, '
+    + 'so no text, rooms, levels or units come from it.';
+}
+
 /** D3. What it is, in an officer's words, from the read alone, and the question it rests on. */
 export function pageImageWords(read: IntakePageImageRead): string {
   const size = read.width && read.height ? `${grouped(read.width)} x ${grouped(read.height)} ` : '';
@@ -210,6 +217,6 @@ export function pageImageWords(read: IntakePageImageRead): string {
   const kept = `A ${size}${FORMAT_WORDS[read.format]} image, ${facts}. Kept for review as a page image`;
   const preview = read.preview ? '' : ` (${read.previewLimit ?? 'no preview was made'})`;
   if (read.label) return `${kept}${preview}. The officer said it shows ${labelWords[read.label.value]}; `
-    + 'this is a candidate label, not reviewed.';
+    + `this is a candidate label, not reviewed. ${labelNextWords(read.label.value)}`;
   return `${kept}${preview}. What does it show: a plan, an elevation, a photo or something else?`;
 }

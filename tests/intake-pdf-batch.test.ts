@@ -4,10 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import type { Pool } from 'pg';
-import { documentScannedPages, DocumentStatusSchema } from '../packages/contracts/src/usp/document-ingestion';
+import { DOCUMENT_LIMITS, documentScannedPages, DocumentStatusSchema }
+  from '../packages/contracts/src/usp/document-ingestion';
 import type { IntakeCard } from '@ulpin/contracts/usp';
 import { DocumentIngestionService } from '../packages/server/src/modules/usp/ingestion/documents';
-import { queueIntakeDraftTx, pageWords } from '../packages/server/src/modules/usp/ingestion/intake-draft';
+import { batchPdfSettlement, queueIntakeDraftTx, pageWords }
+  from '../packages/server/src/modules/usp/ingestion/intake-draft';
 import type { IntakeSourceRow } from '../packages/server/src/modules/usp/ingestion/intake-context';
 import { failDocumentJob, runDocumentJob } from '../packages/server/src/modules/usp/ingestion/document-worker';
 import { extractSourceDocument } from '../packages/server/src/modules/usp/ingestion/document-native';
@@ -273,6 +275,18 @@ test('a PDF above the reader bound rests kept in words, and a stopped read says 
       'not_understood',
       'The page reader stopped before it finished; the original is kept unchanged with its SHA-256.']);
   });
+});
+
+test('a PDF above the page reader byte bound says its text layer was not read, and OCR when the original allows', () => {
+  const native = { status: 'tool_error', format: 'pdf', readerSha256: 'a'.repeat(64),
+    code: 'NATIVE_READER_BYTE_LIMIT', warnings: [], parts: [] } as const;
+  const unread = 'The page reader reads a PDF of at most 10 MB, so the text layer of this one was not read; the '
+    + 'original is kept with its SHA-256.';
+  assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes), { state: 'failed_part',
+    placement: 'not_understood', limitReason: `${unread} Its pages can be read by OCR from the PDF reading, for a `
+      + 'PDF of at most 8 pages. Nothing read is a fact until you confirm it.' });
+  assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes + 1), { state: 'failed_part',
+    placement: 'not_understood', limitReason: unread });
 });
 
 test('the officer can OCR a batch PDF through the existing retry route, without a second active job', async () => {

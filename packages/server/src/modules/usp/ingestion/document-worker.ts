@@ -75,7 +75,7 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
         {status:'needs_input',summary:'Source-bound extraction receipt retained. Native results and model proposals are separate; no facts are approved.',
           documentAccepted:{jobId,sha256:hash,nativeStatus:native.status,modelStatus:model.status}}]);
       await appendCaseIngestionTx(client,input.caseId,{kind:'document.changed',sourceId:input.sourceId,sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
-      await settleBatchPdfTx(client,input.caseId,input.sourceId,native);
+      await settleBatchPdfTx(client,input.caseId,input.sourceId,native,input.sourceBytes);
     });
     async function authorizePins(client:Parameters<typeof assertDocumentInputTx>[0]){
       if(Date.now()>deadline)throw new AppError(503,'DOCUMENT_DEADLINE','The bounded document execution expired.');

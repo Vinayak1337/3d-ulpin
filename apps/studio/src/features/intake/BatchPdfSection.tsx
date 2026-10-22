@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { DOCUMENT_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { pageFailure } from '../evidence/citedPage';
 import type { IntakeItem } from './batch-model';
 import { useSourceCase } from './table/queries';
-import { createPdfOcrPress, latestPdfJob, pdfOcrChoice, pdfOcrWords, readPdfJob,
-  type PdfReading } from './pdf-reading';
+import { createPdfOcrRun, latestPdfJob, pagesToRead, pdfJobs, pdfJobsLeft, pdfNeedsPageCount, pdfNoReadingWords,
+  pdfOcrOffer, pdfOcrPageWords, pdfOcrPressWords, pdfOcrWords, readPdfJob, readPdfOcrRuns, readPdfPageCount,
+  type OcrPageProgress, type OcrPageRun, type PdfReading } from './pdf-reading';
 import styles from './Batch.module.css';
 
 export const isBatchPdf = (item: IntakeItem) => item.format === 'pdf' && Boolean(item.sourceId);
@@ -26,69 +27,97 @@ function usePdfReading(caseId: string, sourceId: string, updatedAt: string) {
   useEffect(() => {
     void client.invalidateQueries({ queryKey: ['source-case', caseId] });
   }, [client, caseId, sourceId, updatedAt]);
-  const [send] = useState(() => createPdfOcrPress(caseId, sourceId));
-  const press = useMutation({
-    mutationFn: ({ reading, selection }: { reading: PdfReading; selection: { page: number } }) =>
-      send(reading, selection),
-    onSuccess: () => { void client.invalidateQueries({ queryKey: ['source-case', caseId] }); },
-  });
-  const latest = latestPdfJob(sourceCase.data?.jobs ?? [], sourceId);
-  const jobId = press.data?.jobId ?? latest?.id ?? '';
+  const jobs = sourceCase.data?.jobs ?? [];
+  const jobId = latestPdfJob(jobs, sourceId)?.id ?? '';
   const read = useQuery({ queryKey: ['intake', caseId, 'pdf', sourceId, jobId], enabled: Boolean(jobId),
     retry: false,
     refetchInterval: query => ['queued', 'running'].includes(query.state.data?.status.status ?? '') ? 5000 : false,
     queryFn: () => readPdfJob(caseId, sourceId, jobId),
   });
-  return { sourceCase, read, press, jobId };
+  return { sourceCase, read, jobs, jobId };
+}
+
+/** The page count, each page's newest OCR reading, and one press that reads the selected pages in turn. */
+function usePdfOcr(caseId: string, sourceId: string, reading: PdfReading | undefined,
+  jobs: Parameters<typeof pdfJobs>[0]) {
+  const client = useQueryClient();
+  const needed = pdfNeedsPageCount(reading);
+  const pageCount = useQuery({ queryKey: ['intake', caseId, 'pdf-pages', sourceId, reading?.sourceSha256 ?? ''],
+    enabled: needed, retry: false, staleTime: Infinity, queryFn: () => readPdfPageCount(sourceId, reading!) });
+  const finished = pdfJobs(jobs, sourceId).filter(job => job.status === 'succeeded').map(job => job.id);
+  const runs = useQuery({ queryKey: ['intake', caseId, 'pdf-ocr', sourceId, finished.join(',')],
+    enabled: needed, retry: false, placeholderData: keepPreviousData,
+    queryFn: () => readPdfOcrRuns(caseId, sourceId, finished, reading!.sourceRevision) });
+  const [progress, setProgress] = useState<OcrPageProgress | null>(null);
+  // The officer's pick outlives each page's new job, which replaces the reading shown while it loads.
+  const [chosen, setChosen] = useState<number[] | null>(null);
+  const [run] = useState(() => createPdfOcrRun(caseId, sourceId));
+  const leaving = useRef(new AbortController());
+  useEffect(() => () => leaving.current.abort(), []);
+  const refresh = () => { void client.invalidateQueries({ queryKey: ['source-case', caseId] }); };
+  const press = useMutation({
+    mutationFn: (pages: number[]) => run(reading!, pages, leaving.current.signal, value => {
+      setProgress(value);
+      if (!['queued', 'running'].includes(value.status)) refresh();
+    }),
+    onSettled: () => { setProgress(null); refresh(); },
+  });
+  return { pageCount, runs, progress, press, chosen, setChosen, left: pdfJobsLeft(jobs, sourceId) };
 }
 
 function PdfReadingSection({ caseId, item }: { caseId: string; item: IntakeItem }) {
-  const { sourceCase, read, press, jobId } = usePdfReading(caseId, item.sourceId!, item.updatedAt);
+  const { sourceCase, read, jobs, jobId } = usePdfReading(caseId, item.sourceId!, item.updatedAt);
   const status = read.data?.status;
-  const error = press.error ?? read.error ?? sourceCase.error;
-  const ocrJob = status?.ocr || press.data || item.state === 'read';
-  const words = status && (!['queued', 'running'].includes(status.status) || ocrJob)
-    ? pdfOcrWords(status, read.data!.passages.length) : 'The PDF text-layer reading is waiting or running.';
+  const ocr = usePdfOcr(caseId, item.sourceId!, status, jobs);
+  const error = ocr.press.error ?? read.error ?? sourceCase.error ?? ocr.pageCount.error ?? ocr.runs.error;
   return <section className={styles.question} aria-label={`PDF reading in ${item.name}`}>
     <h2 className="ul-heading">PDF reading · {item.name}</h2>
     <p className="ul-help">OCR reads words only. Passages are candidates, not record fields. No rooms, levels or
       units are created; the original stays unchanged.</p>
     {sourceCase.isPending || (jobId && read.isPending) ? <Skeleton /> : null}
-    {!jobId && !sourceCase.isPending ? <p>No document reading is available for this file yet.</p> : null}
-    {status ? <p role="status">{words}</p> : null}
-    {press.isPending ? <p role="status">Checking the private document runtime before requesting OCR.</p> : null}
+    {!jobId && !sourceCase.isPending ? <p>{pdfNoReadingWords(item.sizeBytes)}</p> : null}
+    {status ? <p role="status">{pdfOcrWords(status)}</p> : null}
     {error ? <PdfRefusal error={error} /> : null}
-    {status ? <PdfOcrAction reading={status} pending={press.isPending}
-      submit={selection => press.mutate({ reading: status, selection })} /> : null}
-    {status?.ocr && status.ocr.outputStatus !== 'failed' ? <>
-      <OcrRemaining remaining={Math.max(0, pdfOcrChoice(status).scanned.length - 1)} />
-      {status.ocr.issues.length ? <p>{status.ocr.issues.join(' ')}</p> : null}
-      <OcrPassages sourceId={item.sourceId!} reading={status} passages={read.data!.passages} />
-    </> : null}
+    {status ? <PdfOcrPages sourceId={item.sourceId!} reading={status} ocr={ocr} /> : null}
   </section>;
 }
 
-function OcrRemaining({ remaining }: { remaining: number }) {
-  return <p>{remaining} other scanned {remaining === 1 ? 'page remains' : 'pages remain'} unread by this OCR job.</p>;
+function PdfOcrPages({ sourceId, reading, ocr }: {
+  sourceId: string; reading: PdfReading; ocr: ReturnType<typeof usePdfOcr>;
+}) {
+  const offer = pdfOcrOffer(reading, ocr.pageCount.data);
+  const runs = ocr.runs.data ?? [];
+  if (offer.refusal) return <p>{offer.refusal}</p>;
+  if (!offer.pages.length) return null;
+  if (ocr.runs.isPending) return <Skeleton />;
+  const selected = ocr.chosen ?? pagesToRead(offer.pages, runs).slice(0, ocr.left);
+  const toggle = (page: number, on: boolean) => ocr.setChosen(on ? [...selected, page] : selected
+    .filter(value => value !== page));
+  return <div className={styles.stack}>
+    <p>Pick the pages to read. One press reads them one after another, one OCR job per page; a page already read
+      is not read again. OCR opens a PDF of at most {DOCUMENT_LIMITS.ocrMaxPage} pages.</p>
+    <ul aria-label="Pages OCR can read">{offer.pages.map(page => <li key={page}>
+      <label><input type="checkbox" checked={selected.includes(page)} disabled={ocr.press.isPending}
+        onChange={event => toggle(page, event.target.checked)} /> {pdfOcrPageWords(page,
+        runs.find(run => run.page === page), ocr.progress?.page === page ? ocr.progress : undefined)}</label>
+    </li>)}</ul>
+    <OcrPress selected={selected} runs={runs} left={ocr.left} pending={ocr.press.isPending}
+      submit={pages => ocr.press.mutate(pages)} />
+    {runs.filter(run => run.reading.ocr?.outputStatus !== 'failed').map(run => <OcrPassages key={run.page}
+      sourceId={sourceId} run={run} />)}
+  </div>;
 }
 
-function PdfOcrAction({ reading, pending, submit }: {
-  reading: PdfReading; pending: boolean; submit: (selection: { page: number }) => void;
+function OcrPress({ selected, runs, left, pending, submit }: {
+  selected: number[]; runs: OcrPageRun[]; left: number; pending: boolean; submit: (pages: number[]) => void;
 }) {
-  if (reading.status !== 'completed' || (reading.ocr && reading.ocr.outputStatus !== 'failed')) return null;
-  const { scanned, selection } = pdfOcrChoice(reading);
-  if (!scanned.length) return null;
-  if (!selection) return <p>{scanned.length} scanned {scanned.length === 1 ? 'page remains' : 'pages remain'} unread.
-    OCR supports pages 1–{DOCUMENT_LIMITS.ocrMaxPage} only.</p>;
-  const remaining = scanned.length - 1;
-  return <div className={styles.stack}>
-    <p>Read page {selection.page}. This OCR job reads at most {DOCUMENT_LIMITS.ocrPages} scanned page.
-      {' '}{remaining} scanned {remaining === 1 ? 'page is' : 'pages are'} left unread by this request.
-      Only pages 1–{DOCUMENT_LIMITS.ocrMaxPage} are supported.</p>
-    <div><Button variant="soft" disabled={pending} onClick={() => submit(selection)}>
-      Read the words on the scanned pages (OCR)
-    </Button></div>
-  </div>;
+  const pages = pagesToRead(selected, runs);
+  return <>
+    <p>{pdfOcrPressWords(pages.length, left)} Leaving this page stops later pages from being requested; a page
+      already requested finishes.</p>
+    <div><Button variant="soft" disabled={pending || !pages.length || pages.length > left}
+      onClick={() => submit(pages)}>Read the words on the selected pages (OCR)</Button></div>
+  </>;
 }
 
 function PdfRefusal({ error }: { error: Error }) {
@@ -98,11 +127,11 @@ function PdfRefusal({ error }: { error: Error }) {
   </Banner>;
 }
 
-function OcrPassages({ sourceId, reading, passages }: {
-  sourceId: string; reading: PdfReading; passages: NonNullable<PdfReading['ocrItems']>;
-}) {
+function OcrPassages({ sourceId, run }: { sourceId: string; run: OcrPageRun }) {
   const open = useOpenEvidence();
-  return <ul aria-label="Candidate OCR passages">{passages.map((passage, index) => <li key={index}>
+  const { reading, passages } = run;
+  return <ul aria-label={`Candidate OCR passages on page ${run.page}`}>{passages.map((passage, index) => <li
+    key={index}>
     <blockquote>{passage.text}</blockquote>
     {passage.sourcePageBoxes.map((citation, at) => {
       const [x, y, right, bottom] = citation.box as [number, number, number, number];
