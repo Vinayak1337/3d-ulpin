@@ -97,9 +97,13 @@ const exteriorRecordBodySchema = recordBodySchema.extend({
   footprint: z.array(pointSchema).length(0),
   representation: z.literal("physical_exterior"),
 });
-/** Only a recorded exterior-only record may keep an empty footprint; a new or detailed record needs a polygon. */
-function registryBodySchema(record: RegistryRecord) {
-  return record.revision > 0 && isExteriorOnly(record) ? exteriorRecordBodySchema : recordBodySchema;
+/** The ids of the current exterior-only records: only their corrections may keep an empty footprint. */
+function currentExteriorIds(current: RegistryRecord[]): ReadonlySet<string> {
+  return new Set(current.filter(record => isExteriorOnly(record)).map(record => record.id));
+}
+/** An exterior-only proposal of a current exterior-only record; a recorded outline is never dropped. */
+function keepsExterior(record: RegistryRecord, exteriors: ReadonlySet<string>) {
+  return exteriors.has(record.id) && isExteriorOnly(record);
 }
 export const editDraftSchema = z
   .object({
@@ -486,12 +490,13 @@ async function evidenceChecks(
   client: PoolClient,
   site: RegistrySite,
   records: RegistryRecord[],
+  exteriors: ReadonlySet<string>,
   lock=false,
   documentCheck:typeof assertRegistryDocumentCitationsTx=assertRegistryDocumentCitationsTx,
 ) {
   assertNoNativeCandidates(records);
   for (const r of records) {
-    registryBodySchema(r).parse(bodyOnly(r));
+    (keepsExterior(r, exteriors) ? exteriorRecordBodySchema : recordBodySchema).parse(bodyOnly(r));
     await assertRegistryMetadataTx(client, site.id, r.kind, r.registryMetadata);
     await documentCheck(client,site.id,r,lock);
     if (site.synthetic && r.officialUlpin)
@@ -702,7 +707,7 @@ export async function prepareRegistryReview(
     if (d.records.some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
       conflict("A proposed record has a newer current revision. Create a correction from that current record.");
     const combined = registryReviewInputs(current, d.records);
-    await evidenceChecks(client, site, combined, false, documentCheck);
+    await evidenceChecks(client, site, combined, currentExteriorIds(current), false, documentCheck);
     const preparationFingerprint=await linkedPreparationFingerprint(client,d.caseId);
     return { d, site, current, combined, preparationFingerprint };
   });
@@ -762,7 +767,7 @@ export async function persistRegistryReviewTx(client:PoolClient,
     if(draft.status!=='draft'||fingerprint(draft)!==fingerprint(snapshot.d)||fingerprint(site)!==fingerprint(snapshot.site)||
       fingerprint(combined)!==fingerprint(snapshot.combined))conflict('Registry inputs changed while preparing the review.');
     assertDocumentReviewContext(review);
-    await evidenceChecks(client,site,combined,true,documentCheck);
+    await evidenceChecks(client,site,combined,currentExteriorIds(current),true,documentCheck);
     if(await linkedPreparationFingerprint(client,draft.caseId,true)!==snapshot.preparationFingerprint)
       conflict('Related preparation changed while checking this review.');
     await client.query('INSERT INTO registry_reviews(id,draft_id,body) VALUES($1,$2,$3)',[review.id,snapshot.d.id,review]);
@@ -888,7 +893,8 @@ export async function commitRegistryReviewTx(
       if(!proposed||fingerprint(proposed.documentCitations??[])!==fingerprint(record.documentCitations??[]))
         conflict('The reviewed document citation amendment changed.');
     }
-    await evidenceChecks(client, site, combined,true,documentCheck);
+    const exteriors = currentExteriorIds(current);
+    await evidenceChecks(client, site, combined,exteriors,true,documentCheck);
     const next = site.revision + 1;
     for (const record of review.records) {
       const body = { ...record };
@@ -900,7 +906,7 @@ export async function commitRegistryReviewTx(
       await client.query(
         "UPDATE registry_records SET body=$2,revision=$3,footprint=ST_SetSRID(ST_GeomFromGeoJSON($4),0) WHERE id=$1",
         // An exterior-only building has no footprint polygon; its column stays empty as it was recorded.
-        [record.id, body, revision, isExteriorOnly(record) ? null : ringGeometry(record.footprint)],
+        [record.id, body, revision, keepsExterior(record, exteriors) ? null : ringGeometry(record.footprint)],
       );
       await client.query(
         "INSERT INTO registry_revisions(record_id,revision,body,site_revision) VALUES($1,$2,$3,$4)",

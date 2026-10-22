@@ -264,7 +264,7 @@ function citedExterior(footprint: number[][] = []) {
     else assert(/^(SELECT|UPDATE|INSERT|DELETE|BEGIN|COMMIT|ROLLBACK|SET)/.test(sql), sql);
     return { rows, rowCount: rows.length };
   };
-  return { draft, proposed, pin, state, client: { query } as unknown as PoolClient };
+  return { draft, current, proposed, pin, state, client: { query } as unknown as PoolClient };
 }
 
 /** The citation check runs on every pass; its private reads are qualified by the registry document tests. */
@@ -302,4 +302,26 @@ test('a correction with fewer than three footprint points keeps the strict body 
         () => prepareRegistryReview(control.draft.id, 2, 1, citationCheck([])),
         (error: any) => error.name === 'ZodError')));
   }
+}));
+
+/** The recorded building keeps its outline: only the representation marker goes, as a polygon record holds none. */
+function outline(current: { body: Record<string, unknown> }) {
+  const { representation: _representation, ...body } = current.body;
+  current.body = { ...body, footprint: ring };
+}
+
+test('a correction cannot turn a recorded outline into an exterior-only building', () => attributed(async () => {
+  const strict = (error: any) => error.name === 'ZodError';
+  const refused = citedExterior();
+  outline(refused.current);
+  await withGeoCheck(() => assert.fail('no geo check'), () => memoryPool(
+    refused.client.query.bind(refused.client) as any,
+    () => assert.rejects(() => prepareRegistryReview(refused.draft.id, 2, 1, citationCheck([])), strict)));
+  const changed = citedExterior();
+  const review = await withGeoCheck(() => {}, () => memoryPool(changed.client.query.bind(changed.client) as any,
+    () => prepareRegistryReview(changed.draft.id, 2, 1, citationCheck([]))));
+  outline(changed.current);
+  await assert.rejects(() => commitRegistryReviewTx(changed.client, review.id, 'Technical control', undefined,
+    citationCheck([])), strict);
+  assert.equal(changed.state.written, undefined, 'commit never nulls a recorded footprint');
 }));
