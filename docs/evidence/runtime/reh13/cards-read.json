@@ -1,0 +1,4 @@
+{ "at": "2026-10-22T12:54:09.269Z", "confirmation": 200, "cards": { "cited": {
+"id": "93fd4362-041b-4708-b45c-b72b179a2277", "read": 200, "verification": 200, "pdf": { "status": 200,
+"type": "application/pdf", "bytes": 7146 } }, "footprintOnly": { "id": "c060eb84-0b42-49cd-a37c-db33eb5deb9f",
+"read": 200, "verification": 200, "pdf": { "status": 200, "type": "application/pdf", "bytes": 6793 } } } }
