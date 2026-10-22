@@ -238,8 +238,8 @@ test('a ZIP of map layers settles its own item with words naming each layer and 
   const fixture = zipFixture([{ name: 'layers/', format: 'unknown' },
     { name: 'layers/roads.geojson', format: 'geojson' }, { name: 'layers/blocks.geojson', format: 'geojson' },
     { name: 'register.csv', format: 'csv' }, { name: 'README.md', format: 'unknown' }]);
-  const expected = '2 map layers in this ZIP are taken in as their own files: layers/roads.geojson, '
-    + 'layers/blocks.geojson. Not taken in: register.csv (not a map layer), README.md (not a map layer).';
+  const expected = '4 members. 4 files waiting to be taken out as their own items: layers/roads.geojson, '
+    + 'layers/blocks.geojson, register.csv, README.md.';
   assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
   assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
   assert.deepEqual(fixture.state.projection, { state: 'read', placement: 'undecided', plan_ref: null,
@@ -253,14 +253,14 @@ test('a ZIP of map layers settles its own item with words naming each layer and 
 test('a ZIP with no map layer says so and lists its members with their reasons, long lists counted', async () => {
   const fixture = zipFixture([{ name: 'plan.pdf', format: 'pdf' },
     { name: 'roads.geojson', format: 'geojson', refusalCode: 'ZIP_ENCRYPTED_MEMBER' }]);
-  const expected = 'This ZIP holds no map layer this batch can take in. '
-    + 'Its members: plan.pdf (not a map layer), roads.geojson (ZIP_ENCRYPTED_MEMBER).';
+  const expected = '2 members. 1 file waiting to be taken out as their own items: plan.pdf. '
+    + '1 file kept, not read: roads.geojson (inside archive; ZIP_ENCRYPTED_MEMBER).';
   await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
   assert.equal(fixture.state.projection.limit_reason, expected);
   assert.notEqual(fixture.state.projection.placement, 'needs_answer');
   const many = zipFixture(Array.from({ length: 300 }, (_, at) => ({ name: `sheets/page-${at}.pdf`, format: 'pdf' })));
   const words = intakeDraftLimit(many.tray, many.src)!;
-  assert.match(words, /^This ZIP holds no map layer.*sheets\/page-0\.pdf \(not a map layer\).* and \d+ more\.$/);
+  assert.match(words, /^300 members\. 300 files waiting.*sheets\/page-0\.pdf.* and \d+ more\.$/);
   assert(words.length <= 2000);
 });
 

@@ -78,7 +78,8 @@ class LedgerControl {
   }
 
   private job(sql: string, values: any[]) {
-    if (sql.startsWith('SELECT status FROM jobs')) return { rows: this.jobs.filter(job => job.source_id === values[0]) };
+    if (sql.startsWith('SELECT status FROM jobs')) return { rows: this.jobs.filter(job =>
+      job.source_id === values[0] && job.operation === 'intake-zip-layers') };
     if (sql.startsWith('SELECT id,status FROM jobs')) {
       return { rows: this.jobs.filter(job => job.source_id === values[0]
         && job.operation === 'intake-native-derivative') };
@@ -271,8 +272,8 @@ test('member and sheet cards keep parent authority, idempotency and unknown shee
     assert.equal(f.rows.size, 2);
     assert.equal(member.source_id, null);
     assert.deepEqual([f.rows.get(f.sourceId).state, f.rows.get(f.sourceId).placement], ['read', 'undecided']);
-    assert.equal(f.rows.get(f.sourceId).limit_reason, 'This ZIP holds no map layer this batch can take in. '
-      + 'Its members: folder/control.csv (not a map layer).');
+    assert.equal(f.rows.get(f.sourceId).limit_reason,
+      '1 member. 1 file being taken out as their own items: folder/control.csv.');
     assert.equal((await f.service.one(f.caseId, member.item_id)).sizeBytes, bytes.length);
     await f.service.pin(f.caseId, member.item_id, { wave: 1, requestKey: randomUUID() });
     await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
@@ -392,9 +393,9 @@ async function layerZipCard() {
   return probeOriginal(async (start, end) => pack.subarray(start, end), pack.length, 'layers.zip');
 }
 
-const layerWords = (being: string) => `2 map layers in this ZIP are${being} taken in as their own files: `
-  + 'uttam/01-google-building-footprints.geojson, uttam/block-boundary.geojson. '
-  + 'Not taken in: uttam/README.md (not a map layer).';
+const layerWords = (being: string) => `3 members. 3 files ${being ? 'being' : 'waiting to be'} `
+  + 'taken out as their own items: uttam/01-google-building-footprints.geojson, '
+  + 'uttam/block-boundary.geojson, uttam/README.md.';
 
 test('enrolling a ZIP of GeoJSON layers queues one layer job and keeps no layer during the request', async () => {
   await configured(async () => {
@@ -425,22 +426,24 @@ test('enrolling a ZIP of GeoJSON layers queues one layer job and keeps no layer 
     assert.equal(words(), layerWords(' being'));
     // Once every layer is kept and enrolled, a finished job leaves nothing to retry.
     f.jobs[1].status = 'succeeded';
-    for (const row of members) if (row.format === 'geojson') row.source_id = randomUUID();
+    for (const row of members) row.source_id = randomUUID();
     await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
     assert.equal(f.jobs.length, 2);
     // With no layer waiting and no job queued, ZF2's words stand as they are.
-    assert.equal(words(), layerWords(''));
+    assert.equal(words(), '3 members. 2 GeoJSON layers, 1 unknown file taken out as their own items: '
+      + 'uttam/01-google-building-footprints.geojson, uttam/block-boundary.geojson, uttam/README.md. '
+      + '1 file kept, not read: uttam/README.md (own item; no batch reader).');
   });
 });
 
-test('enrolling a shapefile ZIP queues its conversion job, not a layer job', async () => {
+test('enrolling a shapefile ZIP also queues independent members without blocking its conversion', async () => {
   await configured(async () => {
     const f = fixture();
     const card = await layerZipCard();
     f.useCard({ ...card, members: [...card.members, { name: 'uttam/roads.shp', sizeBytes: 100,
       compressedBytes: 100, family: 'vector', format: 'shapefile', refusalCode: null, companions: [], card: null }] });
     await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
-    assert.deepEqual(f.jobs.map(job => job.operation), ['intake-native-derivative']);
+    assert.deepEqual(f.jobs.map(job => job.operation), ['intake-native-derivative', 'intake-zip-layers']);
   });
 });
 

@@ -9,17 +9,21 @@ import { claimUspJobAttempt, heartbeatUspJobAttempt, assertUspJobAttemptTx, acce
   type UspJobAttempt } from '../jobs';
 import { assertIntakeDraftTx } from './intake-draft';
 import { IntakeService } from './intake-service';
-import { IntakeZipLayersInputSchema, fanOutZipLayers, zipParentStageTx, type IntakeZipLayersInput,
+import { IntakeZipLayersInputSchema, fanOutZipLayers, retainZipMemberOriginal, zipParentStageTx,
+  type IntakeZipLayersInput,
   type ZipLayerDependencies } from './intake-zip-layers';
 import { LargeOriginalService } from './large-original';
 import { ManualIngestionService } from './service';
 
 const manual = new ManualIngestionService();
 const intake = new IntakeService();
-// The dependencies the enrol request passed before ZJ1; each layer is enrolled like any dropped file.
+const large = new LargeOriginalService();
+// Each member uses an existing receipt and the same enrolment as a dropped file.
 const defaults: ZipLayerDependencies = { transaction, read: readObjectRange,
-  retain: manual.retain.bind(manual) as ZipLayerDependencies['retain'],
-  register: (caseId, raw) => intake.register(caseId, raw), large: new LargeOriginalService() };
+  retain: manual.retain.bind(manual),
+  retainMember: (caseId, revision, file, lineage) =>
+    retainZipMemberOriginal(caseId, revision, file, lineage, { large }),
+  register: (caseId, raw) => intake.register(caseId, raw), large };
 // ZL1: a large layer is read twice in 1 MiB ranges, longer than one lease; its reads renew it at most this often.
 const READ_RENEW_MS = 60_000;
 
@@ -29,7 +33,7 @@ const pinned = (input: IntakeZipLayersInput) => (client: PoolClient) =>
 
 /** Officer words carry the code only, never an error message; the sentence replaces the in-progress one (ZW1). */
 async function stoppedTx(client: PoolClient, input: IntakeZipLayersInput, code: string) {
-  const sentence = `Taking the layers out of this ZIP stopped (${code}); enrol the ZIP again to retry.`;
+  const sentence = `Taking the members out of this ZIP stopped (${code}); enrol the ZIP again to retry.`;
   await zipParentStageTx(client, input.caseId, input.itemId, { stopped: sentence });
   await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
     [input.jobId]);
@@ -97,6 +101,7 @@ export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial
         return own.read(...args);
       },
       retain: async (...args) => { await renew(); return own.retain(...args); },
+      retainMember: async (...args) => { await renew(); return own.retainMember(...args); },
       register: async (...args) => { await renew(); return own.register(...args); } });
     await complete(input, attempt, kept);
   } catch (error) {
