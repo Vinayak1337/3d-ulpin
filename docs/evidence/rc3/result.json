@@ -116,5 +116,57 @@
   "gaps": [
     "The first retry's HTTP status was not captured (see runtime.cited).",
     "The intake target keeps artefacts.record at revision 1 beside evidence.record revision 2; the card pins 2."
-  ]
+  ],
+  "round2": {
+    "at": "2026-10-22",
+    "offline": "no Docker, no runtime; ulpin-reh-02 not started",
+    "tightening": {
+      "commit": "c50957e0",
+      "cause": ["registryBodySchema widened for any proposed record with revision > 0 that was exterior-only,",
+        "so a correction turning a recorded polygon building into footprint [] + physical_exterior passed",
+        "and commit wrote a null footprint."],
+      "fix": [
+        "registry.ts currentExteriorIds(current) collects the ids of current exterior-only records.",
+        "evidenceChecks takes that set; keepsExterior(record, exteriors) picks exteriorRecordBodySchema only when",
+        "the current record with the same id and the proposal are both exterior-only; else recordBodySchema.",
+        "prepareRegistryReview, persistRegistryReviewTx and commitRegistryReviewTx pass the set; commit writes a",
+        "null footprint only under keepsExterior, so it never nulls one the current record has."
+      ],
+      "test": {
+        "name": "a correction cannot turn a recorded outline into an exterior-only building",
+        "refuses": "current polygon + proposed exterior-only correction: prepare throws ZodError before the geo check",
+        "commitGuard": "current becomes a polygon after review: commit throws ZodError, no registry_records write",
+        "failedBefore": "with registry.ts at 79e0eb75 the correction passed the body check and reached the geo check",
+        "rc3TestStillPasses": true
+      }
+    },
+    "checks": [
+      { "command": "pnpm typecheck:backend", "exit": 0 },
+      { "command": "pnpm exec tsx --test packages/server/src/modules/registry/exterior-only.test.ts", "exit": 0,
+        "tests": 9, "pass": 9 },
+      { "command": "pnpm exec tsx --test packages/server/src/modules/registry/*.test.ts tests/registry*.test.ts",
+        "exit": 1, "tests": 146, "pass": 141, "fail": 4,
+        "failures": "tests/registry-ifc-citations.test.ts, the same 4 as round 1" }
+    ],
+    "ifcFailures": {
+      "failOnStaging": true,
+      "stagingTree": "detached worktree of origin/staging 833b14c0, pnpm install --offline --frozen-lockfile",
+      "stagingResult": { "tests": 4, "pass": 0, "fail": 4 },
+      "failureText": ["SOURCE_FUSION_UNAVAILABLE 'The requested accepted evidence context is unavailable.'",
+        "(source-fusion.ts:180) from amendRegistryDocumentCitationsTx at registry-ifc-citations.test.ts:174, 203,",
+        "264; at 287 the same error fails an assert.rejects predicate."],
+      "cause": ["ifc-processor.ts ifcSummary writes structure:value.structure even when the scan found none; the",
+        "undefined key vanishes in stored JSON, so the summary hash no longer matches and the fusion read denies.",
+        "The key came with cade7139 (IFC pass 1 structure scan)."],
+      "knownFix": ["3f48f588 fix(int2): keep absent IFC structure stable across stored summaries (spread structure",
+        "only when present), on task/int2-post-roll; not on staging 833b14c0."],
+      "fixConfirmed": "that one line applied uncommitted in the scratch tree: 4 of 4 pass; reverted",
+      "inIntegratorSet": "yes: INT2 runs tests/*.test.ts packages/server/src/**/*.test.ts",
+      "whyNotShownInInt2": ["They did show: INT2 initialFailedTests lists all 4 (diagnosis ifc_summary_wire_hash),",
+        "resolved by 3f48f588 on its own branch, so its final summary is 0 failed. INT2 is not on staging yet."],
+      "fixedHere": false
+    },
+    "scratchLeft": ["E:/Projects/ulpin-wt/_scratch-rc3 is unregistered (git worktree remove ran); its ignored",
+      "node_modules (pnpm junctions) stays, as the rules forbid a recursive delete."]
+  }
 }
