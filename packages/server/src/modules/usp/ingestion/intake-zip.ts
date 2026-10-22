@@ -194,22 +194,75 @@ function officeKind(card: IntakeCard, inspected: Awaited<ReturnType<typeof inspe
       card.format = 'ods';
       card.family = 'table';
     }
-  } else if (kmzShape(inspected)) {
-    card.format = 'kmz';
-    card.family = 'vector';
+  } else {
+    const shape = kmzShape(inspected);
+    if (shape?.kmz) {
+      card.format = 'kmz';
+      card.family = 'vector';
+    } else if (shape) card.limits.push(`Not read as a KMZ: ${shape.reason}; each member is taken out as its own item.`);
   }
 }
 
 // The files a KML document references from inside its KMZ: overlay and icon images, and COLLADA models.
 const KMZ_RESOURCE = /\.(?:png|jpe?g|gif|bmp|tiff?|dae)$/i;
+const KML_NAME = /\.kml$/i;
 
 /**
- * A KMZ is its KML documents and the resources they reference. A ZIP that also holds any other kind keeps its
- * members as members, so each, the KML included, is taken out as its own item rather than dropped unnamed.
+ * AUD3 gap 5. A KMZ is one KML document, at the archive's root or named doc.kml, and only the images or models that
+ * KML references: by their relative path, or by sitting in the files/ folder beside it that it references. Anything
+ * else (a second KML, a plan photo, a table) keeps the archive a ZIP, so each member, the KML included, is taken out
+ * as its own item rather than left unread inside a KMZ. Null when the archive holds no KML.
  */
-function kmzShape(inspected: InspectedEntry[]): boolean {
-  return inspected.some(item => item.member.format === 'kml')
-    && inspected.every(item => item.member.format === 'kml' || KMZ_RESOURCE.test(item.member.name));
+function kmzShape(inspected: InspectedEntry[]): { kmz: true } | { kmz: false; reason: string } | null {
+  const documents = inspected.filter(item => item.member.format === 'kml' || KML_NAME.test(item.member.name));
+  if (!documents.some(item => item.member.format === 'kml')) return null;
+  if (documents.length > 1) return { kmz: false, reason: `it holds ${documents.length} KML documents` };
+  const [kml] = documents;
+  const folder = kml.member.name.slice(0, kml.member.name.lastIndexOf('/') + 1);
+  if (folder && !/(?:^|\/)doc\.kml$/i.test(kml.member.name)) {
+    return { kmz: false, reason: `its KML ${kml.member.name} is neither at the root nor named doc.kml` };
+  }
+  const references = kmlReferences(kml, folder);
+  const filesFolder = `${folder}files/`;
+  const filesReferenced = [...references].some(path => path.startsWith(filesFolder));
+  const unproven = inspected.filter(item => item !== kml && !(KMZ_RESOURCE.test(item.member.name)
+    && (references.has(item.member.name) || filesReferenced && item.member.name.startsWith(filesFolder))));
+  if (!unproven.length) return { kmz: true };
+  const named = unproven.length === 1 ? `${unproven[0].member.name} is`
+    : `${unproven.length} members, ${unproven[0].member.name} first, are`;
+  return { kmz: false, reason: `${named} not an image or model its KML references` };
+}
+
+const KML_ENTITY: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", '#39': "'" };
+
+/**
+ * The member paths a KML names, read from its bounded head only (the probe's member read allowance): element
+ * hrefs, and href or src attributes in descriptions. Nothing is fetched; a web link or a path leaving the archive
+ * names no member, and a reference past the head is not seen, so that member is taken out as its own item.
+ */
+function kmlReferences(kml: InspectedEntry, folder: string): Set<string> {
+  if (!kml.bytes) return new Set();
+  const text = new TextDecoder().decode(kml.bytes.subarray(0, limits.memberHeadBytes))
+    .replace(/<!\[CDATA\[|\]\]>/g, '')
+    .replace(/&(amp|lt|gt|quot|apos|#39);/g, (_match, name: string) => KML_ENTITY[name]);
+  const values = [...text.matchAll(/<(?:[\w.-]+:)?(?:href|targetHref)\s*>([^<]{1,1024})</gi),
+    ...text.matchAll(/\b(?:href|src)\s*=\s*["']([^"'<>]{1,1024})["']/gi)].map(match => match[1]);
+  return new Set(values.map(value => memberReference(folder, value)).filter((path): path is string => !!path));
+}
+
+/** A relative reference resolved against the KML's folder; null for a web link, an absolute path or an escape. */
+function memberReference(folder: string, reference: string): string | null {
+  let path = reference.trim().replace(/\\/g, '/').split(/[?#]/)[0];
+  if (!path || /^[a-z][a-z0-9+.-]*:/i.test(path) || path.startsWith('/')) return null;
+  try { path = decodeURIComponent(path); } catch { /* a stray % is kept literally */ }
+  const parts: string[] = [];
+  for (const part of `${folder}${path}`.split('/')) {
+    if (part === '..') {
+      if (!parts.length) return null;
+      parts.pop();
+    } else if (part && part !== '.') parts.push(part);
+  }
+  return parts.join('/');
 }
 
 function directoryProfile(end: Buffer, size: number, depth: number) {
