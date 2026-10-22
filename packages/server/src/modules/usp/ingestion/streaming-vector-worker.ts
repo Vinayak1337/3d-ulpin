@@ -44,14 +44,29 @@ export function tallyAcceptedGeometry(counts:StreamingVectorGeometrySummary['cou
   counts[kind]=(counts[kind]??0)+1;
 }
 
-/** Written only with the sealed result; a replay replaces the tally instead of adding to a previous attempt. */
+/** An incomplete attempt-local tally is optional evidence, never a prerequisite for sealing the read. */
 export async function writeStreamingGeometrySummaryTx(client:PoolClient,input:AnyStreamingInput,
   counts:StreamingVectorGeometrySummary['counts'],accepted:number){
-  const summary=StreamingVectorGeometrySummarySchema.parse({rawJobId:input.jobId,counts});
-  if(Object.values(summary.counts).reduce((total,count)=>total+count,0)!==accepted)
-    conflict('The geometry summary does not account for every accepted feature.');
-  await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedGeometrySummary}',$2::jsonb)
-    WHERE id=$1`,[input.sourceId,JSON.stringify(summary)]);
+  const parsed=StreamingVectorGeometrySummarySchema.safeParse({rawJobId:input.jobId,counts});
+  if(!parsed.success)return;
+  const summary=parsed.data;
+  if(Object.values(summary.counts).reduce((total,count)=>total+count,0)!==accepted)return;
+  await client.query(`UPDATE sources SET inspection=jsonb_set(COALESCE(inspection,'{}'::jsonb),
+    '{streamedGeometrySummary}',$2::jsonb) WHERE id=$1`,[input.sourceId,JSON.stringify(summary)]);
+}
+
+/** Sealed reader counts and the receipt remain authoritative even when the advisory tally is incomplete. */
+export async function completeStreamingReadTx(client:PoolClient,input:AnyStreamingInput,
+  closure:Parameters<typeof writeSealedMapReceiptTx>[2],counts:StreamingVectorGeometrySummary['counts'],
+  reference?:Parameters<typeof writeSealedMapReceiptTx>[3]){
+  const state=(await client.query('SELECT accepted,quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',
+    [input.jobId])).rows[0];
+  const status=state.quarantined?'completed_with_rejections':'completed';
+  await client.query(`UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now()
+    WHERE job_id=$1`,[input.jobId,status]);
+  if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,closure,reference);
+  if(input.framing!=='tabular')await writeStreamingGeometrySummaryTx(client,input,counts,state.accepted);
+  return status;
 }
 
 /** A single SQL watermark is the ordered publication authority; SSE cursors stay per subscriber. */
@@ -333,12 +348,8 @@ export async function runStreamingVectorJob(jobId:string){
         if(current.operation!=='streaming-vector'||state.sealed_chunks!==nextIndex||state.next_publish_index!==nextIndex||state.records!==result.features||state.unknown_remainder)
           conflict('The complete reader manifest is not published.');
       },client=>assertStreamingInputTx(client,input).then(()=>{}),async client=>{
-        const state=(await client.query('SELECT accepted,quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
-        const status=state.quarantined?'completed_with_rejections':'completed';
-        await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
-        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,
-          {...result,quarantinedByCode:setAside},reference);
-        if(input.framing!=='tabular')await writeStreamingGeometrySummaryTx(client,input,geometryCounts,state.accepted);
+        const status=await completeStreamingReadTx(client,input,{...result,quarantinedByCode:setAside},
+          geometryCounts,reference);
         if(isWindowedTable(input))await queueFinishedTableEvidenceTx(client,input.caseId,jobId);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
