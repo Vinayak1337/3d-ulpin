@@ -14,6 +14,7 @@ import { queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE }
   from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
 import { AppError } from '../packages/server/src/infrastructure/errors';
+import { geojsonInventory } from '../packages/server/src/modules/usp/ingestion/registry';
 
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 // Real public layers kept in the repository (OSM / Google Open Buildings, test_only); zipped here, never committed.
@@ -63,6 +64,8 @@ class Ledger {
   /** ZL2. The lineage each retain or finalize wrote with its source, keyed by the source it created. */
   readonly inspections = new Map<string, unknown>();
   readonly ancestors = new Map<string, any>();
+  /** Rows the map route kept before its reader refused them: lineage written, no manual profile. */
+  readonly partial = new Set<string>();
   /** ZL2. The member item whose next link fails once, as a stop between the retain and the link would. */
   linkFault: string | null = null;
   archive: any;
@@ -161,8 +164,9 @@ class Ledger {
       return source ? [source] : [];
     }
     if (sql.startsWith(`SELECT id FROM sources WHERE case_id=$1 AND inspection->'archiveMember' @>`)) {
-      return [...this.inspections].filter(([, lineage]) => Object.entries(values[1])
-        .every(([key, value]) => (lineage as Record<string, unknown>)[key] === value)).map(([id]) => ({ id }));
+      return [...this.inspections].filter(([id, lineage]) => Object.entries(values[1])
+        .every(([key, value]) => (lineage as Record<string, unknown>)[key] === value)
+        && !(this.partial.has(id) && sql.includes("inspection ? 'manualProfile'"))).map(([id]) => ({ id }));
     }
     if (sql.startsWith('SELECT * FROM usp_intake_items WHERE source_id')) {
       return [...this.rows.values()].filter(row => row.source_id === values[0] && !row.parent_item_id);
@@ -211,7 +215,13 @@ class Ledger {
   }
 }
 
-async function layersJob(pack: Uint8Array, options: { failRetain?: (name: string) => AppError | null } = {}) {
+type LayerOptions = {
+  failRetain?: (name: string) => AppError | null;
+  /** The map route's own reader check, run after it keeps the original, as the /sources retain does today. */
+  mapRoute?: (bytes: Uint8Array) => unknown;
+};
+
+async function layersJob(pack: Uint8Array, options: LayerOptions = {}) {
   const card = await probeOriginal(reader(pack), pack.length, 'layers.zip');
   const ledger = new Ledger(pack, card);
   const client = { query: ledger.query.bind(ledger) } as unknown as PoolClient;
@@ -228,10 +238,22 @@ async function layersJob(pack: Uint8Array, options: { failRetain?: (name: string
     ledger.revision++;
     return sourceId;
   };
+  const mapRoute = (bytes: Uint8Array, lineage: unknown) => {
+    try { options.mapRoute?.(bytes); }
+    catch (error) {
+      const partial = randomUUID();
+      ledger.inspections.set(partial, lineage);
+      ledger.partial.add(partial);
+      ledger.revision++;
+      throw error;
+    }
+  };
   const dependencies = {
     read: async (_key: string, start: number, end: number) => pack.subarray(start, end),
-    retain: async (_caseId: string, input: any, file: { name: string; bytes: Uint8Array }, lineage: unknown) =>
-      ({ source: { sourceId: keep(file, input, lineage, 'geojson-manual-v1') } }),
+    retain: async (_caseId: string, input: any, file: { name: string; bytes: Uint8Array }, lineage: unknown) => {
+      mapRoute(file.bytes, lineage);
+      return { source: { sourceId: keep(file, input, lineage, 'geojson-manual-v1') } };
+    },
     retainMember: async (_caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
       lineage: unknown) => keep(file, { format: 'original', expectedWorkspaceRevision: revision },
       lineage, 'large-original-v1'),
@@ -788,4 +810,68 @@ test('long or padded basenames fit the byte receipt while their exact paths stay
       assert.ok(log.created[0].filename.length <= 150);
       assert.equal((fixture.ledger.inspections.get(log.sourceId) as { memberPath: string }).memberPath, path);
     }
+  }));
+
+// AUD2 gap 1. The map route keeps a GeoJSON its reader then refuses; the member goes through the byte receipt.
+test('a GeoJSON member of 2,001 polygons the map route refuses is kept through the byte receipt, with lineage', () =>
+  configured(async () => {
+    // Protocol-only unit squares, not operational locations or proposed registry records.
+    const squares = Array.from({ length: 2001 }, (_, at) => ({ type: 'Feature', properties: {},
+      geometry: { type: 'Polygon', coordinates: [[[at, 0], [at + 1, 0], [at + 1, 1], [at, 1], [at, 0]]] } }));
+    const blocks = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: squares }));
+    const fixture = await layersJob(zipSync({ 'map/blocks.geojson': blocks }), { mapRoute: geojsonInventory });
+    await fixture.run((await fixture.queue())!);
+    const [kept] = fixture.retained;
+    assert.deepEqual([fixture.retained.length, kept.profile, kept.name], [1, 'large-original-v1', 'blocks.geojson']);
+    assert.equal(sha(kept.bytes), sha(blocks));
+    const lineage = ArchiveMemberLineageSchema.parse(kept.lineage);
+    assert.deepEqual([lineage.parentSourceId, lineage.parentSourceRevision, lineage.parentSha256,
+      lineage.parentItemId, lineage.memberPath, lineage.memberBytes, lineage.memberSha256],
+    [fixture.ledger.archiveId, 1, sha(fixture.ledger.bytes), fixture.ledger.itemId, 'map/blocks.geojson',
+      blocks.length, sha(blocks)]);
+    const member = fixture.ledger.member('map/blocks.geojson');
+    assert.deepEqual([member.source_id, member.limit_reason], [kept.sourceId, null]);
+    assert.ok(fixture.order.includes(`register:${kept.sourceId}`));
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '1 member. 1 GeoJSON layer taken out as their own items: map/blocks.geojson.');
+    assert.equal(await fixture.queue(), null);
+  }));
+
+test('a GeoJSON member holding one Feature is kept through the byte receipt and never linked to a refused row', () =>
+  configured(async () => {
+    const parsed = JSON.parse(real['uttam/01-google-building-footprints.geojson'].toString());
+    const single = Buffer.from(JSON.stringify(parsed.features[0]));
+    const fixture = await layersJob(zipSync({ 'map/one.geojson': single }), { mapRoute: geojsonInventory });
+    assert.equal(fixture.card.members[0].format, 'geojson');
+    const member = fixture.ledger.member('map/one.geojson');
+    // A stop between the byte receipt and the link: the refused map row and the kept child share the lineage.
+    fixture.ledger.linkFault = member.item_id;
+    await fixture.run((await fixture.queue())!);
+    assert.equal(member.source_id, null);
+    await fixture.run((await fixture.queue())!);
+    const [kept] = fixture.retained;
+    assert.deepEqual([fixture.retained.length, kept.profile, sha(kept.bytes)], [1, 'large-original-v1', sha(single)]);
+    assert.deepEqual([member.source_id, member.limit_reason], [kept.sourceId, null]);
+    assert.equal(fixture.ledger.partial.size, 1);
+    assert.ok(fixture.order.includes(`register:${kept.sourceId}`));
+  }));
+
+// AUD2 gap 6. A KML beside other kinds does not make the ZIP a KMZ.
+test('a ZIP of a KML, a GeoJSON and a CSV takes out all three as their own items; none is dropped', () =>
+  configured(async () => {
+    const files = { 'a.kml': Buffer.from('<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>'),
+      'b.geojson': real['uttam/block-boundary.geojson'], 'c.csv': Buffer.from('key,value\na,b\n') };
+    const fixture = await layersJob(zipSync(files));
+    assert.equal(fixture.card.format, 'zip');
+    await fixture.run((await fixture.queue())!);
+    assert.deepEqual(fixture.retained.map(file => [file.name, file.profile]),
+      [['a.kml', 'large-original-v1'], ['b.geojson', 'geojson-manual-v1'], ['c.csv', 'large-original-v1']]);
+    for (const file of fixture.retained) {
+      const path = (file.lineage as { memberPath: keyof typeof files }).memberPath;
+      assert.equal(sha(file.bytes), sha(files[path]));
+      assert.equal(fixture.ledger.member(path).source_id, file.sourceId);
+      assert.ok(fixture.order.includes(`register:${file.sourceId}`));
+    }
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '3 members. 1 kml file, 1 GeoJSON layer, 1 CSV taken out as their own items: a.kml, b.geojson, c.csv.');
   }));

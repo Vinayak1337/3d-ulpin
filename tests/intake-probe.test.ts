@@ -116,6 +116,23 @@ test('DOCX, ODS and KMZ container kinds come from directory plus bytes', async (
   for (const [format, files] of packs) assert.equal((await probe(zipSync(files))).format, format);
 });
 
+test('a KMZ with doc.kml at its root and its images or models stays a KMZ', async () => {
+  const kml = strToU8('<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>');
+  const icon = Buffer.from('89504e470d0a1a0a', 'hex');
+  const kmz = await probe(zipSync({ 'doc.kml': kml, 'files/icon.png': icon, 'models/house.dae': bytes('<COLLADA/>') }),
+    'ward.kmz');
+  assert.deepEqual([kmz.format, kmz.family], ['kmz', 'vector']);
+});
+
+test('a ZIP holding a KML beside other files stays a ZIP and lists every member', async () => {
+  const card = await probe(zipSync({ 'a.kml': strToU8('<kml xmlns="http://www.opengis.net/kml/2.2">'),
+    'b.geojson': bytes('{"type":"FeatureCollection","features":[]}'), 'c.csv': bytes('key,value\n1,2\n') }),
+  'mixed.zip');
+  assert.deepEqual([card.format, card.family], ['zip', 'archive']);
+  assert.deepEqual(card.members.map(member => [member.name, member.format, member.refusalCode]),
+    [['a.kml', 'kml', null], ['b.geojson', 'geojson', null], ['c.csv', 'csv', null]]);
+});
+
 test('ZIP shapefile companions form one item and absent PRJ stays absent', async () => {
   const shp = head(100);
   shp.writeUInt32BE(9994);

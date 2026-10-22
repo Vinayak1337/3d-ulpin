@@ -305,16 +305,28 @@ async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSo
     memberPath: member.member_path, ordinal: extracted.ordinal, memberBytes: extracted.bytes.length,
     compressedBytes: extracted.compressedBytes, crc32: extracted.crc32, memberSha256: sha256(extracted.bytes) });
   const file = { name: layerName(member), bytes: extracted.bytes };
-  const sourceId = await fenced(caseId, dependencies, async revision => {
-    if (member.card?.format === 'geojson') {
-      const profile = await dependencies.retain(caseId,
-        { format: 'geojson', requestKey: randomUUID(), expectedWorkspaceRevision: revision }, file, lineage);
-      return profile.source.sourceId;
-    }
-    return dependencies.retainMember(caseId, revision, file, lineage);
-  });
+  const sourceId = member.card?.format === 'geojson'
+    ? await retainMapLayer(caseId, file, lineage, dependencies)
+    : await fenced(caseId, dependencies, revision => dependencies.retainMember(caseId, revision, file, lineage));
   await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
+}
+
+/**
+ * A small GeoJSON keeps the map route. When that route refuses the layer (413 or 422: over its feature bound, a
+ * single Feature, no declared projection), the layer is kept through the byte receipt with the same lineage, as a
+ * dropped file is, and its streaming reader reads it. Any other failure stays the caller's.
+ */
+async function retainMapLayer(caseId: string, file: { name: string; bytes: Uint8Array },
+  lineage: ArchiveMemberLineage, dependencies: ZipLayerDependencies): Promise<string> {
+  try {
+    return await fenced(caseId, dependencies, async revision => (await dependencies.retain(caseId,
+      { format: 'geojson', requestKey: randomUUID(), expectedWorkspaceRevision: revision }, file, lineage))
+      .source.sourceId);
+  } catch (error) {
+    if (!(error instanceof AppError) || ![413, 422].includes(error.status)) throw error;
+    return fenced(caseId, dependencies, revision => dependencies.retainMember(caseId, revision, file, lineage));
+  }
 }
 
 // The byte receipt takes a basename; the complete original path stays in lineage and on the member row.
@@ -363,12 +375,14 @@ export async function fenced<T>(caseId: string, dependencies: Pick<ZipLayerDepen
 /**
  * ZL2. A child kept for this member but never linked to it (a stop between the retain and the link) is found by the
  * lineage it was retained with and linked, in one transaction, before any member byte is read. The parent's
- * revision and SHA-256 pin the member's bytes; the child's own SHA-256 must be the member's.
+ * revision and SHA-256 pin the member's bytes; the child's own SHA-256 must be the member's. A map-route row its
+ * reader never finished (no manual profile, as a refused retain leaves it) is not a kept child.
  */
 async function linkKeptTx(client: PoolClient, caseId: string, archive: IntakeSourceRow,
   member: MemberRow): Promise<string | null> {
   const kept = (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND inspection->'archiveMember' @> $2::jsonb
-    AND sha256=inspection->'archiveMember'->>'memberSha256' ORDER BY created_at,id LIMIT 1`,
+    AND sha256=inspection->'archiveMember'->>'memberSha256'
+    AND (profile<>'geojson-manual-v1' OR inspection ? 'manualProfile') ORDER BY created_at,id LIMIT 1`,
   [caseId, { parentSourceId: archive.id, parentSourceRevision: archive.revision, parentSha256: archive.sha256,
     memberPath: member.member_path }])).rows[0];
   if (!kept) return null;
