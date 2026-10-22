@@ -8,7 +8,7 @@ import {transaction} from '../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../infrastructure/errors';
 import {readObjectBounded} from '../../infrastructure/storage';
 import {fingerprint} from '../cases/domain';
-import {recordFrom,recordedBodySchema} from './registry';
+import {recordFrom,recordedBody,type RecordedEnvelope} from './registry';
 import {assertRegistryCurrentCitationTargetTx,assertRegistryDocumentCitationsTx,documentReviewContext,
   type RegistryDocumentDependencies} from './registry-document-evidence';
 import {citedCaseId,lockRegistryDocumentCasesTx,registryRegionCases} from './registry-document-locks';
@@ -59,12 +59,20 @@ async function captureTx(client:PoolClient,input:RegistryRecordEvidenceRequest,l
   if(capture.record.id!==input.recordId||capture.history.record_id!==input.recordId||
     capture.record.site_id!==capture.site.id||Number(capture.history.revision)!==input.revision||
     input.revision>Number(capture.record.revision)||capture.body.kind!==capture.record.kind||
-    capture.selectedBody.kind!==capture.record.kind||Number(capture.history.site_revision)>Number(capture.site.revision)||
-    (input.revision===Number(capture.record.revision)&&fingerprint(capture.body)!==fingerprint(capture.selectedBody)))
+    capture.selectedBody.kind!==capture.record.kind||Number(capture.history.site_revision)>Number(capture.site.revision))
     conflict('The exact committed target, site or revision body changed.');
-  recordedBodySchema(capture.body).parse(capture.body);
-  recordedBodySchema(capture.selectedBody).parse(capture.selectedBody);
+  capturedBodies(capture,input);
   return capture;
+}
+/** Each body may repeat its own row's envelope: the current one at the record's revision, the selected one at the
+ * requested revision. Both parse strictly without it; at the current revision both must be the same body. */
+function capturedBodies(capture:Capture,input:RegistryRecordEvidenceRequest){
+  const envelope=(revision:number):RecordedEnvelope=>({id:capture.record.id,siteId:capture.record.site_id,
+    identifier:capture.record.identifier,revision});
+  const current=recordedBody(capture.body,envelope(Number(capture.record.revision))),
+    selected=recordedBody(capture.selectedBody,envelope(input.revision));
+  if(input.revision===Number(capture.record.revision)&&fingerprint(current)!==fingerprint(selected))
+    conflict('The exact committed target, site or revision body changed.');
 }
 function records(capture:Capture,input:RegistryRecordEvidenceRequest){
   const current=recordFrom({...capture.record,body:capture.body}),
