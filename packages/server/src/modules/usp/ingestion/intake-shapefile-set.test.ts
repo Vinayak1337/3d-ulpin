@@ -8,6 +8,7 @@ import test from 'node:test';
 import type { PoolClient } from 'pg';
 import type { IntakeCard } from '@ulpin/contracts/usp';
 import { localOperatorSubject } from '../principal';
+import { fingerprint } from '../../cases/domain';
 import { probeOriginal } from './intake-probe';
 import { queueLateIntakeEvidenceTx } from './intake-evidence';
 import { convertNativeLayers, queueShapefileSetTx, setPartWordsTx, stateLayerCrsTx,
@@ -105,9 +106,10 @@ function batch() {
     ['INSERT INTO usp_outbox', () => []],
     ['SELECT pg_advisory', () => []],
     ['SELECT * FROM sources', ([, id]) => [sources.get(id)]],
-    ['SELECT id FROM sources', ([, hash, original, layer]) => [...sources.values()].filter(row => row.sha256 === hash
-      && row.inspection.nativeDerivative?.originalSha256 === original
-      && row.inspection.nativeDerivative?.layer === layer)],
+    ['SELECT id FROM sources', ([, hash, lineage, bytes]) => [...sources.values()].filter(row => row.sha256 === hash
+      && Number(row.bytes) === bytes
+      && fingerprint(row.inspection.nativeDerivative ?? null) === fingerprint(lineage))],
+    ['SELECT s.id,u.body', () => []],
     ['UPDATE sources', ([id, lineage]) => {
       sources.get(id).inspection.nativeDerivative = lineage;
       return [];
@@ -188,6 +190,7 @@ async function tweedParts(folder: string) {
 /** The real geo conversion over the batch's loose parts; each stored derivative is put in `files` by its key. */
 function dependencies(ledger: ReturnType<typeof batch>, folder: string, files: Map<string, Buffer>,
   requests: any[]): NativeDerivativeDependencies {
+  let file: { filename: string; bytes: number };
   const paths = Object.fromEntries([...ledger.sources.values()].map(source =>
     [source.object_key, join(folder, source.name)]));
   return {
@@ -202,14 +205,17 @@ function dependencies(ledger: ReturnType<typeof batch>, folder: string, files: M
     },
     register: async () => ({}),
     large: {
-      create: async (_case: string, input: any) => ({ id: input.filename, revision: 1, currentCaseRevision: 4 }),
+      create: async (_case: string, input: any) => {
+        file = input;
+        return { id: input.filename, revision: 1, currentCaseRevision: 4 };
+      },
       claimPart: async (_case: string, id: string) => ({ id }),
       receivePart: async () => ({ id: 'upload', revision: 2, currentCaseRevision: 4 }),
       failPart: async () => {},
-      finalize: async (_case: string, _id: string, input: { sha256: string; bytes: number }) => {
+      finalize: async (_case: string, _id: string, input: { sha256: string }, lineage: unknown) => {
         const id = '40000000-0000-4000-8000-300000000000';
-        ledger.sources.set(id, { ...retained(id, input.bytes, input.sha256, 'Council_Buildings.geojson'),
-          family_id: id });
+        const source = retained(id, file.bytes, input.sha256, file.filename);
+        ledger.sources.set(id, { ...source, inspection: { ...source.inspection, nativeDerivative: lineage } });
         return { source: { sourceId: id } };
       },
       abort: async () => {},
@@ -298,9 +304,9 @@ test('a set with no .prj asks the officer for its layer\'s system, and the answe
     assert.deepEqual(parent.plan_ref, { nativeLayers: { unstated: ['Council_Buildings'], answers: [] } });
     assert.match(parent.limit_reason, /^Not converted until its coordinate reference system is stated: Council_Build/);
 
-    ledger.jobs[0].status = 'completed';
+    ledger.jobs[0].status = 'succeeded';
     await stateLayerCrsTx(ledger.client, shp, parent.item_id, { layer: 'Council_Buildings', crs: 'EPSG:28356' });
-    assert.deepEqual(ledger.jobs.map(job => job.status), ['completed', 'queued']);
+    assert.deepEqual(ledger.jobs.map(job => job.status), ['succeeded', 'queued']);
     assert.deepEqual(ledger.jobs[1].payload.members, ledger.jobs[0].payload.members);
     const [child] = await convertNativeLayers(caseId, parent.item_id, deps, ledger.jobs[1].payload.members);
     assert.deepEqual(requests[1].layerCrs, { Council_Buildings: 'EPSG:28356' });

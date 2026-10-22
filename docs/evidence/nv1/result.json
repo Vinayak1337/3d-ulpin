@@ -1,0 +1,91 @@
+{
+  "task": "NV1",
+  "gate": "AUD4 N9",
+  "base": "b1a4bd80",
+  "scope": "Offline receipt, lineage, replay and job-status regression checks; no runtime qualification.",
+  "verified_before_edit": [
+    "intake-native-derivative.ts:245-246,463-493",
+    "large-original.ts:25-31,373-380",
+    "jobs.ts:239-250,268-309"
+  ],
+  "test_first": {
+    "exit_code": 1,
+    "tests": 6,
+    "failed": 6,
+    "observed": [
+      "A stop after old finalization left a retained child without nativeDerivative lineage.",
+      "The old finalizer rejected native-derivative/1 before publication.",
+      "The old lookup reused a child of another parent item.",
+      "Old orphan receipts were copied instead of recovered or reported.",
+      "A succeeded job queued another conversion."
+    ]
+  },
+  "result": {
+    "native_lineage_in_source_insert": true,
+    "publication_fault_rolls_back_source_lineage_and_receipt_retention": true,
+    "stored_bytes_survive_publication_rollback": true,
+    "post_finalize_stop_replay_receipts": 1,
+    "old_linked_rows_read_without_rewrite": true,
+    "exact_old_orphan_recovered_without_new_receipt": true,
+    "mismatched_ambiguous_or_integrity_failed_orphans_unchanged_and_reported": true,
+    "succeeded_requeued": false,
+    "failed_requeued": true,
+    "officer_crs_answer_can_queue_after_success": true,
+    "job_status_values_verified_in_jobs_ts": ["queued", "running", "succeeded", "failed"]
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit_code": 0},
+    {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": [
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "tests/intake-*.test.ts"
+      ],
+      "exit_code": 0, "tests": 449, "passed": 449, "skipped": 0
+    },
+    {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": [
+        "packages/server/src/modules/usp/ingestion/large-original-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/table-geojson.test.ts",
+        "tests/large-original.test.ts"
+      ],
+      "exit_code": 0, "tests": 42, "passed": 42, "skipped": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/registry*.test.ts",
+      "exit_code": 0, "tests": 96, "passed": 95, "skipped": 1
+    },
+    {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": [
+        "packages/server/src/modules/usp/ingestion/intake-native-derivative.test.ts",
+        "packages/server/src/modules/usp/ingestion/large-original-small.test.ts"
+      ],
+      "exit_code": 0, "tests": 24, "passed": 24, "skipped": 0
+    },
+    {"command": "git diff --check", "exit_code": 0}
+  ],
+  "real_inputs": {
+    "root": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals",
+    "classification": "test_only; foreign development inputs, not Indian operational evidence",
+    "good": {"file": "Building_and_garage_LOD2-EPSG25832.gml", "children": 1, "replay_children": 1},
+    "difficult": {"file": "Building_LOD1-LocalEngineeringCRS.gml", "children": 0, "state": "not_understood"}
+  },
+  "contract_changed": false,
+  "openapi_check": "Not required: internal lineage only; no published contract or route changed.",
+  "verification_recovery": [
+    "Missing binaries and cross-workspace module identities fixed using ignored local dependency links.",
+    "Legacy completed-status test fixtures changed to the actual succeeded status.",
+    "One initial orphan-mock failure was an undefined fingerprint; the fixture now models JSONB equality."
+  ],
+  "limits": [
+    "No Docker, live database, object-store or external-provider checks were run.",
+    "The optional registry D1 artifact test skipped because its explicit external artifact pin was unset.",
+    "Orphan recovery requires one retained receipt naming the same parent and matching layer and byte facts."
+  ],
+  "next": [
+    "Review and integrate; qualify recovery SQL on an authorized isolated database later.",
+    "Separately review existing per-layer fault handling: caught layer failures can still finish the job as succeeded."
+  ]
+}

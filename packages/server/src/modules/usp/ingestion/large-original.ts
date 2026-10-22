@@ -25,10 +25,14 @@ export function storedUploadProvenance(value:LargeUploadCreate['provenance']):La
 export const LargeLayerLineageSchema=ArchiveMemberLineageSchema.extend({
   memberBytes:z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes)});
 /** The lineage a derived large original is published with, and the inspection member that keeps it. */
-const DerivedLineageSchema=z.discriminatedUnion('version',[
-  LargeLayerLineageSchema,TableDerivativeLineageSchema,CellDerivativeLineageSchema]);
+async function parseDerivedLineage(value:unknown){
+  // Load after module initialization: the native converter itself uses the receipt path.
+  const {NativeDerivativeLineageSchema}=await import('./intake-native-derivative');
+  return z.discriminatedUnion('version',[LargeLayerLineageSchema,TableDerivativeLineageSchema,
+    CellDerivativeLineageSchema,NativeDerivativeLineageSchema]).parse(value);
+}
 const LINEAGE_MEMBER={'zip-layer/1':'archiveMember','table-derivative/1':'tableDerivative',
-  'cell-derivative/1':'cellDerivative'} as const;
+  'cell-derivative/1':'cellDerivative','native-derivative/1':'nativeDerivative'} as const;
 
 const uuid=z.string().uuid(),lease=()=>new Date(Date.now()+limits.leaseSeconds*1000);
 type Upload=Record<string,any>;
@@ -301,12 +305,12 @@ export class LargeOriginalService {
     });
   }
   /**
-   * ZL2. A derived layer's lineage (an archive member's, or TC1's table placement) is written with its source in one
+   * A derived layer's lineage (archive, table, cell or native) is written with its source in one
    * transaction; /uploads passes none.
    */
   async finalize(caseIdValue:string,idValue:string,value:unknown,derivedLineage?:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadFinalizeSchema.parse(value),inputHash=fingerprint(input);
-    const lineage=derivedLineage===undefined?undefined:DerivedLineageSchema.parse(derivedLineage);
+    const lineage=derivedLineage===undefined?undefined:await parseDerivedLineage(derivedLineage);
     const claim=await transaction(async client=>{
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);
       if(lineage&&v2(upload))

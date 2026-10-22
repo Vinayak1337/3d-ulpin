@@ -11,6 +11,8 @@ import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
+import { fingerprint } from '../../cases/domain';
+import type { IntakeSourceRow } from './intake-context';
 import { probeOriginal } from './intake-probe';
 import { intakeItem } from './intake-ledger';
 import { nativeDerivativeFormat } from './intake-draft';
@@ -80,7 +82,8 @@ const caseId = '30000000-0000-4000-8000-000000000001';
 const itemId = '30000000-0000-4000-8000-000000000002';
 const sourceId = '30000000-0000-4000-8000-000000000003';
 
-function retained(id: string, bytes: number, hash: string, name: string, inspection: Record<string, unknown> = {}) {
+function retained(id: string, bytes: number, hash: string, name: string,
+  inspection: Record<string, unknown> = {}): IntakeSourceRow & { inspection: Record<string, any> } {
   return { id, case_id: caseId, family_id: id, revision: 1, bytes, sha256: hash, profile: 'large-original-v1',
     object_key: `large-originals/${id}/${hash}`, name, status: 'needs_input', inspection: { ...inspection,
       largeOriginal: { uploadId: id, operatorSubject: localOperatorSubject(), objectEtag: 'etag',
@@ -93,6 +96,7 @@ function retained(id: string, bytes: number, hash: string, name: string, inspect
 function ledger(original: ReturnType<typeof retained>) {
   const sources = new Map<string, any>([[original.id, original]]);
   const jobs: any[] = [];
+  const uploads: any[] = [];
   const item = { item_id: itemId, case_id: caseId, source_id: original.id, parent_item_id: null,
     card: { format: 'geopackage', family: 'vector' }, state: 'reading', placement: 'undecided', plan_ref: null as any,
     records_seen: 0, limit_reason: 'converting', family: 'vector', format: 'geopackage', size_class: 'L', wave: 1,
@@ -106,7 +110,13 @@ function ledger(original: ReturnType<typeof retained>) {
       if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 4 }];
       if (sql.startsWith('SELECT * FROM sources')) return [sources.get(values[1])];
       if (sql.startsWith('SELECT id FROM sources')) return [...sources.values()].filter(row =>
-        row.sha256 === values[1] && row.inspection.nativeDerivative?.layer === values[3]);
+        row.sha256 === values[1] && Number(row.bytes) === values[3]
+          && fingerprint(row.inspection.nativeDerivative ?? null) === fingerprint(values[2]));
+      if (sql.startsWith('SELECT s.id,u.body')) return uploads.filter(upload => {
+        const row = sources.get(upload.source_id);
+        return row && !row.inspection.nativeDerivative && upload.body.batchSourceId === values[1]
+          && (row.name === values[2] || row.sha256 === values[3]);
+      }).map(upload => ({ id: upload.source_id, body: upload.body, operator_subject: upload.operator_subject }));
       if (sql.startsWith('UPDATE sources')) {
         sources.get(values[0]).inspection.nativeDerivative = values[1];
         return [];
@@ -135,17 +145,19 @@ function ledger(original: ReturnType<typeof retained>) {
     if (!rows) throw new Error(`Unexpected SQL: ${sql}`);
     return { rows, rowCount: rows.length };
   } } as unknown as PoolClient;
-  return { client, sources, item, jobs };
+  return { client, sources, item, jobs, uploads };
 }
 
 /** The byte receipt /uploads drives, standing in for storage: it hashes each part and keeps the bytes it was sent. */
-function receipt(sources: Map<string, any>, kept: Map<string, Buffer>) {
+function receipt(sources: Map<string, any>, kept: Map<string, Buffer>, afterFinalize = () => {},
+  onCreate = () => {}) {
   let parts: Buffer[] = [];
   let file: { filename: string; sha256: string; bytes: number };
   return {
     create: async (_case: string, input: any, batchSourceId?: string) => {
       // TC2: each layer's receipt names the converted file as its batch item.
       assert.equal(batchSourceId, sourceId);
+      onCreate();
       file = input;
       parts = [];
       return { id: randomUUID(), revision: 1, currentCaseRevision: 4 };
@@ -156,12 +168,14 @@ function receipt(sources: Map<string, any>, kept: Map<string, Buffer>) {
       return { id: 'upload', revision: 1 + parts.length, currentCaseRevision: 4 };
     },
     failPart: async () => {},
-    finalize: async (_case: string, _id: string, input: { sha256: string }) => {
+    finalize: async (_case: string, _id: string, input: { sha256: string }, lineage?: unknown) => {
       const bytes = Buffer.concat(parts);
       assert.equal(sha(bytes), input.sha256);
       const id = randomUUID();
-      sources.set(id, retained(id, bytes.length, input.sha256, file.filename));
+      sources.set(id, retained(id, bytes.length, input.sha256, file.filename,
+        lineage ? { nativeDerivative: lineage } : {}));
       kept.set(id, bytes);
+      afterFinalize();
       return { source: { sourceId: id } };
     },
     abort: async () => {},
@@ -262,9 +276,9 @@ test('an officer states the CRS of the layer whose file states none; only that l
       { code: 'INTAKE_LAYER_CRS_CONVERTING' });
     jobs.pop();
     // SH2's job finished: the answer queues the conversion again as the next job.
-    jobs.push({ id: 'first', status: 'completed' });
+    jobs.push({ id: 'first', status: 'succeeded' });
     await stateLayerCrsTx(client, original, itemId, { layer: 'unstated', crs: 'EPSG:28356' });
-    assert.deepEqual(jobs.map(job => job.status), ['completed', 'queued']);
+    assert.deepEqual(jobs.map(job => job.status), ['succeeded', 'queued']);
     assert.equal(jobs[1].payload.jobId, jobs[1].id);
     assert.equal(item.state, 'reading');
     await assert.rejects(stateLayerCrsTx(client, original, itemId, { layer: 'unstated', crs: 'EPSG:32756' }),
@@ -600,6 +614,126 @@ test('a KML with no placemark geometry rests not understood, naming what it keep
   assert.deepEqual(nativeParentState('kmz', conversion, []), { state: 'read', placement: 'not_understood',
     planRef: null, recordsSeen: 0, limitReason: 'Not converted: whole file (holds no Placemark). Kept in the '
       + 'original but not fetched or read: NetworkLink (2).' });
+});
+
+function derivativeProtocol(afterFinalize = () => {}) {
+  const original = retained(sourceId, 10, sha(Buffer.from('test_only parent')), 'outlines.gpkg');
+  const state = ledger(original);
+  const kept = new Map<string, Buffer>();
+  let receipts = 0;
+  const bytes = Buffer.from('{"type":"FeatureCollection","features":[]}');
+  const object = { objectKey: `native-derivatives/${original.sha256}/0/geojson-${sha(bytes)}`,
+    bytes: bytes.length, sha256: sha(bytes) };
+  const layer = { layer: 'outlines', ordinal: 0, state: 'converted', crs: 'EPSG:4326', crsSource: 'stated',
+    features: 0, notWritten: 0, geojson: object, sidecar: object };
+  const lineage = NativeDerivativeLineageSchema.parse({ layer: layer.layer, ordinal: 0, crs: layer.crs,
+    crsSource: layer.crsSource, features: 0, notWritten: 0, sidecar: object,
+    version: 'native-derivative/1', conversion: 'native_gis_to_geojson@1', readerVersion: 'protocol/1',
+    originalSourceId: sourceId, originalSourceRevision: 1, originalSha256: original.sha256,
+    originalItemId: itemId, format: 'gpkg' });
+  const dependencies = { transaction: async (work: (client: PoolClient) => Promise<unknown>) => work(state.client),
+    read: async (_key: string, start: number, end: number) => bytes.subarray(start, end),
+    convert: async () => ({ conversion: 'native_gis_to_geojson@1', readerVersion: 'protocol/1', sourceId,
+      sourceSha256: original.sha256, layers: [layer] }),
+    register: async () => ({}), large: receipt(state.sources, kept, afterFinalize, () => { receipts++; }),
+  } as NativeDerivativeDependencies;
+  return { ...state, original, kept, bytes, lineage, dependencies, get receipts() { return receipts; } };
+}
+
+test('a stop immediately after finalize leaves a linked child; replay creates no second receipt', async () => {
+  let stopped = false;
+  const state = derivativeProtocol(() => {
+    if (!stopped) {
+      stopped = true;
+      throw new Error('Injected stop after finalization committed');
+    }
+  });
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), []);
+  assert.equal(state.kept.size, 1);
+  const child = [...state.kept.keys()][0];
+  assert.deepEqual(state.sources.get(child).inspection.nativeDerivative, state.lineage);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [child]);
+  assert.equal(state.kept.size, 1);
+  assert.equal(state.receipts, 1);
+});
+
+test('old linked children remain readable, but a different parent item or sidecar is not reused', async () => {
+  const state = derivativeProtocol();
+  const old = randomUUID();
+  state.sources.set(old, retained(old, state.bytes.length, sha(state.bytes), 'outlines.geojson',
+    { nativeDerivative: state.lineage }));
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [old]);
+  assert.equal(state.kept.size, 0);
+  for (const difference of [{ originalItemId: randomUUID() },
+    { sidecar: { ...state.lineage.sidecar, sha256: 'e'.repeat(64) } }]) {
+    state.sources.get(old).inspection.nativeDerivative = { ...state.lineage, ...difference };
+    const children = await convertNativeLayers(caseId, itemId, state.dependencies);
+    assert.equal(children.length, 1);
+    assert.notEqual(children[0], old);
+    assert.deepEqual(state.sources.get(old).inspection.nativeDerivative, { ...state.lineage, ...difference });
+  }
+  assert.equal(state.kept.size, 1);
+  assert.equal(state.sources.size, 3);
+});
+
+function orphanReceipt(state: ReturnType<typeof derivativeProtocol>) {
+  const id = randomUUID();
+  const orphan = retained(id, state.bytes.length, sha(state.bytes), 'outlines.geojson');
+  state.sources.set(id, orphan);
+  const upload = { source_id: id, operator_subject: localOperatorSubject(), body: {
+    batchSourceId: sourceId, input: { filename: orphan.name, bytes: orphan.bytes, sha256: orphan.sha256 },
+    verified: { bytes: orphan.bytes, sha256: orphan.sha256 } } };
+  state.uploads.push(upload);
+  return { orphan, upload };
+}
+
+test('an old unlinked receipt is recovered only with exact retained bytes and parent/layer receipt facts', async () => {
+  const state = derivativeProtocol();
+  const { orphan } = orphanReceipt(state);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [orphan.id]);
+  assert.deepEqual(orphan.inspection.nativeDerivative, state.lineage);
+  assert.equal(state.kept.size, 0);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [orphan.id]);
+  assert.equal(state.sources.size, 2);
+});
+
+test('mismatched or ambiguous old orphan receipts are left unchanged and reported, not deleted or copied', async () => {
+  for (const ambiguous of [false, true]) {
+    const state = derivativeProtocol();
+    const { orphan, upload } = orphanReceipt(state);
+    if (ambiguous) orphanReceipt(state);
+    else upload.body.verified.sha256 = 'f'.repeat(64);
+    const before = structuredClone([...state.sources]);
+    assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), []);
+    assert.deepEqual([...state.sources], before);
+    assert.equal(state.kept.size, 0);
+    assert.equal(orphan.inspection.nativeDerivative, undefined);
+    assert.match(state.item.limit_reason, /earlier retained original.*left unchanged/);
+  }
+});
+
+test('an old orphan whose stored byte authority disagrees is left unchanged with an honest explanation', async () => {
+  const state = derivativeProtocol();
+  const { orphan } = orphanReceipt(state);
+  orphan.inspection.largeOriginal.verifiedBytes++;
+  const before = structuredClone(orphan);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), []);
+  assert.deepEqual(orphan, before);
+  assert.equal(state.kept.size, 0);
+  assert.match(state.item.limit_reason, /earlier retained original.*left unchanged/);
+});
+
+test('succeeded conversion is not queued again; queued and running are reused, failed is retried', async () => {
+  for (const status of ['queued', 'running', 'succeeded', 'failed']) {
+    const state = derivativeProtocol();
+    const id = randomUUID();
+    state.jobs.push({ id, status });
+    const result = await queueNativeDerivativeTx(state.client, state.original, state.item.card as IntakeCard);
+    if (status === 'succeeded') assert.equal(result, null);
+    else if (status === 'failed') assert.notEqual(result, id);
+    else assert.equal(result, id);
+    assert.equal(state.jobs.length, status === 'failed' ? 2 : 1);
+  }
 });
 
 test('publishing a KML or KMZ card queues its conversion job; any other vector card is not converted', async () => {
