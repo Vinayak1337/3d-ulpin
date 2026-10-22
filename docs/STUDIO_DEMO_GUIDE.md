@@ -1,6 +1,7 @@
 # Studio live-demo presenter runbook
 
-> This guide matches staging `4c278323` and later; if the demo still serves `8d6e19fa`, use `git show c610922f:docs/STUDIO_DEMO_GUIDE.md`.
+> The demo serves `4ffd801a`; R10 rolled it from `8d6e19fa`, with doctor **28 PASS, 0 FAIL** after the roll.
+> This guide matches that commit. [R10]
 
 This replaces the September source-to-record walkthrough, its Lake View fictional example,
 legacy local-app address, and old intake limits. It is not a prepared-record tour.
@@ -12,11 +13,13 @@ confirmation press to a cited, verified card and a footprint-only card, with no 
 REH11's stop (`REGISTRY_SOURCE_UNAVAILABLE`) was not seen. REH10 receipts now exist, but that run did not
 prove the linked card or surface drawing. [H10] [H11] [H13] [Card13]
 
-REH13 left the served demo unchanged at `8d6e19fa` (doctor **28 PASS, 0 FAIL** before and after) and rolled
-its runtime back to `1a226949`. Its staging rehearsal is not a demo roll or proof of a clean start.
-RC1 is merged and REH12 ran; the next roll candidate is `4c278323` (RC2, RC3). Before that roll, the registry
-citation read checked by `journey:check` must stop refusing exterior-only records (HTTP 422 `INVALID_INPUT`);
-the Studio does not call that read. [H13]
+R10 rolled the served demo from `8d6e19fa` to `4ffd801a`: doctor **28 PASS, 0 FAIL** after the roll, about
+61 s without `/health`, and the same counts of cases, sources, packages and features before and after.
+Before the roll, on `ulpin-reh-02` at `4ffd801a`, `journey:check` passed **8 of 8**, including the citation
+step that REH13 saw refused (HTTP 422 `INVALID_INPUT`). On that runtime the cited building's record page
+showed **“Card 93fd4362 · revision 1 · cites record revision 2”**, and its Documents tab listed the register
+row (`gpmc-yuvp.csv`, CSV logical row 444) beside `buildings-original.geojson` feature 1084419. That page was
+read on the rehearsal runtime, not on the demo. [R10]
 The architecture describes the intended flow, not a receipt that every part works. [Arch]
 
 ## 1. Thirty minutes before — check, do not rebuild
@@ -216,10 +219,6 @@ is evidence; it states no right or owner.”**
 
 ### What the presenter will see that is not finished
 
-- The cited building's record page shows **“Building 1084419 · Reviewed”** with **“Property Card: Blocked:
-  select a unit with an assigned proposed code”**, and its Documents tab lists only
-  `buildings-original.geojson` feature 1084419, not the register row. Both are being fixed on a separate
-  branch. Open the card from the batch's **Open card PDF** and **Verification** instead. [Act13]
 - The confirmation progress shows the cited record at revision **1**, while the card is built on revision
   **2**, the revision that carries the confirmed evidence. Read the revision from the card. [Act13]
 - The card PDF's QR code resolves only on the machine that made it; the PDF says so. Do not invite judges
@@ -386,6 +385,8 @@ A kept file, a proposal and a recorded fact are deliberately different.”**
 
 Receipt fields (each reference below names its file and JSON field):
 
+[R10]: evidence/runtime/r10/result.json
+  "to; after.doctor; after.counts; downtime.seconds; a0.journey.summary; a0.ui1.header; a0.ui1.documents"
 [H13]: evidence/runtime/reh13/result.json "servedCommit; rolledBackTo; demo; failures; runbookCorrections; verdict"
 [Card13]: evidence/runtime/reh13/result.json "act1.cards; act1.retryPressed; act1.confirmationsPressed"
 [Act13]: evidence/runtime/reh13/act1.json "steps; cited; footprintOnly; recordPage; surfacesAtCards"
