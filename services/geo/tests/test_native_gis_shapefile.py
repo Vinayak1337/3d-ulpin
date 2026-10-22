@@ -17,7 +17,6 @@ TWEED = Path(
     "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/"
     "TSC_Buildings_OD_8831041243266425049.zip"
 )
-REFUSAL = "stores M or MultiPatch shapes, or its shapes and records differ in number"
 # Clockwise exteriors, counterclockwise hole; each Z is only an unqualified source coordinate.
 OUTER = [[500000, 3100000, 10], [500000, 3100020, 11], [500020, 3100020, 12],
          [500020, 3100000, 13], [500000, 3100000, 10]]
@@ -39,6 +38,8 @@ def fixture_zip(tmp_path: Path, shape_type: int, measured: bool = False) -> Path
             if measured:
                 rings = [[point + [7] for point in ring] for ring in rings]
             writer.polyz(rings)
+        elif shape_type == 18:
+            writer.multipointz([OUTER[0], OTHER[0]])
         elif shape_type == 21:
             writer.pointm(500000, 3100000, 7)
         elif shape_type == 23:
@@ -113,10 +114,32 @@ def test_point_and_line_z_keep_their_third_coordinates(
     assert collection["features"][0]["geometry"] == {"type": kind, "coordinates": coordinates}
 
 
-@pytest.mark.parametrize("shape_type", [21, 23, 25, 31])
-def test_m_and_multipatch_still_have_the_existing_refusal(tmp_path: Path, shape_type: int) -> None:
-    layer, collection, _ = convert(fixture_zip(tmp_path, shape_type), tmp_path)
-    assert (layer["state"], layer["reason"]) == ("not_converted", REFUSAL)
+@pytest.mark.parametrize("shape_type", [18, 21, 23, 25, 31])
+def test_unsupported_shape_type_is_named_and_still_refused(tmp_path: Path, shape_type: int) -> None:
+    path = fixture_zip(tmp_path, shape_type)
+    if shape_type == 18:
+        with zipfile.ZipFile(path) as archive:
+            with shapefile.Reader(shp=archive.open("layer.shp"), shx=archive.open("layer.shx"),
+                                  dbf=archive.open("layer.dbf")) as reader:
+                assert reader.numShapes == reader.numRecords == 1
+                assert all(value is None for value in reader.shape(0).m)
+    layer, collection, _ = convert(path, tmp_path)
+    assert (layer["state"], layer["reason"]) == (
+        "not_converted", f"stores unsupported shape type {shape_type} ({shapefile.SHAPETYPE_LOOKUP[shape_type]})"
+    )
+    assert collection == {} and "geojson" not in layer
+
+
+def test_mismatched_shape_and_record_counts_keep_their_own_refusal(tmp_path: Path) -> None:
+    path = fixture_zip(tmp_path, 15)
+    with zipfile.ZipFile(path) as archive:
+        raw = bytearray(archive.read("layer.dbf"))
+    struct.pack_into("<I", raw, 4, 0)
+    mismatched = rewrite_member(path, tmp_path / "mismatched.zip", ".dbf", bytes(raw))
+    layer, collection, _ = convert(mismatched, tmp_path)
+    assert (layer["state"], layer["reason"]) == (
+        "not_converted", "its shapes and records differ in number"
+    )
     assert collection == {} and "geojson" not in layer
 
 

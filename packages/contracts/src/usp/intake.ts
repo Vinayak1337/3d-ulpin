@@ -117,13 +117,6 @@ export type ArchiveMemberLineage = z.infer<typeof ArchiveMemberLineageSchema>;
 export const TABLE_GEOJSON_CONVERSION = 'table_rows_to_geojson@1';
 export const TABLE_PLACEMENT_SKIP_REASONS = ['no_coordinates', 'not_a_number', 'not_wkt', 'formula', 'open_ring',
   'too_large', 'inexact_number', 'refused'] as const;
-/**
- * TB2: placement cites each row by its byte range in the original, and the window reader keeps those ranges for UTF-8
- * and Windows-1252 text only; a UTF-16 table is read as a table but not placed, and nothing is transcoded.
- */
-export const TABLE_PLACEMENT_UTF16 = 'This table is UTF-16 text. Its rows are placed on the map only from UTF-8 or '
-  + 'Windows-1252 text, so that each placed row cites its exact bytes. Save the table as CSV UTF-8 and add it again; '
-  + 'this original stays kept unchanged.';
 export const TABLE_DERIVATIVE_LOCATOR =
   'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.';
 /**

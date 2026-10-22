@@ -3,12 +3,12 @@ import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
-import { TABLE_PLACEMENT_UTF16 } from '@ulpin/contracts/usp';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, expect, it, vi } from 'vitest';
 import captured from '../../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import { createContractValidator } from '../../../local/contract';
-import { placementRefusal } from '../table-placement-command';
-import { createTableEnrolment, PlacementBody, tableItemId } from './TablePlacement';
+import { intakeKey } from '../batch-queries';
+import { createTableEnrolment, PlacementBody, TablePlacement, tableItemId } from './TablePlacement';
 import type { TableProfile } from './types';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
@@ -70,7 +70,7 @@ it('TB2: a refused enrolment makes the next press a new request', async () => {
 });
 
 const render = (fields: Partial<Parameters<typeof PlacementBody>[0]>) => renderToStaticMarkup(<MemoryRouter>
-  <PlacementBody caseId={caseId} itemId={null} name="mi-d10-02.csv" headers={profile.headers} refusal={null}
+  <PlacementBody caseId={caseId} itemId={null} name="mi-d10-02.csv" headers={profile.headers}
     opened={false} enrol={idle} {...fields} />
 </MemoryRouter>);
 
@@ -87,16 +87,27 @@ it('TB2: once in the batch, the batch\'s own opener is offered with a link to th
   const html = render({ itemId: enrolled.itemId });
   expect(html).toContain('>Place on the map</button>');
   expect(html).toContain(`href="/studio/work/cases/${caseId}/intake"`);
-  expect(html).toContain('says how many rows were placed and how many were skipped');
+  expect(html).toContain('says how many rows were prepared and how many were skipped, and why.');
+  expect(html).toContain('That GeoJSON file is then taken in as its own item in this batch, and its own line says '
+    + 'whether it is on the map.');
+  expect(html).not.toContain('rows were placed');
   expect(html).not.toContain('joins its case');
 });
 
-it('TB2: a UTF-16 table says why its rows are not placed, and offers no press', () => {
-  const utf16 = { ...profile.tabular.selection, encoding: 'utf-16le' as const };
-  expect(placementRefusal(utf16)).toBe(TABLE_PLACEMENT_UTF16);
-  expect(placementRefusal(profile.tabular.selection)).toBeNull();
-  const html = render({ refusal: placementRefusal(utf16) });
-  expect(html).toContain('This table is UTF-16 text.');
-  expect(html).toContain('Save the table as CSV UTF-8 and add it again');
-  expect(html).not.toContain('</button>');
+it.each(['utf-16le', 'utf-16be'] as const)('a BOM %s table offers placement before and after enrolment', encoding => {
+  // Protocol control: the captured profile with the encoding the BOM reader pins; no source bytes are changed.
+  const utf16 = { ...profile, tabular: { ...profile.tabular,
+    selection: { ...profile.tabular.selection, encoding } } };
+  for (const items of [[], [{ ...enrolled, sourceId, parentItemId: null }]]) {
+    const client = new QueryClient();
+    client.setQueryData(intakeKey(caseId), { caseId, items });
+    const html = renderToStaticMarkup(<QueryClientProvider client={client}><MemoryRouter>
+      <TablePlacement caseId={caseId} sourceId={sourceId} name="mi-d10-02.csv" profile={utf16} />
+    </MemoryRouter></QueryClientProvider>);
+    expect(html).toContain('>Place on the map</button>');
+    expect(html).not.toContain('Save the table as CSV UTF-8');
+    if (items.length) expect(html).toContain('This file is an item of its case&#x27;s batch.');
+    else expect(html).toContain('It first joins its case&#x27;s batch as an item');
+    client.clear();
+  }
 });
