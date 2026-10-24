@@ -1,7 +1,7 @@
 import { Controller, Get, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { query } from '@ulpin/server/infrastructure/db';
+import { poolPressure, query } from '@ulpin/server/infrastructure/db';
 import { databaseReadiness } from '@ulpin/server/infrastructure/database-readiness';
 import { checkStorage } from '@ulpin/server/infrastructure/storage';
 import { settings } from '@ulpin/server/infrastructure/config';
@@ -39,7 +39,12 @@ export class FoundationController {
 
   @Get('v1/health')
   @ApiOperation({ operationId: 'GET_api_v1_health', summary: 'Local dependency health' })
-  @ApiOkResponse({ schema: { type: 'object', required: ['ok', 'services', 'serviceObservations', 'dataMode'], properties: {
+  @ApiOkResponse({ schema: { type: 'object',
+    required: ['ok', 'services', 'serviceObservations', 'dataMode', 'pool'], properties: {
+    pool: { type: 'object', nullable: true, required: ['total', 'idle', 'waiting'], properties: {
+      total: { type: 'integer', minimum: 0 }, idle: { type: 'integer', minimum: 0 },
+      waiting: { type: 'integer', minimum: 0 },
+    } },
     ok: { type: 'boolean' }, dataMode: { type: 'string', enum: ['repository', 'linked'] },
     services: { type: 'object', required: ['database', 'storage', 'processor', 'redis', 'worker'], properties: {
       database: { type: 'boolean' }, storage: { type: 'boolean' }, processor: { type: 'boolean' },
@@ -84,7 +89,8 @@ export class FoundationController {
       ...processor.services,
     };
     // Dependency liveness remains compatible; consumers must inspect schema admission separately.
-    return { ok: Object.values(services).every(Boolean), services, serviceObservations: processor.serviceObservations, dataMode: settings.dataMode,
+    return { ok: Object.values(services).every(Boolean), services, pool: poolPressure(),
+      serviceObservations: processor.serviceObservations, dataMode: settings.dataMode,
       databaseReadiness: checks[3].status === 'fulfilled' ? checks[3].value : { status: 'unavailable', schema: { ready: false } } };
   }
 }

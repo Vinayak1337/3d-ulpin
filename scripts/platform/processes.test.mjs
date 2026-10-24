@@ -5,8 +5,9 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { runInNewContext } from 'node:vm';
 import { runtimeDefinition } from './demo-config.mjs';
-import { ownedProcess } from './processes.mjs';
+import { launchProcesses, ownedProcess } from './processes.mjs';
 
 const created = '/Date(1792800000000)/';
 const entry = join('made-up-checkout', 'apps/api/src/main.ts');
@@ -25,7 +26,40 @@ function madeUpRuntime(t) {
   return { runtime, record, bytes };
 }
 const holder = (changes = {}) => () => ({ ProcessId: 4242, ExecutablePath: process.execPath,
-  CommandLine: `"${process.execPath}" --require ${preload} --import tsx ${entry}`, CreationDate: created, ...changes });
+  CommandLine: `"${process.execPath}" --require ${preload} --require exit-record.cjs --import tsx ${entry}`,
+  CreationDate: created, ...changes });
+
+test('launch wiring keeps the identity preload and sets a per-runtime exit destination after safeEnvironment', () => {
+  const source = launchProcesses.toString();
+  assert.match(source, /join\('E:\/ulpin-tmp', runtime\.name\)/);
+  assert.match(source, /mkdirSync\(exitDir, \{ recursive: true \}\)/);
+  assert.match(source, /scripts\/platform\/exit-record\.cjs/);
+  assert.match(source, /\['--require', preload, '--require', exitPreload, '--import', 'tsx', entry\]/);
+  assert.match(source, /safeEnvironment\(env\), ULPIN_EXIT_RECORD_FILE: join\(exitDir, `\$\{label\}-exit\.jsonl`\)/);
+});
+
+test('dispatcher reports safe codes once per failure streak, without blaming every error on the database', async () => {
+  const source = readFileSync(new URL('../dispatcher.ts', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '');
+  const signals = {}, printed = [];
+  let ticks = 0;
+  const error = new TypeError('private file content');
+  error.code = 'READER_FAILED';
+  await runInNewContext(source, {
+    process: { on: (name, listener) => { signals[name] = listener; } },
+    Error, console: { log() {}, error: message => printed.push(message) },
+    localOperatorSubject() {}, dispatchWakeVersion: () => 0,
+    dispatchTick: async () => {
+      ticks++;
+      if (ticks === 3) return;
+      if (ticks === 4) error.code = 'postgres://u:p@h/db';
+      throw error;
+    },
+    waitForDispatch: async () => { if (ticks === 4) signals.SIGTERM(); },
+    closePool: async () => {}, closeStorageClient() {},
+  });
+  assert.deepEqual(printed, ['Dispatcher tick failed with error code READER_FAILED.',
+    'Dispatcher tick failed with error code TypeError.']);
+});
 
 test('a PID reused by a process created at another time: null, and the record is moved aside, not deleted', t => {
   const { runtime, bytes } = madeUpRuntime(t);

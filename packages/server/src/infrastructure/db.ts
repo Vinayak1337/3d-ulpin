@@ -38,6 +38,12 @@ export function pool(): Pool {
   }
   return globals.ulpinPool;
 }
+/** Observes only an existing pool; health diagnostics never create one. */
+export function poolPressure(): { total: number; idle: number; waiting: number } | null {
+  const connectionPool = globals.ulpinPool;
+  if (!connectionPool) return null;
+  return { total: connectionPool.totalCount, idle: connectionPool.idleCount, waiting: connectionPool.waitingCount };
+}
 /** Closes only a pool created by this process; shutdown never opens a connection. */
 export async function closePool(): Promise<void> {
   const connectionPool = globals.ulpinPool;
