@@ -49,7 +49,8 @@ export function advanceStreamedInventory(previous:Aggregate,records:StreamingVec
     if(record.disposition==='quarantined'){
       quarantined++;
       locators.push({featureIndex:record.featureIndex,byteStart:record.byteStart,byteEnd:record.byteEnd,
-        rawSha256:record.rawSha256,issueCode:record.issueCode??'RAW_FEATURE_QUARANTINED'});
+        rawSha256:record.rawSha256,issueCode:record.issueCode??'RAW_FEATURE_QUARANTINED',
+        ...(record.sequencePosition?{sequencePosition:record.sequencePosition}:{})});
       continue;
     }
     const feature=record.feature as Record<string,unknown>,observed=new Map<string,unknown>();

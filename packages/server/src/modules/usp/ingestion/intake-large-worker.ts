@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
-import { StreamedMappingReceiptSchema, StreamingVectorGeometrySummarySchema } from '@ulpin/contracts/usp';
+import { StreamedMappingReceiptSchema, StreamingVectorGeometrySummarySchema,
+  type StreamedProfileGeneration } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange, putOriginalStream, verifyObjectStream } from '../../../infrastructure/storage';
@@ -295,8 +296,15 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
   const setAside = intakeLargeSetAside(fold.kind, state.source.inspection?.streamedGeometrySummary,
     fold.readerJobId, fold.recordsRead - fold.readerRejected);
   const held = countHeld(fold.held, fold.pending);
+  const inventory = fold.readerRejected ? (await client.query<{
+    locators: StreamedProfileGeneration['quarantineLocators'];
+  }>(`SELECT body->'quarantineLocators' locators FROM usp_streamed_profile_generations
+    WHERE job_id=$1 AND ($2::int IS NULL OR generation=$2) ORDER BY generation DESC LIMIT 1`,
+  [state.store.profile!.job_id, state.store.profile!.sealed_generation])).rows[0] : undefined;
+  const readerRejectedPositions = (inventory?.locators ?? []).flatMap(locator =>
+    locator.sequencePosition ? [locator.sequencePosition] : []).slice(0, 5);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
-    accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected,
+    accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected, readerRejectedPositions,
     duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide,
     outside: cells ? 0 : held.heldOutside, unmeasured: held.heldUnmeasured, setAside },
   // CN1: each retained cell's own case, source and item, kept beside the plan in the same end transaction.
