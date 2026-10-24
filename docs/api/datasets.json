@@ -9674,6 +9674,41 @@
       ]
     },
     {
+      "id": "s2-1-practice-kit-part-1",
+      "classification": "test_only",
+      "originKind": "retained_public_originals_referenced_in_place",
+      "issuer": "Per-file issuers in manifest; exact NYC issuing agency remains unknown",
+      "geography": "Canada, Australia, Singapore, United States; IFC physical geography unknown",
+      "manifest": "docs/evidence/step-2/s2-1/manifest.json",
+      "guide": "docs/evidence/step-2/s2-1/result.json",
+      "sourceCount": 8,
+      "sourceFamilies": 4,
+      "totalOriginalBytes": 292295571,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data",
+        "itemsPointer": "/files",
+        "formats": ["GeoJSON", "Shapefile ZIP", "XLSX", "CSV (WKT)", "PDF (native text)", "IFC4", "COPC LAZ"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-file licenceState, licenceUrl and metadataSource in practice manifest",
+        "limitations": "Mixed licences: five confirmed, three unconfirmed; local test_only, not redistribution clearance."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Eight retained originals across the four plan families; no data-drive bytes changed or copied.",
+        "Six sibling receipts match; Baton Rouge has a catalogue pin only; NYC has a pack-manifest receipt only.",
+        "Strict all-sibling-receipt acceptance remains incomplete; no receipt was created or repaired.",
+        "Baton Rouge permission remains unconfirmed despite the catalogue's literal Public Domain description.",
+        "IFC publisher notice is not a formal licence; exact NYC issuing agency and licence URL remain null.",
+        "RERA ~6.3 MiB scan receipt not located safely; substituted the receipted DQ1 native-text HDB PDF.",
+        "No scanned-plan coverage, import, profile, learning, rights, measurement or runtime qualification."
+      ]
+    },
+    {
       "id": "dq1-singapore-sealed-rehearsal-set-20261018",
       "classification": "test_only",
       "originKind": "foreign_authority_issuing_portal_original_files",
