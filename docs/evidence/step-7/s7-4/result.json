@@ -1,0 +1,49 @@
+{
+  "task": "S7.4", "planStep": 7, "base": "fc671fe6b699dceeca01ae572898ff91229cfa9a",
+  "result": "Plain server sentences preserve facts; stale-reading and omitted-file evidence stops name files.",
+  "design": [
+    "Only admissionLimitations changed in tabular-source.ts; structured admission and rejection fields are unchanged.",
+    "Quarantine explains the first rejection, including its location, counts, original kept unchanged and no repairs.",
+    "Evidence names use existing source and coverage queries, with a left join; no extra per-item query.",
+    "Missing names remain unnamed; unknown personal data never becomes no personal data."
+  ],
+  "inputs": {
+    "good": "edmonton-heritage.csv: retained and streamed with unchanged hash by tabular-admission.test.ts",
+    "difficult": "kansas-municipal.csv: retained and streamed with unchanged hash by tabular-admission.test.ts",
+    "nyc": "Read-only check of buildings-original.geojson: 1662 features, one invalid ring at index 1322.",
+    "nycRegression": "1661 accepted, 1 skipped; one plain sentence; original kept, no repair; structured reason intact."
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "passed": 780, "skipped": 3 },
+    "studioOnly": { "passed": 709, "skipped": 2 },
+    "WORKING-RULES section 5 server command": {
+      "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "beforeExit": 0, "beforePassed": 943, "beforeSkipped": 4,
+      "afterExit": 0, "afterPassed": 946, "afterSkipped": 4
+    },
+    "taskListedTestsPlusEvidenceConfirmAndCitations": { "afterExit": 0, "passed": 102, "skipped": 0 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "beforeExit": 0, "afterExit": 1, "expected": "source-pins.json stale; pins left unchanged"
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "beforeExit": 0, "afterExit": 1, "expected": "Stops at first changed producer, gis-quarantine.ts"
+    },
+    "task CHECK rg scan": { "afterExit": 1, "matches": 0 },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  },
+  "changedProducers": [
+    "packages/server/src/modules/areas/gis-quarantine.ts",
+    "packages/server/src/modules/officer/register-missing.ts",
+    "packages/server/src/modules/usp/ingestion/tabular-source.ts",
+    "packages/server/src/modules/usp/ingestion/intake-evidence.ts"
+  ],
+  "notes": [
+    "Intermediate typecheck found three fixtures missing the new name field; corrected; final checks pass.",
+    "docs/design/UX-REVIEW-2026-10-24.md is absent at this base; task's plain-language requirements used.",
+    "Studio, contracts, protected intake files and pins unchanged; no runtime or external service used."
+  ],
+  "logs": "E:/ulpin-tmp/s7-4/",
+  "next": "Lead regenerates source pins during integration; SourceHeader details change remains separate."
+}

@@ -57,8 +57,8 @@ function install(sources: Record<string, unknown>[], confirmations: Record<strin
     ['SELECT profile_sha256 FROM usp_intake_key_profiles', () => [{ profile_sha256: profileSha256 }]],
     ['SELECT * FROM usp_intake_key_profiles', () => []],
     ['SELECT i.item_id,s.id', () => [{ item_id: itemId, id: sourceId, revision: 2, sha256: sourceSha256,
-      bytes: '87', latest: true }]],
-    ['SELECT * FROM usp_intake_evidence_coverage', () => [coverageRow]],
+      name: 'register.csv', bytes: '87', latest: true }]],
+    ['SELECT c.*,s.name FROM usp_intake_evidence_coverage', () => [{ ...coverageRow, name: 'register.csv' }]],
     ['SELECT c.*,s.id source_id', () => sources.map(source => ({ ...coverageRow, ...source }))],
     ['SELECT t.target_id', () => [{ target_id: targetId, package_id: packageId, revision: 3, review,
       committed: null, ...target }]],
@@ -116,6 +116,16 @@ test('a link manifest hash that is not the decisions\' own is refused and nothin
     linkManifestSha256: fingerprint('test_only:other') } }), (error: { status: number; code: string;
     message: string }) => error.status === 409 && error.code === 'INTAKE_EVIDENCE_STALE'
     && error.message === 'The link manifest hash does not match the decisions sent.');
+  assert.equal(stored(seen), undefined);
+});
+
+test('a stale reading names the stored file with no extra per-item query or confirmation write', async () => {
+  const seen = install([]);
+  await assert.rejects(confirmIntakeEvidence(caseId, { ...body,
+    included: [{ ...body.included[0], resultSha256: fingerprint('test_only:older-reading') }] }),
+  { message: 'The file "register.csv" has a different reading under this profile. '
+    + 'Confirm the current evidence again, then try the stopped building again.' });
+  assert.equal(seen.filter(statement => statement.sql.includes('FROM usp_intake_evidence_coverage')).length, 1);
   assert.equal(stored(seen), undefined);
 });
 

@@ -6,7 +6,22 @@ export function gisQuarantine(disposition:GisGeometryDisposition|undefined,sourc
   if(!value.rejected)return undefined;
   const first=value.rejections[0];
   return GisQuarantineSchema.parse({...value,version:'gis-quarantine/1',sourceSha256,sourceId,sourceRevision,complete:false,
-    message:`${value.accepted} of ${value.total} source features accepted; ${value.rejected} skipped. ${first.code}: ${first.reason}. Original retained unchanged; no geometry repaired.`});
+    message:`${value.accepted} of ${value.total} source features accepted; ${value.rejected} skipped `
+      + `(first reason: ${rejectionWords(first.reason)}); `
+      + 'the original is kept unchanged and no geometry was repaired.'});
+}
+
+function rejectionWords(reason: string): string {
+  const words = reason
+    .replace(/Ring Self-intersection/gi, 'an outline ring crosses itself')
+    .replace(/Self-intersection/gi, 'an outline crosses itself')
+    .replace(/Polygon or MultiPolygon geometry/g, 'an outline or a group of outlines')
+    .replace(/Polygon rings/g, 'outline rings')
+    .replace(/Line geometry/g, 'the line')
+    .replace(/\[([^\]]+)\]/g, ' at coordinates $1')
+    .replace(/[.!]+\s*$/, '')
+    .replace(/\. /g, '; ');
+  return words.charAt(0).toLowerCase() + words.slice(1);
 }
 
 /** Counts the normalizer's geometry kind rejections by each feature's GeoJSON kind. A feature without one
