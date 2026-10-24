@@ -6,7 +6,7 @@ import test from 'node:test';
 import { zipSync, strToU8 } from 'fflate';
 import type { PoolClient } from 'pg';
 import type { MappingTarget } from '@ulpin/contracts';
-import { INTAKE_FORMAT_NAMES, IntakeReadingSchema, ChunkMappingPayloadSchema,
+import { CITYGML_LIMITS, INTAKE_FORMAT_NAMES, IntakeReadingSchema, ChunkMappingPayloadSchema,
   DXFResultSchema, IFCSummarySchema, type DocumentResult, type MappingPlan, type MappingReceipt }
   from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
@@ -356,7 +356,15 @@ for (const [, saved, original, summarise] of savedReadings) {
       const raw = readFileSync(nativeRoot + saved), value = JSON.parse(raw.toString());
       const pins = { sourceSha256: value.sourceSha256 ?? value.source.sha256,
         sourceBytes: value.sourceBytes ?? value.source.bytes, sceneIndex: null, readerSha256: '0'.repeat(64) };
-      const summary = summarise(raw, pins as never);
+      // Reuse the saved inventory unchanged apart from this test's current lane bounds.
+      if (value.schemaVersion === 'ulpin-native-citygml/1') {
+        Object.assign(value.limits, {
+          input_bytes: CITYGML_LIMITS.originalBytes, output_bytes: CITYGML_LIMITS.artifactBytes,
+          elements: CITYGML_LIMITS.elements, coordinate_values: CITYGML_LIMITS.coordinateValues,
+        });
+      }
+      const profileBytes = value.schemaVersion === 'ulpin-native-citygml/1' ? Buffer.from(JSON.stringify(value)) : raw;
+      const summary = summarise(profileBytes, pins as never);
       const bytes = readFileSync(nativeRoot + original), card = await probe(bytes, basename(original));
       const facts = { native: summary }, before = structuredClone(facts);
       const reading = IntakeReadingSchema.parse(readingOf({}, card, facts));

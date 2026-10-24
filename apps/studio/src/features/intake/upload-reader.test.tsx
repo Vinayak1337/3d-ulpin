@@ -113,7 +113,7 @@ it('forecasts only what the name and size settle: points, JSON, CityJSON, DXF, g
   expect(words('mesh.obj', OBJ_LIMITS.originalBytes + 1))
     .toBe('Will be kept, not read: larger than the 16 MiB OBJ reader');
   expect(words('city.gml')).toBe('Read by the CityGML reader when its bytes show a CityGML city model '
-    + `(within 32 MiB). Other GML is kept, not read. ${outlines}`);
+    + `(within 33 MiB). Other GML is kept, not read. ${outlines}`);
   for (const name of ['scan.laz', 'city.json', 'city.cityjson', 'plan.dxf', 'model.glb', 'model.gltf', 'mesh.obj',
     'city.gml']) {
     expect(words(name)).not.toContain('Kind not known');

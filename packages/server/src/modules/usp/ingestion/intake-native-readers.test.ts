@@ -225,12 +225,20 @@ function cityjsonSummary(raw: Buffer): CityJSONResult['summary'] {
   });
 }
 
+function citygmlReading(path: string): Buffer {
+  const value = JSON.parse(readFileSync(path).toString('utf8'));
+  // Saved inventory literals are unchanged; only this test's lane bounds follow the current profile.
+  Object.assign(value.limits, { input_bytes: CITYGML_LIMITS.originalBytes, output_bytes: CITYGML_LIMITS.artifactBytes,
+    elements: CITYGML_LIMITS.elements, coordinate_values: CITYGML_LIMITS.coordinateValues });
+  return Buffer.from(JSON.stringify(value));
+}
+
 function acceptedEnd(format: Format, fixture: BatchProtocol, jobId: string): IntakeNativeReaderEnd {
   const input = fixture.jobs.get(jobId).payload;
   if (format === 'dxf') return { format, summary: dxfSummary(
     readFileSync(`${dxfRoot}/runs/declared-final/drawing.json`), input) };
   if (format === 'citygml') return { format, summary: citygmlSummary(
-    readFileSync(`${gmlRoot}/run-02-lod2/projection.json`), input) };
+    citygmlReading(`${gmlRoot}/run-02-lod2/projection.json`), input) };
   if (format === 'glb' || format === 'gltf') {
     return { format: 'gltf', summary: gltfSummary(readFileSync(inputs[format].reading), input) };
   }
@@ -391,11 +399,50 @@ for (const format of ['cityjson', 'citygml'] as const) {
   });
 }
 
+test('oversized CityGML inventory is refused before JSON decoding', () => {
+  assert.equal(CITYGML_LIMITS.artifactBytes, 16 * 1024**2);
+  assert.throws(() => citygmlSummary(Buffer.alloc(CITYGML_LIMITS.artifactBytes + 1), {} as never),
+    { status: 413, code: 'CITYGML_OUTPUT_LIMIT' });
+});
+
+test('only failed CityGML inventory overflow queues a separate outline conversion', {
+  skip: !existsSync(inputs.citygml.path),
+}, async () => {
+  for (const [status, code, converts] of [
+    ['failed', 'CITYGML_OUTPUT_LIMIT', true],
+    ['failed', 'CITYGML_PROCESSING_FAILED', false],
+    ['failed', 'CITYGML_STRUCTURE_LIMIT', false],
+  ] as const) {
+    const fixture = await batch('citygml'), { client, source, item, jobs } = fixture;
+    const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+    globals.ulpinPool = { connect: async () => client, query: client.query } as unknown as Pool;
+    await failCityGMLJob(jobId, source.case_id, code);
+    assert.equal(jobs.get(jobId).status, status);
+    assert.equal(jobs.get(jobId).error, code);
+    assert.equal(outlinesConverted({ format: 'citygml', status, code }), converts);
+    const conversions = [...jobs.values()].filter(job => job.operation === 'intake-native-derivative');
+    assert.equal(conversions.length, converts ? 1 : 0);
+    if (converts) {
+      assert.equal(conversions[0].payload.sourceSha256, source.sha256);
+      assert.equal(item.plan_ref.nativeReaderJobId, jobId);
+      await settleIntakeNativeReaderTx(client, source.case_id, jobId, { format: 'citygml', status, code });
+      assert.equal(jobs.size, 2);
+    } else {
+      assert.deepEqual([item.state, item.placement], ['read', 'not_understood']);
+      assert.ok(item.limit_reason.includes(code));
+    }
+  }
+  assert.equal(outlinesConverted({ format: 'citygml', status: 'stale', code: 'CITYGML_OUTPUT_LIMIT' }), false);
+  for (const format of ['dxf', 'cityjson', 'gltf', 'obj'] as const) {
+    assert.equal(outlinesConverted({ format, status: 'failed', code: 'CITYGML_OUTPUT_LIMIT' }), false);
+  }
+});
+
 test('a partial CityGML summary stays partial and never invents a surface count or CRS', {
   skip: !existsSync(`${gmlRoot}/run-02-local/projection.json`),
 }, () => {
   const raw = readFileSync(`${gmlRoot}/originals/Building_LOD1-LocalEngineeringCRS.gml`);
-  const summary = citygmlSummary(readFileSync(`${gmlRoot}/run-02-local/projection.json`),
+  const summary = citygmlSummary(citygmlReading(`${gmlRoot}/run-02-local/projection.json`),
     { sourceSha256: sha256(raw), sourceBytes: raw.length } as any);
   assert.equal(summary.status, 'partial');
   const words = intakeNativeReadWords(summary);

@@ -46,7 +46,7 @@ class NativeCityGMLTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "only be reduced"):
             Limits(elements=DEFAULT_LIMITS.elements + 1)
 
-    def test_real_berlin_tile_fits_default_bounds(self):
+    def test_real_berlin_extracts_but_inventory_exceeds_artifact_bound(self):
         path = Path("E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/"
                     "LoD2_33_392_5820_1_BE.gml")
         if not path.is_file():
@@ -60,7 +60,11 @@ class NativeCityGMLTests(unittest.TestCase):
         self.assertEqual(1605, result["counts"]["buildingsAndParts"])
         self.assertEqual(732, sum(row["type"] == "Building" for row in result["buildings"]))
         self.assertEqual(363348, result["counts"]["decodedCoordinateValues"])
-        self.assertLessEqual(len(encode_result(result)), DEFAULT_LIMITS.output_bytes)
+        self.assertEqual(16 * 1024**2, DEFAULT_LIMITS.output_bytes)
+        with self.assertRaises(CityGMLError) as raised:
+            encode_result(result)
+        self.assertEqual("OUTPUT_LIMIT", raised.exception.code)
+        self.assertEqual("limit", raised.exception.status)
         self.assertEqual(expected, hashlib.sha256(path.read_bytes()).hexdigest())
 
     def error(self, code, raw, limits=Limits()):

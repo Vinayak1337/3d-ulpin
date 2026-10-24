@@ -259,11 +259,14 @@ function stoppedWords(end: Extract<IntakeNativeReaderEnd, { status: string }>): 
 
 /**
  * CityJSON with a declared system and accepted CityGML readings take the ground-outline derivative job.
+ * CityGML inventory overflow also takes it: Python reads outlines directly from the unchanged original.
  * The CityGML summary has no system field: its converter checks each geometry's literal/envelope declaration.
  * Only placed outlines take the GeoJSON map path; the officer still confirms every card.
  */
 export function outlinesConverted(end: IntakeNativeReaderEnd): boolean {
-  if (!('summary' in end)) return false;
+  if (!('summary' in end)) {
+    return end.format === 'citygml' && end.status === 'failed' && end.code === 'CITYGML_OUTPUT_LIMIT';
+  }
   if (end.format === 'citygml') return true;
   return end.format === 'cityjson' && end.summary.referenceSystemState === 'declared';
 }
