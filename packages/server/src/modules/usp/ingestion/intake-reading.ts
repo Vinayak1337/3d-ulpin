@@ -181,16 +181,41 @@ function surfaceHolds(row: ReadingRow): Line[] | null {
   return words.map(words => line(words));
 }
 
-/** Match the native detail's summary labels and null words, without interpreting nested source values. */
+const summaryLabel = (path: string[]) => {
+  const words = path.join(' ').replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
+
+/** Label literals only: at most two nested key/index steps and eight scalar leaves per summary field. */
+function summaryValueHolds(key: string, value: unknown): Line[] {
+  const lines: Line[] = [];
+  let leaves = 0;
+  const visit = (value: unknown, path: string[], depth: number): boolean => {
+    if (depth > 2) return false;
+    if (value === null || typeof value !== 'object') {
+      if (++leaves > 8) return false;
+      lines.push(line(`${summaryLabel(path)}: ${value === null ? 'not stated' : String(value)}.`));
+      return true;
+    }
+    if (Array.isArray(value) && value.length && value.every(entry => typeof entry === 'number')) {
+      leaves += value.length;
+      if (leaves > 8) return false;
+      lines.push(line(`${summaryLabel(path)}: ${value.join(', ')}.`));
+      return true;
+    }
+    const entries = Array.isArray(value) ? value.map((entry, index) => [String(index + 1), entry] as const)
+      : Object.entries(value);
+    if (!entries.length || entries.length > 8) return false;
+    return entries.every(([name, entry]) => visit(entry, [...path, name], depth + 1));
+  };
+  if (!visit(value, [key], 0)) return [line(`${summaryLabel([key])}: stated; shown in the reader panel.`)];
+  return lines;
+}
+
+/** Plain summary labels and literals, without interpreting source values or displaying their JSON encoding. */
 function summaryHolds(summary: Record<string, unknown>): Line[] {
   return Object.entries(summary).filter(([key]) => /Count$|^(units|axes|crs|globalPlacement)$/.test(key))
-    .map(([key, value]) => {
-      const label = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
-      let words = String(value);
-      if (value === null) words = 'Not stated (stored as null)';
-      else if (typeof value === 'object') words = JSON.stringify(value);
-      return line(`${label.charAt(0).toUpperCase() + label.slice(1)}: ${words}.`);
-    });
+    .flatMap(([key, value]) => summaryValueHolds(key, value));
 }
 
 function storedHolds(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts): Line[] {
@@ -218,7 +243,7 @@ function storedHolds(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
     holds.push(line('Vertical reference: not stated in the stored reading.'));
     const scanned = documentScannedPages(pdf);
     const pages = new Set([...pdf.parts.flatMap(part => part.locator.page ?? []), ...scanned]);
-    holds.push(line(pages.size ? `${pages.size} ${pages.size === 1 ? 'page' : 'pages'} read `
+    holds.push(line(pages.size ? `${pages.size} ${pages.size === 1 ? 'page' : 'pages'} in the stored reading `
       + `(${pageWords([...pages].sort((a, b) => a - b))}).` : 'Pages: not stated in the stored reading.'));
     holds.push(line(scanned.length ? `${scanned.length} ${scanned.length === 1 ? 'page needs' : 'pages need'} OCR: `
       + `${pageWords(scanned)}.`

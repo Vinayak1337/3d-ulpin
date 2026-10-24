@@ -373,14 +373,49 @@ test('IFC structure counts and types come from the retained run; an unread struc
   assert.doesNotMatch(unread.holds.map(entry => entry.words).join(' '), /0 storeys|0 spaces/);
 });
 
+// Summary formatting protocol controls, not source facts; nested values exercise future stored summary shapes.
+const summaryControl = (extra: Record<string, unknown>): NonNullable<ReadingFacts['native']> => ({
+  schemaVersion: 'source-native-cityjson/1', status: 'supported', objectCount: 0,
+  supportedGeometryCount: 0, unsupportedGeometryCount: 0, referenceSystemState: 'absent', ...extra,
+} as unknown as NonNullable<ReadingFacts['native']>);
+
+test('native summary values have plain path labels, not JSON or null wording', () => {
+  const native = summaryControl({ axes: { horizontal: { direction: 'east', unit: null }, origin: [0, 0, 0] },
+    crs: null, globalPlacement: { origin: [0, 0, 0] } });
+  const before = structuredClone(native);
+  const words = readingOf({}, null, { native }).holds.map(entry => entry.words);
+  for (const expected of ['Axes horizontal direction: east.', 'Axes horizontal unit: not stated.',
+    'Axes origin: 0, 0, 0.', 'Crs: not stated.', 'Global placement origin: 0, 0, 0.']) {
+    assert.ok(words.includes(expected), expected);
+  }
+  for (const text of words) assert.doesNotMatch(text, /[{}\[\]"]|\bnull\b/i);
+  assert.deepEqual(native, before);
+});
+
+test('nested summary values stop at two key steps or eight scalar leaves without partial output', () => {
+  const axes = (value: unknown) => readingOf({}, null, { native: summaryControl({ axes: value }) })
+    .holds.map(entry => entry.words).filter(words => words.startsWith('Axes'));
+  assert.deepEqual(axes({ horizontal: { direction: 'east' } }), ['Axes horizontal direction: east.']);
+  assert.deepEqual(axes([{ direction: 'east' }, { direction: 'north' }]),
+    ['Axes 1 direction: east.', 'Axes 2 direction: north.']);
+  assert.deepEqual(axes({ origin: Array(8).fill(0) }), ['Axes origin: 0, 0, 0, 0, 0, 0, 0, 0.']);
+  const fallback = ['Axes: stated; shown in the reader panel.'];
+  assert.deepEqual(axes({ horizontal: { direction: { name: 'east' } } }), fallback);
+  assert.deepEqual(axes({ known: 'east', origin: Array(8).fill(0) }), fallback);
+  assert.deepEqual(axes(Array(9).fill(0)), fallback);
+  assert.deepEqual(axes(Object.fromEntries(Array.from({ length: 9 }, (_, index) => [index, 'east']))), fallback);
+  assert.deepEqual(axes({}), fallback);
+});
+
 test('PDF page and OCR lines use only stored page locators and native no-text warnings', () => {
-  // The Magnolia native reading's page structure, also used by intake-pdf-batch.test.ts.
-  const native = { format: 'pdf', status: 'extracted', warnings: [3, 4, 5, 6].map(page =>
+  // Two text pages and one scanned-page protocol control, using the stored Magnolia warning/locator shape.
+  const native = { format: 'pdf', status: 'extracted', warnings: [3].map(page =>
     `PDF page ${page} has no native text; image interpretation/OCR remains unresolved.`),
   parts: [1, 2].map(page => ({ locator: { page } })) } as DocumentResult['native'];
   const reading = readingOf({}, null, { document: native });
-  assert.ok(reading.holds.some(entry => /6 pages read/.test(entry.words)));
-  assert.ok(reading.holds.some(entry => /4 pages need OCR: pages 3–6/.test(entry.words)));
+  assert.ok(reading.holds.some(entry => entry.words === '3 pages in the stored reading (pages 1–3).'));
+  assert.ok(reading.holds.some(entry => entry.words === '1 page needs OCR: page 3.'));
+  assert.ok(reading.holds.every(entry => !/pages? read\b/.test(entry.words)));
   const empty = readingOf({}, null, { document: { ...native, parts: [], warnings: [], status: 'tool_error' } });
   assert.ok(empty.holds.every(entry => /not stated/.test(entry.words)));
   assert.doesNotMatch(empty.holds.map(entry => entry.words).join(' '), /0 pages/);
