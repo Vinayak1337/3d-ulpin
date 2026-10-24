@@ -91,9 +91,11 @@ export async function readRasterResult(input:RasterWindowInput,hash:string,bound
   const result=RasterWindowResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==rasterArtifactKey(input.jobId,result.artifact.sha256))
     throw new AppError(422,'RASTER_RESULT_SCOPE','The window receipt belongs to another original or job.');
-  const window=input.window??{x:0,y:0,width:Math.min(RASTER_WINDOW_LIMITS.windowSide,result.metadata.sourceWidth),
-    height:Math.min(RASTER_WINDOW_LIMITS.windowSide,result.metadata.sourceHeight)};
-  if(fingerprint(result.metadata.window)!==fingerprint(window))
+  const step=Math.ceil(Math.max(result.metadata.sourceWidth,result.metadata.sourceHeight)
+    /RASTER_WINDOW_LIMITS.windowSide);
+  const window=input.window?{...input.window,step:input.window.step??1}:{x:0,y:0,step,
+    width:Math.ceil(result.metadata.sourceWidth/step),height:Math.ceil(result.metadata.sourceHeight/step)};
+  if(fingerprint({...result.metadata.window,step:result.metadata.window.step??1})!==fingerprint(window))
     throw new AppError(422,'RASTER_RESULT_SCOPE','The receipt describes another pixel window.');
   rasterReadLive(bounds);
   return result;
@@ -137,7 +139,7 @@ export class RasterWindowService{
     const caseId=uuid.parse(caseValue),request=RasterRetainSchema.parse(raw),hash=sha256(file.bytes);
     if(!z.string().min(1).max(150).regex(/^[^\\/\u0000-\u001f]+$/).safeParse(file.name).success)
       throw new AppError(422,'RASTER_FILENAME','Use a bounded plain filename without path separators or control characters.');
-    if(!file.bytes.length||file.bytes.length>RASTER_WINDOW_LIMITS.originalBytes)
+    if(!file.bytes.length||file.bytes.length>RASTER_WINDOW_LIMITS.directRetainBytes)
       throw new AppError(413,'RASTER_ORIGINAL_SIZE','Retain a nonempty original of at most 16 MiB. No bytes were truncated.');
     if(!/^II\x2a\x00|^MM\x00\x2a|^II\x2b\x00|^MM\x00\x2b/.test(Buffer.from(file.bytes.subarray(0,4)).toString('latin1')))
       throw new AppError(415,'RASTER_FORMAT','Only TIFF magic bytes are admitted; the reader will check native GeoTIFF support.');

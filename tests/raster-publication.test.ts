@@ -1,3 +1,4 @@
+import '../packages/server/src/modules/usp/ingestion/intake-surface';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
@@ -31,7 +32,10 @@ function fixture(){
         upstreamBytes:upstream.bytes,upstreamRetained:false,parentSha256:null,limitations:manifest.limitations,note:'memory-only authority control'}}),
     source={id:old.sourceId,case_id:current.id,family_id:old.sourceId,revision:1,profile:'geotiff-raster-v1',sha256:old.sourceHash,
       bytes:old.sourceBytes,object_key:`sources/${old.sourceId}/${old.sourceHash}`,inspection:{rasterOriginal:marker}},
-    input=rasterInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId:null})},old.first.jobId,null),digest=fingerprint(input),
+    // Pin the historical crop explicitly: null now means the whole-extent overview.
+    input=rasterInput({current,source,binding,latest:true,
+      context:fingerprint({frame:null,context:null,siteId:null})},old.first.jobId,old.first.result.metadata.window),
+    digest=fingerprint(input),
     job:any={id:input.jobId,case_id:input.caseId,source_id:input.sourceId,case_revision:input.caseRevision,operation:'raster-window',
       payload:input,input_fingerprint:digest,status:'queued',error:null,attempts:0},
     meta:any={input_manifest_id:source.id,input_sha256:digest,scope:{kind:'intake',workspaceId:current.id,version:2},
@@ -76,7 +80,8 @@ function fixture(){
   };
   const client=Object.assign(new EventEmitter(),{query,release:()=>{active=false;}}),pool={connect:async()=>client,query};
   const request:typeof fetch=async(_url,options)=>{assert(!active);nativeCalls++;io.push('native');assert(options!.signal);deadlines.push(Date.now());
-    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,sha256:input.sourceSha256,bytes:input.sourceBytes,window:null});
+    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,
+      sha256:input.sourceSha256,bytes:input.sourceBytes,window:input.window});
     if(mode==='oversize')return new Response(new ReadableStream({cancel(){bodyCancelled=true;}}),{headers:{'content-length':String(RASTER_NATIVE_REPLY_BYTES+1)}});
     if(mode==='cancel'||mode==='timeout'){if(mode==='cancel')setTimeout(()=>controller.abort(),10);return new Response(new ReadableStream({
       start(c){c.enqueue(Buffer.from('{"metadata":'));},cancel(){bodyCancelled=true;}}));}
@@ -115,7 +120,8 @@ test('controlled native reply and immutable replay publish through canonical fen
   f.setMode('replay');await run(f);assert.equal(f.job.status,'succeeded');assert.equal(f.meta.logical_state,'succeeded');assert.equal(f.meta.accepted_fence,1);
   assert.equal(f.attempts[0].state,'accepted');const bytes=f.objects.get(rasterResultKey(f.input.jobId,f.meta.result_ref.sha256))!,result=RasterWindowResultSchema.parse(JSON.parse(bytes.toString('utf8')));
   assert.equal(f.meta.result_ref.sha256,sha256(bytes));assert.equal(f.attempts[0].completion_sha256,sha256(bytes));
-  assert.deepEqual(result.metadata,f.old.first.result.metadata);assert.equal(result.input.window,null);assert.deepEqual(result.input,f.input);
+  assert.deepEqual(result.metadata,f.old.first.result.metadata);
+  assert.deepEqual(result.input.window,f.old.first.result.metadata.window);assert.deepEqual(result.input,f.input);
   assert.deepEqual(f.objects.get(result.artifact.key),f.technical);assert.equal(result.artifact.sha256,sha256(f.technical));
   assert(f.events.some(e=>e.type==='job.succeeded'));assert(f.events.some(e=>e.change?.status==='completed'));
   assert.equal(f.stats().replayReads,4);assert(f.streams.every(s=>s.destroyed));assert.equal(new Set(f.deadlines.filter(n=>n>Date.now()+1000)).size,1);
