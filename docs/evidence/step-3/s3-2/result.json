@@ -1,0 +1,55 @@
+{
+  "task": "S3.2",
+  "planStep": 3,
+  "base": "af28288d77653a57038d6c79f994409a91c2b38c",
+  "result": "Local in-process holds fit both machine memory and Node heap less a 1024 MiB reserve.",
+  "decisions": [
+    "Machine budget, operation rows, lane caps, scratch and runtimes are unchanged.",
+    "Only owned in-process holds count against heap; processor and elsewhere holds count against machine memory.",
+    "A lone in-process job may exceed heap budget; the optional final admit argument defaults to Infinity.",
+    "Preserved the import substring used by the existing latency replay's scratch-budget stub."
+  ],
+  "acceptance": {
+    "heapLimitMiB": 4288, "reserveMiB": 1024, "heapBudgetMiB": 3264,
+    "heldInProcessMiB": 3200, "next128MiBJob": "refused", "inspectAndBuild": "admitted",
+    "newTests": 7, "oversizedAlone": "passed", "exactBoundaryAndElsewhereExclusion": "passed"
+  },
+  "inputs": {
+    "kind": "Synthetic reservation jobs and existing offline REH16 calibrated replay; no live ingestion.",
+    "goodMember": "nyc-footprints-2100.geojson (2100 features)",
+    "difficultBundle": "E:/BhuAayam-data/task-data/reh14/act2/zp1-geojson-kml-csv.zip",
+    "sha256": "cc05cb9a17aa55a016b93f7b40056ab2f9908405185c8a2242600d9753478abf",
+    "qualification": "Bundle metadata from the existing replay, not a new acquisition or runtime measurement."
+  },
+  "lq1Replay": {
+    "before": { "memberFirstDispatchMs": 164810, "memberLayoutMs": 402112 },
+    "after": { "memberFirstDispatchMs": 0, "memberLayoutMs": 6983, "allLayoutsMs": 48041 },
+    "peakMemoryMiB": 938, "peakVector": 2, "dispatches": 28
+  },
+  "checkCounts": "Test counts are [exit, passed, failed, skipped]; typecheck counts are checked packages.",
+  "checks": [
+    { "command": "Task TESTS tsx command", "before": [0, 39, 0, 4], "afterWithHeapTest": [0, 46, 0, 4] },
+    { "command": "pnpm typecheck:backend", "before": [0, 2], "after": [0, 2] },
+    { "command": "pnpm studio:typecheck", "before": [0, 4], "after": [0, 4] },
+    { "command": "pnpm studio:test", "before": [0, 769, 0, 3], "after": [1, 767, 2, 3] },
+    { "command": "WORKING-RULES section 5 server command", "before": [0, 874, 0, 5], "after": [0, 874, 0, 5] },
+    { "command": "openapi.ts --check", "beforeExit": 0, "afterExit": 1, "operations": 332, "schemas": 376 },
+    { "command": "python scripts/api/check.py", "beforeExit": 0, "afterExit": 1 },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0 }
+  ],
+  "boundedComparison": {
+    "hypothesis": "UI timing failures may be sensitive to simultaneous backend check load.",
+    "baseline": "Post-change studio:test: scene incremental assertion and upload progress assertion failed.",
+    "comparison": "One studio:test run without simultaneous backend checks; require zero failures; stop after one.",
+    "result": [1, 765, 4, 3],
+    "failures": "Four 5000 ms timeouts: local contract register, two upload cases, and surface parts.",
+    "conclusion": "Removing this task's concurrent backend checks did not make the UI suite green; no more retries."
+  },
+  "expectedPins": [
+    "packages/server/src/modules/cases/dispatch-lanes.ts",
+    "packages/server/src/modules/cases/processing.ts"
+  ],
+  "pinDiagnostics": "OpenAPI: source-pins.json stale. check.py stops at dispatch-lanes.ts producer changed.",
+  "logs": "E:/ulpin-tmp/s3-2-{before,after}-*.log; UI comparison: s3-2-after-studio-test-isolated.log",
+  "next": "Lead regenerates pins on integration, investigates UI test timing, and qualifies heap protection live."
+}

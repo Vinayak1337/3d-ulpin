@@ -40,7 +40,7 @@ import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
 import type {runPacketPdfJob} from '../usp/packets/pdf-worker';
 import {DispatchReservations,dispatchInProcessOperations,dispatchLaneParameters,dispatchMemoryBudgetMiB,
-  dispatchScratchBudgetMiB,type DispatchJob} from './dispatch-lanes';
+  dispatchHeapBudgetMiB,dispatchScratchBudgetMiB,type DispatchJob} from './dispatch-lanes';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
 let streamingVectorWorker:Promise<void>|undefined;
@@ -366,7 +366,7 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
   const budget=dispatchMemoryBudgetMiB(settings.dispatchMemoryMib),scratch=await dispatchScratchBudgetMiB();
   const now=Date.now();
   const admit=(job:QueryResultRow)=>reservations.admit({id:job.id,operation:job.operation,created_at:job.created_at,
-    payload:job.payload},budget,elsewhere,now,scratch);
+    payload:job.payload},budget,elsewhere,now,scratch,dispatchHeapBudgetMiB());
   // SB1 keeps its reader caps and one pass at a time, but never delays unrelated selected jobs.
   admitSurfaces();
   await Promise.all(
