@@ -11,6 +11,7 @@ import type { ImportPackage } from '@ulpin/contracts';
 import { appendIntakeItemTx } from './events';
 import { intakeNameWords, cellDerivativeWords } from './intake-text';
 import { INTAKE_WIDE_GEOJSON_REASON } from './intake-package-extent';
+import { readingOf } from './intake-reading';
 
 /** Metadata registration only. It adds/changes no source and deliberately does not advance case revision. */
 export async function registerIntakeItemTx(client: PoolClient, source: IntakeSourceRow) {
@@ -130,6 +131,7 @@ export function intakeItem(row: any) {
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
     memberPath: row.member_path, name: row.name ?? row.member_path, family: row.family, format: row.format,
+    what: readingOf(row, row.card ?? null).what.words,
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes), sizeClass: row.size_class,
     wave: row.wave, state: row.state,
     placement: row.placement, card: row.card, cardSha256: row.card_sha256, probeVersion: row.probe_version,

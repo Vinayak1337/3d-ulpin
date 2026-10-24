@@ -205,7 +205,7 @@ export type IntakeCellBatch = z.infer<typeof IntakeCellBatchSchema>;
 export const IntakeItemSchema = z.strictObject({
   itemId: z.string().uuid(), sourceId: z.string().uuid().nullable(), caseId: z.string().uuid(),
   parentItemId: z.string().uuid().nullable(), memberPath: text.nullable(), name: text,
-  family: IntakeFamilySchema, format: z.string().max(64).nullable(),
+  family: IntakeFamilySchema, format: z.string().max(64).nullable(), what: text.optional(),
   sizeBytes: z.number().int().nonnegative().nullable(),
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
   placement: IntakePlacementSchema, card: IntakeCardSchema.nullable(), cardSha256: hash.nullable(),
@@ -246,6 +246,18 @@ export const IntakeItemSchema = z.strictObject({
     + 'that batch or it is unavailable. Absent for every other item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
+const readingLine = z.strictObject({ words: z.string().min(1).max(2000),
+  basis: z.enum(['reader', 'memory', 'rule', 'sarvam', 'officer']) });
+export const IntakeReadingSchema = z.strictObject({
+  version: z.literal('intake-reading/1'),
+  what: readingLine,
+  holds: z.array(readingLine),
+  fields: z.array(readingLine.extend({ field: text })),
+  drawing: readingLine.extend({ as: z.string().min(1).max(64) }),
+  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']) })),
+  question: z.string().min(1).max(2000).nullable(),
+});
+export type IntakeReading = z.infer<typeof IntakeReadingSchema>;
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });
 
 /**

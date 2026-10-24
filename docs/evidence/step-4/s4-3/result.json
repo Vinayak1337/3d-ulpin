@@ -1,0 +1,46 @@
+{
+  "task": "S4.3",
+  "planStep": 4,
+  "base": "e1e0af4f",
+  "result": "Stored-fact reading contract, pure assembler, item summary and source-authorised route implemented.",
+  "inputs": [
+    "fixtures/real-nyc/original.geojson",
+    "fixtures/real-area/original.geojson",
+    "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+    "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx",
+    "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-ortho-2018.tif",
+    "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-lidar-2017.laz"
+  ],
+  "decisions": [
+    "Lines use words and basis; fields reserve field names, links reserve target itemId and by key/address/place.",
+    "Only row/card facts are used; fields and links remain empty. Unknown counts are omitted; known zero is kept.",
+    "Drawing is conditional on placement/layout; existing kept/archive/surface rules supply reasons and limits."
+  ],
+  "testRunner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+  "testEnvironment": "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false",
+  "countOrder": ["exit", "passed", "failed", "skipped"],
+  "checks": {
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
+    "pnpm studio:test": { "before": [1, 762, 2, 3], "after": [0, 764, 0, 3] },
+    "WORKING-RULES section 5 ingestion/invariant suite": { "before": [0, 874, 0, 5], "after": [0, 883, 0, 5] },
+    "task TESTS plus intake-reading.test.ts": { "before": [0, 80, 0, 0], "after": [1, 89, 1, 0] },
+    "task TESTS excluding stale intake-api.test.ts, plus intake-reading.test.ts": { "final": [0, 89, 0, 0] },
+    "intake-reading.test.ts acceptance subset": { "after": [0, 9, 0, 0], "dataDriveSurfacesPassed": 2 },
+    "openapi.ts --check": { "before": 0, "after": 1, "reason": "New reading route is not in operation-manifest.json" },
+    "python scripts/api/check.py": { "before": 0, "after": 1, "reason": "Producer pins deliberately unchanged" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "notes": "Baseline Studio upload tests failed under contention; isolated after-run passed. No UI changes.",
+  "staleProducers": [
+    "apps/api/src/modules/ingestion/ingestion.controller.ts",
+    "packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts",
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts"
+  ],
+  "next": "Add reading GET to ingestion/operation-manifest.json, then regenerate catalogue, client types and pins.",
+  "scope": "No generated files, runtime, original bytes or registry records changed; no external calls.",
+  "logs": "E:/ulpin-tmp/s4-3-{before,after,final}-*.log"
+}

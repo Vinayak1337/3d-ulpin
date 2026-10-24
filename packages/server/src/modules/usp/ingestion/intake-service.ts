@@ -23,6 +23,7 @@ import { planImage, planModel, queueIntakePlanTx } from './intake-plan';
 import { planOcrPagesTx } from './intake-plan-processor';
 import { queueLateIntakeEvidenceTx } from './intake-evidence';
 import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
+import { readingOf } from './intake-reading';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -226,6 +227,17 @@ export class IntakeService {
       const { row } = await itemContextTx(client, caseId, itemId);
       assertIngestionBinding(scope.binding);
       return intakeItem((await withCellBatchesTx(client, [row]))[0]);
+    });
+  }
+
+  async reading(caseValue: string, itemValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    return this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId);
+      const { row } = await itemContextTx(client, caseId, itemId);
+      assertIngestionBinding(scope.binding);
+      return readingOf(row, row.card ?? null);
     });
   }
 

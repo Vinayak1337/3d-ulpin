@@ -11,7 +11,7 @@ import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-servic
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
   IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema,
   IntakeLayerCrsSchema, IntakeTablePlacementSchema, IntakePlanOfferSchema, IntakePlanRequestSchema,
-  IntakePlanReceiptSchema, IntakeNativeOmissionsSchema } from '@ulpin/contracts/usp';
+  IntakePlanReceiptSchema, IntakeNativeOmissionsSchema, IntakeReadingSchema } from '@ulpin/contracts/usp';
 import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
   IntakeSurfaceDisplaySchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
@@ -79,6 +79,15 @@ export class IngestionController {
     summary:'Read one holdings card under its original source authority'})
   @wireResponse(200,IntakeItemSchema)
   intakeItem(@Param('caseId') caseId:string,@Param('itemId') itemId:string){return this.intake.one(caseId,itemId);}
+
+  @Get('cases/:caseId/intake/items/:itemId/reading')
+  @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_reading',
+    summary:'Read what a kept file is, holds and how it is drawn under its original source authority'})
+  @wireResponse(200,IntakeReadingSchema)
+  intakeReading(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
+    return this.intake.reading(caseId,itemId);
+  }
 
   @Get('cases/:caseId/intake/items/:itemId/parts')
   @param('caseId') @param('itemId') @ApiQuery({name:'after',required:false,schema:{type:'integer',minimum:-1}})
