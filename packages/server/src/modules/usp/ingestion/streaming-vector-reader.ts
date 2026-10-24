@@ -133,6 +133,7 @@ class Cursor {
         throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
       if(lines&&byte===10)break;
     }
+    if(!lines)while([32,9,13].includes(bytes.at(-1)??-1))bytes.pop();
     if(bytes.pop()!==10)
       throw new AppError(422,'GEOJSON_SEQUENCE','Every sequence line or record must end with LF.');
     if(bytes.at(-1)===13)bytes.pop();
@@ -321,7 +322,10 @@ export function streamedFeatureIssue(raw:Buffer):string|null{
   return parsed.issueCode??validateStreamingFeature(parsed.value);
 }
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
-  let issueCode=item.valueIssueCode??validateStreamingFeature(item.feature);
+  const featureIssue=validateStreamingFeature(item.feature);
+  let issueCode=item.valueIssueCode??featureIssue;
+  if(item.sourcePosition&&item.valueIssueCode!=='GEOJSON_JSON'&&featureIssue==='INVALID_FEATURE')
+    issueCode=featureIssue;
   if(item.sourcePosition&&issueCode==='GEOJSON_JSON')
     issueCode+=`: ${item.sourcePosition} is not valid JSON.`;
   if(item.sourcePosition&&issueCode==='INVALID_FEATURE')

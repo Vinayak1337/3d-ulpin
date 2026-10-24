@@ -1,48 +1,40 @@
 {
   "task": "S5.3",
   "planStep": 5,
-  "status": "blocked_checkpoint_not_ready_to_merge",
+  "status": "passed_code_checks_expected_stale_contract_and_pins",
   "branch": "task/s5-3-geojson-lines",
   "base": "cba6685f",
-  "blocker": {
-    "path": "packages/contracts/src/usp/ingestion.ts:104",
-    "reason": "StreamedMapOriginalReceiptSchema fixes framing to feature-collection. Sequence receipts throw; sequence previews cannot become sealed.",
-    "requiredChange": "Authorize this additional contract path and use StreamingVectorFramingSchema for receipt framing. No out-of-scope file was changed."
-  },
   "inputs": {
-    "good": "fixtures/google-uttam/00-all-google-detections.geojson: 91 test_only Open Buildings polygons; sequence rewrites are in memory only",
-    "difficult": "Same features with one bare-geometry line and one invalid-JSON line: exactly two quarantined, with Line 2 and Line 3 explanations",
-    "protocols": "Nonobjects, FeatureCollection records, malformed JSON, blank lines, CRLF, missing LF, oversized values and pretty-printed RS records"
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson: 91 test_only Open Buildings polygons; NDJSON LF, NDJSON CRLF and RS rewrites remain in memory",
+    "difficult": "Same features with a bare-geometry line and invalid JSON: exactly two quarantined, naming Line 2 and Line 3; remaining 91 accepted"
   },
-  "implemented": [
-    "Card-selected framing shared by intake routing, large reader startup and read preview",
-    "Bounded LF/RS sequence reader, physical line/record explanations, blank-line count, source ranges and hashes",
-    "Sequence publication and RFC 7946 receipt construction; contract currently prevents sealing"
+  "acceptance": [
+    "All three rewrites probe as ndjson or geojson-seq, family vector; route streamed_geojson; read 91 unchanged parsed Features; preserve exact byte ranges and whole-source hashes",
+    "All three seal with empty collectionMetadata and EPSG:4326; evidence says the sequence states no coordinate system and is read as RFC 7946 longitude and latitude",
+    "Every accepted real Feature span passes unchanged provePartFeature; isRetainedMapOriginal accepts its exact sealed receipt; original fixture bytes remain unchanged",
+    "Sequence previews use rfc7946_no_crs_read_yet while reading, then sealed; mismatched framing is refused",
+    "Both sequence framings publish before seal; SQL completion writes sealed receipts with stable rejection tallies",
+    "Blank lines are skipped and counted; invalid JSON, nonobjects, collections and bare geometries are numbered refusals; LF, value budgets, duplicate-key and number policies remain bounded"
   ],
   "decisions": [
-    "Numbered refusal words use the existing issueCode string field; sealed tallies retain the stable code before the colon",
-    "Sequences never supply collection metadata or guess a CRS from coordinates"
+    "Card format alone selects framing; no filename or unread-byte guess",
+    "Numbered refusal words use existing issueCode strings; receipt tallies retain the stable code before the colon",
+    "Sequence receipt construction refuses collection members and cannot take a caller's projected-reference override",
+    "Read-only review: retained-map-original.ts has no framing branch; proved-area-part.ts:44-46 constructs a temporary wrapper around one raw Feature, not an assumption about the original; both files unchanged",
+    "Authorized ingestion.ts change is receipt framing plus its import only; readerVersion, all other fields and every refine are unchanged"
   ],
   "checks": {
-    "targeted_TESTS_command": { "exit": 1, "tests": 170, "passed": 168, "failed": 2, "skipped": 0 },
-    "pnpm typecheck:backend": { "beforeExit": 0, "exit": 2, "errors": 3 },
+    "targeted_TESTS_command": { "beforeExit": 1, "beforePassed": 168, "beforeFailed": 2, "exit": 0, "passed": 173, "failed": 0 },
+    "pnpm typecheck:backend": { "beforeExit": 2, "beforeErrors": 3, "exit": 0 },
     "pnpm studio:typecheck": { "beforeExit": 0, "exit": 0 },
     "pnpm studio:test": { "beforeExit": 0, "exit": 0, "passed": 783, "skipped": 3, "files": 123 },
-    "WORKING-RULES_section_5_server_command": { "exit": 1, "tests": 969, "passed": 963, "failed": 2, "skipped": 4,
+    "WORKING-RULES_section_5_server_command": { "beforeExit": 1, "beforePassed": 963, "beforeFailed": 2, "exit": 0, "passed": 968, "failed": 0, "skipped": 4,
       "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
-    "openapi.ts --check": { "exit": 1, "expectedStale": "docs/api/openapi.json" },
-    "python scripts/api/check.py": { "exit": 1, "expectedStalePin": "packages/contracts/src/usp/streaming-vector.ts" },
-    "git diff --check": { "exit": 0 },
-    "logs": "E:/ulpin-tmp/s5-3-*.log",
-    "baselineCaveat": "Initial server and later checks overlapped edits: initial server 946 passed/10 failed/4 skipped is not a clean baseline. Initial backend and Studio checks completed before edits."
+    "openapi.ts --check": { "beforeExit": 1, "exit": 1, "expectedStale": "docs/api/openapi.json" },
+    "python scripts/api/check.py": { "beforeExit": 1, "exit": 1, "reportedStalePin": "packages/contracts/src/usp/ingestion.ts", "alsoChangedContract": "packages/contracts/src/usp/streaming-vector.ts" },
+    "git diff --check": { "beforeExit": 0, "exit": 0 },
+    "logs": "E:/ulpin-tmp/s5-3-resume-before-*.log and s5-3-resume-after-*.log; resume baseline completed before edits"
   },
-  "next": [
-    "Lead authorization for ingestion.ts receipt framing; resume sealing and preview acceptance checks",
-    "Fix checkpoint type errors: reader test source needs inspection:null; worker reference needs an explicit type",
-    "Finish diff cleanup and test indentation; enforce sequence reference against caller overrides and numbered non-Feature words when duplicate-key issues coexist",
-    "Split real-file acceptance cases so NDJSON sealing failure does not prevent RS and CRLF cases from running",
-    "Add focused sequence receipt SQL completion/startReaders coverage, then rerun checks",
-    "Separate UI step: apps/studio upload forecast words for .ndjson, .geojsonl and .geojsons; merger regenerates OpenAPI and pins"
-  ],
-  "safety": "No runtime, Docker, image, demo, provider or GPU action; no original, pin, generated contract or KEEP path changed"
+  "next": ["Separate Studio forecast wording for .ndjson, .geojsonl and .geojsons", "Lead regenerates OpenAPI and source pins; runtime proof is outside this code-only task"],
+  "safety": "No runtime, Docker, image, demo, external call or GPU action; originals, generated files, pins and KEEP paths unchanged"
 }

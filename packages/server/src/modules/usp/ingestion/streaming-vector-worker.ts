@@ -342,7 +342,7 @@ export async function runStreamingVectorJob(jobId:string){
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');
     if(!result.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
     await parts.flush();const nextIndex=parts.index;
-    let reference;
+    let reference:Awaited<ReturnType<typeof resolveStreamedReference>>|undefined;
     if(input.framing==='feature-collection')reference=await resolveStreamedReference(result.metadata);
     else if(input.framing!=='tabular')reference=streamedSequenceReference();
     await transaction(async client=>{

@@ -4,7 +4,8 @@ import { createRequire } from 'node:module';
 import type { PoolClient } from 'pg';
 import { S3Client } from '@aws-sdk/client-s3';
 import { readFileSync } from 'node:fs';
-import { IntakeReadPreviewPageSchema, STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
+import { IntakeReadPreviewPageSchema, STREAMING_VECTOR_LIMITS as limits,
+  type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { localOperatorSubject } from '../principal';
 import { AppError } from '../../../infrastructure/errors';
 import { sourceRecord } from './streaming-vector-reader';
@@ -23,7 +24,9 @@ const feature = (geometry = { type: 'Polygon',
   type: 'Feature', id: 'test_only-key', properties: { name: 'test_only-name' }, geometry,
 });
 
-function fixture(features = Array.from({ length: 500 }, () => feature()), framing = 'feature-collection') {
+function fixture(features = Array.from({ length: 500 }, () => feature()),
+  framing: StreamingVectorInput['framing'] = 'feature-collection') {
+  const formats = { 'feature-collection': 'geojson', 'geojson-lines': 'ndjson', 'geojson-seq-rs': 'geojson-seq' };
   const source = { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, bytes: 20_000_000,
     sha256: hash, profile: 'large-original-v1', object_key: 'original-must-not-be-read', name: 'test_only.geojson',
     status: 'received', inspection: { largeOriginal: { uploadId: sourceId, operatorSubject: localOperatorSubject(),
@@ -33,9 +36,7 @@ function fixture(features = Array.from({ length: 500 }, () => feature()), framin
         acquiredAt: '2026-10-25T00:00:00.000Z', permissionReference: 'test_only', limitations: [],
         state: 'caller_declared' } } } };
   const item = { item_id: itemId, source_id: sourceId, parent_item_id: null,
-    card: { family: 'vector', format: framing === 'feature-collection' ? 'geojson'
-      : framing === 'geojson-lines' ? 'ndjson' : 'geojson-seq',
-    crs: { state: 'stated', code: 'EPSG:4326' } } };
+    card: { family: 'vector', format: formats[framing], crs: { state: 'stated', code: 'EPSG:4326' } } };
   const state = { published: 3, running: true };
   const chunks: any[][] = [];
   let offset = 0, partBytes = 0;
@@ -127,7 +128,7 @@ test('five no-crs chunks preview on RFC 7946 before seal; paging returns accepte
 
 test('sequence previews use RFC 7946 while reading and seal only under the matching framing', async () => {
   const original = JSON.parse(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson', 'utf8'));
-  for (const framing of ['geojson-lines', 'geojson-seq-rs']) {
+  for (const framing of ['geojson-lines', 'geojson-seq-rs'] as const) {
     const f = fixture(original.features, framing);
     f.state.published = 1;
     f.item.card.crs = { state: 'unknown', code: null as any };

@@ -8,6 +8,9 @@ import { readStreamingFeatures, sourceRecord, type SourceFeature } from './strea
 import { resolveStreamedReference, sealedMapReceipt } from './streamed-map-receipt';
 import { intakeGeojsonFraming, intakeReaderRoute } from './intake-draft';
 import { probeOriginal } from './intake-probe';
+import { provePartFeature } from './proved-area-part';
+import { isRetainedMapOriginal } from './retained-map-original';
+import { measurableCrs } from './intake-package-extent';
 
 // test_only protocol literals: no survey or registry records.
 const features = [
@@ -79,17 +82,17 @@ const original = readFileSync('fixtures/google-uttam/00-all-google-detections.ge
 const realFeatures: unknown[] = JSON.parse(original.toString()).features;
 const realLines = realFeatures.map(value => JSON.stringify(value));
 
-test('the 91 test_only Open Buildings polygons probe, route, read and seal in either sequence framing', async () => {
-  for (const [format, framing, text] of [
-    ['ndjson', 'geojson-lines', realLines.join('\n') + '\n'],
-    ['geojson-seq', 'geojson-seq-rs', realLines.map(line => '\x1e' + line + '\n').join('')],
-    ['ndjson', 'geojson-lines', realLines.join('\r\n') + '\r\n'],
-  ] as const) {
+for (const [format, framing, ending, text] of [
+  ['ndjson', 'geojson-lines', 'LF', realLines.join('\n') + '\n'],
+  ['geojson-seq', 'geojson-seq-rs', 'LF', realLines.map(line => '\x1e' + line + '\n').join('')],
+  ['ndjson', 'geojson-lines', 'CRLF', realLines.join('\r\n') + '\r\n'],
+] as const) {
+  test(`91 test_only Open Buildings polygons probe, route, read, seal and prove as ${format} ${ending}`, async () => {
     const bytes = Buffer.from(text), hash = createHash('sha256').update(bytes).digest('hex');
     const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'wrong.bin');
     assert.equal(card.format, format);
     assert.equal(card.family, 'vector');
-    assert.equal(intakeReaderRoute(card, { bytes: bytes.length }), 'streamed_geojson');
+    assert.equal(intakeReaderRoute(card, { bytes: bytes.length, inspection: null }), 'streamed_geojson');
     assert.equal(intakeGeojsonFraming(card), framing);
     const result = await read(text, framing);
     assert.equal(result.closure.features, 91);
@@ -99,6 +102,8 @@ test('the 91 test_only Open Buildings polygons probe, route, read and seal in ei
     for (const item of result.items) {
       assert.equal(sourceRecord(item).disposition, 'accepted');
       assert.deepEqual(bytes.subarray(item.start, item.end), item.raw);
+      const proved = await provePartFeature(sourceRecord(item), item.raw, bytes.length);
+      assert.deepEqual(proved.feature, item.feature);
     }
     const receipt = sealedMapReceipt({ version: limits.version, sourceBytes: bytes.length, sourceSha256: hash,
       sourceId: '22222222-2222-4222-8222-222222222222', sourceRevision: 1,
@@ -106,11 +111,16 @@ test('the 91 test_only Open Buildings polygons probe, route, read and seal in ei
     [{ chunk_index: 0, first_feature_index: 0, last_feature_index: 90, records: 91,
       accepted: 91, quarantined: 0, published: true, result_sha256: hash }]);
     assert.equal(receipt.reference.sourceCrs, 'EPSG:4326');
-    assert.match(receipt.reference.evidence, /sequence has no collection members; RFC 7946 longitude\/latitude/);
+    assert.match(receipt.reference.evidence, /sequence states no coordinate system/);
+    assert.match(receipt.reference.evidence, /read as RFC 7946 longitude and latitude/);
     assert.deepEqual(receipt.collectionMetadata, {});
-  }
-  assert.deepEqual(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson'), original);
-});
+    assert.deepEqual(measurableCrs(receipt.collectionMetadata), { kind: 'degree' });
+    assert(isRetainedMapOriginal({ id: receipt.sourceId, revision: 1, bytes: bytes.length, sha256: hash,
+      profile: 'large-original-v1', inspection: { streamedMapReceipt: receipt,
+        largeOriginal: { verifiedSha256: hash, verifiedBytes: bytes.length } } }));
+    assert.deepEqual(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson'), original);
+  });
+}
 
 test('difficult NDJSON sets aside only its bare geometry and broken JSON, naming physical lines', async () => {
   const geometry = JSON.stringify((realFeatures[0] as { geometry: unknown }).geometry);
@@ -124,7 +134,8 @@ test('difficult NDJSON sets aside only its bare geometry and broken JSON, naming
 });
 
 test('sequence delimiters recover invalid JSON and every non-Feature without guessing collection members', async () => {
-  const invalid = ['{"type":"FeatureCollection","features":[]}', 'null', '42', '[]', '"text"', '{broken'];
+  const invalid = ['{"type":"FeatureCollection","features":[]}', 'null', '42', '[]', '"text"', '{broken',
+    '{"type":"FeatureCollection","type":"Point"}', '{"type":"Point","coordinates":[9007199254740993,0]}'];
   for (const framing of ['geojson-lines', 'geojson-seq-rs'] as const) {
     const units = [...invalid, realLines[0]];
     const text = units.map(unit => (framing === 'geojson-lines' ? '' : '\x1e') + unit + '\n').join('');
@@ -157,6 +168,8 @@ test('sequences retain the shared value bound and require their declared delimit
   await assert.rejects(read(realLines[0] + '\n', 'geojson-seq-rs'), { code: 'GEOJSON_CONTAINER' });
   const pretty = await read('\x1e' + JSON.stringify(realFeatures[0], null, 2) + '\n', 'geojson-seq-rs');
   assert.deepEqual(pretty.items[0].feature, realFeatures[0]);
+  const spaced = await read('\x1e' + realLines[0] + '\n \t\r\x1e' + realLines[1] + '\n \t', 'geojson-seq-rs');
+  assert.deepEqual(spaced.items.map(item => item.feature), realFeatures.slice(0, 2));
 });
 
 test('a closed root without FeatureCollection type refuses after staging its literal features', async () => {
