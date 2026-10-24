@@ -68587,9 +68587,33 @@
           "ok",
           "services",
           "serviceObservations",
-          "dataMode"
+          "dataMode",
+          "pool"
         ],
         "properties": {
+          "pool": {
+            "type": "object",
+            "nullable": true,
+            "required": [
+              "total",
+              "idle",
+              "waiting"
+            ],
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "idle": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "waiting": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
           "ok": {
             "type": "boolean"
           },

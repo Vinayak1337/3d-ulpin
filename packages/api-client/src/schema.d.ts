@@ -5433,6 +5433,11 @@ export interface components {
             imageEgress: "blocked";
         };
         GET_health_Response_200_application_json: {
+            pool: {
+                total: number;
+                idle: number;
+                waiting: number;
+            } | null;
             ok: boolean;
             /** @enum {string} */
             dataMode: "repository" | "linked";
