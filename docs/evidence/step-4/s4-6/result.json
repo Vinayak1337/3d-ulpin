@@ -1,0 +1,40 @@
+{
+  "task": "S4.6",
+  "plan_step": 4,
+  "base": "0ce6cad82e860d5f134d3cd6cf8f7cc0848b3c0c",
+  "branch": "task/s4-6-reading-fields",
+  "inputs_test_only": [
+    { "path": "fixtures/real-nyc/original.geojson",
+      "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda" },
+    { "path": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+      "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce" }
+  ],
+  "acceptance": [
+    "NYC bin and name use canonical rule labels; height_roof remains not known; footprint name suggests building.",
+    "Stored adaptive meanings retain candidate provenance; approved kind, key, name and stated height win.",
+    "LGD stored chunk-0 payload retains per-column provenance; derivative hash mismatch is refused.",
+    "Source revision mismatch cannot confirm fields; incomplete height metadata never supplies a unit.",
+    "Name suggestions mirror layout geometry acceptance; ambiguous name words abstain."
+  ],
+  "gateway_calls_on_read": 0,
+  "originals_unchanged": true,
+  "decisions": [
+    "Read the latest current-source import's first published chunk; never process original bytes on a read.",
+    "No student basis exists in the contract: retain Not known with explicit learner suggestion words until review.",
+    "GIS columns contain no samples; absent type and shape evidence remain unknown."
+  ],
+  "before": { "backend": 0, "studio_types": 0, "studio_tests": [0, 776, 3],
+    "server": [1, 901, 1, 4], "openapi": 1, "api_check": 1, "diff_check": 0,
+    "note": "Initial suite overlapped edits and hit its old empty-fields assertion; frozen base reading: 11/11 pass." },
+  "after": { "pnpm typecheck:backend": 0, "pnpm studio:typecheck": 0,
+    "pnpm studio:test": { "exit": 0, "passed": 776, "skipped": 3 },
+    "WORKING-RULES section 5 server command": { "exit": 0, "passed": 905, "skipped": 4 },
+    "task TESTS five-file command": { "exit": 0, "passed": 72, "skipped": 0 },
+    "openapi.ts --check": 1, "python scripts/api/check.py": 1, "git diff --check": 0 },
+  "expected_stale_producers": [
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s4-6-{before,after}-*.log; s4-6-frozen-base-reading.log",
+  "next": "Review and integrate; regenerate producer pins only at integration."
+}

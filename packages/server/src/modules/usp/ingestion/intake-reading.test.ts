@@ -4,11 +4,20 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import test from 'node:test';
 import { zipSync, strToU8 } from 'fflate';
-import { INTAKE_FORMAT_NAMES, IntakeReadingSchema } from '@ulpin/contracts/usp';
+import type { PoolClient } from 'pg';
+import { INTAKE_FORMAT_NAMES, IntakeReadingSchema, ChunkMappingPayloadSchema,
+  type MappingPlan, type MappingReceipt } from '@ulpin/contracts/usp';
+import { ModelGateway } from '../../model-gateway/gateway';
+import { inspectedProfile } from './registry';
+import { profileTabularChunk } from './chunk-mapping-agent';
+import { manualTeacherPlan } from './mapping-teacher';
+import { IntakeService } from './intake-service';
+import { ingestionBinding } from './events';
+import { profileColumnFile } from './column-profile';
 import { INTAKE_FORMAT_NAMES as browserFormatNames } from '@ulpin/contracts/upload-reader-limits';
 import { intakeItem } from './intake-ledger';
 import { probeOriginal } from './intake-probe';
-import { readingOf, type ReadingRow } from './intake-reading';
+import { readingOf, type ReadingFacts, type ReadingRow } from './intake-reading';
 
 const fixtures = [
   ['fixtures/real-nyc/original.geojson', 'GeoJSON map layer', 'features?'],
@@ -34,7 +43,11 @@ for (const [path, kind, count] of fixtures) test(`reading stored facts from ${pa
   assert.ok(reading.drawing.words.length);
   assert.doesNotMatch(`${reading.what.words} ${reading.drawing.words}`, /Not known/i);
   assert.equal(reading.what.basis, 'reader');
-  assert.deepEqual([reading.fields, reading.links], [[], []]);
+  assert.deepEqual(reading.links, []);
+  if (card.family === 'table') {
+    assert.equal(reading.fields.length, card.columns.length);
+    assert.ok(reading.fields.every(field => /Not known/.test(field.words)));
+  }
   for (const [noun, value] of Object.entries(card.counts)) {
     if (value !== null) {
       const words = `${value} ${value === 1 ? noun.slice(0, -1) : noun}`;
@@ -144,6 +157,164 @@ test('a ZIP describes members without claiming copies and a layer CRS question f
   assert.equal(readingOf({ plan_ref: { nativeLayers } }, card).question, null);
   const malformed = JSON.parse('{"plan_ref":{"nativeLayers":{"unstated":"unreadable"}}}');
   assert.equal(readingOf(malformed, card).question, null, 'an unknown stored projection does not break the reading');
+});
+
+test('NYC stored paths use rules, retain unstated height and never dispatch the gateway', async t => {
+  let calls = 0;
+  t.mock.method(ModelGateway.prototype, 'propose', async () => {
+    calls++;
+    throw new Error('No teacher on reads.');
+  });
+  const bytes = readFileSync(fixtures[0][0]);
+  const json = JSON.parse(bytes.toString());
+  const card = await probe(bytes, 'original.geojson');
+  const profile = inspectedProfile(bytes, { format: 'geojson', sourceSha256: digest(bytes),
+    featureCount: json.features.length, sourceCrs: 'OGC:CRS84', crsEvidence: json.crs.properties.name,
+    crsUnit: 'degree', geometryTypes: card.geometryTypes, fields: Object.keys(json.features[0].properties)
+      .map(name => ({ name })) } as Parameters<typeof inspectedProfile>[1]);
+  const row = { name: 'NYC footprints.geojson', placement: 'needs_answer' };
+  const facts: ReadingFacts = { profile };
+  const before = structuredClone(facts);
+  const reading = readingOf(row, card, facts);
+  const field = (name: string) => reading.fields.find(field => field.field === `/features/*/properties/${name}`)!;
+  assert.match(field('bin').words, /^Building source key\./);
+  assert.match(field('name').words, /^Building name\./);
+  assert.equal(field('bin').basis, 'rule');
+  assert.equal(field('name').basis, 'rule');
+  assert.match(field('height_roof').words, /^Not known\./);
+  assert.equal(reading.drawing.as, 'building');
+  assert.equal(reading.drawing.basis, 'rule');
+  assert.deepEqual(IntakeReadingSchema.parse(reading), reading);
+  assert.deepEqual(facts, before);
+  // Recipe pins and approval below are protocol controls; source meanings are those of this real file.
+  const id = '10000000-0000-4000-8000-000000000001', hash = digest(bytes);
+  const plan: MappingPlan = { version: 'manual-geojson/1', mode: 'manual_mapping', caseId: id,
+    workspaceRevision: 0, workspaceFingerprint: hash, kind: 'building', source: { sourceId: id,
+      familyId: id, sourceRevision: 1, sourceSha256: hash, schemaFingerprint: profile.schemaFingerprint },
+    operations: [{ sourcePath: '/features/*/properties/bin', target: 'feature.sourceKey',
+      conversionId: 'literal_identifier@1' }, { sourcePath: '/features/*/properties/name', target: 'feature.name',
+      conversionId: 'literal_text@1' }, { sourcePath: '/features/*/geometry', target: 'feature.geometry',
+      conversionId: 'geojson_geometry@1' }] };
+  const proposal = readingOf(row, card, { profile, proposal: { plan, origin: 'teacher' } });
+  assert.equal(proposal.fields.find(field => field.field.endsWith('/bin'))!.basis, 'sarvam');
+  assert.equal(proposal.drawing.basis, 'sarvam');
+  const recipe: MappingReceipt = { id, revision: 1, state: 'approved', plan, planHash: hash,
+    destination: { kind: 'new_area', name: 'Protocol control', namespace: 'Protocol control' },
+    authoredBy: 'protocol-control', authoredAt: new Date(0).toISOString(), execution: null,
+    approval: { subject: 'protocol-control', at: new Date(0).toISOString(), planHash: hash,
+      provenance: 'server_configured_local_operator' } };
+  const approved = readingOf(row, card, { profile, recipe, proposal: { plan, origin: 'teacher' } });
+  for (const name of ['bin', 'name']) {
+    assert.equal(approved.fields.find(field => field.field.endsWith(`/${name}`))!.basis, 'officer');
+  }
+  assert.equal(approved.drawing.basis, 'officer');
+  const height = readingOf(row, card, { profile, recipe: { ...recipe, plan: { ...plan,
+    heightField: 'height_roof', heightUnit: 'ft', heightMeaning: 'Protocol-only officer height decision' } } });
+  const heightField = height.fields.find(field => field.field.endsWith('/height_roof'))!;
+  assert.equal(heightField.basis, 'officer');
+  assert.match(heightField.words, /Source height in ft/);
+  assert.doesNotMatch(heightField.words, /metres/);
+  const incomplete = readingOf(row, card, { profile, recipe: { ...recipe,
+    plan: { ...plan, heightField: 'height_roof' } } });
+  assert.match(incomplete.fields.find(field => field.field.endsWith('/height_roof'))!.words, /^Not known\./);
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'reading-protocol-control';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  });
+  const binding = ingestionBinding(id);
+  let storedRecipe: unknown = recipe;
+  const client = { query: async (sql: string) => {
+    if (sql.includes('FROM cases')) return { rows: [{ id, archived: false }] };
+    if (sql.startsWith('SELECT i.*')) return { rows: [{ source_id: id, card, ...row }] };
+    if (sql.startsWith('SELECT s.inspection')) return { rows: [{ profile, recipe: storedRecipe,
+      proposal: { plan, origin: 'teacher' } }] };
+    if (sql.includes('FROM sources')) return { rows: [{ id, revision: 1, case_id: id,
+      profile: 'geojson-manual-v1', bytes: bytes.length, sha256: hash, object_key: 'protocol-control',
+      inspection: { actor: binding.subject } }] };
+    throw new Error(`Unexpected reading SQL: ${sql}`);
+  } } as unknown as PoolClient;
+  const service = new IntakeService({ transaction: async action => action(client),
+    read: async () => { throw new Error('Original byte reads are forbidden.'); },
+    object: async () => { throw new Error('No derivative is needed for map fields.'); } });
+  assert.equal((await service.reading(id, id)).fields.find(field => field.field.endsWith('/bin'))!.basis, 'officer');
+  storedRecipe = { ...recipe, plan: { ...plan, source: { ...plan.source, sourceRevision: 2 } } };
+  assert.equal((await service.reading(id, id)).fields.find(field => field.field.endsWith('/bin'))!.basis, 'sarvam');
+  assert.equal(calls, 0);
+});
+
+test('stored LGD first-chunk provenance is per column, not the plan-wide method', async t => {
+  const path = fixtures[2][0], { profile: source, rows } = profileColumnFile(path);
+  const headers = source.columns.map(column => column.name);
+  const { profile } = profileTabularChunk({ jobId: '10000000-0000-4000-8000-000000000001', chunkIndex: 0,
+    sourceRef: 'test_only:lgd-gurugram.csv', headers, rows: rows.map(row => headers.map(header => row[header])) });
+  const plan = manualTeacherPlan(profile, 'MAPPING_REVIEW_REQUIRED').plan;
+  // Provenance protocol control over real columns: no asserted meanings or values are fabricated.
+  const sources = ['memory', 'rule', 'student', 'teacher', 'officer', 'unanswered'] as const;
+  const mapping = { profile, plan, fieldSources: profile.columns.map((column, index) => ({
+    sourceField: column.name, source: sources[index % sources.length], method: 'protocol-control' })) };
+  const card = await probe(readFileSync(path), basename(path));
+  const reading = readingOf({}, card, { mapping });
+  assert.deepEqual(reading.fields.map(field => field.basis),
+    ['memory', 'rule', 'reader', 'sarvam', 'officer', 'reader', 'memory', 'rule']);
+  assert.deepEqual(reading.fields.map(field => field.field), profile.columns.map(column => column.name));
+  assert.ok(reading.fields.every(field => /^Not known\./.test(field.words)));
+  assert.deepEqual(IntakeReadingSchema.parse(reading), reading);
+  // Stored payload and receipt pins are protocol controls over the unchanged real file.
+  const id = '10000000-0000-4000-8000-000000000001', original = readFileSync(path), hash = digest(original);
+  const payload = ChunkMappingPayloadSchema.parse({ version: 'chunk-mapping/1', jobId: id, rawJobId: id,
+    sourceId: id, sourceRevision: 1, sourceSha256: hash, chunkIndex: 0, rawResultSha256: hash,
+    schemaFingerprint: profile.layoutFingerprint, recipeRevision: null, converterSha256: hash, records: [],
+    tabular: { selection: { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }, sourceBytes: original.length,
+      admission: { kind: 'case_original', origin: 'officer_supplied', issuer: null,
+        licence: 'unconfirmed', containsPersonalData: 'unknown' } },
+    mapping: { ...mapping, questions: [], sourceRows: [], rows: [], metrics: { kind: 'mapping.chunk', jobId: id,
+      chunkIndex: 0, layout: 'new', teacherCalls: 0, memoryHits: 0, studentFields: 0, teacherFields: 0,
+      needsInput: profile.columns.length, latencyMs: 0, learnerVersion: null } } });
+  const bytes = Buffer.from(JSON.stringify(payload));
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'reading-protocol-control';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  });
+  const binding = ingestionBinding(id);
+  let objectHash = digest(bytes), objects = 0;
+  const client = { query: async (sql: string) => {
+    if (sql.includes('FROM cases')) return { rows: [{ id, archived: false }] };
+    if (sql.startsWith('SELECT i.*')) return { rows: [{ source_id: id, card }] };
+    if (sql.startsWith('SELECT s.inspection')) return { rows: [{ object_key: 'protocol-proposal',
+      object_sha256: objectHash, bytes: bytes.length }] };
+    if (sql.includes('FROM sources')) return { rows: [{ id, revision: 1, case_id: id,
+      profile: 'tabular-manual-v1', bytes: original.length, sha256: hash, object_key: 'protocol-original',
+      inspection: { actor: binding.subject } }] };
+    throw new Error(`Unexpected reading SQL: ${sql}`);
+  } } as unknown as PoolClient;
+  const service = new IntakeService({ transaction: async action => action(client),
+    read: async () => { throw new Error('No original byte reads.'); }, object: async key => {
+      assert.equal(key, 'protocol-proposal');
+      objects++;
+      return bytes;
+    } });
+  assert.deepEqual((await service.reading(id, id)).fields, reading.fields);
+  assert.equal(objects, 1);
+  objectHash = '0'.repeat(64);
+  await assert.rejects(service.reading(id, id), { code: 'INTAKE_READING_INTEGRITY' });
+});
+
+test('kind name words obey the same geometry acceptance as the layout question', async () => {
+  const card = await probe(readFileSync(fixtures[0][0]), 'original.geojson');
+  for (const [name, kind] of [['building', 'building'], ['footprint', 'building'], ['parcel', 'parcel'],
+    ['plot', 'parcel'], ['road', 'road'], ['park', 'public_land']]) {
+    assert.equal(readingOf({ name }, card).drawing.as, kind);
+    assert.equal(readingOf({ name }, { ...card, geometryTypes: ['LineString'] }).drawing.as,
+      kind === 'road' ? 'road' : 'lines');
+    assert.equal(readingOf({ name }, { ...card, geometryTypes: [] }).drawing.as, 'features');
+    assert.equal(readingOf({ name }, { ...card, geometryTypes: ['Polygon', 'Point'] }).drawing.as, kind);
+  }
+  assert.equal(readingOf({ name: 'building parcels' }, card).drawing.as, 'outlines');
+  assert.equal(readingOf({ name: 'roadmap' }, card).drawing.as, 'outlines');
 });
 
 const pack = 'E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload';
