@@ -38,7 +38,7 @@ export const IntakeTableGeojsonInputSchema = z.strictObject({
   subject: z.string().min(1).max(256), accessSha256: hex64, sourceBytes: z.number().int().positive(),
   // The table read the officer chose columns from; `tabular` also tells the dispatcher a workbook's scratch.
   tabular: TabularPinSchema, headers: TabularSourceProfileSchema.shape.headers,
-  coordinates: Coordinates, crs: StatedCrs,
+  coordinates: Coordinates, crs: StatedCrs, decimalMark: IntakeTablePlacementSchema.shape.decimalMark,
 });
 export type IntakeTableGeojsonInput = z.infer<typeof IntakeTableGeojsonInputSchema>;
 
@@ -58,7 +58,8 @@ const READER_ISSUES: Readonly<Record<string, SkipReason>> = { OPEN_RING: 'open_r
   RING_BUDGET_OR_SHAPE: 'too_large', POLYGON_BUDGET_OR_SHAPE: 'too_large', GEOMETRY_BUDGET: 'too_large',
   GEOJSON_UNIT_BUDGET: 'too_large', UNREPRESENTABLE_NUMBER: 'inexact_number' };
 
-export type TablePlacementPlan = Pick<IntakeTableGeojsonInput, 'headers' | 'coordinates' | 'crs'> & {
+export type TablePlacementPlan = Pick<z.input<typeof IntakeTableGeojsonInputSchema>,
+  'headers' | 'coordinates' | 'crs' | 'decimalMark'> & {
   selection: IntakeTableGeojsonInput['tabular']['selection'];
   source: Pick<IntakeSourceRow, 'id' | 'revision' | 'sha256' | 'name' | 'bytes'>;
 };
@@ -83,7 +84,8 @@ function propertyNames(headers: string[]): string[] {
 }
 
 /** The row's geometry from the officer's columns, or why it is skipped; a skipped row is never placed at 0,0. */
-function rowGeometry(row: TableRow, unknown: Set<number>, coordinates: TableCoordinates)
+function rowGeometry(row: TableRow, unknown: Set<number>, coordinates: TableCoordinates,
+  decimalMark: IntakeTableGeojsonInput['decimalMark'])
   : TableGeometry | SkipReason {
   const columns = coordinates.kind === 'wkt' ? [coordinates.column] : [coordinates.x, coordinates.y];
   if (columns.some(column => unknown.has(column))) return 'formula';
@@ -94,7 +96,13 @@ function rowGeometry(row: TableRow, unknown: Set<number>, coordinates: TableCoor
     return geometry ?? 'not_wkt';
   }
   if (cells.some(cell => !cell)) return 'no_coordinates';
-  const [x, y] = cells.map(coordinateText);
+  const [x, y] = cells.map(cell => {
+    if (decimalMark === 'comma') {
+      if (cell.includes('.') || cell.indexOf(',') !== cell.lastIndexOf(',')) return null;
+      cell = cell.replace(',', '.');
+    }
+    return coordinateText(cell);
+  });
   return x === null || y === null ? 'not_a_number' : { type: 'Point', coordinates: [x, y] };
 }
 
@@ -126,6 +134,7 @@ function headersChanged(): never {
  */
 export async function writeTableGeojson(body: Readable, plan: TablePlacementPlan,
   write: (text: string) => Promise<void>, read = readTableWindows): Promise<TablePlacementCounts> {
+  checkDecimalMark(plan.coordinates, plan.decimalMark);
   const names = propertyNames(plan.headers);
   const counts: TablePlacementCounts = { rows: 0, features: 0, skipped: {} };
   await write(`{"type":"FeatureCollection","crs":{"type":"name","properties":{"name":${JSON.stringify(plan.crs)}}},`
@@ -139,7 +148,7 @@ export async function writeTableGeojson(body: Readable, plan: TablePlacementPlan
         counts.rows++;
         // As in the table read, a workbook cell the reader marked has no value.
         const unknown = 'marks' in row ? unavailableColumns(row) : new Set<number>();
-        const geometry = rowGeometry(row, unknown, plan.coordinates);
+        const geometry = rowGeometry(row, unknown, plan.coordinates, plan.decimalMark ?? 'point');
         const placed = typeof geometry === 'string' ? geometry
           : accepted(featureJson(row, unknown, geometry, names, plan));
         if (typeof placed === 'string') counts.skipped[placed] = (counts.skipped[placed] ?? 0) + 1;
@@ -209,6 +218,12 @@ function tableRead(source: IntakeSourceRow) {
   return read.data;
 }
 
+function checkDecimalMark(coordinates: TableCoordinates, decimalMark: TablePlacementPlan['decimalMark']) {
+  if (coordinates.kind === 'wkt' && decimalMark === 'comma') throw new AppError(422, 'TABLE_PLACEMENT_WKT_DECIMAL',
+    'Comma was stated as the decimal mark, but WKT text has its own number form: it uses a decimal point. '
+    + 'Choose point for a WKT column.');
+}
+
 function checkColumns(coordinates: TableCoordinates, headers: string[]) {
   const columns = coordinates.kind === 'wkt' ? [coordinates.column] : [coordinates.x, coordinates.y];
   if (columns.some(column => column >= headers.length)) throw new AppError(422, 'TABLE_PLACEMENT_COLUMN',
@@ -220,7 +235,8 @@ function checkColumns(coordinates: TableCoordinates, headers: string[]) {
  * checked a stated code with the geo service). No code is refused with a question; none waits while one runs.
  */
 export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSourceRow,
-  request: z.infer<typeof IntakeTablePlacementSchema>): Promise<string> {
+  request: z.input<typeof IntakeTablePlacementSchema>): Promise<string> {
+  checkDecimalMark(request.coordinates, request.decimalMark);
   if (!request.crs) unstated();
   const read = tableRead(source);
   checkColumns(request.coordinates, read.headers);
@@ -235,7 +251,8 @@ export async function queueTableGeojsonTx(client: PoolClient, source: IntakeSour
     caseId: source.case_id, caseRevision: scope.current.revision, itemId: item.item_id, sourceId: source.id,
     sourceRevision: source.revision, sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding),
     subject: scope.binding.subject, accessSha256: scope.binding.access, sourceBytes: Number(source.bytes),
-    tabular: read.tabular, headers: read.headers, coordinates: request.coordinates, crs: request.crs });
+    tabular: read.tabular, headers: read.headers, coordinates: request.coordinates, crs: request.crs,
+    decimalMark: request.decimalMark });
   const digest = fingerprint(input);
   await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
     VALUES($1,$2,$3,'intake-table-geojson',$4,$5,$6)`,
@@ -278,9 +295,12 @@ const plural = (value: number, one: string) => `${value.toLocaleString('en-US')}
  * says that, once its own reading has placed it. A refused enrolment is said first, never after success words.
  */
 export function tablePlacementWords(counts: TablePlacementCounts, kept: { name: string; crs: string } | null,
-  code: string | null = null): string {
-  const reasons = (Object.keys(SKIP_WORDS) as SkipReason[]).flatMap(reason => counts.skipped[reason]
-    ? [`${counts.skipped[reason]!.toLocaleString('en-US')} ${SKIP_WORDS[reason]}`] : []);
+  code: string | null = null, decimalMark: IntakeTableGeojsonInput['decimalMark'] = 'point'): string {
+  const words = { ...SKIP_WORDS, ...(decimalMark === 'comma' ? {
+    not_a_number: 'had text that is not a number with comma stated as the decimal mark (no points or grouping)',
+  } : {}) };
+  const reasons = (Object.keys(words) as SkipReason[]).flatMap(reason => counts.skipped[reason]
+    ? [`${counts.skipped[reason]!.toLocaleString('en-US')} ${words[reason]}`] : []);
   const skipped = counts.rows - counts.features;
   const skips = skipped ? `; ${plural(skipped, 'row')} skipped: ${reasons.join(', ')}` : '';
   const rows = plural(counts.features, 'row');
@@ -376,7 +396,7 @@ export async function placeTableRows(input: IntakeTableGeojsonInput,
   const source = await dependencies.transaction(client => pinnedTableTx(client, input));
   const selection = await pinnedReading(source, input.tabular.selection, dependencies.open);
   const plan: TablePlacementPlan = { source, selection, headers: input.headers, coordinates: input.coordinates,
-    crs: input.crs };
+    crs: input.crs, decimalMark: input.decimalMark };
   const first = await dependencies.open(source);
   const measured = await measure(first, plan, dependencies.read).finally(() => first.destroy());
   const name = derivativeName(source, input);
@@ -385,14 +405,15 @@ export async function placeTableRows(input: IntakeTableGeojsonInput,
     const lineage = TableDerivativeLineageSchema.parse({ version: 'table-derivative/1',
       conversion: TABLE_GEOJSON_CONVERSION, originalSourceId: source.id, originalSourceRevision: source.revision,
       originalSha256: source.sha256, originalItemId: input.itemId, format: plan.selection.format,
-      layer: plan.selection.sheet, coordinates: input.coordinates, crs: input.crs, crsSource: 'officer_stated',
+      layer: plan.selection.sheet, coordinates: input.coordinates, crs: input.crs, decimalMark: input.decimalMark,
+      crsSource: 'officer_stated',
       features: measured.features, notWritten: measured.rows - measured.features, skipped: measured.skipped,
       locator: TABLE_DERIVATIVE_LOCATOR });
     const file = { name, bytes: measured.bytes, sha256: measured.sha256 };
     kept = await keepTableDerivative(input, source, plan, file, lineage, dependencies);
     code = await enrol(input, kept, dependencies);
   }
-  const words = tablePlacementWords(measured, kept ? { name, crs: input.crs } : null, code);
+  const words = tablePlacementWords(measured, kept ? { name, crs: input.crs } : null, code, input.decimalMark);
   await dependencies.transaction(client => placedTx(client, input, words));
   return kept ? [kept] : [];
 }

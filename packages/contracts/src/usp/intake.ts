@@ -101,6 +101,8 @@ export const IntakeTablePlacementSchema = z.strictObject({
     z.strictObject({ kind: z.literal('wkt'), column: tableColumn }),
   ]),
   crs: IntakeLayerCrsSchema.shape.crs.nullable(),
+  decimalMark: z.enum(['point', 'comma']).default('point')
+    .describe('The coordinate cells\' decimal mark, stated by the officer, never detected. WKT uses point only.'),
 });
 export const IntakeLargeRetryResultSchema = z.strictObject({
   itemId: z.string().uuid(), jobId: z.string().uuid(),
@@ -140,6 +142,7 @@ export const TableDerivativeLineageSchema = z.strictObject({
   originalSourceId: z.string().uuid(), originalSourceRevision: z.number().int().positive(), originalSha256: hash,
   originalItemId: z.string().uuid(), format: z.enum(['csv', 'xlsx', 'ods']), layer: z.string().min(1).max(150),
   coordinates: IntakeTablePlacementSchema.shape.coordinates, crs: IntakeLayerCrsSchema.shape.crs,
+  decimalMark: IntakeTablePlacementSchema.shape.decimalMark.unwrap().optional(),
   crsSource: z.literal('officer_stated'), features: z.number().int().nonnegative(),
   notWritten: z.number().int().nonnegative(),
   skipped: z.partialRecord(z.enum(TABLE_PLACEMENT_SKIP_REASONS), z.number().int().positive()),

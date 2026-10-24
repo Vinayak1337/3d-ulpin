@@ -1,0 +1,35 @@
+{
+  "task": "S5.7", "planStep": 5, "base": "cba6685fc90ad5732e3bf0af1706cc6262f7b6c9",
+  "inputRoot": "E:/BhuAayam-data/task-data/reh14/act2/",
+  "inputs": [
+    { "file": "csv2-edmonton-heritage-semicolon-decimal-comma.csv", "bytes": 460,
+      "sha256": "a71375bde6c1dbe8431300c95e2c73412548b7a94bc0fca502c713bb2f0a64e4", "use": "test_only, difficult" },
+    { "file": "csv2-bengaluru-bus-stops-windows-1252.csv", "bytes": 540,
+      "sha256": "3640bd2e0a07899d7fcafe941a0486aa7376ceef16ac3b3b3af2e5632531771c", "use": "test_only, good" }
+  ],
+  "acceptance": {
+    "edmonton": "comma: 5 points accepted; point or omitted: 5 not_a_number, no derivative",
+    "provenance": "Exact normalized coordinate text, unchanged properties, original hashes and byte locators checked",
+    "receipt": "New receipts record decimalMark; legacy receipts remain without an invented stated mark",
+    "refusals": "1.234,5, repeated commas, grouping and points rejected in comma mode; WKT refused before queue/write",
+    "bengaluru": "6 points with mark omitted; source hash unchanged",
+    "decision": "Integers remain readable in comma mode; the existing exact-number and map-reader checks still apply"
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-7-{before,after}-*.log",
+    "targeted": { "exitBefore": 0, "exitAfter": 0, "passBefore": 46, "passAfter": 50, "skipped": 0 },
+    "pnpm typecheck:backend": { "exitBefore": 0, "exitAfter": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "exitBefore": 0, "exitAfter": 0, "projects": 4 },
+    "pnpm studio:test": { "exitBefore": 0, "exitAfter": 0, "pass": 783, "skipped": 3, "files": 123 },
+    "WORKING-RULES section 5 server": {
+      "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "exitBefore": 0, "passBefore": 956, "exitAfter": 0, "passAfter": 960, "skipped": 4,
+      "fixedRegression": "Initial run: 959 pass, 1 failure; defaulting legacy receipt mark changed its stored lineage"
+    },
+    "openapi.ts --check": { "exitBefore": 0, "exitAfter": 1, "expected": "docs/api/openapi.json stale" },
+    "scripts/api/check.py": { "exitBefore": 0, "exitAfter": 1,
+      "expected": "producer changed: packages/contracts/src/usp/intake.ts" },
+    "git diff --check": { "exitBefore": 0, "exitAfter": 0 }
+  },
+  "next": "PlaceOnMapDialog must send decimalMark: point|comma (default point); lead regenerates contract and pins"
+}

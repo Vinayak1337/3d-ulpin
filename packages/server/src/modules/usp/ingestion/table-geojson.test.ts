@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import type { TabularSelection } from '@ulpin/contracts/usp';
+import { IntakeTablePlacementSchema, TableDerivativeLineageSchema, type TabularSelection } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { assertIntakeDraftTx } from './intake-draft';
@@ -130,6 +130,87 @@ test('a row whose coordinate cell is not a number is skipped and named so', asyn
   assert.equal(tablePlacementWords(counts, null), 'Prepared 1 row as GeoJSON features; 2 rows skipped: '
     + '1 had no coordinates, 1 had text that is not a number.');
 });
+
+test('comma mode refuses points, repeated commas and grouping; integers and exact comma decimals stay readable',
+  async () => {
+    // test_only malformed coordinate controls, not records of any place.
+    const cells = ['1.234,5', '1,2,3', '1 234,5', "1'234,5", '77.5', '77,5000', '77', '77,12345678901234567890'];
+    const bytes = Buffer.from(`x;y\n${cells.map(cell => `${cell};12,5\n`).join('')}`);
+    const table = { ...plan(bytes, ['x', 'y'], { kind: 'columns' as const, x: 0, y: 1 }),
+      decimalMark: 'comma' as const, selection: { ...selection, delimiter: ';' as const } };
+    const { counts, geojson } = await written(bytes, table);
+    assert.deepEqual(counts, { rows: 8, features: 2, skipped: { not_a_number: 5, inexact_number: 1 } });
+    assert.ok(geojson.includes('"coordinates":[77.5000,12.5]'));
+    assert.match(tablePlacementWords(counts, null, null, 'comma'), /comma stated as the decimal mark/);
+  });
+
+test('comma stated for WKT is refused with words before queuing or writing', async () => {
+  const original = tableSource(WKT, ['plot', 'outline']);
+  const { client, statements } = ledger(original);
+  const coordinates = { kind: 'wkt' as const, column: 1 };
+  const refusal = (error: any) => error.code === 'TABLE_PLACEMENT_WKT_DECIMAL' && error.status === 422
+    && /WKT text has its own number form/.test(error.message) && /decimal point/.test(error.message);
+  await assert.rejects(queueTableGeojsonTx(client, original, { requestKey: randomUUID(), coordinates,
+    crs: 'EPSG:32643', decimalMark: 'comma' }), refusal);
+  assert.deepEqual(statements, []);
+  await assert.rejects(written(WKT, { ...plan(WKT, ['plot', 'outline'], coordinates), decimalMark: 'comma' }), refusal);
+});
+
+const commaCsv = 'E:/BhuAayam-data/task-data/reh14/act2/csv2-edmonton-heritage-semicolon-decimal-comma.csv';
+test('real Edmonton comma coordinates: five points only with comma stated; cells and locators unchanged',
+  { skip: existsSync(commaCsv) ? false : 'data drive or reh14 Edmonton decimal-comma CSV is absent' }, async () => {
+    const bytes = readFileSync(commaCsv);
+    const pin = { ...selection, delimiter: ';' as const };
+    const rows: { cells: (string | null)[]; byteStart: number; byteEnd: number; rawSha256: string }[] = [];
+    const read = await readTableWindows(Readable.from([bytes]), { selection: pin, bytes: bytes.length },
+      async window => { rows.push(...window.rows); });
+    assert.equal(rows.length, 5);
+    for (const decimalMark of ['comma', 'point', undefined] as const) {
+      const original = tableSource(bytes, read.headers, true, pin);
+      const { client, sources, jobs, item } = ledger(original);
+      const request = IntakeTablePlacementSchema.parse({ requestKey: randomUUID(),
+        coordinates: { kind: 'columns', x: 4, y: 3 }, crs: 'EPSG:4326',
+        ...(decimalMark ? { decimalMark } : {}) });
+      await queueTableGeojsonTx(client, original, request);
+      assert.equal(jobs[0].payload.decimalMark, decimalMark ?? 'point');
+      const kept = new Map<string, Buffer>();
+      const children = await placeTableRows(jobs[0].payload, jobDependencies(client, receipt(sources, kept), bytes));
+      if (decimalMark !== 'comma') {
+        assert.deepEqual(children, []);
+        assert.equal(kept.size, 0);
+        assert.match(item.limit_reason, /5 rows skipped: 5 had text that is not a number/);
+        continue;
+      }
+      const text = kept.get(children[0])!.toString();
+      const features = JSON.parse(text).features;
+      assert.equal(features.length, 5);
+      features.forEach((feature: any, index: number) => {
+        const row = rows[index];
+        assert.equal(feature.geometry.type, 'Point');
+        assert.ok(text.includes(`"coordinates":[${row.cells[4]!.replace(',', '.')},`
+          + `${row.cells[3]!.replace(',', '.')}]`));
+        assert.deepEqual(Object.values(feature.properties), row.cells);
+        assert.deepEqual(feature.tableRow, { sourceId, sourceRevision: 1, sha256: sha(bytes), row: index + 2,
+          byteStart: row.byteStart, byteEnd: row.byteEnd, rawSha256: sha(bytes.subarray(row.byteStart, row.byteEnd)) });
+      });
+      const lineage = sources.get(children[0]).inspection.tableDerivative;
+      assert.deepEqual([lineage.decimalMark, lineage.features, lineage.skipped], ['comma', 5, {}]);
+      assert.equal((await largePath(kept.get(children[0])!, 'edmonton.geojson')).accepted, 5);
+    }
+    assert.equal(sha(readFileSync(commaCsv)), sha(bytes), 'the original is unchanged');
+  });
+
+const pointCsv = 'E:/BhuAayam-data/task-data/reh14/act2/csv2-bengaluru-bus-stops-windows-1252.csv';
+test('real Bengaluru decimal-point coordinates still place with the decimal mark omitted',
+  { skip: existsSync(pointCsv) ? false : 'data drive or reh14 Bengaluru Windows-1252 CSV is absent' }, async () => {
+    const bytes = readFileSync(pointCsv);
+    const pin = { ...selection, encoding: 'windows-1252' as const };
+    const read = await readTableWindows(Readable.from([bytes]), { selection: pin, bytes: bytes.length },
+      async () => {});
+    const table = { ...plan(bytes, read.headers, { kind: 'columns' as const, x: 2, y: 1 }), selection: pin };
+    assert.deepEqual((await written(bytes, table)).counts, { rows: 6, features: 6, skipped: {} });
+    assert.equal(sha(readFileSync(pointCsv)), sha(bytes));
+  });
 
 test('a WKT column stated in EPSG:32643 gives polygons in that declared system, unprojected', async () => {
   const table = plan(WKT, ['plot', 'outline'], { kind: 'wkt', column: 1 }, 'EPSG:32643');
@@ -363,9 +444,13 @@ test('the job keeps the derivative once with its lineage, enrols it and words th
   assert.deepEqual(sources.get(child).inspection.tableDerivative, { version: 'table-derivative/1',
     conversion: 'table_rows_to_geojson@1', originalSourceId: sourceId, originalSourceRevision: 1,
     originalSha256: sha(WKT), originalItemId: itemId, format: 'csv', layer: 'csv',
-    coordinates: { kind: 'wkt', column: 1 }, crs: 'EPSG:32643', crsSource: 'officer_stated', features: 2,
+    coordinates: { kind: 'wkt', column: 1 }, crs: 'EPSG:32643', decimalMark: 'point',
+    crsSource: 'officer_stated', features: 2,
     notWritten: 1, skipped: { not_wkt: 1 },
     locator: 'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.' });
+  // Older receipts have no stated mark; reading them must not invent one.
+  const { decimalMark: _mark, ...legacy } = sources.get(child).inspection.tableDerivative;
+  assert.deepEqual(TableDerivativeLineageSchema.parse(legacy), legacy);
   assert.deepEqual(registered.map(entry => entry.sourceId), [child]);
   assert.equal(JSON.parse(kept.get(child)!.toString()).features.length, 2);
   const placedWords = 'Kept as a CSV table. Map placement: Prepared 2 rows as a GeoJSON file, plots.geojson, in '
