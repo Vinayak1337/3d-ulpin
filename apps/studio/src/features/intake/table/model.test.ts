@@ -101,6 +101,11 @@ describe('published chunks', () => {
 });
 
 describe('rule and data-policy words', () => {
+  it('asks for confirmation when a proposed target has a withheld explanation', () => {
+    expect(questionWords('TEACHER_RATIONALE_WITHHELD'))
+      .toBe('The explanation included a value, so it was withheld; confirm the proposed target.');
+  });
+
   it('names a source-header rule without presenting it as a measured percentage', () => {
     expect(confidenceText({ origin: 'rule', noAnswer: null, confidence: 1 })).toBe('Source header rule');
   });
