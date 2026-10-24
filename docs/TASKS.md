@@ -693,7 +693,7 @@ Size S, code only. After: none; parallel with S7.2, S7.3, S7.4, S7.5, S7.6, S7.7
 
 ### S7.2 Batch table rows that fit at 1440 px
 
-Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: running in a new chat session since 24 Oct 2026 (owner).**
 
 - **What:** Cut the table from 10 columns to 5: File (name, kind and format in words, size in KiB/MiB/GiB), Status (state and placement in one line, the reason below it as help text, part progress), Holds (features, rows, pages or points with a unit), Coordinates (crsWords only; the raw native extent moves to the reading card, S4.8) and Next step. Remove the min-width and overflow-wrap:anywhere that split words into letters. Give every format named in intake-signatures a plain name, use 'Unknown' rather than 'Not known', and in the drop table replace raw bytes and 'Not applicable' with sizeWords and empty cells. Every value stays read from the item.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx:24-49 (columns; keep NextStep 52-76); apps/studio/src/features/intake/batch-model.ts:45-99 (stateWords, countWords:64-66, formatWords:86-91, sizeClassWords); apps/studio/src/features/intake/Batch.module.css:31-59; apps/studio/src/features/intake/IntakeDropDialog.tsx:51-63 (DropOutcomes); reuse sizeWords in upload-model.ts:57-61; the format list is packages/server/src/modules/usp/ingestion/intake-signatures.ts:276-285
@@ -702,7 +702,7 @@ Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7
 
 ### S7.3 Batch page empty states
 
-Size M, code only. After: none; parallel with S7.1, S7.2, S7.4, S7.5, S7.6, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.4, S7.5, S7.6, S7.7. **Status: running in a new chat session since 24 Oct 2026 (owner).**
 
 - **What:** Four fixes. (1) While a drop is uploading, the page says 'No files are enrolled in this batch.' under 'Retaining files: File 1 of 4' (REH16 a03); while an upload is pending it should say the files are being kept. (2) For a batch with no drafted buildings, show the recording panel as one line ('No buildings are drafted from this batch yet; they appear after a map layout is used') instead of eight zero counts, Refresh, 'Choose the first 100 ready', the filter and the confirmation box (REH14 act2-nr-dxf.png). (3) Show the Confirm panel only when a package can be confirmed. (4) Show Evidence by key only once a map item has drafted buildings. Act 1 behaviour, where buildings exist, is unchanged.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:124-146 (BatchRecords, line 144); apps/studio/src/features/intake/run/IntakeRunPanel.tsx:17-57; apps/studio/src/features/intake/run/model.ts:43-45 (hasNoBuildings), countsLine; apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:17-40 (its drafted rule at 37); the pending-upload state via batchUploadKey as read in BatchUploadProgress.tsx:16-19
