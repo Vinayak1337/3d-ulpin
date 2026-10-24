@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
-import type { AnyStreamingInput } from '@ulpin/contracts/usp';
+import type { AnyStreamingInput, StreamingVectorInput } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { endImportTx, fencedOut, publishStreamingPrefixTx, StreamingPartWriter,
   streamingFailureKind, tallySetAside } from './streaming-vector-worker';
-import { resolveStreamedReference } from './streamed-map-receipt';
+import { resolveStreamedReference, sealedMapReceipt } from './streamed-map-receipt';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
 const caseId = '30000000-0000-4000-8000-000000000001';
@@ -93,7 +93,7 @@ test('a type-first collection publishes its first part before the reader can rea
   }
 });
 
-test('both sequence framings publish without a collection seal and keep numbered refusals in stable tallies',
+test('both sequence framings publish before seal and keep stable codes in receipt tallies',
   async () => {
     for (const framing of ['geojson-lines', 'geojson-seq-rs'] as const) {
       const store = collectionStore(), tally: Record<string, number> = {};
@@ -102,16 +102,21 @@ test('both sequence framings publish without a collection seal and keep numbered
         await publishStreamingPrefixTx(store.client, { ...input, framing });
       });
       const prefix = framing === 'geojson-lines' ? '' : '\x1e';
-      await readStreamingFeatures(Readable.from([Buffer.from(prefix + 'null\n' + prefix + '{broken\n')]),
-        framing, async item => {
-          const record = sourceRecord(item);
-          tallySetAside(tally, record);
-          await parts.add(record, 1);
-        });
+      const bytes = Buffer.from(prefix + 'null\n' + prefix + '{broken\n');
+      const closed = await readStreamingFeatures(Readable.from([bytes]), framing, async item => {
+        const record = sourceRecord(item);
+        tallySetAside(tally, record);
+        await parts.add(record, 1);
+      });
       assert.equal(store.state.sealed_chunks, null);
       assert.equal(store.state.next_publish_index, 2);
       assert.equal(store.events(), 2);
       assert.deepEqual(tally, { INVALID_FEATURE: 1, GEOJSON_JSON: 1 });
+      const receipt = sealedMapReceipt({ ...input, framing, version: 'geojson-stream/2',
+        sourceBytes: bytes.length, sourceSha256: closed.sha256 } as StreamingVectorInput,
+      { ...closed, quarantinedByCode: tally }, store.slots.map((slot, index) => ({ ...slot,
+        first_feature_index: index, last_feature_index: index, accepted: 0, quarantined: 1 })));
+      assert.deepEqual(receipt.quarantinedByCode, { INVALID_FEATURE: 1, GEOJSON_JSON: 1 });
     }
   });
 

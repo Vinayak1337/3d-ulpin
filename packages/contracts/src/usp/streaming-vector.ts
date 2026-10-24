@@ -69,6 +69,7 @@ export const StreamingVectorStatusSchema=z.strictObject({
 export const StreamingVectorRecordSchema=z.strictObject({
   featureIndex:z.number().int().nonnegative(),byteStart:z.number().int().nonnegative(),byteEnd:z.number().int().positive(),
   rawSha256:hash,disposition:z.enum(['accepted','quarantined']),issueCode:z.string().max(80).nullable(),
+  sequencePosition:z.strictObject({kind:z.enum(['line','record']),number:z.number().int().positive()}).optional(),
   feature:z.unknown(),
 });
 export const StreamingVectorPayloadSchema=z.strictObject({

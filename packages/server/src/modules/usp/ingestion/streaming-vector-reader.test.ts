@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { STREAMING_VECTOR_LIMITS as limits, type StreamingVectorInput } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS as limits, StreamingVectorRecordSchema,
+  type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import { readStreamingFeatures, sourceRecord, type SourceFeature } from './streaming-vector-reader';
 import { resolveStreamedReference, sealedMapReceipt } from './streamed-map-receipt';
-import { intakeGeojsonFraming, intakeReaderRoute } from './intake-draft';
+import { intakeReaderRoute } from './intake-draft';
+import { intakeGeojsonFraming } from './geojson-framing';
 import { probeOriginal } from './intake-probe';
 import { provePartFeature } from './proved-area-part';
 import { isRetainedMapOriginal } from './retained-map-original';
@@ -51,6 +53,7 @@ test('features before type and crs retain the same literal features and exact so
       assert.equal(item.start, result.bytes.indexOf(literal));
       assert.equal(item.end, item.start + literal.length);
       assert.equal(sourceRecord(item).disposition, 'accepted');
+      assert.equal(Object.hasOwn(sourceRecord(item), 'sequencePosition'), false);
     }
   }
 });
@@ -101,6 +104,8 @@ for (const [format, framing, ending, text] of [
     assert.equal(result.closure.sha256, hash);
     for (const item of result.items) {
       assert.equal(sourceRecord(item).disposition, 'accepted');
+      assert.deepEqual(sourceRecord(item).sequencePosition,
+        { kind: framing === 'geojson-lines' ? 'line' : 'record', number: item.index + 1 });
       assert.deepEqual(bytes.subarray(item.start, item.end), item.raw);
       const proved = await provePartFeature(sourceRecord(item), item.raw, bytes.length);
       assert.deepEqual(proved.feature, item.feature);
@@ -122,14 +127,16 @@ for (const [format, framing, ending, text] of [
   });
 }
 
-test('difficult NDJSON sets aside only its bare geometry and broken JSON, naming physical lines', async () => {
+test('difficult NDJSON sets aside only its bare geometry and broken JSON, retaining physical positions', async () => {
   const geometry = JSON.stringify((realFeatures[0] as { geometry: unknown }).geometry);
   const result = await read([realLines[0], geometry, '{broken', ...realLines.slice(1)].join('\n') + '\n',
     'geojson-lines');
   const records = result.items.map(sourceRecord), rejected = records.filter(r => r.disposition === 'quarantined');
   assert.equal(rejected.length, 2);
-  assert.match(rejected[0].issueCode!, /Line 2 is not a GeoJSON Feature/);
-  assert.match(rejected[1].issueCode!, /Line 3 is not valid JSON/);
+  assert.equal(rejected[0].issueCode, 'INVALID_FEATURE');
+  assert.deepEqual(rejected[0].sequencePosition, { kind: 'line', number: 2 });
+  assert.equal(rejected[1].issueCode, 'GEOJSON_JSON');
+  assert.deepEqual(rejected[1].sequencePosition, { kind: 'line', number: 3 });
   assert.deepEqual(records.filter(r => r.disposition === 'accepted').map(r => r.feature), realFeatures);
 });
 
@@ -142,18 +149,38 @@ test('sequence delimiters recover invalid JSON and every non-Feature without gue
     const result = await read(text, framing), records = result.items.map(sourceRecord);
     assert.equal(records.filter(record => record.disposition === 'quarantined').length, invalid.length);
     assert.equal(records.at(-1)!.disposition, 'accepted');
-    invalid.forEach((_, index) => assert.match(records[index].issueCode!,
-      new RegExp(`${framing === 'geojson-lines' ? 'Line' : 'Record'} ${index + 1} is not`)));
+    invalid.forEach((_, index) => {
+      assert.equal(records[index].issueCode, index === 5 ? 'GEOJSON_JSON' : 'INVALID_FEATURE');
+      assert.deepEqual(records[index].sequencePosition,
+        { kind: framing === 'geojson-lines' ? 'line' : 'record', number: index + 1 });
+    });
     assert.deepEqual({ ...result.closure.metadata }, {});
   }
 });
+
+test('line 5 keeps a stable JSON code and a validated position; collection quarantine has no sequence position',
+  async () => {
+    const text = [...realLines.slice(0, 4), '{broken', ...realLines.slice(4)].join('\n') + '\n';
+    const result = await read(text, 'geojson-lines'), rejected = sourceRecord(result.items[4]);
+    assert.equal(rejected.issueCode, 'GEOJSON_JSON');
+    assert.deepEqual(rejected.sequencePosition, { kind: 'line', number: 5 });
+    assert.deepEqual(StreamingVectorRecordSchema.parse(rejected), rejected);
+    for (const position of [{ kind: 'line', number: 0 }, { kind: 'record', number: 1.5 },
+      { kind: 'byte', number: 5 }])
+      assert.equal(StreamingVectorRecordSchema.safeParse({ ...rejected, sequencePosition: position }).success, false);
+    const collection = await read('{"type":"FeatureCollection","features":[null]}');
+    const record = sourceRecord(collection.items[0]);
+    assert.equal(record.issueCode, 'INVALID_FEATURE');
+    assert.equal(Object.hasOwn(record, 'sequencePosition'), false);
+  });
 
 test('blank LF and CRLF lines are counted and skipped without changing record indices or source coverage', async () => {
   const text = '\n \t\r\n' + realLines[0] + '\r\n\r\n' + realLines[1] + '\n';
   const result = await read(text, 'geojson-lines');
   assert.equal(result.closure.blankLines, 3);
   assert.deepEqual(result.items.map(item => item.index), [0, 1]);
-  assert.deepEqual(result.items.map(item => item.sourcePosition), ['Line 3', 'Line 5']);
+  assert.deepEqual(result.items.map(sourceRecord).map(record => record.sequencePosition),
+    [{ kind: 'line', number: 3 }, { kind: 'line', number: 5 }]);
   assert.deepEqual(result.items.map(item => item.feature), realFeatures.slice(0, 2));
   assert.equal(result.closure.bytes, Buffer.byteLength(text));
 });

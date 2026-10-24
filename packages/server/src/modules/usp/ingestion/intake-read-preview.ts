@@ -6,7 +6,7 @@ import { AppError, notFound } from '../../../infrastructure/errors';
 import { assertIngestionBinding } from './events';
 import { intakeSourceTx } from './intake-context';
 import { intakeLargeRequestKey } from './intake-large';
-import { intakeGeojsonFraming } from './intake-draft';
+import { intakeGeojsonFraming } from './geojson-framing';
 import { featureExtent, measurableCrs, type SourceCrs } from './intake-package-extent';
 import { StreamingVectorService } from './streaming-vector';
 

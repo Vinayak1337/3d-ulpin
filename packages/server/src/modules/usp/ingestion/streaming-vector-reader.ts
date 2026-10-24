@@ -145,7 +145,8 @@ class Cursor {
 }
 
 export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;
-  valueIssueCode:string|null;rawSha256?:string;collectionTypeBeforeFeatures?:boolean;sourcePosition?:string};
+  valueIssueCode:string|null;rawSha256?:string;collectionTypeBeforeFeatures?:boolean;
+  sequencePosition?:StreamingVectorRecord['sequencePosition']};
 /** Late-type collections stage privately until closure; type-first collections can publish while reading. */
 export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
   const cursor=new Cursor(body);let index=0,metadataBytes=0,blankLines=0,collectionTypeBeforeFeatures=false;
@@ -200,7 +201,8 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
         parsed={value:null,issueCode:'GEOJSON_JSON'};
       }
       await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,
-        feature:parsed.value,valueIssueCode:parsed.issueCode,sourcePosition:`${lines?'Line':'Record'} ${position}`});
+        feature:parsed.value,valueIssueCode:parsed.issueCode,
+        sequencePosition:{kind:lines?'line':'record',number:position}});
     }
   }
   if(await cursor.nonspace()!==null)throw new AppError(422,'GEOJSON_CONTAINER','Trailing source content is not part of the declared framing.');
@@ -324,13 +326,10 @@ export function streamedFeatureIssue(raw:Buffer):string|null{
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
   const featureIssue=validateStreamingFeature(item.feature);
   let issueCode=item.valueIssueCode??featureIssue;
-  if(item.sourcePosition&&item.valueIssueCode!=='GEOJSON_JSON'&&featureIssue==='INVALID_FEATURE')
+  if(item.sequencePosition&&item.valueIssueCode!=='GEOJSON_JSON'&&featureIssue==='INVALID_FEATURE')
     issueCode=featureIssue;
-  if(item.sourcePosition&&issueCode==='GEOJSON_JSON')
-    issueCode+=`: ${item.sourcePosition} is not valid JSON.`;
-  if(item.sourcePosition&&issueCode==='INVALID_FEATURE')
-    issueCode+=`: ${item.sourcePosition} is not a GeoJSON Feature.`;
   return {featureIndex:item.index,byteStart:item.start,byteEnd:item.end,
     rawSha256:createHash('sha256').update(item.raw).digest('hex'),
+    ...(item.sequencePosition?{sequencePosition:item.sequencePosition}:{}),
     disposition:issueCode?'quarantined':'accepted',issueCode,feature:issueCode?null:item.feature};
 }

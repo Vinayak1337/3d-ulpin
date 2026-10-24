@@ -32,8 +32,7 @@ function tabularChunkRows(width:number){
 /** One whole read counts each set-aside record under its code; every attempt replays from byte zero. */
 export function tallySetAside(tally:Record<string,number>,record:StreamingVectorRecord){
   if(record.disposition!=='quarantined')return;
-  // A sequence record keeps its numbered explanation beside the code; receipt tallies use the stable code only.
-  const code=record.issueCode?.split(':',1)[0]??'UNSTATED';
+  const code=record.issueCode??'UNSTATED';
   tally[code]=(tally[code]??0)+1;
 }
 

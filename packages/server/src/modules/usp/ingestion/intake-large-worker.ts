@@ -14,6 +14,7 @@ import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbe
 import { ChunkMappingService } from './chunk-mapping';
 import { caseScopedDestination, intakeCaseArea, intakeDestination, retiredFileAreaWords } from './intake-destination';
 import { assertIntakeDraftTx } from './intake-draft';
+import { intakeGeojsonFraming } from './geojson-framing';
 import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
@@ -139,7 +140,6 @@ async function caseRevision(input: IntakeLargeInput, attempt: UspJobAttempt | un
 async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt | undefined, state: State) {
   const pins = { expectedCaseRevision: await caseRevision(input, attempt),
     expectedSourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256 };
-  const { intakeGeojsonFraming } = await import('./intake-draft');
   const framing = state.item.card && intakeGeojsonFraming(state.item.card);
   if (!framing) conflict('The reading card does not name a supported GeoJSON framing.');
   const rawJobId = state.store.reader?.job_id ?? (await reader.enqueue(input.caseId, input.sourceId, {

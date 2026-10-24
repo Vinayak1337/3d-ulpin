@@ -19,6 +19,7 @@ import { queueBatchDocumentTx } from './documents';
 import { GEOJSON_FEATURE_LIMIT } from './registry';
 import { BOUNDED_READER_UNAVAILABLE, prepareRetainedGeojsonTx } from './service';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { intakeGeojsonFraming } from './geojson-framing';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -233,15 +234,6 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
     AND status IN ('queued','running') ORDER BY created_at LIMIT 1`, [input.sourceId])).rows[0];
   if (active && active.payload.sourcePin !== input.sourcePin) conflict('The retained intake source changed.');
   return active?.id ?? null;
-}
-
-/** Only the probed card chooses framing; neither the name nor unread source bytes select a reader. */
-export function intakeGeojsonFraming(card: Pick<IntakeCard, 'format' | 'family'>) {
-  if (card.format === 'geojson') return 'feature-collection' as const;
-  if (card.family !== 'vector') return null;
-  if (card.format === 'ndjson') return 'geojson-lines' as const;
-  if (card.format === 'geojson-seq') return 'geojson-seq-rs' as const;
-  return null;
 }
 
 /** Byte-probed kinds select readers; a small byte count alone never selects the bounded feature adapter. */
