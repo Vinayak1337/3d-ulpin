@@ -11,8 +11,11 @@ import { lookupMappingMemory } from './mapping-memory';
 import { proposeMappingRules } from './mapping-rules';
 import { keptWords, pageWords, zipParentWords } from './intake-draft';
 import { surfaceKind, surfaceReader } from './intake-surface';
+import { keyLiteral, keyProperty } from './intake-evidence';
 
 type Line = IntakeReading['what'];
+type Field = IntakeReading['fields'][number] & { target: MappingTarget | null; header: string };
+export type ReadingPeer = { itemId: string; name: string; card: IntakeCard | null; facts: ReadingFacts };
 export type ReadingRow = {
   name?: string; family?: string; format?: string | null; size_bytes?: string | number | null;
   state?: string; placement?: string; limit_reason?: string | null; streamed_profile_job_id?: string | null;
@@ -281,11 +284,11 @@ const basisOf = (source?: string): Line['basis'] => {
   return 'reader';
 };
 
-function fieldLine(field: string, target: MappingTarget, basis: Line['basis']): IntakeReading['fields'][number] {
+function fieldLine(field: string, target: MappingTarget, basis: Line['basis']): Field {
   const definition = CANONICAL_TARGETS[canonicalTarget(target)];
   const words = target === 'unknown' ? `Not known. ${definition.meaning}`
     : `${definition.displayLabel}. ${definition.meaning}`;
-  return { field, ...line(words, basis) };
+  return { field, header: field, target, ...line(words, basis) };
 }
 
 /** No cells are available here: types are stored facts, shape rates and samples remain unknown. */
@@ -305,7 +308,7 @@ function gisColumns(profile: NonNullable<ReadingFacts['profile']>): ColumnProfil
     sampleShortfall: true, layoutFingerprint: layoutFingerprint(columns) };
 }
 
-function tableFields(card: IntakeCard, facts: ReadingFacts): IntakeReading['fields'] {
+function tableFields(card: IntakeCard, facts: ReadingFacts): Field[] {
   const approved = facts.recipe && ['approved', 'executed'].includes(facts.recipe.state) ? facts.recipe : null;
   const mapping = facts.mapping;
   const plan = approved?.plan.version === 'manual-tabular/1' ? approved.plan.mapping : mapping?.plan;
@@ -322,7 +325,7 @@ function tableFields(card: IntakeCard, facts: ReadingFacts): IntakeReading['fiel
   });
 }
 
-function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): IntakeReading['fields'] {
+function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): Field[] {
   if (card?.family === 'table') return tableFields(card, facts);
   if (card?.family !== 'vector' || !facts.profile) return [];
   const approved = facts.recipe && ['approved', 'executed'].includes(facts.recipe.state) ? facts.recipe : null;
@@ -345,6 +348,7 @@ function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): IntakeReading['
     if (operation && (operation.target.endsWith('.sourceKey') || operation.target.endsWith('.name'))) {
       const target = operation.target.endsWith('.sourceKey') ? 'building.sourceKey' : 'building.name';
       const result = fieldLine(path.path, target, basis);
+      if (target === 'building.sourceKey' && plan?.kind && plan.kind !== 'building') result.target = null;
       const nouns = { building: 'Building', parcel: 'Parcel', road: 'Road',
         public_land: 'Public land', utility: 'Utility' };
       if (plan?.kind) result.words = result.words.replaceAll('Building', nouns[plan.kind]);
@@ -355,7 +359,7 @@ function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): IntakeReading['
     if (remembered) return fieldLine(path.path, remembered.target, 'memory');
     if (rule) return fieldLine(path.path, rule.field.target, 'rule');
     return fieldLine(path.path, 'unknown', 'reader');
-  });
+  }).map(field => ({ ...field, header: keyProperty(field.field) ?? field.field }));
 }
 
 function kindDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts): IntakeReading['drawing'] {
@@ -386,9 +390,67 @@ function kindDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
   return { as: kind, ...line(`${approved ? 'Confirmed' : 'Suggested'} kind: ${kind}. ${drawing.words}`, basis) };
 }
 
+const basisWords: Record<Line['basis'], string> = { reader: 'no meaning stated', rule: 'rule',
+  memory: 'memory', sarvam: 'Sarvam, not confirmed', officer: 'confirmed by you' };
+const identifier = (target: MappingTarget) => target === 'building.sourceKey' || target.startsWith('parcel.')
+  || target === 'document.registrationNo' || target === 'document.sanctionNo';
+
+function sharedField(fields: Field[], others: Field[], by: 'key' | 'address'): [Field, Field] | null {
+  let headerPair: [Field, Field] | null = null;
+  for (const field of fields) for (const other of others) {
+    if (field.target === null || other.target === null) continue;
+    const target = canonicalTarget(field.target);
+    if (target === canonicalTarget(other.target) && (by === 'address'
+      ? target === 'building.addressLiteral' : identifier(target))) return [field, other];
+    if (by !== 'key' || target !== 'unknown' || canonicalTarget(other.target) !== 'unknown') continue;
+    if (keyLiteral(field.header, 'text') !== null && field.header === other.header) headerPair ??= [field, other];
+  }
+  return headerPair;
+}
+
+function fieldReason(pair: [Field, Field]): string {
+  const [field, other] = pair;
+  const describe = (entry: Field) => `${entry.header} (${basisWords[entry.basis]})`;
+  if (field.target === 'unknown') {
+    return `${describe(field)} here and ${describe(other)} there have the same header as written; `
+      + 'neither has a stated meaning.';
+  }
+  const target = canonicalTarget(field.target!);
+  const label = CANONICAL_TARGETS[target].displayLabel;
+  return `${describe(field)} here and ${describe(other)} there both mean ${label} (${target}).`;
+}
+
+function linksOf(card: IntakeCard | null, fields: Field[], peers: ReadingPeer[]) {
+  const links: IntakeReading['links'] = [];
+  const bounds = card?.extent.epsg4326;
+  for (const peer of [...peers].sort((a, b) => a.name.localeCompare(b.name) || a.itemId.localeCompare(b.itemId))) {
+    const others = fieldsOf(peer.card, peer.facts);
+    for (const by of ['key', 'address'] as const) {
+      const pair = sharedField(fields, others, by);
+      if (pair) links.push({ itemId: peer.itemId, by, ...line(
+        `A link may be declared to ${peer.name}: ${fieldReason(pair)}`, 'rule') });
+    }
+    const other = peer.card?.extent.epsg4326;
+    if (bounds && other && bounds[0] <= other[2] && other[0] <= bounds[2]
+      && bounds[1] <= other[3] && other[1] <= bounds[3]) {
+      links.push({ itemId: peer.itemId, by: 'place', ...line(
+        `A link may be declared to ${peer.name}: the stored longitude/latitude extents intersect.`, 'rule') });
+    }
+  }
+  const order = { key: 0, address: 1, place: 2 };
+  links.sort((a, b) => order[a.by] - order[b.by]);
+  return { links: links.slice(0, 20), omitted: links.length > 20 };
+}
+
 /** Stored facts only. A reading never opens originals, runs a reader, asks a model or changes a record. */
-export function readingOf(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts = {}): IntakeReading {
-  return { version: 'intake-reading/1', what: whatOf(row, card), holds: storedHolds(row, card, facts),
-    fields: fieldsOf(card, facts),
-    drawing: storedDrawing(row, card, facts), links: [], question: questionOf(row, card) };
+export function readingOf(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts = {},
+  comparison: { items: ReadingPeer[]; more: boolean } = { items: [], more: false }): IntakeReading {
+  const fields = fieldsOf(card, facts);
+  const suggestions = linksOf(card, fields, comparison.items);
+  const holds = storedHolds(row, card, facts);
+  if (comparison.more) holds.push(line('The remaining case items were not compared.', 'rule'));
+  if (suggestions.omitted) holds.push(line('Further link suggestions are not shown.', 'rule'));
+  return { version: 'intake-reading/1', what: whatOf(row, card), holds,
+    fields: fields.map(({ target, header, ...field }) => field),
+    drawing: storedDrawing(row, card, facts), links: suggestions.links, question: questionOf(row, card) };
 }

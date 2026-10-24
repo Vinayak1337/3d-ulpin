@@ -5,6 +5,7 @@ import { basename } from 'node:path';
 import test from 'node:test';
 import { zipSync, strToU8 } from 'fflate';
 import type { PoolClient } from 'pg';
+import type { MappingTarget } from '@ulpin/contracts';
 import { INTAKE_FORMAT_NAMES, IntakeReadingSchema, ChunkMappingPayloadSchema,
   DXFResultSchema, IFCSummarySchema, type DocumentResult, type MappingPlan, type MappingReceipt }
   from '@ulpin/contracts/usp';
@@ -24,7 +25,9 @@ import { profileColumnFile } from './column-profile';
 import { INTAKE_FORMAT_NAMES as browserFormatNames } from '@ulpin/contracts/upload-reader-limits';
 import { intakeItem } from './intake-ledger';
 import { probeOriginal } from './intake-probe';
-import { readingOf, type ReadingFacts, type ReadingRow } from './intake-reading';
+import { readingOf, type ReadingFacts, type ReadingRow, type ReadingPeer } from './intake-reading';
+import { proposeMappingRules } from './mapping-rules';
+import { inspectGeojsonExtent } from './intake-package-extent';
 
 const fixtures = [
   ['fixtures/real-nyc/original.geojson', 'GeoJSON map layer', 'features?'],
@@ -215,6 +218,14 @@ test('NYC stored paths use rules, retain unstated height and never dispatch the 
     assert.equal(approved.fields.find(field => field.field.endsWith(`/${name}`))!.basis, 'officer');
   }
   assert.equal(approved.drawing.basis, 'officer');
+  const binProfile = { paths: profile.paths.filter(path => path.path.endsWith('/bin')) };
+  const comparison = { items: [{ itemId: id, name: 'protocol-peer', card, facts: { profile: binProfile } }],
+    more: false };
+  const confirmed = readingOf(row, card, { profile: binProfile, recipe }, comparison);
+  assert.match(confirmed.links[0].words, /confirmed by you/);
+  const parcel = readingOf(row, card, { profile: binProfile, proposal: {
+    plan: { ...plan, kind: 'parcel' }, origin: 'teacher' } }, comparison);
+  assert.deepEqual(parcel.links, [], 'a parcel source key is not a building source key');
   const height = readingOf(row, card, { profile, recipe: { ...recipe, plan: { ...plan,
     heightField: 'height_roof', heightUnit: 'ft', heightMeaning: 'Protocol-only officer height decision' } } });
   const heightField = height.fields.find(field => field.field.endsWith('/height_roof'))!;
@@ -234,6 +245,7 @@ test('NYC stored paths use rules, retain unstated height and never dispatch the 
   let storedRecipe: unknown = recipe;
   const client = { query: async (sql: string) => {
     if (sql.includes('FROM cases')) return { rows: [{ id, archived: false }] };
+    if (sql.includes('LIMIT 65')) return { rows: [] };
     if (sql.startsWith('SELECT i.*')) return { rows: [{ source_id: id, card, ...row }] };
     if (sql.startsWith('SELECT s.inspection')) return { rows: [{ profile, recipe: storedRecipe,
       proposal: { plan, origin: 'teacher' } }] };
@@ -290,6 +302,7 @@ test('stored LGD first-chunk provenance is per column, not the plan-wide method'
   let objectHash = digest(bytes), objects = 0;
   const client = { query: async (sql: string) => {
     if (sql.includes('FROM cases')) return { rows: [{ id, archived: false }] };
+    if (sql.includes('LIMIT 65')) return { rows: [] };
     if (sql.startsWith('SELECT i.*')) return { rows: [{ source_id: id, card }] };
     if (sql.startsWith('SELECT s.inspection')) return { rows: [{ object_key: 'protocol-proposal',
       object_sha256: objectHash, bytes: bytes.length }] };
@@ -465,6 +478,7 @@ test('reading route reads one accepted receipt, never an original, reader, model
   const client = { query: async (sql: string) => {
     assert.match(sql, /^SELECT /, 'reading cannot write');
     if (sql.includes('FROM cases')) return { rows: [{ id, archived: false, revision: caseRevision }] };
+    if (sql.includes('LIMIT 65')) return { rows: [] };
     if (sql.startsWith('SELECT i.*')) return { rows: [{ source_id: id, plan_ref: { nativeReaderJobId: id },
       card: fullCard }] };
     if (sql.includes('FROM jobs')) {
@@ -500,6 +514,172 @@ test('reading route reads one accepted receipt, never an original, reader, model
   resultHash = hash;
   await assert.rejects(service.reading(id, id), { code: 'INTAKE_READING_INTEGRITY' });
   assert.equal(forbidden.mock.callCount(), 0);
+});
+
+test('link reasons keep provenance, exact headers, meaning disagreements and closed-interval placement', async () => {
+  // Meaning and extent envelope controls over real profiles, not assertions about these source records.
+  const card = await probe(readFileSync(fixtures[2][0]), 'lgd-gurugram.csv');
+  const source = profileColumnFile(fixtures[2][0]).profile;
+  const profile = { ...source, columns: source.columns.slice(0, 2) };
+  const facts = (targets: [MappingTarget, MappingTarget],
+    basis: 'rule' | 'memory' | 'teacher' | 'officer'): ReadingFacts => {
+    const plan = manualTeacherPlan(profile, 'MAPPING_REVIEW_REQUIRED').plan;
+    plan.fields = plan.fields.map((field, index) => ({ ...field, target: targets[index] }));
+    return { mapping: { profile, plan, fieldSources: profile.columns.map(column => ({
+      sourceField: column.name, source: basis, method: 'protocol-control' })) } };
+  };
+  const id = '10000000-0000-4000-8000-000000000001';
+  const meanings = facts(['building.sourceKey', 'building.addressLiteral'], 'rule');
+  const peers: ReadingPeer[] = ['z', 'a'].map((name, index) => ({ name,
+    itemId: index ? id : '10000000-0000-4000-8000-000000000002', card,
+    facts: facts(['building.sourceKey', 'building.addressLiteral'], 'teacher') }));
+  const reading = readingOf({}, card, meanings, { items: peers, more: false });
+  assert.deepEqual(reading.links.map(link => [link.by, link.itemId]),
+    [['key', id], ['key', peers[0].itemId], ['address', id], ['address', peers[0].itemId]]);
+  assert.ok(reading.links.every(link => /rule.*Sarvam, not confirmed/.test(link.words)));
+  for (const [basis, words] of [['memory', 'memory'], ['officer', 'confirmed by you']] as const) {
+    peers[0].facts = facts(['building.sourceKey', 'building.addressLiteral'], basis);
+    assert.ok(readingOf({}, card, meanings, { items: [peers[0]], more: false }).links
+      .every(link => link.words.includes(words)));
+  }
+  const compare = (own: ReadingFacts, other: ReadingFacts) => readingOf({}, card, own,
+    { items: [{ ...peers[0], facts: other }], more: false }).links;
+  const unknown = facts(['unknown', 'building.name'], 'rule');
+  assert.match(compare(unknown, unknown)[0].words, /same header as written/);
+  assert.deepEqual(compare(unknown, facts(['building.name', 'building.name'], 'rule')), []);
+  const changed = structuredClone(unknown);
+  changed.mapping!.profile.columns[0].name = changed.mapping!.profile.columns[0].name.toUpperCase();
+  assert.deepEqual(compare(unknown, changed), [], 'header fallback does not fold case');
+  for (const target of ['parcel.khasra', 'parcel.plot', 'parcel.survey', 'parcel.ulpinAnchor',
+    'document.registrationNo', 'document.sanctionNo'] as const) {
+    const left = facts([target, 'building.name'], 'rule');
+    assert.equal(compare(left, left)[0].by, 'key');
+  }
+  assert.deepEqual(compare(facts(['parcel.khasra', 'building.name'], 'rule'),
+    facts(['parcel.plot', 'building.name'], 'rule')), []);
+  const bytes = readFileSync(fixtures[0][0]), map = await probe(bytes, 'original.geojson');
+  const bounds = inspectGeojsonExtent(bytes)!.bounds;
+  map.extent.epsg4326 = bounds;
+  const corner = { ...map, extent: { ...map.extent,
+    epsg4326: [bounds[2], bounds[3], bounds[2], bounds[3]] as [number, number, number, number] } };
+  const place = (card: typeof map) => readingOf({}, map, {}, { items: [{ ...peers[0], card, facts: {} }],
+    more: false }).links;
+  assert.equal(place(corner)[0].by, 'place', 'touching a corner is an intersection');
+  assert.deepEqual(place({ ...map, extent: { ...map.extent, epsg4326: null } }), []);
+  const separated: typeof bounds = [bounds[2] + 1, bounds[1], bounds[2] + 1, bounds[3]];
+  assert.deepEqual(place({ ...map, extent: { ...map.extent, epsg4326: separated } }), []);
+});
+
+const linkPaths = [
+  'E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson',
+  'E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv',
+  'E:/BhuAayam-data/datasets/nyc-10013/files/parks.geojson',
+  'E:/BhuAayam-data/task-data/ulpin-data-09/initial-derived-pack/lgd-gurugram.csv',
+];
+test('stored case comparisons suggest NYC keys and overlapping places, bounded and read-only', {
+  skip: !linkPaths.every(existsSync) && 'the data drive link inputs are not present',
+}, async t => {
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'reading-protocol-control';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  });
+  // Identities and stored-slot envelopes are protocol controls over these unchanged public originals.
+  const id = (index: number) => `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`;
+  const binding = ingestionBinding(id(0));
+  const objects = new Map<string, Buffer>();
+  const entries = await Promise.all(linkPaths.map(async (path, index) => {
+    const original = readFileSync(path), hash = digest(original), card = await probe(original, basename(path));
+    // Prepare the stored card's measured receipt before the read-only route; never measure on that route.
+    if (card.family === 'vector') card.extent.epsg4326 = inspectGeojsonExtent(original)!.bounds;
+    const source = { id: id(index), case_id: id(0), revision: 1, bytes: original.length, sha256: hash,
+      object_key: `protocol-original-${index}`, profile: card.family === 'table'
+        ? 'tabular-manual-v1' : 'geojson-manual-v1', inspection: { actor: binding.subject } };
+    const stored: Record<string, unknown> = {};
+    if (index === 0) {
+      const json = JSON.parse(original.toString());
+      stored.profile = inspectedProfile(original, { format: 'geojson', sourceSha256: hash,
+        featureCount: json.features.length, sourceCrs: 'OGC:CRS84', crsEvidence: json.crs.properties.name,
+        crsUnit: 'degree', geometryTypes: card.geometryTypes, fields: Object.keys(json.features[0].properties)
+          .map(name => ({ name })) } as Parameters<typeof inspectedProfile>[1]);
+    }
+    if (card.family === 'table') {
+      const { profile } = profileColumnFile(path), rules = proposeMappingRules(profile);
+      const plan = manualTeacherPlan(profile, 'MAPPING_REVIEW_REQUIRED').plan;
+      plan.fields = plan.fields.map(field => rules.find(rule => rule.field.sourceField === field.sourceField)?.field
+        ?? field);
+      const mapping = { profile, plan, fieldSources: profile.columns.map(column => ({ sourceField: column.name,
+        source: rules.some(rule => rule.field.sourceField === column.name) ? 'rule' : 'unanswered',
+        method: 'protocol-control' })), questions: [], sourceRows: [], rows: [], metrics: { kind: 'mapping.chunk',
+        jobId: id(index), chunkIndex: 0, layout: 'new', teacherCalls: 0, memoryHits: 0, studentFields: 0,
+        teacherFields: 0, needsInput: profile.columns.length, latencyMs: 0, learnerVersion: null } };
+      const payload = ChunkMappingPayloadSchema.parse({ version: 'chunk-mapping/1', jobId: id(index),
+        rawJobId: id(index), sourceId: id(index), sourceRevision: 1, sourceSha256: hash, chunkIndex: 0,
+        rawResultSha256: hash, schemaFingerprint: profile.layoutFingerprint, recipeRevision: null,
+        converterSha256: hash, records: [], mapping, tabular: { sourceBytes: original.length,
+          selection: { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }, admission: {
+            kind: 'case_original', origin: 'officer_supplied', issuer: null, licence: 'unconfirmed',
+            containsPersonalData: 'unknown' } } });
+      const bytes = Buffer.from(JSON.stringify(payload)), key = `protocol-proposal-${index}`;
+      objects.set(key, bytes);
+      Object.assign(stored, { object_key: key, object_sha256: digest(bytes), bytes: bytes.length });
+    }
+    return { item_id: id(index), source_id: source.id, name: basename(path), card,
+      reading_source: source, ...stored };
+  }));
+  let caseItems = entries.slice(0, 3), comparisons = 0;
+  const client = { query: async (sql: string, values: string[]) => {
+    assert.match(sql, /^SELECT /, 'reading cannot write');
+    const own = entries.find(entry => entry.item_id === values[1]);
+    if (sql.includes('FROM cases')) return { rows: [{ id: id(0), archived: false }] };
+    if (sql.includes('LIMIT 65')) {
+      comparisons++;
+      assert.match(sql, /i.parent_item_id IS NULL AND i.item_id<>\$2/);
+      assert.match(sql, /to_jsonb\(s\) AS reading_source/);
+      return { rows: caseItems.filter(entry => entry.item_id !== values[1]).slice(0, 65) };
+    }
+    if (sql.startsWith('SELECT i.*')) return { rows: [own] };
+    if (sql.startsWith('SELECT s.inspection')) return { rows: [own] };
+    if (sql.startsWith('SELECT * FROM sources')) return { rows: [own!.reading_source] };
+    throw new Error(`Unexpected reading SQL: ${sql}`);
+  } } as unknown as PoolClient;
+  const forbidden = t.mock.fn(async () => { throw new Error('No original, reader or model on a reading.'); });
+  t.mock.method(ModelGateway.prototype, 'propose', forbidden);
+  let objectReads = 0;
+  const service = new IntakeService({ transaction: async action => action(client), read: forbidden,
+    probe: forbidden, planModel: forbidden, object: async key => {
+      objectReads++;
+      assert.ok(objects.has(key), 'only the stored first mapping chunk may be read');
+      return objects.get(key)!;
+    } });
+  const building = IntakeReadingSchema.parse(await service.reading(id(0), id(0)));
+  const key = building.links.find(link => link.itemId === id(1) && link.by === 'key')!;
+  assert.match(key.words, /bin \(rule\) here and bin \(rule\) there both mean Building source key/);
+  assert.ok(building.links.every(link => link.by !== 'address'));
+  const parks = await service.reading(id(0), id(2));
+  assert.ok(parks.links.some(link => link.itemId === id(0) && link.by === 'place'));
+  for (const link of [...building.links, ...parks.links]) {
+    assert.match(link.words, /A link may be declared/);
+    assert.doesNotMatch(link.words, /\b\d+\b|%|confidence|share|matched|are linked/i);
+  }
+  caseItems = [entries[3]];
+  assert.deepEqual((await service.reading(id(0), id(3))).links, []);
+  assert.equal(comparisons, 3, 'one bounded peer query per read');
+  // Repeated metadata envelopes exercise admission bounds, not extra source records.
+  caseItems = Array.from({ length: 65 }, (_, index) => ({ ...entries[1], item_id: id(index + 10) }));
+  const beforeBound = objectReads, bounded = await service.reading(id(0), id(0));
+  assert.equal(objectReads - beforeBound, 64, 'the overflow sentinel never opens a stored proposal');
+  assert.equal(bounded.links.length, 20);
+  assert.equal(bounded.holds.filter(line => /remaining case items were not compared/.test(line.words)).length, 1);
+  assert.equal(bounded.holds.filter(line => /Further link suggestions/.test(line.words)).length, 1);
+  caseItems = [{ ...entries[1], reading_source: { ...entries[1].reading_source,
+    inspection: { actor: 'different-access-context' } } }];
+  await assert.rejects(service.reading(id(0), id(0)), { code: 'INTAKE_SOURCE_DENIED' });
+  assert.equal(forbidden.mock.callCount(), 0);
+  for (let index = 0; index < linkPaths.length; index++) {
+    assert.equal(digest(readFileSync(linkPaths[index])), entries[index].reading_source.sha256);
+  }
 });
 
 const pack = 'E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload';
