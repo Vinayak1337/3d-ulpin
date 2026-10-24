@@ -846,23 +846,25 @@ test('G23: a page image enrols its own first read once, says it is being read, t
   assert.match(fixture.state.projection.limit_reason, /The officer said it shows a plan; this is a candidate label/);
 });
 
-test('a small retained collection over 2,000 features queues the streaming path, not a bounded refusal', async () => {
-  const fixture = protocol();
-  fixture.src.profile = 'large-original-v1';
-  fixture.src.bytes = 50000;
-  fixture.src.inspection = {};
-  fixture.tray.card = { format: 'geojson', family: 'vector', counts: { features: 2500 } } as DraftItem['card'];
-  let streamed = 0;
-  const query = fixture.client.query.bind(fixture.client);
-  fixture.client.query = (async (sql: string, values: any[]) => {
-    if (!sql.startsWith('SELECT item_id,case_id,state,placement')) return query(sql, values);
-    streamed++;
-    return { rows: [], rowCount: 0 };
-  }) as typeof fixture.client.query;
-  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
-  assert.equal(streamed, 1);
-  assert.equal(fixture.state.projection.limit_reason, null);
-});
+for (const format of ['geojson', 'ndjson', 'geojson-seq']) {
+  test(`a retained ${format} queues the streaming path without bounded preparation`, async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.bytes = 50000;
+    fixture.src.inspection = {};
+    fixture.tray.card = { format, family: 'vector', counts: { features: 2500 } } as DraftItem['card'];
+    let streamed = 0;
+    const query = fixture.client.query.bind(fixture.client);
+    fixture.client.query = (async (sql: string, values: any[]) => {
+      if (!sql.startsWith('SELECT item_id,case_id,state,placement')) return query(sql, values);
+      streamed++;
+      return { rows: [], rowCount: 0 };
+    }) as typeof fixture.client.query;
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(streamed, 1);
+    assert.equal(fixture.state.projection.limit_reason, null);
+  });
+}
 
 test('a small retained GeoJSON with its bounded receipt queues the same draft authority as a manual original',
   async () => {

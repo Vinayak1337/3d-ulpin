@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {LegacyMappingTargetSchema} from '../canonical/targets';
 import { ColumnProfileDocumentSchema, DelimitedReadingSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
 import { STREAMING_VECTOR_LIMITS, StreamingVectorInputSchema, StreamingVectorRequestSchema,
-  StreamingVectorStatusSchema } from './streaming-vector';
+  StreamingVectorStatusSchema, StreamingVectorFramingSchema } from './streaming-vector';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
 
@@ -101,7 +101,7 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
   sourceId: id, sourceRevision: revision,
   sourceBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes),
   sourceSha256: hash, readerVersion: z.literal('geojson-stream/2'), rawJobId: id,
-  framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.chunks),
+  framing: StreamingVectorFramingSchema, parts: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.chunks),
   features: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.features), accepted: z.number().int().nonnegative(),
   quarantined: z.number().int().nonnegative(),
   /** Each set-aside record counted under its reader issue code; present only when something was set aside. */

@@ -1,0 +1,43 @@
+{
+  "task": "S5.3",
+  "planStep": 5,
+  "status": "passed_code_checks_officer_words_deferred_outside_owned_paths",
+  "branch": "task/s5-3-geojson-lines",
+  "base": "cba6685f",
+  "reviewBase": "cd09a393",
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson: 91 test_only Open Buildings polygons; NDJSON LF, NDJSON CRLF and RS rewrites remain in memory",
+    "difficult": "Same features with bare geometry and invalid JSON: exactly two quarantined; remaining 91 accepted; positions retained separately from stable codes"
+  },
+  "acceptance": [
+    "All three rewrites probe as ndjson or geojson-seq, family vector; route streamed_geojson; read 91 unchanged parsed Features; retain exact source ranges and hashes",
+    "All three seal with empty collectionMetadata and EPSG:4326; evidence states the sequence has no coordinate system and is read as RFC 7946 longitude and latitude",
+    "Sequence previews retain provisional RFC 7946 then sealed basis; raw spans pass unchanged provePartFeature and exact receipts pass isRetainedMapOriginal",
+    "A quarantined NDJSON line 5 has issueCode GEOJSON_JSON and sequencePosition {kind:line,number:5}; collection records omit sequencePosition, including quarantined records",
+    "Both sequence framings retain stable INVALID_FEATURE/GEOJSON_JSON codes and line/record positions; receipt tally keys are those codes alone without splitting",
+    "sequencePosition schema rejects zero, fractional numbers and unsupported kinds; blanks retain physical line numbering; value and framing bounds remain tested"
+  ],
+  "design": [
+    "geojson-framing.ts owns card-to-framing selection and is statically imported by draft routing, reader startup and preview",
+    "StreamingVectorRecordSchema has one optional structured sequencePosition; sourceRecord never embeds prose in issueCode; tallySetAside uses issueCode unchanged",
+    "No direct chunk-mapping-normalizer or streamed-profile test files exist; streamed-layout.test.ts exercises both normalizer and profile inventory and is included in targeted and full server checks"
+  ],
+  "checks": {
+    "targeted_TESTS_plus_streamed_layout": { "beforeExit": 0, "beforePassed": 183, "exit": 0, "passed": 184, "failed": 0 },
+    "pnpm typecheck:backend": { "beforeExit": 0, "exit": 0 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "exit": 0 },
+    "pnpm studio:test": { "beforeExit": 0, "exit": 0, "passed": 783, "skipped": 3, "files": 123 },
+    "WORKING-RULES_section_5_server_command": { "beforeExit": 0, "beforePassed": 968, "exit": 0, "passed": 969, "failed": 0, "skipped": 4,
+      "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
+    "openapi.ts --check": { "beforeExit": 1, "exit": 1, "expectedStale": "docs/api/openapi.json" },
+    "python scripts/api/check.py": { "beforeExit": 1, "exit": 1, "reportedStalePin": "packages/contracts/src/usp/ingestion.ts", "alsoChangedContract": "packages/contracts/src/usp/streaming-vector.ts" },
+    "git diff --check": { "beforeExit": 0, "exit": 0 },
+    "logs": "E:/ulpin-tmp/s5-3-review-before-*.log and s5-3-review-after-*.log; baseline completed before edits"
+  },
+  "next": [
+    "Officer words: intake-large.ts:184-199 intakeLargeHoldsReason emits aggregate rejection counts; intakeLargeEnd:470-476 projects those words. Both are outside OWN and unchanged. A follow-up must load/propagate bounded per-record positions to say Line 5 is not valid JSON or Record 7 is not a GeoJSON Feature",
+    "streamed-profile-inventory.ts:51-52 currently copies only code and byte/index locators, not sequencePosition; unchanged and outside OWN. If profile locators supply the officer words, their contract and propagation also need a separate task",
+    "Separate Studio forecast wording for .ndjson, .geojsonl and .geojsons; lead regenerates OpenAPI and source pins; runtime proof remains outside this code-only task"
+  ],
+  "safety": "No runtime, Docker, image, demo, external call or GPU action; originals, generated files, pins and KEEP paths unchanged"
+}
