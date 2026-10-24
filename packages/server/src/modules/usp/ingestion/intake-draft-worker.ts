@@ -99,7 +99,7 @@ export async function proposeIntakeLayout(profile: SourceProfile, remembered: Ma
   const plan = memoryPlan(profile, remembered);
   if (plan) return { plan, origin: 'memory' };
   const gate = caseOriginalTeacherGate();
-  if (!gate.allowed) throw new AppError(422, gate.code, gate.words);
+  if (!gate.allowed) return null;
   const response = await teacher();
   if (response.status !== 'proposed' || !response.plan) return null;
   return { plan: response.plan, origin: 'teacher' };
