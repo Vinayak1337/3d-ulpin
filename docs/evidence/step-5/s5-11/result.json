@@ -1,6 +1,7 @@
 {
   "task": "S5.11", "planStep": 5, "base": "3e7c66151a4ed68b97a2b9a40733dfbe10f96d9c",
   "result": "Stepped, source-bound GeoTIFF previews and a bounded verified-original cache; no runtime action.",
+  "reviewBase": "9d65f4e8",
   "inputs": [
     {"file": "USGS_13_n39w105_20211005.tif", "bytes": 346054720,
       "sha256": "d68a9384153d979a2dbeeca8ce6a996d910e277e6442618c61b442cf1211b0ff",
@@ -15,28 +16,34 @@
     "stepped": "128 x 128 at step 32 inside both files took under 10 seconds; second read made no S3 request.",
     "regression": "NYC step-one TIFF hashes and native LAS/LAZ records remain unchanged; clipped/all-masked cases pass.",
     "cache": "Hash/size failures leave no copy; hits consume no body; LRU eviction enforces size and free-space floor.",
-    "contracts": "Steps 0/1.5/4097 refused; both default overview receipts accepted; 16 MiB plus one direct byte refused."
+    "contracts": "Steps 0/1.5/4097 refused; both overview receipts accepted; 16 MiB plus one direct byte refused.",
+    "review": [
+      "Last source column/row accepted at steps 1 and 4; one extra output column/row refused, not upsampled.",
+      "1000 x 1000 legacy null-window crop accepted without step; changed origin/width or explicit step refused.",
+      "Cross-disk hardlink failure gives plain words; a wrong-size cache entry is removed and reverified.",
+      "Studio's over-limit ortho row now names the 2 GiB reader; no application UI code changed."
+    ]
   },
   "decisions": [
     "Optional step stays absent in legacy contract pins; receipt comparison normalizes absence to one.",
-    "Historical crop controls pin their explicit window, rather than relabeling a crop as a null-window overview.",
+    "Legacy null-window receipts without step accept only the old exact first crop; new receipts use whole extent.",
     "Cache leases serialize readers and eviction across processes; LAS/LAZ use temporary hardlinks, not second copies.",
     "Unmasked non-finite samples keep their valid count but omit an unrepresentable finite range; empty ranges are null."
   ],
   "checks": {
-    "python": {"exit": 0, "passed": 33, "skipped": 0, "baselinePassed": 17},
-    "focusedTypeScript": {"exit": 0, "passed": 50},
+    "python": {"exit": 0, "passed": 36, "skipped": 0, "baselinePassed": 17},
+    "focusedTypeScript": {"exit": 0, "passed": 51},
     "pnpm typecheck:backend": {"before": 0, "after": 0},
     "standardServer": {"before": 0, "after": 0, "passed": 989, "skipped": 4},
-    "pnpm studio:test": {"before": 0, "after": 1, "passed": 782, "failed": 1, "skipped": 3},
+    "pnpm studio:test": {"before": 0, "after": 0, "passed": 783, "failed": 0, "skipped": 3},
     "pnpm studio:typecheck": {"before": 2, "after": 2, "knownError": "table-placement-command.ts:65 TS2322"},
     "openapi --check": {"before": 0, "after": 1, "expected": "docs/api/openapi.json stale"},
     "scripts/api/check.py": {"before": 0, "after": 1, "expected": "producer changed: packages/contracts/src/usp/raster-window.ts"},
     "git diff --check": {"before": 0, "after": 0}
   },
-  "logs": "E:/ulpin-tmp/s5-11/{before,after}-*.log; Python uses the specified d07 interpreter and s5-11-site.",
+  "logs": "E:/ulpin-tmp/s5-11/{before,after,review}-*.log; Python uses specified d07 interpreter and s5-11-site.",
   "next": [
-    "S5.15: surface planning and apps/studio/src/features/intake/upload-reader.test.tsx:21 (stale 16 MiB assertion).",
+    "S5.15: surface planning; the authorized Studio reader-limit assertion is fixed.",
     "S5.16: stepped rendering and shared ranges. Integration regenerates OpenAPI, client types and source pins.",
     "Point reader still opens its S3 response before _source_path, but a cache hit consumes no chunks; lazy opening is S5.14."
   ]

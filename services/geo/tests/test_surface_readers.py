@@ -16,7 +16,7 @@ from rasterio.windows import Window
 
 from geo import settings
 
-from geo.point_batch import read_point_batch
+from geo.point_batch import _source_path, read_point_batch
 from geo.raster_window import _band, read_raster_window
 from geo.validation import InputError
 
@@ -175,7 +175,8 @@ def test_practice_overview_covers_whole_extent_and_cache_downloads_once(file):
 
 
 @pytest.mark.parametrize("masked", [False, True])
-def test_clipped_step_uses_actual_span_and_empty_valid_range_is_null(tmp_path, masked):
+@pytest.mark.parametrize("step", [1, 4])
+def test_clipped_step_stops_at_last_source_sample_and_empty_range_is_null(tmp_path, masked, step):
     # Technical pixels only, not survey data: exercise both clipped axes and nodata.
     path = tmp_path / "control.tif"
     values = np.full((1, 7, 10), -99, dtype="int16") if masked else np.arange(70, dtype="int16").reshape(1, 7, 10)
@@ -187,12 +188,27 @@ def test_clipped_step_uses_actual_span_and_empty_valid_range_is_null(tmp_path, m
     source_id = str(uuid.uuid4())
     key = f"sources/{source_id}/{digest}"
     pins = {"sourceId": source_id, "objectKey": key, "sha256": digest, "bytes": len(data)}
-    window = {"x": 8, "y": 5, "width": 4, "height": 3, "step": 4}
+    window = {"x": 9 - step, "y": 6 - step, "width": 2, "height": 2, "step": step}
     result = read_raster_window({**pins, "window": window}, s3=_S3(key, data))
     assert result["metadata"]["window"] == window
     assert result["metadata"]["sourceCrsWkt"] is None
-    assert result["metadata"]["bands"][0]["validPixels"] == (0 if masked else 12)
+    assert result["metadata"]["bands"][0]["validPixels"] == (0 if masked else 4)
     _check_output(path, result)
+    for extra in ({"width": 3}, {"height": 3}):
+        with pytest.raises(InputError, match="Pixel window is outside the retained raster dimensions"):
+            read_raster_window({**pins, "window": {**window, **extra}}, s3=_S3(key, data))
+
+
+def test_point_cache_on_another_disk_has_plain_words(tmp_path, monkeypatch):
+    # Only the LAS prefix is needed to exercise naming, not native point decoding.
+    data = b"LASF" + bytes(101)
+
+    def wrong_disk(self, target):
+        raise OSError("Cross-device link")
+
+    monkeypatch.setattr(Path, "hardlink_to", wrong_disk)
+    with pytest.raises(InputError, match="cache folder must be on the same disk as the processor temporary folder"):
+        _source_path(_Body(data), str(tmp_path), len(data), hashlib.sha256(data).hexdigest())
 
 
 def test_unmasked_nonfinite_samples_do_not_claim_a_finite_range():

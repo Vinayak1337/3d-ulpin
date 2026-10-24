@@ -95,7 +95,11 @@ export async function readRasterResult(input:RasterWindowInput,hash:string,bound
     /RASTER_WINDOW_LIMITS.windowSide);
   const window=input.window?{...input.window,step:input.window.step??1}:{x:0,y:0,step,
     width:Math.ceil(result.metadata.sourceWidth/step),height:Math.ceil(result.metadata.sourceHeight/step)};
-  if(fingerprint({...result.metadata.window,step:result.metadata.window.step??1})!==fingerprint(window))
+  const legacyWindow={x:0,y:0,width:Math.min(RASTER_WINDOW_LIMITS.windowSide,result.metadata.sourceWidth),
+    height:Math.min(RASTER_WINDOW_LIMITS.windowSide,result.metadata.sourceHeight)};
+  const legacyDefault=input.window===null&&result.metadata.window.step===undefined
+    &&fingerprint(result.metadata.window)===fingerprint(legacyWindow);
+  if(!legacyDefault&&fingerprint({...result.metadata.window,step:result.metadata.window.step??1})!==fingerprint(window))
     throw new AppError(422,'RASTER_RESULT_SCOPE','The receipt describes another pixel window.');
   rasterReadLive(bounds);
   return result;

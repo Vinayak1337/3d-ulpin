@@ -118,7 +118,7 @@ def _read_native(src: Any, requested: dict | None) -> dict:
     selected = requested or {"x": 0, "y": 0, "width": math.ceil(src.width / step),
                              "height": math.ceil(src.height / step), "step": step}
     x, y, width, height, step = (selected[k] for k in ("x", "y", "width", "height", "step"))
-    if x >= src.width or y >= src.height:
+    if x + (width - 1) * step >= src.width or y + (height - 1) * step >= src.height:
         raise InputError("Pixel window is outside the retained raster dimensions.")
     if (len(set(src.dtypes)) != 1
             or np.dtype(src.dtypes[0]).itemsize * width * height * src.count > MAX_WINDOW_RAW_BYTES):

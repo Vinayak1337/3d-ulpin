@@ -38,10 +38,15 @@ def test_second_read_does_not_download_and_bad_receipt_cannot_reuse(cache):
         with verified_source(8, digest, download) as path:
             assert path.read_bytes() == b"original"
     assert len(calls) == 1
-    with pytest.raises(InputError, match="byte count differs"):
+    (cache / digest).write_bytes(b"cut")
+    with verified_source(8, digest, download) as repaired:
+        assert repaired.read_bytes() == b"original"
+    assert len(calls) == 2
+    with pytest.raises(InputError, match="exceeds its retained byte receipt"):
         with verified_source(7, digest, download):
             pytest.fail("A mismatched byte receipt was served.")
-    assert len(calls) == 1
+    assert len(calls) == 3
+    assert not (cache / digest).exists()
 
 
 @pytest.mark.parametrize("data,size", [(b"bad", 3), (b"extra", 3), (b"x", 3)])

@@ -49,6 +49,17 @@ for (const [width, height, step, cols, rows] of [[10812, 10812, 43, 252, 252], [
   });
 }
 
+test('null-window historical receipts accept only the exact legacy default when step is absent', async () => {
+  const value = receipt(1000, 1000, window);
+  assert.deepEqual((await read(value)).metadata.window, window);
+  for (const selected of [{ ...window, x: 1 }, { ...window, y: 1 }, { ...window, width: 255 },
+    { ...window, step: 1 }]) {
+    value.metadata.window = selected;
+    value.metadata.bands[0].validPixels = selected.width * selected.height;
+    await assert.rejects(() => read(value), (e: any) => e.code === 'RASTER_RESULT_SCOPE');
+  }
+});
+
 test('explicit legacy step-one windows and optional band extrema still parse and read', async () => {
   const value = receipt(10812, 10812, window);
   value.input = { ...input, window };

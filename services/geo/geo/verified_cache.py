@@ -97,7 +97,7 @@ def verified_source(size: int, digest: str, download: Callable[[], Any]) -> Iter
         for partial in root.glob("copy-*.part"):
             partial.unlink()
         if path.exists() and path.stat().st_size != size:
-            raise InputError("Cached source byte count differs from its retained receipt.")
+            path.unlink()
         if not path.exists():
             _reserve(root, size)
             _download(root, path, size, digest, download())

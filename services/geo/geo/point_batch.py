@@ -45,7 +45,11 @@ def _source_path(body: Any, directory: str, size: int, digest: str) -> Path:
         if len(prefix) != 105 or prefix[:4] != b"LASF":
             raise InputError("The retained bytes are not a supported readable LAS/LAZ source.")
         named = Path(directory) / ("source.laz" if prefix[104] & 0x80 else "source.las")
-        named.hardlink_to(path)
+        try:
+            named.hardlink_to(path)
+        except OSError:
+            raise InputError("The verified-original cache folder must be on the same disk "
+                             "as the processor temporary folder.") from None
         return named
 
 
