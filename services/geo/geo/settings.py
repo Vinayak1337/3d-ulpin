@@ -1,4 +1,10 @@
 import os
+import tempfile
+from pathlib import Path
+
+VERIFIED_CACHE_DIR = os.getenv("VERIFIED_CACHE_DIR", str(Path(tempfile.gettempdir()) / "ulpin-verified-originals"))
+VERIFIED_CACHE_BYTES = int(os.getenv("VERIFIED_CACHE_BYTES", str(8 * 1024 ** 3)))
+VERIFIED_CACHE_FREE_BYTES = int(os.getenv("VERIFIED_CACHE_FREE_BYTES", str(2 * 1024 ** 3)))
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 GEO_SERVICE_TOKEN = os.getenv("GEO_SERVICE_TOKEN", "")

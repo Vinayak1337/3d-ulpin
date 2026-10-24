@@ -84,8 +84,12 @@ test('above a reader limit the original is kept and the limit is named', () => {
   assert.match((oversized as { limit: string }).limit, /point cloud of at most 16 MiB/);
   const over = surfaceReader({ ...card, point: { format: 1 }, counts: { points: 5_000_001 } } as never, 1024);
   assert.match((over as { limit: string }).limit, /at most 5 million points/);
-  const big = surfaceReader({ family: 'raster', format: 'geotiff', raster: null, counts: {} } as never, 17 * 1024 ** 2);
-  assert.match((big as { limit: string }).limit, /^Kept \(17 MiB\)\. The batch reads a raster of at most 16 MiB/);
+  const raster = { family: 'raster', format: 'geotiff', raster: null, counts: {} };
+  assert.deepEqual(surfaceReader(raster as never, 401575010), { operation: 'raster-window' });
+  const big = surfaceReader(raster as never, 2 * 1024 ** 3 + 1);
+  assert.match((big as { limit: string }).limit, /raster of at most 2048 MiB/);
+  const wide = surfaceReader({ ...raster, raster: { width: 50_000, height: 50_000 } } as never, 1024);
+  assert.match((wide as { limit: string }).limit, /at most 2,00,00,00,000 pixels/);
 });
 
 test('a waveform source stays kept with words and queues no point part', async () => {
@@ -328,7 +332,9 @@ test('a part read outside the batch area is not on the map, and says so', async 
 for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geotiff'],
   ['LAZ', 'point', 'point_cloud', 'laz']] as const) {
   test(`a kept ${name} whose receipt is over its reader's bound rests with words; the publish goes on`, async () => {
-    const sha = 'd'.repeat(64), sourceId = '30000000-0000-4000-8000-000000000005', over = 17 * 1024 ** 2;
+    const limitMiB = profile === 'raster' ? 2048 : 16;
+    const sha = 'd'.repeat(64), sourceId = '30000000-0000-4000-8000-000000000005';
+    const over = (limitMiB + 1) * 1024 ** 2;
     const item: Record<string, any> = { item_id: itemId, case_id: caseId, source_id: sourceId, plan_ref: null,
       state: 'probed', placement: 'undecided', records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0,
       family, format, size_class: 'S', wave: 1 };
@@ -363,9 +369,10 @@ for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geo
     const source = { id: sourceId, case_id: caseId, profile: 'large-original-v1', bytes: 1024 ** 2 } as IntakeSourceRow;
     assert.equal(await queueIntakeSurfaceTx(client, source, card), true);
     assert.deepEqual([item.state, item.placement, item.plan_ref], ['probed', 'not_understood', null]);
-    assert.equal(item.limit_reason, `Kept. The ${profile} reader reads an original of at most 16 MiB with this `
-      + 'batch\'s own kept receipt; its kept receipt states 17 MiB, over the reader\'s 16 MiB bound, so it is not '
-      + 'read or on the map; the original is kept with its SHA-256.');
+    assert.equal(item.limit_reason, `Kept. The ${profile} reader reads an original of at most ${limitMiB} MiB `
+      + `with this batch's own kept receipt; its kept receipt states ${limitMiB + 1} MiB, `
+      + `over the reader's ${limitMiB} MiB bound, so it is not read or on the map; `
+      + 'the original is kept with its SHA-256.');
     assert.doesNotMatch(item.limit_reason, /\d{5,}/);
     assert.ok(statements.includes('ROLLBACK TO SAVEPOINT intake_surface_source'));
     assert.equal(statements.filter(sql => /usp_intake_parts|INTO jobs/.test(sql)).length, 0);

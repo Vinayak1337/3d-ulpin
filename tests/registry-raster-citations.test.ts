@@ -44,7 +44,9 @@ function fixture(kind:'building'|'floor'|'space'='building'){
         upstreamBytes:upstream.bytes,upstreamRetained:false,parentSha256:null,limitations:manifest.limitations,note:'memory-only authority control'}}),
     source={id:sourceId,case_id:caseId,family_id:sourceId,revision:1,profile:'geotiff-raster-v1',sha256:old.sourceHash,
       bytes:old.sourceBytes,object_key:`sources/${sourceId}/${old.sourceHash}`,inspection:{rasterOriginal:marker}},
-    input=rasterInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId})},jobId,null),
+    // Keep this historical crop explicit under the new whole-extent null-window rule.
+    input=rasterInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId})},
+      jobId,old.first.result.metadata.window),
     result=RasterWindowResultSchema.parse({...old.first.result,input,artifact:{...old.first.result.artifact,key:rasterArtifactKey(jobId,old.first.result.artifact.sha256)}}),
     resultBytes=Buffer.from(JSON.stringify(result)),inputHash=fingerprint(input),
     job={id:jobId,operation:'raster-window',case_id:caseId,source_id:sourceId,case_revision:1,payload:input,input_fingerprint:inputHash,

@@ -50,7 +50,8 @@ export function surfaceReader(card: IntakeCard, bytes: number): { operation: Ope
     + `${mib(ceiling)} natively, ${kept}` };
   if (raster && card.raster?.width && card.raster.height
     && card.raster.width * card.raster.height > RASTER_WINDOW_LIMITS.sourcePixels) return { limit: 'Kept. The '
-    + `batch reads a raster of at most 100 million pixels; this one has ${card.raster.width} × `
+    + `batch reads a raster of at most ${RASTER_WINDOW_LIMITS.sourcePixels.toLocaleString('en-IN')} pixels; `
+    + `this one has ${card.raster.width} × `
     + `${card.raster.height}, ${kept}` };
   if (raster && (card.counts.bands ?? 0) > RASTER_WINDOW_LIMITS.sourceBands) return { limit: 'Kept. The batch reads '
     + `a raster of at most 4 bands; this one has ${card.counts.bands}, ${kept}` };

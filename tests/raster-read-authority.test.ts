@@ -1,3 +1,4 @@
+import '../packages/server/src/modules/usp/ingestion/intake-surface';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
@@ -34,7 +35,9 @@ function fixture(technical=false){
         upstreamBytes:upstream.bytes,upstreamRetained:false,parentSha256:null,limitations:manifest.limitations,note:'Memory-only source authority control'}}),
     source={id:saved.sourceId,case_id:current.id,family_id:saved.sourceId,revision:saved.first.sourceRevision,profile:'geotiff-raster-v1',
       sha256:saved.sourceHash,bytes:saved.sourceBytes,object_key:`sources/${saved.sourceId}/${saved.sourceHash}`,inspection:{rasterOriginal:marker}},
-    input=rasterInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId:null})},saved.first.jobId,null);
+    // The retained first result is a crop; null now asks for the whole extent instead.
+    input=rasterInput({current,source,binding,latest:true,
+      context:fingerprint({frame:null,context:null,siteId:null})},saved.first.jobId,saved.first.result.metadata.window);
   const technicalBytes=Buffer.from('RASTER-02 non-TIFF transport authority control; never source evidence'),
     result=RasterWindowResultSchema.parse({...saved.first.result,input,artifact:technical?
       {key:rasterArtifactKey(input.jobId,sha256(technicalBytes)),sha256:sha256(technicalBytes),bytes:technicalBytes.length,mediaType:'image/tiff'}:saved.first.result.artifact}),
@@ -79,7 +82,7 @@ function save(name:string,value:unknown){const dir=process.env.ULPIN_RASTER_READ
 
 test('retained first-window metadata is unchanged through controlled exact status authority; missing historical TIFF remains explicit',{skip:!present},()=>local(async()=>{
   const f=fixture(),c=control(f),returned=await status(c,f);
-  assert.equal(f.input.window,null);assert.deepEqual(returned,f.saved.first);
+  assert.deepEqual(f.input.window,f.saved.first.result.metadata.window);assert.deepEqual(returned,f.saved.first);
   assert.equal(returned.result!.metadata.sourceCrsAuthority,'EPSG:2263');assert.equal(returned.result!.metadata.verticalReferenceStatus,'unknown');
   assert.equal(returned.result!.metadata.globalPlacement,'not_qualified');assert.deepEqual(c.stats(),{active:false,transactions:2});
   assert.equal(c.reads.length,1);assert.equal(c.heads.length,1);assert(c.streams.every(s=>s.destroyed));

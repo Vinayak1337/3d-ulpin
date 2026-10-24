@@ -37,25 +37,20 @@ def _batch(value: Any) -> dict | None:
 
 
 def _source_path(body: Any, directory: str, size: int, digest: str) -> Path:
-    path = Path(directory) / "source"
-    source_hash = hashlib.sha256()
-    count = 0
-    with path.open("wb") as target:
-        for block in body.iter_chunks(chunk_size=1024 * 1024):
-            count += len(block)
-            if count > size:
-                raise InputError("Point source exceeds its retained byte receipt.")
-            source_hash.update(block)
-            target.write(block)
-    if count != size or source_hash.hexdigest() != digest:
-        raise InputError("Point source hash or byte count differs from its retained receipt.")
-    with path.open("rb") as source:
-        prefix = source.read(105)
-    if len(prefix) != 105 or prefix[:4] != b"LASF":
-        raise InputError("The retained bytes are not a supported readable LAS/LAZ source.")
-    named = path.with_suffix(".laz" if prefix[104] & 0x80 else ".las")
-    path.rename(named)
-    return named
+    from .verified_cache import verified_source
+
+    with verified_source(size, digest, lambda: body) as path:
+        with path.open("rb") as source:
+            prefix = source.read(105)
+        if len(prefix) != 105 or prefix[:4] != b"LASF":
+            raise InputError("The retained bytes are not a supported readable LAS/LAZ source.")
+        named = Path(directory) / ("source.laz" if prefix[104] & 0x80 else "source.las")
+        try:
+            named.hardlink_to(path)
+        except OSError:
+            raise InputError("The verified-original cache folder must be on the same disk "
+                             "as the processor temporary folder.") from None
+        return named
 
 
 def _validate_header(header: laspy.LasHeader) -> None:

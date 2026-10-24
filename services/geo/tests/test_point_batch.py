@@ -146,12 +146,31 @@ def test_old_versions_extra_dimensions_and_over_limit_counts_stay_refused(tmp_pa
         read_point_batch(pins, s3=stored)
 
 
-def test_limits_and_integrity_still_apply(tmp_path: Path) -> None:
+def test_limits_and_integrity_still_apply(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from geo import settings
+
+    monkeypatch.setattr(settings, "VERIFIED_CACHE_DIR", str(tmp_path / "verified"))
+    downloads = []
+    chunks = Body.iter_chunks
+
+    def counted(body: Body, chunk_size: int) -> Iterator[bytes]:
+        downloads.append(1)
+        yield from chunks(body, chunk_size)
+
+    monkeypatch.setattr(Body, "iter_chunks", counted)
     stored, _ = literal_source(tmp_path, "1.2", 1)
     with pytest.raises(InputError, match="outside the retained source point count"):
         stored.read({"start": 1, "count": 2})
     with pytest.raises(InputError, match="bounded reader profile"):
         stored.read({"start": 0, "count": 8193})
+    stored.read()
+    assert len(downloads) == 1
     stored.content += b"changed"
+    stored.read()  # The already verified original, not the changed remote body, is reused.
+    assert len(downloads) == 1
+    empty_cache = tmp_path / "cache-miss"
+    monkeypatch.setattr(settings, "VERIFIED_CACHE_DIR", str(empty_cache))
     with pytest.raises(InputError, match="exceeds its retained byte receipt"):
         stored.read()
+    assert len(downloads) == 2
+    assert [path.name for path in empty_cache.iterdir()] == [".lock"]

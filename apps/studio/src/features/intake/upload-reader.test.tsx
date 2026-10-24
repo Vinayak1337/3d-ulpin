@@ -10,7 +10,7 @@ import { readerEligibility } from './upload-model';
 
 it('discloses reader eligibility beside each file before retention, without creating any bytes', () => {
   const files = [
-    { name: 'ortho.tif', size: 2 * 1024 ** 3 },
+    { name: 'ortho.tif', size: 2 * 1024 ** 3 + 1 },
     { name: 'structure.ifc', size: 20 * 1024 ** 2 },
     { name: 'footprints.geojson', size: 5 * 1024 ** 2 },
     { name: 'unrecognised.new-kind', size: 1024 },
@@ -18,7 +18,7 @@ it('discloses reader eligibility beside each file before retention, without crea
   const html = renderToStaticMarkup(<DropOutcomes readers rows={files.map(file => ({
     name: file.name, sizeBytes: file.size, state: 'waiting',
   }))} />);
-  expect(html).toContain('Will be kept, not read: larger than the 16 MiB raster reader');
+  expect(html).toContain('Will be kept, not read: larger than the 2 GiB raster reader');
   expect(html).toContain('Will be read by the IFC structure reader (within 32 MiB)');
   expect(html).toContain('Will be read by the GeoJSON reader (within 1 GiB)');
   expect(html).toContain('Kind not known yet: will be kept and recognised after upload');
