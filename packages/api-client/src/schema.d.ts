@@ -65627,9 +65627,18 @@ export interface components {
             layoutQuestion?: boolean;
             /**
              * Format: uuid
-             * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.
+             * @description Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; null otherwise.
              */
             streamedProfileJobId: string | null;
+            /** @description The immutable streamed-profile generation covered by this layout question; provisional means prefix only. */
+            layoutProfile?: {
+                generation: number;
+                generationHash: string;
+                /** @enum {string} */
+                coverage: "provisional" | "sealed";
+                recordsSeen: number;
+                accepted: number;
+            };
             probeVersion: string | null;
             /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
             partsPlanned: number | null;
@@ -66060,9 +66069,18 @@ export interface components {
                 layoutQuestion?: boolean;
                 /**
                  * Format: uuid
-                 * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.
+                 * @description Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; null otherwise.
                  */
                 streamedProfileJobId: string | null;
+                /** @description The immutable streamed-profile generation covered by this layout question; provisional means prefix only. */
+                layoutProfile?: {
+                    generation: number;
+                    generationHash: string;
+                    /** @enum {string} */
+                    coverage: "provisional" | "sealed";
+                    recordsSeen: number;
+                    accepted: number;
+                };
                 probeVersion: string | null;
                 /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
                 partsPlanned: number | null;

@@ -371025,10 +371025,50 @@
           },
           "streamedProfileJobId": {
             "nullable": true,
-            "description": "Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.",
+            "description": "Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; null otherwise.",
             "type": "string",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "layoutProfile": {
+            "description": "The immutable streamed-profile generation covered by this layout question; provisional means prefix only.",
+            "type": "object",
+            "properties": {
+              "generation": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "generationHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "coverage": {
+                "type": "string",
+                "enum": [
+                  "provisional",
+                  "sealed"
+                ]
+              },
+              "recordsSeen": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "accepted": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "generation",
+              "generationHash",
+              "coverage",
+              "recordsSeen",
+              "accepted"
+            ],
+            "additionalProperties": false
           },
           "probeVersion": {
             "nullable": true,
@@ -373264,10 +373304,50 @@
                 },
                 "streamedProfileJobId": {
                   "nullable": true,
-                  "description": "Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.",
+                  "description": "Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; null otherwise.",
                   "type": "string",
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "layoutProfile": {
+                  "description": "The immutable streamed-profile generation covered by this layout question; provisional means prefix only.",
+                  "type": "object",
+                  "properties": {
+                    "generation": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "generationHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "coverage": {
+                      "type": "string",
+                      "enum": [
+                        "provisional",
+                        "sealed"
+                      ]
+                    },
+                    "recordsSeen": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "accepted": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "generation",
+                    "generationHash",
+                    "coverage",
+                    "recordsSeen",
+                    "accepted"
+                  ],
+                  "additionalProperties": false
                 },
                 "probeVersion": {
                   "nullable": true,
