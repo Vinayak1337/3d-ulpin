@@ -478,7 +478,7 @@
     "packages/server/src/modules/usp/ingestion/intake-text.ts": "77f558a55c8a71dfbe988c43e1d15b3a34ee44be6e75f597d1ec39401e241e60",
     "packages/server/src/modules/usp/ingestion/intake-workbook.ts": "d3bb932fcde815bc3455b127376e4b52af08ce3309c90eb1d770d5e0e2b95ac3",
     "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts": "38912309b44a70011d7335aa549cb076ff597843290d6194f1ad59ede2985be3",
-    "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts": "c9e70279100d28305f3b273c16924041a5ee4c3daddc8030ea2e0facadc9c67a",
+    "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts": "32552168f59ae5bf6caa142e64f9a2978c907d8273b0071fe68690d4217fe6e0",
     "packages/server/src/modules/usp/ingestion/intake-zip.ts": "5e280a37fb1fd98235f394994771819be5400f9fa08be103c3d6de5dd72e1060",
     "packages/server/src/modules/usp/ingestion/kml-config.ts": "9b4cdb670c165aba7ecc83e94f5c8b332f89d197650539b2fbabd14ed5fd49ac",
     "packages/server/src/modules/usp/ingestion/kml-processor.ts": "85cd8ea9b9d0660da570d616ae94d561d230bd9e10249dce032d1f15fec6f4d4",
