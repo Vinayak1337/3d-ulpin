@@ -95,6 +95,9 @@ def _polygon(document, faces: list[dict], vertices: list) -> dict:
 
 def _features(reading: dict) -> list[tuple[str, dict | None, dict | None]]:
     """Each Building in source order: its pointer, then its properties and outline, or None and None."""
+    if "features" in reading:
+        return [row for feature in reading["features"]
+                for row in _features({**feature, "sourceDocument": reading["sourceDocument"]})]
     document, vertices = reading["sourceDocument"], reading["decodedVertices"]
     rows = []
     for item in reading["objects"]:

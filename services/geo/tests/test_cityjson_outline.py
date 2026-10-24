@@ -13,7 +13,7 @@ BUILDING = "NL.IMBAG.Pand.1655100000500568"
 
 
 def convert(tmp_path, document, run="run"):
-    raw = json.dumps(document).encode("utf-8")
+    raw = document if isinstance(document, bytes) else json.dumps(document).encode("utf-8")
     folder = tmp_path / run
     folder.mkdir()
     path = folder / "original.json"
@@ -54,6 +54,29 @@ def test_the_building_lod0_footprint_becomes_one_outline_in_the_horizontal_part_
                                      "geometryPointer": footprint["pointer"]}
     assert sidecar[0]["readerVersion"] == "cityjson-ground-outline/1" and sidecar[0]["format"] == "cityjson"
     assert sidecar[1:] == [{"feature": 0, "position": f"/feature/CityObjects/{BUILDING}"}]
+
+
+def test_test_only_sequence_draws_two_buildings_on_the_declared_epsg_with_local_indices(tmp_path):
+    document = d1()
+    header, first = document["metadata"], document["feature"]
+    header["metadata"]["referenceSystem"] = "EPSG:28992"
+    second = d1()["feature"]
+    # Structural test_only control: distinguish the two local vertex arrays, not a new property assertion.
+    second["vertices"] = [[x + 1, y, z] for x, y, z in second["vertices"]]
+    raw = b"\n".join(json.dumps(text).encode() for text in (header, first, second))
+    layer = convert(tmp_path, raw)
+    assert (layer["state"], layer["crs"], layer["features"]) == ("converted", "EPSG:28992", 2)
+    collection, sidecar = written(layer)
+    reading = read_cityjson(raw)
+    for index, feature in enumerate(collection["features"], 1):
+        footprint = reading["features"][index - 1]["objects"][0]["geometries"][0]
+        face = first["CityObjects"][BUILDING]["geometry"][0]["boundaries"][0]
+        vertices = reading["features"][index - 1]["decodedVertices"]
+        expected = [[vertices[i] for i in ring + ring[:1]] for ring in face]
+        assert feature["geometry"] == {"type": "Polygon", "coordinates": expected}
+        assert feature["properties"]["geometryPointer"] == footprint["pointer"]
+    assert collection["features"][0]["geometry"] != collection["features"][1]["geometry"]
+    assert sidecar[1:] == [{"feature": i - 1, "position": f"/{i}/CityObjects/{BUILDING}"} for i in (1, 2)]
 
 
 def test_the_outline_reads_as_a_building_with_its_heights_beside_it_and_no_height_measured(tmp_path):
