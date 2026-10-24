@@ -47,7 +47,7 @@ pushed, and merged into `task/int3-pre`.
 
 ### S1.1 Full check set on int3-pre 0aecb4f8, fix only what fails
 
-Size M, this PC: Docker. After: none. **Status: open.**
+Size M, this PC: Docker. After: none. **Status: running codex since 24 Oct 2026 (the Claude CLI account is refused by an organisation setting).**
 
 - **What:** Run the whole check recipe the INT2 integrator used, at 0aecb4f8. No full run exists at this head; the last one is INT2 (backend 2022 tests 0 failed, Studio 616 0 failed). Fix only failing tests or real bugs, one commit each, with a regression test for each real bug. Also run the PostgreSQL dispatcher controls that LQ1 skipped, against a disposable local Postgres container, never a runtime's database.
 - **Files:** Read: docs/evidence/int2/result.json (checks[] has the exact commands and env: ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe, --tsconfig docs/evidence/int2/tsconfig.tests.json); packages/server/src/modules/cases/processing.test.ts:349 (ULPIN_DISPATCH_TEST_DATABASE_URL); docs/evidence/lq1/result.json (skips). Change: only the failing test or source file. Worktree from 0aecb4f8.
@@ -136,7 +136,7 @@ Why the API exited under load is unknown (its log is private and no exit code is
 
 ### S3.1 Record why the API or dispatcher exits, and API pool pressure
 
-Size S, code only. After: none (cut from 0aecb4f8; runs in parallel with S1.1 and S3.2). **Status: open.**
+Size S, code only. After: none (cut from 0aecb4f8; runs in parallel with S1.1 and S3.2). **Status: running codex since 24 Oct 2026.**
 
 - **What:** REH15's three API exits could not be explained because stderr goes only to the private runtime log (processes.mjs:56-60) and no exit code is kept. Add exit hooks to the API and dispatcher (exit, uncaughtException, unhandledRejection, SIGTERM). Each hook appends one JSON line to a file named by a new env var that processes.mjs sets to E:/ulpin-tmp/<runtime>/<label>-exit.jsonl. The line holds only: code, signal, error name or AppError code, the first in-repo stack frame as file:line, uptime, rss, heapUsed and heap limit. No message text, the same rule as keepWorkerError (processing.ts:94-104). Make dispatcher.ts:28-34 log the error code instead of always saying 'cannot reach the application database'. Add the pool's totalCount, idleCount and waitingCount to the health response.
 - **Files:** apps/api/src/main.ts:34-60; scripts/dispatcher.ts:6-45; scripts/platform/processes.mjs:49-74; scripts/platform/demo-config.mjs:509-512 (safeEnvironment); apps/api/src/foundation/foundation.controller.ts (health); packages/server/src/infrastructure/db.ts:22-39
@@ -273,7 +273,7 @@ Size M, code only. After: none (wave 1). **Status: open.**
 
 ### S4.3 Reading card: contract, assembler and route for what a file is, what it holds and how it is drawn
 
-Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: open.**
+Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: running codex since 24 Oct 2026.**
 
 - **What:** The tray shows family, format, counts, CRS, extent and a reason, but never says in plain words what a file is or how it will be drawn. Add IntakeReadingSchema (intake-reading/1: what, holds[], fields[], drawing{as,words}, links[], question; each line has a basis: reader, memory, rule, sarvam or officer). Also add an optional one-line what on IntakeItem, computed from the row with no extra read. A new pure assembler builds what, holds, drawing and the open question from the row, its IntakeCard and source.inspection, reusing keptWords, zipParentWords and surfaceWords; fields and links stay empty here. Add GET cases/:caseId/intake/items/:itemId/reading under the item route's authority. The holds lines also show what the intake card already has but the Studio never shows (merged from the UI reader's S4.8): layers, geometry types, raster size and bands, point format and scale, format version, CRS words and extent. Unknown stays unknown; nothing is invented.
 - **Files:** packages/contracts/src/usp/intake.ts:205-249 (IntakeItemSchema; new IntakeReadingSchema after it); new packages/server/src/modules/usp/ingestion/intake-reading.ts; intake-ledger.ts:122-153 intakeItem; intake-service.ts:221-230 one() (add reading()); apps/api/src/modules/ingestion/ingestion.controller.ts:76-81; intake-draft.ts:73-173 (export keptWords only); intake-surface.ts:534-556 (export surfaceWords only)

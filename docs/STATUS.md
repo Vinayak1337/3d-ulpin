@@ -7,6 +7,10 @@ running; the demo runtime stays up. This page stays under one page; the board be
 **24 October.** The old Next.js app `apps/web` and the tests and tools that only exercised it are removed (in Git
 history only). Workers are Claude CLI (all UI work) and pi codex only; no cloud agents.
 
+**24 October, later.** Three codex workers are running: the full check set on the newest code, recording why the API
+or dispatcher stops, and the reading card's contract and route. The Claude CLI worker cannot start: its account is
+refused by an organisation setting, so UI work waits for the owner to fix that account.
+
 ## What works
 
 - Our own New York files (building outlines, a landmarks register, an aerial photo, a laser scan) go from one drop to
