@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
-import { countWords, crsWords, fieldWords, formatWords, holdsWords, isSettled, opensPages, partProgressWords, placementWords, stateWords }
-  from './batch-model';
+import { countWords, crsWords, fieldWords, formatWords, holdsWords, isSettled, opensPages, partProgressWords,
+  placementWords, stateWords } from './batch-model';
 import { intakeRefreshFrame, silenceDelay } from './batch-events';
 import type { IntakeItem } from './batch-model';
 
