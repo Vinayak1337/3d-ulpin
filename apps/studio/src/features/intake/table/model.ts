@@ -9,6 +9,8 @@ const STALE_REASON_WORDS: Record<Freshness['reasons'][number], string> = {
 // Reasons the server gives when nobody answered a column, in words. A code not listed here is shown as it is.
 const NO_ANSWER_WORDS: Record<string, string> = {
   TEACHER_UNAVAILABLE: 'teacher unavailable',
+  CASE_ORIGINAL_TEACHER_REFUSED: 'original file not sent to the teacher',
+  TEACHER_DATA_DENIED: 'data policy does not permit asking the teacher',
   TEACHER_INPUT_LIMIT: 'table too wide; mapping teacher not asked',
   TEACHER_BUDGET_EXHAUSTED: 'teacher budget exhausted',
   TEACHER_RATE_LIMITED: 'teacher rate limited',
@@ -45,6 +47,8 @@ function unansweredQuestion(question: Question | undefined, target: Target, orig
 // A question whose reason is a code, as a sentence. A reason not listed here is the server's own wording.
 const QUESTION_WORDS: Record<string, string> = {
   TEACHER_UNAVAILABLE: 'No teacher was available when this table was imported: this column is unmapped.',
+  CASE_ORIGINAL_TEACHER_REFUSED: 'The original file was not sent to the teacher; this column needs officer input.',
+  TEACHER_DATA_DENIED: 'Data policy does not permit asking the teacher; this column needs officer input.',
   TEACHER_INPUT_LIMIT: 'This table is too wide for the mapping teacher, so the teacher was not asked '
     + 'and the columns are left for the officer.',
 };
@@ -84,8 +88,11 @@ export function isUnmapped(row: Pick<ColumnRow, 'noAnswer' | 'target'>): boolean
  * The confidence cell in words: who decided, or a percentage only when the answer holds a confidence. Null when
  * nobody answered: there is no confidence to print, and 0% would read as a measured one.
  */
-export function confidenceText(row: Pick<ColumnRow, 'origin' | 'noAnswer' | 'confidence'>): string | null {
+export function confidenceText(
+  row: Pick<ColumnRow, 'noAnswer' | 'confidence'> & { origin: ColumnRow['origin'] | 'rule' },
+): string | null {
   if (row.origin === 'officer') return 'Officer decision';
+  if (row.origin === 'rule') return 'Source header rule';
   if (row.noAnswer !== null) return null;
   return row.confidence === null ? 'Unknown' : `${Math.round(row.confidence * 100)}%`;
 }

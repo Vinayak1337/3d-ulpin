@@ -12,6 +12,7 @@ export const MappingChunkMetricsSchema = z.strictObject({ kind: z.literal('mappi
   chunkIndex: z.number().int().nonnegative().max(STREAMING_VECTOR_LIMITS.chunks), layout: z.enum(['new', 'memory']),
   teacherCalls: z.number().int().min(0).max(2), memoryHits: z.number().int().min(0).max(1),
   studentFields: z.number().int().min(0).max(256), teacherFields: z.number().int().min(0).max(256),
+  ruleFields: z.number().int().min(0).max(256).optional(),
   unansweredFields: z.number().int().min(0).max(256).optional(),
   needsInput: z.number().int().min(0).max(256), latencyMs: z.number().finite().nonnegative(),
   learnerVersion: z.string().regex(/^v[1-9]\d*$/).nullable() });

@@ -1,0 +1,53 @@
+{
+  "task": "S4.2",
+  "planStep": 4,
+  "base": "4c704191",
+  "branch": "task/s4-2-mapping-rules",
+  "result": "Memory, named rules, student, teacher; only unmatched columns advance. Officer review stays required.",
+  "inputs": [
+    "fixtures/real-nyc/original.geojson",
+    "Baton Rouge headers: NUMBER OF FLOORS, HEIGHT (FEET), ID, ID 2",
+    "Edmonton header: Building Address",
+    "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv"
+  ],
+  "acceptance": {
+    "nyc": "bin -> building.sourceKey; name -> building.name; unitless height_roof unmatched",
+    "batonRouge": "Explicit floor count; height uses declared ft; both generic ID columns unmatched",
+    "edmonton": "Building Address -> building.addressLiteral",
+    "gurugram": "No building or parcel targets",
+    "routing": "Rule fields never enter student or teacher inputs; positional learner metadata remains aligned",
+    "guards": "Duplicate targets abstain; invalid later answers preserve rules and leave others unanswered"
+  },
+  "decisions": [
+    "Bare name requires a building-key header; generic ID alone is not a building key.",
+    "Unit spellings and dimensions reuse UNIT_SUFFIXES and UNIT_TABLE; no guessed units or factors.",
+    "Studio changes are wording only; components, layout, generated schema and pins are untouched."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:test", "before": [0, 773, 3], "after": [0, 776, 3] },
+    { "command": "WORKING-RULES section 5 server command", "before": [0, 885, 5], "after": [0, 892, 5] },
+    { "command": "Required targeted test files (task TESTS), including mapping-rules.test.ts", "after": [0, 63, 0] },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/table/model.test.ts",
+      "after": [0, 19, 0] },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 1, "expected": "docs/api/openapi.json stale; regeneration reserved for lead" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 1,
+      "expected": "Stops at changed producer packages/contracts/src/canonical/mapping-plan.ts" },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "countOrder": "Test arrays are exit, passed, skipped; no final test failures.",
+  "environment": "TMP/TEMP/TMPDIR=E:/ulpin-tmp; server checks use isolated-env.cjs, demo, REPO_DATA=false",
+  "recovery": {
+    "baseline": "Targeted tests: exit 1, 60 passed, 2 failed, 1 skipped; default Python lacks sklearn",
+    "hypothesis": "The documented profile interpreter restores the two existing offline student checks",
+    "comparison": "Only ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe changed",
+    "criterionAndStop": "Run the two affected suites once; stop if not all 8 pass",
+    "outcome": "8/8 passed; then all 63 required tests passed, including tabular admission"
+  },
+  "logs": "E:/ulpin-tmp/s4-2-{before,after}-*.log; s4-2-python-diagnostic.log; s4-2-routing-venv.log",
+  "externalCalls": 0,
+  "runtimeChanged": false,
+  "next": "Lead regenerates OpenAPI, api-client types and pins for the five changed pinned producers."
+}
