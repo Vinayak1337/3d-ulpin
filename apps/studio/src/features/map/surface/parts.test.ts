@@ -151,16 +151,23 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     const noExtent = { placement: { state: 'not_placed', reason: 'no_area_extent', words: NO_EXTENT } };
     const fake = fakeIo(() => 300, () => (extent ? placed : noExtent as Partial<PartDisplay>));
     const { parts, view } = layer(fake.io);
-    parts.sync([item(300, 'read', waiting)]);
-    await vi.waitFor(() => expect(view.lines[0]!.line).toContain('0 parts drawn and 256 not placed'),
-      { timeout: 5000 });
-    expect(fake.asked).toHaveLength(256);
-    extent = true;
-    parts.sync([item(300, 'read', onMap)]);
-    await vi.waitFor(() => expect(view.parts).toHaveLength(SURFACE_LIMITS.drawnPerItem), { timeout: 5000 });
-    expect(fake.asked).toHaveLength(512);
-    expect(new Set(fake.asked.slice(256))).toEqual(new Set(fake.asked.slice(0, 256)));
-    expect(fake.most()).toBe(SURFACE_LIMITS.displayReads);
+    vi.useFakeTimers();
+    try {
+      parts.sync([item(300, 'read', waiting)]);
+      await vi.runAllTimersAsync();
+      expect(view.lines[0]!.line).toContain('0 parts drawn and 256 not placed');
+      expect(fake.asked).toHaveLength(256);
+      extent = true;
+      parts.sync([item(300, 'read', onMap)]);
+      await vi.runAllTimersAsync();
+      expect(view.parts).toHaveLength(SURFACE_LIMITS.drawnPerItem);
+      expect(fake.asked).toHaveLength(512);
+      expect(new Set(fake.asked.slice(256))).toEqual(new Set(fake.asked.slice(0, 256)));
+      expect(fake.most()).toBe(SURFACE_LIMITS.displayReads);
+    } finally {
+      parts.dispose();
+      vi.useRealTimers();
+    }
   });
 
   it('does not ask a part read outside the area again when only new parts are read', async () => {
