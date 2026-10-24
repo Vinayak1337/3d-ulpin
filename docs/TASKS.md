@@ -351,7 +351,7 @@ Size M, code only. After: S4.2, S4.3. **Status: done 25 Oct (merged on task/int3
 
 ### S4.7 Reading card holds lines for 3D models, IFC, PDFs and surfaces, from their stored readings
 
-Size M, code only. After: S4.3; after S4.6 (same file intake-reading.ts). **Status: running 25 Oct (codex).**
+Size M, code only. After: S4.3; after S4.6 (same file intake-reading.ts). **Status: sent back 25 Oct (4d1723b8: stored readings accepted; nested summary values printed as JSON and null, and OCR pages counted as read), running again.**
 
 - **What:** The item already names its stored readings: native reader job for DXF, CityGML, CityJSON, glTF and OBJ; ifcJobId; the PDF's document reading; plan_ref.header for orthophotos and point clouds. Read these once in the reading route and turn them into holds and drawing lines: objects and types, storeys and spaces, pages and pages needing OCR, pixels, bands, points, stated CRS and vertical reference. Add the layers a conversion left out. Reuse the Studio's existing summary words where they exist; no reader runs again.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-reading.ts; intake-ledger.ts:144-150 (job ids on the item); intake-native-readers.ts; intake-native-omissions.ts; intake-ifc.ts; documents.ts readDocumentResult (read only); intake-surface.ts:534-556; apps/studio/src/features/intake/native/reading-model.ts:45-60 (read only)
