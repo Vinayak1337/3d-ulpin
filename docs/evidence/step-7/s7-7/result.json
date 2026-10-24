@@ -1,0 +1,20 @@
+{
+  "task": "S7.7",
+  "title": "Header area switcher names the right area",
+  "base": "af28288d",
+  "changes": [
+    "Frame AreaSwitcher: the button names an area only on /studio/areas/:areaId; elsewhere it reads Choose an area, no subtitle",
+    "areaSubtitle: adds the first 8 characters of the area id in a mono span, in the button and each menu option",
+    "areaSubtitle: a feature count of 0 reads 0 features; only a missing count is left out",
+    "writeLastArea and the Map link's remembered area are unchanged"
+  ],
+  "tests": {
+    "added": ["app/Frame.test.tsx (3 cases, two areas both named buildings original)"],
+    "fail_on_base": "all 3 cases fail against the base Frame.tsx",
+    "studio_typecheck_exit": 0,
+    "studio_test_exit": 0,
+    "studio_test_counts": "112 files passed; 701 tests passed, 2 skipped"
+  },
+  "ui_design_check": { "report": "ui-design-check.txt", "candidates": 0 },
+  "note": "Not looked at in a running browser; checked by render tests only."
+}
