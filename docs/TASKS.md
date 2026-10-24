@@ -247,7 +247,7 @@ There is no per-file reading card today. Tables wait for a press before anything
 
 ### S4.1 Owner switch for Sarvam on judges' files: one gate for tables and map layers
 
-Size S, code only. After: none (wave 1; disjoint from S4.2 and S4.3). **Status: running codex (24 Oct).**
+Size S, code only. After: none (wave 1; disjoint from S4.2 and S4.3). **Status: done 24 Oct (merged on int3-pre; default off: a judge GeoJSON or table without approved memory gets the officer question until the owner sets ULPIN_TEACHER_CASE_ORIGINALS=masked_profile; batch GeoJSON has no licence or personal-data marks, so only tables can refuse on them).**
 
 - **What:** Judges' tables are always refused, because tabularTeacherPolicy swaps in CASE_ORIGINAL_TEACHER_REFUSED. A judge's GeoJSON reaches Sarvam whenever the gateway is on, because proposeIntakeLayout calls adaptive.propose with no case-original check. Add one setting from ULPIN_TEACHER_CASE_ORIGINALS: absent or off means refuse, masked_profile means allow. Both paths obey it with the same code and plain words. When allowed, a table uses the real teacher with split unlabelled, but never for licence restricted or containsPersonalData yes. Document the owner's one-line step in DEMO-GATEWAY.md.
 - **Files:** packages/server/src/infrastructure/config.ts:19-59 (getter beside dispatchMemoryMib); packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts:103-112 tabularTeacherPolicy; intake-draft-worker.ts:92-103 proposeIntakeLayout; chunk-mapping-worker.ts:166-176 propose (manual-geojson branch); adaptive-mapping-service.ts:28-56; packages/contracts/src/usp/ingestion.ts:154-162 (provenance fields, read only); docs/backend/DEMO-GATEWAY.md (one section)
