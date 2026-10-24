@@ -130,7 +130,7 @@ Verify each licence at fetch time; never guess one. Single writer of real-source
 
 ### S2.3 Closed kit: a separate session acquires and seals about 12 other public files
 
-Size M, this PC: data drive. After: none for the fetch; catalogue entry after S2.2 merged. **Status: open.**
+Size M, this PC: data drive. After: none for the fetch; catalogue entry after S2.2 merged. **Status: done 25 Oct (merged on task/int3-pre): 12 sealed files, 4 families, 1.24 GB; largest 735 MB.**
 
 - **What:** A session that writes no product code fetches about 12 real public originals across the four families and the size range. They must come from publishers and geographies not in the practice kit. Store them in E:/BhuAayam-data/holdout/judge-kit-closed/; the 'holdout' name puts it under every worker's never-open rule. Never profile, open or import them. The sealed manifest (generic names k01..k12, family, format, bytes, sha256, licence state) stays beside the files; commit only its sha256 and the count per family. URLs and real names stay in the receipts outside Git.
 - **Files:** Pattern: docs/evidence/gf5/dq1/sealed-manifest.json and the dq1 entry in docs/api/datasets.json. Write: docs/evidence/step-2/s2-3/result.json with the manifest sha256 and counts per family only.
