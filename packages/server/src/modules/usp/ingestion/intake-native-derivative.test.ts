@@ -640,6 +640,27 @@ function derivativeProtocol(afterFinalize = () => {}, layerNames = ['outlines'])
   return { ...state, original, kept, bytes, lineage, dependencies, get receipts() { return receipts; } };
 }
 
+test('a GeoParquet card queues the batch conversion and keeps a child with GeoParquet lineage', async () => {
+  const state = derivativeProtocol();
+  state.item.card = { format: 'geoparquet', family: 'vector' };
+  state.original.name = 'outlines.parquet';
+  assert.equal(nativeDerivativeFormat(state.item.card as IntakeCard), 'geoparquet');
+  assert.equal(nativeDerivativeFormat({ format: 'parquet', family: 'table' } as IntakeCard), null);
+  const job = await queueIntakeDraftTx(state.client, state.original, state.item.card as IntakeCard);
+  assert.equal(state.jobs[0].id, job);
+  assert.match(state.item.limit_reason, /layers of this GeoParquet are being converted/);
+  const convert = state.dependencies.convert;
+  state.dependencies.convert = async request => {
+    assert.equal(request.format, 'geoparquet');
+    return convert(request);
+  };
+  const [child] = await convertNativeLayers(caseId, itemId, state.dependencies);
+  const lineage = NativeDerivativeLineageSchema.parse(state.sources.get(child).inspection.nativeDerivative);
+  assert.equal(lineage.format, 'geoparquet');
+  assert.equal(lineage.originalSha256, state.original.sha256);
+  assert.match(state.item.limit_reason, /this GeoParquet/);
+});
+
 test('a stop immediately after finalize leaves a linked child; replay creates no second receipt', async () => {
   let stopped = false;
   const state = derivativeProtocol(() => {

@@ -71,7 +71,7 @@ export const NativeDerivativeLineageSchema = z.strictObject({
   version: z.literal('native-derivative/1'), conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION),
   readerVersion: z.string().min(1).max(64), originalSourceId: uuid, originalSourceRevision: z.number().int().positive(),
   originalSha256: hex64, originalItemId: uuid,
-  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz', 'cityjson', 'citygml']),
+  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz', 'cityjson', 'citygml', 'geoparquet']),
   layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
   members: SetMembersSchema.optional(),
@@ -88,7 +88,8 @@ function derivativeFormat(card: IntakeCard | null, name: string):
 
 type NativeFormat = NonNullable<ReturnType<typeof derivativeFormat>>;
 const kinds: Record<NativeFormat, string> = { gpkg: 'GeoPackage', shapefile_zip: 'shapefile ZIP',
-  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ', cityjson: 'CityJSON', citygml: 'CityGML' };
+  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ', cityjson: 'CityJSON', citygml: 'CityGML',
+  geoparquet: 'GeoParquet' };
 const kind = (format: NativeFormat) => kinds[format];
 
 /** The native reading the outlines are converted after stays cited beside its item. */
