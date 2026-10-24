@@ -247,7 +247,7 @@ There is no per-file reading card today. Tables wait for a press before anything
 
 ### S4.1 Owner switch for Sarvam on judges' files: one gate for tables and map layers
 
-Size S, code only. After: none (wave 1; disjoint from S4.2 and S4.3). **Status: open.**
+Size S, code only. After: none (wave 1; disjoint from S4.2 and S4.3). **Status: running codex (24 Oct).**
 
 - **What:** Judges' tables are always refused, because tabularTeacherPolicy swaps in CASE_ORIGINAL_TEACHER_REFUSED. A judge's GeoJSON reaches Sarvam whenever the gateway is on, because proposeIntakeLayout calls adaptive.propose with no case-original check. Add one setting from ULPIN_TEACHER_CASE_ORIGINALS: absent or off means refuse, masked_profile means allow. Both paths obey it with the same code and plain words. When allowed, a table uses the real teacher with split unlabelled, but never for licence restricted or containsPersonalData yes. Document the owner's one-line step in DEMO-GATEWAY.md.
 - **Files:** packages/server/src/infrastructure/config.ts:19-59 (getter beside dispatchMemoryMib); packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts:103-112 tabularTeacherPolicy; intake-draft-worker.ts:92-103 proposeIntakeLayout; chunk-mapping-worker.ts:166-176 propose (manual-geojson branch); adaptive-mapping-service.ts:28-56; packages/contracts/src/usp/ingestion.ts:154-162 (provenance fields, read only); docs/backend/DEMO-GATEWAY.md (one section)
@@ -273,7 +273,7 @@ Size M, code only. After: none (wave 1). **Status: open.**
 
 ### S4.3 Reading card: contract, assembler and route for what a file is, what it holds and how it is drawn
 
-Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: sent back 24 Oct (route catalogue entry, plain format names in contracts, singular counts); running codex.**
+Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: done 24 Oct (d583ea12, after one send-back).**
 
 - **What:** The tray shows family, format, counts, CRS, extent and a reason, but never says in plain words what a file is or how it will be drawn. Add IntakeReadingSchema (intake-reading/1: what, holds[], fields[], drawing{as,words}, links[], question; each line has a basis: reader, memory, rule, sarvam or officer). Also add an optional one-line what on IntakeItem, computed from the row with no extra read. A new pure assembler builds what, holds, drawing and the open question from the row, its IntakeCard and source.inspection, reusing keptWords, zipParentWords and surfaceWords; fields and links stay empty here. Add GET cases/:caseId/intake/items/:itemId/reading under the item route's authority. The holds lines also show what the intake card already has but the Studio never shows (merged from the UI reader's S4.8): layers, geometry types, raster size and bands, point format and scale, format version, CRS words and extent. Unknown stays unknown; nothing is invented.
 - **Files:** packages/contracts/src/usp/intake.ts:205-249 (IntakeItemSchema; new IntakeReadingSchema after it); new packages/server/src/modules/usp/ingestion/intake-reading.ts; intake-ledger.ts:122-153 intakeItem; intake-service.ts:221-230 one() (add reading()); apps/api/src/modules/ingestion/ingestion.controller.ts:76-81; intake-draft.ts:73-173 (export keptWords only); intake-surface.ts:534-556 (export surfaceWords only)
