@@ -106,7 +106,7 @@ Recompute each sha256 and compare it to the sibling receipt. Take the licence, U
 
 ### S2.2 Practice kit part 2: acquire the missing files (large raster, large points, 1 GB vector, real 3D/DXF/DOCX)
 
-Size M, this PC: data drive. After: S2.1. **Status: running codex (24 Oct). Lead note 24 Oct: also fetch one public scanned plan PDF above 16 MiB under a stated licence (S2.1 has none; S5.9 needs one).**
+Size M, this PC: data drive. After: S2.1. **Status: done 24 Oct (merged on int3-pre: Indian COG 402 MB, USGS DEM 346 MB, 2.2M-feature NDJSON 800 MB, Berlin LOD2 CityGML, DXF, DOCX, 59 MB scanned PDF; gaps: no LAZ above 300 MB (USGS HTTP 429), no CityJSON or OBJ, no surveyed DXF floor plan).**
 
 - **What:** Fetch about 5 public originals without login, form or CAPTCHA into E:/BhuAayam-data/datasets/practice-kit-20261024/. Each gets a sibling receipt: issuer, URL, date, sha256, licence, geography, CRS. Gaps to fill:
 - a COG orthophoto of 300 MB to 1 GB (e.g. OpenAerialMap, CC BY 4.0)
@@ -259,7 +259,7 @@ Size S, code only. After: none (wave 1; disjoint from S4.2 and S4.3). **Status: 
 
 ### S4.2 Rules name clear field meanings before the student and the teacher
 
-Size M, code only. After: none (wave 1). **Status: sent back 24 Oct (a rule and a later stage naming one target made the whole plan fall back); running codex ( Studio part limited to model.ts words; a Rule fields column in LearnerPanel is left for a UI task).**
+Size M, code only. After: none (wave 1). **Status: done 24 Oct after one send-back (merged on int3-pre;  Studio part limited to model.ts words; a Rule fields column in LearnerPanel is left for a UI task).**
 
 - **What:** Memory is empty on a fresh runtime and the student commits no correct field, so judge columns end unanswered. Add mapping-rules.ts: header rules (English and common Hindi words) plus the existing value shapes and declared unit, giving canonical targets each with a rule name. A quantity needs a stated unit, a storey count needs a count header, and no two columns may get one target. Call it in proposeMapping after memory and before callStudent, so only unmatched columns reach the student and teacher. Add source 'rule' and method rule:<name>@1 to the contracts and an optional ruleFields metric. Add Studio words for 'rule' and for the raw codes CASE_ORIGINAL_TEACHER_REFUSED and TEACHER_DATA_DENIED.
 - **Files:** new packages/server/src/modules/usp/ingestion/mapping-rules.ts; mapping-teacher.ts:705-873 (RoutingOptions, FieldSourceKind 711, remainingTeacher 780-792, routedSources 801-813, routedResult 815-838, proposeMapping 841-873); chunk-mapping-agent.ts:95-109 chunkMetrics; column-profile.ts:151-215 (read only); packages/contracts/src/usp/chunk-mapping.ts:16-24 (source enum line 19); packages/contracts/src/canonical/mapping-plan.ts:48-51 MappingMethodSchema; packages/contracts/src/usp/ingestion-events.ts:11-17; packages/contracts/src/canonical/targets.ts:65-200 (read only); apps/studio/src/features/intake/table/model.ts:11-60; table/LearnerPanel.tsx:18-55
