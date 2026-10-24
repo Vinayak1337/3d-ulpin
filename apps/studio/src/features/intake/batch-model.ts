@@ -1,5 +1,6 @@
 import type { GetResponse } from '@ulpin/api-client';
 import type { Package } from './run/model';
+import { sizeWords } from './upload-model';
 
 export type IntakeManifest = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake'>;
 export type IntakeItem = IntakeManifest['items'][number];
@@ -62,7 +63,7 @@ export function isSettled(item: IntakeItem) {
 }
 
 export function countWords(value: number | null | undefined) {
-  return value == null ? 'Not known' : value.toLocaleString('en-IN');
+  return value == null ? 'Unknown' : value.toLocaleString('en-IN');
 }
 
 export function fieldWords(path: string) {
@@ -73,25 +74,51 @@ export function fieldWords(path: string) {
 export function familyWords(family: IntakeItem['family']) {
   const words: Record<IntakeItem['family'], string> = {
     vector: 'Map features', table: 'Table', raster: 'Raster', point_cloud: 'Point cloud',
-    model3d: '3D model', document: 'Document', image: 'Image', archive: 'Archive', unknown: 'Not known',
+    model3d: '3D model', document: 'Document', image: 'Image', archive: 'Archive', unknown: 'Unknown',
   };
   return words[family];
 }
 
-export function sizeClassWords(sizeClass: IntakeItem['sizeClass']) {
-  if (!sizeClass) return 'Not known';
-  return { S: 'Small file', M: 'Medium file', L: 'Large file', XL: 'Very large file' }[sizeClass];
-}
+/** A plain name for every format the server's intake signatures can name; a format not listed shows as stated. */
+const formats: Record<string, string> = {
+  geojson: 'GeoJSON', 'geojson-seq': 'GeoJSON sequence', ndjson: 'Newline-delimited JSON',
+  shapefile: 'Shapefile', dbf: 'Shapefile attribute table', 'shapefile-index': 'Shapefile index',
+  shapefile_zip: 'Shapefile ZIP', geopackage: 'GeoPackage', gpkg: 'GeoPackage', sqlite: 'SQLite database',
+  parquet: 'Parquet table', geoparquet: 'GeoParquet', flatgeobuf: 'FlatGeobuf', kml: 'Google Earth KML',
+  kmz: 'Google Earth KMZ', gml: 'GML', citygml: 'CityGML', tiff: 'TIFF image', bigtiff: 'BigTIFF image',
+  geotiff: 'GeoTIFF image', png: 'PNG image', jpeg: 'JPEG image', las: 'LAS point cloud', laz: 'LAZ point cloud',
+  e57: 'E57 point cloud', ply: 'PLY mesh', csv: 'Comma-separated table', tsv: 'Tab-separated table',
+  xlsx: 'Excel workbook', xls: 'Excel 97-2003 workbook', ods: 'OpenDocument spreadsheet',
+  docx: 'Word document', pdf: 'PDF document', ifc: 'IFC building model', glb: 'glTF binary model',
+  gltf: 'glTF model', obj: 'OBJ model', dwg: 'AutoCAD drawing', dxf: 'DXF drawing', zip: 'ZIP archive',
+  '7z': '7-Zip archive', rar: 'RAR archive',
+};
 
 export function formatWords(format: IntakeItem['format']) {
-  if (!format) return 'Not known';
-  const words: Record<string, string> = { geojson: 'GeoJSON', gpkg: 'GeoPackage', shapefile_zip: 'Shapefile ZIP',
-    csv: 'CSV', xlsx: 'Excel workbook', ods: 'OpenDocument spreadsheet', xls: 'Excel 97-2003 workbook' };
-  return words[format] ?? format;
+  if (!format) return 'Unknown';
+  return formats[format] ?? format;
+}
+
+/** Kind, format and size on one line under the file name; the size is the item's bytes in KiB, MiB or GiB. */
+export function fileDetailWords(item: Pick<IntakeItem, 'family' | 'format' | 'sizeBytes'>) {
+  const size = item.sizeBytes == null ? 'Unknown size' : sizeWords(item.sizeBytes);
+  return `${familyWords(item.family)} · ${formatWords(item.format)} · ${size}`;
+}
+
+const holds = [['features', 'feature', 'features'], ['rows', 'row', 'rows'], ['pages', 'page', 'pages'],
+  ['points', 'point', 'points']] as const;
+
+/** What the file holds, from the card's counts: each count the probe stated, with its unit; null when none. */
+export function holdsWords(card: IntakeItem['card']): string | null {
+  const stated = holds.flatMap(([key, one, many]) => {
+    const count = card?.counts[key];
+    return count == null ? [] : [`${countWords(count)} ${count === 1 ? one : many}`];
+  });
+  return stated.length ? stated.join(' · ') : null;
 }
 
 export function crsWords(card: IntakeItem['card']) {
-  if (!card) return 'Not known';
+  if (!card) return 'Unknown';
   const words = { stated: 'Stated', sidecar: 'Stated in a companion file', absent: 'Not stated',
     conflicting: 'Conflicting statements', not_applicable: 'Not applicable' };
   const state = words[card.crs.state];

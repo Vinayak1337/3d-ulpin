@@ -10,8 +10,8 @@ import { StoppedRetry } from './StoppedRetry';
 import { PlanReadingSummary } from './PlanReadingSection';
 import { useSourceCase } from './table/queries';
 import { LayerCrsAnswers } from './LayerCrsAnswer';
-import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
-  stateWords, packagePath, partProgressWords, opensPages, CELL_BATCHES_WORDS, cellBatchPath } from './batch-model';
+import { crsWords, fileDetailWords, holdsWords, placementWords, stateWords, packagePath, partProgressWords,
+  opensPages, CELL_BATCHES_WORDS, cellBatchPath } from './batch-model';
 import type { CellBatch, IntakeItem } from './batch-model';
 import { isIfcItem } from './ifc/structure-model';
 import { opensReading } from './native/reading-model';
@@ -23,26 +23,19 @@ export function IntakeTray({ caseId, items, packages, choose, refresh }: {
 }) {
   return <div className={styles.tray} tabIndex={0} role="region" aria-label="Files in this batch">
     <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId} columns={[
-      { header: 'File', cell: (item) => item.name },
-      { header: 'Contents', cell: (item) => <>
-        {familyWords(item.family)} · {formatWords(item.format)}
+      { header: 'File', cell: (item) => <>
+        {item.name}
+        <p className="ul-help">{fileDetailWords(item)}</p>
       </> },
-      { header: 'Size', numeric: true, cell: (item) => <>
-        {item.sizeBytes == null ? 'Not known' : `${countWords(item.sizeBytes)} bytes`}
-        {item.sizeClass ? ` · ${sizeClassWords(item.sizeClass)}` : ''}
-      </> },
-      { header: 'State', cell: (item) => <>
-        {stateWords(item.state)}
+      { header: 'Status', cell: (item) => <>
+        {stateWords(item.state)} · {placementWords(item.placement)}
         {partProgressWords(item) ? <p className="ul-help">{partProgressWords(item)}</p> : null}
+        {item.limitReason ? <p className="ul-help">{item.limitReason}</p> : null}
+        {item.planReadings?.length ? <div className="ul-help"><PlanReadingSummary readings={item.planReadings} /></div>
+          : null}
       </> },
-      { header: 'Features', numeric: true, cell: (item) => countWords(item.card?.counts.features) },
-      { header: 'Coordinate system', cell: (item) => crsWords(item.card) },
-      { header: 'Extent as stated', cell: (item) => item.card?.extent.native?.join(', ') ?? 'Not known' },
-      { header: 'Placement', cell: (item) => placementWords(item.placement) },
-      { header: 'Reason', cell: (item) => <>
-        {item.limitReason ?? null}
-        <PlanReadingSummary readings={item.planReadings ?? []} />
-      </> },
+      { header: 'Holds', cell: (item) => holdsWords(item.card) },
+      { header: 'Coordinates', cell: (item) => crsWords(item.card) },
       { header: 'Next step', cell: (item) => <NextStep caseId={caseId} item={item} items={items} packages={packages}
         choose={choose} refresh={refresh} /> },
     ]} />

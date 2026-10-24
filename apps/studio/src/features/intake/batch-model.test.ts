@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
-import { countWords, crsWords, fieldWords, isSettled, opensPages, partProgressWords, placementWords, stateWords }
+import { countWords, crsWords, fieldWords, formatWords, holdsWords, isSettled, opensPages, partProgressWords, placementWords, stateWords }
   from './batch-model';
 import { intakeRefreshFrame, silenceDelay } from './batch-events';
 import type { IntakeItem } from './batch-model';
@@ -14,10 +14,10 @@ it('keeps a question distinct from state and renders unknown counts without zero
   expect(isSettled({ ...item, state: 'read', placement: 'undecided' })).toBe(true);
   expect(stateWords('read_to_limit')).toBe('Read to the limit');
   expect(stateWords('probe_failed')).toBe('File could not be checked');
-  expect(countWords(null)).toBe('Not known');
-  expect(countWords(undefined)).toBe('Not known');
+  expect(countWords(null)).toBe('Unknown');
+  expect(countWords(undefined)).toBe('Unknown');
   expect(countWords(0)).toBe('0');
-  expect(crsWords(null)).toBe('Not known');
+  expect(crsWords(null)).toBe('Unknown');
   expect(fieldWords('/features/*/properties/doitt_id')).toBe('doitt_id');
   expect(fieldWords('/features/*/properties/a~1b~0c')).toBe('a/b~c');
 });
@@ -43,4 +43,29 @@ it('a PDF being read says nothing of records, and only a read, unlocked PDF open
   expect(opensPages({ ...pdf, state: 'read' })).toBe(true);
   expect(opensPages({ ...pdf, state: 'read', placement: 'needs_answer' })).toBe(false);
   expect(opensPages({ ...pdf, state: 'read', format: 'docx' })).toBe(false);
+});
+
+// The format keys of the server's extensions map (intake-signatures.ts); a key shown raw is a token, not a name.
+const formatKeys = ['geojson', 'geojson-seq', 'ndjson', 'shapefile', 'dbf', 'geopackage', 'sqlite', 'parquet',
+  'geoparquet', 'tiff', 'bigtiff', 'xlsx', 'xls', 'docx', 'ods', 'kmz', 'geotiff', 'shapefile-index', 'csv', 'tsv',
+  'png', 'jpeg', 'las', 'laz', 'pdf', 'ifc', 'citygml', 'gml', 'kml', 'glb', 'gltf', 'obj', 'zip', 'dwg', 'e57', 'ply',
+  '7z', 'rar', 'flatgeobuf', 'dxf'];
+
+it('formatWords names every format key in words, never the raw token', () => {
+  for (const key of formatKeys) {
+    expect(formatWords(key as IntakeItem['format']), key).not.toBe(key);
+  }
+  expect(formatWords(null)).toBe('Unknown');
+});
+
+it('holdsWords gives each stated count its unit and nothing for a file with no counts', () => {
+  const counts: Record<string, number | null> = { features: 1662, rows: null, pages: null, members: null,
+    points: null, bands: null };
+  const card = (fields: Record<string, number | null>) => ({ counts: { ...counts, ...fields } }) as IntakeItem['card'];
+  expect(holdsWords(card({}))).toBe('1,662 features');
+  expect(holdsWords(card({ features: 1 }))).toBe('1 feature');
+  expect(holdsWords(card({ features: null, pages: 3 }))).toBe('3 pages');
+  expect(holdsWords(card({ features: null, rows: 12, points: 5 }))).toBe('12 rows · 5 points');
+  expect(holdsWords(card({ features: null }))).toBeNull();
+  expect(holdsWords(null)).toBeNull();
 });
