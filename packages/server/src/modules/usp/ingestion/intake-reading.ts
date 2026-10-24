@@ -1,6 +1,7 @@
 import { CANONICAL_TARGETS, canonicalTarget, type MappingTarget, type ColumnProfileDocument } from '@ulpin/contracts';
 import { INTAKE_FORMAT_NAMES, type AnyMappingReceipt, type ChunkMappingPayload, type IntakeCard, type IntakeReading,
-  type MappingPlan, type SourceProfile, documentScannedPages, type DocumentResult, type IFCResult }
+  type MappingPlan, type SourceProfile, type IntakeLayoutMemorySchema,
+  documentScannedPages, type DocumentResult, type IFCResult }
   from '@ulpin/contracts/usp';
 import { z } from 'zod';
 import { intakeNativeReadWords } from './intake-native-readers';
@@ -27,7 +28,8 @@ export type ReadingFacts = {
   ifc?: IFCResult['summary'] | null;
   document?: DocumentResult['native'] | null;
   omissions?: { layer: string; notWritten: number }[];
-  profile?: Pick<SourceProfile, 'paths'> | null;
+  profile?: { paths: Pick<SourceProfile['paths'][number], 'path' | 'types'>[] } | null;
+  layoutMemory?: z.infer<typeof IntakeLayoutMemorySchema>['memory'];
   mapping?: Pick<NonNullable<ChunkMappingPayload['mapping']>, 'profile' | 'plan' | 'fieldSources'> | null;
   recipe?: AnyMappingReceipt | null;
   proposal?: { plan: MappingPlan; origin: 'memory' | 'teacher' | 'officer' } | null;
@@ -327,6 +329,21 @@ function tableFields(card: IntakeCard, facts: ReadingFacts): Field[] {
 
 function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): Field[] {
   if (card?.family === 'table') return tableFields(card, facts);
+  if (card?.family === 'vector' && facts.layoutMemory) {
+    const memory = facts.layoutMemory;
+    const kind = memory.kind === 'public_land' ? 'public land' : memory.kind;
+    return memory.operations.map(({ target, sourcePath }) => {
+      const header = keyProperty(sourcePath) ?? (sourcePath === '/features/*/id' ? 'id' : 'geometry');
+      if (target.endsWith('.geometry')) return { field: sourcePath, header, target: null,
+        ...line(`Geometry for the suggested ${kind} layout; check it and approve.`, 'memory') };
+      const key = target.endsWith('.sourceKey');
+      let meaning: Field['target'] = null;
+      if (memory.kind === 'building') meaning = key ? 'building.sourceKey' : 'building.name';
+      const words = key ? `${header} identifies each ${kind} in the source; not an allocated application ID.`
+        : `${header} holds the ${kind} name as stated in the source.`;
+      return { field: sourcePath, header, target: meaning, ...line(`${words} Check it and approve.`, 'memory') };
+    });
+  }
   if (card?.family !== 'vector' || !facts.profile) return [];
   const approved = facts.recipe && ['approved', 'executed'].includes(facts.recipe.state) ? facts.recipe : null;
   const profile = gisColumns(facts.profile);
@@ -367,6 +384,8 @@ function kindDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
   if (card?.family !== 'vector' || drawing.as === 'kept') return drawing;
   const approved = facts.recipe && ['approved', 'executed'].includes(facts.recipe.state) ? facts.recipe : null;
   const plan = approved?.plan.version === 'manual-geojson/1' ? approved.plan : facts.proposal?.plan;
+  if (!plan && facts.layoutMemory) return { as: facts.layoutMemory.kind,
+    ...line(`Suggested kind: ${facts.layoutMemory.kind}. ${drawing.words}`, 'memory') };
   let kind = plan ? plan.kind ?? 'building' : undefined;
   let basis = approved ? 'officer' : basisOf(facts.proposal?.origin);
   if (!kind) {

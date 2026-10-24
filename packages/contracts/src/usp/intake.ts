@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { IntakePlanReadingSchema } from './intake-plan';
-import { SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
+import { LayoutKindSchema, MappingOperationSchema, SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS,
+  TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
 import { STREAMING_VECTOR_LIMITS } from './streaming-vector';
@@ -263,6 +264,14 @@ export const IntakeItemSchema = z.strictObject({
     + 'that item\'s current state. caseId, itemId, state and placement are null when this officer may not open '
     + 'that batch or it is unavailable. Absent for every other item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
+});
+/** Remembered choices only: the current source still needs its own authored recipe and officer approval. */
+export const IntakeLayoutMemorySchema = z.strictObject({
+  memory: z.strictObject({ kind: LayoutKindSchema,
+    operations: z.array(MappingOperationSchema.pick({ target: true, sourcePath: true })).min(2).max(3),
+    recipeId: z.string().uuid(), name: text, approvedAt: z.iso.datetime(),
+  }).nullable(),
+  words: z.string().min(1).max(2000),
 });
 const readingLine = z.strictObject({ words: z.string().min(1).max(2000),
   basis: z.enum(['reader', 'memory', 'rule', 'sarvam', 'officer']) });

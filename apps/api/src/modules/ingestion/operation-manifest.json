@@ -907,6 +907,19 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layout-memory",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_layout_memory",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "IntakeLayoutMemorySchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "S4.11"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/read-preview",
       "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_read_preview",
       "disposition": "added",

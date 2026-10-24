@@ -11,7 +11,8 @@ import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-servic
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
   IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema,
   IntakeLayerCrsSchema, IntakeTablePlacementSchema, IntakePlanOfferSchema, IntakePlanRequestSchema,
-  IntakePlanReceiptSchema, IntakeNativeOmissionsSchema, IntakeReadingSchema } from '@ulpin/contracts/usp';
+  IntakePlanReceiptSchema, IntakeNativeOmissionsSchema, IntakeReadingSchema,
+  IntakeLayoutMemorySchema } from '@ulpin/contracts/usp';
 import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
   IntakeSurfaceDisplaySchema, IntakeReadPreviewPageSchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
@@ -20,6 +21,7 @@ import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake
 import { declareIntakeKeyProfile, readIntakeEvidence } from '@ulpin/server/modules/usp/ingestion/intake-evidence';
 import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake-large';
 import { readIntakeReadPreview } from '@ulpin/server/modules/usp/ingestion/intake-read-preview';
+import { streamedLayoutMemory } from '@ulpin/server/modules/usp/ingestion/streamed-memory';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
@@ -88,6 +90,17 @@ export class IngestionController {
   @wireResponse(200,IntakeReadingSchema)
   intakeReading(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
     return this.intake.reading(caseId,itemId);
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/layout-memory')
+  @Header('Cache-Control','private, no-store') @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_layout_memory',
+    summary:'Read remembered layout choices from an earlier approval; this file still needs its own approval'})
+  @wireResponse(200,IntakeLayoutMemorySchema)
+  intakeLayoutMemory(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    strictQuery(request.originalUrl,z.strictObject({}),[],
+      'INTAKE_LAYOUT_MEMORY_QUERY','Layout memory has no query fields.');
+    return streamedLayoutMemory(caseId,itemId);
   }
 
   @Get('cases/:caseId/intake/items/:itemId/read-preview')
