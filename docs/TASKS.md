@@ -319,7 +319,7 @@ Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (t
 
 ### S4.6 Reading card fields: each field's meaning and where it came from
 
-Size M, code only. After: S4.2, S4.3. **Status: open.**
+Size M, code only. After: S4.2, S4.3. **Status: done 25 Oct (merged on task/int3-pre).**
 
 - **What:** Fill fields[] in the reading.
 - A table: meanings come from its stored first chunk-mapping proposal (plan and fieldSources); an approved recipe wins as officer.
