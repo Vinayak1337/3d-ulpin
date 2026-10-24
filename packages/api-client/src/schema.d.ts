@@ -72989,6 +72989,11 @@ export interface components {
                     byteEnd: number;
                     rawSha256: string;
                     issueCode: string;
+                    sequencePosition?: {
+                        /** @enum {string} */
+                        kind: "line" | "record";
+                        number: number;
+                    };
                 }[];
                 reference: {
                     sourceCrs: string | null;
@@ -73056,6 +73061,11 @@ export interface components {
                 byteEnd: number;
                 rawSha256: string;
                 issueCode: string;
+                sequencePosition?: {
+                    /** @enum {string} */
+                    kind: "line" | "record";
+                    number: number;
+                };
             }[];
             reference: {
                 sourceCrs: string | null;
