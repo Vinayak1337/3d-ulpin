@@ -107,7 +107,7 @@ def test_geoparquet_crs_questions_defaults_refusals_and_exact_values(arrow, tmp_
         column["crs"] = {"type": "unknown"}
     if crs_state == "encoding":
         column["encoding"] = "point"
-    meta = {"version": "1.0.0" if crs_state == "older" else "1.1.0", "primary_column": "geometry",
+    meta = {"version": "0.4.0" if crs_state == "older" else "1.1.0", "primary_column": "geometry",
             "columns": {"geometry": column, "other": {"encoding": "WKB", "geometry_types": ["Point"]}}}
     path, count = geoparquet_control(arrow, tmp_path, meta)
     [layer] = convert(path, "geoparquet", tmp_path)
@@ -119,8 +119,6 @@ def test_geoparquet_crs_questions_defaults_refusals_and_exact_values(arrow, tmp_
         return
     if crs_state in ("null", "older"):
         assert layer["state"] == "crs_unstated" and layer["statesCrs"] is False
-        if crs_state == "older":
-            return
         out = tmp_path / "answered"
         out.mkdir()
         [layer] = convert_native_file(path, "geoparquet", out, sha(path), {"geometry": "EPSG:28356"})
@@ -134,8 +132,46 @@ def test_geoparquet_crs_questions_defaults_refusals_and_exact_values(arrow, tmp_
     assert [line["reason"] for line in sidecar[-3:-1]] == ["geometry is null", "geometry is empty"]
     assert "WKB" in sidecar[-1]["reason"]
     assert sidecar[0]["words"].count("other") == 1
+    if crs_state in ("null", "older"):
+        assert sidecar[0]["crsSource"] == "officer_stated"
+        assert "crsBasis" not in layer and "crsBasis" not in sidecar[0]
     assert collection["features"][WINDOW]["properties"] == {
         "day": "2026-01-01", "time": "12:30:00", "stamp": "2026-01-01T12:30:00", "amount": "1.2300"}
+
+
+@pytest.mark.parametrize("crs_state", ["absent", "declared", "null"])
+def test_geoparquet_1_0_0_uses_its_specification_or_declared_crs(arrow, tmp_path, crs_state):
+    from pyproj import CRS
+    column = {"encoding": "WKB", "geometry_types": ["Point"]}
+    if crs_state != "absent":
+        column["crs"] = CRS.from_epsg(28356).to_json_dict() if crs_state == "declared" else None
+    meta = {"version": "1.0.0", "primary_column": "geometry", "columns": {
+        "geometry": column, "other": {"encoding": "WKB", "geometry_types": ["Point"]}}}
+    path, count = geoparquet_control(arrow, tmp_path, meta)
+    [layer] = convert(path, "geoparquet", tmp_path)
+    if crs_state == "null":
+        assert layer["state"] == "crs_unstated" and layer["statesCrs"] is False
+        return
+    assert layer["state"] == "converted" and layer["crsSource"] == "stated"
+    assert (layer["features"], layer["notWritten"]) == (count, 3)
+    if crs_state == "absent":
+        assert layer["crs"] == "EPSG:4326"
+        assert layer["crsBasis"] == "the GeoParquet 1.0.0 specification states longitude and latitude on " \
+            "OGC CRS84 when a column has no crs"
+        assert written(layer)[1][0]["crsBasis"] == layer["crsBasis"]
+    else:
+        assert layer["crs"] == "EPSG:28356" and "crsBasis" not in layer
+
+
+def test_geoparquet_0_4_0_with_declared_crs_stops_naming_its_version(arrow, tmp_path):
+    from pyproj import CRS
+    meta = {"version": "0.4.0", "primary_column": "geometry", "columns": {"geometry": {
+        "encoding": "WKB", "geometry_types": ["Point"], "crs": CRS.from_epsg(28356).to_json_dict()}}}
+    path, _ = geoparquet_control(arrow, tmp_path, meta)
+    [layer] = convert_native_file(path, "geoparquet", tmp_path, sha(path), {"geometry": "EPSG:4326"})
+    assert layer["state"] == "not_converted"
+    assert layer["reason"] == "GeoParquet version 0.4.0 is not supported when a coordinate reference system is stated"
+    assert "geojson" not in layer
 
 
 def sha(path: Path) -> str:

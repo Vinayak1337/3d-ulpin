@@ -1155,9 +1155,9 @@ def _horizontal_epsg(code: int) -> str | None:
 
 
 def _geoparquet_crs(meta: dict, version: str, stopped: dict, answers: dict) -> dict:
-    if "crs" not in meta and version == "1.1.0":
+    if "crs" not in meta and version in ("1.0.0", "1.1.0"):
         return {"crs": "EPSG:4326", "crsSource": "stated", "crsBasis":
-                "the GeoParquet 1.1.0 specification states longitude and latitude on OGC CRS84 "
+                f"the GeoParquet {version} specification states longitude and latitude on OGC CRS84 "
                 "when a column has no crs"}
     if meta.get("crs") is None:
         answer = _officer_crs(stopped, _STATES_NONE, answers)
@@ -1237,16 +1237,17 @@ def _geoparquet_layer(parquet, folder: Path, source_sha256: str, answers: dict) 
                "ordinal": 0, "state": "not_converted"}
     if isinstance(primary, str) and not 1 <= len(primary) <= 256:
         return {**stopped, "reason": "the primary geometry column name must have 1 to 256 characters"}
-    if checked["status"] != "supported":
-        # An older file without a CRS still asks the existing question, never takes the 1.1.0 default.
-        meta = checked["columns"].get(primary, {}) if isinstance(primary, str) else {}
-        if checked["reasons"] == ["version_unsupported"] and meta.get("crs", {}).get("state") == "absent":
-            crs = _officer_crs(stopped, _STATES_NONE, answers)
-            if isinstance(crs, dict):
-                return crs
+    version = geo.get("version") if isinstance(geo, dict) else None
+    if checked["reasons"] == ["version_unsupported"]:
+        # The converter accepts 1.0.0 WKB too; other versions need the officer when no system is stated.
+        meta = checked["columns"][primary]
+        if version != "1.0.0" and meta["crs"]["state"] == "declared":
+            return {**stopped, "reason": f"GeoParquet version {version} is not supported "
+                    "when a coordinate reference system is stated"}
+    elif checked["status"] != "supported":
         words = "; ".join(item.replace("_", " ") for item in checked["reasons"])
         return {**stopped, "reason": f"GeoParquet profile not supported: {words}"[:300]}
-    crs = _geoparquet_crs(geo["columns"][primary], geo["version"], stopped, answers)
+    crs = _geoparquet_crs(geo["columns"][primary], version, stopped, answers)
     if "state" in crs:
         return crs
     return _geoparquet_write(parquet, geo, crs, stopped, folder, source_sha256)

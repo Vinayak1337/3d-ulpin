@@ -16,12 +16,14 @@
   },
   "controls": [
     "test_only: 2001 written rows across WINDOW boundaries; null, empty and invalid WKB each cited as not written",
-    "1.1.0 absent crs: EPSG:4326 with specification basis; explicit null: officer question and answered conversion",
+    "1.0.0 and 1.1.0 absent crs: EPSG:4326 with versioned specification basis; null: officer question",
+    "0.4.0 absent crs: officer question then answered conversion; declared crs: stop naming version 0.4.0",
     "Invalid declared CRS cannot be replaced; unsupported encoding stops with words; missing reader uses plain words",
     "ISO date/time/timestamp and exact decimal text; other geometry columns omitted and named once in sidecar header"
   ],
   "decisions": [
-    "The existing profile remains 1.1.0 only. Older absent CRS asks the officer; an answer cannot waive that profile.",
+    "The converter accepts version-only profile refusals for 1.0.0, without changing the existing profile reader.",
+    "Other versions without a CRS take officer answers; a declared CRS stops naming the unsupported version.",
     "Omitted-column words live in the layer sidecar header; the strict layer response schema is unchanged."
   ],
   "environment": {
@@ -42,16 +44,19 @@
     "final": {
       "backend": "0; no errors", "studioTypes": "2; same existing TS2322",
       "studioTests": "0; 783 passed, 3 skipped", "targeted": "0; 77 passed",
-      "server": "0; 984 passed, 4 skipped", "pytest": "0; 33 passed, 6 skipped",
-      "withoutPyarrow": "0; 1 passed, 6 skipped, 22 deselected (-k geoparquet)",
+      "server": "0; 984 passed, 4 skipped", "pytest": "0; 37 passed, 6 skipped",
+      "withoutPyarrow": "0; 1 passed, 10 skipped, 22 deselected (-k geoparquet)",
       "openapi": "1; expected stale source-pins.json", "pins": "1; expected producer changed", "diff": "0"
     },
+    "reviewBefore": "Same final exits/counts above except pytest: 33 passed, 6 skipped; no edits overlapped checks.",
+    "regressionBaseline": "New assertions against b2592d69: exit 1; 5 failed, 6 passed, 22 deselected.",
+    "testCorrection": "Initial added fixture omitted its second geometry declaration; corrected before baseline run.",
     "pythonSkips": "Six existing upstream-reader cases lack NATIVE_GEOPARQUET_TEST_SOURCES; new cases ran.",
     "staleProducers": [
       "packages/server/src/modules/usp/ingestion/intake-draft.ts",
       "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts"
     ],
-    "logs": "E:/ulpin-tmp/s5-4-{before,after}-*.log; s5-4-baseline-pytest.log; s5-4-acceptance.json"
+    "logs": "E:/ulpin-tmp/s5-4-review-{before,after}-*.log; s5-4-review-{red,green,no-arrow}.log"
   },
   "next": [
     "S5.6 processor image after S5.5 integration; no image, runtime or demo action performed here",
