@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, { mock } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { Readable } from 'node:stream';
 import { settings } from '../../../infrastructure/config';
 import { AdaptiveMappingService, caseOriginalTeacherGate } from './adaptive-mapping-service';
 import type { PoolClient } from 'pg';
@@ -7,7 +10,7 @@ import { SourceProfileSchema, AdaptiveMappingResponseSchema, type MappingReceipt
 import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
-  assertIntakeDraftTx, type DraftItem } from './intake-draft';
+  assertIntakeDraftTx, certainTableSelection, type DraftItem } from './intake-draft';
 import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
   lookupIntakeMemory } from './intake-draft-worker';
 import type { MapArea } from '@ulpin/contracts';
@@ -15,6 +18,12 @@ import { AppError } from '../../../infrastructure/errors';
 import { registerUspJobInputTx } from '../jobs';
 import { fingerprint } from '../../cases/domain';
 import { IntakePageImageInputSchema, labelPageImageTx, settlePageImageTx } from './intake-page-image';
+import { probeOriginal } from './intake-probe';
+import { prepareIntakeTable } from './intake-table-auto';
+import { StreamingVectorService } from './streaming-vector';
+import { ChunkMappingService } from './chunk-mapping';
+import { ManualIngestionService } from './service';
+import { sha256 } from '../../../infrastructure/storage';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'ca0-protocol-operator';
 const caseId = '10000000-0000-4000-8000-000000000001';
@@ -67,12 +76,18 @@ type Protocol = {
   src: IntakeSourceRow;
   tray: DraftItem;
   jobs: any[];
-  state: { recipeRevision: number; events: number; projection: Record<string, any> };
+  state: { recipeRevision: number; revision: number; operations: Map<string, any>;
+    events: number; projection: Record<string, any> };
 };
 function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
   if (sql.startsWith('SELECT * FROM usp_intake_items')) return [tray];
-  if (sql.startsWith('SELECT id,revision,archived FROM cases')) return [{ id: caseId, revision: 0, archived: false }];
+  if (sql.includes('FROM operations')) return state.operations.has(values[1]) ? [state.operations.get(values[1])] : [];
+  if (sql.startsWith('SELECT id,revision FROM cases')) return [{ id: caseId, revision: state.revision }];
+  if (sql.includes('FROM registry_case_feature_mappings') || sql.includes('FROM import_packages')) return [];
+  if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return [src];
+  if (sql.startsWith('SELECT id,revision,archived FROM cases'))
+    return [{ id: caseId, revision: state.revision, archived: false }];
   if (sql.startsWith('SELECT * FROM sources')) return [src];
   if (sql.startsWith('SELECT max(revision)')) return [{ revision: src.revision }];
   if (sql.startsWith('SELECT revision FROM usp_mapping_recipes'))
@@ -81,7 +96,7 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT state,placement,plan_ref')) return [state.projection];
   if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
-  if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 0 }];
+  if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: state.revision }];
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
     return jobs.filter(job => job.source_id === values[0] && job.operation === 'intake-large');
@@ -94,7 +109,20 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   return null;
 }
 function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | null {
-  const { tray, jobs, state } = fixture;
+  const { src, tray, jobs, state } = fixture;
+  if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql) || sql.startsWith('UPDATE jobs SET next_attempt_at=')) return [];
+  if (sql.startsWith('UPDATE sources SET inspection=')) {
+    Object.assign(src.inspection!, JSON.parse(values[1]));
+    return [];
+  }
+  if (sql.startsWith('UPDATE cases SET revision=')) {
+    state.revision++;
+    return [];
+  }
+  if (sql.startsWith('INSERT INTO operations')) {
+    state.operations.set(values[1], { payload_hash: values[2], result: values[3] });
+    return [];
+  }
   if (sql.startsWith('INSERT INTO jobs')) {
     jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2],
       operation: /VALUES\(\$1,\$2,\$3,'([a-z-]+)'/.exec(sql)![1],
@@ -117,8 +145,9 @@ function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | n
   return null;
 }
 function protocol() {
-  const fixture: Protocol = { src: source(), tray: item(), jobs: [], state: { recipeRevision: 0, events: 0,
-    projection: { state: 'probed', placement: 'undecided', plan_ref: null, records_seen: 0, limit_reason: null } } };
+  const fixture: Protocol = { src: source(), tray: item(), jobs: [],
+    state: { recipeRevision: 0, revision: 0, operations: new Map(), events: 0,
+      projection: { state: 'probed', placement: 'undecided', plan_ref: null, records_seen: 0, limit_reason: null } } };
   const statements: string[] = [];
   const client = { query: async (sql: string, values: any[]) => {
     statements.push(sql);
@@ -334,6 +363,142 @@ for (const [format, expected] of [
     assert.equal(fixture.state.projection.limit_reason, expected);
   });
 }
+
+async function tableProtocol(bytes: Buffer, name: string) {
+  const fixture = protocol();
+  Object.assign(fixture.src, { profile: 'large-original-v1', bytes: bytes.length, sha256: sha256(bytes), name,
+    inspection: { largeOriginal: { uploadId: sourceId, operatorSubject: binding.subject, objectEtag: 'etag',
+      verifiedSha256: sha256(bytes), verifiedBytes: bytes.length, conversion: 'unsupported',
+      bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed',
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-20T00:00:00.000Z', state: 'not_stated' } } } });
+  fixture.tray.family = 'table';
+  fixture.tray.card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, name);
+  return fixture;
+}
+
+async function tableCommands(fixture: Awaited<ReturnType<typeof tableProtocol>>, bytes: Buffer,
+  run: () => Promise<void>) {
+  const globals = globalThis as any;
+  const previous = globals.ulpinPool;
+  globals.ulpinPool = { query: fixture.client.query.bind(fixture.client),
+    connect: async () => ({ query: fixture.client.query.bind(fixture.client), release() {} }) };
+  const require = createRequire(new URL('../../../../package.json', import.meta.url));
+  const { S3Client } = require('@aws-sdk/client-s3');
+  for (const key of ['s3Endpoint', 's3Region', 's3Bucket', 's3AccessKey', 's3SecretKey'] as const)
+    mock.getter(settings, key, () => key === 's3Endpoint' ? 'http://127.0.0.1:1' : 'table-protocol');
+  mock.method(S3Client.prototype, 'send', async () => ({ Body: Readable.from([bytes]),
+    ContentLength: bytes.length, ETag: 'etag' }));
+  try {
+    await run();
+  } finally {
+    globals.ulpinPool = previous;
+    mock.restoreAll();
+  }
+}
+
+test('lgd-gurugram reads once and queues both pinned proposal commands without an officer request', async () => {
+  const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+  const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.jobs.length, 1);
+  assert.match(fixture.state.projection.limit_reason, /table is being read/);
+  const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+  assert.equal(input.sourcePin, intakeSourcePin(fixture.src, binding));
+  await tableCommands(fixture, bytes, async () => {
+    const calls: any[] = [];
+    let occupied = true;
+    for (const [service, kind] of [[StreamingVectorService, 'streaming-vector'],
+      [ChunkMappingService, 'chunk-mapping']] as const) {
+      mock.method(service.prototype, 'enqueue', async (caseValue: string, sourceValue: string, request: any) => {
+        if (kind === 'chunk-mapping' && occupied) throw new AppError(429, 'MAPPING_CAPACITY', 'Protocol busy slot.');
+        const id = intakeDraftKey(sourceId, 0, kind);
+        calls.push({ kind, caseValue, sourceValue, request });
+        fixture.state.operations.set(`${kind}:${request.requestKey}`, { result: { jobId: id } });
+        return { jobId: id };
+      });
+    }
+    fixture.state.revision++; // Another file arrives after enrolment, before this read.
+    assert.equal(await prepareIntakeTable(input), false);
+    assert.equal(calls.length, 1);
+    occupied = false;
+    assert.equal(await prepareIntakeTable(input), true);
+    assert.equal(fixture.src.inspection!.manualProfile.version, 'manual-tabular/1');
+    assert.equal(fixture.src.sha256, sha256(bytes));
+    assert.equal(fixture.src.bytes, bytes.length);
+    assert.equal(fixture.src.inspection!.manualProfile.tabular.admission.containsPersonalData, 'unknown');
+    assert.deepEqual(calls.map(call => call.kind), ['streaming-vector', 'chunk-mapping']);
+    for (const call of calls) {
+      assert.equal(call.caseValue, caseId);
+      assert.equal(call.sourceValue, sourceId);
+      assert.equal(call.request.expectedSourceRevision, input.sourceRevision);
+      assert.equal(call.request.sourceSha256, input.sourceSha256);
+      assert.equal(call.request.expectedCaseRevision, fixture.state.revision);
+      assert.deepEqual(call.request.tabular, fixture.src.inspection!.manualProfile.tabular);
+    }
+    assert.equal(calls[1].request.rawJobId, intakeDraftKey(sourceId, 0, 'streaming-vector'));
+    fixture.state.revision++;
+    assert.equal(await prepareIntakeTable(input), true);
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+    assert.equal(fixture.jobs.length, 1);
+    assert.equal(calls.length, 2);
+    assert.equal(fixture.statements.filter(sql => sql.startsWith('UPDATE sources SET inspection=')).length, 1);
+    assert(!fixture.statements.some(sql => /INSERT INTO.*(?:request|recipe|approval)/.test(sql)));
+    fixture.src.sha256 = 'b'.repeat(64);
+    await assert.rejects(prepareIntakeTable(input), { code: 'INTAKE_SOURCE_INTEGRITY' });
+    fixture.src.sha256 = input.sourceSha256;
+    fixture.src.inspection!.largeOriginal.operatorSubject = 'another-protocol-context';
+    await assert.rejects(prepareIntakeTable(input), { code: 'INTAKE_SOURCE_DENIED' });
+    assert.equal(calls.length, 2);
+  });
+  assert(jobId);
+});
+
+test('a streamed table read waits without spending an attempt or admitting a mapper before its profile', async () => {
+  const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+  const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+  await tableCommands(fixture, bytes, async () => {
+    mock.method(ManualIngestionService.prototype, 'tableFromOriginal', async () => ({ version: 'table-profile/1',
+      jobId: sourceId, caseId, sourceId, sourceRevision: 1, status: 'running', issueCode: null, message: null }));
+    assert.equal(await prepareIntakeTable(input), false);
+    assert(fixture.statements.some(sql => sql.startsWith('UPDATE jobs SET next_attempt_at=')));
+    assert(!fixture.statements.some(sql => sql.includes('usp_job_attempts')));
+    assert.equal(fixture.jobs.length, 1);
+    assert.equal(fixture.src.inspection!.manualProfile, undefined);
+  });
+});
+
+test('a real two-sheet workbook stays kept and asks which sheet and header row to read', async () => {
+  const manifest = JSON.parse(readFileSync('docs/evidence/usp/native-xlsx/sources.json', 'utf8'));
+  const original = manifest.sources.find((entry: any) => entry.id === 'dfe-discharge-coefficient-calculator');
+  const bytes = readFileSync(original.privateOriginal);
+  assert.equal(sha256(bytes), original.sha256);
+  const fixture = await tableProtocol(bytes, 'Discharge_coefficient_calculator.xlsx');
+  assert.equal(fixture.tray.card!.sheets.length, 2);
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(fixture.tray.state, 'probed');
+  assert.equal(fixture.state.projection.placement, 'not_understood');
+  assert.match(fixture.state.projection.limit_reason, /Which sheet and header row should be read/);
+  assert.equal(fixture.jobs.length, 0);
+});
+
+test('only complete first-row selections are automatic; an incomplete workbook inventory keeps the press', async () => {
+  const fixture = await tableProtocol(Buffer.from('code\tname\ncontrol\tlayout control\n'), 'layout-control.tsv');
+  const card = fixture.tray.card!;
+  assert.deepEqual(certainTableSelection(card), { format: 'csv', sheet: 'csv', table: null, headerRows: [1],
+    delimiter: '\t', encoding: card.encoding });
+  assert.equal(certainTableSelection({ ...card, encoding: null }), null);
+  assert.equal(certainTableSelection({ ...card, delimiter: null }), null);
+  for (const format of ['xlsx', 'ods']) {
+    const workbook = { ...card, format, sheets: [{ name: 'Layout control', count: null }], limits: [] };
+    assert.deepEqual(certainTableSelection(workbook), {
+      format, sheet: 'Layout control', table: null, headerRows: [1],
+    });
+    assert.equal(certainTableSelection({ ...workbook, limits: ['Sheet inventory cut; more may follow.'] }), null);
+    assert.equal(certainTableSelection({ ...workbook, encrypted: true }), null);
+  }
+});
 
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';

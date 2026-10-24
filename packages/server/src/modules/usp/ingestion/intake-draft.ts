@@ -1,7 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { DOCUMENT_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_TABLE_READER_FORMATS, STREAMING_VECTOR_LIMITS,
-  type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
+  TabularSelectionSchema, type TabularSelection, type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
@@ -27,6 +27,7 @@ export const IntakeDraftInputSchema = z.strictObject({
   caseRevision: z.number().int().nonnegative(), sourceId: uuid, sourceRevision: z.number().int().positive(),
   sourceSha256: hash, sourcePin: hash, recipeRevision: z.number().int().nonnegative(),
   subject: z.string().min(1).max(256), accessSha256: hash,
+  tableSelection: TabularSelectionSchema.optional(),
 });
 export type IntakeDraftInput = z.infer<typeof IntakeDraftInputSchema>;
 export type DraftItem = {
@@ -105,9 +106,23 @@ function zipCountWords(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
-/** A batch PDF goes to the document reader; a batch table is read with "Open the table". */
+/** A batch PDF goes to the document reader; a table with an uncertain layout keeps its press. */
 const batchPdf = (card: IntakeCard) => card.format === 'pdf' && card.family === 'document';
 const batchTable = (card: IntakeCard) => card.family === 'table' && INTAKE_TABLE_READER_FORMATS.includes(card.format);
+
+/** Only the first-row layout is automatic; incomplete sheet inventories never establish a one-sheet workbook. */
+export function certainTableSelection(card: IntakeCard): TabularSelection | null {
+  if (!batchTable(card) || card.encrypted || card.depth !== 'structure') return null;
+  const delimited = card.format === 'csv' || card.format === 'tsv';
+  if (delimited && (!card.delimiter || !card.encoding || !card.columns.length)) return null;
+  if (!delimited && (card.sheets.length !== 1
+    || card.limits.some(words => /cut|unresolved|unavailable|refused/i.test(words)))) return null;
+  const parsed = TabularSelectionSchema.safeParse({ format: delimited ? 'csv' : card.format,
+    sheet: delimited ? 'csv' : card.sheets[0].name, table: null, headerRows: [1],
+    ...(delimited ? { delimiter: card.delimiter, encoding: card.encoding } : {}),
+  });
+  return parsed.success ? parsed.data : null;
+}
 
 /** A member taken out of a ZIP other than a small GeoJSON is kept through the byte receipt, under this profile. */
 const keptMember = { profile: 'large-original-v1' } as IntakeSourceRow;
@@ -165,6 +180,8 @@ export function keptWords(card: IntakeCard, bytes: number): string {
   if (card.format === 'xls') return `Excel 97-2003 workbook (${sizeWords(bytes)}). ${INTAKE_LEGACY_WORKBOOK_WORDS}`;
   const kind = `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
   const kept = `Kept as ${/^[AEIOX]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}).`;
+  if (batchTable(card) && card.sheets?.length > 1) return `${kept} Which sheet and header row should be read? `
+    + 'Choose them with "Read as a table"; the original is kept with its SHA-256.';
   if (batchTable(card)) return `${kept} Read it as a table with "Open the table"; the original is kept with its `
     + 'SHA-256.';
   if (card.family === 'table') return `${kept} It is not read as a table today; the original is kept with its SHA-256.`;
@@ -277,6 +294,8 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (publishedCard && pageImageFormat(publishedCard)) return readPageImageTx(client, source, publishedCard);
   if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
   if (batchNativeReader(source, publishedCard)) return queueIntakeNativeReaderTx(client, source, publishedCard!);
+  if (publishedCard && source.profile === 'large-original-v1' && certainTableSelection(publishedCard))
+    return queueBatchTableTx(client, source, publishedCard);
   if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
   if (nativeDerivativeFormat(publishedCard ?? null)) {
     // SH2: converted into GeoJSON layers by its own job; each layer then takes the large GeoJSON path.
@@ -335,6 +354,18 @@ async function settleKeptTx(client: PoolClient, source: IntakeSourceRow, card: I
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
     planRef: null, recordsSeen: 0, limitReason: keptWords(card, Number(source.bytes)) });
   return null;
+}
+
+/** The existing draft job orchestrates the table commands; no officer request or approval is made. */
+async function queueBatchTableTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard) {
+  const item = await draftItemTx(client, source.id);
+  if (!item || item.parent_item_id || item.state !== 'probed' || item.plan_ref
+    || !['undecided', 'not_understood'].includes(item.placement)) return null;
+  const jobId = await enrollDraftTx(client, item, source, certainTableSelection(card)!);
+  await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
+    planRef: null, recordsSeen: 0, limitReason: 'The table is being read. Its field meanings will be proposed for '
+      + 'your review; nothing is recorded until you confirm it.' });
+  return jobId;
 }
 
 /** G23. A page image goes to its own first read instead of resting kept only; a placed or answered item stands. */
@@ -464,7 +495,8 @@ export async function stopBatchPdfTx(client: PoolClient, caseId: string, sourceI
     placement: 'not_understood', planRef: item.plan_ref, recordsSeen: 0, limitReason: stale ? pdfStale : pdfStopped });
 }
 
-async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow) {
+async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow,
+  tableSelection?: TabularSelection) {
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-draft:${item.item_id}`]);
   const scope = await intakeCaseTx(client, item.case_id);
   const recipe = (await client.query('SELECT revision FROM usp_mapping_recipes WHERE source_id=$1',
@@ -475,6 +507,7 @@ async function enrollDraftTx(client: PoolClient, item: DraftItem, source: Intake
     caseRevision: scope.current.revision, sourceId: source.id, sourceRevision: source.revision,
     sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding), recipeRevision: revision,
     subject: scope.binding.subject, accessSha256: scope.binding.access,
+    ...(tableSelection ? { tableSelection } : {}),
   });
   const prior = await priorJobTx(client, input);
   if (prior) return prior;

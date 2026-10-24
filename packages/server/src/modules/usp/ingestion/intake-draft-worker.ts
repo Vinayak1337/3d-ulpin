@@ -17,6 +17,7 @@ import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntak
   type IntakeDraftInput } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
+import { prepareIntakeTable } from './intake-table-auto';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
@@ -210,7 +211,19 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
   });
 }
 
+async function settleTable(input: IntakeDraftInput, attempt: UspJobAttempt) {
+  await pinned(input, attempt, async client => {
+    const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+    if (current.state !== 'reading' || current.placement !== 'undecided' || current.planRef) return;
+    await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, state: 'read',
+      limitReason: 'The table is read. Its field meanings are being proposed for your review; '
+        + 'nothing is recorded until you confirm it.',
+    });
+  });
+}
+
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
+  if (input.tableSelection) return settleTable(input, attempt);
   let current = await recipe(input, attempt);
   if (!current) current = await proposeRecipe(input, attempt);
   if (!current) {
@@ -278,15 +291,33 @@ async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unkn
   });
 }
 
+async function stopTableTx(client: PoolClient, input: IntakeDraftInput) {
+  try {
+    await assertIntakeDraftTx(client, input);
+  } catch (error) {
+    if (error instanceof AppError) return;
+    throw error;
+  }
+  const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+  if (current.state === 'reading' && current.placement === 'undecided' && !current.planRef)
+    await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, state: 'failed_part',
+      placement: 'not_understood', limitReason: 'Reading this table stopped. The original is kept unchanged; '
+        + 'use "Read as a table" to retry.',
+    });
+}
+
 async function unclaimedFailure(input: IntakeDraftInput, error: unknown) {
   if (!(error instanceof AppError)) throw error;
   await transaction(async client => {
+    const { lockSourceCaseDestinationTx } = await import('../../cases/source-case-lock');
+    await lockSourceCaseDestinationTx(client, input.caseId);
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
     const job = (await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE', [input.jobId])).rows[0];
     await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [input.jobId]);
     const active = (await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
       AND state='active' AND lease_until>now() LIMIT 1`, [input.jobId])).rowCount;
     if (active || !job || !['queued', 'running'].includes(job.status)) return;
+    if (input.tableSelection) await stopTableTx(client, input);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
       [input.jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',
@@ -301,6 +332,7 @@ export async function runIntakeDraftJob(jobId: string) {
   const input = IntakeDraftInputSchema.parse(job.payload);
   let attempt: UspJobAttempt;
   try {
+    if (input.tableSelection && !await prepareIntakeTable(input)) return;
     attempt = await claimUspJobAttempt(jobId, `intake-draft:${randomUUID()}`,
       client => assertIntakeDraftTx(client, input).then(() => {}));
   } catch (error) {
