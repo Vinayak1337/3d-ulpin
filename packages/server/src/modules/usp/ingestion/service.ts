@@ -25,6 +25,7 @@ import { compileMapping, geojsonFeatureCount, geojsonInventory, GEOJSON_FEATURE_
 import { decodeIntakeHead, detectIntakeKind } from './intake-signatures';
 import { probeOriginal } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
+import type { IntakeSourcePins } from './intake-draft';
 import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
   from './intake-destination';
 import { assertAreaRowLive } from '../../areas/area-retire';
@@ -376,7 +377,15 @@ async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,a
   return row;
 }
 type TableRequest={caseId:string;sourceId:string;input:z.infer<typeof TableFromOriginalSchema>;actor:string;
-  key:string;digest:string};
+  key:string;digest:string;intakePins?:IntakeSourcePins};
+/** Server reads tolerate unrelated batch arrivals, but never a changed original or access context. */
+async function assertTableRequestTx(client:PoolClient,table:TableRequest){
+  if(!table.intakePins)return;
+  if(table.intakePins.caseId!==table.caseId||table.intakePins.sourceId!==table.sourceId)
+    conflict('The table request names a different intake source.');
+  const {assertIntakeDraftTx}=await import('./intake-draft');
+  await assertIntakeDraftTx(client,table.intakePins);
+}
 async function tableJobTx(client:PoolClient,jobId:string){
   const {tableProfileJobTx}=await import('./table-profile-worker');
   return tableProfileJobTx(client,jobId);
@@ -394,10 +403,12 @@ async function streamedTable(table:TableRequest,read:{sha256:string;revision:num
   inspection?:{manualProfile?:{schemaFingerprint:string}}})
   :Promise<AnySourceProfile|TableProfileJob>{
   return transaction(async client=>{
+    await assertTableRequestTx(client,table);
     const scope=await workspace(client,table.caseId,table.sourceId);
     const replay=await operation(client,table.caseId,table.key,table.digest);
     if(replay)return replay.jobId?tableJobTx(client,replay.jobId):replay as AnySourceProfile;
-    if(scope.revision!==table.input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
+    if(!table.intakePins&&scope.revision!==table.input.expectedWorkspaceRevision)
+      conflict('The source workspace changed; refresh first.');
     const row=await originalTableTx(client,table.caseId,table.sourceId,table.actor,'UPDATE',table.input.selection,
       read.inspection?.manualProfile?.schemaFingerprint??null);
     if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
@@ -674,15 +685,18 @@ export class ManualIngestionService {
    * whole here; above that a CSV, or one sheet of a workbook (XW1), is read as a stream by one queued job, and the
    * request answers that job. A replay of the same request answers the same job as it stands. TB2: a whole read
    * that meets the reader's record bound takes that job too. */
-  async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown):Promise<AnySourceProfile|TableProfileJob>{
+  async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown,intakePins?:IntakeSourcePins)
+    :Promise<AnySourceProfile|TableProfileJob>{
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=TableFromOriginalSchema.parse(value);
     const actor=localOperatorSubject(),digest=fingerprint({input,sourceId,actor});
-    const key=`table-original:${input.requestKey}`,table={caseId,sourceId,input,actor,key,digest};
+    const key=`table-original:${input.requestKey}`,table={caseId,sourceId,input,actor,key,digest,intakePins};
     type Admitted={job:TableProfileJob}|{profile:AnySourceProfile}|{row:any};
     const admitted=await transaction(async (client):Promise<Admitted>=>{
+      await assertTableRequestTx(client,table);
       const scope=await workspace(client,caseId,sourceId),replay=await operation(client,caseId,key,digest);
       if(replay)return replay.jobId?{job:await tableJobTx(client,replay.jobId)}:{profile:replay};
-      if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
+      if(!intakePins&&scope.revision!==input.expectedWorkspaceRevision)
+        conflict('The source workspace changed; refresh first.');
       const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE',input.selection);
       if(Number(row.bytes)<=TABULAR_LIMITS.bytes)return {row};
       await assertOriginalTableByteKind(row,input.selection);
@@ -700,11 +714,12 @@ export class ManualIngestionService {
       throw error;
     }
     return transaction(async client=>{
+      await assertTableRequestTx(client,table);
       await workspace(client,caseId,sourceId);
       const replay=await operation(client,caseId,key,digest);
       if(replay)return replay as AnySourceProfile;
       const result=await attachTableTx(client,{caseId,sourceId,actor,read,
-        expectedWorkspaceRevision:input.expectedWorkspaceRevision},inventory);
+        expectedWorkspaceRevision:intakePins?null:input.expectedWorkspaceRevision},inventory);
       await remember(client,caseId,key,digest,result);
       return result;
     });
