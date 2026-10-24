@@ -47,7 +47,7 @@ pushed, and merged into `task/int3-pre`.
 
 ### S1.1 Full check set on int3-pre 0aecb4f8, fix only what fails
 
-Size M, this PC: Docker. After: none. **Status: running codex since 24 Oct 2026 (the Claude CLI account is refused by an organisation setting).**
+Size M, this PC: Docker. After: none. **Status: done 24 Oct (4c704191 on int3-pre; test-only timing fixes; one non-reproduced native-reader timeout kept as a qualification).**
 
 - **What:** Run the whole check recipe the INT2 integrator used, at 0aecb4f8. No full run exists at this head; the last one is INT2 (backend 2022 tests 0 failed, Studio 616 0 failed). Fix only failing tests or real bugs, one commit each, with a regression test for each real bug. Also run the PostgreSQL dispatcher controls that LQ1 skipped, against a disposable local Postgres container, never a runtime's database.
 - **Files:** Read: docs/evidence/int2/result.json (checks[] has the exact commands and env: ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe, --tsconfig docs/evidence/int2/tsconfig.tests.json); packages/server/src/modules/cases/processing.test.ts:349 (ULPIN_DISPATCH_TEST_DATABASE_URL); docs/evidence/lq1/result.json (skips). Change: only the failing test or source file. Worktree from 0aecb4f8.
