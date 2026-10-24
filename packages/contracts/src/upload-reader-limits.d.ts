@@ -24,4 +24,4 @@ export declare const GLTF_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const OBJ_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const TABULAR_LIMITS: Readonly<{ bytes: number }>;
 export declare const TABULAR_STREAM_LIMITS: Readonly<{ bytes: number }>;
-export declare const NATIVE_GIS_LIMITS: Readonly<{ sourceBytes: number }>;
+export declare const NATIVE_GIS_LIMITS: Readonly<{ sourceBytes: typeof STREAMING_VECTOR_LIMITS.sourceBytes }>;

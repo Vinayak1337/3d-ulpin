@@ -8,7 +8,7 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { fingerprint } from '../../cases/domain';
@@ -21,6 +21,7 @@ import { convertNativeLayers, nativeParentState, NativeConversionSchema, queueNa
 import { IntakeService } from './intake-service';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { streamedSourceReference } from './streamed-map-receipt';
+import { convert as requestConversion } from './intake-native-derivative-worker';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'native-derivative-protocol';
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
@@ -841,6 +842,29 @@ test('a successful conversion is not re-enrolled, but an officer CRS answer stil
   assert.equal(await queueNativeDerivativeTx(state.client, state.original, card), state.jobs[1].id);
 });
 
+test('conversion fetch scales its timeout with source bytes, or the sum of loose shapefile parts', async t => {
+  process.env.GEO_URL ??= 'http://processor.invalid';
+  process.env.GEO_SERVICE_TOKEN ??= 'protocol';
+  const timeouts: number[] = [];
+  const signal = new AbortController().signal;
+  t.mock.method(AbortSignal, 'timeout', (ms: number) => { timeouts.push(ms); return signal; });
+  const bytes = 600 * 1024 ** 2;
+  const pins = { sourceId, objectKey: `large-originals/${sourceId}/${'a'.repeat(64)}`,
+    sha256: 'a'.repeat(64), bytes };
+  const requestFetch: typeof fetch = async (url, init) => {
+    assert.match(String(url), /\/internal\/area\/convert-native$/);
+    assert.equal(init?.signal, signal);
+    assert.equal(init?.method, 'POST');
+    return Response.json({ layers: [] });
+  };
+  await requestConversion({ ...pins, format: 'gpkg' }, requestFetch);
+  await requestConversion({ ...pins, bytes: 200 * 1024 ** 2, format: 'shapefile_set', layer: 'test_only',
+    members: ['shp', 'shx', 'dbf'].map(extension => ({ ...pins, bytes: 200 * 1024 ** 2,
+      extension: extension as 'shp' | 'shx' | 'dbf' })) }, requestFetch);
+  assert.deepEqual(timeouts, [streamingReadMs(bytes), streamingReadMs(bytes)]);
+  assert.equal(timeouts[0], 50 * 60 * 1000);
+});
+
 test('publishing a KML or KMZ card queues its conversion job; any other vector card is not converted', async () => {
   for (const format of ['kml', 'kmz']) {
     const original = retained(sourceId, 10, 'c'.repeat(64), `ward.${format}`);
@@ -849,7 +873,7 @@ test('publishing a KML or KMZ card queues its conversion job; any other vector c
     const jobId = await queueNativeDerivativeTx(client, original, item.card as IntakeCard);
     assert.deepEqual(jobs.map(job => [job.id, job.operation]), [[jobId, 'intake-native-derivative']]);
     assert.equal(item.limit_reason, `The layers of this ${format.toUpperCase()} are being converted to GeoJSON, `
-      + 'each to be taken in as its own file.');
+      + 'each to be taken in as its own file. Layers enter the map path once the whole conversion ends.');
   }
   assert.equal(nativeDerivativeFormat({ format: 'geojson', family: 'vector' } as IntakeCard), null);
 });

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS } from '@ulpin/contracts/usp';
+import { streamingReadMs } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
@@ -21,10 +21,12 @@ const intake = new IntakeService();
 const RENEW_MS = 60_000;
 
 /** The geo service converts the original from object storage; a refusal of the file itself is its 422 words. */
-async function convert(request: Parameters<NativeDerivativeDependencies['convert']>[0]) {
-  const response = await fetch(`${settings.geoUrl}/internal/area/convert-native`, { method: 'POST',
+export async function convert(request: Parameters<NativeDerivativeDependencies['convert']>[0], requestFetch = fetch) {
+  const bytes = request.format === 'shapefile_set'
+    ? request.members!.reduce((sum, part) => sum + part.bytes, 0) : request.bytes;
+  const response = await requestFetch(`${settings.geoUrl}/internal/area/convert-native`, { method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${settings.geoToken}` },
-    body: JSON.stringify(request), signal: AbortSignal.timeout(STREAMING_VECTOR_LIMITS.readMs) });
+    body: JSON.stringify(request), signal: AbortSignal.timeout(streamingReadMs(bytes)) });
   if (response.status === 422) throw new AppError(422, 'NATIVE_DERIVATIVE_FILE',
     'The native reader refused this file.');
   if (!response.ok) throw new AppError(503, 'NATIVE_DERIVATIVE_SERVICE', 'The conversion service did not answer.');

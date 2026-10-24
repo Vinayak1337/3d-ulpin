@@ -247,7 +247,8 @@ test('loose Tweed parts dropped .dbf, .shp, .shx: one job, read as one shapefile
       extensions.map(extension => [extension, sha(parts.get(extension)!.bytes)]));
     const read = ['read', 'undecided', 'Read with Council_Buildings.shp as one shapefile.'];
     assert.deepEqual(words(ledger), { [shp]: ['reading', 'undecided', 'The layers of this shapefile are being '
-      + 'converted to GeoJSON, each to be taken in as its own file.'], 'Council_Buildings.shx': read,
+      + 'converted to GeoJSON, each to be taken in as its own file. '
+      + 'Layers enter the map path once the whole conversion ends.'], 'Council_Buildings.shx': read,
     'Council_Buildings.dbf': read, 'Council_Buildings.prj': read, 'Council_Buildings.cpg': read });
 
     // Parts published in another order queue the same job.

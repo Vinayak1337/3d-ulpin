@@ -379,7 +379,7 @@ for (const format of ['cityjson', 'citygml'] as const) {
     assert.deepEqual([item.state, item.placement, item.plan_ref], ['reading', 'undecided', { nativeReaderJobId: jobId }]);
     const name = format === 'citygml' ? 'CityGML' : 'CityJSON';
     assert.equal(item.limit_reason, `The layers of this ${name} are being converted to GeoJSON, `
-      + 'each to be taken in as its own file.');
+      + 'each to be taken in as its own file. Layers enter the map path once the whole conversion ends.');
     assert.equal(intakeItem(item).nativeReaderJobId, jobId);
     const published = fixture.events.length;
     await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);

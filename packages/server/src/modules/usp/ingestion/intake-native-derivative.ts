@@ -269,7 +269,7 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
     planRef: withReading(planRef, item.plan_ref), recordsSeen: 0,
     limitReason: `The layers of this ${kind(format)} are being converted to GeoJSON, each to be taken in as its own `
-      + 'file.' });
+      + 'file. Layers enter the map path once the whole conversion ends.' });
   return input.jobId;
 }
 

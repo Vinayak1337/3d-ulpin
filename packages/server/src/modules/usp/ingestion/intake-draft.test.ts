@@ -275,7 +275,7 @@ for (const [name, format, card] of [
       [[jobId, 'intake-native-derivative', 'intake-native-derivative/1']]);
     assert.deepEqual(fixture.state.projection, { state: 'reading', placement: 'undecided', plan_ref: null,
       records_seen: 0, limit_reason: `The layers of this ${format} are being converted to GeoJSON, each to be `
-        + 'taken in as its own file.' });
+        + 'taken in as its own file. Layers enter the map path once the whole conversion ends.' });
     assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), jobId);
     fixture.jobs[0].status = 'succeeded';
     assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);

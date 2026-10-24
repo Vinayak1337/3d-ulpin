@@ -356,8 +356,9 @@ def normalize_native(data):
 CONVERSION = "native_gis_to_geojson@1"
 WINDOW_READER = "native-gis-window/1"
 WINDOW = 1000
-MAX_SOURCE_BYTES = 128 * 1024 * 1024
-MAX_DERIVATIVE_BYTES = 128 * 1024 * 1024
+# Both match STREAMING_VECTOR_LIMITS.sourceBytes in packages/contracts/src/usp/streaming-vector.ts (1 GiB).
+MAX_SOURCE_BYTES = 1024 * 1024 * 1024
+MAX_DERIVATIVE_BYTES = MAX_SOURCE_BYTES
 MAX_LAYERS = 100
 SAFE_INTEGER = 9007199254740991
 _ENVELOPE_BYTES = {0: 0, 1: 32, 2: 48, 3: 48, 4: 64}
@@ -1331,7 +1332,7 @@ def _pins(source_id, key, digest, size):
     if not match or match.group(2) != source_id or match.group(3) != digest:
         raise InputError("The object key must name the retained original's ID and SHA-256.")
     if isinstance(size, bool) or not isinstance(size, int) or not 1 <= size <= MAX_SOURCE_BYTES:
-        raise InputError(f"Conversion reads originals of 1 to {MAX_SOURCE_BYTES} bytes.")
+        raise InputError(f"Conversion reads originals of 1 to {MAX_SOURCE_BYTES} bytes (1 GiB); the file stays kept.")
 
 
 def _set_parts(data: dict) -> dict:
@@ -1350,7 +1351,8 @@ def _set_parts(data: dict) -> dict:
     if not {"shp", "shx", "dbf"} <= set(parts) or any(parts["shp"][name] != data[name] for name in _PIN_FIELDS):
         raise InputError("A shapefile set needs its .shp, .shx and .dbf, and its .shp is the original it names.")
     if sum(member["bytes"] for member in parts.values()) > MAX_SOURCE_BYTES:
-        raise InputError(f"Conversion reads a shapefile set of at most {MAX_SOURCE_BYTES} bytes.")
+        raise InputError(f"Conversion reads a shapefile set of at most {MAX_SOURCE_BYTES} bytes (1 GiB); "
+                         "its parts stay kept.")
     return parts
 
 

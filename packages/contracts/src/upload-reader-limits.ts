@@ -14,5 +14,7 @@ export { GLTF_LIMITS } from './usp/gltf-ingestion';
 export { OBJ_LIMITS } from './usp/obj-ingestion';
 export { TABULAR_LIMITS, TABULAR_STREAM_LIMITS } from './usp/ingestion';
 
+import { STREAMING_VECTOR_LIMITS } from './usp/streaming-vector';
+
 /** Native GIS conversion's source/set ceiling (services/geo/geo/native_gis.py: MAX_SOURCE_BYTES). */
-export const NATIVE_GIS_LIMITS = Object.freeze({ sourceBytes: 128 * 1024 ** 2 });
+export const NATIVE_GIS_LIMITS = Object.freeze({ sourceBytes: STREAMING_VECTOR_LIMITS.sourceBytes });
