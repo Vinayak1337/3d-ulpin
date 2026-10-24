@@ -7,6 +7,39 @@ import { zipSync } from 'fflate';
 import { IntakeService } from '../packages/server/src/modules/usp/ingestion/intake-service';
 import { IntakeProbeBudget, probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { IntakeManifestSchema, IntakeItemSchema } from '../packages/contracts/src/usp/intake';
+import { citeIntakeReceipt } from '../packages/server/src/modules/usp/ingestion/intake-ledger';
+import { inspectGeojsonExtent, INTAKE_WIDE_GEOJSON_REASON }
+  from '../packages/server/src/modules/usp/ingestion/intake-package-extent';
+
+test('kept GeoJSON cites stored bounds regardless of width; missing bounds and CRS conflicts stay empty', async () => {
+  const bytes = readFileSync('fixtures/real-nyc/original.geojson');
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'original.geojson');
+  const extent = inspectGeojsonExtent(bytes)!;
+  assert.equal(extent.fitsOneArea, true);
+  assert.equal(card.extent.epsg4326, null);
+  const source = new LedgerControl().source;
+  // Width flags below are receipt-envelope controls over unchanged real bounds, not source assertions.
+  for (const fitsOneArea of [true, false]) {
+    const cited = citeIntakeReceipt(structuredClone(card), { ...source,
+      inspection: { intakeExtent: { ...extent, fitsOneArea } } });
+    assert.deepEqual(cited.extent.epsg4326, extent.bounds);
+    assert.ok(cited.citations.some(citation => citation.sha256 === source.sha256
+      && citation.locator === 'source.inspection.intakeExtent:measured_bounds'));
+    assert.equal(cited.limits.includes(INTAKE_WIDE_GEOJSON_REASON), !fitsOneArea);
+  }
+  for (const intakeExtent of [undefined, null, {}, { bounds: [1, 2] },
+    { bounds: [NaN, 0, 1, 1] }, { bounds: [1, 0, 0, 1] }, { bounds: [-181, 0, 1, 1] }]) {
+    const cited = citeIntakeReceipt(structuredClone(card), { ...source, inspection: { intakeExtent } });
+    assert.equal(cited.extent.epsg4326, null);
+    assert.ok(!cited.citations.some(citation => citation.locator.endsWith(':measured_bounds')));
+  }
+  const conflicting = structuredClone(card);
+  conflicting.crs.code = 'EPSG:3857'; // CRS disagreement protocol control, not a source assertion.
+  const cited = citeIntakeReceipt(conflicting, { ...source,
+    inspection: { intakeExtent: extent, gis: { sourceCrs: 'EPSG:4326' } } });
+  assert.equal(cited.crs.state, 'conflicting');
+  assert.equal(cited.extent.epsg4326, null);
+});
 
 // In-memory protocol controls, not dataset records. No database, object store or runtime is opened.
 class LedgerControl {

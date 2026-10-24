@@ -249,7 +249,12 @@ export function citeIntakeReceipt(card: IntakeCard, source: IntakeSourceRow): In
   const extent = inspection.intakeExtent;
   if (extent?.fitsOneArea === false && !card.limits.includes(INTAKE_WIDE_GEOJSON_REASON)) {
     card.limits.push(INTAKE_WIDE_GEOJSON_REASON);
-    card.extent.epsg4326 = extent.bounds;
+  }
+  const bounds = z.tuple([z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90),
+    z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90)])
+    .refine(([west, south, east, north]) => west <= east && south <= north).safeParse(extent?.bounds);
+  if (bounds.success) {
+    card.extent.epsg4326 = bounds.data;
     card.citations.push({ locator: 'source.inspection.intakeExtent:measured_bounds', sha256: source.sha256 });
   }
   const count = profile?.featureCount ?? profile?.records ?? inspection.featureCount;

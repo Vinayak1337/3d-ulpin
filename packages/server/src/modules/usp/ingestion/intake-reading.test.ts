@@ -23,11 +23,12 @@ import { IntakeService } from './intake-service';
 import { ingestionBinding } from './events';
 import { profileColumnFile } from './column-profile';
 import { INTAKE_FORMAT_NAMES as browserFormatNames } from '@ulpin/contracts/upload-reader-limits';
-import { intakeItem } from './intake-ledger';
+import { citeIntakeReceipt, intakeItem } from './intake-ledger';
 import { probeOriginal } from './intake-probe';
 import { readingOf, type ReadingFacts, type ReadingRow, type ReadingPeer } from './intake-reading';
 import { proposeMappingRules } from './mapping-rules';
 import { inspectGeojsonExtent } from './intake-package-extent';
+import type { IntakeSourceRow } from './intake-context';
 
 const fixtures = [
   ['fixtures/real-nyc/original.geojson', 'GeoJSON map layer', 'features?'],
@@ -537,6 +538,10 @@ test('link reasons keep provenance, exact headers, meaning disagreements and clo
   assert.deepEqual(reading.links.map(link => [link.by, link.itemId]),
     [['key', id], ['key', peers[0].itemId], ['address', id], ['address', peers[0].itemId]]);
   assert.ok(reading.links.every(link => /rule.*Sarvam, not confirmed/.test(link.words)));
+  for (const link of reading.links) {
+    assert.match(link.words, /both mean (Building source key|Address)\.$/);
+    assert.doesNotMatch(link.words, /\b(?:building|parcel|document)\.[A-Za-z]+/);
+  }
   for (const [basis, words] of [['memory', 'memory'], ['officer', 'confirmed by you']] as const) {
     peers[0].facts = facts(['building.sourceKey', 'building.addressLiteral'], basis);
     assert.ok(readingOf({}, card, meanings, { items: [peers[0]], more: false }).links
@@ -554,6 +559,7 @@ test('link reasons keep provenance, exact headers, meaning disagreements and clo
     'document.registrationNo', 'document.sanctionNo'] as const) {
     const left = facts([target, 'building.name'], 'rule');
     assert.equal(compare(left, left)[0].by, 'key');
+    assert.doesNotMatch(compare(left, left)[0].words, /\b(?:building|parcel|document)\.[A-Za-z]+/);
   }
   assert.deepEqual(compare(facts(['parcel.khasra', 'building.name'], 'rule'),
     facts(['parcel.plot', 'building.name'], 'rule')), []);
@@ -591,11 +597,18 @@ test('stored case comparisons suggest NYC keys and overlapping places, bounded a
   const objects = new Map<string, Buffer>();
   const entries = await Promise.all(linkPaths.map(async (path, index) => {
     const original = readFileSync(path), hash = digest(original), card = await probe(original, basename(path));
-    // Prepare the stored card's measured receipt before the read-only route; never measure on that route.
-    if (card.family === 'vector') card.extent.epsg4326 = inspectGeojsonExtent(original)!.bounds;
-    const source = { id: id(index), case_id: id(0), revision: 1, bytes: original.length, sha256: hash,
+    const source: IntakeSourceRow = { id: id(index), family_id: id(index), case_id: id(0), revision: 1,
+      name: basename(path), status: 'received', bytes: original.length, sha256: hash,
       object_key: `protocol-original-${index}`, profile: card.family === 'table'
-        ? 'tabular-manual-v1' : 'geojson-manual-v1', inspection: { actor: binding.subject } };
+        ? 'tabular-manual-v1' : 'geojson-manual-v1', inspection: { actor: binding.subject,
+          ...(card.family === 'vector' ? { intakeExtent: inspectGeojsonExtent(original) } : {}) } };
+    // Project the stored receipt as enrolment does; the read-only route never measures or reads the original.
+    citeIntakeReceipt(card, source);
+    if (card.family === 'vector') {
+      assert.deepEqual(card.extent.epsg4326, source.inspection!.intakeExtent.bounds);
+      assert.ok(card.citations.some(citation => citation.sha256 === hash
+        && citation.locator === 'source.inspection.intakeExtent:measured_bounds'));
+    }
     const stored: Record<string, unknown> = {};
     if (index === 0) {
       const json = JSON.parse(original.toString());
@@ -662,6 +675,7 @@ test('stored case comparisons suggest NYC keys and overlapping places, bounded a
   for (const link of [...building.links, ...parks.links]) {
     assert.match(link.words, /A link may be declared/);
     assert.doesNotMatch(link.words, /\b\d+\b|%|confidence|share|matched|are linked/i);
+    assert.doesNotMatch(link.words, /\b(?:building|parcel|document)\.[A-Za-z]+/);
   }
   caseItems = [entries[3]];
   assert.deepEqual((await service.reading(id(0), id(3))).links, []);
