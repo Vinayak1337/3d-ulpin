@@ -8,6 +8,7 @@ import { afterEach, beforeEach, expect, it, vi, type MockInstance } from 'vitest
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import type { IntakeItem, IntakeManifest } from './batch-model';
 import { uploadsKey } from './UnfinishedUploads';
+import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import type { UploadEntry, WaitingFile } from './upload-model';
 
 // The page's own sections render as they are; the panels that read the server for themselves are named stand-ins.
@@ -60,11 +61,12 @@ afterEach(() => {
   errors.mockRestore();
 });
 
-async function renderBatch(waiting: WaitingFile[]) {
+async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload) {
   if (waiting.length) facts.storage.set(waitingKey, JSON.stringify(waiting));
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
   client.setQueryData(['intake', caseId], { items: facts.items });
   client.setQueryData(uploadsKey(caseId), { uploads: facts.uploads });
+  if (upload) client.setQueryData(batchUploadKey(caseId), upload);
   const root = container();
   const view = createRoot(root as never);
   const router = createMemoryRouter([{ path: '/studio/work/cases/:caseId/intake', element: <BatchPage /> }],
@@ -99,6 +101,20 @@ it('D1: the batch with several items, an item open and waiting words shows no Re
   await press(buttons(page.root, 'View layout')[1]!);
   expect(keyWarnings()).toEqual([]);
   await page.unmount();
+});
+
+it('S7.3: while an upload is pending and the manifest is empty, the files are said to be kept', async () => {
+  facts.items = [];
+  facts.uploads = [];
+  const row = { name: 'first.pdf', sizeBytes: 12, state: 'retaining' } as BatchUpload['rows'][number];
+  const upload = { rows: [row], pending: true, active: null, remaining: [], error: null };
+  const pending = await renderBatch([], upload);
+  expect(pending.root.textContent).toContain('The dropped files are being kept');
+  expect(pending.root.textContent).not.toContain('No files are enrolled');
+  await pending.unmount();
+  const idle = await renderBatch([], { ...upload, pending: false });
+  expect(idle.root.textContent).toContain('No files are enrolled in this batch.');
+  await idle.unmount();
 });
 
 // test_only cards around real development files; no probe or ingestion result is asserted here.

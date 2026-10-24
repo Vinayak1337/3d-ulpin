@@ -1,0 +1,19 @@
+{
+  "task": "S7.3",
+  "title": "Batch page empty states",
+  "base": "e1e0af4f",
+  "changes": [
+    "BatchPage: a pending upload with an empty manifest says the files are being kept",
+    "IntakeRunPanel: nothing drafted shows one line, no counts, Refresh, choice controls, filter or confirmation",
+    "IntakeRunPanel: the confirmation shows only while a package or cards list can be confirmed or a press is unanswered",
+    "EvidenceByKey: shown only once a map item of the batch has drafted buildings"
+  ],
+  "tests": {
+    "added": ["run/empty-state.test.ts", "evidence/empty-state.test.tsx", "batch-page.test.tsx (one case)"],
+    "studio_typecheck_exit": 0,
+    "studio_test_exit": 0,
+    "studio_test_counts": "111 files passed; 698 tests passed, 2 skipped"
+  },
+  "ui_design_check": { "report": "ui-design-check.txt", "candidates": 0 },
+  "note": "Not looked at in a running browser; checked by render tests only."
+}
