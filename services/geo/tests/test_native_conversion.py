@@ -23,6 +23,121 @@ NIAGARA = DATA / "niagara-falls/Niagara_Falls_Building_Footprints_2018_133069828
 pytestmark = pytest.mark.skipif(not TWEED_GPKG.exists(), reason="the data drive with the real test originals")
 
 
+GEOPARQUET = Path("E:/BhuAayam-data/task-data/desktop-geoparquet-native/originals")
+
+
+@pytest.fixture
+def arrow():
+    return pytest.importorskip("pyarrow", reason="this processor has no GeoParquet reader installed yet")
+
+
+def test_real_geoparquet_has_one_layer_and_every_footer_row_has_a_locator(arrow, tmp_path):
+    import pyarrow.parquet as pq
+    from pyproj import CRS
+    original = GEOPARQUET / "example.parquet"
+    if not original.exists():
+        pytest.skip("the retained public GeoParquet example is not on this data drive")
+    path = tmp_path / original.name
+    shutil.copyfile(original, path)
+    digest = sha(original)
+    with pq.ParquetFile(path) as parquet:
+        count = parquet.metadata.num_rows
+        geo = json.loads(parquet.metadata.metadata[b"geo"])
+    [layer] = convert(path, "geoparquet", tmp_path)
+    assert layer["layer"] == geo["primary_column"] and layer["state"] == "converted"
+    assert layer["features"] + layer["notWritten"] == count
+    declared = CRS.from_json_dict(geo["columns"][layer["layer"]]["crs"])
+    assert declared.equals(CRS.from_user_input(layer["crs"]), ignore_axis_order=True)
+    _, sidecar = written(layer)
+    assert sidecar[0]["positionKind"] == "row" and sidecar[0]["originalSha256"] == digest
+    assert [line["position"] for line in sidecar[1:]] == list(range(count))
+    assert sha(path) == sha(original) == digest
+
+
+def test_plain_parquet_is_not_converted_as_a_map(arrow, tmp_path):
+    original = GEOPARQUET / "alltypes_plain.parquet"
+    if not original.exists():
+        pytest.skip("the retained plain Parquet example is not on this data drive")
+    path = tmp_path / original.name
+    shutil.copyfile(original, path)
+    with pytest.raises(InputError, match="no geo metadata"):
+        convert(path, "geoparquet", tmp_path)
+    assert sha(path) == sha(original)
+
+
+def geoparquet_control(arrow, tmp_path, meta):
+    """test_only metadata and value controls; not building records or evaluation truth."""
+    import datetime
+    import decimal
+    import pyarrow.parquet as pq
+    from shapely.geometry import Point
+    good = Point(1, 2).wkb
+    rows = 2 * WINDOW + 1
+    table = arrow.table({"geometry": [good] * rows + [None, Point().wkb, b"bad"],
+                         "other": [good] * (rows + 3),
+                         "day": [datetime.date(2026, 1, 1)] * (rows + 3),
+                         "time": [datetime.time(12, 30)] * (rows + 3),
+                         "stamp": [datetime.datetime(2026, 1, 1, 12, 30)] * (rows + 3),
+                         "amount": [decimal.Decimal("1.2300")] * (rows + 3)})
+    path = tmp_path / "test_only.parquet"
+    pq.write_table(table.replace_schema_metadata({b"geo": json.dumps(meta).encode()}), path)
+    return path, rows
+
+
+def test_geoparquet_missing_reader_has_plain_words(monkeypatch, tmp_path):
+    import builtins
+    original_import = builtins.__import__
+
+    def without_arrow(name, *args, **kwargs):
+        if name.startswith("pyarrow"):
+            raise ImportError("test_only missing dependency")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_arrow)
+    with pytest.raises(InputError, match="This processor has no GeoParquet reader installed yet"):
+        convert_native_file(tmp_path / "test_only.parquet", "geoparquet", tmp_path, "0" * 64)
+
+
+@pytest.mark.parametrize("crs_state", ["absent", "null", "older", "invalid", "encoding"])
+def test_geoparquet_crs_questions_defaults_refusals_and_exact_values(arrow, tmp_path, crs_state):
+    column = {"encoding": "WKB", "geometry_types": ["Point"]}
+    if crs_state == "null":
+        column["crs"] = None
+    if crs_state == "invalid":
+        column["crs"] = {"type": "unknown"}
+    if crs_state == "encoding":
+        column["encoding"] = "point"
+    meta = {"version": "1.0.0" if crs_state == "older" else "1.1.0", "primary_column": "geometry",
+            "columns": {"geometry": column, "other": {"encoding": "WKB", "geometry_types": ["Point"]}}}
+    path, count = geoparquet_control(arrow, tmp_path, meta)
+    [layer] = convert(path, "geoparquet", tmp_path)
+    if crs_state == "encoding":
+        assert layer["state"] == "not_converted" and "encoding unsupported" in layer["reason"]
+        return
+    if crs_state == "invalid":
+        assert layer["state"] == "crs_unstated" and layer["statesCrs"] is True
+        return
+    if crs_state in ("null", "older"):
+        assert layer["state"] == "crs_unstated" and layer["statesCrs"] is False
+        if crs_state == "older":
+            return
+        out = tmp_path / "answered"
+        out.mkdir()
+        [layer] = convert_native_file(path, "geoparquet", out, sha(path), {"geometry": "EPSG:28356"})
+        assert layer["crs"] == "EPSG:28356" and layer["crsSource"] == "officer_stated"
+    else:
+        assert layer["crs"] == "EPSG:4326" and "GeoParquet 1.1.0 specification" in layer["crsBasis"]
+        assert "OGC CRS84" in layer["crsBasis"] and "no crs" in layer["crsBasis"]
+    collection, sidecar = written(layer)
+    assert (layer["features"], layer["notWritten"]) == (count, 3)
+    assert [line["position"] for line in sidecar[1:]] == list(range(count + 3))
+    assert [line["reason"] for line in sidecar[-3:-1]] == ["geometry is null", "geometry is empty"]
+    assert "WKB" in sidecar[-1]["reason"]
+    assert sidecar[0]["words"].count("other") == 1
+    assert collection["features"][WINDOW]["properties"] == {
+        "day": "2026-01-01", "time": "12:30:00", "stamp": "2026-01-01T12:30:00", "amount": "1.2300"}
+
+
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 

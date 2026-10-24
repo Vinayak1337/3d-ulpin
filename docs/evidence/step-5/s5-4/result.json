@@ -1,0 +1,61 @@
+{
+  "task": "S5.4",
+  "planStep": 5,
+  "base": "c27d1094bed99ca32fa828812946497fc4adb1c1",
+  "branch": "task/s5-4-geoparquet-layer",
+  "result": "GeoParquet batch cards take native conversion; plain Parquet stays kept as a table.",
+  "inputs": {
+    "folder": "E:/BhuAayam-data/task-data/desktop-geoparquet-native/originals",
+    "good": "example.parquet",
+    "sha256": "f3e4bf0b0376904f851057d2047bb69e81dce913f2ff1aabe8a4dc1ec0789bc2",
+    "difficult": "alltypes_plain.parquet: no geo footer, refused as a map; original unchanged",
+    "example": { "footerRows": 5, "layers": 1, "features": 5, "notWritten": 0, "locatorRows": 5 },
+    "crs": "Declared OGC CRS84 resolves to equivalent EPSG:4326 without changing coordinates.",
+    "originalUnchanged": true,
+    "rowPositionsExact": true
+  },
+  "controls": [
+    "test_only: 2001 written rows across WINDOW boundaries; null, empty and invalid WKB each cited as not written",
+    "1.1.0 absent crs: EPSG:4326 with specification basis; explicit null: officer question and answered conversion",
+    "Invalid declared CRS cannot be replaced; unsupported encoding stops with words; missing reader uses plain words",
+    "ISO date/time/timestamp and exact decimal text; other geometry columns omitted and named once in sidecar header"
+  ],
+  "decisions": [
+    "The existing profile remains 1.1.0 only. Older absent CRS asks the officer; an answer cannot waive that profile.",
+    "Omitted-column words live in the layer sidecar header; the strict layer response schema is unchanged."
+  ],
+  "environment": {
+    "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+    "PYTHONPATH": "E:/ulpin-tmp/s5-4-site",
+    "temporaryRoot": "E:/ulpin-tmp",
+    "installation": "Offline pyarrow==21.0.0, --no-deps --target into a fresh folder; exit 0; no venv changed",
+    "server": "WORKING-RULES section 5 command with ULPIN_PROFILE_PYTHON set to the Python above"
+  },
+  "checks": {
+    "initial": {
+      "backend": "0; no errors", "studioTypes": "2; one existing TS2322 at table-placement-command.ts:65",
+      "studioTests": "0; 783 passed, 3 skipped", "targeted": "0; 75 passed",
+      "server": "0; 982 passed, 4 skipped", "openapi": "1; stale pins", "pins": "1; changed producer",
+      "diff": "0", "frozenBasePytest": "0; 25 passed, 6 skipped"
+    },
+    "initialCaveat": "Initial pin/pytest commands overlapped edits; frozen-base Python was checked separately.",
+    "final": {
+      "backend": "0; no errors", "studioTypes": "2; same existing TS2322",
+      "studioTests": "0; 783 passed, 3 skipped", "targeted": "0; 77 passed",
+      "server": "0; 984 passed, 4 skipped", "pytest": "0; 33 passed, 6 skipped",
+      "withoutPyarrow": "0; 1 passed, 6 skipped, 22 deselected (-k geoparquet)",
+      "openapi": "1; expected stale source-pins.json", "pins": "1; expected producer changed", "diff": "0"
+    },
+    "pythonSkips": "Six existing upstream-reader cases lack NATIVE_GEOPARQUET_TEST_SOURCES; new cases ran.",
+    "staleProducers": [
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+      "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts"
+    ],
+    "logs": "E:/ulpin-tmp/s5-4-{before,after}-*.log; s5-4-baseline-pytest.log; s5-4-acceptance.json"
+  },
+  "next": [
+    "S5.6 processor image after S5.5 integration; no image, runtime or demo action performed here",
+    "Studio GeoParquet reading-card/forecast words, including exposing omitted-column sidecar words",
+    "Integration refreshes the two producer pins; S5.7 owns the existing Studio type error"
+  ]
+}

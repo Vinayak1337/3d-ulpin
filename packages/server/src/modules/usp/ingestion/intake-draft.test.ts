@@ -373,6 +373,17 @@ test('a kept batch CSV names its table reader instead of claiming no batch reade
   assert.equal(fixture.jobs.length, 0);
 });
 
+test('plain Parquet remains kept as a table and never queues a native derivative', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.inspection = {};
+  fixture.tray.family = 'table';
+  fixture.tray.card = { format: 'parquet', family: 'table' } as DraftItem['card'];
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.match(fixture.state.projection.limit_reason, /Kept as a Parquet table/);
+  assert.equal(fixture.jobs.length, 0);
+});
+
 for (const [format, expected] of [
   ['xlsx', 'Kept as an XLSX table (85 KB). Read it as a table with "Open the table"; the original is kept with '
     + 'its SHA-256.'],

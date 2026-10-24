@@ -44,7 +44,7 @@ export function intakeDraftKey(itemId: string, revision: number, phase: string):
 export const shapefileZip = (card: IntakeCard | null) =>
   card?.format === 'zip' && card.members.some(member => member.format === 'shapefile');
 
-export type NativeDerivativeFormat = 'gpkg' | 'shapefile_zip' | 'shapefile_set' | 'kml' | 'kmz';
+export type NativeDerivativeFormat = 'gpkg' | 'shapefile_zip' | 'shapefile_set' | 'kml' | 'kmz' | 'geoparquet';
 
 /**
  * SH2. The native format a batch card is converted from into GeoJSON layers, or null for any other card. N05: with
@@ -52,6 +52,7 @@ export type NativeDerivativeFormat = 'gpkg' | 'shapefile_zip' | 'shapefile_set' 
  */
 export function nativeDerivativeFormat(card: IntakeCard | null, name = ''): NativeDerivativeFormat | null {
   if (card?.format === 'geopackage') return 'gpkg';
+  if (card?.format === 'geoparquet') return 'geoparquet';
   if (card?.format === 'kml' || card?.format === 'kmz') return card.format;
   if (card?.format === 'shapefile' && /\.shp$/i.test(name)) return 'shapefile_set';
   return shapefileZip(card) ? 'shapefile_zip' : null;
@@ -171,6 +172,7 @@ const keptFormats: Record<string, string> = { bigtiff: 'BigTIFF', citygml: 'City
  * have their own layout reader). The vector family always has a reader or a refusal of its own.
  */
 function keptOnly(card: IntakeCard, source: IntakeSourceRow): boolean {
+  if (card.format === 'geoparquet') return false;
   if (card.family === 'table') return source.profile === 'large-original-v1';
   return card.family !== 'vector' && card.format !== 'zip';
 }

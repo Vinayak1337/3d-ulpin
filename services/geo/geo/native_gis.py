@@ -1154,6 +1154,132 @@ def _horizontal_epsg(code: int) -> str | None:
     return f"EPSG:{authority[1]}"
 
 
+def _geoparquet_crs(meta: dict, version: str, stopped: dict, answers: dict) -> dict:
+    if "crs" not in meta and version == "1.1.0":
+        return {"crs": "EPSG:4326", "crsSource": "stated", "crsBasis":
+                "the GeoParquet 1.1.0 specification states longitude and latitude on OGC CRS84 "
+                "when a column has no crs"}
+    if meta.get("crs") is None:
+        answer = _officer_crs(stopped, _STATES_NONE, answers)
+        return answer if isinstance(answer, dict) else {"crs": answer, "crsSource": "officer_stated"}
+    try:
+        reference = CRS.from_json_dict(meta["crs"])
+        code = reference.to_epsg()
+        # CRS84 names the same horizontal system with longitude first, not EPSG's latitude-first axes.
+        if code is None and reference.equals(CRS.from_user_input("OGC:CRS84")):
+            code = 4326
+        crs = _horizontal_epsg(code) if code is not None else None
+    except (CRSError, ValueError, TypeError):
+        crs = None
+    if crs is None:
+        return {**stopped, "state": "crs_unstated", "statesCrs": True,
+                "reason": "states a coordinate reference system that does not resolve to a horizontal EPSG code"}
+    return {"crs": crs, "crsSource": "stated"}
+
+
+def _geoparquet_value(value: object, field: str) -> object:
+    import datetime
+    import decimal
+    if isinstance(value, (datetime.date, datetime.time)):
+        return value.isoformat()
+    if isinstance(value, decimal.Decimal):
+        return str(value)
+    if isinstance(value, dict):
+        return {name: _geoparquet_value(item, f"{field}.{name}") for name, item in value.items()}
+    if isinstance(value, list):
+        return [_geoparquet_value(item, field) for item in value]
+    reason = _value_refusal({field: value})
+    if reason:
+        raise InputError(reason)
+    return value
+
+
+def _geoparquet_row(row: dict, primary: str, columns: dict) -> tuple[dict, dict | None, str | None]:
+    from shapely.errors import GEOSException
+    from shapely.geometry import mapping
+    from .native_geoparquet import DEFAULT_LIMITS, GeoParquetError, wkb_guard
+    properties = {name: value for name, value in row.items() if name not in columns}
+    binary = row[primary]
+    if binary is None:
+        return properties, None, "geometry is null"
+    if not isinstance(binary, bytes):
+        return properties, None, "geometry is not WKB bytes"
+    try:
+        wkb_guard(binary, DEFAULT_LIMITS)
+        geometry = from_wkb(binary)
+        if geometry.is_empty:
+            return properties, None, "geometry is empty"
+        properties = {name: _geoparquet_value(value, name) for name, value in properties.items()}
+        _json(properties)
+        return properties, mapping(geometry), _value_refusal(properties)
+    except (GeoParquetError, InputError) as error:
+        return {}, None, str(error)
+    except GEOSException:
+        return {}, None, "geometry could not be decoded"
+    except (ValueError, TypeError):
+        return {}, None, "attributes cannot be written exactly as JSON"
+
+
+def _geoparquet_layer(parquet, folder: Path, source_sha256: str, answers: dict) -> dict:
+    from .native_geoparquet import DEFAULT_LIMITS, GeoParquetError, json_metadata, profile
+    raw = (parquet.metadata.metadata or {}).get(b"geo")
+    if raw is None:
+        raise InputError("This Parquet file has no geo metadata; it is kept as a table.")
+    try:
+        if len(raw) > DEFAULT_LIMITS.footer_bytes:
+            raise InputError("The GeoParquet geo metadata exceeds the reader's metadata limit.")
+        geo = json_metadata(raw.decode("utf-8"), DEFAULT_LIMITS)
+    except (GeoParquetError, UnicodeError) as error:
+        raise InputError(f"The GeoParquet geo metadata could not be read: {error}") from None
+    checked = profile(geo, parquet.schema_arrow.names)
+    primary = geo.get("primary_column") if isinstance(geo, dict) else None
+    stopped = {"layer": primary if isinstance(primary, str) and 1 <= len(primary) <= 256 else "geometry",
+               "ordinal": 0, "state": "not_converted"}
+    if isinstance(primary, str) and not 1 <= len(primary) <= 256:
+        return {**stopped, "reason": "the primary geometry column name must have 1 to 256 characters"}
+    if checked["status"] != "supported":
+        # An older file without a CRS still asks the existing question, never takes the 1.1.0 default.
+        meta = checked["columns"].get(primary, {}) if isinstance(primary, str) else {}
+        if checked["reasons"] == ["version_unsupported"] and meta.get("crs", {}).get("state") == "absent":
+            crs = _officer_crs(stopped, _STATES_NONE, answers)
+            if isinstance(crs, dict):
+                return crs
+        words = "; ".join(item.replace("_", " ") for item in checked["reasons"])
+        return {**stopped, "reason": f"GeoParquet profile not supported: {words}"[:300]}
+    crs = _geoparquet_crs(geo["columns"][primary], geo["version"], stopped, answers)
+    if "state" in crs:
+        return crs
+    return _geoparquet_write(parquet, geo, crs, stopped, folder, source_sha256)
+
+
+def _geoparquet_write(parquet, geo: dict, crs: dict, stopped: dict, folder: Path, source_sha256: str) -> dict:
+    primary = geo["primary_column"]
+    others = [name for name in geo["columns"] if name != primary]
+    header = {"version": "native-gis-locators/1", "conversion": CONVERSION, "readerVersion": WINDOW_READER,
+              "originalSha256": source_sha256, "format": "geoparquet", "layer": primary,
+              "positionKind": "row", **crs}
+    if others:
+        header["words"] = "Other geometry columns kept in the original, not in properties: " + ", ".join(others)
+    derivative = _Derivative(folder, 0, header, crs["crs"])
+    try:
+        position = 0
+        for batch in parquet.iter_batches(batch_size=WINDOW, use_threads=False):
+            for row in batch.to_pylist():
+                properties, geometry, reason = _geoparquet_row(row, primary, geo["columns"])
+                if reason:
+                    derivative.refuse(position, reason)
+                else:
+                    derivative.feature(position, properties, geometry)
+                position += 1
+    except InputError as error:
+        derivative.abandon()
+        return {**stopped, "reason": str(error)}
+    except BaseException:
+        derivative.abandon()
+        raise
+    return {**stopped, "state": "converted", **crs, **derivative.close()}
+
+
 def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str,
                         answers: dict | None = None) -> list[dict]:
     """Every layer of one original on scratch disk, each converted or stopped with words naming why. `answers` maps
@@ -1164,6 +1290,13 @@ def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str,
         return convert(path, source_sha256, lambda header, crs: _Derivative(
             folder, 0, {"version": "native-gis-locators/1", "conversion": CONVERSION, **header}, crs),
             _horizontal_epsg)
+    if fmt == "geoparquet":
+        try:
+            from pyarrow.parquet import ParquetFile
+        except ImportError:
+            raise InputError("This processor has no GeoParquet reader installed yet.") from None
+        with ParquetFile(path) as parquet:
+            return [_geoparquet_layer(parquet, folder, source_sha256, answers or {})]
     if fmt == "gpkg":
         with path.open("rb") as head:
             if head.read(16) != b"SQLite format 3\x00":
