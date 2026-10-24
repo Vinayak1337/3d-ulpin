@@ -37770,6 +37770,217 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/reading": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_reading",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_intake_items_itemId_reading_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read what a kept file is, holds and how it is drawn under its original source authority",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "S4.3",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "none",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts": {
       "get": {
         "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts",
@@ -369752,6 +369963,11 @@
             "type": "string",
             "maxLength": 64
           },
+          "what": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
           "sizeBytes": {
             "nullable": true,
             "type": "integer",
@@ -371986,6 +372202,11 @@
                   "type": "string",
                   "maxLength": 64
                 },
+                "what": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024
+                },
                 "sizeBytes": {
                   "nullable": true,
                   "type": "integer",
@@ -374105,6 +374326,194 @@
         "required": [
           "caseId",
           "items"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_intake_items_itemId_reading_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "intake-reading/1"
+            ]
+          },
+          "what": {
+            "type": "object",
+            "properties": {
+              "words": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "reader",
+                  "memory",
+                  "rule",
+                  "sarvam",
+                  "officer"
+                ]
+              }
+            },
+            "required": [
+              "words",
+              "basis"
+            ],
+            "additionalProperties": false
+          },
+          "holds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "words": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "basis": {
+                  "type": "string",
+                  "enum": [
+                    "reader",
+                    "memory",
+                    "rule",
+                    "sarvam",
+                    "officer"
+                  ]
+                }
+              },
+              "required": [
+                "words",
+                "basis"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "words": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "basis": {
+                  "type": "string",
+                  "enum": [
+                    "reader",
+                    "memory",
+                    "rule",
+                    "sarvam",
+                    "officer"
+                  ]
+                },
+                "field": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024
+                }
+              },
+              "required": [
+                "words",
+                "basis",
+                "field"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "drawing": {
+            "type": "object",
+            "properties": {
+              "words": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "reader",
+                  "memory",
+                  "rule",
+                  "sarvam",
+                  "officer"
+                ]
+              },
+              "as": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "words",
+              "basis",
+              "as"
+            ],
+            "additionalProperties": false
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "words": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "basis": {
+                  "type": "string",
+                  "enum": [
+                    "reader",
+                    "memory",
+                    "rule",
+                    "sarvam",
+                    "officer"
+                  ]
+                },
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "by": {
+                  "type": "string",
+                  "enum": [
+                    "key",
+                    "address",
+                    "place"
+                  ]
+                }
+              },
+              "required": [
+                "words",
+                "basis",
+                "itemId",
+                "by"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "question": {
+            "nullable": true,
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "version",
+          "what",
+          "holds",
+          "fields",
+          "drawing",
+          "links",
+          "question"
         ],
         "additionalProperties": false
       },
