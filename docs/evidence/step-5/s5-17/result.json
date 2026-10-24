@@ -1,0 +1,73 @@
+{
+  "task": "S5.17", "planStep": 5, "status": "bounded_inventory_and_separate_outline_path_checked",
+  "source": {
+    "path": "E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/LoD2_33_392_5820_1_BE.gml",
+    "copy": "E:/ulpin-tmp/s5-17/berlin.gml", "bytes": 27980798,
+    "sha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
+    "originalAndCopyHashVerifiedBeforeAndAfter": true,
+    "test_only": true, "licence": "dl-de/zero-2-0; issuer receipt confirmed", "citygmlVersion": "1.0",
+    "srsName": "urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH"
+  },
+  "counts": {
+    "elements": 244832, "buildings": 732, "parts": 873, "coordinateDeclarations": 22350,
+    "coordinateValues": 363348, "references": 20882, "buildingsWithOwnGroundDeclaration": 546
+  },
+  "fullInventoryBenchmark": {
+    "testOnlyLimits": {"input_bytes": 268435456, "output_bytes": 2147483648,
+      "elements": 2000000, "coordinate_values": 10000000, "memory_bytes": 2147483648, "seconds": 60, "threads": 2},
+    "outputBytes": 219287880,
+    "untraced": {"extractSeconds": 5.100510, "encodeSeconds": 9.803455, "totalSeconds": 14.903965,
+      "peakWorkingSetBytes": 1351766016, "peakPrivateBytes": 1363558400},
+    "traced": {"tracemallocPeakBytes": 1302521155, "peakWorkingSetBytes": 2328571904,
+      "peakPrivateBytes": 2391867392, "totalSeconds": 121.328717},
+    "currentDefaultOutcome": "extract succeeds; encode_result stops with OUTPUT_LIMIT; no native artifact accepted"
+  },
+  "outlinePathBenchmark": {
+    "method": "Fresh processes, DEFAULT_LIMITS; convert_citygml_file on copy, no encode_result or artifact.",
+    "untraced": {"totalSeconds": 5.838606, "peakWorkingSetBytes": 801771520, "peakPrivateBytes": 1565368320},
+    "traced": {"totalSeconds": 44.508342, "tracemallocPeakBytes": 724301028,
+      "peakWorkingSetBytes": 1842450432, "peakPrivateBytes": 2651250688},
+    "instrumentation": "Tracing adds memory/time; runtime projections use untraced process peaks.",
+    "result": "not_converted", "placedOutlines": 0,
+    "reason": "states a coordinate reference system that is not an EPSG code, so its outlines stay unplaced",
+    "sourceSystemInReason": "source srsName: urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH"
+  },
+  "bounds": {
+    "input_bytes": 34603008, "output_bytes": 16777216, "elements": 302777, "coordinate_values": 449342,
+    "memory_bytes": 2147483648, "seconds": 60, "threads": 2,
+    "nativeBindingBound": "16 MiB artifact protects Node decoding, JSON.parse and zod; never raised for large tiles.",
+    "outlineBindingBound": "33 MiB input and structure counts protect Python extraction; output cap is not involved.",
+    "arithmetic": [
+      "Original inventory peak/input = 1363558400 / 27980798; 256 MiB predicts 13081378912 bytes, above 2 GiB.",
+      "Original 20% reserve gives 35253821.86 input bytes; largest whole-MiB bound is 33 MiB = 34603008 bytes.",
+      "Retain authorized 33 MiB input. Scale = 34603008 / 27980798 = 1.236669805.",
+      "Outline max(untraced working set, private bytes) * scale = 1935843735 bytes: 9.855% memory spare.",
+      "Outline 5.838606 * scale = 7.220427 s: 87.966% time spare; 256 MiB predicts 15017454427 private bytes.",
+      "elements = ceil(244832 * scale) = 302777; coordinate_values = ceil(363348 * scale) = 449342.",
+      "At this inventory density 16 MiB output corresponds to only 2140747 input bytes; Berlin is refused.",
+      "The independent output cap, not the 33 MiB original cap, decides whether a native artifact is kept."
+    ],
+    "caveat": "Tile-density extrapolation, not arbitrary XML; independent token/count caps and supervision remain."
+  },
+  "checks": {
+    "logsDirectory": "E:/ulpin-tmp/s5-17; revision-before/after logs, outline benchmarks and measurement helpers",
+    "pytestNativeOutlineConversion": {"exitCodes": [0, 0], "passed": 44, "skipped": 2},
+    "tsxCitygmlTests": {"exitCodes": [0, 0], "passed": 8, "skipped": 1},
+    "backendTypecheck": {"exitCodes": [0, 0]},
+    "studioTypecheck": {"exitCodes": [2, 2], "existingError": "table-placement-command.ts:65 missing decimalMark"},
+    "studioTest": {"exitCodes": [1, 0], "passed": [782, 783], "failed": [1, 0], "skipped": 3},
+    "ingestion": {"exitCodes": [1, 0], "passed": [980, 987], "failed": [5, 0], "skipped": 5},
+    "focusedServerTests": {"exitCode": 0, "passed": 73},
+    "openapiCheck": {"exitCodes": [1, 1], "expected": "stale published schema; lead regenerates"},
+    "apiCheck": {"exitCodes": [1, 1], "expected": "producer changed: packages/contracts/src/usp/citygml-ingestion.ts"},
+    "diffCheck": {"exitCodes": [0, 0]}, "oldOgcByteComparison": {"exitCode": 0, "files": 2, "identical": true},
+    "regressions": "16 MiB pre-decode guard; overflow queues one derivative; other failures/stale/formats unchanged"
+  },
+  "next": [
+    "Inventory-overflow fact remains on the failed native job; officer sees the separate conversion words.",
+    "Reading-card gap: packages/server/src/modules/usp/ingestion/intake-service.ts loads succeeded native jobs only.",
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts would need the failed-native fact for 16 MiB words.",
+    "intake-native-derivative.ts is unchanged; its wording belongs to S5.5. stoppedWords is unchanged as requested.",
+    "Lead repins contracts and host profiles. No image, runtime, demo, source bytes or CRS mapping was changed."
+  ]
+}

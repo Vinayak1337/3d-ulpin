@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "services/geo"))
-from geo.native_citygml import CityGMLError, Limits, encode_result, extract
+from geo.native_citygml import DEFAULT_LIMITS, CityGMLError, Limits, encode_result, extract
 
 spec = importlib.util.spec_from_file_location("citygml_cli", ROOT / "scripts/usp/desktop-citygml-read.py")
 cli = importlib.util.module_from_spec(spec)
@@ -21,6 +21,52 @@ OPEN = b'<CityModel xmlns="http://www.opengis.net/citygml/2.0" xmlns:gml="http:/
 
 
 class NativeCityGMLTests(unittest.TestCase):
+    def test_versions_are_literal_and_mixed_namespaces_are_refused(self):
+        raw = (OPEN + b'<cityObjectMember><Building xmlns="http://www.opengis.net/citygml/building/2.0">'
+               b'<lod0FootPrint><gml:posList srsDimension="3">0 0 0 1 0 0</gml:posList></lod0FootPrint>'
+               b'</Building></cityObjectMember></CityModel>')
+        two = extract(raw)
+        one = extract(raw.replace(b'citygml/2.0', b'citygml/1.0')
+                      .replace(b'citygml/building/2.0', b'citygml/building/1.0'))
+        self.assertEqual("1.0", one["source"]["citygmlVersion"])
+        self.assertEqual("2.0", two["source"]["citygmlVersion"])
+        for field in ("elements", "buildingsAndParts", "coordinateDeclarations", "decodedCoordinateValues"):
+            self.assertEqual(two["counts"][field], one["counts"][field])
+        self.assertEqual(two["coordinates"], one["coordinates"])
+        self.error("VERSION_PROFILE", raw.replace(b'citygml/building/2.0', b'citygml/building/1.0'))
+        self.error("VERSION_PROFILE", raw.replace(b'citygml/2.0', b'citygml/1.0'))
+        self.error("VERSION_PROFILE", raw.replace(b'citygml/building/2.0', b'citygml/building/3.0'))
+        self.error("VERSION_PROFILE", OPEN.replace(b'xmlns:gml=',
+                   b'xmlns:unused="http://www.opengis.net/citygml/generics/1.0" xmlns:gml=') + b'</CityModel>')
+
+    def test_default_bounds_refuse_one_extra_element_or_input_byte(self):
+        raw = OPEN + b'<gml:name/>' * DEFAULT_LIMITS.elements + b'</CityModel>'
+        self.error("STRUCTURE_LIMIT", raw)
+        self.error("INPUT_LIMIT", b' ' * (DEFAULT_LIMITS.input_bytes + 1))
+        with self.assertRaisesRegex(ValueError, "only be reduced"):
+            Limits(elements=DEFAULT_LIMITS.elements + 1)
+
+    def test_real_berlin_extracts_but_inventory_exceeds_artifact_bound(self):
+        path = Path("E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/"
+                    "LoD2_33_392_5820_1_BE.gml")
+        if not path.is_file():
+            self.skipTest("Berlin test_only practice-kit tile is absent")
+        raw = path.read_bytes()
+        expected = "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5"
+        self.assertEqual(expected, hashlib.sha256(raw).hexdigest())
+        result = extract(raw)
+        self.assertEqual("1.0", result["source"]["citygmlVersion"])
+        self.assertEqual(244832, result["counts"]["elements"])
+        self.assertEqual(1605, result["counts"]["buildingsAndParts"])
+        self.assertEqual(732, sum(row["type"] == "Building" for row in result["buildings"]))
+        self.assertEqual(363348, result["counts"]["decodedCoordinateValues"])
+        self.assertEqual(16 * 1024**2, DEFAULT_LIMITS.output_bytes)
+        with self.assertRaises(CityGMLError) as raised:
+            encode_result(result)
+        self.assertEqual("OUTPUT_LIMIT", raised.exception.code)
+        self.assertEqual("limit", raised.exception.status)
+        self.assertEqual(expected, hashlib.sha256(path.read_bytes()).hexdigest())
+
     def error(self, code, raw, limits=Limits()):
         with self.assertRaises(CityGMLError) as raised:
             extract(raw, limits)

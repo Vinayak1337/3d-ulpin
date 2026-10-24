@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Callable
 
 from .cityjson_outline import LAYER, _placement as reference_placement
-from .native_citygml import BUILDING, DEFAULT_LIMITS, GML, CityGMLError, extract
+from .native_citygml import DEFAULT_LIMITS, GML, CityGMLError, extract
 from .validation import InputError
 
 OUTLINE_READER = "citygml-ground-outline/1"
@@ -27,6 +27,7 @@ class Projection:
     children: dict[int, list[int]]
     coordinates: dict[int, dict]
     envelope_conflicts: set[int]
+    building_namespace: str
 
     @classmethod
     def from_reading(cls, reading: dict) -> Projection:
@@ -36,7 +37,9 @@ class Projection:
                 children[node["parent"]].append(node["ordinal"])
         conflicts = {element for finding in reading["findings"] if finding["code"] == "ENVELOPE_CONFLICT"
                      for element in finding["elements"]}
-        return cls(reading["elements"], children, {row["element"]: row for row in reading["coordinates"]}, conflicts)
+        building_namespace = f"http://www.opengis.net/citygml/building/{reading['source']['citygmlVersion']}"
+        return cls(reading["elements"], children, {row["element"]: row for row in reading["coordinates"]},
+                   conflicts, building_namespace)
 
     def named(self, element: int, namespace: str, local: str) -> bool:
         node = self.elements[element]
@@ -77,7 +80,8 @@ def _outline_declarations(projection: Projection, building: dict) -> tuple[list[
     grounds = []
     for row in building["lodDeclarations"]:
         parent = projection.elements[row["element"]]["parent"]
-        if projection.named(parent, BUILDING, "GroundSurface") and re.fullmatch(r"lod[0-4]MultiSurface", row["name"]):
+        if (projection.named(parent, projection.building_namespace, "GroundSurface")
+                and re.fullmatch(r"lod[0-4]MultiSurface", row["name"])):
             grounds.append(row)
     if not grounds:
         return [], "ground_surface", None
@@ -96,7 +100,7 @@ def _polygons(projection: Projection, element: int) -> list[int]:
     _inline(node)
     if projection.named(element, GML, "Polygon"):
         return [element]
-    declaration = (node["namespace"] == BUILDING
+    declaration = (node["namespace"] == projection.building_namespace
                    and re.fullmatch(r"lod(?:0FootPrint|[0-4]MultiSurface)", node["localName"]))
     if not declaration and not (node["namespace"] == GML and node["localName"] in _WRAPPERS):
         raise InputError("has an unsupported outline surface; its outlines stay unplaced")
@@ -213,7 +217,7 @@ def convert_citygml_file(path: Path, source_sha256: str, open_layer: Callable,
                          horizontal: Callable[[int], str | None]) -> list[dict]:
     stopped = {"layer": LAYER, "ordinal": 0, "state": "not_converted"}
     if path.stat().st_size > DEFAULT_LIMITS.input_bytes:
-        return [{**stopped, "reason": "is larger than the 32 MiB the CityGML reader takes"}]
+        return [{**stopped, "reason": f"exceeds the CityGML input byte limit ({DEFAULT_LIMITS.input_bytes} bytes)"}]
     try:
         reading = extract(path.read_bytes())
         rows, crs, bases = _rows(reading, horizontal)
