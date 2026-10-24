@@ -18,7 +18,8 @@ import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intake
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
-import { readIntakeDraftTx, withCellFiles, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
+import { readIntakeDraftTx, withCellFiles, writeIntakeDraftTx, writeIntakeLargeTx,
+  type IntakeLargeState } from './intake-ledger';
 import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
   type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import type { AreaFrame } from './intake-package-extent';
@@ -53,11 +54,11 @@ const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
 
 /** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
  * leaves the case row unlocked: its readers share-lock it from their own transactions. */
-async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt,
+async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt | undefined,
   work: (client: PoolClient, state: State) => Promise<T>, lockCase = true): Promise<T> {
   return transaction(async client => {
     await assertIntakeDraftTx(client, input, lockCase);
-    await assertUspJobAttemptTx(client, attempt);
+    if (attempt) await assertUspJobAttemptTx(client, attempt);
     const state = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
     return work(client, state);
   });
@@ -127,13 +128,13 @@ async function complete(input: IntakeLargeInput, attempt: UspJobAttempt, publish
 }
 
 /** The enqueue pins the case revision it saw; a replayed enqueue of an unchanged request sends the same pins. */
-async function caseRevision(input: IntakeLargeInput, attempt: UspJobAttempt): Promise<number> {
+async function caseRevision(input: IntakeLargeInput, attempt: UspJobAttempt | undefined): Promise<number> {
   return pinned(input, attempt, async client => Number((await client.query('SELECT revision FROM cases WHERE id=$1',
     [input.caseId])).rows[0].revision));
 }
 
 /** The reader and the profile through their own admission, with the item's stable request keys. */
-async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt, state: State) {
+async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt | undefined, state: State) {
   const pins = { expectedCaseRevision: await caseRevision(input, attempt),
     expectedSourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256 };
   const rawJobId = state.store.reader?.job_id ?? (await reader.enqueue(input.caseId, input.sourceId, {
@@ -143,7 +144,7 @@ async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt, sta
 }
 
 /** The approved layout's own pins admit the part mapping; the row says approved before it runs. */
-async function startMapping(input: IntakeLargeInput, attempt: UspJobAttempt, state: State) {
+async function startMapping(input: IntakeLargeInput, attempt: UspJobAttempt | undefined, state: State) {
   const recipe = state.store.recipe!;
   const plan = await pinned(input, attempt, async (client, current) => {
     await publishTx(client, input, current);
@@ -367,8 +368,6 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
     return complete(input, attempt, false);
   }
   const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
-  if (phase === 'start' || phase === 'read' && !state.store.profile) await startReaders(input, attempt, state);
-  if (phase === 'map' && !state.store.mapping) await startMapping(input, attempt, state);
   if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) await draft(input, attempt);
   await complete(input, attempt, true);
 }
@@ -429,11 +428,73 @@ async function unclaimedFailure(input: IntakeLargeInput, error: unknown) {
   });
 }
 
+/** Admission waits precede the attempt authority, so occupied lanes spend no attempt or live lease. */
+async function prepareReaders(input: IntakeLargeInput): Promise<boolean> {
+  const state = await pinned(input, undefined, async (client, current) => {
+    const job = (await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE', [input.jobId])).rows[0];
+    const active = (await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
+      AND state='active' AND lease_until>now() LIMIT 1`, [input.jobId])).rowCount;
+    return !active && ['queued', 'running'].includes(job?.status) ? current : null;
+  });
+  if (!state) return false;
+  if (state.key !== input.stateKey || intakeLargeAtRest(state.item)
+    || await retiredFileAreaWords(input.caseId, input.sourceSha256)) return true;
+  try {
+    const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
+    if (phase === 'start' || phase === 'read' && !state.store.profile) await startReaders(input, undefined, state);
+    if (phase === 'map' && !state.store.mapping) await startMapping(input, undefined, state);
+    return true;
+  } catch (error) {
+    if (!(error instanceof AppError)) throw error;
+    const occupied = error.status === 429
+      && ['STREAMING_CAPACITY', 'STREAMED_PROFILE_CAPACITY', 'MAPPING_CAPACITY'].includes(error.code);
+    // A sibling arrival may win admission's revision race; waiting reasserts the source and access pins.
+    if (error.code !== 'STALE_REVISION' && !occupied) throw error;
+    return waitForReader(input, error.code);
+  }
+}
+
+/** The first dispatch starts the durable 30 minute bound; retries never extend it. */
+async function waitForReader(input: IntakeLargeInput, code: string): Promise<false> {
+  await pinned(input, undefined, async (client, state) => {
+    const job = (await client.query(`SELECT status,
+      dispatched_at <= now()-interval '30 minutes' expired FROM jobs WHERE id=$1 FOR UPDATE`,
+    [input.jobId])).rows[0];
+    await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [input.jobId]);
+    const active = (await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
+      AND state='active' AND lease_until>now() LIMIT 1`, [input.jobId])).rowCount;
+    if (active || !['queued', 'running'].includes(job?.status)) return;
+    if (job.expired) {
+      await stopItemTx(client, input, 'No reader became free within 30 minutes; '
+        + 'the original and the steps already done are kept. Nothing more was prepared from it.');
+      await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
+        [input.jobId]);
+      await client.query("UPDATE jobs SET status='failed',error=$2,completed_at=now() WHERE id=$1",
+        [input.jobId, code]);
+      return;
+    }
+    if (!intakeLargeAtRest(state.item)) {
+      const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+      await writeIntakeDraftTx(client, input.caseId, input.itemId,
+        { ...current, limitReason: 'Waiting for a free reader; the original and the steps already done are kept.' });
+    }
+    await client.query(`UPDATE jobs SET status='queued',dispatched_at=COALESCE(dispatched_at,now()),
+      next_attempt_at=now()+interval '2 seconds',error=$2 WHERE id=$1`, [input.jobId, code]);
+  });
+  return false;
+}
+
 /** The existing dispatcher and fenced authority own scheduling; each job is one step of one large file. */
 export async function runIntakeLargeJob(jobId: string) {
   const job = (await query("SELECT * FROM jobs WHERE id=$1 AND operation='intake-large'", [jobId])).rows[0];
   if (!job || !['queued', 'running'].includes(job.status)) return;
   const input = IntakeLargeInputSchema.parse(job.payload);
+  let admissionError: unknown;
+  try {
+    if (!await prepareReaders(input)) return;
+  } catch (error) {
+    admissionError = error;
+  }
   let attempt: UspJobAttempt;
   try {
     attempt = await claimUspJobAttempt(jobId, `intake-large:${randomUUID()}`,
@@ -443,6 +504,7 @@ export async function runIntakeLargeJob(jobId: string) {
     return;
   }
   try {
+    if (admissionError) throw admissionError;
     await step(input, attempt);
   } catch (error) {
     await fail(input, attempt, error).catch(() => {/* A newer fence owns the job's durable state. */});
