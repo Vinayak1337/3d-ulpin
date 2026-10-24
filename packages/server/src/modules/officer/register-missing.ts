@@ -9,8 +9,8 @@ type RegisterMissingState = {
 export function registerMissing(state: RegisterMissingState): string[] {
   return [
     ...(!state.geometryAvailable ? [
-      'Spatial analysis not assessed: canonical geometry qualification is unavailable. '
-        + 'Retained geometry is available for source inspection only.',
+      'Spatial analysis was not assessed because the checks needed to use the recorded shapes are unavailable. '
+        + 'The kept shapes are available only for inspecting the source.',
     ] : []),
     ...Array.from({ length: state.staleDetailLinkCount }, () => 'A linked detailed representation changed.'),
     ...(!state.hasSpaces ? ['No source-linked detailed spaces have been recorded for this property.'] : []),

@@ -197,17 +197,24 @@ export async function inspectTabularStream(body: Readable, receipt: { sha256: st
 }
 
 function admissionLimitations(admitted: TabularAdmission): string[] {
-  const common = 'No geometry, identity issuance or registry writes; native sheet rows remain source locators.';
+  const common = 'No map shapes are created, no identifiers are issued and no records are written; '
+    + 'the original sheet rows still locate the source.';
   if (admitted.kind === 'case_original') {
-    return [`officer_supplied; licence ${admitted.admission.licence}; ` +
-      `containsPersonalData ${admitted.admission.containsPersonalData}.`,
-    'This is not a development or evaluation asset; no family or learning split is assigned.',
-    'The D8 manifest omits held-out original hashes; this gate cannot recognise those files by hash.', common];
+    const personalData = {
+      unknown: 'It is not known whether it contains personal data.',
+      yes: 'It contains personal data.',
+      no: 'It contains no personal data.',
+    }[admitted.admission.containsPersonalData];
+    return [`An officer supplied this file; its licence is ${admitted.admission.licence}. ${personalData}`,
+    'This file is not for development or scoring; it has no assigned source family or learning split.',
+    'The file list leaves out hashes of originals kept aside for scoring, so those files cannot be recognised here '
+      + 'by their hash.', common];
   }
   const asset = admitted.asset;
-  return ['test_only; permission unconfirmed unless publisher metadata states otherwise.', common,
-    ...(asset.derivativeOf ? [`Recorded JSON-original lineage: ${asset.derivativeOf.originalSha256}; ` +
-      `${asset.derivativeOf.version}. CSV is a development derivative, not a publisher-native CSV.`] : [])];
+  return ['For testing only; permission is unconfirmed unless the publisher states otherwise.', common,
+    ...(asset.derivativeOf ? [`This CSV was made for development from the original JSON file with hash ` +
+      `${asset.derivativeOf.originalSha256}, version ${asset.derivativeOf.version}; ` +
+      'it is not the publisher’s original CSV.'] : [])];
 }
 
 export function assertTabularPin(pin: TabularPin, source: { sha256: string; bytes: number; inspection: any }) {

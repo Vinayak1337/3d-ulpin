@@ -634,9 +634,10 @@ type TargetPins = { packageId: string; packageRevision: number; reviewFingerprin
  * at the reviewed revision it was committed from, so a confirmation made before the commit still holds after it. */
 export type EvidenceState = {
   profileSha256: string | null;
-  sources: Map<string, { sourceId: string; sourceRevision: number; sourceSha256: string; bytes: number;
-    latest: boolean }>;
-  coverage: Map<string, { jobId: string | null; resultSha256: string | null; coverage: IntakeEvidenceCoverage }>;
+  sources: Map<string, { name: string | null; sourceId: string; sourceRevision: number; sourceSha256: string;
+    bytes: number; latest: boolean }>;
+  coverage: Map<string, { name: string | null; jobId: string | null; resultSha256: string | null;
+    coverage: IntakeEvidenceCoverage }>;
   targets: Map<string, TargetPins & { committed?: TargetPins }>;
   candidates: Map<string, { itemId: string; candidateSha256: string; targetIds: string[];
     outcome: IntakeEvidenceCandidate['outcome']; evidence: IntakeEvidenceLocator }>;
@@ -693,13 +694,19 @@ export function evidenceConfirmationIssue(input: IntakeEvidenceConfirm, state: E
     const read = state.coverage.get(named.itemId);
     if (!read || read.jobId !== named.jobId || read.resultSha256 !== named.resultSha256
       || fingerprint(read.coverage) !== fingerprint(named.coverage)) {
-      return `Source item ${named.itemId} has another reading under this profile. `
+      const name = read?.name ?? state.sources.get(named.itemId)?.name;
+      const file = name ? `The file "${name}"` : 'This file';
+      return `${file} has a different reading under this profile. `
         + 'Confirm the current evidence again, then try the stopped building again.';
     }
   }
   const named = new Set([...input.included, ...input.excluded].map(source => source.itemId));
   const unnamed = [...state.coverage.keys()].find(itemId => !named.has(itemId));
-  if (unnamed) return `Source item ${unnamed} was read under this profile; include or exclude it.`;
+  if (unnamed) {
+    const name = state.coverage.get(unnamed)?.name;
+    const file = name ? `The file "${name}"` : 'A file';
+    return `${file} was read under this profile; include or exclude it.`;
+  }
   for (const target of input.targets) {
     const current = state.targets.get(target.targetId);
     const views = current ? [current, current.committed] : [];
@@ -737,12 +744,13 @@ export async function evidenceStateTx(client: PoolClient, caseId: string, input:
   const profile = (await client.query(`SELECT profile_sha256 FROM usp_intake_key_profiles
     WHERE case_id=$1 AND profile_id=$2 FOR SHARE`, [caseId, input.profileId])).rows[0];
   const items = [...input.included, ...input.excluded].map(source => source.itemId);
-  const sources = (await client.query(`SELECT i.item_id,s.id,s.revision,s.sha256,s.bytes,
+  const sources = (await client.query(`SELECT i.item_id,s.id,s.revision,s.sha256,s.bytes,s.name,
     s.revision=(SELECT max(x.revision) FROM sources x WHERE x.case_id=s.case_id AND x.family_id=s.family_id) latest
     FROM usp_intake_items i JOIN sources s ON s.id=i.source_id WHERE i.case_id=$1 AND i.item_id=ANY($2::uuid[])`,
   [caseId, items])).rows;
-  const coverage: CoverageRow[] = (await client.query(`SELECT * FROM usp_intake_evidence_coverage
-    WHERE case_id=$1 AND profile_id=$2`, [caseId, input.profileId])).rows;
+  const coverage: (CoverageRow & { name: string | null })[] = (await client.query(`SELECT c.*,s.name
+    FROM usp_intake_evidence_coverage c LEFT JOIN usp_intake_items i ON i.item_id=c.item_id AND i.case_id=c.case_id
+    LEFT JOIN sources s ON s.id=i.source_id WHERE c.case_id=$1 AND c.profile_id=$2`, [caseId, input.profileId])).rows;
   const targets = (await client.query(`SELECT t.target_id,t.package_id,(p.body->>'revision')::int revision,
     CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision' THEN p.body->'review'->>'inputFingerprint'
     END review,CASE WHEN p.body->>'state'='COMMITTED' THEN p.body->'review' END committed
@@ -753,9 +761,10 @@ export async function evidenceStateTx(client: PoolClient, caseId: string, input:
     candidate->'evidence' evidence FROM usp_intake_evidence_candidates WHERE case_id=$1 AND profile_id=$2
     AND candidate_id=ANY($3::uuid[])`, [caseId, input.profileId, decisions.map(d => d.candidateId)])).rows;
   return { profileSha256: profile?.profile_sha256 ?? null,
-    sources: new Map(sources.map(row => [row.item_id, { sourceId: row.id, sourceRevision: row.revision,
+    sources: new Map(sources.map(row => [row.item_id, { name: row.name, sourceId: row.id, sourceRevision: row.revision,
       sourceSha256: row.sha256, bytes: Number(row.bytes), latest: row.latest }])),
-    coverage: new Map(coverage.map(row => [row.item_id, { jobId: row.job_id, resultSha256: row.result_sha256,
+    coverage: new Map(coverage.map(row => [row.item_id, { name: row.name, jobId: row.job_id,
+      resultSha256: row.result_sha256,
       coverage: coverageOf(row) }])),
     targets: new Map(targets.map(row => [row.target_id, { packageId: row.package_id, packageRevision: row.revision,
       reviewFingerprint: row.review ?? null, committed: row.committed ? { packageId: row.package_id,

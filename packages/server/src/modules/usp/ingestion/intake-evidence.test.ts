@@ -147,8 +147,9 @@ function confirmationOf(candidates: IntakeEvidenceCandidate[], coverage: IntakeE
       reviewFingerprint: fingerprint('test_only:review') }],
     additions: { kind: 'citations', linkManifestSha256: evidenceLinkManifest(decisions), decisions } };
   const state: EvidenceState = { profileSha256,
-    sources: new Map([[ids('register'), { ...input.included[0], latest: true }]]),
-    coverage: new Map([[ids('register'), { jobId: ids('reading'), resultSha256: fingerprint('test_only:result'),
+    sources: new Map([[ids('register'), { ...input.included[0], name: 'gpmc-yuvp.csv', latest: true }]]),
+    coverage: new Map([[ids('register'), { name: 'gpmc-yuvp.csv', jobId: ids('reading'),
+      resultSha256: fingerprint('test_only:result'),
       coverage }]]),
     targets: new Map([[input.targets[0].targetId, { packageId: ids('package'), packageRevision: 1,
       reviewFingerprint: fingerprint('test_only:review') }]]),
@@ -168,7 +169,8 @@ test('a confirmation holds every pin; a stale pin or an unnamed newer source ref
   const target = state.targets.get(input.targets[0].targetId)!;
   const stale: [string, EvidenceState][] = [
     ['profile', { ...state, profileSha256: fingerprint('other') }],
-    ['source', { ...state, sources: new Map([[ids('register'), { ...input.included[0], latest: false }]]) }],
+    ['source', { ...state, sources: new Map([[ids('register'), { ...input.included[0],
+      name: 'gpmc-yuvp.csv', latest: false }]]) }],
     ['reading', { ...state, coverage: new Map([[ids('register'), { ...reading0,
       resultSha256: fingerprint('newer') }]]) }],
     ['newer source', { ...state, coverage: new Map([...state.coverage, [ids('late'), reading0]]) }],
@@ -181,6 +183,24 @@ test('a confirmation holds every pin; a stale pin or an unnamed newer source ref
     linkManifestSha256: fingerprint('other') } as IntakeEvidenceConfirm['additions'] }, state), null);
   assert.deepEqual(newerSources(input, [ids('register'), ids('late')]), [ids('late')],
     'a stored confirmation is unchanged; the read names the source read after it');
+});
+
+test('an evidence stop names the file, even when omitted from the confirmation', { skip }, () => {
+  const reading = registerReading(readFileSync(registerPath));
+  const { input, state } = confirmationOf(close(reading, anchorsOf(readFileSync(buildingsPath))), reading.coverage);
+  const current = state.coverage.get(ids('register'))!;
+  state.coverage.set(ids('register'), { ...current, resultSha256: fingerprint('newer') });
+  assert.equal(evidenceConfirmationIssue(input, state), 'The file "gpmc-yuvp.csv" has a different reading under '
+    + 'this profile. Confirm the current evidence again, then try the stopped building again.');
+  state.coverage.delete(ids('register'));
+  assert.match(evidenceConfirmationIssue(input, state)!, /^The file "gpmc-yuvp.csv" has a different reading/);
+  state.coverage.set(ids('register'), current);
+  state.coverage.set(ids('late'), { ...current, name: 'Metadata_BuildingFootprints.md' });
+  const issue = evidenceConfirmationIssue(input, state)!;
+  assert.equal(issue, 'The file "Metadata_BuildingFootprints.md" was read under this profile; include or exclude it.');
+  assert.doesNotMatch(issue, /[0-9a-f]{8}-[0-9a-f-]{27,}/i);
+  state.coverage.set(ids('late'), { ...current, name: null });
+  assert.equal(evidenceConfirmationIssue(input, state), 'A file was read under this profile; include or exclude it.');
 });
 
 type StoredWindow = { window_index: number; first_record: number; records: number; fence: number;
@@ -593,18 +613,20 @@ test('EV2 run a: prepare does not replace a completed reading that read the curr
     const { input, state } = confirmationOf([...candidates.values()], coverage);
     Object.assign(input.included[0], { jobId: confirmed.job_id, resultSha256: confirmed.result_sha256,
       bytes: bytes.length });
-    state.sources.set(store.itemId, { ...input.included[0], latest: true });
+    state.sources.set(store.itemId, { ...input.included[0], name: 'gpmc-yuvp.csv', latest: true });
     const accepted = [...candidates.values()].find(candidate => candidate.outcome === 'matched')!;
     input.targets[0].packageId = accepted.anchors[0].packageId;
     state.targets.set(input.targets[0].targetId, { ...input.targets[0] });
-    state.coverage.set(store.itemId, { jobId: confirmed.job_id, resultSha256: confirmed.result_sha256, coverage });
+    state.coverage.set(store.itemId, { name: 'gpmc-yuvp.csv', jobId: confirmed.job_id,
+      resultSha256: confirmed.result_sha256, coverage });
     assert.equal(evidenceConfirmationIssue(input, state), null, 'the officer confirms while prepare still runs');
     await prepareIntakeTargetsTx(store.client, second);
     assert.equal(store.jobs.size, 1, 'same inputs: no second reading and no second confirmation');
     assert.deepEqual(store.coverage.get(store.itemId), confirmed);
     assert.deepEqual(store.candidates, candidates);
     const current = store.coverage.get(store.itemId)!;
-    state.coverage.set(store.itemId, { jobId: current.job_id, resultSha256: current.result_sha256, coverage });
+    state.coverage.set(store.itemId, { name: 'gpmc-yuvp.csv', jobId: current.job_id,
+      resultSha256: current.result_sha256, coverage });
     assert.equal(evidenceConfirmationIssue(input, state), null, 'the citation step accepts that same confirmation');
     await prepareIntakeTargetsTx(store.client, first);
     assert.equal(store.jobs.size, 1, 'run b: preparing before a later confirmation also changes nothing');

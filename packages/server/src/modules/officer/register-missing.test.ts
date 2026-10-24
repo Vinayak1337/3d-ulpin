@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { registerMissing } from './register-missing';
 
-const absentGeometry = 'Spatial analysis not assessed: canonical geometry qualification is unavailable. '
-  + 'Retained geometry is available for source inspection only.';
+const absentGeometry = 'Spatial analysis was not assessed because the checks needed to use the recorded shapes '
+  + 'are unavailable. The kept shapes are available only for inspecting the source.';
 const absentParcel = 'No evidenced parcel association has been confirmed.';
 
 test('Tower 3 with a recorded space and Magnolia with a linked PDF state absences, not missing plans', () => {

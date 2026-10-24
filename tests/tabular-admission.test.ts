@@ -265,8 +265,12 @@ test('an unseen public original is retained without a question and keeps honest 
     origin: 'officer_supplied', licence: 'unconfirmed', containsPersonalData: 'unknown' });
   assert.deepEqual(protocol.source?.inspection.tabularProvenance, profile.tabular.admission);
   assert.equal(protocol.puts, 1);
-  assert(profile.limitations.some(line => line.includes('not a development or evaluation asset')));
-  assert(profile.limitations.some(line => line.includes('cannot recognise those files by hash')));
+  assert.equal(profile.limitations[0], 'An officer supplied this file; its licence is unconfirmed. '
+    + 'It is not known whether it contains personal data.');
+  assert(profile.limitations.some(line => line.includes('not for development or scoring')));
+  assert(profile.limitations.some(line => line.includes('originals kept aside for scoring')
+    && line.includes('cannot be recognised here by their hash')));
+  assert.doesNotMatch(profile.limitations.join(' '), /officer_supplied|containsPersonalData|D8/);
   assert.equal(profile.records, 1105);
 });
 
@@ -278,7 +282,8 @@ test('stated provenance survives retention, both duplicate paths, replay and str
   assert.deepEqual(profile.tabular.admission, { kind: 'case_original', ...provenance });
   assert.equal(profile.tabular.admission.licence, 'restricted');
   assert.equal(profile.tabular.admission.containsPersonalData, 'yes');
-  assert(profile.limitations.some(line => line.includes('licence restricted')));
+  assert.equal(profile.limitations[0], 'An officer supplied this file; its licence is restricted. '
+    + 'It contains personal data.');
   const file = { name: 'edmonton-heritage.csv', bytes: originalBytes };
   assert.deepEqual(await service.retain(protocol.caseId, request, file), profile);
   const duplicate = await service.retain(protocol.caseId, { ...request, requestKey: randomUUID() }, file);
@@ -293,6 +298,18 @@ test('stated provenance survives retention, both duplicate paths, replay and str
   assert.equal(streamed.sha256, originalHash);
   await assert.rejects(service.retain(protocol.caseId, { ...request, requestKey: randomUUID(), licence: 'open' }, file),
     code('TABULAR_PIN_CHANGED'));
+});
+
+test('limitation words distinguish unknown personal data from no personal data and keep the stated licence', () => {
+  for (const licence of ['unconfirmed', 'open', 'restricted'] as const) {
+    for (const containsPersonalData of ['unknown', 'yes', 'no'] as const) {
+      const profile = inspectTabularSource(originalBytes, selection, { licence, containsPersonalData });
+      const words = { unknown: 'It is not known whether it contains personal data.',
+        yes: 'It contains personal data.', no: 'It contains no personal data.' };
+      assert.equal(profile.limitations[0], `An officer supplied this file; its licence is ${licence}. `
+        + words[containsPersonalData]);
+    }
+  }
 });
 
 test('case provenance remains closed and a case pin cannot acquire development fields', async () => {

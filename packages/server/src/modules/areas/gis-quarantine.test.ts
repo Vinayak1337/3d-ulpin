@@ -27,6 +27,21 @@ test('the normalizer sets pins and lines aside under an outline kind; the packag
     '1 pin is kept in the original but not drawn as land parcels.');
 });
 
+test('the REH16 NYC summary is one plain sentence and keeps the original without repairs', () => {
+  const disposition = { total: 1662, accepted: 1661, rejected: 1, rejections: [{ featureIndex: 1322,
+    sourceKey: null, code: 'INVALID_GEOMETRY' as const,
+    reason: 'Ring Self-intersection[-74.003625525124 40.72574597286]' }] };
+  const quarantine = gisQuarantine(disposition, 'a'.repeat(64))!;
+  assert.equal(quarantine.message, '1661 of 1662 source features accepted; 1 skipped (first reason: '
+    + 'an outline ring crosses itself at coordinates -74.003625525124 40.72574597286); '
+    + 'the original is kept unchanged and no geometry was repaired.');
+  assert.doesNotMatch(quarantine.message, /\b[A-Z][A-Z_]+\b|\.\s+[A-Z]/);
+  assert.deepEqual(quarantine.rejections, disposition.rejections, 'the exact code and reason stay structured');
+  assert.equal(gisQuarantine(mixed, 'a'.repeat(64))!.message,
+    '1 of 5 source features accepted; 4 skipped (first reason: building requires an outline or a group of outlines); '
+      + 'the original is kept unchanged and no geometry was repaired.');
+});
+
 test('nothing is counted aside for an all-polygon file, a line kind, or geometry without a GeoJSON kind', () => {
   const polygons = { total: 2, accepted: 2, rejected: 0, rejections: [] };
   const before = JSON.stringify(polygons);
