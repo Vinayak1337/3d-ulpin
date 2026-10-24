@@ -66641,6 +66641,12 @@ export interface components {
                 column: number;
             };
             crs: string | null;
+            /**
+             * @description The coordinate cells' decimal mark, stated by the officer, never detected. WKT uses point only.
+             * @default point
+             * @enum {string}
+             */
+            decimalMark: "point" | "comma";
         };
         GET_ingestion_conversions_Response_200_application_json: {
             /** @enum {string} */
