@@ -417,7 +417,7 @@ function fieldReason(pair: [Field, Field]): string {
   }
   const target = canonicalTarget(field.target!);
   const label = CANONICAL_TARGETS[target].displayLabel;
-  return `${describe(field)} here and ${describe(other)} there both mean ${label} (${target}).`;
+  return `${describe(field)} here and ${describe(other)} there both mean ${label}.`;
 }
 
 function linksOf(card: IntakeCard | null, fields: Field[], peers: ReadingPeer[]) {
