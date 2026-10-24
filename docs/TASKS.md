@@ -757,7 +757,7 @@ Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merge
 
 ### S7.11 Batch screen as a file list and one detail pane (wait for the owner's list)
 
-Size M, code only. After: WAIT for the owner's five worst problems (PLAN Needs you 2); after S7.2, S7.3, S4.8. **Status: open.**
+Size M, code only. After: S7.2, S7.3, S4.8 (the owner left the UI list to the lead on 24 Oct; the list is in STATUS.md). **Status: open.**
 
 - **What:** BatchPage stacks about a dozen sections in one scroll: the file table, PDF buttons, banners, the upload table, waiting files, the chosen file's detail (up to 7 sections), Evidence by key and the recording panels. The detail renders below the whole table. At desktop width, show the file list on the left, and on the right the chosen file's reading card, its question and its readings (one inspector per selection, design-system README Principles). Keep the selection in ?item= so a reload keeps it. Put the recording panels below as one 'Record buildings' section, drop the separate 'View PDF reading' buttons, and stack to one column at 200 %. Layout only; no new data.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:67-146 (state 70-78, PDF nav 139-143); apps/studio/src/features/intake/Batch.module.css; apps/studio/src/features/intake/IntakeTray.tsx:20-76 (selecting a row)
@@ -766,7 +766,7 @@ Size M, code only. After: WAIT for the owner's five worst problems (PLAN Needs y
 
 ### S7.12 ZIP and KML members listed under their file (wait for the owner's list)
 
-Size S, code only. After: WAIT for the owner's list; after S7.11. **Status: open.**
+Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: open.**
 
 - **What:** Members taken out of a ZIP or KML are separate rows, and only the reason text links them back ('Taken out of zp1-geojson-kml-csv.zip.', REH14 act2-zp1.png and REH15 zp2 words), although each item carries parentItemId. List members indented under their parent, collapsible above 10, with the parent's line giving how many files were taken out.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx; apps/studio/src/features/intake/batch-model.ts
@@ -775,7 +775,7 @@ Size S, code only. After: WAIT for the owner's list; after S7.11. **Status: open
 
 ### S7.13 Add files: one dialog, a named batch, short forecasts (wait for the owner's list)
 
-Size M, code only. After: WAIT for the owner's list; after S7.2 (IntakeDropDialog.tsx); forecast words follow step 5's drawing outcomes. **Status: open.**
+Size M, code only. After: S7.2 (IntakeDropDialog.tsx; UI list in STATUS.md, 24 Oct); forecast words follow step 5's drawing outcomes. **Status: open.**
 
 - **What:** A drop passes two dialogs, and the second's primary button stays disabled until 'New case name' is typed under 'Source case: Create an unassigned source case' (REH16 a02-forecast.png). Forecasts run to three sentences of reader limits, and say that DXF, glTF and OBJ readings are 'kept as evidence, not placed on the map'. Four changes:
 - Pre-fill an editable batch name from the first file name and today's date.
@@ -789,7 +789,7 @@ The rehearsal steps click 'Retain files and open batch' and 'New case name' (E:/
 
 ### S7.14 Map tools show only what the area holds (wait for the owner's list)
 
-Size S, code only. After: WAIT for the owner's list; after S7.9 (MapWorkspace.tsx). **Status: open.**
+Size S, code only. After: S7.9 (MapWorkspace.tsx; UI list in STATUS.md, 24 Oct). **Status: open.**
 
 - **What:** Every area gets the same building tools. The Tools panel always offers the Area, Building, Floors, Findings and Underground views and the None, Rights, Utilities and Height colours, disabled when absent, plus the gestures line and 'Retire area'. The search says 'Find building…' even for an area of imagery or points (REH16 a09). Hide the views and colours the area has no data for, name the search after what the area holds, and lead with the layers list when the area holds only surfaces.
 - **Files:** apps/studio/src/features/map/MapWorkspace.tsx:470-520 (views 489-499, colourOptions 502-507); apps/studio/src/features/map/MapSidebar.tsx:1-130; apps/studio/src/features/map/BuildingSearch.tsx:65
@@ -805,6 +805,39 @@ Size S, this PC: runtime. After: S7.1-S7.9 merged (S7.11-S4.8 if done); step 2 p
 - **Check:** result.json lists each shot with its URL, viewport and file, the scan exit code and the frame numbers, and the owner accepts the set or names what to change.
 - **Tests:** pnpm studio:typecheck && pnpm studio:test on the integrated head before capture; node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging
 
+
+### S7.17 Step strip and a Needs-you box on the batch page (UX review 1 and 2)
+
+Size M, code only. After: none; before S7.11 (same page). **Status: open.**
+
+- **What:** [UX review](design/UX-REVIEW-2026-10-24.md) findings 1 and 2. A step strip (Files, Reading, Your answers, Confirm, Cards) with counts from the records, and a Needs-you box listing each pending action with one button, or what the system is doing when nothing waits. A test: every item in a Needs-you state renders exactly one visible action. The Batches list gains Stage and Needs-you columns.
+- **Files:** apps/studio/src/features/intake/BatchPage.tsx, IntakeTray.tsx, batch-model.ts; the Batches list page.
+- **Check:** a test per state with record fixtures; the S1.2 case (planned, needs_answer, no plan) shows one button.
+
+### S7.18 Every disabled control says why and links to what unblocks it (UX review 5)
+
+Size S, code only. After: none. **Status: open.**
+
+- **What:** Finding 5: each disabled button in the batch, evidence and confirmation panels gets its one failing condition beside it and a link to the action that clears it.
+- **Check:** a test lists every disabled control in those panels and finds a reason next to each.
+
+### S7.19 Confirmation summary, filled acknowledgement and a Done panel (UX review 7)
+
+Size M, code only. After: S4.9 if it is running at the same time (same panel); otherwise none. **Status: open.**
+
+- **What:** Finding 7: a one-line summary with counts, three bullets (recorded, not recorded, cannot be undone), an editable acknowledgement filled from those facts, a button naming the count, then progress and a Done panel with Open the card, Verify and See on the map.
+
+### S7.20 Batches can be told apart; news when work ends (UX review 9 and 10)
+
+Size S, code only. After: S7.17 (Batches list). **Status: open.**
+
+- **What:** Findings 9 and 10: a suggested unique batch name at drop with a warning on a duplicate; a dot on the Batches tab when something needs you; a toast when a reading finishes or stops, with Open.
+
+### S7.21 A first-time start and focus that follows the work (UX review 12)
+
+Size S, code only. After: S7.17. **Status: open.**
+
+- **What:** Finding 12: How it works on the empty Batches page with Try our sample files (our NYC kit, test_only); after an answer, focus moves to the next Needs-you action.
 
 ## Step 8: Rehearsal 1 on the closed kit
 

@@ -7,9 +7,16 @@ running; the demo runtime stays up. This page stays under one page; the board be
 **24 October.** The old Next.js app `apps/web` and the tests and tools that only exercised it are removed (in Git
 history only). Workers are Claude CLI (all UI work) and pi codex only; no cloud agents.
 
-**24 October, later.** Three codex workers are running: the full check set on the newest code, recording why the API
-or dispatcher stops, and the reading card's contract and route. The Claude CLI worker cannot start: its account is
-refused by an organisation setting, so UI work waits for the owner to fix that account.
+**24 to 25 October.** Merged into `task/int3-pre` and pushed: S1.1 (full checks), S2.1 and S2.2 (practice kit,
+17 files with receipts), S3.1, S3.2, S4.1 (one owner switch for Sarvam on judges' files, default off), S4.2 (header
+rules), S4.3 (reading card route), S4.5 server part (certain tables read without a press), S7.2, S7.3. The S1.2
+rehearsal on a fresh `ulpin-reh-03` proved surface jobs (SA1) but failed act 1 on two faults from S4.1 and S4.5; S1.2a
+fixes them. Running: S1.2a, S4.6, S2.3 (codex) and S7.7 (chat session). The Claude CLI account is still refused.
+
+**UI list (owner left it to the lead, 24 October):** [UX review](design/UX-REVIEW-2026-10-24.md). Worst first: the
+batch page never says which step it is in or what needs the officer (S7.17), an action can vanish or sit disabled with
+no way out (S7.18, S1.2a), one long page instead of a file list and a detail pane (S7.11), status as long prose and
+machine words (S7.5), a legal-wall confirmation (S7.19).
 
 ## What works
 
@@ -29,7 +36,7 @@ refused by an organisation setting, so UI work waits for the owner to fix that a
   checks rejected both of Sarvam's suggestions for what the table columns mean.
 - **Our own table-reading model** has not yet filled any field correctly by itself. The roof-finding model finds about
   65 of every 100 roofs; the target is 70.
-- **The UI** needs a pass (plan step 7).
+- **The UI**: see the UX review above (plan step 7).
 
 ## Where things are
 
@@ -39,7 +46,7 @@ refused by an organisation setting, so UI work waits for the owner to fix that a
 | `staging` | The main working branch, in `E:/Projects/3d-ulpin`; pushed |
 | `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`; pushed; about 209 changes not yet in `staging`, including three timing fixes not yet rehearsed |
 | `main` | `origin/main` `14fc0b9c` (2 October) is the public repository's default branch. The local `main` (`bc587b49`) is an old copy: never push it or build on it |
-| Rehearsal runtimes | `ulpin-reh-02` stopped at `1a226949`; `ulpin-reh-01` untouched |
+| Rehearsal runtimes | `ulpin-reh-03` stopped at `0ce6cad8` (S1.2, volumes kept); `ulpin-reh-02` stopped at `1a226949`; `ulpin-reh-01` untouched |
 
 ## Next
 
