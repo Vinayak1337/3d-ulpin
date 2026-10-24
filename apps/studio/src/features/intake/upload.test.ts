@@ -265,9 +265,14 @@ it('a refused finish again shows the server words and keeps Cancel upload', asyn
   const run = await finalizingResume(v1(-60_000));
   const words = 'Original finalization is still active; resume from status.';
   run.transport.finalize.mockRejectedValueOnce(new ApiError(409, '', { error: { message: words } }));
+  const stopped = new Promise<void>(resolve => {
+    run.progress.mockImplementation(progress => {
+      if (progress.phase === 'stopped') resolve();
+    });
+  });
   const finished = run.command.run();
-  await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
-    phase: 'stopped', words })));
+  await stopped;
+  expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'stopped', words }));
   await run.command.cancel();
   expect(await finished).toBeNull();
   expect(run.transport.finalize).toHaveBeenCalledOnce();
