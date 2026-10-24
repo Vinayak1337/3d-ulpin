@@ -101,7 +101,8 @@ function chunkMetrics(
   const memory = cached || proposal.memoryMatched === true || count('memory') === input.headers.length;
   const event = CaseIngestionChangeSchema.parse({ kind: 'mapping.chunk', jobId: input.jobId,
     chunkIndex: input.chunkIndex, layout: memory ? 'memory' : 'new', teacherCalls: proposal.attempts,
-    memoryHits: Number(memory), studentFields: count('student'), teacherFields: count('teacher'),
+    memoryHits: Number(memory), ruleFields: count('rule'), studentFields: count('student'),
+    teacherFields: count('teacher'),
     unansweredFields: count('unanswered'), needsInput: questions.length, latencyMs,
     learnerVersion: proposal.activeLearnerVersion });
   if (event.kind !== 'mapping.chunk') throw new Error('MAPPING_CHUNK_EVENT_INVALID');

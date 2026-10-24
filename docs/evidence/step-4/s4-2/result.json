@@ -1,0 +1,61 @@
+{
+  "task": "S4.2",
+  "planStep": 4,
+  "base": "4c704191",
+  "checkBaseline": "bf1b5129 (resume)",
+  "branch": "task/s4-2-mapping-rules",
+  "result": "Memory, named rules, student, teacher; only unmatched columns advance. Officer review stays required.",
+  "inputs": [
+    "fixtures/real-nyc/original.geojson",
+    "Baton Rouge headers: NUMBER OF FLOORS, HEIGHT (FEET), ID, ID 2",
+    "Edmonton header: Building Address",
+    "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv"
+  ],
+  "acceptance": {
+    "nyc": "bin -> building.sourceKey; name -> building.name; unitless height_roof unmatched",
+    "batonRouge": "Explicit floor count; height uses declared ft; both generic ID columns unmatched",
+    "edmonton": "Building Address -> building.addressLiteral",
+    "gurugram": "No building or parcel targets",
+    "routing": "Rule fields never enter student or teacher inputs; positional learner metadata remains aligned",
+    "guards": "Duplicate rules abstain; later rule-target clashes become unknown without losing other answers",
+    "clashes": "Replay teacher and stubbed student preserve bin plus a third answer; exactly one named clash issue",
+    "fallback": "Rule-enriched fallback is validated; failure returns plain manual fields and no rule provenance"
+  },
+  "decisions": [
+    "Bare name requires a building-key header; generic ID alone is not a building key.",
+    "Unit spellings and dimensions reuse UNIT_SUFFIXES and UNIT_TABLE; no guessed units or factors.",
+    "Studio changes are wording only; components, layout, generated schema and pins are untouched."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:test", "before": [0, 776, 3], "after": [0, 776, 3] },
+    { "command": "WORKING-RULES section 5 server command", "before": [0, 892, 5], "after": [0, 895, 5] },
+    { "command": "Resume CHECK: mapping-rules, mapping-routing, tabular-admission", "before": [0, 27, 0],
+      "after": [0, 30, 0] },
+    { "command": "Remaining task TESTS: a3e-unanswered, mapping-teacher, mapping-memory, column-profile",
+      "after": [0, 36, 0] },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/table/model.test.ts",
+      "after": [0, 19, 0] },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 1, "afterExit": 1, "expected": "docs/api/openapi.json stale; regeneration reserved for lead" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 1, "afterExit": 1,
+      "expected": "Stops at changed producer packages/contracts/src/canonical/mapping-plan.ts" },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "countOrder": "Test arrays are exit, passed, skipped; no final test failures.",
+  "environment": "TMP/TEMP/TMPDIR=E:/ulpin-tmp; server checks use isolated-env.cjs, demo, REPO_DATA=false",
+  "profilePython": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe (default Python lacks sklearn)",
+  "clashChecks": "Both stages tested; new student test intercepts spawnSync and does not execute Python.",
+  "logs": "E:/ulpin-tmp/s4-2-resume-{before,after}-*.log; s4-2-resume-rules.log",
+  "staleProducers": [
+    "packages/contracts/src/canonical/mapping-plan.ts",
+    "packages/contracts/src/usp/chunk-mapping.ts",
+    "packages/contracts/src/usp/ingestion-events.ts",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts",
+    "packages/server/src/modules/usp/ingestion/mapping-teacher.ts"
+  ],
+  "externalCalls": 0,
+  "runtimeChanged": false,
+  "next": "Lead regenerates OpenAPI, api-client types and pins for the five changed pinned producers."
+}

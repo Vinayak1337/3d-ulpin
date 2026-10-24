@@ -100,6 +100,27 @@ describe('published chunks', () => {
   });
 });
 
+describe('rule and data-policy words', () => {
+  it('names a source-header rule without presenting it as a measured percentage', () => {
+    expect(confidenceText({ origin: 'rule', noAnswer: null, confidence: 1 })).toBe('Source header rule');
+  });
+
+  it.each([
+    ['CASE_ORIGINAL_TEACHER_REFUSED', 'original file not sent to the teacher'],
+    ['TEACHER_DATA_DENIED', 'data policy does not permit asking the teacher'],
+  ])('explains %s without printing the raw code or a confidence', (code, words) => {
+    const copy = structuredClone(mapping);
+    copy.fieldSources[0]!.source = 'unanswered';
+    copy.fieldSources[0]!.method = `manual:${code}`;
+    copy.plan.fields[0]!.target = 'unknown';
+    const row = columnRows(profile, copy)[0]!;
+    expect(row.noAnswer).toBe(words);
+    expect(confidenceText(row)).toBeNull();
+    expect(isUnmapped(row)).toBe(true);
+    expect(questionWords(code)).not.toBe(code);
+  });
+});
+
 describe('columns nobody answered', () => {
   function withSources(source: string, method: string) {
     const copy = structuredClone(mapping);
