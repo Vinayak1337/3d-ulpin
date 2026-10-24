@@ -404087,7 +404087,8 @@
                 "type": "string",
                 "enum": [
                   "feature-collection",
-                  "geojson-seq-rs"
+                  "geojson-seq-rs",
+                  "geojson-lines"
                 ]
               }
             },
@@ -405133,6 +405134,29 @@
                       "nullable": true,
                       "type": "string",
                       "maxLength": 80
+                    },
+                    "sequencePosition": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "line",
+                            "record"
+                          ]
+                        },
+                        "number": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "number"
+                      ],
+                      "additionalProperties": false
                     },
                     "feature": {}
                   },
