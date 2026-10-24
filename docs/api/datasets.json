@@ -9784,6 +9784,33 @@
         "No Indian file passed the rules; no H23/H28 tag applies; foreign test_only.",
         "Not evidence for rights, ownership, accuracy, learning or any runtime gate."
       ]
+    },
+    {
+      "id": "s2-3-closed-judge-kit",
+      "classification": "test_only",
+      "manifestSha256": "0445f4bbdfa952830d14000818edbfa534b9aed05ae5891500854b0845f5d284",
+      "guide": "docs/evidence/step-2/s2-3/result.json",
+      "sourceCount": 12,
+      "sourceFamilies": 4,
+      "sourceCountsByFamily": {
+        "maps and tables": 4,
+        "documents and plans": 3,
+        "3D models": 2,
+        "imagery and point clouds": 3
+      },
+      "totalOriginalBytes": 1235829064,
+      "terms": {
+        "state": "confirmed",
+        "limitations": "Twelve licences read before acquisition; source details remain in sealed external receipts."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Closed rehearsal only; no source identities, per-file hashes or locations published.",
+        "Twelve unchanged originals and receipts verified; no practice hash or publisher overlaps.",
+        "No payload profiling, import, model calls, teaching, tuning or runtime qualification."
+      ]
     }
   ],
   "offlineLearningCorpus": {
