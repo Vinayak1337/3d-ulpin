@@ -111,16 +111,24 @@ function HeaderSearch() {
   );
 }
 
-function areaSubtitle(area: Area): string {
-  return `Revision ${area.revision}${area.featureCount ? ` · ${area.featureCount} features` : ''}`;
+/** Revision, the short id that tells two areas of one name apart, and the feature count when the record has one. */
+function areaSubtitle(area: Area) {
+  const hasCount = typeof area.featureCount === 'number';
+  return (
+    <>
+      Revision {area.revision} · <span className={styles.areaId}>{area.id.slice(0, 8)}</span>
+      {hasCount ? ` · ${area.featureCount} features` : ''}
+    </>
+  );
 }
 
 function AreaSwitcher() {
   const areas = useAreas();
   const match = useMatch('/studio/areas/:areaId');
   const navigate = useNavigate();
-  const currentId = match?.params.areaId ?? readLastArea();
-  const current = areas.data?.find((area) => area.id === currentId) ?? areas.data?.[0];
+  // Only an area page names an area; the remembered area is for the Map link, not for what the header says.
+  const currentId = match?.params.areaId;
+  const current = areas.data?.find((area) => area.id === currentId);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
