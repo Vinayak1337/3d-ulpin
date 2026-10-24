@@ -88,7 +88,7 @@ Reuse the real public files already on the data drive; acquire only what is miss
 
 ### S2.1 Practice kit part 1: pick about 8 real public files already on the data drive
 
-Size S, this PC: data drive. After: none (step 0 is done). **Status: running codex since 24 Oct 2026.**
+Size S, this PC: data drive. After: none (step 0 is done). **Status: done 24 Oct (merged on int3-pre; 8 files, 4 families, hashes match; gaps: NYC and Baton Rouge have no sibling receipt, and a native-text DQ1 PDF stands in for the RERA scan, so no scanned plan yet).**
 
 - **What:** Write the practice-kit manifest from originals already retained. Don't copy or change them: reference them in place. Cover all four families and the size range. Proposed list:
 - Niagara footprints, 25.4 MiB GeoJSON
@@ -106,7 +106,7 @@ Recompute each sha256 and compare it to the sibling receipt. Take the licence, U
 
 ### S2.2 Practice kit part 2: acquire the missing files (large raster, large points, 1 GB vector, real 3D/DXF/DOCX)
 
-Size M, this PC: data drive. After: S2.1. **Status: open.**
+Size M, this PC: data drive. After: S2.1. **Status: open. Lead note 24 Oct: also fetch one public scanned plan PDF above 16 MiB under a stated licence (S2.1 has none; S5.9 needs one).**
 
 - **What:** Fetch about 5 public originals without login, form or CAPTCHA into E:/BhuAayam-data/datasets/practice-kit-20261024/. Each gets a sibling receipt: issuer, URL, date, sha256, licence, geography, CRS. Gaps to fill:
 - a COG orthophoto of 300 MB to 1 GB (e.g. OpenAerialMap, CC BY 4.0)
