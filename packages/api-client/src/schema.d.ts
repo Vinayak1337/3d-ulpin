@@ -19845,7 +19845,7 @@ export interface components {
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
-                        citygmlVersion: "2.0";
+                        citygmlVersion: "1.0" | "2.0";
                         /** @enum {string} */
                         encodingProfile: "XML 1.0 UTF-8";
                         /** @enum {string} */
@@ -37235,7 +37235,7 @@ export interface components {
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
-                        citygmlVersion: "2.0";
+                        citygmlVersion: "1.0" | "2.0";
                         /** @enum {string} */
                         encodingProfile: "XML 1.0 UTF-8";
                         /** @enum {string} */
@@ -53340,7 +53340,7 @@ export interface components {
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
-                        citygmlVersion: "2.0";
+                        citygmlVersion: "1.0" | "2.0";
                         /** @enum {string} */
                         encodingProfile: "XML 1.0 UTF-8";
                         /** @enum {string} */
@@ -55659,7 +55659,7 @@ export interface components {
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
-                            citygmlVersion: "2.0";
+                            citygmlVersion: "1.0" | "2.0";
                             /** @enum {string} */
                             encodingProfile: "XML 1.0 UTF-8";
                             /** @enum {string} */
@@ -71412,7 +71412,7 @@ export interface components {
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
-                            citygmlVersion: "2.0";
+                            citygmlVersion: "1.0" | "2.0";
                             /** @enum {string} */
                             encodingProfile: "XML 1.0 UTF-8";
                             /** @enum {string} */
@@ -71849,7 +71849,7 @@ export interface components {
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
-                            citygmlVersion: "2.0";
+                            citygmlVersion: "1.0" | "2.0";
                             /** @enum {string} */
                             encodingProfile: "XML 1.0 UTF-8";
                             /** @enum {string} */
@@ -73981,7 +73981,7 @@ export interface components {
                     sourceSha256: string;
                     sourceBytes: number;
                     /** @enum {string} */
-                    citygmlVersion: "2.0";
+                    citygmlVersion: "1.0" | "2.0";
                     /** @enum {string} */
                     encodingProfile: "XML 1.0 UTF-8";
                     /** @enum {string} */

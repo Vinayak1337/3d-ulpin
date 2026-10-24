@@ -140424,11 +140424,12 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 33554432
+                              "maximum": 34603008
                             },
                             "citygmlVersion": {
                               "type": "string",
                               "enum": [
+                                "1.0",
                                 "2.0"
                               ]
                             },
@@ -140455,37 +140456,37 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "buildingAndPartCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "coordinateDeclarationCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "decodedCoordinateValueCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 100000
+                              "maximum": 449342
                             },
                             "referenceCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "unsupportedElementCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "unresolvedReferenceCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "findingCodes": {
                               "maxItems": 5,
@@ -229171,11 +229172,12 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 33554432
+                              "maximum": 34603008
                             },
                             "citygmlVersion": {
                               "type": "string",
                               "enum": [
+                                "1.0",
                                 "2.0"
                               ]
                             },
@@ -229202,37 +229204,37 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "buildingAndPartCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "coordinateDeclarationCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "decodedCoordinateValueCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 100000
+                              "maximum": 449342
                             },
                             "referenceCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "unsupportedElementCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "unresolvedReferenceCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "findingCodes": {
                               "maxItems": 5,
@@ -314006,11 +314008,12 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 33554432
+                              "maximum": 34603008
                             },
                             "citygmlVersion": {
                               "type": "string",
                               "enum": [
+                                "1.0",
                                 "2.0"
                               ]
                             },
@@ -314037,37 +314040,37 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "buildingAndPartCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "coordinateDeclarationCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "decodedCoordinateValueCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 100000
+                              "maximum": 449342
                             },
                             "referenceCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "unsupportedElementCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "unresolvedReferenceCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 25000
+                              "maximum": 302777
                             },
                             "findingCodes": {
                               "maxItems": 5,
@@ -324842,11 +324845,12 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 33554432
+                                  "maximum": 34603008
                                 },
                                 "citygmlVersion": {
                                   "type": "string",
                                   "enum": [
+                                    "1.0",
                                     "2.0"
                                   ]
                                 },
@@ -324873,37 +324877,37 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "buildingAndPartCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "coordinateDeclarationCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "decodedCoordinateValueCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 449342
                                 },
                                 "referenceCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "unsupportedElementCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "unresolvedReferenceCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "findingCodes": {
                                   "maxItems": 5,
@@ -400644,11 +400648,12 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 33554432
+                                  "maximum": 34603008
                                 },
                                 "citygmlVersion": {
                                   "type": "string",
                                   "enum": [
+                                    "1.0",
                                     "2.0"
                                   ]
                                 },
@@ -400675,37 +400680,37 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "buildingAndPartCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "coordinateDeclarationCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "decodedCoordinateValueCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 449342
                                 },
                                 "referenceCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "unsupportedElementCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "unresolvedReferenceCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "findingCodes": {
                                   "maxItems": 5,
@@ -402781,11 +402786,12 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 33554432
+                                  "maximum": 34603008
                                 },
                                 "citygmlVersion": {
                                   "type": "string",
                                   "enum": [
+                                    "1.0",
                                     "2.0"
                                   ]
                                 },
@@ -402812,37 +402818,37 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "buildingAndPartCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "coordinateDeclarationCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "decodedCoordinateValueCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 449342
                                 },
                                 "referenceCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "unsupportedElementCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "unresolvedReferenceCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 25000
+                                  "maximum": 302777
                                 },
                                 "findingCodes": {
                                   "maxItems": 5,
@@ -413312,7 +413318,7 @@
             "type": "integer",
             "minimum": 0,
             "exclusiveMinimum": true,
-            "maximum": 33554432
+            "maximum": 34603008
           },
           "jobId": {
             "type": "string",
@@ -413441,11 +413447,12 @@
                     "type": "integer",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 33554432
+                    "maximum": 34603008
                   },
                   "citygmlVersion": {
                     "type": "string",
                     "enum": [
+                      "1.0",
                       "2.0"
                     ]
                   },
@@ -413472,37 +413479,37 @@
                     "type": "integer",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 25000
+                    "maximum": 302777
                   },
                   "buildingAndPartCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 25000
+                    "maximum": 302777
                   },
                   "coordinateDeclarationCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 25000
+                    "maximum": 302777
                   },
                   "decodedCoordinateValueCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 100000
+                    "maximum": 449342
                   },
                   "referenceCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 25000
+                    "maximum": 302777
                   },
                   "unsupportedElementCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 25000
+                    "maximum": 302777
                   },
                   "unresolvedReferenceCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 25000
+                    "maximum": 302777
                   },
                   "findingCodes": {
                     "maxItems": 5,
