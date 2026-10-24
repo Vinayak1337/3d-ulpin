@@ -1,21 +1,29 @@
 import { CANONICAL_TARGETS, canonicalTarget, type MappingTarget, type ColumnProfileDocument } from '@ulpin/contracts';
 import { INTAKE_FORMAT_NAMES, type AnyMappingReceipt, type ChunkMappingPayload, type IntakeCard, type IntakeReading,
-  type MappingPlan, type SourceProfile } from '@ulpin/contracts/usp';
+  type MappingPlan, type SourceProfile, documentScannedPages, type DocumentResult, type IFCResult }
+  from '@ulpin/contracts/usp';
+import { z } from 'zod';
+import { intakeNativeReadWords } from './intake-native-readers';
+import { intakeIfcReadWords } from './intake-ifc';
 import { profileColumns } from './column-profile';
 import { layoutFingerprint } from './mapping-plan-v2';
 import { lookupMappingMemory } from './mapping-memory';
 import { proposeMappingRules } from './mapping-rules';
-import { keptWords, zipParentWords } from './intake-draft';
+import { keptWords, pageWords, zipParentWords } from './intake-draft';
 import { surfaceKind, surfaceReader } from './intake-surface';
 
 type Line = IntakeReading['what'];
 export type ReadingRow = {
   name?: string; family?: string; format?: string | null; size_bytes?: string | number | null;
   state?: string; placement?: string; limit_reason?: string | null; streamed_profile_job_id?: string | null;
-  plan_ref?: { layoutQuestion?: boolean; recipeState?: string;
+  plan_ref?: { layoutQuestion?: boolean; recipeState?: string; header?: unknown;
     nativeLayers?: { unstated?: string[]; answers?: { layer: string }[] } } | null;
 };
 export type ReadingFacts = {
+  native?: Parameters<typeof intakeNativeReadWords>[0] | null;
+  ifc?: IFCResult['summary'] | null;
+  document?: DocumentResult['native'] | null;
+  omissions?: { layer: string; notWritten: number }[];
   profile?: Pick<SourceProfile, 'paths'> | null;
   mapping?: Pick<NonNullable<ChunkMappingPayload['mapping']>, 'profile' | 'plan' | 'fieldSources'> | null;
   recipe?: AnyMappingReceipt | null;
@@ -53,18 +61,18 @@ function whatOf(row: ReadingRow, card: IntakeCard | null): Line {
     : 'Kept file; its kind has not been read yet.');
 }
 
-function holdsOf(card: IntakeCard | null): Line[] {
+function holdsOf(card: IntakeCard | null, storedDetails = false): Line[] {
   if (!card) return [];
-  const words = countWords(card);
+  const words = storedDetails ? [] : countWords(card);
   for (const layer of card.layers) words.push(`Layer: ${layer.name}`
     + `${layer.count === null ? '' : ` (${layer.count} records)`}.`);
   for (const sheet of card.sheets) words.push(`Sheet: ${sheet.name}`
     + `${sheet.count === null ? '' : ` (${sheet.count} rows)`}.`);
   if (card.geometryTypes.length) words.push(`Geometry types read: ${card.geometryTypes.join(', ')}.`);
-  if (card.raster?.width !== null && card.raster?.width !== undefined) {
+  if (!storedDetails && card.raster?.width !== null && card.raster?.width !== undefined) {
     words.push(`Raster width: ${card.raster.width} pixels.`);
   }
-  if (card.raster?.height !== null && card.raster?.height !== undefined) {
+  if (!storedDetails && card.raster?.height !== null && card.raster?.height !== undefined) {
     words.push(`Raster height: ${card.raster.height} pixels.`);
   }
   if (card.point?.format !== null && card.point?.format !== undefined) {
@@ -75,7 +83,7 @@ function holdsOf(card: IntakeCard | null): Line[] {
   const crs = { stated: 'Coordinate system stated', sidecar: 'Coordinate system has a sidecar; not resolved here',
     absent: 'No coordinate system stated in this reading', conflicting: 'Coordinate system statements conflict',
     not_applicable: 'Coordinate system is not applicable' };
-  words.push(`${crs[card.crs.state]}${card.crs.code ? `: ${card.crs.code}` : ''}.`);
+  if (!storedDetails) words.push(`${crs[card.crs.state]}${card.crs.code ? `: ${card.crs.code}` : ''}.`);
   if (card.extent.native) words.push(`Extent in source coordinates: ${card.extent.native.join(', ')}.`);
   if (card.extent.epsg4326) words.push(`Extent in EPSG:4326: ${card.extent.epsg4326.join(', ')}.`);
   return words.map(words => line(words));
@@ -149,6 +157,96 @@ function drawingOf(row: ReadingRow, card: IntakeCard | null): IntakeReading['dra
   if (['model3d', 'document', 'image'].includes(card.family)) return { as: 'kept',
     ...line(row.limit_reason || 'Kept as evidence; no map placement is confirmed.', 'rule') };
   return keptDrawing(row, card);
+}
+
+const surfaceHeader = z.object({ operation: z.enum(['raster-window', 'point-batch']), crsStated: z.boolean(),
+  authority: z.string().nullable(), size: z.array(z.number().int().nonnegative()).min(1),
+  vertical: z.object({ status: z.enum(['known', 'unknown']), name: z.string().nullable() }) });
+
+function surfaceHolds(row: ReadingRow): Line[] | null {
+  const parsed = surfaceHeader.safeParse(row.plan_ref?.header);
+  if (!parsed.success) return null;
+  const h = parsed.data;
+  const words: string[] = [];
+  if (h.operation === 'point-batch') words.push(`${h.size[0]} points.`);
+  else {
+    words.push(`Raster width: ${h.size[0]} pixels.`);
+    words.push(h.size[1] === undefined ? 'Raster height: not stated.' : `Raster height: ${h.size[1]} pixels.`);
+    words.push(h.size[2] === undefined ? 'Bands: not stated.' : `Bands: ${h.size[2]}.`);
+  }
+  words.push(h.crsStated ? `Coordinate system stated: ${h.authority ?? 'code not stated in the stored header'}.`
+    : 'Coordinate system: not stated.');
+  words.push(h.vertical.status === 'known' && h.vertical.name ? `Vertical reference stated: ${h.vertical.name}.`
+    : 'Vertical reference: not stated.');
+  return words.map(words => line(words));
+}
+
+/** Match the native detail's summary labels and null words, without interpreting nested source values. */
+function summaryHolds(summary: Record<string, unknown>): Line[] {
+  return Object.entries(summary).filter(([key]) => /Count$|^(units|axes|crs|globalPlacement)$/.test(key))
+    .map(([key, value]) => {
+      const label = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+      let words = String(value);
+      if (value === null) words = 'Not stated (stored as null)';
+      else if (typeof value === 'object') words = JSON.stringify(value);
+      return line(`${label.charAt(0).toUpperCase() + label.slice(1)}: ${words}.`);
+    });
+}
+
+function storedHolds(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts): Line[] {
+  const surface = surfaceHolds(row);
+  const holds = [...holdsOf(card, surface !== null || Boolean(facts.native || facts.ifc)), ...(surface ?? [])];
+  if (!surface && (facts.native || facts.ifc) && card?.crs.state === 'stated' && card.crs.code) {
+    holds.push(line(`Coordinate system stated in the probe: ${card.crs.code}.`));
+  }
+  if (!facts.native && !facts.ifc && !surface
+    && ['model3d', 'raster', 'point_cloud'].includes(card?.family ?? row.family ?? '')) {
+    holds.push(line('Vertical reference: not stated in the stored reading.'));
+  }
+  if (facts.native) holds.push(line(intakeNativeReadWords(facts.native)), ...summaryHolds(facts.native),
+    line('Object types and vertical reference: not stated in the stored summary.'));
+  if (facts.ifc) {
+    holds.push(line(intakeIfcReadWords(facts.ifc)),
+      line('Coordinate system code and vertical reference: not stated in the stored summary.'));
+    if (facts.ifc.structure?.state === 'read') {
+      const types = [...new Set(facts.ifc.structure.nodes.map(node => node.entityType))];
+      holds.push(line(`Structure object types: ${types.length ? types.join(', ') : 'not stated'}.`));
+    }
+  }
+  const pdf = facts.document;
+  if (pdf) {
+    holds.push(line('Vertical reference: not stated in the stored reading.'));
+    const scanned = documentScannedPages(pdf);
+    const pages = new Set([...pdf.parts.flatMap(part => part.locator.page ?? []), ...scanned]);
+    holds.push(line(pages.size ? `${pages.size} ${pages.size === 1 ? 'page' : 'pages'} read `
+      + `(${pageWords([...pages].sort((a, b) => a - b))}).` : 'Pages: not stated in the stored reading.'));
+    holds.push(line(scanned.length ? `${scanned.length} ${scanned.length === 1 ? 'page needs' : 'pages need'} OCR: `
+      + `${pageWords(scanned)}.`
+      : 'Pages needing OCR: not stated in the stored reading.'));
+  }
+  for (const layer of facts.omissions ?? []) {
+    if (layer.notWritten) holds.push(line(`Layer ${layer.layer}: ${layer.notWritten} features left out by conversion; `
+      + 'kept in the original, not placed or confirmed.'));
+  }
+  return holds;
+}
+
+function storedDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts): IntakeReading['drawing'] {
+  const header = surfaceHeader.safeParse(row.plan_ref?.header);
+  if (header.success && !['probe_failed', 'failed_part'].includes(row.state ?? '')) {
+    const raster = header.data.operation === 'raster-window';
+    const where = row.placement === 'on_map' ? 'on the map' : 'not placed on the map';
+    return { as: raster ? 'raster_overlay' : 'points', ...line(
+      `${raster ? 'Raster overlay' : 'Points'} from the stored reading, ${where}. `
+      + `${row.limit_reason ?? ''} Display only, not measurement or rights.`, 'rule') };
+  }
+  if (facts.native || facts.ifc || facts.document) {
+    const converted = facts.omissions?.length;
+    const words = converted ? 'Converted layer outlines are separate derivatives; the original is kept as evidence.'
+      : 'Kept as evidence, not placed on the map; the stored reading does not establish measurement or rights.';
+    return { as: 'kept', ...line(`${words} ${row.limit_reason ?? ''}`, 'rule') };
+  }
+  return kindDrawing(row, card, facts);
 }
 
 const propertyPrefix = '/features/*/properties/';
@@ -265,6 +363,7 @@ function kindDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
 
 /** Stored facts only. A reading never opens originals, runs a reader, asks a model or changes a record. */
 export function readingOf(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts = {}): IntakeReading {
-  return { version: 'intake-reading/1', what: whatOf(row, card), holds: holdsOf(card), fields: fieldsOf(card, facts),
-    drawing: kindDrawing(row, card, facts), links: [], question: questionOf(row, card) };
+  return { version: 'intake-reading/1', what: whatOf(row, card), holds: storedHolds(row, card, facts),
+    fields: fieldsOf(card, facts),
+    drawing: storedDrawing(row, card, facts), links: [], question: questionOf(row, card) };
 }
