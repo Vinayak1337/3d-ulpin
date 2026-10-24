@@ -175,7 +175,7 @@ it.skipIf(!existsSync(NYC))('a part bound before the reload is sent again under 
   expect(transport.part.mock.calls.map(call => call[1].number)).toEqual([3, 5, 6]);
   const bound = parts.find(p => p.partNumber === 3)!;
   expect(transport.part.mock.calls[0]![1].headers['X-Request-Key']).toBe(bound.requestKey);
-});
+}, 30_000); // Hashing the real file and its parts is not an upload latency assertion.
 
 it.skipIf(!existsSync(NIAGARA))('resume with another file of the same name and size is refused and sends nothing',
   async () => {
@@ -189,7 +189,7 @@ it.skipIf(!existsSync(NIAGARA))('resume with another file of the same name and s
     await expect(resume(new File([bytes.slice(1)], file.name), entry, transport)).rejects.toThrow(NOT_THE_FILE);
     for (const send of [transport.create, transport.status, transport.part, transport.finalize, transport.abort])
       expect(send).not.toHaveBeenCalled();
-  });
+  }, 30_000); // Both complete file hashes must finish even when the suite runs in parallel.
 
 it('Cancel upload aborts a listed receipt with its own guard', async () => {
   const file = new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], 'control.geojson');
@@ -197,7 +197,7 @@ it('Cancel upload aborts a listed receipt with its own guard', async () => {
   await abortReceipt(transport, entry, () => 'abort-key');
   expect(transport.abort).toHaveBeenCalledWith(entry, { requestKey: 'abort-key', expectedRevision: 9,
     expectedCaseRevision: 3 });
-});
+}, 30_000); // The receipt fixture hashes a 16 MiB file before checking the cancellation guard.
 
 it('Finish cancelling sends the existing cleanup with the receipt guard; a refusal keeps its words', async () => {
   const file = new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], 'control.geojson');
@@ -265,9 +265,14 @@ it('a refused finish again shows the server words and keeps Cancel upload', asyn
   const run = await finalizingResume(v1(-60_000));
   const words = 'Original finalization is still active; resume from status.';
   run.transport.finalize.mockRejectedValueOnce(new ApiError(409, '', { error: { message: words } }));
+  const stopped = new Promise<void>(resolve => {
+    run.progress.mockImplementation(progress => {
+      if (progress.phase === 'stopped') resolve();
+    });
+  });
   const finished = run.command.run();
-  await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
-    phase: 'stopped', words })));
+  await stopped;
+  expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'stopped', words }));
   await run.command.cancel();
   expect(await finished).toBeNull();
   expect(run.transport.finalize).toHaveBeenCalledOnce();
