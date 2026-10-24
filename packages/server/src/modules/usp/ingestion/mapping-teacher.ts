@@ -45,7 +45,7 @@ export type TeacherDataPolicy = {
   dataClass: 'public' | 'private' | 'restricted';
   split: 'development' | 'unlabelled' | 'held_out';
 };
-export type TeacherIssue = { sourceField: string; state: 'needs_input'; code: string };
+export type TeacherIssue = { sourceField: string; state: 'needs_input'; code: string; message?: string };
 export type GatewayRefusal = { code: string; retryable: boolean };
 export type MappingTeacherResult = {
   plan: MappingPlanV2;
@@ -836,6 +836,33 @@ function routedSources(
   });
 }
 
+function ruleTargetClashes(
+  fields: (MappingPlanV2['fields'][number] | undefined)[], rules: ReadonlyMap<string, RuleField>,
+) {
+  const owners = new Map([...rules.values()].map(rule => [canonicalTarget(rule.field.target), rule.field.sourceField]));
+  const issues: TeacherIssue[] = [];
+  const repaired = fields.map(field => {
+    if (!field || rules.has(field.sourceField)) return field;
+    const owner = owners.get(canonicalTarget(field.target));
+    if (!owner || field.target === 'unknown') return field;
+    const message = `Target ${field.target} is already held by rule column "${owner}"; confirm another meaning.`;
+    issues.push({ sourceField: field.sourceField, state: 'needs_input', code: 'MAPPING_RULE_TARGET_TAKEN', message });
+    return { ...field, target: 'unknown' as const, operation: { kind: 'copy' as const },
+      confidence: 0, rationale: message };
+  });
+  return { fields: repaired, issues };
+}
+
+function validatedRuleFallback(profile: ColumnProfileDocument, rules: ReadonlyMap<string, RuleField>) {
+  const manual = manualTeacherPlan(profile, 'MAPPING_ROUTING_INVALID');
+  const plan = { ...manual.plan,
+    fields: manual.plan.fields.map(field => rules.get(field.sourceField)?.field ?? field) };
+  const checked = validateMappingPlanV2(plan, mappingContextFromColumnProfile(profile));
+  if (!checked.success) return { result: manual, rules: new Map<string, RuleField>() };
+  return { result: { ...manual, plan: checked.plan,
+    issues: manual.issues.filter(issue => !rules.has(issue.sourceField)) }, rules };
+}
+
 function routedResult(
   profile: ColumnProfileDocument, version: string | null, confident: MappingPlanV2['fields'],
   teacher: MappingTeacherResult | undefined, memoryReasonCode: string | null, studentReasonCode: string | null,
@@ -844,23 +871,23 @@ function routedResult(
   const rules = new Map(ruleFields.map(rule => [rule.field.sourceField, rule]));
   const student = new Map(confident.map(field => [field.sourceField, field]));
   const supplied = new Map(teacher?.plan.fields.map(field => [field.sourceField, field]) ?? []);
-  const fallback = manualTeacherPlan(profile, 'MAPPING_ROUTING_INVALID');
-  fallback.plan.fields = fallback.plan.fields.map(field => rules.get(field.sourceField)?.field ?? field);
-  fallback.issues = fallback.issues.filter(issue => !rules.has(issue.sourceField));
-  const fields = profile.columns.map(column =>
-    rules.get(column.name)?.field ?? student.get(column.name) ?? supplied.get(column.name));
+  const fallback = validatedRuleFallback(profile, rules);
+  const repaired = ruleTargetClashes(profile.columns.map(column =>
+    rules.get(column.name)?.field ?? student.get(column.name) ?? supplied.get(column.name)), rules);
   const method = `model:stage-a@${version ?? 'unavailable'}`;
-  const routed = { ...fallback.plan, fields,
+  const routed = { ...fallback.result.plan, fields: repaired.fields,
     method: routedMethod(method, confident.length, teacher, rules.size) };
   const checked = validateMappingPlanV2(routed, mappingContextFromColumnProfile(profile));
   const accepted = checked.success ? acceptedResult(checked.plan, {
     profileHash: columnProfileHash(profile), attempts: teacher?.attempts ?? 0,
     replayed: teacher?.replayed ?? false, validationCodes: teacher?.validationCodes ?? [],
-  }) : fallback;
-  const issues = checked.success ? [...accepted.issues, ...(teacher?.issues ?? [])]
-    .filter(issue => !rules.has(issue.sourceField)) : fallback.issues;
-  const fieldSources = checked.success ? routedSources(profile, student, method, teacher, fallback.plan.method, rules)
-    : routedSources(profile, new Map(), method, fallback, fallback.plan.method, rules);
+  }) : fallback.result;
+  const issues = checked.success ? [...new Map([...accepted.issues, ...(teacher?.issues ?? []), ...repaired.issues]
+    .filter(issue => !rules.has(issue.sourceField)).map(issue => [issue.sourceField, issue])).values()]
+    : fallback.result.issues;
+  const fieldSources = checked.success
+    ? routedSources(profile, student, method, teacher, fallback.result.plan.method, rules)
+    : routedSources(profile, new Map(), method, fallback.result, fallback.result.plan.method, fallback.rules);
   return { ...accepted, issues, state: issues.length ? 'needs_input' : 'candidate', activeLearnerVersion: version,
     ...(teacher?.gatewayRefusal ? { gatewayRefusal: teacher.gatewayRefusal } : {}),
     ...(teacher?.columnGroups

@@ -10,11 +10,17 @@ import { MappingMethodSchema, type ColumnProfileDocument } from '@ulpin/contract
 import { MappingChunkMetricsSchema, TabularChunkResultSchema } from '@ulpin/contracts/usp';
 import { profileColumns, profileGisAttributes } from './column-profile';
 import { TabularChunkMapper } from './chunk-mapping-agent';
-import { layoutFingerprint } from './mapping-plan-v2';
+import { layoutFingerprint, validateMappingPlanV2 } from './mapping-plan-v2';
 import { proposeMappingRules } from './mapping-rules';
-import { manualTeacherPlan, mappingContextFromColumnProfile, proposeMapping } from './mapping-teacher';
+import { manualTeacherPlan, mappingContextFromColumnProfile, proposeMapping,
+  type MappingRoutingResult } from './mapping-teacher';
 import { rememberMapping } from './mapping-memory';
-import { requestContext } from '../../../../../../scripts/agent/control-runtime';
+import { requestContext, ControlLedger, controlConfig, unknownResponse } from
+  '../../../../../../scripts/agent/control-runtime';
+import { ModelGateway } from '../../model-gateway/gateway';
+import { ControlAdapter, ReplayAdapter } from '../../model-gateway/adapter';
+import { TeacherRecordings } from '../../model-gateway/recordings';
+import { hash } from '../../model-gateway/config';
 
 const nyc = JSON.parse(readFileSync('fixtures/real-nyc/original.geojson', 'utf8'));
 const profile = profileGisAttributes(nyc.features.map((feature: { properties: Record<string, unknown> }) =>
@@ -130,7 +136,7 @@ test('all-rule chunks skip both later stages, publish rule counts and remain pro
   assert(!MappingMethodSchema.safeParse('rule:building-key').success);
 });
 
-test('exact officer memory still wins, and a conflicting later answer cannot discard rule fields', async () => {
+test('exact officer memory still wins, and an invalid later answer cannot discard validated rule fields', async () => {
   const value = headers(['Building Name']);
   const plan = { ...manualTeacherPlan(value, 'MAPPING_REVIEW_REQUIRED').plan, method: 'reviewer:confirmed' };
   const routing = options();
@@ -143,11 +149,85 @@ test('exact officer memory still wins, and a conflicting later answer cannot dis
   const result = await proposeMapping(profile, { ...options(), teacher: async remaining => {
     const answer = manualTeacherPlan(remaining, 'TEACHER_UNAVAILABLE');
     answer.plan.method = 'model:test@1';
-    answer.plan.fields[0].target = 'building.sourceKey';
+    answer.plan.fields[0].operation = { kind: 'unit_convert', sourceUnit: 'm' };
     return answer;
   } });
   assert.equal(result.plan.fields.find(field => field.sourceField === 'bin')?.target, 'building.sourceKey');
   assert.equal(result.fieldSources.find(field => field.sourceField === 'bin')?.source, 'rule');
   assert(result.fieldSources.filter(field => !['bin', 'name'].includes(field.sourceField))
     .every(field => field.source === 'unanswered' && field.method === 'manual:MAPPING_ROUTING_INVALID'));
+  assert(validateMappingPlanV2(result.plan, mappingContextFromColumnProfile(profile)).success);
+});
+
+const clashProfile = profileGisAttributes(nyc.features.map((feature: { properties: Record<string, unknown> }) =>
+  feature.properties), ['bin', 'objectid', 'last_edited_date']).profile;
+
+function assertRuleClash(result: MappingRoutingResult, stage: 'teacher' | 'student') {
+  assert.equal(result.fieldSources.find(field => field.sourceField === 'bin')?.source, 'rule');
+  assert.equal(result.plan.fields.find(field => field.sourceField === 'bin')?.target, 'building.sourceKey');
+  const clashing = result.plan.fields.find(field => field.sourceField === 'objectid')!;
+  assert.equal(clashing.target, 'unknown');
+  assert.deepEqual(clashing.operation, { kind: 'copy' });
+  assert.equal(clashing.confidence, 0);
+  const issues = result.issues.filter(issue => issue.sourceField === 'objectid');
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].code, 'MAPPING_RULE_TARGET_TAKEN');
+  assert.match(issues[0].message!, /rule column "bin"/u);
+  assert.equal(clashing.rationale, issues[0].message);
+  assert.equal(result.plan.fields.find(field => field.sourceField === 'last_edited_date')?.target, 'document.date');
+  assert.equal(result.fieldSources.find(field => field.sourceField === 'last_edited_date')?.source, stage);
+  assert(!result.issues.some(issue => issue.sourceField !== 'objectid'));
+  assert(validateMappingPlanV2(result.plan, mappingContextFromColumnProfile(clashProfile)).success);
+}
+
+test('a replay teacher clash changes only the losing column; another teacher answer survives', async () => {
+  const recordings = new TeacherRecordings(mkdtempSync(join(tmpdir(), 's4-2-clash-replay-')));
+  const control = new ModelGateway(controlConfig(), new ControlLedger(), new ControlAdapter(async request => {
+    const response = unknownResponse(request);
+    const columns = JSON.parse(request.messages[1].content).columnProfile.columns;
+    const output = { fields: columns.map((column: { sourceField: string }, index: number) => ({
+      sourceField: column.sourceField, target: index === 0 ? 'building.sourceKey' : 'document.date',
+      operation: { kind: 'copy' }, confidence: 'high', rationale: 'Replay routing control, not evaluation truth.',
+    })) };
+    return { ...response, output, responseHash: hash(output), rawResponse: { output } };
+  }));
+  await proposeMapping(clashProfile, { ...options(), gateway: control, recordings });
+  const replay = new ModelGateway(controlConfig(), new ControlLedger(),
+    new ReplayAdapter(key => recordings.replay(key)));
+  const result = await proposeMapping(clashProfile, { ...options(), gateway: replay });
+  assert.equal(result.replayed, true);
+  assertRuleClash(result, 'teacher');
+});
+
+test('a stubbed student clash changes only the losing column without running Python', async t => {
+  const model = mkdtempSync(join(tmpdir(), 's4-2-clash-student-'));
+  writeFileSync(join(model, 'manifest.json'), JSON.stringify({ version: 'v1' }));
+  const spawn = t.mock.method(childProcess, 'spawnSync', (
+    _command: unknown, _args: unknown, run: { input: string },
+  ) => {
+    const inputs: { profileId: string }[] = JSON.parse(run.input);
+    return { status: 0, stdout: inputs.map((input, index) => JSON.stringify({ profileId: input.profileId,
+      target: index === 0 ? 'building.sourceKey' : 'document.date', probability: 1,
+      committed: true, version: 'v1' })).join('\n') };
+  });
+  syncBuiltinESMExports();
+  t.after(() => {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  });
+  const result = await proposeMapping(clashProfile, { ...options(), learnerModelPath: model,
+    teacher: async () => { assert.fail('The student already supplied both unmatched columns.'); } });
+  assert.equal(spawn.mock.callCount(), 1);
+  assert.equal(result.studentReasonCode, null);
+  assertRuleClash(result, 'student');
+});
+
+test('an invalid rule-enriched fallback returns the plain manual plan and no rule provenance', async () => {
+  const invalid = { ...clashProfile, layoutFingerprint: 'f'.repeat(64) };
+  const result = await proposeMapping(invalid, { ...options(), teacher: async remaining =>
+    manualTeacherPlan(remaining, 'TEACHER_UNAVAILABLE') });
+  assert.equal(result.plan.method, 'manual:MAPPING_ROUTING_INVALID');
+  assert(result.plan.fields.every(field => field.target === 'unknown'));
+  assert(result.fieldSources.every(field => field.source === 'unanswered'));
+  assert.equal(result.issues.length, invalid.columns.length);
 });
