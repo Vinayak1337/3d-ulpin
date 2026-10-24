@@ -136,7 +136,7 @@ Why the API exited under load is unknown (its log is private and no exit code is
 
 ### S3.1 Record why the API or dispatcher exits, and API pool pressure
 
-Size S, code only. After: none (cut from 0aecb4f8; runs in parallel with S1.1 and S3.2). **Status: running codex since 24 Oct 2026.**
+Size S, code only. After: none (cut from 0aecb4f8; runs in parallel with S1.1 and S3.2). **Status: done ebc61e4b on task/int3-pre (24 Oct).**
 
 - **What:** REH15's three API exits could not be explained because stderr goes only to the private runtime log (processes.mjs:56-60) and no exit code is kept. Add exit hooks to the API and dispatcher (exit, uncaughtException, unhandledRejection, SIGTERM). Each hook appends one JSON line to a file named by a new env var that processes.mjs sets to E:/ulpin-tmp/<runtime>/<label>-exit.jsonl. The line holds only: code, signal, error name or AppError code, the first in-repo stack frame as file:line, uptime, rss, heapUsed and heap limit. No message text, the same rule as keepWorkerError (processing.ts:94-104). Make dispatcher.ts:28-34 log the error code instead of always saying 'cannot reach the application database'. Add the pool's totalCount, idleCount and waitingCount to the health response.
 - **Files:** apps/api/src/main.ts:34-60; scripts/dispatcher.ts:6-45; scripts/platform/processes.mjs:49-74; scripts/platform/demo-config.mjs:509-512 (safeEnvironment); apps/api/src/foundation/foundation.controller.ts (health); packages/server/src/infrastructure/db.ts:22-39
@@ -145,7 +145,7 @@ Size S, code only. After: none (cut from 0aecb4f8; runs in parallel with S1.1 an
 
 ### S3.2 Bound in-process dispatcher reservations by the Node heap limit
 
-Size S, code only. After: none (parallel with S1.1, S3.1; disjoint files). **Status: open.**
+Size S, code only. After: none (parallel with S1.1, S3.1; disjoint files). **Status: running codex since 24 Oct 2026.**
 
 - **What:** dispatchMemoryBudgetMiB defaults to half of RAM, 16,231 MiB here (dispatch-lanes.ts:141-143). Every in-process worker shares one Node heap with heap_size_limit 4,288 MiB, and REH16 saw the dispatcher at 3,018 MB. Keep the machine budget for jobs the processor container runs. Add a second budget for in-process holds (rows without processor:true): v8 heap_size_limit less a stated reserve. Admit an in-process job only when both budgets fit. Never raise a lane cap.
 - **Files:** packages/server/src/modules/cases/dispatch-lanes.ts:104-143 (dispatchInProcessOperations, dispatchCost, dispatchMemoryBudgetMiB), 168-225 (fits, DispatchReservations.admit); packages/server/src/modules/cases/processing.ts:366-369 (budget call)
@@ -693,7 +693,7 @@ Size S, code only. After: none; parallel with S7.2, S7.3, S7.4, S7.5, S7.6, S7.7
 
 ### S7.2 Batch table rows that fit at 1440 px
 
-Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: running in a new chat session since 24 Oct 2026 (owner).**
+Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: sent back 24 Oct: the drop table upload progress still shows raw bytes.**
 
 - **What:** Cut the table from 10 columns to 5: File (name, kind and format in words, size in KiB/MiB/GiB), Status (state and placement in one line, the reason below it as help text, part progress), Holds (features, rows, pages or points with a unit), Coordinates (crsWords only; the raw native extent moves to the reading card, S4.8) and Next step. Remove the min-width and overflow-wrap:anywhere that split words into letters. Give every format named in intake-signatures a plain name, use 'Unknown' rather than 'Not known', and in the drop table replace raw bytes and 'Not applicable' with sizeWords and empty cells. Every value stays read from the item.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx:24-49 (columns; keep NextStep 52-76); apps/studio/src/features/intake/batch-model.ts:45-99 (stateWords, countWords:64-66, formatWords:86-91, sizeClassWords); apps/studio/src/features/intake/Batch.module.css:31-59; apps/studio/src/features/intake/IntakeDropDialog.tsx:51-63 (DropOutcomes); reuse sizeWords in upload-model.ts:57-61; the format list is packages/server/src/modules/usp/ingestion/intake-signatures.ts:276-285
@@ -702,7 +702,7 @@ Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7
 
 ### S7.3 Batch page empty states
 
-Size M, code only. After: none; parallel with S7.1, S7.2, S7.4, S7.5, S7.6, S7.7. **Status: running in a new chat session since 24 Oct 2026 (owner).**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.4, S7.5, S7.6, S7.7. **Status: done af28288d on task/int3-pre (24 Oct).**
 
 - **What:** Four fixes. (1) While a drop is uploading, the page says 'No files are enrolled in this batch.' under 'Retaining files: File 1 of 4' (REH16 a03); while an upload is pending it should say the files are being kept. (2) For a batch with no drafted buildings, show the recording panel as one line ('No buildings are drafted from this batch yet; they appear after a map layout is used') instead of eight zero counts, Refresh, 'Choose the first 100 ready', the filter and the confirmation box (REH14 act2-nr-dxf.png). (3) Show the Confirm panel only when a package can be confirmed. (4) Show Evidence by key only once a map item has drafted buildings. Act 1 behaviour, where buildings exist, is unchanged.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:124-146 (BatchRecords, line 144); apps/studio/src/features/intake/run/IntakeRunPanel.tsx:17-57; apps/studio/src/features/intake/run/model.ts:43-45 (hasNoBuildings), countsLine; apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:17-40 (its drafted rule at 37); the pending-upload state via batchUploadKey as read in BatchUploadProgress.tsx:16-19
@@ -738,7 +738,7 @@ Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: open.**
 
 ### S7.7 Header area switcher names the right area
 
-Size S, code only. After: none; parallel with S7.1-S7.6. **Status: open.**
+Size S, code only. After: none; parallel with S7.1-S7.6. **Status: ready 24 Oct: task file and worktree prepared; waits for the owner to start its chat session.**
 
 - **What:** On batch and table pages the header names an unrelated area: REH15 'table page header named another case (Niagara Falls, Revision 0)', and REH16 act 1 the same. The switcher falls back to the remembered area or the first area on every route. Off map routes, show 'Choose an area' with no subtitle. Add the area's short id in mono to the subtitle and the menu, so two areas both named 'buildings original' (REH16 a03 against a09) can be told apart. A count of 0 shows as '0 features'.
 - **Files:** apps/studio/src/app/Frame.tsx:114-181 (areaSubtitle 114-116, fallback 122-123, label 144); apps/studio/src/app/Frame.module.css (areaMeta)
