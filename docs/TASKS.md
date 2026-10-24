@@ -207,7 +207,7 @@ Size M, code only. After: S3.4 (same files; sequential). **Status: running 25 Oc
 
 ### S3.6 Studio: answer a prefix layout question, with words that say it covers the first part
 
-Size M, code only. After: S3.4 (question shape). **Status: open.**
+Size M, code only. After: S3.4 (question shape). **Status: running 25 Oct (UI session s3-6-prefix-answer, worktree E:/Projects/ulpin-wt/s3-6 from 695029f2).**
 
 - **What:** StreamedLayoutAnswer posts only to sealed recipes (streamed-queries.ts:21). When the item's question names a provisional profile, author and approve through the prefix-recipes routes. Words: the layout is taken from the first N features read; the rest is checked as it arrives. On a re-ask after the profile seals, show what changed.
 - **Files:** apps/studio/src/features/intake/StreamedLayoutAnswer.tsx; streamed-queries.ts; streamed-question-model.ts; question-model.ts; layout-command.ts
