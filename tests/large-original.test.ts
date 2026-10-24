@@ -194,6 +194,61 @@ test('TC1: a table derivative\'s lineage is stored in the same insert as its lar
   }finally{globals.ulpinPool=prior;}
 });
 
+test('an append upload survives sibling arrivals at admission, part receipt, assembly and publication', async () => {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'large-original-lineage';
+  const caseId = randomUUID(), { control, pool } = receiptPool(caseId);
+  const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
+  globals.ulpinPool = pool;
+  try {
+    const bytes = new Uint8Array(2048), sha = digest(bytes), storage = receiptStorage();
+    control.db().case.revision++;
+    const service = new LargeOriginalService({ ...storage, readPartObject: async (...args) => {
+      control.db().case.revision++;
+      return storage.readPartObject(...args);
+    } });
+    const created = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+      filename: 'protocol.laz', mediaType: 'application/octet-stream', sha256: sha, bytes: bytes.length,
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-24T00:00:00.000Z' } });
+    control.db().case.revision++;
+    const claim = await service.claimPart(caseId, created.id, { requestKey: randomUUID(),
+      expectedRevision: created.revision, expectedCaseRevision: 0, partNumber: 1, sha256: sha });
+    control.db().case.revision++;
+    const received = await service.receivePart(claim, bytes);
+    control.db().case.revision++;
+    const final = await service.finalize(caseId, created.id, { requestKey: randomUUID(),
+      expectedRevision: received.revision, expectedCaseRevision: 0, sha256: sha });
+    assert.equal(final?.state, 'retained');
+    assert.equal(final?.verifiedSha256, sha);
+    assert.equal(control.db().sources.length, 1);
+    assert.equal(control.db().case.revision, 7);
+  } finally { globals.ulpinPool = prior; }
+});
+
+for (const changed of ['future revision', 'upload revision', 'access context'] as const) {
+  test(`an append upload refuses ${changed} before storing bytes`, async () => {
+    process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'large-original-lineage';
+    const caseId = randomUUID(), { control, pool } = receiptPool(caseId);
+    const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
+    globals.ulpinPool = pool;
+    let writes = 0;
+    try {
+      const storage = receiptStorage(), sha = digest(new Uint8Array(1));
+      const service = new LargeOriginalService({ ...storage,
+        putPartObject: async () => { writes++; }, putOriginalStream: async () => { writes++; } });
+      const created = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+        filename: 'protocol.laz', mediaType: 'application/octet-stream', sha256: sha, bytes: 1,
+        provenance: { origin: 'not_stated', acquiredAt: '2026-10-24T00:00:00.000Z' } });
+      if (changed === 'access context') control.db().uploads[0].body.accessSha256 = 'b'.repeat(64);
+      const guard = { requestKey: randomUUID(), expectedCaseRevision: changed === 'future revision' ? 1 : 0,
+        expectedRevision: changed === 'upload revision' ? created.revision + 1 : created.revision, sha256: sha };
+      const code = changed === 'access context' ? 'INGESTION_ACCESS_CHANGED' : 'STALE_REVISION';
+      await assert.rejects(service.claimPart(caseId, created.id, { ...guard, partNumber: 1 }), { code });
+      await assert.rejects(service.finalize(caseId, created.id, guard), { code });
+      assert.deepEqual([writes, control.db().parts.length, control.db().sources.length], [0, 0, 0]);
+    } finally { globals.ulpinPool = prior; }
+  });
+}
+
 /** The NWIC district GeoJSON ZIP (datasets.json) is the real original these quota cases reserve. */
 const nwicBytes=71238839;
 const idle:UploadQuota={held:0,caseHeld:0,operatorHeld:0,heldBytes:0,caseBytes:0,freesAt:null,caseFreesAt:null,

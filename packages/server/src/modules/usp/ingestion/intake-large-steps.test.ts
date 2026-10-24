@@ -20,6 +20,10 @@ import { localOperatorSubject } from '../principal';
 import { sealedMapReceipt } from './streamed-map-receipt';
 import { probeOriginal } from './intake-probe';
 import { INTAKE_WIDE_GEOJSON_REASON } from './intake-package-extent';
+import { runIntakeLargeJob } from './intake-large-worker';
+import { StreamedProfileService } from './streamed-profile';
+import { StreamingVectorService } from './streaming-vector';
+import { ChunkMappingService } from './chunk-mapping';
 
 const caseId = '20000000-0000-4000-8000-000000000001';
 const sourceId = '20000000-0000-4000-8000-000000000002';
@@ -136,6 +140,117 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
 }
 
 const card = { family: 'vector', format: 'geojson' } as IntakeCard;
+
+for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPPING_CAPACITY'] as const) {
+  test(`${capacity} waits three times without attempts, then starts readers; 30 minutes stops the wait`, async () => {
+    const fixture = store();
+    if (capacity === 'MAPPING_CAPACITY') Object.assign(fixture.tables, { source: retained,
+      reader: sealedReader(), profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 },
+      recipe: { id: recipeId, revision: 2, state: 'approved' } });
+    if (capacity === 'STREAMED_PROFILE_CAPACITY') fixture.tables.reader = { ...sealedReader(), state: 'running',
+      sealed_chunks: null };
+    const initialReader = fixture.tables.reader;
+    const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    const job = fixture.jobs.get(jobId)!;
+    Object.assign(job, { status: 'queued', attempts: 0 });
+    const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
+    const attempts: Record<string, any>[] = [], waits: number[] = [];
+    let refusals = 3;
+    const one = (row?: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+    const original = fixture.client.query.bind(fixture.client) as any;
+    const query = async (sql: string, values: any[] = []) => {
+      if (sql.startsWith("SELECT * FROM jobs WHERE id=$1 AND operation='intake-large'")) return one(job);
+      if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
+      if (sql.startsWith('SELECT status,')) {
+        assert.match(sql, /dispatched_at <= now\(\)-interval '30 minutes'/);
+        return one({ ...job, expired: Number(job.dispatched_at) <= Date.now() - 1800000 });
+      }
+      if (sql.startsWith('SELECT status FROM jobs')) return one(job);
+      if (sql.startsWith('SELECT * FROM usp_job_metadata') && values[0] === jobId) return one(meta);
+      if (sql.startsWith('SELECT job_id FROM usp_job_metadata')) return one({ job_id: jobId });
+      if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return one();
+      if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one(attempts.at(-1));
+      if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+        const row = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
+          state: 'active', lease_until: new Date(Date.now() + 180000) };
+        attempts.push(row);
+        return one(row);
+      }
+      if (sql.startsWith('UPDATE usp_job_attempts')) { attempts.at(-1)!.state = 'accepted'; return one(); }
+      if (sql.startsWith('UPDATE usp_job_metadata')) {
+        if (sql.includes("='failed'")) meta.logical_state = 'failed';
+        else if (sql.includes("='running'")) meta.logical_state = 'running';
+        else meta.logical_state = 'succeeded';
+        return one();
+      }
+      if (sql.startsWith('UPDATE jobs')) {
+        if (sql.includes("='failed'")) job.status = 'failed';
+        else if (sql.includes("='queued'")) job.status = 'queued';
+        else if (sql.includes("='succeeded'")) job.status = 'succeeded';
+        else job.status = 'running';
+        if (sql.includes('attempts=$2')) job.attempts = values[1];
+        if (sql.includes('dispatched_at=COALESCE')) job.dispatched_at ??= new Date();
+        if (sql.includes("interval '2 seconds'")) {
+          job.next_attempt_at = Date.now() + 2000;
+          waits.push(Number(job.next_attempt_at));
+        }
+        job.error = values[1];
+        return one();
+      }
+      if (sql.startsWith('SELECT a.name')) return one();
+      if (sql.startsWith('SELECT body FROM usp_mapping_recipes')) return one({ body: { plan: {} } });
+      return original(sql, values);
+    };
+    const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+    globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
+    mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+      if (capacity === 'STREAMING_CAPACITY' && refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
+      return { jobId: readerJob };
+    });
+    mock.method(StreamedProfileService.prototype, 'enqueue', async () => {
+      if (capacity === 'STREAMED_PROFILE_CAPACITY' && refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
+      fixture.tables.reader ??= { ...sealedReader(), state: 'queued' };
+      fixture.tables.profile = { job_id: profileJob, state: 'queued', sealed_generation: null };
+      return { jobId: profileJob };
+    });
+    mock.method(ChunkMappingService.prototype, 'enqueue', async () => {
+      if (refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
+      fixture.tables.mapping = { ...sealedReader(), job_id: mappingJob, state: 'queued' };
+      return { jobId: mappingJob };
+    });
+    try {
+      let firstDispatch: unknown;
+      for (let count = 1; count <= 3; count++) {
+        const now = Date.now();
+        await runIntakeLargeJob(jobId);
+        assert.deepEqual([job.status, job.attempts, attempts.length, waits.length], ['queued', 0, 0, count]);
+        assert(waits.at(-1)! >= now + 2000 && waits.at(-1)! <= Date.now() + 2000);
+        if (count === 1) firstDispatch = job.dispatched_at;
+        assert.equal(job.dispatched_at, firstDispatch, 'waiting never extends the deadline');
+        assert.match(String(fixture.tables.item!.limit_reason), /Waiting for a free reader/);
+      }
+      await runIntakeLargeJob(jobId);
+      assert.equal(job.status, 'succeeded');
+      assert.equal(job.attempts, 1, 'only the successful step claims an attempt');
+      assert.equal(fixture.tables.profile!.job_id, profileJob);
+      if (capacity === 'MAPPING_CAPACITY') fixture.tables.mapping = null;
+      else {
+        fixture.tables.reader = initialReader;
+        fixture.tables.profile = null;
+      }
+      Object.assign(job, { status: 'queued', attempts: 0 });
+      attempts.length = 0;
+      refusals = 1;
+      job.dispatched_at = new Date(Date.now() - 1800001);
+      await runIntakeLargeJob(jobId);
+      assert.deepEqual([job.status, job.error, job.attempts, attempts.length], ['failed', capacity, 0, 0]);
+      assert.match(String(fixture.tables.item!.limit_reason), /within 30 minutes/);
+    } finally {
+      globals.ulpinPool = previous;
+      mock.restoreAll();
+    }
+  });
+}
 
 test('enrollment queues one step job for a large GeoJSON within the ceiling and none above it', async () => {
   const within = store();
