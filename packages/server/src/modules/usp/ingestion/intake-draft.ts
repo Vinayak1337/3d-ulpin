@@ -107,8 +107,9 @@ function zipCountWords(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
-/** A batch PDF goes to the document reader; a table with an uncertain layout keeps its press. */
-const batchPdf = (card: IntakeCard) => card.format === 'pdf' && card.family === 'document';
+/** Batch PDFs and Word documents share the document reader; uncertain table layouts keep their press. */
+const batchDocument = (card: IntakeCard): card is IntakeCard & { format: 'pdf' | 'docx' } =>
+  (card.format === 'pdf' || card.format === 'docx') && card.family === 'document';
 const batchTable = (card: IntakeCard) => card.family === 'table' && INTAKE_TABLE_READER_FORMATS.includes(card.format);
 
 /** Only the first-row layout is automatic; incomplete sheet inventories never establish a one-sheet workbook. */
@@ -135,7 +136,7 @@ const keptMember = { profile: 'large-original-v1' } as IntakeSourceRow;
 function zipMemberHasReader(member: IntakeCard['members'][number]): boolean {
   const card: IntakeCard | null = member.card && { ...member.card, members: [] };
   if (!card) return false;
-  return card.format === 'zip' || card.format === 'geojson' || batchPdf(card) || Boolean(pageImageFormat(card))
+  return card.format === 'zip' || card.format === 'geojson' || batchDocument(card) || Boolean(pageImageFormat(card))
     || batchIfc(keptMember, card) || batchNativeReader(keptMember, card) || Boolean(nativeDerivativeFormat(card))
     || Boolean(surfaceKind(card)) || batchTable(card);
 }
@@ -179,7 +180,8 @@ export function keptWords(card: IntakeCard, bytes: number): string {
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
   if (card.format === 'xls') return `Excel 97-2003 workbook (${sizeWords(bytes)}). ${INTAKE_LEGACY_WORKBOOK_WORDS}`;
-  const kind = `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
+  const kind = card.format === 'docx' ? 'Word document'
+    : `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
   const kept = `Kept as ${/^[AEIOX]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}).`;
   if (batchTable(card) && card.sheets?.length > 1) return `${kept} Which sheet and header row should be read? `
     + 'Choose them with "Read as a table"; the original is kept with its SHA-256.';
@@ -291,7 +293,7 @@ async function retainedGeojsonAdapterTx(client: PoolClient, item: DraftItem, sou
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
   if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
-  if (publishedCard && batchPdf(publishedCard)) return queueBatchPdfTx(client, source);
+  if (publishedCard && batchDocument(publishedCard)) return queueBatchPdfTx(client, source, publishedCard.format);
   if (publishedCard && pageImageFormat(publishedCard)) return readPageImageTx(client, source, publishedCard);
   if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
   if (batchNativeReader(source, publishedCard)) return queueIntakeNativeReaderTx(client, source, publishedCard!);
@@ -389,24 +391,38 @@ const pdfJobStates: Record<string, PdfItemState> = {
   stale: { state: 'failed_part', placement: 'not_understood', limitReason: pdfStale },
 };
 
-/**
- * G10. A probed PDF is read by the existing document reader, on its text layer only. Above the reader's byte bound
- * it rests kept, in words. A later probe finds the same job and says where that job stands.
- */
-async function queueBatchPdfTx(client: PoolClient, source: IntakeSourceRow): Promise<string | null> {
+function documentJobWords(format: 'pdf' | 'docx', status: string): PdfItemState {
+  if (format === 'pdf') return pdfJobStates[status]
+    ?? { state: 'failed_part', placement: 'not_understood', limitReason: pdfStopped };
+  const words: Record<string, string> = {
+    queued: 'Reading the paragraphs and table cells of this Word document. Nothing is recorded until you confirm it.',
+    succeeded: 'Read earlier. Open this Word document to review its paragraphs and table cells.',
+    stale: 'This Word document or its batch changed while it was read; nothing was kept from that read.',
+    stopped: 'The Word document reader stopped before it finished; the original is kept unchanged with its SHA-256.',
+  };
+  const next = pdfJobStates[status] ?? { state: 'failed_part', placement: 'not_understood' };
+  return { ...next, limitReason: words[status === 'running' ? 'queued' : status] ?? words.stopped };
+}
+
+/** Documents share one bounded queue; a later probe finds the same job rather than reading again. */
+async function queueBatchPdfTx(client: PoolClient, source: IntakeSourceRow,
+  format: 'pdf' | 'docx'): Promise<string | null> {
   const item = await draftItemTx(client, source.id);
   if (!item || item.parent_item_id || item.state !== 'probed' || item.plan_ref
     || !['undecided', 'not_understood'].includes(item.placement)) return null;
   const bytes = Number(source.bytes);
+  const kind = format === 'pdf' ? 'PDF document' : 'Word document';
+  const reader = format === 'pdf' ? 'page reader' : 'Word document reader';
+  const file = format === 'pdf' ? 'PDF' : 'Word document';
   if (bytes > DOCUMENT_LIMITS.originalBytes) {
     await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
-      planRef: null, recordsSeen: 0, limitReason: `Kept as a PDF document (${sizeWords(bytes)}). The page reader `
-        + `in a batch reads a PDF of at most ${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so this one is not read; `
+      planRef: null, recordsSeen: 0, limitReason: `Kept as a ${kind} (${sizeWords(bytes)}). The ${reader} `
+        + `in a batch reads a ${file} of at most ${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so this one is not read; `
         + 'the original is kept with its SHA-256.' });
     return null;
   }
-  const { jobId, status } = await queueBatchDocumentTx(client, item.case_id, source.id);
-  const next = pdfJobStates[status] ?? { state: 'failed_part', placement: 'not_understood', limitReason: pdfStopped };
+  const { jobId, status } = await queueBatchDocumentTx(client, item.case_id, source.id, format);
+  const next = documentJobWords(format, status);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { ...next, planRef: null, recordsSeen: 0 });
   return jobId;
 }
@@ -475,25 +491,66 @@ export function batchPdfSettlement(native: DocumentResult['native'], sourceBytes
   return { state: 'read', placement: textPages.length ? 'undecided' : 'not_understood', limitReason: words.join(' ') };
 }
 
-/** G10. A batch PDF's item, when this source has one in this case. */
-async function batchPdfItemTx(client: PoolClient, caseId: string, sourceId: string) {
-  const item = await draftItemTx(client, sourceId);
-  return item?.case_id === caseId && item.card?.format === 'pdf' ? item : null;
+/** DOCX units are counted by source locator, not by continuation segments or inferred document values. */
+function batchDocxSettlement(native: DocumentResult['native']): PdfItemState {
+  if (native.status === 'tool_error') {
+    if (native.code !== 'NATIVE_READER_BYTE_LIMIT') return documentJobWords('docx', 'stopped');
+    return { state: 'failed_part', placement: 'not_understood', limitReason: 'The Word document reader reads at '
+      + `most ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, so this one was not read; the original is kept with its `
+      + 'SHA-256.' };
+  }
+  if (native.status === 'unsupported' || native.format !== 'docx') return { state: 'read',
+    placement: 'not_understood', limitReason: 'The document reader could not take this file as a Word document; '
+      + 'the original is kept with its SHA-256.' };
+  if (native.status === 'encrypted') return { state: 'read', placement: 'needs_answer',
+    limitReason: 'This Word document is encrypted, so it was not read. Add an unlocked copy to the batch; '
+      + 'no password is kept.' };
+  const paragraphs = new Set<number>();
+  const cells = new Set<string>();
+  const named = new Set<string>();
+  for (const part of native.parts) {
+    const { paragraph, table, row, column } = part.locator;
+    let citation: string;
+    if (paragraph !== undefined) {
+      paragraphs.add(paragraph);
+      citation = `paragraph ${paragraph}`;
+    } else if (table !== undefined && row !== undefined && column !== undefined) {
+      citation = `table ${table}, row ${row}, column ${column}`;
+      cells.add(citation);
+    } else continue;
+    if (floorsOrRooms.test(part.text)) named.add(citation);
+  }
+  const words = [`${zipCountWords(paragraphs.size, 'paragraph')} and ${zipCountWords(cells.size, 'table cell')} read.`];
+  if (named.size) words.push(`Passages at ${listWords([...named], 900)} name floors, storeys, levels or rooms: `
+    + 'candidates cited to their paragraph or table cell, for your review, not recorded values.');
+  else if (paragraphs.size || cells.size) words.push('No passage names floors, storeys, levels or rooms.');
+  words.push('Only body paragraphs and direct table cells were read. Drawings, headers, footnotes, nested tables, '
+    + 'deleted text and text boxes need separate review.', 'Nothing is recorded until you confirm it.');
+  return { state: 'read', placement: paragraphs.size || cells.size ? 'undecided' : 'not_understood',
+    limitReason: words.join(' ') };
 }
 
-/** G10. A finished document read settles its batch PDF's item; a source with no PDF item is left alone. */
+/** A batch document's item, when this source has one in this case. */
+async function batchPdfItemTx(client: PoolClient, caseId: string, sourceId: string) {
+  const item = await draftItemTx(client, sourceId);
+  return item?.case_id === caseId && !item.parent_item_id && item.card && batchDocument(item.card) ? item : null;
+}
+
+/** A finished read settles its batch document's item; other sources are left alone. */
 export async function settleBatchPdfTx(client: PoolClient, caseId: string, sourceId: string,
   native: DocumentResult['native'], sourceBytes: number) {
   const item = await batchPdfItemTx(client, caseId, sourceId);
-  if (item) await writeIntakeDraftTx(client, caseId, item.item_id, { ...batchPdfSettlement(native, sourceBytes),
-    planRef: item.plan_ref, recordsSeen: 0 });
+  if (!item) return;
+  const next = item.card!.format === 'docx' ? batchDocxSettlement(native) : batchPdfSettlement(native, sourceBytes);
+  await writeIntakeDraftTx(client, caseId, item.item_id, { ...next, planRef: item.plan_ref, recordsSeen: 0 });
 }
 
-/** G10. A stopped or stale document read is said on its batch PDF's item; the original stays kept. */
+/** A stopped or stale document read is said on its batch item; the original stays kept. */
 export async function stopBatchPdfTx(client: PoolClient, caseId: string, sourceId: string, stale: boolean) {
   const item = await batchPdfItemTx(client, caseId, sourceId);
-  if (item) await writeIntakeDraftTx(client, caseId, item.item_id, { state: 'failed_part',
-    placement: 'not_understood', planRef: item.plan_ref, recordsSeen: 0, limitReason: stale ? pdfStale : pdfStopped });
+  if (item) await writeIntakeDraftTx(client, caseId, item.item_id, {
+    ...documentJobWords(item.card!.format as 'pdf' | 'docx', stale ? 'stale' : 'stopped'),
+    planRef: item.plan_ref, recordsSeen: 0 });
 }
 
 async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow,

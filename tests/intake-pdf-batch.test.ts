@@ -4,11 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import type { Pool } from 'pg';
+import { zipSync } from 'fflate';
 import { DOCUMENT_LIMITS, documentScannedPages, DocumentStatusSchema, type DocumentInput, type DocumentResult }
   from '../packages/contracts/src/usp/document-ingestion';
 import type { IntakeCard } from '@ulpin/contracts/usp';
 import { DocumentIngestionService } from '../packages/server/src/modules/usp/ingestion/documents';
-import { batchPdfSettlement, queueIntakeDraftTx, pageWords }
+import { batchPdfSettlement, queueIntakeDraftTx, pageWords, stopBatchPdfTx }
   from '../packages/server/src/modules/usp/ingestion/intake-draft';
 import type { IntakeSourceRow } from '../packages/server/src/modules/usp/ingestion/intake-context';
 import { failDocumentJob, runDocumentJob } from '../packages/server/src/modules/usp/ingestion/document-worker';
@@ -49,7 +50,7 @@ class BatchControl {
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return item.source_id === args[0] ? [item] : [];
     if (sql.startsWith('SELECT state,placement,plan_ref')) return [item];
     if (sql.startsWith('SELECT item_id AS')) return [{ itemId: item.item_id, state: item.state, family: item.family,
-      format: 'pdf', sizeClass: 'M', wave: 4, pinnedByOfficer: false }];
+      format: item.card.format, sizeClass: 'M', wave: 4, pinnedByOfficer: false }];
     if (!sql.startsWith('UPDATE usp_intake_items SET state=')) return null;
     Object.assign(item, { state: args[2], placement: args[3], plan_ref: args[4], records_seen: args[5],
       limit_reason: args[6] });
@@ -157,17 +158,18 @@ class BatchControl {
       ContentLength: bytes.length, ETag: 'protocol-only-etag' };
   };
 
-  /** A PDF kept through the uploads route and probed into the batch: a large original, not a document receipt. */
-  retainPdf(bytes: Buffer, declaredBytes = bytes.length): IntakeSourceRow {
+  /** A document kept through uploads and probed into the batch: a large original, not a document receipt. */
+  retainPdf(bytes: Buffer, declaredBytes = bytes.length, format: 'pdf' | 'docx' = 'pdf'): IntakeSourceRow {
     const id = randomUUID();
-    const source = { id, case_id: this.current.id, family_id: id, revision: 1, name: 'control.pdf',
+    const source = { id, case_id: this.current.id, family_id: id, revision: 1, name: `control.${format}`,
       profile: 'large-original-v1', bytes: declaredBytes, sha256: sha256(bytes),
       object_key: `large-originals/${id}/${sha256(bytes)}`,
       status: 'needs_input', inspection: { profile: 'large-original-v1' } };
     this.sources.set(id, source);
     this.objects.set(source.object_key, bytes);
     this.item = { item_id: id, source_id: id, case_id: this.current.id, parent_item_id: null, state: 'probed',
-      placement: 'undecided', family: 'document', card, plan_ref: null, records_seen: 0, limit_reason: null };
+      placement: 'undecided', family: 'document', card: { ...card, format }, plan_ref: null,
+      records_seen: 0, limit_reason: null };
     return source;
   }
 }
@@ -401,6 +403,124 @@ test('only native no-text PDF warnings identify scanned pages, sorted and withou
   assert.deepEqual(documentScannedPages({ ...native, warnings: [] }), []);
   assert.deepEqual(documentScannedPages({ ...native, status: 'encrypted' }), []);
   assert.deepEqual(documentScannedPages({ ...native, format: 'text' }), []);
+});
+
+// test_only OOXML, as in services/geo/tests/test_area.py: no external document or package is acquired.
+const docxCard = { format: 'docx', family: 'document' } as IntakeCard;
+const docxReply: Reply = { parts: [
+  { text: 'Control letter', locator: { paragraph: 1, label: 'DOCX paragraph 1' } },
+  { text: 'Control two floors', locator: { paragraph: 2, label: 'DOCX paragraph 2' } },
+  { text: 'Control closing', locator: { paragraph: 3, label: 'DOCX paragraph 3' } },
+  { text: 'Control cell', locator: { table: 1, row: 1, column: 1, label: 'DOCX table 1, row 1, column 1' } },
+], warnings: ['DOCX extraction covers native body paragraphs and direct table cells; drawings, headers, '
+  + 'footnotes, nested tables, tracked deletions and text boxes require separate review.'] };
+function docxBytes() {
+  const paragraph = (text: string) => `<w:p><w:r><w:t>${text}</w:t></w:r></w:p>`;
+  const body = docxReply.parts.slice(0, 3).map(part => paragraph(part.text)).join('')
+    + `<w:tbl><w:tr><w:tc>${paragraph(docxReply.parts[3].text)}</w:tc></w:tr></w:tbl>`;
+  return Buffer.from(zipSync({ 'word/document.xml': Buffer.from('<w:document '
+    + `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}`
+    + '</w:body></w:document>') }));
+}
+async function queueDocx(control: BatchControl, declaredBytes?: number) {
+  const source = control.retainPdf(docxBytes(), declaredBytes, 'docx');
+  const jobId = await queueIntakeDraftTx(clientOf(control), source, docxCard);
+  return { source, jobId };
+}
+function noDocxPages(control: BatchControl) {
+  assert.doesNotMatch(control.item!.limit_reason, /\bpages?\b|\bOCR\b/i);
+  assert.equal(control.item!.records_seen, 0);
+}
+
+test('a batch DOCX queues its own format and settles cited paragraphs and table cells, never values', async () => {
+  await isolated(async control => {
+    const { source, jobId } = await queueDocx(control);
+    assert.ok(jobId);
+    const original = control.objects.get(source.object_key)!;
+    const receipt = control.sources.get(source.id)!.inspection.documentOriginal;
+    assert.deepEqual([receipt.format, receipt.sha256, receipt.bytes], ['docx', source.sha256, source.bytes]);
+    assert.equal(control.jobs.get(jobId)!.payload.mode, 'native_only');
+    assert.match(control.item!.limit_reason, /Reading the paragraphs and table cells of this Word document/);
+    noDocxPages(control);
+    control.item!.state = 'probed';
+    assert.equal(await queueIntakeDraftTx(clientOf(control), source, docxCard), jobId);
+    await runDocumentJob(jobId, { extract: (input, bytes) => extractSourceDocument(input, bytes, async data => {
+      assert.equal((data as { format: string }).format, 'archive', 'The native reader checks the OOXML container.');
+      assert.deepEqual(Buffer.from(bytes), original);
+      return { format: 'docx', status: 'ready', sourceSha256: input.sourceSha256, ...docxReply };
+    }) });
+    assert.equal(control.jobs.get(jobId)!.status, 'succeeded');
+    assert.deepEqual([control.item!.state, control.item!.placement], ['read', 'undecided']);
+    assert.match(control.item!.limit_reason, /^3 paragraphs and 1 table cell read\./);
+    assert.match(control.item!.limit_reason,
+      /paragraph 2 name floors.*candidates cited to their paragraph or table cell/);
+    assert.match(control.item!.limit_reason, /Drawings, headers, footnotes.*need separate review/);
+    assert.match(control.item!.limit_reason, /Nothing is recorded until you confirm it\.$/);
+    noDocxPages(control);
+    assert.equal(control.jobs.size, 1);
+    assert.equal(control.sources.get(source.id)!.sha256, sha256(original));
+    assert.deepEqual(control.objects.get(source.object_key), original);
+  });
+});
+
+test('DOCX continuations count once and room passages cite their table cell', async () => {
+  await isolated(async control => {
+    const { source, jobId } = await queueDocx(control);
+    const parts = docxReply.parts.map(part => ({ ...part, text: `${part.text} ${'control '.repeat(800)}` }));
+    parts[3].text += ' room';
+    await runDocumentJob(jobId!, { extract: (input, bytes) => extractSourceDocument(input, bytes,
+      async () => ({ format: 'docx', sourceSha256: input.sourceSha256, parts, warnings: docxReply.warnings })) });
+    assert.match(control.item!.limit_reason, /^3 paragraphs and 1 table cell read\./);
+    assert.match(control.item!.limit_reason, /paragraph 2, table 1, row 1, column 1 name floors/);
+    noDocxPages(control);
+    control.item!.state = 'probed';
+    await queueIntakeDraftTx(clientOf(control), source, docxCard);
+    assert.match(control.item!.limit_reason, /Read earlier.*Word document.*paragraphs and table cells/);
+    assert.equal(control.jobs.size, 1);
+    noDocxPages(control);
+  });
+});
+
+test('a large, stopped or stale batch DOCX keeps its original and uses Word document words', async () => {
+  await isolated(async control => {
+    assert.equal((await queueDocx(control, DOCUMENT_LIMITS.originalBytes + 1)).jobId, null);
+    assert.match(control.item!.limit_reason, /^Kept as a Word document.*at most 16 MB.*not read/);
+    assert.equal(control.jobs.size, 0);
+    const { source, jobId } = await queueDocx(control);
+    await failDocumentJob(jobId!, 'DOCUMENT_WORKER_FAILED');
+    assert.equal(control.item!.state, 'failed_part');
+    assert.match(control.item!.limit_reason, /Word document reader stopped.*original is kept unchanged/);
+    noDocxPages(control);
+    await stopBatchPdfTx(clientOf(control), control.current.id, source.id, true);
+    assert.match(control.item!.limit_reason, /Word document or its batch changed.*nothing was kept from that read/);
+    noDocxPages(control);
+  });
+});
+
+test('an unsupported DOCX or a container read as something else settles plainly with its original kept', async () => {
+  for (const format of ['unsupported', 'xlsx', 'missing Word part', 'byte limit'] as const) {
+    await isolated(async control => {
+      const bytes = format === 'byte limit'
+        ? Buffer.concat([docxBytes(), Buffer.alloc(DOCUMENT_LIMITS.nativeBytes)]) : docxBytes();
+      const source = control.retainPdf(bytes, bytes.length, 'docx');
+      const jobId = await queueIntakeDraftTx(clientOf(control), source, docxCard);
+      await runDocumentJob(jobId!, { extract: (input, original) => extractSourceDocument(input, original, async () => {
+        if (format === 'missing Word part') throw new Error('no Word document part');
+        const parts = format === 'xlsx' ? [{ text: 'Control workbook cell', locator: { label: 'Control!A1',
+          row: 1, column: 1, sheet: 'Control', sheetIndex: 1, sheetId: 1, cell: 'A1', cellState: 'literal' } }] : [];
+        return { format: format === 'xlsx' ? 'xlsx' : 'docx',
+          status: format === 'unsupported' ? 'unsupported' : 'ready',
+          sourceSha256: input.sourceSha256, parts, warnings: [] };
+      }) });
+      if (format === 'xlsx') assert.equal(control.sources.get(source.id)!.inspection.documentAccepted.nativeStatus,
+        'extracted', 'Even successfully extracted text of another kind is not a DOCX reading.');
+      assert.equal(control.item!.placement, 'not_understood');
+      assert.match(control.item!.limit_reason, /(?:could not take this file as a Word document|at most 10 MB)/);
+      assert.match(control.item!.limit_reason, /original is kept with its SHA-256/);
+      noDocxPages(control);
+      assert.equal(control.sources.get(source.id)!.sha256, source.sha256);
+    });
+  }
 });
 
 test('page numbers read as runs', () => {

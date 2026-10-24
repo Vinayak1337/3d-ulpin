@@ -529,15 +529,30 @@ test('only complete first-row selections are automatic; an incomplete workbook i
   }
 });
 
+test('a batch DOCX child, placed item or reviewed plan never queues an automatic document read', async () => {
+  for (const blocked of ['child', 'placed', 'plan']) {
+    const fixture = protocol();
+    fixture.tray.family = 'document';
+    fixture.tray.card = { format: 'docx', family: 'document' } as DraftItem['card'];
+    if (blocked === 'child') fixture.tray.parent_item_id = caseId;
+    if (blocked === 'placed') fixture.tray.placement = 'attached';
+    if (blocked === 'plan') fixture.tray.plan_ref = { recipeId: caseId };
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+    assert.equal(fixture.jobs.length, 0);
+    assert.equal(fixture.state.events, 0);
+  }
+});
+
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';
 for (const [format, family, bytes, expected] of [
-  ['docx', 'document', 3355443, `Kept as a DOCX document (3.2 MB).${kept}`],
+  ['docx', 'document', 16777217, 'Kept as a Word document (16 MB). The Word document reader in a batch reads '
+    + 'a Word document of at most 16 MB, so this one is not read; the original is kept with its SHA-256.'],
   ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
   ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
   ['unknown', 'unknown', 421888, 'Kept (412 KB); its kind was not recognised from its first and last bytes.'],
 ] as const) {
-  test(`a probed ${format} no batch reader takes rests not understood in words naming what the probe saw`,
+  test(`a probed ${format} without batch reading rests not understood in words naming what the probe saw`,
     async () => {
       const fixture = protocol();
       fixture.src.profile = 'large-original-v1';
