@@ -79,12 +79,19 @@ Size S, code only. After: S1.2a (merged). **Status: done 25 Oct (merged on task/
 
 ### S1.3 Fresh-runtime rehearsal part 2: our own act 2 files alone and under load, with timings
 
-Size L, this PC: Docker. After: S1.2. **Status: running 25 Oct (codex; reh-03 at aaa9d698, production Studio build, GPU Chromium, EV2 under load added).**
+Size L, this PC: Docker. After: S1.2. **Status: failed 25 Oct (evidence e47274ed on task/s1-3-rehearsal; production build, RTX 3070 renderer). Passed: file f alone first map 183.5 s (REH15 738 s); no API or dispatcher exit; 426 health samples all healthy. Failed: under load eight large-file jobs ended on capacity refusals (429) instead of waiting, so file b under load drew no map; a LAZ upload was refused when sibling arrivals moved the case revision; four native readers refused TOOL_CHANGED on reh-03. EV2 overlap again not produced (prepare 3.9 s): accepted on intake-evidence-confirm tests and 0 re-confirmations in S1.2 run 2. Fix S1.3a running; then run 2 with the native readers rebuilt and checked first.**
 
 - **What:** On ulpin-reh-03, run REH16's act 2 list. First file b (the zp1 ZIP) alone, measuring LQ1: layout, first map, both parts. Then file f (Niagara 26 MB GeoJSON) alone. Then the load phase, each file in its own batch. Record per file: forecast and tray words, reader outcome, map yes/no, seconds. Record job queue, execution and retry split, any S3.1 exit lines, health pool numbers every 5 s, and host CPU. Fix the REH17 act2-list CityJSON path first; it points at a reh16 file that doesn't exist. Stop reh-03 at the end.
 - **Files:** k3 docs/evidence/runtime/reh16/{act2-list.json,watch.mjs,jobs.mjs,checkpoint.json}; _tasks/reh17.md steps 4-5; E:/BhuAayam-data/task-data/reh16/act2 prepared inputs. Write: docs/evidence/step1/s1-3/result.json.
 - **Check:** API and dispatcher exit files stay empty through the load phase. File b: first map within 180 s, both ZIP parts within 240 s, officer time excluded. File f alone: first map time recorded beside REH15's 738 s. A verdict line for every act 2 file.
 - **Tests:** jobs.mjs read-only job timing; pnpm platform:doctor --profile demo --runtime ulpin-reh-03
+
+### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
+
+Size M, code only. After: S1.3. **Status: running 25 Oct (codex).**
+
+- **What:** S1.3 faults 1 and 2. A 429 capacity refusal (STREAMING_CAPACITY, STREAMED_PROFILE_CAPACITY, MAPPING_CAPACITY) from the intake-large worker's reader, profiler or mapper enqueue makes the job wait about 2 s without spending an attempt, as the table path does, bounded at 30 minutes. A large upload that appends a new original tolerates sibling arrivals moving the case revision, with the S1.2a rule. It also lists every other strict case-revision check an automatic job reaches under load, for a later task.
+- **Files:** intake-large-worker.ts, large-original.ts and their tests; docs/evidence/step-1/s1-3a/result.json
 
 ### S1.4 Lead: merge task/int3-pre into staging and regenerate pins
 
