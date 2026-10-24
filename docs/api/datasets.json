@@ -9674,6 +9674,45 @@
       ]
     },
     {
+      "id": "s2-2-practice-kit-part-2",
+      "classification": "test_only",
+      "originKind": "public_issuer_originals_with_lossless_container_payloads",
+      "issuer": "Per-file issuers and public-domain declarations in manifest and sibling receipts",
+      "geography": "India, Germany, United Kingdom, United States; WikiHouse built site unknown",
+      "manifest": "docs/evidence/step-2/s2-2/manifest.json",
+      "guide": "docs/evidence/step-2/s2-2/result.json",
+      "sourceCount": 7,
+      "sourceFamilies": 4,
+      "totalOriginalBytes": 1007153789,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data",
+        "itemsPointer": "/files",
+        "formats": ["COG GeoTIFF", "DEM GeoTIFF", "NDJSON (gzip)", "NDJSON", "CityGML ZIP",
+          "CityGML 1.0 (LOD2)", "DXF (construction cutting plan)", "DOCX", "PDF (scanned plans)"],
+        "losslessPayloadCount": 2,
+        "totalKeptBytes": 1834871654,
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "confirmed",
+        "reference": "Per-file licenceUrl and sibling receipt licence declaration; read at acquisition",
+        "limitations": "Mixed open licences and public-domain declarations; attribution and exclusions retained."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Seven originals and two exact decoded payloads; all nine have matching sibling receipts; below 6 GB.",
+        "Microsoft global release is CDLA Permissive 2.0, not ODbL; vendor predictions, never official truth.",
+        "NDJSON payload is 799737067 bytes and 2224797 polygons; gzip original is 186395946 bytes, not 1 GB.",
+        "USGS LAZ above 300 MB remains missing: slow stream, then bounded range comparison hit HTTP 429.",
+        "Berlin LOD2 CityGML replaces unavailable 3DBAG; no CityJSON or OBJ coverage is claimed.",
+        "DXF is a WikiHouse CNC construction plan, not a surveyed floor plan; CRS and built site unknown.",
+        "Historical scanned-plan PDF has issuer Public Domain Mark 1.0, a status marker, not a copyright licence.",
+        "No existing file replaced, import, learning, provider call, runtime gate or closed-material access."
+      ]
+    },
+    {
       "id": "s2-1-practice-kit-part-1",
       "classification": "test_only",
       "originKind": "retained_public_originals_referenced_in_place",
