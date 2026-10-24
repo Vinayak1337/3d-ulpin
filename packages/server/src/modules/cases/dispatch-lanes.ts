@@ -1,12 +1,13 @@
 import { statfs } from 'node:fs/promises';
 import { tmpdir, totalmem } from 'node:os';
+import { getHeapStatistics } from 'node:v8';
 import { TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 
 /** G22. The lanes of docs/next-steps/INGESTION-ARCHITECTURE.md section 8; an operation no row names is `other`. */
 export type DispatchLane = 'probe' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d' | 'link' | 'gpu'
   | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
-type Hold = Cost & { operation: string; scratchMiB: number };
+type Hold = Cost & { operation: string; scratchMiB: number; inProcess: boolean };
 type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
 /** `workbook` names the table pin: workbooks and CSV reading detection use scratch; pinned CSV reads do not. */
 type OperationRow = { lane: DispatchLane; mib?: number; scratchMiB?: number; workbook?: 'request' | 'tabular';
@@ -142,6 +143,14 @@ export function dispatchMemoryBudgetMiB(stated: number | undefined): number {
   return stated ?? Math.floor(totalmem() / 2 / 1024 ** 2);
 }
 
+/** Leave 1 GiB for the API, shared state and allocation overhead outside job reservations. */
+export const DISPATCH_HEAP_RESERVE_MIB = 1024;
+
+/** This process's Node heap limit, in MiB, less the reserve for non-job work. */
+export function dispatchHeapBudgetMiB(limitMiB = getHeapStatistics().heap_size_limit / 1024 ** 2): number {
+  return limitMiB - DISPATCH_HEAP_RESERVE_MIB;
+}
+
 /** The free space the scratch budget always leaves on the scratch root. */
 export const DISPATCH_SCRATCH_FLOOR_MIB = 2048;
 type ReadDisk = (path: string) => Promise<{ bavail: number; bsize: number }>;
@@ -169,8 +178,11 @@ export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
 /** A job as the tick reads it: any operation, created at a database time, with its payload where the tick has it. */
 export type DispatchJob = { id: string; operation: string; created_at: Date | string; payload?: unknown };
 const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
-const dispatchHold = (job: DispatchJob): Hold =>
-  ({ ...dispatchCost(job.operation), operation: job.operation, scratchMiB: dispatchScratchMiB(job) });
+const dispatchHold = (job: DispatchJob): Hold => {
+  const row = operationRow(job.operation);
+  return { ...dispatchCost(job.operation), operation: job.operation, scratchMiB: dispatchScratchMiB(job),
+    inProcess: row !== undefined && !row.processor };
+};
 
 /** Memory fits what is unreserved, or nothing is held. Scratch fits what is unreserved, or the job writes none, or no
  * held job writes any, so a job larger than the whole scratch budget runs alone among the jobs that write scratch. */
@@ -202,18 +214,22 @@ export class DispatchReservations {
   /**
    * Reserves only when the job's lane is under its concurrency and its memory and scratch fit what is unreserved
    * (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
-   * budget fits when nothing else is held. A refused job holds nothing, a job already held is not started twice, and
+   * budget fits when nothing else is held. In-process jobs also fit this process's own in-process holds under its
+   * heap budget, or run alone among them. A refused job holds nothing, a job already held is not started twice, and
    * a job outside the probe lane waits behind an older job refused more than DISPATCH_HEAD_OF_LINE_MS ago.
    */
   admit(job: DispatchJob, budgetMiB: number, elsewhere: readonly DispatchJob[], now: number,
-    scratchBudgetMiB = Infinity): boolean {
+    scratchBudgetMiB = Infinity, heapBudgetMiB = Infinity): boolean {
     if (this.held.has(job.id)) return false;
     const cost = dispatchHold(job);
     if (cost.lane !== 'probe' && this.behindRefused(job, now)) return false;
     const outside = elsewhere.filter(other => other.id !== job.id && !this.held.has(other.id));
     const holding = [...this.held.values(), ...outside.map(dispatchHold)];
     if (holding.filter(other => other.lane === cost.lane).length >= DISPATCH_LANES[cost.lane].concurrency) return false;
-    if (!fits(holding, cost, budgetMiB, scratchBudgetMiB)) {
+    const inProcess = [...this.held.values()].filter(hold => hold.inProcess);
+    const heapFits = !cost.inProcess || inProcess.length === 0
+      || inProcess.reduce((total, hold) => total + hold.mib, 0) + cost.mib <= heapBudgetMiB;
+    if (!fits(holding, cost, budgetMiB, scratchBudgetMiB) || !heapFits) {
       if (!this.refused.has(job.id)) this.refused.set(job.id, { since: now, created: createdAt(job) });
       return false;
     }
