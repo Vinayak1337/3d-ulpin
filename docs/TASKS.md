@@ -88,7 +88,7 @@ Size L, this PC: Docker. After: S1.2. **Status: failed 25 Oct (evidence e47274ed
 
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
-Size M, code only. After: S1.3. **Status: running 25 Oct (codex).**
+Size M, code only. After: S1.3. **Status: sent back 25 Oct (ba6a7c00: capacity waits and upload rule accepted; STALE_REVISION on the reader enqueues must wait too), running again.**
 
 - **What:** S1.3 faults 1 and 2. A 429 capacity refusal (STREAMING_CAPACITY, STREAMED_PROFILE_CAPACITY, MAPPING_CAPACITY) from the intake-large worker's reader, profiler or mapper enqueue makes the job wait about 2 s without spending an attempt, as the table path does, bounded at 30 minutes. A large upload that appends a new original tolerates sibling arrivals moving the case revision, with the S1.2a rule. It also lists every other strict case-revision check an automatic job reaches under load, for a later task.
 - **Files:** intake-large-worker.ts, large-original.ts and their tests; docs/evidence/step-1/s1-3a/result.json
