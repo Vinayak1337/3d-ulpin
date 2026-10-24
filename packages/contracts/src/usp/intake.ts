@@ -654,6 +654,8 @@ const previewGeometry = z.discriminatedUnion('type', [
 export const IntakeReadPreviewPageSchema = z.strictObject({
   itemId: uuid, sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hash, rawJobId: uuid,
   chunksRead: z.number().int().nonnegative(), reading: z.boolean(),
+  crsBasis: z.enum(['stated', 'rfc7946_no_crs_read_yet', 'sealed', 'unsupported'])
+    .describe('Replace the displayed preview when this basis changes.'),
   features: z.array(z.strictObject({ featureIndex: z.number().int().nonnegative(), geometry: previewGeometry })).max(2000),
   next: z.number().int().nonnegative().nullable().describe('Last scanned feature index; poll after it while reading.'),
   words: z.string().min(1).max(1024),

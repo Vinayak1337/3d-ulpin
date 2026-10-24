@@ -8,7 +8,7 @@ import { IntakeReadPreviewPageSchema, STREAMING_VECTOR_LIMITS as limits } from '
 import { localOperatorSubject } from '../principal';
 import { AppError } from '../../../infrastructure/errors';
 import { sourceRecord } from './streaming-vector-reader';
-import { featureExtent, measurableCrs } from './intake-package-extent';
+import { featureExtent, measurableCrs, utmForward } from './intake-package-extent';
 import { readIntakeReadPreview } from './intake-read-preview';
 
 const caseId = '35000000-0000-4000-8000-000000000001';
@@ -78,10 +78,11 @@ function fixture(features = Array.from({ length: 500 }, () => feature())) {
   const seal = (metadata: Record<string, unknown>) => {
     state.published = chunks.length;
     state.running = false;
+    const accepted = chunks.flat().filter(record => record.disposition === 'accepted').length;
     const receipt = { version: 'streamed-map-original/1', coverage: 'sealed', unknownRemainder: false,
       sourceId, sourceRevision: 1, sourceBytes: source.bytes, sourceSha256: hash, readerVersion: 'geojson-stream/2',
       rawJobId, framing: 'feature-collection', parts: chunks.length, features: features.length,
-      accepted: features.length, quarantined: 0, rawManifestSha256: hash, collectionMetadata: metadata,
+      accepted, quarantined: features.length - accepted, rawManifestSha256: hash, collectionMetadata: metadata,
       reference: { sourceCrs: 'EPSG:4326', evidence: 'test_only', coordinateUnit: 'degree' } };
     Object.assign(source.inspection, { streamedMapReceipt: receipt });
     return receipt;
@@ -89,8 +90,9 @@ function fixture(features = Array.from({ length: 500 }, () => feature())) {
   return { source, item, state, chunks, deps, read, seal, client, reads, statements };
 }
 
-test('five test_only chunks: only 0–2 while running; after returns accepted features once in order', async t => {
+test('five no-crs chunks preview on RFC 7946 before seal; paging returns accepted features once', async t => {
   const f = fixture();
+  f.item.card.crs = { state: 'absent', code: null as any };
   f.chunks[1][5].disposition = 'quarantined';
   const storage = t.mock.method(S3Client.prototype, 'send', async () => assert.fail('No original read or write'));
   const first = await f.read();
@@ -98,6 +100,10 @@ test('five test_only chunks: only 0–2 while running; after returns accepted fe
   assert.equal(first.features.length, 299);
   assert.equal(first.chunksRead, 3);
   assert.equal(first.reading, true);
+  assert.equal(first.crsBasis, 'rfc7946_no_crs_read_yet');
+  assert.ok(first.words.includes('No coordinate system is stated so far, so the outlines are drawn '
+    + 'as longitude and latitude (RFC 7946); a later statement in the file replaces this preview.'));
+  assert.match(first.words, /\(RFC 7946\); a later statement in the file replaces this preview/);
   assert.match(first.words, /Preview.*not a record, not reviewed, not placed/);
   assert.match(first.words, /Packages follow/);
   assert.doesNotMatch(JSON.stringify(first), /properties|test_only-key|name/);
@@ -105,9 +111,9 @@ test('five test_only chunks: only 0–2 while running; after returns accepted fe
     features: [{ ...first.features[0], properties: {} }] }).success, false);
   assert.deepEqual(first.features[0].geometry,
     { type: 'Polygon', coordinates: [[[75, 0], [75, 1], [76, 1], [75, 0]]] });
-  f.state.published = 5;
-  f.state.running = false;
+  f.seal({});
   const last = await f.read(first.next!);
+  assert.equal(last.crsBasis, 'sealed');
   assert.equal(last.features.length, 200);
   assert.equal(last.next, null);
   assert.match(last.words, /reader has finished.*packages/);
@@ -122,15 +128,18 @@ test('WGS 84 UTM 43N converts the known central-meridian point to 1e-7 degrees; 
   f.state.published = 1;
   f.item.card.crs.code = 'EPSG:32643';
   const page = await f.read();
+  assert.equal(page.crsBasis, 'stated');
   const coordinates = (page.features[0].geometry as { coordinates: number[] }).coordinates;
   assert.ok(Math.abs(coordinates[0] - 75) < 1e-7 && Math.abs(coordinates[1]) < 1e-7);
 });
 
-test('unsupported EPSG:7755 and unread CRS give no features, no part reads and explicit CRS words', async () => {
-  for (const code of ['EPSG:7755', null]) {
+test('unsupported, unread, sidecar and conflicting CRS states stay refused without part reads', async () => {
+  for (const crs of [{ state: 'stated', code: 'EPSG:7755' }, { state: 'stated', code: null },
+    ...['sidecar', 'conflicting', 'not_applicable', 'unknown'].map(state => ({ state, code: 'EPSG:4326' }))]) {
     const f = fixture();
-    f.item.card.crs.code = code as any;
+    f.item.card.crs = crs as any;
     const page = await f.read();
+    assert.equal(page.crsBasis, 'unsupported');
     assert.deepEqual(page.features, []);
     assert.match(page.words, /needs a stated, supported CRS/);
     assert.deepEqual(f.reads, []);
@@ -161,14 +170,17 @@ test('2000-feature and 4 MiB coordinate bounds resume inside a chunk without rep
   }
 });
 
-test('real NYC and area originals wait for their late CRS; sealed outlines and named conversions match', async () => {
+test('real NYC and area late CRS84 declarations replace RFC 7946; named conversions still match', async () => {
   for (const path of ['fixtures/real-nyc/original.geojson', 'fixtures/real-area/original.geojson']) {
     const original = JSON.parse(readFileSync(path, 'utf8')), f = fixture(original.features);
     f.state.published = f.chunks.length;
-    f.item.card.crs.code = null as any;
-    assert.deepEqual((await f.read()).features, []);
+    f.item.card.crs = { state: 'absent', code: null as any };
+    const before = await f.read();
+    assert.equal(before.crsBasis, 'rfc7946_no_crs_read_yet');
+    assert.equal(before.features.length, original.features.length);
     f.seal({ crs: original.crs });
     const page = await f.read();
+    assert.equal(page.crsBasis, 'sealed');
     assert.equal(page.features.length, original.features.length);
     assert.deepEqual(page.features.map(value => value.geometry),
       original.features.map((value: any) => value.geometry));
@@ -184,6 +196,51 @@ test('real NYC and area originals wait for their late CRS; sealed outlines and n
     assert.deepEqual(converted.features[0].geometry,
       { type: 'Point', coordinates: featureExtent(input, crs)!.geographic });
   }
+});
+
+test('RFC 7946 excludes an entire feature with any out-of-range position, never chooses a projected CRS', async () => {
+  const f = fixture([feature({ type: 'Point', coordinates: [-180, -90] }),
+    feature({ type: 'Point', coordinates: [180, 90] }),
+    feature({ type: 'LineString', coordinates: [[75, 0], [180.001, 0]] }),
+    ...[[-180.001, 0], [75, 90.001], [75, -90.001]].map(coordinates => feature({ type: 'Point', coordinates }))]);
+  f.item.card.crs = { state: 'absent', code: null as any };
+  f.state.published = 1;
+  const page = await f.read();
+  assert.deepEqual(page.features.map(value => value.featureIndex), [0, 1]);
+  assert.equal(page.next, 5);
+  assert.match(page.words, /Some outlines are not in longitude and latitude and wait for the file's stated/);
+  assert.equal(page.words.match(/Some outlines/g)?.length, 1);
+});
+
+test('real-area test_only UTM derivative waits for its late declaration before drawing projected data', async () => {
+  const original = JSON.parse(readFileSync('fixtures/real-area/original.geojson', 'utf8'));
+  // The original is CRS84, not projected. Exercise a late projected declaration through a named test-only conversion.
+  const project = (coordinates: any[]): any[] => typeof coordinates[0] === 'number'
+    ? utmForward(32618, coordinates[0], coordinates[1]) : coordinates.map(project);
+  const projected = original.features.map((value: any) => ({ ...value,
+    geometry: { ...value.geometry, coordinates: project(value.geometry.coordinates) } }));
+  const f = fixture(projected);
+  f.item.card.crs = { state: 'absent', code: null as any };
+  f.state.published = f.chunks.length;
+  const before = await f.read();
+  assert.equal(before.crsBasis, 'rfc7946_no_crs_read_yet');
+  assert.deepEqual(before.features, []);
+  assert.match(before.words, /Some outlines are not in longitude and latitude and wait for the file's stated/);
+  const receipt = f.seal({ crs: { type: 'name', properties: { name: 'EPSG:32618' } } });
+  const after = await f.read();
+  assert.equal(after.crsBasis, 'sealed');
+  assert.equal(after.features.length, original.features.length);
+  assert.doesNotMatch(after.words, /Some outlines|No coordinate system is stated/);
+  for (const entry of after.features) {
+    const expected = featureExtent(original.features[entry.featureIndex], { kind: 'degree' })!.geographic;
+    const actual = featureExtent({ geometry: entry.geometry }, { kind: 'degree' })!.geographic;
+    assert.ok(actual.every((coordinate, index) => Math.abs(coordinate - expected[index]) < 1e-7));
+  }
+  receipt.collectionMetadata = { crs: { type: 'name', properties: { name: 'EPSG:7755' } } };
+  const unsupported = await f.read();
+  assert.equal(unsupported.crsBasis, 'unsupported');
+  assert.deepEqual(unsupported.features, []);
+  assert.match(unsupported.words, /needs a stated, supported CRS/);
 });
 
 test('sealed metadata permits no-crs and CRS84; mismatched receipts never imply degrees', async () => {
