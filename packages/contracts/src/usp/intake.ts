@@ -224,8 +224,12 @@ export const IntakeItemSchema = z.strictObject({
   layoutQuestion: z.boolean().optional().describe(
     'True only while the map reader asks the officer to state a layout; independent of display reasons.'),
   streamedProfileJobId: z.string().uuid().nullable().describe(
-    'Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; '
+    'Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; '
     + 'null otherwise.'),
+  layoutProfile: z.strictObject({ generation: z.number().int().nonnegative(), generationHash: hash,
+    coverage: z.enum(['provisional', 'sealed']), recordsSeen: z.number().int().nonnegative(),
+    accepted: z.number().int().nonnegative() }).optional().describe(
+    'The immutable streamed-profile generation covered by this layout question; provisional means prefix only.'),
   probeVersion: z.string().nullable(),
   partsPlanned: z.number().int().positive().nullable().describe(
     'Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, '

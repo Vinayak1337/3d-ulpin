@@ -1,16 +1,25 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
+import { StreamedPrefixMappingPlanSchema, STREAMING_VECTOR_LIMITS as limits,
+  type StreamedProfileGeneration, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { intakeLargeFailureReason, intakeLargeHoldsReason, intakeLargeNumbers, intakeLargePhase,
-  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, writeIntakeLargeReadTx, type IntakeLargeRows
+  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, intakeLargeProjection, writeIntakeLargeReadTx,
+  type IntakeLargeRows, type IntakeLargeStore
 } from './intake-large';
-import { writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
+import { intakeItem, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
 import type { IntakeCard } from '@ulpin/contracts/usp';
 import { claimUspJobAttempt } from '../jobs';
 import { AppError } from '../../../infrastructure/errors';
+import { Readable } from 'node:stream';
+import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
+import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
+import { normalizeMappedChunk } from './chunk-mapping-normalizer';
+import { prefixLayoutMatchesSealed } from './streamed-mapping';
+import { pairMappedFeatures } from './intake-package-cuts';
+import { StreamingPartWriter } from './streaming-vector-worker';
 
 const caseId = '10000000-0000-4000-8000-000000000001';
 const itemId = '10000000-0000-4000-8000-000000000002';
@@ -25,6 +34,120 @@ function sealedRows(): IntakeLargeRows {
     next_publish_index: 45, sealed_chunks: 45, unknown_remainder: false },
   profile: { state: 'sealed', sealed_generation: 45, issue_code: null }, receiptVerified: true };
 }
+
+test('five GeoJSON chunks ask on the first prefix, map while open, and draft only after a matching seal', async () => {
+  const hash = 'a'.repeat(64), state = rows();
+  // test_only collection, not operational records or identifiers.
+  const features = [1, 2, 3, 4, 5].map(id => ({ type: 'Feature', id, properties: {},
+    geometry: { type: 'Polygon', coordinates: [[[0, 0], [0, 1], [1, 1], [0, 0]]] } }));
+  const read: StreamingVectorRecord[] = [];
+  let inventory = emptyInventory(), prefix: StreamedProfileGeneration | undefined;
+  let plan: ReturnType<typeof StreamedPrefixMappingPlanSchema.parse> | undefined, questions = 0;
+  state.reader = { state: 'running', issue_code: null, next_publish_index: 0, records: 0,
+    sealed_chunks: null, unknown_remainder: true };
+  const store: IntakeLargeStore = { reader: null, profile: null, recipe: null, mapping: null, parts: 0, unreviewed: 0 };
+  const makeProfile = (sealed: boolean): StreamedProfileGeneration => ({ ...inventory,
+    version: 'streamed-profile/1', jobId: itemId, rawJobId: itemId,
+    source: { sourceId: itemId, familyId: itemId, sourceRevision: 1, sourceSha256: hash, schemaFingerprint: hash },
+    generation: sealed ? 5 : 0, generationHash: hash, previousHash: null, readerSha256: hash, profilerSha256: hash,
+    coverage: sealed ? 'sealed' : 'provisional', unknownRemainder: !sealed,
+    rawChunkIndex: sealed ? null : 0, rawResultSha256: sealed ? null : hash, quarantineLocators: [],
+    reference: { sourceCrs: null, evidence: null, globalPlacement: 'not_qualified' } });
+  const parts = new StreamingPartWriter(
+    async (index, records) => {
+      const record = records[0];
+      read.push(record);
+      inventory = advanceStreamedInventory(inventory, [record]).inventory;
+      state.reader!.next_publish_index++;
+      state.reader!.records++;
+      if (!prefix) {
+        prefix = makeProfile(false);
+        state.profile = { state: 'running', issue_code: null, sealed_generation: null, layout_profile: {
+          generation: 0, generationHash: hash, coverage: 'provisional', recordsSeen: 1, accepted: 1 } };
+        store.profile = { ...state.profile, job_id: itemId };
+        assert.equal(intakeLargePhase(state), 'question');
+        questions++;
+        const projection = intakeLargeProjection('question', state, store, { bytes: 1, crsWords: null });
+        const listed = intakeItem({ item_id: itemId, source_id: itemId, case_id: caseId, parent_item_id: null,
+          member_path: null, name: 'test_only.geojson', family: 'vector', format: 'geojson', size_bytes: null,
+          size_class: null, wave: 1, state: projection.state, placement: projection.placement, card: null,
+          card_sha256: null, probe_version: null, plan_ref: projection.planRef, streamed_profile_job_id: itemId,
+          parts_planned: null, parts_done: 1, records_seen: 1, limit_reason: projection.limitReason,
+          pinned_by_officer: false, created_at: new Date(0), updated_at: new Date(0) });
+        assert.equal(listed.placement, 'needs_answer');
+        assert.equal(listed.layoutQuestion, true);
+        assert.deepEqual(listed.layoutProfile, state.profile.layout_profile);
+        plan = StreamedPrefixMappingPlanSchema.parse({ version: 'streamed-prefix-mapping/1',
+          scope: 'observed_prefix_and_later_compatible_features', mode: 'streamed_mapping', source: prefix.source,
+          caseId, caseRevision: 0, rawJobId: itemId, profileJobId: itemId, profileGeneration: 0, profileHash: hash,
+          prefix: { throughRawChunkIndex: 0, rawResultSha256: hash, recordsSeen: 1, accepted: 1 },
+          kind: 'parcel', basis: 'officer_stated', semanticEvidence: [], operations: [
+            { target: 'feature.sourceKey', sourcePath: '/features/*/id', conversionId: 'literal_integer_identifier@1' },
+            { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' }] });
+        state.recipeState = 'approved';
+        state.prefixRecipe = true;
+      }
+      assert.equal(intakeLargePhase(state), 'map', 'not drafting while the reader remains open');
+      assert.equal(normalizeMappedChunk([record], plan!, prefix, itemId, index, []).records[0].disposition,
+        'observed');
+      assert.equal(store.parts, 0);
+    });
+  await readStreamingFeatures(Readable.from([JSON.stringify({ type: 'FeatureCollection', features })]),
+    'feature-collection', item => parts.add(sourceRecord(item), 1));
+  assert.equal(parts.index, 5);
+  Object.assign(state.reader, { state: 'completed', sealed_chunks: 5, unknown_remainder: false });
+  Object.assign(state.profile!, { state: 'sealed', sealed_generation: 5 });
+  state.receiptVerified = true;
+  state.mapping = { ...state.reader! };
+  assert.equal(intakeLargePhase(state), 'compare');
+  assert(prefixLayoutMatchesSealed(plan!, prefix!, makeProfile(true)));
+  state.prefixCheck = 'matched';
+  assert.equal(intakeLargePhase(state), 'draft');
+  assert.equal(questions, 1, 'matching paths do not ask a second question');
+  const repeated = read.map((record, index) => index === 4 ? { ...record,
+    feature: { ...record.feature!, id: 1 } } : record);
+  const reservations: { source_key_sha256: string; source_key: string; first_feature_index: number }[] = [];
+  const mapped = repeated.map((record, index) => {
+    const chunk = normalizeMappedChunk([record], plan!, prefix!, itemId, index, reservations);
+    reservations.push(...chunk.keys.filter(key => key.laterIndex === null).map(key => ({
+      source_key_sha256: key.hash, source_key: key.value, first_feature_index: key.firstIndex })));
+    return chunk;
+  });
+  const conflicts = new Set(mapped.flatMap(chunk => chunk.keys).filter(key => key.laterIndex !== null)
+    .flatMap(key => [key.firstIndex, key.laterIndex!]));
+  assert.deepEqual([...conflicts], [0, 4]);
+  assert.deepEqual(pairMappedFeatures(repeated, mapped.flatMap(chunk => chunk.records),
+    { after: -1, conflicts, kind: 'parcel' })
+    .map(item => item.raw.featureIndex), [1, 2, 3], 'both occurrences stay out before any part is cut');
+  for (const change of [{ types: ['string'] as const }, { absent: 1, values: 4 }]) {
+    const sealed = makeProfile(true);
+    sealed.paths = sealed.paths.map(path => path.path.endsWith('/id') ? { ...path, ...change,
+      types: change.types ? [...change.types] : path.types } : path);
+    assert.equal(prefixLayoutMatchesSealed(plan!, prefix!, sealed), false);
+    state.prefixCheck = 'changed';
+    assert.equal(intakeLargePhase(state), 'question');
+    store.profile = { ...state.profile!, job_id: itemId, layout_profile: {
+      generation: 5, generationHash: hash, coverage: 'sealed', recordsSeen: 5, accepted: 5 } };
+    const again = intakeLargeProjection('question', state, store, { bytes: 1, crsWords: null });
+    assert.equal(again.placement, 'needs_answer');
+    assert.match(again.limitReason!, /Nothing was drafted.*complete file/);
+    assert.equal((again.planRef!.layoutProfile as { coverage: string }).coverage, 'sealed');
+  }
+});
+
+test('a reader that seals before an answer asks only over the sealed generation, even after a prefix proposal', () => {
+  const state = sealedRows();
+  state.profile!.layout_profile = { generation: 45, generationHash: 'a'.repeat(64), coverage: 'sealed',
+    recordsSeen: 4500, accepted: 4500 };
+  for (const recipeState of [null, 'proposed']) {
+    Object.assign(state, { recipeState, prefixRecipe: recipeState !== null });
+    assert.equal(intakeLargePhase(state), 'question');
+    const store: IntakeLargeStore = { reader: null, profile: { ...state.profile!, job_id: itemId },
+      recipe: null, mapping: null, parts: 0, unreviewed: 0 };
+    const question = intakeLargeProjection('question', state, store, { bytes: 1, crsWords: null });
+    assert.deepEqual(question.planRef, { layoutProfile: state.profile!.layout_profile });
+  }
+});
 
 test('the existing job authority refuses completed-job wake-up and a fourth lifetime claim', async () => {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
@@ -307,7 +430,7 @@ function readingStore(initial: IntakeLargeState, reader: Record<string, unknown>
     if (sql.includes('FROM usp_streaming_vector_imports')) return one(reader);
     if (sql.includes('FROM usp_streamed_profile_imports')) return one({ job_id: itemId, state: 'running',
       issue_code: null, sealed_generation: null });
-    if (sql.startsWith('SELECT id,revision,state FROM usp_mapping_recipes')) return { rows: [] };
+    if (sql.startsWith('SELECT id,revision,state,body')) return { rows: [] };
     if (sql.includes('count(*)')) return one({ n: 0 });
     return write(sql, values);
   } } as unknown as PoolClient;

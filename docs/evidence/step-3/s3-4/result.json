@@ -1,39 +1,44 @@
 {
-  "task": "S3.4",
-  "planStep": 3,
-  "status": "blocked_scope",
-  "completedSteps": [1],
-  "productionChanges": false,
+  "task": "S3.4", "planStep": 3, "status": "code_complete",
   "baselinePrefixAdmission": {
-    "recordedBeforeAdmissionChanges": true,
-    "test": "streamed-layout.test.ts: prefix admission maps later compatible chunks and holds later drift against the unchanged prefix pins",
-    "exit": 0,
-    "tests": 9,
-    "answer": "Later compatible chunks are mapped against the immutable observed prefix. Later type or absent-path drift is held unresolved, not refused as a whole job. The pinned schema fingerprint stays unchanged.",
-    "decision": "The mapper supports later compatible chunks, but batch drafting and typed question projection require changes outside the owned paths. Do not ship an early question whose approval the batch cannot use."
+    "recordedBeforeAdmissionChanges": true, "commit": "e3d50609", "exit": 0, "tests": 9,
+    "answer": "Later compatible chunks map against prefix pins; type or absent-path drift is held unresolved."
   },
-  "baseline": { "backendTypes": 0, "studioTypes": 0, "studioTests": 0,
-    "server": { "exit": 0, "tests": 925, "pass": 921, "skip": 4 }, "apiCheck": 0,
-    "openapi": 0, "studioTestCounts": { "pass": 780, "skip": 3 }
+  "scopeDecision": "Pre-seal drafting moves to S3.5. intake-part-draft.ts and its duplicate rule are unchanged.",
+  "design": {
+    "question": "First nonempty generation wakes intake-large; layoutProfile exposes pinned generation and coverage.",
+    "mapping": "Prefix approval enqueues streamed-prefix-admission/1; drafting still waits for closure.",
+    "comparison": "Compare used-path type/completeness, integer coverage, geometry kinds and sealed compilation.",
+    "holds": "Scan held slots for invalid used keys/text; duplicates keep their separate two-sided exclusion.",
+    "marker": "Source inspection pins the result to plan hash, sealed hash and mapping job; it changes the step key.",
+    "drafting": "Proved-part admission independently checks closed mapping, comparison pins and matching profiles."
   },
-  "blockers": [
-    { "path": "packages/server/src/modules/usp/ingestion/intake-part-draft.ts:26-39",
-      "reason": "assertClosedMappingTx requires closed raw and mapped jobs with matching whole-file counts; prefix drafts are refused. Global duplicate-key closure also needs an explicit safe streaming policy." },
-    { "path": "packages/server/src/modules/usp/ingestion/proved-area-part.ts:76-135",
-      "reason": "approvedPartLayoutTx rejects prefix plans outright; loadPartFeatures and prepareProvedAreaPartTx require source closure and the sealed original receipt. No prefix approval can draft even after seal under this path." },
-    { "path": "packages/server/src/modules/usp/ingestion/intake-ledger.ts:28-33,131-152",
-      "reason": "Typed IntakeItem projection is assembled here, outside OWN. Extra question metadata in plan_ref is not exposed; adding a contract field alone cannot publish the generation and coverage." }
+  "acceptance": [
+    "Five test_only GeoJSON chunks: question after chunk 1; prefix generation 0 exposed through intakeItem.",
+    "Compatible chunks map while open; no draft phase until closure; matching seal needs no second question.",
+    "Used-key type/completeness changes re-ask over sealed coverage; invalid mapped text is also detected.",
+    "A key repeated in chunk 5 reserves a cross-chunk conflict; positions 0 and 4 are excluded before cutting.",
+    "Sealed-first asks only over sealed coverage, including an unanswered prefix proposal.",
+    "A stored comparison wakes the next step; stale plan pins cannot grant drafting."
   ],
-  "next": "Expand scope to these three files, define safe pre-seal drafting and later duplicate handling, then implement steps 2-5 with sealed used-path comparison. Keep current production behavior until that work is integrated.",
-  "inputs": { "fixture": "Five explicit test_only raw chunk records in streamed-layout.test.ts",
-    "realGood": null, "realDifficult": null, "runtimeOrProviderCalls": false },
-  "checks": {
-    "prefixBaseline": { "exit": 0, "tests": 9, "pass": 9 },
-    "requestedTests": { "exit": 0, "tests": 103, "pass": 103 },
-    "backendTypes": 0, "studioTypes": 0,
-    "studioTests": { "exit": 0, "pass": 780, "skip": 3 },
-    "workingRulesServer": { "exit": 0, "tests": 926, "pass": 922, "skip": 4 },
-    "openapi": 0, "apiCheck": 0, "diffCheck": 0,
-    "logs": "E:/ulpin-tmp/s3-4-{before,after}-*.log; s3-4-targeted.log; s3-4-prefix-before.log"
-  }
+  "inputs": { "newFixture": "Explicit test_only GeoJSON, not registry or evaluation data",
+    "realRegression": "Existing NYC buildings-original.geojson proof test: 1662 unchanged features",
+    "difficultRealNewRun": null, "runtimeProviderImageOrDemoAction": false },
+  "before": { "backendTypes": 0, "studioTypes": 0, "studioTests": 0,
+    "server": { "exit": 0, "tests": 926, "pass": 922, "skip": 4 }, "openapi": 0, "apiCheck": 0 },
+  "after": { "requestedTests": { "exit": 0, "tests": 108, "pass": 108 },
+    "backendTypes": 0, "studioTypes": 0, "studioTests": { "exit": 0, "pass": 780, "skip": 3 },
+    "server": { "exit": 0, "tests": 931, "pass": 927, "skip": 4 },
+    "openapi": { "exit": 1, "expected": "docs/api/openapi.json stale after layoutProfile addition" },
+    "apiCheck": { "exit": 1, "expected": "producer changed: packages/contracts/src/usp/intake.ts" },
+    "diffCheck": 0, "logs": "E:/ulpin-tmp/s3-4-resume-{before,after}-*.log" },
+  "changedProducers": ["packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+    "packages/server/src/modules/usp/ingestion/proved-area-part.ts",
+    "packages/server/src/modules/usp/ingestion/streamed-mapping.ts",
+    "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts"],
+  "next": ["Lead regenerates OpenAPI, api-client and source pins on merge; S3.6 consumes layoutProfile.",
+    "S3.5 owns pre-seal drafting. No runtime timing or new difficult-real-file claim."]
 }

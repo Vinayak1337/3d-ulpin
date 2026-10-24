@@ -136,6 +136,8 @@ export function intakeItem(row: any) {
     wave: row.wave, state: row.state,
     placement: row.placement, card: row.card, cardSha256: row.card_sha256, probeVersion: row.probe_version,
     plan, streamedProfileJobId: row.streamed_profile_job_id ?? null,
+    ...(IntakeItemSchema.shape.layoutProfile.unwrap().safeParse(row.plan_ref?.layoutProfile).success
+      ? { layoutProfile: row.plan_ref.layoutProfile } : {}),
     layoutQuestion: ['probed', 'read'].includes(row.state) && row.placement === 'needs_answer'
       && !plan && (row.plan_ref?.layoutQuestion === true || Boolean(row.streamed_profile_job_id)),
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),

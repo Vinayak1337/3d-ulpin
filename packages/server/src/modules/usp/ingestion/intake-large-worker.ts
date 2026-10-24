@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
-import { StreamingVectorGeometrySummarySchema } from '@ulpin/contracts/usp';
+import { StreamedMappingReceiptSchema, StreamingVectorGeometrySummarySchema } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange, putOriginalStream, verifyObjectStream } from '../../../infrastructure/storage';
@@ -30,7 +30,9 @@ import { IntakeService } from './intake-service';
 import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
-import { StreamedProfileService } from './streamed-profile';
+import { loadProvisionalStreamedProfileTx, StreamedProfileService } from './streamed-profile';
+import { loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingUsedPathHeld,
+  prefixSealCheckKey } from './streamed-mapping';
 import { StreamingVectorService } from './streaming-vector';
 
 const reader = new StreamingVectorService();
@@ -154,7 +156,9 @@ async function startMapping(input: IntakeLargeInput, attempt: UspJobAttempt | un
     requestKey: intakeLargeRequestKey(input.itemId, 'mapping', recipe.revision), rawJobId: plan.rawJobId,
     expectedCaseRevision: await caseRevision(input, attempt), expectedSourceRevision: input.sourceRevision,
     sourceSha256: input.sourceSha256, profileJobId: plan.profileJobId, profileGeneration: plan.profileGeneration,
-    profileHash: plan.profileHash });
+    profileHash: plan.profileHash,
+    ...(plan.version === 'streamed-prefix-mapping/1'
+      ? { prefixAdmissionVersion: 'streamed-prefix-admission/1' } : {}) });
 }
 
 /** The GIS suggestion's rule for a retained original that has none: its file name and its bytes' namespace, scoped
@@ -354,6 +358,37 @@ async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
   await draftCut(input, attempt, fold, cutter.close(), true);
 }
 
+/** Inspect only held slots after closure. Duplicates keep their existing two-sided exclusion at the draft door. */
+async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
+  const prepared = await pinned(input, attempt, async (client, state) => {
+    const receipt = StreamedMappingReceiptSchema.parse((await client.query(
+      'SELECT body FROM usp_mapping_recipes WHERE id=$1', [state.store.recipe!.id])).rows[0].body);
+    const plan = receipt.plan;
+    const { profile } = await loadProvisionalStreamedProfileTx(client, plan.profileJobId, plan.profileGeneration,
+      plan.profileHash, plan.rawJobId, input.caseId, input.sourceId);
+    const sealed = await loadPrefixSealTx(client, plan);
+    const slots = (await client.query(`SELECT chunk_index FROM usp_chunk_mapping_slots
+      WHERE job_id=$1 AND published AND unresolved>0 ORDER BY chunk_index`, [state.store.mapping!.job_id])).rows;
+    return { key: state.key, mappingJobId: state.store.mapping!.job_id, slots,
+      checkKey: prefixSealCheckKey(receipt.planHash, sealed.generationHash, state.store.mapping!.job_id),
+      changed: !prefixLayoutMatchesSealed(plan, profile, sealed) };
+  });
+  const beat = heartbeat(input, attempt);
+  for (const slot of prepared.slots) {
+    if (prepared.changed) break;
+    const chunk = await mapper.chunk(input.caseId, input.sourceId, prepared.mappingJobId, slot.chunk_index);
+    if (!chunk.current || !chunk.payload || chunk.unknownRemainder) conflict('The closed mapped part changed.');
+    prepared.changed = prefixMappingUsedPathHeld(chunk.payload.records);
+    await beat();
+  }
+  await pinned(input, attempt, async (client, state) => {
+    if (state.key !== prepared.key) conflict('The prefix closure context changed.');
+    await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('intakePrefixSealCheck',$2::jsonb)
+      WHERE id=$1`, [input.sourceId, JSON.stringify({ key: prepared.checkKey, mappingJobId: prepared.mappingJobId,
+      changed: prepared.changed })]);
+  });
+}
+
 async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
   const state = await pinned(input, attempt, async (client, current) => {
     await client.query(`UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()),
@@ -368,6 +403,7 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
     return complete(input, attempt, false);
   }
   const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
+  if (phase === 'compare') await comparePrefix(input, attempt);
   if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) await draft(input, attempt);
   await complete(input, attempt, true);
 }

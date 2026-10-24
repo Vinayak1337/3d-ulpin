@@ -24,6 +24,7 @@ import { runIntakeLargeJob } from './intake-large-worker';
 import { StreamedProfileService } from './streamed-profile';
 import { StreamingVectorService } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
+import { prefixSealCheckKey } from './streamed-mapping';
 
 const caseId = '20000000-0000-4000-8000-000000000001';
 const sourceId = '20000000-0000-4000-8000-000000000002';
@@ -73,7 +74,7 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
     if (sql.startsWith('SELECT job_id,state,issue_code,sealed_generation')) return one(tables.profile);
     if (sql.startsWith('SELECT job_id,state,issue_code,next_publish_index,records,sealed_chunks'))
       return one(tables.mapping);
-    if (sql.startsWith('SELECT id,revision,state FROM usp_mapping_recipes')) return one(tables.recipe);
+    if (sql.startsWith('SELECT id,revision,state,body')) return one(tables.recipe);
     if (sql.startsWith('SELECT count(*)::int n FROM usp_intake_parts WHERE')) return one({ n: tables.parts });
     if (sql.startsWith('SELECT count(*)::int n FROM usp_intake_parts part')) return one({ n: tables.unreviewed });
     if (sql.startsWith('SELECT i.source_id FROM usp_intake_parts')) return one(tables.partOf
@@ -141,14 +142,23 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
 
 const card = { family: 'vector', format: 'geojson' } as IntakeCard;
 
-for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPPING_CAPACITY',
-  'STALE_REVISION'] as const) {
+for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPPING_CAPACITY',
+  'STALE_REVISION', 'PREFIX_MAPPING_CAPACITY'] as const) {
+  const prefix = scenario === 'PREFIX_MAPPING_CAPACITY';
+  const capacity = prefix ? 'MAPPING_CAPACITY' : scenario;
   const waitCount = capacity === 'STALE_REVISION' ? 2 : 3;
-  test(`${capacity} waits ${waitCount} times without attempts; starts readers or stops after 30 minutes`, async () => {
+  test(`${scenario} waits ${waitCount} times without attempts; starts readers or stops after 30 minutes`, async () => {
     const fixture = store();
     if (capacity === 'MAPPING_CAPACITY') Object.assign(fixture.tables, { source: retained,
       reader: sealedReader(), profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 },
       recipe: { id: recipeId, revision: 2, state: 'approved' } });
+    if (prefix) {
+      Object.assign(fixture.tables.reader!, { state: 'running', sealed_chunks: null, unknown_remainder: true });
+      Object.assign(fixture.tables.profile!, { state: 'running', sealed_generation: null,
+        layout_profile: { generation: 0, generationHash: hash, coverage: 'provisional',
+          recordsSeen: 100, accepted: 100 } });
+      fixture.tables.recipe!.plan_version = 'streamed-prefix-mapping/1';
+    }
     if (capacity === 'STREAMED_PROFILE_CAPACITY' || capacity === 'STALE_REVISION') {
       fixture.tables.reader = { ...sealedReader(), state: 'running', sealed_chunks: null };
     }
@@ -204,7 +214,8 @@ for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
         return one();
       }
       if (sql.startsWith('SELECT a.name')) return one();
-      if (sql.startsWith('SELECT body FROM usp_mapping_recipes')) return one({ body: { plan: {} } });
+      if (sql.startsWith('SELECT body FROM usp_mapping_recipes')) return one({ body: { plan: {
+        version: prefix ? 'streamed-prefix-mapping/1' : 'streamed-mapping/1' } } });
       return original(sql, values);
     };
     const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
@@ -230,7 +241,12 @@ for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
       fixture.tables.profile = { job_id: profileJob, state: 'queued', sealed_generation: null };
       return { jobId: profileJob };
     });
-    mock.method(ChunkMappingService.prototype, 'enqueue', async () => {
+    mock.method(ChunkMappingService.prototype, 'enqueue', async (
+      _caseId: string, _sourceId: string, value: unknown,
+    ) => {
+      assert.equal((value as { prefixAdmissionVersion?: string }).prefixAdmissionVersion,
+        prefix ? 'streamed-prefix-admission/1' : undefined);
+      if (prefix) assert.equal(fixture.tables.reader!.state, 'running', 'mapping enqueues before the seal');
       if (refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
       fixture.tables.mapping = { ...sealedReader(), job_id: mappingJob, state: 'queued' };
       return { jobId: mappingJob };
@@ -250,6 +266,7 @@ for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
       assert.equal(job.status, 'succeeded');
       assert.equal(job.attempts, 1, 'only the successful step claims an attempt');
       assert.equal(fixture.tables.profile!.job_id, profileJob);
+      assert.equal(fixture.tables.parts, 0, 'admission never drafts a part');
       if (capacity === 'STALE_REVISION') assert.deepEqual(profileRevisions, [3, 4, 5]);
       if (capacity === 'MAPPING_CAPACITY') fixture.tables.mapping = null;
       else {
@@ -385,6 +402,28 @@ function project(store: IntakeLargeStore, source = retained) {
   const rows = intakeLargeRows(store, source);
   return intakeLargeProjection(intakeLargePhase(rows), rows, store, failure);
 }
+
+test('a stored prefix comparison wakes drafting or the sealed question; stale comparison pins cannot grant drafting',
+  async () => {
+    const fixture = store({ source: structuredClone(retained) as IntakeSourceRow, reader: sealedReader(),
+      profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487, layout_profile: {
+        generation: 487, generationHash: hash, coverage: 'sealed', recordsSeen: 48686, accepted: 48686 } },
+      recipe: { id: recipeId, revision: 2, state: 'approved', plan_version: 'streamed-prefix-mapping/1',
+        plan_hash: hash }, mapping: { ...sealedReader(), job_id: mappingJob, state: 'needs_input' } });
+    const before = (await largeStateKey(fixture.client, sourceId))!;
+    assert.equal(intakeLargePhase(intakeLargeRows(before.store, before.source)), 'compare');
+    for (const changed of [false, true]) {
+      fixture.tables.source!.inspection!.intakePrefixSealCheck = {
+        key: prefixSealCheckKey(hash, hash, mappingJob), mappingJobId: mappingJob, changed };
+      const after = (await largeStateKey(fixture.client, sourceId))!;
+      assert.notEqual(after.key, before.key, 'the comparison queues a new durable step');
+      assert.equal(intakeLargePhase(intakeLargeRows(after.store, after.source)), changed ? 'question' : 'draft');
+    }
+    fixture.tables.recipe!.plan_hash = 'c'.repeat(64);
+    const stale = (await largeStateKey(fixture.client, sourceId))!;
+    assert.equal(stale.store.prefixCheck, undefined);
+    assert.equal(intakeLargePhase(intakeLargeRows(stale.store, stale.source)), 'compare');
+  });
 
 test('each stored state has its row: question, proposed and approved layout, mapping and drafting', () => {
   const question = stored();

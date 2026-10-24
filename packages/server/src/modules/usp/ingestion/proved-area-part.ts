@@ -10,8 +10,9 @@ import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { streamingContextTx, StreamingVectorService } from './streaming-vector';
-import { loadSealedStreamedProfileTx } from './streamed-profile';
-import { compileStreamedMapping, assertStreamedIssuerEvidence } from './streamed-mapping';
+import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx } from './streamed-profile';
+import { compileStreamedMapping, assertStreamedIssuerEvidence, loadPrefixSealTx,
+  prefixLayoutMatchesSealed, prefixSealCheckKey } from './streamed-mapping';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
 export type ProvedAreaPartInput = {
@@ -80,12 +81,29 @@ async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInp
   const plan = receipt.plan;
   if (receipt.state !== 'approved' || receipt.planHash !== input.layoutHash
     || receipt.planHash !== fingerprint(plan) || receipt.approval?.planHash !== input.layoutHash
-    || receipt.approval?.subject !== localOperatorSubject() || plan.version !== 'streamed-mapping/1'
+    || receipt.approval?.subject !== localOperatorSubject()
     || plan.source.sourceId !== input.sourceId || plan.source.sourceRevision !== input.sourceRevision
     || plan.source.sourceSha256 !== input.sourceSha256)
     conflict('The proved cut requires this original\'s exact officer-approved sealed layout.');
-  const { profile } = await loadSealedStreamedProfileTx(client, plan.profileJobId, plan.profileGeneration,
-    plan.profileHash, plan.rawJobId, source.case_id, source.id);
+  const prefix = plan.version === 'streamed-prefix-mapping/1';
+  const { profile } = await (prefix ? loadProvisionalStreamedProfileTx : loadSealedStreamedProfileTx)(
+    client, plan.profileJobId, plan.profileGeneration, plan.profileHash, plan.rawJobId, source.case_id, source.id);
+  if (prefix) {
+    const sealed = await loadPrefixSealTx(client, plan);
+    const check = source.inspection?.intakePrefixSealCheck;
+    const closed = check && (await client.query(`SELECT m.job_id FROM usp_chunk_mapping_imports m
+      JOIN jobs j ON j.id=m.job_id WHERE m.job_id=$1 AND m.source_id=$2 AND m.raw_job_id=$3
+      AND NOT m.unknown_remainder AND m.sealed_chunks=$4 AND m.next_publish_index=m.sealed_chunks
+      AND m.records=$5 AND m.state IN ('completed','completed_with_rejections','needs_input')
+      AND j.payload->>'planHash'=$6 AND j.payload->>'recipeId'=$7
+      AND (j.payload->>'recipeRevision')::int=$8 FOR SHARE OF m,j`,
+    [check.mappingJobId, source.id, plan.rawJobId, sealed.generation, sealed.recordsSeen,
+      receipt.planHash, receipt.id, receipt.revision])).rowCount;
+    if (!closed || check.changed !== false
+      || check.key !== prefixSealCheckKey(receipt.planHash, sealed.generationHash, check.mappingJobId)
+      || !prefixLayoutMatchesSealed(plan, profile, sealed))
+      conflict('The first-part layout has not passed comparison with this complete file.');
+  }
   const mapping = compileStreamedMapping(plan, profile);
   assertStreamedIssuerEvidence(plan, source as { profile: string; inspection: any });
   return { plan, mapping };

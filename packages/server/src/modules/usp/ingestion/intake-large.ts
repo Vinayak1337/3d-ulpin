@@ -2,7 +2,7 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import type { GisSetAside } from '@ulpin/contracts';
 import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits,
-  type IntakeCard } from '@ulpin/contracts/usp';
+  type IntakeCard, type IntakeItemSchema } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { AREA_PROCESSOR_OPERATION } from '../../areas/areas';
@@ -17,6 +17,7 @@ import { INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import { stableUuid } from './intake-run';
 import { setAsideWords } from './registry';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { prefixSealCheckKey } from './streamed-mapping';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
   + 'An officer states what each feature is and which field identifies it.';
@@ -107,12 +108,14 @@ export function intakeLargePartRefusal(error: unknown): string | null {
   return `A part of this file could not be read as a map: ${error.message.replace(/\.$/, '')}${nothing}`;
 }
 
-export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end' | 'failure';
+export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end'
+  | 'failure' | 'compare';
 type ReaderRow = {
   state: string; issue_code: string | null; next_publish_index: number;
   records: number; sealed_chunks: number | null; unknown_remainder: boolean;
 };
-type ProfileRow = { state: string; issue_code: string | null; sealed_generation: number | null };
+type ProfileRow = { state: string; issue_code: string | null; sealed_generation: number | null;
+  layout_profile?: z.infer<typeof IntakeItemSchema>['layoutProfile'] };
 type MappingRow = ReaderRow;
 export type IntakeLargeRows = {
   reader: ReaderRow | null;
@@ -120,6 +123,8 @@ export type IntakeLargeRows = {
   mapping: MappingRow | null;
   receiptVerified: boolean;
   recipeState: string | null;
+  prefixRecipe?: boolean;
+  prefixCheck?: 'matched' | 'changed';
   publishedPackages: number;
   foldComplete: boolean;
 };
@@ -130,15 +135,24 @@ const failed = (state: string) => ['failed', 'stale'].includes(state);
 export function intakeLargePhase(rows: IntakeLargeRows): IntakeLargePhase {
   if ([rows.reader, rows.profile, rows.mapping].some(row => row && failed(row.state))) return 'failure';
   if (!rows.reader) return 'start';
+  if (rows.prefixCheck === 'changed') return 'question';
+  const openPrefix = !finished(rows.reader.state) && rows.reader.unknown_remainder
+    && rows.profile?.layout_profile?.coverage === 'provisional';
+  if (openPrefix && !rows.recipeState) return 'question';
+  if (openPrefix && rows.prefixRecipe && rows.recipeState !== 'approved') return 'layout';
+  const prefixApproved = rows.prefixRecipe && rows.recipeState === 'approved';
+  if (openPrefix && prefixApproved) return 'map';
   if (!finished(rows.reader.state) || rows.reader.unknown_remainder || !rows.receiptVerified
     || rows.reader.sealed_chunks === null || rows.reader.next_publish_index !== rows.reader.sealed_chunks
     || rows.profile?.state !== 'sealed' || rows.profile.sealed_generation !== rows.reader.sealed_chunks) return 'read';
-  if (!rows.recipeState) return 'question';
+  if (!rows.recipeState || rows.prefixRecipe && rows.recipeState !== 'approved') return 'question';
   if (rows.recipeState !== 'approved') return 'layout';
-  if (!rows.mapping || !finished(rows.mapping.state) || rows.mapping.unknown_remainder
+  if (!rows.mapping || !(finished(rows.mapping.state) || prefixApproved && rows.mapping.state === 'needs_input')
+    || rows.mapping.unknown_remainder
     || rows.mapping.sealed_chunks !== rows.reader.sealed_chunks
     || rows.mapping.next_publish_index !== rows.mapping.sealed_chunks
     || rows.mapping.records !== rows.reader.records) return 'map';
+  if (prefixApproved && rows.prefixCheck !== 'matched') return 'compare';
   return rows.foldComplete ? 'end' : 'draft';
 }
 
@@ -205,7 +219,8 @@ type Stored<T> = (T & { job_id: string }) | null;
 export type IntakeLargeStore = {
   reader: Stored<ReaderRow & { quarantined: number }>;
   profile: Stored<ProfileRow>;
-  recipe: { id: string; revision: number; state: string } | null;
+  recipe: { id: string; revision: number; state: string; plan_version?: string; plan_hash?: string } | null;
+  prefixCheck?: 'matched' | 'changed';
   mapping: Stored<MappingRow>;
   parts: number;
   unreviewed: number;
@@ -221,7 +236,12 @@ export type IntakeLargeSource = {
 const stepTables = {
   'streaming-vector': `SELECT job_id,state,issue_code,next_publish_index,records,quarantined,sealed_chunks,
     unknown_remainder FROM usp_streaming_vector_imports`,
-  'streamed-profile': 'SELECT job_id,state,issue_code,sealed_generation FROM usp_streamed_profile_imports',
+  'streamed-profile': `SELECT job_id,state,issue_code,sealed_generation,
+    (SELECT jsonb_build_object('generation',g.generation,'generationHash',g.body->>'generationHash',
+      'coverage',g.body->>'coverage','recordsSeen',g.body->'recordsSeen','accepted',g.body->'accepted')
+    FROM usp_streamed_profile_generations g WHERE g.job_id=p.job_id
+      AND (g.generation=p.sealed_generation OR p.sealed_generation IS NULL AND (g.body->>'accepted')::int>0)
+    ORDER BY g.generation LIMIT 1) layout_profile FROM usp_streamed_profile_imports p`,
   'chunk-mapping': `SELECT job_id,state,issue_code,next_publish_index,records,sealed_chunks,unknown_remainder
     FROM usp_chunk_mapping_imports`,
 } as const;
@@ -238,7 +258,8 @@ async function largeStoreTx(client: PoolClient, item: IntakeLargeItem, sourceId:
     intakeLargeRequestKey(item.item_id, 'reader'));
   const profile = await stepRowTx(client, item.case_id, 'streamed-profile',
     intakeLargeRequestKey(item.item_id, 'profile'));
-  const recipe = (await client.query('SELECT id,revision,state FROM usp_mapping_recipes WHERE source_id=$1',
+  const recipe = (await client.query(`SELECT id,revision,state,body->'plan'->>'version' plan_version,
+    body->>'planHash' plan_hash FROM usp_mapping_recipes WHERE source_id=$1`,
     [sourceId])).rows[0] ?? null;
   const mapping = recipe?.state === 'approved' ? await stepRowTx(client, item.case_id, 'chunk-mapping',
     intakeLargeRequestKey(item.item_id, 'mapping', recipe.revision)) : null;
@@ -252,10 +273,11 @@ function keyInputs(store: IntakeLargeStore) {
   const { reader, profile, recipe, mapping } = store;
   return { version: 'intake-large/1',
     reader: reader && [reader.job_id, reader.state, reader.sealed_chunks, reader.unknown_remainder],
-    profile: profile && [profile.job_id, profile.state, profile.sealed_generation],
+    profile: profile && [profile.job_id, profile.state, profile.sealed_generation,
+      ...(profile.layout_profile ? [profile.layout_profile.generationHash] : [])],
     recipe: recipe && [recipe.id, recipe.revision, recipe.state],
     mapping: mapping && [mapping.job_id, mapping.state, mapping.sealed_chunks, mapping.unknown_remainder],
-    parts: store.parts };
+    parts: store.parts, ...(store.prefixCheck ? { prefixCheck: store.prefixCheck } : {}) };
 }
 
 /** Cuts of one drafting step compare this, so a review finishing between two cuts does not stop the fold. */
@@ -272,6 +294,12 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
   if (!item || !source || source.profile !== 'large-original-v1' || item.card?.format !== 'geojson'
     || Number(source.bytes) > limits.sourceBytes) return null;
   const store = await largeStoreTx(client, item, sourceId);
+  const check = source.inspection?.intakePrefixSealCheck;
+  if (store.recipe?.plan_version === 'streamed-prefix-mapping/1' && store.mapping && store.profile?.layout_profile
+    && typeof check?.changed === 'boolean' && check.key === prefixSealCheckKey(store.recipe.plan_hash!,
+      store.profile.layout_profile.generationHash, store.mapping.job_id)) {
+    store.prefixCheck = check.changed ? 'changed' : 'matched';
+  }
   const retries = await intakeLargeRetriesTx(client, item);
   // Zero retries leaves the key as it was, so stored step jobs keep their ids.
   return { item, source, store, key: fingerprint({ ...keyInputs(store), unreviewed: store.unreviewed,
@@ -388,7 +416,8 @@ export function intakeLargeRows(store: IntakeLargeStore, source: IntakeLargeSour
   return { reader: store.reader, profile: store.profile, mapping: store.mapping,
     receiptVerified: Boolean(store.reader) && isRetainedMapOriginal(source)
       && receipt?.rawJobId === store.reader?.job_id,
-    recipeState: store.recipe?.state ?? null, publishedPackages: store.parts, foldComplete: false };
+    recipeState: store.recipe?.state ?? null, prefixRecipe: store.recipe?.plan_version === 'streamed-prefix-mapping/1',
+    prefixCheck: store.prefixCheck, publishedPackages: store.parts, foldComplete: false };
 }
 
 export function intakeLargePlan(recipe: IntakeLargeStore['recipe']) {
@@ -423,13 +452,18 @@ export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLarge
     return { state: 'failed_part', placement: 'not_understood', planRef, ...numbers,
       limitReason: intakeLargeFailureReason(code ?? 'STREAMING_WORKER_ERROR', failure.bytes, failure.crsWords) };
   }
-  if (phase === 'question') return { state: 'probed', placement: 'needs_answer', planRef: null, ...numbers,
-    limitReason: INTAKE_LARGE_LAYOUT_QUESTION };
+  if (phase === 'question') return { state: 'probed', placement: 'needs_answer',
+    planRef: store.profile?.layout_profile ? { layoutProfile: store.profile.layout_profile } : null, ...numbers,
+    limitReason: rows.prefixCheck === 'changed' ? 'A field used by the first-part layout changed or could not be read '
+      + 'as stated. Nothing was drafted. State the layout again for the complete file.'
+      : INTAKE_LARGE_LAYOUT_QUESTION };
   if (phase === 'layout' || phase === 'map' && !rows.mapping) return { state: 'planned', placement: 'undecided',
     planRef, ...numbers, limitReason: null };
+  const prefixWords = phase === 'map' && rows.prefixRecipe
+    ? 'The layout is being applied while the file is read. Packages wait for the complete file to be checked.' : null;
   return { state: 'reading', placement: store.parts ? 'on_map' : 'undecided',
     planRef: phase === 'start' || phase === 'read' ? null : planRef, ...numbers,
-    limitReason: phase === 'draft' ? waitingWords(store) : null };
+    limitReason: phase === 'draft' ? waitingWords(store) : prefixWords };
 }
 
 /** After the last cut; a file with no cut rests not understood with the same counts. */
