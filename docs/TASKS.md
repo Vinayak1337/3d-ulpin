@@ -106,7 +106,7 @@ Recompute each sha256 and compare it to the sibling receipt. Take the licence, U
 
 ### S2.2 Practice kit part 2: acquire the missing files (large raster, large points, 1 GB vector, real 3D/DXF/DOCX)
 
-Size M, this PC: data drive. After: S2.1. **Status: open. Lead note 24 Oct: also fetch one public scanned plan PDF above 16 MiB under a stated licence (S2.1 has none; S5.9 needs one).**
+Size M, this PC: data drive. After: S2.1. **Status: running codex (24 Oct). Lead note 24 Oct: also fetch one public scanned plan PDF above 16 MiB under a stated licence (S2.1 has none; S5.9 needs one).**
 
 - **What:** Fetch about 5 public originals without login, form or CAPTCHA into E:/BhuAayam-data/datasets/practice-kit-20261024/. Each gets a sibling receipt: issuer, URL, date, sha256, licence, geography, CRS. Gaps to fill:
 - a COG orthophoto of 300 MB to 1 GB (e.g. OpenAerialMap, CC BY 4.0)
