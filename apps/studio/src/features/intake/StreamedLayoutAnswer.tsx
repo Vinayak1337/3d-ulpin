@@ -2,28 +2,38 @@ import { Banner, Skeleton } from '@ulpin/ui';
 import type { IntakeItem } from './batch-model';
 import type { Recipe } from './layout-model';
 import type { Choices } from './question-model';
-import { useStreamedProfile } from './streamed-queries';
-import { inventoryWords, streamedIdentifierPaths, streamedIdentifierWords, streamedNamePaths, streamedQuestionBody,
-  streamedSummary, type Inventory } from './streamed-question-model';
+import { useStreamedGeneration, useStreamedProfile } from './streamed-queries';
+import { changedPrefixWords, inventoryWords, prefixWords, questionInventory, streamedIdentifierPaths,
+  streamedIdentifierWords, streamedNamePaths, streamedQuestionBody, streamedSummary,
+  type Inventory } from './streamed-question-model';
 import { AnswerForm, type Command } from './LayoutAnswer';
 import { ChoiceError, FieldChoice, KindField } from './QuestionFields';
 import styles from './Batch.module.css';
 
 const noHeight = 'A height is not stated for large files yet; heights stay unknown.';
 
-/** A large file's question is answered from its sealed streamed inventory. */
+/** A large file's question is answered from its sealed streamed inventory, or from the provisional generation
+ * that covers the first part read when the item's question names one. */
 export function StreamedLayoutAnswer({ caseId, item, receipt, command }: {
   caseId: string; item: IntakeItem; receipt?: Recipe; command: Command;
 }) {
-  const status = useStreamedProfile(caseId, item.sourceId ?? '', item.streamedProfileJobId ?? '', item.updatedAt);
-  const waiting = status.data ? inventoryWords(status.data) : null;
-  const inventory = waiting ? null : status.data?.latest;
+  const sourceId = item.sourceId ?? '', jobId = item.streamedProfileJobId ?? '';
+  const firstPart = prefixWords(item);
+  const status = useStreamedProfile(caseId, sourceId, jobId, item.updatedAt);
+  const generation = useStreamedGeneration(caseId, sourceId, jobId,
+    firstPart ? item.layoutProfile?.generation ?? null : null);
+  const waiting = status.data ? inventoryWords(status.data, Boolean(firstPart)) : null;
+  const inventory = status.data && !waiting ? questionInventory(item, status.data, generation.data) : null;
   // The inventory's own case revision: the case may have advanced since it was queued.
   const pin = status.data;
+  const changed = changedPrefixWords(item);
+  const error = status.error ?? generation.error;
   return <>
-    {status.isPending ? <Skeleton /> : null}
-    {status.error ? <Banner tone="danger">{status.error.message}</Banner> : null}
+    {status.isPending || firstPart && generation.isPending ? <Skeleton /> : null}
+    {error ? <Banner tone="danger">{error.message}</Banner> : null}
+    {changed ? <Banner tone="warning">{changed}</Banner> : null}
     {waiting ? <p>{waiting}</p> : null}
+    {firstPart && !waiting ? <p>{firstPart}</p> : null}
     {inventory && pin ? <AnswerForm receipt={receipt} command={command}
       summary={choices => streamedSummary(choices, inventory.geometryTypes)} help={() => noHeight}
       body={choices => streamedQuestionBody(inventory, choices, pin, receipt?.revision ?? 0, '')}
