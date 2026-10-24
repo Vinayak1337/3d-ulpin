@@ -184,7 +184,7 @@ Size M, this PC: runtime. After: S3.1 (exit and pool fields); runtime check afte
 
 ### S3.4 Large batch files: ask the layout from the first profile part, map while the reader continues
 
-Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if the merge is late. **Status: running 25 Oct (codex, from int3-pre c504eb64). Run 1 (e3d50609) proved later compatible chunks map under prefix pins and drift is held; it stopped on the drafting guards. Lead decision: drafting before the seal moves to S3.5; here the question comes early, mapping runs while reading, and at the seal a matching prefix approval drafts at once with no second question. Resumed with proved-area-part.ts (approvedPartLayoutTx) and intake-ledger.ts (one question field) added.**
+Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if the merge is late. **Status: done 25 Oct (merged into task/int3-pre, contract and pins e9728a87; server set 940 pass, 4 skipped). A large GeoJSON asks its layout from the first published profile part (IntakeItem.layoutProfile says provisional or sealed), maps under the prefix approval while reading, and at closure drafts with no second question only if every used path still matches and no used path was held; otherwise it asks again over the complete file. Whole-file and duplicate-key drafting guards unchanged. Studio answer: S3.6.**
 
 - **What:** The batch path waits for the whole file to be read and the profile sealed before asking the layout (intake-large.ts:133-135). That is up to 80 min for 1 GiB (streaming-vector.ts:11-17), so first features in 60 s is impossible. Reuse the existing prefix route; no new format.
 1. Confirm with a test what prefix admission does with chunks after the observed prefix.
@@ -197,7 +197,7 @@ Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if th
 
 ### S3.5 Large batch files: drafts follow mapped parts so the first part reaches the map early
 
-Size M, code only. After: S3.4 (same files; sequential). **Status: open.**
+Size M, code only. After: S3.4 (same files; sequential). **Status: running 25 Oct (codex, from int3-pre e9728a87). Lead decision: instead of packages before the seal, a display-only preview of the outlines read so far (new read-preview route; no properties, no record, never reviewed); packages still wait for the whole file. The lead note below is replaced by this.**
 
 - **What:** Drafting starts only in the draft phase, after every chunk is mapped (intake-large.ts:136-141; intake-large-worker.ts:370-372). REH15 measured approve-to-first-map at 310 s. Let the draft step consume each mapped part as it is published, under the existing INTAKE_UNFINISHED_PACKAGE_LIMIT. partsDone and partsPlanned stay truthful while mapping continues, and the end projection still waits for the sealed mapping.
 - **Lead note (25 Oct, from S3.4 run 1):** drafting today needs whole-file closure: assertClosedMappingTx (intake-part-draft.ts:26-50) wants closed raw and mapped jobs with matching counts, and a key duplicated anywhere keeps both copies out of a package; loadPartFeatures and prepareProvedAreaPartTx (proved-area-part.ts:100-140) want the closed original and its sealed receipt. The rule for parts drafted before the seal: they are drawn on the map as provisional and cannot be confirmed until the mapping closes; at the close, a package holding a key that a later chunk duplicated is withdrawn with plain words and its other features are cut again. Add intake-part-draft.ts and proved-area-part.ts to the files.
