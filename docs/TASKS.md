@@ -13,8 +13,9 @@ line numbers refer to that commit. Before writing a task file the lead reads the
   staying up, the reading card and the cheap UI fixes, then drawing and linking.
 - **Capacity.** At most three workers at once; only one of them uses this PC's runtime, Docker or GPU (the "this PC"
   tasks marked runtime, Docker or GPU). Data-drive tasks run locally but do not take that slot.
-- **Spawner.** "code only" tasks go to pi codex-pool first (or the CLI), and to a cloud agent only when both are out of
-  limit and the base is pushed. "this PC" tasks go to the Claude CLI or codex, never the cloud.
+- **Spawner.** Only Claude CLI and pi codex workers ([WORKING-RULES.md §2](WORKING-RULES.md#2-who-does-the-work)).
+  UI tasks (step 7, and any task changing `apps/studio`, `packages/ui` or `packages/scene`) go to the Claude CLI; other
+  "code only" tasks go to codex first; "this PC" tasks go to the CLI or codex. No cloud agents.
 - **Tests.** Each task names the existing test files that guard what it touches. Run those, plus the standard checks of
   [WORKING-RULES.md §5](WORKING-RULES.md#5-tests-and-evidence). Nothing else.
 - **Shared files** have one writer at a time, in the order the tasks give: `packages/contracts/src/usp/intake.ts`
@@ -73,7 +74,7 @@ Size L, this PC: Docker. After: S1.2. **Status: open.**
 
 ### S1.4 Lead: merge task/int3-pre into staging and regenerate pins
 
-Size S, code only (cloud allowed). After: S1.1, S1.3 (verdict), S3.1, S3.2. **Status: open.**
+Size S, code only. After: S1.1, S1.3 (verdict), S3.1, S3.2. **Status: open.**
 
 - **What:** Lead-only integration, done when S1.1 is green and S1.2/S1.3 give no reason to fall back to staging. The step 0 paperwork is already on staging and was merged into task/int3-pre on 23 October. Merge task/int3-pre (with the S1.1, S3.1 and S3.2 commits) into staging, then regenerate docs/api/source-pins.json, openapi and the api-client types (WORKING-RULES section 4). Point the comment at packages/server/src/modules/cases/dispatch-lanes.ts:5 to docs/design/INGESTION-ARCHITECTURE.md in the same merge, since the pins are regenerated anyway. Push staging. From then on tasks are cut from staging. Fallback if the rehearsal fails: stay on staging and fix only the failing item on int3.
 - **Files:** E:/Projects/3d-ulpin (staging); scripts/api/check.py:130-138 (docs/api/*.md link check); scripts/api/refresh-contract.ts; docs/api/source-pins.json; packages/server/src/modules/cases/dispatch-lanes.ts:5
@@ -135,7 +136,7 @@ Why the API exited under load is unknown (its log is private and no exit code is
 
 ### S3.1 Record why the API or dispatcher exits, and API pool pressure
 
-Size S, code only (cloud allowed). After: none (cut from 0aecb4f8; runs in parallel with S1.1 and S3.2). **Status: open.**
+Size S, code only. After: none (cut from 0aecb4f8; runs in parallel with S1.1 and S3.2). **Status: open.**
 
 - **What:** REH15's three API exits could not be explained because stderr goes only to the private runtime log (processes.mjs:56-60) and no exit code is kept. Add exit hooks to the API and dispatcher (exit, uncaughtException, unhandledRejection, SIGTERM). Each hook appends one JSON line to a file named by a new env var that processes.mjs sets to E:/ulpin-tmp/<runtime>/<label>-exit.jsonl. The line holds only: code, signal, error name or AppError code, the first in-repo stack frame as file:line, uptime, rss, heapUsed and heap limit. No message text, the same rule as keepWorkerError (processing.ts:94-104). Make dispatcher.ts:28-34 log the error code instead of always saying 'cannot reach the application database'. Add the pool's totalCount, idleCount and waitingCount to the health response.
 - **Files:** apps/api/src/main.ts:34-60; scripts/dispatcher.ts:6-45; scripts/platform/processes.mjs:49-74; scripts/platform/demo-config.mjs:509-512 (safeEnvironment); apps/api/src/foundation/foundation.controller.ts (health); packages/server/src/infrastructure/db.ts:22-39
@@ -144,7 +145,7 @@ Size S, code only (cloud allowed). After: none (cut from 0aecb4f8; runs in paral
 
 ### S3.2 Bound in-process dispatcher reservations by the Node heap limit
 
-Size S, code only (cloud allowed). After: none (parallel with S1.1, S3.1; disjoint files). **Status: open.**
+Size S, code only. After: none (parallel with S1.1, S3.1; disjoint files). **Status: open.**
 
 - **What:** dispatchMemoryBudgetMiB defaults to half of RAM, 16,231 MiB here (dispatch-lanes.ts:141-143). Every in-process worker shares one Node heap with heap_size_limit 4,288 MiB, and REH16 saw the dispatcher at 3,018 MB. Keep the machine budget for jobs the processor container runs. Add a second budget for in-process holds (rows without processor:true): v8 heap_size_limit less a stated reserve. Admit an in-process job only when both budgets fit. Never raise a lane cap.
 - **Files:** packages/server/src/modules/cases/dispatch-lanes.ts:104-143 (dispatchInProcessOperations, dispatchCost, dispatchMemoryBudgetMiB), 168-225 (fits, DispatchReservations.admit); packages/server/src/modules/cases/processing.ts:366-369 (budget call)
@@ -162,7 +163,7 @@ Size M, this PC: runtime. After: S3.1 (exit and pool fields); runtime check afte
 
 ### S3.4 Large batch files: ask the layout from the first profile part, map while the reader continues
 
-Size L, code only (cloud allowed). After: S1.4 (cut from merged staging), or from int3-pre if the merge is late. **Status: open.**
+Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if the merge is late. **Status: open.**
 
 - **What:** The batch path waits for the whole file to be read and the profile sealed before asking the layout (intake-large.ts:133-135). That is up to 80 min for 1 GiB (streaming-vector.ts:11-17), so first features in 60 s is impossible. Reuse the existing prefix route; no new format.
 1. Confirm with a test what prefix admission does with chunks after the observed prefix.
@@ -175,7 +176,7 @@ Size L, code only (cloud allowed). After: S1.4 (cut from merged staging), or fro
 
 ### S3.5 Large batch files: drafts follow mapped parts so the first part reaches the map early
 
-Size M, code only (cloud allowed). After: S3.4 (same files; sequential). **Status: open.**
+Size M, code only. After: S3.4 (same files; sequential). **Status: open.**
 
 - **What:** Drafting starts only in the draft phase, after every chunk is mapped (intake-large.ts:136-141; intake-large-worker.ts:370-372). REH15 measured approve-to-first-map at 310 s. Let the draft step consume each mapped part as it is published, under the existing INTAKE_UNFINISHED_PACKAGE_LIMIT. partsDone and partsPlanned stay truthful while mapping continues, and the end projection still waits for the sealed mapping.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-large.ts:130-160 (intakeLargePhase, intakeLargeNumbers); intake-large-worker.ts:230-300,360-375 (draft, writeEndTx)
@@ -184,7 +185,7 @@ Size M, code only (cloud allowed). After: S3.4 (same files; sequential). **Statu
 
 ### S3.6 Studio: answer a prefix layout question, with words that say it covers the first part
 
-Size M, code only (cloud allowed). After: S3.4 (question shape). **Status: open.**
+Size M, code only. After: S3.4 (question shape). **Status: open.**
 
 - **What:** StreamedLayoutAnswer posts only to sealed recipes (streamed-queries.ts:21). When the item's question names a provisional profile, author and approve through the prefix-recipes routes. Words: the layout is taken from the first N features read; the rest is checked as it arrives. On a re-ask after the profile seals, show what changed.
 - **Files:** apps/studio/src/features/intake/StreamedLayoutAnswer.tsx; streamed-queries.ts; streamed-question-model.ts; question-model.ts; layout-command.ts
@@ -193,7 +194,7 @@ Size M, code only (cloud allowed). After: S3.4 (question shape). **Status: open.
 
 ### S3.7 Vector-lane readers start up to the lane cap, not one per process
 
-Size M, code only (cloud allowed). After: S3.2 (same file dispatch-lanes.ts); dispatch only if S1.3 still shows vector-lane queue time above execution time. **Status: open.**
+Size M, code only. After: S3.2 (same file dispatch-lanes.ts); dispatch only if S1.3 still shows vector-lane queue time above execution time. **Status: open.**
 
 - **What:** streaming-vector, streamed-profile, chunk-mapping and intake-large each have one module slot (processing.ts:46-50, 391, 475, 489, 547), although the vector lane allows 2 (dispatch-lanes.ts:27). unavailableOperations blocks a second start of a held operation (dispatch-lanes.ts:235-240). REH15 under load: queue 1,559.5 s against 15.1 s of execution. Replace those four singletons with per-operation sets bounded by the lane concurrency and the S3.2 heap budget. Fencing and attempts are unchanged.
 - **Files:** packages/server/src/modules/cases/processing.ts:45-50,385-395,475-500,545-552; packages/server/src/modules/cases/dispatch-lanes.ts:232-241
@@ -246,7 +247,7 @@ There is no per-file reading card today. Tables wait for a press before anything
 
 ### S4.1 Owner switch for Sarvam on judges' files: one gate for tables and map layers
 
-Size S, code only (cloud allowed). After: none (wave 1; disjoint from S4.2 and S4.3). **Status: open.**
+Size S, code only. After: none (wave 1; disjoint from S4.2 and S4.3). **Status: open.**
 
 - **What:** Judges' tables are always refused, because tabularTeacherPolicy swaps in CASE_ORIGINAL_TEACHER_REFUSED. A judge's GeoJSON reaches Sarvam whenever the gateway is on, because proposeIntakeLayout calls adaptive.propose with no case-original check. Add one setting from ULPIN_TEACHER_CASE_ORIGINALS: absent or off means refuse, masked_profile means allow. Both paths obey it with the same code and plain words. When allowed, a table uses the real teacher with split unlabelled, but never for licence restricted or containsPersonalData yes. Document the owner's one-line step in DEMO-GATEWAY.md.
 - **Files:** packages/server/src/infrastructure/config.ts:19-59 (getter beside dispatchMemoryMib); packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts:103-112 tabularTeacherPolicy; intake-draft-worker.ts:92-103 proposeIntakeLayout; chunk-mapping-worker.ts:166-176 propose (manual-geojson branch); adaptive-mapping-service.ts:28-56; packages/contracts/src/usp/ingestion.ts:154-162 (provenance fields, read only); docs/backend/DEMO-GATEWAY.md (one section)
@@ -258,7 +259,7 @@ Size S, code only (cloud allowed). After: none (wave 1; disjoint from S4.2 and S
 
 ### S4.2 Rules name clear field meanings before the student and the teacher
 
-Size M, code only (cloud allowed). After: none (wave 1). **Status: open.**
+Size M, code only. After: none (wave 1). **Status: open.**
 
 - **What:** Memory is empty on a fresh runtime and the student commits no correct field, so judge columns end unanswered. Add mapping-rules.ts: header rules (English and common Hindi words) plus the existing value shapes and declared unit, giving canonical targets each with a rule name. A quantity needs a stated unit, a storey count needs a count header, and no two columns may get one target. Call it in proposeMapping after memory and before callStudent, so only unmatched columns reach the student and teacher. Add source 'rule' and method rule:<name>@1 to the contracts and an optional ruleFields metric. Add Studio words for 'rule' and for the raw codes CASE_ORIGINAL_TEACHER_REFUSED and TEACHER_DATA_DENIED.
 - **Files:** new packages/server/src/modules/usp/ingestion/mapping-rules.ts; mapping-teacher.ts:705-873 (RoutingOptions, FieldSourceKind 711, remainingTeacher 780-792, routedSources 801-813, routedResult 815-838, proposeMapping 841-873); chunk-mapping-agent.ts:95-109 chunkMetrics; column-profile.ts:151-215 (read only); packages/contracts/src/usp/chunk-mapping.ts:16-24 (source enum line 19); packages/contracts/src/canonical/mapping-plan.ts:48-51 MappingMethodSchema; packages/contracts/src/usp/ingestion-events.ts:11-17; packages/contracts/src/canonical/targets.ts:65-200 (read only); apps/studio/src/features/intake/table/model.ts:11-60; table/LearnerPanel.tsx:18-55
@@ -272,7 +273,7 @@ Size M, code only (cloud allowed). After: none (wave 1). **Status: open.**
 
 ### S4.3 Reading card: contract, assembler and route for what a file is, what it holds and how it is drawn
 
-Size M, code only (cloud allowed). After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: open.**
+Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: open.**
 
 - **What:** The tray shows family, format, counts, CRS, extent and a reason, but never says in plain words what a file is or how it will be drawn. Add IntakeReadingSchema (intake-reading/1: what, holds[], fields[], drawing{as,words}, links[], question; each line has a basis: reader, memory, rule, sarvam or officer). Also add an optional one-line what on IntakeItem, computed from the row with no extra read. A new pure assembler builds what, holds, drawing and the open question from the row, its IntakeCard and source.inspection, reusing keptWords, zipParentWords and surfaceWords; fields and links stay empty here. Add GET cases/:caseId/intake/items/:itemId/reading under the item route's authority. The holds lines also show what the intake card already has but the Studio never shows (merged from the UI reader's S4.8): layers, geometry types, raster size and bands, point format and scale, format version, CRS words and extent. Unknown stays unknown; nothing is invented.
 - **Files:** packages/contracts/src/usp/intake.ts:205-249 (IntakeItemSchema; new IntakeReadingSchema after it); new packages/server/src/modules/usp/ingestion/intake-reading.ts; intake-ledger.ts:122-153 intakeItem; intake-service.ts:221-230 one() (add reading()); apps/api/src/modules/ingestion/ingestion.controller.ts:76-81; intake-draft.ts:73-173 (export keptWords only); intake-surface.ts:534-556 (export surfaceWords only)
@@ -287,7 +288,7 @@ Size M, code only (cloud allowed). After: none (wave 1; sole writer of contracts
 
 ### S4.4 A teacher field whose only fault is its rationale keeps its target as a question
 
-Size S, code only (cloud allowed). After: S4.2 (same file mapping-teacher.ts, one writer). **Status: open.**
+Size S, code only. After: S4.2 (same file mapping-teacher.ts, one writer). **Status: open.**
 
 - **What:** LP6 refused both live mapping plans, all 16 fields on fields.N.rationale. One digit, EPSG or 'coordinate' fails the schema, and retainValidFields then drops the field. SV3 changed only the prompt, and nothing live has passed since. Keep the rule unchanged. A field failing only its rationale keeps target, operation and confidence, with a code-owned rationale ('Withheld: the explanation stated a literal.') and issue TEACHER_RATIONALE_WITHHELD. It stays a question for the officer, and no literal reaches the stored plan. The lead approves this first: it changes SV3's consequence, not its rule.
 - **Files:** packages/server/src/modules/usp/ingestion/mapping-teacher.ts:86-109 (TeacherOutputSchema), 420-476 (unknownFields, validIsolatedField, retainValidFields), 557-562 acceptedResult; mapping-teacher-prompt.ts (read only); apps/studio/src/features/intake/table/model.ts:11-25 (one word line); docs/evidence/gf-ai/gateway/lp6/result.json (read only)
@@ -298,7 +299,7 @@ Size S, code only (cloud allowed). After: S4.2 (same file mapping-teacher.ts, on
 
 ### S4.5 A dropped table is read and proposed without a press when its layout is certain
 
-Size M, code only (cloud allowed). After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (teacher policy applies to the proposal). **Status: open.**
+Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (teacher policy applies to the proposal). **Status: open.**
 
 - **What:** A dropped CSV, TSV, XLSX or ODS rests as kept until the officer presses Read as a table. Its mapping jobs start from the browser, so its card has no field meanings until someone acts. When the selection is certain, queue the same server calls the press makes, from a job: tableFromOriginal, then StreamingVectorService.enqueue and ChunkMappingService.enqueue, as queueApprovedTabular does. Certain means a CSV or TSV (its only allowed header is row 1) or a one-sheet workbook with header row 1. A workbook with several sheets keeps the press, and its card names that question. The table section shows the read in progress instead of the press.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft.ts:147-173 (keptOnly, keptWords), 274-283 (route), 331-345 settleKeptTx; intake-draft-worker.ts:294-313 (job pattern); service.ts:677-700 tableFromOriginal; chunk-mapping-learning.ts:180-201 queueApprovedTabular (pattern, read only); packages/contracts/src/usp/ingestion.ts:136-146 (selection rule, read only); apps/studio/src/features/intake/BatchTableSection.tsx:36-80
@@ -310,7 +311,7 @@ Size M, code only (cloud allowed). After: S4.3 (keptWords export in intake-draft
 
 ### S4.6 Reading card fields: each field's meaning and where it came from
 
-Size M, code only (cloud allowed). After: S4.2, S4.3. **Status: open.**
+Size M, code only. After: S4.2, S4.3. **Status: open.**
 
 - **What:** Fill fields[] in the reading.
 - A table: meanings come from its stored first chunk-mapping proposal (plan and fieldSources); an approved recipe wins as officer.
@@ -328,7 +329,7 @@ Size M, code only (cloud allowed). After: S4.2, S4.3. **Status: open.**
 
 ### S4.7 Reading card holds lines for 3D models, IFC, PDFs and surfaces, from their stored readings
 
-Size M, code only (cloud allowed). After: S4.3; after S4.6 (same file intake-reading.ts). **Status: open.**
+Size M, code only. After: S4.3; after S4.6 (same file intake-reading.ts). **Status: open.**
 
 - **What:** The item already names its stored readings: native reader job for DXF, CityGML, CityJSON, glTF and OBJ; ifcJobId; the PDF's document reading; plan_ref.header for orthophotos and point clouds. Read these once in the reading route and turn them into holds and drawing lines: objects and types, storeys and spaces, pages and pages needing OCR, pixels, bands, points, stated CRS and vertical reference. Add the layers a conversion left out. Reuse the Studio's existing summary words where they exist; no reader runs again.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-reading.ts; intake-ledger.ts:144-150 (job ids on the item); intake-native-readers.ts; intake-native-omissions.ts; intake-ifc.ts; documents.ts readDocumentResult (read only); intake-surface.ts:534-556; apps/studio/src/features/intake/native/reading-model.ts:45-60 (read only)
@@ -341,7 +342,7 @@ Size M, code only (cloud allowed). After: S4.3; after S4.6 (same file intake-rea
 
 ### S4.8 The batch screen shows each file's reading card
 
-Size M, code only (cloud allowed). After: S4.3 merged with openapi.json and api-client types regenerated by the merger; field lines fill in after S4.6. **Status: open.**
+Size M, code only. After: S4.3 merged with openapi.json and api-client types regenerated by the merger; field lines fill in after S4.6. **Status: open.**
 
 - **What:** Add ReadingCard.tsx and reading-model.ts with a useReading query, shown first in ItemDetail; the tray's Contents cell shows the one-line what. The card lists:
 - what the file is and what it holds;
@@ -359,7 +360,7 @@ Values come only from the reading. This is the single writer of ReadingCard.tsx.
 
 ### S4.9 The one officer question opens with the card's answers filled in
 
-Size M, code only (cloud allowed). After: S4.6, S4.8. **Status: open.**
+Size M, code only. After: S4.6, S4.8. **Status: open.**
 
 - **What:** LayoutAnswer and the streamed answer start blank, and table placement assumes no EPSG. Fill them from the reading:
 - identifier: the building.sourceKey field, if identifierPaths allows it;
@@ -386,7 +387,7 @@ Size S, this PC: runtime. After: S4.4 merged into the served commit; the lead co
 
 ### S4.11 A large file or cell batch with an already-approved layout needs only one confirmation
 
-Size M, code only (cloud allowed). After: S4.9. **Status: open.**
+Size M, code only. After: S4.9. **Status: open.**
 
 - **What:** A large GeoJSON's layout is officer-only: streamed recipes have no memory, while small files reuse approved recipes whose paths are contained. So every cell batch of a wide file and every converted layer asks the same question again. Reuse the containment check against the streamed profile paths to fill the streamed answer from the operator's newest approved recipe, shown as 'from memory'. Approval stays the officer's press. Cut candidate.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:51-90 (export profileContained logic); streamed-mapping.ts:120-160; intake-large.ts:380-397 intakeLargePlan; intake-ledger.ts:98-110 (cell batches, read only); intake-reading.ts; apps/studio/src/features/intake/StreamedLayoutAnswer.tsx
@@ -397,7 +398,7 @@ Size M, code only (cloud allowed). After: S4.9. **Status: open.**
 
 ### S4.12 After the owner's yes, Sarvam names the remaining map-layer field meanings
 
-Size M, code only (cloud allowed). After: S4.1, S4.2, S4.6; switched on only after the owner's yes on PLAN Needs you 3. **Status: open.**
+Size M, code only. After: S4.1, S4.2, S4.6; switched on only after the owner's yes on PLAN Needs you 3. **Status: open.**
 
 - **What:** Map layers reach Sarvam only through the building-key proposal, which takes only EPSG:4326 building polygons. Every other property stays unknown or rule-named. In the intake draft job, after memory and rules: profile the first 100 features as gis_attributes with masked samples, and call proposeMapping (teacher only under the S4.1 switch). Store the routed result in an operations row keyed by item and source revision. The reading shows those fields as Sarvam, not confirmed. Cut candidate.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:119-135 preparedProposal; column-profile.ts:93-102 maskColumnSample, 255-265 profileGisAttributes; mapping-teacher.ts:841-873 (call only); adaptive-mapping.ts:148-150 (read only); intake-reading.ts (read the stored row)
@@ -415,7 +416,7 @@ The map draws polygons only: lines, pins and table points are kept but never dra
 
 ### S5.1 Draw recorded and proposed lines and pins on the map
 
-Size M, code only (cloud allowed). After: S1 (int3-pre merged into staging). Parallel with S5.3, S5.4, S5.7, S5.8 (disjoint files). **Status: open.**
+Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3, S5.4, S5.7, S5.8 (disjoint files). **Status: open.**
 
 - **What:** The map draws polygons only. Road and utility layouts already accept lines and points, so KML paths and placemarks, road centrelines and lon/lat table rows become records the map never draws. Add optional lines and pins to BaseFeatureInput. Draw them in the existing base batches: one LineSegments object for lines and one Points object for pins, built in rebuildBaseLines, and include them in baseBounds. toBase should pass LineString, MultiLineString, Point and MultiPoint geometry for non-building kinds, and undrawnNote then counts only features that have no geometry. Display only: no picking or geometry change.
 - **Files:** packages/scene/src/types.ts:45-58 (BaseFeatureInput); packages/scene/src/engine.ts:53-60 (BaseBatch), 554-705 (setBase, addBaseEntry, rebuildBaseLines, baseLines), 2081 (baseBounds), 2180-2200 (ringLines, lines); apps/studio/src/features/map/footprints.ts:45-83 (toBase, convertBase), 150-185 (polygonsOf, undrawnNote)
@@ -424,7 +425,7 @@ Size M, code only (cloud allowed). After: S1 (int3-pre merged into staging). Par
 
 ### S5.2 The display window sends lines and pins
 
-Size S, code only (cloud allowed). After: S5.1 (BaseFeatureInput lines and pins). **Status: open.**
+Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: open.**
 
 - **What:** Large areas are drawn through GET /api/v1/areas/{areaId}/display-window. Its outline() keeps polygons only, its feature schema has only polygons, and windowScene skips a feature with no polygons, so lines and pins vanish in window mode even after S5.1. Add optional lines and pins to AreaWindowFeatureSchema, fill them next to outline() from the same local GeoJSON, and pass them to the scene in windowScene. The merger regenerates openapi.json and the api-client.
 - **Files:** packages/contracts/src/area.ts:356-365 (AreaWindowFeatureSchema); packages/server/src/modules/areas/area-display-window.ts:120-147 (row mapping, outline); apps/studio/src/features/map/areaWindow.ts:41-52 (windowScene)
@@ -433,7 +434,7 @@ Size S, code only (cloud allowed). After: S5.1 (BaseFeatureInput lines and pins)
 
 ### S5.3 NDJSON and GeoJSON text sequences take the large GeoJSON path
 
-Size L, code only (cloud allowed). After: S1. Parallel with S5.1, S5.4, S5.7, S5.8. In intake-draft.ts it owns lines 222-310 only. **Status: open.**
+Size L, code only. After: S1. Parallel with S5.1, S5.4, S5.7, S5.8. In intake-draft.ts it owns lines 222-310 only. **Status: open.**
 
 - **What:** A batch NDJSON or RS-framed GeoJSON sequence is probed as a vector, but no reader takes it. Only geojson cards reach the streaming reader, the item rests on the words Drafting accepts only a retained GeoJSON recipe original, and the large step always asks for feature-collection framing. Add a geojson-lines framing (one Feature per LF-ended line) to the existing reader next to geojson-seq-rs. Route ndjson and geojson-seq vector cards to the large path with their framing. Let the sealed map receipt accept a sequence, using the RFC 7946 lon/lat reference already used for a collection with no crs member. A record that is not a Feature is quarantined with words. Add forecast words for .ndjson, .geojsonl and .geojsons. The merger regenerates openapi.json.
 - **Files:** packages/contracts/src/usp/streaming-vector.ts:29 (StreamingVectorFramingSchema); packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:130-176 (readStreamingFeatures); streamed-map-receipt.ts:19-23, 63-67; streaming-vector-worker.ts:67-74, 174, 277-344 (receipt and holdCollection by framing); streaming-vector.ts:150-152; intake-large-worker.ts:136-141 (startReaders framing); intake-draft.ts:222-232 (intakeReaderRoute), 273-310 (queueIntakeDraftTx retainedGeojson); apps/studio/src/features/intake/upload-model.ts:83-115
@@ -451,7 +452,7 @@ Size M, this PC: data drive. After: S1. Parallel with S5.1, S5.3, S5.8. S5.5 fol
 
 ### S5.5 Native GIS conversion takes originals up to 1 GiB
 
-Size M, code only (cloud allowed). After: S5.4 (same file, native_gis.py). **Status: open.**
+Size M, code only. After: S5.4 (same file, native_gis.py). **Status: open.**
 
 - **What:** GeoPackage, shapefile (ZIP or loose set), KML and KMZ in a batch convert only up to 128 MiB of source and 128 MiB per derivative, and the server waits at most 10 minutes for a conversion, against the owner's 1 GB file and 500,000-feature layer. Raise the source and derivative bounds to STREAMING_VECTOR_LIMITS.sourceBytes (1 GiB). Scale the conversion request timeout with streamingReadMs of the source bytes, keeping the heartbeat. Update NATIVE_GIS_LIMITS and the tray and forecast words. Reading stays one window at a time. The words say layers enter the map path once the whole conversion ends.
 - **Files:** services/geo/geo/native_gis.py:359-361, 1195-1200 (_pins), 1218-1219 (_set_parts); packages/contracts/src/upload-reader-limits.ts:16-17 (NATIVE_GIS_LIMITS); packages/server/src/modules/usp/ingestion/intake-native-derivative-worker.ts:21-30, 105-115; intake-native-derivative.ts:41, 265-275 (words); apps/studio/src/features/intake/upload-model.ts:96-100
@@ -496,7 +497,7 @@ Size L, this PC: runtime. After: S1, S2 (a scanned PDF above 16 MiB in the pract
 
 ### S5.10 A DOCX in a batch is read by the document reader
 
-Size M, code only (cloud allowed). After: S5.9 (same PDF section of intake-draft.ts). It may run before S5.9 if S5.9 has not started. **Status: open.**
+Size M, code only. After: S5.9 (same PDF section of intake-draft.ts). It may run before S5.9 if S5.9 has not started. **Status: open.**
 
 - **What:** A DOCX is recognised, but it rests as kept-only with the words that no batch reader takes it, although the document reader already extracts DOCX text. Send a batch DOCX to queueBatchDocumentTx with its own format instead of the fixed pdf. Settle it with paragraph words, the way batchPdfSettlement does: a passage naming floors or rooms is a candidate cited to its paragraph. Show its passages in the batch item through BatchPdfSection, without pages or OCR. Add a forecast entry. This is cut-list item 5, so it goes last.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft.ts:109 (batchPdf), 156-174 (keptOnly, keptWords), 273-280, 364-460 (queue and settle); documents.ts:63-77 (queueBatchDocumentTx format); document-native.ts:64-80 (read only); apps/studio/src/features/intake/BatchPdfSection.tsx:15-25; pdf-reading.ts; upload-model.ts:83-115
@@ -514,7 +515,7 @@ Size M, this PC: data drive. After: Step 1: the base rehearsal shows the act 1 T
 
 ### S5.12 Batch screen draws a kept raster or point cloud in its own frame when it is not on the map
 
-Size M, code only (cloud allowed). After: None: it works with today's readers. Can run in parallel with S5.11, S5.13 and S5.14 (Studio files only). **Status: open.**
+Size M, code only. After: None: it works with today's readers. Can run in parallel with S5.11, S5.13 and S5.14 (Studio files only). **Status: open.**
 
 - **What:** A surface with no batch area, outside the area or with no stated CRS is read but never drawn: frameTx returns not_placed and the map layer exists only for the area's site. Add a surface preview to the batch item detail. It reuses the existing parts page, display read, artifact routes and decode worker, draws raster parts as one canvas mosaic by their sourceCorners and point parts as a top-down scatter, and shows the not-placed words plus 'display only'. No new route; nothing is placed.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:115-117 (mount beside IfcStructure and NativeReading); apps/studio/src/features/map/surface/api.ts (browserSurfaceIo, reused), parts.ts:19-22 (isSurfaceItem), decode.ts, pixels.ts:68-73, las.ts:15-31; new apps/studio/src/features/intake/surface/SurfacePreview.tsx and its test
@@ -550,7 +551,7 @@ Size M, this PC: data drive. After: S5.11 and S5.14 (contracts). Can run in para
 
 ### S5.16 Overview drawn under its tiles; all parts of a DEM or point cloud shaded on one range
 
-Size M, code only (cloud allowed). After: S5.15 (header and part 0 convention) and S5.11 (band min/max). The integrator regenerates openapi and the api-client. **Status: open.**
+Size M, code only. After: S5.15 (header and part 0 convention) and S5.11 (band min/max). The integrator regenerates openapi and the api-client. **Status: open.**
 
 - **What:** Ground pictures share one render order with the depth test off, so S5.15's overview can be drawn over its finer tiles. Each DEM part is also shaded by its own range and each point batch coloured by Z rank within that batch, so neighbouring parts do not match. Give SurfacePartInput an `under` flag (lower render order) for part 0 of a multi-part item. Carry one value range in the display read (the overview's band min/max for one-band rasters; the header Z bounds as raw integers for points; both kept in the plan header at the first accepted read), shade every part with it, and fall back to today's behaviour when it is absent.
 - **Files:** packages/scene/src/types.ts:95-103 (SurfacePartInput); packages/scene/src/engine.ts:2258-2288 (surfacePartObject); apps/studio/src/features/map/surface/parts.ts (part 0 flag, range pass-through), pixels.ts:41-73, las.ts:49-71, decode.ts; packages/server/src/modules/usp/ingestion/intake-surface.ts:376-388 (header range), 648-672 (surfacePartDisplayTx); packages/contracts/src/usp/intake.ts:617 (IntakeSurfaceDisplaySchema, optional valueRange)
@@ -586,7 +587,7 @@ Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned
 
 ### S5.20 IFC panel draws the storey outlines in their own frame
 
-Size S, code only (cloud allowed). After: S5.19 (artifact fields). **Status: open.**
+Size S, code only. After: S5.19 (artifact fields). **Status: open.**
 
 - **What:** The IfcStructure panel shows only the building, storey and space tree. Read S5.19's outlines from the accepted IFC artifact through the existing .../ifc/jobs/{jobId}/native route and draw them as SVG in the file's own frame, one per storey, with words saying they are not placed on the map. This is display only.
 - **Files:** apps/studio/src/features/intake/ifc/IfcStructure.tsx, structure-model.ts, useIfcStructure.ts, IfcStructure.module.css, IfcStructure.test.tsx
@@ -595,7 +596,7 @@ Size S, code only (cloud allowed). After: S5.19 (artifact fields). **Status: ope
 
 ### S5.21 glTF/GLB and OBJ drawn in their own frame in the reading panel
 
-Size M, code only (cloud allowed). After: None; can run in parallel with anything. Dispatch it last and drop it first: it is cut 1. **Status: open.**
+Size M, code only. After: None; can run in parallel with anything. Dispatch it last and drop it first: it is cut 1. **Status: open.**
 
 - **What:** glTF and OBJ readings appear only as words ('kept as evidence, not on the map', intake-native-readers.ts:132, 207-223), although each accepted artifact already holds projected positions and indices (native_gltf.py:603-616; native_obj.py:200-207). Add a small own-frame mesh preview to packages/scene (three.js is already a dependency) and show it in the NativeReading panel from the existing .../gltf/jobs/{jobId}/native and .../obj/jobs/{jobId}/native routes. It is flat-lit and can be orbited, with words: own frame, axes and units as the reading states, not placed.
 - **Files:** new packages/scene/src/model-preview.ts plus its export in packages/scene/src/index.ts; apps/studio/src/features/intake/native/NativeReading.tsx:17-48, useNativeReading.ts, reading-model.ts (positions and indices from the artifact); apps/api/src/modules/ingestion/gltf.controller.ts:70-77 and obj.controller.ts:70-72 (read only)
@@ -651,7 +652,7 @@ Each is a suggestion with its reason. Nothing is recorded and no match count is 
 
 ### S6.3 A suggested key or address link is declared in one press
 
-Size S, code only (cloud allowed). After: S6.2, S4.8. **Status: open.**
+Size S, code only. After: S6.2, S4.8. **Status: open.**
 
 - **What:** A key or address link on the card opens DeclareKey filled in:
 - the map anchor and field, the table item, selection and column;
@@ -667,7 +668,7 @@ The officer checks it and presses the existing declare button, and the existing 
 
 ### S6.4 The map can colour buildings by link outcome and count them
 
-Size S, code only (cloud allowed). After: S6.1. **Status: open.**
+Size S, code only. After: S6.1. **Status: open.**
 
 - **What:** Step 6 needs links shown on the map as well. Add a 'Link' option to the existing Colour by control, using FootprintInput.color as Colour by height does. Read the case's evidence page counts and candidate anchors (200 per page) and colour buildings by outcome: matched, several, conflicting, no match, none. The legend shows the counts as read, for example NYC act 1: 612 matched, 60 no match, 81 conflicting. Read only, no new route.
 - **Files:** apps/studio/src/features/map/MapSidebar.tsx:77-92 (colour options, key list); MapWorkspace.tsx:260-340 (colourBy, legend), 500-512 (options); useBuildingScene.ts:18-60; heightBands.ts (pattern); apps/studio/src/state/selection.ts (ColourBy type); packages/scene/src/types.ts:26-42 (color field, read only); apps/studio/src/features/intake/evidence/api.ts (useEvidencePage, reuse)
@@ -683,7 +684,7 @@ Problems proven from code and rehearsal screenshots: the batch table breaks word
 
 ### S7.1 Make ui-design-check scan the Studio
 
-Size S, code only (cloud allowed). After: none; parallel with S7.2, S7.3, S7.4, S7.5, S7.6, S7.7. **Status: open.**
+Size S, code only. After: none; parallel with S7.2, S7.3, S7.4, S7.5, S7.6, S7.7. **Status: done 24 Oct (with the apps/web removal).**
 
 - **What:** The skill's scan diffs only apps/web, so every 'scan exit 0' reported for an apps/studio change checked nothing. Point it at apps/studio/src, packages/ui/src and packages/scene/src as well as apps/web, print counts per path, and fix SKILL.md (trigger and steps name apps/web). WORKING-RULES §4 requires this report for every step-7 merge, so it goes first.
 - **Files:** .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs:1 (usage line), 12-19 (rules), 24 and 30 (the apps/web path), 48 (summary); .agents/skills/ui-design-check/SKILL.md:3, 12-15
@@ -692,7 +693,7 @@ Size S, code only (cloud allowed). After: none; parallel with S7.2, S7.3, S7.4, 
 
 ### S7.2 Batch table rows that fit at 1440 px
 
-Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: open.**
 
 - **What:** Cut the table from 10 columns to 5: File (name, kind and format in words, size in KiB/MiB/GiB), Status (state and placement in one line, the reason below it as help text, part progress), Holds (features, rows, pages or points with a unit), Coordinates (crsWords only; the raw native extent moves to the reading card, S4.8) and Next step. Remove the min-width and overflow-wrap:anywhere that split words into letters. Give every format named in intake-signatures a plain name, use 'Unknown' rather than 'Not known', and in the drop table replace raw bytes and 'Not applicable' with sizeWords and empty cells. Every value stays read from the item.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx:24-49 (columns; keep NextStep 52-76); apps/studio/src/features/intake/batch-model.ts:45-99 (stateWords, countWords:64-66, formatWords:86-91, sizeClassWords); apps/studio/src/features/intake/Batch.module.css:31-59; apps/studio/src/features/intake/IntakeDropDialog.tsx:51-63 (DropOutcomes); reuse sizeWords in upload-model.ts:57-61; the format list is packages/server/src/modules/usp/ingestion/intake-signatures.ts:276-285
@@ -701,7 +702,7 @@ Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.3, S7.4, 
 
 ### S7.3 Batch page empty states
 
-Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.2, S7.4, S7.5, S7.6, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.4, S7.5, S7.6, S7.7. **Status: open.**
 
 - **What:** Four fixes. (1) While a drop is uploading, the page says 'No files are enrolled in this batch.' under 'Retaining files: File 1 of 4' (REH16 a03); while an upload is pending it should say the files are being kept. (2) For a batch with no drafted buildings, show the recording panel as one line ('No buildings are drafted from this batch yet; they appear after a map layout is used') instead of eight zero counts, Refresh, 'Choose the first 100 ready', the filter and the confirmation box (REH14 act2-nr-dxf.png). (3) Show the Confirm panel only when a package can be confirmed. (4) Show Evidence by key only once a map item has drafted buildings. Act 1 behaviour, where buildings exist, is unchanged.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:124-146 (BatchRecords, line 144); apps/studio/src/features/intake/run/IntakeRunPanel.tsx:17-57; apps/studio/src/features/intake/run/model.ts:43-45 (hasNoBuildings), countsLine; apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:17-40 (its drafted rule at 37); the pending-upload state via batchUploadKey as read in BatchUploadProgress.tsx:16-19
@@ -710,7 +711,7 @@ Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.2, S7.4, 
 
 ### S7.4 Plain words from the server on the judges' path
 
-Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.2, S7.3, S7.5, S7.6, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.5, S7.6, S7.7. **Status: open.**
 
 - **What:** Rewrite four server strings in plain words, keeping every fact: licence unconfirmed, personal data unknown, how many features were left out and why, original unchanged. The strings are: the table-page limitations ('officer_supplied; licence unconfirmed; containsPersonalData unknown.', 'The D8 manifest omits held-out original hashes...'), the quarantine toast ('INVALID_GEOMETRY: Ring Self-intersection[...]'), the record-page 'canonical geometry qualification is unavailable' line, and the stop line that names an item UUID. Codes stay in their structured fields, not in the sentence. The table page's limitation list starts closed.
 - **Files:** packages/server/src/modules/usp/ingestion/tabular-source.ts:199-209 (admissionLimitations); packages/server/src/modules/areas/gis-quarantine.ts:3-10; packages/server/src/modules/officer/register-missing.ts:9-19; packages/server/src/modules/usp/ingestion/intake-evidence.ts:690-698; apps/studio/src/features/intake/table/SourceHeader.tsx:45-48 (details open)
@@ -719,7 +720,7 @@ Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.2, S7.3, 
 
 ### S7.5 Plain words in readings, layouts and packages
 
-Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7. **Status: open.**
 
 - **What:** Five fixes in the Studio: (1) Finding counts end in raw codes such as '(BOUNDARY_CONTACT)' (REH16 a16): drop the code. (2) Each package is headed by its UUID and 'Revision N' (a13): head it with its anchor item's file name (Package.anchorItemId to the manifest item name), with the id copyable in a caption. (3) The native reading prints nested values as JSON, 'Not stated (stored as null)' and 'result SHA-256', with tokens such as globalPlacement and axes (lead-queue NR4 note): show labelled lines and put hashes in closed details. (4) The layout lists 'This layout also states: version, mode...': drop that line and say the origin plainly. (5) 'Its review has not run yet.' and 'The package review has not run yet.' appear together (REH14 act2-mx1-keyed-layout.png): show the review line once.
 - **Files:** apps/studio/src/features/intake/run/Packages.tsx:5-43 (findingWords 5-13, line 20, heading 29, revision 37, reasons 33-35); apps/studio/src/features/intake/native/reading-model.ts:116-150; apps/studio/src/features/intake/native/NativeReading.tsx:38-49; apps/studio/src/features/intake/layout-model.ts:13-48; apps/studio/src/features/intake/LayoutQuestion.tsx:57-77
@@ -728,7 +729,7 @@ Size M, code only (cloud allowed). After: none; parallel with S7.1, S7.2, S7.3, 
 
 ### S7.6 The map reads lightly while a package streams
 
-Size M, code only (cloud allowed). After: none; parallel with S7.1-S7.5, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: open.**
 
 - **What:** Today, while a package streams, the map downloads it every 700 ms, re-reads the whole area every 5 s and invalidates every query in the app when the import settles. Three changes: (1) Count features by kind from context.displayFeatures by proposalPackageId, and take state and quarantine from context.packages, which are already polled, instead of the 700 ms GET of the whole package (every feature with three geometries). (2) Stop the 5 s re-reads of the area context and the canonical area once the package leaves RECEIVED, even if ?package= stays in the URL. (3) When it settles, invalidate only this area's and this batch's keys. The demo-import path (isDemoId, demo-import.ts:110) keeps working.
 - **Files:** apps/studio/src/features/map/ImportTray.tsx:16-66 (useSettled 17-24, poll 33-37, counts 43-48); apps/studio/src/features/map/MapWorkspace.tsx:71-75, 125, 397-401, 574-580 (MapImportTray); apps/studio/src/features/map/MapPage.tsx:39-43; apps/studio/src/api/queries.ts:228-260; apps/studio/src/features/map/canonicalScene.ts:66-80
@@ -737,7 +738,7 @@ Size M, code only (cloud allowed). After: none; parallel with S7.1-S7.5, S7.7. *
 
 ### S7.7 Header area switcher names the right area
 
-Size S, code only (cloud allowed). After: none; parallel with S7.1-S7.6. **Status: open.**
+Size S, code only. After: none; parallel with S7.1-S7.6. **Status: open.**
 
 - **What:** On batch and table pages the header names an unrelated area: REH15 'table page header named another case (Niagara Falls, Revision 0)', and REH16 act 1 the same. The switcher falls back to the remembered area or the first area on every route. Off map routes, show 'Choose an area' with no subtitle. Add the area's short id in mono to the subtitle and the menu, so two areas both named 'buildings original' (REH16 a03 against a09) can be told apart. A count of 0 shows as '0 features'.
 - **Files:** apps/studio/src/app/Frame.tsx:114-181 (areaSubtitle 114-116, fallback 122-123, label 144); apps/studio/src/app/Frame.module.css (areaMeta)
@@ -746,7 +747,7 @@ Size S, code only (cloud allowed). After: none; parallel with S7.1-S7.6. **Statu
 
 ### S7.9 One way from the batch to the map, and a map that says it is drawing
 
-Size M, code only (cloud allowed). After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merged first. **Status: open.**
+Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merged first. **Status: open.**
 
 - **What:** The table offers 'Open package' only when an item has plan.packageId, so there is no batch-level route to the map; the header Map link opens the last remembered area. Add one 'Open on the map' button in the batch header when a listed package names an areaId, or an item names existingAreaId. On the map, while ?package= is set and no footprint is drawn yet, show a floating line 'Drawing <file>: <n> features so far', using the S7.6 counts. That replaces the empty grey canvas in REH16 a09; today nothingToDraw is forced false whenever a package is set.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:79-87 (header); apps/studio/src/features/intake/batch-model.ts:19-23 (packagePath); apps/studio/src/features/intake/run/model.ts:7 (Package.areaId); apps/studio/src/features/map/MapWorkspace.tsx:145-148, 455-467; apps/studio/src/features/map/footprints.ts (drawnCountNote)
@@ -755,7 +756,7 @@ Size M, code only (cloud allowed). After: S7.6 (MapWorkspace.tsx) and S7.3 (Batc
 
 ### S7.11 Batch screen as a file list and one detail pane (wait for the owner's list)
 
-Size M, code only (cloud allowed). After: WAIT for the owner's five worst problems (PLAN Needs you 2); after S7.2, S7.3, S4.8. **Status: open.**
+Size M, code only. After: WAIT for the owner's five worst problems (PLAN Needs you 2); after S7.2, S7.3, S4.8. **Status: open.**
 
 - **What:** BatchPage stacks about a dozen sections in one scroll: the file table, PDF buttons, banners, the upload table, waiting files, the chosen file's detail (up to 7 sections), Evidence by key and the recording panels. The detail renders below the whole table. At desktop width, show the file list on the left, and on the right the chosen file's reading card, its question and its readings (one inspector per selection, design-system README Principles). Keep the selection in ?item= so a reload keeps it. Put the recording panels below as one 'Record buildings' section, drop the separate 'View PDF reading' buttons, and stack to one column at 200 %. Layout only; no new data.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:67-146 (state 70-78, PDF nav 139-143); apps/studio/src/features/intake/Batch.module.css; apps/studio/src/features/intake/IntakeTray.tsx:20-76 (selecting a row)
@@ -764,7 +765,7 @@ Size M, code only (cloud allowed). After: WAIT for the owner's five worst proble
 
 ### S7.12 ZIP and KML members listed under their file (wait for the owner's list)
 
-Size S, code only (cloud allowed). After: WAIT for the owner's list; after S7.11. **Status: open.**
+Size S, code only. After: WAIT for the owner's list; after S7.11. **Status: open.**
 
 - **What:** Members taken out of a ZIP or KML are separate rows, and only the reason text links them back ('Taken out of zp1-geojson-kml-csv.zip.', REH14 act2-zp1.png and REH15 zp2 words), although each item carries parentItemId. List members indented under their parent, collapsible above 10, with the parent's line giving how many files were taken out.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx; apps/studio/src/features/intake/batch-model.ts
@@ -773,7 +774,7 @@ Size S, code only (cloud allowed). After: WAIT for the owner's list; after S7.11
 
 ### S7.13 Add files: one dialog, a named batch, short forecasts (wait for the owner's list)
 
-Size M, code only (cloud allowed). After: WAIT for the owner's list; after S7.2 (IntakeDropDialog.tsx); forecast words follow step 5's drawing outcomes. **Status: open.**
+Size M, code only. After: WAIT for the owner's list; after S7.2 (IntakeDropDialog.tsx); forecast words follow step 5's drawing outcomes. **Status: open.**
 
 - **What:** A drop passes two dialogs, and the second's primary button stays disabled until 'New case name' is typed under 'Source case: Create an unassigned source case' (REH16 a02-forecast.png). Forecasts run to three sentences of reader limits, and say that DXF, glTF and OBJ readings are 'kept as evidence, not placed on the map'. Four changes:
 - Pre-fill an editable batch name from the first file name and today's date.
@@ -787,7 +788,7 @@ The rehearsal steps click 'Retain files and open batch' and 'New case name' (E:/
 
 ### S7.14 Map tools show only what the area holds (wait for the owner's list)
 
-Size S, code only (cloud allowed). After: WAIT for the owner's list; after S7.9 (MapWorkspace.tsx). **Status: open.**
+Size S, code only. After: WAIT for the owner's list; after S7.9 (MapWorkspace.tsx). **Status: open.**
 
 - **What:** Every area gets the same building tools. The Tools panel always offers the Area, Building, Floors, Findings and Underground views and the None, Rights, Utilities and Height colours, disabled when absent, plus the gestures line and 'Retire area'. The search says 'Find building…' even for an area of imagery or points (REH16 a09). Hide the views and colours the area has no data for, name the search after what the area holds, and lead with the layers list when the area holds only surfaces.
 - **Files:** apps/studio/src/features/map/MapWorkspace.tsx:470-520 (views 489-499, colourOptions 502-507); apps/studio/src/features/map/MapSidebar.tsx:1-130; apps/studio/src/features/map/BuildingSearch.tsx:65
@@ -824,7 +825,7 @@ Friday 30 to Saturday 31.
 
 ### S9.1 Fix the failures rehearsal 1 found
 
-Size M, code only (cloud allowed). After: S8.1. **Status: open.**
+Size M, code only. After: S8.1. **Status: open.**
 
 - **What:** The lead turns each S8.1 failure into a task under the step it belongs to (S3 to S7), in the cut order of PLAN.md, and dispatches them. Nobody who saw the closed kit's contents works on these fixes; the failures are described by format and symptom only.
 - **Files:** docs/evidence/step-8/s8-1/result.json; TASKS.md (new tasks added under their steps)

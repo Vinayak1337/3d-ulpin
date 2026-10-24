@@ -23,7 +23,7 @@ The revised hardening review (`~/Downloads/3D ULPIN Plan Review — Grand Finale
 | Topic | Decision |
 | --- | --- |
 | Frontend stack | **React + Vite + TypeScript** (user decision). Not Next.js |
-| Old frontend | `apps/web` is frozen legacy. Do not build new UI there and do not delete it; the backend lanes are still extracting code from it |
+| Old frontend | `apps/web` was removed on 24 October (owner). It is in Git history only |
 | Backend | NestJS API in `apps/api`, domain code in `packages/server`, SQL in `database/`, Python processors in `services/geo`. Built by the GPT-6 lanes, not by us |
 | Division of work | **Claude builds all frontend.** Backend, tiling and data work belong to the GPT-6 lanes. We never edit `apps/api`, `packages/server`, `database/` or `services/`; we report reproducible backend issues instead |
 | 3D viewer | **Three.js + [`3d-tiles-renderer`](https://github.com/NASA-AMMOS/3DTilesRendererJS)** behind our own scene engine module. No Cesium. Globe/ellipsoid mode for state and city views. Geography (CRS, datum, transforms) stays in the backend; the viewer receives positions relative to a local origin |
@@ -155,7 +155,7 @@ Keep these in `packages/api-client/src/draft/` as TypeScript types and OpenAPI f
 6. **Findings mode (S8/S10), S6 Underground, S13 Deviation, S14 Card + P4L,** switching from local to live as the backend cards land.
 7. **Rehearsal journeys** in Playwright; desktop light captures.
 
-Before handing off any UI change, run the repository's `ui-design-check` skill (`.agents/skills/ui-design-check`); it currently scans `apps/web` and needs retargeting to `apps/studio`.
+Before handing off any UI change, run the repository's `ui-design-check` skill (`.agents/skills/ui-design-check`); it scans `apps/studio/src`, `packages/ui/src` and `packages/scene/src`.
 
 ## 10. Settled in the planning conversation (26 September 2026)
 

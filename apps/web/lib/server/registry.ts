@@ -1,2 +1,0 @@
-/** Temporary compatibility export; implementation: packages/server/src/modules/registry/registry.ts. */
-export { bodyOnly, commitRegistryReview, commitRegistryReviewTx, createRegistryDraft, createSite, draftDetail, editDraftSchema, editRegistryDraft, listSites, openRegistryRing, prepareRegistryReview, querySchema, recordBodySchema, registryGeo, registryQuery, reserveRecord, resolveRecord, ringGeometry, siteDetail, siteFrom } from "@ulpin/server/modules/registry/registry";

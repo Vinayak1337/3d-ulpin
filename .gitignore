@@ -16,8 +16,6 @@ playwright-report/
 output/playwright/
 coverage/
 dist/
-apps/web/public/cesium/
-apps/web/public/pdf.worker.min.mjs
 *.tsbuildinfo
 
 fixtures/reference-neighborhood/installed.json

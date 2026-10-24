@@ -31,8 +31,8 @@ archived link is background only.
   private object storage, Redis/Celery, and Python processing in `services/`. Extend the one registry, job authority,
   model gateway and conversion contract; don't add competing services.
 - **Frontend:** `apps/studio`, `packages/scene`, `packages/ui`, `packages/api-client`. React, Vite and TypeScript with
-  Three.js and `3d-tiles-renderer` (no Next.js, no Cesium). `apps/web` is frozen legacy: don't add UI there or delete
-  it, and read `apps/web/AGENTS.md` before touching it. Desktop-first, light-only; keep keyboard, contrast and zoom.
+  Three.js and `3d-tiles-renderer` (no Next.js, no Cesium). The old Next.js app `apps/web` was removed on 24 October
+  (owner); it stays in Git history only. Desktop-first, light-only; keep keyboard, contrast and zoom.
   `design-mockup/` and [the design system](docs/design-system/README.md) are protected references; never copy their
   sample values.
 - **Design reference for intake:** [docs/design/INGESTION-ARCHITECTURE.md](docs/design/INGESTION-ARCHITECTURE.md).
