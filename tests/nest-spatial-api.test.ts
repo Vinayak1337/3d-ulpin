@@ -13,7 +13,6 @@ import { guardLocalRequest } from '../apps/api/src/common/request-context';
 import { setRuntimeLoopbackPort } from '../packages/server/src/infrastructure/loopback-host';
 import { saveSpatialDataset } from '../packages/server/src/modules/spatial/spatial-datasets';
 import { AppError } from '../packages/server/src/infrastructure/errors';
-import { GET as legacyCalibrationRead } from '../apps/web/app/api/v1/spatial/calibration/[kind]/[...asset]/route';
 
 // Resolve the API's public dependencies from its package, without changing any
 // package manifest or requiring a root dependency on Nest.
@@ -27,7 +26,7 @@ Module({ imports: [SpatialModule, AiModule] })(ValidationApp);
 // Concrete migration risk: wildcard scene URLs and disabled body parsing must
 // reach the intended native method and reject invalid input before service IO.
 // This check creates no operational records and never calls storage, DB or a provider.
-test('native spatial/AI routes publish all 28 operations and enforce non-stateful transport boundaries', async () => {
+test('native spatial/AI routes publish all 33 operations and enforce non-stateful transport boundaries', async () => {
   const app = await NestFactory.create(ValidationApp, { bodyParser: false, logger: false });
   let port = 0;
   app.use((request: any, response: any, next: () => void) =>
@@ -55,11 +54,6 @@ test('native spatial/AI routes publish all 28 operations and enforce non-statefu
     assert.match(intake.error.replacement, /import-packages/);
     const calibration = await request('/api/v1/spatial/calibration/garden/manifest.json', 410);
     assert.equal(calibration.error.code, 'RETIRED_SYNTHETIC_CALIBRATION');
-    const legacyCalibration = await legacyCalibrationRead(new Request(base + '/api/v1/spatial/calibration/garden/manifest.json'),
-      { params: Promise.resolve({ kind: 'garden', asset: ['manifest.json'] }) });
-    assert.equal(legacyCalibration.status, 410);
-    assert.equal(legacyCalibration.headers.get('Cache-Control'), 'no-store');
-    assert.deepEqual(await legacyCalibration.json(), calibration);
     const crossSite = await request('/api/v1/spatial-ml/status', 403, { headers: { 'Sec-Fetch-Site': 'cross-site' } });
     assert.equal(crossSite.error.code, 'CROSS_ORIGIN_READ');
     await request('/api/v1/spatial/calibration/unknown/manifest.json', 404);
@@ -81,13 +75,27 @@ test('native spatial/AI routes publish all 28 operations and enforce non-statefu
     const operations = Object.values(doc.paths).flatMap((entry: any) =>
       Object.values(entry).filter((operation: any) => operation?.operationId)) as any[];
     const ledger = JSON.parse(await readFile(new URL('../docs/orchestration/nestjs-operation-ledger.json', import.meta.url), 'utf8'));
-    const expected = ledger.operations.filter((operation: any) => operation.batch === 'NEST-13').map((operation: any) => operation.operationId).sort();
+    const addedIds = [
+      'POST_api_v1_spatial_ml_source_batches',
+      'GET_api_v1_spatial_ml_items_itemId_source_reviews',
+      'GET_api_v1_spatial_ml_items_itemId_source_reviews_context',
+      'GET_api_v1_spatial_ml_items_itemId_source_reviews_reviewId',
+      'POST_api_v1_spatial_ml_items_itemId_source_reviews',
+    ];
+    const published = JSON.parse(await readFile(new URL('../docs/api/openapi.json', import.meta.url), 'utf8'));
+    const added = Object.entries(published.paths).flatMap(([path, entry]: [string, any]) =>
+      Object.entries(entry).filter(([,operation]: [string, any]) => addedIds.includes(operation?.operationId))
+        .map(([method, operation]: [string, any]) => ({ path, method: method.toUpperCase(),
+          operationId: operation.operationId })));
+    assert.equal(added.length, addedIds.length);
+    const baselines = ledger.operations.filter((operation: any) => operation.batch === 'NEST-13').concat(added);
+    const expected = baselines.map((operation: any) => operation.operationId).sort();
     assert.deepEqual(operations.map(operation => operation.operationId).sort(), expected);
     for (const operation of operations) assert.ok(Object.keys(operation.responses).length, operation.operationId);
     const documented = Object.entries(doc.paths).flatMap(([path, entry]: [string, any]) =>
       Object.entries(entry).filter(([,operation]: [string, any]) => operation?.operationId)
         .map(([method, operation]: [string, any]) => ({ path, method: method.toUpperCase(), operationId: operation.operationId })));
-    for (const baseline of ledger.operations.filter((operation: any) => operation.batch === 'NEST-13')) {
+    for (const baseline of baselines) {
       const current = documented.find((operation: any) => operation.operationId === baseline.operationId);
       assert.equal(current?.method, baseline.method, baseline.operationId);
       assert.equal(current?.path, baseline.path, baseline.operationId);

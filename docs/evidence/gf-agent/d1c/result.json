@@ -1,0 +1,85 @@
+{
+  "task": "D1d", "continuationOf": "D1c", "gate": "GF-AGENT data prerequisite",
+  "status": "blocked_checkpoint", "taskThresholdsMet": false,
+  "branch": "task/d1c-property-tables", "baseline": "2432f8e4", "sprintTaskBaseline": "f5539916",
+  "startedAtUtc": "2026-10-10T09:22:39Z", "acquisitionStoppedAtUtc": "2026-10-10T10:08:00Z",
+  "acquisitionMinutes": 45.4, "stopReason": "Route comparison saturated; close the honest bounded checkpoint.",
+  "development": {
+    "families": 3, "files": 5, "labels": 0, "csvDerivatives": 3, "prefixDerivatives": 1,
+    "familyDetails": [
+      {"family": "mi-d22", "publisher": "Tamil Nadu Housing Board", "files": 2,
+       "names": ["schemes-yes.json", "schemes-no.json"], "format": "JSON object tables", "columnsPerFile": 90,
+       "rowsPerFile": [108, 102], "permission": "unconfirmed", "licence": "not stated", "purpose": "test_only"},
+      {"family": "mi-d23", "publisher": "Pune Municipal Corporation", "files": 2,
+       "names": ["pmc-library-inventory.xlsx", "pmc-office-inventory.xlsx"], "format": "XLSX", "columnsPerFile": 5,
+       "rowsPerFile": [56, 8], "permission": "unconfirmed", "licence": "not stated", "purpose": "test_only"},
+      {"family": "mi-d24", "publisher": "Microsoft", "files": 1,
+       "names": ["ms-india-demo-partition.csv.gz"], "format": "native gzip GeoJSONL, not CSV", "columnsPerFile": 3,
+       "rowsPerFile": [1187957], "permission": "confirmed", "licence": "CDLA-Permissive-2.0", "purpose": "test_only"}
+    ]
+  },
+  "newHeldout": {"families": 2, "files": 2, "columns": 4, "scorable": 2, "positiveTargets": 2,
+                 "truthAbsent": 2, "positiveCountsByTarget": {"building.footprint": 2}},
+  "targetShortfalls": {"developmentFamilies": 1, "heldoutFamilies": 1, "positiveTargets": 23},
+  "wholePack": {"originals": 44, "schemaFamilies": 31, "developmentFiles": 37, "heldoutFiles": 7},
+  "splitAssignmentSha256": "14b313184db20f8d8244680fd4b2fba7d7786c117651599e3d54f447f2847729",
+  "evaluatorSourcesSha256": "9a1aba1349b91280976db11f60406d64ec84b334431635bd1c04736c58961e47",
+  "a3TruthBytesUnchanged": true, "a3ReceiptGitBytesUnchanged": true,
+  "historicalA3": {"columns": 97, "scorable": 55, "positiveTargets": 0},
+  "originalEmptyCheckpointUnchanged": true,
+  "replacementTruthIsAdditive": true,
+  "teacherCalls": 0, "trainingWrites": 0, "memoryWrites": 0, "runtimeImports": 0, "modelEvaluations": 0,
+  "privacy": {
+    "selectedOriginalsScreened": true, "redactions": 0, "columnsDropped": 0,
+    "discoveryRetentionDefect": "Early discovery saved excluded public bodies/bytes before full privacy screening.",
+    "recovery": "Closed unqualified external discovery; no unsafe candidate admitted, no provider/teacher dispatch.",
+    "ownerActionRequired": "Reviewed exact-path disposition; do not dispatch task-data/d1c or provisional discovery."
+  },
+  "gaps": [
+    "Class A: inventory pages largely PDF-only, gated, transport-failing or contain personal contact identities.",
+    "Class B: attempted public RERA lists returned 403/404 or a non-table application shell; none admitted.",
+    "Class C: institutional-site XLSX qualified; building identity and expanded dictionary remain unverified.",
+    "Class D: native demo-area partitions over 200 MB skipped; public community API routes failed 406/500.",
+    "Two small documented native attribute queries qualified as candidate research, not official operational data.",
+    "Compound attribute cells have no single supported target; nested leaves were not expanded to inflate positives.",
+    "The source partition prefix is not a geographic clip or a second original/layout/family.",
+    "CSV intake, teacher profiling and runtime import remain unqualified; CSV derivatives are not native originals.",
+    "Catalogue builder KeyError: content and historical D1b fixed seal remain unowned pre-existing incompatibilities.",
+    "Unqualified external discovery retention requires owner-reviewed disposition before any further use."
+  ],
+  "failureRecovery": [
+    {"signature": "SESSION_EXPIRED / PUBLIC_AJAX_403", "baseline": "Anonymous POST returns expired session.",
+     "comparison": "One anonymous public-page cookie session using published search fields; no login or key.",
+     "result": "HTTP 403", "decision": "Stop that route; no authentication or repeated retry."},
+    {"signature": "NATIVE_PARTITION_OVER_200MB", "baseline": "One demo partition has 520344672 native bytes.",
+     "comparison": "Bounded documented public attribute query instead of whole native partition transfer.",
+     "result": "Small complete source responses retain all attributes and geometry; candidate semantics only.",
+     "decision": "Keep raw mirror provenance explicit; do not call vendor/community data official."},
+    {"signature": "PERSONAL_CONTACT_REGISTER", "baseline": "Public vacant-property table includes contact phones.",
+     "comparison": "Different ready-to-move inventory route, and municipal institutional site inventory.",
+     "result": "Contact-bearing authority file excluded; two clean institutional XLSX originals admitted.",
+     "decision": "No redaction/column dropping; all publisher layouts stay in one family."},
+    {"signature": "D1D_DISCOVERY_RETAINED_BEFORE_COMPLETE_PRIVACY_SCREEN",
+     "result": "Closed discovery safety receipt records the defect; selected pack is separate and screened.",
+     "decision": "Future screening must be transient and whole-file, including workbook metadata; owner disposition."}
+  ],
+  "verification": {
+    "verifyD1c": {"exitCode": 0, "scope": "Original/copy/prefix/derivative/split/freeze integrity, not acceptance."},
+    "a3FreezeCheck": {"exitCode": 0, "interpreter": "existing venv-k3a-geo; unchanged frozen Git bytes"},
+    "d1cFreezeCreate": {"exitCode": 0, "mode": "Additive truth; authorised pinned Git checkpoint receipt replacement"},
+    "d1cFreezeCheck": {"exitCode": 0}, "catalogueRegressionTest": {"exitCode": 0},
+    "ruffChangedPython": {"exitCode": 0}, "diffCheck": {"exitCode": 0},
+    "nativeGitBlobHashes": {"exitCode": 0, "files": 8},
+    "newCodeAndEvidenceLineLengths": {"exitCode": 0, "limit": 120,
+      "exception": "Publisher-native literals, source URL and byte-preserving tabular rows are not reformatted."},
+    "catalogueBuild": {"status": "not_retried", "knownFailure": "KeyError: content; no catalogue regeneration"},
+    "historicalD1bVerifier": {"status": "not_changed", "knownFailure": "Historical fixed previous-seal assumption"}
+  },
+  "commits": ["2a26b558", "c1df5654", "Final bridge/checkpoint commit recorded in HANDOFF and Git history"],
+  "next": [
+    "Acquire one more development publisher and one more documented heldout publisher, respecting mechanical split.",
+    "Acquire 23 more genuinely documented positive columns; do not relabel or expand this frozen set to pad counts.",
+    "Close privacy-safe qualification and permission before intake; owner dispositions excluded discovery artifacts.",
+    "Lead: retain catalogue history while adapting the existing DTO builder and historical verifier seams."
+  ]
+}

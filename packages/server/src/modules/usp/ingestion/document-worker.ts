@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {DocumentInputSchema,DocumentResultSchema,DOCUMENT_LIMITS,type DocumentResult} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
-import {readObject,putOriginal,sha256} from '../../../infrastructure/storage';
+import {readRetainedOriginal,putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx} from '../jobs';
 import {assertDocumentInputTx} from './document-context';
@@ -12,6 +12,7 @@ import {runSourceOcr} from './document-ocr';
 import {inspectDocumentArchive} from './document-archive';
 import {documentResultKey,readDocumentResult} from './documents';
 import {appendCaseIngestionTx} from './events';
+import {settleBatchPdfTx,stopBatchPdfTx} from './intake-draft';
 
 type Dependencies={extract?:typeof extractSourceDocument;propose?:typeof proposeDocument;ocr?:typeof runSourceOcr;archive?:typeof inspectDocumentArchive};
 export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
@@ -46,8 +47,8 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
   };
   try{
     await authorize();
-    const original=await readObject(input.objectKey);
-    if(original.length!==input.sourceBytes || sha256(original)!==input.sourceSha256)throw new AppError(422,'SOURCE_INTEGRITY','The retained original differs from its receipt.');
+    const original=await readRetainedOriginal(input.objectKey,input.sourceBytes,input.sourceSha256,
+      DOCUMENT_LIMITS.originalBytes,Math.max(1,deadline-Date.now()));
     const native=await (dependencies.extract??extractSourceDocument)(input,original);
     await authorize();
     const ocr=input.ocrSelection?await (dependencies.ocr??runSourceOcr)(input,original,deadline):undefined;
@@ -74,6 +75,7 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
         {status:'needs_input',summary:'Source-bound extraction receipt retained. Native results and model proposals are separate; no facts are approved.',
           documentAccepted:{jobId,sha256:hash,nativeStatus:native.status,modelStatus:model.status}}]);
       await appendCaseIngestionTx(client,input.caseId,{kind:'document.changed',sourceId:input.sourceId,sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
+      await settleBatchPdfTx(client,input.caseId,input.sourceId,native);
     });
     async function authorizePins(client:Parameters<typeof assertDocumentInputTx>[0]){
       if(Date.now()>deadline)throw new AppError(503,'DOCUMENT_DEADLINE','The bounded document execution expired.');
@@ -91,6 +93,7 @@ export async function failDocumentJob(jobId:string,code:string,attempt?:Awaited<
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[jobId]);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,stale?'stale':'failed',code]);
+    await stopBatchPdfTx(client,job.case_id,job.source_id,stale);
     if(job.payload.subject===process.env.ULPIN_LOCAL_OPERATOR_SUBJECT)
       await appendCaseIngestionTx(client,job.case_id,{kind:'document.changed',sourceId:job.source_id,sourceRevision:job.payload.sourceRevision,
         jobId,status:stale?'stale':'failed'},job.payload.subject);

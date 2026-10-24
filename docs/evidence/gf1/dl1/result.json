@@ -1,0 +1,34 @@
+{
+  "task": "DL1b",
+  "gate": "GF1",
+  "branch": "task/dl1c-dispatcher-error-code",
+  "base": "02fe761b",
+  "runtime": "none: code and tests only (no Docker, no database, no provider call)",
+  "helper": {
+    "file": "packages/server/src/modules/cases/processing.ts",
+    "line": 54,
+    "name": "keepWorkerError",
+    "writes": "one console.warn line: the operation, the dispatching job id and a code; never a message, stack or other text",
+    "code": ["an AppError's code", "a string own property code matching /^[A-Z0-9_]{1,40}$/", "the Error's name",
+      "unknown"]
+  },
+  "sites": {
+    "changed": 19,
+    "comments": "each site's recovery comment from 02fe761b^ restored unchanged, on the line above its .catch(keepWorkerError(...))"
+  },
+  "tests": {
+    "file": "packages/server/src/modules/cases/processing.test.ts",
+    "replaced": "a background worker's error is kept in the log, not discarded (pinned the message text)",
+    "added": "a background worker's error is kept in the log by its code, never its message",
+    "cases": { "AppError": "STALE_REVISION", "code 23514": "23514", "plain Error": "Error", "thrown string": "unknown" },
+    "marker": "every thrown message holds SECRET_MARKER_TEXT; no warned line contains it; each dispatch resolves to 1"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "backend tests (task file command, 7 groups)", "exit": 1,
+      "before": { "at": "02fe761b", "tests": 258, "passed": 221, "failed": 15, "skipped": 22 },
+      "after": { "tests": 258, "passed": 221, "failed": 15, "skipped": 22 },
+      "note": "the same 15 tests fail before and after on a box without the data drive; processing.test.ts passes 2, skips 2" },
+    { "command": "git diff --check", "exit": 0 }
+  ]
+}

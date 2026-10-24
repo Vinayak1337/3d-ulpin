@@ -1,0 +1,534 @@
+{
+ "task": "Q1",
+ "gate": "M1: ML + agentic pipelines done (API), 14 October 2026",
+ "auditedCommit": "57eb2bc7ad53514daa50469f8d4ea2b976d4002e",
+ "asOf": "10 October 2026; committed evidence only",
+ "stateCounts": {"proven_live": 5, "proven_offline": 8, "partial": 8, "not_started": 0, "blocked": 5},
+ "interpretation": [
+  "Full-box states include P3/P4 acceptance, not just implementation existence.",
+  "proven_offline is not a runtime-gate pass; proven_live is a historical receipt, not a fresh health check.",
+  "Building evaluation exists, but its intended recall gate is unmet; B9 results are not in this checkout.",
+  "No external data, held-out inputs, credentials, network, runtime request, model or GPU was used.",
+  "Held-out numbers below are existing Git count/metric receipts, never new scoring.",
+  "Code references explain gaps; code or an unexecuted test is never counted as execution proof.",
+  "Module-relative next-task paths resolve under packages/server/src/modules; score.py is under gf-ai/storeys.",
+  "Exact checklist strings exceed 120 columns in JSON; all other new non-table lines fit the limit.",
+  "teacherCalls in older live receipts can mean failed replay attempts, not Sarvam network calls.",
+  "R4/J1b serve 83965a21; this audit does not assert that newer staging code ran live."
+ ],
+ "gitChronology": {
+  "preregistrationCommit": "7d33e221080d814ef5d7732f490c1a63eaaeedc2",
+  "preregistrationCommittedAt": "2026-10-10T00:46:45+05:30",
+  "baselineCodeCommit": "819f7bed2117109b9c924d0c50043cdbc230c25a",
+  "baselineCodeCommittedAt": "2026-10-10T01:20:13+05:30",
+  "baselineRunAt": "2026-10-09T19:52:11.623940+00:00",
+  "ancestorCheckExit": 0
+ },
+ "boxes": [
+  {"id": "ML-B1", "group": "Buildings",
+   "box": "preregistration committed before any holdout run;",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/building/b1/result.json", "key": "preregistration_commit; holdout_runs",
+     "proof": "7d33e221; holdout_runs=0 at B1; Git ancestor check=0 before baseline code."},
+    {"path": "docs/evidence/gf-ai/building/b2-installed-holdout-20261010/result.json", "key": "at; git_sha",
+     "proof": "First baseline at 2026-10-09T19:52:11.623940+00:00, after the prereg commit."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": ""
+  },
+  {"id": "ML-B2", "group": "Buildings",
+   "box": "installed RF-DETR and fine-tuned RF-DETR-Seg evaluated on the frozen RAMP Karnataka holdout (per-building precision/recall at IoU ≥ 0.5, false positives on empty tiles);",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/building/b2-installed-holdout-20261010/result.json",
+     "key": "coverage; metrics.per_building; metrics.false_buildings_on_empty",
+     "proof": "1273 chips; P=0.6879394267171444 (3816/5547); R=0.41559573077760836 (3816/9182).",
+     "more": "92 false buildings / 355 empty chips; IoU match threshold=0.5."},
+    {"path": "docs/evidence/gf-ai/building/b3-final-holdout-20261010/result.json",
+     "key": "coverage; metrics.per_building; metrics.false_buildings_on_empty",
+     "proof": "1273 chips; P=0.8363968008979935 (5961/7127); R=0.6492049662382923 (5961/9182).",
+     "more": "15 false buildings / 355 empty chips; PyTorch-cuda, not full ONNX holdout scoring."},
+    {"path": "docs/evidence/gf-ai/preregistration.json", "key": "building_mask.thresholds",
+     "proof": "precision_min=0.75; recall_min=0.7. Measurement done; recall acceptance missed."}
+   ],
+   "missing": "A building candidate meeting the recall gate, or an explicit unmet-gate decision.",
+   "blockedOn": [{"kind": "another task", "detail": "B9 retrain/selection; outcome not in Git."}],
+   "smallestNextTask": "Review B9 result.json/card against frozen criteria; never reopen old holdouts."
+  },
+  {"id": "ML-B3", "group": "Buildings", "box": "model card and ONNX parity;",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/building/rfdetr-ramp-ka-seg-medium-b3-v1/model-card.json",
+     "key": "registration_status; instance_parity_20_dev_chips; evaluation_claim_scope",
+     "proof": "Card binds epoch-4 weights/profile/licence; final-instance v2 passed on 20 DEV chips only."},
+    {"path": "docs/evidence/gf-ai/building/b5/result.json", "key": "outcome; parity",
+     "proof": "passed_20_of_20; minimum mask IoU=0.9993451211525868; score delta=9.2e-05.",
+     "more": "Box-corner delta=0.0 source pixels; threshold-band exceptions=0; graph unchanged."},
+    {"path": "docs/evidence/gf-ai/building/b3-final-export-parity-20261010/result.json",
+     "key": "status; chips; max_abs_difference; tolerance",
+     "proof": "Raw tensor v1 failed on the same 20 chips: masks=70.30064392089844 vs tolerance=0.001.",
+     "more": "v1 failed and v2 passed are different protocols; neither is full ONNX holdout accuracy."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": ""
+  },
+  {"id": "ML-B4", "group": "Buildings", "box": "a new model id served by `/spatial-ml`.",
+   "state": "proven_live",
+   "evidence": [
+    {"path": "docs/evidence/gf-backend/k2c/result.json", "key": "servedApiCommit; roofprint; imagery",
+     "proof": "395e7770; rfdetr-ramp-ka-seg-medium-b3-v1; 22 chips, 2 batches, 80 candidates.",
+     "more": "CPU/demo-only/test_only; 13 nonempty, 9 empty; registry acceptance remains refused (422)."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": ""
+  },
+  {"id": "ML-P1", "group": "Plans",
+   "box": "the vector plan reader turns Bihar Magnolia pages into rooms with literal labels, dimensions and metric areas, plus a consistency report;",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/plans/vector/20261010-p1-structure/post-merge/result.json",
+     "key": "receipts[0].pageResults.2; allIdentical; checks",
+     "proof": "18 candidates; 17 parsed labels; 10 stated-dimension pairs; consistency=9 ok/8 unknown/1 mismatch.",
+     "more": "9/11 parsed-name dimension checks=0.8181818181818182; 9/12 any literals=0.75."},
+    {"path": "docs/evidence/gf-ai/plans/vector/20261010-p1/result.json", "key": "inputs[0]; gaps",
+     "proof": "Original: 1 vector floor-plan PDF page, requested 3; NOT SCALE THE DRAWING; areas diagnostic."},
+    {"path": "docs/evidence/gf-backend/k2c/result.json", "key": "servedApiCommit; rooms",
+     "proof": "395e7770 serves 18 candidate rooms; plan-local scale candidate; placement unknown."}
+   ],
+   "missing": "Three real vector-page qualification and source-supported completeness; not 18 exact measured rooms.",
+   "blockedOn": [{"kind": "data", "detail": "Two more suitable vector pages; absent literals cannot be invented."}],
+   "smallestNextTask": "Qualify scripts/plans/read_vector_plan.py on supplied pages; retain gaps and consistency."
+  },
+  {"id": "ML-P2", "group": "Plans",
+   "box": "scanned pages give CubiCasa candidates with a scale, or `no_scale`.",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/plans/raster/20261011-tower3/result.json",
+     "key": "recordedRealExecutions; results; qualification",
+     "proof": "Tower 3: 218 room candidates across 4 panels; all 4 no_scale; 1124 OCR observations.",
+     "more": "100 foreign test plans: meanClassIoU=0.5236082680954804; not Indian accuracy or API admission."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": ""
+  },
+  {"id": "ML-D1", "group": "Documents",
+   "box": "storeys, unit counts and floor labels from RERA PDFs, by rules plus the Sarvam agent;",
+   "state": "blocked",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/storeys/a5/result.json", "key": "baseline; agent; demo",
+     "proof": "Rules dev floors R=0.0 (0/7), P=0.0 (0/2); units R=0.25 (1/4), P=1.0 (1/1).",
+     "more": "Agent metrics=null; teacher_unavailable; Tower 3 finds G+42, misses G+41 and unit count 81."},
+    {"path": "docs/evidence/gf-ai/storeys/a5/agent-receipt.json", "key": "sources[*].calls; sources[*].states",
+     "proof": "Every source has calls=0 and teacher_unavailable; no live Sarvam extraction."},
+    {"path": "docs/evidence/gf-ai/storeys/a5b/result.json", "key": "dev.alternative; tower3; conclusion",
+     "proof": "Alternative floor P=1.0 (1/1), R=0.1429 (1/7); loses G+42; not a full replacement."}
+   ],
+   "missing": "A verified Sarvam development/demo extraction receipt, compared per field with the rule baseline.",
+   "blockedOn": [
+    {"kind": "owner", "detail": "Approve Sarvam tariff, total/day INR caps and calls/person/day."},
+    {"kind": "another task", "detail": "K9 project-owned document interpreter before stable runtime qualification."}
+   ],
+   "smallestNextTask": "Run ai/document-storey-agent.ts after gateway approval; score verified public demo facts."
+  },
+  {"id": "ML-D2", "group": "Documents", "box": "every value carries a verified quote;",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/storeys/a5/candidates/haryana-2831-tower3.json",
+     "key": "storeyCount.alternatives[0]; labels; building.write",
+     "proof": "G+42 and retained label alternatives carry quotes/locators and quote_at_locator; write=none."},
+    {"path": "scripts/usp/learning/storey_quote_verifier.py", "key": "verify_item; filter_verified",
+     "proof": "Implementation checks quote at source hash/page/region and numbers; not a route-run receipt."},
+    {"path": "docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json",
+     "key": "packet.quotationVerification; servedCodeCommit",
+     "proof": "54fb3522 persisted 10 proposals, but quotationVerification=not_machine_verified."}
+   ],
+   "missing": "Route-integrated quote filtering before persistence, with accepted and rejected real-value receipts.",
+   "blockedOn": [],
+   "smallestNextTask": "Wire quote filtering into ingestion/document-proposals.ts; check real packets and bad quotes."
+  },
+  {"id": "ML-D3", "group": "Documents", "box": "scored against the official RERA registry fields;",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/storeys/a5/result.json", "key": "baseline; holdout.metrics; agent.metrics",
+     "proof": "Rules holdout: 3 records, floor R=0.0 (0/3), P=null (n=0); unit truth n=0, scores null.",
+     "more": "Dev label recall=0.75 (3/4), explicitly d2_candidate_observation_not_truth; agent metrics=null."},
+    {"path": "docs/evidence/gf-ai/storeys/a5b/result.json", "key": "claimScope; dev.alternative",
+     "proof": "Development-only comparison; units P=0.5 (1/2), R=0.25 (1/4); no new holdout claim."}
+   ],
+   "missing": "Registry-scored agent development results and independently scoreable label/count coverage.",
+   "blockedOn": [
+    {"kind": "owner", "detail": "Sarvam gateway spending approval; held-out documents still never go to a teacher."},
+    {"kind": "data", "detail": "Independent floor-label truth; blank official unit counts cannot be scored."}
+   ],
+   "smallestNextTask": "Extend storeys/a5/score.py receipts for verified agent dev outputs; keep blank truth null."
+  },
+  {"id": "ML-D4", "group": "Documents", "box": "Tower 3 stays `conflicting`.",
+   "state": "proven_live",
+   "evidence": [
+    {"path": "docs/evidence/gf-t16/k3b/result.json", "key": "servedNativeCheckout; tower",
+     "proof": "40f077d0; reviewed schedule conflicting; G+41/G+42 retained; expandedLevels=0."},
+    {"path": "docs/evidence/runtime/r3/result.json", "key": "finalRuntime.servedCommit; step3.readBack",
+     "proof": "fbe525f7 live canonical read stays conflicting after identity assignment; heights unknown."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": ""
+  },
+  {"id": "ML-L1", "group": "Learner", "box": "Stage A runs online;",
+   "state": "proven_live",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a3c/result.json", "key": "runtime.codeCommit; learning; approval; qualification",
+     "proof": "dac2a7cd live approval: v43 to v44, partialFitCalls=1, committedAfterUpdate=0.",
+     "more": "Lead-entered verified unknown labels; not independent officer truth or positive takeover."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": ""
+  },
+  {"id": "ML-L2", "group": "Learner",
+   "box": "on a multi-chunk file and on a second, similar file, Sarvam calls per chunk drop while precision on committed fields stays 1.0, or the field abstains.",
+   "state": "blocked",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a4/result.json", "key": "teacherCallCurve; student.calibration",
+     "proof": "Replay curves=[1,0,0] and [1,0,0] on 2 files; networkCalls=0; no cold-chunk improvement.",
+     "more": "Calibration precision=1 on 4 committed unknown fields / 6 fields; 0 positive commits."},
+    {"path": "docs/evidence/gf-agent/a3c/result.json", "key": "first.metrics; second.metrics; learning",
+     "proof": "Live 33-row then 8-row files: teacherCalls all 0; accepted memory reused; no positive accuracy."},
+    {"path": "docs/evidence/gf-agent/a4c/result.json", "key": "arms[0]; heldOut",
+     "proof": "527 pooled fields: 0 positive commits, 53 unknown commits; heldOut n=2, 2 abstained."}
+   ],
+   "missing": "A two-file live Sarvam call curve with committed-field denominators and explicit abstentions.",
+   "blockedOn": [
+    {"kind": "owner", "detail": "Approve live Sarvam costs and spending limits."},
+    {"kind": "another task", "detail": "A4d verification/retrain/count receipt is not in Git; do not predict gain."}
+   ],
+   "smallestNextTask": "Qualify scripts/agent/measure-a4.ts via 2 API files; count calls, attempts and abstentions."
+  },
+  {"id": "AG-S1", "group": "Sarvam teacher",
+   "box": "goes through the gateway with a budget ledger and structured output;",
+   "state": "blocked",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a2/result.json", "key": "inputs; tests; live; limitations",
+     "proof": "2 real inputs: 1 control reservation/settlement each; 131760 control micro-INR each; live.calls=0."},
+    {"path": "docs/evidence/gf-agent/g1/result.json", "key": "checks[0]; ownerInputsMissing",
+     "proof": "10/10 config tests; tariff/caps unapproved; no live PostgreSQL ledger concurrency/restart proof."}
+   ],
+   "missing": "One live structured Sarvam response with PostgreSQL admission, settlement and served-commit receipt.",
+   "blockedOn": [{"kind": "owner", "detail": "Approve tariff, total/day INR caps and calls/person/day."}],
+   "smallestNextTask": "Qualify model-gateway/gateway.ts with 1 public dev call; reconcile the PostgreSQL ledger.",
+   "manualReplay": "Manual needs_input and software-control structured outputs work; replay makes no paid admission.",
+   "liveOnly": "Actual Sarvam schema compliance, usage, price settlement and charged PostgreSQL call lifecycle."
+  },
+  {"id": "AG-S2", "group": "Sarvam teacher", "box": "every response is recorded, and replay mode works;",
+   "state": "blocked",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a2/result.json", "key": "inputs[*].replayed; replay; live",
+     "proof": "Both real input profiles replay recorded_software_control; replayPaidAdmissions=0; live.calls=0."}
+   ],
+   "missing": "A real Sarvam response recording replayed by input hash with no new provider dispatch or debit.",
+   "blockedOn": [{"kind": "owner", "detail": "Gateway tariff/spend approval before the first real recording."}],
+   "smallestNextTask": "Record/replay 1 approved scripts/agent/mapping-teacher.ts call; pin the served commit.",
+   "manualReplay": "Control recordings replay; manual/failure paths produce no fabricated provider answer.",
+   "liveOnly": "A genuine provider response survives redaction/storage and can be replayed byte-bound without charge."
+  },
+  {"id": "AG-S3", "group": "Sarvam teacher", "box": "it fails closed when credits or the network fail.",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a2/result.json", "key": "failureModes; tests; invariants",
+     "proof": "15 new checks, 21 gateway/mapping checks, 0 failures; HTTP 402, quota, timeout/network controls."},
+    {"path": "docs/evidence/gf-agent/a3/failures.json", "key": "controls; qualification",
+     "proof": "3 failure controls: 16 questions each, candidateCells=0, providerDispatches=0; software-only."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": "",
+   "manualReplay": "Credit/outage/replay-miss controls return manual needs_input; no key rotation or registry write.",
+   "liveOnly": "Actual provider outage/credit response and its ledger settlement remain unobserved, not required here."
+  },
+  {"id": "AG-V1", "group": "Canonical vocabulary and MappingPlan v2",
+   "box": "covers building, parcel, unit, level, space and document facts;",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a1/result.json", "key": "checks[1]; scope",
+     "proof": "13/13 canonical/mapping/adaptive tests passed; contract/executor foundation, not accuracy."},
+    {"path": "packages/contracts/src/canonical/targets.ts", "key": "CANONICAL_TARGETS",
+     "proof": "Read catalogue defines all 6 fact domains; source code corroborates the executed contract checks."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": "",
+   "manualReplay": "The same deterministic vocabulary is available to manual and replay plans.",
+   "liveOnly": "No live call needed for catalogue coverage; provider selection accuracy is a separate box."
+  },
+  {"id": "AG-V2", "group": "Canonical vocabulary and MappingPlan v2",
+   "box": "operations: copy, enum lookup, unit conversion with a sourced factor, literal parse, parent-key link;",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a1/result.json", "key": "checks[1]; limitations",
+     "proof": "13/13 tests cover executor/units; gaj and regional units correctly needs_input, not guessed."},
+    {"path": "packages/server/src/modules/usp/ingestion/mapping-executor.test.ts",
+     "key": "executor controls; parent links; unchanged real NYC source",
+     "proof": "Executed suite includes source copy, declared ft2 conversion, date parse and unique parent checks."},
+    {"path": "packages/server/src/modules/usp/ingestion/unit-table.ts", "key": "UNIT_TABLE",
+     "proof": "Code-owned NIST factors ft2=0.09290304, sq_yd=0.83612736; unsupported regional units abstain."},
+    {"path": "docs/evidence/gf-agent/a4b/result.json", "key": "t1bVerifiedExamples; fitTargetCounts",
+     "proof": "193/193 T1b fields verified, including 2 unit.type lookup examples; pseudo-labels, not truth."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": "",
+   "manualReplay": "Code executes allowed operations from manual/replay plans; factors never come from the teacher.",
+   "liveOnly": "No live call needed for deterministic operations; successful provider proposals remain unmeasured."
+  },
+  {"id": "AG-V3", "group": "Canonical vocabulary and MappingPlan v2", "box": "literals are rejected;",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a1/result.json", "key": "literalRejections; checks[1]",
+     "proof": "literal_epsg and literal_factor rejected: MAPPING_LITERAL_FORBIDDEN; 13/13 suite passed."},
+    {"path": "packages/server/src/modules/usp/ingestion/mapping-plan-v2.test.ts",
+     "key": "stable literal rejection and target/operation/source/unit/parent checks fail closed",
+     "proof": "Executed suite also checks coordinates, invented identifiers and tool=approve; test-only attacks."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": "",
+   "manualReplay": "Manual and replay plans share the strict validator; literal injection controls are rejected.",
+   "liveOnly": "No live call required for rejection; resistance to real malicious provider inputs is unmeasured."
+  },
+  {"id": "AG-V4", "group": "Canonical vocabulary and MappingPlan v2",
+   "box": "works on tabular files (CSV/XLSX) and GIS attributes.",
+   "state": "proven_offline",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a1/result.json", "key": "inputs; checks[1]",
+     "proof": "LGD CSV: 1 row/8 unknown cells; GMDA GIS: 2 rows/6 unknown cells; NYC positive seam test passed."},
+    {"path": "docs/evidence/gf-agent/a3c/result.json", "key": "runtime.codeCommit; first; second; xlsx",
+     "proof": "dac2a7cd live CSV 33/8 rows; selected XLSX 60 rows, 4 SSE frames; propose-only, all unknown."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": "",
+   "manualReplay": "CSV/XLSX live subset plus GIS offline checks; no cross-format positive accuracy claim.",
+   "liveOnly": "Provider meaning inference on unfamiliar layouts is separate; deterministic format support needs none."
+  },
+  {"id": "AG-C1", "group": "The chunked loop",
+   "box": "order: memory → student → teacher → verifier → officer questions → deterministic executor;",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a3b/result.json", "key": "controls; approvedLearningControl",
+     "proof": "30 focused tests; real bytes/local Python with SQL/S3 doubles; unapproved learning refuses."},
+    {"path": "docs/evidence/runtime/r1/result.json", "key": "step1.after; step2.import; step3",
+     "proof": "4d03be3f; live new/memory/memory over 3 chunks; questions=9/0/0; teacher unavailable.",
+     "more": "TNHB: 102 draft rows/51 chunks; 1 replay attempt, 50 memory layouts; no approved positive plan."}
+   ],
+   "missing": "A successful teacher/replay proposal verified, questioned, reviewed and executed in route order.",
+   "blockedOn": [],
+   "smallestNextTask": "Qualify ingestion/chunk-mapping-agent.ts on a real dev table/control replay; assert order.",
+   "manualReplay": "Live manual fallback and memory order work; replay misses; student positive takeover unproven.",
+   "liveOnly": "A real Sarvam answer traverses the same sequence; offline replay can qualify orchestration first."
+  },
+  {"id": "AG-C2", "group": "The chunked loop", "box": "progress over SSE;",
+   "state": "proven_live",
+   "evidence": [
+    {"path": "docs/evidence/runtime/r1/result.json", "key": "step1.after; step2.import; step3",
+     "proof": "4d03be3f automatic dispatcher: 3 mapping SSE frames/3 chunks; TNHB 51 frames/51 chunks."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": "",
+   "manualReplay": "Live SSE progress exists with gateway off and honest unresolved draft outcomes.",
+   "liveOnly": "Successful provider latency and teacher-response events are not observed; SSE transport needs none."
+  },
+  {"id": "AG-C3", "group": "The chunked loop", "box": "nothing commits without review.",
+   "state": "proven_live",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a3c/result.json", "key": "runtime.codeCommit; approval; learning; counts",
+     "proof": "dac2a7cd: proposed-to-approved recipe precedes 1 partial_fit; registry lists/counts unchanged."},
+    {"path": "docs/evidence/gf-agent/a3b/result.json", "key": "controls.covered; design.authority",
+     "proof": "30 software checks include unapproved learning and tabular registry execute refusal."}
+   ],
+   "missing": "", "blockedOn": [], "smallestNextTask": "",
+   "manualReplay": "Drafts cannot write registry; approval gates memory/learning; tabular execution refuses.",
+   "liveOnly": "The review fence is shared; no successful reviewed tabular registry commit is claimed."
+  },
+  {"id": "AG-D1", "group": "Document agent",
+   "box": "**Document agent:** wired into the existing document-proposal and decision routes.",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-ai/storeys/a5/agent-receipt.json", "key": "sources[*].calls; sources[*].states",
+     "proof": "0 calls on every retained source; extractor run reports teacher_unavailable."},
+    {"path": "docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json",
+     "key": "servedCodeCommit; httpObservations; packet; qualification",
+     "proof": "54fb3522: POST201/GET200 for 10 caller-supplied proposals; not machine-verified agent execution."},
+    {"path": "docs/evidence/gf-ai/storeys/a5/candidates.py", "key": "candidate_file; packet_for",
+     "proof": "Rules emit compatible packet files, write=none; this is not agent route activation."}
+   ],
+   "missing": "An agent-to-proposal adapter and accept/reject readback receipt through the existing routes.",
+   "blockedOn": [
+    {"kind": "another task", "detail": "K9 stable project-owned interpreter; its result is not in Git."},
+    {"kind": "owner", "detail": "Live Sarvam route qualification needs approved gateway spending."}
+   ],
+   "smallestNextTask": "Wire ai/document-storey-agent.ts to ingestion/document-proposals.ts; check decision replay.",
+   "manualReplay": "Manual proposal persistence exists; storey agent controls are separate, not a wired route receipt.",
+   "liveOnly": "Real Sarvam document output reaches the proposal/decision routes after quote verification."
+  },
+  {"id": "AG-E1", "group": "Evaluation JSON", "box": "precision, recall and abstention per held-out family;",
+   "state": "blocked",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a3/result.json", "key": "truth; heldOut",
+     "proof": "5 families/97 columns: 55 documented unknown, 42 truth absent, 0 positives; abstention=1/family."},
+    {"path": "docs/evidence/gf-agent/a4/result.json", "key": "heldOut.families; heldOut.gate",
+     "proof": "Earlier 5-family receipt says truth_absent with precision/recall/abstention=null, not accuracy."},
+    {"path": "docs/evidence/gf-agent/d1c/result.json", "key": "newHeldout; targetShortfalls",
+     "proof": "New set: 2 families/4 columns; 2 scorable positives; shortfalls=1 family and 23 positives."},
+    {"path": "docs/evidence/gf-agent/a4c/result.json", "key": "heldOut",
+     "proof": "n=2 scorable: committed=0, correct=0, abstained=2; aggregate counts, not per-family accuracy."}
+   ],
+   "missing": "An authorised adequately sized blind-family metric receipt with n and null-safe precision/recall.",
+   "blockedOn": [
+    {"kind": "data", "detail": "Frozen blind data shortfall: target 3 families and 25 positive columns, actual 2/2."},
+    {"kind": "owner", "detail": "Authorise a new independent blind-data acquisition after two stopped attempts."},
+    {"kind": "another task", "detail": "A4d count-only retrain receipt not in Git; does not guarantee adequate truth."}
+   ],
+   "smallestNextTask": "Publish scripts/agent/measure-a4b.ts per-family count receipts; keep teacher truth closed.",
+   "manualReplay": "Safe abstention/count receipts exist; A3 and A4 differ in truth qualification, not positive proof.",
+   "liveOnly": "Live calls prove runtime costs, not blind accuracy; holdout families never reach any teacher."
+  },
+  {"id": "AG-E2", "group": "Evaluation JSON", "box": "the teacher-call curve;",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a4/result.json", "key": "teacherCallCurve",
+     "proof": "2 replay files, 3 chunks each: [1,0,0]/[1,0,0]; networkCalls=0; studentCommits=0 each."},
+    {"path": "docs/evidence/runtime/r1/result.json", "key": "step2.import.chunks; step2.import.teacher; step3",
+     "proof": "Live attempts [1,0,0], not Sarvam calls; TEACHER_UNAVAILABLE; TNHB 1 attempt across 51 chunks."},
+    {"path": "docs/evidence/gf-agent/a3c/result.json", "key": "first.metrics; second.metrics; qualification",
+     "proof": "Live actual teacherCalls all 0 over 3 first-file chunks and 1 second-file chunk; gateway off."}
+   ],
+   "missing": "An evaluation JSON separating paid network calls, replay attempts, memory reuse and committed-field n.",
+   "blockedOn": [{"kind": "owner", "detail": "Approve live Sarvam tariff/caps for the paid-call curve."}],
+   "smallestNextTask": "Extend scripts/agent/measure-a4.ts curve JSON; join 2 live imports with accuracy counts.",
+   "manualReplay": "Falling replay-attempt curves and memory reuse are proven; no falling paid-call curve exists.",
+   "liveOnly": "Real Sarvam calls/latency per chunk across two files, with approved decisions and abstention counts."
+  },
+  {"id": "AG-E3", "group": "Evaluation JSON", "box": "real injection cases where they exist.",
+   "state": "partial",
+   "evidence": [
+    {"path": "docs/evidence/gf-agent/a1/result.json", "key": "literalRejections; checks[1]",
+     "proof": "2 recorded literal rejection cases; 13/13 tests. These are software controls, not real attacks."},
+    {"path": "packages/server/src/modules/usp/ingestion/mapping-plan-v2.test.ts",
+     "key": "stable literal rejection and target/operation/source/unit/parent checks fail closed",
+     "proof": "5 injected operation keys are test-only; no real-file injection count/screening receipt opened."}
+   ],
+   "missing": "A scoped real-development-input injection receipt, or an explicit no-real-case-found gap with n.",
+   "blockedOn": [],
+   "smallestNextTask": "Add a gf-agent injection disposition receipt on approved dev inputs; check real-case n.",
+   "manualReplay": "Literal/identifier/tool controls reject unsafe plans; genuine source attacks unqualified.",
+   "liveOnly": "Live adversarial behaviour is unmeasured; real-file/manual replay checks need no provider."
+  }
+ ],
+ "canCloseWithoutOwner": [
+  {"order": 1, "boxes": ["AG-E3"], "hours": "1-2",
+   "task": "Record scoped injection-case availability on approved public dev inputs; do not invent an attack file."},
+  {"order": 2, "boxes": ["ML-D2"], "hours": "4-6",
+   "task": "Integrate quote filtering into proposal persistence; check real rules packets and bad quotes."},
+  {"order": 3, "boxes": ["AG-C1"], "hours": "4-6",
+   "task": "Qualify the full loop on a real table with recorded software-control replay and officer review."}
+ ],
+ "withoutOwnerQualification": [
+  "These close at proven_offline or manual/replay runtime scope, never a claim of live Sarvam success.",
+  "B9 and A4d can finish already approved work without new owner input, but no missing box is guaranteed to pass.",
+  "After K9, document wiring can be built/checked offline in 6-10 hours; full live-agent closure still needs policy.",
+  "ML-P1 needs supplied vector pages, not an owner decision; no acquisition or inference substitutes for them."
+ ],
+ "cannotCloseWithoutOwner": [
+  {"boxes": ["AG-S1", "AG-S2", "ML-D1", "ML-D3", "ML-L2", "AG-D1", "AG-E2"],
+   "question": "What approved INR per million input/cached/output tokens, total INR, INR/day and calls/person/day?",
+   "also": "Confirm funding/privacy policy; private/restricted documents stay excluded; lead supplies bounds.",
+   "source": "docs/backend/DEMO-GATEWAY.md:58-77"},
+  {"boxes": ["AG-E1"],
+   "question": "May a new blind-data task acquire 1 more family and 23 more documented positive columns?",
+   "also": "Current count is 2 families/2 positives vs target 3/25; never expand or tune the frozen set."},
+  {"boxes": ["ML-B2"],
+   "question": "If B9 misses, keep the unmet recall gate visible or approve a scope change from R>=0.70?",
+   "also": "No decision or extra holdout run is assumed; B9 outcome is unknown."}
+ ],
+ "unsupportedClaims": [
+  {"path": "docs/STATUS.md", "line": 22,
+   "claim": "Indian labelled data is still blocked; 0 eligible pairs.",
+   "correction": "Historical paragraph is stale today: B1 records 6288 Karnataka pairs, publisher-reviewed."},
+  {"path": "docs/STATUS.md", "line": 27, "claim": "No model has been trained.",
+   "correction": "Historical paragraph is stale today: B3 records 4 completed epochs and an epoch-4 holdout run."},
+  {"path": "docs/STATUS.md", "line": 28, "claim": "0 of 30 tests with any receipt or attempt.",
+   "correction": "Not a gate-pass claim, but no attempts/receipts is stale; K2c, K3b and J1b have scoped receipts."},
+  {"path": "docs/STATUS.md", "line": 37, "claim": "No code, packet, card or QR exists yet; serves 9aad8da2.",
+   "correction": "Same row later contradicts it: R3 assigned/generated; R4/J1b serve 83965a21."},
+  {"path": "docs/STATUS.md", "line": 38,
+   "claim": "Holdout P 0.836 / R 0.649 and transfer P 0.830 / R 0.355, without n.",
+   "correction": "Use exact scoped numbers/denominators; B3 P n=7127/R n=9182; transfer P n=10874/R n=25409."},
+  {"path": "docs/STATUS.md", "line": 39, "claim": "Magnolia CAD: 18 exact vector rooms.",
+   "correction": "18 candidates, 17 labels, 10 dimension pairs; 1 mismatch/8 unknown; diagnostic scale, not exact."},
+  {"path": "docs/STATUS.md", "line": 45, "claim": "No server read lists a unit's cards; card/Verify browser-only.",
+   "correction": "R3 lists 1 card via API; F3d is already recorded in the live-state row; old clause is stale."},
+  {"path": "docs/STATUS.md", "line": 58,
+   "claim": "K5 revocation running; live card comes from R2; last evidence only offline.",
+   "correction": "R3 applied the table and generated/verified the card; J1b has live card reads; R2 stopped earlier."},
+  {"path": "docs/STATUS.md", "line": 59, "claim": "GF5 last real evidence: none.",
+   "correction": "J1b records 11 pass/2 skipped; partial, but not no evidence."},
+  {"path": "docs/STATUS.md", "line": 70, "claim": "P3 code exists; no input wired.",
+   "correction": "R3 source-stated UNIT-3B input was reviewed and assigned; geometry remains absent."},
+  {"path": "docs/STATUS.md", "line": 71, "claim": "The journey generates a card each run.",
+   "correction": "J1b check mode reads only; write mode refuses before requests; 24h expiry needs separate action."},
+  {"path": "docs/evidence/gf-ai/building/b3/result.json", "line": 1,
+   "claim": "registered=false; serving_activation_allowed=false.",
+   "correction": "Historical B3 state, contradicted if read as current: B5 v2 qualification/K2c demo serving."},
+  {"path": "docs/evidence/gf-ai/building/rfdetr-ramp-ka-seg-medium-b3-v1/model-card.json", "line": 1,
+   "claim": "Inactive/not activated/installation not performed.",
+   "correction": "Historical/default registration scope; K2c demo profile explicitly activated and served the model."},
+  {"path": "docs/evidence/gf-agent/a3d/result.json", "line": 1,
+   "claim": "teacherCalls=1, teacherFields=16 in first runtime chunk.",
+   "correction": "Its own disposition says replay unavailable; no provider call. R1 repeats this provenance defect."},
+  {"path": "docs/evidence/gf-agent/a4c/result.json", "line": 200,
+   "claim": "13 positives never clear the pooled threshold.",
+   "correction": "Current fitExamples=591, unknown=576, registrationNo=4 (A4b=2); 13 describes earlier fitting."},
+  {"path": "docs/evidence/gf-agent/a4c/result.json", "line": 258,
+   "claim": "13 positives in 585 examples.",
+   "correction": "Gap repeats earlier 585; current fitExamples=591/unknown=576/registrationNo=4; do not mix counts."},
+  {"path": "docs/evidence/gf-agent/a3e/result.json", "line": 19,
+   "claim": "Machine-readable result.json receipt.",
+   "correction": "Adjacent string fragments at lines 18-19 invalidate JSON; json.load exits 1 at line 19 column 7."},
+  {"path": "docs/evidence/gf-ai/storeys/a5b/result.json", "line": 1,
+   "claim": "decision.alternativeReplacesBaseline=true.",
+   "correction": "Conclusion says beside, not instead: loses G+42 and lowers unit precision/basement recall."},
+  {"path": "docs/evidence/runtime/r3/result.json", "line": 542, "claim": "snapshots: +2.",
+   "correction": "R4 item3Listing.differences records 4 stored snapshots; R3 counted response manifests, not rows."}
+ ],
+ "disagreements": [
+  "B3 raw tensor parity failed; B5 final-instance parity passed on the same 20 DEV chips. Keep both protocols.",
+  "B3/card inactive statements vs K2c demo-active serving are historical/default versus runtime scope.",
+  "A4 says old heldout truth absent; A3 scores 55 unknown/97 columns with 0 positives. Neither proves accuracy.",
+  "A4c narrative 13/585 vs fitExamples=591/unknown=576/registrationNo=4; never pool or recalculate precision.",
+  "A5b alternativeReplacesBaseline=true vs conclusion beside baseline; no automatic full-route replacement.",
+  "A3c teacherCalls all zero vs R1/A3d 1-attempt cold chunks; these are different attempt-counting semantics.",
+  "R3 says snapshots +2; R4 read 4 and traces the extra review/pre-assignment snapshots. Keep both receipts.",
+  "preregistration.json storeys pending/holdout_runs_allowed=false vs A5 holdout run_once: scope unreconciled."
+ ],
+ "pendingNotEvidence": [
+  "B9: model retrain; A4d: separate verification and retrain; K9: document interpreter.",
+  "K3d: source-stated heights; no M1 box requires guessed heights or real prisms.",
+  "F3e, K10, H5: Studio/card work, not prerequisites for these M1 API checklist boxes."
+ ],
+ "gaps": [
+  "M1 cannot honestly be declared done: Sarvam live proof missing, recall target missed, blind positives too sparse.",
+  "No files under E:/BhuAayam-data are needed to perform this audit; upstream workers supply missing receipts.",
+  "No unit-count/label accuracy is implied by null official truth or D2 candidate transcriptions.",
+  "Owner runtime-receipt repin remains a separate contract-check blocker; this task does not repair it.",
+  "The quote-at-locator code normalises OCR region text; it does not independently prove OCR transcription truth."
+ ],
+ "supportingReceipts": [
+  {"path": "docs/evidence/runtime/r4/result.json", "key": "finalRuntime; item3Listing.differences",
+   "proof": "83965a21; R3 stored 4 snapshots, not the 2 inferred from R3 responses."},
+  {"path": "docs/evidence/gf5/j1b/result.json", "key": "run; checks.writeModeRefusal",
+   "proof": "83965a21: 11 pass/2 skipped; check mode reads only; write mode refuses before requests."},
+  {"path": "docs/evidence/gf5/f3d/result.json", "key": "served; browserChecks; notVerified",
+   "proof": "83965a21 API plus worktree Studio: live unit card/PDF/verification; other states mocked."}
+ ],
+ "checks": {
+  "jsonLoad": {
+   "commandParts": ["python -B -c",
+    "import json;json.load(open('docs/evidence/m1/audit.json',encoding='utf-8'))"], "exitCode": 0
+  },
+  "evidencePaths": {"command": "python -B docs/evidence/m1/check_paths.py", "exitCode": 0,
+   "pathsChecked": 43, "missing": 0},
+  "diff": {"command": "git diff --check", "exitCode": 0},
+  "checklistAndFields": {"command": "python -B (inline verbatim/order/state/required-field assertions)",
+   "exitCode": 0, "boxes": 26},
+  "lineLimits": {"command": "python -B (inline non-table line-length assertions)", "exitCode": 0,
+   "markdownNonTableOver120": 0, "jsonExactChecklistStringExceptions": 3},
+  "preregAncestor": {"command": "git merge-base --is-ancestor 7d33e221 819f7bed", "exitCode": 0},
+  "sourceReceiptParse": {
+   "commandParts": ["python -B -c",
+    "import json; json.load(open('docs/evidence/gf-agent/a3e/result.json', encoding='utf-8'))"],
+   "exitCode": 1, "qualification": "Observed source defect, not a failed audit check; no repair or retry."
+  }
+ }
+}

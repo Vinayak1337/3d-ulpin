@@ -1,0 +1,5 @@
+{ "caseId": "ce260ba2-ad3c-47f9-a5e4-4a4bc355c2aa", "before": { "areaId": "dafe884e-2b05-4049-9c3f-8eed919a9e36",
+"recorded": null, "drafted": null, "analysisCrs": "EPSG:32618" }, "after": {
+"areaId": "dafe884e-2b05-4049-9c3f-8eed919a9e36", "recorded": null, "drafted": [ 0, 0, 1672.7523134248331,
+1678.9865502836183 ], "analysisCrs": "EPSG:32618" },
+"rawReceipt": "E:/BhuAayam-data/task-data/sfa1/raw-receipts/bounds-sql.json" }

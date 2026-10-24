@@ -1,9 +1,12 @@
-import type { BuildingLedger, RegistryRecord, SourceLocator } from '@ulpin/contracts';
+import { RegistryDocumentCitationSchema, type BuildingLedger, type RegistryRecord,
+  type SourceLocator } from '@ulpin/contracts';
 import { transaction } from '../../infrastructure/db';
 import { AppError, notFound } from '../../infrastructure/errors';
-import { registrySourceTx } from '../registry/registry-metadata';
+import { registryRecordedSourceTx, registrySourceTx } from '../registry/registry-metadata';
+import { tableRowLocatorWords } from '../registry/registry-table-evidence';
 import { assertPackageDocumentAuthority } from '../areas/package-authority';
 import { relatedRegistryRecords } from './officer';
+import { ledgerRegistryHistoryEntry, ledgerRegistryHistorySql } from './building-ledger-history';
 
 const iso = (value: Date | string) => new Date(value).toISOString();
 
@@ -35,10 +38,36 @@ export function parcelUlpinCoverage(parcels: Array<{ id: string }>, assertions: 
   return { state, missingParcelIds };
 }
 
+/** One source and locator a record's document citation names. */
+export type CitationLocator = { sourceId: string; locator: string };
+/**
+ * The document citations stored on a record's current revision, each as its source and its locator in words: a
+ * table row as the native reader writes it ('CSV logical row 444'), a native part by its locator label, and any
+ * other kind by its source with the citation's own id. Only the source and locator leave this read; pins, quotes and
+ * excerpts stay with the record. A stored citation that does not read in its current form is counted, never listed
+ * and never guessed at, so the rest of the ledger stays readable.
+ */
+export function documentCitationLocators(citations: unknown): { cited: CitationLocator[]; unreadable: number } {
+  const stored = citations === undefined || citations === null ? [] : Array.isArray(citations) ? citations : [citations];
+  const cited: CitationLocator[] = [];
+  let unreadable = 0;
+  for (const item of stored) {
+    const read = RegistryDocumentCitationSchema.safeParse(item);
+    if (!read.success) { unreadable++; continue; }
+    const pin = read.data;
+    cited.push(pin.version === 'registry-table-row-citation/1'
+      ? { sourceId: pin.row.sourceId, locator: tableRowLocatorWords(pin.row) }
+      : pin.version === 'registry-document-citation/1' ? { sourceId: pin.document.sourceId, locator: pin.locator.label }
+        : { sourceId: pin.document.sourceId, locator: `document citation ${pin.id.slice(0, 12)}` });
+  }
+  return { cited, unreadable };
+}
+
 type Edge = { evidence?: SourceLocator[] };
 type ParcelEvidence = { body: { sourceRevisionId: string; evidence?: SourceLocator[] }; association: Edge };
 type IdentifierEvidence = { source_id: string; evidence: { sourceRevisionId?: string; locator?: string } };
-/** Every source supporting a projected edge or assertion must pass registrySourceTx. */
+/** Every source supporting a projected edge or assertion must pass registryRecordedSourceTx,
+ * or registrySourceTx while the building is still an unrecorded proposal. */
 export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey?: string; evidence?: SourceLocator[] },
   records: Array<Pick<RegistryRecord, 'evidence'>>, detailEdges: Edge[], parcels: ParcelEvidence[],
   identifiers: IdentifierEvidence[]): Map<string, Set<string>> {
@@ -72,6 +101,14 @@ export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey
   return locators;
 }
 
+/** The cited original and its locators are unchanged; only the document reading retained beside it moved on. */
+export function movedOnDocumentNotes(
+  sources: Array<{ id: string; source: { documentResult?: { reasons: readonly string[] } } }>): string[] {
+  return sources.filter(item => item.source.documentResult).map(item =>
+    `The document reading retained beside source ${item.id} is no longer current (${
+      item.source.documentResult!.reasons.join(', ')}); the recorded citation is unchanged.`);
+}
+
 export function boundedLedgerRows<T>(rows: T[], label: string): T[] {
   if (rows.length > 200) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', `Too many current ${label} for one ledger read.`);
   return rows;
@@ -82,6 +119,51 @@ export async function authorizeLedgerSources<T>(sourceIds: Iterable<string>, aut
   const sources: Array<{ id: string; source: T }> = [];
   for (const id of [...sourceIds].sort()) sources.push({ id, source: await authorize(id) });
   return sources;
+}
+
+/**
+ * Splits document citations by the authority their source is read under. A source the strict locators already cite
+ * keeps that strict read and gains the citation's locator in `strict`; a source only citations name is returned apart,
+ * to be read by authorizeCitedSources.
+ */
+export function citedOnlyLocators(strict: Map<string, Set<string>>, citations: CitationLocator[]):
+  Map<string, Set<string>> {
+  const cited = new Map<string, Set<string>>();
+  for (const { sourceId, locator } of citations) {
+    const into = strict.has(sourceId) ? strict : cited;
+    if (!into.has(sourceId)) into.set(sourceId, new Set());
+    into.get(sourceId)!.add(locator);
+  }
+  return cited;
+}
+
+/** The statuses with which a source read refuses this source: denied, absent, unavailable or not readable as stored. */
+const REFUSED = new Set([403, 404, 409, 422]);
+
+/**
+ * The sources only document citations name, each read under the same authority as the ledger's other sources. A
+ * refusal leaves that source out and is counted, so a cited row the reader may not read never costs the rest of the
+ * ledger; any other fault still fails the read.
+ */
+export async function authorizeCitedSources<T>(sourceIds: Iterable<string>, authorize: (id: string) => Promise<T>):
+  Promise<{ sources: Array<{ id: string; source: T }>; refused: number }> {
+  const sources: Array<{ id: string; source: T }> = [];
+  let refused = 0;
+  for (const id of [...sourceIds].sort()) {
+    try {
+      sources.push({ id, source: await authorize(id) });
+    } catch (error) {
+      if (!(error instanceof AppError) || !REFUSED.has(error.status)) throw error;
+      refused++;
+    }
+  }
+  return { sources, refused };
+}
+
+/** The ledger's word on cited sources it left out. */
+export function citedSourceNotes(refused: number): string[] {
+  return refused ? [`${refused} cited source${refused > 1 ? 's are' : ' is'} not available to this read and ${
+    refused > 1 ? 'are' : 'is'} not listed.`] : [];
 }
 
 export const currentParcelSql = `SELECT p.id,p.revision,p.body,a.body association FROM property_associations a
@@ -125,16 +207,26 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       ORDER BY feature_id,normalized_value LIMIT 201`, [parcelIds])).rows, 'official parcel assertions') : [];
     const featureRevisions = (await client.query(`SELECT revision,created_at FROM physical_feature_revisions
       WHERE feature_id=$1 AND revision<=$2 ORDER BY revision DESC LIMIT 101`, [buildingId, root.revision])).rows;
-    const registryRevisions = records.length ? (await client.query(`SELECT record_id,revision,created_at
-      FROM registry_revisions WHERE record_id=ANY($1::uuid[]) ORDER BY created_at DESC LIMIT 201`,
+    const registryRevisions = records.length ? (await client.query(ledgerRegistryHistorySql,
       [records.map(record => record.id)])).rows : [];
     const lastCheck = root.revision > 0 ? (await client.query(`SELECT id FROM area_check_runs WHERE area_id=$1
       AND status='completed' ORDER BY created_at DESC LIMIT 1`, [root.area_id])).rows[0]
       : null;
 
+    // The related records are read with their document citations withheld; their stored current bodies name them.
+    const stored = records.length ? (await client.query(`SELECT body->'documentCitations' citations
+      FROM registry_records WHERE id=ANY($1::uuid[]) AND revision>0 AND body ? 'documentCitations' ORDER BY id`,
+      [records.map(record => record.id)])).rows.map(row => documentCitationLocators(row.citations)) : [];
+    const citations = stored.flatMap(read => read.cited);
+    const unreadableCitations = stored.reduce((total, read) => total + read.unreadable, 0);
     const locatorMap = ledgerSourceLocators(root.body, records, detailEdges, parcelRows, identifiers);
-    if (locatorMap.size > 1000) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'Too many cited sources for one ledger read.');
-    const authorized = await authorizeLedgerSources(locatorMap.keys(), id => registrySourceTx(client, root.site_id, id));
+    const citedMap = citedOnlyLocators(locatorMap, citations);
+    if (locatorMap.size + citedMap.size > 1000) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'Too many cited sources for one ledger read.');
+    const readSource = root.revision > 0 ? registryRecordedSourceTx : registrySourceTx;
+    const strict = await authorizeLedgerSources(locatorMap.keys(), id => readSource(client, root.site_id, id));
+    const cited = await authorizeCitedSources(citedMap.keys(), id => readSource(client, root.site_id, id));
+    for (const [id, locators] of citedMap) locatorMap.set(id, locators);
+    const authorized = [...strict, ...cited.sources].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const sources: BuildingLedger['sources'] = authorized.map(({ id, source }) => ({
       id, revision: source.revision, name: source.name, sha256: source.sha256,
       fileUrl: `/api/v1/sources/${id}/file`, locators: [...locatorMap.get(id)!].sort(),
@@ -149,6 +241,10 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       ...(coverage.missingParcelIds.length ? [`Current parcels without a validated official ULPIN: ${coverage.missingParcelIds.join(', ')}.`] : []),
       ...(!parcels.length ? ['No current confirmed parcel association is recorded.'] : []),
       ...(!root.reference ? ['Global placement is unavailable; local-frame records remain inspectable.'] : []),
+      ...movedOnDocumentNotes(authorized),
+      ...(unreadableCitations ? [`${unreadableCitations} stored document citation${unreadableCitations > 1 ? 's do'
+        : ' does'} not read in the current citation form and ${unreadableCitations > 1 ? 'are' : 'is'} not listed.`] : []),
+      ...citedSourceNotes(cited.refused),
       'Technical readiness, rights and deviation are not assessed by this ledger.',
     ];
     return {
@@ -164,8 +260,8 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       })) },
       sources,
       history: { feature: featureRevisions.slice(0, 100).map(row => ({ revision: row.revision, recordedAt: iso(row.created_at) })),
-        registry: registryRevisions.slice(0, 200).map(row => ({ recordId: row.record_id, revision: row.revision,
-          recordedAt: iso(row.created_at) })), featureHasMore: featureRevisions.length > 100,
+        registry: registryRevisions.slice(0, 200).map(ledgerRegistryHistoryEntry),
+        featureHasMore: featureRevisions.length > 100,
         registryHasMore: registryRevisions.length > 200 },
       assessment: { state: 'not_assessed', latestCheck: lastCheck ? 'historical' : 'absent',
         reason: 'This projection does not qualify current checks or technical readiness.' },

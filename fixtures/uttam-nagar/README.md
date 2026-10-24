@@ -27,3 +27,6 @@ The room plan source uses EPSG:32643 coordinates. The installer converts those t
 prepared/ contains the unchanged selected OSM shapes. sources/ retains the bounded raw response, query, Nominatim records and download receipts. scenario/ contains openly labelled authored test inputs. Delhi-wide coverage is the boundary only, not all buildings of Delhi. Source and licensing details and official-registration research are in SOURCE_NOTES.md.
 
 Do not display synthetic heights, parcel outlines, residents, road widths or invented overlap findings as real land information. Re-run the reference check after scenario installation to verify it remains isolated. Geographic proximity alone must not join a fictional copy into observed reference checks.
+
+`web-display/` holds the building and road layers the removed `apps/web` app served from `public/datasets/uttam-nagar/`
+(moved here on 24 October; byte-identical copies of the boundary and source notes were dropped).

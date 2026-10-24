@@ -1,0 +1,1 @@
+{"attachThenReject":{"status":409,"code":"CANDIDATE_DECIDED"},"emptyDecisions":{"status":422,"code":"INVALID_INPUT"},"buildingCanonicalUnchanged":true,"newDecisionsWritten":0}

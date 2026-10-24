@@ -1,0 +1,51 @@
+{
+  "task": "EV2 Part 2",
+  "demo": "http://127.0.0.1:3194",
+  "building": "e8777ffc-9409-4129-bacf-f680160d8795",
+  "reads": {
+    "canonical": {"suffix": "canonical", "status": 200},
+    "register": {"suffix": "register", "status": 200},
+    "consolidated": {"suffix": "register?profile=consolidated&format=json", "status": 200}
+  },
+  "candidateCitation": {
+    "fields": ["sourceId", "sourceSha256", "locator"],
+    "locatorFields": ["kind", "page", "x", "y", "width", "height", "unit"],
+    "counts": {"candidates": 18, "citations": 18, "sources": 1, "page": 18, "region": 18, "revision": 0},
+    "generated": [
+      "packages/api-client/src/schema.d.ts:9807 onward: canonical citations have optional sourceRevision.",
+      "Required: sourceId, sourceSha256, locator. Region locator states page and coordinates with unit.",
+      "apps/studio/src/features/review/candidates/model.ts:184-197 preserves revision as null when absent."
+    ]
+  },
+  "pinRead": {
+    "fields": ["sources[].id", "sources[].revision", "sources[].sha256"],
+    "generated": "packages/api-client/src/schema.d.ts:28814-28818 (standard register JSON response)",
+    "alreadySentElsewhere": "apps/studio/src/api/queries.ts:436 useBuildingRegister; RegisterPage.tsx:55",
+    "alreadySentOnCandidates": [
+      "CandidateCardView.tsx:136 sends useReadingStatements for a reviewed building.",
+      "register/useReadingStatements.ts:58-66 sends consolidated register, then keeps only reading statements.",
+      "Its raw sources state the same revision and hash, but that mapped cache no longer contains the pins."
+    ],
+    "counts": {
+      "allBuildingCitations": 61, "citedSources": 1, "standardSources": 1, "consolidatedSources": 1,
+      "pinnedByBothAgreeingWithEveryCitationHash": 1, "missingOrDisagreeing": 0
+    },
+    "notAPin": "canonical.inputRevisions states area/feature/record/package revisions, not source pins."
+  },
+  "today": [
+    "evidence/citedPage.ts:7-29 selects only cached standard register reads (three-element query keys).",
+    "useEvidencePin reuses agreeing sources, or an explicit evidence pin; it sends no new read.",
+    "Candidates do not load that standard register, so direct entry has no retained source pin.",
+    "recorded/model.ts:170-173 creates no pin when citation.revision is null.",
+    "EvidenceViewer.tsx:23-30 skips CitedPageViewer without a pin, then DraftPagesViewer ends at FileViewer.",
+    "The candidate hash is lost when evidenceRef makes an unpinned target; retain it to check source agreement."
+  ],
+  "decision": [
+    "Stop rule not triggered: the existing standard register GET states the pin, with agreement for 1/1 sources.",
+    "Candidates will call existing useBuildingRegister; useEvidencePin remains the one retained-pin resolver.",
+    "No calculated revision or revision-1 default; preserve the candidate hash to reject a different original.",
+    "A candidate source without an agreeing pin goes directly to file view with a missing-revision statement."
+  ],
+  "evidence": "E:/BhuAayam-data/task-data/ev2/step0-reads.json (raw reads, not committed)",
+  "check": "node docs/evidence/gf5/ev2/step0.mjs: exit 0; GET only, no storing route"
+}

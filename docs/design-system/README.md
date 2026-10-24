@@ -1,12 +1,12 @@
 # 3D ULPIN design system
 
-**Current ownership:** The user owns the UI redesign. Current assigned work is backend focused; UI implementation cards are not scheduled in this cleanup. When UI work resumes, use this design language, preserve shared runtime/data contracts and saved-link compatibility, and never copy mockup data or code. See the [delivery policy](../usp-agent-handoffs/current-delivery-policy.md).
+**Scope:** priorities come from [PLAN.md](../PLAN.md) (the UI pass is step 7). Use this design language, preserve shared runtime/data contracts and saved-link compatibility, and never copy mockup data or code. See the [delivery policy](../archive/usp-agent-handoffs/current-delivery-policy.md).
 
-**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+**Current delivery:** [User scope policy](../archive/usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
 
 The visual and content rules for every 3D ULPIN screen: the design language agents build in. It is the repository copy of the team's design system (the private claude.ai Design System artifact and its Claude Design project), kept in sync with it and reconciled with the finale handoffs. Agents cannot open private claude.ai pages, so this folder is what they build from; [Sync with the team design system](#sync-with-the-team-design-system) records what was compared and what differs on purpose.
 
-**Authority.** [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) owns routes, selection, caches, feature slots and the V1–V8 acceptance shots. This folder owns tokens, components, map styling and copy. Where they disagree, H99's "Z" addendum settles it. The retired `docs/v2-design/` pack (removed by CLEANUP-01, in Git history) is historical input; its forest green and layout sizes live on here.
+**Authority.** [H99](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md) owns routes, selection, caches, feature slots and the V1–V8 acceptance shots. This folder owns tokens, components, map styling and copy. Where they disagree, H99's "Z" addendum settles it. The retired `docs/v2-design/` pack (removed by CLEANUP-01, in Git history) is historical input; its forest green and layout sizes live on here.
 
 | File | Use it for |
 | --- | --- |
@@ -41,7 +41,7 @@ The visual and content rules for every 3D ULPIN screen: the design language agen
 - Areas and volumes to 2 decimals in tables, 1 in labels. Indian digit grouping for rupees and large counts: ₹12,40,000; 1,23,456 parcels. Area in m² first; sq ft in brackets only when the source used it.
 - Dates as 24 Sep 2026; times 24-hour in IST, 14:10. Relative time ("2 min ago") only in activity feeds, with the exact time on hover.
 - **Identifiers** are mono, never broken across lines, always copyable:
-  - the proposed project code (format in [H26](../usp-agent-handoffs/26-identifiers-and-standard-exchange.md)), labelled **3D ULPIN (proposed)**;
+  - the proposed project code (format in [H26](../api/identifiers-and-exchange.md)), labelled **3D ULPIN (proposed)**;
   - the separate **Location** line (parcel / structure / level / space segments), display only (H26 Z1);
   - the state's parcel code, labelled **Parcel ULPIN**, with its anchor state.
 - Fixed status words: *Draft*, *Needs evidence*, *Needs review*, *Reviewed*, *Recorded*, *Assigned*, *Retired*, *Cancelled*, *Unknown*, *Not assessed*, *Not comparable*, *Test fixture* (an authored deviation shows *Seeded test case*). No synonyms. Never label data "fictional", "demo" or "demonstration data"; provenance comes from the record ([AGENTS.md](../../AGENTS.md)).

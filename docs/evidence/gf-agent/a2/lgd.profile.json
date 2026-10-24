@@ -1,0 +1,160 @@
+{
+  "version": "column-profile/1",
+  "sourceKind": "tabular",
+  "layoutFingerprint": "31348b6fd41e85485472938e2b518c59c565b25f4dc061bdf87ab1a13b1ce24c",
+  "columns": [
+    {
+      "name": "state_code",
+      "inferredType": "number",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "D"
+      ]
+    },
+    {
+      "name": "state_name_english",
+      "inferredType": "text",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "Xxxxxxx"
+      ]
+    },
+    {
+      "name": "state_name_local",
+      "inferredType": "text",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "XXXXXXX                                           "
+      ]
+    },
+    {
+      "name": "state_census2011_code",
+      "inferredType": "number",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "DD"
+      ]
+    },
+    {
+      "name": "district_code",
+      "inferredType": "number",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "DD"
+      ]
+    },
+    {
+      "name": "district_name_english",
+      "inferredType": "text",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "Xxxxxxxx"
+      ]
+    },
+    {
+      "name": "district_name_local",
+      "inferredType": "text",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "XXXXXXXX"
+      ]
+    },
+    {
+      "name": "district_census2011_code",
+      "inferredType": "number",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "DDD"
+      ]
+    }
+  ],
+  "sampleShortfall": true
+}

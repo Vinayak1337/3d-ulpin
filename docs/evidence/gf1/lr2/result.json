@@ -1,0 +1,437 @@
+{
+  "task": "LR2",
+  "gate": "GF1",
+  "base": "ada1e6cf",
+  "branch": "task/lr2-projected-large-file",
+  "status": "stopped_at_drafting",
+  "qualification": "Actual HTTP upload/register/answer/confirm boundary; the product API and dispatcher run as their own processes; in-memory loopback S3 and the product geo Python as stand-ins.",
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "bytes": 26660992,
+    "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+    "features": 42247,
+    "declares": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:2958"
+      }
+    },
+    "use": "test_only",
+    "licence": "OGL Niagara Falls 1.0, recorded in docs/evidence/gf1/da1/result.json",
+    "hashCheckedBeforeEachWalk": true,
+    "originalHashUnchangedAfter": true
+  },
+  "layout": {
+    "kind": "building",
+    "identifier": {
+      "sourcePath": "/features/*/properties/OBJECTID",
+      "conversionId": "literal_integer_identifier@1",
+      "inventory": {
+        "path": "/features/*/properties/OBJECTID",
+        "types": [
+          "number"
+        ],
+        "values": 41809,
+        "explicitNull": 0,
+        "absent": 0,
+        "unknown": 438,
+        "integers": 41809
+      },
+      "why": "The inventory counts OBJECTID as a whole number on every record, and a read of the file finds each of its 42,247 values once; a whole-number field takes the integer identifier conversion."
+    },
+    "geometry": {
+      "sourcePath": "/features/*/geometry",
+      "conversionId": "geojson_geometry@1"
+    },
+    "basis": "officer_stated",
+    "recipeId": "65beb54d-883a-4f8a-94e0-b9fcc8ef5dc8"
+  },
+  "receipt": {
+    "sourceCrs": "EPSG:2958",
+    "authority": "EPSG:2958",
+    "coordinateUnit": "metre",
+    "evidence": "Declared in the file's crs member: `EPSG:2958`",
+    "parts": 423,
+    "features": 42247,
+    "accepted": 41809,
+    "quarantined": 438,
+    "quarantinedByCode": [
+      {
+        "code": null,
+        "records": 438
+      }
+    ]
+  },
+  "question": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+  "reader": [
+    {
+      "state": "completed_with_rejections",
+      "issue_code": null,
+      "records": 42247,
+      "accepted": 41809,
+      "quarantined": 438,
+      "next_publish_index": 423,
+      "sealed_chunks": 423,
+      "unknown_remainder": false,
+      "updated_at": "2026-10-16T17:33:01.034Z"
+    }
+  ],
+  "packages": {
+    "packages": 0,
+    "featuresInPackages": 0
+  },
+  "transformed": {
+    "bounds": {
+      "lon": [
+        -79.2,
+        -78.9
+      ],
+      "lat": [
+        43.0,
+        43.2
+      ]
+    },
+    "samples": [],
+    "note": "No package was drafted, so no feature was transformed; nothing to sample."
+  },
+  "jobs": [
+    {
+      "id": "a5f0bbd3-56c5-58e7-a85e-1f6ad4d06037",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:31:45.822Z",
+      "completed_at": "2026-10-16T17:31:46.516Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:31:46.439711+00:00",
+          "leaseUntil": "2026-10-16T17:34:46.439711+00:00"
+        }
+      ]
+    },
+    {
+      "id": "e2ddcc32-2c1f-458c-9417-d3e71e14da58",
+      "operation": "streaming-vector",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:31:46.476Z",
+      "completed_at": "2026-10-16T17:33:01.034Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:31:47.200149+00:00",
+          "leaseUntil": "2026-10-16T17:35:47.231404+00:00"
+        }
+      ]
+    },
+    {
+      "id": "c42a7a29-d155-4e3a-a9b4-f4b3459bf79d",
+      "operation": "streamed-profile",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:31:46.498Z",
+      "completed_at": "2026-10-16T17:33:01.413Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:31:47.208217+00:00",
+          "leaseUntil": "2026-10-16T17:35:48.962617+00:00"
+        }
+      ]
+    },
+    {
+      "id": "9de07b3e-9e54-5d84-8d6a-768f657c1b36",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:31:46.516Z",
+      "completed_at": "2026-10-16T17:31:47.272Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:31:47.209146+00:00",
+          "leaseUntil": "2026-10-16T17:34:47.209146+00:00"
+        }
+      ]
+    },
+    {
+      "id": "eb60878f-0405-5bdf-a435-c030b83a984a",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:31:47.272Z",
+      "completed_at": "2026-10-16T17:31:47.979Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:31:47.950439+00:00",
+          "leaseUntil": "2026-10-16T17:34:47.950439+00:00"
+        }
+      ]
+    },
+    {
+      "id": "16c04021-607a-5739-aadd-57972a377d42",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:33:01.034Z",
+      "completed_at": "2026-10-16T17:33:01.509Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:01.49288+00:00",
+          "leaseUntil": "2026-10-16T17:36:01.49288+00:00"
+        }
+      ]
+    },
+    {
+      "id": "0707db91-5bc6-5b00-82cc-96aa28bc2ecd",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:33:01.413Z",
+      "completed_at": "2026-10-16T17:33:02.262Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:02.245253+00:00",
+          "leaseUntil": "2026-10-16T17:36:02.245253+00:00"
+        }
+      ]
+    },
+    {
+      "id": "1a701d95-48f5-5338-8a1f-a29f85073656",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:33:06.048Z",
+      "completed_at": "2026-10-16T17:33:06.830Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:06.814159+00:00",
+          "leaseUntil": "2026-10-16T17:36:06.814159+00:00"
+        }
+      ]
+    },
+    {
+      "id": "e1a2e764-b9e0-52dc-8a58-a2daf582d171",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:33:11.098Z",
+      "completed_at": "2026-10-16T17:33:11.468Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:11.378206+00:00",
+          "leaseUntil": "2026-10-16T17:36:11.378206+00:00"
+        }
+      ]
+    },
+    {
+      "id": "26cb9391-3483-4f77-9745-f07cc0992fa3",
+      "operation": "chunk-mapping",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:33:11.425Z",
+      "completed_at": "2026-10-16T17:33:58.323Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:12.143178+00:00",
+          "leaseUntil": "2026-10-16T17:36:42.197414+00:00"
+        }
+      ]
+    },
+    {
+      "id": "e8df73df-cc7b-54b0-a838-ae1f8b029ab8",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:33:11.468Z",
+      "completed_at": "2026-10-16T17:33:12.201Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:12.152957+00:00",
+          "leaseUntil": "2026-10-16T17:36:12.152957+00:00"
+        }
+      ]
+    },
+    {
+      "id": "3849fd1f-cea1-50a5-86af-b674d0718e82",
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "created_at": "2026-10-16T17:33:12.201Z",
+      "completed_at": "2026-10-16T17:33:12.960Z",
+      "attempts": [
+        {
+          "state": "accepted",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:12.891728+00:00",
+          "leaseUntil": "2026-10-16T17:36:12.891728+00:00"
+        }
+      ]
+    },
+    {
+      "id": "a50a4786-2df9-5580-a5e2-b8cff0417727",
+      "operation": "intake-large",
+      "status": "failed",
+      "error": "AREA_PROCESSING",
+      "created_at": "2026-10-16T17:33:58.323Z",
+      "completed_at": "2026-10-16T17:34:09.642Z",
+      "attempts": [
+        {
+          "state": "fenced",
+          "number": 1,
+          "createdAt": "2026-10-16T17:33:58.681315+00:00",
+          "leaseUntil": "2026-10-16T17:36:58.681315+00:00"
+        },
+        {
+          "state": "fenced",
+          "number": 2,
+          "createdAt": "2026-10-16T17:34:03.265548+00:00",
+          "leaseUntil": "2026-10-16T17:37:03.265548+00:00"
+        },
+        {
+          "state": "fenced",
+          "number": 3,
+          "createdAt": "2026-10-16T17:34:07.794174+00:00",
+          "leaseUntil": "2026-10-16T17:37:07.794174+00:00"
+        }
+      ]
+    }
+  ],
+  "retried": [
+    {
+      "operation": "intake-large",
+      "status": "failed",
+      "error": "AREA_PROCESSING",
+      "attempts": 3
+    }
+  ],
+  "phasesMs": {
+    "upload": 700,
+    "read and inventory": 80135,
+    "layout": 10152,
+    "drafting": 1800009
+  },
+  "final": {
+    "state": "failed_part",
+    "placement": "not_understood",
+    "sentence": "Preparing this file stopped after repeated errors; the steps already done are kept. Nothing more was prepared from it.",
+    "recordsSeen": 42247
+  },
+  "stepJobs": {
+    "jobs": 10,
+    "attempts": 12,
+    "succeeded": 9,
+    "retried": 1,
+    "open": 1
+  },
+  "geometryCalls": {
+    "resolve-geojson-crs": 1,
+    "normalize": 3
+  },
+  "providerCalls": 0,
+  "failures": [
+    {
+      "message": "Not reached in 30 min: four cuts drafted; {\"msSinceRegister\":145441,\"state\":\"failed_part\",\"placement\":\"not_understood\",\"partsPlanned\":null,\"partsDone\":0,\"recordsSeen\":42247,\"limitReason\":\"Preparing this file stopped after repeated errors; the steps already done are kept. Nothing more was prepared from it.\",\"plan\":{\"recipeState\":\"approved\",\"packageId\":null},\"ledger\":{\"parts\":0,\"unreviewed\":0,\"prepared\":0,\"preparing\":0}}",
+      "stack": [
+        "Error: Not reached in 30 min: four cuts drafted; {\"msSinceRegister\":145441,\"state\":\"failed_part\",\"placement\":\"not_understood\",\"partsPlanned\":null,\"partsDone\":0,\"recordsSeen\":42247,\"limitReason\":\"Preparing this file stopped after repeated errors; the steps already done are kept. Nothing more was prepared from it.\",\"plan\":{\"recipeState\":\"approved\",\"packageId\":null},\"ledger\":{\"parts\":0,\"unreviewed\":0,\"prepared\":0,\"preparing\":0}}",
+        "    at Timeout._onTimeout (E:\\Projects\\ulpin-wt\\k2\\docs\\evidence\\gf1\\lr2\\runtime.ts:221:47)",
+        "    at listOnTimeout (node:internal/timers:635:17)",
+        "    at process.processTimers (node:internal/timers:571:7)"
+      ]
+    }
+  ],
+  "failureSignature": {
+    "step": "intake-large, drafting the first cut",
+    "code": "AREA_PROCESSING",
+    "geoOperation": "normalize",
+    "geoCalls": 3,
+    "refusal": "Feature 1 requires exactly two coordinates; Z/M values are unsupported and will not be dropped.",
+    "refusalSource": "services/geo/geo/area.py:140 (_geometry); reproduced read-only by calling geo.area.normalize_area on the original's first feature",
+    "firstPosition": [
+      649438.387,
+      4771463.226,
+      186.110000000001
+    ],
+    "positionsWithThreeValues": "363,793 of 363,793 (every Polygon ring position carries a height)",
+    "harnessWait": "The harness waited its 30 minutes for four cuts; the row had rested at 145 s."
+  },
+  "lastGoodPhase": "mapping: the reader sealed 423 parts with the declaration on the receipt and the approved building layout mapped the accepted records (chunk-mapping succeeded); no cut was drafted.",
+  "retryReason": "intake-large retries any code except a part refusal up to its bound of 3 attempts, 2 s apart; the normaliser's refusal does not change between attempts, so attempts 2 and 3 repeated it.",
+  "quarantineCodesNote": "The reader's slot rows store no per-record code; each record's code lives in its chunk object, held in the removed box's memory store, so the 438 codes were not kept.",
+  "firstWalk": {
+    "runtime": "first-walk.json",
+    "progress": "first-walk-progress.jsonl",
+    "failure": "Unexpected geo operation resolve-geojson-crs; nothing was prepared from it.",
+    "cause": "The geo stand-in copied from LP3c served normalize, check and inspect-gis only; LR1 added resolve-geojson-crs. The stand-in now serves the product route and refuses the way services/geo/geo/api.py does (422 carrying the error text).",
+    "jobs": [
+      {
+        "operation": "intake-large",
+        "status": "succeeded",
+        "error": null,
+        "attempts": 1
+      },
+      {
+        "operation": "streaming-vector",
+        "status": "failed",
+        "error": "STREAMING_SOURCE_CRS",
+        "attempts": 2
+      },
+      {
+        "operation": "streamed-profile",
+        "status": "failed",
+        "error": "STREAMING_SOURCE_CRS",
+        "attempts": 1
+      },
+      {
+        "operation": "intake-large",
+        "status": "succeeded",
+        "error": null,
+        "attempts": 1
+      },
+      {
+        "operation": "intake-large",
+        "status": "succeeded",
+        "error": null,
+        "attempts": 1
+      },
+      {
+        "operation": "intake-large",
+        "status": "succeeded",
+        "error": null,
+        "attempts": 1
+      }
+    ],
+    "readerSecondAttempt": "The reader took a second attempt; its first ended without a stored code, so the dispatcher discarded the reason and the lease ran out. The cause is not recoverable from the removed box."
+  },
+  "projectedLargeFileToPackages": false,
+  "declarationStoredOnReceipt": true,
+  "coordinatesInDegreesAfterTransform": false,
+  "noStepRetriedForever": true,
+  "ownedContainerRemoved": true,
+  "containers": [
+    "ulpin-lr2-tmp-bec86dbea0f5ea21",
+    "ulpin-lr2-tmp-7df55e1f2b24d8d2"
+  ],
+  "runtime": "runtime.json",
+  "progress": "progress.jsonl",
+  "checks": "checks.json"
+}

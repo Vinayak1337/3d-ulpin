@@ -20,7 +20,7 @@ try{
  const area=candidates.find(area=>/Lake View/i.test(area.name))??candidates.find(area=>/Uttam/i.test(area.name));
  assert(area,'An existing Lake View or fictional Uttam dataset is required; this verifier never seeds it.');
  const context=await get(`/areas/${area.id}/context`);
- const buildings=context.features.filter(feature=>feature.kind==='building');assert(buildings.length);
+ const buildings=context.displayFeatures.filter(feature=>feature.kind==='building');assert(buildings.length);
  let building,dossier;
  for(const candidate of buildings.slice(0,8)){
   const next=await get(`/buildings/${candidate.id}/dossier`);
@@ -51,7 +51,7 @@ try{
  await page.getByRole('button',{name:'2D Map',exact:true}).click();
  await page.locator('.ui-plan-svg').waitFor();
  await page.screenshot({path:out+'/saved-dataset-map.png'});
- pass('Dataset chooser opens an actual saved demonstration with its own identity',{areaId:area.id,features:context.features.length});
+ pass('Dataset chooser opens an actual saved demonstration with its own identity',{areaId:area.id,features:context.displayFeatures.length});
 
  const resolved=await get('/resolve?identifier='+encodeURIComponent(building.identifier));
  assert(resolved.matches.some(match=>match.feature?.id===building.id||match.canonicalBuildingId===building.id||match.buildingId===building.id||match.relatedBuildings?.some(item=>(item.feature?.id??item.id)===building.id)),'The actual resolver must return the saved canonical building.');

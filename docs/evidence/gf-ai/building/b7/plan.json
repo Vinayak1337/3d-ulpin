@@ -1,0 +1,24 @@
+{
+  "schema": "building-operating-point-plan/1",
+  "task": "b7-operating-point",
+  "status": "preregistered",
+  "split": "dev",
+  "model": {
+    "path": "E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-004/model.safetensors",
+    "sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+    "provider": "PyTorch FP32 on CUDA, same protocol as docs/evidence/gf-ai/building/b3-ka-run1-20261010-epoch004-dev-t050"
+  },
+  "hypothesis": "Roofs missed at the 0.5 score threshold, mostly small ones, have a model instance (IoU >= 0.5 with the truth) whose score is below 0.5. If so, a lower DEV-chosen operating point recovers recall without retraining; if few or none do, only a training change can.",
+  "data_boundary": "DEV only. The Karnataka holdout, Cox's Bazar and Chittagong transfer-2 are never loaded.",
+  "inference": "Exactly one GPU pass over the 1434 DEV chips through the unchanged production painting path. Raw logits and the masks of all queries with sigmoid >= 0.01 are cached outside Git under E:/BhuAayam-data/ml/runs/b7-dev-scores/. All thresholds are applied afterwards by replaying the unchanged production painting, component and matching code on the cache; no second forward pass.",
+  "replay_parity_check": "The replay at threshold 0.5 must reproduce the B3 DEV counts (tp 8715, predicted 10200, 20 false buildings on empty chips). Any difference is reported, and the selection rule's 0.5 reference uses the replayed count.",
+  "threshold_grid": {"from": 0.05, "to": 0.95, "step": 0.05, "count": 19},
+  "analysis": {
+    "size_bins": "COCO mask pixel area, bins [0,16) [16,64) [64,128) [128,256) [256,512) [512,1024) [1024,inf), as in B5",
+    "per_threshold": "object precision, recall and F1 over all DEV chips plus recall per size bin, using the B3 matcher (maximum cardinality one-to-one, IoU >= 0.5) on production polygon-candidate masks; false buildings on empty chips",
+    "missed_truths": "Truths unmatched at 0.5, per size bin: (a) share matched at any lower grid threshold by the production pipeline; (b) share having a raw model instance with IoU >= 0.5 against the truth at any score >= 0.01, and a histogram of the highest score among those instances (the best match's score, in 0.05-wide bins below 0.5, plus 'below 0.05' and 'at or above 0.5'); (c) for truths with no such instance, a histogram of the best raw-instance IoU. (b) and (c) are descriptive and do not enter the selection rule."
+  },
+  "selection_rule": "Over the grid, keep thresholds with DEV object precision >= 0.80 and empty-chip false buildings <= 2 x the 0.5-threshold count; choose the one with the highest DEV object recall; ties go to the higher threshold. If no threshold qualifies, report none.",
+  "claim_scope": "The chosen point is DEV-selected. It carries no held-out, transfer or cross-geography claim, and is not written to ml-models.json by this task.",
+  "not_changed": ["registered model", "ml-models.json", "preregistration.json", "transfer-2-runs.jsonl"]
+}

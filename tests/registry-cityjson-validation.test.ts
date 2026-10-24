@@ -171,6 +171,7 @@ test('canonical cancellation reaches actual current-authority status; stored err
   const meta={logical_state:'queued',version:1,input_sha256:digest,result_ref:null,accepted_fence:null},attempt={state:'active'};
   const client={release(){},query:async(sql:string)=>{
     if(['BEGIN','COMMIT','ROLLBACK'].includes(sql))return {rows:[]};
+    if(sql==='SELECT operation FROM jobs WHERE id=$1')return {rows:[{operation:job.operation}]};
     if(sql.startsWith('SELECT id FROM jobs'))return {rows:[{id:job.id}]};
     if(sql.startsWith('SELECT * FROM usp_job_metadata'))return {rows:[meta]};
     if(sql.startsWith('UPDATE usp_job_attempts')){attempt.state='fenced';return {rows:[]};}

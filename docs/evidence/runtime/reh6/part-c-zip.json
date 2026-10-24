@@ -1,0 +1,131 @@
+{ "at": "2026-10-17T18:35:12.768Z", "api": "http://127.0.0.1:21026", "caseId": "9d97afec-49e2-4208-9cf7-3aeab79c31e8",
+"wallSeconds": 11.8, "stoppedAt": null, "input": {
+"path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip", "bytes": 14621643,
+"sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da", "verifiedBeforeUpload": true },
+"zipRoute": "intake", "archive": { "sourceId": "9523b5fe-cc67-42ac-a91e-debd22b2d45a",
+"sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da" }, "enrol": {
+"route": "POST /api/v1/ingestion/cases/{caseId}/intake/items", "seconds": 0.16, "returnedAtOnce": true, "item": {
+"itemId": "9523b5fe-cc67-42ac-a91e-debd22b2d45a", "parentItemId": null, "memberPath": null,
+"name": "nyc-10013-multimodal.zip", "sourceId": "9523b5fe-cc67-42ac-a91e-debd22b2d45a", "family": "archive",
+"format": "zip", "state": "read", "placement": "undecided", "reason": [
+"6 map layers in this ZIP are taken in as their own files: layers/sidewalk.geojson, layers/",
+"buildings-original.geojson, layers/boundary-original.geojson, layers/hydrography.geojson, ",
+"layers/roadbed.geojson, layers/parks.geojson. Not taken in: layers/nyc-10013-dem-2017.tif ",
+"(not a map layer), layers/nyc-10013-lidar-2017.laz (not a map layer), layers/nyc-10013-ort",
+"ho-2018.tif (not a map layer), manifest.json (not a map layer)." ], "existingAreaId": null } }, "job": {
+"route": "GET /api/v1/cases/{caseId} (jobs)", "id": "6856a906-a799-59f3-a4e8-285f506795a0",
+"sourceId": "9523b5fe-cc67-42ac-a91e-debd22b2d45a", "operation": "intake-zip-layers", "status": "succeeded",
+"createdAt": "2026-10-17T18:34:36.475Z", "completedAt": "2026-10-17T18:34:38.072Z", "error": null,
+"queuedToCompletedSeconds": 1.597, "rightAfterEnrol": [ "queued" ],
+"attempts": "not reported by any product route (the case read gives id, status, error and times)",
+"dispatcherLog": "not read: it lies under E:/BhuAayam-data/runtime/**, which this task may not open" }, "trail": [ {
+"seconds": 0, "jobs": [ "6856a906-a799-59f3-a4e8-285f506795a0: queued" ], "items": [
+"nyc-10013-multimodal.zip: read/undecided" ] }, { "seconds": 2.1, "jobs": [
+"6856a906-a799-59f3-a4e8-285f506795a0: succeeded" ], "items": [ "nyc-10013-multimodal.zip: read/undecided",
+"boundary-original.geojson: probed/undecided", "buildings-original.geojson: probed/undecided",
+"hydrography.geojson: probed/undecided", "parks.geojson: probed/undecided", "roadbed.geojson: probed/undecided",
+"sidewalk.geojson: probed/needs_answer" ] }, { "seconds": 4.1, "jobs": [
+"6856a906-a799-59f3-a4e8-285f506795a0: succeeded" ], "items": [ "nyc-10013-multimodal.zip: read/undecided",
+"boundary-original.geojson: probed/needs_answer", "buildings-original.geojson: read/undecided",
+"hydrography.geojson: probed/undecided", "parks.geojson: probed/undecided", "roadbed.geojson: probed/undecided",
+"sidewalk.geojson: probed/needs_answer" ] }, { "seconds": 6.2, "jobs": [
+"6856a906-a799-59f3-a4e8-285f506795a0: succeeded" ], "items": [ "nyc-10013-multimodal.zip: read/undecided",
+"boundary-original.geojson: probed/needs_answer", "buildings-original.geojson: read/undecided",
+"hydrography.geojson: probed/needs_answer", "parks.geojson: probed/needs_answer",
+"roadbed.geojson: probed/needs_answer", "sidewalk.geojson: probed/needs_answer" ] } ], "restSeconds": 6.2,
+"quietReads": 9, "parentWords": [
+"6 map layers in this ZIP are taken in as their own files: layers/sidewalk.geojson, layers/",
+"buildings-original.geojson, layers/boundary-original.geojson, layers/hydrography.geojson, ",
+"layers/roadbed.geojson, layers/parks.geojson. Not taken in: layers/nyc-10013-dem-2017.tif ",
+"(not a map layer), layers/nyc-10013-lidar-2017.laz (not a map layer), layers/nyc-10013-ort",
+"ho-2018.tif (not a map layer), manifest.json (not a map layer)." ], "parent": {
+"itemId": "9523b5fe-cc67-42ac-a91e-debd22b2d45a", "parentItemId": null, "memberPath": null,
+"name": "nyc-10013-multimodal.zip", "sourceId": "9523b5fe-cc67-42ac-a91e-debd22b2d45a", "family": "archive",
+"format": "zip", "state": "read", "placement": "undecided", "reason": [
+"6 map layers in this ZIP are taken in as their own files: layers/sidewalk.geojson, layers/",
+"buildings-original.geojson, layers/boundary-original.geojson, layers/hydrography.geojson, ",
+"layers/roadbed.geojson, layers/parks.geojson. Not taken in: layers/nyc-10013-dem-2017.tif ",
+"(not a map layer), layers/nyc-10013-lidar-2017.laz (not a map layer), layers/nyc-10013-ort",
+"ho-2018.tif (not a map layer), manifest.json (not a map layer)." ], "existingAreaId": null }, "layers": [ {
+"member": "layers/boundary-original.geojson",
+"memberSha256": "9a0c9f23bfd6a0b6ba71ab628ee25159e6b3754b4c40231d4a8090259e19c6cf",
+"sourceId": "4e38ccf3-c46d-4d64-a3c7-ad06518b06dc", "itemId": "4e38ccf3-c46d-4d64-a3c7-ad06518b06dc", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null, "draftJob": { "operation": "intake-draft", "sourceId": "4e38ccf3-c46d-4d64-a3c7-ad06518b06dc",
+"status": "succeeded", "error": null, "createdAt": "2026-10-17T18:34:37.955Z", "completedAt": "2026-10-17T18:34:40.079Z"
+} }, { "member": "layers/buildings-original.geojson",
+"memberSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+"sourceId": "1e28fe5a-e696-4ebe-8e20-e9dd96c03847", "itemId": "1e28fe5a-e696-4ebe-8e20-e9dd96c03847", "state": "read",
+"placement": "undecided", "reason": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ], "existingAreaId": "e4874150-ba45-4282-af98-61f2d50007b7", "draftJob": {
+"operation": "intake-draft", "sourceId": "1e28fe5a-e696-4ebe-8e20-e9dd96c03847", "status": "failed",
+"error": "SOURCE_ALREADY_IN_AREA", "createdAt": "2026-10-17T18:34:37.921Z", "completedAt": "2026-10-17T18:34:39.335Z" }
+}, { "member": "layers/hydrography.geojson",
+"memberSha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+"sourceId": "ffc268e3-96cf-41d0-b9e0-c47bd305dba5", "itemId": "ffc268e3-96cf-41d0-b9e0-c47bd305dba5", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null, "draftJob": { "operation": "intake-draft", "sourceId": "ffc268e3-96cf-41d0-b9e0-c47bd305dba5",
+"status": "succeeded", "error": null, "createdAt": "2026-10-17T18:34:37.986Z", "completedAt": "2026-10-17T18:34:40.845Z"
+} }, { "member": "layers/parks.geojson",
+"memberSha256": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13",
+"sourceId": "6a6e6ea1-7c16-4ac8-b8b5-e940d922f530", "itemId": "6a6e6ea1-7c16-4ac8-b8b5-e940d922f530", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null, "draftJob": { "operation": "intake-draft", "sourceId": "6a6e6ea1-7c16-4ac8-b8b5-e940d922f530",
+"status": "succeeded", "error": null, "createdAt": "2026-10-17T18:34:38.053Z", "completedAt": "2026-10-17T18:34:42.366Z"
+} }, { "member": "layers/roadbed.geojson",
+"memberSha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+"sourceId": "158ceb03-bc0e-4e36-b82b-d3faee529f58", "itemId": "158ceb03-bc0e-4e36-b82b-d3faee529f58", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null, "draftJob": { "operation": "intake-draft", "sourceId": "158ceb03-bc0e-4e36-b82b-d3faee529f58",
+"status": "succeeded", "error": null, "createdAt": "2026-10-17T18:34:38.020Z", "completedAt": "2026-10-17T18:34:41.596Z"
+} }, { "member": "layers/sidewalk.geojson",
+"memberSha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+"sourceId": "172a5b5c-cb68-43ce-8e74-98d60f25702f", "itemId": "172a5b5c-cb68-43ce-8e74-98d60f25702f", "state": "probed",
+"placement": "needs_answer", "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"existingAreaId": null, "draftJob": { "operation": "intake-draft", "sourceId": "172a5b5c-cb68-43ce-8e74-98d60f25702f",
+"status": "succeeded", "error": null, "createdAt": "2026-10-17T18:34:37.879Z", "completedAt": "2026-10-17T18:34:38.563Z"
+} } ], "membersInsideArchive": [ { "memberPath": "layers/boundary-original.geojson", "state": "probed",
+"placement": "undecided" }, { "memberPath": "layers/buildings-original.geojson", "state": "probed",
+"placement": "undecided" }, { "memberPath": "layers/hydrography.geojson", "state": "probed", "placement": "undecided" },
+{ "memberPath": "layers/parks.geojson", "state": "probed", "placement": "undecided" }, {
+"memberPath": "layers/roadbed.geojson", "state": "probed", "placement": "undecided" }, {
+"memberPath": "layers/sidewalk.geojson", "state": "probed", "placement": "undecided" }, {
+"memberPath": "layers/nyc-10013-dem-2017.tif", "state": "probed", "placement": "undecided" }, {
+"memberPath": "layers/nyc-10013-lidar-2017.laz", "state": "probed", "placement": "undecided" }, {
+"memberPath": "layers/nyc-10013-ortho-2018.tif", "state": "probed", "placement": "undecided" }, {
+"memberPath": "manifest.json", "state": "probed", "placement": "undecided" } ], "otherJobs": [ {
+"operation": "intake-draft", "sourceId": "6a6e6ea1-7c16-4ac8-b8b5-e940d922f530", "status": "succeeded", "error": null,
+"createdAt": "2026-10-17T18:34:38.053Z", "completedAt": "2026-10-17T18:34:42.366Z" }, { "operation": "intake-draft",
+"sourceId": "158ceb03-bc0e-4e36-b82b-d3faee529f58", "status": "succeeded", "error": null,
+"createdAt": "2026-10-17T18:34:38.020Z", "completedAt": "2026-10-17T18:34:41.596Z" }, { "operation": "intake-draft",
+"sourceId": "ffc268e3-96cf-41d0-b9e0-c47bd305dba5", "status": "succeeded", "error": null,
+"createdAt": "2026-10-17T18:34:37.986Z", "completedAt": "2026-10-17T18:34:40.845Z" }, { "operation": "intake-draft",
+"sourceId": "4e38ccf3-c46d-4d64-a3c7-ad06518b06dc", "status": "succeeded", "error": null,
+"createdAt": "2026-10-17T18:34:37.955Z", "completedAt": "2026-10-17T18:34:40.079Z" }, { "operation": "intake-draft",
+"sourceId": "1e28fe5a-e696-4ebe-8e20-e9dd96c03847", "status": "failed", "error": "SOURCE_ALREADY_IN_AREA",
+"createdAt": "2026-10-17T18:34:37.921Z", "completedAt": "2026-10-17T18:34:39.335Z" }, { "operation": "intake-draft",
+"sourceId": "172a5b5c-cb68-43ce-8e74-98d60f25702f", "status": "succeeded", "error": null,
+"createdAt": "2026-10-17T18:34:37.879Z", "completedAt": "2026-10-17T18:34:38.563Z" } ], "again": {
+"route": "POST /api/v1/ingestion/cases/{caseId}/intake/items", "seconds": 0.101, "sameItem": true, "jobsAfter": [
+"6856a906-a799-59f3-a4e8-285f506795a0: succeeded" ], "secondJobQueued": false }, "requests": [ {
+"step": "create batch case", "method": "POST", "route": "/api/v1/cases", "status": 201, "seconds": 0.033,
+"requestKey": null }, { "step": "case revision", "method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200,
+"seconds": 0.012, "requestKey": null }, { "step": "retain archive", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/intake/archives", "status": 201, "seconds": 0.237,
+"requestKey": "3f809922-73de-41e3-8396-26c1285ee77d" }, { "step": "enrol archive", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/intake/items", "status": 201, "seconds": 0.16,
+"requestKey": "1f72b8d4-030a-4b30-940e-d6d357da0fbd" }, { "step": "manifest at rest", "method": "GET",
+"route": "/api/v1/ingestion/cases/{caseId}/intake", "status": 200, "seconds": 0.029, "requestKey": null }, {
+"step": "case jobs and lineage", "method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200, "seconds": 0.023,
+"requestKey": null }, { "step": "enrol archive again", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/intake/items", "status": 201, "seconds": 0.101,
+"requestKey": "2006f1cb-b7fc-4a56-a917-a02f17d1af32" }, { "step": "case jobs after the second enrolment",
+"method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200, "seconds": 0.008, "requestKey": null } ],
+"expected": { "enrolReturnedAtOnce": true, "oneJobQueuedAtEnrol": true, "jobSucceeded": true, "sixLayerItems": true,
+"noSecondJob": true } }

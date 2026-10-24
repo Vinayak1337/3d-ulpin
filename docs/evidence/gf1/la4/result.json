@@ -1,0 +1,28 @@
+{
+  "task": "LA4",
+  "gate": "GF1",
+  "base": "db59db08",
+  "design": {
+    "far": "max(20000, 1.25 * (fitted distance + framed diagonal))",
+    "near": "far * 0.3 / 20000, the camera's own ratio (1 : 66,667), so depth precision holds at every scale",
+    "max_distance": "fitted distance + framed diagonal when far exceeds 20000, otherwise unlimited as before",
+    "fog": "starts past the framed reach (and thickens over 1.4 reaches more) when far exceeds 20000, otherwise the building-span values as before",
+    "flights": "keep the wider of the old and new range during the flight and settle on the new range when it lands",
+    "paths": ["fitPlanBox", "frameTarget (every mode)", "flyToNeighbourhood"]
+  },
+  "tests_added": [
+    "60 km by 40 km box: every corner inside the frustum, far >= fitted distance + diagonal, fog clear of the framed reach",
+    "50 m box: near/far/max distance/fog stay at today's defaults; large then small returns to them",
+    "flight from a large to a small frame keeps the wide range until it lands"
+  ],
+  "counts": {
+    "scene_tests": { "before": 46, "after": 49 },
+    "studio_test_total": { "after": 469, "note": "includes packages/scene, ui, api-client; staging figure in the task was 459" },
+    "backend_tests": { "total": 282, "pass": 280, "fail": 0, "skipped": 2 },
+    "openapi_check": "314 operations, 356 named schemas, matches"
+  },
+  "gaps": [
+    "the ground backdrop plane and the sun's shadow camera still follow the buildings' span, not the framed box: the plane is the clear colour so its edge is invisible, and shadows are only for buildings",
+    "no browser run: depth precision at 100 km+ is argued from the ratio, not seen"
+  ]
+}

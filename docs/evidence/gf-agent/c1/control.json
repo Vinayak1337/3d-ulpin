@@ -1,0 +1,65 @@
+{
+  "version": "c1-control/1",
+  "kind": "recorded_software_control",
+  "notASarvamAnswer": true,
+  "qualification": "pseudo_label copied from a verified development-teacher label; not truth and not officer approval",
+  "labelFile": "E:/BhuAayam-data/task-data/t1b/labels/teacher-labels-v2.jsonl",
+  "labelFileSha256": "3679d316bee96fa860f7311e5ee6ed9985d9f465b2aaae341e44834695f3f0d6",
+  "labelMethod": "model:claude-opus-5-5@dev-2026-10",
+  "verifierReceipt": "docs/evidence/gf-agent/t1b/verify.json",
+  "table": {
+    "id": "mi-d23-pmc-library-inventory.xlsx",
+    "sha256": "c43f624104cf1e48f5dfb35e79b8ae4abb7ec692ff742c6b18555530b7f9087a",
+    "sheet": "LIBRARY"
+  },
+  "confidenceBuckets": "label confidence >= 0.9 high, >= 0.5 medium, >= 0.25 low, else none",
+  "fields": {
+    "1|name": {
+      "labelLine": 181,
+      "labelProfileId": "c029ce8ef43e3d9f7ceb100dd5f4ae4dc83a6e003f4c928ef21359c19fd1fcb9",
+      "target": "unknown",
+      "operation": { "kind": "copy" },
+      "labelConfidence": 0.7,
+      "confidence": "medium"
+    },
+    "2|address": {
+      "labelLine": 182,
+      "labelProfileId": "5494a35c768a97efd1ad777477dc6ecd44a22913ccf365c0dc70674abe356980",
+      "target": "building.addressLiteral",
+      "operation": { "kind": "copy" },
+      "labelConfidence": 0.6,
+      "confidence": "medium"
+    },
+    "3|class": {
+      "labelLine": 183,
+      "labelProfileId": "6a05a0446221e4f801ab72546be6241306ee756cd0027cb82ca0323bce8fd8a6",
+      "target": "unknown",
+      "operation": { "kind": "copy" },
+      "labelConfidence": 0.85,
+      "confidence": "medium"
+    },
+    "4|longitude": {
+      "labelLine": 184,
+      "labelProfileId": "387a5affee3093b7e69b30b5ab34e62dd0ff7751adcc28a8c3aadd5fd51a4e86",
+      "target": "unknown",
+      "operation": { "kind": "copy" },
+      "labelConfidence": 0.9,
+      "confidence": "high"
+    },
+    "5|latitude": {
+      "labelLine": 185,
+      "labelProfileId": "c5184ea3af781bbefec22c8c0bdd3f65d789ffd5e3e56c811911ff20f670f2de",
+      "target": "unknown",
+      "operation": { "kind": "copy" },
+      "labelConfidence": 0.9,
+      "confidence": "high"
+    }
+  },
+  "rationaleByLabelLine": {
+    "181": "Name of a municipal facility, not a stated building name.",
+    "182": "Facility address text as written; a facility is not a verified building and the text is not geocoded.",
+    "183": "Facility class of the inventory; no canonical target.",
+    "184": "Point longitude; there is no point-location target and a footprint is not inferred from a point.",
+    "185": "Point latitude; there is no point-location target and a footprint is not inferred from a point."
+  }
+}

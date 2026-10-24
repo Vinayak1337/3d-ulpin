@@ -1,0 +1,35 @@
+{ "at": "2026-10-22T10:05:42.126Z", "parts": [ { "item_id": "255d2981-7ef3-4acf-b98b-69e6e398bf00", "state": "reading",
+"family": "point_cloud", "part_state": "planned", "operation": null, "status": null, "error": null, "parts": "179",
+"first_job_id": null }, { "item_id": "255d2981-7ef3-4acf-b98b-69e6e398bf00", "state": "reading",
+"family": "point_cloud", "part_state": "published", "operation": "point-batch", "status": "succeeded", "error": null,
+"parts": "31", "first_job_id": "016120d0-ad2e-5e92-b62a-9dcb24664715" }, {
+"item_id": "255d2981-7ef3-4acf-b98b-69e6e398bf00", "state": "reading", "family": "point_cloud", "part_state": "queued",
+"operation": "point-batch", "status": "queued", "error": null, "parts": "1",
+"first_job_id": "3e48cbca-f43f-5ddc-a2ea-22186e503289" }, { "item_id": "cd4d161f-c6e6-471e-9641-70786ff53035",
+"state": "probed", "family": "table", "part_state": null, "operation": null, "status": null, "error": null,
+"parts": "0", "first_job_id": null }, { "item_id": "d524fb62-7bdf-4b12-8bf1-10f75cef2e3f", "state": "read",
+"family": "raster", "part_state": "published", "operation": "raster-window", "status": "succeeded", "error": null,
+"parts": "9", "first_job_id": "186f11f2-14c3-57de-a15f-88cbc973a988" }, {
+"item_id": "f95b2b3b-d875-45a2-ae0a-6487ad82a1ac", "state": "read", "family": "vector", "part_state": null,
+"operation": null, "status": null, "error": null, "parts": "0", "first_job_id": null } ], "jobs": [ {
+"operation": "intake-draft", "status": "succeeded", "error": null, "count": "2" }, { "operation": "intake-evidence",
+"status": "failed", "error": "STREAMING_ORIGINAL_REQUIRED", "count": "1" }, { "operation": "intake-run",
+"status": "succeeded", "error": null, "count": "3" }, { "operation": "point-batch", "status": "queued", "error": null,
+"count": "1" }, { "operation": "point-batch", "status": "succeeded", "error": null, "count": "31" }, {
+"operation": "raster-window", "status": "succeeded", "error": null, "count": "9" } ], "lanes": { "exit": 0, "rows": [ {
+"id": "3e48cbca-f43f-5ddc-a2ea-22186e503289", "operation": "point-batch", "status": "queued", "lane": "point",
+"file_rank": "1" } ] }, "admission": { "exit": 0, "orderedRows": [ { "itemId": "c03403ea-27be-4b19-8f84-a589e3101a68",
+"caseId": "6650f974-7446-45bd-9d05-6a7b4713a055", "operation": "raster-window", "planned": false, "moved": false }, {
+"itemId": "35ffb328-1cff-4a39-a253-b8f045f93631", "caseId": "6650f974-7446-45bd-9d05-6a7b4713a055",
+"operation": "point-batch", "planned": false, "moved": false }, { "itemId": "c794511a-5893-4a48-be4e-344cb1efdf4a",
+"caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "operation": "raster-window", "planned": false, "moved": false }, {
+"itemId": "d524fb62-7bdf-4b12-8bf1-10f75cef2e3f", "caseId": "76f1cdb3-1407-40b4-b9a2-20cea1c53380",
+"operation": "raster-window", "planned": false, "moved": false }, { "itemId": "67ebd657-0df7-46a8-b1af-29f5583a8410",
+"caseId": "ce260ba2-ad3c-47f9-a5e4-4a4bc355c2aa", "operation": "raster-window", "planned": false, "moved": false }, {
+"itemId": "bc94c915-89de-4ac3-87e5-5c229fa3c26c", "caseId": "1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6",
+"operation": "raster-window", "planned": false, "moved": false }, { "itemId": "e1f847ac-a11d-4496-b88e-dd6b956160ec",
+"caseId": "ce260ba2-ad3c-47f9-a5e4-4a4bc355c2aa", "operation": "point-batch", "planned": true, "moved": false }, {
+"itemId": "05bb6c32-d166-4bad-8528-c2b7e2d428ea", "caseId": "1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6",
+"operation": "point-batch", "planned": true, "moved": false }, { "itemId": "1f32e216-6326-49ce-a234-27392158e270",
+"caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "operation": "point-batch", "planned": true, "moved": false } ] },
+"rawReceipt": "E:/BhuAayam-data/task-data/sfa1/raw-receipts/diagnosis-final.json" }

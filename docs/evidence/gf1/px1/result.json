@@ -1,0 +1,57 @@
+{
+ "task": "PX1",
+ "gate": "GF1",
+ "status": "pass_code_only",
+ "base": "f4916b09ca8b2b51024f0e9673f35a6641ed77dc",
+ "gaps": ["G06", "G07"],
+ "decisions": {
+  "D1": "A draft row is inserted with geographic_geometry (never geometry) by writeDraftFeature (packages/server/src/modules/areas/areas.ts:334, called at :1012). A redraft of a row still at revision 0 moves the outline to the newer package's (UPDATE ... WHERE revision=0); a recorded row is never touched. No code path changes a draft's outline after drafting: createPackageCorrection rebuilds from recorded rows (revision>0) and answerQuestion changes heights only, so 'again on a package correction' is the redraft update.",
+  "D2": "No recorded geometry until recorded: every reader of the stored outline filters revision>0 (list below, pinned by draft-outline.test.ts).",
+  "D3": "The proposal rule (areaProposals) is unchanged. A window read gives it, from every package, only the features whose draft outline meets the window (GiST on geographic_geometry) plus every feature whose row holds no draft outline (recorded corrections, drafts written before this change). Every package names a feature by the one id its (namespace, sourceKey) link gives, so filtering by id leaves the rule's answer for the kept features unchanged; rejections are package fields and are kept whole.",
+  "D4": "The window and single-feature reads take every package of the area (no LIMIT 30); budget 15,000 and paging 4,000 unchanged. The whole-area context read (full bodies, AREA_DISPLAY_LIMIT 10,000) keeps its newest-30 cut.",
+  "D5": "Old drafts (geographic_geometry NULL) stay on the body path: kept by the rule filter and placed from the package body by coalesce in the proposed CTE. Mixed window tested."
+ },
+ "behaviourNotes": [
+  "A window that draws no feature of a package no longer checks that package's cited sources, so a quarantined package with an unavailable source refuses only the windows that would draw from it (the summary still checks every package)."
+ ],
+ "recordedFeatureReadersChecked": [
+  {"reader": "site snapshot", "at": "packages/server/src/modules/usp/snapshots.ts:99", "filter": "f.revision>0"},
+  {"reader": "targeted snapshot", "at": "packages/server/src/modules/usp/snapshots.ts:181", "filter": "f.revision>0"},
+  {"reader": "area read (context, canonical area)", "at": "packages/server/src/modules/areas/areas.ts:231", "filter": "f.revision>0"},
+  {"reader": "area list counts", "at": "packages/server/src/modules/areas/areas.ts:161", "filter": "f.revision>0"},
+  {"reader": "area neighbours", "at": "packages/server/src/modules/areas/areas.ts:1241", "filter": "revision>0"},
+  {"reader": "review context, own area", "at": "packages/server/src/modules/areas/areas.ts:1272", "filter": "revision>0"},
+  {"reader": "review context, neighbours", "at": "packages/server/src/modules/areas/areas.ts:1277", "filter": "revision>0"},
+  {"reader": "review context, parcels", "at": "packages/server/src/modules/areas/areas.ts:1287", "filter": "f.revision>0"},
+  {"reader": "review context, group members", "at": "packages/server/src/modules/areas/areas.ts:1291", "filter": "f.revision>0"},
+  {"reader": "area check", "at": "packages/server/src/modules/areas/areas.ts:2533", "filter": "f.revision>0"},
+  {"reader": "window and summary, recorded part", "at": "packages/server/src/modules/areas/area-display-window.ts:17", "filter": "f.revision>0"},
+  {"reader": "single feature read (canonical building source)", "at": "packages/server/src/modules/areas/area-feature-read.ts:32", "filter": "row.revision > 0; body only"},
+  {"reader": "officer feature", "at": "packages/server/src/modules/officer/officer.ts:34", "filter": "revision>0"},
+  {"reader": "officer dossier parcels (outline intersection)", "at": "packages/server/src/modules/officer/officer.ts:373", "filter": "p.revision>0; b is read through physicalFeature, revision>0"},
+  {"reader": "officer building register capture", "at": "packages/server/src/modules/officer/consolidated-register.ts:74", "filter": "revision>0, or revision 0 by explicit includeUnrecorded; body only, no geometry column"},
+  {"reader": "spatial core read", "at": "packages/server/src/modules/spatial/spatial-core-read.ts:47", "filter": "f.revision>0"},
+  {"reader": "area resolver", "at": "packages/server/src/modules/areas/area-resolver.ts:28", "filter": "f.revision>0"},
+  {"reader": "area resolver, buildings in a parcel", "at": "packages/server/src/modules/areas/area-resolver.ts:56", "filter": "revision>0; local geometry, never written for drafts"},
+  {"reader": "canonical building", "at": "packages/server/src/modules/registry/canonical-building.ts:753", "filter": "feature.revision > 0 from the single feature read"}
+ ],
+ "tests": {
+  "added": [
+   "packages/server/src/modules/areas/draft-outline.test.ts: draft row carries its outline in geographic_geometry and none in geometry; redraft moves only a revision-0 row; every reader of a stored outline keeps only recorded rows",
+   "packages/server/src/modules/areas/area-display-window.test.ts: same proposals from outlines, bodies and both mixed (rule given 4, 2 and 3 features); a window over 35 packages draws the oldest package's proposal"
+  ],
+  "failBeforeChange": ["same proposals from outlines ...", "a window over 35 packages ..."]
+ },
+ "checks": {
+  "typecheck:backend": {"before": 0, "after": 0},
+  "studio:typecheck": {"before": 0, "after": 0},
+  "studio:test": {"before": "471 passed", "after": "471 passed"},
+  "backendTests": {
+   "before": {"tests": 332, "pass": 295, "fail": 15, "skipped": 22},
+   "after": {"tests": 337, "pass": 300, "fail": 15, "skipped": 22},
+   "note": "The same 15 fail before and after on a box without the E: data drive or the Python/OCR environment."
+  },
+  "openapiCheck": "stale source pins after the change; refreshed with refresh-contract.ts origin/staging, studio:api-types and check.py, then 314 operations, 356 schemas, check passes"
+ },
+ "notMeasured": "No runtime here: the 1.5 s per window read at 41,809 features was not re-measured. The rule still reads every package body's rule fields (jsonb, no GeoJSON parse) on each window read; AU2 Step 0 (EXPLAIN ANALYZE on the rehearsal) decides whether the rule's choice must also be stored."
+}

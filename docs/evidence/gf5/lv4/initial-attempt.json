@@ -1,0 +1,62 @@
+{
+  "lv4-after": {
+    "git": "e5f93562fd25af323ae3fd4585dc1dc3caca6bcd",
+    "warmUp": {"startedAt":18617,"endedAt":19009.9,"settled":true,"outcome":"ready","parallel":false},
+    "firstDraw": 19021.5,
+    "firstPartAt": 18737.2,
+    "tasks": [],
+    "programCount": 13,
+    "firstDrawnCount": 13,
+    "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791685993147/timings.json",
+    "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791685993147/cpu.cpuprofile"
+  },
+  "lv4-headed": {
+    "git": "e5f93562fd25af323ae3fd4585dc1dc3caca6bcd",
+    "warmUp": {"startedAt":18512.2,"endedAt":18622.4,"settled":true,"outcome":"ready","parallel":true},
+    "firstDraw": 18727,
+    "firstPartAt": 18646.5,
+    "tasks": [
+      {
+        "at": 19745.2,
+        "ms": 103,
+        "topInclusive": [
+          ["renderFrame",101.926],
+          ["engine.renderFrame",101.926],
+          ["WebGLRenderer.render",94.024],
+          ["renderObjects",92.149],
+          ["renderScene",92.149]
+        ],
+        "topSelf": [["onFirstUse",87.59],["isEarHashed",3.188],["addUV",1.575]],
+        "overlappingCalls":
+        [{"name":"drainBaseQueue","at":19745.2,"ms":8.2},{"name":"renderFrame","at":19745.2,"ms":103.4}],
+        "topSceneOrLoader": [["renderFrame",101.926],["engine.renderFrame",101.926],["drainBaseQueue",7.902]],
+        "sceneOrStudioAttributable": true,
+        "decoderDuringStream": false
+      },
+      {
+        "at": 19955.3,
+        "ms": 101,
+        "topInclusive": [
+          ["renderFrame",99.877],
+          ["engine.renderFrame",99.877],
+          ["WebGLRenderer.render",88.667],
+          ["renderObject",84.85],
+          ["renderer.renderBufferDirect",81.709]
+        ],
+        "topSelf": [["onFirstUse",77.316],["EdgesGeometry",3.182],["computeBoundingSphere",2.211]],
+        "overlappingCalls": [
+          {"name":"drainBuildingQueue","at":19955.5,"ms":5.2},
+          {"name":"drainBaseQueue","at":19960.7,"ms":7.6},
+          {"name":"renderFrame","at":19955.4,"ms":100.8}
+        ],
+        "topSceneOrLoader": [["renderFrame",99.877],["engine.renderFrame",99.877],["drainBuildingQueue",5.977]],
+        "sceneOrStudioAttributable": true,
+        "decoderDuringStream": false
+      }
+    ],
+    "programCount": 25,
+    "firstDrawnCount": 15,
+    "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791685965760/timings.json",
+    "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791685965760/cpu.cpuprofile"
+  }
+}

@@ -16,14 +16,14 @@ export class SufficiencyController{
   @Post('cases/:caseId/sources/:sourceId/sufficiency')
   @HttpCode(200)
   @param('caseId') @param('sourceId')
-  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency',summary:'Evaluate bounded source-pinned tasks without qualifying geometry or rights'})
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency',summary:'Evaluate bounded source-pinned tasks including retained OBJ/glTF originals and inspect_native_context accepted metadata; preserve partial companions and unavailable/stale readers without qualifying geometry or rights'})
   @jsonBody(EvaluateSufficiencySchema) @wireResponse(200,SufficiencyResultSchema)
   async evaluate(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Req() req:Request){
     return this.sufficiency.evaluate(caseId,sourceId,EvaluateSufficiencySchema.parse(await readJsonBody(req,JSON_BODY_LIMIT)));
   }
   @Get('cases/:caseId/needs-input')
   @param('caseId')
-  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_needs_input',summary:'Read bounded current decisions and class questions from retained evidence receipts'})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_needs_input',summary:'Read bounded current decisions and class questions from retained evidence receipts, including native mesh metadata states and current source/job/access revalidation'})
   @wireResponse(200,NeedsInputSchema)
   needsInput(@Param('caseId') caseId:string){return this.sufficiency.needsInput(caseId);}
   @Post('cases/:caseId/questions/:questionId/answers')

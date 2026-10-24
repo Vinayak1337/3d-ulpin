@@ -1,2 +1,0 @@
-/** Temporary compatibility export; implementation: packages/server/src/modules/usp/snapshots.ts. */
-export { assertLocalUsp, captureRegistrySnapshot, captureRegistrySnapshotTx, hasVerticalMembership, readManifest, readRegistryEvidence, readRegistryEvidenceBytes, readRegistryScope, readSnapshotBody, resolveRegistryTarget, resolveRegistryVerticalContext, storedRevision } from "@ulpin/server/modules/usp/snapshots";

@@ -1,0 +1,59 @@
+{
+  "task": "UP1",
+  "gate": "GF-RECOVERY",
+  "scope": "Studio disclosure and mocked transport; no runtime gate claimed",
+  "checks": [
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm --filter @ulpin/server --filter @ulpin/api typecheck", "exit": 0},
+    {"command": "pnpm --filter @ulpin/studio test src/features/intake", "exit": 0,
+      "files": 39, "passed": 199, "failed": 0, "skipped": 0},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "reader_controls": [
+    {"name": "ortho.tif", "bytes": 2147483648, "reader": "raster", "within_ceiling": false},
+    {"name": "structure.ifc", "bytes": 20971520, "reader": "IFC structure", "within_ceiling": true},
+    {"name": "footprints.geojson", "bytes": 5242880, "reader": "GeoJSON", "within_ceiling": true},
+    {"name": "unrecognised.new-kind", "bytes": 1024, "reader": null, "within_ceiling": null}
+  ],
+  "progress_control": {
+    "batch_visible_before_first_file_retained": true,
+    "file": 2, "files": 2, "received_bytes": 8388608, "total_bytes": 16777217,
+    "part": 2, "parts": 3, "retry_on_batch_page": true, "sequential_retention_and_enrolment": true,
+    "mocked_transport": true
+  },
+  "real_inputs": [
+    {
+      "directory": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+      "name": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+      "bytes": 26660992, "use": "good: eligibility and existing resume test, only missing parts sent",
+      "classification": "foreign test_only"
+    },
+    {
+      "directory": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/",
+      "name": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson",
+      "bytes": 43263076, "use": "difficult: eligibility and existing resume test with a failed bound part",
+      "classification": "foreign test_only; permission unconfirmed"
+    }
+  ],
+  "decisions": [
+    "Reuse the existing query cache for progress and the active command; no parallel upload service.",
+    "The dialog currently reads no file header; forecasts use names and sizes only.",
+    "A browser-safe contracts export reuses existing constants; native GIS adds a processor-alignment test.",
+    "Upload-command, retain-batch routing, server jobs and their order are unchanged."
+  ],
+  "resolved_attempts": [
+    {"check": "Studio typecheck", "exit": 1, "cause": "dependencies absent", "fix": "offline frozen install"},
+    {"check": "Studio typecheck", "exit": 2, "cause": "strict checks reached backend schema implementation",
+      "fix": "narrow declaration surface on the limits export"},
+    {"check": "Studio typecheck", "exit": 2, "cause": "mock transport used an id-only receipt type",
+      "fix": "look up the complete stored receipt"},
+    {"check": "intake tests", "exit": 1, "cause": "test expected western instead of Indian digit grouping",
+      "fix": "assert the existing locale"}
+  ],
+  "next": [
+    "No server change is needed for this scope; reader ceilings are not raised.",
+    "Run a live multi-file browser rehearsal, including reload/resume and 200% zoom.",
+    "The 2 GiB raster is a metadata control, not a large-file capacity or reader qualification."
+  ]
+}

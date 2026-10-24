@@ -1,0 +1,133 @@
+{
+ "schemaVersion": "sv1-sarvam-output/1",
+ "task": "SV1",
+ "date": "2026-10-21",
+ "claim": [
+  "Every LP4 answer stopped at max_tokens: sarvam-105b reasons by default, its reasoning tokens share the",
+  "max_tokens budget, and reasoning_effort low still reasons. The adapter now sends reasoning_effort null,",
+  "which Sarvam documents as disabling reasoning, and keeps the strict json_schema.",
+  "Not proven live: no provider call was made."
+ ],
+ "failure": {
+  "source": "docs/evidence/gf-ai/gateway/lp4/result.json",
+  "signature": [
+   "10 of 10 calls HTTP 200 with finish_reason length; completion tokens 2048 = maxOutputTokens;",
+   "prompts 576 to 3550 tokens; the request carried reasoning_effort low"
+  ],
+  "result": "8 storey calls TEACHER_INVALID_OUTPUT, 2 mapping calls TEACHER_INVALID_PLAN"
+ },
+ "documentation": [
+  {
+   "url": "https://docs.sarvam.ai/api-reference/chat/chat-completions-v1/llms.txt",
+   "read": "2026-10-21",
+   "facts": [
+    "reasoning_effort is optional and nullable, default medium; its enum lists low, high, max",
+    "reasoning \"Can be disabled by explicitly setting to None\"",
+    "max_tokens is optional, default 2048; no maximum is stated on this page",
+    "message.reasoning_content is the visible reasoning trace, billed as completion tokens",
+    "usage.completion_tokens_details.reasoning_tokens: chain-of-thought tokens, billed as completion tokens",
+    "response_format: json_schema (Structured Outputs, strict optional), json_object (JSON mode), text",
+    "finish_reason values: stop, length, tool_calls, content_filter, function_call (deprecated)",
+    "the V1 endpoint serves only sarvam-105b and sarvam-105b-conversations; sarvam-105b context 128K"
+   ]
+  },
+  {
+   "url": "https://docs.sarvam.ai/api-reference-docs/api-guides-tutorials/chat-completion/overview",
+   "read": "2026-10-21",
+   "facts": [
+    "thinking mode is \"on by default\" at low; options listed as low, medium, high",
+    "reasoning_effort null (JS, cURL) or None (Python) disables it",
+    "reasoning appears in choices[].message.reasoning_content, separate from content",
+    "reasoning tokens count toward completion tokens",
+    "a low max_tokens can be consumed entirely by reasoning: finish_reason length with an empty content",
+    "max_tokens default 2048; limits table: Starter 4096, Pro 16384, Business 128000",
+    "json_schema with strict true is the recommended structured output; json_object is JSON mode"
+   ]
+  },
+  {
+   "url": "https://docs.sarvam.ai/api-reference-docs/getting-started/models/sarvam-105b",
+   "read": "2026-10-21",
+   "facts": [
+    "reasoning_effort defaults to low and is enabled by default; set it to None to disable",
+    "default temperature 0.5 with reasoning, 0.2 without (the adapter sends 0.2)",
+    "max_tokens plan caps Starter 4096, Pro 16384, Business 128000; context 128K"
+   ]
+  },
+  {
+   "url": "https://docs.sarvam.ai/api/getting-started/ratelimits",
+   "read": "2026-10-21",
+   "facts": [
+    "plans Starter (pay as you go), Pro, Business, Enterprise; new users get Rs 100 free credit",
+    "sarvam-105b on Starter: 40 requests a minute; no output-token limit on this page"
+   ]
+  }
+ ],
+ "documentationConflicts": [
+  "The API reference gives default medium and lists low, high, max; the overview and model pages give",
+  "default low and list low, medium, high. Every page agrees that null or None disables reasoning, so the",
+  "adapter sends null and depends on neither default. No page says whether reasoning_effort null is",
+  "accepted together with a strict json_schema; not tested, since no call was allowed."
+ ],
+ "change": {
+  "adapter": [
+   "packages/server/src/modules/model-gateway/adapter.ts: reasoning_effort low -> null (exported",
+   "REASONING_EFFORT, sent explicitly because an omitted field means reasoning on). The answer is still",
+   "read only from message.content; reasoning_content is neither parsed nor kept; finish_reason length",
+   "still maps to truncated_output."
+  ],
+  "estimate": "scripts/agent/live-proof.ts: outputEstimate is the full maxOutputTokens (was half)",
+  "notChanged": [
+   "the policy file and the config.ts bounds (maxOutputTokens 1..4096, default 2048)",
+   "gateway.ts input hash: it does not carry the reasoning setting; LP4 recorded nothing to replay"
+  ]
+ },
+ "planOnSyntheticPolicy": {
+  "policy": [
+   "made-up file in a temp folder: 11 made-up key names, the approved prices (Rs 15, 5, 60 per million),",
+   "caps Rs 100 total and Rs 25 a day, 150 calls, maxPromptTokens 34816, paceMs 1500"
+  ],
+  "command": "pnpm exec tsx scripts/agent/live-proof.ts --plan --tariff <synthetic policy> --out <temp>",
+  "maxOutputTokens2048": {
+   "calls": 10,
+   "estimateMicroInr": "1750875",
+   "requestBoundMicroInr": "3102105",
+   "atMostMicroInr": "7741440",
+   "heldPerCallMicroInr": "774144",
+   "oldRuleEstimateMicroInr": "1136475",
+   "note": [
+    "the old-rule estimate equals the LP4 plan on the owner's file (1136475), so the shape matches;",
+    "LP4 actually spent 1454385, under the new estimate"
+   ]
+  },
+  "maxOutputTokens4096": {
+   "calls": 10,
+   "estimateMicroInr": "2979675",
+   "requestBoundMicroInr": "4330905",
+   "atMostMicroInr": "9216000",
+   "heldPerCallMicroInr": "921600",
+   "shareOfDailyCapAtMost": "36.87%"
+  }
+ },
+ "checks": {
+  "typecheckBackend": "exit 0",
+  "gatewayAndLiveProofTests": "control, key-list, key-readers, post-visibility, live-proof: 35 tests, 35 pass",
+  "callerTests": "model-gateway sql, mapping-teacher, document-storey-agent: 36 tests, 35 pass, 1 skipped",
+  "demoGatewayTest": "scripts/platform/demo-gateway.test.mjs: 12 tests, 12 pass",
+  "openapi": [
+   "adapter.ts source pin refreshed (refresh-contract.ts origin/staging); openapi.ts --check matches,",
+   "328 operations, 371 schemas; api-types regenerated with no content change"
+  ],
+  "checkPy": [
+   "exit 1 only on the known Windows CRLF hash of docs/evidence/usp/cityjson-validation-runtime.json",
+   "(its LF hash matches)"
+  ]
+ },
+ "nextLiveRun": {
+  "policy": "no change: keep maxOutputTokens 2048; raise to 4096 only if an answer still truncates",
+  "demoRoll": [
+   "needed: the demo serving checkout (9d6acc6b in LP4) must carry this adapter before the next",
+   "live run; the policy hash does not change"
+  ]
+ },
+ "notIncluded": "no key, no env value, no provider call, no prompt or answer text"
+}

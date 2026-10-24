@@ -1,0 +1,29 @@
+{ "receipts": [ { "name": "start", "command": "pnpm platform:start --profile demo --runtime ulpin-reh-02", "exit": 0,
+"seconds": 32.821 }, { "name": "doctor", "command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02",
+"exit": 0, "seconds": 6.751 }, { "name": "stop", "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-02",
+"exit": 0, "seconds": 5.79 }, { "name": "checkout",
+"command": "git checkout --detach 1f25407be674cbf8e15777832e2073d8c6bb5749", "exit": 0, "seconds": 0.2 }, {
+"name": "install", "command": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 0.918 }, { "name": "build",
+"command": "node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02", "exit": 0, "seconds": 58.965
+}, { "name": "rolled-start", "command": "pnpm platform:start --profile demo --runtime ulpin-reh-02", "exit": 1,
+"seconds": 26.923 }, { "name": "migrate",
+"command": "node docs/evidence/runtime/reh9/migrate.mjs E:/Projects/ulpin-wt/ulpin-reh-02 ulpin-reh-02", "exit": 0,
+"seconds": 2.811 }, { "name": "migrated-doctor",
+"command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 6.817 }, {
+"name": "bounds-stop", "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-02", "exit": 0,
+"seconds": 6.787 }, { "name": "bounds-checkout",
+"command": "git checkout --detach b6c54356ae8c9813a19abb0f96952b7c060e2f6a", "exit": 0, "seconds": 0.219 }, {
+"name": "bounds-install", "command": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 0.792 }, {
+"name": "bounds-build", "command": "node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02",
+"exit": 0, "seconds": 14.585 }, { "name": "bounds-start",
+"command": "pnpm platform:start --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 35.535 }, {
+"name": "final-roll-stop", "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-02", "exit": 0,
+"seconds": 6.921 }, { "name": "final-checkout",
+"command": "git checkout --detach 1952c5fbcd5a530ea087045b4cc067ab8e1c1bb8", "exit": 0, "seconds": 0.116 }, {
+"name": "final-install", "command": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 1.038 }, {
+"name": "final-build", "command": "node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02",
+"exit": 0, "seconds": 54.898 }, { "name": "final-start",
+"command": "pnpm platform:start --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 37.259 }, {
+"name": "final-doctor", "command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02", "exit": 0,
+"seconds": 7.122 }, { "name": "end-stop", "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-02",
+"exit": 0, "seconds": 8.122 } ], "note": "Full outputs and test transcripts are retained in scratch/raw-receipts." }

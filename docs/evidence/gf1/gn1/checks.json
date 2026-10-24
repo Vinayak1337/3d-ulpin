@@ -1,0 +1,91 @@
+{
+  "task": "GN1",
+  "checks": [
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/*.test.ts packages/server/src/modules/areas/retained-case-binding.test.ts packages/server/src/modules/usp/packets/*.test.ts tests/manual-ingestion.test.ts tests/manual-plan-later-receipt.test.ts tests/adaptive-mapping.test.ts tests/streaming-later-receipt.test.ts apps/api/src/modules/ingestion/intake-run.controller.test.ts",
+      "before": {
+        "exit": 0,
+        "pass": 233,
+        "fail": 0
+      },
+      "after": {
+        "exit": 0,
+        "pass": 243,
+        "fail": 0
+      }
+    },
+    {
+      "command": "cd services/geo && PROJ_NETWORK=OFF PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B -m pytest tests/test_area.py tests/test_gis_inspection.py -o addopts='' -q",
+      "before": {
+        "exit": 0,
+        "pass": 120
+      },
+      "after": {
+        "exit": 0,
+        "pass": 137
+      }
+    },
+    {
+      "command": "cd services/geo && PROJ_NETWORK=OFF PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B -m pytest tests/test_native_adapters.py -o addopts='' -q",
+      "exit": 0,
+      "pass": 15
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts",
+      "exit": 0,
+      "operations": 310,
+      "schemas": 351
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:api-types",
+      "exit": 0
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 814807ca489208ac9a8e31005f138f3a20ee4a1a",
+      "exit": 0,
+      "repinned": [
+        "packages/contracts/src/gis-inspection.ts",
+        "packages/contracts/src/usp/ingestion.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
+        "packages/server/src/modules/usp/ingestion/registry.ts",
+        "packages/server/src/modules/usp/ingestion/service.ts"
+      ]
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B scripts/api/check.py",
+      "exit": 0
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/gn1/probe.ts --after",
+      "exit": 0,
+      "receipt": "after.json"
+    },
+    {
+      "command": "PROJ_NETWORK=OFF PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B docs/evidence/gf1/gn1/token-proof.py",
+      "exit": 0,
+      "receipt": "token-proof.json"
+    },
+    {
+      "command": "node docs/evidence/gf1/gn1/run-runtime.mjs docs/evidence/gf1/gn1/runtime.json",
+      "exit": 0,
+      "receipt": "runtime.json",
+      "qualification": "G4 blocked, not a full task pass"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ]
+}

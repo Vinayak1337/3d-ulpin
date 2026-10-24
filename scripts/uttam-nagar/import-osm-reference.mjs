@@ -46,12 +46,12 @@ try{
   console.log('RECORDED',kind,pkg.features.length,pkg.state,state.areaId);
  }
  const c=await api('/areas/'+state.areaId+'/context');
- assert.equal(c.features.filter(f=>f.kind==='building').length,113);assert.equal(c.features.filter(f=>f.kind==='road').length,35);
- assert(c.features.every(f=>f.worldStatus==='observed'));
- assert(c.features.filter(f=>f.kind==='building').every(f=>f.height.value===null),'No height should have been invented');
+ assert.equal(c.displayFeatures.filter(f=>f.kind==='building').length,113);assert.equal(c.displayFeatures.filter(f=>f.kind==='road').length,35);
+ assert(c.displayFeatures.every(f=>f.worldStatus==='observed'));
+ assert(c.displayFeatures.filter(f=>f.kind==='building').every(f=>f.height.value===null),'No height should have been invented');
  const check=await api('/area-checks',{areaId:state.areaId,expectedRevision:c.area.revision});
  state.result='PASS';state.finishedAt=new Date().toISOString();state.siteId=c.area.siteId;state.check={id:check.id,findings:check.findings.length};
  await writeFile(runtime+'/reference-context.json',JSON.stringify(await api('/areas/'+state.areaId+'/context'),null,2));
  await writeFile(runtime+'/reference-check.json',JSON.stringify(check,null,2));await save();
- console.log('REFERENCE PASS',JSON.stringify({areaId:state.areaId,features:c.features.length,check:state.check}));
+ console.log('REFERENCE PASS',JSON.stringify({areaId:state.areaId,features:c.displayFeatures.length,check:state.check}));
 }catch(e){state.lastError=String(e);await save();console.error(e);process.exitCode=1;}

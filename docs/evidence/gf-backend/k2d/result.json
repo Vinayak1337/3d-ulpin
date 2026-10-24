@@ -1,0 +1,18 @@
+{
+  "task": "K2d",
+  "gates": ["GF-AI backend", "GF-BACKEND"],
+  "status": "checkpoint_complete_with_prerequisite_blocks",
+  "startedAt": "2026-10-10T09:06:16+05:30",
+  "checkpointObservedAt": "2026-10-10T09:26:28+05:30",
+  "timeBoxMinutes": 60,
+  "branch": "task/k2d-roofprint-review",
+  "base": "a8fe388843592311073ea697f069ba436eae698f",
+  "producerPins": {"reviewedChangedProducers": 1, "runtimeReceiptEncodingOnlyMismatches": 3, "runtimeReceiptRepins": 0, "wireSchemaChanged": false, "openapiRegenerated": false, "apiCheckerPassed": true},
+  "roofprint": {"buildingId": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4", "packageId": "dae9326f-ec09-4e4c-89c5-c413bf8ed9b8", "ordinaryReviewStatus": 422, "ordinaryCommitStatus": 409, "unchangedCanonical": true, "unchangedPackage": true, "physicalRevision": 0, "qualifyGeometryExecuted": false, "reviewedRegistryFootprint": false, "measurementAuthorityGranted": false, "rights": "unknown", "height": "unknown", "levels": 0, "parcels": 0, "newRejectDecisions": 0, "priorSourceSelectionAndRejectionPreserved": true},
+  "ocr": {"diagnosticAttempts": 1, "postDiagnosisRetries": 0, "samePageAndRegion": true, "workerExitCode": 1, "elapsedSeconds": 10.25, "items": 0, "class": "KeyError", "nonUserTextKey": "text", "module": "docling/models/stages/ocr/tesseract_ocr_cli_model.py", "line": 251, "privateFullTraceRetained": true, "nativeAssetPrerequisites": ["osd.traineddata", "configs/tsv"], "assetChanges": 0, "ocrCodeRepairs": 0, "exactTsvFailureCausalityProven": false},
+  "profilePredicate": {"configuredProfilesSupported": true, "defaultActivationUnchanged": true, "karnatakaProfile": "demo", "provider": "CPUExecutionProvider", "unitTests": 1, "servedAssertions": 3},
+  "runtime": {"api": "http://127.0.0.1:3194/api/v1", "leftRunning": true, "image": "ulpin-geo:demo-k2d", "receipt": "runtime-final.json", "storagePreserved": true, "nativeRestarts": 0, "gpuUsed": false, "additionalRoofprintInference": 0},
+  "verification": {"checks": "checks.json", "focusedTests": 23, "canonicalOriginalHashesVerified": 22, "completeGatePass": false},
+  "restrictions": {"databaseReset": false, "reseed": false, "directProductSqlWrites": false, "holdoutScoring": false, "training": false, "merge": false, "rebase": false, "push": false},
+  "next": ["Owner resolves ordinary admission/qualification ordering and provides an executable qualification producer", "Owner authorises isolated native tessdata asset closure or a proven owned adapter repair before another OCR comparison"]
+}

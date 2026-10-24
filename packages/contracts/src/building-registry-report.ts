@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {RegistryFactStateSchema} from './registry-metadata';
+import {RetainedDocumentFreshnessSchema} from './document-freshness';
 const id=z.uuid(),text=z.string().max(250),revision=z.number().int().nonnegative();
 const field=z.strictObject({state:RegistryFactStateSchema,value:text.nullable(),sources:z.array(id).max(30)});
 const identifier=z.strictObject({id,applicationId:text,kind:z.enum(['parcel','building','floor','space']),revision});
@@ -20,7 +21,9 @@ export const ConsolidatedRegistryReportSchema=z.strictObject({schemaVersion:z.li
     address,ownershipClaims:z.array(z.strictObject({party:field,sources:z.array(id)})).max(30),
     occupancy:z.strictObject({state:RegistryFactStateSchema,people:z.array(z.strictObject({name:field,role:z.enum(['resident','occupant'])})).max(30),sources:z.array(id)})})).max(2000),
   sources:z.array(z.strictObject({id,revision:z.number().int().positive(),sha256:z.string().regex(/^[a-f0-9]{64}$/),
-    profile:text,receivedAt:z.iso.datetime()})).max(1000),
+    profile:text,receivedAt:z.iso.datetime(),
+    /** Stated when the document result retained beside this cited original is no longer current. */
+    documentResult:RetainedDocumentFreshnessSchema.optional()})).max(1000),
   omissions:z.array(z.string().max(500)).max(20),
 });
 export type ConsolidatedRegistryReport=z.infer<typeof ConsolidatedRegistryReportSchema>;

@@ -1,0 +1,151 @@
+{
+  "task": "LV0",
+  "title": "Live intake measured: backend paths, reader audit and owner-presentation gaps",
+  "gate": "GF5/LV0",
+  "status": "Documentation/native-reader handoff complete; live presentation runtime not qualified",
+  "branch": "task/lv0-live-intake-measured",
+  "productRevision": "b7657546e49299b3bd49b1e38c8656dc5dd421fd",
+  "partA": {
+    "commit": "d13b3c8b",
+    "accepted": true,
+    "modified": false,
+    "measurementRerun": false,
+    "receipt": "docs/evidence/gf5/lv0/lag.json",
+    "longestFrameMs": 1783.3,
+    "framesOver100Ms": 28,
+    "framesOver50Ms": 33,
+    "perPartCostGrows": true,
+    "pearsonR": 0.989,
+    "slopeMsPerPriorBuilding": 0.129,
+    "startToLastDrawMs": 34878.6,
+    "where": "docs/evidence/gf5/lv0/lag.json:12-25,881-887",
+    "repeatCommandRetainedNotRun": "node docs/evidence/gf5/lv0/measure.mjs",
+    "caution": "Development Chromium/SwiftShader profiler receipt; rAF gaps are not GPU duration or production timings."
+  },
+  "partB": {
+    "commit": "9d175aa2",
+    "files": ["paths.json", "native.json", "native-check.py", "demo-only.json"],
+    "nativeUnits": 9,
+    "failures": 0,
+    "errors": 0,
+    "runtimeQualification": false
+  },
+  "partC": {
+    "commit": "HEAD: the commit containing this receipt (self-hash deliberately not embedded)",
+    "subject": "docs(studio): LV0 the gaps between today and the owner's presentation",
+    "files": ["readers.json", "gaps.json", "eight-check.py", "eight.json", "verify.mjs", "result.json"],
+    "readerLanes": 24,
+    "gaps": 16,
+    "architectureStagesClassified": 9,
+    "architectureCorrections": 10,
+    "architectureReadOnly": true,
+    "source": "E:/Projects/3d-ulpin/docs/next-steps/INGESTION-ARCHITECTURE.md"
+  },
+  "nativeEight": {
+    "receipt": "docs/evidence/gf5/lv0/eight.json",
+    "source": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip",
+    "bytes": 14621643,
+    "sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+    "zipMembers": 10,
+    "profileLayersRead": 8,
+    "vectorFeatures": 2363,
+    "nativeAccepted": 2362,
+    "nativeQuarantined": 1,
+    "areaDisplayCap": 2000,
+    "nativeExcess": 362,
+    "pointBatch": {"sourcePoints": 1726222, "read": 8192, "artifactBytes": 245760},
+    "rasterWindows": [
+      {"sourcePixels": 757952, "readPixels": 65536, "artifactBytes": 117176},
+      {"sourcePixels": 589824, "readPixels": 65536, "artifactBytes": 95494}
+    ],
+    "qualification": "Real native functions, memory-only source body; not persisted source/job/HTTP proof.",
+    "privacy": "No source rows, attribute headers, people or sample values emitted; counts/hashes/sizes only.",
+    "scratch": "E:/BhuAayam-data/task-data/lv0",
+    "dependencies": "Owned CPython 3.13; pyproj 3.7.2 deviation in findings.json; boto3 added.",
+    "modelOrProviderCalls": 0,
+    "networkCalls": 0,
+    "databaseAccess": false,
+    "storingRequests": 0
+  },
+  "priorityFindings": [
+    {
+      "finding": "Native accepted NYC vectors exceed one area display cap; 422 AREA_LIMIT, not silent truncation.",
+      "where": "packages/server/src/modules/areas/areas.ts:215-242"
+    },
+    {
+      "finding": "Existing raw/mapped GETs + chunk notifications can support an additive private candidate adapter.",
+      "where": [
+        "packages/contracts/src/usp/chunk-mapping.ts:68-116",
+        "apps/studio/src/features/map/canonicalScene.ts:55-70"
+      ],
+      "boundary": "Supported reference/exact source/geometry pins; scene candidates never bypass officer recording."
+    },
+    {
+      "finding": "Sequential document retention advances case revision and earlier reads go stale; K13 owns repair.",
+      "where": [
+        "staging:docs/evidence/runtime/reh1/part-b-notes.json:34-35",
+        "packages/server/src/modules/usp/ingestion/documents.ts:126-129,148-174"
+      ]
+    }
+  ],
+  "commands": {
+    "native": [
+      "PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe",
+      "docs/evidence/gf5/lv0/native-check.py"
+    ],
+    "eight": [
+      "PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe",
+      "docs/evidence/gf5/lv0/eight-check.py"
+    ],
+    "joinRule": "Join each native/eight array with one space; run from this worktree.",
+    "evidence": "node docs/evidence/gf5/lv0/verify.mjs",
+    "whitespace": "git diff --check staging...HEAD"
+  },
+  "checks": {
+    "nativeExit": 0,
+    "eightExit": 0,
+    "evidenceExit": 0,
+    "diffCheckExit": 0,
+    "lineLimit": 120,
+    "changedPathsOwnedOnly": true,
+    "fullDiffReview": "git diff staging...HEAD reviewed file by file; accepted Part A excluded from revision changes.",
+    "partAUnchangedExit": 0,
+    "port5226Free": true,
+    "serverStartedInResume": false,
+    "push": false,
+    "productChanges": false,
+    "runtimeGateClaim": false
+  },
+  "failureLedger": [
+    {
+      "signature": "Eight-check first selection contained ten ZIP members, not eight profile layers.",
+      "cause": "Boundary/manifest are additional retained members; semantic profile has eight layer names.",
+      "comparison": "Select exact recorded profile members with unchanged SHA-256; no larger/synthetic combined input.",
+      "result": "Eight native layer reads succeeded; extra members untouched."
+    },
+    {
+      "signature": "Evidence verifier found citation ranges extending beyond source EOF and lines >120.",
+      "cause": "Rapid draft reference ranges and long narrative strings.",
+      "comparison": "Review relevant source spans; correct draft citations; exempt accepted profiler URL offsets only.",
+      "result": "B/C ranges and all evidence line lengths pass; no Part A edits."
+    }
+  ],
+  "limitations": [
+    "All API outcomes outside native functions are code-derived; shared runtime/DB/provider/GPU not operated.",
+    "No unfamiliar judge file or complete whole-cloud/raster/document pipeline was qualified.",
+    "No recording, property identities, controls, rights, heights or geometry were invented.",
+    "No closed data directories, credentials, .env or shared runtime data were accessed.",
+    "Owner size targets, local worker/model availability and live empty-runtime rehearsal remain prerequisites."
+  ],
+  "report": [
+    "TASK   LV0 — live intake measured            GATE GF5/LV0",
+    "WORKS  B/C audit complete; retained A: longest 1783.3 ms; 28 frames >100 ms; per-part cost grows.",
+    "SEE IT node docs/evidence/gf5/lv0/verify.mjs",
+    "INPUTS NYC ZIP: road layer good, building geometry quarantined; real raster windows and LiDAR batch.",
+    "GAPS   2000 cap vs 2363; mapped-map bridge missing; stale document reads owned by K13; runtime unqualified.",
+    "DESIGN paths/readers/gaps; native-check/eight-check exercise readers; verify checks evidence.",
+    "COMMITS A d13b3c8b; B 9d175aa2; C HEAD (owner-presentation gaps); no push.",
+    "CHECKS 9 native tests + 8 layer reads exit 0; JSON/citations/120 cols/diff pass; 5226 free.",
+    "NEXT   K13 retained reads; LV1 scene; additive chunk bridge/bounded views; runtime-owner qualification."
+  ]
+}

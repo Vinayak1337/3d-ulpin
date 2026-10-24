@@ -1,0 +1,214 @@
+{
+  "task": "LV2 (resume of LV1)",
+  "gate": "GF5 / M2",
+  "status": "partial",
+  "qualified": false,
+  "branch": "task/lv1-scene-takes-parts-incrementally",
+  "resumeBase": "2aee5d98",
+  "measuredSource": "3deb7ec1",
+  "criteria": [
+    {
+      "id": 1,
+      "target": "Part-work slope <0.01 ms per prior building, including deferred queue work.",
+      "before": {"setter":0.12543,"deferredInclusive":0.12543},
+      "LV1": {"setter":0.000028,"deferredInclusive":0.011219},
+      "LV2": {"setter":-0.000106,"deferredInclusive":0.005923},
+      "unit": "ms per prior building",
+      "status": "met"
+    },
+    {
+      "id": 2,
+      "target": "1662 building inputs built; no base rebuilds in the 17 building-only parts.",
+      "before": {"inputsBuilt":15857,"baseRebuilds":17},
+      "LV1": {"inputsBuilt":1662,"baseRebuilds":0},
+      "LV2": {"inputsBuilt":1662,"baseRebuilds":0},
+      "status": "met"
+    },
+    {
+      "id": 3,
+      "target": "3a: no main-thread long task >50 ms attributable to scene/Studio during the stream.",
+      "measureChanged": "PerformanceObserver long tasks replace rAF gaps as the gate; idle gaps are not code time.",
+      "before": {"longTasksOver50":33,"attributable":33,"rafOver100":27},
+      "LV1": {"longTasksOver50":9,"attributable":9,"rafOver100":50},
+      "LV2": {"longTasksOver50":2,"attributable":2,"rafOver100":43},
+      "remaining": [
+        {"atMs":18209.2,"taskMs":71,"topSceneFunction":"setBase","callMs":64.6},
+        {"atMs":19052.5,"taskMs":67,"topLoaderFunctions":["inflate_fast","getTileOrStrip","imageryOverlay"]}
+      ],
+      "profiles": "docs/evidence/gf5/lv1/lv2-comparison.json: runs.lv2-after.remainingLongTasks",
+      "status": "partial"
+    },
+    {
+      "id": 4,
+      "target": "Same ids/bounds at a fixed pose; RGB MAE <=1/255 and <=1% pixels with an RGB delta >8.",
+      "before": {"drawn":1662,"rgbMae255":0,"changedFractionAbove8":0},
+      "LV1": {"drawn":1662,"rgbMae255":0.987542,"changedFractionAbove8":0.024215},
+      "LV2": {"drawn":1662,"rgbMae255":0.103617,"changedFractionAbove8":0.003245},
+      "sameApplicationIds": true,
+      "sameRawBounds": true,
+      "proof": "Same retained before records/ids replayed in 96-feature parts, with assets and before camera pose.",
+      "limit": "Fresh upload intents change ids/tints; natural camera intentionally now fits the whole arrived area.",
+      "status": "met"
+    }
+  ],
+  "base": {
+    "slopeMsPerPriorBaseFeature": {"before":0.171863,"LV1":0.141518,"LV2":-0.04907},
+    "LV2BasePartMs": [64.6,44.7,28.5,28.1,34.7,28,33.7,15.2],
+    "scope": "First eight base-containing parts; last one contains 29 base features, not 96.",
+    "method": "Whole truth by id/own-field identity; only new or changed surfaces are built.",
+    "mergedLines":
+    "Parcel lines, sidewalk/fallback kerbs and lanes merged per arriving part; changes repair its batch.",
+    "retained": "Road/sidewalk flags, lands, utility meshes/anchors, layer switches and base render proof.",
+    "limit": "Arriving base features build synchronously; first part still causes the 71 ms task."
+  },
+  "camera": {
+    "call": "SceneEngine.setImportStreaming(active), owned by the Studio's package state.",
+    "firstFit": "Arrived surface bounds plus arrived building bounds, not just the first drained buildings.",
+    "following": "Refits only on plan-box growth, one eased 600 ms flight, never during an existing flight.",
+    "stops": "One pointer/wheel interaction, selection or non-area mode; does not re-arm during the same import.",
+    "reducedMotion": "Jumps; outside imports, first content fits once.",
+    "fit": "All box corners must fit with 10% NDC margin; the old 0.47 radius scale alone clipped the area.",
+    "proof": "E:/BhuAayam-data/task-data/lv1/run-1791666085925/final.png"
+  },
+  "pixelDiagnosis": {
+    "capturedBeforePadChange": "07466947",
+    "LV1FrozenChangedPixels": 21670,
+    "sharesOfChangedPixels": {
+      "missingAssetErrorNote": 0.887217,
+      "textLabels": 0.10683,
+      "shadowFrustum": 0.005953,
+      "pads": 0,
+      "trees": 0,
+      "buildingEdgesOrTints": 0
+    },
+    "cause": "LV1 replay copied state.json but no retained TIFF/LAZ assets, producing a large visible error note.",
+    "labels": "Remaining text-label raster differences; no geometry/material/tint change needed.",
+    "shadow": "All 129 non-UI residual pixels match the controlled shadow-frustum difference mask.",
+    "shadowFarM": {"original":8059.13551,"forcedUpdate":8693.381804},
+    "shadowRightM": 1259.239923,
+    "shadowDecision": "Shadow fitting left unchanged, as requested.",
+    "padsChoice": "One merged mesh per drained frame, not a global rebuild at the dressing interval.",
+    "padsMeasurement": {"all1662Ms":19.3,"batch24MaxMs":6.4},
+    "pads": "Merging all pads changed no >8 pixels in the fixed-id diagnosis; batching removes extra draw calls.",
+    "LV2PadBatches": 57,
+    "removal": "A removed building rebuilds only its pad batch; unrelated batches remain.",
+    "differenceImage": "docs/evidence/gf5/lv1/lv2-comparison.json: frozenDifferenceImage",
+    "details": ["lv2-diagnosis-assets-present.json","lv2-shadow-difference.json","lv2-parity.json"]
+  },
+  "headedGpu3b": {
+    "gate": false,
+    "renderer": "NVIDIA GeForce RTX 3070, ANGLE Direct3D11",
+    "frames": {"count":369,"p50Ms":7.1,"p95Ms":24.8,"longestMs":166.1,"over50":6,"over100":3},
+    "mainThreadLongTasksOver50": 7,
+    "topCosts": "Base construction and renderer onFirstUse (shader/program/buffer setup); profiles list every task.",
+    "maxFullAreaRenderFrameMs": 21.8,
+    "command": "LV1_CAPTURE=lv2-headed LV2_HEADED=1 node docs/evidence/gf5/lv1/measure.mjs",
+    "browserClosed": true
+  },
+  "difficult4x": {
+    "gate": false,
+    "frames": {"count":431,"p50Ms":166.6,"p95Ms":216.8,"longestMs":2983.2,"over50":406,"over100":337},
+    "actualInputsBuilt": 1662,
+    "finalDrawn": 1662,
+    "importCompleteMs": 48562.2,
+    "finalDrawMs": 89646.9,
+    "limit": "Unchanged sender fallback overlaps queued work; record only, not sender qualification or the gate."
+  },
+  "input": {
+    "pack": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip",
+    "sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+    "features": 2363,
+    "buildings": 1662,
+    "goodAndDifficult": "Same real pack at 1x and 4x; one headed real-GPU run. No enlarged or synthetic scene."
+  },
+  "callers": {
+    "proof": "docs/evidence/gf5/lv1/lv2-callers.json",
+    "viewport": "1440 x 900",
+    "captured": ["register","review workspace","roofprint map","portal"],
+    "inputs":
+    "Retained Swiss register/context, NYC Bronx context and k2c roofprint candidate; actual caller components.",
+    "limit": "Isolated read-only components, not live routes. Swiss placement/heights unknown; its scene stays empty.",
+    "tests": "Existing tests pass in pnpm studio:test."
+  },
+  "evidence": {
+    "beforeAndLV1": "docs/evidence/gf5/lv1/lag.json",
+    "comparison": "docs/evidence/gf5/lv1/lv2-comparison.json",
+    "software": "docs/evidence/gf5/lv1/lv2-after.json",
+    "headed": "docs/evidence/gf5/lv1/lv2-headed.json",
+    "throttled": "docs/evidence/gf5/lv1/lv2-throttled.json",
+    "uiDesign": "docs/evidence/gf5/lv1/ui-design-check.json",
+    "rawAndScreenshots": "Each capture gives its owned rawTimingFile; neighboring first/middle/final/aligned PNGs."
+  },
+  "checks": [
+    {"command":"pnpm --filter @ulpin/scene test","phase":"camera/pads/base/corner-fit","exit":0},
+    {"command":"pnpm --filter @ulpin/scene typecheck","phase":"two missing test types, corrected","exit":0},
+    {"command":"LV1_CAPTURE=lv2-after node docs/evidence/gf5/lv1/measure.mjs","exit":0},
+    {"command":"LV1_CAPTURE=lv2-throttled LV1_CPU_RATE=4 node docs/evidence/gf5/lv1/measure.mjs","exit":0},
+    {"command":"LV1_CAPTURE=lv2-headed LV2_HEADED=1 node docs/evidence/gf5/lv1/measure.mjs","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/lv2-diagnose.mjs","phase":"bounded pixel diagnosis","exit":0},
+    {"command":"LV2_PARITY=1 node docs/evidence/gf5/lv1/parity.mjs","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/lv2-callers.mjs","phase":"corrected isolated capture","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/shadow-difference.mjs","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/lv2-analyze.mjs","phase":"linear call alignment","exit":0},
+    {"command":"pnpm studio:test","exit":0,"Studio":329,"scene":31,"UI":4,"apiClient":2},
+    {"command":"pnpm studio:typecheck","exit":0},
+    {"command":"pnpm --filter @ulpin/scene typecheck","phase":"final","exit":0},
+    {"command":"node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging","exit":0},
+    {"command":"node --check each LV1/LV2 .mjs","exit":0},
+    {"command":"git diff --check; new-file lines <=120","exit":0},
+    {"command":"freePort(5234); freePort(5235)","exit":0}
+  ],
+  "recovery": [
+    {
+      "failure": "The old area preset's radius scale still clipped corners in the initial camera run.",
+      "decision": "Added corner-constrained fit, tested projection margin, committed; final runs use that code."
+    },
+    {
+      "failure": "Caller capture first hit dependency interop/query-context and service-worker interception errors.",
+      "decision":
+      "Isolated HTML, guarded reads and native imports of resolved URLs; all four callers captured.",
+      "logs": "E:/BhuAayam-data/task-data/lv1/lv2-callers-*-run.log and lv2-callers-read-trace.log"
+    },
+    {
+      "failure": "Extended sample alignment timed out at 150 s using repeated all-call searches.",
+      "decision":
+      "Linear sorted interval walk, bounded offset comparison; analysis succeeds without re-running the import."
+    },
+    {
+      "failure": "Two test input type omissions caused scene typecheck exit 2 during development.",
+      "decision": "Corrected heightState and base kind type; final tests/type checks exit 0."
+    }
+  ],
+  "safety": {
+    "ownedPorts": [5234,5235],
+    "portsStoppedAndFree": true,
+    "gpu": "One approved headed browser only; closed. All other scene runs used software rendering.",
+    "backendProviderRuntimeStarted": false,
+    "demo3194OrRehearsal21016Requests": false,
+    "inheritedShellReads": "The measurement's existing shell requests failed via proxy 3188; no responding API used.",
+    "originalsOrExistingScratchChanged": false,
+    "credentialsEnvOrForbiddenDirectoriesOpened": false,
+    "otherWorktreesMergeRebasePush": false
+  },
+  "report": {
+    "TASK": "LV2 — streamed camera, pad/base batching and honest main-thread evidence; GF5 / M2.",
+    "WORKS": "Whole arrived area stays in frame; 1662 builds, stable prior surfaces, 0 building-only base rebuilds.",
+    "SEE IT": "LV1_CAPTURE=lv2-after node docs/evidence/gf5/lv1/measure.mjs",
+    "INPUTS": "Real NYC pack at 1x/4x, one RTX 3070 run; retained records for four caller screenshots.",
+    "GAPS": "3a remains partial: 71 ms base task and 67 ms imagery decode; caller captures are isolated, not live.",
+    "DESIGN": [
+      "engine.ts: setImportStreaming follows arrived bounds; per-frame pad batches and per-part base reconciliation.",
+      "Studio supplies lifecycle only; fixed-id part replay, difference masks and long-task profiles prove the changes."
+    ],
+    "COMMITS": [
+      "07466947 — streamed camera",
+      "064f2cf6 — merged pads",
+      "4297df55 — incremental base",
+      "3deb7ec1 — fit every corner",
+      "docs(studio): LV2 evidence (this commit)"
+    ],
+    "CHECKS":
+    "Final tests/type checks, software/4x/GPU runs, parity, caller capture, analysis, UI scan and ports: exit 0.",
+    "NEXT": "Review checkpoint; follow-up for frame-budgeted base additions and off-main-thread imagery decoding."
+  }
+}

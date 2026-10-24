@@ -1,0 +1,47 @@
+{
+  "task": "HB1",
+  "gate": "GF1",
+  "gap": "AU2 G03",
+  "base": "f4916b09ca8b2b51024f0e9673f35a6641ed77dc",
+  "status": "code_and_tests_passed_runtime_unwalked",
+  "design": {
+    "renew": "commit() renews through the job authority's existing heartbeatUspJobAttempt after every named package, committed, skipped or refused; jobs.ts is unchanged.",
+    "leaseLost": "A 409 from the attempt assertion in pinned() or from the renewal becomes AppError 503 INTAKE_RUN_LEASE_LOST, which intakeRunRefusal already reads as infrastructure; fail() returns without writing, so no target is stopped and no refusal sentence or retry mark is written. The authority's next claim follows the lease expiry.",
+    "retry": "commitOne already skips a package that is COMMITTED at its named revision + 1; the retry re-records its targets idempotently and commits only the rest.",
+    "refusal": "A package refused by its own checks keeps today's path: its targets stop in its own words, other packages continue, and the job fails with its code.",
+    "seam": "getPackage joins intakeRunSteps as 'package' so a check can supply package state; every call site in the worker uses it."
+  },
+  "tests": {
+    "file": "packages/server/src/modules/usp/ingestion/intake-run.test.ts",
+    "added": [
+      "a confirmation run renews its lease after each committed package (3 packages, 3 renewals)",
+      "a lease lost after package 2 stops nothing, and the retry commits only package 3 (no stop, no job error, attempt 2 commits [3], 5 renewals in total)",
+      "a package refused by its own checks still stops its building in its own words (stop code and words exact, job failed with its code, attempt fenced)"
+    ],
+    "harness": "runIntakeRunJob runs unchanged against a fake pool that answers the run's own SQL by statement prefix; the real claim, heartbeat, assertion, accept and fail functions run.",
+    "mutations": [
+      {"change": "remove the renewal in commit()", "result": "3 of the added tests fail"},
+      {"change": "remove the lease-lost early return in fail()", "result": "the lease-lost test fails"}
+    ]
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "before": 0, "after": 0},
+    {"command": "pnpm studio:typecheck", "before": 0, "after": 0},
+    {"command": "pnpm studio:test", "before": 0, "after": 0, "tests": {"studio": 471, "scene": 52, "ui": 7, "apiClient": 2}},
+    {"command": "backend test set from the task", "before": {"exit": 1, "tests": 332, "pass": 295, "fail": 15, "skipped": 22},
+      "after": {"exit": 1, "tests": 335, "pass": 298, "fail": 15, "skipped": 22},
+      "note": "The same 15 tests fail before and after: they read E:/BhuAayam-data, absent on this box."},
+    {"command": "apps/api/scripts/openapi.ts --check", "before": 0, "afterCodeChange": "1 (source-pins.json stale)", "afterRefresh": 0,
+      "operations": 314, "schemas": 356},
+    {"command": "scripts/api/refresh-contract.ts origin/staging", "exit": 0, "repinned": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts"]},
+    {"command": "pnpm studio:api-types", "exit": 0, "changed": false},
+    {"command": "python scripts/api/check.py", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "gaps": [
+    "No runtime walk: a 21-package confirmation on a live box (G05) is still needed to show the lease is held in practice.",
+    "A single commitPackage call longer than the 180 s lease cannot renew inside it (that would need areas.ts; commit cost per feature is D4). The lease-lost path then still ends the attempt cleanly.",
+    "The target and prepare phases do not renew: each is one target or one review, bounded and observed well under half the lease (LQ1b: 12 s to the first card).",
+    "A lease lost between the last renewal and acceptUspJobAttempt is still reported through acceptance's own conflict; fail() then cannot write and the job is retried, as before."
+  ]
+}

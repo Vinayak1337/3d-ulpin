@@ -1,0 +1,554 @@
+{
+  "task": "S3",
+  "gates": [
+    "AG-S1",
+    "ML-A",
+    "ML-D1"
+  ],
+  "base": "9138678c",
+  "step0": {
+    "writtenBeforeCode": true,
+    "point1_whereTheFourTokensLive": {
+      "writer": "packages/server/src/modules/usp/ingestion/column-profile.ts:93-98 (maskColumnSample): undefined -> [absent], object -> [array] or [object], blank text -> [blank]; null -> [null] at :94. Called for the profile at :239 and again on stored samples by the request builder at packages/server/src/modules/usp/ingestion/mapping-teacher.ts:167.",
+      "passThrough": "packages/server/src/modules/usp/ingestion/column-profile.ts:99 returns a text cell unchanged when it is exactly one of the five bracket spellings, so the builder's second masking keeps a token under a personal header. The same line means a real cell whose whole text is such a spelling cannot be told from the token: 0 of 68,399 text cells in the 50 tables are such a cell.",
+      "shortening": "packages/server/src/modules/usp/ingestion/column-profile.ts:83 keeps any [..] group whole when a long sample is cut. A whole-sample token is returned at :93-99 before the cut and is at most 8 characters, so the cut never sees one.",
+      "safeWords": "packages/server/src/modules/usp/ingestion/column-profile.ts:38 lists blank, absent, array, object (with email, pan, aadhaar, phone) as words the text masker keeps, so that a second masking of a token is the token.",
+      "storedWithCounts": [
+        {
+          "where": "E:/BhuAayam-data/task-data/t1/profiles/profiles.jsonl",
+          "columns": 411,
+          "columnsHoldingOneOfTheFour": 50,
+          "tables": 14,
+          "samples": {
+            "[blank]": 214,
+            "[absent]": 44
+          },
+          "bySplit": {
+            "dev": 46,
+            "pool": 4
+          },
+          "pin": "docs/evidence/gf-agent/t1/prep.json profilesSha256 82009732...; the stored file matches it"
+        },
+        {
+          "where": "E:/BhuAayam-data/task-data/t1b/profiles/profiles.jsonl",
+          "columns": 193,
+          "columnsHoldingOneOfTheFour": 91,
+          "tables": 3,
+          "samples": {
+            "[blank]": 784,
+            "[object]": 20
+          },
+          "pin": "docs/evidence/gf-agent/t1b/result.json profilesSha256 502f6658...; the stored file matches it"
+        },
+        {
+          "where": "E:/BhuAayam-data/task-data/t1/verifier/inventory.json and t1b/verifier/inventory.json",
+          "what": "one full column profile per table, masked samples included (45 tables in t1); pinned as inventorySha256 in the same two files; both stored files match their pins"
+        },
+        {
+          "where": "sources.inspection.manualProfile (database)",
+          "what": "the tabular profile of every retained CSV or XLSX, masked samples included, written at packages/server/src/modules/usp/ingestion/service.ts:168-174 and read back at :56-58 and :69-79",
+          "count": "not counted: the database is not read in this task"
+        },
+        {
+          "where": "Git, recorded API responses",
+          "files": [
+            "docs/evidence/gf-agent/ui/f2b/responses.json",
+            "docs/evidence/gf1/ui/f3a/table-responses.json"
+          ],
+          "each": {
+            "[blank]": 55,
+            "[absent]": 10
+          },
+          "what": "evidence of what the API returned to the studio; no test reads them for the spelling"
+        },
+        {
+          "where": "E:/BhuAayam-data/task-data/a3b/learning/approvals",
+          "count": 0,
+          "what": "the folder does not exist yet; officer examples would carry the stored profile column (chunk-mapping-learning.ts:48-66)"
+        }
+      ],
+      "readers": {
+        "gatewayRequest": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:159-169 (promptColumns) is the only place masked samples enter a provider request; scripts/agent/live-proof.ts:213 and scripts/agent/injection-screen.ts:257 both go through it.",
+        "hashes": "columnProfileHash covers the samples; it keys the replay (packages/server/src/modules/usp/ingestion/mapping-teacher.ts:103-108), the request scope (packages/server/src/modules/usp/ingestion/mapping-teacher.ts:422-423), the routing result (chunk-mapping-agent.ts:89), officer examples (chunk-mapping-learning.ts:50) and the label groups (verify-teacher-labels.ts:138, :190).",
+        "labelKeys": "development-teacher label lines are keyed by profileId = hash(family, file, sheet, column) (scripts/agent/t1-profiles.ts:58): 0 keys hold a sample.",
+        "learnerFeatures": "services/geo/geo/usp_learning/stage_a.py reads 0 of its 9 feature groups from maskedSamples.",
+        "mappingMemory": "keyed by the layout fingerprint (headers and types), not by samples.",
+        "api": "packages/api-client/src/schema.d.ts:64149 and :67987 return maskedSamples to the studio as text.",
+        "tests": [
+          "scripts/agent/t1-prep.test.ts:64 (compound samples equal [object])",
+          "scripts/agent/t1-profiles.ts:210 (the policy sentence naming [object])",
+          "packages/server/src/modules/usp/ingestion/column-profile.test.ts (pattern tokens and the cut; none of the four)"
+        ]
+      },
+      "s2CountCorrected": {
+        "confirmed": {
+          "requestsRefusedOf50": 17,
+          "tablesByToken": {
+            "[blank]": 13,
+            "[absent]": 4,
+            "[object]": 1
+          },
+          "tablesWithTwoKinds": 1,
+          "labelKeys": 0,
+          "learnerFeatures": 0,
+          "profilePins": 2,
+          "assertions": 1,
+          "policySentences": 1
+        },
+        "missedInS2": "scripts/agent/verify-teacher-labels.ts:93-102 (materialize) rebuilds each labelled table's profile from its source with the masker as it is now and compares it with the stored inventory and the stored columns by hash (T1_PROFILE_INVENTORY_CHANGED, T1_PROFILE_CHANGED). So the stored T1 and T1b sets do depend on the spelling: 141 stored columns in 17 tables, under 298 stored development-teacher label lines (115 of 411 in t1/labels, 183 of 193 in t1b/labels). S2 counted the pins and not this check."
+      }
+    },
+    "point2_whereTheChangeGoes": {
+      "holds": "A stored record depends on the old spelling, so the masker is left alone and the four tokens are translated in the mapping request builder.",
+      "recordsThatForcedIt": [
+        "The stored T1 and T1b profile sets and inventories: scripts/agent/verify-teacher-labels.ts:93-102 reproduces them with the current masker and throws on the first changed column. A changed masker makes every later verification of the 298 label lines on the 17 tables fail until both sets are written again.",
+        "They cannot be written again in place: scripts/agent/t1-profiles.ts:45 creates files with the exclusive flag, :192 accepts only the T1b folder, and a worker does not modify existing files under E:/BhuAayam-data. A second copy elsewhere would leave two profile sets and re-pointed label runs: a learning-lane task, not this one."
+      ],
+      "recordsThatDoNot": [
+        "Recorded requests: 0. A request holding one of the four tokens was refused before replay or dispatch since the minimizer rule of 26 September (21103ea3); the mapping teacher went through the gateway on 10 October (390695a7).",
+        "Database rows hold the spelling but nothing rebuilds a profile and compares it with the stored one (tabular-source.ts:164 compares the pin; tabular-recipe.ts:10-11 the source and the selection).",
+        "Dedupe keys: the retain operation key hashes the request, not the profile (service.ts:40-42)."
+      ],
+      "file": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+      "testFile": "scripts/agent/mapping-teacher.test.ts",
+      "line": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:167, inside promptColumns: a stored sample that is exactly one of the four tokens is sent in its plain-text form; every other sample is masked again as today.",
+      "evidence": "mappingTeacherRequest returns the translation it made (token, form, number of samples); scripts/agent/live-proof.ts writes it into each mapping call of the plan and the receipt.",
+      "unchanged": [
+        "the masker and its tests",
+        "every profile, profile hash and replay key",
+        "the two pins (no regeneration)",
+        "scripts/agent/t1-prep.test.ts:64 and the sentence at t1-profiles.ts:210 (both stay true)",
+        "the template name and the 33 requests that pass today, byte for byte"
+      ],
+      "ifTheLeadReadsTheRuleNarrowly": "If only product records count, the masker change is the same four strings at packages/server/src/modules/usp/ingestion/column-profile.ts:93-99, plus a new T1 and T1b profile root and a re-run of the label verification on 298 lines; the builder change here would then be removed."
+    },
+    "point3_theNewSpelling": {
+      "forms": {
+        "[absent]": "(absent cell)",
+        "[blank]": "(blank cell)",
+        "[array]": "(array cell)",
+        "[object]": "(object cell)"
+      },
+      "pattern": "^\\((?:absent|blank|array|object) cell\\)$",
+      "ascii": true,
+      "firstCharacter": "(",
+      "whatTheTextMaskerCanOutput": "Each run of letters becomes X, x or the Devanagari letter a, unless it is already only X, x, D or that letter, or (under a header that is not personal) a listed safe word, or m, ft, yd or B followed by D. Digits become D. Everything else is copied (packages/server/src/modules/usp/ingestion/column-profile.ts:64-74). The word 'cell' is none of these, so no real cell text can leave the masker as one of the four forms: a real cell '(blank cell)' leaves as '(blank xxxx)', and under a personal header as '(xxxxx xxxx)' (run with synthetic input).",
+      "atomic": "The forms are written by the builder after masking and after the cut; they are at most 13 characters and never pass through shortenMaskedSample.",
+      "minimizer": "each of the four forms passes unchanged (run with synthetic input); [null] is unchanged and passes as JSON.",
+      "limitThatStays": "A real cell whose whole text is an old bracket spelling is still returned as the token by packages/server/src/modules/usp/ingestion/column-profile.ts:99; ending that needs the masker to tell a cell from a stored sample. 0 such cells in the 50 tables."
+    },
+    "point4_thePatternTokens": {
+      "syntheticAtTheMinimizer": {
+        "wholeSample": {
+          "[email]": "refused",
+          "[phone:DDDDDDDDDD]": "refused",
+          "[PAN:AAAAADDDDA]": "refused",
+          "[Aadhaar:DDDD DDDD DDDD]": "refused"
+        },
+        "tokenThenText": "refused",
+        "textThenToken": "passes unchanged",
+        "code": "MODEL_PROMPT_PRIVACY"
+      },
+      "whatTheMaskerWrites": "Under a plain header: [email], [phone:DDDDDDDDDD], [PAN:XXXXXXXXXX], [Aadhaar:DDDD DDDD DDDD]. Under a personal header the name inside the bracket is masked too: [xxxxx], [xxxxx:DDDDDDDDDD], [XXX:XXXXXXXXXX]. All are refused as a whole sample.",
+      "areSamplesOfPersonalColumnsSent": "Yes: promptColumns sends the masked samples of every column.",
+      "whyTheFiftyTablesDoNotShowIt": "0 of the 604 stored T1 and T1b columns hold a sample that starts with, or contains, a pattern token: none of the sampled cells is an e-mail address, a phone number, a PAN or an Aadhaar number.",
+      "ownersTableWithAPhoneColumn": "A synthetic table (plot, phone, area; 6 rows) builds a request the minimizer refuses with MODEL_PROMPT_PRIVACY, so the teacher is unavailable for the whole table and the mapping falls back to memory or manual.",
+      "decision": "Not in this change. The forms are not a fixed list of four (seven at least, by header kind), they also lead longer samples, and a real cell that begins with a bracket is refused by the same rule. Listed under NEXT with the count 0."
+    },
+    "point5_theContactLine": {
+      "rule": "packages/server/src/modules/ai/document-storey-agent.ts:23-24: the alternative 'unit' of UNIT_WORDS, matched anywhere in the line and without regard to case. In the contact line it matches the first word, which is followed by 'No' and a door number.",
+      "eightSources": {
+        "lines": 3451,
+        "selectedByAnyWord": 209,
+        "linesWhereUnitMatches": 22,
+        "selectedByUnitAlone": 19
+      },
+      "linesWhereUnitMatches": {
+        "stateALevelOrAUnitCount": 3,
+        "positions": [
+          "26c2d310 p1-l109",
+          "26c2d310 p1-l128",
+          "2b9f8803 p1-l40"
+        ],
+        "ofThoseSelectedByUnitAlone": [
+          "2b9f8803 p1-l40"
+        ],
+        "matchInsideAnotherWord": 5,
+        "matchInsideAnotherWordPositions": [
+          "26c2d310 p1-l56",
+          "26c2d310 p1-l233",
+          "26c2d310 p1-l274",
+          "26c2d310 p1-l278",
+          "26c2d310 p1-l294"
+        ],
+        "unitFollowedByNoAndADigit": [
+          "2b9f8803 p1-l322",
+          "2aadce88 p1-l252",
+          "2aadce88 p1-l253"
+        ],
+        "unitFollowedByNoAndNoDigit": [
+          "f8a55dc2 p1-l93",
+          "f8a55dc2 p2-l1085"
+        ]
+      },
+      "narrowestChange": "The word 'unit' does not select a line where it is followed by 'No' and a digit: a numbered unit is one door, as in an address, not a count of units. A line that also names a level, a tower or a count elsewhere is still selected by that other word. This drops 3 of the 209 selected lines, all three in the architect's contact block of the two plan sheets, and no other line of the 8 sources.",
+      "widerRulesNotTaken": "A word boundary around 'unit' would also drop the 5 lines matched inside another word and 2 more; asking for a stated count would drop 18 of the 19 lines. Neither is needed to drop the contact block.",
+      "recordedTower3Answers": "docs/evidence/gf-ai/storeys/a5/candidates/haryana-2831-tower3.json cites lines of one source only, 26c2d310 (20 proposals); the change alters the selection of 0 lines in that source. No model answer is recorded for any of the 8 sources (agent-receipt.json: 0 calls).",
+      "howItIsReported": "The selection names such a line by position under its own code, apart from the privacy omissions."
+    },
+    "pathCorrection": "scripts/agent/run-agent.ts does not exist. The agent run that writes the agent files is docs/evidence/gf-ai/storeys/a5/run-agent.ts; Part 3 changes that file."
+  },
+  "part1": {
+    "what": "The mapping request builder sends each of the four whole-sample tokens in a plain-text form; the masker is unchanged (Step 0.2: the stored T1 and T1b profile sets are rebuilt and compared by the label verifier).",
+    "changed": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts: PROMPT_SAMPLE_FORMS, promptSample(), promptSampleForms(); mappingTeacherRequest() also returns sampleForms",
+    "forms": {
+      "[absent]": "(absent cell)",
+      "[blank]": "(blank cell)",
+      "[array]": "(array cell)",
+      "[object]": "(object cell)"
+    },
+    "unchanged": {
+      "masker": "packages/server/src/modules/usp/ingestion/column-profile.ts and its test: not in the diff",
+      "minimizer": "packages/server/src/modules/model-gateway/**: not in the diff",
+      "pins": "docs/evidence/gf-agent/t1/prep.json and docs/evidence/gf-agent/t1b/result.json: not in the diff; the stored profile and inventory files still match them (Step 0, point 1)",
+      "hashes": "columnProfileHash, teacherReplayKey and the T1 label keys read the profile, not the request",
+      "template": "the prompt template name is not bumped: the 33 requests that passed before are the same bytes",
+      "sentence": "scripts/agent/t1-profiles.ts:210 and scripts/agent/t1-prep.test.ts:64 stay true as written"
+    },
+    "developmentMappingRequests": {
+      "method": "E3's screen (scripts/agent/injection-screen.ts screenTables) over the same 50 tables, run before and after the change; each request is built and given to minimizeMessages; nothing is sent",
+      "requests": 50,
+      "refusedBefore": 17,
+      "refusedAfter": 2,
+      "tablesHoldingOneOfTheFour": 17,
+      "samplesByToken": {
+        "[blank]": 998,
+        "[absent]": 44,
+        "[object]": 20
+      },
+      "stillRefused": [
+        {
+          "family": "mi-d22",
+          "where": "schemes-yes-v1.csv",
+          "columns": 90,
+          "userMessageChars": 45161,
+          "blankSamples": 402,
+          "bodyBytes": 56333,
+          "code": "MODEL_PROMPT_PRIVACY"
+        },
+        {
+          "family": "mi-d22",
+          "where": "schemes-no-v1.csv",
+          "userMessageChars": 44648,
+          "blankSamples": 382,
+          "bodyBytes": 55824,
+          "code": "MODEL_PROMPT_PRIVACY"
+        }
+      ],
+      "whyTheTwoRemain": "Not the tokens: one message may hold at most 32,768 characters (packages/server/src/modules/model-gateway/adapter.ts:38), and the gateway reports a longer one with the same code. As the task file expected.",
+      "notScreened": "9 files of the opf families are stopped earlier by the source guard (T1_SOURCE_DENIED), as in E3"
+    },
+    "evidenceOfTheTranslation": "mappingTeacherRequest returns sampleForms (token, form, number of samples); scripts/agent/live-proof.ts writes it into the mapping step of the plan as input.sampleForms. The two planned mapping calls hold none of the four: [].",
+    "test": "scripts/agent/mapping-teacher.test.ts: request: the four whole-sample tokens go as plain-text forms the minimizer accepts; cell text stays text (synthetic rows)"
+  },
+  "part2": {
+    "what": "The word 'unit' selects no line where 'No' and a digit follow it; a stated count of units is still selected. The rule is in the selection, not a mask applied afterwards.",
+    "changed": "packages/server/src/modules/ai/document-storey-agent.ts: DOOR_NUMBER, UNIT_WORDS, NUMBERED_UNIT; storeyPartSelection() names such a line in omitted with code NOT_SELECTED_UNIT_NUMBER; StoreyOmittedLine['code'] has two members",
+    "linesNoLongerSelected": {
+      "ofSelectedLinesInThe8PlannedDocuments": "3 of 209",
+      "positions": [
+        {
+          "document": "2b9f8803",
+          "partId": "p1-l322",
+          "page": 1,
+          "line": 322
+        },
+        {
+          "document": "2aadce88",
+          "partId": "p1-l252",
+          "page": 1,
+          "line": 252
+        },
+        {
+          "document": "2aadce88",
+          "partId": "p1-l253",
+          "page": 1,
+          "line": 253
+        }
+      ],
+      "otherSixDocuments": 0
+    },
+    "theThirdReason": {
+      "sent": "a part of the request (step.exec parts; counted in input.sent)",
+      "omittedByPrivacy": "input.omitted with code MODEL_PROMPT_PRIVACY; neverSent reason starts \"the gateway's text minimizer refuses this line\"",
+      "notSelected": "input.omitted with code NOT_SELECTED_UNIT_NUMBER; neverSent reason starts \"not selected: its only matching word is a numbered unit\"",
+      "tower3Plan1_2b9f8803": {
+        "linesSent": 18,
+        "before": 19,
+        "omitted": [
+          {
+            "partId": "p1-l276",
+            "code": "MODEL_PROMPT_PRIVACY"
+          },
+          {
+            "partId": "p1-l322",
+            "code": "NOT_SELECTED_UNIT_NUMBER"
+          }
+        ]
+      },
+      "tower3Plan2_2aadce88": {
+        "linesSent": 9,
+        "before": 11,
+        "omitted": [
+          {
+            "partId": "p1-l252",
+            "code": "NOT_SELECTED_UNIT_NUMBER"
+          },
+          {
+            "partId": "p1-l253",
+            "code": "NOT_SELECTED_UNIT_NUMBER"
+          },
+          {
+            "partId": "p1-l284",
+            "code": "MODEL_PROMPT_PRIVACY"
+          }
+        ]
+      }
+    },
+    "plan": {
+      "command": "pnpm exec tsx scripts/agent/live-proof.ts --plan",
+      "tariff": "lead's proposal of 10 October 2026: not approved (lead-proposal-20261010/not-approved)",
+      "policyHash": "371070a6deb1880936a151e6779c463ed179175d263d8997b77cc6673a8ab51a",
+      "calls": 10,
+      "estimate": {
+        "kind": "estimate",
+        "microInr": 1136475,
+        "rupees": "₹1.14",
+        "before": {
+          "microInr": 1140060,
+          "rupees": "₹1.15"
+        }
+      },
+      "requestBound": {
+        "kind": "upper_bound",
+        "microInr": 3102105,
+        "rupees": "₹3.11",
+        "before": {
+          "microInr": 3112815,
+          "rupees": "₹3.12"
+        }
+      },
+      "atMost": {
+        "kind": "upper_bound",
+        "microInr": 7741440,
+        "rupees": "₹7.75",
+        "before": "the same"
+      },
+      "shareOfProposedCapsAtMost": {
+        "total": "7.75%",
+        "daily": "30.97%",
+        "callsForOnePersonADay": "10 of 150",
+        "documentAgentPart": "20.65%"
+      },
+      "neverSent": {
+        "entries": 12,
+        "heldOutOrDeniedNotOpened": 7,
+        "linesByPrivacy": 2,
+        "linesNotSelected": 3
+      },
+      "writtenTo": "E:/BhuAayam-data/task-data/s1/plan-20261010T162536800Z"
+    },
+    "dryRun": {
+      "command": "pnpm exec tsx scripts/agent/live-proof.ts --dry-run",
+      "steps": 15,
+      "gatewayAsks": 11,
+      "providerDispatches": 0,
+      "ledgerReservations": 0,
+      "fetchAttempts": 0,
+      "requestsMatchingPlan": "10 of 10",
+      "endStates": {
+        "needs_input": 6,
+        "teacher_unavailable": 9
+      },
+      "rupeesSpent": "none: no request left the process",
+      "writtenTo": "E:/BhuAayam-data/task-data/s1/dry-run-20261010T162537937Z"
+    },
+    "tests": [
+      "packages/server/src/modules/ai/document-storey-agent.test.ts: selection: a numbered unit in a contact line selects nothing; a stated unit count does (synthetic page: a contact line with a numbered unit, an address and a landline is not selected and is named; three unit-count and floor lines are selected)",
+      "scripts/agent/live-proof.test.ts: plan: a line left out of a storey call is named under its own reason; a mapping call names its forms"
+    ],
+    "document": "docs/backend/LIVE-PROOF.md line 73: estimate ₹1.15 -> ₹1.14 (numbers only)"
+  },
+  "part3": {
+    "pathCorrection": "scripts/agent/run-agent.ts does not exist; the runner that writes the agent files is docs/evidence/gf-ai/storeys/a5/run-agent.ts",
+    "what": "agentDocument() builds each <sha256>.agent.json as { source, mode, omitted, results }; omitted is storeyPartSelection(store).omitted: part id, page, line index and code, never the text. The receipt line of each source carries the count.",
+    "alsoChanged": "the runner starts main() only when it is the file run, so the test can import agentDocument",
+    "test": "docs/evidence/gf-ai/storeys/a5/run-agent.test.ts: agent file: the lines a request left out are recorded by position and code, never by their text (synthetic lines; one of each code)",
+    "notRun": "The runner itself was not started (it builds the gateway runtime from the environment). Agent files written before this change are not rewritten and hold no omitted list."
+  },
+  "productionFilesChanged": [
+    "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+    "packages/server/src/modules/ai/document-storey-agent.ts"
+  ],
+  "exportsAdded": [
+    "docs/evidence/gf-ai/storeys/a5/run-agent.ts: agentDocument (used by its test and by main)"
+  ],
+  "gaps": [
+    "Nothing was sent, no key was read, no held-out file was listed or opened. The licence of the public RERA sheets is with the owner.",
+    "The masker still writes the four bracket tokens; only the request differs. A product profile stored in the database keeps the old spelling and is translated when a request is built; those rows were not counted (the database is not read here).",
+    "A real cell whose whole text is one of the old bracket spellings is still returned as the token by column-profile.ts:99 and would now be sent as the form. 0 of 68,399 text cells in the 50 tables are such a cell.",
+    "The two mi-d22 tables stay refused: their message is 45,161 and 44,648 characters against a bound of 32,768. The gateway reports this with MODEL_PROMPT_PRIVACY, the same code as a privacy refusal.",
+    "Pattern tokens ([email], [phone:...], [PAN:...], [Aadhaar:...] and their personal-header shapes) at the start of a sample are still refused; a table with a phone column is refused whole. 0 of the 604 stored T1 and T1b columns hold one. Not in this change (Step 0, point 4).",
+    "The translation is recorded where a request is planned (live-proof plan, input.sampleForms) and returned by the builder. The product ingestion service and the gateway ledger do not store it: neither is mine to change.",
+    "The contact-line rule is narrow on purpose: a line that also holds floor, tower, block, flat or apartment is still selected by that word, whatever else it holds. Only the three lines named in part2 change in the 8 planned documents.",
+    "Only numbered-unit lines are named as not selected; the other unselected lines of a page are not listed.",
+    "docs/backend/LIVE-PROOF.md lines 98-99 still describe one refused line per Tower 3 plan (true of the minimizer) and do not name the new reason: I was given numbers only in that file.",
+    "scripts/agent/injection-screen.test.ts: 8 pass, 1 fail (\"a request the gateway would refuse is screened as built and listed with the refusal code\"). It fails the same way on the S3 base 9138678c (checked with the S3 changes stashed); the file is not mine.",
+    "scripts/agent/t1-prep.test.ts writes under its root, so it was run with ULPIN_T1_ROOT pointing at a copy of the two files it reads, under E:/BhuAayam-data/task-data/s1/t1-compat."
+  ],
+  "checks": [
+    {
+      "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx --test packages/server/src/modules/usp/ingestion/column-profile.test.ts",
+      "exitCode": 0,
+      "pass": 4,
+      "fail": 0,
+      "env": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe PYTHONDONTWRITEBYTECODE=1"
+    },
+    {
+      "command": "pnpm exec tsx --test packages/server/src/modules/ai/document-storey-agent.test.ts",
+      "exitCode": 0,
+      "pass": 10,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/live-proof.test.ts",
+      "exitCode": 0,
+      "pass": 6,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/t1-prep.test.ts",
+      "exitCode": 0,
+      "pass": 5,
+      "fail": 0,
+      "env": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe PYTHONDONTWRITEBYTECODE=1 ULPIN_T1_ROOT=E:/BhuAayam-data/task-data/s1/t1-compat"
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/injection-screen.test.ts",
+      "exitCode": 1,
+      "pass": 8,
+      "fail": 1,
+      "note": "the same 8 and 1 on the base 9138678c"
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/mapping-teacher.test.ts",
+      "exitCode": 0,
+      "pass": 11,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --test docs/evidence/gf-ai/storeys/a5/run-agent.test.ts",
+      "exitCode": 0,
+      "pass": 1,
+      "fail": 0,
+      "note": "typechecked once with a temporary tsconfig extending scripts/agent/tsconfig.json: 0"
+    },
+    {
+      "command": "pnpm exec tsx --test tests/model-gateway/control.test.ts",
+      "exitCode": 0,
+      "pass": 8,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/verify-teacher-labels.test.ts",
+      "exitCode": 0,
+      "pass": 3,
+      "fail": 0,
+      "env": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe PYTHONDONTWRITEBYTECODE=1"
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/mapping-routing.test.ts",
+      "exitCode": 0,
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/mapping-teacher-review.test.ts",
+      "exitCode": 0,
+      "pass": 5,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/a3-chunk.test.ts",
+      "exitCode": 0,
+      "pass": 4,
+      "fail": 0
+    },
+    {
+      "command": "pnpm exec tsx scripts/agent/live-proof.ts --plan",
+      "exitCode": 0,
+      "runs": 1
+    },
+    {
+      "command": "pnpm exec tsx scripts/agent/live-proof.ts --dry-run",
+      "exitCode": 0,
+      "runs": 1
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "added lines over 120 characters in code, tests and LIVE-PROOF.md",
+      "lines": 0,
+      "note": "this JSON file holds long strings, as the S1 and S2 evidence files do"
+    }
+  ],
+  "report": {
+    "TASK": "S3 — The mapping request is no longer refused for the masker's own tokens; the architect's contact line is not selected for a storey request; the agent run records the lines it left out   GATE AG-S1, ML-A, ML-D1",
+    "WORKS": [
+      "Mapping requests refused by the gateway: 17 of 50 before, 2 of 50 after. The two left are the mi-d22 tables, refused for message size (45,161 and 44,648 characters against 32,768), not for a token.",
+      "The four tokens go as (absent cell), (blank cell), (array cell), (object cell). The masker, every stored profile, hash, replay key, label key and both pins are unchanged.",
+      "Storey selection: 3 of 209 selected lines in the 8 planned documents are no longer selected (Tower 3 plan 1: p1-l322; plan 2: p1-l252, p1-l253). A stated unit count is still selected.",
+      "Plan at the lead's proposal (not approved): 10 calls; estimate ₹1.14 (was ₹1.15); request upper bound ₹3.11 (was ₹3.12); at most ₹7.75 of the ₹100 proposed (unchanged).",
+      "Dry run: 15 steps, 0 provider dispatches, 0 ledger reservations, 0 fetch attempts; 10 of 10 requests match the plan.",
+      "The plan names each left-out line under its own reason: 2 by privacy (MODEL_PROMPT_PRIVACY), 3 not selected (NOT_SELECTED_UNIT_NUMBER).",
+      "An agent file now holds omitted (part id, page, line, code; no text) and the receipt holds its count."
+    ],
+    "SEE IT": "pnpm exec tsx scripts/agent/live-proof.ts --plan   (steps 11 and 12: input.omitted; neverSent: the five lines under two reasons; steps 3 and 6: input.sampleForms)",
+    "INPUTS": "good: the 33 development mapping requests that passed before (same bytes) and the six storey documents with nothing left out; difficult: the 17 tables holding a whole-sample token (2 of them over the message bound) and the two Tower 3 plans (2b9f8803, 2aadce88) with a contact block and a bracket-led line. Tests use synthetic rows and lines only.",
+    "GAPS": "Nothing sent; licence question with the owner. Masker unchanged, so database profiles keep the old spelling and are translated per request (rows not counted). Two mi-d22 tables still refused for size. Pattern tokens at the start of a sample still refused (0 in stored T1/T1b columns). The contact rule drops only a numbered-unit line; an address line holding floor, tower, block or flat is still selected. injection-screen.test.ts fails 1 of 9, the same on the base, not my file. LIVE-PROOF.md lines 98-99 not reworded (numbers only). Old agent files not rewritten.",
+    "DESIGN": [
+      "Step 0.2 chose the builder, not the masker: scripts/agent/verify-teacher-labels.ts:93-102 rebuilds each labelled table with the current masker and compares it by hash with the stored T1 and T1b profile sets (141 columns in 17 tables under 298 label lines hold a token), and those sets cannot be written again in place. If the lead reads the rule as product records only, the masker change is the alternative, with T1 and T1b written again in new folders and both pins moved.",
+      "packages/server/src/modules/usp/ingestion/mapping-teacher.ts: promptSample() maps the four tokens through PROMPT_SAMPLE_FORMS before the second masking; the masker cannot produce a form from cell text because it masks the word \"cell\". mappingTeacherRequest() returns sampleForms as the record of what it translated.",
+      "packages/server/src/modules/ai/document-storey-agent.ts: 'unit' followed by 'No' and a digit does not select; NUMBERED_UNIT names such an unselected line in omitted. Parts hash, citation schema and answer check are untouched, so no answer can cite a line that was not sent.",
+      "docs/evidence/gf-ai/storeys/a5/run-agent.ts: agentDocument() is the one place the agent file is shaped.",
+      "The minimizer and the whole model-gateway folder are untouched."
+    ],
+    "COMMITS": [
+      "9f17ecc2 docs(agent): S3 where the masker's tokens are read, and which line selects a contact block",
+      "a21e1016 fix(ingestion): a mapping request carries a masked whole-sample token as plain text the gateway accepts",
+      "975b637d fix(agent): a storey request selects lines about levels and units, not a firm's contact block",
+      "147c8eba feat(agent): an agent run records the lines its request left out",
+      "docs(agent): S3 evidence (this commit)"
+    ],
+    "CHECKS": "tsc -p scripts/agent/tsconfig.json 0; pnpm typecheck:backend 0; column-profile.test.ts 4 pass 0; document-storey-agent.test.ts 10 pass 0; live-proof.test.ts 6 pass 0; t1-prep.test.ts 5 pass 0 (copy root); injection-screen.test.ts 8 pass 1 fail (same on base); mapping-teacher.test.ts 11 pass 0; run-agent.test.ts 1 pass 0; tests/model-gateway/control.test.ts 8 pass 0; verify-teacher-labels.test.ts 3 pass 0; --plan 0; --dry-run 0; git diff --check 0; no new code line over 120 characters.",
+    "NEXT": [
+      "Lead: accept the builder reading of Step 0.2, or ask for the masker change with T1 and T1b written again.",
+      "Lead: the two mi-d22 tables need a smaller message (fewer samples or columns per request) and the gateway a size code of its own; both touch files outside this task.",
+      "Lead: pattern tokens at the start of a sample ([phone:...], [email], [PAN:...], [Aadhaar:...]) refuse any table with such a column; count in the stored T1/T1b columns is 0, so it first shows on an owners table.",
+      "Owner of scripts/agent/injection-screen.test.ts: its refusal test uses one bracket-led line, which S2's selection now leaves out, so no refusal is listed (expected 1, got 0); it fails on the base 9138678c.",
+      "Lead: one sentence in docs/backend/LIVE-PROOF.md (lines 98-99) to name the not-selected reason.",
+      "Whoever stores product mapping requests: keep sampleForms beside the request hash.",
+      "Owner: the licence of the public RERA sheets; until it is answered nothing here sends anything."
+    ]
+  }
+}

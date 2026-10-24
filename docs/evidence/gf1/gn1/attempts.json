@@ -1,0 +1,53 @@
+{
+  "task": "GN1",
+  "attempts": [{
+    "receipt": "runtime-attempt1.json",
+    "signature": "DA5 initial batch placement undecided, expected needs_answer; retain and profile already succeeded",
+    "classification": "harness storage adapter",
+    "hypothesis": "CR1 whole-file S3 stand-in does not implement the byte-range semantics used by KN2 intake probes; the head/tail reader cannot publish a card",
+    "comparison": "Implement only the KN2 GET range response in the throwaway store, and expose initial DA5 item in evidence before asserting. No product/probe changes.",
+    "criterion": "Real retained file publishes its probe and draft waiting state, then can be authored and read through HTTP",
+    "stop": "One bounded runtime attempt; if the seam still fails inspect retained card/reason and report any unowned product line"
+  }, {
+    "receipt": "runtime-attempt2.json",
+    "priorComparisonResult": "Range response repaired the probe. DA5 reaches probed/needs_answer with declared EPSG:2958, all 155 features cited from retained inspection.",
+    "signature": "Recipe author HTTP 503 after valid projected profile and integer identity",
+    "classification": "New destination-call argument defect",
+    "cause": "New author call referenced plan instead of input.plan, an unbound variable; normalizer/probe are not at fault",
+    "comparison": "Correct the owned destination call to use input.plan.source.sourceSha256; run backend typecheck, then one fresh nonce runtime",
+    "criterion": "Recipe author HTTP 201 and projected parcel batch can approve, prepare and record",
+    "stop": "One fresh bounded three-file runtime; retain both earlier receipts"
+  }, {
+    "receipt": "runtime-attempt3.json",
+    "priorComparisonResult": "All three HTTP walks succeeded: 155 DA5 parcels, 1661 NYC buildings, 1417 DA4 buildings; duplicate waits with its 409 words and adds zero areas/packages/records.",
+    "signature": "42P01 relation model_gateway_calls does not exist in final evidence count query",
+    "classification": "harness qualification query, not product failure",
+    "cause": "The existing gateway migration defines usp_model_calls, not model_gateway_calls",
+    "comparison": "Read database/sql/90-model-gateway/model-gateway.sql and use its actual usp_model_calls table; no product or schema mutation",
+    "criterion": "Final provider count query reports zero and complete runtime receipt exits zero",
+    "stop": "One fresh nonce runtime, preserving all earlier receipts and ownership checks"
+  }, {
+    "receipt": "runtime-with-callsite-bridge.json",
+    "result": "Three walks succeeded and zero provider calls; diagnostic only because final ownership review reverted temporary protected author/decide arguments. See ownership-stop.json."
+  }, {
+    "receipt": "runtime-attempt4.json",
+    "signature": "New warning assertion read warning.message but ImportPackage warnings are strings",
+    "classification": "Harness assertion shape; DA5 already recorded and read over HTTP",
+    "cause": "CR1 runtime and canonical ImportPackage both publish string warnings; use warning.includes directly",
+    "comparison": "Repair only that assertion, then execute the owned code without the protected call forwarding",
+    "criterion": "G1/G2/G3 pass; G4 is explicitly false at the protected call-site seam, with current row/job state retained",
+    "stop": "One bounded runtime and preserve receipt"
+  }, {
+    "receipt": "runtime-before-final-review.json",
+    "result": "Owned-code walk exits zero: G1/G2/G3 true, G4 false at the protected call, zero new records for duplicate. Rebuilt final runtime after narrowing unit publication to GeoJSON and readability-only token/helper changes.",
+    "finalReceipt": "runtime-before-harness-polish.json"
+  }, {
+    "receipt": "runtime-before-harness-polish.json",
+    "result": "G1/G2/G3 pass and G4 is blocked on identical product code. The final harness was split into small helpers and now verifies either the current ownership blocker or the exact waiting words after the owner adds the pin.",
+    "finalReceipt": "runtime.json"
+  }],
+  "checkHarnessCorrection": "The first OpenAPI --check used pnpm --filter with a relative NODE_OPTIONS preload, so the package working directory could not find scripts/platform/isolated-env.cjs. Re-ran the generator and --check from the repository root with the same isolated environment: both exit zero.",
+  "reviewHelperCorrection": "An ad-hoc diff audit initially used Python's Windows cp1252 default on the new curly-quoted message. Reading source explicitly as UTF-8 fixed the audit; protected author, memoryPlan and all read-only paths compare unchanged.",
+  "step0Correction": "before.json's pure duplicate fixture mistakenly describes its job as failed. The unchanged STALE_REVISION fail path actually marks it stale; final runtime proves probed/undecided, null reason, stale job. The fixture is retained as written before build."
+}
+}

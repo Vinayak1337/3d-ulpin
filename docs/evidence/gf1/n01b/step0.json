@@ -1,0 +1,19 @@
+{
+  "task": "n01b",
+  "gap": "A CSV or workbook kept in a batch rests on its item; nothing on the item reads it as a table, so the officer drops it again through the table import.",
+  "base": "afaf3e2f",
+  "change": [
+    {"path": "apps/studio/src/features/intake/table/useFollowTable.ts (new)", "why": "the shared follow hook: TP1's follow loop (followTable), its job words (jobWords) and the opening of the table page move here from useRetainTable.ts and TableImportDialog.tsx; both the dialog and the batch item use it."},
+    {"path": "apps/studio/src/features/intake/table/useRetainTable.ts, TableImportDialog.tsx", "why": "only the moved lines: they call the shared hook instead of their own loop, job state, abort controller and words."},
+    {"path": "apps/studio/src/features/intake/BatchTableSection.tsx (new)", "why": "on an item whose card states a kept CSV or XLSX of family table: 'Read as a table' with TableImportFields' sheet and header-row fields (filled from the card's sheets), tableFromOriginal with a fresh key and the workspace revision, followed by the shared hook; 'Open the table' when the profile read says the source is already a table."},
+    {"path": "apps/studio/src/features/intake/BatchPage.tsx", "why": "one line in the item detail: render the new section for the current item."},
+    {"path": "apps/studio/src/features/intake/BatchTableSection.test.tsx (new)", "why": "tests with a stubbed fetch: 201 opens, 202 is followed then opens, a refusal shows words and the next key differs, a non-table item shows nothing."}
+  ],
+  "reuse": ["tableFromOriginal and readSourceCase (retain.ts)", "TableSelectionFields (TableImportFields.tsx)", "TableRefusal (Progress.tsx)", "useTableProfile (queries.ts) to learn whether the source already has a table", "the item's card (format, family, sheets)"],
+  "seamsOutside": [
+    "apps/studio/src/features/intake/table/retain.ts: tableSelection decides CSV by file name; a small split (tableFormat(file) and formatSelection(format, sheet, rows)) lets the batch item choose by the card's format. TP1's behaviour is unchanged.",
+    "apps/studio/src/features/intake/table/TableImportFields.tsx: TableSelectionFields takes the format instead of the File, and optionally the sheet names a card states (a list to choose from). The dialog passes tableFormat(file)."
+  ],
+  "tableKnown": "No batch or case read lists a table receipt per source. GET .../sources/{sourceId}/profile answers manual-tabular/1 once the source is a table and refuses 422 before; that read (useTableProfile, as the table page uses) decides between 'Open the table' and 'Read as a table'.",
+  "runtime": "none: Studio only, stubbed fetch; no server or contract change, no Docker, GPU or provider."
+}

@@ -1,0 +1,181 @@
+{ "phase": "nyc", "at": "2026-10-17T00:04:36.714Z", "api": "http://127.0.0.1:21026",
+"caseId": "50f6f915-7e3f-4f11-988b-f2825b286295", "wallSeconds": 3.6, "stoppedAt": { "step": "author layout",
+"status": 409, "code": "SOURCE_ALREADY_IN_AREA", "message": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ] }, "result": {
+"rebuiltFrom": "raw exchanges nyc-003 to nyc-009 in scratch (response bodies as received)",
+"zipRoute": "intake (walk.ts asserted it before the first request; the case was created only after it)", "archive": {
+"sourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "sourceRevision": 1,
+"sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da", "bytes": 14621643 }, "parentRegistered": {
+"itemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "parentItemId": null, "memberPath": null,
+"name": "nyc-10013-multimodal.zip", "sourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "family": "archive",
+"format": "zip", "state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 14621643, "recordsSeen": 0,
+"plan": null, "cardFormat": "zip", "cardMembers": [ { "name": "layers/sidewalk.geojson", "format": "geojson",
+"family": "vector", "sizeBytes": 1854113, "refusalCode": null }, { "name": "layers/buildings-original.geojson",
+"format": "geojson", "family": "vector", "sizeBytes": 1103282, "refusalCode": null }, {
+"name": "layers/boundary-original.geojson", "format": "geojson", "family": "vector", "sizeBytes": 5854,
+"refusalCode": null }, { "name": "layers/hydrography.geojson", "format": "geojson", "family": "vector",
+"sizeBytes": 2055, "refusalCode": null }, { "name": "layers/roadbed.geojson", "format": "geojson", "family": "vector",
+"sizeBytes": 1837922, "refusalCode": null }, { "name": "layers/parks.geojson", "format": "geojson", "family": "vector",
+"sizeBytes": 119417, "refusalCode": null }, { "name": "layers/nyc-10013-dem-2017.tif", "format": "tiff",
+"family": "raster", "sizeBytes": 989186, "refusalCode": null }, { "name": "layers/nyc-10013-lidar-2017.laz",
+"format": "laz", "family": "point_cloud", "sizeBytes": 11110715, "refusalCode": null }, {
+"name": "layers/nyc-10013-ortho-2018.tif", "format": "geotiff", "family": "raster", "sizeBytes": 1036134,
+"refusalCode": null }, { "name": "manifest.json", "format": "unknown", "family": "unknown", "sizeBytes": 6707,
+"refusalCode": null } ] }, "parent": { "itemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "parentItemId": null,
+"memberPath": null, "name": "nyc-10013-multimodal.zip", "sourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"family": "archive", "format": "zip", "state": "probed", "placement": "undecided", "reason": null,
+"sizeBytes": 14621643, "recordsSeen": 0, "plan": null }, "otherTopLevelItems": [], "layers": [ {
+"memberPath": "layers/boundary-original.geojson", "memberRow": { "itemId": "22c9d2ea-d0ab-40f2-b2d1-3423f117423f",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/boundary-original.geojson",
+"name": "boundary-original.geojson", "sourceId": "31d5d661-d4c3-4195-b626-85459d0b9439", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 5854, "recordsSeen": 0,
+"plan": null }, "childSourceId": "31d5d661-d4c3-4195-b626-85459d0b9439", "childItem": {
+"itemId": "31d5d661-d4c3-4195-b626-85459d0b9439", "parentItemId": null, "memberPath": null,
+"name": "boundary-original.geojson", "sourceId": "31d5d661-d4c3-4195-b626-85459d0b9439", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 5854, "recordsSeen": 0,
+"plan": null }, "childOriginal": { "name": "boundary-original.geojson", "profile": "geojson-manual-v1", "bytes": 5854,
+"sha256": "9a0c9f23bfd6a0b6ba71ab628ee25159e6b3754b4c40231d4a8090259e19c6cf", "status": "needs_input" }, "lineage": {
+"crc32": 599819867, "ordinal": 2, "version": "zip-layer/1", "memberPath": "layers/boundary-original.geojson",
+"memberBytes": 5854, "memberSha256": "9a0c9f23bfd6a0b6ba71ab628ee25159e6b3754b4c40231d4a8090259e19c6cf",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"parentSha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+"parentSourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "compressedBytes": 2248, "parentSourceRevision": 1 } }, {
+"memberPath": "layers/buildings-original.geojson", "memberRow": { "itemId": "56233622-adba-4888-a0f6-e81a72fb6c41",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/buildings-original.geojson",
+"name": "buildings-original.geojson", "sourceId": "5ed9ea08-5e20-47d6-87aa-776f199e3986", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 1103282,
+"recordsSeen": 0, "plan": null }, "childSourceId": "5ed9ea08-5e20-47d6-87aa-776f199e3986", "childItem": {
+"itemId": "5ed9ea08-5e20-47d6-87aa-776f199e3986", "parentItemId": null, "memberPath": null,
+"name": "buildings-original.geojson", "sourceId": "5ed9ea08-5e20-47d6-87aa-776f199e3986", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 1103282,
+"recordsSeen": 0, "plan": null }, "childOriginal": { "name": "buildings-original.geojson",
+"profile": "geojson-manual-v1", "bytes": 1103282,
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e", "status": "needs_input" }, "lineage": {
+"crc32": 208219664, "ordinal": 1, "version": "zip-layer/1", "memberPath": "layers/buildings-original.geojson",
+"memberBytes": 1103282, "memberSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"parentSha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+"parentSourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "compressedBytes": 258117, "parentSourceRevision": 1 } }, {
+"memberPath": "layers/hydrography.geojson", "memberRow": { "itemId": "b48bdb03-a226-45ed-aba5-c9a180f4af02",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/hydrography.geojson",
+"name": "hydrography.geojson", "sourceId": "2a282145-4514-4d72-b4f1-eeade6f57a87", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 2055, "recordsSeen": 0,
+"plan": null }, "childSourceId": "2a282145-4514-4d72-b4f1-eeade6f57a87", "childItem": {
+"itemId": "2a282145-4514-4d72-b4f1-eeade6f57a87", "parentItemId": null, "memberPath": null,
+"name": "hydrography.geojson", "sourceId": "2a282145-4514-4d72-b4f1-eeade6f57a87", "family": "vector",
+"format": "geojson", "state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 2055, "recordsSeen": 0,
+"plan": null }, "childOriginal": { "name": "hydrography.geojson", "profile": "geojson-manual-v1", "bytes": 2055,
+"sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192", "status": "needs_input" }, "lineage": {
+"crc32": 47808085, "ordinal": 3, "version": "zip-layer/1", "memberPath": "layers/hydrography.geojson",
+"memberBytes": 2055, "memberSha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"parentSha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+"parentSourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "compressedBytes": 867, "parentSourceRevision": 1 } }, {
+"memberPath": "layers/parks.geojson", "memberRow": { "itemId": "f623269e-ec40-4b30-a236-2c440f98fed5",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/parks.geojson", "name": "parks.geojson",
+"sourceId": "f753ebca-8652-4a69-8b7d-9bb1eba78a11", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "undecided", "reason": null, "sizeBytes": 119417, "recordsSeen": 0, "plan": null },
+"childSourceId": "f753ebca-8652-4a69-8b7d-9bb1eba78a11", "childItem": {
+"itemId": "f753ebca-8652-4a69-8b7d-9bb1eba78a11", "parentItemId": null, "memberPath": null, "name": "parks.geojson",
+"sourceId": "f753ebca-8652-4a69-8b7d-9bb1eba78a11", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "undecided", "reason": null, "sizeBytes": 119417, "recordsSeen": 0, "plan": null }, "childOriginal": {
+"name": "parks.geojson", "profile": "geojson-manual-v1", "bytes": 119417,
+"sha256": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13", "status": "needs_input" }, "lineage": {
+"crc32": 3369373930, "ordinal": 5, "version": "zip-layer/1", "memberPath": "layers/parks.geojson",
+"memberBytes": 119417, "memberSha256": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"parentSha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+"parentSourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "compressedBytes": 38986, "parentSourceRevision": 1 } }, {
+"memberPath": "layers/roadbed.geojson", "memberRow": { "itemId": "6e5e1345-84b4-4d6e-8fc9-e046184c43b3",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/roadbed.geojson",
+"name": "roadbed.geojson", "sourceId": "ce0817bb-3629-422a-b8da-2810abbc83e5", "family": "vector", "format": "geojson",
+"state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 1837922, "recordsSeen": 0, "plan": null },
+"childSourceId": "ce0817bb-3629-422a-b8da-2810abbc83e5", "childItem": {
+"itemId": "ce0817bb-3629-422a-b8da-2810abbc83e5", "parentItemId": null, "memberPath": null, "name": "roadbed.geojson",
+"sourceId": "ce0817bb-3629-422a-b8da-2810abbc83e5", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "undecided", "reason": null, "sizeBytes": 1837922, "recordsSeen": 0, "plan": null }, "childOriginal": {
+"name": "roadbed.geojson", "profile": "geojson-manual-v1", "bytes": 1837922,
+"sha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f", "status": "needs_input" }, "lineage": {
+"crc32": 1985839040, "ordinal": 4, "version": "zip-layer/1", "memberPath": "layers/roadbed.geojson",
+"memberBytes": 1837922, "memberSha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"parentSha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+"parentSourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "compressedBytes": 602704, "parentSourceRevision": 1 } }, {
+"memberPath": "layers/sidewalk.geojson", "memberRow": { "itemId": "9fe5cfbd-8cd3-4394-8af2-d3c00a5b4614",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/sidewalk.geojson",
+"name": "sidewalk.geojson", "sourceId": "0352cc38-7dbc-4fc9-b576-e80334a4ae3b", "family": "vector", "format": "geojson",
+"state": "probed", "placement": "undecided", "reason": null, "sizeBytes": 1854113, "recordsSeen": 0, "plan": null },
+"childSourceId": "0352cc38-7dbc-4fc9-b576-e80334a4ae3b", "childItem": {
+"itemId": "0352cc38-7dbc-4fc9-b576-e80334a4ae3b", "parentItemId": null, "memberPath": null, "name": "sidewalk.geojson",
+"sourceId": "0352cc38-7dbc-4fc9-b576-e80334a4ae3b", "family": "vector", "format": "geojson", "state": "probed",
+"placement": "undecided", "reason": null, "sizeBytes": 1854113, "recordsSeen": 0, "plan": null }, "childOriginal": {
+"name": "sidewalk.geojson", "profile": "geojson-manual-v1", "bytes": 1854113,
+"sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9", "status": "needs_input" }, "lineage": {
+"crc32": 3831387616, "ordinal": 0, "version": "zip-layer/1", "memberPath": "layers/sidewalk.geojson",
+"memberBytes": 1854113, "memberSha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"parentSha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+"parentSourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "compressedBytes": 626319, "parentSourceRevision": 1 } }, {
+"memberPath": "layers/nyc-10013-dem-2017.tif", "memberRow": { "itemId": "e450327c-8b0f-46ec-9913-503519df8b6e",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "layers/nyc-10013-dem-2017.tif",
+"name": "layers/nyc-10013-dem-2017.tif", "sourceId": null, "family": "raster", "format": "tiff", "state": "probed",
+"placement": "undecided", "reason": null, "sizeBytes": 989186, "recordsSeen": 0, "plan": null }, "childSourceId": null,
+"childItem": null, "childOriginal": null, "lineage": null }, { "memberPath": "layers/nyc-10013-lidar-2017.laz",
+"memberRow": { "itemId": "afd5f55e-e806-40fd-976c-52948c6a8571", "parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"memberPath": "layers/nyc-10013-lidar-2017.laz", "name": "layers/nyc-10013-lidar-2017.laz", "sourceId": null,
+"family": "point_cloud", "format": "laz", "state": "probed", "placement": "undecided", "reason": null,
+"sizeBytes": 11110715, "recordsSeen": 0, "plan": null }, "childSourceId": null, "childItem": null,
+"childOriginal": null, "lineage": null }, { "memberPath": "layers/nyc-10013-ortho-2018.tif", "memberRow": {
+"itemId": "c26d6be7-7da2-4e4e-ab5d-d8d44697a9c7", "parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"memberPath": "layers/nyc-10013-ortho-2018.tif", "name": "layers/nyc-10013-ortho-2018.tif", "sourceId": null,
+"family": "raster", "format": "geotiff", "state": "probed", "placement": "undecided", "reason": null,
+"sizeBytes": 1036134, "recordsSeen": 0, "plan": null }, "childSourceId": null, "childItem": null, "childOriginal": null,
+"lineage": null }, { "memberPath": "manifest.json", "memberRow": { "itemId": "348ba633-2637-4b1e-8b2b-94e2cc802c45",
+"parentItemId": "bf21ef35-be18-4ed9-9381-d32165b38e37", "memberPath": "manifest.json", "name": "manifest.json",
+"sourceId": null, "family": "unknown", "format": "unknown", "state": "probed", "placement": "undecided", "reason": null,
+"sizeBytes": 6707, "recordsSeen": 0, "plan": null }, "childSourceId": null, "childItem": null, "childOriginal": null,
+"lineage": null } ], "buildingsSha256MatchesReh2Member": true, "card": { "present": true, "format": "geojson",
+"family": "vector", "sizeClass": "S", "crs": { "state": "stated", "code": "EPSG:4326", "sidecarSha256": null },
+"features": 1662, "geometryTypes": [ "MultiPolygon" ], "extent4326": null }, "toQuestion": {
+"trail": "progress.jsonl: probed/undecided at 0 s, planned/needs_answer at 2 s", "rested": {
+"placement": "needs_answer", "reason": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ] } }, "profile": { "version": "manual-geojson/1", "featureCount": 1662, "crs": {
+"value": "EPSG:4326", "evidence": "Declared OGC CRS84", "unit": "degree" }, "geometryTypes": [ "MultiPolygon" ],
+"identifierCandidates": [ "/features/*/properties/bin", "/features/*/properties/doitt_id" ], "limitations": [ [
+"Only bounded GeoJSON is supported by this manual profile; the layout states one kind for t", "he whole file." ], [
+"Height is unknown unless the layout states a field, its source unit and its meaning. Geome",
+"try role, floor levels, ownership and official issuance remain unknown." ], [
+"This synchronous manual path does not qualify queued streaming, model proposals, held-out ",
+"accuracy, PII egress or GF-AGENT." ] ] }, "refusal": { "step": "author layout",
+"route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes", "status": 409, "code": "SOURCE_ALREADY_IN_AREA",
+"message": [ "This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ] } }, "requests": [ { "input": "nyc", "step": "create batch case",
+"method": "POST", "route": "/api/v1/cases", "status": 201, "seconds": 0.03, "at": "2026-10-17T00:04:33.140Z",
+"requestKey": null, "cacheControl": "no-store", "contract": null }, { "input": "nyc", "step": "case revision",
+"method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200, "seconds": 0.012, "at": "2026-10-17T00:04:33.174Z",
+"requestKey": null, "cacheControl": "no-store", "contract": true }, { "input": "nyc", "step": "retain archive",
+"method": "POST", "route": "/api/v1/ingestion/cases/{caseId}/intake/archives", "status": 201, "seconds": 0.207,
+"at": "2026-10-17T00:04:33.192Z", "requestKey": "b1b31b95-bd25-4c72-891d-69b6c966cf97",
+"caseId": "50f6f915-7e3f-4f11-988b-f2825b286295", "cacheControl": "no-store", "contract": true }, { "input": "nyc",
+"step": "enrol archive (fan-out)", "method": "POST", "route": "/api/v1/ingestion/cases/{caseId}/intake/items",
+"status": 201, "seconds": 1.116, "at": "2026-10-17T00:04:33.401Z", "requestKey": "639f5226-aa43-4c7f-8f05-5bddb99a8098",
+"caseId": "50f6f915-7e3f-4f11-988b-f2825b286295", "sourceId": "bf21ef35-be18-4ed9-9381-d32165b38e37",
+"cacheControl": "no-store", "contract": true }, { "input": "nyc", "step": "manifest after fan-out", "method": "GET",
+"route": "/api/v1/ingestion/cases/{caseId}/intake", "status": 200, "seconds": 0.014, "at": "2026-10-17T00:04:34.523Z",
+"requestKey": null, "cacheControl": "no-store", "contract": true }, { "input": "nyc",
+"step": "case sources and lineage", "method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200, "seconds": 0.022,
+"at": "2026-10-17T00:04:34.540Z", "requestKey": null, "cacheControl": "no-store", "contract": true }, { "input": "nyc",
+"step": "read buildings layer card", "method": "GET", "route": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}",
+"status": 200, "seconds": 0.009, "at": "2026-10-17T00:04:34.566Z", "requestKey": null,
+"itemId": "5ed9ea08-5e20-47d6-87aa-776f199e3986", "cacheControl": "no-store", "contract": true }, { "input": "nyc",
+"step": "read profile", "method": "GET", "route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile",
+"status": 200, "seconds": 0.022, "at": "2026-10-17T00:04:36.645Z", "requestKey": null, "cacheControl": "no-store",
+"contract": false }, { "input": "nyc", "step": "author layout", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes", "status": 409, "seconds": 0.035,
+"at": "2026-10-17T00:04:36.678Z", "requestKey": "2b31a236-adf3-4840-b9fd-7df7e7b5d38b",
+"caseId": "50f6f915-7e3f-4f11-988b-f2825b286295", "sourceId": "5ed9ea08-5e20-47d6-87aa-776f199e3986",
+"cacheControl": "no-store", "refusal": { "code": "SOURCE_ALREADY_IN_AREA", "message": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ] } } ], "quietReads": 2 }

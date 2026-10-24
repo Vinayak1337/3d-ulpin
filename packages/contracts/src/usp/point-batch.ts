@@ -1,9 +1,10 @@
 import {z} from 'zod';
 
 export const POINT_BATCH_VERSION='point-batch/1' as const;
+// SB1 (AU3 pointOfficerLimits): 611 jobs per original, one per 8192-point part of the 5 million points read.
 export const POINT_BATCH_LIMITS=Object.freeze({originalBytes:16*1024*1024,retainedSources:64,
   retainedBytes:256*1024*1024,sourcePoints:5_000_000,batchPoints:8192,
-  artifactBytes:512*1024,resultBytes:32*1024,jobsPerSource:32,active:2});
+  artifactBytes:512*1024,resultBytes:32*1024,jobsPerSource:611,active:2});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const positive=z.number().int().positive(),finite=z.number().finite();
 const FORMAT_6_DIMENSIONS=['X','Y','Z','intensity','return_number','number_of_returns','synthetic',

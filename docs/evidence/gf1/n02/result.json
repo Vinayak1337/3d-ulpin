@@ -1,0 +1,65 @@
+{
+  "task": "N02",
+  "gate": "GF1",
+  "status": "packages_paged_unrecorded_first",
+  "base": "ecbf8b93152e30c056cf005f6e4d5ca34260f198",
+  "branch": "task/n02-target-packages-paged",
+  "works": {
+    "read": [
+      "GET .../targets?packageCursor=<opaque> pages a case's packages 100 at a time:",
+      "unrecorded (state not COMMITTED) first, then recorded; within each, the file's part order",
+      "(first published part: item, part index), else package id."
+    ],
+    "newFields": ["packagesNextCursor", "packagesTotal", "packagesUnrecorded", "packagesUnrecordedAfter"],
+    "packagesTruncated": "true while the page lists fewer packages than the batch has",
+    "bodyRead": "order from the import_packages state column and part rows; review facts for page ids only",
+    "badCursor": "422 INTAKE_TARGET_QUERY",
+    "studio": [
+      "The confirmation says 'After these 100 packages, N more packages of this batch are not yet",
+      "recorded.' and offers 'Next 100 packages'; a later page offers 'Back to the first packages'.",
+      "Moving clears the building choice; 'Choose the first 100 ready' reads the same package page."
+    ],
+    "unchanged": ["counts by readiness", "target page and cursor", "confirmation limit of 100 packages"]
+  },
+  "tests": {
+    "server": [
+      "250 packages, 120 recorded (fake rows, parts backwards by id, 10 without parts): pages of",
+      "100/100/50; page 1 all unrecorded, page 2 30 unrecorded then 70 recorded, page 3 recorded;",
+      "totals 250/130, unrecorded after 30/0/0; the same cursor read again gives the same page;",
+      "no query reads a body; a forged cursor is refused 422."
+    ],
+    "studio": [
+      "250 unrecorded packages: pressing 'Next 100 packages' reads the next page by its cursor;",
+      "three confirmation bodies name packages 1-100, 101-200, 201-250, each once, valid to the",
+      "request schema; words say 150 then 50 remain; no button on the last page; disabled while busy."
+    ],
+    "controller": "packageCursor accepted once; repeated, empty or out-of-alphabet values refused",
+    "realInput": "not applicable: the read and confirmation are exercised with fake rows; no runtime asked"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0,
+      "counts": "studio 79 files 500 tests; scene 58 passed 1 skipped; ui 7; api-client 2" },
+    { "command": "template backend test command plus apps/api/.../intake-run.controller.test.ts", "exit": 0,
+      "counts": "417 tests, 415 pass, 0 fail, 2 skipped",
+      "note": "an earlier run lost intake-large-steps.test.ts to a VirtualAlloc failure (shared PC memory)" },
+    { "command": "apps/api/scripts/openapi.ts --check", "exit": 0,
+      "note": "after scripts/api/refresh-contract.ts ecbf8b93 and pnpm studio:api-types" },
+    { "command": "python scripts/api/check.py", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs ecbf8b93", "exit": 0 }
+  ],
+  "uiDesignCheck": {
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": [
+      "Confirm.tsx PackagePages: @ulpin/ui Button, existing stack/controls classes, no new CSS or colour",
+      "one primary button stays (Record packages); the new buttons are default variant",
+      "words sentence case; counts read from the target read, none hard-coded",
+      "native buttons, keyboard reachable; status words in role=status"
+    ],
+    "scan": "scan-ui-diff.mjs covers apps/web only: 0 added lines, no candidates, exit 0"
+  },
+  "runtimeDockerGpuProvider": "none"
+}

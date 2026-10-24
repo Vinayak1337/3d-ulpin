@@ -1,0 +1,53 @@
+{
+  "task": "CB1",
+  "status": "passed_on_isolated_throwaway_postgresql",
+  "receipt": "runtime-verified.json",
+  "command": "node docs/evidence/gf1/cb1/run-runtime.mjs <new-receipt.json>",
+  "exit": 0,
+  "startedAt": "2026-10-11T04:12:54.718Z",
+  "finishedAt": "2026-10-11T04:13:23.341Z",
+  "passedSteps": 33,
+  "order": ["import", "review", "commit", "record", "snapshot", "plan", "confirm", "execute", "card", "verification"],
+  "results": [
+    {
+      "format": "shapefile_zip", "features": 88, "verification": "consistent",
+      "citation": "TSC_Buildings_OD_8831041243266425049.zip, Council_Buildings.dbf, record 1, decoded values",
+      "position": 0, "positionKind": "sequence", "encoding": "UTF-8",
+      "alteredPosition": 1, "alteredPositionRefusal": "PACKET_PLAN_NATIVE_KEY_MISMATCH"
+    },
+    {
+      "format": "gpkg", "features": 88, "verification": "consistent",
+      "citation": "TSC_Buildings_OD_-1703359794462598529.gpkg, Council_Buildings, record 1, decoded values",
+      "position": 1, "positionKind": "integer_primary_key", "positionField": "OBJECTID", "encoding": "UTF-8",
+      "alteredPosition": 2, "alteredPositionRefusal": "PACKET_PLAN_NATIVE_KEY_MISMATCH"
+    },
+    {
+      "format": "geojson", "features": 1661, "verification": "consistent",
+      "citation": "buildings-original.geojson, feature 345", "newCitationFields": "absent"
+    }
+  ],
+  "allCardStates": {"geometry": "unavailable", "measurements": "unavailable", "rights": "not_assessed"},
+  "nycByteComparison": {
+    "before": "nyc-before-v2.json", "after": "nyc-after-final.json",
+    "realFeatureIndices": [0, 1620],
+    "equal": ["canonical plan including plan hash", "packet SHA-256", "canonical card content", "card PDF SHA-256"],
+    "postgresqlComparison": {
+      "baseline": "bfc2e45d", "receipt": "runtime-verified.json",
+      "helper": "nyc-postgres-equivalence.ts", "byteIdentical": true,
+      "planSha256": "7e97170c65a0d740cce817132191a0e03c3427502eabfb9d6be9c8648e0d59d5",
+      "packetSha256": "7c500d3f02b2150072de93391b06f82ee8e928a34cea9500f5b22cc89a9ed4f7",
+      "cardBodySha256": "92c9d19bf76e7ead8931858a5f53c5191029ce9ffb8d42034f0830d164ece33a",
+      "pairedPdfSha256": "63ee50cfd8c937138b305126e49aa07cdecce1ba83e291570d4825140552afda"
+    },
+    "qualification": "The pre-edit fixture and the same-box PostgreSQL check both pass. The PostgreSQL check evaluates original staging authority, projection and renderers from Git against the real captured snapshot and current issued plan/packet/card, sharing issued protocol metadata and seeded paired PDF entropy. It is a baseline-code comparison, not an independently issued pre-edit PostgreSQL card. Temporary baseline-code copies are removed; no branch switch or original change occurs."
+  },
+  "safety": {
+    "originalsUnchanged": true, "providerCalls": 0, "demoAccessed": false,
+    "ownedContainer": "ulpin-cb1-tmp-e46c314a50adf37c", "ownedContainerRemoved": true,
+    "machineContainerVolumeNetworkNamesUnchanged": true, "ownedScopeUnchanged": true,
+    "populatedVolumesTouched": false, "imagesBuilt": false
+  },
+  "priorAttempts": ["runtime-built-01.json", "runtime-built-02.json", "runtime-built-final.json",
+    "runtime-complete.json", "runtime-complete-02.json", "runtime-complete-final.json"],
+  "next": "Owner rebuilds the demo geo image before using the new native reader. Older document derivations show reader_changed until re-extracted; their immutable pins remain untouched."
+}

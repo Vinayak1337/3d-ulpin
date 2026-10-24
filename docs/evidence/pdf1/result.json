@@ -1,0 +1,43 @@
+{
+  "task": "PDF1",
+  "gate": "GF-AI",
+  "scope": "AUD1 gap 6: bounded OCR on officer press; offline checks only, no runtime gate passed",
+  "routesChanged": false,
+  "implementation": {
+    "selection": "Existing OCR contract accepts one page per job, with a page number from 1 to 8. Offer the first scanned page in that range and state the unread remainder; no automatic continuation.",
+    "press": "GET existing pinned private page metadata first; runtime refusal is shown before enqueue. POST existing documents/retry with mode native_only and ocrSelection. Lost enqueue responses reuse the request key.",
+    "progress": "Selected PDF detail refreshes a cached case job list on open/item change, then follows the existing job status every 5 seconds while queued/running, including after reload. Fetch all bounded OCR passage pages (maximum 64 items over 3 requests).",
+    "results": "Show pages read, passage count, unverified completeness, partial/failed/unavailable states, and page-region citations opening the existing pinned viewer. No registry, geometry, room, level or unit writes.",
+    "server": "Only scanned/OCR sentences changed in intake-draft.ts. Existing batch document receipts and retry enqueue already support the batch source; no controller, document service, queue or job authority was added."
+  },
+  "checks": [
+    {"command":"pnpm typecheck:backend","exitCode":0},
+    {"command":"pnpm studio:typecheck","exitCode":0},
+    {"command":"pnpm exec tsx --test tests/intake-pdf-batch.test.ts tests/document-later-receipt.test.ts tests/document-ocr-boundary.test.ts","exitCode":0,"passed":27,"failed":0},
+    {"command":"pnpm --filter @ulpin/studio exec vitest run src/features/intake/BatchPdfSection.test.tsx src/features/intake/batch-page.test.tsx src/features/intake/batch-model.test.ts","exitCode":0,"passed":17,"failed":0},
+    {"command":"node --max-old-space-size=384 --import tsx docs/evidence/pdf1/real-inputs.ts","exitCode":0,"realInputs":2},
+    {"command":"node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging","exitCode":0,"report":"docs/evidence/pdf1/ui-design-check.md"},
+    {"command":"pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check","exitCode":1,"schemaMatched":true,"failure":"docs/api/source-pins.json needs integration refresh for the four touched server/contract files; no route or wire schema changed. Generated catalogue left unchanged because it is not owned for a no-route change."},
+    {"command":"git diff --check","exitCode":0},
+    {"command":"awk length>120 on the four new TypeScript files","exitCode":0,"findings":0}
+  ],
+  "realInputs": [
+    {"kind":"good","path":"E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-magnolia-sanctioned-layout-original.pdf","bytes":2455183,"sha256":"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","pages":6,"scannedPages":[3,4,5,6],"ocrSelection":{"page":3},"scannedPagesLeft":3,"permission":"unconfirmed","originalUnchanged":true},
+    {"kind":"difficult","path":"E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-section.pdf","bytes":2448909,"sha256":"f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b","pages":1,"scannedPages":[1],"ocrSelection":{"page":1},"scannedPagesLeft":0,"permission":"unconfirmed","originalUnchanged":true}
+  ],
+  "regressionFound": "A cached case job list may predate batch enrollment, leaving PDF details without the job to follow. Refresh the list when the PDF detail opens or its item changes; the regression test starts from an empty cached job list.",
+  "realInputQualification": "Read-only PDF.js text-presence comparison against retained G10 native-reader coverage; exact agreement on both PDFs. No OCR text or OCR accuracy was measured. Originals and permission records unchanged; no acquisition.",
+  "recoveredCheckFailures": [
+    "Initial Studio typecheck could not find tsc: this worktree had no node_modules. Offline frozen-lockfile install with scripts disabled succeeded; no tracked dependency files changed.",
+    "Initial new code typecheck exposed the Studio narrow contracts alias and a split indexed-access type; reused the existing browser-safe reader-limit export and generated route types, then both typechecks passed.",
+    "Initial server test had a runtime import through a root-only missing workspace alias; changed the test import to the existing relative contracts path, then it passed.",
+    "Initial UI refusal assertion expected alert; the shared warning Banner correctly uses status. Corrected the test assertion; no production design change was needed.",
+    "Initial optional OpenAPI command lacked the API tsconfig and could not compile decorators; corrected invocation reached the unchanged schema and then the expected source-pin mismatch.",
+    "pypdf was absent in both the default Python and the documented document interpreter. Stopped that path. One bounded comparison used the already installed PDF.js reader: baseline G10 page coverage, success exact scanned-page agreement, stop 60 seconds/384 MiB JS heap/10 MiB per input; both matched."
+  ],
+  "gaps": [
+    "No Docker, database, object store, dispatcher or actual OCR process was started. Real upload-to-OCR and citation opening need an authorized document-runtime rehearsal; whole-page frame and existing OCR dependency limits still apply.",
+    "Refresh docs/api/source-pins.json after integration; only the four touched server/contract source hashes differ. No published OpenAPI schema difference was found.",
+    "No browser screenshot, focus traversal or 200% zoom qualification."
+  ]
+}

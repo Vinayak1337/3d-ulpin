@@ -1,0 +1,229 @@
+{
+  "task": "VA2",
+  "gates": [
+    "GF-AGENT",
+    "FP-LEARN-TEST"
+  ],
+  "status": "part1_filtered_part2_stopped_trainer_refuses_synthetic_variant",
+  "base": "a10d9dd2 (staging with VA1 merged)",
+  "part1": {
+    "script": "scripts/agent/variants-va2.ts",
+    "input": {
+      "path": "E:/BhuAayam-data/task-data/va1/variants-v1.jsonl",
+      "sha256": "58e5102d20c96d7fe1b3e6d36e46f8bc3188edc553a94c972632a2cc97dcd141",
+      "lines": 476
+    },
+    "rule": [
+      "seed join: VA1 seeds.json to the VA1 verifier runs (link, verified field, plan method)",
+      "values: rows re-sampled, deterministic, from every verified column of the seed target in the seed family",
+      "row count equals the seed column cell count; no model typed a value",
+      "real cells read through the existing source authority (sourceTables) with inventory and boundary checks",
+      "order per variant: storeyLabel rule, near-duplicate of seed, near-duplicate of a kept variant,",
+      "existing canonical verifier (plan validation + executor dry-run), cap of 20 per seed",
+      "near-duplicate key: NFKC, lower case, whitespace and Unicode punctuation removed; against all kept",
+      "fold: family and split of the seed; only manifest development families; held-out and pool refused",
+      "one-column table per variant named variant_<id16>, so the trainer key (profileHash, sourceField) is unique"
+    ],
+    "storeyLabelDecision": {
+      "reason": "seed header names a count; storeyLabel doubtful",
+      "seeds": 3,
+      "seedHeader": "Sanctioned No of Floor",
+      "family": "mi-d02",
+      "variantsDropped": 38
+    },
+    "kept": 270,
+    "dropped": 206,
+    "dropsByReason": {
+      "equal to a kept variant header after case, whitespace and punctuation removal": 124,
+      "equal to its seed header after case, whitespace and punctuation removal": 44,
+      "seed header names a count; storeyLabel doubtful": 38
+    },
+    "keptDuplicateScope": {
+      "other family, same target": 73,
+      "same family, same target": 14,
+      "same seed": 37
+    },
+    "dryRunRefusals": 0,
+    "keptByTarget": {
+      "building.addressLiteral": 59,
+      "building.heightM": 13,
+      "building.name": 57,
+      "building.sourceKey": 53,
+      "building.storeyCount": 25,
+      "document.registrationNo": 41,
+      "unit.type": 22
+    },
+    "keptByFamily": {
+      "mi-d02": 24,
+      "mi-d03": 21,
+      "mi-d22": 42,
+      "mi-d23": 24,
+      "opf-d02": 44,
+      "opf-d03": 20,
+      "opf-d04": 11,
+      "opf-d05": 34,
+      "opf-d06": 16,
+      "opf-d07": 22,
+      "opf-d08": 12
+    },
+    "keptPerSeedMax": 16,
+    "keptEqualToOtherFoldRealHeader": {
+      "count": 5,
+      "note": "reported, not filtered: kept headers equal after folding to a real seed header of another family"
+    },
+    "outputs": {
+      "examples": "E:/BhuAayam-data/task-data/va2/variant-examples.jsonl",
+      "links": "E:/BhuAayam-data/task-data/va2/profile-links.jsonl",
+      "drops": "E:/BhuAayam-data/task-data/va2/drops.jsonl",
+      "summary": "E:/BhuAayam-data/task-data/va2/summary.json",
+      "verifier": "E:/BhuAayam-data/task-data/va2/verifier/",
+      "sha256": {
+        "variant-examples.jsonl": "5cbf9768dbec923051291972dfbf2ea2eab896bb8477f8ee1834c6db54cf2c6d",
+        "profile-links.jsonl": "d39917853b204670eb37b3ee8fe1ef4e7ff4828a81fd921d57635b805894d7b8",
+        "drops.jsonl": "f182d55b6bcc490d88fbbb5f973efd70ff6267537f26a145109c25c8fc3bbf1a"
+      },
+      "summarySha256": "cc4ae36376f6e08ce00bc0c85d0b67d04dbf6b8047f5d0280cdd749e0db9e6c2"
+    },
+    "lineage": {
+      "labelKind": "synthetic_variant",
+      "method": "model:claude-opus-5-5@dev-2026-10",
+      "fields": "seedProfileId and style on every example; labelKind and seedProfileId on every link"
+    },
+    "rebuild": "--check rebuilds in a fresh directory; all three output hashes equal"
+  },
+  "examplesByKind": {
+    "real": {
+      "source": "A4e fit input",
+      "total": 805,
+      "byTarget": {
+        "unknown": 772,
+        "building.name": 8,
+        "building.storeyLabel": 3,
+        "document.registrationNo": 4,
+        "unit.type": 2,
+        "building.addressLiteral": 8,
+        "building.footprint": 1,
+        "building.sourceKey": 4,
+        "building.storeyCount": 2,
+        "building.heightM": 1
+      }
+    },
+    "variant": {
+      "source": "VA2 kept, not fitted",
+      "total": 270,
+      "byTarget": {
+        "building.addressLiteral": 59,
+        "building.heightM": 13,
+        "building.name": 57,
+        "building.sourceKey": 53,
+        "building.storeyCount": 25,
+        "document.registrationNo": 41,
+        "unit.type": 22
+      }
+    }
+  },
+  "part2": {
+    "status": "not_run_stop_rule",
+    "stop": "The trainer cannot take the variants without a change under services/**.",
+    "file": "services/geo/geo/usp_learning/stage_a.py",
+    "lines": {
+      "168-171": [
+        "load_examples admits only labelKind officer (reviewer:) or pseudo_label (model:);",
+        "synthetic_variant raises STAGE_A_LABEL_AUTHORITY_DENIED"
+      ],
+      "339 and 365": [
+        "cross_fit_fold scores every row of the left-out family and choose_threshold uses those scores;",
+        "relabelling variants to pass 168-171 would put them in calibration and threshold choice"
+      ]
+    },
+    "loaderCheck": {
+      "command": "PYTHONPATH=services/geo python -B -c load_examples(va2/variant-examples.jsonl)",
+      "output": "refused STAGE_A_LABEL_AUTHORITY_DENIED",
+      "exitCode": 0,
+      "note": "loader only; no fit, no file written"
+    },
+    "notDone": [
+      "no fit, no held-out run, no measure-a4d.ts option (it could not reach a fit)",
+      "rehearsal docker check not run: no retrain was going to start"
+    ],
+    "baselineA4e": {
+      "threshold": 0.9866563081741333,
+      "pooled": {
+        "n": 741,
+        "wrong": 0,
+        "correctPositive": 0,
+        "unknownCommitted": 2,
+        "abstained": 739
+      },
+      "heldOut": {
+        "n": 2,
+        "committed": 0,
+        "correct": 0,
+        "abstained": 2
+      }
+    },
+    "va2Measured": null,
+    "supported": null
+  },
+  "tests": {
+    "file": "scripts/agent/variants-va2.test.ts",
+    "passed": 6,
+    "cases": [
+      "good case with real opf-d07 values",
+      "near-duplicate of seed and of kept variant",
+      "dry-run refusal MAPPING_UNIT_NOT_DECLARED",
+      "cap of 20",
+      "fold rule",
+      "storeyLabel rule"
+    ]
+  },
+  "checks": [
+    {
+      "command": "pnpm exec tsx scripts/agent/variants-va2.ts",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx scripts/agent/variants-va2.ts --check",
+      "exitCode": 0
+    },
+    {
+      "command": "tsx --test scripts/agent/variants-va2.test.ts",
+      "exitCode": 0,
+      "passed": 6
+    },
+    {
+      "command": "tsx --test A4e agentFiles (t1-prep, verify-teacher-labels, a3-chunk, foreign-development)",
+      "exitCode": 0,
+      "passed": 19
+    },
+    {
+      "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+      "exitCode": 2,
+      "note": "one error, scripts/agent/a3d-derivatives.test.ts:38 (unchanged since a10d9dd2); none in VA2 files"
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check; line width <= 120 in written files",
+      "exitCode": 0
+    }
+  ],
+  "boundaries": {
+    "servicesChanged": false,
+    "heldOutOpened": false,
+    "providerCalls": 0,
+    "docker": false,
+    "gpu": false,
+    "fits": 0,
+    "heldOutRuns": 0,
+    "variantHeadersEdited": 0,
+    "seedsRelabelled": 0,
+    "pushed": false
+  },
+  "next": [
+    "Lead: a trainer change under services/** (image pin) to admit synthetic_variant as fit-only",
+    "(excluded from cross-fit scoring and threshold choice), then the one A4e-arm run with these 270."
+  ]
+}

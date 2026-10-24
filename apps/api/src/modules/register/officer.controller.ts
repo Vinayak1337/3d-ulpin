@@ -1,11 +1,22 @@
-import { Controller, Get, HttpCode, Inject, Param, Patch, Post, Query, Req, Res } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller, Get, Header, HttpCode, Inject, Param, Patch, Post, Query, Req, Res, UseGuards,
+} from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
+import {
+  BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema,
+  BuildingPlanCandidateRequestSchema, BuildingPlanCandidateReceiptSchema,
+  LevelScheduleRequestSchema, LevelScheduleReceiptSchema, SourceSpaceRequestSchema, SourceSpaceReceiptSchema,
+} from '@ulpin/contracts';
+import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
+import { jsonBody, wireResponse } from '../intake/wire-schemas';
+import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
 import { readJsonBody } from '../../common/body';
 import { jsonResponse, sendWebResponse } from '../../common/response';
 import { OfficerService } from './officer.service';
+import { commandSourceSpace } from '@ulpin/server/modules/officer/source-spaces';
 import {
   answerInvestigationInput, associationInput, blockGroupInput,
   createInvestigationInput, detailReviewInput, investigationRequestInput,
@@ -24,6 +35,84 @@ const queryUrl = (request: Request) => new URL(request.originalUrl ?? request.ur
 @Controller('api/v1')
 export class OfficerController {
   constructor(@Inject(OfficerService) private readonly service: OfficerService) {}
+
+  @Post('buildings/:buildingId/conflict-decisions')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_conflict_decisions',
+    summary: 'Append a checked-page officer conflict decision without deleting source alternatives' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(BuildingConflictDecisionRequestSchema)
+  @wireResponse(201, BuildingConflictDecisionSchema)
+  async conflictDecision(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) {
+      throw new AppError(422, 'CONFLICT_DECISION_QUERY', 'This command accepts no query fields.');
+    }
+    const input = await body(req, BuildingConflictDecisionRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'CONFLICT_DECISION_KEY', 'Match Idempotency-Key to the decision request key.');
+    }
+    return this.service.conflictDecision(uuid.parse(buildingId), input);
+  }
+
+  @Post('buildings/:buildingId/candidates')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_candidates',
+    summary: 'Retain plan-local room candidates, reject one or review an existing level association' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(BuildingPlanCandidateRequestSchema)
+  @wireResponse(201, BuildingPlanCandidateReceiptSchema)
+  async candidates(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) throw new AppError(422, 'CANDIDATE_QUERY', 'This command accepts no query fields.');
+    const input = await body(req, BuildingPlanCandidateRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'CANDIDATE_KEY', 'Match Idempotency-Key to the candidate request key.');
+    }
+    return this.service.candidates(uuid.parse(buildingId), input);
+  }
+
+  @Post('buildings/:buildingId/level-schedules')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_level_schedules',
+    summary: 'Propose or review a cited geometry-free level schedule, retaining conflicts' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(LevelScheduleRequestSchema)
+  @wireResponse(201, LevelScheduleReceiptSchema)
+  async levelSchedule(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) throw new AppError(422, 'LEVEL_SCHEDULE_QUERY', 'This command accepts no query fields.');
+    const input = await body(req, LevelScheduleRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'LEVEL_SCHEDULE_KEY', 'Match Idempotency-Key to the schedule request key.');
+    }
+    return this.service.levelSchedule(uuid.parse(buildingId), input);
+  }
+
+  @Post('buildings/:buildingId/source-spaces')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_source_spaces',
+    summary: 'Record an officer-cited literal floor and unit without geometry or inferred scope' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(SourceSpaceRequestSchema)
+  @wireResponse(201, SourceSpaceReceiptSchema)
+  async sourceSpace(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) throw new AppError(422, 'SOURCE_SPACE_QUERY', 'This command accepts no query fields.');
+    const input = await body(req, SourceSpaceRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'SOURCE_SPACE_KEY', 'Match Idempotency-Key to the source-space request key.');
+    }
+    return commandSourceSpace(uuid.parse(buildingId), input);
+  }
 
   @Get('work-queue')
   @ApiOperation({ operationId: 'GET_api_v1_work_queue', summary: 'Read the current officer work queue' })

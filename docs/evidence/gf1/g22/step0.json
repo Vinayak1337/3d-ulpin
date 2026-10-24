@@ -1,0 +1,16 @@
+{
+  "task": "G22",
+  "gate": "GF1",
+  "base": "30e3fb79",
+  "branch": "task/g22-lanes-and-memory",
+  "change": [
+    {"path": "packages/server/src/modules/cases/dispatch-lanes.ts", "why": "new: operation to lane, per-lane concurrency, per-operation worst-case MiB with its source, the memory budget and the in-process reservations"},
+    {"path": "packages/server/src/modules/cases/processing.ts", "why": "dispatchTick only: one SQL that puts probe-lane jobs first and then each (lane, source or case) group's oldest job; an admission check before each start, released in the same finally that clears each guard"},
+    {"path": "packages/server/src/modules/cases/processing.test.ts", "why": "fake-pool and fake-reservation tests for the six named cases; the SQL meaning test stays PostgreSQL-only and skipped without ULPIN_DISPATCH_TEST_DATABASE_URL"},
+    {"path": "packages/server/src/infrastructure/config.ts", "why": "one optional number: settings.dispatchMemoryMib from DISPATCH_MEMORY_MIB"}
+  ],
+  "reuse": ["the existing dispatcher tick and jobs table", "the single-worker guards and admitIntakeSurfaceParts unchanged",
+    "reader caps in packages/contracts and measured peaks in docs/evidence for the MiB numbers"],
+  "seamsOutsideOwnedPaths": [],
+  "needsRuntimeDockerGpuOrProvider": false
+}

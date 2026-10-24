@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "uncommitted_preregistration_refused": true,
+  "model_calls": 0,
+  "holdout_runs": 0,
+  "error": "HOLDOUT denied: docs/evidence/gf-ai/preregistration.json is not committed"
+}

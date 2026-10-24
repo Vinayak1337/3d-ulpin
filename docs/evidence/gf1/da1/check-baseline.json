@@ -1,0 +1,20 @@
+{
+  "command": "python scripts/api/check.py",
+  "exitCode": 1,
+  "when": "Before DA1 catalogue/source-index edits",
+  "stderr": "API-DOC: runtime receipt changed",
+  "diagnosis": ["Three existing runtime receipts have CRLF checkout bytes; their LF bytes match", "the pinned hashes."],
+  "paths": [
+    "docs/evidence/usp/cityjson-validation-runtime.json",
+    "docs/evidence/usp/current-runtime-20261003.json",
+    "docs/evidence/usp/nest-migration/runtime-source/source-evidence-history-20261005.json"
+  ],
+  "cataloguePinned": true,
+  "sourceIndexPinned": false,
+  "refreshCommand": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts staging",
+  "refreshStatus": [
+    "Not run: it writes unowned openapi.json/source-pins.json. Lead must refresh",
+    "after integration."
+  ],
+  "safety": "No pin, runtime receipt or checkout EOL setting changed; no hash mismatch bypassed."
+}

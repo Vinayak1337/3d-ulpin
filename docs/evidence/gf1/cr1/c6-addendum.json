@@ -1,0 +1,18 @@
+{
+  "task": "CR1",
+  "step0FollowUp": "Additional degree-only sites found by unit/recipe audit; no changes made.",
+  "paths": [
+    {"path": "packages/contracts/src/usp/ingestion.ts", "lines": [26],
+      "needs": "SourceProfile.crs.unit is literal degree: carry the declared horizontal unit for projected profiles."},
+    {"path": "packages/api-client/src/schema.d.ts", "lines": [64968],
+      "needs": "Generated degree-only SourceProfile unit; regenerate when the contract is widened."},
+    {"path": "packages/server/src/modules/usp/ingestion/registry.ts", "lines": [53],
+      "needs": "Always emits unit degree; resolve the declared unit instead of labelling projected numbers degrees."},
+    {"path": "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts", "lines": [67, 71, 72, 94, 96, 97],
+      "needs": "Large-original profiles have no GIS CRS evidence; validate collection declarations before placement."},
+    {"path": "packages/server/src/modules/datasets/reference-import/source-normalizer.ts", "lines": [64],
+      "needs": "Separate exact named local-frame reader; do not route projected GeoJSON here or infer degrees."}
+  ],
+  "crs84Compatibility": "C3 changes inspection evidence even for CRS84. Widen document-ingestion.ts:186 in the next task; direct import with OBJECTID bypasses that manual profile.",
+  "studio": "No independent raw-GeoJSON degree/4326 gate found. Studio relies on server inspection/profile; map consumers take normalized/local geometry."
+}

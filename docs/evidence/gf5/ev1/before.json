@@ -1,0 +1,123 @@
+{
+  "shots": [
+    {
+      "file": "caption-1440.png",
+      "text": [
+        "2ND FLOOR PLAN · p.1",
+        "Cited place",
+        "Page 1 · region at x 850, y 875 · 170 wide × 35 high · unit pt",
+        "Source",
+        "5293cd72-2377-4deb-a51c-c76d11ccb429 · revision 1",
+        "Copy source ID",
+        "The server cannot render this page",
+        "",
+        "The page is listed with a 2586 × 1695 pt frame but has no raster.",
+        "",
+        "Open the file view",
+        "Close"
+      ],
+      "insideViewport": true,
+      "scrollsSideways": false
+    },
+    {
+      "file": "label-1440.png",
+      "text": [
+        "UNIT-3B · p.1",
+        "Cited place",
+        "Page 1 · region at x 596, y 390 · 48 wide × 19 high · unit pt",
+        "Source",
+        "5293cd72-2377-4deb-a51c-c76d11ccb429 · revision 1",
+        "Copy source ID",
+        "The server cannot render this page",
+        "",
+        "The page is listed with a 2586 × 1695 pt frame but has no raster.",
+        "",
+        "Open the file view",
+        "Close"
+      ],
+      "insideViewport": true,
+      "scrollsSideways": false
+    },
+    {
+      "file": "page-only-1440.png",
+      "text": [
+        "haryana-2831-site-plan.pdf · p.1",
+        "Cited place",
+        "Page 1",
+        "Source",
+        "c59d2027-f176-4773-a799-5f0eb682fa2a · revision 1",
+        "Copy source ID",
+        "The server cannot render this page",
+        "",
+        "The page is listed with a 2585 × 3390 pt frame but has no raster.",
+        "",
+        "Open the file view",
+        "Close"
+      ],
+      "insideViewport": true,
+      "scrollsSideways": false
+    },
+    {
+      "file": "caption-200pct.png",
+      "text": [
+        "2ND FLOOR PLAN · p.1",
+        "Cited place",
+        "Page 1 · region at x 850, y 875 · 170 wide × 35 high · unit pt",
+        "Source",
+        "5293cd72-2377-4deb-a51c-c76d11ccb429 · revision 1",
+        "Copy source ID",
+        "The server cannot render this page",
+        "",
+        "The page is listed with a 2586 × 1695 pt frame but has no raster.",
+        "",
+        "Open the file view",
+        "Close"
+      ],
+      "insideViewport": true,
+      "scrollsSideways": false
+    },
+    {
+      "file": "label-200pct.png",
+      "text": [
+        "UNIT-3B · p.1",
+        "Cited place",
+        "Page 1 · region at x 596, y 390 · 48 wide × 19 high · unit pt",
+        "Source",
+        "5293cd72-2377-4deb-a51c-c76d11ccb429 · revision 1",
+        "Copy source ID",
+        "The server cannot render this page",
+        "",
+        "The page is listed with a 2586 × 1695 pt frame but has no raster.",
+        "",
+        "Open the file view",
+        "Close"
+      ],
+      "insideViewport": true,
+      "scrollsSideways": false
+    },
+    {
+      "file": "page-only-200pct.png",
+      "text": [
+        "haryana-2831-site-plan.pdf · p.1",
+        "Cited place",
+        "Page 1",
+        "Source",
+        "c59d2027-f176-4773-a799-5f0eb682fa2a · revision 1",
+        "Copy source ID",
+        "The server cannot render this page",
+        "",
+        "The page is listed with a 2585 × 3390 pt frame but has no raster.",
+        "",
+        "Open the file view",
+        "Close"
+      ],
+      "insideViewport": true,
+      "scrollsSideways": false
+    }
+  ],
+  "postCount": 0,
+  "posts": [],
+  "answers": [],
+  "prevented": [{"method":"POST","path":"/api/v1/usp/property-cards/list","count":9}],
+  "failures": []
+}

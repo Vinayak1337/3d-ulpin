@@ -1,0 +1,16 @@
+{ "step": "stop", "phase": "forward", "receipt": { "command": [
+"pnpm platform:stop --profile demo --runtime ulpin-reh-02" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 0,
+"startedAt": "2026-10-22T13:27:14.972Z", "endedAt": "2026-10-22T13:27:19.318Z", "seconds": 4.346, "output": [
+"> 3d-ulpin@ platform:stop E:\\Projects\\ulpin-wt\\ulpin-reh-02",
+"> bash scripts/platform-stop.sh \"--profile\" \"demo\" \"--runtime\" \"ulpin-reh-02\"", "",
+"ulpin-reh-02 API/dispatcher and containers stopped; all data volumes preserved." ], "error": null }, "outputLines": 4,
+"after": { "at": "2026-10-22T13:27:19.319Z", "commit": "1a226949521aa4c5dbde05d0e8a3e9c92bd41d74",
+"checkoutClean": true, "servicesGeo": "eab382a5cdd44dd62df5789d46df12dc3937640d", "machine": { "processes": [],
+"listeners": [], "freeGB": 637.857 }, "containers": [
+"ef0e5deb7d76 ulpin-reh-02-geo-1 ulpin-geo:git-a40b60238728 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"e8521a8b5474 ulpin-reh-02-worker-1 ulpin-geo:git-a40b60238728 exited" ], "health": "000" }, "volumes": [
+"ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ] }

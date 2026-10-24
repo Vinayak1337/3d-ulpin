@@ -1,0 +1,106 @@
+{
+  "cause": "Tesseract PE imports libcurl.dll, absent from the retained environment; STATUS_DLL_NOT_FOUND",
+  "operation": "new isolated conda-forge dependency prefix plus unchanged retained binaries",
+  "retainedEnvironmentModified": false,
+  "prefix": "E:/BhuAayam-data/task-data/k2/tesseract-runtime-k2b",
+  "packages": [
+    {
+      "name": "ca-certificates",
+      "version": "2026.7.22",
+      "build": "h4c7d964_0",
+      "url": "https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2026.7.22-h4c7d964_0.conda",
+      "sha256": "95e8e74062a5fe5f870ac8c90302b6e89945165fdaed7810606e84ddee6aac12",
+      "licence": "ISC"
+    },
+    {
+      "name": "icu",
+      "version": "78.3",
+      "build": "h5112557_2",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/icu-78.3-h5112557_2.conda",
+      "sha256": "75c549b55b673e15de8785a8e5dd85bca7eb612eee0ff4dc8d7bdaa15eacbdbb",
+      "licence": "MIT"
+    },
+    {
+      "name": "krb5",
+      "version": "1.22.2",
+      "build": "h719d79b_2",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/krb5-1.22.2-h719d79b_2.conda",
+      "sha256": "63ff03324e903eb01a715ccf357df56d66224e61952fd6615d86490ebefb3285",
+      "licence": "MIT"
+    },
+    {
+      "name": "libcurl",
+      "version": "8.22.0",
+      "build": "hdb0ef4a_0",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/libcurl-8.22.0-hdb0ef4a_0.conda",
+      "sha256": "5fe063cffa90ad3ef04e25c76b1a79cdbc4f6c43747164a7dcdd89c4faebb84e",
+      "licence": "curl"
+    },
+    {
+      "name": "libpsl",
+      "version": "0.23.1",
+      "build": "h9b16d47_1",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/libpsl-0.23.1-h9b16d47_1.conda",
+      "sha256": "e53fe3b09f82b59b644264133d6d148ac31bb5451b7583cff55690bf038f2f62",
+      "licence": "MIT"
+    },
+    {
+      "name": "libssh2",
+      "version": "1.11.1",
+      "build": "h734d217_1",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/libssh2-1.11.1-h734d217_1.conda",
+      "sha256": "1097b08429b4f53f5751a32c6d99a083d227ca7f7812c0b239eea124cec073a0",
+      "licence": "BSD-3-Clause"
+    },
+    {
+      "name": "libzlib",
+      "version": "1.3.2",
+      "build": "hfd05255_3",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/libzlib-1.3.2-hfd05255_3.conda",
+      "sha256": "0629c2cc0404d3bb29d6baa7b4ba62da80797015e86de050db81ea5a07050527",
+      "licence": "Zlib"
+    },
+    {
+      "name": "openssl",
+      "version": "3.6.5",
+      "build": "hf411b9b_0",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/openssl-3.6.5-hf411b9b_0.conda",
+      "sha256": "bc44625e0c6d83f3e02b5f6adc01e0e3ca7001d3d94e24959591a57f5a011b9a",
+      "licence": "Apache-2.0"
+    },
+    {
+      "name": "ucrt",
+      "version": "10.0.26100.0",
+      "build": "h57928b3_0",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/ucrt-10.0.26100.0-h57928b3_0.conda",
+      "sha256": "3005729dce6f3d3f5ec91dfc49fc75a0095f9cd23bab49efb899657297ac91a5",
+      "licence": "LicenseRef-MicrosoftWindowsSDK10"
+    },
+    {
+      "name": "vc",
+      "version": "14.5",
+      "build": "ha367084_41",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/vc-14.5-ha367084_41.conda",
+      "sha256": "35444c55a92e2f7f7ba26bc70f81e56e52344f7d064c0fd4b40a46a58517b79c",
+      "licence": "BSD-3-Clause"
+    },
+    {
+      "name": "vc14_runtime",
+      "version": "14.51.36247",
+      "build": "habf1de7_41",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/vc14_runtime-14.51.36247-habf1de7_41.conda",
+      "sha256": "4e4cb599cdc41bf2109d1464c127b5bcbddf548ce3e322e612afb691338b48f8",
+      "licence": "LicenseRef-MicrosoftVisualCpp2015-2022Runtime"
+    },
+    {
+      "name": "vcomp14",
+      "version": "14.51.36247",
+      "build": "habf1de7_41",
+      "url": "https://conda.anaconda.org/conda-forge/win-64/vcomp14-14.51.36247-habf1de7_41.conda",
+      "sha256": "731e043390c9457299484d39e427221fc868a9249540a498a5a4f6456c7744d1",
+      "licence": "LicenseRef-MicrosoftVisualCpp2015-2022Runtime"
+    }
+  ],
+  "copiedFiles": 82,
+  "copiedManifestSha256": "336343a3c8766c5e4165ec48e0a771341d93b32243da10c43500735c321cdd19"
+}

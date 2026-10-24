@@ -1,0 +1,14 @@
+{
+  "task": "KML1 batch KML/KMZ converted per layer into GeoJSON on the large path",
+  "base": "ecbf8b93",
+  "changes": [
+    {"path": "services/geo/geo/native_gis.py", "why": "convert-native gains kml and kmz: a streamed pyexpat read (DTD and entities refused) writes one GeoJSON derivative per Document/Folder holding Placemarks (or the whole file when it has none) with SH2's _Derivative, sidecar and object keys; KMZ reads its root doc.kml (or its only .kml) as a stream under the shapefile ZIP's member checks; names and ExtendedData as written, altitude kept as the coordinate's third value, altitudeMode as written; NetworkLink, GroundOverlay, PhotoOverlay and ScreenOverlay counted as kept but not read"},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts", "why": "admit kml/kmz formats; lineage format and an optional crsBasis; conversion's optional notRead counts; words name KML's specification-stated EPSG:4326 and the kept-but-not-read elements"},
+    {"path": "packages/server/src/modules/usp/ingestion/intake-draft.ts", "why": "one function, nativeDerivativeFormat, returns kml/kmz for a KML or KMZ card so the publish path queues SH2's job (seam outside owned paths, no other task named as its owner)"},
+    {"path": "services/geo/tests/test_native_conversion.py, intake-native-derivative.test.ts", "why": "real libkml kmlsamples.kml (good) and multikml-doc.kmz (difficult: four .kml members, none doc.kml at root); a test_only KML and KMZ generated in the test with folders, ExtendedData, a 3D coordinate and a NetworkLink"}
+  ],
+  "reuse": ["SH2 intake-native-derivative job, _Derivative writer, sidecar and content-addressed keys", "convert-native route", "KML_NAMESPACES and GX from native_kml.py (constants only)", "the shapefile ZIP member checks"],
+  "seamsOutsideOwned": ["intake-draft.ts nativeDerivativeFormat (one function)"],
+  "crsSource": "KML layers carry the existing file-stated value 'stated' (no separate 'file_stated' enum is added) and crsBasis words that the KML 2.2 specification states WGS 84 longitude/latitude",
+  "runtimeNeeded": false
+}

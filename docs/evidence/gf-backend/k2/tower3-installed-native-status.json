@@ -1,0 +1,22 @@
+{
+  "version": "source-document/1",
+  "caseId": "fef196d1-351e-41d7-a31e-aba54424f93f",
+  "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+  "jobId": "262a251f-ed47-42f4-b200-78352678d4e7",
+  "status": "stale",
+  "currentCaseRevision": 4,
+  "sourceRevision": 1,
+  "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+  "resultSha256": null,
+  "native": null,
+  "model": null,
+  "parts": [],
+  "page": 0,
+  "hasMore": false,
+  "ocr": null,
+  "ocrItems": [],
+  "ocrPage": 0,
+  "ocrHasMore": false,
+  "archiveInspection": null,
+  "code": "DOCUMENT_INPUT_STALE"
+}

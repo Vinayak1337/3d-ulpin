@@ -1,0 +1,41 @@
+{
+  "task": "PR1",
+  "title": "A process record left behind by a reboot no longer blocks a runtime's stop, roll or start",
+  "base": "staging 7ee868b1",
+  "kind": "code and tests only; no Docker engine, runtime, process or provider was used",
+  "gap": [
+    "After a reboot, a recorded PID held by an unrelated process made ownedProcess throw 'PID identity changed',",
+    "so every stop, roll and start of that runtime refused until the record was moved by hand."
+  ],
+  "decisions": {
+    "D1": "Recorded PID held by a process with another CreationDate: the recorded one exited; null is returned.",
+    "D2": [
+      "That record is renamed aside, never deleted, to <label>.process.json.exited-<yyyyMMddHHmmss> (UTC).",
+      "One line names the label and both creation dates only. A later launchProcesses writes a fresh record."
+    ],
+    "D3": "Same CreationDate with another command line, executable, entry or preload: refused with the same words.",
+    "D4": [
+      "Record shape, ports and spawning are unchanged.",
+      "ownedProcess takes an optional third argument { info } (default processInfo) so tests stand in for it."
+    ]
+  },
+  "files": ["scripts/platform/processes.mjs", "scripts/platform/processes.test.mjs"],
+  "checks": {
+    "platformTests": {
+      "command": "node --test scripts/platform/*.test.mjs",
+      "before": { "exit": 0, "tests": 77, "pass": 75, "fail": 0, "skipped": 2 },
+      "after": { "exit": 0, "tests": 80, "pass": 78, "fail": 0, "skipped": 2 },
+      "skippedBothTimes": [
+        "dry-run frozen profiles pass existing verifiedProfile only for the exact repo, hash and interpreter",
+        "the CLI switch passes the real import preflight with the project-owned interpreter, on a copy"
+      ]
+    },
+    "typecheckBackend": { "command": "pnpm typecheck:backend", "exit": 0 },
+    "diffCheck": { "command": "git diff --check", "exit": 0 }
+  },
+  "newTests": [
+    "Same PID, other CreationDate: null; old name gone; one aside copy with the same bytes; one line printed.",
+    "Same CreationDate, other entry, executable or preload: the same refusal; the record stays.",
+    "No process holds the PID: null. A matching process: the record. Neither moves the record."
+  ]
+}

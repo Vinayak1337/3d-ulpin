@@ -1,0 +1,46 @@
+{
+ "task": "LA1b",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "41c5773b",
+ "defect": "LA1 gaps and REH4 needsCode 2: window mode only centred on the area's extent; a summary with 0 features or a null extent left a blank map with no words; a picked footprint showed only its identifier and kind, with no way to the building.",
+ "decisions": {
+  "D1_fit": {
+   "engine": "packages/scene/src/engine.ts:482 fitPlanBox(minX, minY, maxX, maxY): area view only; sets the camera key and framed box, then frames through frameTarget (:1589), the pose code applyCamera already used (presetFor, flat top-down, fitAreaPose, flight or jump). Content arriving later keeps the frame; a selection or another mode moves the camera as before. cameraKeyOf (:1947) is the key applyCamera already computed, moved out unchanged.",
+   "studio": "apps/studio/src/features/map/areaWindow.ts:118 showWindow fits the summary's extent with engine.fitPlanBox, then starts the read; useAreaWindow calls it at :146 in place of engine.panTo"
+  },
+  "D2_empty": {
+   "rule": "areaWindow.ts:27 windowEmpty: summary read and featureCount 0 or extent null; useAreaWindow (:131) then treats the extent as absent, so no reader, no count line and no read error",
+   "words": "areaWindow.ts:14 'This area has no recorded buildings to draw yet.'",
+   "where": "WindowedArea.tsx:98 WindowEmpty, the same centred card as the map's 'No geometry is recorded' card; shown at WindowedArea.tsx:71 and MapWorkspace.tsx:460 (window mode only); the scale readout is hidden in that case (WindowedArea.tsx:86, MapWorkspace.tsx:533). No danger banner: the summary read succeeded."
+  },
+  "D3_link": {
+   "destination": "/studio/properties/{buildingId}/register, the route the normal inspector's 'Open register' links (inspector/BuildingInspector.tsx:109). The register page reads the building by id; the area context only feeds its small scene, and a building with no register shows RegisterAbsent with its record links.",
+   "inspector": "WindowedArea.tsx:107 WindowedInspector: kind as title, identifier copyable, 'Open register' as the one footer action for a building only; no field beyond what the window read holds"
+  },
+  "D4": "displayState is not read: the register route already answers a building with no register in plain words, so nothing depends on the field. API client types untouched.",
+  "D5": "No server, contract, tile or far-view change; areas under the limit open MapWorkspace as before (useAreaWindow inactive reads no summary and says nothing)."
+ },
+ "tests": {
+  "scene": "packages/scene/src/streaming-camera.test.ts:120 the whole box projects inside 0.91 of the view and a later arrival does not refit; :141 eases to the box centre, does nothing outside the area view",
+  "studio": "apps/studio/src/features/map/areaWindow.test.ts: windowEmpty rule; WindowedArea with summaries (0, null), (0, box), (5, null) shows the sentence and no banner, count line or readout, (5, box) does not; an inactive window (area under the limit) reads no summary and says nothing; a picked building links /studio/properties/{id}/register, a road links nothing; showWindow calls fitPlanBox with the extent and never panTo, then reads once settled"
+ },
+ "checks": {
+  "typecheck:backend": {"exit": 0},
+  "studio:typecheck": {"exit": 0},
+  "studio:test": {"exit": 0,
+   "before": {"studio": 459, "scene": 44, "ui": 7, "apiClient": 2},
+   "after": {"studio": 465, "scene": 46, "ui": 7, "apiClient": 2}},
+  "backendTests": {"exit": 0, "tests": 277, "pass": 275, "fail": 0, "skipped": 2, "note": "unchanged from staging; no server path touched"},
+  "openapi --check": {"exit": 0, "operations": 314, "namedSchemas": 356},
+  "contractRegeneration": "not run: no contract or pinned source changed",
+  "git diff --check": {"exit": 0},
+  "ui-design-check": "docs/evidence/gf1/la1b/ui-design-check.md (scan exit 0)"
+ },
+ "notRun": "No browser run: the task forbids starting a runtime or requesting one, so the fit and the words were checked by unit and static-render tests only.",
+ "gaps": [
+  "The camera's far plane is a fixed 20 km (engine.ts:209 in the constructor) and the fog follows the drawn content; for an extent much wider than about 12 km the far edge of the fitted view may be clipped until the officer moves closer. The normal area framing has the same limit.",
+  "The sentence says 'recorded' because the window counts only recorded features on staging; once proposals are counted (displayState), the words may name proposals too.",
+  "The window and canonical frames may differ by grid convergence (LA1 gap 1), unchanged here."
+ ]
+}

@@ -1,0 +1,451 @@
+{
+  "schemaVersion": "normalized-building/1",
+  "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898",
+  "frame": {
+    "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+    "origin": {
+      "lon": 77.1007494298676,
+      "lat": 28.395913481052787,
+      "hEllipsoidal": null
+    },
+    "axes": "ENU",
+    "unit": "m",
+    "placement": "source_supported",
+    "sourceCrs": [
+      "EPSG:32643"
+    ],
+    "verticalRefs": [
+      "building-relative; not aligned between features"
+    ],
+    "horizontalOperation": "deterministic:wgs84-surface-to-enu@1"
+  },
+  "buildings": [
+    {
+      "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190",
+      "recordState": "reviewed",
+      "name": {
+        "value": "TOWER 3",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+            "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+            "locator": {
+              "kind": "page",
+              "page": 1,
+              "text": "central T-3 tower graphic"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
+      },
+      "footprint": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+            "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+            "locator": {
+              "kind": "page",
+              "page": 1,
+              "text": "central T-3 tower graphic"
+            }
+          }
+        ],
+        "method": "deterministic:wgs84-surface-to-enu@1",
+        "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
+      },
+      "heightM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [],
+        "method": "source_literal",
+        "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
+      },
+      "heightState": "unknown"
+    }
+  ],
+  "baseFeatures": [
+    {
+      "id": "6fb53506-73d7-488a-b8e8-f9d3e6c8d17a",
+      "kind": "road",
+      "polygons": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "deterministic:wgs84-surface-to-enu@1",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "name": {
+        "value": "Dividing Road Sec 58/61",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "lowerM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "upperM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "network": {
+        "value": null,
+        "state": "unknown",
+        "citations": [],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      }
+    },
+    {
+      "id": "da8dbe21-13a2-4f39-954a-d50e019239a8",
+      "kind": "road",
+      "polygons": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "deterministic:wgs84-surface-to-enu@1",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "name": {
+        "value": "Dividing Road between Sec 59/60",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "lowerM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "upperM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "network": {
+        "value": null,
+        "state": "unknown",
+        "citations": [],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      }
+    }
+  ],
+  "administrativeContext": [
+    {
+      "id": "68cf15d7-f486-4f39-b18f-036bacbf724b",
+      "kind": "sector",
+      "role": "administrative_context",
+      "analyticalEligibility": "not_assessed",
+      "sourceCrs": "EPSG:32643",
+      "name": {
+        "value": "63 A",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+            "sourceSha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+            "locator": {
+              "kind": "feature",
+              "featureId": "165"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "polygons": {
+        "value": [
+          [
+            [
+              [
+                -675.6075541065392,
+                -509.2271269653171
+              ],
+              [
+                247.46700374808944,
+                -3.901807700149588
+              ],
+              [
+                205.41951476195499,
+                451.0513269607783
+              ],
+              [
+                -765.2195290803936,
+                249.4698053397509
+              ],
+              [
+                -1752.4668721484463,
+                -268.3591948945938
+              ],
+              [
+                -1479.2976808383687,
+                -949.1995409516732
+              ],
+              [
+                -675.6075541065392,
+                -509.2271269653171
+              ]
+            ]
+          ]
+        ],
+        "state": "candidate",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+            "sourceSha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+            "locator": {
+              "kind": "feature",
+              "featureId": "165"
+            }
+          }
+        ],
+        "method": "deterministic:administrative-boundary-source-to-enu@1",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      }
+    },
+    {
+      "id": "5498d68e-d15b-4268-8763-e0b900dc66c6",
+      "kind": "sector",
+      "role": "administrative_context",
+      "analyticalEligibility": "not_assessed",
+      "sourceCrs": "EPSG:32643",
+      "name": {
+        "value": "59",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+            "sourceSha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+            "locator": {
+              "kind": "feature",
+              "featureId": "166"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      },
+      "polygons": {
+        "value": [
+          [
+            [
+              [
+                247.46700374808944,
+                -3.901807700149588
+              ],
+              [
+                924.0881005455565,
+                366.5038008971876
+              ],
+              [
+                1071.6189402732878,
+                523.9540347051906
+              ],
+              [
+                1292.5719530369663,
+                959.6033579300473
+              ],
+              [
+                1786.368896470834,
+                1933.2056651114835
+              ],
+              [
+                1669.1007551019015,
+                1947.3777954797886
+              ],
+              [
+                1549.0408520259073,
+                1905.5514925203001
+              ],
+              [
+                1385.28738146117,
+                1846.4956097542558
+              ],
+              [
+                1163.8121045649661,
+                1769.9258658854658
+              ],
+              [
+                987.6771882728382,
+                1713.9963774307766
+              ],
+              [
+                913.6448629393963,
+                1686.7126742550736
+              ],
+              [
+                797.0600625744999,
+                1646.9421476612347
+              ],
+              [
+                621.037067410606,
+                1582.2790652264218
+              ],
+              [
+                493.43180273782696,
+                1532.646227103717
+              ],
+              [
+                396.526743124297,
+                1498.6176367175988
+              ],
+              [
+                277.88570634944915,
+                1462.322364234005
+              ],
+              [
+                223.34705220346373,
+                1445.2820298331396
+              ],
+              [
+                124.00228562698098,
+                1417.4939230458435
+              ],
+              [
+                137.34210151196993,
+                1292.1393777415815
+              ],
+              [
+                158.0874395468046,
+                1070.8435376955701
+              ],
+              [
+                167.53317917966774,
+                899.4880405560497
+              ],
+              [
+                170.97440280588933,
+                823.754816912457
+              ],
+              [
+                247.46700374808944,
+                -3.901807700149588
+              ]
+            ]
+          ]
+        ],
+        "state": "candidate",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+            "sourceSha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+            "locator": {
+              "kind": "feature",
+              "featureId": "166"
+            }
+          }
+        ],
+        "method": "deterministic:administrative-boundary-source-to-enu@1",
+        "revisionId": "6bf9ca7a6964b9d2955f08c77ef547139a894834b0a06f3f9ca38f4b93ba3898"
+      }
+    }
+  ],
+  "overlays": [],
+  "tilesets": [],
+  "gaps": [
+    "No qualified overlay/tileset supplied by the area context; presentation scene assets are not analytical tilesets.",
+    "6fb53506-73d7-488a-b8e8-f9d3e6c8d17a: non-polygon context retained in source; no guessed ribbon width or area.",
+    "da8dbe21-13a2-4f39-954a-d50e019239a8: non-polygon context retained in source; no guessed ribbon width or area.",
+    "Sector boundaries are administrative context, not parcel/public-land or analytical geometry."
+  ]
+}

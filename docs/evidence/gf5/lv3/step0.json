@@ -1,0 +1,130 @@
+{
+  "baselineGit": "ffa05e0a5b6362bab0692fc6098d7cdde096dabb",
+  "command": "LV1_CAPTURE=lv3-before node docs/evidence/gf5/lv3/measure.mjs",
+  "harnessDeviation": "LV1 rejects lv3-before and writes to LV1; copied unchanged algorithm with LV3 output routing.",
+  "sceneOrStudioLongTasks": 5,
+  "tasks": [
+    {
+      "at": 19091.9,
+      "ms": 64,
+      "topInclusive": [
+        ["performWorkOnRoot",57.802],
+        ["performSyncWorkOnRoot",57.802],
+        ["flushSyncWorkAcrossRoots_impl",57.802],
+        ["processRootScheduleInMicrotask",57.802],
+        ["react_stack_bottom_frame",56.673]
+      ],
+      "topSelf": [["(garbage collector)",5.877],["sidewalls",4.815],["addVertex",3.144]],
+      "overlappingCalls": [{"name":"setBase","at":19096.8,"ms":59.8}],
+      "topSceneOrLoader": [["setBase",52.12]],
+      "sceneOrStudioAttributable": true,
+      "decoderDuringStream": false
+    },
+    {
+      "at": 19481.8,
+      "ms": 60,
+      "topInclusive": [
+        ["getTileOrStrip",31.942],
+        ["inflate$1",30.469],
+        ["decodeBlock",30.469],
+        ["decode",30.469],
+        ["Inflate$1.push",24.216]
+      ],
+      "topSelf": [["(anonymous)",18.114],["inflate_fast",14.952],["(program)",5.176]],
+      "overlappingCalls": [],
+      "topSceneOrLoader": [["getTileOrStrip",31.942],["inflate$1",30.469],["decodeBlock",30.469]],
+      "sceneOrStudioAttributable": true,
+      "decoderDuringStream": true
+    },
+    {
+      "at": 19542.6,
+      "ms": 237,
+      "topInclusive": [
+        ["WebGLRenderer.render",236.1],
+        ["renderFrame",236.1],
+        ["renderObject",235.525],
+        ["renderObjects",235.525],
+        ["renderScene",235.525]
+      ],
+      "topSelf": [["onFirstUse",230.759],["setMaterial",1.562],["WebGLShader",1.139]],
+      "overlappingCalls":
+      [{"name":"drainBuildingQueue","at":19542.7,"ms":0},{"name":"renderFrame","at":19542.7,"ms":236.3}],
+      "topSceneOrLoader": [["renderFrame",236.1]],
+      "sceneOrStudioAttributable": true,
+      "decoderDuringStream": false
+    },
+    {
+      "at": 20472.6,
+      "ms": 184,
+      "topInclusive": [
+        ["renderFrame",184.966],
+        ["WebGLRenderer.render",184.816],
+        ["renderObjects",178.967],
+        ["renderScene",178.967],
+        ["renderObject",178.692]
+      ],
+      "topSelf": [["onFirstUse",169.457],["WebGLShader",2.84],["projectObject",1.633]],
+      "overlappingCalls":
+      [{"name":"drainBuildingQueue","at":20472.7,"ms":0},{"name":"renderFrame","at":20472.6,"ms":184.1}],
+      "topSceneOrLoader": [["renderFrame",184.966]],
+      "sceneOrStudioAttributable": true,
+      "decoderDuringStream": false
+    },
+    {
+      "at": 20832.6,
+      "ms": 233,
+      "topInclusive": [
+        ["renderFrame",233.43],
+        ["WebGLRenderer.render",227.041],
+        ["renderObject",223.574],
+        ["WebGLRenderer.renderBufferDirect",221.106],
+        ["setProgram",218.656]
+      ],
+      "topSelf": [["onFirstUse",215.384],["setProgram",2.831],["setTest",1.626]],
+      "overlappingCalls":
+      [{"name":"drainBuildingQueue","at":20833.1,"ms":5.1},{"name":"renderFrame","at":20833.1,"ms":232.1}],
+      "topSceneOrLoader": [["renderFrame",233.43],["drainBuildingQueue",6.285]],
+      "sceneOrStudioAttributable": true,
+      "decoderDuringStream": false
+    }
+  ],
+  "base": {
+    "partSequence": 2,
+    "arrivingFeatures": 96,
+    "setterMs": 59.8,
+    "table": [
+      {"function":"addBaseEntry","inclusiveSampleMs":48.459},
+      {"function":"rebuildBaseLines","inclusiveSampleMs":3.239},
+      {"function":"updateBaseDerived","inclusiveSampleMs":0},
+      {"function":"apply","inclusiveSampleMs":0},
+      {"function":"followArrivedContent","inclusiveSampleMs":1.619}
+    ],
+    "limit": "Inclusive 1 ms CPU samples; zero means unsampled, not zero cost. Rows may overlap."
+  },
+  "buildingPattern": [
+    "setBuildings reconciles whole-list truth and queues only new ids in insertion order.",
+    "renderFrame drains the queue once, with BUILDING_BUDGET_MS = 4.",
+    "The drain checks elapsed time after each geometry addition.",
+    "Pending pads are merged once per drained frame, then bounds and apply are updated.",
+    "finishDraw records rendered ids; waitForDrawn waits for a frame, not merely arrival."
+  ],
+  "imagery": {
+    "width": 768,
+    "height": 768,
+    "bands": 4,
+    "projectedCSTypeGeoKey": 3857,
+    "mainThread": ["fetch (asynchronous)","inflate","readRasters","per-pixel RGBA loop","putImageData"],
+    "sceneImageType": "HTMLCanvasElement",
+    "imageBitmapAccepted": false,
+    "decision": "Transfer RGBA bytes; keep canvas and putImageData on main thread without changing scene types."
+  },
+  "lidarLongTask": false,
+  "additionalCause": "Three cold shader first-use tasks (onFirstUse) appear; not either named repair.",
+  "boundedComparison": {
+    "hypothesis": "Cold software-renderer shader first-use is separate from base construction and TIFF decode.",
+    "baseline": "Unchanged staging captured above, including assets.",
+    "attempt": "Measure repaired code once under the same cold harness; no shader or material changes in this task.",
+    "success": "No scene/Studio task >50 ms in stream.",
+    "stop": "If shader first-use remains, report its profile without further out-of-scope repair."
+  }
+}

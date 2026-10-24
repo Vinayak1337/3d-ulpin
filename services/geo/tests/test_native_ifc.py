@@ -19,11 +19,12 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT/"services/geo"))
-from geo.native_ifc import DEFAULT_LIMITS, IFCError, lexical_index
+from geo.native_ifc import DEFAULT_LIMITS, IFCError, lexical_index, scan_structure, structure_or_reason
 
 spec = importlib.util.spec_from_file_location("ifc_cli", ROOT/"scripts/usp/desktop-ifc-read.py")
 cli = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cli)
+FIXTURES = ROOT/"services/geo/tests/fixtures"
 SOURCES = Path(os.environ["NATIVE_IFC_TEST_SOURCES"]) if "NATIVE_IFC_TEST_SOURCES" in os.environ else None
 
 
@@ -150,6 +151,70 @@ class NativeIFCTests(unittest.TestCase):
                 cli.supervise(source, result)
             self.assertFalse(result.exists())
         self.assertFalse(psutil.pid_exists(pid))
+
+
+class OneByteStream:
+    """Returns one byte per read, so every statement, string and comment crosses a read boundary."""
+    def __init__(self, raw):
+        self.raw, self.pos = raw, 0
+
+    def read(self, _size):
+        self.pos += 1
+        return self.raw[self.pos-1:self.pos]
+
+
+class StructureScanTests(unittest.TestCase):
+    """Pass 1 on hand-written test-only fixtures; no parser, geometry kernel or source record."""
+    def scan(self, schema, limits=DEFAULT_LIMITS):
+        raw = (FIXTURES/f"ifc1-structure-{schema}.ifc").read_bytes()
+        return raw, structure_or_reason(raw, limits)
+
+    def test_ifc4_tree_with_step_locators_and_stated_values(self):
+        raw, structure = self.scan("ifc4")
+        self.assertEqual(structure["state"], "read")
+        self.assertEqual(structure["lengthUnit"], {"state": "supplied", "stepId": 3, "entityType": "IfcSIUnit",
+                                                   "prefix": "MILLI", "name": "METRE"})
+        nodes = {node["stepId"]: node for node in structure["nodes"]}
+        self.assertEqual(sorted(nodes), [1, 5, 6, 7, 8, 9, 10, 11])
+        self.assertEqual([nodes[k]["candidate"] for k in (1, 5, 6, 7, 8, 9)],
+                         [None, None, "building", "level", "level", "space"])
+        self.assertEqual((nodes[6]["name"], nodes[6]["longName"]), ("Test building", "Building 'A'"))
+        self.assertEqual({k: nodes[k]["parentStepIds"] for k in (6, 7, 8, 9, 10, 11)},
+                         {6: [5], 7: [6], 8: [6], 9: [7], 10: [7], 11: [8]})
+        self.assertEqual(nodes[11]["relationStepIds"], [16])
+        self.assertEqual((nodes[9]["longName"], nodes[11]["longName"]), ("Café", "Room; with semicolon"))
+        self.assertEqual(nodes[9]["globalId"], "0Kq2fRvcL1xBtS0Gx3Zs06")
+        self.assertEqual(nodes[7]["elevation"], {"state": "supplied", "value": 0.0, "literal": "0."})
+        self.assertEqual(nodes[8]["elevation"], {"state": "absent"})
+        self.assertNotIn("elevation", nodes[6])
+        self.assertEqual(scan_structure(OneByteStream(raw)), structure)
+
+    def test_ifc2x3_reads_the_same_way(self):
+        _, structure = self.scan("ifc2x3")
+        self.assertEqual(structure["lengthUnit"], {"state": "supplied", "stepId": 3,
+                                                   "entityType": "IfcConversionBasedUnit", "prefix": None,
+                                                   "name": "FOOT"})
+        nodes = {node["stepId"]: node for node in structure["nodes"]}
+        self.assertEqual([node["candidate"] for node in structure["nodes"]],
+                         [None, "building", "level", "level", "space", "space", "space"])
+        self.assertEqual(nodes[8]["elevation"], {"state": "supplied", "value": -1.5, "literal": "-1.5E0"})
+        self.assertEqual(nodes[9]["elevation"], {"state": "absent"})
+        self.assertEqual((nodes[12]["parentStepIds"], nodes[12]["relationStepIds"]), ([9], [16]))
+
+    def test_ceilings_keep_the_file_and_say_why(self):
+        for field, bound, code in (("structure_entities", 3, "STRUCTURE_ENTITY_LIMIT"),
+                                   ("structure_bytes", 512, "STRUCTURE_INPUT_LIMIT"),
+                                   ("structure_output_bytes", 256, "STRUCTURE_OUTPUT_LIMIT")):
+            with self.subTest(ceiling=field):
+                _, structure = self.scan("ifc4", replace(DEFAULT_LIMITS, **{field: bound}))
+                self.assertEqual((structure["state"], structure["code"]), ("not_read", code))
+                self.assertTrue(structure["reason"])
+
+    def test_malformed_or_truncated_statement_is_not_read(self):
+        raw = (FIXTURES/"ifc1-structure-ifc4.ifc").read_bytes()
+        short = raw.replace(b"'Ground',$,$,$,$,$,.ELEMENT.,0.)", b"'Ground')")
+        self.assertEqual(structure_or_reason(short, DEFAULT_LIMITS)["code"], "STRUCTURE_SYNTAX")
+        self.assertEqual(structure_or_reason(raw[:raw.index(b"#9=") + 12], DEFAULT_LIMITS)["code"], "STRUCTURE_SYNTAX")
 
 
 if __name__ == "__main__":

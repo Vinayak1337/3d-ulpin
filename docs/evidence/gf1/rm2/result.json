@@ -1,0 +1,29 @@
+{
+  "task": "RM2",
+  "title": "The large-file drafting step ends at once on a processor that lacks an operation",
+  "base": "staging 41c5773b",
+  "branch": "task/rm2-large-draft-final",
+  "found_by": "docs/evidence/runtime/rm1/result.json limits: the intake-large drafting step still retries a 503 AREA_PROCESSOR_OPERATION up to its attempt limit",
+  "defect": {
+    "signature": "a draft step whose processor answers 404/405 for an operation raised 503 AREA_PROCESSOR_OPERATION; fail() in intake-large-worker.ts retried it to the attempt limit because only a part the file refuses ended the job at once",
+    "change": "intakeLargePartRefusal, which fail() already reads, answers the existing AREA_PROCESSOR_OPERATION words from intake-large.ts for that code, so the first attempt fences, rests the row and fails the job",
+    "shared_with_rm1": "the same error code and the same reason words as the streaming reader's streamingFailureKind 'final' branch; no second list of codes",
+    "413_422": "unchanged: the large job already ends a 422 AREA_PROCESSING at once and its test keeps a 413 AREA_RESULT_LIMIT retried; the reader's 413/422 are the reader's own file refusals and do not arise from the processor in this step",
+    "files": ["packages/server/src/modules/usp/ingestion/intake-large.ts", "packages/server/src/modules/usp/ingestion/intake-large.test.ts"],
+    "worker_file": "intake-large-worker.ts unchanged: fail() needed no edit",
+    "contract": "no state, migration or contract change; docs/api/source-pins.json repinned for intake-large.ts only"
+  },
+  "checks": {
+    "typecheck_backend": { "before": "exit 0", "after": "exit 0" },
+    "studio_typecheck": { "after": "exit 0" },
+    "studio_test": { "before": "459", "after": "459 pass" },
+    "backend_suite": { "before": "277 tests, 275 pass, 2 skipped", "after": "278 tests, 276 pass, 0 fail, 2 skipped" },
+    "openapi_check": { "before": "exit 0", "after": "exit 0 after repinning source-pins.json" },
+    "api_check_py": { "after": "exit 1: 'runtime receipt changed' for receipt files whose bytes in this checkout differ by line endings (cityjson-validation-runtime, current-runtime-20261003, source-evidence-history and four more match only after LF normalisation); not touched by this task" },
+    "git_diff_check": "exit 0"
+  },
+  "not_done": [
+    "No database here: the one-attempt job end is shown by intakeLargePartRefusal returning the refusal that fail() uses to rest the row, not by a job run",
+    "No runtime rehearsal against an old processor image"
+  ]
+}

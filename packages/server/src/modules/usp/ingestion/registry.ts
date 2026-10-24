@@ -9,10 +9,16 @@ export const CONVERSIONS = [
   {id: 'literal_identifier@1', target: 'building.sourceKey', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Copy a complete, unique source string verbatim. No trimming, coercion or generated identity.'},
   {id: 'literal_text@1', target: 'building.name', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Read a complete source text attribute through the existing area normalizer; original attributes remain retained.'},
   {id: 'geojson_polygon@1', target: 'building.geometry', inputUnit: 'degree', outputUnit: 'm', semantics: 'Use unchanged RFC 7946/recognized OGC CRS84 polygons in the existing canonical-area-officer-v1 normalizer. CRS evidence comes from inspection; the retained destination frame governs projection. Geometry role stays unknown.'},
+  {id: 'literal_integer_identifier@1', target: 'feature.sourceKey', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Copy a unique whole-number identifier as the digits the file writes. No rounding, padding or generated identity.'},
+  {id: 'literal_identifier@1', target: 'feature.sourceKey', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Copy the unique source identifier for the kind explicitly stated in the layout.'},
+  {id: 'literal_text@1', target: 'feature.name', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Read source text through the existing area normalizer for the stated kind.'},
+  {id: 'geojson_geometry@1', target: 'feature.geometry', inputUnit: 'as_declared', outputUnit: 'm', semantics: 'Read unchanged GeoJSON geometry in the coordinate system the file declares through the existing area normalizer; the stated kind governs compatible geometry. Geometry role stays unknown.'},
 ] as const;
+const geometryTypes = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
+const polygonKinds = ['building', 'parcel', 'public_land'];
 export const limitations = [
-  'Only bounded GeoJSON building polygons are supported by this manual profile; other formats and target concepts are unsupported.',
-  'Height, geometry role, floor levels, ownership and official issuance are unknown. No height or regional-unit conversion is qualified without retained unit and meaning evidence.',
+  'Only bounded GeoJSON is supported by this manual profile; the layout states one kind for the whole file.',
+  'Height is unknown unless the layout states a field, its source unit and its meaning. Geometry role, floor levels, ownership and official issuance remain unknown.',
   'This synchronous manual path does not qualify queued streaming, model proposals, held-out accuracy, PII egress or GF-AGENT.',
 ];
 const escape = (key: string) => key.replaceAll('~', '~0').replaceAll('/', '~1');
@@ -32,14 +38,15 @@ export function geojsonInventory(bytes: Uint8Array): Feature[] {
 export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
   const rows = geojsonInventory(bytes);
   if (inspection.format !== 'geojson' || inspection.sourceSha256 !== sha256(bytes) || inspection.featureCount !== rows.length
-    || inspection.sourceCrs !== 'EPSG:4326' || !inspection.crsEvidence)
+    || !inspection.sourceCrs || !/^[A-Za-z][A-Za-z0-9_]*:[A-Za-z0-9_.-]+$/.test(inspection.sourceCrs)
+    || !inspection.crsEvidence)
     throw new AppError(422, 'SOURCE_PROFILE', 'The inspected source does not match the supported GeoJSON profile.');
-  if (inspection.geometryTypes.some(type => !['Polygon', 'MultiPolygon'].includes(type)))
-    throw new AppError(422, 'UNSUPPORTED_GEOMETRY', 'This recipe supports building polygons only; no geometry role is inferred.');
-  const entries: {path: string; get: (row: Feature) => {present: boolean; value: unknown}}[] = [
+  if (inspection.geometryTypes.some(type => !geometryTypes.includes(type)))
+    throw new AppError(422, 'UNSUPPORTED_GEOMETRY', 'Choose point, line or polygon GeoJSON geometry supported by the area normalizer; no geometry role is inferred.');
+  const entries: {path: string; integerIdEligible?: boolean; get: (row: Feature) => {present: boolean; value: unknown}}[] = [
     {path: '/features/*/geometry', get: row => ({present: Object.hasOwn(row, 'geometry'), value: row.geometry})},
-    ...(rows.some(row => Object.hasOwn(row, 'id')) ? [{path: '/features/*/id', get: (row: Feature) => ({present: Object.hasOwn(row, 'id'), value: row.id})}] : []),
-    ...inspection.fields.map(field => ({path: `/features/*/properties/${escape(field.name)}`, get: (row: Feature) => ({present: Object.hasOwn(row.properties || {}, field.name), value: row.properties?.[field.name]})})),
+    ...(rows.some(row => Object.hasOwn(row, 'id')) ? [{path: '/features/*/id', integerIdEligible: inspection.featureIntegerIdEligible, get: (row: Feature) => ({present: Object.hasOwn(row, 'id'), value: row.id})}] : []),
+    ...inspection.fields.map(field => ({path: `/features/*/properties/${escape(field.name)}`, integerIdEligible: field.integerIdEligible, get: (row: Feature) => ({present: Object.hasOwn(row.properties || {}, field.name), value: row.properties?.[field.name]})})),
   ];
   const paths = entries.map(entry => {
     const items = rows.map(entry.get), values = items.filter(item => item.present && item.value !== null);
@@ -48,26 +55,59 @@ export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
     return {path: entry.path, types, values: values.length, explicitNull: items.filter(item => item.present && item.value === null).length,
       absent: items.filter(item => !item.present).length,
       literalIdEligible: ids.length === rows.length && ids.every(v => typeof v === 'string' && v.length > 0 && v.length <= 256 && v.trim() === v) && new Set(ids).size === ids.length,
-      literalTextEligible: ids.length === rows.length && ids.every(v => typeof v === 'string' && v.length > 0 && v.length <= 2048 && v.trim() === v)};
+      literalTextEligible: ids.length === rows.length && ids.every(v => typeof v === 'string' && v.length > 0 && v.length <= 2048 && v.trim() === v),
+      ...(entry.integerIdEligible === undefined ? {} : {integerIdEligible: entry.integerIdEligible
+        && ids.length === rows.length && ids.every(v => Number.isSafeInteger(v)) && new Set(ids).size === ids.length})};
   });
-  const crs = {value: inspection.sourceCrs, evidence: inspection.crsEvidence, unit: 'degree' as const};
+  const unit = inspection.crsUnit ?? (inspection.sourceCrs === 'EPSG:4326' ? 'degree' : null);
+  if (typeof unit !== 'string' || !unit.trim() || unit.length > 80)
+    throw new AppError(422, 'SOURCE_PROFILE',
+      'The stored inspection does not establish the coordinate unit. Check the file again.');
+  const crs = {value: inspection.sourceCrs, evidence: inspection.crsEvidence, unit};
   return {version: INGESTION_VERSION, format: 'geojson' as const, featureCount: rows.length, crs, geometryTypes: inspection.geometryTypes,
     paths, limitations, schemaFingerprint: sha256(JSON.stringify({version: INGESTION_VERSION, crs, geometryTypes: inspection.geometryTypes, paths: paths.map(p => ({path: p.path, types: p.types}))}))};
 }
-export function compileMapping(plan: MappingPlan, profile: SourceProfile): Mapping {
-  const mapping: Mapping = {kind: 'building', geometryRole: 'unknown'};
+function heightMapping(plan: Pick<MappingPlan, 'heightField' | 'heightUnit' | 'heightMeaning'>,
+  profile: Pick<SourceProfile, 'paths'>): Partial<Mapping> {
+  const field = plan.heightField;
+  if (field === undefined) return {};
+  if (!plan.heightUnit || !plan.heightMeaning?.trim())
+    throw new AppError(422, 'MAPPING_HEIGHT', 'State the height field, its source unit and its meaning together.');
+  const path = profile.paths.find(item => item.path === `/features/*/properties/${escape(field)}`);
+  if (!path || path.types.some(type => !['number', 'string'].includes(type)))
+    throw new AppError(422, 'MAPPING_HEIGHT', 'Choose an inspected numeric or text height attribute; null and absent values remain unknown.');
+  return {heightField: field, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning};
+}
+type LayoutPlan = Pick<MappingPlan, 'kind' | 'operations' | 'heightField' | 'heightUnit' | 'heightMeaning'>;
+type LayoutProfile = Pick<SourceProfile, 'paths' | 'geometryTypes' | 'crs'>;
+/** The one meaning of a layout; a large file's streamed profile reaches it through `compileStreamedMapping`. */
+export function compileMapping(plan: LayoutPlan, profile: LayoutProfile): Mapping {
+  const kind = plan.kind ?? 'building';
+  const accepted = polygonKinds.includes(kind) ? ['Polygon', 'MultiPolygon'] : geometryTypes;
+  const refused = profile.geometryTypes.filter(type => !accepted.includes(type));
+  if (refused.length) throw new AppError(422, 'MAPPING_GEOMETRY_KIND',
+    `The layout states ${kind}, which does not accept ${refused.join(', ')} geometry. Choose a compatible kind; no kind is inferred.`);
+  const mapping: Mapping = {kind, geometryRole: 'unknown', ...heightMapping(plan, profile)};
   for (const operation of plan.operations) {
     const definition = CONVERSIONS.find(item => item.id === operation.conversionId && item.target === operation.target);
     const path = profile.paths.find(item => item.path === operation.sourcePath);
     if (!definition || !path) throw new AppError(422, 'MAPPING_PATH', 'Choose an inspected source path and compatible registry conversion.');
-    if (operation.target === 'building.geometry') {
+    if (operation.target === 'building.geometry' || operation.target === 'feature.geometry') {
+      if (operation.conversionId === 'geojson_polygon@1' && profile.crs.unit !== 'degree')
+        throw new AppError(422, 'MAPPING_CRS', 'The older building layout reads longitude and latitude only. '
+          + "State the kind of feature so the layout reads the file's declared coordinate system.");
       if (operation.sourcePath !== '/features/*/geometry') throw new AppError(422, 'MAPPING_GEOMETRY', 'Geometry must reference the retained GeoJSON feature geometry.');
     } else {
       const prefix = '/features/*/properties/';
       const field = operation.sourcePath.startsWith(prefix) ? unescape(operation.sourcePath.slice(prefix.length)) : undefined;
       if (field && (field.length > 80 || field.trim() !== field)) throw new AppError(422, 'MAPPING_FIELD', 'The existing area adapter cannot map this field name verbatim.');
-      if (operation.target === 'building.sourceKey') {
-        if (!path.literalIdEligible) throw new AppError(422, 'MAPPING_IDENTITY', 'Source identity must be complete, unique, nonempty literal text.');
+      if (operation.target === 'building.sourceKey' || operation.target === 'feature.sourceKey') {
+        if (operation.conversionId === 'literal_integer_identifier@1') {
+          if (path.integerIdEligible !== true) throw new AppError(422, 'MAPPING_IDENTITY',
+            'Source identity must be complete, unique whole-number tokens within the exact integer range.');
+        } else if (!path.literalIdEligible) {
+          throw new AppError(422, 'MAPPING_IDENTITY', 'Source identity must be complete, unique, nonempty literal text.');
+        }
         if (operation.sourcePath !== '/features/*/id' && !field) throw new AppError(422, 'MAPPING_IDENTITY', 'Choose a source attribute or retained Feature.id.');
         if (field) mapping.idField = field;
       } else {

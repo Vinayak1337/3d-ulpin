@@ -1,0 +1,44 @@
+{
+  "task": "R8",
+  "found": {
+    "at": "2026-10-17T08:18:29Z",
+    "lastBoot": "2026-10-17T03:28:45Z",
+    "dockerEngine": "not answering: npipe dockerDesktopLinuxEngine absent; WSL distro docker-desktop Stopped",
+    "dockerDesktopProcesses": "none (only wslservice)",
+    "demoProcesses": "none recorded alive; nothing answering on 127.0.0.1:3194",
+    "demoCheckout": "99e0026ecc90a1b95b2a735a2418ec6433d02fe1, git status clean"
+  },
+  "attempt": {
+    "why": [
+      "The doctor's and runtime.mjs's own fix for an engine that is down is to start Docker Desktop on its",
+      "existing local Linux context; a start resumes containers by their restart policy and recreates nothing."
+    ],
+    "command": "Start-Process C:/Users/kvina/AppData/Local/Programs/DockerDesktop/Docker Desktop.exe (4.91.0)",
+    "startedAt": "2026-10-17T08:19:04Z",
+    "result": [
+      "the backend stopped at 08:19:06Z: starting services: initializing Ingest server: listening on",
+      "unix://C:/Users/kvina/AppData/Local/Docker/run/sailor-ingest.sock: rename ... sailor-ingest.sock.stale:",
+      "The file cannot be accessed by the system."
+    ],
+    "log": "%LOCALAPPDATA%/Docker/log/host/com.docker.backend.exe.log lines 3518 and 3594",
+    "dialog": "An unexpected error occurred; actions offered: Quit, Reset to factory defaults (neither clicked)",
+    "staleEntries": [
+      "%LOCALAPPDATA%/Docker/run/dockerEthernetVfkit",
+      "%LOCALAPPDATA%/Docker/run/dockerInference",
+      "%LOCALAPPDATA%/Docker/run/sailor-ingest.sock",
+      "%LOCALAPPDATA%/Docker/run/userAnalyticsOtlpHttp.sock"
+    ],
+    "staleEntriesRead": "ls shows each as unreadable (-?????????); left in place, nothing removed",
+    "undone": [
+      "the Docker Desktop and com.docker.backend processes started here were stopped at 08:22Z, so the",
+      "dialog with Reset to factory defaults is not left on screen; the engine is down as it was found"
+    ]
+  },
+  "stoppedBefore": "roll-out step 2: no demo process, container, volume, image or checkout was changed",
+  "needsOwner": [
+    "Never choose Reset to factory defaults: it deletes every volume, the demo's stores included.",
+    "Quit Docker Desktop, remove the four stale entries above under %LOCALAPPDATA%/Docker/run (runtime",
+    "sockets of the previous session, not data), start Docker Desktop, and confirm the engine answers;",
+    "or name another fix. Then R8 resumes from Part A with the demo's stores up."
+  ]
+}

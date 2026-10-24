@@ -1,0 +1,46 @@
+{
+  "task": "A3",
+  "path": "E:/BhuAayam-data/task-data/a3/heldout-truth.jsonl",
+  "sha256": "4444588804dd9bcab5a7093be277859194fff914e57bc19d2ac2e5b0f265fdfe",
+  "manifestSha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
+  "columns": 97,
+  "families": [
+    {
+      "family": "mi-h01",
+      "columns": 35,
+      "scorable": 0
+    },
+    {
+      "family": "mi-h02",
+      "columns": 3,
+      "scorable": 0
+    },
+    {
+      "family": "mi-h03",
+      "columns": 26,
+      "scorable": 26
+    },
+    {
+      "family": "mi-h04",
+      "columns": 23,
+      "scorable": 21
+    },
+    {
+      "family": "mi-h05",
+      "columns": 10,
+      "scorable": 8
+    }
+  ],
+  "method": "Literal publisher aliases/types or hierarchical descriptions; no teacher/team labels.",
+  "rules": [
+    "Alias/type without expanded meaning is truth_absent.",
+    "Documented non-property statistical concepts are unknown/copy.",
+    "Undocumented columns and undifferentiated years are truth_absent.",
+    "No propagation into merged header children; no source values in this receipt."
+  ],
+  "censusQualification": "Retained publisher metadata only; existing native limits block original.",
+  "teacherCalls": 0,
+  "trainingWrites": 0,
+  "memoryWrites": 0,
+  "evaluationBeforeFreeze": false
+}

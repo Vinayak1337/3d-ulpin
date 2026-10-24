@@ -1,0 +1,39 @@
+{
+  "schema": "ramp-acquisition-summary/1",
+  "use": "test_only",
+  "licence": "CC-BY-NC-4.0",
+  "attribution": "RAMP (Replicable AI for Microplanning), DevGlobal / TaQadam / B.O.T; Maxar Open Data Program imagery; distributed by Radiant Earth MLHub",
+  "karnataka": {
+    "chip_label_pairs": 6288,
+    "files": 12578,
+    "total_bytes": 1294633753,
+    "manifest": "E:/BhuAayam-data/datasets/ramp/manifest-karnataka.json",
+    "manifest_sha256": "6a4b1e82b07f632da6341a760ba78d429f800d1ec8dba9b4b130cc42bafdda34"
+  },
+  "live_manifest": {
+    "path": "E:/BhuAayam-data/datasets/ramp/manifest.json",
+    "sha256_at_freeze": "919f2bd57596dc0cc4bc841c62b6f21e52a3d4f3e8d23695566e1da7a3d4f826",
+    "note": "Changes as detached Bangladesh TRAIN-only acquisition progresses; Karnataka pins above are immutable."
+  },
+  "splits": {
+    "train": {
+      "chips": 3581,
+      "empty_chips": 880,
+      "publisher_features": 28328,
+      "chip_ids_sha256": "3063acddb6d017439f24b7a0f7461fa08407c03c000bc3e6ec09d9f3cc193a33"
+    },
+    "dev": {
+      "chips": 1434,
+      "empty_chips": 305,
+      "publisher_features": 13156,
+      "chip_ids_sha256": "d529040ba1b6a0a77b60260c9456f522c98f613c3ea4c2e4e92098ce0732fc8c"
+    },
+    "holdout": {
+      "chips": 1273,
+      "empty_chips": 355,
+      "publisher_features": 9182,
+      "chip_ids_sha256": "3c2f837930eefa86b89780c5db90adb8ce834a11eabe75f81c46d80df3a17076"
+    }
+  },
+  "launch_clearance": "Noncommercial research only; CC BY-NC / upstream imagery terms require owner clearance before operational launch."
+}

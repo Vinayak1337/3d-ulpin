@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "ramp-pilot-split/1",
+  "task": "D07-RAMP-PILOT-SPLIT",
+  "state": "frozen_preparation_not_fit_admitted",
+  "baseCommit": "9909847db43f1915709966b7489cc0625d356ac2",
+  "branch": "task/d07-ramp-pilot-split-20261005",
+  "allocationOverlay": {
+    "path": "E:/BhuAayam-data/task-data/d07-ramp-pilot-split-20261005/allocation-overlay.json",
+    "bytes": 31595,
+    "sha256": "3f31d467c9ca8f6c92e02d7a09ffbb0fee7d51cd0d4dc3642629a32b02c074da"
+  },
+  "checks": {
+    "path": "E:/BhuAayam-data/task-data/d07-ramp-pilot-split-20261005/checks.json",
+    "bytes": 4616,
+    "sha256": "92fd6915be715533c150df783cdf5ef393e66df49f93d16b17b895847aeac725"
+  },
+  "partition": {
+    "experimentalTrainingAllocated": 24,
+    "openDevelopmentAllocated": 24,
+    "finalTestAllocated": 0,
+    "unallocated": 0,
+    "fitAdmitted": 0
+  },
+  "groups": [
+    {
+      "role": "experimental_training",
+      "cocoSplit": "train",
+      "groupId": "ramp-MaxarODP-105001001597B000",
+      "parentCapture": "105001001597B000",
+      "sourceProject": "ramp_barishal_bangladesh",
+      "geography": "Barishal, Bangladesh; foreign research training imagery",
+      "images": 24,
+      "positiveImages": 23,
+      "sourceEmptyImages": 1,
+      "publisherInstances": 263,
+      "clippedSourceRings": 6,
+      "metadataSource": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/provenance/portable-v1/input-metadata/input-trainOriginal.json",
+        "bytes": 166194,
+        "sha256": "5fcb6d552f423a9c97bb6053300c18d6cc8b718f2e998f64f1c01afb58a2da8c"
+      },
+      "sourceMetadataIdentitySha256": "3698dfba9c0d3fdeb3bff9b58cc1cff2fd4bcd161df345610445fe9a44e94a28",
+      "annotations": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/train/_annotations.coco.json",
+        "bytes": 289622,
+        "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+      }
+    },
+    {
+      "role": "open_development",
+      "cocoSplit": "valid",
+      "groupId": "ramp-MaxarODP-104001002CA32300",
+      "parentCapture": "104001002CA32300",
+      "sourceProject": "ramp_karnataka_india",
+      "geography": "Karnataka, India (publisher declaration; actual lon/lat frames retained)",
+      "images": 24,
+      "positiveImages": 19,
+      "sourceEmptyImages": 5,
+      "publisherInstances": 178,
+      "clippedSourceRings": 23,
+      "metadataSource": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/provenance/portable-v1/input-metadata/input-developmentObserved.json",
+        "bytes": 171287,
+        "sha256": "7be7ccb7c5cf1b81d21f8e7799f6a2dc09ad9762267774f6b3aa07cfd67ba9db"
+      },
+      "sourceMetadataIdentitySha256": "ce5e5f5d3e5e778cb7920f264d49060c2129f155fb85e9c0a49576406d1935c2",
+      "annotations": {
+        "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/valid/_annotations.coco.json",
+        "bytes": 248539,
+        "sha256": "50ae2e87534f2957f8664337ef6c8c60233322f9c613c6f73613eb200019b601"
+      }
+    }
+  ],
+  "membership": "Exact48 source IDs, COCO image IDs, roles and full source mapping fingerprints are frozen in allocationOverlay; no partial/group-crossing selection.",
+  "lineage": {
+    "sourceMappingManifest": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/manifest.json",
+      "bytes": 444695,
+      "sha256": "443f57089ca43044b281a80267b5e6f3c8209adc023e1afbe2460401311fc6cb"
+    },
+    "portableDescriptor": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/provenance/portable-v1/descriptor.json",
+      "bytes": 5633,
+      "sha256": "5063af10cd818804c93196df6cb80f1b5ddf428d58a4f3439e56e3447afd4267"
+    },
+    "barishalOriginalIdentitySha256": "3698dfba9c0d3fdeb3bff9b58cc1cff2fd4bcd161df345610445fe9a44e94a28",
+    "karnatakaStableIdentitySha256": "ce5e5f5d3e5e778cb7920f264d49060c2129f155fb85e9c0a49576406d1935c2",
+    "metadataTransition": "Original Barishal unallocated24/trainAllocated0 -> this overlay experimentalTrainingAllocated24; no source metadata update.",
+    "developmentTransition": "Karnataka observed developmentAllocated24 retained as all24 open development; original reserved and observed snapshots unchanged."
+  },
+  "supervision": {
+    "origin": "Publisher-human TaQadam/B.O.T annotations and reported DevGlobal review; no agent/model/teacher labels or label edits.",
+    "status": "Research supervision; not independently audited operational/application truth.",
+    "localIndependentHumanAudit": "not_performed",
+    "rfDetrPretrainingOverlap": "unknown",
+    "target": "Visible rooftops; not ground footprints, surveyed building/property/floor identities or independently distinct buildings.",
+    "emptyPolicy": "Only retained complete publisher FeatureCollections with zero features; one Barishal/five Karnataka real source-empty images. Unknown/null/unannotated are not empty.",
+    "ignorePolicy": "No authoritative publisher ignore/per-feature uncertainty mask; original full-frame eligible-pixel analysis retained, uncertainty remains unknown.",
+    "topology": "Original instances, pixel affines, clipped rings and masks unchanged;6train+23dev clipped rings,0 observed holes/multipart source features.",
+    "terms": "Declared CC-BY-NC-4.0 imagery/labels, DevGlobal/WHO/TaQadam/B.O.T attribution and upstream Maxar ODP conditions retained in pinned source metadata; no commercial/operational launch qualification."
+  },
+  "reusedEvidence": {
+    "barishal": {
+      "path": "E:/BhuAayam-data/task-data/data-building-train-pool-20261005/verification.json",
+      "bytes": 5114,
+      "sha256": "ba5a719f2bae928bfdcf5f5bd7c7df8b1fda5168bc9c77cae7147a8a029ee5d1"
+    },
+    "karnataka": {
+      "path": "E:/BhuAayam-data/task-data/data-building-shard-20261005/verification.json",
+      "bytes": 12300,
+      "sha256": "2d45390a3b58bf69b616e7a4e2369499b6a0ba71afa9ddab772fe390a4326bb7"
+    },
+    "coco": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/verification.json",
+      "bytes": 4991,
+      "sha256": "8927835c118dfe81c7884de74d879641d0f3805330dac89de4ab26341fd5d35f"
+    },
+    "portability": {
+      "path": "E:/BhuAayam-data/task-data/d06-ramp-coco-20261005/provenance/portable-v1/checks.json",
+      "bytes": 3505,
+      "sha256": "b9192821bdaf87ad7c419b1194f94f2d04b9bd792b8cc709fd76a8296bd9da98"
+    },
+    "separation": "Accepted distinct project/parent groups, source/hash checks and prior source one-chip buffer exclusions reused. Neighboring/touching/unknown-site chips remain together per entire source group; zero independent-generalization claim."
+  },
+  "executionReservation": {
+    "purpose": "One later bounded supervised research pilot; no sweep/config/Trainer redesign selected.",
+    "splitFrozen": true,
+    "trainingAuthorized": false,
+    "qualityOrReleasePass": false,
+    "closedEvaluationAccess": false
+  },
+  "executionDependencies": [
+    "Strict unchanged-checkpoint loading",
+    "Numeric/preprocessing parity",
+    "Comparable fixed24 open-development reference",
+    "Bounded full-model capacity",
+    "Separately frozen fit configuration/decision and exclusive runtime/GPU ownership"
+  ],
+  "preservation": "Immutable original/reserved/observed metadata, fixed COCO/RGB/masks/model files and old receipts unchanged; overlay never rewrites source allocation fields. Primary checkout/source catalogue/task board remain integrator-owned.",
+  "settings": {
+    "requested": "gpt-6.1-sol/high/default-standard1x",
+    "actualModelEffortTier": "unexposed",
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "trainingAuthorized": false,
+  "qualityOrReleasePass": false
+}

@@ -1,0 +1,16 @@
+{ "at": "2026-10-10T18:13:25.423Z", "checks": { "contract": { "command": [
+"pnpm exec tsx docs/evidence/runtime/reh1/contract-check.ts --runtime ulpin-reh-01" ],
+"from": "E:/Projects/ulpin-wt/r5", "exit": 0, "seconds": 1.192, "output": [
+"PASS exchange contracts, six card checks, unknowns, source hashes and two extra-field regr", "essions." ],
+"error": null }, "scan": { "command": [ "node docs/evidence/runtime/reh1/check.mjs" ],
+"from": "E:/Projects/ulpin-wt/r5", "exit": 0, "seconds": 0.107, "output": [
+"PASS 77 files; 12 digest occurrences are recorded source SHA-256 or image ID only." ], "error": null }, "diff": {
+"command": [ "git diff --check afd23f2999c412ed5c2b21aae10c3fae0c859003" ], "from": "E:/Projects/ulpin-wt/r5",
+"exit": 0, "seconds": 0.094, "output": [ "" ], "error": null } },
+"comparisonBase": "afd23f2999c412ed5c2b21aae10c3fae0c859003", "ownedPathsOnly": true, "pathsBeforeThisReceipt": 77,
+"reviewedDiffs": [ "self-review-1.diff", "self-review-final.diff" ],
+"judgeImage": "view-card.py exit 0; one page visually inspected", "demoComparison": true, "stoppedAndPreserved": true,
+"priorScopeProbe": { "command": "git diff --name-only staging",
+"assertion": "failed: staging advanced; two-dot includes other work in reverse",
+"resolution": "Pinned original task base equals merge-base(staging, HEAD); owned paths only. No branch merge or repair."
+} }

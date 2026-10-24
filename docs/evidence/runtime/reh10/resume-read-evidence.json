@@ -1,0 +1,14 @@
+{ "status": 200, "value": { "caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "profiles": [ {
+"profileId": "310a1451-ab81-4e17-acff-68afaf1d278d", "caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0",
+"profileSha256": "[omitted non-source digest]", "input": { "requestKey": "3d2c1cd9-3340-4511-bb69-ebd2ef01db68",
+"version": "exact-key/1", "namespace": "NYC building identification number (bin), as written in both files",
+"kind": "integer", "map": { "anchorItemId": "6575d9b8-4037-431c-8056-56ddbdb91a0b",
+"sourcePath": "/features/*/properties/bin" }, "tables": [ { "itemId": "89e76bc7-0dc2-4109-85ed-6a5f6dbb63ec",
+"selection": { "format": "csv", "sheet": "csv", "table": null, "headerRows": [ 1 ] }, "columnIndex": 0 } ],
+"documents": [] }, "subject": "rehearsal-runtime-ulpin-reh-02", "createdAt": "2026-10-20T22:47:50.398Z" } ],
+"confirmations": [], "sources": [ { "itemId": "89e76bc7-0dc2-4109-85ed-6a5f6dbb63ec",
+"profileId": "310a1451-ab81-4e17-acff-68afaf1d278d", "family": "table", "jobId": "6b283a85-c490-53c0-8bd9-ee0a4b2cc439",
+"resultSha256": null, "coverage": { "state": "partial", "read": 0, "eligible": null, "keyless": null, "unread": null,
+"failed": null }, "sourceId": "89e76bc7-0dc2-4109-85ed-6a5f6dbb63ec", "sourceRevision": 1,
+"sourceSha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b", "bytes": 87352 } ],
+"candidates": [], "counts": { "matched": 0, "no_match": 0, "several": 0, "conflicting": 0 }, "nextCursor": null } }

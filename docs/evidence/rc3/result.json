@@ -1,0 +1,172 @@
+{
+  "task": "RC3",
+  "title": "Registry review accepts an exterior-only building whose record gains confirmed citations; the cited card",
+  "at": "2026-10-22",
+  "branch": "task/rc3-exterior-review",
+  "base": "c2a3e121",
+  "fixCommit": "47c1308d",
+  "case": {
+    "caseId": "2398f7be-d1fb-4453-ae8d-4c688d85cfad",
+    "confirmationId": "c167989e-b6f3-4a42-85f0-cc41c7ba7525",
+    "evidenceConfirmationId": "ba6bde38-0875-4359-bddf-b1128124a1cd",
+    "targetId": "0098370d-b3cd-5e84-af85-637d96cd2f49",
+    "recordId": "decd35aa-9b0b-45e2-8551-ac198e168664",
+    "citationDraft": "67a63f62-f1dd-46e9-b8b0-b526a306e8b5"
+  },
+  "cause": [
+    "registry.ts evidenceChecks parsed every combined record with recordBodySchema (footprint of 3+ points, no",
+    "representation key). registryReviewInputs leaves current exterior-only records out, but the proposed one (the",
+    "same recorded building with its new register-row citation) stayed in, so prepareRegistryReview threw a ZodError",
+    "and the intake run stopped at stage 3 with INTAKE_RUN_INPUT. Two more places would have refused it next: the geo",
+    "check payload (a record footprint of [] is not a polygon) and the commit's ST_GeomFromGeoJSON of an empty ring."
+  ],
+  "fix": {
+    "file": "packages/server/src/modules/registry/registry.ts",
+    "change": [
+      "exteriorRecordBodySchema = recordBodySchema.extend({footprint: length 0, representation: physical_exterior})",
+      "(still strict); registryBodySchema(record) picks it only for revision > 0 && isExteriorOnly(record).",
+      "evidenceChecks parses with registryBodySchema; metadata, document citations, ULPIN, links, evidence unchanged.",
+      "prepareRegistryReview sends the geo check combined records without exterior-only ones, as current ones are.",
+      "commitRegistryReviewTx writes a null footprint column for an exterior-only record (it was null when recorded).",
+      "prepareRegistryReview takes the documentCheck seam that persist and commit already take."
+    ],
+    "unchanged": ["new (revision 0) exterior-only proposals still fail the strict schema (existing test)",
+      "any footprint of 1 or 2 points fails the strict schema", "non-exterior records", "services/geo untouched"]
+  },
+  "test": {
+    "file": "packages/server/src/modules/registry/exterior-only.test.ts",
+    "added": ["a recorded exterior-only building gains its confirmed register citation through review and commit",
+      "a correction with fewer than three footprint points keeps the strict body check"],
+    "beforeFix": ["ZodError: footprint 'Too small: expected array to have >=3 items';",
+      "'Unrecognized key: representation'"],
+    "afterFix": "8 of 8 pass; committed body keeps footprint [] and physical_exterior, gains exactly the pin;",
+    "afterFixMore": "footprint column param null; geo payload []; citation check ran in prepare, persist and commit",
+    "refactor": "the geo fetch stub of the existing prepare test became withGeoCheck(), shared by both tests"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": ["npx tsx --tsconfig packages/server/tsconfig.json --test <server>/registry/*.test.ts",
+      "<server>/usp/packets/*.test.ts <server>/usp/ingestion/intake-evidence*.test.ts",
+      "<server>/usp/ingestion/intake-run*.test.ts tests/registry*.test.ts"], "from": "repo root", "exit": 1,
+      "tests": 327, "pass": 322, "fail": 4, "skipped": 1,
+      "failures": ["tests/registry-ifc-citations.test.ts, all 4:",
+        "'The requested accepted evidence context is unavailable.'"],
+      "preExisting": "the same 4 fail with registry.ts restored from c2a3e121 (4 of 4)" }
+  ],
+  "runtime": {
+    "served": "47c1308d8d9a5cd3ab30054a0132c9d337b3570b",
+    "rollSteps": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": 0 },
+    "doctor": "28 PASS, all checks passed; health 200",
+    "schemaOrImage": "none: database/ and services/ unchanged since 1a226949",
+    "script": "docs/evidence/rc3/prove.mjs (bodies in E:/BhuAayam-data/task-data/rc3)",
+    "cited": {
+      "action": "POST /ingestion/cases/{caseId}/confirmations/{confirmationId}/retry with {} (the Studio's retry)",
+      "retryPressed": "once, about 12:18 UTC",
+      "retryStatusNotCaptured": "the first run then failed reading the PDF revision URL as JSON; the fixed script read",
+      "rereadWithoutRetry": "the target again, carded, without pressing retry (it retries only a stopped target)",
+      "target": { "stage": 8, "readiness": "carded", "blockedBy": [],
+        "reason": "Carded: card f080000d-c2bc-4560-99b8-b9b3143715d2 revision 1 verified consistent." },
+      "evidenceWrite": { "confirmationIds": ["ba6bde38-0875-4359-bddf-b1128124a1cd"],
+        "record": { "id": "decd35aa-9b0b-45e2-8551-ac198e168664", "revision": 2 } },
+      "card": { "id": "f080000d-c2bc-4560-99b8-b9b3143715d2", "revision": 1, "targetRevision": 2,
+        "packetId": "f94479df-2aad-4bd6-8369-5f79de75540c", "planId": "10d9f7a5-43c1-440c-90f8-a4f8d4da2ccc",
+        "evidenceEntries": 2, "read": 200, "resolvedPdf": { "status": 200, "bytes": 7301, "pages": 1 } },
+      "quotedRow": ["bin: 1087575", "bbl: 1001870016", "borough: MN",
+        "des_addres: 377-381 Greenwich Street (aka 68-72 North Moore Street)", "style_prim: Not determined",
+        "date_low: 1989", "date_high: 1989", "mat_prim: Not determined", "build_type: Garage"],
+      "locator": "gpmc-yuvp.csv, CSV logical row 168",
+      "cardLine": "Evidence confirmed by the officer by an exact key; it states no right or owner.",
+      "sourceCitation": "buildings-original.geojson, feature 1087575",
+      "verification": { "result": "consistent", "checks": "card_body, stored_linkage, revision_chain,",
+        "checksMore": "artifact_bytes, plan_link, packet_bytes: all pass", "snapshot": "same_revision (2 = 2)",
+        "signature": "not_assessed (NO_TRUSTED_KEY_POLICY)" },
+      "recordAfter": { "revision": 2, "footprint": [], "representation": "physical_exterior", "geometry": "absent",
+        "evidence": "unchanged: 06b5c8bc-4cfa-49b3-8b66-f369c91ba8a0, feature 1087575",
+        "history": "revisions 1 and 2, both footprint [] and physical_exterior" }
+    },
+    "footprintOnly": {
+      "action": "POST /ingestion/cases/{caseId}/confirmations, cards only (packages [], one recorded target)",
+      "chosen": "first recorded target with no card and no evidence write, other than 0098370d",
+      "target": { "targetId": "003c345c-b7e5-559f-a51d-69dbf92dd537", "locator": "feature 1087559",
+        "record": { "id": "98ef00a7-5adb-45ef-af48-e4bad556feee", "revision": 1 } },
+      "confirmation": { "id": "3c9843e7-2081-45b7-bc79-f7809cdbd199", "status": 202,
+        "requestKey": "df34d771-f15c-42fc-9d18-dfb5b1424b68" },
+      "after": { "stage": 8, "readiness": "carded", "evidenceWrite": "none" },
+      "card": { "id": "d95a2557-2b5c-4390-8554-1e5b3868f768", "revision": 1, "targetRevision": 1,
+        "evidenceEntries": 1, "confirmedEvidence": "none",
+        "sourceCitation": "buildings-original.geojson, feature 1087559" },
+      "verification": { "result": "consistent", "checks": "all 6 pass", "snapshot": "same_revision (1 = 1)" },
+      "recordAfter": { "revision": 1, "footprint": [], "representation": "physical_exterior" }
+    },
+    "caseCountsBeforeFootprintOnly": { "recorded": 1660, "carded": 1, "stopped": 0 }
+  },
+  "rehearsalStateLeft": {
+    "target": "0098370d carded (record decd35aa revision 2, card f080000d revision 1); 003c345c carded (d95a2557)",
+    "rolledBackTo": "1a226949521aa4c5dbde05d0e8a3e9c92bd41d74",
+    "rollBackSteps": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": 0,
+      "doctorPass": 28, "checkoutClean": true },
+    "stopped": "platform:stop exit 0; all six ulpin-reh-02 containers exited"
+  },
+  "demoDoctor": {
+    "before": { "commit": "8d6e19fa", "checkoutClean": true, "pass": 28, "result": "all checks passed",
+      "health": 200 },
+    "after": { "commit": "8d6e19fa", "checkoutClean": true, "pass": 28, "result": "all checks passed",
+      "health": 200, "containers": "five ulpin-demo containers up 19 hours, healthy" }
+  },
+  "gaps": [
+    "The first retry's HTTP status was not captured (see runtime.cited).",
+    "The intake target keeps artefacts.record at revision 1 beside evidence.record revision 2; the card pins 2."
+  ],
+  "round2": {
+    "at": "2026-10-22",
+    "offline": "no Docker, no runtime; ulpin-reh-02 not started",
+    "tightening": {
+      "commit": "c50957e0",
+      "cause": ["registryBodySchema widened for any proposed record with revision > 0 that was exterior-only,",
+        "so a correction turning a recorded polygon building into footprint [] + physical_exterior passed",
+        "and commit wrote a null footprint."],
+      "fix": [
+        "registry.ts currentExteriorIds(current) collects the ids of current exterior-only records.",
+        "evidenceChecks takes that set; keepsExterior(record, exteriors) picks exteriorRecordBodySchema only when",
+        "the current record with the same id and the proposal are both exterior-only; else recordBodySchema.",
+        "prepareRegistryReview, persistRegistryReviewTx and commitRegistryReviewTx pass the set; commit writes a",
+        "null footprint only under keepsExterior, so it never nulls one the current record has."
+      ],
+      "test": {
+        "name": "a correction cannot turn a recorded outline into an exterior-only building",
+        "refuses": "current polygon + proposed exterior-only correction: prepare throws ZodError before the geo check",
+        "commitGuard": "current becomes a polygon after review: commit throws ZodError, no registry_records write",
+        "failedBefore": "with registry.ts at 79e0eb75 the correction passed the body check and reached the geo check",
+        "rc3TestStillPasses": true
+      }
+    },
+    "checks": [
+      { "command": "pnpm typecheck:backend", "exit": 0 },
+      { "command": "pnpm exec tsx --test packages/server/src/modules/registry/exterior-only.test.ts", "exit": 0,
+        "tests": 9, "pass": 9 },
+      { "command": "pnpm exec tsx --test packages/server/src/modules/registry/*.test.ts tests/registry*.test.ts",
+        "exit": 1, "tests": 146, "pass": 141, "fail": 4,
+        "failures": "tests/registry-ifc-citations.test.ts, the same 4 as round 1" }
+    ],
+    "ifcFailures": {
+      "failOnStaging": true,
+      "stagingTree": "detached worktree of origin/staging 833b14c0, pnpm install --offline --frozen-lockfile",
+      "stagingResult": { "tests": 4, "pass": 0, "fail": 4 },
+      "failureText": ["SOURCE_FUSION_UNAVAILABLE 'The requested accepted evidence context is unavailable.'",
+        "(source-fusion.ts:180) from amendRegistryDocumentCitationsTx at registry-ifc-citations.test.ts:174, 203,",
+        "264; at 287 the same error fails an assert.rejects predicate."],
+      "cause": ["ifc-processor.ts ifcSummary writes structure:value.structure even when the scan found none; the",
+        "undefined key vanishes in stored JSON, so the summary hash no longer matches and the fusion read denies.",
+        "The key came with cade7139 (IFC pass 1 structure scan)."],
+      "knownFix": ["3f48f588 fix(int2): keep absent IFC structure stable across stored summaries (spread structure",
+        "only when present), on task/int2-post-roll; not on staging 833b14c0."],
+      "fixConfirmed": "that one line applied uncommitted in the scratch tree: 4 of 4 pass; reverted",
+      "inIntegratorSet": "yes: INT2 runs tests/*.test.ts packages/server/src/**/*.test.ts",
+      "whyNotShownInInt2": ["They did show: INT2 initialFailedTests lists all 4 (diagnosis ifc_summary_wire_hash),",
+        "resolved by 3f48f588 on its own branch, so its final summary is 0 failed. INT2 is not on staging yet."],
+      "fixedHere": false
+    },
+    "scratchLeft": ["E:/Projects/ulpin-wt/_scratch-rc3 is unregistered (git worktree remove ran); its ignored",
+      "node_modules (pnpm junctions) stays, as the rules forbid a recursive delete."]
+  }
+}

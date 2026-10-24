@@ -1,0 +1,47 @@
+{
+  "task": "D1e",
+  "evaluatorListSha256": "9aa0c23ed8b816a49488f05721bd67c1d4088aa4544fb726bf9d2732ac58fe9d",
+  "files": 78,
+  "classes": {
+    "personal_contact": {
+      "files": 9,
+      "bytes": 6559023
+    },
+    "unscreened": {
+      "files": 9,
+      "bytes": 1513315
+    },
+    "excluded_other": {
+      "files": 39,
+      "bytes": 133210548
+    },
+    "selected": {
+      "files": 21,
+      "bytes": 133212286
+    }
+  },
+  "directories": [
+    "E:/BhuAayam-data/task-data/d1c",
+    "E:/BhuAayam-data/datasets/messy-india/d1c",
+    "E:/BhuAayam-data/datasets/messy-india/heldout/d1d-provisional",
+    "E:/BhuAayam-data/datasets/messy-india/heldout/d1c"
+  ],
+  "referenceAudit": {
+    "documentsChecked": 78,
+    "unsafeReferences": 0,
+    "scopes": [
+      "Pack manifest, heldout manifest, pinned private manifest and derivative index",
+      "All T1 JSON inputs, T1b profiles and verifier inventory",
+      "Default teacher/provider recording directory; no provider input created by D1c/D1d/D1e"
+    ]
+  },
+  "unsafeManifestDerivativeProfileTeacherProviderReferences": 0,
+  "unknownAcquisitionTimes": 71,
+  "timestampPolicy": "Unknown source acquisition times remain null; retainedAtUtc is file creation only.",
+  "ownerReviewRequired": true,
+  "deleted": 0,
+  "moved": 0,
+  "originalsModified": 0,
+  "heldoutDetailsInReceipt": false,
+  "providerCalls": 0
+}

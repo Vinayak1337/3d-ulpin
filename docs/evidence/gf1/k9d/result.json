@@ -1,0 +1,231 @@
+{
+  "task": "K9d",
+  "date": "2026-10-10",
+  "branch": "task/k9d-ocr-box-at-region-edge",
+  "base": "e9dcebde",
+  "step0": "step0.json (committed first, 311bf390)",
+  "leadDecision": {
+    "asked": "Step 0 found the 1 pt rule in the contract file, outside K9d's paths; the lead was asked first.",
+    "answer": "Option A: K9d may edit the OCR result schema and its box rule in document-ingestion.ts, with 8 points.",
+    "scaleFloor": "0.5 px per pt is the lead's bound, not a measured one. The bridge defines no smallest scale.",
+    "bridgeLimitsImply": [
+      "services/geo/geo/usp_document_candidates/docling_tesseract.py:132 takes the smallest of 3.0,",
+      "1400 px / side and sqrt(1.6 million px / area); with the 2000 pt side limit (:126) that is about",
+      "0.632 px per pt for a 2000 x 2000 pt region. It is a result of four limits, not a named value."
+    ]
+  },
+  "rule": {
+    "contract": "packages/contracts/src/usp/document-ingestion.ts",
+    "block": "regionEdge {renderScalePxPerPt >= 0.5, boxesBeyondRegion 0..256, largestOverhangPt >= 0}, optional",
+    "allowance": "1 / renderScalePxPerPt, computed in measureOcrRegionEdge; never stored. The bridge adds no padding.",
+    "blockAbsent": "the same four comparisons against 1 pt as before, expression unchanged",
+    "blockPresent": [
+      "a box may pass the region by at most one rendered pixel; further out refuses as before",
+      "boxesBeyondRegion and largestOverhangPt are recounted from the boxes; a different count, or a largest",
+      "value more than 1e-6 pt away, refuses the result",
+      "a whole-page result (no region) may not state the block"
+    ],
+    "bridge": [
+      "packages/server/src/modules/usp/ingestion/document-ocr.ts: admitOcrCandidate (the tail of runSourceOcr,",
+      "moved out so it can be tested without starting Python) reads render.scale from the worker's result,",
+      "fills the block only when the worker states a scale, stores every box as read, and answers a box",
+      "further out as OCR_BOX_OUTSIDE_REGION. Without a stated scale no block is written and 1 pt decides."
+    ],
+    "refusalCode": "OCR_BOX_OUTSIDE_REGION is an issue string; issues are free strings in the published shape."
+  },
+  "productEntry": {
+    "what": "K9's difficult input through runSourceOcr, once, CPU, on a scratch copy; nothing of the demo touched",
+    "command": [
+      "G=docs/evidence/gf1/k9d/safety.cjs",
+      "NODE_OPTIONS=\"--require $G\" node --require $G --import tsx docs/evidence/gf1/k9d/product-entry.ts"
+    ],
+    "file": "haryana-2831-site-plan.pdf, page 1",
+    "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "regionPt": [280, 860, 960, 2580],
+    "toolStatus": "complete",
+    "outputStatus": "partial",
+    "issues": ["item_limit_reached"],
+    "lines": 64,
+    "boxes": 69,
+    "regionEdge": {
+      "renderScalePxPerPt": 0.813953488372093,
+      "boxesBeyondRegion": 3,
+      "largestOverhangPt": 1.1142857142856997
+    },
+    "allowedOverhangPtDerived": 1.2285714285714286,
+    "textSha256": "c4453529d7805ccb914775da6c67d5a2fc4134b6ef502ced2beb20ab374c4cb9",
+    "workerResultSha256": "3d69916ebbb8a5a802a1996d7ca6582148a5a95015cacc78d709cce9e0e8b81e",
+    "sameBytesAs": "K9's retained result and R5c's two runs; the text hash is the one R5c's receipt names",
+    "renderSha256": "8e76472f7428807a58c98b694ad3ab1dc1005d9e6ab6c9a7fe722124c8477ec3",
+    "supervisorExit": 0,
+    "workerExit": 0,
+    "workerSeconds": 18.797,
+    "runs": 1,
+    "interpreter": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe, started, not modified",
+    "scratchPrefix": [
+      "tessdata assembled as new files under E:/BhuAayam-data/task-data/k9d/tessdata from the two retained",
+      "split prefixes (eng 7d4322bd, osd 9cf5d576, configs/tsv 59d079bb); the demo's complete prefix stayed closed"
+    ],
+    "retained": "E:/BhuAayam-data/task-data/k9d/ocr-scratch/document-ocr-613ac520-.../output (four files)"
+  },
+  "blockAbsentProof": [
+    {
+      "what": "K9's retained worker result, every byte, published without the block",
+      "how": "reproduce.ts on E:/BhuAayam-data/task-data/k9/new-ocr-config-3/result.json",
+      "contractAccepts": false,
+      "refusal": "OCR boxes must stay in the selected source region.",
+      "sameBytesThroughTheBridge": "accepted: 64 lines, regionEdge 3 boxes, 1.1142857142856997 pt, boxes stored as read"
+    },
+    {
+      "what": "three real stored document statuses from the demo, committed by K2, none stating the block",
+      "how": "stored.ts on docs/evidence/gf-backend/k2/tower3-*-status.json",
+      "accepted": 3,
+      "limit": [
+        "They hold a failed or unavailable OCR summary and no boxes. No real stored result with boxes is",
+        "readable outside the demo's database, which is closed to this task. For boxes the proof is the",
+        "unchanged fixture tests below: every one that passed before still passes."
+      ]
+    }
+  ],
+  "readers": {
+    "storedResult": "DocumentResultSchema accepts a result with the block and one without (source-fusion test)",
+    "fusion": [
+      "fusionOcrSourceProjection accepts both; the block reaches the fusion context through the status summary",
+      "shape; a miscounted block, or the same boxes with the block removed, is refused there"
+    ],
+    "assumeABoxInsideTheRegion": [
+      {
+        "who": "D2's quote check",
+        "where": "packages/server/src/modules/usp/ingestion/document-proposal-quotes.ts:25-31",
+        "what": [
+          "It tests the proposal's cited box against the stored region with zero tolerance. It does not test",
+          "OCR line boxes, which it picks by overlap. A proposal that copies an overhanging OCR box exactly",
+          "gets no region text. Possible before for an overhang up to 1 pt, now up to one rendered pixel.",
+          "scripts/usp/learning/storey_quote_verifier.py states the same rule on the Python side."
+        ],
+        "changed": false
+      },
+      {
+        "who": "the proposal locator warning citation_extends_declared_region",
+        "where": "packages/server/src/modules/usp/ingestion/document-proposals.ts:43-48",
+        "what": "Zero tolerance; such a proposal is kept with the warning. Same remark.",
+        "changed": false
+      },
+      {
+        "who": "the citation viewer",
+        "where": "apps/studio/src/features/evidence/CitedPageViewer.tsx:99-101",
+        "what": "No assumption: it draws a cited region when it lies inside the page frame.",
+        "changed": false
+      }
+    ]
+  },
+  "published": {
+    "changed": "the OCR result and the status OCR summary gain the optional regionEdge block (5 places in openapi)",
+    "regeneratedOnThisBranch": [
+      "scripts/api/refresh-contract.ts e9dcebde (run through the tsx loader with apps/api/tsconfig.json, under the",
+      "guard so no .env is read): docs/api/openapi.json and docs/api/source-pins.json (two pins)",
+      "pnpm studio:api-types: packages/api-client/src/schema.d.ts"
+    ],
+    "atTheMerge": "staging has moved docs/api and schema.d.ts since e9dcebde (RC1, GK2); regenerate there"
+  },
+  "checks": {
+    "typecheckBackend": "pnpm typecheck:backend: exit 0",
+    "bridgeTests": {
+      "file": "tests/document-ocr-boundary.test.ts",
+      "before": "4 tests, 4 pass",
+      "after": "7 tests, 7 pass",
+      "added": [
+        "without a stated region edge the first 1 pt box rule is unchanged",
+        "a stated render scale allows one rendered pixel and the contract recounts the boxes",
+        "the bridge keeps a box within one rendered pixel as read, counts it, and names one further out"
+      ]
+    },
+    "readerTests": {
+      "tests/source-fusion.test.ts": "11 pass before the new test (contract already changed), 12 of 12 after",
+      "tests/document-proposals.test.ts": "22 of 22 (needs TSX_TSCONFIG_PATH=apps/api/tsconfig.json)",
+      "tests/registry-document-evidence.test.ts": "12 of 12",
+      "tests/usp-source-fusion-associations.test.ts": "6 of 6",
+      "packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts": "2 of 2"
+    },
+    "apiCheck": {
+      "inTheCheckout": [
+        "python -B scripts/api/check.py prints 'API-DOC: runtime receipt changed', exit 1. Not from this task:",
+        "three committed runtime receipts are checked out with other line endings than their pins (K2 recorded",
+        "this); the check stops there before it reaches the pins."
+      ],
+      "onAnLfExportOfHead": [
+        "python -B docs/evidence/gf1/k9d/check-lf-export.py (K2's export check, own folder) prints",
+        "'API-DOC: 301 native operations (132 baseline + 169 added), 342 named schemas; pins, manifests, models,",
+        "dataset link valid', exit 0, on the fix commit 28c23702"
+      ]
+    },
+    "gitDiffCheck": "exit 0",
+    "lineLength": "no new hand-written line over 120; generated docs/api and schema.d.ts lines are as generated",
+    "logs": "E:/BhuAayam-data/task-data/k9d/*.log and *.json"
+  },
+  "notDone": [
+    "No demo start, stop, build or switch; no request to the demo API; nothing under the runtime folder and no",
+    ".env read (the guard refuses both). No GPU: the product's supervisor sets CUDA_VISIBLE_DEVICES empty itself.",
+    "No change to the interpreter, its pins, the profile file or any Python file."
+  ],
+  "report": {
+    "TASK": "K9d: an OCR box within one rendered pixel of the selected region is kept as read and counted.",
+    "WORKS": [
+      "The site plan region that the demo refused is accepted through the product's entry: 64 lines, 69 boxes,",
+      "boxesBeyondRegion 3, largestOverhangPt 1.1142857 against a derived allowance of 1.2285714 pt.",
+      "The worker's bytes are K9's and R5c's (3d69916e); no box was moved.",
+      "A box further out refuses the whole result by name, OCR_BOX_OUTSIDE_REGION.",
+      "A result without the block is judged by 1 pt exactly as before; K9's bytes without it are still refused.",
+      "The stored document result and fusion accept a result with the block and one without."
+    ],
+    "SEE IT": [
+      "cd E:/Projects/ulpin-wt/f1; G=docs/evidence/gf1/k9d/safety.cjs; export NODE_OPTIONS=\"--require $G\"",
+      "node --require $G --import tsx --test tests/document-ocr-boundary.test.ts   (7 of 7)",
+      "node --require $G --import tsx docs/evidence/gf1/k9d/reproduce.ts \\",
+      "  E:/BhuAayam-data/task-data/k9/new-ocr-config-3/result.json   (refused without the block, kept with it)",
+      "E:/BhuAayam-data/task-data/k9d/product-entry-1791651461604.json   (the one run)"
+    ],
+    "INPUTS": [
+      "haryana-2831-site-plan.pdf page 1, region [280,860,960,2580], public RERA sheet, development only, read",
+      "from a scratch copy; K9's retained worker result; three stored statuses committed by K2. One run of OCR."
+    ],
+    "GAPS": [
+      "One sheet and one region hold every retained box; 3 of 69 is one measurement, not a rate.",
+      "No real stored result with boxes is readable to this task, so 'unchanged without the block' is shown on",
+      "K9's bytes, three real stored statuses without boxes, and the unchanged fixture tests.",
+      "The product's entry starts its worker isolated (run_trial.py:180, -I -S), so the no-bytecode setting did",
+      "not reach it: the one run wrote five git-ignored .pyc files in this worktree's __pycache__ folders.",
+      "Nothing was deleted; they are left in place. The supervisor itself ran without bytecode writes.",
+      "tests/source-fusion.test.ts gained one test under the lead's point 7; the file is not named in my paths.",
+      "Its count of 11 before was taken with the contract already changed and the file untouched.",
+      "The demo was not touched: it refuses this region until the runtime owner rolls a build with this branch."
+    ],
+    "DESIGN": [
+      "The rule lives once, in the contract (measureOcrRegionEdge), and the bridge calls it; the allowance is",
+      "derived from the stated scale and never stored, so it cannot disagree with it.",
+      "The 0.5 scale floor is the lead's bound. A stated scale above 1 px per pt narrows the rule below 1 pt.",
+      "The tail of runSourceOcr became admitOcrCandidate so the rule is tested on bytes without starting Python.",
+      "The count is a published field, as decided; the refusal code is an issue string and changes no shape."
+    ],
+    "COMMITS": [
+      "311bf390 docs(documents): K9d where the 1 pt box rule comes from and what the three boxes are",
+      "28c23702 fix(documents): an OCR box within one rendered pixel and the bridge's padding of the region is",
+      "  kept and counted",
+      "docs(documents): K9d evidence (this file's commit)"
+    ],
+    "CHECKS": [
+      "pnpm typecheck:backend exit 0; bridge tests 4 of 4 before, 7 of 7 after; reader tests 12, 22, 12, 6, 2",
+      "all pass; python -B scripts/api/check.py prints 'API-DOC: runtime receipt changed' in this checkout (line",
+      "endings of three committed receipts, not this task) and passes on an LF export of the fix commit;",
+      "git diff --check exit 0; no new hand-written line over 120."
+    ],
+    "NEXT": [
+      "Lead: regenerate docs/api and schema.d.ts at the merge (staging moved them since e9dcebde) and re-pin.",
+      "Runtime owner: after the roll, run R5c's ocr-site-plan again; expect 64 lines and regionEdge 3 / 1.114.",
+      "Not changed, for a decision: D2's quote check and the locator warning compare a proposal's cited box",
+      "with the region at zero tolerance, so a proposal copying an overhanging OCR box exactly gets no region",
+      "text or a warning (document-proposal-quotes.ts:25-31, document-proposals.ts:43-48).",
+      "Not changed: run_trial.py starts the worker without -B; a worker that must not write bytecode needs it there."
+    ]
+  }
+}

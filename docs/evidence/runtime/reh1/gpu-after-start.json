@@ -1,0 +1,9 @@
+{ "gpu": { "command": [ "nvidia-smi --query-compute-apps=pid,used_memory --format=csv" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.073, "output": [
+"pid, used_gpu_memory [MiB]", "10428, [N/A]", "9532, [N/A]", "12036, [N/A]", "12044, [N/A]", "14092, [N/A]",
+"18120, [N/A]", "17316, [N/A]", "11060, [N/A]", "20988, [N/A]", "6436, [N/A]", "21760, [N/A]", "23884, [N/A]",
+"22932, [N/A]", "14036, [N/A]", "7488, [N/A]", "21936, [N/A]", "7768, [N/A]", "2004, [N/A]", "9908, [N/A]",
+"34068, [N/A]", "21564, [N/A]", "34620, [N/A]", "33168, [N/A]", "34320, [N/A]", "30116, [N/A]" ], "error": null },
+"processes": [ { "pid": 26980, "started": "2026-10-10T17:47:17.8588620Z",
+"entry": "E:/Projects/ulpin-wt/ulpin-reh-01/apps/api/src/main.ts" }, { "pid": 32304,
+"started": "2026-10-10T17:47:18.2800940Z", "entry": "E:/Projects/ulpin-wt/ulpin-reh-01/scripts/dispatcher.ts" } ] }

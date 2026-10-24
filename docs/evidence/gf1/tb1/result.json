@@ -1,0 +1,114 @@
+{
+  "task": "TB1",
+  "gate": "GF1",
+  "gap": "AU2 G09 (and the stored shapes G21 needs)",
+  "proposal": "docs/evidence/gf1/au4/proposal.json tasks[0] (AU4-B1)",
+  "base": "7231538c",
+  "status": "contracts_schema_and_refusing_routes_passed_runtime_unwalked",
+  "runtime": "none: code and tests only (no Docker, no database, no provider call)",
+  "contracts": {
+    "file": "packages/contracts/src/usp/intake.ts (appended; ZIP_LAYER_LIMITS lines untouched)",
+    "schemas": [
+      "IntakeKeyProfileInputSchema / IntakeKeyProfileSchema: exact-key/1; officer-named namespace and kind (text or integer), one map field (never geometry), table columns by sheet, header rows and positional column index, documents by item.",
+      "IntakeEvidenceKeySchema: profile pin, namespace, kind and the literal as read.",
+      "IntakeEvidenceAnchorSchema: the building side, with target, package revision, feature, source and field pins and the literal read there.",
+      "IntakeTableRowLocatorSchema: item, source revision and hash, raw job id/input/result hashes, accepted fence, selection, physical source row, row hash, column index and header, and the key cell as {state: literal, value}.",
+      "IntakeDocumentPartLocatorSchema: the document pins the native citation already uses (case revision, source, job, result, input, reader, fence), part id and hash, page or null, and an exact quote whose span length must equal its length.",
+      "IntakeEvidenceCoverageSchema: reading | partial | closed with read, eligible, keyless, unread and failed each null while unknown; closed states every count with unread 0.",
+      "IntakeEvidenceSourceSchema: coverage is nullable (not read yet); closed coverage names its job and result.",
+      "IntakeEvidenceCandidateSchema: state candidate, qualification not_assessed; outcome matched (1 building), no_match (0, closed coverage only), several (2 or more), conflicting (1 or more, with a conflict group).",
+      "IntakeEvidencePageSchema and IntakeEvidenceQuerySchema: profiles, source coverage, a page of candidates and counts by outcome.",
+      "IntakeEvidenceConfirmSchema / IntakeEvidenceConfirmationSchema: every pin from confirmationPins (see below).",
+      "RegistryTableRowCitationSchema in packages/contracts/src/registry-document-evidence.ts: registry-table-row-citation/1 with the row locator, key, confirmation and candidate pins, record target and selection."
+    ],
+    "exactKey": "A key is refused unless the table cell value equals the literal, or the document quote contains it, and every building's field literal equals it, character for character. Integer keys must be their digits as written (no 007, 7.0, +7, 1e3). No trimming, case folding, width folding or number coercion is done anywhere.",
+    "confirmationPins": "requestKey and a non-blank acknowledgement; profile id and hash; included sources (item, source id, revision, hash, bytes, job, result hash, closed coverage) and excluded sources with a reason, each source once; targets (target, package, package revision, review fingerprint); additions either {kind: no_additions} or {kind: citations, linkManifestSha256, decisions} where each decision pins candidate id and hash and either accepts it for a named building with its exact locator or rejects it with a reason. Strict objects: no right, ownership or issuance field can be sent.",
+    "rightsAndIssuance": "No contract, column or route carries a right, ownership or issuance field; the SQL test refuses those words outside comments."
+  },
+  "schema": {
+    "file": "database/sql/95-ingestion/intake-evidence.sql",
+    "manifestStep": "ingestion.intake.evidence (order 57, task TB1, 6 statement hashes) in database/manifest.json",
+    "appliedBy": "migrateIntakeLedgerTx in packages/server/src/modules/usp/ingestion/intake-migration.ts, after ingestion.intake.targets, inside the existing USP migration transaction",
+    "added": [
+      "usp_intake_key_profiles: one exact-key profile per case and request key, anchored to an intake item of the same case.",
+      "usp_intake_evidence_coverage: one row per profile and source; nullable counts; closed requires job, result, every count and unread 0.",
+      "usp_intake_evidence_candidates: candidate jsonb with its hash, outcome, target ids sized to the outcome, conflict group only for a conflict, one operation key per case.",
+      "usp_intake_evidence_key_idx (profile_id, key_literal): the exact-key lookup, usable from either side.",
+      "usp_intake_evidence_case_idx (case_id, outcome, candidate_id): the page read.",
+      "usp_intake_evidence_confirmations: request key, input hash, profile pin, additions kind with a link manifest hash only for citations, the full pins as jsonb, acknowledgement, expiry."
+    ],
+    "additiveOnly": "Every statement is CREATE TABLE or CREATE INDEX IF NOT EXISTS; nothing dropped, renamed, retyped, altered, backfilled or seeded.",
+    "applyTwice": "Not run on a real database: the backend tests use a mocked pool (there is no test database) and this task forbids Docker and the runtime. Shown instead by tests/intake-evidence-contract.test.ts: all six statements are IF NOT EXISTS, and two migration runs issue the same statements in the same order."
+  },
+  "routes": [
+    {
+      "route": "GET /api/v1/ingestion/cases/{caseId}/intake/evidence",
+      "controller": "ingestion.controller.ts",
+      "response": "200 IntakeEvidencePageSchema (published)",
+      "now": "Checks the case id and a strict query (one optional outcome and cursor), then answers 501 INTAKE_EVIDENCE_NOT_BUILT: 'Reading batch evidence is not built yet: the exact-key evidence pass comes in a later step. Nothing was stored or read.'"
+    },
+    {
+      "route": "POST /api/v1/ingestion/cases/{caseId}/intake/evidence/key-profiles",
+      "controller": "ingestion.controller.ts",
+      "response": "201 IntakeKeyProfileSchema (published)",
+      "now": "Checks the case id and the body against IntakeKeyProfileInputSchema, then answers 501 INTAKE_EVIDENCE_NOT_BUILT ('Declaring an exact key ...')."
+    },
+    {
+      "route": "POST /api/v1/ingestion/cases/{caseId}/intake/evidence/confirmations",
+      "controller": "intake-run.controller.ts",
+      "response": "202 IntakeEvidenceConfirmationSchema (published)",
+      "now": "Checks the case id and the body against IntakeEvidenceConfirmSchema, then answers 501 INTAKE_EVIDENCE_NOT_BUILT ('Confirming batch evidence ...')."
+    }
+  ],
+  "differencesFromProposal": [
+    "Routes refuse with 501 instead of storing and reading. tasks[0].files names no server module, so there is no owned place for the store/read service; per D3 each route checks its input and answers a stated 501. The service belongs in packages/server/src/modules/usp/ingestion/intake-evidence.ts, which AU4-B2 owns.",
+    "documents.controller.ts unchanged: a document part is pinned by IntakeDocumentPartLocatorSchema and is cited by the existing registry-document-citation/1 (partId, partSha256, locator), so B1 needs no document route.",
+    "packets.ts and usp/index.ts unchanged: the plan citation of a table row is AU4-B3's plan-citation authority, and a packet variant without it would let a plan accept an unchecked locator; intake.ts is already exported.",
+    "ingestion.ts is reused (SourcePathSchema, TabularSelectionSchema), with one line changed: intake.ts now imports it, so the Studio's stricter typecheck reads it and refused headerRows[index - 1] as possibly undefined; a non-null assertion behind the existing index > 0 guard fixes that with no change in behaviour.",
+    "RegistryTableRowCitationSchema is exported but not added to RegistryDocumentCitationSchema: adding it there now would let stored drafts carry a citation no authority checks. AU4-B3 adds it with that authority.",
+    "The evidence confirmation is its own contract, route and table, not a field on IntakeConfirmSchema: confirmIntake (not this task's path) would silently ignore an extra field and an officer could believe citations were authorised. AU4-B3 decides whether to fold it into the one batch press the proposal describes.",
+    "usp_holding_keys (IN1, key_norm, hung off usp_intake_parts) is not reused: its name and shape assume a normalised key with no profile or case scope. It is left untouched; the exact index is on the candidates table.",
+    "apps/api/src/modules/ingestion/operation-manifest.json and docs/api/source-pins.json were edited: the one OpenAPI pipeline refuses an undeclared operation, and the refresh rewrites the pins. Neither is in tasks[0].files.",
+    "intakeTargetQuery now delegates to a shared strictQuery helper (same fields, code and words) so the evidence read uses the same strict query rule; its existing test passes unchanged.",
+    "Coverage counts are per source and profile, not per job; a job id and result hash are pinned beside them.",
+    "scripts/db/verify_extraction.py was not run or changed: its authored-task allowlist ends at IN1, and E1's step already sits outside it."
+  ],
+  "tests": {
+    "added": {
+      "tests/intake-evidence-contract.test.ts": [
+        "a candidate holds the exact key literal on both sides; a normalised or invented key is refused",
+        "coverage may be null; unread coverage is never absence and closed coverage states every count",
+        "an evidence confirmation refuses a missing pin, an unread source and any right or issuance field",
+        "a table-row citation cites the exact key cell of its confirmed candidate",
+        "the evidence SQL runs after the targets SQL and only creates what is absent"
+      ],
+      "apps/api/src/modules/ingestion/ingestion.controller.test.ts": [
+        "the three batch-evidence routes publish their contracts and a 501, and check input before refusing"
+      ]
+    }
+  },
+  "checks": {
+    "note": "The before run overlapped the first edits, so its openapi check already saw undeclared operations.",
+    "before": {
+      "pnpm typecheck:backend": "exit 0",
+      "pnpm studio:typecheck": "exit 0",
+      "pnpm studio:test": "exit 1: apps/studio 477 passed, 1 failed on a 5 s timeout (passes in the after run)",
+      "backend tests": "exit 0: 362 tests, 360 pass, 0 fail, 2 skipped",
+      "openapi.ts --check": "exit 1: unreconciled operations from the edits in progress"
+    },
+    "after": {
+      "pnpm typecheck:backend": "exit 0",
+      "pnpm studio:typecheck": "exit 2 (TS2532 at usp/ingestion.ts:131), then exit 0 after the one-line fix",
+      "pnpm studio:test": "exit 0: apps/studio 478 passed; packages/scene 58 passed, 1 skipped; packages/ui 7 passed",
+      "backend tests": "exit 0: 362 tests, 360 pass, 0 fail, 2 skipped",
+      "new and touched intake tests": "exit 0: 9 tests, 9 pass",
+      "openapi.ts --check": "exit 0: 317 operations, 361 named schemas",
+      "refresh-contract.ts 7231538c, pnpm studio:api-types, scripts/api/check.py": "exit 0"
+    }
+  },
+  "gaps": [
+    "No store or read service: every new route answers 501 until AU4-B2 builds intake-evidence.ts.",
+    "No migration run on a real database (no test database; no Docker in this task).",
+    "No worker, job, matching, registry write, Studio or card change (AU4-B2 to B4)."
+  ]
+}

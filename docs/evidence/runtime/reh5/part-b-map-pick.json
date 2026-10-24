@@ -1,0 +1,29 @@
+{ "at": "2026-10-17T12:05:43.773Z", "url": "http://127.0.0.1:5188/studio/areas/{areaId}",
+"browser": "Chromium 153.0.8010.12 headless", "viewport": "1440x900",
+"why": "map.mjs grid clicks picked nothing (footprints 1 to 2 px after 8 ticks)", "zoomSteps": [ { "step": 1,
+"drawnPixels": 730, "target": { "x": 930, "y": 232, "near": 101 } }, { "step": 2, "drawnPixels": 1466, "target": {
+"x": 996, "y": 116, "near": 270 } }, { "step": 3, "drawnPixels": 642, "target": { "x": 842, "y": 214, "near": 58 } } ],
+"afterZoom": { "statusLines": [ "Showing 15,000 of 41,809 buildings; move closer to see the rest." ], "scale": [
+"EPSG:2958 N 100 m" ] }, "candidates": 485, "pickedAt": [ 1006, 72 ], "clicks": 16, "inspector": true,
+"inspectorText": [ "Niagara Falls Building Footprints 2018 1330698285055863645", "Building", "Identifier",
+"3DU-51R4JJN54Z8AKTGYATTANAFK26:B22744",
+"This area is drawn by the part in view, so only the identifier and kind are shown here.", "Open register" ],
+"registerHref": "/studio/properties/5f13a2af-bb7d-474e-b246-204d0665de81/register", "register": {
+"url": "http://127.0.0.1:5188/studio/properties/5f13a2af-bb7d-474e-b246-204d0665de81/register", "banners": [], "text": [
+"Name unknown", "No register is recorded for this building",
+"The record of this building could not be read · AREA_LIMIT", "Back to Register" ], "reads": [ {
+"path": "/api/v1/buildings/5f13a2af-bb7d-474e-b246-204d0665de81/register", "status": 404, "seconds": 0.01 }, {
+"path": "/api/v1/buildings/5f13a2af-bb7d-474e-b246-204d0665de81/canonical", "status": 422, "seconds": 1.171 } ],
+"screenshot": "map-4.png" }, "screenshot": "map-3b.png", "reads": [ { "path": "/api/v1/workspace-capabilities",
+"status": 200, "seconds": 0.004 }, { "path": "/api/v1/areas", "status": 200, "seconds": 0.215 }, {
+"path": "/api/v1/areas/{areaId}/context", "status": 422, "seconds": 1.084 }, {
+"path": "/api/v1/areas/{areaId}/display-summary", "status": 200, "seconds": 1.899 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "seconds": 1.704 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "seconds": 1.881 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "seconds": 2.478 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "seconds": 2.027 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "seconds": 1.714 }, {
+"path": "/api/v1/areas/{areaId}/display-window", "status": 200, "seconds": 2.293 }, {
+"path": "/api/v1/buildings/5f13a2af-bb7d-474e-b246-204d0665de81/register", "status": 404, "seconds": 0.01 }, {
+"path": "/api/v1/buildings/5f13a2af-bb7d-474e-b246-204d0665de81/canonical", "status": 422, "seconds": 1.171 } ],
+"pageErrors": [] }

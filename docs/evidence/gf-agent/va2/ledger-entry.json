@@ -1,0 +1,32 @@
+{
+  "operation": "VA2 fallback Step 1: VA1 header variants filtered, then one A4e-arm Stage A retrain",
+  "hypothesis": [
+    "Header variants of the 33 real positives over re-sampled real values give the cross-fit",
+    "student at least one correct positive commit with zero wrong commits"
+  ],
+  "baseline": [
+    "A4e: cross_fit, no class balance, 805 examples / 33 positive, threshold 0.9866563081741333;",
+    "pooled n=741: wrong 0, correct positive 0, unknown committed 2, abstained 739"
+  ],
+  "bounded_comparison": [
+    "One run of the A4e arm with the 270 filtered variants added as fit-only;",
+    "one held-out count-only run; no second arm, no tuning"
+  ],
+  "result": [
+    "Not run. Filter kept 270 of 476: 124 kept-duplicate, 44 seed-duplicate,",
+    "38 storeyLabel rule, 0 dry-run refusals. The trainer refuses synthetic_variant before any fit."
+  ],
+  "failure_signature": [
+    "STAGE_A_LABEL_AUTHORITY_DENIED at services/geo/geo/usp_learning/stage_a.py:171;",
+    "cross_fit_fold (339) would also score variants into the threshold choice (365)"
+  ],
+  "not_separated": "Nothing measured; the hypothesis is untested, not refuted.",
+  "receipts": [
+    "va2/result.json",
+    "E:/BhuAayam-data/task-data/va2/summary.json"
+  ],
+  "decision": [
+    "No fit and no held-out run. The lead decides on a trainer change under services/**",
+    "(processor image pin); the retrain waits for it."
+  ]
+}

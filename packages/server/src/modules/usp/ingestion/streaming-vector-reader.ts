@@ -1,6 +1,10 @@
 import {createHash} from 'node:crypto';
 import type {Readable} from 'node:stream';
-import {STREAMING_VECTOR_LIMITS as limits,type StreamingVectorRecord} from '@ulpin/contracts/usp';
+import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,
+  type StreamingVectorRecord} from '@ulpin/contracts/usp';
+import {readTabularSource,admitTabularSource} from './tabular-source';
+import {readTabularWindows} from './tabular-stream';
+import {fingerprint} from '../../cases/domain';
 import {AppError} from '../../../infrastructure/errors';
 
 const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
@@ -89,6 +93,7 @@ class Cursor {
     return this.chunk[this.position]!;
   }
   async take():Promise<number|null>{const value=await this.peek();if(value!==null){this.position++;this.offset++;}return value;}
+  private takeBuffered(){this.offset++;return this.chunk[this.position++]!;}
   async nonspace():Promise<number|null>{let byte=await this.peek();while(byte!==null&&whitespace(byte)){await this.take();byte=await this.peek();}return byte;}
   async expect(expected:number){const value=await this.nonspace();if(value!==expected)throw new AppError(422,'GEOJSON_CONTAINER','The GeoJSON framing is incomplete or malformed.');await this.take();}
   async value(maxBytes:number):Promise<{bytes:Buffer;start:number;end:number}>{
@@ -103,7 +108,9 @@ class Cursor {
       if(bytes.length>maxBytes)throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
       if(!compound&&!inString){const next=await this.peek();if(next===null||whitespace(next)||next===44||next===93||next===125||next===30)break;}
       if(compound&&brackets.length===0||first===34&&!inString)break;
-      const byte=await this.take();if(byte===null)throw new AppError(422,'GEOJSON_CONTAINER','The original ends inside a JSON value.');
+      // A byte already buffered is taken without a wait; only an exhausted chunk awaits the next one.
+      const byte=this.position<this.chunk.length?this.takeBuffered():await this.take();
+      if(byte===null)throw new AppError(422,'GEOJSON_CONTAINER','The original ends inside a JSON value.');
       bytes.push(byte);
       if(inString){if(escaped)escaped=false;else if(byte===92)escaped=true;else if(byte===34)inString=false;continue;}
       if(byte===34){inString=true;continue;}
@@ -117,7 +124,8 @@ class Cursor {
   digest(){return this.hash.digest('hex');}
 }
 
-export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;valueIssueCode:string|null};
+export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;
+  valueIssueCode:string|null;rawSha256?:string};
 export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
   const cursor=new Cursor(body);let index=0,metadataBytes=0;const metadata:Record<string,unknown>=Object.create(null);
   const feature=async()=>{
@@ -160,6 +168,58 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
   }
   if(await cursor.nonspace()!==null)throw new AppError(422,'GEOJSON_CONTAINER','Trailing source content is not part of the declared framing.');
   return {features:index,metadata,bytes:cursor.offset,sha256:cursor.digest()};
+}
+
+/** A CSV pinned above 16 MiB is read in row windows, never whole; each row cites its own byte range. */
+async function readStreamedTabular(body:Readable,pin:TabularPin,onFeature:(item:SourceFeature)=>Promise<void>){
+  const read=await readTabularWindows(body,async(window,headers)=>{
+    for(const row of window.rows){
+      const cells=headers.map((_,column)=>row.cells[column]===undefined?{state:'absent'}
+        :{state:'literal',value:row.cells[column]});
+      await onFeature({index:row.index,start:row.byteStart,end:row.byteEnd,raw:Buffer.alloc(0),
+        rawSha256:row.rawSha256,feature:{cells,headers,sheet:pin.selection.sheet,sourceRow:row.sourceRow},
+        valueIssueCode:null});
+    }
+  });
+  if(read.bytes!==pin.sourceBytes)
+    throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original differs from its tabular pin.');
+  return {features:read.records,metadata:{},bytes:read.bytes,sha256:read.sha256};
+}
+
+/** Tabular records retain whole-original byte/hash coverage plus physical sheet/row locators, not fake GIS. */
+export async function readStreamingTabular(body:Readable,pin:TabularPin,onFeature:(item:SourceFeature)=>Promise<void>){
+  if(pin.selection.format==='csv'&&pin.sourceBytes>TABULAR_LIMITS.bytes)return readStreamedTabular(body,pin,onFeature);
+  const chunks:Buffer[]=[];let length=0;
+  for await(const value of body){
+    const chunk=Buffer.from(value);length+=chunk.length;
+    if(length>TABULAR_LIMITS.bytes){
+      throw new AppError(413,'TABULAR_SOURCE_BUDGET','Tabular bytes exceed the receipt bound.');
+    }
+    chunks.push(chunk);
+  }
+  const raw=Buffer.concat(chunks),hash=createHash('sha256').update(raw).digest('hex');
+  const admitted=admitTabularSource(hash,raw.length,'admission' in pin?pin.admission:{});
+  const sameAdmission=admitted.kind==='case_original'
+    ?'admission' in pin&&fingerprint(admitted.admission)===fingerprint(pin.admission)
+    :'developmentAssetId' in pin&&admitted.asset.id===pin.developmentAssetId&&
+      admitted.asset.family===pin.developmentFamily;
+  if(!sameAdmission||raw.length!==pin.sourceBytes)
+    throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original differs from its tabular pin.');
+  const table=readTabularSource(raw,pin.selection);
+  for(const [index,row] of table.rows.entries()){
+    const cells=table.headers.map((_,column)=>{
+      const state=table.cellStates?.[index][column]??(row[column]===undefined?'absent':'literal');
+      return state==='literal'?{state,value:row[column]}:{state};
+    });
+    await onFeature({index,start:0,end:raw.length,raw,rawSha256:hash,feature:{cells,headers:table.headers,
+      sheet:pin.selection.sheet,sourceRow:table.sourceRows[index]},valueIssueCode:null});
+  }
+  return {features:table.rows.length,metadata:{},bytes:raw.length,sha256:hash};
+}
+export function tabularSourceRecord(item: SourceFeature): StreamingVectorRecord {
+  return { featureIndex: item.index, byteStart: item.start, byteEnd: item.end,
+    rawSha256: item.rawSha256 ?? createHash('sha256').update(item.raw).digest('hex'),
+    disposition: 'accepted', issueCode: null, feature: item.feature };
 }
 
 function ringIssue(value:unknown):string|null{

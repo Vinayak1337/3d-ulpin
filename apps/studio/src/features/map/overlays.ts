@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import type { OverlayInput } from '@ulpin/scene';
+import type { NormalizedArea } from '@ulpin/contracts/canonical-scene';
+import type { ImageOverlayInput, LocalXY, OverlayInput } from '@ulpin/scene';
+import { imageryRefusal, type ImageryReply } from './imagery-pixels';
 
 /** A supplemental dataset as the area context lists it (imagery, point cloud, elevation). */
 export interface SupplementalDataset {
@@ -62,35 +64,72 @@ export interface LoadedOverlay {
   caption: string;
 }
 
-async function readTiff(url: string, signal: AbortSignal) {
+/** Reads an overlay file, refused unless the application API serves it. */
+async function fetchOverlay(url: string, signal: AbortSignal): Promise<Response> {
   if (new URL(url, location.origin).origin !== location.origin) throw new Error("Overlay URL must use the application API");
-  const { fromArrayBuffer } = await import('geotiff');
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`${url}: ${response.status}`);
+  return response;
+}
+
+async function readTiff(url: string, signal: AbortSignal) {
+  const { fromArrayBuffer } = await import('geotiff');
+  const response = await fetchOverlay(url, signal);
   const tiff = await fromArrayBuffer(await response.arrayBuffer());
   const image = await tiff.getImage();
   if (image.getWidth() * image.getHeight() > 16_000_000) throw new Error("Raster exceeds the bounded browser preview size");
   return image;
 }
 
+async function decodeImagery(bytes: ArrayBuffer, signal: AbortSignal): Promise<ImageryReply> {
+  signal.throwIfAborted();
+  const worker = new Worker(new URL('./imagery.worker.ts', import.meta.url), { type: 'module' });
+  return new Promise((resolve, reject) => {
+    const finish = (reply?: ImageryReply, error?: unknown) => {
+      signal.removeEventListener('abort', abort);
+      worker.terminate();
+      if (error !== undefined) reject(error);
+      else resolve(reply!);
+    };
+    const abort = () => finish(undefined, signal.reason ?? new DOMException('Aborted', 'AbortError'));
+    signal.addEventListener('abort', abort, { once: true });
+    worker.onmessage = (event: MessageEvent<ImageryReply>) => {
+      if (signal.aborted) abort();
+      else finish(event.data);
+    };
+    worker.onerror = (event) => finish(undefined, new Error(event.message));
+    worker.onmessageerror = () => finish(undefined, new Error('overlay could not be loaded'));
+    try {
+      worker.postMessage(bytes, [bytes]);
+    } catch (error) {
+      finish(undefined, error);
+    }
+  });
+}
+
+async function readImagery(url: string, signal: AbortSignal): Promise<HTMLCanvasElement> {
+  const response = await fetchOverlay(url, signal);
+  const reply = await decodeImagery(await response.arrayBuffer(), signal);
+  signal.throwIfAborted();
+  if ('error' in reply) throw new Error(reply.error);
+  const refusal = imageryRefusal(reply.profile);
+  if (refusal) throw new Error(refusal);
+  if (!reply.rgba) throw new Error('overlay could not be loaded');
+  const canvas = document.createElement('canvas');
+  canvas.width = reply.profile.width;
+  canvas.height = reply.profile.height;
+  const ctx = canvas.getContext('2d')!;
+  const pixels = ctx.createImageData(canvas.width, canvas.height);
+  pixels.data.set(reply.rgba);
+  ctx.putImageData(pixels, 0, 0);
+  return canvas;
+}
+
 /** Official imagery draped where it covers: corners from its recorded geographic bounds. */
 async function imageryOverlay(d: SupplementalDataset, ref: AreaReference, signal: AbortSignal): Promise<LoadedOverlay | null> {
   const utm = utmZone(ref.analysisCrs);
   if (!d.originalUrl || !d.bounds4326 || !utm || !ref.origin || !/^EPSG:32[67]\d{2}$/.test(ref.analysisCrs ?? '')) return null;
-  const image = await readTiff(d.originalUrl, signal);
-  const width = image.getWidth(), height = image.getHeight();
-  const raster = (await image.readRasters({ interleave: true })) as unknown as Uint8Array;
-  const bands = image.getSamplesPerPixel();
-  if (![3, 4].includes(bands) || image.getGeoKeys().ProjectedCSTypeGeoKey !== 3857) throw new Error("Only the verified Web Mercator RGB/RGBA imagery profile is supported");
-  const canvas = document.createElement('canvas');
-  canvas.width = width; canvas.height = height;
-  const ctx = canvas.getContext('2d')!;
-  const pixels = ctx.createImageData(width, height);
-  for (let i = 0, j = 0; i < width * height; i++, j += bands) {
-    pixels.data[i * 4] = raster[j]!; pixels.data[i * 4 + 1] = raster[j + 1]!; pixels.data[i * 4 + 2] = raster[j + 2]!;
-    pixels.data[i * 4 + 3] = bands > 3 ? raster[j + 3]! : 255;
-  }
-  ctx.putImageData(pixels, 0, 0);
+  const canvas = await readImagery(d.originalUrl, signal);
   // CanvasTexture already flips source rows for UV north-up; do not flip twice.
   const [west, south, east, north] = d.bounds4326;
   const local = (lon: number, lat: number): [number, number] => {
@@ -102,7 +141,10 @@ async function imageryOverlay(d: SupplementalDataset, ref: AreaReference, signal
     label: `Aerial${d.captureYear ? ` · ${d.captureYear}` : ''}`,
     caption: `Aerial ${d.captureYear ?? 'date unknown'} · georeferenced`,
     note: `${d.name}: georeferenced image; source coverage only.`,
-    input: { id: d.sourceId, kind: 'image', corners: [local(west, south), local(east, south), local(east, north), local(west, north)], image: canvas },
+    input: {
+      id: d.sourceId, kind: 'image', role: 'ground',
+      corners: [local(west, south), local(east, south), local(east, north), local(west, north)], image: canvas,
+    },
   };
 }
 
@@ -167,5 +209,102 @@ export function useOverlays(areaId: string, datasets: SupplementalDataset[] | un
       }
       return { overlays: out, warnings };
     },
+  });
+}
+
+export type CanonicalImageOverlay = Extract<NormalizedArea['overlays'][number], { kind: 'image' }>;
+type RetainedImagery = NonNullable<NormalizedArea['imagery']>[number];
+
+/** The pictures of an area's canonical read that loaded, and how many of those listed did not. */
+export interface RetainedImages {
+  overlays: ImageOverlayInput[];
+  listed: number;
+  failed: number;
+}
+
+const CLASSIFICATION_WORDS: Record<RetainedImagery['classification'], string> = {
+  test_only: 'Test data, not official imagery',
+};
+const ELIGIBILITY_WORDS: Record<RetainedImagery['analyticalEligibility'], string> = {
+  not_assessed: 'Not assessed for measurement',
+};
+// The read's chips carry no capture field: acquiredAt is when the project retained the file.
+const CAPTURE_UNKNOWN = 'Capture date unknown';
+
+/** The read lists corners NW, NE, SE, SW; the scene takes SW, SE, NE, NW (proven on a real chip, MP2 step 0). */
+export function sceneCorners(corners: CanonicalImageOverlay['corners']): ImageOverlayInput['corners'] {
+  if (corners.length !== 4) throw new Error('An image overlay needs four corners');
+  const [nw, ne, se, sw] = corners.map(([x, y]): LocalXY => [x!, y!]) as ImageOverlayInput['corners'];
+  return [sw, se, ne, nw];
+}
+
+/** One line per retained imagery entry: its sources and licence as the read states them, then its states. */
+export function imageryAttribution(imagery: RetainedImagery[]): string[] {
+  return imagery.map((entry) => {
+    const sources = new Set(entry.chips.map((chip) => chip.upstreamConditions));
+    const licences = new Set(entry.chips.map((chip) => chip.licence));
+    return [
+      ...sources,
+      ...licences,
+      CLASSIFICATION_WORDS[entry.classification],
+      ELIGIBILITY_WORDS[entry.analyticalEligibility],
+      CAPTURE_UNKNOWN,
+    ].join(' · ');
+  });
+}
+
+/** Names the pictures that did not load by count; null when every listed picture loaded. */
+export function imageryFailureNote(images: Pick<RetainedImages, 'listed' | 'failed'>): string | null {
+  if (!images.failed) return null;
+  return `${images.failed} of ${images.listed} ${images.listed === 1 ? 'image' : 'images'} did not load`;
+}
+
+/** A retained preview (PNG) from the application API, drawn on a canvas the scene can drape. */
+async function readPicture(url: string, signal: AbortSignal): Promise<HTMLCanvasElement> {
+  const response = await fetchOverlay(url, signal);
+  const bitmap = await createImageBitmap(await response.blob());
+  const canvas = document.createElement('canvas');
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return canvas;
+}
+
+type ReadPicture = (url: string, signal: AbortSignal) => Promise<HTMLCanvasElement>;
+
+async function loadImage(
+  overlay: CanonicalImageOverlay,
+  signal: AbortSignal,
+  read: ReadPicture,
+): Promise<ImageOverlayInput> {
+  const corners = sceneCorners(overlay.corners);
+  return { id: overlay.id, kind: 'image', role: 'ground', corners, image: await read(overlay.originalUrl, signal) };
+}
+
+/** Asks for each listed picture once; one that fails is counted and never fails the others. */
+export async function loadRetainedImages(
+  listed: CanonicalImageOverlay[],
+  signal: AbortSignal,
+  read: ReadPicture = readPicture,
+): Promise<RetainedImages> {
+  const results = await Promise.allSettled(listed.map((overlay) => loadImage(overlay, signal, read)));
+  signal.throwIfAborted();
+  const overlays = results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
+  return { overlays, listed: listed.length, failed: listed.length - overlays.length };
+}
+
+/** The image overlays an area's canonical read lists. */
+export function listedImages(area: NormalizedArea | undefined): CanonicalImageOverlay[] {
+  return (area?.overlays ?? []).filter((overlay): overlay is CanonicalImageOverlay => overlay.kind === 'image');
+}
+
+/** Loads the listed pictures for display only: they change no record, measurement or selection. */
+export function useRetainedImagery(areaId: string, listed: CanonicalImageOverlay[]) {
+  return useQuery({
+    queryKey: ['retained-imagery', areaId, listed.map((overlay) => overlay.originalUrl)],
+    enabled: listed.length > 0,
+    staleTime: Infinity,
+    queryFn: ({ signal }) => loadRetainedImages(listed, signal),
   });
 }

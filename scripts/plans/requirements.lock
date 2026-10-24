@@ -1,0 +1,6 @@
+# P1 offline CPU reader; installed with CPython 3.13.7, Windows AMD64.
+# python -m pip install -r scripts/plans/requirements.lock
+PyMuPDF==1.25.5
+Shapely==2.0.7
+Pillow==11.2.1
+numpy==2.5.3

@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
-import { UlpinCode } from './UlpinCode';
+import { UlpinCode, type CodeState } from './UlpinCode';
 import { DescriptionList, type Fact } from './DescriptionList';
 
 /**
  * One-page card for a space. Released fields only; footer says it is a technical record, not a
  * title document, with the revision, hash and chain state. The QR opens the verification page.
+ * `state` is the state of the code as `UlpinCode` words it; without one the code reads as assigned.
  */
-export function PropertyCard({ title, code, location, facts, revision, hash, chain, qr }: {
-  title: string; code: string | null; location: string[] | null; facts: Fact[];
+export function PropertyCard({ title, code, location, state, facts, revision, hash, chain, qr }: {
+  title: string; code: string | null; location: string[] | null; state?: CodeState; facts: Fact[];
   revision: string; hash: string; chain: string; qr: ReactNode;
 }) {
   return (
@@ -19,7 +20,7 @@ export function PropertyCard({ title, code, location, facts, revision, hash, cha
         </div>
         <div className="ul-qr">{qr}</div>
       </div>
-      <UlpinCode code={code} location={location} copyable={false} />
+      <UlpinCode code={code} location={location} state={state} copyable={false} />
       <DescriptionList items={facts} />
       <footer className="ul-card__foot">
         <span>Technical record, not a title document.</span>

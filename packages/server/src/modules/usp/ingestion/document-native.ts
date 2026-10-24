@@ -10,7 +10,7 @@ import {redactDerivative} from '../ingest/redact';
 export function documentReaderSha(){
   const paths=['packages/contracts/src/usp/document-ingestion.ts','packages/server/src/modules/usp/ingestion/document-native.ts',
     'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py',
-    'services/geo/geo/native_workbook.py','services/geo/geo/native_archive.py',
+    'services/geo/geo/native_workbook.py','services/geo/geo/native_ods.py','services/geo/geo/native_archive.py',
     'services/geo/geo/native_archive_member.py','services/geo/geo/archive_member_inspection.py',
     'services/geo/geo/gis_inspection.py','services/geo/geo/native_gis.py','services/geo/geo/api.py',
     'packages/server/src/modules/usp/ingestion/document-archive.ts',
@@ -40,7 +40,7 @@ export function documentFormat(bytes:Uint8Array):DocumentResult['native']['forma
 type Extracted={format?:string;status?:string;code?:string|null;sourceSha256?:string;
   parts:{text:string;locator:{label:string;page?:number;row?:number;line?:number;lineEnd?:number;
     paragraph?:number;table?:number;column?:number;headerRow?:number;sheet?:string;sheetIndex?:number;sheetId?:number;
-    cell?:string;cellState?:string;cellType?:string}}[];warnings?:string[];
+    cell?:string;cellState?:string;cellType?:string;ods?:DocumentResult['native']['parts'][number]['locator']['ods']}}[];warnings?:string[];
   archiveInventory?:DocumentResult['native']['archiveInventory']};
 /** Keep exact redacted-unit spans; prefer a source line/word boundary for long units. */
 function unitSegments(text:string){
@@ -70,7 +70,7 @@ export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array
     const parsed=await extract({format:format==='archive'?'archive':format==='csv'?'csv_reference':format,base64:Buffer.from(bytes).toString('base64')});
     if(parsed.sourceSha256!==input.sourceSha256)throw new Error('NATIVE_SOURCE_HASH');
     if(format==='archive'){
-      if(parsed.format!=='docx'&&parsed.format!=='xlsx'&&parsed.format!=='archive')throw new Error('NATIVE_FORMAT_MISMATCH');
+      if(parsed.format!=='docx'&&parsed.format!=='xlsx'&&parsed.format!=='ods'&&parsed.format!=='archive')throw new Error('NATIVE_FORMAT_MISMATCH');
       format=parsed.format;
       if(format==='archive' && !parsed.archiveInventory)throw new Error('NATIVE_ARCHIVE_INVENTORY_MISSING');
     }
@@ -95,7 +95,7 @@ export async function extractSourceDocument(input:DocumentInput,bytes:Uint8Array
     }
     return {format,readerSha256:input.readerSha256,...(archiveInventory?{archiveInventory}:{}),
       code:parsed.code??(parts.length?(warnings.some(w=>w.includes('no native text'))?'NATIVE_PARTIAL_TEXT':null):'NATIVE_TEXT_UNAVAILABLE'),
-      warnings,parts,status:parsed.status==='unsupported'?'unsupported':parts.length?'extracted':format==='pdf'?'needs_ocr':format==='xlsx'?'unsupported':'extracted'};
+      warnings,parts,status:parsed.status==='encrypted'?'encrypted':parsed.status==='unsupported'?'unsupported':parts.length?'extracted':format==='pdf'?'needs_ocr':format==='xlsx'||format==='ods'?'unsupported':'extracted'};
   }catch(error){
     const message=error instanceof Error?error.message:'';
     const encrypted=/^Encrypted PDFs|\bencrypted\b|decrypt|password/i.test(message),

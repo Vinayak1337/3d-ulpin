@@ -257,6 +257,33 @@ test('large OCR crop bounds survive the document result, fusion projection and i
   }
 });
 
+test('a stated OCR region edge is accepted by the stored result and by fusion; without it the 1 pt rule decides',()=>{
+  const ocr=ocrDocument(2),region:[number,number,number,number]=[4800.25,6500.125,5100.75,6600.875];
+  const frame={kind:'pdf_display_page_top_left_points' as const,rotation:0 as const,width:6000,height:8000};
+  const stored=(box:number[],regionEdge?:Record<string,number>)=>({...ocr.loaded.result,
+    input:{...ocr.authority.input,ocrSelection:{page:1,region}},
+    ocr:{...ocr.loaded.result.ocr!,requestedRegion:region,sourcePageFrame:frame,...(regionEdge?{regionEdge}:{}),
+      items:ocr.loaded.result.ocr!.items.map(item=>({...item,sourcePageBoxes:[{...item.sourcePageBoxes[0],box}]}))}});
+  const pinned=(result:ReturnType<typeof DocumentResultSchema.parse>)=>({...ocr.selection,pin:{...ocr.selection.pin,
+    inputSha256:fingerprint(result.input),resultSha256:sha256(JSON.stringify(result)),
+    resultBytes:Buffer.byteLength(JSON.stringify(result))}});
+  const project=(value:unknown)=>{const result=DocumentResultSchema.parse(value);
+    return fusionOcrSourceProjection(pinned(result),result);};
+  // Two lines share one box 1.05 pt left of the region; at 0.9 px per pt one rendered pixel is 1.111 pt.
+  const atEdge=[4799.2,6510,4840,6530];
+  const stated={renderScalePxPerPt:0.9,boxesBeyondRegion:2,largestOverhangPt:4800.25-4799.2};
+  assert.equal(project(stored([4810,6510,4840,6530])).ocr!.regionEdge,undefined);
+  assert.equal(DocumentResultSchema.safeParse(stored(atEdge)).success,false);
+  const projected=project(stored(atEdge,stated));
+  assert.deepEqual(projected.ocr!.regionEdge,stated);
+  assert.deepEqual(projected.observations.map(o=>o.item.sourcePageBoxes[0].box),[atEdge,atEdge]);
+  // Fusion checks the result again itself: a miscounted edge, or the same boxes with no edge, is refused there.
+  const accepted=DocumentResultSchema.parse(stored(atEdge,stated)),{regionEdge,...bare}=accepted.ocr!;
+  assert.deepEqual(regionEdge,stated);
+  for(const changed of [{...accepted.ocr!,regionEdge:{...stated,boxesBeyondRegion:1}},bare])
+    assert.throws(()=>fusionOcrSourceProjection(pinned(accepted),{...accepted,ocr:changed}),AppError);
+});
+
 test('empty, missing, failed and unavailable OCR retain explicit gaps; unknown items and inconsistent source citations fail generically',async()=>local(async ctx=>{
   const a=document(1),b=ocrDocument(2),empty={...b.selection,itemOrdinals:[]};
   assert.equal(fusionOcrSourceProjection(empty,b.loaded.result).capability,'selection_required');

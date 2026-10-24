@@ -1,6 +1,6 @@
 # Canonical backend architecture
 
-> **26 September scope:** Backend architecture and API compatibility only. [H00](usp-agent-handoffs/00-README.md) and H01 govern active planning; the [migration ledger](orchestration/NESTJS_MIGRATION.md) records current implementation and acceptance. The user owns the UI.
+> **26 September scope:** Backend architecture and API compatibility only. Scope and priorities come from [PLAN.md](PLAN.md); the [migration ledger](archive/orchestration/NESTJS_MIGRATION.md) records the September implementation.
 
 The application owns the case and its history. A private processing service inspects stored originals and computes geometry. The viewer displays persisted results and edits explicit candidate geometry; it does not calculate authoritative model results in the browser.
 
@@ -50,4 +50,4 @@ The private service accepts `POST /internal/jobs {jobId,operation,input}` and se
 
 Verification follows the affected backend seam and the current source policy. Use current commands and isolated services only after an explicit execution assignment. Historical Python/service smoke numbers and synthetic-case API runs belong to their recorded revision, not the current cleanup. Do not execute deleted seed/replay checks to reproduce them.
 
-Preserve privacy, exact source hashes, immutable revisions, stale-result retention, idempotency and queue-recovery semantics when changing routes. Backend completion is distinct from user-owned browser/rendering acceptance, official-source accuracy, provider permission, performance and deployment. Use [H99](usp-agent-handoffs/99-ui-ux-and-integration.md) for consumer API contracts; no screen implementation is planned here.
+Preserve privacy, exact source hashes, immutable revisions, stale-result retention, idempotency and queue-recovery semantics when changing routes. Backend completion is distinct from user-owned browser/rendering acceptance, official-source accuracy, provider permission, performance and deployment. Use [H99](archive/usp-agent-handoffs/99-ui-ux-and-integration.md) for consumer API contracts; no screen implementation is planned here.

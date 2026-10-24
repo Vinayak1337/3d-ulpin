@@ -1,0 +1,32 @@
+{
+  "purpose": "Attributed linguistic rendering control only; no operational property facts, identifiers or labels",
+  "originRepository": "https://github.com/notofonts/devanagari",
+  "originRevision": "c4f7163256b8b0c3bf8a2d11fcf0314efc134989",
+  "originUrl": "https://raw.githubusercontent.com/notofonts/devanagari/c4f7163256b8b0c3bf8a2d11fcf0314efc134989/qa/html/androidtext-font-Devanagari-hi.txt",
+  "originalSha256": "d0e1f9c79b8b724298a5d4e42132d85f9a7d819d6e921f71356dde840b666903",
+  "originalBytes": 161612,
+  "originalPath": "E:\\BhuAayam-data\\task-data\\desktop-property-card-unicode\\androidtext-font-Devanagari-hi.txt",
+  "permission": "Public dependency test text reused for authorized development; separate sample-text redistribution/launch clearance not assessed",
+  "lines": [
+    {
+      "line": 3,
+      "text": " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    },
+    {
+      "line": 10,
+      "text": "%1$s से शेयर करें"
+    },
+    {
+      "line": 14,
+      "text": "%1$s वर्क प्रोफ़ाइल का समर्थन नहीं करता"
+    },
+    {
+      "line": 414,
+      "text": "समय क्षेत्र सेट करें"
+    },
+    {
+      "line": 885,
+      "text": "कृपया अपना चेहरा फिर से दर्ज करें ताकि आपको बेहतर तरीके से पहचाना जा सके"
+    }
+  ]
+}

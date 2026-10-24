@@ -1,0 +1,1 @@
+{"task":"K5","checkedAt":"2026-10-10T13:40:53.964Z","migration":"usp_property_card_revocations_001","registeredLoaderExecuted":true,"servedDatabaseTargetChecked":true,"applied":true,"before":{"cardRows":0,"cardRowsMd5":"","table":false,"marked":false},"after":{"cardRows":0,"cardRowsMd5":"","table":true,"marked":true},"forwardOnly":true,"productWrites":0,"resetOrReseed":false}

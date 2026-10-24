@@ -12,11 +12,19 @@ from pyproj import Transformer
 from pypdf import PdfWriter
 from shapely.geometry import shape
 
-from geo.area import check_area, extract_document, normalize_area
+from geo.area import check_area, extract_document, normalize_area, resolve_geojson_crs
 from geo.validation import InputError
 
 
 REFERENCE = {"sourceCrs": "EPSG:32643", "analysisCrs": "EPSG:32643", "origin": [500000, 3100000]}
+
+
+def test_equal_area_imagery_reference_keeps_a_bounded_explicit_metre_crs():
+    from geo.area import _analysis_crs
+    assert _analysis_crs("EPSG:6933").to_epsg() == 6933
+    assert all(axis.unit_name == "metre" for axis in _analysis_crs("EPSG:6933").axis_info)
+    with pytest.raises(InputError):
+        _analysis_crs("EPSG:3857")
 
 
 def ring(x=0, y=0, width=10, height=10):
@@ -95,11 +103,195 @@ def test_original_nyc_62_feature_snapshot_with_explicit_legacy_crs84():
         assert feature["areaM2"] > 0
 
 
-@pytest.mark.parametrize("name", ["EPSG:3857", "urn:ogc:def:crs:EPSG::32643", "unknown"])
-def test_other_declared_geojson_crs_remain_explicit_errors(name):
-    data = geojson()
+@pytest.mark.parametrize("name,code", [
+    ("EPSG:3857", 3857), ("urn:ogc:def:crs:EPSG::32643", 32643),
+    ("urn:ogc:def:crs:EPSG::2958", 2958), ("EPSG:4258", 4258),
+])
+def test_named_geojson_crs_transforms_xy_by_the_existing_rule(name, code):
+    x, y = (-79.1, 43.1) if code == 2958 else (77, 28)
+    if code == 4258:
+        x, y = 9, 50
+    converter = Transformer.from_crs(4326, code, always_xy=True, allow_ballpark=False, only_best=True)
+    coordinates = [list(converter.transform(*point, errcheck=True)) for point in ring(x, y, .0001, .0001)]
+    data = geojson({"type": "Polygon", "coordinates": [coordinates]})
     data["data"]["crs"] = {"type": "name", "properties": {"name": name}}
-    with pytest.raises(InputError):
+    before = copy.deepcopy(data)
+    result = normalize_area(data)
+    direct = Transformer.from_crs(code, 4326, always_xy=True, allow_ballpark=False, only_best=True)
+    actual = result["features"][0]["geographicGeometry"]["coordinates"][0][0]
+    assert actual == pytest.approx(direct.transform(*coordinates[0]), abs=1e-10)
+    assert result["reference"]["sourceCrs"] == f"EPSG:{code}"
+    assert result["warnings"][0] == (
+        f"The source declares `{name}`; read as `EPSG:{code}`, coordinates in the order written (x, y). "
+        "Original bytes keep that declaration; normalized geographic geometry uses RFC 7946 coordinates.")
+    assert result["features"][0]["sourceGeometry"] == before["data"]["features"][0]["geometry"]
+    assert data == before
+
+
+CRS_DECLARATION_REFUSALS = [
+    ({"type": "link", "properties": {"href": "https://invalid.example/crs"}}, "2008 named CRS form"),
+    ({"type": "name", "properties": {"name": "unknown"}}, "not a recognized coordinate reference system"),
+    ({"type": "name", "properties": {"name": "EPSG:7405"}}, "two-dimensional horizontal CRS"),
+    ({"type": "name", "properties": {"name": "EPSG:4979"}}, "two-dimensional horizontal CRS"),
+    ({"type": "name", "properties": {"name": "EPSG:5703"}}, "two-dimensional horizontal CRS"),
+    ({"type": "name", "properties": {"name": 'LOCAL_CS["control",UNIT["metre",1],'
+      'AXIS["x",EAST],AXIS["y",NORTH]]'}}, "two-dimensional horizontal CRS"),
+    (None, "2008 named CRS form"),
+    ("EPSG:2958", "2008 named CRS form"),
+    ({"type": "name", "properties": {}}, "2008 named CRS form"),
+    ({"type": "name", "properties": {"name": 2958}}, "nonempty coordinate reference system text"),
+    ({"type": "name", "properties": {"name": ""}}, "nonempty coordinate reference system text"),
+    ({"type": "name", "properties": {"name": "EPSG:2958", "extra": True}}, "2008 named CRS form"),
+    ({"type": "name", "properties": {"name": "EPSG:2958"}, "extra": True}, "2008 named CRS form"),
+]
+
+
+@pytest.mark.parametrize("member,words", CRS_DECLARATION_REFUSALS)
+def test_invalid_geojson_declaration_quotes_the_file_and_reason(member, words):
+    data = geojson()
+    data["data"]["crs"] = member
+    with pytest.raises(InputError, match=words) as caught:
+        normalize_area(data)
+    assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
+
+
+@pytest.mark.parametrize("member,words", CRS_DECLARATION_REFUSALS)
+def test_large_file_resolution_refuses_with_the_same_words(member, words):
+    with pytest.raises(InputError, match=words) as caught:
+        resolve_geojson_crs({"collection": {"type": "FeatureCollection", "crs": member}})
+    assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
+
+
+def test_large_file_resolution_names_the_code_and_unit_the_normalizer_reads():
+    assert resolve_geojson_crs({"collection": {"crs": {"type": "name", "properties": {
+        "name": "urn:ogc:def:crs:EPSG::2958"}}}}) == {
+        "declared": "urn:ogc:def:crs:EPSG::2958", "authority": "EPSG:2958", "unit": "metre"}
+    assert resolve_geojson_crs({"collection": {"type": "FeatureCollection"}}) == {
+        "declared": None, "authority": "EPSG:4326", "unit": "degree"}
+    with pytest.raises(InputError, match="without its features"):
+        resolve_geojson_crs({"collection": {"crs": None, "features": []}})
+
+
+def test_a_proved_part_collection_is_read_in_its_declared_system():
+    """The large path sends the receipt's collection members with the part's raw features, unchanged."""
+    converter = Transformer.from_crs(4326, 2958, always_xy=True, allow_ballpark=False, only_best=True)
+    coordinates = [list(converter.transform(*point, errcheck=True)) for point in ring(-79.1, 43.1, .0001, .0001)]
+    data = geojson({"type": "Polygon", "coordinates": [coordinates]})
+    metadata = {"type": "FeatureCollection", "name": "parcels",
+                "crs": {"type": "name", "properties": {"name": "EPSG:2958"}}}
+    data["data"] = {**metadata, "type": "FeatureCollection", "features": data["data"]["features"]}
+    result = normalize_area(data)
+    direct = Transformer.from_crs(2958, 4326, always_xy=True, allow_ballpark=False, only_best=True)
+    actual = result["features"][0]["geographicGeometry"]["coordinates"][0][0]
+    assert actual == pytest.approx(direct.transform(*coordinates[0]), abs=1e-10)
+    assert result["reference"]["sourceCrs"] == "EPSG:2958"
+    assert result["features"][0]["sourceGeometry"]["coordinates"][0] == coordinates
+
+
+def niagara(heights=None):
+    """A projected footprint whose positions carry heights, the way the Niagara Falls file writes them."""
+    converter = Transformer.from_crs(4326, 2958, always_xy=True, allow_ballpark=False, only_best=True)
+    outline = [list(converter.transform(*point, errcheck=True)) for point in ring(-79.1, 43.1, .0001, .0001)]
+    heights = heights or [186.110000000001, 190, 188.5, 186.2, 186.110000000001]
+    data = geojson({"type": "Polygon", "coordinates": [[[*xy, z] for xy, z in zip(outline, heights)]]})
+    data["data"]["crs"] = {"type": "name", "properties": {"name": "EPSG:2958"}}
+    flat = geojson({"type": "Polygon", "coordinates": [outline]})
+    flat["data"]["crs"] = data["data"]["crs"]
+    return data, flat
+
+
+def test_a_position_with_a_height_keeps_a_two_coordinate_outline_and_its_heights_beside_it():
+    data, flat = niagara()
+    before = copy.deepcopy(data)
+    feature = normalize_area(data)["features"][0]
+    assert feature["sourceHeights"] == {"positions": 5, "min": 186.110000000001, "max": 190,
+                                        "unit": None, "reference": None, "basis": "source_coordinates"}
+    assert isinstance(feature["sourceHeights"]["max"], int)
+    assert feature["sourceGeometry"] == before["data"]["features"][0]["geometry"]
+    assert feature["height"] == {"state": "unknown", "value": None, "unit": "m",
+                                 "meaning": "height above the building's own ground level",
+                                 "reference": "building-relative; not aligned between features"}
+    assert data == before
+    without = {key: value for key, value in feature.items() if key not in ("sourceHeights", "sourceGeometry")}
+    plain = normalize_area(flat)["features"][0]
+    assert "sourceHeights" not in plain
+    assert without == {key: value for key, value in plain.items() if key != "sourceGeometry"}
+    assert "sourceHeights" not in json.dumps(normalize_area(geojson()))
+
+
+@pytest.mark.parametrize("extra,words", [
+    ([188.5, 0], r"has a position of 4 numbers; a position takes two coordinates and may add a height, "
+                 r"and a fourth \(M\) value is unsupported"),
+    ([], "mixes positions with and without a height"),
+])
+def test_a_measure_value_or_a_mix_of_heights_is_refused_in_words(extra, words):
+    data, _ = niagara()
+    coordinates = data["data"]["features"][0]["geometry"]["coordinates"][0]
+    coordinates[1] = [*coordinates[1][:2], *extra]
+    with pytest.raises(InputError, match="Feature B1 " + words):
+        normalize_area(data)
+
+
+def test_arcgis_positions_with_a_third_number_still_need_their_adapter():
+    data = arcgis()
+    for point in data["data"]["features"][0]["geometry"]["rings"][0]:
+        point.append(2)
+    with pytest.raises(InputError, match="exactly two coordinates; Z/M values are unsupported"):
+        normalize_area(data)
+    data = arcgis()
+    data["data"]["hasZ"] = True
+    with pytest.raises(InputError, match="ArcGIS Z/M feature sets require a dedicated adapter"):
+        normalize_area(data)
+
+@pytest.mark.parametrize("name", ["EPSG:32643", "urn:ogc:def:crs:EPSG::32643"])
+def test_explicit_geojson_source_crs_must_agree_with_declaration(name):
+    data = geojson(polygon(500000, 3100000))
+    data["data"]["crs"] = {"type": "name", "properties": {"name": name}}
+    data["reference"] = {"sourceCrs": "EPSG:32643"}
+    assert normalize_area(data)["reference"]["sourceCrs"] == "EPSG:32643"
+    data["reference"]["sourceCrs"] = "EPSG:4326"
+    with pytest.raises(InputError, match="Explicit sourceCrs conflicts with the file's crs member."):
+        normalize_area(data)
+
+
+@pytest.mark.parametrize("name,explicit", [
+    ("EPSG:4326", "EPSG:4326"),
+    ("urn:ogc:def:crs:OGC:1.3:CRS84", "EPSG:4326"),
+    ("urn:ogc:def:crs:OGC:1.3:CRS84", "OGC:CRS84"),
+    ("EPSG:4258", "EPSG:4258"),
+])
+def test_explicit_geographic_crs_agrees_in_written_xy_order(name, explicit):
+    data = geojson(polygon(9, 50, .0001, .0001))
+    data["data"]["crs"] = {"type": "name", "properties": {"name": name}}
+    data["reference"] = {"sourceCrs": explicit}
+    assert normalize_area(data)["disposition"]["accepted"] == 1
+    data["reference"]["sourceCrs"] = "EPSG:3857"
+    with pytest.raises(InputError, match="Explicit sourceCrs conflicts with the file's crs member."):
+        normalize_area(data)
+
+
+def test_undeclared_geojson_keeps_rfc_rule_and_identical_whole_result():
+    data = geojson()
+    original = normalize_area(data)
+    data["reference"] = {"sourceCrs": "EPSG:4326"}
+    assert normalize_area(data) == original
+    data["reference"]["sourceCrs"] = "EPSG:3857"
+    with pytest.raises(InputError, match="RFC GeoJSON input is EPSG:4326"):
+        normalize_area(data)
+    data.pop("reference")
+    data["data"]["features"][0]["geometry"] = polygon(500000, 3100000)
+    with pytest.raises(InputError, match="The file declares no coordinate system"):
+        normalize_area(data)
+
+
+@pytest.mark.parametrize("level", ["feature", "geometry"])
+def test_geojson_crs_on_feature_or_geometry_is_still_refused(level):
+    data = geojson()
+    target = data["data"]["features"][0]
+    if level == "geometry":
+        target = target["geometry"]
+    target["crs"] = {"type": "name", "properties": {"name": "EPSG:4326"}}
+    with pytest.raises(InputError, match="CRS override"):
         normalize_area(data)
 
 
@@ -187,7 +379,7 @@ def test_invalid_heights_do_not_become_evidenced(bad_value):
 
 
 @pytest.mark.parametrize("geometry", [
-    {"type": "Point", "coordinates": [77, 28, 4]},
+    {"type": "Point", "coordinates": [77, 28, 4, 1]},
     {"type": "Point", "coordinates": [77, float("nan")]},
     {"type": "Point", "coordinates": [77, float("inf")]},
     {"type": "Point", "coordinates": [True, 28]},

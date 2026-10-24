@@ -1,0 +1,49 @@
+{ "at": "2026-10-18T08:06:06.375Z", "commit": "67959045919447ee07302523225422e33dcca6b2", "receipt": { "command": [
+"node scripts/platform/processor-image.mjs roll --runtime ulpin-reh-02" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02",
+"exit": 0, "seconds": 3.55, "output": [
+"ulpin-reh-02: geo and worker already run ulpin-geo:git-22003ea3d878; nothing recreated." ], "error": null },
+"outputLines": 1, "containersBefore": { "ulpin-demo": [
+"9332e3bd69a7 ulpin-demo-geo-1 ulpin-geo:git-22003ea3d878 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"a5c41cce7d08 ulpin-demo-worker-1 ulpin-geo:git-22003ea3d878 running" ], "ulpin-reh-02": [
+"7ba3472c65be ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"3a76b477e6fb ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ] }, "containersAfter": { "ulpin-demo": [
+"9332e3bd69a7 ulpin-demo-geo-1 ulpin-geo:git-22003ea3d878 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"a5c41cce7d08 ulpin-demo-worker-1 ulpin-geo:git-22003ea3d878 running" ], "ulpin-reh-02": [
+"7ba3472c65be ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"3a76b477e6fb ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ] }, "state": { "runtimeEntriesByName": [
+"api.process.json", "bootstrap.complete.json", "dispatcher.process.json",
+"document-ocr-41d83576-0bdd-47a0-9d29-86698bdb0ba7-NzPxSq", "document-ocr-8338b048-3c44-4710-b246-a1f6f9b13aac-3jG5i6",
+"document-ocr-934c4f99-f36c-4ab6-a2c9-a30da7717bc1-v6pzwQ", "document-ocr-c9cd361d-2afc-44f9-9af0-251399a6348f-R6Jg3k",
+"document-ocr-ebe401c6-3c41-4ca0-8c45-6b830fd16eab-H7hfsG", "document-runtime-paths.json", "learning", "logs", "models",
+"ocr-paths.json", "ocr-scratch", "runtime.env", "tabular-paths.json" ], "volumes": [ "ulpin-reh-02_minio-data",
+"ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ], "containers": [
+"7ba3472c65be ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"3a76b477e6fb ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ], "networks": [ "ulpin-reh-02_default" ],
+"listeners": [] }, "images": [ { "name": "ulpin-geo:demo-k3b", "present": true,
+"id": "sha256:f66bd7e9af672b75805bc1f839f2bec92dff2452595a31c4ddda5edd4dbd3c73",
+"created": "2026-10-10T05:31:24.221741226Z", "labels": { "org.opencontainers.image.revision": "<no value>",
+"in.bhuaayam.ulpin.services-geo-tree": "<no value>" } }, { "name": "ulpin-geo:git-22003ea3d878", "present": true,
+"id": "sha256:b444427f51942b4a5a30b1a6b770d050f135ef2b3c28ecded547ae1902cc9985",
+"created": "2026-10-16T23:57:31.000033297Z", "labels": {
+"org.opencontainers.image.revision": "22003ea3d878700750fd3053e4c539616117249b",
+"in.bhuaayam.ulpin.services-geo-tree": "dd59ed7f21fc235eddb69b86188ce4b8f4db04e4" } } ] }

@@ -1,0 +1,29 @@
+{
+  "task": "N04B",
+  "branch": "task/n04b-finish-again",
+  "base": "8ed253c2",
+  "plan": {
+    "change": [
+      "apps/studio/src/features/intake/upload-command.ts: on resume, while a receipt is 'finalizing', send the same finalize once more (same SHA-256, the receipt's guard, a new request key) when the status shows the finish is no longer held",
+      "apps/studio/src/features/intake/upload.test.ts: fake-transport cases for an expired v1 lease, a live v1 lease and a refusal"
+    ],
+    "reuse": "uploadGuard, guarded, the existing status follow and the existing Cancel upload; server rules unchanged"
+  },
+  "seamCheck": {
+    "question": "Does the receipt status carry what D1 needs: the v1 finalization lease expiry, and for v2 the server's words that the job ended without a result?",
+    "read": [
+      "packages/contracts/src/usp/ingestion.ts:276-288 (LargeUploadStatusSchema)",
+      "packages/server/src/modules/usp/ingestion/large-original.ts:48-65 (status)",
+      "packages/server/src/modules/usp/ingestion/large-original.ts:285-313 (finalize)",
+      "packages/server/src/modules/usp/ingestion/large-original.ts:563-580 (failV2Job)"
+    ],
+    "answer": "no",
+    "decision": "D3 applies: stop before any code change; GAPS name the missing fields; the server is unchanged"
+  },
+  "needsOutsideOwnedPaths": [
+    "packages/contracts/src/usp/ingestion.ts (LargeUploadStatusSchema)",
+    "packages/server/src/modules/usp/ingestion/large-original.ts (status)",
+    "docs/api/openapi.json and packages/api-client/src/schema.d.ts (regenerated)"
+  ],
+  "runtime": "none; no Docker, GPU or provider call"
+}

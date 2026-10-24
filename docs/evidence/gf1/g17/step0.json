@@ -1,0 +1,19 @@
+{
+ "task": "G17",
+ "step": 0,
+ "base": "6d038782",
+ "defect": "Upload and streaming caps count everything that ever happened in the runtime: 128 v1 and 8 v2 receipts ever, 512 MiB / 7 GiB reserved by every receipt not aborted (retained included), and 128 streaming imports ever. Rehearsals spend them and the live drop gets 429.",
+ "change": [
+  {"path": "packages/server/src/modules/usp/ingestion/large-original.ts", "why": "create() quota: count open receipts (receiving, finalizing or aborting, and before expiry, under a live lease, or with a v2 job to finish it) and the bytes they reserve, per case, per operator subject and runtime-wide; drop the lifetime receipt count; add the per-case retained-bytes ceiling; configured v2 capacity counts what is on disk now; 429 words name the limit and when a slot frees. finalize() untouched (ZL2)."},
+  {"path": "packages/server/src/modules/usp/ingestion/streaming-vector.ts", "why": "STREAMING_HISTORY_CAPACITY: 128 imports per case instead of 128 ever in the runtime; the large GeoJSON intake path (intake-large-worker.ts) enqueues through this reader, so it consumed the runtime-wide count. 2 active stays; 429 words say when a slot frees."},
+  {"path": "packages/contracts/src/usp/ingestion.ts", "why": "Drop maxUploadReceipts (a lifetime count no longer enforced) from both limit objects; comment what maxReservedOriginalBytes now bounds."},
+  {"path": "docs/api/openapi.json, packages/api-client/src/schema.d.ts", "why": "Regenerated: the limits endpoint publishes the limit objects."},
+  {"path": "tests/large-original.test.ts, packages/server/src/modules/usp/ingestion/large-original-small.test.ts", "why": "Pure tests of the quota decision and words; the in-memory pool answers the new quota statement."}
+ ],
+ "reuse": ["The existing admission advisory lock and the one quota statement in create()", "AppError details through the existing exception filter", "Existing limit constants; no new numbers"],
+ "decisions": {
+  "D2": "Per-case ceiling = maxReservedOriginalBytes of the receipt's profile (512 MiB v1, 7 GiB v2), counted over retained originals plus open receipts of that profile in the case plus the new request.",
+  "D3": "No sweeper exists for expired receipts (grep: nothing outside large-original.ts reads usp_source_uploads.expires_at), so the check skips them; their remaining temporary part bytes still count against the configured physical capacity."
+ },
+ "seamsOutside": "None. intake-zip-layers.ts reads only the UPLOAD_QUOTA code, which stays. No runtime, Docker, GPU or provider."
+}

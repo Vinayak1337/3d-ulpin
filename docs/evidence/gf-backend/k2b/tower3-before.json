@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "normalized-building/1",
+  "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+  "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82",
+  "recordState": "reviewed",
+  "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+  "frame": {
+    "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+    "origin": {
+      "lon": 77.1007494298676,
+      "lat": 28.395913481052787,
+      "hEllipsoidal": null
+    },
+    "axes": "ENU",
+    "unit": "m",
+    "placement": "source_supported",
+    "sourceCrs": [
+      "EPSG:32643"
+    ],
+    "verticalRefs": [
+      "building-relative; not aligned between features"
+    ],
+    "horizontalOperation": "deterministic:wgs84-surface-to-enu@1"
+  },
+  "name": {
+    "value": "TOWER 3",
+    "state": "source_supported",
+    "citations": [
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "inputRevisions": [
+    {
+      "namespace": "area",
+      "id": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+      "revision": 2
+    },
+    {
+      "namespace": "area_feature",
+      "id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "revision": 1
+    },
+    {
+      "namespace": "registry_record",
+      "id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "revision": 1
+    },
+    {
+      "namespace": "import_package",
+      "id": "085434ff-9fb0-4224-9db2-9fd0f54c0dde",
+      "revision": 4
+    }
+  ],
+  "parcelRefs": [],
+  "footprint": {
+    "value": null,
+    "state": "unknown",
+    "unit": "m",
+    "citations": [
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      }
+    ],
+    "method": "deterministic:wgs84-surface-to-enu@1",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "footprintKind": {
+    "value": null,
+    "state": "unknown",
+    "citations": [
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "baseM": {
+    "value": null,
+    "state": "unknown",
+    "unit": "m",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "heightM": {
+    "value": null,
+    "state": "unknown",
+    "unit": "m",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "heightState": "unknown",
+  "storeyCount": {
+    "value": null,
+    "state": "conflicting",
+    "unit": "count",
+    "citations": [
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      },
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "lower-right UNIT DETAIL, TOWER 3 row"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "storeyLabel": {
+    "value": null,
+    "state": "conflicting",
+    "citations": [
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      },
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "lower-right UNIT DETAIL, TOWER 3 row"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "storeys": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+  },
+  "levels": [],
+  "conflicts": [
+    {
+      "property": "building.storeyLabel",
+      "alternatives": [
+        {
+          "value": "G+41",
+          "state": "candidate",
+          "citations": [
+            {
+              "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+              "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+              "locator": {
+                "kind": "page",
+                "page": 1,
+                "text": "central T-3 tower graphic"
+              }
+            }
+          ],
+          "method": "model:agent-transcription@unverified",
+          "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+        },
+        {
+          "value": "G+42",
+          "state": "candidate",
+          "citations": [
+            {
+              "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+              "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+              "locator": {
+                "kind": "page",
+                "page": 1,
+                "text": "lower-right UNIT DETAIL, TOWER 3 row"
+              }
+            }
+          ],
+          "method": "model:agent-transcription@unverified",
+          "revisionId": "94559282850eacf003739892a1f14989c326b714a42e48193736d10c989c9b82"
+        }
+      ],
+      "reason": "Retained source claims disagree; no automatic selection."
+    }
+  ],
+  "gaps": [
+    "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
+    "No detailed level schedule, spaces, rights or parcel association reviewed.",
+    "Current sanction/as-built status and source-to-unit association remain unqualified.",
+    "Footprint or geographic placement unavailable; no replacement geometry.",
+    "Source outline role is unknown; it is not asserted as a ground footprint or roofprint.",
+    "Measured base elevation unknown; scene uses building-relative bases, not surveyed terrain."
+  ],
+  "candidates": []
+}

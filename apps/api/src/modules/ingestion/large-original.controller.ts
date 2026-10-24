@@ -3,7 +3,7 @@ import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam } from '@nestjs
 import type { Request } from 'express';
 import { z } from 'zod';
 import { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
-  LargeUploadPartSchema, LargeUploadStatusSchema } from '@ulpin/contracts/usp';
+  LargeUploadListSchema, LargeUploadPartSchema, LargeUploadStatusSchema } from '@ulpin/contracts/usp';
 import { LargeOriginalService } from '@ulpin/server/modules/usp/ingestion/large-original';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { readBoundedBytes, readJsonBody } from '../../common/body';
@@ -30,6 +30,12 @@ export class LargeOriginalController {
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_uploads',summary:'Admit a bounded resumable opaque original in the current source case'})
   @jsonBody(LargeUploadCreateSchema) @wireResponse(201,LargeUploadStatusSchema,[429,503])
   async create(@Param('caseId') caseId:string,@Req() request:Request){return this.uploads.create(caseId,await readJsonBody(request));}
+
+  @Get('cases/:caseId/uploads') @param('caseId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_uploads',
+    summary:'List the receipts of this operator in the case that hold an upload slot, newest first, at most 20'})
+  @wireResponse(200,LargeUploadListSchema)
+  list(@Param('caseId') caseId:string){return this.uploads.list(caseId);}
 
   @Get('cases/:caseId/uploads/:uploadId') @param('caseId') @param('uploadId')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_uploads_uploadId',summary:'Read durable receipt, byte-part progress and current case/upload revisions'})

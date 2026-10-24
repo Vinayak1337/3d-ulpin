@@ -1,0 +1,215 @@
+{
+  "task": "ST1c",
+  "gate": "GF1",
+  "branch": "task/st1c-large-layout-walk",
+  "base": "133e0f18433fcbb90d092f20b4ae918396c79778",
+  "qualification": "Actual HTTP boundary; the product API and dispatcher run as their own processes; in-memory loopback S3 and the product geo Python as stand-ins.",
+  "input": {
+    "name": "Niagara",
+    "bytes": 26660992,
+    "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+    "hashVerifiedBeforeRead": true,
+    "originalHashesUnchanged": true
+  },
+  "secondFile": {
+    "path": "fixtures/real-nyc/original.geojson",
+    "bytes": 1763,
+    "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda"
+  },
+  "steps": [
+    {
+      "step": "upload",
+      "status": 200,
+      "ms": 680
+    },
+    {
+      "step": "register",
+      "status": 201,
+      "ms": 74
+    },
+    {
+      "step": "manifest at the question",
+      "status": 200,
+      "ms": 7
+    },
+    {
+      "step": "profile status",
+      "status": 200,
+      "ms": 42
+    },
+    {
+      "step": "case revision before",
+      "status": 200,
+      "ms": 15
+    },
+    {
+      "step": "second file retained",
+      "status": 201,
+      "ms": 328
+    },
+    {
+      "step": "second file registered",
+      "status": 201,
+      "ms": 33
+    },
+    {
+      "step": "case revision after",
+      "status": 200,
+      "ms": 9
+    },
+    {
+      "step": "author at the inventory revision",
+      "status": 201,
+      "ms": 41
+    },
+    {
+      "step": "author at the current case revision",
+      "status": 409,
+      "ms": 32
+    },
+    {
+      "step": "approve",
+      "status": 200,
+      "ms": 39
+    },
+    {
+      "step": "recipe history",
+      "status": 200,
+      "ms": 20
+    },
+    {
+      "step": "first package drafted",
+      "status": 200,
+      "ms": 78427
+    }
+  ],
+  "step2": {
+    "manifestStreamedProfileJobId": "61cf5a00-f533-4039-96ae-94bfface52df",
+    "tableJobId": "61cf5a00-f533-4039-96ae-94bfface52df",
+    "equal": true,
+    "jobIdSource": "GET /api/v1/ingestion/cases/{caseId}/intake, item parsed with the published IntakeItemSchema; the table was read only after the walk, for this record",
+    "placement": "needs_answer",
+    "limitReason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+    "msFromRegisterToQuestion": 85206,
+    "registeredCard": {
+      "itemId": "9aa36837-5900-4eec-855b-a0813b3a9147",
+      "format": "geojson",
+      "family": "vector",
+      "sizeClass": "M",
+      "sizeBytes": 26660992,
+      "wave": 1,
+      "cardSha256": "e7be45597e955897f1b3a870b84b9bd3817108697a16df63a5c56c300f01d209",
+      "cardFormat": "geojson",
+      "streamedProfileJobId": null
+    }
+  },
+  "step3": {
+    "caseRevisionBefore": 1,
+    "caseRevisionAfter": 2,
+    "profileCaseRevision": 1,
+    "secondSourceId": "6e19684e-0f22-4e62-b5c8-5adf47bd9365",
+    "secondItemId": "6e19684e-0f22-4e62-b5c8-5adf47bd9365"
+  },
+  "step4": {
+    "plan": {
+      "caseRevision": 1,
+      "profileJobId": "61cf5a00-f533-4039-96ae-94bfface52df",
+      "profileGeneration": 423
+    },
+    "kind": "building",
+    "identifier": "/features/*/properties/OBJECTID",
+    "operations": [
+      "feature.sourceKey <- /features/*/properties/OBJECTID via literal_integer_identifier@1",
+      "feature.geometry <- /features/*/geometry via geojson_geometry@1"
+    ],
+    "authoredStatus": 201,
+    "currentRevisionStatus": 409,
+    "refusedAtCaseRevision": 2,
+    "refusal": {
+      "code": "STALE_REVISION",
+      "message": "The source case revision changed."
+    },
+    "unchangedAfterRefusal": true,
+    "countsBefore": {
+      "recipe": {
+        "id": "c29e12eb-18bb-4733-b17d-d0d1abf443c5",
+        "revision": 1,
+        "state": "proposed"
+      },
+      "revisions": 1,
+      "operations": 1
+    },
+    "countsAfter": {
+      "recipe": {
+        "id": "c29e12eb-18bb-4733-b17d-d0d1abf443c5",
+        "revision": 1,
+        "state": "proposed"
+      },
+      "revisions": 1,
+      "operations": 1
+    }
+  },
+  "step5": {
+    "approveStatus": 200,
+    "history": {
+      "revisions": [
+        {
+          "revision": 1,
+          "state": "proposed"
+        },
+        {
+          "revision": 2,
+          "state": "approved"
+        }
+      ],
+      "streamed": true
+    },
+    "parsedWith": "the response union of GET .../recipes/{recipeId}: AnyMappingReceiptSchema members plus StreamedMappingReceiptSchema, deep-equal to the published schema"
+  },
+  "step6": {
+    "stoppedAt": "first package drafted (the import was not run to its end; LR3 took 276 s of drafting for 21 packages of 41,809 features)",
+    "msFromApprovalToFirstPackage": 78427,
+    "firstPackage": {
+      "packages": 1,
+      "packageId": "064d1cd5-2d0e-4ae8-bc88-3d562bdc9a17",
+      "state": "NEEDS_INPUT",
+      "targetCounts": {
+        "preparing": 2000,
+        "ready": 0,
+        "needs_answer": 0,
+        "held": 0,
+        "confirmed": 0,
+        "recorded": 0,
+        "carded": 0,
+        "stopped": 0
+      }
+    },
+    "partsTable": [
+      {
+        "part_index": 0,
+        "package_id": "064d1cd5-2d0e-4ae8-bc88-3d562bdc9a17",
+        "features": 2000
+      }
+    ]
+  },
+  "manifestNamesInventory": true,
+  "answeredAfterCaseMovedOn": true,
+  "currentRevisionRefused": true,
+  "historyParsesStreamedReceipt": true,
+  "failures": [],
+  "providerCalls": 0,
+  "geometryCalls": {
+    "resolve-geojson-crs": 1,
+    "inspect-gis": 1,
+    "normalize": 1,
+    "check": 1
+  },
+  "container": {
+    "name": "ulpin-st1c-tmp-d30ecd697d79cba9",
+    "removed": "ulpin-st1c-tmp-d30ecd697d79cba9",
+    "ownedBoxGone": true
+  },
+  "notes": [
+    "A first run of this harness reached the same end; its database read of the profile table named a column that does not exist, so it was repeated once with that query corrected. Nothing in the product failed."
+  ]
+}

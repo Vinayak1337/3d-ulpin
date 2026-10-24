@@ -1,0 +1,17 @@
+# Building/floor paired-source checkpoint
+
+The three-family search retained one useful IFC original, but did not qualify a complete model/document floor pair. [The manifest](manifest.json) separates source-native observations from cross-input correspondence; the latter remains `not_assessed` / `needs_input`.
+
+| Family | Supported evidence | Remaining prerequisite |
+| --- | --- | --- |
+| Retained Haryana project 2831 / Tower-3 | Prior issuing-portal review supports document grouping and explicitly printed planned typical-floor ranges. | Corresponding model/storey identity and exact paired revision. Preserve the G+41/G+42 conflict; no new acquisition/review was repeated. |
+| Retained buildingSMART Simple-Scene | Existing IFC names the building and groundfloor; a complete pinned upstream tree was checked. | No plan/schedule/named-floor table was present in that tree. Generic certification hierarchy instructions are insufficient. |
+| KIT/IAI FZK-Haus | Publisher-linked IFC4 has exact building and two named storey/decomposition literals. Academic publications explicitly attribute their case-study model to the KIT family. | Valid unchanged small plan/document bytes and named-storey/version correspondence; local institutional download returned an HTML challenge, not PDF. |
+
+The unchanged [KIT-linked IFC](https://www.ifcwiki.org/images/e/e3/AC20-FZK-Haus.ifc) is retained privately: 2,570,803 bytes, SHA-256 `70cc8ff245fc0894201d96496c031005a5cbd7a96b22d8a1b87c5a883fb77994`. The [pinned publisher page](https://www.ifcwiki.org/index.php?title=KIT_IFC_Examples&oldid=552) identifies an IAI/KIT example and provides an unrestricted-use notice with requested institutional publication attribution. It describes a development model; physical geography is unknown. Formal licence/version applicability and launch clearance remain separate.
+
+Source literals name building `FZK-Haus` (#434), `Erdgeschoss` (#479) and `Dachgeschoss` (#35065); #481 explicitly decomposes that building into those storeys. These are source-native identifiers and names, not registry floors/units or learning labels. The IFC4 header records a 2016-12-21 export timestamp, and #13 declares metre length units; no frame/height/geometry/accuracy qualification follows.
+
+[The 2023 paper](https://publications.rwth-aachen.de/record/973561/files/973561.pdf), DOI `10.3390/app132212478`, section 3.1, identifies KIT/IAI FZK-Haus IFC4 and points to the same publisher catalogue. Indexed [2025 dissertation](https://publications.rwth-aachen.de/record/1013735/files/1013735.pdf) Figure 2.17 names ground/first-floor panels. Those observations support discovery only: raw documents and exact IFC-version/floor GUID correspondence are unpinned. Direct PDF downloads returned 248-byte HTML challenges; the response is preserved, the subsequent format check refuses it, and no challenge bypass or further source-family search is attempted.
+
+Private root: `E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01`. Original/HTTP receipts, bounded publisher/tree responses, byte/line literal selection and access failures remain there. No originals were modified; no new native parser/profile/job, services, model/provider/GPU, application/registry writes, labels, ML splits or teacher/learner contact occurred. The next useful prerequisite is the unchanged issuing document and its explicit correspondence/version evidence, rather than a generated crosswalk.

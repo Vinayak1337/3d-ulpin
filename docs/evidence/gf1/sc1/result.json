@@ -1,0 +1,33 @@
+{
+ "task": "SC1",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "8eeba26f",
+ "defect": "REH7 Part C: replacing about 15,000 drawn buildings spent 3.0 of 3.3 s in removeBuilding (2.25 s in removeBuildingPad -> padGeometry), because each removal rebuilt its whole pad batch and removed its mesh and edge from a group of about 30,000 children one at a time.",
+ "change": "setBuildings collects the stale and changed ids and removes them in one pass (removeBuildings): meshes and edges leave the group by one rebuild of its children list, geometries are disposed and the per-id maps cleared as before, and each touched pad batch is rebuilt once from the inputs it still holds or dropped when empty (rebuildPad). Changed ids are re-added after the pass, in list order, as before.",
+ "bugFound": "A pad batch whose remaining footprints draw no pad was dropped while those ids still pointed at it; removing them later threw on the missing batch. rebuildPad now clears those ids too. Regression test: 'drops a batch whose remaining footprints draw no pad, then removes them cleanly'.",
+ "timing": {
+  "input": "15,000 synthetic 10 m squares on a 20 m grid (123 columns), test_only, generated in the test; not records.",
+  "harness": "packages/scene/src/incremental.test.ts 'times replacing 15,000 drawn buildings' (runs only with SCENE_TIMING=1): the scene test fixture with real geometry and pad builders and the renderer replaced; drained at 0.1 ms per building under the 4 ms budget, giving 371 pad batches; only the setBuildings call is timed.",
+  "environment": "Node v24.19.0, Vitest 5.0.2, win32-x64; three runs each, median reported.",
+  "replaceAll": {
+   "removed": 15000,
+   "before": { "padGeometryCalls": 14629, "ms": 1280, "runsMs": [1330, 1278, 1280] },
+   "after": { "padGeometryCalls": 0, "ms": 30, "runsMs": [30, 32, 30] }
+  },
+  "keepEveryOther": {
+   "removed": 7500,
+   "before": { "padGeometryCalls": 7500, "ms": 2052, "runsMs": [2012, 2064, 2052] },
+   "after": { "padGeometryCalls": 371, "ms": 39, "runsMs": [38, 39, 39] }
+  },
+  "note": "Node times exclude WebGL and garbage collection pauses seen in the browser profile; the call counts are the portable figure. A full replacement empties every batch, so no pad is rebuilt; when every batch keeps half, each is rebuilt exactly once."
+ },
+ "equivalence": "Test 'rebuilds each touched pad batch once and leaves the scene as removing one by one does': 30 squares in three pad batches; one setBuildings drops 15 ids (one batch partly, one wholly) and changes one id; padGeometry runs 3 times (two touched batches that keep inputs, one new batch for the changed id) and the group children (order, type, parent, positions), entries, inputs, bounds, footprints, renderChanges, pendingPads, pads, padBatches, pad positions, plateFor and dressingDirty equal those from removing the same ids one call at a time. The same comparison also passes on the base engine.",
+ "checks": {
+  "pnpm studio:typecheck": 0,
+  "pnpm studio:test": 0,
+  "sceneTests": "58 passed, 1 skipped (the timing test)",
+  "git diff --check": 0
+ },
+ "notTouched": "window read, server, apps/studio, LOD or culling, viewFootprint comment"
+}

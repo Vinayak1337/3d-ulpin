@@ -1,0 +1,9 @@
+{ "phase": "zip", "at": "2026-10-16T22:45:50.797Z", "api": "http://127.0.0.1:21026",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "wallSeconds": 0.3, "stoppedAt": null, "result": { "accepted": false,
+"input": "nyc-zip", "refusal": { "status": 422, "code": "AREA_PROCESSING",
+"message": "Shapefile ZIP must contain 1–100 layers." } }, "requests": [ { "input": "zip", "step": "create batch case",
+"method": "POST", "route": "/api/v1/cases", "status": 201, "seconds": 0.028, "at": "2026-10-16T22:45:50.489Z",
+"requestKey": null, "cacheControl": "no-store", "contract": null }, { "input": "zip",
+"step": "inspect zip (Add files, direct route)", "method": "POST", "route": "/api/v1/import-packages/inspect",
+"status": 422, "seconds": 0.276, "at": "2026-10-16T22:45:50.520Z", "requestKey": null, "cacheControl": "no-store",
+"refusal": { "code": "AREA_PROCESSING", "message": "Shapefile ZIP must contain 1–100 layers." } } ], "quietReads": 0 }

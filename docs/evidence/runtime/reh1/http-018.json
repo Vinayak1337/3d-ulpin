@@ -1,0 +1,10 @@
+{ "index": "018", "method": "POST", "route": "/api/v1/usp/identity/assign", "status": 200, "seconds": 0.183,
+"requestKey": "1ee7d625-c1bc-42d1-a5b4-68d6e493d96f", "idempotencyHeader": null, "ids": {
+"receiptId": "97d51f65-4421-4c78-a57c-84451633f865", "reviewId": "bf90e613-12e4-4b6d-81c5-d5be3848f387" }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/018", "request": { "scope": { "kind": "snapshot",
+"scopeId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "world": { "namespace": "world",
+"id": "registry-site/daf0c3e9-a952-4177-88a5-f90f15e39112" }, "manifestId": "3f85fca4-3fac-44c2-828b-0f00c5a26b9d",
+"snapshotDigest": "[omitted non-source digest]", "stage": "recorded" },
+"expectedManifestId": "3f85fca4-3fac-44c2-828b-0f00c5a26b9d", "reviewId": "bf90e613-12e4-4b6d-81c5-d5be3848f387",
+"requestKey": "1ee7d625-c1bc-42d1-a5b4-68d6e493d96f", "recordId": "f6bb6847-0116-48b9-8cd3-e16ed0cb85ce",
+"expectedRecordVersion": 1 } }

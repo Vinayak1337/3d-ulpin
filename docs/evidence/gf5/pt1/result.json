@@ -1,0 +1,25 @@
+{
+  "task": "PT1",
+  "gate": "GF5",
+  "base": "staging 41c5773b",
+  "platformTests": {
+    "command": "node --test $(ls scripts/platform/*.test.mjs)",
+    "before": { "tests": 76, "pass": 73, "fail": 1, "skipped": 2 },
+    "after": { "tests": 77, "pass": 75, "fail": 0, "skipped": 2 },
+    "skippedReason": "both need ULPIN_DOCUMENT_RUNTIME_TEST_PYTHON (a native interpreter), which is not set here"
+  },
+  "defects": [
+    {
+      "id": 1,
+      "test": "doctor takes the runtime name: a refused name reads nothing, a rehearsal name reads only its own",
+      "cause": "the test assumed ulpin-reh-01 has no folder on the machine; once it exists the doctor reads its real configuration and Docker, so the output changed. The doctor was correct.",
+      "fix": "the test runs the doctor under a preload that hides the runtimes folder, so it no longer depends on which runtimes exist"
+    },
+    {
+      "id": 2,
+      "cause": "roll always ran its force-recreate step, with no check of what geo and worker already ran",
+      "fix": "roll compares the processors with the pin by the doctor's own check (processorImageProblems); when nothing differs it prints one line and runs no compose step; otherwise it behaves as before",
+      "testedBy": "rollNeeded in processor-image.test.mjs (no Docker); the roll itself was not run, by rule"
+    }
+  ]
+}

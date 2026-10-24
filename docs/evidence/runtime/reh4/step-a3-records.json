@@ -1,0 +1,5 @@
+{ "at": "2026-10-17T10:50:08.754Z", "route": "GET /api/v1/ingestion/cases/{caseId}/targets",
+"caseId": "50f6f915-7e3f-4f11-988b-f2825b286295", "status": 200, "seconds": 0.779, "counts": { "preparing": 0,
+"ready": 41809, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 },
+"packages": 21, "niagaraArea": { "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "packages": 21, "allReviewed": true,
+"states": [ "REVIEWED" ] }, "otherAreas": [] }

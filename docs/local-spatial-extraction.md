@@ -29,11 +29,11 @@ The existing Nous document-assistance feature remains separate. Local segmentati
 ## Verification commands
 
 - `pnpm typecheck` and `pnpm build`
-- `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/spatial-ml*.test.ts`
-- `pnpm exec tsx --tsconfig apps/web/tsconfig.json tests/spatial-ml-backend-integration.ts` for isolated database/storage contracts
-- `pnpm exec tsx --tsconfig apps/web/tsconfig.json tests/spatial-ml-footprint-integration.ts` for atomic draft rollback, retry and source-byte preservation
+- `pnpm exec tsx --test tests/spatial-ml*.test.ts`
+- `pnpm exec tsx tests/spatial-ml-backend-integration.ts` for isolated database/storage contracts
+- `pnpm exec tsx tests/spatial-ml-footprint-integration.ts` for atomic draft rollback, retry and source-byte preservation
 - `python -m pytest services/geo/tests/test_spatial_ml.py` in the private processor test environment
-- `pnpm exec tsx --tsconfig apps/web/tsconfig.json scripts/ml/verify-workflow.ts` for the actual local-worker extraction phase
+- `pnpm exec tsx scripts/ml/verify-workflow.ts` for the actual local-worker extraction phase
 - `node scripts/ml/browser-workflow.mjs` for the retained browser workflow
 - The verifier's `--record` phase exercises ordinary fact review/build/record and footprint draft review using only its newly created, explicitly synthetic verification area.
 

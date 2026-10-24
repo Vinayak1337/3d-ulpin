@@ -125,7 +125,8 @@ test('same-client accepted authority locks source/job/attempt and rejects stale 
   assert(queries.some(sql=>sql.includes('FOR SHARE OF j,m')));assert(queries.some(sql=>sql.includes('FROM usp_job_attempts')&&sql.includes('FOR SHARE')));
   await assert.rejects(()=>acceptedCityJSONTx(client,{...f.request.source,resultSha256:'c'.repeat(64)},true),status(409));
   latest=2;await assert.rejects(()=>acceptedCityJSONTx(client,f.request.source,true),status(409));latest=1;
-  current.revision++;await assert.rejects(()=>acceptedCityJSONTx(client,f.request.source,true),status(409));current.revision--;
+  current.revision++;assert.deepEqual((await acceptedCityJSONTx(client,f.request.source,true)).input,input);current.revision--;
+  current.context={changed:true} as any;await assert.rejects(()=>acceptedCityJSONTx(client,f.request.source,true),status(409));current.context=null;
   attempt.state='failed';await assert.rejects(()=>acceptedCityJSONTx(client,f.request.source,true),status(409));attempt.state='accepted';
   job.payload={...input,sourceBytes:input.sourceBytes+1};await assert.rejects(()=>acceptedCityJSONTx(client,f.request.source,true),status(422));job.payload=input;
   current.archived=true;await assert.rejects(()=>acceptedCityJSONTx(client,f.request.source,true),status(403));

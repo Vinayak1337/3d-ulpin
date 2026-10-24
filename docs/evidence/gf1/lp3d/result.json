@@ -1,0 +1,63 @@
+{
+  "task": "LP3d",
+  "gate": "GF1",
+  "base": "4e87e0960fd3ccfa1fcf94c4af1e9cc45b226ca5",
+  "status": "delivered_unit_and_sql",
+  "qualification": "Retry is proved on the stored-row fixture beside the existing large-file tests; the selection is proved on PostgreSQL 16.15 with a temporary jobs table. No served HTTP walk or populated runtime was run.",
+  "tests": {
+    "command": "ingestion/*.test.ts, areas/*.test.ts, tests/manual-author.test.ts, tests/ingestion-events.test.ts",
+    "before": { "tests": 198, "pass": 182, "fail": 13, "skipped": 3 },
+    "after": { "tests": 202, "pass": 186, "fail": 13, "skipped": 3 },
+    "failuresUnchanged": true,
+    "failureCause": "The same 13 tests fail before and after: originals under E:/BhuAayam-data are absent in this checkout (ENOENT), one teacher-output guard (TEACHER_OUTPUT_IN_GIT) and the TypeScript/Python cross-checks. The plan expected 328 tests; this checkout's node runner counts 198.",
+    "added": [
+      "packages/server/src/modules/usp/ingestion/intake-large-steps.test.ts:291 zero retries keep today's key",
+      "packages/server/src/modules/usp/ingestion/intake-large-steps.test.ts:297 retry queues one new job; replay adds none",
+      "packages/server/src/modules/usp/ingestion/intake-large-steps.test.ts:318 same key, different request refused",
+      "packages/server/src/modules/usp/ingestion/intake-large-steps.test.ts:330 reader terminal, bounded and not-stopped refusals",
+      "packages/server/src/modules/cases/processing.test.ts:25 selection shape",
+      "packages/server/src/modules/cases/processing.test.ts:34 backlog no longer hides another operation (PostgreSQL)",
+      "packages/server/src/modules/cases/processing.test.ts:62 one unguarded operation alone keeps 12 jobs (PostgreSQL)"
+    ],
+    "dispatcher": {
+      "tests": 3, "pass": 3,
+      "database": "ULPIN_DISPATCH_TEST_DATABASE_URL set to a local PostgreSQL 16.15; the test skips without it",
+      "oldSelectionHidIntakeLarge": true,
+      "newSelection": ["run-0", "profile", "large-oldest", "run-1", "large-later",
+        "run-2", "run-3", "run-4", "run-5", "run-6", "run-7", "run-8"],
+      "unguardedAloneSelects": 12,
+      "rowReaders": "pending.rows is read only at processing.ts:218 by named fields; no row is spread and none reads operation_rank"
+    },
+    "packetPdf": "tests/usp-packet-pdf.test.ts: 1 fail, 17 skipped before and after (retained recovery rows absent); its fake now matches the new selection text"
+  },
+  "decisions": {
+    "D1": [
+      "packages/server/src/modules/usp/ingestion/intake-large.ts:295 retryIntakeLargeItem",
+      "packages/server/src/modules/usp/ingestion/intake-large.ts:315 only INTAKE_LARGE_STOPPED without a terminal step row",
+      "packages/server/src/modules/usp/ingestion/intake-large.ts:318 operations row kind intake-large-retry, key retry:<requestKey>",
+      "packages/server/src/modules/usp/ingestion/intake-large.ts:322 queueIntakeLargeTx in the same transaction",
+      "apps/api/src/modules/ingestion/ingestion.controller.ts:61 POST cases/:caseId/intake/items/:itemId/retry"
+    ],
+    "D2": [
+      "packages/server/src/modules/usp/ingestion/intake-large.ts:238 retry count read from stored operations",
+      "packages/server/src/modules/usp/ingestion/intake-large.ts:241 key gains retries only when nonzero",
+      "packages/server/src/modules/usp/ingestion/intake-large.ts:251 intakeLargeAtRest unchanged; only the retry moves a stopped item"
+    ],
+    "D3": ["packages/server/src/modules/cases/processing.ts:214 row_number() per operation by created_at, ordered by rank then created_at, limit 12"],
+    "D4": [
+      "packages/contracts/src/usp/intake.ts:60 IntakeLargeRetrySchema",
+      "packages/contracts/src/usp/intake.ts:61 IntakeLargeRetryResultSchema",
+      "apps/api/src/modules/ingestion/operation-manifest.json:754 manifest entry"
+    ]
+  },
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "openapi generate": 0,
+    "openapi --check": 0,
+    "studio:api-types": 0,
+    "refresh-contract 4e87e096": 0,
+    "scripts/api/check.py": 0,
+    "git diff --check": 0
+  }
+}

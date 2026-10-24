@@ -1,0 +1,58 @@
+{
+  "task": "REH1",
+  "part": "A",
+  "status": "runtime done; schema first/second-run proof blocked by the documented entry point",
+  "servingCommit": "afd23f2999c412ed5c2b21aae10c3fae0c859003",
+  "selected": "staging at task start; detached worktree, never edited or committed in",
+  "before": "before.json: demo doctor 0, same pinned commit, two OS-observed processes; ports/storage absent",
+  "sequence": [
+    { "step": 1, "exit": 0, "receipt": "step-1.json", "created": "detached serving checkout" },
+    { "step": 2, "exit": 0, "receipt": "step-2.json", "created": "500 packages, 0 downloaded" },
+    { "step": 3, "exit": 0, "receipt": "step-3.json", "created": "empty product schema and private storage" },
+    { "step": 4, "exit": 0, "receipt": "step-4.json", "created": "document profile and paths pointer" },
+    {
+      "step": 5, "exit": null,
+      "note": "Command completed, but audit inventory failed before its output or exit was saved.",
+      "cause": "Long OS JSON strings were split at 90 characters and rejoined with a newline.",
+      "fix": "audit.mjs machine() joins chunks without newlines; no platform script changed.",
+      "observedAfter": "API 26980, dispatcher 32304; step-6.json is all PASS.",
+      "resume": { "runs": 1, "exit": 0, "seconds": 12.409, "receipt": "step-5-resume.json" },
+      "noThirdRun": true
+    },
+    { "step": 6, "exit": 0, "receipt": "step-6.json", "pass": 27, "fail": 0 },
+    { "step": 7, "deferred": "until all route attempts finish" },
+    { "step": 8, "exit": 0, "receipt": "demo-part-a.json", "matchesBaseline": true }
+  ],
+  "schema": {
+    "document": "docs/backend/DEMO-GATEWAY.md step 4: Start applies the additive ledger schema",
+    "firstRun": "Inside create: migrate() then demo-schema.ts, both scripted; step-3 exit 0.",
+    "output": "Applying existing additive migrations to ulpin-reh-01 only (no seeds).",
+    "independentCountsObserved": null,
+    "secondSchemaRun": "not tried: there is no documented runtime-scoped schema-only command",
+    "secondStart": "step-5-resume.json: running and doctor PASS, NOT schema no-op evidence",
+    "scriptFinding": [
+      "scripts/platform/demo.mjs:48-55 runs both schema producers and discards their output.",
+      "scripts/platform/demo.mjs:138-156 only calls bootstrap when its marker is absent.",
+      "scripts/platform/demo.mjs:121-133 resume starts containers, never migrates.",
+      "scripts/platform/demo-schema.ts has no --runtime parser or settings loader.",
+      "No SQL of our own, no ledger call, no key or enable command, no script repair."
+    ],
+    "priorGk3CountsNotRehearsalEvidence": { "columns": 12, "constraints": 7, "indexes": 2 },
+    "gatewayAfter": { "enabled": false, "providerKeysNamed": 0, "providerKeysPresent": 0 },
+    "decision": "Record the proof gap and continue to Part B: health/schema admission and all doctor lines pass."
+  },
+  "gpu": {
+    "beforeCreate": "step-3.json gpu",
+    "afterStart": "gpu-after-start.json",
+    "sameComputePids": true,
+    "nativePidsInComputeList": false,
+    "memoryCaveat": "Windows WDDM prints N/A, not a measured zero; no new compute PID appeared.",
+    "containerConfiguration": "compose.yaml plus rehearsal.compose.yaml have no GPU devices or reservations"
+  },
+  "demo": {
+    "doctorBefore": 0, "doctorAfter": 0, "commit": "18b5e74c", "samePidsAndStartTimes": true,
+    "pids": [35160, 28836],
+    "note": "Doctor omits PIDs/commit: supplemented by read-only Git HEAD and OS creation times, not records."
+  },
+  "outputFormat": "Command chunks concatenate; output chunks are <=90 characters; non-source digests omitted."
+}

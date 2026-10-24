@@ -66,10 +66,12 @@ export interface SpatialMlApplication {
 export interface SpatialMlItem {
   id: string;
   batchId: string;
-  packageId: string;
+  packageId: string | null;
+  /** Absent on historical package items; source scope never supplies a native part. */
+  scope?: SpatialMlScope;
   sourceRevisionId: string;
   sourceSha256: string;
-  partId: string;
+  partId: string | null;
   page: number;
   task: SpatialMlTask;
   modelId: string;
@@ -99,10 +101,43 @@ export interface SpatialMlItem {
 }
 export interface SpatialMlBatch {
   id: string;
-  packageId: string;
+  packageId: string | null;
+  scope?: SpatialMlScope;
   requestKey: string;
   createdAt: string;
   items: SpatialMlItem[];
+}
+export interface SpatialMlSourceScope {
+  kind: "source";
+  caseId: string;
+  caseRevision: number;
+  sourceId: string;
+  sourceRevision: number;
+  sourceSha256: string;
+  sourceBytes: number;
+  page: number;
+  frame: { kind: "pdf_display_page_top_left_points"; width: number; height: number; rotation: number };
+  region: { x: number; y: number; width: number; height: number };
+  locator: { kind: "pdf_page"; page: number };
+  calibration: null;
+  applicability: "not_assessed";
+}
+export type SpatialMlScope = { kind: "package"; packageId: string } | SpatialMlSourceScope;
+/** One explicit source/page/region. No extraction, entity or metric target is required. */
+export interface SpatialMlSourceBatchRequest {
+  scope: "source";
+  caseId: string;
+  caseRevision: number;
+  sourceId: string;
+  sourceRevision: number;
+  sourceSha256: string;
+  sourceBytes: number;
+  page: number;
+  frame: SpatialMlSourceScope["frame"];
+  region: SpatialMlSourceScope["region"];
+  task: "floor-plan";
+  modelId: string;
+  requestKey: string;
 }
 export interface SpatialMlBatchRequest {
   packageId: string;

@@ -1,0 +1,331 @@
+{
+  "task": "AU2",
+  "gate": "GF1",
+  "kind": "proposal_only",
+  "baseline": "e2c5af5d",
+  "decision": [
+    "One retained source, one reviewed file layout/destination, bounded packages, existing registry chain.",
+    "Do not call ingestArea with a part buffer masquerading as the full retained original: that is rightly refused.",
+    "Smallest build: internal proved-part adapter to its normalizer/persistence, not a second authority.",
+    "Part transport and package semantics differ: aggregate raw100-feature parts into <=2000-feature package parts.",
+    "250 packages is the simple low-vertex case, not a fixed count for every500000-feature original."
+  ],
+  "prerequisitesInOrder": [
+    {
+      "order": 1,
+      "auditItem": 7,
+      "change": [
+        "Bound review/commit dependency work before raising reader ceilings. Own package stays <=2000/100000 vertices.",
+        "Replace full-area body load/fingerprint with own candidates plus bounded relevant QUALIFIED context and pins.",
+        "Use indexed spatial/explicit associations to find that context; SQL counts disclose unqualified exclusions.",
+        "Excluded exteriors gain no analytical qualification. Keep candidate-admission wording and guards.",
+        "Count only does not check omitted neighbours; changed review coverage must say its spatial scope.",
+        "Global recording mutex remains; commit reconstructs this same context set/hash and rejects any changed pin.",
+        "Reference/source/candidate/context-set pins replace areaRevision equality; unrelated commits proceed.",
+        "Otherwise pre-reviewing250 packages then confirming once fails after the first area revision increment.",
+        "Do not merely lift2000 or drop the fingerprint:10000 qualification cap and huge JS geometry arrays also fail.",
+        "CA2 featureDocumentIds uses physical_feature_revisions(feature_id,revision,package_id),",
+        "joining exact committed package, instead of searching all import_packages JSON arrays for every target."
+      ],
+      "reuse": [
+        "areas.ts:1046-1113,1260-1452; usp/geometry.ts:103-151; usp/snapshots.ts:161-168",
+        "database/sql/20-area/area.sql:39-44 links exact feature revision to package; no new membership table."
+      ],
+      "smallestSafetyBoundary": [
+        "Review dependency-scope change, not just performance tuning; lead must approve its coverage rule.",
+        "If qualified context exceeds a bound, hold package with explicit scope question, never truncate.",
+        "Dense500000-feature data is not guaranteed reviewable just because it is transportable."
+      ]
+    },
+    {
+      "order": 2,
+      "auditItem": 8,
+      "change": [
+        "Create exact large-GeoJSON receipt at verified EOF; retain profile/status needs_input unchanged.",
+        "Binds source revision/hash/bytes/ETag, reader/completed raw manifest, format/CRS evidence, counts.",
+        "Extend isRetainedMapOriginal to that validated server receipt only; no blanket large allowance.",
+        "Keep bindRetainedCaseTx/package authority rules; test active/site/owner/quarantine predicates.",
+        "Snapshot already captures same-site large source; retain CA2 exact-target bounds and source access checks.",
+        "Add source feature global index and exact byte range/raw hash to PhysicalFeature's governed source locator.",
+        "Plan's range path budgets fetched extract bytes, not total original size;64 MiB whole-source path remains.",
+        "Packet exact-text renderer/card unchanged; only original fetch/eligibility gains range path.",
+        "Detailed registry reference policy uses the same exact receipt and committed observation proof, record-only."
+      ],
+      "reuse": [
+        "areas.ts:351-364; areas/package-authority.ts:20-37; ingestion/retained-map-original.ts:7-12",
+        "usp/snapshots.ts:170-198; packets/plan-authority.ts:144-170,207-268; registry-reference-policy.ts:30-38"
+      ],
+      "fences": [
+        "Range authority proves source owner/site/active case, immutable original and current accepted reader result.",
+        "Require byteEnd-byteStart<=1 MiB, valid boundaries, actual range hash, global index and source-key match.",
+        "Upload hash/ETag and completed reader hash prove original identity; range verifies exact feature.",
+        "No trusting an officer-supplied offset or mapped reserialization as exact source text."
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "action": "Route Studio drop through existing receipts, not direct import, with explicit file provenance.",
+      "reuse": "Manual retain for<=16 MiB/2000; LargeOriginalService create/claimPart/finalize above16 MiB.",
+      "files": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx",
+        "apps/studio/src/features/intake/retained-upload.ts (new thin existing-API orchestrator)"
+      ],
+      "notes": [
+        "8 MiB slices; one part in flight (claimPart refuses second writer); reuse status for resume.",
+        "Full-file browser SHA must be incremental in a worker, not await file.arrayBuffer() on a1 GB file.",
+        "<=16 MiB/>2000 features fits NEITHER: sources refuses count, uploads refuses minimum size.",
+        "Add explicit small streamed GeoJSON upload admission with bounded provenance, not fake padding.",
+        "Ordinary1 MiB file uses CA0 manual-source path. CSV/XLSX/binary formats keep existing gaps."
+      ],
+      "at": "AddFilesDialog.tsx:134-193; ingestion.ts:189-193; service.ts:123-130; large-original.ts:154-173"
+    },
+    {
+      "order": 2,
+      "action": "Enroll/probe retained source, start one raw reader and streamed profiler through existing jobs.",
+      "reuse": "IntakeService and StreamingVectorService.enqueue; StreamedProfileService.enqueue; source-pin checks.",
+      "notes": [
+        "Extend existing reader to<=1000000000 bytes and<=500000 features; retain per-feature/memory bounds.",
+        "Derive a finite part count from the feature/byte budget, not4096:5000 parts is only the100-per-part minimum.",
+        "Support500000 one-feature data parts plus terminal marker if byte limits force that fragmentation.",
+        "Raise mapping part and profile generation caps consistently to raw-part ceiling+1/+2;4097 cannot stay.",
+        "Finite deadlines remain but need qualification/configuration, not blindly retained10/12-minute limits.",
+        "Charge derivative/profile storage to a configured reservation; read_to_limit visibly stops at that quota.",
+        "Persist validated metadata/CRS from reader; profiler currently loses it for large files.",
+        "Reuse area.py RFC7946/recognizedCRS84 rule; late conflicting CRS revokes ALL tentative displays/packages.",
+        "Before EOF, display needs officer-confirmed CRS or early declaration; never guess placement.",
+        "A probe hint or numeric range is never CRS proof; keep unknown geometry in neutral preview pending an answer."
+      ],
+      "at": "streaming-vector.ts:138-159; streaming-vector-reader.ts:123-166; streamed-profile-worker.ts:67-76"
+    },
+    {
+      "order": 3,
+      "action": "Officer approves one file layout/destination/frame through streamed-prefix recipe authority.",
+      "reuse": "StreamedMappingService.author/approve, compileStreamedMapping, ChunkMappingService.enqueue.",
+      "notes": [
+        "Versioned additive recipe envelope pins destination without weakening source-scoped approval.",
+        "Prefix approval may apply to later compatible parts; new path/type/key drift stays held with its issue.",
+        "Reuse conversions literal_identifier@1,literal_text@1,geojson_polygon@1; no new mapping or model authority.",
+        "No provider call is needed for the smallest manual file-layout build; unseen layout waits for the officer.",
+        "Reader/profile/key-conflict output continues while decision waits, under storage reservation rather than RAM."
+      ],
+      "at": "streamed-mapping.ts:17-79,137-170; chunk-mapping-normalizer.ts:107-154"
+    },
+    {
+      "order": 4,
+      "action": "Deterministically cut accepted compatible records into package parts and publish candidates.",
+      "reuse": "usp_intake_parts; ingestArea's normalize/persist split; source_feature_links; existing package schema.",
+      "notes": [
+        "Raw rejected/unresolved rows stay cited and counted. No zero-row import package is created.",
+        "Close at first bound:2000 features,16 MiB input,100000 vertices,20 MiB source serialization.",
+        "Keep10000 vertices/feature,50 km frame bounds. Oversized/elsewhere part held; never simplify.",
+        "Assemble derivative FeatureCollection only to feed existing normalizer, not to pretend it is the original.",
+        "Proved-part input carries full source receipt, raw/mapped hashes, per-feature locators.",
+        "Reuse original sourceId/objectKey, persist global indices/ranges; operation key pins part identity.",
+        "Transaction creates package/reservations and usp_intake_parts.result_ref; replay finds same package.",
+        "Candidates appear while reading but cannot become ready until full source hash/EOF and keys close.",
+        "Late duplicate holds BOTH earlier and later target via key/conflict ledger; never record",
+        "the first while claiming source-wide uniqueness. Drift/rejected rows do not stop other valid complete parts."
+      ],
+      "at": "areas.ts:475-502,544-932; chunk-mapping-worker.ts:101-128; intake-ledger.sql:45-64"
+    },
+    {
+      "order": 5,
+      "action": "Draw each normalized candidate part through a bounded canonical package display read.",
+      "reuse": "canonicalArea/canonicalBuilding projections, normalized-building/1 adapter, setBuildings/setBase.",
+      "notes": [
+        "Publish only package/part id/hash/count; Studio pulls next bounded display part at its own draw pace.",
+        "Avoid whole areaContext/canonicalArea on every append; both are currently capped and whole-area projections.",
+        "Add bounded part/viewport reads using existing physical_features geographic GiST and package source pins.",
+        "Unrecorded IDs stay separate from registry status; styles say candidate. No invented height/location.",
+        "Use engine.waitForDrawn; cap drawn features, switch to bounded viewport pages, never500000 meshes.",
+        "Scene-only raw slot join is not an end-to-end package proof; use actual package candidates."
+      ],
+      "at": "areas.ts:207-243; canonical-area.ts:40-48,183-220; scene/react.tsx:69-71; demo-import.ts:72-83"
+    },
+    {
+      "order": 6,
+      "action": "Prepare E1's stored confirmation list, then let its existing chain record and card targets.",
+      "reuse": "reviewPackage/commitPackage; recordCommittedExteriorsTx; captureRegistrySnapshot; packets/cards.",
+      "notes": [
+        "250 packages appear as250 immutable package pins plus up to500000 exact target rows, not250 manual approvals.",
+        "One layout decision; confirmation lists package hash/revision, exact targets, ready/held counts/codes.",
+        "List paged/searchable; counts from stored rows; officer includes/excludes groups, inspects exceptions.",
+        "No500000-target snapshot: existing CA2<=100 target pins/capture; use per-target or bounded batches<=100.",
+        "Review pins survive unrelated commits by prerequisite1, or E1 stops/reconfirms stale pins.",
+        "Never have the run review changed content and substitute a new package hash under the old confirmation.",
+        "After commit, targets/citations use original locator and existing exterior-only registry record.",
+        "Cards queue by need; no geometry/rights/official ULPIN. Exact text opens by original range.",
+        "E1 is a dependency, read at staging only; do not assume its unmerged code supports this."
+      ],
+      "at": "INGESTION-ARCHITECTURE.md:259-273; snapshots.ts:271-273; exterior-records.ts:12-74"
+    }
+  ],
+  "job": {
+    "authority": "Existing jobs/usp_job_metadata/usp_job_attempts and dispatcher; no second queue.",
+    "operation": "Extend intake-draft with registered versioned proved-part input, alongside its bounded-file input.",
+    "granularity": "Per file: streaming-vector/profile/mapping jobs. Per PACKAGE part: intake-draft job.",
+    "idempotency": [
+      "Pin usp_intake_items.plan_ref once: sourceId/revision/SHA,reader,approved planHash,destination frame.",
+      "Key=hash(sourceId,revision,sourceSHA,readerVersion,package-part locator,pipelineHash).",
+      "Deterministic UUID/jobId, unique import_packages.operation_key; atomic result_ref under part lock.",
+      "Same part/epoch makes one package across crashes. Changed layout is explicit correction, not second draft.",
+      "usp_intake_parts PK(item_id,part_index) guards authority; never overwrite result for another epoch."
+    ],
+    "orderAndPressure": [
+      "Sequential reader, deterministic cuts in global order. Raw publication watermark preserves order.",
+      "At most8 unfinished draft jobs/file; published candidates waiting for review do not occupy these8 slots.",
+      "Release next only when draft consumer/storage reservation fits; confirmation can wait until EOF.",
+      "Byte stream pauses when its bounded reservation/look-ahead fills; no ever-growing RAM queue.",
+      "Browser draw pressure is independent: stored candidates wait, client pulls next only after engine draw receipt.",
+      "While layout waits, raw parts use reserved disk; at quota, visible read_to_limit, no dropped remainder."
+    ],
+    "failureAndResume": [
+      "Bad feature stays in raw ledger; failed package part quarantined with locator/code, later parts continue.",
+      "File-integrity, source/access or layout-pin failure stops ALL dependent readiness, not merely one part.",
+      "Transient failures: fenced180s lease/30s heartbeat/three attempts; expired attempt cannot publish.",
+      "Resume scans part/result refs, returns existing package on replay, queues only absent/nonterminal parts.",
+      "Raw reader still replays from zero after crash; changing to byte-seek cursor is not needed for the first build.",
+      "Malformed JSON cannot continue from guessed boundary; retain prefix and unknown remainder."
+    ],
+    "at": "usp/jobs.ts:19-20,161-230; cases/processing.ts:208,305; intake-draft.ts:25-32,79-143 (staging)"
+  },
+  "identity": {
+    "sourceFeatureIndex": "Zero-based whole-original index from raw payload; never part-local or accepted-only.",
+    "key": "Exact officer-approved literal source key; namespace scoped to file/layer family, not package number.",
+    "locator": "sourceId/revision/SHA,global index,[byteStart,byteEnd),rawSha256; copied to feature history.",
+    "extract": "Range-read original feature, verify rawSha256/key, return exact properties substring/whitespace.",
+    "at": "streaming-vector-reader.ts:123-131,234-238; feature-extract.ts:62-79; areas.ts:712-737,827-839"
+  },
+  "tables": {
+    "newTables": [],
+    "existingConsidered": [
+      "usp_intake_items.plan_ref: immutable file pipeline/placement/recipe reference (intake-ledger.sql:22).",
+      "usp_intake_parts.locator/counts/result_ref: package-part byte/record membership, pins and package ref (:45-64).",
+      "usp_streaming_vector_slots: raw immutable payloads, not package authority (streaming-vector.sql:20-44).",
+      "usp_chunk_mapping_keys/conflicts: file-wide uniqueness/first occurrence (chunk-mapping.sql:55-74).",
+      "import_packages.operation_key and revisions: package idempotency/history (20-area/area.sql:23-33).",
+      "physical_feature_revisions: exact committed package membership, avoids new join table (20-area/area.sql:39-44).",
+      "Feature/source inspection JSON holds exact locators/receipt; no new original or shadow registry."
+    ]
+  },
+  "officerLimitsThatStay": [
+    "We can retain up to7 GiB through the configured large-upload profile; this GeoJSON reader accepts up to1 GB.",
+    "This reader stops at500000 features; anything unread stays retained and is counted as an unknown remainder.",
+    "Each package is at most16 MiB and2000 features,100000 vertices total and10000 per feature.",
+    "This local area is at most50 km across/from its origin; a part outside it needs a placement decision.",
+    "A serialized normalizer input is at most20 MiB; complex geometry may produce more than250 packages.",
+    "Each raw feature is at most1 MiB; raw parts512 KiB/100 records, mapped parts256 KiB/100 records.",
+    "Metadata64 KiB/32 fields,nesting64; profile64 paths/64 KiB,100 displayed quarantine locators remain.",
+    "1 MiB feature ceiling does not override tighter part serialization bounds; oversized output is a visible hold.",
+    "A dense check exceeding20000 pairs or bounded qualified context stops with a question; no partial clean verdict.",
+    "Only supported source polygons/complete literal keys are ready; missing CRS, drift or duplicates are questions.",
+    "Reader/profile/mapping deadlines are finite and shown; current10/12/12 minutes must be qualified/reconfigured.",
+    "552 features/s on the small control is NOT evidence500000 features finishes inside the current10 minutes.",
+    "Upload receipts currently have lifetime caps128 v1/8 v2; readers/mapping/profile128, active2/1/1 globally.",
+    "These lifetime caps stay for this one-file build; reaching one refuses admission, it never deletes history.",
+    "Upload parts8 MiB, one writer/receipt, three attempts,180s lease; storage reservation is required.",
+    "Snapshots select at most100 targets,1000 dependency records/features and2000 sources; cards arrive in turn.",
+    "Exact excerpt remains<=16000 characters; large properties may not fit a card extract and will be held.",
+    "Private sources and original ranges stay private; restricted data never reaches a provider.",
+    "No heights, floors, units, rights, ownership, geometry qualification or official parcel identifiers are invented."
+  ],
+  "tasks": [
+    {
+      "id": "LP1",
+      "title": "Bounded area dependencies, proved-part persistence and paged canonical display",
+      "hours": [16, 22],
+      "files": [
+        "packages/server/src/modules/areas/areas.ts",
+        "packages/server/src/modules/areas/canonical-area.ts",
+        "packages/server/src/modules/areas/area-display-proposals.ts",
+        "packages/server/src/modules/areas/retained-part-import.ts (new internal adapter)",
+        "packages/server/src/modules/usp/geometry.ts",
+        "packages/server/src/modules/usp/snapshots.ts",
+        "packages/contracts/src/area.ts",
+        "apps/api/src/modules/register/canonical.controller.ts",
+        "apps/api/src/modules/register/canonical.service.ts",
+        "apps/api/src/modules/register/operation-manifest.json",
+        "database/sql/20-area/area.sql",
+        "database/manifest.json"
+      ],
+      "check": [
+        "Real package plus context: same verdicts, exclusion scope explicit, changed context stale.",
+        "Two pre-reviewed independent same-file packages commit in sequence; same-part retry returns same package.",
+        "CA2 uses exact feature revision package join; bounded display returns no unrelated geometries."
+      ]
+    },
+    {
+      "id": "LP2",
+      "title": "Exact large map receipt and range-backed citations",
+      "hours": [10, 14],
+      "files": [
+        "packages/server/src/modules/usp/ingestion/retained-map-original.ts",
+        "packages/server/src/modules/usp/ingestion/retained-map-part.ts (new proof helper)",
+        "packages/server/src/modules/usp/packets/feature-extract.ts",
+        "packages/server/src/modules/usp/packets/plan-authority.ts",
+        "packages/server/src/modules/registry/registry-reference-policy.ts",
+        "packages/contracts/src/usp/packet0.ts"
+      ],
+      "check": [
+        "One real accepted feature range gives exact same properties text and packet/card as existing whole-file path.",
+        "Real quarantined1322 feature or changed range/hash/source/owner cannot create citation authority.",
+        "Opaque large original is refused; exact same-site completed GeoJSON receipt accepted record-only."
+      ]
+    },
+    {
+      "id": "LP3",
+      "title": "Existing jobs deliver file-layout-approved package parts from Studio; consume E1 interface",
+      "hours": [22, 30],
+      "files": [
+        "packages/contracts/src/usp/ingestion.ts",
+        "packages/contracts/src/usp/streaming-vector.ts",
+        "packages/contracts/src/usp/chunk-mapping.ts",
+        "packages/contracts/src/usp/streamed-profile.ts",
+        "packages/contracts/src/usp/intake.ts",
+        "packages/server/src/modules/usp/ingestion/large-original.ts",
+        "packages/server/src/modules/usp/ingestion/streaming-vector.ts",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-mapping.ts",
+        "packages/server/src/modules/usp/ingestion/chunk-mapping.ts",
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
+        "packages/server/src/modules/usp/ingestion/intake-part-draft-worker.ts (new versioned part adapter)",
+        "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+        "packages/server/src/modules/usp/jobs.ts",
+        "packages/server/src/modules/cases/processing.ts",
+        "database/sql/95-ingestion/streaming-vector.sql",
+        "database/sql/95-ingestion/chunk-mapping.sql",
+        "database/sql/95-ingestion/streamed-profile.sql",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx",
+        "apps/studio/src/features/intake/retained-upload.ts (new)",
+        "apps/studio/src/features/map/MapWorkspace.tsx",
+        "apps/studio/src/features/map/canonicalScene.ts",
+        "apps/studio/src/api/queries.ts",
+        "docs/api/openapi.json",
+        "packages/api-client/src/schema.d.ts"
+      ],
+      "check": [
+        "Real NYC through upload/reader/recipe/package APIs; one layout; partial draw before completion.",
+        "Crash after write resumes once; malformed/rejected feature stays cited, never zero or registry fact.",
+        "Paginated E1 confirmation freezes packages/targets; stale pin stops; no unconfirmed target commits/cards.",
+        "Contract check, source unchanged/access invariants, UI design check and measured bounded frame/draw pressure."
+      ]
+    }
+  ],
+  "estimate": {
+    "workerHours": [48, 66],
+    "scope": "Manual GeoJSON end-to-end build with scale prerequisites; not full scheduler/all-format design.",
+    "sequence": "LP1/LP2 contract agreement first; LP3 integrates after both and E1 reviewed/merged.",
+    "ownership": [
+      "Disjoint lists. LP1 owns area schema/migration manifest; LP3 hands new SQL hashes to that owner.",
+      "Adjacent tests inherit task ownership; E1 intake-targets/intake-run remain read-only.",
+      "Lead settles review-scope semantics before LP1. Freeze feature locator and receipt shape before parallel edits.",
+      "500000-feature/1 GB qualification needs genuine real input and allocated runtime time."
+    ]
+  }
+}

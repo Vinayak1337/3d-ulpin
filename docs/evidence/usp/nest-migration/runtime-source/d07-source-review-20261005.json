@@ -1,0 +1,415 @@
+{
+  "schemaVersion": "ulpin-scoped-runtime-observation/1",
+  "task": "D07-SOURCE-REVIEW-RUNTIME",
+  "attempt": 1,
+  "recordedAt": "2026-10-05T04:49:23.909Z",
+  "clientDate": "2026-10-05",
+  "servedCodeCommit": "aac6332dbb19a9d7ffa8997df9b51e7c87053a9e",
+  "role": "PRIVATE_INSPECTION",
+  "privateProof": {
+    "path": "E:/BhuAayam-data/task-data/d07-source-review-runtime-20261005-run01/verification.json",
+    "bytes": 24476,
+    "sha256": "6255b06e3b8e96410e762dac3dcf67d12995c065cab616914e9b813805a810fb"
+  },
+  "publication": "Selected safe metadata only; local Windows actor identifier, full request/reason/snapshot and SQL rows, credentials, raw source/artifacts and runtime code remain private.",
+  "sources": {
+    "manifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+    "testedAssetIds": [
+      "haryana-2831-tower3-plan2.pdf"
+    ],
+    "otherManifestAssetsQualified": false,
+    "sourceScope": {
+      "kind": "source",
+      "caseId": "9a2618cf-0d63-45fa-a53b-18e80fc13b04",
+      "caseRevision": 2,
+      "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+      "sourceRevision": 1,
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "sourceBytes": 1630108,
+      "page": 1,
+      "frame": {
+        "kind": "pdf_display_page_top_left_points",
+        "rotation": 0,
+        "width": 2586,
+        "height": 1694
+      },
+      "region": {
+        "x": 0.5181747873163186,
+        "y": 0.053128689492325853,
+        "width": 0.44470224284609433,
+        "height": 0.3925619834710744
+      },
+      "locator": {
+        "kind": "pdf_page",
+        "page": 1
+      },
+      "calibration": null,
+      "applicability": "not_assessed"
+    },
+    "approvedRevisionIdentity": "not_assessed"
+  },
+  "authority": {
+    "pin": {
+      "itemId": "e7738bac-7b19-4b58-b933-06774ac462e9",
+      "batchId": "61e1ff09-1e2f-4b6a-81f7-f1ea3e5a6604",
+      "jobId": "6d0b75a1-c3a0-454c-8458-d1c5823c3469",
+      "scope": {
+        "kind": "source",
+        "caseId": "9a2618cf-0d63-45fa-a53b-18e80fc13b04",
+        "caseRevision": 2,
+        "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+        "sourceRevision": 1,
+        "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+        "sourceBytes": 1630108,
+        "page": 1,
+        "frame": {
+          "kind": "pdf_display_page_top_left_points",
+          "rotation": 0,
+          "width": 2586,
+          "height": 1694
+        },
+        "region": {
+          "x": 0.5181747873163186,
+          "y": 0.053128689492325853,
+          "width": 0.44470224284609433,
+          "height": 0.3925619834710744
+        },
+        "locator": {
+          "kind": "pdf_page",
+          "page": 1
+        },
+        "calibration": null,
+        "applicability": "not_assessed"
+      },
+      "inputFingerprint": "cc9a70b342846da58f656188543b1ca6a515dcb77567d94969d44fedd184e4e9",
+      "model": {
+        "id": "cubicasa5k-rooms-onnx-v1",
+        "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+        "profileVersion": "cubicasa-rooms-768-bilinear-pad64-contours-v2"
+      },
+      "resultSha256": "1972f8e713d6fa5c305d7091999328c5a445467604c526276b223f4f79d37046",
+      "transformSha256": "9f29df9487a096f93e6115928b7118d77f9a874842f41e32ed7173bdacaa4973",
+      "raster": {
+        "sha256": "cc25404c5e95ee021f67066c4acbcaa760c33dfdf0f54d7fad8d111e302dbc37",
+        "width": 768,
+        "height": 445,
+        "bytes": 347458
+      },
+      "mask": {
+        "sha256": "15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e",
+        "width": 768,
+        "height": 445,
+        "bytes": 14532
+      }
+    },
+    "priorItemBatchJobSourceRowsMatchRun02": true,
+    "privateAccess": "Actual server-owned local process subject/access and unchanged source authority passed capture/original byte/artifact/final fences; no re-pinning or controlled SQL/S3 transport",
+    "profile": {
+      "path": "E:/BhuAayam-data/task-data/d07-source-review-runtime-20261005-run01/region-profile.json",
+      "bytes": 299600,
+      "sha256": "ca4a1538d50e92996a7db518eebc1c168754232aaf7c4c879a1c4f78ede435a0"
+    }
+  },
+  "protocol": {
+    "orderedPreflightPassed": true,
+    "startupStages": [
+      {
+        "name": "cold-preflight",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "fresh-profile",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "compiled-readiness",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "storage-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "database-before",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "retained-redis-before",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "api-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "api-ready",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "domainStages": [
+      {
+        "name": "one-source-review",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "database-after",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "retained-redis-after",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "shutdownStages": [
+      {
+        "name": "api-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "storage-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "coldAuditPassed": true,
+    "method": "API only; pure retained-pixel validation and real PG/object reads, no transport overrides. Existing profile generator hashes runtime metadata before startup; no native reader/model worker executes.",
+    "nativePageGeometryCalls": 0,
+    "inferenceCalls": 0,
+    "processorAndCeleryStarted": false,
+    "migrationsApplied": 0
+  },
+  "review": {
+    "reviewId": "b46216ba-8c6b-4514-9e29-acc793330a5b",
+    "reviewRevision": 1,
+    "requestKey": "c57d6c6e-0a9f-44da-9b89-9e62ed3a16b6",
+    "selectedCandidate": {
+      "componentId": "af803389-f87e-5a8a-8d8b-5b6f074c4ca7",
+      "className": "other_room",
+      "score": 0.857927,
+      "geometrySha256": "d0b20e2a0e67adc8dd896a969776d6195024908b7363a2c9d20b42dbbc72dab7"
+    },
+    "candidateCount": 100,
+    "unselectedCount": 99,
+    "limits": {
+      "coordinateUnit": "pixel",
+      "physicalTarget": null,
+      "calibration": null,
+      "canonicalMatchState": "not_assessed",
+      "qualification": "not_assessed",
+      "learningLabel": false,
+      "independentGroundTruth": false
+    },
+    "decision": {
+      "componentId": "af803389-f87e-5a8a-8d8b-5b6f074c4ca7",
+      "decision": "needs_input"
+    },
+    "reason": "Exact unchanged saved reason retained in private proof/snapshot; no full request body is published.",
+    "attribution": {
+      "time": "2026-10-05T04:47:05.142Z",
+      "attribution": "local_process",
+      "humanAuthenticated": false,
+      "independentGroundTruth": false
+    }
+  },
+  "httpObservations": [
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews/context",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/artifacts/raster?jobId=6d0b75a1-c3a0-454c-8458-d1c5823c3469&sha256=cc25404c5e95ee021f67066c4acbcaa760c33dfdf0f54d7fad8d111e302dbc37",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/artifacts/mask?jobId=6d0b75a1-c3a0-454c-8458-d1c5823c3469&sha256=15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews/b46216ba-8c6b-4514-9e29-acc793330a5b",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/source-reviews/context",
+      "method": "GET",
+      "status": 403
+    }
+  ],
+  "privateResponseCacheControl": "private, no-store",
+  "artifacts": [
+    {
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "image/png",
+        "x-content-sha256": "cc25404c5e95ee021f67066c4acbcaa760c33dfdf0f54d7fad8d111e302dbc37",
+        "x-content-type-options": "nosniff"
+      },
+      "artifact": {
+        "path": "E:/BhuAayam-data/task-data/d07-source-review-runtime-20261005-run01/raster.png",
+        "bytes": 347458,
+        "sha256": "cc25404c5e95ee021f67066c4acbcaa760c33dfdf0f54d7fad8d111e302dbc37"
+      }
+    },
+    {
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "image/png",
+        "x-content-sha256": "15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e",
+        "x-content-type-options": "nosniff"
+      },
+      "artifact": {
+        "path": "E:/BhuAayam-data/task-data/d07-source-review-runtime-20261005-run01/mask.png",
+        "bytes": 14532,
+        "sha256": "15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e"
+      }
+    }
+  ],
+  "replay": {
+    "sameImmutableSnapshot": true,
+    "additionalOperations": 0
+  },
+  "refusals": [
+    {
+      "name": "changed-valid-result-pin",
+      "status": 409,
+      "code": "STALE_REVISION"
+    },
+    {
+      "name": "foreign-origin",
+      "status": 403,
+      "code": "ORIGIN_DENIED"
+    }
+  ],
+  "deniedWriteDelta": 0,
+  "preservation": {
+    "observationScope": "Actual29-table counts/sorted per-row JSONB digest comparisons; excludes only two exact owned operation keys after save. Prior source/review/job/registry/ledger/prediction rows retained.",
+    "tablesChecked": 29,
+    "perTableCountsAndSha256DigestsUnchanged": true,
+    "digestMethod": "SHA-256 of sorted per-row PostgreSQL SHA-256 JSONB representations; excludes only the two exact owned operation keys after save",
+    "operationsBefore": 160,
+    "operationsAfter": 162,
+    "intendedWriteDelta": {
+      "operations": 2,
+      "snapshot": 1,
+      "requestReceipt": 1
+    },
+    "counts": {
+      "cases": 46,
+      "import_packages": 1,
+      "jobs": 87,
+      "operations": 160,
+      "registry_aliases": 0,
+      "registry_case_feature_mappings": 0,
+      "registry_case_import_operations": 0,
+      "registry_drafts": 1,
+      "registry_links": 0,
+      "registry_records": 2,
+      "registry_reviews": 0,
+      "registry_revisions": 0,
+      "registry_rights": 0,
+      "registry_sites": 2,
+      "snapshots": 0,
+      "sources": 45,
+      "spatial_ml_batches": 1,
+      "spatial_ml_footprint_drafts": 0,
+      "spatial_ml_items": 1,
+      "usp_job_attempts": 84,
+      "usp_job_metadata": 86,
+      "usp_migration_ledger": 7,
+      "usp_model_budget": 0,
+      "usp_model_calls": 0,
+      "usp_packet_pdf_entry_checkpoints": 0,
+      "usp_packet_plan_confirmations": 0,
+      "usp_packet_plan_executions": 0,
+      "usp_packet_plans": 0,
+      "usp_packets": 0
+    },
+    "oldItemMaskPredictionsOmissionsUnchanged": true,
+    "retainedRedisDb": 15,
+    "retainedRedisKeys": 3,
+    "redisDumpHashesUnchanged": true,
+    "priorRun02": {
+      "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/verification.json",
+      "bytes": 31376,
+      "sha256": "fbf0b388f05c250f750455053492fc334c1c4e6ccd6669c35ef4f3055be69674"
+    }
+  },
+  "cleanup": {
+    "observationScope": "Accepted run01 completion snapshot; no claim about later owners.",
+    "at": "2026-10-05T04:49:23.907Z",
+    "apiAndTaskStorageStopped": true,
+    "ports3192And28000Absent": true,
+    "ownedNativeChildrenAbsent": true,
+    "scratchEmpty": true,
+    "originalContainerIdsPreserved": 24,
+    "runningContainers": 0,
+    "volumeNamesPreserved": 14,
+    "profileFilesUnchanged": 8,
+    "priorRun02": {
+      "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/verification.json",
+      "bytes": 31376,
+      "sha256": "fbf0b388f05c250f750455053492fc334c1c4e6ccd6669c35ef4f3055be69674"
+    },
+    "dockerAvailable": true,
+    "standingUrl": false
+  },
+  "qualification": "Actual bounded local-process software persistence for one needs_input source-candidate inspection at exact AAC: context200/save201/exact read200/same-key same-body201 immutable replay; changed result pin409 STALE_REVISION and foreign Origin403 ORIGIN_DENIED with denied writes0. One snapshot/request receipt only. local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, physicalTarget/calibration null and qualification not_assessed. No semantic/accuracy/human acceptance/property/floor identity/adoption/rights/learning/frontend/release qualification.",
+  "limitations": [
+    "One bounded private local-process review of one existing source-only candidate; no human authentication/independent ground truth, semantic accuracy, property/floor/space identity, metric geometry/adoption, rights or learning label qualification.",
+    "100 raw predictions and omission/mask fallback remain unchanged; a needs_input reason is inspection status only.",
+    "No new enrollment/job/model/native reader, provider/GPU/training, source discovery, frontend, migration/reset/reseed, credential/environment/model/source edits, standing URL, push/deployment or release qualification.",
+    "No whole-OS egress audit; no running worker/service tier proof from assignment text.",
+    "Only one selected other_room candidate on named T3-2 source is covered; other candidates/assets/decisions or authority-change cases are not qualified by this run.",
+    "Earlier native run02 and failed-before-startup histories keep exact served pins; this run performs no new native page/geometry/model execution."
+  ]
+}

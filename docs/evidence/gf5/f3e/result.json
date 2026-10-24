@@ -1,0 +1,792 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "F3e",
+ "gates": ["GF4", "GF5"],
+ "date": "2026-10-10",
+ "branch": "task/f3e-assign-and-issue",
+ "base": "2eb786f2",
+ "state": "Stopped after Step 0 (task rule). No Studio file changed. No write sent.",
+ "step0": {
+  "writtenBeforeCode": true,
+  "result": [
+   "Both sequences exist as published, typed routes. No request needs a guessed manifest and none needs a",
+   "reviewer name. But the review needs two numbers (G1) and the plan needs one hash, two times and one",
+   "sentence (G5, G7) that no answer supplies, and two things the dialogs must show are answered by no route",
+   "(G2, G6). The task rules that the work stops here: no Studio code was written."
+  ],
+  "readFrom": [
+   "scripts/agent/r3-live.ts, scripts/agent/r2-live.ts: what the runtime owner sent",
+   ["docs/evidence/runtime/r3/result.json: the recorded answers; and, read only, the keys of the stored",
+    "exchanges under E:/BhuAayam-data/task-data/r3/step3/"],
+   ["packages/contracts/src/usp: project-identity.ts, ports.ts, common.ts, packets.ts, packet-pdf.ts,",
+    "property-card.ts; packages/contracts/src/canonical/source-spaces.ts"],
+   ["packages/server/src/modules/usp: project-identity.ts, source-stated-identity.ts, commands.ts,",
+    "snapshots.ts, principal.ts; packets/pdf-service.ts, source-stated-binding.ts, card-service.ts,",
+    "card-projection.ts, card-source-facts.ts, plan-store.ts"],
+   ["apps/api/src/modules/evidence: evidence.controllers.ts, evidence.services.ts, evidence.http.ts,",
+    "packet-plans.controller.ts, property-card.controller.ts"],
+   "packages/api-client/src/schema.d.ts; docs/evidence/gf1/k8b/result.json"
+  ],
+  "requestsSent": [
+   "GET /api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/canonical: 200",
+   "GET /api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/register: 200",
+   "No POST of any kind."
+  ],
+  "notRun": [
+   "Every refusal and every replay answer is read from the code at 2eb786f2; none was provoked. The demo API",
+   "serves 83965a21; git diff 83965a21 2eb786f2 changes none of the identity, packet plan or card generation",
+   "files."
+  ],
+  "unit": {
+   "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+   "unitId": "46b7265e-ca88-402d-83df-065cf7c45140",
+   "label": "UNIT-3B",
+   "recordRevision": 2
+  },
+  "common": {
+   "caller": [
+    "Every USP route runs as the server's own local operator: localRequestContext",
+    "(packages/server/src/modules/usp/principal.ts:23-38) takes the subject from the server's configuration and",
+    "gives it the role operator. No request carries a caller, a reviewer or a role."
+   ],
+   "answer": [
+    "200 with { data, meta: { schemaVersion, requestId, scope } }",
+    "(apps/api/src/modules/evidence/evidence.http.ts:47-49). A refusal is { error: { code, message, retryable,",
+    "requestId } } with the service's own sentence (:51-68); retryable is true for 5xx only."
+   ],
+   "published": [
+    "All eight routes are in packages/api-client/src/schema.d.ts with typed request and answer (operations",
+    "POST_api_v1_usp_snapshots, _identity_reviews, _identity_assign, _identity_resolve, _packets_plans_create,",
+    "_packets_plans_confirm, _packets_plans_execute, _property_cards_generate). No hand-written shape is",
+    "needed."
+   ],
+   "oneCodeManyReasons": [
+    "conflict() answers 409 STALE_REVISION and notFound() 404 NOT_FOUND for many different reasons",
+    "(packages/server/src/infrastructure/errors.ts:12-18); only the sentence tells them apart. For these two",
+    "codes the Studio prints the server's sentence and the code. For every other code it prints the words",
+    "listed here and the code; a code that is not listed is printed with the server's sentence. This is how",
+    "readFailure of F3d already works (apps/studio/src/features/identity/registryCard.ts)."
+   ],
+   "replay": [
+    "A request that carries a request key is stored with a hash of its body (requestReceiptTx,",
+    "packages/server/src/modules/usp/commands.ts:29-40). The same key with the same body answers the stored",
+    "result again. The same key with another body is 409 STALE_REVISION 'This request key was used with",
+    "different inputs.' The key is a body field on these routes; R3 sent no Idempotency-Key header."
+   ],
+   "unknownOutcome": [
+    "No answer at all (connection lost, timeout) and every 5xx: the Studio says that the result is unknown and",
+    "offers Read the record again. It sends nothing by itself."
+   ],
+   "refusalsOfEveryRoute": [
+    ["400 USP_REQUEST_FAILED", "This operation is unavailable. Check its input or service state.",
+     "The registry did not accept the form of this request. Nothing was written."],
+    ["503 USP_REQUEST_FAILED", "(the same sentence)", "The unknown-outcome state."],
+    ["503 LOCAL_OPERATOR_CONFIGURATION", "(principal.ts:27)",
+     "The registry has no local operator configured, so it can name no reviewer. Nothing was written."],
+    ["403 USP_LOCAL_ONLY", "(snapshots.ts)", "The registry accepts this from its local operator only."],
+    ["404 NOT_FOUND", "The exact snapshot is unavailable.",
+     "Shown as it is. The dialog starts again from the record."],
+    ["409 STALE_REVISION", "Refresh the property selection and its access context.",
+     "Shown as it is. The snapshot belongs to another access view or policy."],
+    ["409 STALE_REVISION", "This request key was used with different inputs.",
+     "Shown as it is. A Studio fault: a kept key was sent with a changed body."]
+   ]
+  },
+  "sequenceA": {
+   "asTheTaskNamesIt": [
+    "POST /api/v1/usp/snapshots",
+    "POST /api/v1/usp/identity/resolve",
+    "POST /api/v1/usp/identity/reviews",
+    "POST /api/v1/usp/identity/assign"
+   ],
+   "asTheRegistryDefinesIt": [
+    "capture, review, assign. identity/resolve is not a step before the review: it resolves a code, and the",
+    "unit has none yet (gap G4). R3 ran it after the assignment."
+   ],
+   "reads": {
+    "why": "Two reads the Studio already makes supply every value of sequence A except the two of gap G1.",
+    "GET /api/v1/buildings/{buildingId}/canonical": {
+     "areaId": "the site: scopeId of every request",
+     "inputRevisions[namespace registry_record, id = the unit]": [
+      "the unit's record revision (2 for UNIT-3B today). The space object itself carries no record revision."
+     ],
+     "levels[].spaces[].label.citations[0].sourceRevision": "the revision of the cited source (1)",
+     "levels[].spaces[].proposedCode.value": "null while the unit has no code; the code once assigned"
+    },
+    "GET /api/v1/buildings/{buildingId}/register": {
+     "register[id = the unit].evidence[0].sourceId": "the cited source",
+     "register[id = the unit].evidence[0].locator": [
+      "the recorded locator as one string, as the review must repeat it (live: 'page 1; region pt",
+      "[596,390,644,409]; literal UNIT-3B'). The canonical citation holds the same region as an object in another",
+      "form (x, y, width, height), so the string is read here and not rebuilt."
+     ]
+    }
+   },
+   "requests": [
+    {
+     "n": "A1",
+     "request": "POST /api/v1/usp/snapshots",
+     "sentBy": "Record review",
+     "body": {
+      "scopeId": "canonical.areaId",
+      "world": [
+       "{ namespace: 'world', id: 'registry-site/' + scopeId }: the one form the route accepts",
+       "(apps/api/src/modules/evidence/evidence.services.ts:40-41)"
+      ],
+      "stage": "'recorded': the one stage the route accepts (the same lines)",
+      "selection": [
+       "{ kind: 'targets', pins: [{ ref: { namespace: 'registry_record', id: unit }, revision: the unit's record",
+       "revision }] }"
+      ]
+     },
+     "answerUsedNext": {
+      "data.scope": [
+       "the snapshot scope (kind, scopeId, world, manifestId, snapshotDigest, stage). It is kept as received and",
+       "sent unchanged in A2 and A3."
+      ],
+      "data.id": "the manifest id (equal to data.scope.manifestId)",
+      "data.capturedAt": "printed with the manifest"
+     },
+     "manifest": "Names none: it stores one.",
+     "refusals": [
+      ["422 USP_SNAPSHOT_PROFILE", "This recorded registry scope is unavailable.",
+       "The registry takes a snapshot of a recorded site only. Nothing was written."],
+      ["409 USP_STALE_TARGET", "The selected target is absent or changed.",
+       "The unit changed after this page read it. Read the record again."],
+      ["422 USP_SELECTION", "Choose 1 to 100 targets.", "A Studio fault. Nothing was written."],
+      ["413 USP_SCOPE_LIMIT, USP_SOURCE_PART_LIMIT", "Select a smaller property scope.",
+       "The site holds more than one snapshot may. Nothing was written."]
+     ],
+     "sentTwice": [
+      "It has no key. Each request stores one more manifest with every member body (11 members for this unit). No",
+      "record changes. After a lost answer the dialog says that the result is unknown; a second click on Record",
+      "review captures again and only that answer is used."
+     ]
+    },
+    {
+     "n": "A2",
+     "request": "POST /api/v1/usp/identity/reviews",
+     "sentBy": "Record review, after A1",
+     "body": {
+      "operation": "'assign' (gap G3: the contract has no decision values)",
+      "scope": "A1 data.scope, unchanged",
+      "recordIds": "[unit]",
+      "expectedVersions": "{ [unit]: the unit's record revision }",
+      "reason": "the officer's text, 1 to 2000 characters after trimming (contract :102)",
+      "evidence": "[{ sourceId, revision: sourceRevision, locator }] from the two reads",
+      "location.anchorState": "'not_supplied', with parcels: []",
+      "location.locator.structureKind, levels, spaceKind": [
+       "'?', ['L?'], '?': the only values the server accepts for a unit stated by a source",
+       "(packages/server/src/modules/usp/source-stated-identity.ts:12-16)"
+      ],
+      "location.locator.structureNumber, spaceNumber": "NO SOURCE (gap G1). R3 sent 1 and 1."
+     },
+     "answerUsedNext": {
+      "data.reviewId": "named by A3",
+      "data.expectedManifestId": [
+       "the manifest of the scope the review carried (packages/server/src/modules/usp/project-identity.ts:141). A3",
+       "names exactly this."
+      ],
+      "notAnswered": "no time, no decision, no reviewer (gap G2); data.commandSha256 is not needed"
+     },
+     "manifest": "A1's scope. The answer repeats its manifest id as expectedManifestId.",
+     "refusals": [
+      ["403 USP_REVIEW_CAPABILITY", "An authorized reviewer is required.",
+       "The registry's operator may not review. Nothing was written."],
+      ["422 unsupported_lineage_kind", "The requested lineage shape is unsupported.",
+       "The registry does not take a review of this form. Nothing was written."],
+      ["422 USP_IDENTITY_TARGET", "Every target must be an existing recorded space in this scope.",
+       "The registry holds no such recorded unit on this site."],
+      ["409 STALE_REVISION", "The manifest changed. Capture and review a new snapshot.",
+       "Shown as it is. The site changed after the capture; Record review starts from a new capture."],
+      ["409 STALE_REVISION", "The target version or membership changed.",
+       "Shown as it is. The unit is at another revision: read the record again."],
+      ["422 USP_IDENTITY_EVIDENCE", "Each identity target needs matching recorded source evidence.",
+       "The citation sent is not the one the registry recorded for this unit."],
+      ["403 USP_IDENTITY_SELECTION", "Every identity participant must be in the selected target set.",
+       "The snapshot does not select this unit."],
+      ["422 USP_SOURCE_IDENTITY", "Keep source-only identity evidence and location unqualified.",
+       "A unit stated by a source takes its own citation and an unqualified location only."]
+     ],
+     "sentTwice": [
+      "It has no key. Each accepted request stores one more review row and one more snapshot (the twin K8b",
+      "describes). A review that is never used changes no record. It cannot be read back (gap G2), so after a",
+      "lost answer a second click on Record review starts again from A1."
+     ]
+    },
+    {
+     "n": "A3",
+     "request": "POST /api/v1/usp/identity/assign",
+     "sentBy": "Assign code",
+     "body": {
+      "scope": "A1 data.scope, unchanged: the scope the review carried",
+      "expectedManifestId": "A2 data.expectedManifestId",
+      "reviewId": "A2 data.reviewId",
+      "requestKey": [
+       "a UUID the dialog makes once when the review is answered and keeps until A3 is answered (contract :93, 1",
+       "to 128 characters)"
+      ],
+      "recordId": "unit",
+      "expectedRecordVersion": "the revision the review named"
+     },
+     "answerUsedNext": {
+      "data.snapshot": [
+       "the scope stored after the write: the one snapshot known to hold the unit with its code. Sequence B may",
+       "start from it in the same dialog session."
+      ],
+      "data.after": "the unit's pin at its new revision",
+      "data.outcome.codes[unit]": [
+       "the code. The Studio does not print it from here: it refetches the canonical record and the snapshot",
+       "listing, and prints proposedCode.value once the record states it."
+      ],
+      "data.committedAt, data.receiptId": "printed small with the receipt"
+     },
+     "manifest": [
+      "expectedManifestId is the value A2 answered, and scope is the scope A2 carried. The server refuses any",
+      "other pair. It is never a listed snapshot: after A2 the first listed scope is the review's twin, and an",
+      "assignment that names it is refused (K8b, duplicateSnapshots)."
+     ],
+     "refusals": [
+      ["409 STALE_REVISION", "The expected manifest differs.",
+       "Shown as it is. A Studio fault: the assignment did not name the manifest of its scope."],
+      ["404 NOT_FOUND", "This record could not be found.",
+       "Shown as it is. The registry holds no such review; Record review starts again."],
+      ["409 STALE_REVISION", "The review does not authorize these exact inputs.",
+       "Shown as it is. Read the record again: if it states a code, the assignment is done."],
+      ["409 STALE_REVISION", "This space already has a reserved project code.",
+       "Shown as it is. Read the record again."],
+      ["409 STALE_REVISION", "The manifest changed. Capture and review a new snapshot.",
+       "Shown as it is. The review no longer holds; Record review starts again."],
+      ["503 USP_CODE_COLLISION, USP_CODE_GENERATOR, USP_POSTWRITE_MISSING", "(project-identity.ts:167-202)",
+       "The unknown-outcome state."]
+     ],
+     "sentTwice": [
+      "The same key with the same body answers the stored receipt and assigns nothing again",
+      "(project-identity.ts:236-241). A new key after a committed assignment is refused: the review is used up.",
+      "After a lost answer the Studio reads the canonical record. If it states a code, the assignment is done. If",
+      "it does not, Assign code stays available and sends the same body with the same key."
+     ]
+    }
+   ],
+   "afterwards": [
+    "POST /api/v1/usp/identity/resolve with { scope: A3 data.snapshot, identifier: the code } answers status,",
+    "recordVersion, registryIdentifier and the location line. Part 1 reads the code from the canonical record",
+    "instead, so the Studio does not need this request."
+   ]
+  },
+  "sequenceB": {
+   "asTheTaskNamesIt": [
+    "POST /api/v1/usp/packets/plans/create",
+    "POST /api/v1/usp/packets/plans/confirm",
+    "POST /api/v1/usp/packets/plans/execute",
+    "POST /api/v1/usp/property-cards"
+   ],
+   "asTheRegistryDefinesIt": [
+    "a snapshot that holds the unit with its code, then plan create, confirm, execute, then POST",
+    "/api/v1/usp/property-cards/generate. No route answers at the bare path the task names",
+    "(apps/api/src/modules/evidence/property-card.controller.ts:26-28)."
+   ],
+   "requests": [
+    {
+     "n": "B0",
+     "request": "POST /api/v1/usp/snapshots",
+     "sentBy": "Prepare",
+     "body": {"all fields": "as A1, with the unit's record revision of now (the revision that has the code)"},
+     "answerUsedNext": {
+      "data.scope": "the scope of B1",
+      "data.id": "the manifest B2 names",
+      "data.capturedAt": "printed as the snapshot the card will be bound to"
+     },
+     "manifest": [
+      "Stores the snapshot the card is bound to. A listed snapshot is not used: a listed item states member",
+      "totals only, so the Studio cannot know which listed scope holds the unit at which revision. In the dialog",
+      "session of an assignment, A3 data.snapshot is the same thing and B0 is not sent."
+     ],
+     "refusals": "as A1",
+     "sentTwice": "as A1"
+    },
+    {
+     "n": "B1",
+     "request": "POST /api/v1/usp/packets/plans/create",
+     "sentBy": "Prepare, after B0",
+     "body": {
+      "guard": "{ mode: 'create', requestKey: a UUID made once per Prepare and kept }",
+      "input.target": "{ ref: { namespace: 'registry_record', id: unit }, revision: record revision }",
+      "input.scope": "B0 data.scope, unchanged",
+      "input.purpose, format, recipe": [
+       "'record_evidence', 'pdf', 'pack1-single-region-image/1': the literals of the contract",
+       "(packages/contracts/src/usp/packet-pdf.ts:12, :27-28)"
+      ],
+      "input.expiresAt": "NO SOURCE (gap G7). R3 sent now + 23 h 50 min.",
+      "input.entries[0].bindingId": "NO ROUTE ANSWERS IT (gap G5). R3 computed it in the script.",
+      "input.entries[0].required": "true (contract literal)",
+      "input.entries[0].inclusionReason": "NO SOURCE (gap G7). R3 sent 'Officer-cited label UNIT-3B'."
+     },
+     "answerUsedNext": {
+      "data.planId, data.version, data.planSha256": "named by B2, B3 and B4",
+      "data.targetLabel, data.requiredContext": "printable before the card exists",
+      "data.entries[0].state, .binding": "'included' and the cited document, page and region",
+      "notAnswered": "no row of the card (gap G6)"
+     },
+     "manifest": "B0's scope.",
+     "refusals": [
+      ["422 PACKET_PLAN_EXPIRY", "Use an expiry within the next 24 hours.",
+       "Shown with the server's sentence. Nothing was written."],
+      ["422 PACKET_SOURCE_STATEMENT", "Select only the exact recorded source-only citation.",
+       "The entry is not this unit's own recorded citation. Nothing was written."],
+      ["409 STALE_REVISION", "The exact source-statement snapshot member is unavailable.",
+       "Shown as it is. The snapshot does not hold the unit or its source at these revisions."],
+      ["403 PACKET_PLAN_ACCESS, PACKET_PLAN_TARGET_ACCESS", "(packets/plan-authority.ts)",
+       "The registry's operator may not plan for this unit."],
+      ["503 PACKET_IMAGE_PDF_EXTRACT_UNAVAILABLE", "(packets/pdf-service.ts)", "The unknown-outcome state."]
+     ],
+     "notTraced": [
+      "packets/pdf-authority.ts was not read line by line; a code of it that is not listed here is printed with",
+      "the server's sentence."
+     ],
+     "sentTwice": [
+      "The same key with the same body answers the same plan (packets/pdf-service.ts:88-99). A new key stores",
+      "another plan for the same unit. No route lists plans, so after a lost answer the plan id is learnt only by",
+      "sending the same body with the same key again; the dialog keeps both, and the expiry inside the body, for",
+      "that."
+     ]
+    },
+    {
+     "n": "B2",
+     "request": "POST /api/v1/usp/packets/plans/confirm",
+     "sentBy": "Prepare, after B1",
+     "body": {
+      "planId, version, planSha256": "B1 answer",
+      "reviewed": "true (contract literal)",
+      "guard": [
+       "{ mode: 'update', requestKey: a UUID kept, expectedVersion: B1 data.version, expectedManifestId: B0",
+       "data.id }"
+      ]
+     },
+     "answerUsedNext": {"data.confirmationId": "named by B3", "data.confirmedAt": "printed"},
+     "manifest": "guard.expectedManifestId is the manifest of the scope the plan was created with (B0).",
+     "refusals": [
+      ["409 STALE_REVISION", "Review the exact immutable plan and snapshot.", "Shown as it is. Prepare starts again."],
+      ["409 STALE_REVISION", "This exact version is already confirmed; reuse its request key.",
+       "Shown as it is. An earlier request confirmed it under a key this dialog no longer holds."],
+      ["422 PACKET_PLAN_BLOCKED", "Every required committed region binding is needed.",
+       "The plan does not hold the unit's citation, so it cannot be confirmed."],
+      ["409 STALE_REVISION", "The unexecuted packet plan expired.", "Shown as it is. Prepare starts again."]
+     ],
+     "sentTwice": "The same key answers the stored confirmation (pdf-service.ts:134-139). A new key is refused."
+    },
+    {
+     "n": "B3",
+     "request": "POST /api/v1/usp/packets/plans/execute",
+     "sentBy": [
+      "Issue card, before B4. The task puts it under Prepare 'if rows are only known then'; no row is known after",
+      "it either (gap G6), and it stores a file (the evidence PDF)."
+     ],
+     "body": {
+      "planId, version": "B1 answer",
+      "confirmationId": "B2 answer",
+      "guard": "{ mode: 'create', requestKey: a UUID kept }"
+     },
+     "answerUsedNext": {
+      "data.packet": "the receipt of the evidence PDF it renders and stores",
+      "data.omissions": "printed (0 for R3)",
+      "notAnswered": "no row of the card"
+     },
+     "manifest": "Names none; the plan binds it.",
+     "refusals": [
+      ["404 NOT_FOUND", "Confirm this exact version before execution.", "Shown as it is."],
+      ["409 STALE_REVISION", "The confirmation does not cover this plan.", "Shown as it is."],
+      ["409 STALE_REVISION", "This version already executed; reuse its original request key.",
+       "Shown as it is. Read the record again."],
+      ["409 STALE_REVISION", "The unexecuted packet plan expired.", "Shown as it is. Prepare starts again."],
+      ["503 PACKET_PDF_DEADLINE, PACKET_IMAGE_PDF_EXTRACT_UNAVAILABLE", "(pdf-service.ts)",
+       "The unknown-outcome state."]
+     ],
+     "sentTwice": "The same key answers the stored execution (pdf-service.ts:159-169). A new key is refused."
+    },
+    {
+     "n": "B4",
+     "request": "POST /api/v1/usp/property-cards/generate",
+     "sentBy": "Issue card",
+     "body": {
+      "planId, planVersion": "B1 answer",
+      "cardId": "null: a new card",
+      "expiresAt": "NO SOURCE (gap G7). R3 sent now + 23 h 50 min.",
+      "guard": "{ mode: 'create', requestKey: a UUID kept }"
+     },
+     "answerUsedNext": {
+      "data.cardId, data.revision": "the row the dialog closes on, once the refetched list shows it",
+      "data.facts": "the rows the card prints: first answered here, when the card exists (gap G6)"
+     },
+     "manifest": "Names none; the card takes the scope of its executed plan.",
+     "refusals": [
+      ["422 CARD_EXECUTED_PLAN_REQUIRED", "Execute a confirmed complete packet plan before generating a card.",
+       "The plan was not executed. Prepare starts again."],
+      ["422 CARD_EXPIRY", "Use a card expiry within the next 24 hours.",
+       "Shown with the server's sentence. Nothing was written."],
+      ["403 CARD_ACCESS", "(F3d words)", "The server answers for this card to the operator who created it only."],
+      ["409 STALE_REVISION", "The exact card snapshot body does not match its manifest.", "Shown as it is."],
+      ["422 CARD_ARTIFACT_INTEGRITY", "(packets/card-service.ts)", "The stored card file does not match its receipt."]
+     ],
+     "sentTwice": [
+      "The same key with the same body answers the same card (packets/card-service.ts:167-173). A new key in",
+      "create mode is not refused: it stores a second card of the same plan. So after a lost answer the Studio",
+      "refetches the card list; a new row means the card exists. Only if none appears does Issue card send the",
+      "same body with the same key again."
+     ]
+    },
+    {
+     "n": "B4r",
+     "request": "POST /api/v1/usp/property-cards/generate (a revision of a listed card)",
+     "sentBy": "Issue new revision",
+     "body": {
+      "planId, planVersion": [
+       "of the listed card: POST /api/v1/usp/property-cards/read { cardId, revision } answers data.card.planId,",
+       "planVersion and scope. A list row does not carry them. The read refuses an expired or revoked revision",
+       "(403 CARD_EXPIRED, CARD_REVOKED)."
+      ],
+      "cardId": "the listed card",
+      "expiresAt": "NO SOURCE (gap G7)",
+      "guard": [
+       "{ mode: 'update', requestKey, expectedVersion: the card's latest revision, expectedManifestId:",
+       "data.card.scope.manifestId }"
+      ]
+     },
+     "answerUsedNext": {"data.revision": "the latest revision + 1 of the same card id"},
+     "manifest": "guard.expectedManifestId is the listed card's own manifest, from the card read.",
+     "refusals": [
+      ["422 CARD_REVISION_CONTEXT", "Create a separate card for a different executed plan or snapshot.",
+       "A revision keeps the plan and snapshot of its card. Issue a new card instead."],
+      ["409 STALE_REVISION", "A newer immutable card revision exists.", "Shown as it is. The list is refetched."],
+      ["422 CARD_REVISION_REVOKED", "The latest revision of this card was revoked. Create a separate card.",
+       "Shown with the server's sentence."],
+      ["404 NOT_FOUND", "The exact property card revision is unavailable.", "Shown as it is."]
+     ],
+     "sentTwice": "as B4"
+    }
+   ]
+  },
+  "answers": {
+   "1 whichManifestEachWriteNames": [
+    "A1 and B0 store a manifest. A2 carries A1's scope. A3 carries the same scope and names expectedManifestId",
+    "as A2 answered it. B1 carries B0's scope (or A3 data.snapshot), B2 names that manifest, B3 and B4 name",
+    "none, B4r names the manifest of the card it revises. No request needs a guessed scope and none uses a",
+    "listed snapshot. Every one of these values lives in the open dialog only: after a reload an unfinished",
+    "sequence cannot be continued, it starts again."
+   ],
+   "2 whoTheReviewerIs": [
+    "The request context. The review row stores reviewer_subject = the server's local operator",
+    "(project-identity.ts:138-140) and the assignment must come from the same subject (:152). No body field",
+    "names a reviewer and R3 sent none. The Studio needs no reviewer name: not a blocker."
+   ],
+   "3 whatTheOfficerDecides": [
+    "The contract names no decision values (gap G3). A review states an operation, one of assign, correct,",
+    "cancel, retire, split, merge, boundary_adjustment (contract :96), and a required reason of 1 to 2000",
+    "characters after trimming (:102). Only a review with operation assign, one record and a location leads to",
+    "an assignment."
+   ],
+   "4 whichAnswerHoldsTheRows": [
+    "None before the card exists (gap G6). The rows are data.facts of the generate answer (B4)."
+   ],
+   "5 replay": [
+    "A1, A2 and B0 have no key: a second request stores a second snapshot or review. A3, B1, B2, B3 and B4",
+    "carry a key in the body: the same key with the same body answers the stored result. After a lost answer",
+    "the Studio reads again (the canonical record for A, the card list for B4) and says what it found. It",
+    "resends only on the officer's click, and then the same body with the same key."
+   ]
+  },
+  "gaps": [
+   {
+    "id": "G1",
+    "in": "A2",
+    "kind": "a value the Studio cannot obtain (stops Part 1)",
+    "what": "location.locator.structureNumber and spaceNumber of the review",
+    "required": [
+     "Integers 1 to 99 and 1 to 999, both required (packages/contracts/src/usp/project-identity.ts:50-57). A",
+     "review with operation assign must carry a location (server project-identity.ts:104)."
+    ],
+    "noSource": [
+     "The canonical space (spaceId, kind, polygons, lowerM, upperM, proposedCode, label, recordState, areaM2)",
+     "and the register record (id, identifier, ulpin3d, name, kind, revision, footprint, links, evidence) state",
+     "neither number. For a unit stated by a source the server checks the anchor, the parcels and the three",
+     "unknown tokens, and neither number (source-stated-identity.ts:12-16)."
+    ],
+    "whatR3Did": [
+     "Sent 1 and 1, constants of the script (scripts/agent/r3-live.ts:26-27). They are stored as the unit's",
+     "location and printed: resolve answers 'NO-ANCHOR / ?01 / L? / ?001' and the card prints it as Recorded",
+     "location (docs/evidence/runtime/r3/result.json step3.resolve.location, step3.printed.card)."
+    ],
+    "whyNotInTheBrowser": [
+     "A constant in the Studio would put two numbers nobody stated on a registry record and on a printed card."
+    ],
+    "closedBy": [
+     "One decision of the lead: the contract lets an unqualified location omit the two numbers (K lane); or the",
+     "server sets them; or 1 and 1 are declared the registry's form of an unqualified location and the Studio",
+     "sends them as R3 did."
+    ]
+   },
+   {
+    "id": "G2",
+    "in": "A",
+    "kind": "a missing route (two requirements of Part 1 cannot be met)",
+    "what": "No route reads a review.",
+    "required": [
+     "The review answer is { reviewId, commandSha256, expectedManifestId } (project-identity.ts:141). The",
+     "identity routes are reviews, assign, mutate and resolve",
+     "(apps/api/src/modules/evidence/evidence.controllers.ts:122-151); none lists or reads a review."
+    ],
+    "consequences": [
+     ["'Shows the review as answered: decision, time, bound manifest': only the review id and the manifest are",
+      "answered. There is no time, and the operation and reason on screen would be what the dialog sent, not what",
+      "the registry stored."],
+     ["'A unit whose latest review does not allow assignment shows the review and no assign button': the Studio",
+      "cannot learn that a unit has a review at all."],
+     ["After a reload or a lost answer a stored review cannot be found again. The dialog starts over; the unused",
+      "review and its snapshot stay stored."]
+    ],
+    "closedBy": [
+     "A read of the reviews of a record (id, operation, reason, reviewer, time, manifest, used or not), or the",
+     "lead drops the two requirements."
+    ]
+   },
+   {
+    "id": "G3",
+    "in": "A2",
+    "kind": "the contract differs from the task (design decision)",
+    "what": "There are no decision values to put on radio buttons.",
+    "required": [
+     "operation is a lineage operation, not a verdict. For a unit without a code only assign leads anywhere:",
+     "correct, cancel and retire are sent to identity/mutate, which needs a space that already has a code",
+     "(project-identity.ts:299-301); split, merge and boundary_adjustment are refused for a unit stated by a",
+     "source (source-stated-identity.ts:22-23). The registry stores no negative review."
+    ],
+    "consequences": [
+     ["A radio group would have one true option. The dialog can truthfully be: what is decided, a required",
+      "reason, Record review. Not reviewing is Cancel."]
+    ],
+    "closedBy": "The lead confirms the dialog without a radio group."
+   },
+   {
+    "id": "G4",
+    "in": "A",
+    "kind": "a correction of the sequence (no blocker)",
+    "what": "identity/resolve cannot come before the review.",
+    "required": [
+     "Its body is { scope, identifier } and the identifier is the application code (contract :117-118). A unit",
+     "without a code has none. For a snapshot that holds the unit without a code the route answers 409",
+     "USP_IDENTITY_UNAVAILABLE_IN_SNAPSHOT (project-identity.ts:369, :380)."
+    ],
+    "closedBy": "Nothing to do: the Studio reads the code back from the canonical record."
+   },
+   {
+    "id": "G5",
+    "in": "B1",
+    "kind": "a value no route answers (stops Part 2)",
+    "what": "input.entries[0].bindingId of the plan",
+    "required": [
+     "One entry with a SHA-256 bindingId (packages/contracts/src/usp/packet-pdf.ts:24-28). For a unit stated by",
+     "a source it is not the id of a stored binding but an entry handle the server derives from the pin:",
+     "sourceStatementHandle = fingerprint({ version: 'source-stated-space/1', target })",
+     "(packages/server/src/modules/usp/packets/source-stated-binding.ts:26-28), where fingerprint is SHA-256",
+     "over the server's own canonical JSON (packages/server/src/modules/cases/domain.ts:38-50)."
+    ],
+    "whatR3Did": [
+     "Computed it in the script with a copy of that derivation (r3-live.ts:82-86); recorded as",
+     "step3.plan.entryHandle."
+    ],
+    "whyNotInTheBrowser": [
+     "The Studio would re-implement a server-internal hash in the browser. It would break without notice when",
+     "the server changes the version string or the JSON form."
+    ],
+    "closedBy": [
+     "A read that answers the entries a plan for this target may include, with their handles; or plan create",
+     "accepts the unit's recorded citation without a handle (K lane)."
+    ]
+   },
+   {
+    "id": "G6",
+    "in": "B",
+    "kind": "a missing route (the main promise of Part 2 cannot be met)",
+    "what": "No answer before the card exists holds the rows the card will print.",
+    "required": [
+     "Plan create answers targetLabel, the entry with its citation and state, and requiredContext. Confirm",
+     "answers the confirmation. Execute answers the packet receipt and omissions. The rows are projected inside",
+     "generatePropertyCard (packets/card-service.ts:193, packets/card-projection.ts:16) and are first answered",
+     "as data.facts of the card. The keys of R3's stored answers 06-plan, 07-confirm, 08-execute and 09-card",
+     "under E:/BhuAayam-data/task-data/r3/step3/ agree."
+    ],
+    "consequences": [
+     ["'Prepare shows the rows the card will print as the server returns them' cannot be built. Before the card",
+      "exists the Studio can print the unit, the code, the snapshot, the cited region, the plan's label and state",
+      "and the expiry sent; the rows only after Issue card."]
+    ],
+    "closedBy": [
+     "A read that projects the facts of an executed plan without storing a card (K lane); or the lead accepts",
+     "the rows after issuing, from the generate answer."
+    ]
+   },
+   {
+    "id": "G7",
+    "in": "B1, B4",
+    "kind": "values no answer supplies (stops Part 2)",
+    "what": "expiresAt of the plan, expiresAt of the card, inclusionReason of the entry",
+    "required": [
+     "Both times are required, in the future and at most 24 hours ahead (pdf-service.ts:78-79 'Use an expiry",
+     "within the next 24 hours.'; card-service.ts:175 'Use a card expiry within the next 24 hours.'). These two",
+     "sentences are all the server says about expiry: it has no default. The reason is required text of at most",
+     "2048 characters (packet-pdf.ts:24-25)."
+    ],
+    "whatR3Did": "now + 23 h 50 min for both times and 'Officer-cited label UNIT-3B' (r3-live.ts:79, :152-153).",
+    "closedBy": [
+     "The lead states the rule for the two times and the sentence, or the officer enters them (two inputs the",
+     "dialog of the task does not have)."
+    ]
+   },
+   {
+    "id": "G8",
+    "in": "B4r",
+    "kind": "the true word (finding, no blocker)",
+    "what": "When the action is a revision and when it is a new card.",
+    "required": [
+     "A revision (guard.mode update) is accepted only for the executed plan and snapshot of the card it revises",
+     "(card-service.ts:176-191). It prints the unit as that snapshot holds it and changes the expiry. Anything",
+     "from another snapshot is a new card with a new id (guard.mode create)."
+    ],
+    "consequences": [
+     ["Issue new revision is the true word when a listed card is valid now and the record is still at the",
+      "revision the card was made from (snapshotState same_revision)."],
+     ["Issue card is the true word when no card is listed, when every listed card is expired or revoked (their",
+      "plan cannot be read), and when the record changed after the valid card (changed_revision): the task's rule",
+      "would say revision there, and the server would print the old record."],
+     ["UNIT-3B as F3d read it today (docs/evidence/gf5/f3d/responses.json cardList): card",
+      "6a997624-6c8d-40a9-8215-8a671a74dc1c revision 1 expires 2026-10-11T13:39:30.390Z and is same_revision, so",
+      "the action is Issue new revision until then."]
+    ],
+    "closedBy": "The lead confirms the three cases."
+   }
+  ],
+  "fixtures": {
+   "file": "docs/evidence/runtime/r3/result.json",
+   "note": "The recorded answers the unit tests of Parts 1 and 2 will use, by JSON path. None is copied here.",
+   "paths": [
+    "step3.target, step3.snapshot.manifestId, step3.review.reviewId, step3.review.evidenceLocator,",
+    "step3.assign.requestKey, step3.assign.code, step3.assign.snapshotAfter, step3.readBack, step3.resolve,",
+    "step3.plan, step3.confirm, step3.execute, step3.card, step3.printed.card, step3.list"
+   ]
+  }
+ },
+ "report": {
+  "TASK": [
+   "F3e (P8.3; GF4, GF5): the Studio assigns a unit's code and issues its card through the registry. Only Step",
+   "0 is done. It found values the Studio cannot obtain and routes that do not exist, and the task rules that",
+   "the work stops there."
+  ],
+  "WORKS": [
+   ["Step 0 (step0 in this file): both sequences request by request, with the source of every body field, the",
+    "answer fields the next request needs, the manifest each write names, the refusals with the Studio's words,",
+    "and what a second request does."],
+   "Nothing in the Studio: no file under apps/ or packages/ is changed."
+  ],
+  "SEE IT": [
+   "This file: step0.sequenceA.requests, step0.sequenceB.requests, step0.answers (the five points the task",
+   "asks for) and step0.gaps (G1 to G8, each with what closes it). No screen changed, so there is no",
+   "screenshot."
+  ],
+  "INPUTS": [
+   "The files listed in step0.readFrom, at 2eb786f2.",
+   "Two GETs to the demo API (step0.requestsSent). No POST, no write of any kind."
+  ],
+  "requestTables": {
+   "columns": ["request", "what it sends", "manifest and replay"],
+   "A reviewAndAssign": [
+    ["A1 POST /api/v1/usp/snapshots", "the site and the unit pin, from the canonical read",
+     "stores a manifest; no key"],
+    ["A2 POST /api/v1/usp/identity/reviews",
+     "operation assign, A1's scope, the unit at its revision, a reason, the recorded citation, a location (G1)",
+     "carries A1's scope; no key; cannot be read back (G2)"],
+    ["A3 POST /api/v1/usp/identity/assign",
+     "A1's scope, expectedManifestId and reviewId as A2 answered them, a kept request key, the unit and its revision",
+     "names the manifest A2 answered; the same key answers the same receipt"]
+   ],
+   "B issueCard": [
+    ["B0 POST /api/v1/usp/snapshots", "as A1 at the revision that has the code (or A3 data.snapshot)",
+     "stores the manifest the card is bound to"],
+    ["B1 POST /api/v1/usp/packets/plans/create",
+     "the unit pin, B0's scope, three contract literals, an expiry (G7), one entry: bindingId (G5), a reason (G7)",
+     "carries B0's scope; keyed"],
+    ["B2 POST /api/v1/usp/packets/plans/confirm", "plan id, version and hash as B1 answered them",
+     "names B0's manifest; keyed"],
+    ["B3 POST /api/v1/usp/packets/plans/execute", "plan id, version, the confirmation id of B2", "names none; keyed"],
+    ["B4 POST /api/v1/usp/property-cards/generate", "plan id and version, cardId null, an expiry (G7)",
+     "names none; keyed; answers the rows for the first time (G6)"],
+    ["B4r the same route for a revision",
+     "the listed card's plan and manifest from property-cards/read, an expiry (G7)",
+     "names the card's own manifest; keyed"]
+   ],
+   "full": "step0.sequenceA.requests and step0.sequenceB.requests"
+  },
+  "GAPS": {
+   "stopPart1": [
+    "G1: the review needs structureNumber and spaceNumber; no read states them. R3 sent the constants 1 and 1.",
+    ["G2: no route reads a review, so the review cannot be shown as answered (no time, no decision) and a unit's",
+     "earlier review cannot be shown at all."],
+    "G3: the contract has no decision values; for a unit without a code the one operation is assign."
+   ],
+   "stopPart2": [
+    "G5: the plan entry needs a bindingId the server derives by a hash; no route answers it.",
+    "G6: no answer before the card exists holds the rows it will print.",
+    "G7: the two expiry times and the inclusion reason have no source. The server states no default."
+   ],
+   "findings": [
+    "G4: identity/resolve cannot come before the review; the Studio does not need it.",
+    "The card write is POST /api/v1/usp/property-cards/generate; the bare path has no route.",
+    "G8: a revision keeps the snapshot of its card; after the record changed the true action is a new card."
+   ],
+   "notVerified": [
+    "Every refusal and replay answer is read from code. None was provoked and no write was sent.",
+    "packets/pdf-authority.ts and packets/plan-authority.ts were not traced line by line.",
+    "POST /api/v1/usp/property-cards/read was not sent (the task allows the F3d reads only).",
+    "No capture script was run and no dev server was started: nothing was built to capture."
+   ]
+  },
+  "DESIGN": [
+   ["No UI changed, so $ui-design-check was not run. Decisions the dialogs need from the lead before they are",
+    "built:"],
+   "Part 1 without a radio group: what is decided, a required reason, Record review, then Assign code (G3).",
+   "After Record review the dialog can print the review id and its manifest only (G2).",
+   "Execute belongs to Issue card: it stores a file and reveals no row (G6).",
+   "The rows the card prints can be shown only after the card exists, unless a preview read is added (G6).",
+   "Issue new revision only for a valid card of an unchanged record; otherwise Issue card (G8)."
+  ],
+  "clickPathForTheRuntimeOwner": [
+   "None: no control was built, so there is nothing to click. Once the gaps are closed the API log of one run",
+   "should show A1, A2, A3 for Review and assign code and B0 (or none), B1, B2 on Prepare, then B3, B4 on",
+   "Issue card, in the order of the tables."
+  ],
+  "COMMITS": [
+   "f3425f48 docs(studio): F3e the review-and-assign and issue-card sequences as the registry defines them",
+   "docs(studio): F3e evidence (this report)",
+   ["Not made: the two feat commits. The trailer is Co-Authored-By: Claude Opus 5.5, as WORKERS.md section 7",
+    "and the session rule say."]
+  ],
+  "CHECKS": {
+   "pnpm studio:typecheck": "exit 0 (Studio unchanged)",
+   "pnpm studio:test": "139 passed in 28 files (Studio unchanged)",
+   "capture script": "not run: nothing built; no write was attempted by anything",
+   "git diff --check": "clean",
+   "lines over 120": 0
+  },
+  "NEXT": [
+   ["The lead decides G1 (the two numbers), G3 (no radio group), G7 (expiry rule and reason) and whether G2 and",
+    "G6 are closed by a route or by dropping the requirement. G5 needs a K-lane answer, or the lead's explicit",
+    "word that the Studio may derive the handle."],
+   ["K lane, smallest forms: a read of a record's reviews (G2); a read of the plan entries a target may",
+    "include, with handles (G5); a read that projects a card's rows from an executed plan (G6); an unqualified",
+    "location without the two numbers (G1)."],
+   ["With G1 and G3 decided, Part 1 can be built as specified apart from the two review requirements of G2.",
+    "Part 2 needs G5 and G7 at least."],
+   ["Part 3 was not started, to keep to the stop rule. It depends on no gap: the copy control on the card id of",
+    "the verification page, and the four F3d reads in apps/studio/src/local/routes.ts."]
+  ]
+ }
+}

@@ -1,0 +1,25 @@
+{ "phase": "view-niagara", "at": "2026-10-16T22:52:15.809Z", "api": "http://127.0.0.1:21026",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "wallSeconds": 0.7, "stoppedAt": null, "result": { "manifest": [ {
+"itemId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7", "format": "geojson", "state": "read", "placement": "on_map",
+"reason": null, "sizeBytes": 1103282, "recordsSeen": 1661 }, { "itemId": "c7cc6ea5-5675-4c30-a058-44491d416635",
+"format": "geojson", "state": "failed_part", "placement": "not_understood",
+"reason": "This file could not be read and interpreted completely; nothing was prepared from it.",
+"sizeBytes": 26660992, "recordsSeen": 42247 } ], "counts": { "preparing": 0, "ready": 1661, "needs_answer": 0,
+"held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 }, "packages": [ {
+"packageId": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc", "areaId": "e4874150-ba45-4282-af98-61f2d50007b7",
+"state": "REVIEWED", "revision": 2, "counts": { "preparing": 0, "ready": 1661, "needs_answer": 0, "held": 0,
+"confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 }, "reviewed": true, "reviewRefusal": null } ],
+"areaFeatures": { "e4874150-ba45-4282-af98-61f2d50007b7": { "area": { "name": "buildings original", "anchor": [
+-74.01433324055839, 40.71380636189412 ], "sourceCrs": "EPSG:4326", "analysisCrs": "EPSG:32618" }, "count": 1661,
+"inside": 0, "box": [ -79.2, 42.95, -78.9, 43.2 ], "packages": [ { "id": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc",
+"state": "REVIEWED", "quarantine": [
+"1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection",
+"[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired." ] } ], "samples": [] } } },
+"requests": [ { "input": "view-niagara", "step": "batch manifest", "method": "GET",
+"route": "/api/v1/ingestion/cases/{caseId}/intake", "status": 200, "seconds": 0.032, "at": "2026-10-16T22:52:15.132Z",
+"requestKey": null, "cacheControl": "no-store", "contract": true }, { "input": "view-niagara", "step": "batch packages",
+"method": "GET", "route": "/api/v1/ingestion/cases/{caseId}/targets", "status": 200, "seconds": 0.166,
+"at": "2026-10-16T22:52:15.172Z", "requestKey": null, "cacheControl": "no-store", "contract": true }, {
+"input": "view-niagara", "step": "area context", "method": "GET", "route": "/api/v1/areas/{areaId}/context",
+"status": 200, "seconds": 0.448, "at": "2026-10-16T22:52:15.344Z", "requestKey": null,
+"areaId": "e4874150-ba45-4282-af98-61f2d50007b7", "cacheControl": "no-store", "contract": null } ], "quietReads": 0 }

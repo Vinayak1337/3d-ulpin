@@ -1,0 +1,16 @@
+{
+  "rect": {
+    "x": 12,
+    "y": 68,
+    "width": 1416,
+    "height": 632
+  },
+  "identicalApplicationIds": true,
+  "drawn": 1662,
+  "pixels": {
+    "meanAbsoluteError255": 0.9875421642947388,
+    "changedFraction": 0.02421467138668383
+  },
+  "screenshot": "E:/BhuAayam-data/task-data/lv1/parity-1791660083589/final.png",
+  "qualification": "Snapshot replay for visual parity only; streamed runs remain before/after in lag.json."
+}

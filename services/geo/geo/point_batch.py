@@ -17,7 +17,7 @@ MAX_SOURCE_BYTES = 16 * 1024 * 1024
 MAX_SOURCE_POINTS = 5_000_000
 MAX_BATCH_POINTS = 8192
 MAX_ARTIFACT_BYTES = 512 * 1024
-KEY = re.compile(r"^sources/([0-9a-f-]{36})/([0-9a-f]{64})$")
+KEY = re.compile(r"^(?:sources|large-originals)/([0-9a-f-]{36})/([0-9a-f]{64})$")
 HASH = re.compile(r"^[0-9a-f]{64}$")
 
 

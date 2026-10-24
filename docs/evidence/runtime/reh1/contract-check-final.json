@@ -1,0 +1,5 @@
+{ "exit": 0, "schemaParses": 17, "successfulResponseParses": 14, "verificationChecksPassed": 6,
+"snapshotsNewestCapturedFirst": true, "unknownsPreserved": true, "originalPdfsRehashedUnchanged": 4, "failures": [ {
+"index": "029", "extraKeys": [ "expiresAt" ], "originalHttp": 400, "exactBodyParses": true, "correctedBodySent": false
+}, { "index": "c1-004", "extraKeys": [ "mode", "label" ], "originalHttp": 400, "exactBodyParses": true,
+"correctedBodySent": false } ] }

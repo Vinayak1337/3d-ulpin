@@ -1,0 +1,571 @@
+{
+ "task": "K3e",
+ "mode": "dry-run",
+ "sent": false,
+ "literalsVerified": 9,
+ "citationsArePinned": true,
+ "conversions": [
+  {
+   "key": "groundMark",
+   "literal": "FFL ±00",
+   "inches": 0,
+   "metres": 0
+  },
+  {
+   "key": "fflGround",
+   "literal": "FFL +1'6\"",
+   "inches": 18,
+   "metres": 0.4572
+  },
+  {
+   "key": "fflFirst",
+   "literal": "FFL +11'6\"",
+   "inches": 138,
+   "metres": 3.5052
+  },
+  {
+   "key": "fflSecond",
+   "literal": "FFL +22'1\"",
+   "inches": 265,
+   "metres": 6.731
+  },
+  {
+   "key": "fflRoof",
+   "literal": "FFL +32'6\"",
+   "inches": 390,
+   "metres": 9.906
+  },
+  {
+   "key": "arrowGround",
+   "literal": "10'",
+   "inches": 120,
+   "metres": 3.048
+  },
+  {
+   "key": "arrowFirst",
+   "literal": "10'-7\"",
+   "inches": 127,
+   "metres": 3.2258
+  },
+  {
+   "key": "arrowSecond",
+   "literal": "10'-7\"",
+   "inches": 127,
+   "metres": 3.2258
+  }
+ ],
+ "intervals": [
+  {
+   "levelId": "5a1d717b-b2f0-4e63-938a-a2d19d1cc3ee",
+   "lowerIn": 18,
+   "upperIn": 138,
+   "arrowIn": 120,
+   "agrees": true
+  },
+  {
+   "levelId": "00c167c8-cd53-409a-aea3-fa2c59b407de",
+   "lowerIn": 138,
+   "upperIn": 265,
+   "arrowIn": 127,
+   "agrees": true
+  },
+  {
+   "levelId": "825119e9-76ba-4651-86ea-28809626e3b7",
+   "lowerIn": 265,
+   "upperIn": 390,
+   "arrowIn": 127,
+   "agrees": false
+  }
+ ],
+ "levels": [
+  {
+   "label": "GROUND FLOOR PLAN",
+   "lowerM": {
+    "value": 0.4572,
+    "state": "reviewed"
+   },
+   "upperM": {
+    "value": 3.5052,
+    "state": "reviewed"
+   },
+   "heightSource": "stated",
+   "heightState": "reviewed",
+   "citationsPageXYWHPt": [
+    [
+     2,
+     436.3999938964844,
+     1606.01025390625,
+     130.33737182617188,
+     11.993896484375
+    ],
+    [
+     2,
+     376.1600036621094,
+     993.05908203125,
+     14.02044677734375,
+     4.165283203125
+    ],
+    [
+     2,
+     376.1600036621094,
+     979.4990844726562,
+     16.36968994140625,
+     4.165283203125
+    ],
+    [
+     2,
+     376.1600036621094,
+     889.7390747070312,
+     18.677276611328125,
+     4.165283203125
+    ],
+    [
+     2,
+     345.7790222167969,
+     938.5601196289062,
+     4.165313720703125,
+     5.43988037109375
+    ],
+    [
+     2,
+     2112.320068359375,
+     101.06351470947266,
+     190.554443359375,
+     8.3492431640625
+    ]
+   ],
+   "prismAssessment": {
+    "method": "prism/2",
+    "analyticalEligibility": "not_assessed",
+    "state": "not_assessed",
+    "heightState": "known",
+    "reason": "reviewed_footprint_unavailable",
+    "prism": null
+   },
+   "roomCandidateIds": [
+    "vector-plan:348a20db32290c459ad06c9f9398c57739e7451dcb537c0a79d3949ce4ff0544:candidates.json#/pages/2/candidates/0"
+   ]
+  },
+  {
+   "label": "FIRST FLOOR PLAN",
+   "lowerM": {
+    "value": 3.5052,
+    "state": "reviewed"
+   },
+   "upperM": {
+    "value": 6.731,
+    "state": "reviewed"
+   },
+   "heightSource": "stated",
+   "heightState": "reviewed",
+   "citationsPageXYWHPt": [
+    [
+     2,
+     724.1599731445312,
+     1606.01025390625,
+     103.4111328125,
+     11.993896484375
+    ],
+    [
+     2,
+     376.1600036621094,
+     993.05908203125,
+     14.02044677734375,
+     4.165283203125
+    ],
+    [
+     2,
+     376.1600036621094,
+     889.7390747070312,
+     18.677276611328125,
+     4.165283203125
+    ],
+    [
+     2,
+     376.1600036621094,
+     794.819091796875,
+     18.677276611328125,
+     4.165283203125
+    ],
+    [
+     2,
+     345.7790222167969,
+     843.822509765625,
+     4.165313720703125,
+     10.41748046875
+    ],
+    [
+     2,
+     2112.320068359375,
+     101.06351470947266,
+     190.554443359375,
+     8.3492431640625
+    ]
+   ],
+   "prismAssessment": {
+    "method": "prism/2",
+    "analyticalEligibility": "not_assessed",
+    "state": "not_assessed",
+    "heightState": "known",
+    "reason": "reviewed_footprint_unavailable",
+    "prism": null
+   },
+   "roomCandidateIds": []
+  },
+  {
+   "label": "SECOND FLOOR PLAN",
+   "lowerM": {
+    "value": null,
+    "state": "unknown"
+   },
+   "upperM": {
+    "value": null,
+    "state": "unknown"
+   },
+   "heightSource": "unknown",
+   "heightState": "unknown",
+   "citationsPageXYWHPt": [
+    [
+     2,
+     1014.4400024414062,
+     1606.01025390625,
+     126.89508056640625,
+     11.993896484375
+    ],
+    [
+     2,
+     376.1600036621094,
+     993.05908203125,
+     14.02044677734375,
+     4.165283203125
+    ],
+    [
+     2,
+     376.1600036621094,
+     794.819091796875,
+     18.677276611328125,
+     4.165283203125
+    ],
+    [
+     2,
+     376.1600036621094,
+     701.339111328125,
+     18.677276611328125,
+     4.165283203125
+    ],
+    [
+     2,
+     345.7790222167969,
+     748.7825317382812,
+     4.165313720703125,
+     10.41748046875
+    ],
+    [
+     2,
+     2112.320068359375,
+     101.06351470947266,
+     190.554443359375,
+     8.3492431640625
+    ]
+   ],
+   "prismAssessment": {
+    "method": "prism/2",
+    "analyticalEligibility": "not_assessed",
+    "state": "not_assessed",
+    "heightState": "unknown",
+    "reason": "level_limits_unknown",
+    "prism": null
+   },
+   "roomCandidateIds": []
+  }
+ ],
+ "requests": {
+  "propose": {
+   "requestKey": "df7eee86-70a7-4964-b364-02547b0c3624",
+   "expectedCanonicalRevision": "<revisionId of the canonical building read just before sending>",
+   "action": "propose",
+   "content": {
+    "state": "reviewed",
+    "levels": [
+     {
+      "levelId": "5a1d717b-b2f0-4e63-938a-a2d19d1cc3ee",
+      "order": 0,
+      "labelLiteral": "GROUND FLOOR PLAN",
+      "kind": "floor",
+      "lowerM": 0.4572,
+      "upperM": 3.5052,
+      "heightSource": "stated",
+      "verticalReference": "drawing-local: finished floor levels relative to the section's ground mark; not a surveyed height",
+      "citations": [
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 436.3999938964844,
+         "y": 1606.01025390625,
+         "width": 130.33737182617188,
+         "height": 11.993896484375,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 993.05908203125,
+         "width": 14.02044677734375,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 979.4990844726562,
+         "width": 16.36968994140625,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 889.7390747070312,
+         "width": 18.677276611328125,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 345.7790222167969,
+         "y": 938.5601196289062,
+         "width": 4.165313720703125,
+         "height": 5.43988037109375,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 2112.320068359375,
+         "y": 101.06351470947266,
+         "width": 190.554443359375,
+         "height": 8.3492431640625,
+         "unit": "pt"
+        }
+       }
+      ]
+     },
+     {
+      "levelId": "00c167c8-cd53-409a-aea3-fa2c59b407de",
+      "order": 1,
+      "labelLiteral": "FIRST FLOOR PLAN",
+      "kind": "floor",
+      "lowerM": 3.5052,
+      "upperM": 6.731,
+      "heightSource": "stated",
+      "verticalReference": "drawing-local: finished floor levels relative to the section's ground mark; not a surveyed height",
+      "citations": [
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 724.1599731445312,
+         "y": 1606.01025390625,
+         "width": 103.4111328125,
+         "height": 11.993896484375,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 993.05908203125,
+         "width": 14.02044677734375,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 889.7390747070312,
+         "width": 18.677276611328125,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 794.819091796875,
+         "width": 18.677276611328125,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 345.7790222167969,
+         "y": 843.822509765625,
+         "width": 4.165313720703125,
+         "height": 10.41748046875,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 2112.320068359375,
+         "y": 101.06351470947266,
+         "width": 190.554443359375,
+         "height": 8.3492431640625,
+         "unit": "pt"
+        }
+       }
+      ]
+     },
+     {
+      "levelId": "825119e9-76ba-4651-86ea-28809626e3b7",
+      "order": 2,
+      "labelLiteral": "SECOND FLOOR PLAN",
+      "kind": "floor",
+      "lowerM": null,
+      "upperM": null,
+      "heightSource": "unknown",
+      "verticalReference": null,
+      "citations": [
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 1014.4400024414062,
+         "y": 1606.01025390625,
+         "width": 126.89508056640625,
+         "height": 11.993896484375,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 993.05908203125,
+         "width": 14.02044677734375,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 794.819091796875,
+         "width": 18.677276611328125,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 376.1600036621094,
+         "y": 701.339111328125,
+         "width": 18.677276611328125,
+         "height": 4.165283203125,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 345.7790222167969,
+         "y": 748.7825317382812,
+         "width": 4.165313720703125,
+         "height": 10.41748046875,
+         "unit": "pt"
+        }
+       },
+       {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+         "kind": "region",
+         "page": 2,
+         "x": 2112.320068359375,
+         "y": 101.06351470947266,
+         "width": 190.554443359375,
+         "height": 8.3492431640625,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "review": {
+   "requestKey": "24dc55a6-778c-4fa1-80f4-51114bb1fcbd",
+   "expectedCanonicalRevision": "<revisionId of the canonical building read just before sending>",
+   "action": "review",
+   "proposalId": "<proposal.proposalId of the propose receipt>",
+   "reason": "Floor-to-floor limits from the section's stated finished floor levels (\"ALL LEVELS INDICATED ARE IN FEET AND INCHES.\") relative to its ground mark \"FFL ±00\": drawing-local, not clear height, not surveyed. GROUND FLOOR PLAN: FFL +1'6\" to FFL +11'6\", matching the printed 10'. FIRST FLOOR PLAN: FFL +11'6\" to FFL +22'1\", matching the printed 10'-7\". SECOND FLOOR PLAN: FFL +22'1\" to FFL +32'6\" give 10'5\" while the printed arrow says 10'-7\"; the schedule does not choose and both limits stay unknown. No unit number and no ground placement are claimed."
+  }
+ }
+}

@@ -8,16 +8,29 @@ export type DeclarationBody = {
   supersedes: DeclarationBody['pin'] | null; review: ReviewDeclaration;
   technicalStatus: 'technically_accepted'; legalStatus: 'not_assessed';
 };
-export async function declarationSnapshotRowsTx(client: PoolClient, siteId: string) {
-  const declarations = (await client.query(`SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions
+export async function declarationSnapshotRowsTx(client: PoolClient, siteId: string, recordIds?: readonly string[]) {
+  const declarations = recordIds ? (await client.query(`SELECT DISTINCT ON(id) id,revision,body FROM (
+    SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions
+    WHERE site_id=$1 ORDER BY id,revision DESC
+  ) latest WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(body #> '{input,population,targets}') target
+      WHERE target #>> '{ref,id}'=ANY($2::text[]))
+    OR EXISTS(SELECT 1 FROM jsonb_array_elements(body #> '{input,entries}') entry
+      WHERE entry #>> '{target,ref,id}'=ANY($2::text[]))
+    OR EXISTS(SELECT 1 FROM jsonb_array_elements(body #> '{review,applicability}') app
+      WHERE app #>> '{target,ref,id}'=ANY($2::text[]))
+    ORDER BY id LIMIT 11`, [siteId, recordIds])).rows
+    : (await client.query(`SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions
     WHERE site_id=$1 ORDER BY id,revision DESC LIMIT 11`, [siteId])).rows;
   if (declarations.length > 10) throw new AppError(413, 'DECLARATION_SITE_LIMIT', 'This profile supports ten declarations per site.');
   const rows: { namespace: string; object_id: string; revision: number; body: Record<string, any> }[] = [];
   for (const d of declarations) {
     rows.push({ namespace: 'declaration', object_id: d.id, revision: Number(d.revision), body: d.body });
     for (const [table, namespace] of [['usp_declaration_entries', 'declaration_entry'], ['usp_declaration_applicability', 'applicability']] as const) {
+      const scoped = recordIds && namespace === 'applicability';
+      const restriction = scoped ? "AND body #>> '{target,ref,id}'=ANY($3::text[])" : '';
       const children = (await client.query(`SELECT id,revision,body FROM ${table}
-        WHERE declaration_id=$1 AND declaration_revision=$2 ORDER BY id LIMIT 101`, [d.id, d.revision])).rows;
+        WHERE declaration_id=$1 AND declaration_revision=$2 ${restriction} ORDER BY id LIMIT 101`,
+      scoped ? [d.id, d.revision, recordIds] : [d.id, d.revision])).rows;
       if (children.length > 100) throw new AppError(413, 'DECLARATION_MEMBER_LIMIT', 'The declaration exceeds this profile.');
       rows.push(...children.map(e => ({ namespace, object_id: e.id, revision: Number(e.revision), body: e.body })));
     }

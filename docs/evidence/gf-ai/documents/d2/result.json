@@ -1,0 +1,158 @@
+{
+  "task": "D2",
+  "base": "e4623944",
+  "checkpoint": "Part 1 complete; Part 2 not started under the resumed short pool budget.",
+  "qualification": "Offline service/controller contracts with SQL and storage doubles; not a live gate pass.",
+  "step0": {
+    "pageText": {
+      "reader": "packages/server/src/modules/usp/ingestion/documents.ts:61 readDocumentResult",
+      "product": "document-results/<jobId>/<resultSha256>.json; accepted source-document/1 result",
+      "authority": [
+        "source.inspection.documentAccepted jobId/sha256",
+        "assertDocumentInputTx and assertDocumentAcceptedResultTx"
+      ],
+      "native": "native.parts retain page text and character spans, but no spatial boxes or page frame.",
+      "ocr": [
+        "ocr.items retain text and sourcePageBoxes in pdf_display_page_top_left_points",
+        "ocr.sourcePageFrame retains dimensions and rotation; requestedRegion states the stored crop"
+      ],
+      "hash": "Accepted result SHA-256; OCR execution.candidateSha256 also pins the pre-envelope OCR product.",
+      "reach": "Existing transaction reaches pins; pages returns frames only; new readTextObject seam reads bytes.",
+      "cost": [
+        "One bounded stored-result object read; no extraction for text",
+        "Existing DocumentPagesService.pages still invokes bounded native page inspection for frames"
+      ],
+      "limits": [
+        "No accepted product: not_checked/no_region_text",
+        "Native spatial citation or ambiguous multi-box OCR item: not_checked/no_region_text",
+        "Outside a stored OCR crop: not_checked/no_region_text, never inferred absence",
+        "Malformed, changed or stale accepted source/job authority: refuse the new save"
+      ]
+    },
+    "pythonRule": {
+      "file": "scripts/usp/learning/storey_quote_verifier.py",
+      "normalise": "27: NFKC, collapse Python whitespace runs to one space, strip.",
+      "regionText": "45: join retained lines in order after strict positive-area box intersections; unknown page=None.",
+      "boxesIntersect": "41: x0<x1 and y0<y1 on both boxes; touching edges do not intersect.",
+      "numberIsInQuote": "60: every NFKC Unicode decimal digit group in str(valueLiteral) must be a group in quote.",
+      "verifyItem": "67: source hash or quote failure first, then normalised region substring, then number groups."
+    },
+    "snapshots": {
+      "literals": {
+        "version": "source-document-proposals/1",
+        "method": "caller_supplied_provisional",
+        "provenanceAuthority": "caller_supplied_unverified",
+        "quotationVerification": "not_machine_verified",
+        "unresolvedFirst": "quote_truth"
+      },
+      "reparsed": [
+        "storedSchema/load: exact read, history, request replay and selected proposal",
+        "decisionStoredSchema: originalProposal on decision save, read and history"
+      ],
+      "storage": "Existing operations.result JSONB wrapper, hashed in full; no migration.",
+      "compatibility": [
+        "Keep /1 snapshot schema; add /2 snapshot/view union",
+        "Broaden history quotationVerification and decision originalProposal without defaults or rewriting history"
+      ]
+    },
+    "agent": {
+      "result": ["StoreyAgentResult: state, output, code?, attempts, replayed, partsHash, method",
+        "teacher_unavailable has output=null"],
+      "facts": [
+        "storeyCount/basementCount value+expression; floorExpressions expression+scope",
+        "labels label+kind; heights statedValue+statedUnit; unitCounts value+scope",
+        "Each fact has citations partId+quote; StoreyPart maps partId to page/text"
+      ],
+      "citationGap": "StoreyPageStore TypeScript shape omits retained line boxes and frame needed by the adapter.",
+      "fits": ["fieldRole", "quote", "lineQuote", "locator", "declaredMethod", "status", "reasons"],
+      "noPlaceBeforeTask": ["parsed value/value literal", "height unit", "label kind", "fact scope"],
+      "addedInPart1": "valueLiteral is optional, explicit text for number verification; never hidden in reasons.",
+      "conflicts": "Packet conflicts and unknowns already have explicit homes.",
+      "provenanceGap": "replayed alone cannot distinguish provider replay from recorded software control."
+    },
+    "callers": {
+      "controller": "apps/api/src/modules/ingestion/document-proposals.controller.ts -> DocumentProposalsService.save",
+      "studio": "No document-proposals caller found under apps/studio.",
+      "scripts": "A5 candidates.py creates packet files, write=none; D08 evidence records past manual HTTP saves.",
+      "impact": "Use the saved packet, not echoed input; refused entries are no longer selectable for decisions.",
+      "newRouteNeeded": false
+    },
+    "decision": "Proceed: server can read accepted stored OCR today; no new page-text store or migration."
+  },
+  "part1": {
+    "codeCommit": "c6430f35",
+    "snapshotVersion": "source-document-proposals/2",
+    "quotationVerification": "locator_checks_recorded",
+    "truth": "quote_truth stays unresolved: text presence is neither OCR accuracy nor fact truth.",
+    "input": "docs/evidence/gf-ai/storeys/a5/candidates/haryana-2831-tower3.json",
+    "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "pageStoreDirectory": "E:/BhuAayam-data/task-data/a5/stores",
+    "pageStoreSha256": "b875d74da2638228dc7e5947ca3815e5c56706fa4f0ba0f01213eb684ab32b18",
+    "good": {"kept": 20, "refused": 0, "codes": []},
+    "difficult": {"change": "p6 quote G+42 -> G+43", "kept": 19, "refused": 1,
+      "codes": ["quote_not_at_locator"]},
+    "basis": "ocr_observations; exact page-store SHA-256 in controls, accepted-result SHA-256 in production.",
+    "candidateState": "Kept proposals remain needs_review; learningLabel=false; no registry write.",
+    "parity": {"table": "quote-cases.json", "cases": 9, "python": "ULPIN_PROFILE_PYTHON with -B",
+      "missingQuote": "Python drops it; route records not_checked/no_quote as explicitly required by D2."},
+    "invariants": [
+      "One good and one bad quote retained in separate populations with original locator and code",
+      "All-refused nonempty packet still saves; over 256 rejections refuses with DOCUMENT_PROPOSALS_REJECTED_LIMIT",
+      "Conflicts stay unresolved with refused original-proposal references; no winner selected",
+      "Stored /1 still reads, lists in history and accepts a decision; same request key returns same snapshot",
+      "Stored result read outside insertion locks; hash/scope/frame checked and accepted authority rechecked"
+    ],
+    "tests": {"documentProposals": 18, "quoteCheck": 2, "documentClaims": 6,
+      "documentPages": 6, "storeyAgent": 8, "pageController": 1, "total": 41, "failed": 0, "skipped": 0}
+  },
+  "callerChanges": {
+    "version": "Accept source-document-proposals/1 or /2; old records stay unchanged.",
+    "quotationVerification": "Accept locator_checks_recorded; read per-entry outcomes, not blanket truth.",
+    "valueLiteral": "Optional input field; supply agent literal here for the number rule.",
+    "packet.proposals": "May shrink to zero; use saved population and counts for decisions.",
+    "proposal.quotationCheck": "Read outcome, reason, basis.kind and basis.productSha256.",
+    "packet.rejected": "May grow; show reason, original locator and optional originalProposal with quotationCheck.",
+    "packet.conflicts": "May reference rejected.originalProposal.proposalId; do not silently drop or resolve it.",
+    "decision.originalProposal": "May carry valueLiteral and quotationCheck; citation itself remains unverified.",
+    "unchanged": "status, learningLabel, source pins, request keys, and no canonical adoption.",
+    "studio": "No current caller to change; generated client updated, no UI edited."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "pnpm studio:typecheck", "exitCode": 0},
+    {"command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0},
+    {"commandParts": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "tests/document-proposals.test.ts", "tests/document-claims.test.ts", "tests/document-pages.test.ts",
+      "packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts",
+      "packages/server/src/modules/ai/document-storey-agent.test.ts",
+      "apps/api/src/modules/evidence/document-pages.controller.test.ts"], "exitCode": 0, "passed": 41},
+    {"commandParts": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json",
+      "scripts/api/refresh-contract.ts staging"], "exitCode": 0},
+    {"command": "pnpm studio:api-types", "exitCode": 0},
+    {"commandParts": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json",
+      "apps/api/scripts/openapi.ts --check"], "exitCode": 0},
+    {"command": "python -B scripts/api/check.py", "exitCode": 1,
+      "reason": "API-DOC: runtime receipt changed; known owner re-pin blocker, not altered here."},
+    {"command": "git diff --check", "exitCode": 0}
+  ],
+  "knownCheck": "tests/usp-packet-image-pdf-recovery.test.ts excluded: environment failure owned elsewhere.",
+  "operations": {"added": 0, "generatedOnThisBranch": 298,
+    "merge": "Lead must regenerate against newer staging's 300 operations; no manifest edit here."},
+  "safety": {"providerCalls": 0, "runtimeRequests": 0, "sqlAgainstRunningDatabase": 0,
+    "migrations": 0, "credentialsRead": false, "heldOutOpened": false, "pushed": false},
+  "part2Remaining": [
+    "Add one adapter resolving partId to page/text/box; preserve typed facts, conflicts and unknowns explicitly",
+    "Uncited fact rejection needs an honest no-locator representation, not invented coordinates",
+    "Resolve recording kind from trusted recording metadata; replayed alone is not a software-control label",
+    "One replay-only caller saves through DocumentProposalsService; teacher_unavailable must save nothing",
+    "Recorded-control replay -> adapt -> save -> reviewed/rejected decision readback, zero dispatch assertions",
+    "A5 retained packet contains G+42, not a G+41 alternative; locate legitimate G+41 source text, do not invent it"
+  ],
+  "runtimeOwner": {
+    "prerequisite": "Roll out, retain current accepted OCR at the locator, save once and use its exact snapshotId.",
+    "commandParts": ["curl --fail --silent",
+      "\"$DEMO_API/api/v1/ingestion/cases/$TOWER3_CASE/sources/$TOWER3_SOURCE/document-proposals/$CHECKED_SNAPSHOT\""],
+    "lookFor": "version=/2; quotationCheck.outcome=quote_at_locator; basis SHA-256; quote_truth still unresolved.",
+    "executed": false
+  }
+}

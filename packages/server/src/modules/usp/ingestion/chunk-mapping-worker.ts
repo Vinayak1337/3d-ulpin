@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
-import {CHUNK_MAPPING_LIMITS as limits,ChunkMappingInputSchema,ChunkMappingPayloadSchema,
+import {AnyStreamingInputSchema,CHUNK_MAPPING_LIMITS as limits,ChunkMappingInputSchema,ChunkMappingPayloadSchema,
   type ChunkMappingInput,type ChunkMappingPayload,type StreamingVectorRecord,type AdaptiveMappingResponse} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
@@ -11,7 +11,11 @@ import {appendCaseIngestionTx} from './events';
 import {AdaptiveMappingService} from './adaptive-mapping-service';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {assertChunkMappingInputTx} from './chunk-mapping';
+import {TabularChunkMapper} from './chunk-mapping-agent';
+import {acceptTableWindow,acceptTabularDataSlot,proposeFromTableWindow} from './chunk-mapping-tabular';
+import {isWindowedTable} from './table-windows';
 import {candidateKeyHashes,normalizeMappedChunk,type KeyRow} from './chunk-mapping-normalizer';
+import {queueIntakeLargeTx} from './intake-large';
 
 const rawService=new StreamingVectorService(),adaptive=new AdaptiveMappingService();
 type Stored={payload:ChunkMappingPayload;bytes:number;hash:string;key:string};
@@ -50,7 +54,8 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
   if(!payload||!slot.ref)conflict('A data slot requires its immutable raw payload.');
   const prepared=await transaction(async client=>{
     const {profile,approved}=await assertChunkMappingInputTx(client,input);
-    if(!profile||!approved)conflict('An approved source recipe is required.');
+    if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
+      conflict('An approved GIS source recipe is required.');
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT next_publish_index FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[input.jobId])).rows[0];
     if(state?.next_publish_index!==slot.chunkIndex)conflict('The mapping publication pointer changed.');
@@ -68,7 +73,8 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
   const stored=await storePayload(mapped);
   await transaction(async client=>{
     const {profile,approved}=await assertChunkMappingInputTx(client,input);
-    if(!profile||!approved)conflict('The source recipe changed before mapped publication.');
+    if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
+      conflict('The GIS source recipe changed before mapped publication.');
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     if(!state||state.state!=='running'||state.next_publish_index!==slot.chunkIndex||state.records!==slot.firstFeatureIndex)
@@ -143,6 +149,7 @@ async function terminal(input:ChunkMappingInput,attempt:UspJobAttempt,code:strin
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'failed'},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 async function retry(input:ChunkMappingInput,attempt:UspJobAttempt,code:string){
@@ -180,6 +187,68 @@ async function propose(input:ChunkMappingInput,attempt:UspJobAttempt){
         sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status},input.subject);
     });
 }
+/** G13: a raw job that writes table windows instead of slots; read from its own immutable input receipt. */
+async function rawWindowed(input:ChunkMappingInput){
+  const row=(await query("SELECT payload FROM jobs WHERE id=$1 AND operation='streaming-vector'",[input.rawJobId])).rows[0];
+  const raw=AnyStreamingInputSchema.safeParse(row?.payload);
+  return raw.success&&isWindowedTable(raw.data);
+}
+async function tableWindowState(input:ChunkMappingInput){
+  return transaction(async client=>{
+    await assertChunkMappingInputTx(client,input);
+    const state=(await client.query('SELECT next_publish_index FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',
+      [input.jobId])).rows[0];
+    const raw=(await client.query('SELECT state,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
+      [input.rawJobId])).rows[0];
+    if(!state||!raw)conflict('The mapping or source streaming state is unavailable.');
+    const written=(await client.query('SELECT 1 FROM usp_table_windows WHERE job_id=$1 AND window_index=$2',
+      [input.rawJobId,state.next_publish_index])).rowCount===1;
+    return {index:Number(state.next_publish_index),raw,written};
+  });
+}
+/** The proposal for a streamed table is its first window's sample; every window is mapped after approval. */
+async function proposeTableEnd(input:ChunkMappingInput,attempt:UspJobAttempt){
+  const code='TABLE_WINDOWS_RECIPE_REQUIRED';
+  const resultHash=fingerprint({version:limits.version,jobId:input.jobId,status:'needs_input',code,windowed:true});
+  await acceptUspJobAttempt(attempt,{assetId:`chunk-mapping:${input.jobId}`,version:1,sha256:resultHash},
+    async(client)=>{
+      const state=(await client.query('SELECT state,next_publish_index FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',
+        [input.jobId])).rows[0];
+      if(state?.state!=='running'||state.next_publish_index!==1)conflict('The proposal job changed before acceptance.');
+    },client=>assertChunkMappingInputTx(client,input).then(()=>{}),async client=>{
+      await client.query("UPDATE usp_chunk_mapping_imports SET state='needs_input',issue_code=$2,updated_at=now() WHERE job_id=$1",
+        [input.jobId,code]);
+      await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
+        sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'needs_input'},input.subject);
+    });
+}
+type CompletionState={quarantined:number;unresolved:number;duplicate_keys:number;schema_drift_chunks:number;
+  refused:boolean};
+/** Draft interpretation is not refusal: unresolved table rows survive a closed source as a count. */
+function tabularCompletionStatus(state:CompletionState){
+  return state.quarantined>0||state.refused?'completed_with_rejections':'completed';
+}
+/** For records, unresolved, duplicate or drifted chunks are real import problems. */
+function gisCompletionStatus(state:CompletionState){
+  return state.quarantined||state.unresolved||state.duplicate_keys||state.schema_drift_chunks
+    ?'completed_with_rejections':'completed';
+}
+
+export function chunkMappingCompletionStatus(kind:'tabular'|'gis',state:CompletionState){
+  return kind==='tabular'?tabularCompletionStatus(state):gisCompletionStatus(state);
+}
+
+export async function finishChunkMappingTx(client:PoolClient,input:ChunkMappingInput){
+  const state=(await client.query(`SELECT quarantined,unresolved,duplicate_keys,schema_drift_chunks,EXISTS(SELECT 1
+    FROM usp_chunk_mapping_slots WHERE job_id=$1 AND published=true AND status='quarantined' AND records=0
+    AND issue_code IS NOT NULL) refused FROM usp_chunk_mapping_imports WHERE job_id=$1`,[input.jobId])).rows[0];
+  const status=chunkMappingCompletionStatus(input.tabular?'tabular':'gis',state);
+  await client.query('UPDATE usp_chunk_mapping_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',
+    [input.jobId,status]);
+  await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
+    sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status},input.subject);
+}
+
 async function complete(input:ChunkMappingInput,attempt:UspJobAttempt){
   const sealed=await transaction(async client=>{
     await assertChunkMappingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
@@ -202,11 +271,7 @@ async function complete(input:ChunkMappingInput,attempt:UspJobAttempt){
         ||state.records!==sealed.records||state.unknown_remainder||raw?.unknown_remainder)
         conflict('The complete mapped manifest is not published.');
     },client=>assertChunkMappingInputTx(client,input).then(()=>{}),async client=>{
-      const state=(await client.query('SELECT quarantined,unresolved,duplicate_keys,schema_drift_chunks FROM usp_chunk_mapping_imports WHERE job_id=$1',[input.jobId])).rows[0];
-      const status=state.quarantined||state.unresolved||state.duplicate_keys||state.schema_drift_chunks?'completed_with_rejections':'completed';
-      await client.query('UPDATE usp_chunk_mapping_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[input.jobId,status]);
-      await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
-        sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status},input.subject);
+      await finishChunkMappingTx(client,input);await queueIntakeLargeTx(client,input.sourceId);
     });
 }
 
@@ -252,6 +317,7 @@ async function claimFailure(input:ChunkMappingInput,error:unknown){
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'failed'},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 
@@ -263,6 +329,7 @@ export async function runChunkMappingJob(jobId:string){
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(jobId,`chunk-mapping:${randomUUID()}`,client=>assertChunkMappingInputTx(client,input).then(()=>{}));}
   catch(error){await claimFailure(input,error);return;}
+  const tabularMapper=new TabularChunkMapper();
   let lastHeartbeat=Date.now(),waitStarted=Date.now();
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertChunkMappingInputTx(client,input).then(()=>{}));
@@ -278,7 +345,28 @@ export async function runChunkMappingJob(jobId:string){
       await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,rawJobId:input.rawJobId,status:'running'},input.subject);
     });
-    if(input.route==='proposal_only'){await propose(input,attempt);return;}
+    if(input.route==='proposal_only'&&!input.tabular){await propose(input,attempt);return;}
+    if(input.tabular&&await rawWindowed(input)){
+      // G13: windows in order; a window the recipe cannot map is published as failed with its reason.
+      while(true){
+        await pulse();const next=await tableWindowState(input);
+        if(next.written){
+          if(input.route==='proposal_only'){
+            if(next.index===0&&await proposeFromTableWindow(input,attempt,tabularMapper,storePayload))continue;
+            await proposeTableEnd(input,attempt);return;
+          }
+          await acceptTableWindow(input,attempt,next.index);waitStarted=Date.now();continue;
+        }
+        if(input.route==='proposal_only'&&next.index===1){await proposeTableEnd(input,attempt);return;}
+        if(['completed','completed_with_rejections'].includes(next.raw.state)){await complete(input,attempt);return;}
+        if(['failed','stale'].includes(next.raw.state)){
+          await terminal(input,attempt,next.raw.issue_code??'RAW_STREAM_FAILED');return;
+        }
+        if(Date.now()-waitStarted>limits.readMs)
+          throw new AppError(503,'MAPPING_SOURCE_WAIT','The source stream did not write another table window in time.');
+        await pause(1000);
+      }
+    }
     while(true){
       await pulse();const next=await window(input);
       if(next.slot){
@@ -286,7 +374,10 @@ export async function runChunkMappingJob(jobId:string){
         if(rawChunk.slot.resultSha256!==next.slot.result_sha256)conflict('The published raw slot changed.');
         if(!rawChunk.slot.ref){await terminal(input,attempt,rawChunk.slot.issueCode??'RAW_STREAM_FAILED',false,
           rawChunk.slot.resultSha256);return;}
-        await acceptDataSlot(input,attempt,rawChunk);waitStarted=Date.now();continue;
+        if(input.tabular)await acceptTabularDataSlot(input,attempt,rawChunk.payload!,rawChunk.slot.resultSha256,
+          tabularMapper,storePayload);
+        else await acceptDataSlot(input,attempt,rawChunk);
+        waitStarted=Date.now();continue;
       }
       if(['completed','completed_with_rejections'].includes(next.raw.state)){await complete(input,attempt);return;}
       if(['failed','stale'].includes(next.raw.state)){

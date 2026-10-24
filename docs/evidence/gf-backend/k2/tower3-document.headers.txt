@@ -1,0 +1,13 @@
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+X-Request-Id: 27fa2eb1-bad5-47ee-9d0f-82bc226ee726
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+Content-Type: application/json; charset=utf-8
+Content-Length: 310
+ETag: W/"136-fPBEOehFalorsGIxdtIZ9qZivEQ"
+Date: Fri, 09 Oct 2026 20:13:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

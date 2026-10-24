@@ -1,0 +1,41 @@
+{ "at": "2026-10-17T00:04:24.353Z", "api": "http://127.0.0.1:21026", "runtime": "ulpin-reh-02",
+"servedCommit": "9d6acc6b", "harness": [
+"walk.ts: REH2 walk.ts adapted; Studio zipRoute, questionBody, streamedQuestionBody, approv", "alBody imported" ],
+"newCase": "REH3 presentation rehearsal test_only (not REH2 case 55d54ba5)", "inputs": [ { "name": "nyc-zip",
+"path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip", "bytes": 14621643,
+"sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da", "hashMatchesRecord": true,
+"recordedIn": "docs/evidence/runtime/reh2/plan-b.json", "classification": "test_only",
+"geography": "lower Manhattan inside ZCTA 10013, US" }, { "name": "niagara", "path": [
+"E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018",
+"_1330698285055863645.geojson" ], "bytes": 26660992,
+"sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521", "hashMatchesRecord": true,
+"issuer": "City of Niagara Falls",
+"originalUrl": "https://hub.arcgis.com/api/download/v1/items/0e4764a531e84b7182cfaf3c4da7e8f4/geojson?layers=0",
+"acquiredAt": "2026-10-11T02:58:14.098Z", "permissionReference": "https://open.niagarafalls.ca/pages/terms-of-use",
+"recordedIn": "docs/evidence/gf1/da1/result.json", "classification": "test_only", "crs": "declared EPSG:2958" } ],
+"expectedLayer": { "member": "layers/buildings-original.geojson", "bytes": 1103282,
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+"why": "REH2 extracted this member unchanged; the child original kept by ZF1 must carry the same SHA-256" }, "order": {
+"nyc": [ "zipRoute(bytes) from apps/studio/src/features/intake/file-route.ts must be intake",
+"POST /api/v1/cases (new case)", "GET /api/v1/cases/{caseId} (revision)", [
+"POST /api/v1/ingestion/cases/{caseId}/intake/archives multipart file, requestKey, expected", "WorkspaceRevision" ], [
+"POST /api/v1/ingestion/cases/{caseId}/intake/items {sourceId: archive} (enrol; the fan-out", " runs here)" ],
+"GET /api/v1/ingestion/cases/{caseId}/intake (parent, member rows, layer items)",
+"GET /api/v1/cases/{caseId} (each layer original and its inspection.archiveMember lineage)",
+"GET /api/v1/ingestion/cases/{caseId}/intake/items/{itemId} (the buildings layer card)",
+"GET /api/v1/ingestion/cases/{caseId}/intake until the buildings layer asks or has a plan",
+"GET .../sources/{sourceId}/profile; POST .../sources/{sourceId}/recipes (Studio questionBody)", [
+"  or, for a plan proposed from memory, GET .../recipes/{recipeId} and approve it if it is ", "the same choice" ],
+"POST /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve (Studio approvalBody)",
+"GET .../intake until a package; GET .../targets until reviewed",
+"GET .../intake, .../targets, /api/v1/areas/{areaId}/context" ], "niagara": [ "GET /api/v1/cases/{caseId}",
+"POST .../uploads", "PUT .../uploads/{uploadId}/parts/{n} per part", "POST .../uploads/{uploadId}/finalize",
+"POST .../intake/items", "GET .../intake every 2 s during the read (records seen must move, RM1) until the question",
+"GET .../sources/{sourceId}/streamed-profile/jobs/{jobId} (the manifest streamedProfileJobId)", [
+"POST .../streamed-profile/jobs/{jobId}/recipes (Studio streamedQuestionBody pinned to stat", "us.caseRevision)" ],
+"POST .../recipes/{recipeId}/approve", "GET .../intake until parts done", "GET .../targets until reviewed",
+"GET .../intake, .../targets, /api/v1/areas/{areaId}/context" ] }, "choices": { "nyc": {
+"layer": "layers/buildings-original.geojson", "kind": "building", "identifier": "/features/*/properties/bin",
+"height": "not stated" }, "niagara": { "kind": "building", "identifier": "/features/*/properties/OBJECTID",
+"height": "not stated" } },
+"limits": "Stop each input at the first refusal; no retry of a side-effecting request; no provider, key or GPU" }

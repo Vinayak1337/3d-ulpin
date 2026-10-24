@@ -1,0 +1,148 @@
+{
+  "task": "GN1",
+  "gate": "GF1",
+  "complete": false,
+  "g1": true,
+  "g2": true,
+  "g3": true,
+  "g4": false,
+  "baseCommit": "814807ca489208ac9a8e31005f138f3a20ee4a1a",
+  "implementation": "G1/G2/G3 qualified; G4 guard and waiting mapping tested, protected call site blocks runtime integration.",
+  "da5": {
+    "sourceFeatures": 155,
+    "preparedParcels": 155,
+    "preparedBuildings": 0,
+    "reviewedPhysicalParcelRecords": 155,
+    "readyBuildingTargets": 0,
+    "sourceCrs": "EPSG:2958",
+    "unit": "metre",
+    "all155KeysEqualRawDigits": true,
+    "multipartPartsRetained": [
+      {
+        "sourceKey": "79",
+        "sourceParts": 2,
+        "localParts": 2,
+        "geographicParts": 2
+      },
+      {
+        "sourceKey": "88",
+        "sourceParts": 2,
+        "localParts": 2,
+        "geographicParts": 2
+      },
+      {
+        "sourceKey": "153",
+        "sourceParts": 2,
+        "localParts": 2,
+        "geographicParts": 2
+      }
+    ],
+    "extent": [
+      -79.16101883167528,
+      43.040644980164004,
+      -79.04074191660973,
+      43.14004728100516
+    ],
+    "storedReference": {
+      "sourceCrs": "EPSG:2958",
+      "analysisCrs": "EPSG:32617",
+      "origin": [
+        649725.8133829064,
+        4767147.936926401
+      ],
+      "anchor": [
+        -79.16182333394151,
+        43.042265686487326
+      ],
+      "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / unavailable until proj_trans is called",
+      "verticalReference": "building-relative; not aligned between features"
+    },
+    "sourceSystemWarningRetained": true,
+    "height": "No height layout sent; unknown stays unknown.",
+    "choices": "Harness officer states parcel, OBJECTID whole-number identity, no name/height, no destination."
+  },
+  "columnMemory": {
+    "firstRawFeatures": 1662,
+    "firstPhysicalRecords": 1661,
+    "secondRawFeatures": 1417,
+    "secondReadyBuildings": 1417,
+    "secondPhysicalRecords": 1417,
+    "extraColumns": 7,
+    "origin": "memory",
+    "oldCrsObjectsAndFingerprintsUnchanged": true,
+    "freshSourcePins": true,
+    "approvalNotInherited": true,
+    "officerApprovedBeforePrepare": true,
+    "newAreaForSecond": true
+  },
+  "duplicate": {
+    "caseId": "27b9a017-1d04-400e-8050-ff6d4468a675",
+    "refusal": {
+      "status": 409,
+      "code": "STALE_REVISION",
+      "message": "This destination already exists; pin its current area and reference explicitly.",
+      "requestId": "d83aa1bc-f131-49e6-963c-1a3e35d4664a"
+    },
+    "row": {
+      "state": "probed",
+      "placement": "undecided",
+      "limitReason": null
+    },
+    "before": {
+      "areas": 3,
+      "packages": 3,
+      "records": 3233
+    },
+    "after": {
+      "areas": 3,
+      "packages": 3,
+      "records": 3233
+    },
+    "newAreas": 0,
+    "newPackages": 0,
+    "newPhysicalRecords": 0,
+    "waitingReasonEqualsRefusal": false,
+    "jobStatus": "stale",
+    "noRecipePrepared": true,
+    "g4": false,
+    "blockedBy": "service.ts author destination call is read-only and supplies no source hash. The destination guard cannot prove this file owns file:<sha256> without that pin."
+  },
+  "blockers": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/service.ts",
+      "line": 221,
+      "scope": "ManualIngestionService.author, read-only",
+      "needed": "Pass input.plan.source.sourceSha256 as fourth destination argument (false third); decide at line 266 should pass its source hash as well.",
+      "words": "This destination already exists; pin its current area and reference explicitly.",
+      "status": 409,
+      "code": "STALE_REVISION"
+    }
+  ],
+  "gaps": [
+    "apps/api/src/modules/intake/wire-schemas.ts:230-239 does not advertise additive GIS crsUnit/integer facts; untouched, bounded batch SourceProfile does advertise/use them.",
+    "Projected GeoJSON inside a ZIP still hits document-ingestion.ts:185-186's EPSG:4326 + two evidence strings restriction; untouched.",
+    "Large-file readers, adaptive proposer and Studio unchanged. Private model/provider/runtime demo not qualified.",
+    "In-memory S3 HTTP stand-in, not production object-store qualification. Parcel records are physical records, not issued building/unit registry cards."
+  ],
+  "evidence": {
+    "before": "before.json",
+    "after": "after.json",
+    "tokens": "token-proof.json",
+    "runtime": "runtime.json",
+    "checks": "checks.json",
+    "ownership": "ownership-stop.json",
+    "attempts": "attempts.json"
+  },
+  "providers": 0,
+  "originalHashesUnchanged": true,
+  "hashes": {
+    "da5": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+    "nyc": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "da4": "4a5735dd57c0ad1e4971c853837230056ce148cfbde4cab41c6873d3a2112e9e"
+  },
+  "ownedNonce": "024f86f5f67b3997",
+  "ownedNonceGone": true,
+  "builtGeoSourceHashesMatch": true,
+  "earlierBridgeReceipt": "runtime-with-callsite-bridge.json is diagnostic only; unowned author/decide changes were reverted. Not a final G4 qualification.",
+  "next": "Lead/author owner supplies the two protected destination-call pins, refreshes contract pins and re-walks duplicate; then G4 can be qualified."
+}

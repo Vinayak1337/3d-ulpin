@@ -107,7 +107,7 @@ The record relationships worth explaining are **building → level → unit → 
 
 1. **Data and version continuity.** Choose the new dataset/build and follow the same subject. The older cut, main capture and desktop v2 use different buildings or flats. Do not splice them into an apparent single transaction. Preserve the official NYC versus historical fixture distinction.
 2. **Evidence and decisions.** Add the actual document-viewer moment and one meaningful reviewed outcome. Existing source files and attractive status badges alone do not complete that story. The retained footage includes open findings and unknowns; do not imply they all become resolved.
-3. **Explanatory claims.** V2’s AI/ML panels include training curves, counters and a promoted model. Those animations are not runtime receipts. The current [migration ledger](../orchestration/NESTJS_MIGRATION.md) records the learning candidate as offline, without production promotion. Keep any architecture explanation tied to current evidence and label proposed behavior where applicable. Likewise, standards badges and “any format” copy do not prove universal interoperability or input support.
+3. **Explanatory claims.** V2’s AI/ML panels include training curves, counters and a promoted model. Those animations are not runtime receipts. The current [migration ledger](../archive/orchestration/NESTJS_MIGRATION.md) records the learning candidate as offline, without production promotion. Keep any architecture explanation tied to current evidence and label proposed behavior where applicable. Likewise, standards badges and “any format” copy do not prove universal interoperability or input support.
 
 The main capture is enough to plan the story. These gaps call for a small set of targeted captures, not a new exhaustive test campaign or changes to the frontend by this review task.
 
@@ -138,6 +138,6 @@ This is a first editing budget. The short final sequences may need more time onc
 - Main capture manifest SHA-256: `fb956be01f569c783c3b233ab113dcdd91a484fad235fd808d5cacd95ca868ed`.
 - Extra capture manifest SHA-256: `73beac86cccc167eff8452b9a8184407a0bd118b594e397a4116a5c272327311`.
 - [F7 plan](</Users/vinayak/Desktop/ulpin-frontend/apps/studio/datasets/2-building/plan_F7.pdf>), [sale deed](</Users/vinayak/Desktop/ulpin-frontend/apps/studio/datasets/2-building/sale_deed_704.pdf>) and [declaration](</Users/vinayak/Desktop/ulpin-frontend/apps/studio/datasets/2-building/deed_of_declaration.pdf>): selected relevant pages rendered and visually inspected.
-- [Current source index](../api/real-sources.md) and [status vocabulary](../usp-agent-handoffs/99-ui-ux-and-integration.md).
+- [Current source index](../api/real-sources.md) and [status vocabulary](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md).
 
 Folder names do not establish authorship; this review does not attribute either source project to a particular assistant.

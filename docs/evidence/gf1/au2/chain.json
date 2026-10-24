@@ -1,0 +1,472 @@
+{
+  "task": "AU2",
+  "gate": "GF1",
+  "baseline": "e2c5af5d",
+  "qualification": "Code-read audit except the single small real-file reader run in measurement.json.",
+  "paths": {
+    "ingestion": "packages/server/src/modules/usp/ingestion/",
+    "areas": "packages/server/src/modules/areas/",
+    "usp": "packages/server/src/modules/usp/",
+    "contracts": "packages/contracts/src/usp/",
+    "studio": "apps/studio/src/"
+  },
+  "items": [
+    {
+      "item": 1,
+      "title": "Studio drop",
+      "status": "not connected",
+      "answer": [
+        "A 1 MiB GeoJSON drop uses neither sources nor uploads: it goes to import-packages/inspect,",
+        "then import-packages after manual confirmation; CA0's automatic retained-source path is API-only."
+      ],
+      "evidence": [
+        {
+          "at": "apps/studio/src/features/intake/AddFilesDialog.tsx:38,134-151,170-193,220-227",
+          "fact": [
+            "GIS extensions geojson/json/gpkg/zip are sent whole as FormData to POST /api/v1/import-packages/inspect.",
+            "Start import sends one selected GIS original to POST /api/v1/import-packages; no file-size branch.",
+            "Other types stay not-gis; CSV/XLSX get an explicit Import as a table button (:252-255).",
+            "No generic retained-original intake tray or multipart upload client is connected here."
+          ]
+        },
+        {
+          "at": "apps/studio/src/api/demo-import.ts:11-25",
+          "fact": [
+            "Only opt-in DEV/hosted-demo plus VITE_DEMO_IMPORT=1 tries /api/demo/inspect and /api/demo/imports.",
+            "AddFilesDialog.tsx:139-151 falls back to real import inspection when the demo profile refuses.",
+            "This is the hash-qualified NYC development transport, not the canonical streaming-vector reader."
+          ]
+        },
+        {
+          "at": "apps/studio/src/features/intake/table/retain.ts:16-29",
+          "fact": "Only the table dialog uses POST /api/v1/ingestion/cases/{caseId}/sources, as csv/xlsx."
+        },
+        {
+          "at": "packages/api-client/src/index.ts:1-5; packages/api-client/src/schema.d.ts:3394-3527,3895-3997",
+          "fact": "The generic typed client publishes uploads/stream reads but does not choose an upload strategy."
+        },
+        {
+          "at": "packages/server/src/modules/usp/ingestion/service.ts:117-125,174-185,278-281",
+          "fact": [
+            "API GeoJSON retention is geojson-manual-v1, <=16 MiB and <=2000 features; approval queues CA0.",
+            "The area-import drop instead creates geojson-area-v2 (areas.ts:681-702), not that manual receipt.",
+            "A 1 MiB file cannot use uploads at all: ingestion.ts:189-193 requires >16 MiB for both profiles."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 2,
+      "title": "Large original retention and probe",
+      "status": "works",
+      "condition": "API upload, active unassigned case, local owner, configured v2 capacity and storage.",
+      "evidence": [
+        {
+          "at": "packages/contracts/src/usp/ingestion.ts:156-193",
+          "fact": [
+            "Both profiles cut transport at 8 MiB. v1 file >16 to128 MiB (<=16 parts); v2 >16 MiB to7 GiB (896).",
+            "v1: active case2/operator2/global4, lifetime receipts128, reserved originals512 MiB, copies1 GiB.",
+            "v2: active global1, lifetime receipts8, originals7 GiB, copies ceiling22 GiB; opt-in reservation.",
+            "Receipt lifetime is 24h/7d, not renewal of the lifetime receipt count; attempts part3/finalization3.",
+            "v1 lease180s/finalize120s/cleanup120s, v2 lease180s/finalize12h/cleanup12h; transport requests30s."
+          ]
+        },
+        {
+          "at": "packages/server/src/modules/usp/ingestion/large-original.ts:20-24,104-140,154-173,219-282",
+          "fact": [
+            "File-size/media admission is Zod in create; count and byte reservations are SQL under a global lock.",
+            "Receipt counts include retained AND aborted rows globally, not per case or just active files.",
+            "The 129th fresh v1 receipt gets 429 UPLOAD_QUOTA; aborting old receipts does not clear that count.",
+            "The ninth v2 receipt likewise fails; missing v2 configuration is503 UPLOAD_CAPACITY_UNCONFIGURED.",
+            "Reservations sum all non-aborted originals. Configured total requires2*v1Reserved+3*v2Reserved.",
+            "v1's 1 GiB copy ceiling is implied by512 MiB originals and two copies, not a separate disk scan.",
+            "v2's22 GiB is the fullCeilingConfigured display threshold; actual admission checks configured bytes.",
+            "Part number/size is recomputed from the admitted file; only one writing part per receipt at a time.",
+            "Server rejects differing received length/hash with422 PART_INTEGRITY; repeated attempts are capped."
+          ]
+        },
+        {
+          "at": "apps/api/src/modules/ingestion/large-original.controller.ts:29-65",
+          "fact": [
+            "POST uploads; PUT uploads/:uploadId/parts/:partNumber; POST finalize. Raw body is<=one exact part.",
+            "HTTP raw-reader concurrency4 (:50), content type octet-stream, request/hash/revision headers required.",
+            "Size and lifetime checks are independent of semantic reader or package admission."
+          ]
+        },
+        {
+          "at": "packages/server/src/modules/usp/ingestion/large-original.ts:231-282,398-443",
+          "fact": [
+            "v1 finalize streams assembled bytes and verifies size/hash; v2 queues large-original-storage then MPU.",
+            "Both insert sources at revision1, profile large-original-v1, status needs_input; no semantic records.",
+            "Inspection holds uploadId, operator, ETag, verified hash/bytes, caller-declared provenance, unsupported.",
+            "Case revision advances once. Cleanup fences temporary objects, never deletes the retained original.",
+            "Finalize emits upload.changed; it does not itself parse the file or call probeOriginal."
+          ]
+        },
+        {
+          "at": "packages/server/src/modules/usp/ingestion/intake-probe.ts:14-18,29-44,91-103",
+          "fact": [
+            "A500 MiB retained GeoJSON is size class L; probe reads64 KiB head and64 KiB tail (intake.ts:5-7).",
+            "Initial feature count, native extent, geographic extent and CRS code are null. No body scan."
+          ]
+        },
+        {
+          "at": "packages/server/src/modules/usp/ingestion/intake-text.ts:98-150",
+          "fact": [
+            "Count stays unknown when the whole file is not in the head; geometry types/columns are sampled<=16.",
+            "CRS known only if a literal header declaration before features has a recognized code; else absent/null.",
+            "Extent is metadata-only bbox, never computed from samples; EPSG4326 extent only for exact EPSG:4326.",
+            "No header bbox means unknown, not a sampled500 MiB layer extent; CRS84 literal needs deeper resolution."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 3,
+      "title": "Streaming reader",
+      "status": "refused STREAMING_SOURCE_BUDGET",
+      "condition": "Works on the measured NYC original; a500 MiB or1 GB original is refused before a job is queued.",
+      "evidence": [
+        {
+          "at": "apps/api/src/modules/ingestion/streaming-vector.controller.ts:18-43",
+          "fact": [
+            "Local private POST sources/:sourceId/streaming-vector queues202; GET jobs and chunks read history.",
+            "PrivateSpatialGuard only blocks cross-site (:9-11); service enforces configured local source ownership.",
+            "No named officer role check here: streaming-vector.ts:45-60 uses the local operator subject and access."
+          ]
+        },
+        {
+          "at": "packages/server/src/modules/usp/ingestion/streaming-vector.ts:129-163",
+          "fact": [
+            "A request queues one canonical streaming-vector job per file; dispatcher starts it (processing.ts:227).",
+            "Source bytes>128 MiB are413 STREAMING_SOURCE_BUDGET; large-original media type must be octet-stream.",
+            "Active queued/running imports>=2 globally are429 STREAMING_CAPACITY.",
+            "Operations kind streaming-vector>=128 globally are429 STREAMING_HISTORY_CAPACITY, even finished jobs.",
+            "Same request replay returns its job before caps; a new request still counts. These are finite guards,",
+            "not renewable quotas; there is no reclamation path in enqueue (:144-146)."
+          ]
+        },
+        {
+          "at": "packages/contracts/src/usp/streaming-vector.ts:4-10,26-59",
+          "fact": [
+            "Part<=100 features/512 KiB, individual value<=1 MiB, <=10000 positions; <=4096 data parts.",
+            "Metadata<=64 KiB/32 fields, nesting64, read deadline10min; malformed framing stops, not guessed.",
+            "4096*100 gives at most409600 records, below500000; byte-driven splitting can stop much sooner.",
+            "lookaheadSlots8 and stagedBytes64 MiB are declared but have no worker references or enforcement."
+          ]
+        },
+        {
+          "at": "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:175-207",
+          "fact": [
+            "One retained object-store stream is opened with size and optional largeOriginal ETag; no whole Buffer.",
+            "readStreamingFeatures awaits each feature callback; flush awaits storeChunk then acceptSlot sequentially.",
+            "Thus actual look-ahead is one pending part, not eight concurrent parts; no map-consumer watermark.",
+            "Structural/numeric failures and PostGIS topology failures quarantine the feature and continue.",
+            "Oversized draft unit becomes DRAFT_UNIT_BUDGET; oversized complete JSON or malformed framing is terminal.",
+            "No Python in GeoJSON reader: streaming-vector-validation.ts:5-19 invokes PostGIS/GEOS per feature.",
+            "The Python bounded normalizer is area.py, a separate import step; workbook Python belongs to tables."
+          ]
+        },
+        {
+          "at": "database/sql/95-ingestion/streaming-vector.sql:1-46; streaming-vector-worker.ts:25-84",
+          "fact": [
+            "usp_streaming_vector_imports holds counts/publish watermark; usp_streaming_vector_slots holds",
+            "part index, first/last global feature positions, counts, object key/hash/bytes, status, attempt/fence.",
+            "Byte ranges and raw hash are in payload records, NOT slot columns (streaming-vector-reader.ts:234-238).",
+            "Payload: parsed JSON for accepted rows, null for quarantined, plus exact byte locator/hash.",
+            "Contiguous SQL watermark publishes ready/quarantined slots in order, in the acceptance transaction."
+          ]
+        },
+        {
+          "at": "streaming-vector-worker.ts:59-71,119-166,175-180,208-249; usp/jobs.ts:19-20,161-230 (staging)",
+          "fact": [
+            "Crash recovery reopens from byte zero, reconstructs prefix and compares hashes/counts/indices.",
+            "It is idempotent prefix replay, not seeking to the last byte offset. Three fenced attempts,180s lease,",
+            "30s heartbeat; old attempts cannot accept SQL. Retryable faults queue; exhausted/structural faults",
+            "append quarantine marker and unknown_remainder=true. Source integrity failure denies chunk reads.",
+            "Events: streaming-vector.changed states; streaming-vector.chunk index/hash/counts.",
+            "No geometry in events; acceptUspJobAttempt also publishes canonical job.succeeded outbox."
+          ]
+        }
+      ],
+      "measurement": {
+        "receipt": "docs/evidence/gf1/au2/measurement.json:1",
+        "seconds": 3.01,
+        "featuresPerSecond": 552,
+        "parts": 17,
+        "records": 1662,
+        "accepted": 1661,
+        "quarantined": 1,
+        "slots": "All17 published ready; one has99 accepted/1 quarantined; last has62 records.",
+        "packages": 0,
+        "mappedSlots": 0,
+        "qualification": "Own entry point, throwaway PostGIS; CAR in-memory S3 control, not large-file throughput."
+      }
+    },
+    {
+      "item": 4,
+      "title": "Chunk mapping and slots",
+      "status": "not connected",
+      "evidence": [
+        {
+          "at": "packages/server/src/modules/usp/ingestion/chunk-mapping.ts:65-107,233-267",
+          "fact": [
+            "Consumes pinned published raw streaming slots, and an exact approved recipe from usp_mapping_recipes.",
+            "GIS recipe versions: manual-geojson/1, streamed-mapping/1, streamed-prefix-mapping/1.",
+            "Tabular is manual-tabular/1 carrying mapping-plan/2; pure V2 executor support is not a new GIS authority.",
+            "Without GIS approval route=proposal_only, returns needs_input; prefix needs approval.",
+            "chunk-mapping/1:100 records,256 KiB,4096 chunks,12min wait,active1 (chunk-mapping.ts contract:12-13).",
+            "128 lifetime mapping imports are429 MAPPING_HISTORY_CAPACITY; active1 is429 MAPPING_CAPACITY."
+          ]
+        },
+        {
+          "at": "chunk-mapping-normalizer.ts:107-154; chunk-mapping-worker.ts:48-128,359-379",
+          "fact": [
+            "Produces observations: observed/quarantined/unresolved, literal key/name,",
+            "feature index/byte range/hash; geometryRef points to raw payload, no local-frame geometry.",
+            "Keys reserved across chunks in usp_chunk_mapping_keys; conflicts in usp_chunk_mapping_conflicts.",
+            "Later duplicate is conflicting/unresolved; earlier row not rewritten. Identity completion is false.",
+            "One part at a time follows raw publication; raw/mapping failures can stop the job, not skip all bad parts."
+          ]
+        },
+        {
+          "at": "chunk-mapping-worker.ts:95-128; database/sql/95-ingestion/chunk-mapping.sql:1-74",
+          "fact": [
+            "Stays in slots: usp_chunk_mapping_slots(status ready/quarantined,published=true) plus JSON object.",
+            "Raw: usp_streaming_vector_slots. No import_packages,physical_features or registry write.",
+            "chunk-mapping.ts:265 and streaming-vector.ts:154 are job INSERTs, not package INSERTs.",
+            "GET mapped jobs/:jobId/chunks/:chunkIndex reads these (:303-360); table screen reads values, not the map."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 5,
+      "title": "What draws a streamed part",
+      "status": "not connected",
+      "evidence": [
+        {
+          "at": "features/intake/table/events.ts:35-66; features/intake/table/queries.ts:28-53",
+          "fact": [
+            "Canonical streaming-vector/chunk-mapping events refresh table status and mapped payload reads.",
+            "No canonical GIS-event to scene subscriber in Studio; raw/mapped endpoints are not map inputs."
+          ]
+        },
+        {
+          "at": "apps/studio/src/api/queries.ts:224-252; apps/studio/src/features/map/canonicalScene.ts:54-70",
+          "fact": [
+            "Real map reads /api/v1/areas/{areaId}/context and /canonical, plus selected building /canonical.",
+            "Committed and draft package features use this area projection, not streaming endpoints.",
+            "SceneView forwards setBase/setBuildings (packages/scene/src/react.tsx:69-71); incremental drawing exists,",
+            "but that does not connect retained raw slots or make their CRS placement qualified."
+          ]
+        },
+        {
+          "at": "apps/studio/src/api/demo-import.ts:72-121; packages/scene/src/engine.ts:476,656",
+          "fact": [
+            "Only opt-in NYC demo draws parts: /api/demo/areas/:id/events includes features in chunk events.",
+            "It appends displayFeatures to area cache; demo-id branch converts to scene footprints/base.",
+            "Acknowledgement waits for engine.waitForDrawn, not two frames. No geometry endpoint is fetched per part.",
+            "This is not the feature endpoint a committed real package uses, and not the canonical raw-part job."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 6,
+      "title": "Bounded import, many packages, citations",
+      "status": "works",
+      "condition": "Bounded requests into the same pinned area; area-wide review/display caps still apply.",
+      "evidence": [
+        {
+          "at": "areas.ts:367-399; services/geo/geo/area.py:30-35,263-271,316,111-118,375-382,407-417",
+          "fact": [
+            "16 MiB original at ingestArea entry is PER REQUEST, not cumulative area bytes.",
+            "2000 features,100000 vertices including geometric rejections,10000 per feature are bounds",
+            "per request; MAX_PARTS256 limits shape components/rings. A bad over-budget geometry can fail the request.",
+            "50 km width/height is per request; every bound must be within50 km of retained area origin.",
+            "20 MiB normalized bound actually counts len(json.dumps(source,...)), serialized source input,",
+            "not returned normalized features or UTF8 output bytes. areas.ts:475-492 does not pass maxResultBytes.",
+            "Separate effective-set caps apply at review/commit/display; these are not the same per-request bounds."
+          ]
+        },
+        {
+          "at": "areas.ts:405-465,573-623,641-669,712-737,872-932",
+          "fact": [
+            "One area can hold many packages. Existing areaId/reference and expected revision permit a new layer.",
+            "No one-package-per-area/original rule; signature includes mapping,source hash,destination.",
+            "Same signature retries return same package. New part needs a distinct signature/locator.",
+            "source_feature_links(namespace,key) preserve identity; duplicate/correction is not a new building.",
+            "NYC buildings1661 plus hydrography1 were legal: count1662<=2000, same frame and fresh pins",
+            "(docs/evidence/gf1/ca5/result.json:122-137; ca6/result.json:34-35); not unbounded capacity."
+          ]
+        },
+        {
+          "at": "services/geo/geo/area.py:321-322,375-384; areas.ts:499-502,785-839",
+          "fact": [
+            "Normalizer enumerates request from0 before quarantine; part7 today gives PART-local index.",
+            "Reader's zero-based chunk7 has global positions700..799 at100 features/part, but byte splits vary that.",
+            "Use payload.featureIndex per row, not7*100 or firstIndex+acceptedOffset after rejects.",
+            "retainedOriginal requires original SHA=hash(input.bytes); part buffer with full-file source id",
+            "is rejected as a409 conflict. A governed internal part input is needed, not bypassing this comparison."
+          ]
+        },
+        {
+          "at": "usp/packets/feature-extract.ts:62-79; usp/packets/plan-authority.ts:144-170,207-262",
+          "fact": [
+            "Citation uses sourceFeatureIndex to decode ENTIRE original and walk to exact properties text.",
+            "Plan reads whole original and hash; sources total>64 MiB is413 PACKET_PLAN_SOURCE_LIMIT.",
+            "Need exact per-feature [byteStart,byteEnd) and rawSha256 from raw payload, tied to source hash/index/key.",
+            "A part-wide byte range alone includes commas/other features and is insufficient without feature offsets.",
+            "Range-read exact feature; return original properties substring, not reserialized properties.",
+            "Keep original completion/hash proof and range integrity; global index remains durable identity."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 7,
+      "title": "Cost and hard caps as packages accumulate",
+      "status": "refused AREA_LIMIT",
+      "evidence": [
+        {
+          "at": "areas.ts:1046-1113,1260-1318; usp/geometry.ts:103-151",
+          "fact": [
+            "reviewPackage loads ALL recorded area features, replaces own IDs, then reads neighbours.",
+            "withNeighbours caps features+neighbours at2000 before CA5 splits candidates from context.",
+            "Unqualified context counted/omitted from check, but still loaded, associated and fully hashed.",
+            "Qualification lookup itself has10000-record scope cap; not safe to lift justAREA_LIMIT to500000.",
+            "Cost grows with package PLUS all area geometry/neighbours. Full vertices are walked,",
+            "arrays use Math.min(...xs)/max(...xs), full sort; raising count risks argument/memory limits.",
+            "Python check stays<=2000 features/100000 vertices/20000 pairs (area.py:441-501)."
+          ]
+        },
+        {
+          "at": "areas.ts:1321-1397,1398-1452; areas/exterior-records.ts:44-74",
+          "fact": [
+            "commitPackage re-reads ALL recorded area features, neighbours and associations for fingerprint.",
+            "Then locks/writes only own features, geometry/history/external identifiers: O(package).",
+            "CA1 recordCommittedExteriorsTx reads eligible package IDs via p.id=ANY, locks reservations,",
+            "writes registry/history per eligible exterior and raises site once; O(package), not O(all area records).",
+            "Area/site/advisory locks constant per package; reviewAreaRevision makes later commits stale."
+          ]
+        },
+        {
+          "at": "usp/snapshots.ts:111-140,161-231,235-289",
+          "fact": [
+            "CA2 target closure, linked features,cited sources,aliases,qualifications are scoped to selected targets.",
+            "<=100 target pins, closure/features1000, sources2000; these bounds stay per capture, not per area.",
+            "Growing read: featureDocumentIds scans import_packages JSON feature arrays for matching IDs globally.",
+            "snapshotPackageParts reads ALL packages for selected source cases; retained area packages use separate",
+            "archived cases, so that scan need not grow for this retained-source chain.",
+            "featureDocumentIds scan still grows with package history despite target-scoped output.",
+            "CA2 is not completely constant-time; index/relational observation-package membership needed."
+          ]
+        }
+      ],
+      "projection": {
+        "at": "docs/evidence/gf1/ca6/result.json:18-20,31,34; ca5/result.json:122-137; ca0/result.json:88-103",
+        "nyc": "1661 accepted: review2466.347ms including readback; commit7724.103ms; CA0 older combined46.6s.",
+        "actual": "250 disjoint packages of2000 cannot run today: review of second exceeds2000 and refuses AREA_LIMIT.",
+        "linearThoughtExperiment": [
+          "If only package-sized work remained,500000/1661 times the NYC10.19045s gives~3067.6s (~51.1min).",
+          "This is extrapolation, not a benchmark or promise; shape/pairs/IO/packet/card costs are not predicted by it."
+        ],
+        "areaWideWork": [
+          "250*251/2*2000=62750000 effective feature visits per full-area pass, vs500000 package feature writes.",
+          "Review and commit repeat scans; growing term quadratic in package count at fixed part size.",
+          "No measured split of the10.2s into fixed/package/area terms, so a numerical quadratic wall time is unknown.",
+          "CA2's unindexed package JSON search adds growth even when each target snapshot contains one feature."
+        ]
+      }
+    },
+    {
+      "item": 8,
+      "title": "Large-original source authority",
+      "status": "not connected",
+      "warning": "The question's assumption that every listed authority refuses large-original-v1 is not true.",
+      "evidence": [
+        {
+          "at": "usp/ingestion/retained-map-original.ts:7-12; areas.ts:351-364",
+          "fact": [
+            "isRetainedMapOriginal admits only exact geojson-manual-v1/manual receipt+GIS hash, not large-original-v1.",
+            "bindRetainedCaseTx has NO profile restriction: unassigned active case with UNASSIGNED frame works.",
+            "Archived/wrong-site/own-frame case:403 AREA_SOURCE_DENIED; site-only update never changes revision."
+          ]
+        },
+        {
+          "at": "areas/package-authority.ts:8-37; usp/ingestion/document-authority.ts:23-48,82-87",
+          "fact": [
+            "Package authority does NOT refuse profile: quarantine pin/site/local-owner must agree.",
+            "Before case binding that check is403 AREA_SOURCE_DENIED (:27-30); after correct binding it can pass.",
+            "Unmarked large originals are not staged documents; documentAuthorityTx returnsfalse, not a denial."
+          ]
+        },
+        {
+          "at": "usp/snapshots.ts:36-46,180-205; usp/ingestion/document-authority.ts:117-120",
+          "fact": [
+            "Snapshot does NOT reject profile; same-site source selected by citation is captured.",
+            "Without binding it is absent from sources (snapshots.ts:191-195), not a profile refusal.",
+            "Exact original/access checks remain; capture alone grants no excerpt or registry eligibility."
+          ]
+        },
+        {
+          "at": "usp/packets/plan-authority.ts:207-218,243-268; usp/declarations/authority.ts:53-58",
+          "fact": [
+            "A500 MiB source fails413 PACKET_PLAN_SOURCE_LIMIT at64 MiB before extract eligibility is considered.",
+            "A bound large-original smaller than64 MiB fails featureSupported, leaving exact_extract_unavailable and",
+            "blocked_required_context; confirm/execute:422 PACKET_PLAN_BLOCKED (packets/plan-service.ts:142-143).",
+            "Without active same-site case, declaration evidence guard gives403 DECLARATION_SOURCE_DENIED instead."
+          ]
+        },
+        {
+          "at": "registry/registry-reference-policy.ts:30-38; registry/registry.ts:601-635",
+          "fact": [
+            "permitsFeatureRecordSource returnsfalse for large-original-v1; status needs_input has no parsed features.",
+            "Registry evidence validation fails422 EVIDENCE_UNAVAILABLE. CA1's exterior lift does not call it,",
+            "so no hidden profile refusal at CA1 commit (exterior-records.ts:12-38).",
+            "Smallest change: exact record-only large map admission; never turn all opaque originals ready."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 9,
+      "title": "One layout across a large file",
+      "status": "works",
+      "condition": "Streamed profile/recipe within reader bounds; automatic proposal/package execution absent.",
+      "evidence": [
+        {
+          "at": "usp/ingestion/service.ts:44-56,84-99,117-130,205-277; ingestion/registry.ts:21-55",
+          "fact": [
+            "Manual inspect/author/decide needs profile built by parsing whole<=16 MiB/2000 original.",
+            "large-original-v1 is422 UNSUPPORTED_PROFILE; no manual receipt manufactured for large files."
+          ]
+        },
+        {
+          "at": "packages/contracts/src/usp/streamed-profile.ts:6-7; ingestion/streamed-profile.ts:141-188",
+          "fact": [
+            "streamed-profile job consumes raw published parts;64 paths,4097 generations,100 quarantine locators,",
+            "64 KiB generation body,active1,12min wait;128 lifetime imports =>429 STREAMED_PROFILE_HISTORY.",
+            "Cumulative generation per part plus sealed generation at verified EOF; no original reread.",
+            "Large reference stays null: streamed-profile-worker.ts:67-76,93-99 takes CRS only from manual GIS.",
+            "Raw metadata result not persisted as CRS evidence; streamed mapping is not placement."
+          ]
+        },
+        {
+          "at": "packages/contracts/src/usp/streamed-profile.ts:41-82; streamed-mapping.ts:17-53,56-79,129-185",
+          "fact": [
+            "One approved streamed-mapping/1 pins sealed profile,source,raw job and hash; reused across all raw parts.",
+            "streamed-prefix-mapping/1 pins immutable observed prefix and permits later compatible",
+            "features; drift is unresolved, not remapped (chunk-mapping-normalizer.ts:47-72,146-153).",
+            "Approval hash covers exact SOURCE, allows its parts with no new per-part approval.",
+            "Cannot transfer to another file; author/approve hashes and meaning evidence are exact-source pins.",
+            "Key/name must complete literal strings; officer cites issuing portal meaning and provenance (:70-79).",
+            "Streamed plan has no destination or execute-package. proposal-only returns review required",
+            "(chunk-mapping-worker.ts:185-196), not automatic large-file proposal."
+          ]
+        }
+      ]
+    }
+  ]
+}

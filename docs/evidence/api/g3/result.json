@@ -1,0 +1,48 @@
+{
+ "task": "G3",
+ "gate": "GF-AGENT gateway honesty / API contract",
+ "base": "8665dd7c",
+ "part1": {
+  "demo.mjs": "reads the configuration, then prints gatewayStateText(gatewayReport(env))",
+  "record-demo.mjs": "reads the configuration; rewrites receipt.demo each run; gatewayEnabled is the report boolean",
+  "demo-schema.ts": "does not read the configuration; says only that this step does not change the gateway state"
+ },
+ "part2": {
+  "reproduced": {
+   "generatorFiles": 594,
+   "pinnedByRefresh": 576,
+   "onlyInGenerator": 18,
+   "rule": [
+    "generator pinned every .ts/.js/.json file, tests and fixtures included",
+    "refresh kept the previous keys and added only changed non-test files",
+    "so unchanged non-test producers never entered and old test pins never left"
+   ],
+   "onlyInGeneratorTests": 15,
+   "onlyInGeneratorNonTest": [
+    "packages/server/src/modules/ai/document-storey-agent.ts",
+    "packages/server/src/modules/model-gateway/recordings.ts",
+    "packages/server/src/modules/usp/ingestion/mapping-teacher-prompt.ts"
+   ],
+   "pinnedTestsBefore": 26
+  },
+  "decision": [
+   "one pinnedSourceFiles(root): non-test .ts/.js/.json under the three producer directories",
+   "plus the three declared documents; check.py requires manifests and controllers pinned and is silent on tests"
+  ],
+  "pinnedSourcesAfter": 553,
+  "operations": 294,
+  "checks": {
+   "refreshExit": 0,
+   "secondRefreshChangedFiles": 0,
+   "generatorCheckExit": 0,
+   "generatorWriteEqualsRefresh": true
+  },
+  "sourceSha256Delta": {
+   "before": 576,
+   "after": 553,
+   "changedHashes": 0,
+   "dropped": 26,
+   "added": 3
+  }
+ }
+}

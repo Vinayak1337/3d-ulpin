@@ -9,9 +9,12 @@ const ICONS: Record<EvidenceKind, PhosphorIcon> = { document: FileText, table: T
  * Link from a value to its exact source. Dashed = estimate; amber `missing` doubles as Request evidence.
  * Renders a button when it opens the evidence viewer, else a static chip.
  */
-export function EvidenceChip({ source, locator, exact, kind = 'document', state = 'linked', onOpen }: {
+export function EvidenceChip({ source, locator, exact, kind = 'document', state = 'linked', onOpen,
+  accessibleName }: {
   source: string; locator?: string; /** The unrounded source value, shown on hover when the locator is rounded. */ exact?: string;
   kind?: EvidenceKind; state?: 'linked' | 'estimated' | 'missing'; onOpen?: () => void;
+  /** Optional button name describing what this citation opens; static chips keep their text alone. */
+  accessibleName?: string;
 }) {
   const className = `ul-evid${state === 'estimated' ? ' ul-evid--estimated' : state === 'missing' ? ' ul-evid--missing' : ''}`;
   const content = (
@@ -23,7 +26,8 @@ export function EvidenceChip({ source, locator, exact, kind = 'document', state 
   );
   const title = locator ? `${source} · ${exact ?? locator}` : source;
   return onOpen ? (
-    <button type="button" className={className} onClick={onOpen} title={`Open evidence: ${title}`}>{content}</button>
+    <button type="button" className={className} onClick={onOpen} title={`Open evidence: ${title}`}
+      aria-label={accessibleName}>{content}</button>
   ) : (
     <span className={className} title={title}>{content}</span>
   );

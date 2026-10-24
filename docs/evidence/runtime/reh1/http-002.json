@@ -1,0 +1,8 @@
+{ "index": "002", "method": "POST", "route": "/api/v1/import-packages", "status": 201, "seconds": 0.169,
+"requestKey": null, "idempotencyHeader": null, "ids": { "id": "715ffc1b-5f41-4d9f-8505-7339240b2af4",
+"areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "revision": 1, "state": "READY_FOR_REVIEW" }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/002", "request": { "file": { "filename": "gmda-roads.json", "bytes": 1773,
+"sourceSha256": "[omitted non-source digest]" }, "format": "arcgis", "namespace": "gmda:Toilet2:7",
+"name": "Gurugram sectors 59/63A reference area",
+"mapping": "{\"idField\":\"FID\",\"nameField\":\"Rd_Name\",\"kind\":\"road\",\"geometryRole\":\"road_surface\"}",
+"sourceCrs": "EPSG:32643", "worldStatus": "observed" } }

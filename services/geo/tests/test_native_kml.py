@@ -12,6 +12,7 @@ from pathlib import Path
 import stat
 import sys
 import tempfile
+import tracemalloc
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -218,6 +219,62 @@ class NativeKMLTests(unittest.TestCase):
                 self.assertEqual(cli.main(), 2)
             self.assertFalse(out.exists())
             self.assertEqual(list(Path(folder).iterdir()), [source])
+
+
+class KMLTagBoundTests(unittest.TestCase):
+    """KML2. The streamed convert-native reader (geo.native_gis), not the inspector above. The KML documents below
+    are test_only, written by the test; the random hex value keeps a KMZ under the reader's 1:100 expansion bound."""
+
+    def document(self, attribute_bytes):
+        value = os.urandom(attribute_bytes // 2).hex()
+        return ('<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Folder><name>Plots</name>'
+                '<Placemark><name>Plot 1</name><Point><coordinates>77.2,28.6</coordinates></Point></Placemark>'
+                f'<Placemark><ExtendedData><Data name="{value}"><value>v</value></Data></ExtendedData>'
+                '<Point><coordinates>77.3,28.7</coordinates></Point></Placemark>'
+                '</Folder></Document></kml>').encode()
+
+    def convert(self, folder, name, raw, fmt):
+        from geo.native_gis import convert_kml_file
+        path, out = Path(folder) / name, Path(folder) / 'out'
+        if fmt == 'kmz':
+            with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr('doc.kml', raw)
+        else:
+            path.write_bytes(raw)
+        out.mkdir()
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        tracemalloc.start()
+        try:
+            result = convert_kml_file(path, fmt, out, digest)
+            peak = tracemalloc.get_traced_memory()[1]
+        finally:
+            tracemalloc.stop()
+        return result, peak
+
+    def test_a_3_mib_attribute_value_is_refused_as_tag_too_large_before_it_is_held_whole(self):
+        from geo.native_gis import TAG_TOO_LARGE, _KmlReader, _KmlStop, _file_blocks, _kml_parse
+        raw = self.document(3 * 1024 * 1024)
+        words = ('A KML tag is larger than 1 MiB before it closes; the file was not read further. '
+                 'The original is kept with its SHA-256.')
+        for fmt in ('kml', 'kmz'):
+            with self.subTest(fmt=fmt), tempfile.TemporaryDirectory() as folder:
+                result, peak = self.convert(folder, f'large.{fmt}', raw, fmt)
+                self.assertEqual(result, ([{'layer': 'whole file', 'ordinal': 0, 'state': 'not_converted',
+                                            'reason': words}], {}))
+                self.assertLess(peak, 16 * 1024 * 1024)
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'large.kml'
+            path.write_bytes(raw)
+            reader = _KmlReader(Path(folder), {})
+            with self.assertRaises(_KmlStop) as stopped:
+                _kml_parse(_file_blocks(path), reader)
+            reader.abandon()
+            self.assertEqual(stopped.exception.code, TAG_TOO_LARGE)
+
+    def test_an_attribute_value_under_the_bound_is_read(self):
+        with tempfile.TemporaryDirectory() as folder:
+            ((layer,), _), _ = self.convert(folder, 'wide.kml', self.document(900 * 1024), 'kml')
+            self.assertEqual((layer['layer'], layer['state'], layer['features']), ('Plots', 'converted', 2))
 
 
 if __name__ == '__main__':

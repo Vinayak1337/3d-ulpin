@@ -39,6 +39,9 @@ test('native metadata retains all baseline operations and admits only declared i
       assert.equal(actual['x-batch'],operation.batch??additions.batch);
     }
     const operations=Object.values(document.paths).flatMap(item=>Object.values(item||{})).filter((item:any)=>item?.operationId);
-    assert.equal(operations.length,baseline.operations.length+additions.operations.length);
+    // Other registered modules also have declared additions; the old ingestion-only total (235) was stale.
+    const publishedOperations=Object.values(accepted.paths).flatMap(item=>Object.values(item||{}))
+      .filter((item:any)=>item?.operationId);
+    assert.equal(operations.length,publishedOperations.length);
   }finally{await app.close();}
 });

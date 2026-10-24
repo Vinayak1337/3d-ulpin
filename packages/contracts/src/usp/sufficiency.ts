@@ -1,5 +1,10 @@
 import {z} from 'zod';
 import {CoreIdSchema, CoreSha256Schema, coreText} from '../spatial/core/scalars';
+import {ObjSummarySchema} from './obj-ingestion';
+import {GltfSummarySchema} from './gltf-ingestion';
+import {IFCSummarySchema} from './ifc-ingestion';
+import {KMLMemberPinSchema,KMLSummarySchema} from './kml-ingestion';
+import {CityGMLSummarySchema} from './citygml-ingestion';
 import {DataSufficiencyRequirementsShape, exactSufficiencyRequirements} from './geometry';
 
 export const SUFFICIENCY_VERSION='ingestion-sufficiency/1' as const;
@@ -22,10 +27,36 @@ export const SufficiencyQuestionSchema=z.strictObject({id,revision:z.number().in
   missing:z.array(CoreIdSchema).min(1).max(64),unlocks:z.array(CoreIdSchema).min(1).max(5),
   reason:coreText(512),choices:z.tuple([z.literal('provide_existing_evidence'),z.literal('not_sure')]),
   proposal:SufficiencyReferenceSchema.nullable(),createdAt:z.iso.datetime()});
+export const SufficiencyMeshMetadataSchema=z.discriminatedUnion('kind',[
+  z.strictObject({kind:z.literal('obj'),summary:ObjSummarySchema}),
+  z.strictObject({kind:z.literal('gltf'),summary:GltfSummarySchema}),
+]);
+export const SufficiencyMeshProcessingSchema=z.strictObject({kind:z.enum(['obj','gltf']),
+  inputSha256:hash.nullable(),readerSha256:hash.nullable(),acceptedFence:z.number().int().positive().nullable(),
+  tools:z.enum(['not_checked','current','unavailable']),code:coreText(100).nullable(),
+  metadata:SufficiencyMeshMetadataSchema.nullable(),
+  coverage:z.literal('accepted_result_metadata_only; native_artifact_not_read'),
+});
+export const SufficiencyIFCProcessingSchema=z.strictObject({
+  inputSha256:hash.nullable(),readerSha256:hash.nullable(),acceptedFence:z.number().int().positive().nullable(),
+  tools:z.enum(['not_checked','current','unavailable']),code:coreText(100).nullable(),
+  summary:IFCSummarySchema.nullable(),sourceUnits:z.literal('native_artifact_not_read'),
+  coverage:z.literal('accepted_result_metadata_only; native_artifact_not_read'),
+});
+const xmlProcessing={inputSha256:hash.nullable(),readerSha256:hash.nullable(),acceptedFence:z.number().int().positive().nullable(),
+  tools:z.enum(['not_checked','current','unavailable']),code:coreText(100).nullable(),
+  sourceUnits:z.literal('native_artifact_not_read'),coverage:z.literal('accepted_result_metadata_only; native_artifact_not_read')};
+export const SufficiencyXMLProcessingSchema=z.discriminatedUnion('kind',[
+  z.strictObject({...xmlProcessing,kind:z.literal('kml'),requestedMember:KMLMemberPinSchema.nullable(),summary:KMLSummarySchema.nullable()}),
+  z.strictObject({...xmlProcessing,kind:z.literal('citygml'),summary:CityGMLSummarySchema.nullable()}),
+]);
 export const SufficiencyProcessingSchema=z.strictObject({
-  state:z.enum(['pending','running','failed','stale','needs_ocr','unsupported','tool_error','extracted','canonical_conversion_required']),
+  state:z.enum(['pending','running','failed','stale','needs_ocr','unsupported','tool_error','extracted','canonical_conversion_required','unavailable','inspected_local','inspected_partial','inspected_metadata']),
   jobId:id.nullable(),resultSha256:hash.nullable(),
-  nativeStatus:z.enum(['extracted','needs_ocr','unsupported','encrypted','tool_error']).nullable(),
+  nativeStatus:z.enum(['extracted','needs_ocr','unsupported','encrypted','tool_error','inspected_local','inspected_partial']).nullable(),
+  mesh:SufficiencyMeshProcessingSchema.optional(),
+  ifc:SufficiencyIFCProcessingSchema.optional(),
+  xml:SufficiencyXMLProcessingSchema.optional(),
   modelStatus:z.enum(['not_requested','disabled','unavailable','blocked','needs_input','proposed']).nullable(),
 });
 export const IngestionSufficiencyDecisionSchema=z.strictObject({version:z.literal(SUFFICIENCY_VERSION),id,pins:SufficiencyPinsSchema,
@@ -34,7 +65,7 @@ export const IngestionSufficiencyDecisionSchema=z.strictObject({version:z.litera
   ...DataSufficiencyRequirementsShape,outcome:z.enum(['complete','fill_display','ask','park','reject_for_3d']),
   availability:z.enum(['available','needs_input','unavailable','stale']),evidence:z.array(SufficiencyEvidenceSchema).min(1).max(64),
   unlocks:z.array(CoreIdSchema).max(5),questionId:id.nullable(),
-  nextAction:z.enum(['none','neutral_presentation','review_mapping','review_evidence','provide_evidence','process_source','park','inspect_original','wait_for_extraction','retry_extraction','run_ocr','configure_provider','review_conversion']),
+  nextAction:z.enum(['none','neutral_presentation','review_mapping','review_evidence','provide_evidence','process_source','park','inspect_original','wait_for_extraction','retry_extraction','run_ocr','configure_provider','review_conversion','configure_reader','select_native_member']),
   reason:coreText(512),createdAt:z.iso.datetime()}).superRefine((value,ctx)=>{
     if(!exactSufficiencyRequirements(value) || (value.outcome==='complete' && value.missing.length!==0) ||
       (value.outcome==='ask' && !value.questionId) || value.evidence.length!==value.requirements.length ||

@@ -1,0 +1,1037 @@
+{
+  "git": "b7657546e49299b3bd49b1e38c8656dc5dd421fd",
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip",
+    "bytes": 14621643,
+    "sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+    "git": "b7657546e49299b3bd49b1e38c8656dc5dd421fd"
+  },
+  "environment": {
+    "pixelRatio": 1,
+    "browser": "HeadlessChrome/153.0.8010.12"
+  },
+  "frames": {
+    "count": 146,
+    "p50Ms": 16.7,
+    "p95Ms": 533.3,
+    "longestMs": 1783.3,
+    "over50": 33,
+    "over100": 28
+  },
+  "startToLastDrawMs": 34878.6,
+  "streamWindow": {
+    "from": 18771.2,
+    "to": 36738.2,
+    "ms": 17967
+  },
+  "startToCompleteMs": 34887.7,
+  "heap": {
+    "startBytes": 140494347,
+    "endBytes": 469672740
+  },
+  "chunks": [
+    {
+      "type": "chunk",
+      "at": 18771.2,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 2,
+      "listenerMs": 6.1,
+      "twoFramesMs": 86.1,
+      "intervalMs": null,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 59
+    },
+    {
+      "type": "chunk",
+      "at": 19250.4,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 3,
+      "listenerMs": 6.8,
+      "twoFramesMs": 108.8,
+      "intervalMs": 479.2,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 83
+    },
+    {
+      "type": "chunk",
+      "at": 19436.8,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 4,
+      "listenerMs": 3.1,
+      "twoFramesMs": 108.7,
+      "intervalMs": 186.4,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 81.9
+    },
+    {
+      "type": "chunk",
+      "at": 19671.6,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 5,
+      "listenerMs": 3,
+      "twoFramesMs": 152.4,
+      "intervalMs": 234.8,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 130.9
+    },
+    {
+      "type": "chunk",
+      "at": 19900.2,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 6,
+      "listenerMs": 3.1,
+      "twoFramesMs": 163.4,
+      "intervalMs": 228.6,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 139.1
+    },
+    {
+      "type": "chunk",
+      "at": 20137.6,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 7,
+      "listenerMs": 3.3,
+      "twoFramesMs": 174.4,
+      "intervalMs": 237.4,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 161.2
+    },
+    {
+      "type": "chunk",
+      "at": 20424.8,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 8,
+      "listenerMs": 3.3,
+      "twoFramesMs": 226.6,
+      "intervalMs": 287.2,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 211.5
+    },
+    {
+      "type": "chunk",
+      "at": 20759.1,
+      "count": 96,
+      "buildings": 67,
+      "sequence": 9,
+      "listenerMs": 2.3,
+      "twoFramesMs": 303,
+      "intervalMs": 334.3,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 13.5,
+      "baseApplyMs": 175.1
+    },
+    {
+      "type": "chunk",
+      "at": 21187.6,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 10,
+      "listenerMs": 3,
+      "twoFramesMs": 238.2,
+      "intervalMs": 428.5,
+      "buildingsBefore": 67,
+      "sceneApplyMs": 21.3,
+      "baseApplyMs": 179.8
+    },
+    {
+      "type": "chunk",
+      "at": 21587.2,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 11,
+      "listenerMs": 1.4,
+      "twoFramesMs": 278.9,
+      "intervalMs": 399.6,
+      "buildingsBefore": 163,
+      "sceneApplyMs": 34.1,
+      "baseApplyMs": 209.5
+    },
+    {
+      "type": "chunk",
+      "at": 22007.4,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 12,
+      "listenerMs": 1.9,
+      "twoFramesMs": 913.4,
+      "intervalMs": 420.2,
+      "buildingsBefore": 259,
+      "sceneApplyMs": 54.3,
+      "baseApplyMs": 225
+    },
+    {
+      "type": "chunk",
+      "at": 23075.9,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 13,
+      "listenerMs": 1.8,
+      "twoFramesMs": 359.1,
+      "intervalMs": 1068.5,
+      "buildingsBefore": 355,
+      "sceneApplyMs": 68.5,
+      "baseApplyMs": 217.8
+    },
+    {
+      "type": "chunk",
+      "at": 23581.1,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 14,
+      "listenerMs": 2.4,
+      "twoFramesMs": 1362.9,
+      "intervalMs": 505.2,
+      "buildingsBefore": 451,
+      "sceneApplyMs": 74.2,
+      "baseApplyMs": 229.8
+    },
+    {
+      "type": "chunk",
+      "at": 25064.9,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 15,
+      "listenerMs": 1.6,
+      "twoFramesMs": 1422.3,
+      "intervalMs": 1483.8,
+      "buildingsBefore": 547,
+      "sceneApplyMs": 81.3,
+      "baseApplyMs": 236.8
+    },
+    {
+      "type": "chunk",
+      "at": 26604.7,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 16,
+      "listenerMs": 2,
+      "twoFramesMs": 441.4,
+      "intervalMs": 1539.8,
+      "buildingsBefore": 643,
+      "sceneApplyMs": 79.6,
+      "baseApplyMs": 221.5
+    },
+    {
+      "type": "chunk",
+      "at": 27217.8,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 17,
+      "listenerMs": 2.3,
+      "twoFramesMs": 439.8,
+      "intervalMs": 613.1,
+      "buildingsBefore": 739,
+      "sceneApplyMs": 128.6,
+      "baseApplyMs": 239.4
+    },
+    {
+      "type": "chunk",
+      "at": 27821.7,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 18,
+      "listenerMs": 1.8,
+      "twoFramesMs": 415.5,
+      "intervalMs": 603.9,
+      "buildingsBefore": 835,
+      "sceneApplyMs": 112.9,
+      "baseApplyMs": 243
+    },
+    {
+      "type": "chunk",
+      "at": 28414.2,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 19,
+      "listenerMs": 1.8,
+      "twoFramesMs": 441.1,
+      "intervalMs": 592.5,
+      "buildingsBefore": 931,
+      "sceneApplyMs": 126.9,
+      "baseApplyMs": 246.9
+    },
+    {
+      "type": "chunk",
+      "at": 29016.1,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 20,
+      "listenerMs": 3,
+      "twoFramesMs": 1676.9,
+      "intervalMs": 601.9,
+      "buildingsBefore": 1027,
+      "sceneApplyMs": 130.5,
+      "baseApplyMs": 228.1
+    },
+    {
+      "type": "chunk",
+      "at": 30672.1,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 21,
+      "listenerMs": 3.4,
+      "twoFramesMs": 487.7,
+      "intervalMs": 1656,
+      "buildingsBefore": 1123,
+      "sceneApplyMs": 157.5,
+      "baseApplyMs": 243.3
+    },
+    {
+      "type": "chunk",
+      "at": 31331.6,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 22,
+      "listenerMs": 3.5,
+      "twoFramesMs": 3191.8,
+      "intervalMs": 659.5,
+      "buildingsBefore": 1219,
+      "sceneApplyMs": 179.9,
+      "baseApplyMs": 273
+    },
+    {
+      "type": "chunk",
+      "at": 34499.3,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 23,
+      "listenerMs": 3.9,
+      "twoFramesMs": 489.9,
+      "intervalMs": 3167.7,
+      "buildingsBefore": 1315,
+      "sceneApplyMs": 200.3,
+      "baseApplyMs": 253
+    },
+    {
+      "type": "chunk",
+      "at": 35047.5,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 24,
+      "listenerMs": 2,
+      "twoFramesMs": 546,
+      "intervalMs": 548.2,
+      "buildingsBefore": 1411,
+      "sceneApplyMs": 196.5,
+      "baseApplyMs": 260.1
+    },
+    {
+      "type": "chunk",
+      "at": 35605.1,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 25,
+      "listenerMs": 2.5,
+      "twoFramesMs": 547.4,
+      "intervalMs": 557.6,
+      "buildingsBefore": 1507,
+      "sceneApplyMs": 199.8,
+      "baseApplyMs": 261.6
+    },
+    {
+      "type": "chunk",
+      "at": 36162.9,
+      "count": 59,
+      "buildings": 59,
+      "sequence": 26,
+      "listenerMs": 3,
+      "twoFramesMs": 575.6,
+      "intervalMs": 557.8,
+      "buildingsBefore": 1603,
+      "sceneApplyMs": 222.9,
+      "baseApplyMs": 253
+    }
+  ],
+  "longTasks": [
+    {
+      "at": 18615.1,
+      "ms": 57
+    },
+    {
+      "at": 18792.2,
+      "ms": 63
+    },
+    {
+      "at": 19269.5,
+      "ms": 88
+    },
+    {
+      "at": 19446.5,
+      "ms": 87
+    },
+    {
+      "at": 19685.6,
+      "ms": 138
+    },
+    {
+      "at": 19903.3,
+      "ms": 148
+    },
+    {
+      "at": 20145.9,
+      "ms": 165
+    },
+    {
+      "at": 20433.7,
+      "ms": 217
+    },
+    {
+      "at": 20761.4,
+      "ms": 196
+    },
+    {
+      "at": 20958.1,
+      "ms": 98
+    },
+    {
+      "at": 21198.1,
+      "ms": 207
+    },
+    {
+      "at": 21594.8,
+      "ms": 249
+    },
+    {
+      "at": 22009.3,
+      "ms": 287
+    },
+    {
+      "at": 22296.9,
+      "ms": 613
+    },
+    {
+      "at": 23077.7,
+      "ms": 297
+    },
+    {
+      "at": 23583.6,
+      "ms": 313
+    },
+    {
+      "at": 25066.6,
+      "ms": 325
+    },
+    {
+      "at": 26606.7,
+      "ms": 311
+    },
+    {
+      "at": 27220.1,
+      "ms": 378
+    },
+    {
+      "at": 27838.8,
+      "ms": 364
+    },
+    {
+      "at": 28433.7,
+      "ms": 379
+    },
+    {
+      "at": 29019.1,
+      "ms": 368
+    },
+    {
+      "at": 29387.7,
+      "ms": 1274
+    },
+    {
+      "at": 30700.5,
+      "ms": 410
+    },
+    {
+      "at": 31335.1,
+      "ms": 465
+    },
+    {
+      "at": 32709.7,
+      "ms": 1785
+    },
+    {
+      "at": 34524.5,
+      "ms": 464
+    },
+    {
+      "at": 34988.7,
+      "ms": 52
+    },
+    {
+      "at": 35081.3,
+      "ms": 464
+    },
+    {
+      "at": 35630.5,
+      "ms": 466
+    },
+    {
+      "at": 36097.3,
+      "ms": 55
+    },
+    {
+      "at": 36196.1,
+      "ms": 484
+    },
+    {
+      "at": 36680.6,
+      "ms": 58
+    },
+    {
+      "at": 37345.7,
+      "ms": 67
+    }
+  ],
+  "cpu": {
+    "totalMs": 36151.056,
+    "groups": [
+      {
+        "name": "other",
+        "ms": 28468.171,
+        "percent": 78.748
+      },
+      {
+        "name": "React",
+        "ms": 895.216,
+        "percent": 2.476
+      },
+      {
+        "name": "setQueryData",
+        "ms": 21.753,
+        "percent": 0.06
+      },
+      {
+        "name": "setBuildings",
+        "ms": 2003.624,
+        "percent": 5.542
+      },
+      {
+        "name": "setBase",
+        "ms": 4748.494,
+        "percent": 13.135
+      },
+      {
+        "name": "conversion",
+        "ms": 13.798,
+        "percent": 0.038
+      }
+    ],
+    "topSelfFunctions": [
+      {
+        "name": "(idle) :0",
+        "ms": 21246.655,
+        "percent": 58.772
+      },
+      {
+        "name": "createBuffer deps/three.module-C1ZFymXr.js:42033",
+        "ms": 3836.844,
+        "percent": 10.613
+      },
+      {
+        "name": "(program) :0",
+        "ms": 970.505,
+        "percent": 2.685
+      },
+      {
+        "name": "EdgesGeometry deps/three.module-C1ZFymXr.js:22335",
+        "ms": 798.045,
+        "percent": 2.208
+      },
+      {
+        "name": "(garbage collector) :0",
+        "ms": 509.629,
+        "percent": 1.41
+      },
+      {
+        "name": "applyMatrix4 deps/three.module-C1ZFymXr.js:4356",
+        "ms": 420.601,
+        "percent": 1.163
+      },
+      {
+        "name": "Float32BufferAttribute deps/three.module-C1ZFymXr.js:13465",
+        "ms": 402.868,
+        "percent": 1.114
+      },
+      {
+        "name": "exports.jsxDEV deps/react_jsx-dev-runtime.js:192",
+        "ms": 357.284,
+        "percent": 0.988
+      },
+      {
+        "name": "addVertex deps/three.module-C1ZFymXr.js:25147",
+        "ms": 356.763,
+        "percent": 0.987
+      },
+      {
+        "name": "addUV deps/three.module-C1ZFymXr.js:25152",
+        "ms": 299.742,
+        "percent": 0.829
+      },
+      {
+        "name": "setXYZ deps/three.module-C1ZFymXr.js:13147",
+        "ms": 247.759,
+        "percent": 0.685
+      },
+      {
+        "name": "getX deps/three.module-C1ZFymXr.js:13034",
+        "ms": 235.353,
+        "percent": 0.651
+      },
+      {
+        "name": "fromBufferAttribute deps/three.module-C1ZFymXr.js:4916",
+        "ms": 217.62,
+        "percent": 0.602
+      },
+      {
+        "name": "isEarHashed deps/three.module-C1ZFymXr.js:24419",
+        "ms": 201.19,
+        "percent": 0.557
+      },
+      {
+        "name": "applyMatrix3 deps/three.module-C1ZFymXr.js:4331",
+        "ms": 185.396,
+        "percent": 0.513
+      },
+      {
+        "name": "getY deps/three.module-C1ZFymXr.js:13057",
+        "ms": 123.86,
+        "percent": 0.343
+      },
+      {
+        "name": "computeVertexNormals deps/three.module-C1ZFymXr.js:14384",
+        "ms": 122.26,
+        "percent": 0.338
+      },
+      {
+        "name": "addShape deps/three.module-C1ZFymXr.js:24862",
+        "ms": 117.615,
+        "percent": 0.325
+      },
+      {
+        "name": "WebGLRenderer.renderBufferDirect deps/three.module-C1ZFymXr.js:51786",
+        "ms": 116.343,
+        "percent": 0.322
+      },
+      {
+        "name": "edgeGeometry packages/scene/src/engine.ts:1907",
+        "ms": 109.932,
+        "percent": 0.304
+      },
+      {
+        "name": "min deps/three.module-C1ZFymXr.js:4445",
+        "ms": 105.705,
+        "percent": 0.292
+      },
+      {
+        "name": "f4 deps/three.module-C1ZFymXr.js:25131",
+        "ms": 100.659,
+        "percent": 0.278
+      },
+      {
+        "name": "(anonymous) packages/scene/src/look.ts:314",
+        "ms": 99.335,
+        "percent": 0.275
+      },
+      {
+        "name": "divideScalar deps/three.module-C1ZFymXr.js:4435",
+        "ms": 95.229,
+        "percent": 0.263
+      },
+      {
+        "name": "multiplyMatrices deps/three.module-C1ZFymXr.js:8252",
+        "ms": 94.153,
+        "percent": 0.26
+      },
+      {
+        "name": "sortLinked deps/three.module-C1ZFymXr.js:24552",
+        "ms": 93.524,
+        "percent": 0.259
+      },
+      {
+        "name": "onFirstUse deps/three.module-C1ZFymXr.js:45921",
+        "ms": 92.019,
+        "percent": 0.255
+      },
+      {
+        "name": "max deps/three.module-C1ZFymXr.js:4458",
+        "ms": 87.955,
+        "percent": 0.243
+      },
+      {
+        "name": "setBase packages/scene/src/engine.ts:456",
+        "ms": 86.28,
+        "percent": 0.239
+      },
+      {
+        "name": "bindVertexArrayObject deps/three.module-C1ZFymXr.js:42906",
+        "ms": 79.995,
+        "percent": 0.221
+      },
+      {
+        "name": "Object3D deps/three.module-C1ZFymXr.js:9245",
+        "ms": 76.686,
+        "percent": 0.212
+      },
+      {
+        "name": "setProgram deps/three.module-C1ZFymXr.js:52328",
+        "ms": 75.772,
+        "percent": 0.21
+      },
+      {
+        "name": "ExtrudeGeometry deps/three.module-C1ZFymXr.js:24832",
+        "ms": 72.445,
+        "percent": 0.2
+      },
+      {
+        "name": "getBindingState deps/three.module-C1ZFymXr.js:42912",
+        "ms": 71.453,
+        "percent": 0.198
+      },
+      {
+        "name": "length deps/three.module-C1ZFymXr.js:4590",
+        "ms": 71.102,
+        "percent": 0.197
+      }
+    ],
+    "denominator": "All sampled main-thread time, including idle; groups exclusive by ancestor priority.",
+    "inclusiveFunctions": [
+      {
+        "name": "setBuildings",
+        "ms": 2003.624,
+        "percentOfAll": 5.54,
+        "percentOfAttributedActive": 14.38
+      },
+      {
+        "name": "addFootprintBuilding",
+        "ms": 1542.334,
+        "percentOfAll": 4.27,
+        "percentOfAttributedActive": 11.07
+      },
+      {
+        "name": "prismGeometry",
+        "ms": 4520.373,
+        "percentOfAll": 12.5,
+        "percentOfAttributedActive": 32.44
+      },
+      {
+        "name": "EdgesGeometry",
+        "ms": 856.227,
+        "percentOfAll": 2.37,
+        "percentOfAttributedActive": 6.14
+      },
+      {
+        "name": "edgeGeometry",
+        "ms": 966.159,
+        "percentOfAll": 2.67,
+        "percentOfAttributedActive": 6.93
+      },
+      {
+        "name": "clearEntries",
+        "ms": 163.446,
+        "percentOfAll": 0.45,
+        "percentOfAttributedActive": 1.17
+      },
+      {
+        "name": "setBase",
+        "ms": 4748.494,
+        "percentOfAll": 13.14,
+        "percentOfAttributedActive": 34.08
+      },
+      {
+        "name": "fitGroundAndShadow",
+        "ms": 1.575,
+        "percentOfAll": 0,
+        "percentOfAttributedActive": 0.01
+      },
+      {
+        "name": "buildDressing",
+        "ms": 554.18,
+        "percentOfAll": 1.53,
+        "percentOfAttributedActive": 3.98
+      },
+      {
+        "name": "treeMeshes",
+        "ms": 270.535,
+        "percentOfAll": 0.75,
+        "percentOfAttributedActive": 1.94
+      },
+      {
+        "name": "renderFrame",
+        "ms": 5375.054,
+        "percentOfAll": 14.87,
+        "percentOfAttributedActive": 38.58
+      },
+      {
+        "name": "setQueryData",
+        "ms": 21.753,
+        "percentOfAll": 0.06,
+        "percentOfAttributedActive": 0.16
+      },
+      {
+        "name": "toFootprints",
+        "ms": 3.269,
+        "percentOfAll": 0.01,
+        "percentOfAttributedActive": 0.02
+      },
+      {
+        "name": "toBase",
+        "ms": 10.529,
+        "percentOfAll": 0.03,
+        "percentOfAttributedActive": 0.08
+      },
+      {
+        "name": "MapWorkspace",
+        "ms": 243.729,
+        "percentOfAll": 0.67,
+        "percentOfAttributedActive": 1.75
+      },
+      {
+        "name": "SceneView",
+        "ms": 0.861,
+        "percentOfAll": 0,
+        "percentOfAttributedActive": 0.01
+      },
+      {
+        "name": "ImportTray",
+        "ms": 79.629,
+        "percentOfAll": 0.22,
+        "percentOfAttributedActive": 0.57
+      },
+      {
+        "name": "ImportStream",
+        "ms": 57.537,
+        "percentOfAll": 0.16,
+        "percentOfAttributedActive": 0.41
+      },
+      {
+        "name": "BuildingSearch",
+        "ms": 7.562,
+        "percentOfAll": 0.02,
+        "percentOfAttributedActive": 0.05
+      }
+    ],
+    "idleMs": 21246.655,
+    "unattributedProgramMs": 970.505,
+    "attributedActiveMs": 13933.896,
+    "inclusiveWarning": "Inclusive functions overlap; zero means no sample, not zero execution."
+  },
+  "react": {
+    "commits": 156,
+    "performedWorkByComponent": {
+      "RegisterNavLink": 4,
+      "Icon": 1385,
+      "AreaSwitcher": 153,
+      "OperatorMenu": 2,
+      "FilterChip": 35,
+      "BatchesBody": 7,
+      "NewFiles": 7,
+      "Dialog": 7,
+      "Stepper": 7,
+      "DataTable": 7,
+      "Badge": 7,
+      "Button": 45,
+      "BatchesPage": 4,
+      "EmptyState": 4,
+      "RouterProvider": 2,
+      "Router": 2,
+      "DataRoutes": 2,
+      "RenderErrorBoundary": 4,
+      "RenderedRoute": 6,
+      "Outlet": 2,
+      "MapNavLink": 149,
+      "HeaderSearch": 130,
+      "MapPage": 28,
+      "MapSkeleton": 1,
+      "Skeleton": 7,
+      "MapWorkspace": 146,
+      "EvidenceProvider": 146,
+      "SceneView": 148,
+      "CandidateBanner": 148,
+      "SceneLabels": 148,
+      "MapSidebar": 148,
+      "Toggle": 973,
+      "UndrawnBuildings": 148,
+      "BuildingSearch": 148,
+      "ScaleAndNorth": 148,
+      "ImportTray": 148,
+      "ImportStream": 148,
+      "Toast": 145
+    }
+  },
+  "rawTimingFile": "E:/BhuAayam-data/task-data/lv0/run-1791655964639/timings.json",
+  "rawCpuFile": "E:/BhuAayam-data/task-data/lv0/run-1791655964639/cpu.cpuprofile",
+  "measurementLimits": [
+    "rAF intervals are frame gaps, not GPU durations; Chromium runs headless at 1440 x 900.",
+    "CPU sampling and lightweight hooks add overhead; this is a development build, not a production benchmark.",
+    "React fiber performed-work flags count renders; ordinary dev React does not expose per-component CPU shares.",
+    "Last draw is first render with all buildings, before grow-in completes; not a GPU readback fence."
+  ],
+  "hypothesis": {
+    "sceneCostGrows": true,
+    "measuredCalls": 18,
+    "slopeMsPerPriorBuilding": 0.129,
+    "pearsonR": 0.989,
+    "summedBuildingsPassedToReplacement": 15857,
+    "cacheCopyExistsButDominantCostNotConfirmed": true
+  },
+  "frameDurations": [
+    [15.8, 33.3],
+    [82.4, 66.6],
+    [99.1, 16.7],
+    [115.7, 16.6],
+    [132.5, 16.8],
+    [465.8, 333.3],
+    [482.4, 16.6],
+    [499, 16.6],
+    [582.4, 83.4],
+    [599.1, 16.7],
+    [615.8, 16.7],
+    [632.4, 16.6],
+    [649, 16.6],
+    [665.7, 16.7],
+    [682.4, 16.7],
+    [782.4, 100],
+    [799, 16.6],
+    [815.7, 16.7],
+    [832.4, 16.7],
+    [849.1, 16.7],
+    [882.4, 33.3],
+    [899, 16.6],
+    [1049, 150],
+    [1065.7, 16.7],
+    [1082.4, 16.7],
+    [1099, 16.6],
+    [1115.7, 16.7],
+    [1132.4, 16.7],
+    [1265.7, 133.3],
+    [1299.1, 33.4],
+    [1315.7, 16.6],
+    [1332.4, 16.7],
+    [1349.1, 16.7],
+    [1365.7, 16.6],
+    [1382.3, 16.6],
+    [1532.4, 150.1],
+    [1549.1, 16.7],
+    [1565.7, 16.6],
+    [1582.3, 16.6],
+    [1599, 16.7],
+    [1615.7, 16.7],
+    [1632.3, 16.6],
+    [1649, 16.7],
+    [1665.7, 16.7],
+    [1882.3, 216.6],
+    [1899, 16.7],
+    [1915.6, 16.6],
+    [1932.3, 16.7],
+    [1949, 16.7],
+    [1965.7, 16.7],
+    [1982.4, 16.7],
+    [1999, 16.6],
+    [2282.3, 283.3],
+    [2299, 16.7],
+    [2315.7, 16.7],
+    [2332.3, 16.6],
+    [2349, 16.7],
+    [2365.7, 16.7],
+    [2382.3, 16.6],
+    [2399, 16.7],
+    [2415.7, 16.7],
+    [2432.3, 16.6],
+    [2649, 216.7],
+    [2665.7, 16.7],
+    [2682.3, 16.6],
+    [2699, 16.7],
+    [2715.6, 16.6],
+    [2732.3, 16.7],
+    [2749, 16.7],
+    [2765.7, 16.7],
+    [2782.3, 16.6],
+    [2799, 16.7],
+    [2815.7, 16.7],
+    [2832.3, 16.6],
+    [3082.4, 250.1],
+    [3099, 16.6],
+    [3115.6, 16.6],
+    [3132.3, 16.7],
+    [3149, 16.7],
+    [3165.6, 16.6],
+    [3182.3, 16.7],
+    [3198.9, 16.6],
+    [3315.7, 116.8],
+    [4132.2, 816.5],
+    [4148.9, 16.7],
+    [4165.6, 16.7],
+    [4282.3, 116.7],
+    [4298.9, 16.6],
+    [4615.6, 316.7],
+    [4648.9, 33.3],
+    [4665.6, 16.7],
+    [6115.5, 1449.9],
+    [6165.6, 50.1],
+    [6182.1, 16.5],
+    [7665.5, 1483.4],
+    [7698.8, 33.3],
+    [7715.5, 16.7],
+    [8215.5, 500],
+    [8265.5, 50],
+    [8282.1, 16.6],
+    [8732, 449.9],
+    [8865.4, 133.4],
+    [8882.1, 16.7],
+    [8898.8, 16.7],
+    [8915.4, 16.6],
+    [8932, 16.6],
+    [8965.4, 33.4],
+    [8982, 16.6],
+    [8998.7, 16.7],
+    [9015.4, 16.7],
+    [9032.1, 16.7],
+    [9048.7, 16.6],
+    [9065.4, 16.7],
+    [9465.4, 400],
+    [9482.1, 16.7],
+    [9498.7, 16.6],
+    [9515.3, 16.6],
+    [9532, 16.7],
+    [9548.7, 16.7],
+    [9565.4, 16.7],
+    [9582, 16.6],
+    [9598.7, 16.7],
+    [9632.1, 33.4],
+    [9648.7, 16.6],
+    [10082, 433.3],
+    [10098.7, 16.7],
+    [10115.3, 16.6],
+    [10132, 16.7],
+    [10198.7, 66.7],
+    [10215.3, 16.6],
+    [10382, 166.7],
+    [11881.9, 1499.9],
+    [11915.3, 33.4],
+    [12381.9, 466.6],
+    [12398.6, 16.7],
+    [13931.9, 1533.3],
+    [15715.2, 1783.3],
+    [15748.5, 33.3],
+    [16265.1, 516.6],
+    [16281.8, 16.7],
+    [16815.1, 533.3],
+    [16848.5, 33.4],
+    [17365, 516.5],
+    [17415, 50],
+    [17965.1, 550.1],
+    [17981.7, 16.6]
+  ]
+}

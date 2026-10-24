@@ -1,0 +1,29 @@
+{
+  "task": "A4b step 0",
+  "codeCommit": "e60b3224",
+  "labelFile": "E:/BhuAayam-data/task-data/t1b/labels/teacher-labels-v2.jsonl",
+  "labelFileSha256": "3679d316bee96fa860f7311e5ee6ed9985d9f465b2aaae341e44834695f3f0d6",
+  "output": "E:/BhuAayam-data/task-data/t1b/verifier/labels-a4b-v1",
+  "accepted": 5,
+  "rejected": 0,
+  "examples": 193,
+  "verified": 193,
+  "verifiedPositiveCounts": {
+    "document.registrationNo": 2,
+    "unit.type": 2,
+    "building.addressLiteral": 2,
+    "building.footprint": 1
+  },
+  "pseudoLabelsSha256": "bbd100c6e2df2e192e4c00d4af4d550194c3fa49bddeeb4da754f150910d683f",
+  "sourceCrsPolicy": "Closed lookup to native GeoJSON schema constant; no default or coordinate inference.",
+  "t1Reproduction": {
+    "byteIdentical": true,
+    "sha256": "1c20faaf809d8fd9f98dfaa0a0d953900e133516ddb279a399505b4007b2d46f",
+    "output": "E:/BhuAayam-data/task-data/a4b/t1-reverification-v1",
+    "qualification": "T1 inputs unchanged; output root overridden to owned a4b because T1 writes are out of scope."
+  },
+  "supersededLabelsUsed": false,
+  "labelsChanged": false,
+  "providerCalls": 0,
+  "teacherCalls": 0
+}

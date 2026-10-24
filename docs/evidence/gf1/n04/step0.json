@@ -1,0 +1,21 @@
+{
+  "task": "N04",
+  "branch": "task/n04-reload-resume",
+  "base": "685cc1f4",
+  "outcome": "proceed",
+  "changes": [
+    {"path": "packages/contracts/src/usp/ingestion.ts", "why": "Additive LargeUploadListSchema: this operator's held receipts in a case, at most 20, with the facts resume and cancel need."},
+    {"path": "packages/server/src/modules/usp/ingestion/large-original.ts", "why": "One list function on LargeOriginalService that reuses the heldReceipt predicate unchanged, filtered by case and operator, newest first."},
+    {"path": "apps/api/src/modules/ingestion/large-original.controller.ts", "why": "GET cases/:caseId/uploads beside the existing upload routes."},
+    {"path": "apps/api/src/modules/ingestion/operation-manifest.json", "why": "The new operation's manifest entry."},
+    {"path": "docs/api/openapi.json, packages/api-client/src/schema.d.ts", "why": "Generated from the controller."},
+    {"path": "apps/studio/src/features/intake/upload-command.ts", "why": "A resume entry in createUploadCommand: name, bytes and SHA-256 checked before any write, then only parts not received, then the same finalize; a receipt abort with the receipt's guard."},
+    {"path": "apps/studio/src/features/intake/upload-api.ts", "why": "list(), and receipt arguments narrowed to the id they use; one enrol call."},
+    {"path": "apps/studio/src/features/intake/upload-model.ts", "why": "List entry type, guard from any revision pair, size words, and the waiting-words sessionStorage helpers."},
+    {"path": "apps/studio/src/features/intake/UnfinishedUploads.tsx", "why": "The 'Uploads not finished' section with Resume and Cancel upload."},
+    {"path": "apps/studio/src/features/intake/BatchPage.tsx", "why": "Shows the section; keeps files not added and files still to add as words in sessionStorage and reads them back after a reload."}
+  ],
+  "reuse": ["heldReceipt predicate", "hashFile", "createUploadCommand part/finalize/status loop", "existing abort route and uploadGuard", "intake/items enrolment"],
+  "seamsOutsideOwnedPaths": [],
+  "needsRuntimeDockerGpuOrProvider": false
+}

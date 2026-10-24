@@ -1,0 +1,156 @@
+{
+  "version": "vector-plan-task-result/1",
+  "task": "P1",
+  "runId": "20261010-p1",
+  "method": "deterministic:vector-plan@1",
+  "state": "candidate",
+  "gate": ["GF-AI:plan_rooms", "GF-T16-prerequisite"],
+  "gateQualified": false,
+  "qualification": "Reader and real-input invariants verified; requested three vector floor-plan PDF pages are unavailable in the supplied original. No accuracy or reviewed-room claim.",
+  "codeGitSha": "309c93913c51bf6db4951206faaff374e3600b1a",
+  "receipts": {
+    "bihar": "bihar/result.json",
+    "tower3": "tower3/result.json",
+    "baselineAreaComparison": "baseline/result.json"
+  },
+  "dependencies": {
+    "Python": "3.13.7",
+    "PyMuPDF": "1.25.5",
+    "MuPDF": "1.25.6",
+    "Shapely": "2.0.7",
+    "Pillow": "11.2.1",
+    "numpy": "2.5.3"
+  },
+  "inputs": [
+    {
+      "name": "bihar-magnolia-sanctioned-layout-original.pdf",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "permission": "unconfirmed",
+      "purpose": "test_only",
+      "pagesProcessed": [1, 2, 3, 4, 5, 6],
+      "classifications": {
+        "1": "vector_other",
+        "2": "vector_plan",
+        "3": "not_vector",
+        "4": "not_vector",
+        "5": "not_vector",
+        "6": "not_vector"
+      },
+      "vectorFloorPlanPdfPages": [2],
+      "requestedMinimumVectorFloorPlanPdfPages": 3,
+      "actualVectorFloorPlanPdfPageCount": 1,
+      "selectedFloorPanelsAreNotPdfPages": true,
+      "scopePdfBbox": [400, 1150, 1265, 1640],
+      "roomsFound": 27,
+      "roomCountMeaning": "retained closed-face candidates, not a reviewed room inventory",
+      "roomsWithParsedLabel": 6,
+      "roomsWithStatedDims": 9,
+      "unlabelledRegions": 17,
+      "multipleLabelRegions": 4,
+      "consistency": {"ok": 3, "mismatch": 5, "unknown": 19},
+      "consistencyComparedQuantity": "drawn_polygon_area_vs_product_of_two_stated_lengths",
+      "consistencyRelativeTolerance": 0.05,
+      "bboxLengthDifferencesAreSeparateDiagnostics": true,
+      "unattachedTextLinesInPage2Scope": 164,
+      "scale": {
+        "method": "dimension_layer_tick_intersections+robust_consensus+least_squares_through_origin",
+        "metresPerPdfPoint": 0.03396031151158365,
+        "supportCount": 110,
+        "inlierCount": 110,
+        "medianAbsoluteRelativeResidual": 0.0007501396291569576,
+        "rmsResidualM": 0.0025874233457593987,
+        "independentOfRoomDimensionPairs": true,
+        "unscopedPage2": "no_scale: multiple printed panel scales"
+      },
+      "runtimeSeconds": 3.4194222999503836,
+      "sourceHashUnchanged": true
+    },
+    {
+      "name": "haryana-2831-tower3-plan1.pdf",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "permission": "unconfirmed",
+      "purpose": "test_only",
+      "pagesProcessed": [1],
+      "classifications": {"1": "not_vector"},
+      "roomsFound": 0,
+      "roomsWithParsedLabel": 0,
+      "roomsWithStatedDims": 0,
+      "consistency": {"ok": 0, "mismatch": 0, "unknown": 0},
+      "scaleMethod": null,
+      "scaleResidual": null,
+      "gaps": ["not_vector", "no_scale"],
+      "runtimeSeconds": 0.10608820000197738,
+      "sourceHashUnchanged": true
+    }
+  ],
+  "inspectionPanels": [
+    {
+      "page": 2,
+      "captionLiteral": "GROUND FLOOR PLAN",
+      "captionBbox": [436.3999938964844, 1606.01025390625, 566.7373657226562, 1618.004150390625],
+      "inspectionXBandsPdf": [400, 690],
+      "closedFaceCandidates": 9,
+      "singleLiteralLabels": 2,
+      "parsedDimensionPairs": 3,
+      "consistency": {"ok": 2, "mismatch": 0, "unknown": 7},
+      "reviewedLevelAssociation": null
+    },
+    {
+      "page": 2,
+      "captionLiteral": "FIRST FLOOR PLAN",
+      "captionBbox": [724.1599731445312, 1606.01025390625, 827.5711059570312, 1618.004150390625],
+      "inspectionXBandsPdf": [690, 990],
+      "closedFaceCandidates": 10,
+      "singleLiteralLabels": 2,
+      "parsedDimensionPairs": 4,
+      "consistency": {"ok": 0, "mismatch": 4, "unknown": 6},
+      "reviewedLevelAssociation": null
+    },
+    {
+      "page": 2,
+      "captionLiteral": "SECOND FLOOR PLAN",
+      "captionBbox": [1014.4400024414062, 1606.01025390625, 1141.3350830078125, 1618.004150390625],
+      "inspectionXBandsPdf": [990, 1265],
+      "closedFaceCandidates": 8,
+      "singleLiteralLabels": 2,
+      "parsedDimensionPairs": 2,
+      "consistency": {"ok": 1, "mismatch": 1, "unknown": 6},
+      "reviewedLevelAssociation": null
+    }
+  ],
+  "boundedComparison": {
+    "failureSignature": "A real ground-bedroom door leaf extends the region bbox beyond the stated rectangular length; an implicit bbox assumption incorrectly overrode the area agreement.",
+    "baselineReceipt": "baseline/result.json",
+    "baselineConsistency": {"ok": 0, "mismatch": 8, "unknown": 19},
+    "hypothesis": "Compare polygon area against the stated length product explicitly; retain bbox length discrepancies as separate diagnostics for nonrectangular faces.",
+    "successCriterion": "Preserve the exact same source-derived polygons and scale; classify area differences within the already declared five-percent area tolerance correctly, without erasing bbox diagnostics.",
+    "comparisonConsistency": {"ok": 3, "mismatch": 5, "unknown": 19},
+    "regression": "services/geo/geo/test_vector_plan.py: source-derived ground-bedroom polygon with a door-leaf bbox extension",
+    "stopCondition": "One comparison and regression; no further closure/room-shape heuristics or accuracy claims.",
+    "decision": "Keep area comparison and separate bbox diagnostics. Merged faces remain unknown/mismatched candidates; do not infer missing boundaries.",
+    "baselineRetention": "Small receipt only; intermediate candidate JSON/report/overlay removed from this new task directory to avoid redundant artifacts."
+  },
+  "checks": [
+    {"command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe -m pip check", "exitCode": 0},
+    {"command": "PYTHONPATH=services/geo E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe -m unittest geo.test_vector_plan", "exitCode": 0},
+    {"command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe -m compileall -q services/geo/geo/vector_plan.py services/geo/geo/test_vector_plan.py scripts/plans", "exitCode": 0},
+    {"command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe scripts/plans/read_vector_plan.py E:/BhuAayam-data/task-data/association-sources-20260929/bihar-magnolia-sanctioned-layout-original.pdf --pages 1-6 --region 1:0,0,1950,1650 --region 2:400,1150,1265,1640 --provenance scripts/plans/source-provenance.json --out docs/evidence/gf-ai/plans/vector/20261010-p1/bihar", "exitCode": 0},
+    {"command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe scripts/plans/read_vector_plan.py E:/BhuAayam-data/task-data/association-sources-20260929/haryana-2831-tower3-plan1.pdf --pages 1 --provenance scripts/plans/source-provenance.json --out docs/evidence/gf-ai/plans/vector/20261010-p1/tower3", "exitCode": 0},
+    {"command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe scripts/plans/verify_vector_evidence.py docs/evidence/gf-ai/plans/vector/20261010-p1/bihar docs/evidence/gf-ai/plans/vector/20261010-p1/tower3", "exitCode": 0},
+    {"command": "PYTHONPATH=services/geo E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe - (inline real-page mixed-scale and literal-unit invariant assertions)", "exitCode": 0, "assertions": ["Unscoped real Bihar page 2 abstains from scale", "All 197 unscoped closed-face candidates retain pdf_point2 and null metric geometry", "12'11\" converts to 3.937 m", "10'-2\" converts to 3.0988 m", "3.2 X 4.1 m has length product 13.12 m2", "5'11' remains null, not a guessed inch value"]},
+    {"command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe - (inline aggregate receipt count/classification/runtime/hash and README-link assertions)", "exitCode": 0},
+    {"command": "git diff --check", "exitCode": 0}
+  ],
+  "gaps": [
+    "Only one vector floor-plan PDF page exists in the supplied Bihar original; another source is needed for the requested three-page qualification.",
+    "Open door/kitchen/living/stair/dresser connections are not inferred closed. Unlabelled and multiple-label faces require officer review; no room-count accuracy claimed.",
+    "The balcony literal 5'11' is ambiguous and its text is unattached; the SHAFT dimension bbox also falls outside every retained face. Both are reported, not relocated.",
+    "The source says NOT SCALE THE DRAWING. Metric geometry is diagnostic only; literal written dimensions take precedence.",
+    "Layerless fallback, split fraction text reconstruction, raster OCR/segmentation and other source families are not qualified.",
+    "Permission remains unconfirmed, and no legal/unit/level association, surveyed frame, API route or registry acceptance exists."
+  ],
+  "apiRouteWired": false,
+  "registryWrites": 0,
+  "gpuUsed": false,
+  "externalProviderCalls": 0
+}

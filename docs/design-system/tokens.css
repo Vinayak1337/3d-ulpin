@@ -1,7 +1,7 @@
 /*
  * 3D ULPIN design tokens for the existing `.ulpin-app` scope.
  *
- * Reference file, not imported at runtime. UI-01 (docs/usp-agent-handoffs/29-agent-task-cards.md)
+ * Reference file, not imported at runtime. UI-01 (docs/archive/usp-agent-handoffs/29-agent-task-cards.md)
  * merges these values into apps/web/features/officer/shared/tokens.css. Names marked
  * "existing" already exist there; keep them and update values. Everything else is new.
  * Source: docs/design-system/tokens.json (UX4G 3.1 foundations + v2 forest green + map layer).

@@ -1,0 +1,114 @@
+{
+  "mode": "check",
+  "at": "2026-10-21T02:41:45.6594076+05:30",
+  "rootIsDefault": true,
+  "engine": {
+    "answers": true,
+    "exitCode": 0
+  },
+  "processes": [
+    {
+      "name": "com.docker.backend",
+      "id": 16780,
+      "ageSeconds": 637
+    },
+    {
+      "name": "com.docker.backend",
+      "id": 23084,
+      "ageSeconds": 637
+    },
+    {
+      "name": "com.docker.build",
+      "id": 3756,
+      "ageSeconds": 633
+    },
+    {
+      "name": "Docker Desktop",
+      "id": 6336,
+      "ageSeconds": 633
+    },
+    {
+      "name": "Docker Desktop",
+      "id": 22160,
+      "ageSeconds": 633
+    },
+    {
+      "name": "Docker Desktop",
+      "id": 26480,
+      "ageSeconds": 633
+    },
+    {
+      "name": "Docker Desktop",
+      "id": 28612,
+      "ageSeconds": 637
+    },
+    {
+      "name": "Docker Desktop",
+      "id": 29516,
+      "ageSeconds": 633
+    }
+  ],
+  "sockets": [
+    {
+      "folder": "{root}\\Docker\\run",
+      "present": true,
+      "count": 4,
+      "names": [
+        "dockerEthernetVfkit",
+        "dockerInference",
+        "sailor-ingest.sock",
+        "userAnalyticsOtlpHttp.sock"
+      ]
+    },
+    {
+      "folder": "{root}\\docker-secrets-engine",
+      "present": true,
+      "count": 1,
+      "names": [
+        "engine.sock"
+      ]
+    }
+  ],
+  "socketsNote": "socket entries are stale only while no Docker process runs",
+  "backendLog": {
+    "file": "com.docker.backend.exe.log",
+    "lines": [
+      "[2026-10-20T20:48:37.228515000Z][com.docker.backend.exe] backend cancelling with error: starting services: initializing Ingest server: listening on unix://{root}/Docker/run/sailor-ingest.sock: rename {root}/Docker/run/sailor-ingest.sock {root}/Docker/run/sailor-ingest.sock.stale: The file cannot be accessed by the system. (listener: The file cannot be accessed by the system.)",
+      "[2026-10-20T20:48:39.462397800Z][com.docker.backend.exe] backend crashed, dumping error to file and reporting to user: starting services: initializing Ingest server: listening on unix://{root}/Docker/run/sailor-ingest.sock: rename {root}/Docker/run/sailor-ingest.sock {root}/Docker/run/sailor-ingest.sock.stale: The file cannot be accessed by the system. (listener: The file cannot be accessed by the",
+      "[2026-10-20T20:48:39.463971200Z][com.docker.backend.exe.report] reporting error to user: starting services: initializing Ingest server: listening on unix://{root}/Docker/run/sailor-ingest.sock: rename {root}/Docker/run/sailor-ingest.sock {root}/Docker/run/sailor-ingest.sock.stale: The file cannot be accessed by the system. (listener: The file cannot be accessed by the system.)",
+      "[2026-10-20T20:48:40.392031000Z][com.docker.backend.exe.ipc] (798052e5) 83e53b03-ErrorReportAPI S->C Docker-Desktop/4.91.0 (Windows; x64; GUI) GET /error (1.0512ms): {\"actions\":[\"Quit\",\"Reset to factory defaults\"],\"allowDiagnostics\":true,\"error\":\"starting services: initializing Ingest server: listening on unix://{root}/Docker/run/sailor-ingest.sock: rename {root}/Docker/run/sailor-ingest.sock {roo"
+    ]
+  },
+  "demoContainers": [
+    {
+      "name": "ulpin-demo-worker-1",
+      "state": "running",
+      "health": "healthy"
+    },
+    {
+      "name": "ulpin-demo-geo-1",
+      "state": "running",
+      "health": "healthy"
+    },
+    {
+      "name": "ulpin-demo-minio-init-1",
+      "state": "exited",
+      "health": null
+    },
+    {
+      "name": "ulpin-demo-redis-1",
+      "state": "running",
+      "health": "healthy"
+    },
+    {
+      "name": "ulpin-demo-postgres-1",
+      "state": "running",
+      "health": "healthy"
+    },
+    {
+      "name": "ulpin-demo-minio-1",
+      "state": "running",
+      "health": "healthy"
+    }
+  ]
+}

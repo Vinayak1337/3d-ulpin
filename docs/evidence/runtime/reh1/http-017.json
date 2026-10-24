@@ -1,0 +1,12 @@
+{ "index": "017", "method": "POST", "route": "/api/v1/usp/identity/reviews", "status": 200, "seconds": 0.095,
+"requestKey": null, "idempotencyHeader": null, "ids": { "reviewId": "bf90e613-12e4-4b6d-81c5-d5be3848f387",
+"expectedManifestId": "3f85fca4-3fac-44c2-828b-0f00c5a26b9d" }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/017", "request": { "operation": "assign", "scope": { "kind": "snapshot",
+"scopeId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "world": { "namespace": "world",
+"id": "registry-site/daf0c3e9-a952-4177-88a5-f90f15e39112" }, "manifestId": "3f85fca4-3fac-44c2-828b-0f00c5a26b9d",
+"snapshotDigest": "[omitted non-source digest]", "stage": "recorded" }, "recordIds": [
+"f6bb6847-0116-48b9-8cd3-e16ed0cb85ce" ], "expectedVersions": { "f6bb6847-0116-48b9-8cd3-e16ed0cb85ce": 1 }, "reason": [
+"REH1 local rehearsal replay of the cited R2 boxed label UNIT-3B on 2ND FLOOR PLAN. Label e",
+"vidence only: no boundary, area, use, geometry or rights. Not a field officer decision." ], "evidence": [ {
+"sourceId": "8f7e1ef9-ae44-445b-b238-815d497f5fe6", "revision": 1,
+"locator": "page 1; region pt [596,390,644,409]; literal UNIT-3B" } ] } }

@@ -1,0 +1,87 @@
+{ "task": "REH7", "gate": "GF5", "at": "2026-10-18T08:27:29.668Z", "runtime": "ulpin-reh-02",
+"stagingCommit": "67959045919447ee07302523225422e33dcca6b2", "worktreeBranch": "task/reh7-window-timing",
+"outcome": "reproduced and attributed: one page of 27.0 s, 94% of it in the browser main thread (scene teardown)",
+"partA": { "rolled": "done", "checkoutSeconds": 0.196, "installSeconds": 1.095,
+"roll": "ulpin-reh-02: geo and worker already run ulpin-geo:git-22003ea3d878; nothing recreated.",
+"startSeconds": 42.485, "doctor": { "pass": 28, "fail": 0 }, "apiPid": 30824,
+"dockerRecovery": "docker-recovery.json: booted 13:30 IST, two socket folders renamed aside, started once" }, "partB": {
+"requests": 162, "over3s": 59, "over10s": 0, "stopped": null, "coldSeconds": [ 2.636, 1.879, 1.794, 1.746, 2.069, 1.452
+], "warmSequentialSecondsRange": [ 1.385, 2.146 ], "floor": { "displaySummarySeconds": [ 2.193, 2.289 ],
+"window50mZeroFeaturesSeconds": [ 1.8, 1.86 ], "apiCpuSecondsPerFloorRead": [ 0.265, 0.406 ] },
+"apiCpuSecondsPerWarmPage": [ 0.219, 0.656 ], "concurrentW4Page2": { "x1": { "secondsRange": [ 1.875, 1.989 ] }, "x2": {
+"secondsRange": [ 1.981, 2.127 ] }, "x4": { "secondsRange": [ 2.487, 2.735 ] }, "x8": { "secondsRange": [ 2.801, 3.529 ]
+}, "x12": { "secondsRange": [ 3.027, 5.724 ], "firstEight": [ 3.027, 3.547 ], "ninthToTwelfth": [ 4.968, 5.724 ] } },
+"w5Page2AloneSecondsRange": [ 1.385, 1.476 ], "w5Page2AfterSixAbandonedSecondsRange": [ 2.159, 2.668 ],
+"apiCpuSecondsDuringReadAfterAbandoned": [ 2.75, 2.922 ] }, "partC": { "runs": [ { "run": "1", "reads": 8, "aborted": 0,
+"queuedOrStalledMsMax": 2, "serverToFirstByteMsRange": [ 1814.6, 2330.2 ], "over3s": [ { "seconds": 3.751,
+"downloadMs": 1822.6, "longestTaskMs": 3343 } ], "mainThreadLongTasks": 693, "mainThreadLongTaskSeconds": 116 }, {
+"run": "2", "reads": 12, "aborted": 0, "queuedOrStalledMsMax": 0.8, "serverToFirstByteMsRange": [ 1610.6, 2384.4 ],
+"over3s": [ { "seconds": 27.015, "downloadMs": 25396.4, "longestTaskMs": 26875 } ], "mainThreadLongTasks": 753,
+"mainThreadLongTaskSeconds": 134 }, { "run": "3", "reads": 8, "aborted": 0, "queuedOrStalledMsMax": 1.1,
+"serverToFirstByteMsRange": [ 1830.9, 2381.3 ], "over3s": [ { "seconds": 3.948, "downloadMs": 1968.6,
+"longestTaskMs": 3528 } ], "mainThreadLongTasks": 717, "mainThreadLongTaskSeconds": 117 } ], "note": [
+"Run 3 ran with the CPU profiler; its slow page (3.9 s) is the same stage, view and page as", " run 2's 27 s." ],
+"profile": { "longestJsStretch": { "fromSecond": 91.2, "toSecond": 94.8, "ms": 3600 }, "inclusiveTop": [ { "ms": 3335,
+"name": "setBuildings /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:751" }, { "ms": 3335,
+"name": "(anonymous) /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/react.tsx:57" }, { "ms": 3335,
+"name": "react_stack_bottom_frame /node_modules/.vite/deps/react-dom_client.js:14175" }, { "ms": 3335,
+"name": "runWithFiberInDEV /node_modules/.vite/deps/react-dom_client.js:940" }, { "ms": 3335,
+"name": "commitHookEffectListMount /node_modules/.vite/deps/react-dom_client.js:6894" }, { "ms": 3335,
+"name": "commitHookPassiveMountEffects /node_modules/.vite/deps/react-dom_client.js:6935" }, { "ms": 3012,
+"name": "removeBuilding /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:1104" }, { "ms": 2253,
+"name": "removeBuildingPad /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:1136" }, { "ms": 2226,
+"name": "padGeometry /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/look.ts:239" }, { "ms": 1073,
+"name": "ShapeGeometry /node_modules/.vite/deps/three.module-C1ZFymXr.js:25826" }, { "ms": 521,
+"name": "remove /node_modules/.vite/deps/three.module-C1ZFymXr.js:9801" } ], "selfTop": [ { "ms": 517,
+"name": "remove /node_modules/.vite/deps/three.module-C1ZFymXr.js:9801" }, { "ms": 339,
+"name": "Float32BufferAttribute /node_modules/.vite/deps/three.module-C1ZFymXr.js:13465" }, { "ms": 269,
+"name": "offsetRing /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/look.ts:201" }, { "ms": 168,
+"name": "(garbage collector) (native)" }, { "ms": 157,
+"name": "BufferAttribute /node_modules/.vite/deps/three.module-C1ZFymXr.js:12749" }, { "ms": 150,
+"name": "EdgesGeometry /node_modules/.vite/deps/three.module-C1ZFymXr.js:22335" } ] } }, "requestsOver10s": [ {
+"run": "2", "stage": "4 6 more", "window": "5555 x 5681 m at [5251,11626]",
+"page": "page 2 (after cursor), the first page after a new view replaced the drawn 15,000", "seconds": 27.015,
+"parts": { "browserQueueMs": 0.5, "serverToFirstByteMs": 1610.6, "downloadWhileMainThreadBlockedMs": 25396.4,
+"eventDeliveryMs": 7.4 }, "shares": { "browserQueueMs": "0.0%", "serverToFirstByteMs": "6.0%",
+"downloadWhileMainThreadBlockedMs": "94.0%", "eventDeliveryMs": "0.0%" }, "longestMainThreadTaskDuringMs": 26875,
+"apiCpuSeconds": 0.359, "postgresMeanCpuPercent": 8.3 } ], "hypotheses": { "H1": { "verdict": "not supported",
+"measurement": [ "Browser queueing is at most 2 ms on every Studio read (Part C queuedOrStalledMs); through ",
+"the Vite proxy the server answers in 1.6-2.4 s, direct 1.4-2.1 s. The slow time is in the ",
+"browser, but on its main thread, not in a queue: see H5." ] }, "H2": { "verdict": "not supported as the cause",
+"measurement": [ "Pool wait shows only past 8 concurrent reads: copies 9-12 of W4 page 2 take 5.0-5.7 s agai",
+"nst 3.0-3.5 s for the first 8; six abandoned reads lift the next read from 1.4 s to 2.2-2.",
+"7 s. A wait is capped at 5 s by connectionTimeoutMillis (db.ts:28), and the slow page had ",
+"API CPU 0.36 s and Postgres 8% while it waited." ] }, "H3": { "verdict": "not supported",
+"measurement": "API CPU is 0.2-0.7 s per read in Part B; during the 27 s page the API used 0.36 s of CPU." }, "H4": {
+"verdict": "not supported", "measurement": "The first read after start took 2.6 s, warm reads 1.6-2.1 s." }, "H5": {
+"verdict": "supported", "measurement": [
+"One main-thread task of 26.9 s covers the 27.0 s page; its download phase is 25.4 s (94%).",
+" The profiled run puts the 3.5 s instance in SceneEngine.setBuildings (react.tsx:72 effect",
+") -> removeBuilding -> removeBuildingPad -> padGeometry: 3.0 of 3.3 s in removal." ] } }, "findings": [ [
+"The slow page is always page 2 of a new view: page 1 replaces the 15,000 drawn buildings, ",
+"the scene removes them on the main thread, and page 2's body waits unread until that task ",
+"ends (REH6 stages 4 and 5 match)." ], [
+"Every window read costs a fixed 1.8 s (50 m window, 0 features; display-summary 2.2 s), of",
+" which the API's CPU is about 0.3 s, so a four-page view costs about 7 s before any drawin",
+"g. The rest was not split by statement: that needs SQL, which this task may not run." ], [
+"In headless Chromium (software WebGL) the page's main thread was never idle while the map ",
+"was open: about two thirds native time (part-c-profile-run3.json halfSecondSplitMs). A GPU", " laptop may differ." ], [
+"With LA7's clamp the zoom path now reads 5,555 x 5,681 m at the 200 m stage (REH6: 6,583 x",
+" 6,733 m) and issues no new read at the 100 m stage." ] ], "needsCode": [ {
+"at": "packages/scene/src/engine.ts:1077-1091", "what": [
+"removeBuildingPad rebuilds the merged pad geometry of every remaining building in the batc",
+"h (padGeometry, look.ts:246) once per removed building; setBuildings (engine.ts:705-708) r",
+"emoves one at a time, so a view change costs batch-size squared on the main thread." ] }, {
+"at": "packages/scene/src/engine.ts:1046", "what": [
+"this.buildings.remove(object) per mesh and edge: three.js Object3D.remove searches and spl",
+"ices the group's ~30,000 children each time (0.5 s self in 3.5 s)." ] }, {
+"at": "apps/api/src/modules/intake/area-sources.controller.ts:121-123 and area-display-window.ts:73", "what": [
+"A client abort does not reach the read: the transaction has no signal or deadline, so aban",
+"doned reads run to the end on pooled connections (Part B step 4)." ] } ], "demo": {
+"baselineCommit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "sameAfterA": true, "sameAfterB": true, "sameAtEnd": true,
+"health": "000", "nativeProcesses": 0, "requests": "only GET /api/v1/health" },
+"left": "ulpin-reh-02 stopped at 67959045, six exited containers and three volumes kept; dev server stopped",
+"restart": [ "cd E:/Projects/ulpin-wt/ulpin-reh-02", "pnpm platform:start --profile demo --runtime ulpin-reh-02",
+"pnpm platform:doctor --profile demo --runtime ulpin-reh-02",
+"ULPIN_API_TARGET=http://127.0.0.1:21026 pnpm studio:dev (port 5188)", [
+"node docs/evidence/runtime/reh7/timing.mjs <apiPid>; node .../map-timing.mjs <apiPid> <run", "> [profile]" ] ] }

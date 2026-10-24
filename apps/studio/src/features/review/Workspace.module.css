@@ -61,3 +61,12 @@
   .sheetLayout .side { grid-column: 1 / -1; }
   .questionLayout { grid-template-columns: minmax(0, 1fr); }
 }
+
+/*
+ * Narrow windows and 200% zoom: the scene pane above the checks, each as wide as the page. The frame then
+ * grows with them and the page scrolls, as the register page does.
+ */
+@media (max-width: 900px) {
+  .frame:has(> .check) { height: auto; }
+  .check { grid-template-columns: minmax(0, 1fr); }
+}

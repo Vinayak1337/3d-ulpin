@@ -1,0 +1,393 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-KARNATAKA-RECALL",
+  "status": "completed_cached_comparison",
+  "baseCommit": "397474d670e29229867bed83a71b892c7461b3d2",
+  "branch": "task/d07-karnataka-recall-20261005",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005",
+  "preservedBaseline": {
+    "freeze": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\frozen-config.json",
+      "bytes": 155083,
+      "sha256": "9b580000468c6db12e9d74a2ff25e68fa44eed289204e9fd73dd4461acbffe2c"
+    },
+    "results": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\results.json",
+      "bytes": 173113,
+      "sha256": "57becbda6d0058e1e07cca834a29965c193ec60c598d040ef2531172980b0dc1"
+    },
+    "newBaselineInferenceCalls": 0,
+    "nativeInputFilesUnchanged": 24,
+    "earlierCommitUnchanged": true,
+    "old19DevelopmentOrClosedFinalAccessed": false
+  },
+  "cohort": {
+    "groupId": "ramp-MaxarODP-104001002CA32300",
+    "items": 24,
+    "positiveItems": 19,
+    "emptyLabelledItems": 5,
+    "sourceProjects": 1,
+    "sceneGroups": 1,
+    "scoredPixels": 1572864,
+    "labelPixels": 181259,
+    "publisherFeatures": 178,
+    "trainingItems": 0,
+    "finalEvaluationItems": 0
+  },
+  "investigation": {
+    "receipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\diagnosis.json",
+      "bytes": 6375,
+      "sha256": "c5a11515cbaee38cf55d38734fc29716b47191be5f9586e10e0b37cfba1c3f65"
+    },
+    "tile256Stride192": "Rejected before experiment as no-op. Production uses one unpadded256x256 tile for every input; both settings produce the same tile and432x432 model tensor. Actual source-to-input scale1.6875, native masks108x108. No padding/downscale recall cause established.",
+    "filteredQueryEvidence": "One unmatched1198-pixel rooftop has a query with confidence0.33221874 and pixelIoU0.80794165. Several other best-mask queries are much lower confidence, including tiny152-pixel roof0.01641264; confidence filtering explains some available candidates, not all quality errors. Best-query IoU is oracle diagnosis, not a detector score or new truth."
+  },
+  "experimentalConfiguration": {
+    "freeze": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\frozen-recall-config.json",
+      "bytes": 153837,
+      "sha256": "a733d4c8def3f06d9cff81e2b327fa12ae76b3166f1364e847dc36ff8a38a92c"
+    },
+    "version": "rfdetr-cached-confidence030-mask000/1",
+    "singleFactor": {
+      "factor": "object confidence cutoff",
+      "baseline": 0.5,
+      "experimental": 0.3,
+      "preserved": "All200 native queries;432 model input/native108 masks; mask logit>0; stable descending score painting only unassigned pixels; source256 frames/labels/full scoring; unchanged components/limits/matching",
+      "hypothesis": "A useful rooftop query (confidence0.3322,pixelIoU0.80794,label1198pixels) is censored at0.5. A fixed0.30 cutoff may recover some missed roofs; tiny/lower-confidence/domain/annotation errors remain. This is one changed cutoff, not a sweep.",
+      "choiceBasis": "Largest one-decimal cutoff below the highest-confidence filtered query that supports an unmatched roof in the two-case diagnosis. No alternative threshold was scored before this freeze.",
+      "upstream": {
+        "url": "https://rfdetr.roboflow.com/latest/reference/rfdetr/",
+        "checkedOn": "2026-10-05",
+        "claim": "RFDETR.predict exposes float threshold with default0.5;0.30 is this isolated development experiment, not an upstream recommended satellite threshold."
+      }
+    },
+    "decisionFrozenBeforeReplay": {
+      "baselineMaskRecall": 0.4880088712836328,
+      "baselineMaskPrecision": 0.8466552446950046,
+      "baselinePolygonMatched": 67,
+      "baselinePolygonObjectPrecision": 0.6090909090909091,
+      "baselineEmptyLabelledFpScenes": 1,
+      "baselineCapacityOmissions": 0,
+      "rule": "Recall mechanism supported only if mask recall increases and final polygon matches exceed67. If both precisions stay>=baseline, empty-labelled FP scenes<=1 and capacity omissions==0, classify development_metrics_improved; otherwise recall_gain_with_cost. Without both recall gains classify no_supported_recall_gain. Always report all pixel/object/empty/geometry costs; no promotion, fit or final/generalization claim."
+    },
+    "nativeInputProvenance": "Complete original all200 query logits and108x108 mask logits, float32, captured before production0.5 filtering. No post-filter fabrication, tensor/input/label/model/resolution/mask-threshold/component/matching change."
+  },
+  "metrics": {
+    "mask": {
+      "baseline": {
+        "id": 1,
+        "name": "building",
+        "truthPixels": 181259,
+        "predictedPixels": 104477,
+        "tp": 88456,
+        "fp": 16021,
+        "fn": 92803,
+        "iou": 0.4483779399837794,
+        "precision": 0.8466552446950046,
+        "recall": 0.4880088712836328
+      },
+      "experimental": {
+        "id": 1,
+        "name": "building",
+        "truthPixels": 181259,
+        "predictedPixels": 134412,
+        "tp": 104817,
+        "fp": 29595,
+        "fn": 76442,
+        "iou": 0.49710700294990845,
+        "precision": 0.779818766181591,
+        "recall": 0.5782719754605289
+      }
+    },
+    "finalPolygonMask": {
+      "baseline": {
+        "id": 1,
+        "name": "building",
+        "truthPixels": 181259,
+        "predictedPixels": 104476,
+        "tp": 88455,
+        "fp": 16021,
+        "fn": 92804,
+        "iou": 0.4483728710462287,
+        "precision": 0.8466537769439871,
+        "recall": 0.48800335431619946
+      },
+      "experimental": {
+        "id": 1,
+        "name": "building",
+        "truthPixels": 181259,
+        "predictedPixels": 134146,
+        "tp": 104689,
+        "fp": 29457,
+        "fn": 76570,
+        "iou": 0.4968251105753716,
+        "precision": 0.7804108955913706,
+        "recall": 0.5775658036290612
+      }
+    },
+    "objects": {
+      "baseline": {
+        "mask": {
+          "tp": 62,
+          "fp": 37,
+          "fn": 116,
+          "iou": 0.28837209302325584,
+          "precision": 0.6262626262626263,
+          "recall": 0.34831460674157305,
+          "mergeCandidates": 11
+        },
+        "polygons": {
+          "tp": 67,
+          "fp": 43,
+          "fn": 111,
+          "iou": 0.3031674208144796,
+          "precision": 0.6090909090909091,
+          "recall": 0.37640449438202245,
+          "mergeCandidates": 8
+        }
+      },
+      "experimental": {
+        "mask": {
+          "tp": 67,
+          "fp": 54,
+          "fn": 111,
+          "iou": 0.28879310344827586,
+          "precision": 0.5537190082644629,
+          "recall": 0.37640449438202245,
+          "mergeCandidates": 15
+        },
+        "polygons": {
+          "tp": 87,
+          "fp": 75,
+          "fn": 91,
+          "iou": 0.3438735177865613,
+          "precision": 0.5370370370370371,
+          "recall": 0.4887640449438202,
+          "mergeCandidates": 9
+        }
+      }
+    },
+    "emptyLabelledScenes": {
+      "baseline": {
+        "items": 5,
+        "itemsWithForegroundFalsePositives": 1,
+        "falsePositivePixels": 1106,
+        "falsePositiveMaskObjects": 1,
+        "falsePositivePolygonObjects": 1,
+        "idsWithForegroundFalsePositives": [
+          "ramp-karnataka/f58cf24e-0da4-4612-812a-d54bf65a17c9"
+        ]
+      },
+      "experimental": {
+        "items": 5,
+        "fpScenes": 2,
+        "fpPixels": 4817,
+        "fpPolygonObjects": 2
+      }
+    },
+    "polygonization": {
+      "baselineChangedPixels": 1,
+      "experimentalChangedPixels": 266,
+      "experimentalRemovedForegroundPixels": 266,
+      "experimentalAddedForegroundPixels": 0,
+      "baselineOmissions": {
+        "small": 1,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "experimentalOmissions": {
+        "small": 127,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      }
+    },
+    "changedItems": 12
+  },
+  "decision": {
+    "classification": "recall_gain_with_cost",
+    "maskRecallDelta": 0.09026310417689609,
+    "maskPrecisionDelta": -0.06683647851341368,
+    "extraMatchedPublisherFeatures": 20,
+    "extraFinalFalseObjects": 32,
+    "extraEmptyLabelledFpScenes": 1,
+    "nextStep": "Do not change the production cutoff or promote this alternative. Retain the measured precision/recall tradeoff; added terrain/road candidates and small-fragment burden require review. A separate data/decision-policy task can address label completeness/ambiguity and intended review costs; no fit, sweep or further inference authorized by this result."
+  },
+  "inspection": {
+    "sheet": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\selected-comparison.png",
+      "bytes": 367720,
+      "sha256": "031272a6f44be5551a26f1b618e9a23e59cc60e2a8899eb17aa04b0825dafd5c"
+    },
+    "metadata": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\inspection.json",
+      "bytes": 286,
+      "sha256": "08e919cc2ba9d3a8ce01d300fa9a7785d6e38031f9662272555fb7435d57e234"
+    },
+    "observations": [
+      "0020b409: one additional roof match (2 to3), eight of11 features still missed; expected retained0.3322 query contributes coverage.",
+      "6445f09f: published-feature matches1 to2, but extra road-strip candidates lower mask precision0.96410 to0.48285.",
+      "cb382867: new terrain-like foreground blob on an empty-labelled field chip;3711 scoredFP pixels/one polygon. Earlier f58 empty-labelled roof-like ambiguity persists. Labels unchanged; source interpretation is inspection only."
+    ]
+  },
+  "isolation": {
+    "newNativeModelCalls": 0,
+    "modelAndWeightHooksFailClosed": true,
+    "newNativeOrOsEgressBoundaryVerified": false,
+    "cachedOutputRouteAuthorized": true,
+    "assessment": "Not established for fresh RF-DETR. Existing audited Qwen launcher has fixed roles/staged scopes; no global/ACL/runtime changes performed. Pure cached-output comparison only.",
+    "freshNativePrerequisite": "Separately owned compatible audited task-scoped containment role/profile and GIS/ONNX runtime/read-only input/model grants, plus minimal effective native-network control. Existing Qwen role/stage contract cannot be silently relabelled for RF-DETR. No OS/global firewall/proxy/credentials/ACL/runtime changes attempted.",
+    "pythonControlsSupplementOnly": true
+  },
+  "runtime": {
+    "receipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\replay-recall-command.json",
+      "bytes": 856,
+      "sha256": "ef616d6da06ee15d754d288a0e4acadb27b5d7b99e79cc9d23143a5235a4de91"
+    },
+    "workerSeconds": 3.078,
+    "bodySeconds": 2.2809674000018276,
+    "maxItemSeconds": 0.14597510002204217,
+    "peakObservedRssBytes": 108486656,
+    "peakJobPrivateBytes": 179073024,
+    "bounds": {
+      "cpuThreads": 2,
+      "jobMemoryBytes": 6442450944,
+      "totalSeconds": 1200,
+      "perItemSeconds": 120,
+      "gpu": false
+    },
+    "cpuAffinityMaximum": 2,
+    "cachedQueryFiles": 24,
+    "freshOnnxSessions": 0,
+    "gatedJobClosed": true,
+    "ownedChildrenSurvived": false,
+    "gpuUsed": false
+  },
+  "artifacts": {
+    "results": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\recall-results.json",
+      "bytes": 179559,
+      "sha256": "d7ba940ff2c47e6bbd0a838da334e7a2ce0285b1e90590f2efbd318186493fc1"
+    },
+    "verification": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\verification.json",
+      "bytes": 1348,
+      "sha256": "60cf3b48dca41e75a7841c9fdc472c282d327f4127f1e885077ffb68335d9cb0"
+    },
+    "cachedOutputDirectory": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\cached-replay",
+    "perItemResults": 24,
+    "newOutputPinsChecked": 120,
+    "newNativeOutputs": 0,
+    "retained": "Experimental instance/binary/polygon masks,confidence,polygons/transforms/omissions,all per-item denominators and start receipts; baseline all200 raw arrays referenced read-only."
+  },
+  "code": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\compare_building_ramp.py",
+    "bytes": 30475,
+    "sha256": "2984ff2cd3c15acbc548f77995435943285ec2bb3a696ffe9a3a8fe6b934e264",
+    "canonicalLfSha256": "2984ff2cd3c15acbc548f77995435943285ec2bb3a696ffe9a3a8fe6b934e264"
+  },
+  "verification": {
+    "commands": [
+      {
+        "phase": "diagnose",
+        "command": [
+          "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+          "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\diagnose.py"
+        ],
+        "exit": 0,
+        "receipt": {
+          "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\diagnose-command.json",
+          "bytes": 689,
+          "sha256": "df3b8d611eefc5fad204bd698dbad24398247f0e5812cf5abe1ce65cbe119317"
+        }
+      },
+      {
+        "phase": "freeze-recall",
+        "command": [
+          "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+          "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\compare_building_ramp.py",
+          "freeze-recall",
+          "--root",
+          "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005",
+          "--worker"
+        ],
+        "exit": 0,
+        "receipt": {
+          "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\freeze-recall-command.json",
+          "bytes": 856,
+          "sha256": "8ca9e635ac280195cbc861ad3954ce293c5d09f3f5e13b467afd976e6ad2e2d9"
+        }
+      },
+      {
+        "phase": "replay-recall",
+        "command": [
+          "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+          "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\compare_building_ramp.py",
+          "replay-recall",
+          "--root",
+          "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005",
+          "--worker"
+        ],
+        "exit": 0,
+        "receipt": {
+          "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\replay-recall-command.json",
+          "bytes": 856,
+          "sha256": "ef616d6da06ee15d754d288a0e4acadb27b5d7b99e79cc9d23143a5235a4de91"
+        }
+      },
+      {
+        "phase": "verify",
+        "command": [
+          "C:/Python313/python.exe",
+          "-B",
+          "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\verify_recall.py"
+        ],
+        "exit": 0,
+        "receipt": {
+          "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\verification.json",
+          "bytes": 1348,
+          "sha256": "60cf3b48dca41e75a7841c9fdc472c282d327f4127f1e885077ffb68335d9cb0"
+        }
+      }
+    ],
+    "checks": {
+      "baselineAnd24NativeInputPinsUnchanged": true,
+      "sourceCodeAndConfigurationPinsStable": true,
+      "freezeBeforeAll24Starts": true,
+      "completedItems": 24,
+      "outputPins": 120,
+      "sourceAndProcessedFramesUnchanged": true,
+      "sourceLabelPixels": 181259,
+      "publisherFeatures": 178,
+      "singleChangedConfidenceFactorAstParity": true,
+      "modelHooksFailClosed": true,
+      "maxItemSeconds": 0.14597510002204217,
+      "newNativeModelCalls": 0,
+      "memoryDeadlineAndCleanup": true
+    },
+    "initialVerificationFailure": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-recall-20261005\\verification-ast-failure.json",
+      "bytes": 289,
+      "sha256": "c6bec32ed6e53f6b602149c1af6a53fa7378d9f6781d139861e9cc1bc4f0cba8"
+    },
+    "failureCorrection": "AST normalization added the qualified reference to the same unchanged resize helper; no replay/model run or data/code change followed."
+  },
+  "limits": [
+    "All scores relative to frozen publisher-human rooftop labels; no independent local ground truth or annotation change.",
+    "One scene/project group;24chips/178features are not independent projects or established distinct physical buildings.",
+    "Unknown pretraining overlap and publisher-training origin; no final/generalization/release result.",
+    "Missing publisher ignore/per-feature ambiguity metadata; full-frame analysis policy retained.",
+    "Source30cm/40cm conflict, actual EPSG4326 angular affine and23 boundary-crossing rings retained; no guessed dimensions or cadastral rights.",
+    "CC-BY-NC4.0 RAMP/Maxar source conditions and original attribution retained via baseline receipt."
+  ],
+  "settings": {
+    "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+    "observed": "model/effort/tier unexposed",
+    "permissions": "never/danger-full-access"
+  },
+  "scope": "Only owned adapter extension and new result leaves; production/profile/evaluator/model/catalogue/staging/split originals untouched. No native inference, old baseline rerun,19old dev rerun,fit,environment installation,provider/API/DB/frontend/runtime/GPU/push/main/deploy."
+}

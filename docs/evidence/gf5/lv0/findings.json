@@ -1,0 +1,112 @@
+{
+  "scope": "Part A: measured development import, not a GF5 scale qualification or real registry import",
+  "headline": {
+    "longestFrameMs": 1783.3,
+    "framesOver100Ms": 28,
+    "partCostGrows": true,
+    "evidence": "lag.json:frames,hypothesis,chunks"
+  },
+  "input": {
+    "documentedWorktreePackAbsent": "apps/studio/datasets/nyc-10013/ is absent in this checkout",
+    "used": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip",
+    "catalogue": ["docs/api/real-sources.md:575", "scripts/demo-import/nyc-profile.json:5-86"],
+    "counts": { "files": 8, "features": 2363, "buildings": 1662, "repairs": 1, "rejections": 0 },
+    "goodAndDifficult": "Real eight-layer ZIP, including one invalid polygon repaired by the existing normalizer",
+    "procedure": "pnpm studio:demo --port 5226; Add files route, ZIP, Continue, Start import",
+    "backendNeeded": false,
+    "qualification": "The upload and scene ran without a responding backend; surrounding live shell reads failed.",
+    "where": ["scripts/demo-import/plugin.mjs:77-80,158-183", "apps/studio/vite.config.ts:7-9"]
+  },
+  "environment": {
+    "browser": "Playwright Chromium, headless, 1440 x 900, ANGLE SwiftShader; no hardware GPU requested",
+    "python": "CPython 3.13.7; task-owned environment; no shared environment changed",
+    "versions": { "shapely": "2.0.7", "pyproj": "3.7.2", "laspy": "2.6.1", "rasterio": "1.4.4" },
+    "recipeDeviation": "requirements.txt pins pyproj 3.6.1, which lacks a CPython 3.13 Windows wheel.",
+    "consequence": "This run uses pyproj 3.7.2; it is not exact parity with the historical Python environment.",
+    "setup": "python -m venv E:/BhuAayam-data/task-data/lv0/python",
+    "install": [
+      "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -m pip install --only-binary=:all:",
+      "laspy==2.6.1 lazrs==0.7.0 rasterio==1.4.4 pyproj==3.7.2 shapely==2.0.7 numpy"
+    ]
+  },
+  "hypothesis": {
+    "decision": "Scene rebuild growth confirmed; copying exists but is not a dominant measured cost.",
+    "plot": "lag.json:chunks buildingsBefore versus sceneApplyMs, baseApplyMs, twoFramesMs",
+    "regression": "lag.json:hypothesis; 18 nonempty replacement calls, r=0.989, slope=0.129 ms/prior building",
+    "comparison": "setBuildings 21.3 ms at 67 prior buildings; 222.9 ms at 1603 prior buildings",
+    "rebuildWork": "15857 building inputs passed to replacement calls for 1662 final buildings",
+    "where": [
+      "packages/scene/src/engine.ts:468-486",
+      "packages/scene/src/react.tsx:65-66",
+      "apps/studio/src/api/demo-import.ts:52-56"
+    ]
+  },
+  "cpu": {
+    "denominator": "13933.896 ms attributed active samples, excluding idle and unattributed program",
+    "scene": "setBase 34.08%; setBuildings 14.38%; renderFrame 38.58% (inclusive functions)",
+    "details": "lag.json:cpu.inclusiveFunctions gives call-tree shares by named function",
+    "dominantSceneChildren": "prismGeometry 32.44%; edgeGeometry 6.93%; EdgesGeometry 6.14%; shares overlap",
+    "otherOverFivePercent": "renderFrame 38.58%, including WebGL work; no separate driver/GPU attribution",
+    "react": "Exclusive React group is 895.216 ms / 36151.056 ms all samples; inclusive component rows in lag.json",
+    "cache": "setQueryData 21.753 ms sampled, 0.16% attributed active; not the bottleneck here",
+    "conversion": "toFootprints 3.269 ms; toBase 10.529 ms sampled, together 0.10% attributed active",
+    "limits": "Named component samples are partial; React shared reconciler time cannot be assigned per component.",
+    "renders": "lag.json:react and rawTimingFile commits: component performed-work counts and per-commit timestamps",
+    "unexpected": "Every features-array append invalidates the base memo even when no surface arrived.",
+    "baseWhere": [
+      "apps/studio/src/features/map/useBuildingScene.ts:19",
+      "packages/scene/src/react.tsx:65",
+      "packages/scene/src/engine.ts:404-462"
+    ]
+  },
+  "pacing": [
+    {
+      "where": "scripts/demo-import/normalize.py:65-93",
+      "behavior": "Surfaces first, then buildings; chunks of 96, last 59; no sleep between emitted chunks"
+    },
+    {
+      "where": "scripts/demo-import/plugin.mjs:92-119",
+      "behavior": "Save full snapshot, write journal, send event, wait for browser ack or 1500 ms timeout"
+    },
+    {
+      "where": "apps/studio/src/api/demo-import.ts:59-62",
+      "behavior": "Browser posts ack after two rAF callbacks; not a frame-budget or completed-grow-in guarantee"
+    },
+    {
+      "where": "scripts/demo-import/plugin.mjs:198-205",
+      "behavior": "First subscriber starts processing; disconnect resolves outstanding wait; ack has no sequence pin"
+    },
+    {
+      "where": "apps/studio/src/local/session.ts:11,46",
+      "behavior": "AREA_STREAM_MS=16000 is historical local session progress, not the NYC plugin stream timer"
+    }
+  ],
+  "largerInputs": {
+    "done": false,
+    "reason": "Plugin admits only exact profile hashes/counts; any larger extract is rejected, even if official.",
+    "where": "scripts/demo-import/plugin.mjs:141-147",
+    "noDuplication": true
+  },
+  "failureLedger": [
+    {
+      "attempt": 1,
+      "signature": "Vite readiness timeout although server was listening",
+      "cause": "ANSI formatting split the URL text",
+      "decision": "Strip ANSI before detecting readiness; owned process stopped and port checked free"
+    },
+    {
+      "attempt": 2,
+      "signature": "Normalizer ModuleNotFoundError: shapely",
+      "cause": "Pinned pyproj 3.6.1 install failed on Python 3.13; initial compound shell masked that exit",
+      "comparison": "Binary-only compatible pyproj 3.7.2 install in task-owned venv",
+      "criterion": "All required imports succeed; real eight-file import completes without shared runtime",
+      "result": "Success; versions disclosed; no unchanged repeat of the failed install"
+    },
+    {
+      "attempt": 3,
+      "result": "First successful browser run, superseded by explicit software-renderer run",
+      "scratch": "E:/BhuAayam-data/task-data/lv0/run-1791655873966",
+      "qualification": "Current receipt is the subsequent successful SwiftShader run, not a blend of runs"
+    }
+  ]
+}

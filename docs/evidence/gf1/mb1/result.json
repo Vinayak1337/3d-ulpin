@@ -1,0 +1,41 @@
+{
+ "task": "MB1",
+ "gate": "GF1",
+ "status": "blocked",
+ "base": "536510c3",
+ "defect": "AU2 G18: the window inspector of a picked proposal (displayState unrecorded_proposal) has no link to the batch where it is confirmed.",
+ "decision": "D2 stop: no read the Studio makes carries the case (or batch) that holds a proposal's package, so no route to the batch page can be built without guessing. Nothing but this file is changed; D1, D3 and D4 are not started.",
+ "readsChecked": {
+  "windowFeature": "packages/contracts/src/area.ts:348 AreaWindowFeatureSchema (strict): id, identifier, kind, polygons, heightM, heightState, displayState. No package id and no case id; area-display-window.ts:45 drops the proposing package when it builds the row.",
+  "canonicalBuilding": "GET /api/v1/buildings/{id}/canonical (RG1, canonical-building.ts:763): for a proposal, inputRevisions lists the packages naming the building as namespace 'import_package' (canonical-building.ts:303), and citations carry sourceId only (contracts canonical/building.ts:15). No case id. The deciding package is known server-side as proposalPackageId (area-feature-read.ts:29) but is not a response field.",
+  "importPackage": "GET /api/v1/import-packages/{id} (queries.ts:466 useImportPackage) answers the package body (areas.ts:322 getPackage selects body only). ImportPackage (contracts area.ts:253) has no caseId; sourceWorkspace.caseId exists only for source-only intake, not for a drawn footprint import.",
+  "sources": "no GET /api/v1/sources/{id} that answers a source's case; only /file, /pages, /image reads exist."
+ },
+ "fieldNeeded": {
+  "name": "caseId (uuid) of the case that holds the proposing package, on each window feature whose displayState is unrecorded_proposal; recorded features omit it",
+  "where": "AreaWindowFeatureSchema, packages/contracts/src/area.ts:348",
+  "serverHasIt": [
+   "database/sql/20-area/area.sql:24 import_packages.case_id uuid NOT NULL REFERENCES cases(id) (indexed: database/sql/95-ingestion/events.sql:1)",
+   "packages/server/src/modules/areas/areas.ts:309 areaDisplayPackages selects only body from import_packages; adding case_id there gives the proposing package's case",
+   "packages/server/src/modules/areas/area-display-proposals.ts:19 displayAreaProposals already pairs each proposal with its packageId",
+   "packages/server/src/modules/areas/area-display-window.ts:45 the proposal branch of WINDOW_SQL, where the case would join the row"
+  ],
+  "alternative": "the same caseId on the canonical building read for a proposal, from area-feature-read.ts:29 (drawn.packageId) joined to import_packages.case_id; the window field is the cheaper path because the inspector already holds the window feature and needs no second read",
+  "route": "the batch page is /studio/work/cases/:caseId/intake (apps/studio/src/app/router.tsx:27); with caseId the inspector link is /studio/work/cases/{caseId}/intake"
+ },
+ "notDone": [
+  "D1 line and link in WindowedInspector (apps/studio/src/features/map/WindowedArea.tsx:123)",
+  "D3 line without link on a failed or caseless read",
+  "D4 rewrap of the viewFootprint doc comment in packages/scene/src/engine.ts (held by the stop rule 'change nothing else')",
+  "ui-design-check report (no UI changed)"
+ ],
+ "checks": {
+  "typecheck:backend": "exit 0",
+  "studio:typecheck": "exit 0",
+  "studio:test": "exit 0; studio 73 files, 472 tests passed; scene 55, ui 7, api-client 2 passed",
+  "backend tests": "exit 1; 332 tests, 295 pass, 15 fail, 22 skipped. This box has no data drive: most failures are E:/BhuAayam-data ENOENT, the rest need retained data or the Python side (TEACHER_OUTPUT_IN_GIT, missing retained recovery rows, TypeScript/Python parity). Same before and after, since only this file changed",
+  "openapi --check": "exit 0 (no stale pins)",
+  "git diff --check": "exit 0"
+ },
+ "notRun": "no runtime, Docker, database or provider call"
+}

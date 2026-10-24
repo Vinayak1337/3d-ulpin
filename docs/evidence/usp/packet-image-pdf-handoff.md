@@ -1,0 +1,35 @@
+# PACK1-IMAGE-02 — committed image crop to private single-image PDF
+
+Code `f8825090e887fe650c2010318c530aa97036ce79`, branch `task/desktop-packet-image-pdf`, base `57559794c8ce0ee2603f7835bb027ed93e299729`. Exclusive checkout `C:/Users/kvina/.codex/worktrees/desktop-plan-extraction/3d-ulpin`; staging remains read-only. Prior image/citation branches and checkpoints are preserved.
+
+## Delivered flow
+
+The existing canonical packet-plan create/read/confirm/execute services now accept one required committed `registry-image-region-citation/1` for an exact building/floor. Distinct recipe `pack1-single-original-image-region/1`, assembly `packet-image-pdf-assembly/1` and receipt `packet-image-pdf/1` use the existing immutable plan, confirmation, packet/execution/command/outbox publication and exact private PDF reader. No new store, migration, route or fabricated PDF page/job/fence pins.
+
+Full source-case protection precedes destination locks. Exact target snapshot, original historical target body, canonical commit, source/case revision/hash/bytes, current family/access/authority and selected frame/transform/crop validation are checked. Extraction reuses the existing current-source/current-recipe image service. Crop, assembly and object I/O stay outside SQL transactions; publication recaptures complete authority and atomically registers all SQL linkage. Existing ambiguous-commit and retained-orphan semantics remain unchanged. Private download recaptures exact current image-source authority before and after artifact I/O.
+
+One metadata-free RGB crop, at most 1.6 million pixels, becomes one image-only PDF page, at most 8 MiB, under a 60-second overall execution deadline; the unchanged image extractor retains its 30-second bound. RGB-only policy explicitly rejects RGBA or a transparency-supplied source relabelled RGB before crop/publication. Fixed generic PDF metadata; no original attachment, source text, metadata, annotations or adjacent pixels. Image queue/checkpoints, ZIP and property cards explicitly refuse before artifact/native I/O. Old PDF/text recipes, schemas, derivative bytes and consumers are preserved.
+
+## Evidence and checks
+
+Reused unchanged retained NYC PNG crop/provenance and the saved canonically committed building citation journey. Citation ID `459a15adeef78ba08234257a8a095ac66d38bd089d87756d7d1acd599779be19`; historical target revision 1 and committed revision 2. The prior controlled source envelope was reconstructed and its full authority hash matched the saved citation without rewriting it. Target/snapshot/SQL/storage/extraction transport remain explicitly technical controls, not an authentic property crosswalk or current PostgreSQL persistence.
+
+Actual generated and privately downloaded `E:/BhuAayam-data/task-data/desktop-packet-image-pdf-20261003/packet.pdf`: **60,397 bytes**, SHA **`1893b7bb2bf26b3ebe54b99fbdfd432dd5d1878901bb8a9744043a1ad4f2eb39`**. One 172×178 RGB image; embedded pixels exactly match crop SHA `497d5a9ea526f4bb83b5c7106b95c829fc632b8b14d44c73b60bb60a5b723c97`. MuPDF finds zero text, fonts, annotations, links or attachments; image fills its exact page. The 96-DPI rendering was visually inspected. One existing guarded offline CPU inspection completed in 0.266 seconds with 60,088,320 peak Job private bytes, under 25 seconds/512 MiB; source crop decoding was not rerun. Observed headroom: 17,558,220,800 bytes (approximately 16.4 GiB) free RAM; learner/GPU remained untouched. Existing Python 3.12.14, MuPDF 1.25.5 and Pillow 12.3.0/profile bytes are retained and pinned, with actual loaded native module paths distinguished.
+
+Commands exit 0:
+
+- `pnpm exec tsx --test tests/usp-packet-image-pdf.test.ts`: **two pass, no skips**. Plan/confirm/execute/download/read/replay, pre-I/O unsupported guards, missing/uncommitted/stale binding, explicit alpha refusal, late publication revocation and post-read/before-read revocation denial. Tests protect exact authority and private publication rather than mirroring the renderer.
+- `pnpm exec tsx --test --test-name-pattern 'blocked selection|two actual PDF originals|queued PDF: durable|create → read|accepted single/two-original|packet job enrollment' tests/usp-packet-pdf.test.ts tests/usp-packet-plans.test.ts tests/packet-pdf-bundle.test.ts tests/packet-pdf-job-compatibility.test.ts`: **six pass, no skips**, preserving prior single/two-original PDF, private card/read, queue, ZIP, reader-profile and multiline CSV behavior.
+- `pnpm typecheck:backend`: server/API pass. `git diff --cached --check`: pass. Changed contract/authority/staging/publication/read/unsupported seams reviewed with no known blocker.
+
+Private immutable completion `E:/BhuAayam-data/task-data/desktop-packet-image-pdf-20261003/completion-f8825090.json`: **28,810 bytes**, SHA **`0e63ec81d27e21256c4fe1b708232aca26b5d956ddb6d7c12ec3d6c9df53dc8e`**. It pins source/crop/citation/history/inspection evidence, all 12 owned code files and 30 protected Git files, with physical versus Git bytes distinguished. Saved journey, PDF, rendered PNG, exact structural/pixel proof, headroom and completed command logs are retained under the private owner ACL. Prior completion/original/source/runtime hashes were reconciled unchanged.
+
+## Integration and limits
+
+Lead owns root exports for the new `packet-image-pdf.ts` leaf and assembler as needed, existing route wording/operation manifest, OpenAPI/client publication and additive catalogue observations. No frontend, registry writer, generic storage/job/runtime/config, provider, ML or deployment work was performed. All test/typecheck/inspection processes completed; no owned runtime remains, and the code checkpoint is clean. Requested Sol6.1/xhigh/default-standard; actual per-turn model/effort/tier are unexposed. Supplied permissions are `never`/`danger-full-access`; no speed change is claimed.
+
+NYC remains foreign `test_only`; the retained JPEG remains a development fixture with unknown geography and independently unestablished photographic rights. This flow proves a generated compilation from the saved PNG evidence under controlled transport. Current HTTP/PostgreSQL/private persistence/real contention, authentic applicability/identity/geometry/measurement, Indian operational/learning qualification, image queue/ZIP/card, scale/deployment and GF4/release remain unqualified. Return code/handoff once through the standing authorized callback, then end without polls or schedules.
+
+## Lead integration, 3 October
+
+Code/handoff `8a093bc5` / `bcda0dd7`; 12-file review, completion/45 physical references/42 Git pin reconciliation passed. Eight integrated new/affected compatibility checks plus backend/client/API checks pass. Contract export, route wording/manifest and generated API/client are published, 260 operations/295 schemas; catalogue adds only the concretely checked PNG flow. Saved guarded PDF inspection reused without rerun. Current HTTP/persistence/applicability and deferred image consumer support remain open.

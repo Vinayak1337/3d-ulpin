@@ -1,0 +1,183 @@
+{
+  "schemaVersion": "normalized-building/1",
+  "buildingId": "fixture:haryana-rera:2831:TOWER 3",
+  "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa",
+  "recordState": "candidate",
+  "areaId": "fixture:haryana-rera-2831",
+  "frame": {
+    "areaId": "fixture:haryana-rera-2831",
+    "origin": {
+      "lon": null,
+      "lat": null,
+      "hEllipsoidal": null
+    },
+    "axes": "ENU",
+    "unit": "m",
+    "placement": "unknown",
+    "sourceCrs": [],
+    "verticalRefs": [
+      "building_relative drawing labels; global datum unknown"
+    ],
+    "horizontalOperation": null
+  },
+  "name": {
+    "value": "TOWER 3",
+    "state": "source_supported",
+    "citations": [
+      {
+        "sourceId": "fixture:haryana-2831-site-plan.pdf",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "inputRevisions": [],
+  "parcelRefs": [],
+  "footprint": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "footprintKind": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "baseM": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "heightM": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "heightState": "unknown",
+  "storeyCount": {
+    "value": null,
+    "state": "conflicting",
+    "unit": "count",
+    "citations": [
+      {
+        "sourceId": "fixture:haryana-2831-site-plan.pdf",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      },
+      {
+        "sourceId": "fixture:haryana-2831-site-plan.pdf",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "lower-right UNIT DETAIL, TOWER 3 row"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "storeyLabel": {
+    "value": null,
+    "state": "conflicting",
+    "citations": [
+      {
+        "sourceId": "fixture:haryana-2831-site-plan.pdf",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      },
+      {
+        "sourceId": "fixture:haryana-2831-site-plan.pdf",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "lower-right UNIT DETAIL, TOWER 3 row"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "storeys": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+  },
+  "levels": [],
+  "conflicts": [
+    {
+      "property": "building.storeyLabel",
+      "alternatives": [
+        {
+          "value": "G+41",
+          "state": "source_supported",
+          "citations": [
+            {
+              "sourceId": "fixture:haryana-2831-site-plan.pdf",
+              "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+              "locator": {
+                "kind": "page",
+                "page": 1,
+                "text": "central T-3 tower graphic"
+              }
+            }
+          ],
+          "method": "source_literal",
+          "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+        },
+        {
+          "value": "G+42",
+          "state": "source_supported",
+          "citations": [
+            {
+              "sourceId": "fixture:haryana-2831-site-plan.pdf",
+              "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+              "locator": {
+                "kind": "page",
+                "page": 1,
+                "text": "lower-right UNIT DETAIL, TOWER 3 row"
+              }
+            }
+          ],
+          "method": "source_literal",
+          "revisionId": "b0510fbdef6620be12c5ed2c339697933cd30816384b0bc76dc574576317f1aa"
+        }
+      ],
+      "reason": "Same-sheet G+41/G+42 conflict; no integer level schedule inferred."
+    }
+  ],
+  "gaps": [
+    "G+41/G+42 is a genuine same-sheet source conflict, never resolved by a teacher.",
+    "The site-plan 81-unit statement is document evidence, not an independently keyed registry count.",
+    "Shared project basement labels do not establish a Tower-3 basement count or geometry.",
+    "Plans are scanned images; native text/vector paths absent.",
+    "No independent sanction-letter storey count or current approved-revision register located; registry oracle coverage for Tower 3 remains unknown.",
+    "No normalization to an integer level schedule, height, placement, as-built fact or right."
+  ],
+  "candidates": []
+}

@@ -1,53 +1,58 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
-import { ApiError, api, type Schemas } from '@ulpin/api-client';
+import type { Schemas } from '@ulpin/api-client';
 import { Badge, Banner, Button, DataTable, Dialog, Icon, Skeleton, StatusBadge, formatCount, formatDateTime } from '@ulpin/ui';
 import { demoImportEnabled, inspectDemoFile, startDemoImport } from '../../api/demo-import';
 import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
+import { TableImportDialog } from './table/TableImportDialog';
+import { tablePath, type Opened } from './table/useFollowTable';
+import { batchOrder, batchRouteWords, dropState, routeWords, tablesJoin } from './file-route';
+import { IntakeDropDialog } from './IntakeDropDialog';
 
 type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { demoContents?: string };
-type Kind = 'building' | 'parcel' | 'road' | 'public_land' | 'utility';
 
 interface Picked {
   file: File;
-  state: 'inspecting' | 'ready' | 'not-gis' | 'failed';
+  /** `ready`: answered by the opt-in NYC upload profile, the only reader in this dialog. */
+  state: 'inspecting' | 'ready' | 'intake' | 'not-gis';
   inspection?: Inspection;
-  error?: string;
-  /** Answered by the NYC upload profile (demo import) rather than the area import. */
-  via?: 'demo' | 'local';
 }
 
-interface Mapping {
-  kind: Kind;
-  idField: string;
-  nameField: string;
-  heightField: string;
-  heightUnit: '' | 'm' | 'ft';
-  heightMeaning: string;
+/** The Detected column's words for one picked file. */
+function detected(f: Picked) {
+  if (f.state === 'ready') return formatLabel(f.inspection!.format);
+  if (f.state === 'inspecting') return 'Reading…';
+  return f.state === 'intake' ? batchRouteWords(f.file.name) : routeWords(f.file.name);
 }
 
-const GIS = /\.(geojson|json|gpkg|zip)$/i;
 const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
 
 /**
- * S2 Add files. Each GIS file is profiled by the real inspect endpoint (hash, format, CRS, fields); the
- * officer confirms the mapping; Start import sends the original to the real import endpoint. Other files
- * are listed and kept for a case upload; nothing is dropped silently.
+ * S2 Add files. N01: every file of one drop joins the batch of one case, a GeoPackage and any ZIP included; a table
+ * dropped alone keeps its dialog, and the opt-in NYC profile keeps its separate development transport. TJ1: a table
+ * dropped on the batch page, or with a file that makes a batch, joins that batch as its own item.
  */
-export function AddFilesDialog({ onClose, batchId, buildingId, routed = false }: { onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean }) {
+export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles, onRemaining }: {
+  onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean; caseId?: string;
+  initialFiles?: File[]; onRemaining?: (files: File[]) => void;
+}) {
   if (batchId) return <SavedBatch batchId={batchId} onClose={onClose} />;
   if (buildingId) return <BuildingFiles buildingId={buildingId} onClose={onClose} routed={routed} />;
-  return <NewFiles onClose={onClose} />;
+  return <NewFiles onClose={onClose} routed={routed} openCaseId={caseId} initialFiles={initialFiles}
+    onRemaining={onRemaining} />;
 }
 
+/** G10. A PDF is kept in a batch and read there by the server's page reader; the name only routes the drop. */
+const isPdf = (file: File) => /\.pdf$/i.test(file.name);
+
 /**
- * Add files to one building: plans, level schedules, unit inventories and deeds. Each file is recognised,
- * then Start import records the building's levels and units, which appear on the map as they are read.
+ * Add files to one building: plans, level schedules, unit inventories and deeds. A PDF goes to a batch, where the
+ * server reads its pages; each other file is recognised, then Start import records the building's levels and units.
  */
 function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; onClose: () => void; routed: boolean }) {
   const register = useBuildingRegister(buildingId).data;
@@ -56,9 +61,13 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
   const [files, setFiles] = useState<File[]>([]);
   const [found, setFound] = useState<FileDetection[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [pdfs, setPdfs] = useState<File[]>([]);
   const add = async (list: FileList | null) => {
-    if (!list?.length) return;
-    const next = [...files, ...list];
+    const picked = [...list ?? []];
+    if (picked.some(isPdf)) setPdfs((prior) => [...prior, ...picked.filter(isPdf)]);
+    const others = picked.filter((file) => !isPdf(file));
+    if (!others.length) return;
+    const next = [...files, ...others];
     setFiles(next);
     try { setFound(await detectBuildingFiles(buildingId, next)); } catch (e) { setError((e as Error).message); }
   };
@@ -73,6 +82,10 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
     onError: (e) => setError((e as Error).message),
   });
   const step = !files.length ? 0 : 1;
+  if (pdfs.length) {
+    return <IntakeDropDialog files={pdfs} remainingFiles={files} routed={routed} onClose={onClose}
+      onBack={() => setPdfs([])} />;
+  }
   return (
     <Dialog
       title={`Add files · ${register?.property.name ?? 'building'}`}
@@ -89,7 +102,10 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
         <label className={styles.drop} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); void add(event.dataTransfer.files); }}>
           <Icon icon={FileArrowUp} size={32} />
           <span className="ul-heading">Drop plans, level schedules, unit inventories or deeds</span>
-          <span className="ul-help">PDF, CSV and Excel. Floors and units are read from them and appear on the map.</span>
+          <span className="ul-help">
+            CSV and Excel are read here and their floors and units appear on the map. A PDF is kept in a batch, where
+            its pages are read and what they name waits for your review.
+          </span>
           <input type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
         </label>
         {found.length ? (
@@ -109,84 +125,85 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
   );
 }
 
-function NewFiles({ onClose }: { onClose: () => void }) {
+/**
+ * D3. A drop's files stay listed with their route words until each is routed: kept in the batch, imported as a
+ * table or removed. `onRemaining` hears which files of the drop are still to route after a table import or a removal.
+ */
+function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
+  onClose: () => void; routed: boolean; openCaseId?: string; initialFiles?: File[];
+  onRemaining?: (files: File[]) => void;
+}) {
   const client = useQueryClient();
   const [files, setFiles] = useState<Picked[]>([]);
   const [step, setStep] = useState(0);
-  const [mapping, setMapping] = useState<Mapping | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [summary, setSummary] = useState<string | null>(null);
+  const [tableFile, setTableFile] = useState<File | null>(null);
+  const [imported, setImported] = useState<{ file: File; opened: Opened }[]>([]);
+  const [showIntake, setShowIntake] = useState(false);
+  const initialized = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   const gis = files.find((f) => f.state === 'ready');
-  const demoUpload = files.length > 0 && files.some((f) => f.via === 'demo');
-  const fields = gis?.inspection?.fields ?? [];
-  const kindField = fields.find((f) => /^(kind|type|class|category)$/i.test(f.name))?.name ?? null;
+  const demoUpload = Boolean(gis);
 
-  const add = async (list: FileList | null) => {
+  const add = async (list: FileList | File[] | null) => {
     if (!list?.length) return;
-    const picked = [...list].map<Picked>((file) => ({ file, state: (GIS.test(file.name) || demoImportEnabled && /\.(laz|tif|tiff)$/i.test(file.name)) ? 'inspecting' : 'not-gis' }));
+    const picked = [...list].map<Picked>((file) => ({ file,
+      state: dropState(file.name, demoImportEnabled, Boolean(openCaseId)) }));
     setFiles((current) => [...current, ...picked]);
     setStep(1);
+    let batched = picked.some((p) => p.state === 'intake');
     for (const item of picked.filter((p) => p.state === 'inspecting')) {
-      const body = new FormData();
-      body.set('file', item.file);
-      // The NYC upload profile answers its own files; any other file goes to the area import.
-      const demo = demoImportEnabled
-        ? await inspectDemoFile(item.file).then(data => ({ data, error: undefined, response: new Response() })).catch(error => ({ data: undefined, error: { message: error.message }, response: new Response(null, { status: 400 }) }))
-        : null;
-      const via: 'demo' | 'local' = demo?.data ? 'demo' : 'local';
-      const result = demo?.data ? demo : GIS.test(item.file.name)
-        ? await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData })
-        : demo!;
-      setFiles((current) => current.map((f) => (f.file !== item.file ? f
-        : result.data ? { ...f, state: 'ready', inspection: result.data, via } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
-      if (result.data) {
-        const height = result.data.fields.find((f) => /height|hgt/i.test(f.name) && !/ground/i.test(f.name));
-        setMapping((m) => m ?? {
-          kind: 'building', idField: result.data.suggestedIdField ?? '', nameField: result.data.suggestedNameField ?? '',
-          // Proposed from the field name; the officer confirms or changes it before import.
-          heightField: height?.name ?? '',
-          heightUnit: !height ? '' : /(_m|metre|meter)s?$/i.test(height.name) ? 'm' : /(_ft|feet|foot)$/i.test(height.name) ? 'ft' : '',
-          heightMeaning: !height ? '' : /roof/i.test(height.name) ? 'Roof height above ground' : 'Building height above ground',
-        });
-        if (via === 'local') setSummary(await kindSummary(item.file));
-      }
+      // The opt-in NYC profile keeps its transport; a file it does not take joins the batch.
+      const inspection = await inspectDemoFile(item.file).catch(() => null);
+      setFiles((current) => current.map((file) => file.file !== item.file ? file
+        : inspection ? { ...file, state: 'ready', inspection } : { ...file, state: 'intake' }));
+      batched ||= !inspection;
     }
+    if (!batched) return;
+    // TJ1: a table of a drop that makes a batch is kept in that batch, not moved to a case of its own.
+    setFiles((current) => tablesJoin(current, picked.map((p) => p.file)));
+    setShowIntake(true);
   };
 
+  useEffect(() => {
+    if (initialized.current || !initialFiles?.length) return;
+    initialized.current = true;
+    void add(initialFiles);
+  }, [initialFiles]);
+
   const importFile = useMutation({
-    mutationFn: async () => {
-      if (demoUpload) return startDemoImport(files.map(item => item.file));
-      if (!gis?.inspection || !mapping) throw new Error('Choose a GIS file first.');
-      const body = new FormData();
-      body.set('file', gis.file);
-      body.set('format', gis.inspection.format);
-      if (gis.inspection.layer) body.set('layer', gis.inspection.layer);
-      body.set('namespace', gis.inspection.suggestedNamespace);
-      body.set('name', gis.inspection.suggestedTitle);
-      body.set('mapping', JSON.stringify({
-        kind: mapping.kind, ...(kindField ? { kindField } : {}), idField: mapping.idField,
-        ...(mapping.nameField ? { nameField: mapping.nameField } : {}),
-        ...(mapping.heightField ? { heightField: mapping.heightField, heightUnit: mapping.heightUnit, heightMeaning: mapping.heightMeaning } : {}),
-      }));
-      const result = await api.POST('/api/v1/import-packages', { body: body as never, bodySerializer: (b) => b as unknown as FormData });
-      if (!result.data) throw new ApiError(result.response.status, '', result.error);
-      return result.data as { id: string; areaId: string };
-    },
+    mutationFn: () => startDemoImport(files.map(item => item.file)),
     onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
   });
 
-  const blocked = demoUpload ? (!files.length ? 'add the NYC layer files or their ZIP' : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null) : !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
-    : gis.inspection?.quarantine?.accepted === 0 ? 'no source geometries were accepted'
-    : !gis.inspection?.sourceCrs ? 'the file states no coordinate reference system'
-      : !mapping?.idField ? 'choose the field that identifies each feature'
-        : mapping.heightField && !mapping.heightUnit ? 'choose the height unit the source uses'
-        : mapping.heightField && !mapping.heightMeaning.trim() ? 'say what the height field measures'
-          : null;
+  const blocked = !demoUpload ? 'retain the files in the batch, or import each table'
+    : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null;
 
   const rows = useMemo(() => files, [files]);
+  const tableOf = (file: File) => imported.find((row) => row.file === file)?.opened;
+  const unrouted = files.filter((file) => !tableOf(file.file));
+  const intakeFiles = batchOrder(unrouted.filter((file) => file.state === 'intake').map((file) => file.file));
+  const nextFile = intakeFiles[0] ?? unrouted.find((file) => file.state === 'not-gis')?.file;
+  const remove = (picked: Picked) => {
+    setFiles((current) => current.filter((x) => x !== picked));
+    onRemaining?.(unrouted.filter((x) => x !== picked).map((x) => x.file));
+  };
+  if (showIntake && intakeFiles.length) {
+    return <IntakeDropDialog files={intakeFiles} openCaseId={openCaseId} routed={routed} onClose={onClose}
+      remainingFiles={unrouted.filter((file) => file.state !== 'intake').map((file) => file.file)}
+      onBack={() => setShowIntake(false)} />;
+  }
+  if (tableFile) {
+    // With other files of the drop still to route, the read table returns here instead of opening its page.
+    const others = unrouted.filter((file) => file.file !== tableFile).map((file) => file.file);
+    return <TableImportDialog file={tableFile} onClose={onClose} onBack={() => setTableFile(null)}
+      onImported={others.length ? (opened) => {
+        setImported((current) => [...current, { file: tableFile, opened }]);
+        setTableFile(null);
+        onRemaining?.(others);
+      } : undefined} />;
+  }
   return (
     <Dialog
       title="Add files"
@@ -194,6 +211,8 @@ function NewFiles({ onClose }: { onClose: () => void }) {
       footer={(
         <>
           <Button variant="ghost" onClick={onClose}>Close</Button>
+          {imported.length && nextFile ? <Button variant="soft" onClick={() => intakeFiles.length
+            ? setShowIntake(true) : setTableFile(nextFile)}>Continue with other files</Button> : null}
           {step < 2
             ? <Button variant="primary" disabled={Boolean(blocked)} onClick={() => setStep(2)} title={blocked ?? undefined}>Continue</Button>
             : <Button variant="primary" disabled={Boolean(blocked) || importFile.isPending} onClick={() => importFile.mutate()}>Start import</Button>}
@@ -210,11 +229,20 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           >
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
-            <span className="ul-help">GIS layers are read now. Plans, tables and documents are kept as evidence for a case upload.</span>
+            <span className="ul-help">
+              GeoJSON, GeoPackage and ZIP files are kept unchanged and checked in one batch, one item per layer;
+              the batch converts a GeoPackage or a shapefile set into layers. A CSV or XLSX dropped alone keeps its
+              table import; dropped with other files, it is kept in their batch and read there as a table. Every
+              other file is kept unchanged as an original in the batch.
+            </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
           </label>
         ) : null}
 
+        {imported.length && unrouted.length ? <p role="status">
+          {imported.map((row) => row.file.name).join(', ')} imported as a table. The other files still wait for
+          their route below.
+        </p> : null}
         {files.length ? (
           <div className="ul-panel">
             <DataTable
@@ -223,103 +251,35 @@ function NewFiles({ onClose }: { onClose: () => void }) {
               rowKey={(f) => `${f.file.name}-${f.file.size}-${f.file.lastModified}`}
               columns={[
                 { header: 'File', cell: (f) => <span className="ul-id">{f.file.name}</span> },
-                { header: 'Detected', cell: (f) => (f.state === 'ready' ? formatLabel(f.inspection!.format) : f.state === 'inspecting' ? 'Reading…' : f.state === 'not-gis' ? 'Document or table' : <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>) },
+                { header: 'Detected', cell: detected },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
-                { header: 'Contents', numeric: true, cell: (f) => f.via === 'demo' && f.inspection?.demoContents ? f.inspection.demoContents : (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
-                { header: 'Mapping', cell: (f) => (f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : f.state === 'not-gis' ? <Badge icon={null}>Kept as evidence</Badge> : '—') },
-                ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> }] : []),
+                { header: 'Contents', numeric: true, cell: (f) => f.inspection?.demoContents || (
+                  f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—'
+                    : `${formatCount(f.inspection.featureCount)} features`) },
+                { header: 'Mapping', cell: (f) => {
+                  const opened = tableOf(f.file);
+                  if (opened) return <Link to={tablePath(opened)}>Imported as a table · open the table</Link>;
+                  if (f.state === 'not-gis') {
+                    return <Button variant="soft" onClick={() => setTableFile(f.file)}>Import as a table</Button>;
+                  }
+                  if (f.state === 'intake') {
+                    return <Button variant="soft" onClick={() => setShowIntake(true)}>Retain files</Button>;
+                  }
+                  return f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : '—';
+                } },
+                ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash}
+                  aria-label={`Remove ${f.file.name}`} onClick={() => remove(f)} /> }] : []),
               ]}
             />
           </div>
         ) : null}
 
-        {!demoUpload && gis?.inspection && mapping && step >= 1 ? (
-          <section className={styles.readAs} aria-label="How the file is read">
-            <header className={styles.readAsHead}>
-              <span className="ul-heading">{step === 2 ? 'It will be read like this' : 'We propose to read it like this'}</span>
-              {step === 1 ? <button type="button" className={styles.link} onClick={() => setEditing((e) => !e)}>{editing ? 'Done' : 'Change'}</button> : null}
-            </header>
-            {!editing || step === 2 ? (
-              <dl className={styles.readList}>
-                <div><dt>Each feature is</dt><dd>{kindField ? <>read from <span className="ul-id">{kindField}</span>{summary ? <span className="ul-muted"> · {summary}</span> : null}</> : KIND_LABEL[mapping.kind]}</dd></div>
-                <div><dt>Identified by</dt><dd>{mapping.idField ? <span className="ul-id">{mapping.idField}</span> : <span className="ul-error">choose a field</span>}</dd></div>
-                <div><dt>Named by</dt><dd>{mapping.nameField ? <span className="ul-id">{mapping.nameField}</span> : <span className="ul-muted">no name</span>}</dd></div>
-                <div><dt>Height</dt><dd>{mapping.heightField ? <><span className="ul-id">{mapping.heightField}</span> in {mapping.heightUnit === 'ft' ? 'feet' : 'metres'} · {mapping.heightMeaning.toLowerCase()}</> : <span className="ul-muted">unknown (no height field)</span>}</dd></div>
-              </dl>
-            ) : (
-              <div className={styles.mapping}>
-                {!kindField ? (
-                  <Field label="Features are">
-                    <select className="ul-input" value={mapping.kind} onChange={(e) => setMapping({ ...mapping, kind: e.target.value as Kind })}>
-                      <option value="building">Buildings</option><option value="parcel">Parcels</option><option value="road">Roads</option>
-                      <option value="public_land">Public land</option><option value="utility">Utilities</option>
-                    </select>
-                  </Field>
-                ) : null}
-                <Field label="Identifier field">
-                  <select className="ul-input" value={mapping.idField} onChange={(e) => setMapping({ ...mapping, idField: e.target.value })}>
-                    <option value="">Choose a field</option>
-                    {fields.filter((f) => f.idEligible).map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
-                  </select>
-                </Field>
-                <Field label="Name field">
-                  <select className="ul-input" value={mapping.nameField} onChange={(e) => setMapping({ ...mapping, nameField: e.target.value })}>
-                    <option value="">None</option>
-                    {fields.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
-                  </select>
-                </Field>
-                <Field label="Height field">
-                  <select className="ul-input" value={mapping.heightField} onChange={(e) => setMapping({ ...mapping, heightField: e.target.value })}>
-                    <option value="">None: heights stay unknown</option>
-                    {fields.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
-                  </select>
-                </Field>
-                {mapping.heightField ? (
-                  <>
-                    <Field label="Height unit">
-                      <select className="ul-input" value={mapping.heightUnit} onChange={(e) => setMapping({ ...mapping, heightUnit: e.target.value as 'm' | 'ft' })}>
-                        <option value="">Choose the source unit</option>
-                        <option value="m">Metres</option><option value="ft">Feet (converted to metres)</option>
-                      </select>
-                    </Field>
-                    <Field label="What the height measures">
-                      <input className="ul-input" value={mapping.heightMeaning} maxLength={500} onChange={(e) => setMapping({ ...mapping, heightMeaning: e.target.value })} />
-                    </Field>
-                  </>
-                ) : null}
-              </div>
-            )}
-          </section>
-        ) : null}
-
-        {!demoUpload && step === 2 && gis?.inspection ? (
-          <Banner tone="info">
-            Start import retains <span className="ul-id">{gis.file.name}</span> unchanged (SHA-256 <span className="ul-mono">{gis.inspection.sourceSha256.slice(0, 12)}…</span>) and creates an import to review. Nothing is recorded until you review and record it.
-          </Banner>
-        ) : null}
         {gis?.inspection?.quarantine ? <Banner tone="warning">{gis.inspection.quarantine.message}</Banner> : null}
         {importFile.error ? <Banner tone="danger">{importFile.error.message}</Banner> : null}
         {blocked && files.length ? <p className="ul-help">Blocked: {blocked}.</p> : null}
       </div>
     </Dialog>
   );
-}
-
-const KIND_LABEL: Record<Kind, string> = { building: 'a building', parcel: 'a parcel', road: 'a road', public_land: 'public land', utility: 'a utility' };
-
-/** "22 buildings · 22 parcels · …" from a GeoJSON file's kind field, read in the browser. */
-async function kindSummary(file: File): Promise<string | null> {
-  if (!/\.(geo)?json$/i.test(file.name)) return null;
-  try {
-    const doc = JSON.parse(await file.text()) as { features?: { properties?: Record<string, unknown> }[] };
-    const counts = new Map<string, number>();
-    for (const f of doc.features ?? []) {
-      const k = String(f.properties?.kind ?? f.properties?.type ?? '');
-      if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
-    }
-    const word: Record<string, [string, string]> = { building: ['building', 'buildings'], parcel: ['parcel', 'parcels'], road: ['road', 'roads'], public_land: ['open land', 'open land'], utility: ['utility', 'utilities'] };
-    return [...counts].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n} ${(word[k] ?? [k, k])[n === 1 ? 0 : 1]}`).join(' · ') || null;
-  } catch { return null; }
 }
 
 const MAPPING: Record<ImportBatch['files'][number]['mapping'], { label: string; tone: 'success' | 'info' | 'neutral' }> = {
@@ -413,16 +373,6 @@ function SavedBatch({ batchId, onClose }: { batchId: string; onClose: () => void
         })}
       </div>
     </Dialog>
-  );
-}
-
-function Field({ label, help, children }: { label: string; help?: string; children: React.ReactNode }) {
-  return (
-    <label className="ul-field">
-      <span className="ul-label">{label}</span>
-      {children}
-      {help ? <span className="ul-help">{help}</span> : null}
-    </label>
   );
 }
 

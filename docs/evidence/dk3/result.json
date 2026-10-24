@@ -1,0 +1,55 @@
+{
+  "task": "DK3",
+  "gate": "P0 hygiene: guard shell and retry regression",
+  "status": "pass",
+  "baseCommit": "281bb2c61e78fae2cbf56702862216a902fd3d66",
+  "checkedAt": "2026-10-22T15:14:45+05:30",
+  "runtime": "Windows PowerShell 5.1.26100.9711",
+  "inputs": {
+    "good": "Installed Git for Windows; machine-only PATH shell probe; live read-only Docker check",
+    "difficult": "E:/BhuAayam-data/ops/docker-guard/demo-start-2026-10-22.log and state.json",
+    "incident": {
+      "failedStartsLocal": ["10:31", "10:41"],
+      "failure": "WSL CreateProcessCommon:798 execvpe(/bin/bash) failed: No such file or directory",
+      "apiFailures": 52,
+      "demoStarts": 2,
+      "stateObservedAt": "2026-10-22T15:01:31+05:30"
+    }
+  },
+  "checks": {
+    "node --test scripts/platform/docker-guard.test.mjs": {"exitCode": 0, "passed": 15, "failed": 0},
+    "machine-PATH -SelfTest": {
+      "exitCode": 0,
+      "bash": "C:/Program Files/Git/bin/bash.exe",
+      "scriptShell": "C:/Program Files/Git/bin/bash.exe",
+      "output": ["5.2.37(1)-release", "MINGW64_NT-10.0-26300"],
+      "opsDirectoryCreated": false
+    },
+    "-Check": {"exitCode": 0, "engineAnswers": true, "runningHealthyContainers": 5, "exitedInitContainers": 1},
+    "git diff --check": {"exitCode": 0}
+  },
+  "regressions": [
+    "System32-only PATH stand-in pnpm resolves Git Bash and inherits explicit script shell",
+    "Missing Git Bash refuses before pnpm with git_bash_missing and a reason",
+    "Nonzero start and doctor record bounded failure tails; common credential labels are redacted",
+    "Two starts still exhaust the six-hour watch allowance",
+    "Local midnight releases recent prior-day attempts; doctor PASS clears starts and API failures",
+    "API 200 alone is not treated as a doctor PASS; stopped-on-purpose and opt-out behavior remain"
+  ],
+  "developmentFindings": [
+    "Updated existing doctor assertion to include its newly required failure tail",
+    "Machine-only PATH currently has no bash; the incident log supplies the WSL failure baseline",
+    "DateTime.ToLocalTime shifts offset-free timestamps; DateTimeOffset.LocalDateTime preserves local-day policy"
+  ],
+  "safety": {
+    "liveDemoLifecycleCommands": 0,
+    "installedTaskChanges": 0,
+    "externalOpsWrites": 0,
+    "actingTests": "Temporary roots with stand-ins or DryRun only; no live recovery or demo start"
+  },
+  "limitations": [
+    "No live start was attempted, as required; the installed task still uses the integration checkout",
+    "An external manual doctor PASS is not imported; guard-run doctor PASS or day/window expiry clears its budget"
+  ],
+  "next": "Review and integrate the script; rerun SelfTest from the integration checkout without restarting the demo"
+}

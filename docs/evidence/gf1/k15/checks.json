@@ -1,0 +1,35 @@
+{
+  "task": "K15",
+  "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <file>",
+  "typecheck": { "command": "pnpm typecheck:backend", "exit": 0 },
+  "tests": [
+    { "file": "tests/source-pin.test.ts", "before": "5/5", "after": "8/8", "exit": 0 },
+    { "file": "tests/table-later-receipt.test.ts", "before": "new", "after": "11/11", "exit": 0,
+      "onTodaysCode": "6/11: 5 fail (good, difficult, item 4, n+2 route, authored-then-approved); 6 guards pass" },
+    { "file": "tests/manual-plan-later-receipt.test.ts", "before": "new", "after": "3/3", "exit": 0,
+      "onTodaysCode": "0/3" },
+    { "file": "tests/streaming-later-receipt.test.ts", "before": "4/4", "after": "3/3", "exit": 0,
+      "change": "K14's 'manual-profile mapping explicitly stays strict' removed" },
+    { "file": "tests/document-later-receipt.test.ts", "before": "14/14", "after": "14/14", "exit": 0 },
+    { "file": "tests/adaptive-mapping.test.ts", "before": "4/4", "after": "4/4", "exit": 0,
+      "change": "revision-only advance during the call now proposes; a changed schema fingerprint still 409" },
+    { "file": "tests/ifc-read-compatibility.test.ts", "before": "4/4", "after": "4/4", "exit": 0 },
+    { "file": "tests/registry-cityjson-draft.test.ts", "before": "10/11, 1 skipped", "after": "10/11, 1 skipped",
+      "exit": 0 },
+    { "file": "tests/sufficiency-ifc.test.ts", "before": "3/3", "after": "3/3", "exit": 0 },
+    { "file": "tests/sufficiency-xml.test.ts", "before": "3/3", "after": "3/3", "exit": 0 },
+    { "file": "tests/sufficiency-mesh.test.ts", "before": "1/3", "after": "1/3", "exit": 1,
+      "note": "same two OBJ/mesh tests fail before and after; untouched by K15" },
+    { "file": "scripts/agent/a3b-wiring.test.ts", "before": "6/8", "after": "6/8", "exit": 1,
+      "note": "same two fail before and after: T1_NATIVE_READER_UNAVAILABLE; learning replay message" },
+    { "file": "scripts/agent/a3d-history.test.ts", "before": "3/3", "after": "3/3", "exit": 0 }
+  ],
+  "openapi": {
+    "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+    "exit": 1, "reason": "docs/api/source-pins.json stale: six producer hashes of the six changed server files",
+    "regenerated": "generator run, then --check exit 0: 301 operations, 342 schemas; openapi.json unchanged",
+    "committed": false, "why": "docs/api/** is IN1's in this task; the lead regenerates at merge"
+  },
+  "apiCheck": { "command": "python -B scripts/api/check.py", "exit": 1,
+    "output": "API-DOC: runtime receipt changed (the known owner-waiting failure only)" }
+}

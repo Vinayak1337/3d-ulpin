@@ -1,0 +1,1 @@
+{"url":"https://github.com/roboflow/rf-detr/issues/901","title":"The exported ONNX model results are different from the original pth model results","applicability":"Direct ONNX vs PyTorch report; no verified fix for our encoder proposal rank swap","state":"open","raw_response":"E:/BhuAayam-data/ml/runs/b4-research-20261010/rf-detr-901.json"}

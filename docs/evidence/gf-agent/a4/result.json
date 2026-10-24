@@ -1,0 +1,242 @@
+{
+  "task": "A4",
+  "baseCommit": "9aed71e7",
+  "measurementCodeCommit": "48d72db7",
+  "checkedWorkingTree": true,
+  "finalVerificationCodeCommit": "610426a7",
+  "finalVerifierPseudoLabelsByteIdentical": true,
+  "measurementReviewNote": "Final no-truth assertion/readability guard added after curve; no repeat fitting or tuning.",
+  "gateStatus": "partial; held-out truth absent and student takeover not demonstrated",
+  "gates": [
+    "GF-AGENT",
+    "FP-LEARN-TEST"
+  ],
+  "verification": {
+    "accepted": 45,
+    "rejected": 0,
+    "examples": 411,
+    "verifiedExamples": 398
+  },
+  "qualification": "pseudo_label-trained; held-out truth = publisher/heldout manifest",
+  "student": {
+    "model": "E:\\BhuAayam-data\\task-data\\a4\\learner\\v43",
+    "versions": 43,
+    "fitExamples": 392,
+    "fitFamilies": 25,
+    "fitTargetCounts": { "unknown": 386, "building.name": 3, "building.storeyLabel": 3 },
+    "positiveCalibrationCommits": 0,
+    "unknownCalibrationCommits": 4,
+    "baselineGain": "None on calibration; agreement equals the unknown-only baseline",
+    "modelSha256": "dc17b3822b41312b19d8e69e5d4911f661046ffd7a6202fee7897833426fa8e1",
+    "threshold": 0.9642972350120544,
+    "calibration": {
+      "threshold": 0.9642972350120544,
+      "committed": 4,
+      "precision": 1,
+      "fields": 6,
+      "agreement": 0.6666666666666666,
+      "unknownBaselineAgreement": 0.6666666666666666,
+      "probabilities": "plain SGD; too few grouped calibration positives for stable CV calibration"
+    },
+    "calibrationFamily": "mi-d03",
+    "versionsInstalled": {
+      "numpy": "2.5.3",
+      "scipy": "1.16.3",
+      "scikit-learn": "1.7.2"
+    }
+  },
+  "teacherCallCurve": {
+    "root": "E:\\BhuAayam-data\\task-data\\a4\\curve-1791597159058",
+    "observations": [
+      {
+        "file": "mi-d10-01.csv",
+        "chunk": 1,
+        "rows": 13,
+        "teacherCalls": 1,
+        "memoryHits": 0,
+        "studentCommits": 0,
+        "activeLearnerVersion": null,
+        "nextLearnerVersion": "v1",
+        "verifiedBatchExamples": 16,
+        "latencyMs": 3.42
+      },
+      {
+        "file": "mi-d10-01.csv",
+        "chunk": 2,
+        "rows": 13,
+        "teacherCalls": 0,
+        "memoryHits": 1,
+        "studentCommits": 0,
+        "activeLearnerVersion": "v1",
+        "nextLearnerVersion": "v2",
+        "verifiedBatchExamples": 16,
+        "latencyMs": 2.15
+      },
+      {
+        "file": "mi-d10-01.csv",
+        "chunk": 3,
+        "rows": 11,
+        "teacherCalls": 0,
+        "memoryHits": 1,
+        "studentCommits": 0,
+        "activeLearnerVersion": "v2",
+        "nextLearnerVersion": "v3",
+        "verifiedBatchExamples": 16,
+        "latencyMs": 2.15
+      },
+      {
+        "file": "mi-d10-02.csv",
+        "chunk": 1,
+        "rows": 11,
+        "teacherCalls": 1,
+        "memoryHits": 0,
+        "studentCommits": 0,
+        "activeLearnerVersion": "v3",
+        "nextLearnerVersion": "v4",
+        "verifiedBatchExamples": 16,
+        "latencyMs": 931.3
+      },
+      {
+        "file": "mi-d10-02.csv",
+        "chunk": 2,
+        "rows": 11,
+        "teacherCalls": 0,
+        "memoryHits": 1,
+        "studentCommits": 0,
+        "activeLearnerVersion": "v4",
+        "nextLearnerVersion": "v5",
+        "verifiedBatchExamples": 16,
+        "latencyMs": 1.66
+      },
+      {
+        "file": "mi-d10-02.csv",
+        "chunk": 3,
+        "rows": 11,
+        "teacherCalls": 0,
+        "memoryHits": 1,
+        "studentCommits": 0,
+        "activeLearnerVersion": "v5",
+        "nextLearnerVersion": "v6",
+        "verifiedBatchExamples": 16,
+        "latencyMs": 1.74
+      }
+    ],
+    "falling": true,
+    "withinFileReplayCalls": [[1, 0, 0], [1, 0, 0]],
+    "acrossFileColdChunkImprovement": false,
+    "explanation": "Replay requests fall through exact accepted memory; learner updated after every verified chunk.",
+    "similarFilePreviouslyFitted": false,
+    "networkCalls": 0
+  },
+  "heldOut": {
+    "manifestSha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
+    "teacherCalls": 0,
+    "originalFilesOpened": 0,
+    "families": [
+      {
+        "family": "mi-h01",
+        "status": "truth_absent",
+        "committedFields": null,
+        "precision": null,
+        "recall": null,
+        "abstention": null,
+        "reason": "No documented expected canonical targets; aliases and null canonicalTarget are not scoring truth."
+      },
+      {
+        "family": "mi-h02",
+        "status": "truth_absent",
+        "committedFields": null,
+        "precision": null,
+        "recall": null,
+        "abstention": null,
+        "reason": "No documented expected canonical targets; aliases and null canonicalTarget are not scoring truth."
+      },
+      {
+        "family": "mi-h03",
+        "status": "truth_absent",
+        "committedFields": null,
+        "precision": null,
+        "recall": null,
+        "abstention": null,
+        "reason": "No documented expected canonical targets; aliases and null canonicalTarget are not scoring truth."
+      },
+      {
+        "family": "mi-h04",
+        "status": "truth_absent",
+        "committedFields": null,
+        "precision": null,
+        "recall": null,
+        "abstention": null,
+        "reason": "No documented expected canonical targets; aliases and null canonicalTarget are not scoring truth."
+      },
+      {
+        "family": "mi-h05",
+        "status": "truth_absent",
+        "committedFields": null,
+        "precision": null,
+        "recall": null,
+        "abstention": null,
+        "reason": "No documented expected canonical targets; aliases and null canonicalTarget are not scoring truth."
+      }
+    ],
+    "gate": "unqualified_missing_expected_targets; no accuracy or precision claim"
+  },
+  "registryWrites": 0,
+  "networkCalls": 0,
+  "checks": [
+    { "command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0 },
+    { "command": "pnpm typecheck:backend", "exitCode": 0 },
+    { "command": "pnpm test:ai", "exitCode": 0, "passed": 22 },
+    { "command": "tsx --test T1/A2/grouping/routing/memory focused files", "exitCode": 0, "passed": 27 },
+    {
+      "command": "ruff check services/geo/geo/usp_learning services/geo/tests/test_stage_a.py",
+      "exitCode": 0
+    },
+    { "command": "pytest services/geo/tests/test_stage_a.py", "exitCode": 4 },
+    { "command": "pytest --noconftest services/geo/tests/test_stage_a.py", "exitCode": 0, "passed": 5 },
+    { "command": "stage_a train verified lead batches", "exitCode": 0, "versions": 43 },
+    { "command": "stage_a predict --model learner/v43 --profiles t1/profiles/profiles.jsonl", "exitCode": 0 },
+    { "command": "tsx scripts/agent/measure-a4.ts", "exitCode": 0, "curveUpdates": 6 },
+    { "command": "python scripts/api/check.py", "exitCode": 1 },
+    { "command": "python scripts/agent/check-api-lf.py (LF export)", "exitCode": 1 },
+    { "command": "git diff --check", "exitCode": 0 }
+  ],
+  "apiCheck": {
+    "failure": "API-DOC: runtime receipt changed",
+    "receipt": "docs/evidence/usp/cityjson-admission-runtime.json",
+    "baseCommitHasSameReceiptBytes": true,
+    "expectedSha256": "307ce2d5c64a632effb29548151c4019757ef7f745e3726271a97b3cc29306e8",
+    "actualLfSha256": "e233ad8ae07b21b054e339b91208599a7623355ed97c962ae387b65718bec6fa",
+    "touchedPinnedProducers": [],
+    "rePinnedProducers": [],
+    "decision": "Stop; unrelated baseline receipt is not owned and must be repaired/reviewed by the lead."
+  },
+  "recoveries": [
+    {
+      "failure": "pytest conftest imports uninstalled pypdf through the unrelated geo inspection stack",
+      "hypothesis": "The CPU learner test does not require native geo-service conftest setup.",
+      "comparison": "Isolated --noconftest run: all five learner checks passed; native startup remains unqualified."
+    },
+    {
+      "failure": "LF export used quoted git filenames on Windows (WinError 123)",
+      "comparison": "git ls-files -z plus exclusive new output fixed export; actual API checker exposes baseline pin."
+    },
+    {
+      "failure": "One test-only TypeScript assertion/context shape failed compilation",
+      "comparison": "Use an ordinary typed constant and existing requestContext; full agent/backend checks passed."
+    },
+    {
+      "failure": "Initial diagnostic used Windows default cp1252 decoding",
+      "comparison": "Read diagnostic metadata explicitly as UTF-8; no source, labels or production code changed."
+    }
+  ],
+  "gaps": [
+    "Held-out expected targets absent; accuracy gate cannot be scored.",
+    "13 teacher fields failed deterministic verification; excluded, labels unchanged.",
+    "Routing is proposal-only and not activated on the demo runtime or background job authority.",
+    "Magnitude and unit-suffix profile statistics unavailable; never inferred from masked samples.",
+    "Calibration has two unseen-class positives; safe committed fields are unknown-only, not positive accuracy.",
+    "Replay falls within each file through memory; no cross-file reduction or student-over-baseline gain.",
+    "API checker is blocked by an unchanged baseline receipt pin; unrelated geo startup requires pypdf."
+  ]
+}

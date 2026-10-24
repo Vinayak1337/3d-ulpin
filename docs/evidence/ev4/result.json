@@ -1,0 +1,96 @@
+{
+  "task": "EV4",
+  "gate": "GF-CONTRACT",
+  "status": "code_checks_pass_shared_generation_pending",
+  "scope": "No Docker, database, listener or live HTTP request. Owned paths only were changed.",
+  "decisions": [
+    "Keep retained flat pins unchanged; unavailable rows have all four pins null and source.state/reason.",
+    "Legacy schema inputs with complete retained pins may omit the source object; responses always supply it.",
+    "Do not change confirmation validation, canonicalisation, fingerprints or stored pins.",
+    "A key with an unavailable source cannot be confirmed: unchanged validation requires all coverage items.",
+    "Studio uses the canonical contracts type directly until the shared generated client can be refreshed."
+  ],
+  "checks": [
+    { "command": "pnpm install --frozen-lockfile", "exitCode": 0 },
+    {
+      "command": "pnpm exec tsx scripts/api/openapi.ts",
+      "exitCode": 1,
+      "attempts": ["tsx unavailable before install", "requested script path does not exist after install"]
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/ev4/contract.ts",
+      "exitCode": 0,
+      "initialFailure": "Evidence wrapper required API-local dependency resolution; corrected with createRequire."
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/ev4/contract.ts --check",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/api exec tsx --tsconfig tsconfig.json scripts/openapi.ts --check",
+      "exitCode": 1,
+      "reason": "OpenAPI document matches; docs/api/source-pins.json is stale and outside owned paths."
+    },
+    { "command": "pnpm typecheck:backend", "exitCode": 0, "packages": 2 },
+    { "command": "pnpm studio:typecheck", "exitCode": 0, "packages": 4 },
+    {
+      "command": "pnpm --filter @ulpin/studio test src/features/intake/evidence",
+      "exitCode": 0, "files": 2, "passed": 16, "failed": 0
+    },
+    {
+      "argv": [
+        "pnpm", "exec", "tsx", "--test",
+        "packages/server/src/modules/usp/ingestion/intake-evidence-confirm.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence-filter.test.ts",
+        "tests/intake-evidence-contract.test.ts"
+      ],
+      "exitCode": 0, "passed": 13, "failed": 0
+    },
+    {
+      "argv": [
+        "pnpm", "exec", "tsx", "--test", "--test-name-pattern=a key is|ER1: on the finish|G21: a queued",
+        "packages/server/src/modules/usp/ingestion/intake-evidence.test.ts"
+      ],
+      "exitCode": 0, "passed": 3, "failed": 0,
+      "selection": "Only the protocol tests, not the data-drive or native-reader tests."
+    },
+    {
+      "argv": [
+        "pnpm", "exec", "tsx", "--test",
+        "packages/server/src/modules/usp/ingestion/intake-evidence-confirm.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence-filter.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts"
+      ],
+      "exitCode": 0, "passed": 13, "failed": 0,
+      "scopeDeviation": "Existing citation tests read data-drive fixtures and used its native interpreter."
+    },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging", "exitCode": 0 },
+    { "command": "git diff --check", "exitCode": 0 }
+  ],
+  "regressions": {
+    "server": "Both coverage rows survive a missing source; included and excluded missing items still refuse.",
+    "pins": "Each individually null source pin yields unavailable/all-null, never zero; strict view still throws.",
+    "studio": "Reason and other rows render; unavailable item has no accept/exclude controls and cannot be sent.",
+    "fingerprints": "Existing confirmation test verifies omitted and computed manifest hashes store equal digests."
+  },
+  "inputs": {
+    "targeted": "Existing test_only fixtures: retained plus missing source; closed and partial coverage.",
+    "baselineGood": "Existing public NYC LPC register and DOITT footprints, labelled test_only/foreign.",
+    "baselineDifficult": "Existing conflicting candidates and stale pins; native control workbook with formula cells."
+  },
+  "scopeDeviation": {
+    "detail": "The initial citation suite used existing data-drive inputs, contrary to the code-only task scope.",
+    "action": "Stopped further data-drive tests; later verification used only protocol and repository fixtures.",
+    "safety": "No originals modified; the existing workbook test uses an OS temporary scratch directory."
+  },
+  "gaps": [
+    "apps/studio/src/api/schema.d.ts does not exist; generator writes packages/api-client/src/schema.d.ts instead.",
+    "pnpm studio:api-types was not run because its output is outside owned paths.",
+    "docs/api/source-pins.json also needs the lead's regeneration; full native catalogue check is not green.",
+    "No live GET/confirmation or browser zoom/keyboard qualification was performed."
+  ],
+  "next": [
+    "Lead: regenerate via apps/api/scripts/openapi.ts, then pnpm studio:api-types; review the two shared artifacts.",
+    "Lead: rerun native openapi --check after updating source pins, then qualify the mixed-source GET live."
+  ]
+}

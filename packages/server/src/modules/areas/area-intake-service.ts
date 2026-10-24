@@ -1,4 +1,6 @@
-import type { GisInspection } from '@ulpin/contracts';
+import type {
+  AreaContext, AreaContextFeature, AreaContextPackage, AreaContextResponse, GisInspection, ImportPackage,
+} from '@ulpin/contracts';
 import { query } from '../../infrastructure/db';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { inspectGisBytes, validateUnmappedGisIdentity } from '../cases/gis-inspection';
@@ -7,16 +9,36 @@ import { createSourceWorkspace, sourceWorkspaceForCase } from '../cases/source-w
 import { SOURCE_CATALOG, acquireSource, importAcquisition, probeAcquisition } from './area-acquisitions';
 import { bindExternalIdentifier, resolveAreaIdentifier } from './area-resolver';
 import {
-  addFact, answerQuestion, areaContext, areaGeo, attachDocument, commitPackage,
+  AREA_DISPLAY_LIMIT, addFact, answerQuestion, areaContext, areaGeo, attachDocument, commitPackage,
   copyCaseDocuments, createPackageCorrection, getPackage, ingestArea, listAreas,
   rebasePackage, reviewPackage, runAreaCheck, type DocumentFile,
 } from './areas';
 import { areaScenarioRetired } from './area-scenario';
+import { areaDisplaySummary, areaDisplayWindow } from './area-display-window';
+import { assertLiveArea, restoreArea, retireArea } from './area-retire';
 import type { z } from 'zod';
 import type {
   acquisitionImportSchema, areaImportMetadataSchema, copyCaseDocumentsSchema,
   externalIdentifierSchema, packageAnswerSchema, packageFactSchema,
 } from './area-validation';
+
+type DisplayFeature = NonNullable<AreaContext['displayFeatures']>[number];
+
+/** The context route's answer: the display features without unread geometry, and package summaries. */
+export function areaContextResponse(context: AreaContext): AreaContextResponse {
+  const { features, displayFeatures = features, packages, ...rest } = context;
+  return { ...rest, displayFeatures: displayFeatures.map(contextFeature), packages: packages.map(contextPackage) };
+}
+
+function contextFeature(feature: DisplayFeature): AreaContextFeature {
+  const { sourceGeometry, geographicGeometry, sourceReference, ...sent } = feature;
+  return sent;
+}
+
+function contextPackage({ id, state, quarantine }: ImportPackage): AreaContextPackage {
+  if (!quarantine) return { id, state, quarantine: null };
+  return { id, state, quarantine: { message: quarantine.message, sourceSha256: quarantine.sourceSha256 } };
+}
 
 /** Domain orchestration for area/source intake; HTTP parsing stays in Nest. */
 export class AreaIntakeService {
@@ -26,7 +48,16 @@ export class AreaIntakeService {
   sourceWorkspaceForCase = sourceWorkspaceForCase;
   catalog() { return SOURCE_CATALOG; }
   listAreas = listAreas;
-  context = areaContext;
+  /** The HTTP context read is the area screen's display read: bounded to the display limit. */
+  async context(id: string) {
+    await assertLiveArea(id);
+    return areaContextResponse(await areaContext(id, AREA_DISPLAY_LIMIT));
+  }
+  /** An area beyond the display limit is drawn from its summary and one window of the map at a time. */
+  displaySummary = areaDisplaySummary;
+  displayWindow = areaDisplayWindow;
+  retire = retireArea;
+  restore = restoreArea;
   retiredScenario = areaScenarioRetired;
   resolve = resolveAreaIdentifier;
   bindIdentifier(input: z.output<typeof externalIdentifierSchema>) { return bindExternalIdentifier(input); }

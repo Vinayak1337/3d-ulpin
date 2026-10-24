@@ -1,0 +1,75 @@
+{
+  "captures": [
+    {
+      "view": "1440",
+      "layout": {
+        "overflow": 0,
+        "footerWhole": true
+      },
+      "keyboard": "Enter opens; Escape closes; no issue action clicked"
+    },
+    {
+      "view": "200pct",
+      "layout": {
+        "overflow": 0,
+        "footerWhole": true
+      },
+      "keyboard": "Enter opens; Escape closes; no issue action clicked"
+    }
+  ],
+  "refused": [],
+  "pageErrors": [],
+  "storingRequestsSent": 0,
+  "cardListReads": 8,
+  "revisionReads": [
+    {
+      "route": "/api/v1/usp/property-cards/read",
+      "body": {
+        "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+        "revision": 1
+      },
+      "mock": true
+    },
+    {
+      "route": "/api/v1/usp/property-cards/read",
+      "body": {
+        "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+        "revision": 1
+      },
+      "mock": true
+    }
+  ],
+  "previews": [
+    {
+      "route": "/api/v1/usp/property-cards/preview",
+      "body": {
+        "planId": "8f3ebb97-deab-4235-a377-819e5942bfd8",
+        "planVersion": 1,
+        "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+        "expiresAt": "2026-10-10T22:18:00.000Z",
+        "guard": {
+          "mode": "update",
+          "expectedVersion": 1,
+          "expectedManifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78"
+        }
+      },
+      "mock": false
+    },
+    {
+      "route": "/api/v1/usp/property-cards/preview",
+      "body": {
+        "planId": "8f3ebb97-deab-4235-a377-819e5942bfd8",
+        "planVersion": 1,
+        "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+        "expiresAt": "2026-10-10T22:18:00.000Z",
+        "guard": {
+          "mode": "update",
+          "expectedVersion": 1,
+          "expectedManifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78"
+        }
+      },
+      "mock": false
+    }
+  ],
+  "contracts": "List, stored view and preview response data parsed by their original response schemas."
+}

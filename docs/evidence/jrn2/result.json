@@ -1,0 +1,52 @@
+{
+  "task": "JRN2",
+  "gate": "GF5",
+  "qualification": "offline_pass; live_batch_not_present",
+  "baseCommit": "0af36554c1ac5efb43aa266777a943e46599981e",
+  "codeCommit": "7a157cc9",
+  "implementation": {
+    "runner": "scripts/golden-journey/run.ts",
+    "mode": "GET only; no writes, restarts, provider calls or original downloads",
+    "defaultSelection": "newest created active case with retained intake items",
+    "explicitSelection": "--case <uuid>; no fallback to another case",
+    "steps": ["batch", "items", "table", "surfaces", "evidence", "confirmation", "card", "citation"],
+    "cardSelection": "newest updated carded target; latest revision of that target's stored card",
+    "states": ["pass", "fail", "undecidable", "skipped"],
+    "exitPolicy": "1 if any fail; otherwise 0",
+    "legacy": "explicit --legacy preserves the old receipt-pinned journey and its named POST reads"
+  },
+  "offline": {
+    "fixtures": "scripts/golden-journey/batch.fixtures.ts",
+    "classification": "test_only authored values in recorded contract shapes; never operational expectations",
+    "tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "good": "populated fixture batch, CSV profile, placed raster, unplaced LAZ, confirmation, consistent card PDF",
+    "difficult": "partial/null coverage, empty/offline cases, denied reads, wrong quote, old excerpt-less citation",
+    "invariants": ["all requests GET", "POST refused before request", "unknown remains null", "exact card pins"],
+    "regression": "latest-card discovery must preserve the earlier verification read's revision pin"
+  },
+  "demo": {
+    "receipt": "docs/evidence/jrn2/demo-check.json",
+    "api": "http://127.0.0.1:3194",
+    "startedAt": "2026-10-22T09:38:14.003Z",
+    "requests": 12,
+    "methods": ["GET"],
+    "activeCasesRead": 11,
+    "casesWithIntakeItems": 0,
+    "summary": {"pass": 0, "fail": 0, "undecidable": 0, "skipped": 8},
+    "exitCode": 0,
+    "goodRealBatch": null,
+    "difficultRealInput": "demo workspaces exist but every intake manifest is empty; dependent steps skip",
+    "runtimeMutations": 0
+  },
+  "checks": [
+    {"command": "pnpm exec tsc -p scripts/golden-journey/tsconfig.json", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json --test scripts/golden-journey/batch.test.ts",
+      "exitCode": 0, "passed": 8},
+    {"command": "pnpm journey:check", "exitCode": 0, "runCount": 1},
+    {"command": "git diff --check", "exitCode": 0},
+    {"command": "120-column check on new TypeScript files", "exitCode": 0}
+  ],
+  "next": "Run the same check after an authorized presenter populates a real batch; no live batch claim yet."
+}

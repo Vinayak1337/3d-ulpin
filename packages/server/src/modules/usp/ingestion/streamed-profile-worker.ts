@@ -11,12 +11,14 @@ import {appendCaseIngestionTx} from './events';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {advanceStreamedInventory,emptyInventory} from './streamed-profile-inventory';
 import {assertStreamedProfileInputTx,readStreamedGenerationTx,streamedGenerationHash} from './streamed-profile';
+import {queueIntakeLargeTx} from './intake-large';
 
 const rawService=new StreamingVectorService(),pause=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
 type RawChunk=Awaited<ReturnType<StreamingVectorService['chunk']>>;
 function buildGeneration(input:StreamedProfileInput,index:number,previous:StreamedProfileGeneration|null,
   values:ReturnType<typeof advanceStreamedInventory>['inventory'],locators:StreamedProfileGeneration['quarantineLocators'],
-  rawChunkIndex:number|null,rawResultSha256:string|null,coverage:'provisional'|'sealed',sourceCrs:string|null,evidence:string|null){
+  rawChunkIndex:number|null,rawResultSha256:string|null,coverage:'provisional'|'sealed',
+  reference:Omit<StreamedProfileGeneration['reference'],'globalPlacement'>){
   const placeholder='0'.repeat(64),candidate={version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
     source:{sourceId:input.sourceId,familyId:input.sourceFamilyId,sourceRevision:input.sourceRevision,
       sourceSha256:input.sourceSha256,schemaFingerprint:placeholder},readerSha256:input.readerSha256,
@@ -25,12 +27,22 @@ function buildGeneration(input:StreamedProfileInput,index:number,previous:Stream
     recordsSeen:values.recordsSeen,accepted:values.accepted,quarantined:values.quarantined,
     paths:values.paths,geometryTypes:values.geometryTypes,
     unknownRemainder:coverage!=='sealed',quarantineLocators:locators,
-    reference:{sourceCrs,evidence,globalPlacement:'not_qualified' as const}};
+    reference:{...reference,globalPlacement:'not_qualified' as const}};
   const generationHash=streamedGenerationHash(candidate),body=StreamedProfileGenerationSchema.parse({...candidate,
     generationHash,source:{...candidate.source,schemaFingerprint:generationHash}});
   if(Buffer.byteLength(JSON.stringify(body))>limits.bodyBytes)
     throw new AppError(413,'STREAMED_PROFILE_BODY_BUDGET','The cumulative source inventory exceeds this bounded profile.');
   return body;
+}
+/** A small file's inspection, or a large file's sealed map receipt, states the declared system and its unit. */
+function sourceReference(source:{profile:string;inspection:any}){
+  const text=(value:unknown,limit:number)=>typeof value==='string'?value.slice(0,limit):null;
+  const gis=source.profile==='geojson-manual-v1'?source.inspection?.gis:null;
+  if(gis)return {sourceCrs:text(gis.sourceCrs,100),evidence:text(gis.crsEvidence,200),unit:text(gis.crsUnit,80)};
+  const receipt=source.profile==='large-original-v1'?source.inspection?.streamedMapReceipt?.reference:null;
+  if(!receipt)return {sourceCrs:null,evidence:null};
+  return {sourceCrs:text(receipt.authority??receipt.sourceCrs,100),evidence:text(receipt.evidence,200),
+    unit:receipt.coordinateUnit==='unknown'?null:text(receipt.coordinateUnit,80)};
 }
 async function window(input:StreamedProfileInput){
   return transaction(async client=>{
@@ -64,12 +76,10 @@ async function publishChunk(input:StreamedProfileInput,attempt:UspJobAttempt,raw
     if(prior.recordsSeen!==slot.firstFeatureIndex||payload.records.length!==slot.records)
       conflict('The raw feature index is not contiguous with the profile.');
     const {inventory,quarantineLocators}=advanceStreamedInventory(prior,payload.records);
-    const gis=ctx.source.profile==='geojson-manual-v1'?ctx.source.inspection?.gis:null;
     const retainedLocators=[...(previous?.quarantineLocators??[]),...quarantineLocators]
       .slice(0,limits.quarantineLocators);
     const body=buildGeneration(input,slot.chunkIndex,previous,inventory,retainedLocators,slot.chunkIndex,
-      slot.resultSha256,'provisional',typeof gis?.sourceCrs==='string'?gis.sourceCrs:null,
-      typeof gis?.crsEvidence==='string'?gis.crsEvidence.slice(0,200):null);
+      slot.resultSha256,'provisional',sourceReference(ctx.source));
     await client.query(`INSERT INTO usp_streamed_profile_generations(job_id,generation,raw_chunk_index,raw_result_sha256,
       body,body_sha256,sealed,attempt,fence) VALUES($1,$2,$3,$4,$5,$6,false,$7,$8)`,
       [input.jobId,slot.chunkIndex,slot.chunkIndex,slot.resultSha256,body,fingerprint(body),attempt.number,attempt.fence]);
@@ -91,10 +101,8 @@ async function seal(input:StreamedProfileInput,attempt:UspJobAttempt){
     const prior=previous??emptyInventory();
     if(prior.recordsSeen!==raw.records||prior.accepted!==raw.accepted||prior.quarantined!==raw.quarantined)
       conflict('The complete profile differs from the sealed raw coverage.');
-    const gis=ctx.source.profile==='geojson-manual-v1'?ctx.source.inspection?.gis:null;
     return buildGeneration(input,state.next_raw_index,previous,prior,previous?.quarantineLocators??[],null,null,'sealed',
-      typeof gis?.sourceCrs==='string'?gis.sourceCrs:null,
-      typeof gis?.crsEvidence==='string'?gis.crsEvidence.slice(0,200):null);
+      sourceReference(ctx.source));
   });
   await acceptUspJobAttempt(attempt,{assetId:`streamed-profile:${input.jobId}`,version:1,sha256:prepared.generationHash},
     async client=>{
@@ -118,6 +126,7 @@ async function seal(input:StreamedProfileInput,attempt:UspJobAttempt){
         generationHash:prepared.generationHash,coverage:'sealed',recordsSeen:prepared.recordsSeen},input.subject);
       await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'sealed'},input.subject);
+      await queueIntakeLargeTx(client,input.sourceId);
     });
 }
 async function fail(input:StreamedProfileInput,attempt:UspJobAttempt|null,code:string,stale=false){
@@ -140,6 +149,7 @@ async function fail(input:StreamedProfileInput,attempt:UspJobAttempt|null,code:s
       [input.jobId,stale?'stale':'failed',code]);
     await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:stale?'stale':'failed'},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 async function retry(input:StreamedProfileInput,attempt:UspJobAttempt,code:string){

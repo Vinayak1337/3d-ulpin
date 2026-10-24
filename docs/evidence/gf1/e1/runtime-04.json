@@ -1,0 +1,374 @@
+{
+  "task": "E1",
+  "container": "ulpin-ca0-tmp-caea10ec4262b3c1",
+  "startedAt": "2026-10-11T03:24:36.718Z",
+  "before": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "readyAfterSeconds": 1,
+  "during": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-ca0-tmp-caea10ec4262b3c1",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "published": "127.0.0.1:49328",
+  "runtime": {
+    "exit": 0,
+    "signal": null,
+    "errorCode": null,
+    "progress": [
+      {
+        "completed": "migrations",
+        "appliedTwice": true
+      }
+    ],
+    "evidence": {
+      "task": "E1",
+      "results": {
+        "migrationAppliedTwice": true,
+        "prepared": {
+          "counts": {
+            "preparing": 0,
+            "ready": 1661,
+            "needs_answer": 0,
+            "held": 0,
+            "confirmed": 0,
+            "recorded": 0,
+            "carded": 0,
+            "stopped": 0
+          },
+          "reasonsPresent": 1661,
+          "findings": 1803,
+          "officerCallsAfterLayoutApproval": 0
+        },
+        "idempotency": {
+          "sameRecord": true,
+          "noNewJob": true,
+          "changedListStatus": 409
+        },
+        "firstCardMs": 8275,
+        "retry": {
+          "targetId": "10b7447e-1817-5813-83e8-ed931fab9ee1",
+          "before": "recorded",
+          "code": [
+            "STALE_REVISION"
+          ],
+          "stoppedStage": 7,
+          "countsBefore": {
+            "snapshots": 1,
+            "receipts": [
+              {
+                "operation": "packet_plan_create",
+                "count": 1
+              }
+            ]
+          },
+          "countsAfter": {
+            "snapshots": 1,
+            "receipts": [
+              {
+                "operation": "packet_plan_confirm",
+                "count": 1
+              },
+              {
+                "operation": "packet_plan_create",
+                "count": 1
+              },
+              {
+                "operation": "packet_plan_execute",
+                "count": 1
+              },
+              {
+                "operation": "property_card_generate",
+                "count": 1
+              }
+            ]
+          },
+          "snapshotAndPlanUnchanged": true,
+          "sameKeys": true
+        },
+        "secondLayer": {
+          "packageId": "a043d030-8977-425d-a125-8f14bc37b501",
+          "kind": "public_land",
+          "features": 1
+        },
+        "thirdCardMs": 10838,
+        "completed": {
+          "counts": {
+            "recorded": 1661,
+            "carded": 3,
+            "stopped": 0
+          },
+          "cards": [
+            {
+              "targetId": "10b7447e-1817-5813-83e8-ed931fab9ee1",
+              "locator": "feature 449960",
+              "cardId": "d1232855-a970-4327-adfd-2a57e3897d80",
+              "citation": "buildings-original.geojson, feature 449960",
+              "link": "http://127.0.0.1:3188/api/v1/usp/property-cards/d1232855-a970-4327-adfd-2a57e3897d80/revisions/1",
+              "verification": "consistent"
+            },
+            {
+              "targetId": "0000b77e-303e-5c17-b1bb-c32be310c5be",
+              "locator": "feature 614674",
+              "cardId": "5ec26156-8280-477d-98c6-45b1dc05e51f",
+              "citation": "buildings-original.geojson, feature 614674",
+              "link": "http://127.0.0.1:3188/api/v1/usp/property-cards/5ec26156-8280-477d-98c6-45b1dc05e51f/revisions/1",
+              "verification": "consistent"
+            },
+            {
+              "targetId": "0027c0cd-973b-591d-8a34-dba6049796a3",
+              "locator": "feature 522307",
+              "cardId": "01f0de25-4501-44a6-92dc-1c30622dcf81",
+              "citation": "buildings-original.geojson, feature 522307",
+              "link": "http://127.0.0.1:3188/api/v1/usp/property-cards/01f0de25-4501-44a6-92dc-1c30622dcf81/revisions/1",
+              "verification": "consistent"
+            }
+          ],
+          "unlistedCards": 0,
+          "overlapIncluded": "10b7447e-1817-5813-83e8-ed931fab9ee1",
+          "thirdAfterAreaMoved": "carded"
+        },
+        "boundDestination": {
+          "kind": "existing_area",
+          "areaId": "0cc87508-6af4-4e0b-aed1-f5103297898a",
+          "expectedAreaRevision": 2,
+          "referenceFingerprint": "7d6073f51207165621911b7097faef01ff706c9f7d9a18c8ce63d200e1fba4aa",
+          "name": "Hydrography",
+          "namespace": "hydrography"
+        },
+        "d6Gap": "The existing manual profile has building conversions only; hydrography is public_land. Do not author a building layout for water. Direct public_land import tests same-area movement; D6 destination and normalizer refusals are unit-tested, but a retained hydrography layout needs an unowned conversion."
+      },
+      "rejectedSql": [],
+      "failures": [],
+      "hashes": {
+        "buildings-original.geojson": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+        "hydrography.geojson": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192"
+      },
+      "originalHashesUnchanged": true,
+      "providers": 0,
+      "gpu": false,
+      "pool": {
+        "max": 8,
+        "connectionTimeoutMillis": 10000
+      },
+      "network": "Loopback SQL/storage/product Python; PROJ_NETWORK=OFF; gateway disabled"
+    }
+  },
+  "removed": "ulpin-ca0-tmp-caea10ec4262b3c1",
+  "after": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "machineUnchanged": true,
+  "finishedAt": "2026-10-11T03:25:03.994Z"
+}

@@ -1,0 +1,684 @@
+{
+  "schema": "gf-ai-preregistration/1",
+  "building_mask": {
+    "status": "frozen",
+    "task": "building_mask",
+    "geography": "India/Karnataka",
+    "truth": {
+      "publisher": "DevGlobal / TaQadam / B.O.T",
+      "dataset": "RAMP Karnataka v1.0",
+      "doi": "10.34911/rdnt.5y2w17",
+      "licence": "CC-BY-NC-4.0",
+      "review": "One annotator, second-person QC, additional DevGlobal Tier 1 QC",
+      "definition": "Rooftop outlines, not surveyed ground footprints, ownership or physical property identities",
+      "independent_of_our_team": true,
+      "local_relabelling": false,
+      "ignore_policy": "Full source raster, no invented ignore regions",
+      "use": "test_only"
+    },
+    "split_sha256": "b92cbf81d6f1a6e777db14a218080f87e26fbb6769fd9b9b937b214578cb3bb6",
+    "repository_hash_encoding": "UTF-8 bytes with CRLF normalized to LF, matching Git text blobs",
+    "holdout": {
+      "cluster_ids": [
+        "6933:7322:1609",
+        "6933:7322:1640",
+        "6933:7323:1609",
+        "6933:7323:1610",
+        "6933:7323:1636",
+        "6933:7323:1637",
+        "6933:7325:1543",
+        "6933:7325:1574",
+        "6933:7325:1576",
+        "6933:7326:1537",
+        "6933:7326:1541",
+        "6933:7326:1598",
+        "6933:7326:1637",
+        "6933:7327:1540",
+        "6933:7327:1542",
+        "6933:7327:1578",
+        "6933:7327:1579",
+        "6933:7328:1542",
+        "6933:7328:1570",
+        "6933:7328:1571",
+        "6933:7328:1572",
+        "6933:7328:1574",
+        "6933:7328:1576",
+        "6933:7328:1598",
+        "6933:7328:1607",
+        "6933:7329:1582",
+        "6933:7329:1595",
+        "6933:7329:1606",
+        "6933:7330:1569",
+        "6933:7330:1570",
+        "6933:7330:1571",
+        "6933:7330:1581",
+        "6933:7330:1586",
+        "6933:7330:1595",
+        "6933:7330:1598",
+        "6933:7330:1606",
+        "6933:7331:1568",
+        "6933:7331:1575",
+        "6933:7331:1578",
+        "6933:7331:1586",
+        "6933:7331:1598",
+        "6933:7331:1600",
+        "6933:7331:1604",
+        "6933:7331:1642",
+        "6933:7332:1568",
+        "6933:7332:1572",
+        "6933:7332:1575",
+        "6933:7332:1576",
+        "6933:7332:1579",
+        "6933:7332:1599",
+        "6933:7332:1622",
+        "6933:7333:1591",
+        "6933:7333:1593",
+        "6933:7333:1614",
+        "6933:7333:1616",
+        "6933:7333:1622",
+        "6933:7334:1567",
+        "6933:7334:1594"
+      ],
+      "cluster_ids_sha256": "7772b073d3d923a2f0589ca7dac500e1a3b1fc9304c30186405038d90fd241f3",
+      "chip_ids_sha256": "3c2f837930eefa86b89780c5db90adb8ce834a11eabe75f81c46d80df3a17076",
+      "chips": 1273,
+      "empty_chips": 355,
+      "publisher_features": 9182
+    },
+    "id_list_hash_encoding": "Sorted publisher ids, UTF-8, one id per LF line including final LF",
+    "grid": {
+      "crs": "EPSG:6933",
+      "cell_size_m": 1000,
+      "origin": [
+        0,
+        0
+      ],
+      "assignment": "floor(projected georeferenced pixel-edge centroid / 1000)",
+      "note": "Global equal-area WGS84 projection; approximately 1 km locally, not source CRS relabelling."
+    },
+    "seed": 26011,
+    "allocation": {
+      "requested_fractions": {
+        "holdout": 0.2,
+        "dev": 0.15,
+        "train": 0.65
+      },
+      "actual_fractions": {
+        "train": 0.5694974554707379,
+        "dev": 0.22805343511450382,
+        "holdout": 0.20244910941475827
+      },
+      "dev_deviation_reason": "All 20 cells containing the 24 previously evaluated chips must stay DEV-only; their 1434 chips already exceed the nominal 15% target. Leakage prevention takes precedence over target fraction; no seed search, holdout performance or labels influenced cell assignments."
+    },
+    "baseline": {
+      "id": "rfdetr-satellite-buildings-onnx-v1",
+      "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+      "profile_version": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
+    },
+    "metrics": {
+      "per_building_precision_recall": "One-to-one maximum-cardinality mask IoU >= 0.5, total IoU tie-break; actual production polygon candidates rasterized at source resolution vs one publisher feature per instance; denominators = predicted / publisher buildings. Zero-pixel source features retained as unmatched; count reported.",
+      "mean_iou_of_matches": "Sum IoU / count of matched pairs; null when denominator is zero",
+      "false_buildings_on_empty_chips": "Count, per-empty-chip rate, affected-chip count, denominator all publisher-empty chips",
+      "boundary_f1_2px": "Micro pooled union foreground boundaries, Euclidean tolerance 2 source pixels, border_value=0 erosion; boundary hits and prediction/truth boundary-pixel denominators. Includes false boundaries on empty chips; undefined ratios stay null.",
+      "abstention": "Failed inputs reported separately; empty predictions are scored rather than abstentions"
+    },
+    "thresholds": {
+      "precision_min": 0.75,
+      "recall_min": 0.7,
+      "match_iou_min": 0.5
+    },
+    "inference": {
+      "input": "upright RGB selected crop; at most 2048 pixels per edge and 4,000,000 pixels total; retain source resolution",
+      "resize": "Each tile uses Pillow bilinear to 432x432; no whole-raster downsampling",
+      "tensor": "NCHW float32, RGB/255, ImageNet mean [0.485,0.456,0.406] and std [0.229,0.224,0.225]",
+      "output": "200 object logits and 200 mask logits per tile; object sigmoid >0.5; half-pixel bilinear masks resized to tile raster; mask logits >0; higher-confidence instances paint first within each tile",
+      "confidence": "uncalibrated instance sigmoid; maximum per pixel in tile overlaps, mean over each returned connected candidate",
+      "geometry": "pixel-edge polygons; no metric inference",
+      "tiling": "Single image up to 512 pixels per edge retains instance masks. Larger images: 512-pixel tiles, stride 384, row-major, final tile anchored to far edge, no padding. Union foreground at source pixel coordinates and retain maximum accepted instance confidence per pixel; connected regions become review candidates."
+    },
+    "holdout_policy": {
+      "maximum_attempts": 2,
+      "slots": [
+        "installed_baseline",
+        "final_candidate"
+      ],
+      "failed_or_interrupted_attempt_consumes_slot": true,
+      "log": "docs/evidence/gf-ai/building/holdout-runs.jsonl",
+      "reserve_before_model_load": true,
+      "preregistration_and_split_must_match_committed_HEAD": true,
+      "no_threshold_or_checkpoint_selection_on_holdout": true,
+      "this_task_runs_holdout": false
+    },
+    "installed_checkpoint_training_data": {
+      "documented_finetune_dataset": "merve/satellite-building-segmentation",
+      "documented_base_model": "Roboflow/rf-detr-seg-medium",
+      "base_training": "COCO 2017 instance segmentation, according to the base model card",
+      "dataset_card": {
+        "source": "https://huggingface.co/datasets/merve/satellite-building-segmentation",
+        "origin": "keremberke/satellite-building-segmentation / Roboflow Universe buildings-instance-segmentation v1",
+        "train_images": 6764,
+        "validation_images": 1934,
+        "test_images": 967,
+        "licence_claim": "CC BY 4.0",
+        "geographic_source_families": "undocumented"
+      },
+      "ramp_overlap_ruled_out": false,
+      "reason": "The model names its finetune dataset, but neither card publishes a complete original imagery/chip/source-family inventory. No independent byte/geographic comparison was performed; COCO base provenance does not establish finetune independence from RAMP.",
+      "source_card_pins": [
+        {
+          "path": "E:/BhuAayam-data/ml/source-cards/satellite-buildings-README.md",
+          "sha256": "2921728e98ea96e7576f7bad1006b613460239f84e5903854e70a28ca60ebe2d"
+        },
+        {
+          "path": "E:/BhuAayam-data/ml/source-cards/dataset-README.md",
+          "sha256": "044853274f930c26e331f52a04561caecf402da501afde9dface9475fcbbaa94"
+        },
+        {
+          "path": "E:/BhuAayam-data/ml/source-cards/base-README.md",
+          "sha256": "0b7bc30df4eaca3330caac80c9d4dc4f435a99a0300e53845611edd056c256f0"
+        }
+      ]
+    },
+    "limitations": [
+      "No spatial buffer between adjacent cells; this measures held-out grid-cell performance, not independent acquisition/city performance.",
+      "Installed checkpoint pretraining overlap cannot be ruled out.",
+      "Publisher roof features are not surveyed ground footprints or independent property records."
+    ]
+  },
+  "building_mask_transfer": {"status":"frozen","task":"building_mask_transfer","geography":"Bangladesh/Coxs Bazar","region":"coxs_bazar_bangladesh","use":"test_only","cross_geography_transfer_not_indian_claim":true,"selection_reason":"Smallest completely acquired Bangladesh region by manifest byte size (506722856 bytes, 2375 pairs); chosen without image/model inspection. Other regions are larger. Never used in project training/selection; only Dhaka had an older TRAIN export, not this region.","data_root":"E:\\BhuAayam-data\\ml\\datasets\\b4-coxs-bazar-transfer-20261010","truth":{"publisher":"DevGlobal / TaQadam / B.O.T","dataset":"RAMP Coxs Bazar Bangladesh v1.0","licence":"CC-BY-NC-4.0","review":"Publisher human annotation with second-person and DevGlobal QC; no local relabelling","definition":"Roof outlines, not surveyed ground footprints or rights"},"holdout":{"chips":2375,"empty_chips":447,"publisher_features":25409,"chip_ids_sha256":"6bd758a97c3dc6e96e523ffcbc8bbfa79659ff064607e09b5c473cb4c7ce94a0","chip_ids_path":"E:\\BhuAayam-data\\ml\\datasets\\b4-coxs-bazar-transfer-20261010\\chip-ids.json","coco_sha256":"1f0e87fcb28cbafc76a9aba6fd46849acbc4b1f3f6477c1784de638b4076d24a","source_index_sha256":"f730f65d2ed426dffe6772c5b54e50af30771bfa88403d074add6e3d8da2f35d"},"model_selection":"Use completed B4 run with same B3 DEV gate/F1 selection rule across thresholds .3/.5/.7, compared against epoch4 receipts. If none improves on epoch4 by that rule, use epoch4. No transfer-based tuning or selection.","evaluation_profile":"Frozen building_mask inference at object threshold .5; even if DEV selected another threshold, transfer reports .5 only to preserve preregistered metrics/profile.","holdout_policy":{"maximum_attempts":1,"failed_or_interrupted_attempt_consumes_slot":true,"log":"docs/evidence/gf-ai/building/transfer-runs.jsonl","reserve_before_model_load":true,"preregistration_must_match_committed_HEAD":true,"no_threshold_or_checkpoint_selection_on_holdout":true,"karnataka_holdout_closed":true},"limitations":["Cross-geography transfer only, not an Indian accuracy claim.","This region is independent of our project fine-tuning and selection. Undocumented publisher-checkpoint pretraining overlap cannot be ruled out.","The old B1 split metadata designated all Bangladesh as potential TRAIN; this whole region is reserved now before any project training/selection used it."],"metrics":{"per_building_precision_recall":"One-to-one maximum-cardinality mask IoU >= 0.5, total IoU tie-break; actual production polygon candidates rasterized at source resolution vs one publisher feature per instance; denominators = predicted / publisher buildings. Zero-pixel source features retained as unmatched; count reported.","mean_iou_of_matches":"Sum IoU / count of matched pairs; null when denominator is zero","false_buildings_on_empty_chips":"Count, per-empty-chip rate, affected-chip count, denominator all publisher-empty chips","boundary_f1_2px":"Micro pooled union foreground boundaries, Euclidean tolerance 2 source pixels, border_value=0 erosion; boundary hits and prediction/truth boundary-pixel denominators. Includes false boundaries on empty chips; undefined ratios stay null.","abstention":"Failed inputs reported separately; empty predictions are scored rather than abstentions"},"thresholds":{"precision_min":0.75,"recall_min":0.7,"match_iou_min":0.5},"inference":{"input":"upright RGB selected crop; at most 2048 pixels per edge and 4,000,000 pixels total; retain source resolution","resize":"Each tile uses Pillow bilinear to 432x432; no whole-raster downsampling","tensor":"NCHW float32, RGB/255, ImageNet mean [0.485,0.456,0.406] and std [0.229,0.224,0.225]","output":"200 object logits and 200 mask logits per tile; object sigmoid >0.5; half-pixel bilinear masks resized to tile raster; mask logits >0; higher-confidence instances paint first within each tile","confidence":"uncalibrated instance sigmoid; maximum per pixel in tile overlaps, mean over each returned connected candidate","geometry":"pixel-edge polygons; no metric inference","tiling":"Single image up to 512 pixels per edge retains instance masks. Larger images: 512-pixel tiles, stride 384, row-major, final tile anchored to far edge, no padding. Union foreground at source pixel coordinates and retain maximum accepted instance confidence per pixel; connected regions become review candidates."}},
+  "building_mask_transfer_2": {
+    "status": "frozen",
+    "task": "building_mask_transfer_2",
+    "region": "chittagong_bangladesh",
+    "geography": "Bangladesh/Chittagong",
+    "use": "test_only",
+    "cross_geography_transfer_not_indian_claim": true,
+    "selection_reason": [
+      "Smallest complete never-used eligible region by manifest bytes:1078209732,5229 source pairs.",
+      "Exclude Coxs Bazar:closed transfer;Barishal:previous TRAIN smoke;Dhaka:previous TRAIN export.",
+      "Eligible alternatives Jashore1564276434bytes and Sylhet3427795636bytes are larger.",
+      "Selection uses acquisition metadata,not predictions or accuracy;preserve all publisher features."
+    ],
+    "data_root": "E:/BhuAayam-data/ml/datasets/b6-chittagong-transfer2-20261010",
+    "truth": {
+      "publisher": "DevGlobal / TaQadam / B.O.T",
+      "dataset": "RAMP Chittagong Bangladesh publisher originals",
+      "licence": "CC-BY-NC-4.0",
+      "definition": "Roof outlines,not surveyed ground footprints,ownership or registry truth",
+      "doi": "10.34911/rdnt.zp22dh",
+      "publisher_review": "Tier1 reviewed/improved human labels per retained README",
+      "readme_buildings_claim": 38096,
+      "actual_original_feature_count": 35421,
+      "discrepancy_policy": "Retain actual original35421;do not pad,relabel or invent missing2675 features",
+      "maxar_acquisition_id": "105001001AC98900",
+      "nominal_gsd_claim_m": 0.4,
+      "nominal_gsd_used_for_metric_area": false,
+      "local_relabelling": false,
+      "ignore_policy": "Full raster;retain empty chips and zero-pixel publisher features"
+    },
+    "holdout": {
+      "chips": 5229,
+      "publisher_features": 35421,
+      "empty_chips": 1282,
+      "zero_pixel_features": 9,
+      "chip_ids_sha256": "662a353188bd3ea6109a3da6d90b1f6a3102e86991d89c4261b6dc51cbab6dc9",
+      "chip_ids_path": "E:/BhuAayam-data/ml/datasets/b6-chittagong-transfer2-20261010/chip-ids.json",
+      "coco_sha256": "baa077a259e292c8211ec095501b39b43ee2a2f71679dedfd61204db7ba73746",
+      "source_index_sha256": "447ed9f313b80b605388f369a3c363c6cd267ce5f953d12c66dfcb2796eeaacf",
+      "original_hashes_verified": true,
+      "exact_original_image_overlap_with_prior_project_regions": 0,
+      "prior_original_images_compared": 23592,
+      "source_raster_footprints_overlapping_prior_coxs_bazar": 0,
+      "spatial_overlap_check": "Declared CRS/affine pixel-edge footprints;WGS84 intersection area>1e-12deg2",
+      "coxs_bazar_acquisition_id": "10400100546E3700"
+    },
+    "reference": {
+      "id": "rfdetr-ramp-ka-seg-medium-b3-v1",
+      "checkpoint": "E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-004",
+      "weights_sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+      "config_sha256": "c10551bbd1135503279c6aab80fe6966d88a506d685098530bcd7f9fcbe7659e",
+      "resolution": 432,
+      "dev_recall": 0.6624353906962602,
+      "dev_precision": 0.8544117647058823
+    },
+    "candidate_selection": {
+      "starting_weights": "Publisher satellite-building base,not epoch4;TRAIN-only capacity choice",
+      "resolution": "Largest qualified member of bounded672/624/576 bracket;none currently qualified",
+      "effective_batch": 4,
+      "seed": 26011,
+      "max_epochs": 8,
+      "lr_scheduler": "constant",
+      "early_stopping": "3epochs without strictly higher .5 DEV recall;nonfinite or>6GiB stops immediately",
+      "mask_dice_loss_coefficient": 5,
+      "selection": "Highest .5 DEV recall among precision>=.75;ties:precision then earlier epoch",
+      "fallback_if_no_precision_qualified_epoch": "Highest .5 DEV recall;cannot pass B6 win gate",
+      "freeze": "Completed training,selected weights/config/profile and DEV receipt must be committed first",
+      "no_selection_on_transfer": true
+    },
+    "evaluation_profile": {
+      "backend": "PyTorch-cuda FP32 eval,inference_mode for both models",
+      "metrics_contract": "Unchanged building_mask.metrics and match IoU>=.5",
+      "size_bins": "COCO source-mask pixels:[0,16),[16,64),[64,128),[128,256),[256,512),[512,1024),>=1024",
+      "size_bin_denominator": "All publisher features;zero-pixel features remain unmatched",
+      "inference_contract": "Unchanged building_mask.inference except per-model direct RGB resize resolution",
+      "object_threshold": 0.5,
+      "mask_logit_threshold": 0,
+      "no_double_interpolation": true
+    },
+    "holdout_policy": {
+      "maximum_attempts": 2,
+      "slots": ["epoch4_reference", "b6_dev_selected"],
+      "log": "docs/evidence/gf-ai/building/transfer-2-runs.jsonl",
+      "each_role_exactly_once": true,
+      "reserve_before_model_load": true,
+      "failed_or_interrupted_attempt_consumes_slot": true,
+      "preregistration_and_selection_must_match_committed_HEAD": true,
+      "both_calls_after_completed_frozen_B6_DEV_selection": true,
+      "karnataka_and_coxs_bazar_permanently_closed": true,
+      "no_region_training_or_selection": true
+    },
+    "win": {
+      "dev_recall_strictly_higher_than_epoch4": true,
+      "transfer_2_recall_strictly_higher_than_paired_epoch4": true,
+      "candidate_precision_min_on_both": 0.75,
+      "no_karnataka_holdout_claim": true,
+      "registration_only_after_new_hash_bound_parity_v2": "candidate/inactive/test_only/uncalibrated"
+    },
+    "limitations": [
+      "Fresh to project training/selection/evaluation;publisher-checkpoint pretraining overlap unknown.",
+      "Exact original byte independence does not prove independent imagery acquisition/source families.",
+      "Cross-geography transfer evidence only,not an Indian accuracy claim or a production activation."
+    ]
+  },
+  "building_mask_b9": {
+    "status": "frozen",
+    "task": "building_mask_b9",
+    "geography": "India/Karnataka (DEV and holdout); Bangladesh extra TRAIN only",
+    "use": "test_only",
+    "plan": "docs/evidence/gf-ai/building/b9/plan.json",
+    "amendments": [
+      {
+        "number": 1,
+        "at": "2026-10-10T18:56:00+05:30",
+        "decided_by": "lead",
+        "made": [
+          "After the launch of run b9-ka-more-regions-20261010 and before any DEV result of this",
+          "comparison was read by the lead or by the worker. That run was stopped in epoch 1 at",
+          "optimizer step 475 of 3,146: no epoch ended, so it saved no epoch and no DEV scoring ran."
+        ],
+        "found_by": "The lead, reading the trainer diff and the launch report; not by any result",
+        "stopped_run": "docs/evidence/gf-ai/building/b9/stopped.json",
+        "first_registered_text": "commit 7c6aaa85",
+        "defects": {
+          "instances_that_leave_the_tile": [
+            "The plan handled an instance left with no pixel after scaling by the zero-pixel policy. That",
+            "policy is for publisher masks that rasterize to no pixel but keep a real box. Applied to a",
+            "roof the crop removed from the image, it made a building target with a zero box and no",
+            "visual evidence for about 1 instance in 10 (505 of 5,268 sampled), teaching the model to",
+            "emit building queries for roofs it cannot see."
+          ],
+          "one_region_instead_of_three": [
+            "The cap rule filled the cap from Dhaka alone, which is not what the hypothesis (more South",
+            "Asian regions) says."
+          ]
+        },
+        "changes": {
+          "scale_augmentation": [
+            "An instance that had at least one mask pixel before the scale augmentation and has none",
+            "after it is removed from the sample's targets (box, mask and class). An instance that had no",
+            "pixel before it keeps the existing policy: its box is transformed with the image, and it is",
+            "removed only if that box ends entirely outside the tile. A chip left with no instance is an",
+            "empty chip."
+          ],
+          "extra_regions": [
+            "The 9,000 extra chips are 3,000 from each of Dhaka, Barishal and Jashore, each chosen by the",
+            "same id rule within the region. A region with fewer than 3,000 chips gives all of them and",
+            "Dhaka fills the shortfall by the same rule."
+          ]
+        },
+        "unchanged": [
+          "Starting weights and fresh optimizer, learning rates, resolution, augment ranges, at most 8",
+          "epochs and 480 minutes (counted from the relaunch), early stop, selection, outcomes, TRAIN",
+          "only, every publisher feature of a kept chip, empty chips kept, closed lists excluded and",
+          "proved by id."
+        ]
+      },
+      {
+        "number": 2,
+        "at": "2026-10-10T19:18:00+05:30",
+        "decided_by": "lead",
+        "made": [
+          "After the smoke of the amended recipe and before the relaunch. No DEV result of this",
+          "comparison exists; none was read by the lead or by the worker."
+        ],
+        "subject": "The launch gate. Selection, budget, stops and outcomes are unchanged.",
+        "launch_gate": {
+          "a": "Peak reserved memory of the smoke within the 6 GiB budget.",
+          "b": "Every smoke step loss finite.",
+          "c": [
+            "Like-for-like on the smoke's own TRAIN chips, un-augmented, same sampled points: mean loss",
+            "after the smoke steps is lower than before, and lower on at least two thirds of the chips",
+            "that have roofs."
+          ]
+        },
+        "measured": {
+          "smoke_run": "b9-smoke-memory-three-regions-20261010",
+          "peak_reserved_bytes": 5165285376,
+          "budget_bytes": 6442450944,
+          "smoke_chip_losses": 195,
+          "non_finite_chip_losses": 0,
+          "same_chips": 35,
+          "mean_loss_before": 28.276,
+          "mean_loss_after": 24.845,
+          "chips_with_roofs": 27,
+          "chips_with_roofs_and_lower_loss": 26
+        },
+        "stated_plainly": [
+          "Criterion (c) was written after this measurement was seen. It uses TRAIN chips only: no DEV,",
+          "holdout or transfer chip. It is a runtime sanity gate with no part in selection."
+        ],
+        "statistic_that_does_not_apply": {
+          "what": "B3's smoke check: the mean of the last 20 chip losses below the mean of the first 20.",
+          "first_20_mean_loss": 26.234,
+          "last_20_mean_loss": 27.638,
+          "trainer_status": "failed_loss_not_falling",
+          "trainer_exit_code": 1,
+          "reason": [
+            "The smoke has 35 shuffled chips, so the two windows are two different random sets of",
+            "augmented chips: the statistic measures the draw, not the optimizer. The B9 task asked the",
+            "smoke for memory and time only; this check came with B3's launcher."
+          ],
+          "kept": [
+            "The failed statistic stays in b9/smoke.json and in the smoke run's result.json; B3's",
+            "require_smoke is not changed."
+          ]
+        }
+      }
+    ],
+    "hypothesis": [
+      "With publisher-labelled roofs from more South Asian RAMP regions and scale + colour",
+      "augmentation, DEV recall at the served threshold 0.5 rises."
+    ],
+    "comparison": [
+      "This recipe against the epoch-4 baseline. It changes two things at once (extra TRAIN",
+      "regions; scale and colour augmentation) and does not separate them. That is accepted and",
+      "must be stated in the result."
+    ],
+    "not_a_repeat_of": {
+      "B4": [
+        "Same recipe continued for epochs 5-7: three non-improving DEV epochs; an unchanged",
+        "continuation is closed."
+      ],
+      "B6": "Input resolution 672: rejected on DEV; small-roof recall did not improve.",
+      "B7_B8": [
+        "87% of roofs missed at 0.5 have a raw instance scoring under 0.5; post-processing is not the",
+        "cause."
+      ]
+    },
+    "baseline": {
+      "model": "rfdetr-ramp-ka-seg-medium-b3-v1 (B3 epoch 4)",
+      "weights_sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+      "split": "dev",
+      "threshold": 0.5,
+      "precision": 0.8544117647058823,
+      "recall": 0.6624353906962602,
+      "empty_chip_false_buildings": 20,
+      "size_recall": {
+        "[0,16)": 0.0,
+        "[16,64)": 0.1269,
+        "[64,128)": 0.2979,
+        "[128,256)": 0.3953,
+        "[256,512)": 0.6013,
+        "[512,1024)": 0.7591,
+        "[1024,inf)": 0.826
+      },
+      "sources": [
+        "docs/evidence/gf-ai/building/b3-ka-run1-20261010-epoch004-dev-t050/result.json",
+        "docs/evidence/gf-ai/building/b5-recall-diagnosis-20261010/result.json (size bins)",
+        "docs/evidence/gf-ai/building/b6/b6-decision.json (epoch4B3Reference)"
+      ],
+      "new_model_calls": 0
+    },
+    "training_data": {
+      "karnataka_train": {
+        "use": "The Karnataka TRAIN split exactly as B3 used it",
+        "root": "E:/BhuAayam-data/datasets/ramp/coco/train",
+        "chips": 3581,
+        "publisher_features": 28328,
+        "empty_chips": 880,
+        "coco_sha256": "a09c7021b80144baf73e862861840df3e2d1da2d8450b7ee864b59e528c468cc",
+        "split_chip_ids_sha256": "3063acddb6d017439f24b7a0f7461fa08407c03c000bc3e6ec09d9f3cc193a33"
+      },
+      "extra_region_order": [
+        "dhaka_bangladesh",
+        "barishal_bangladesh",
+        "jashore_bangladesh"
+      ],
+      "extra_use": "TRAIN only, test_only research data, CC-BY-NC-4.0",
+      "never": {
+        "coxs_bazar_bangladesh": "closed transfer set",
+        "chittagong_bangladesh": "closed transfer set",
+        "sylhet_bangladesh": "kept untouched for a later transfer test",
+        "karnataka_dev_or_holdout_cluster": "evaluation data"
+      },
+      "cap_extra_chips": 9000,
+      "cap_rule": [
+        "3,000 chips from each listed region: the chip ids whose SHA-256 (of the UTF-8 id) is lowest",
+        "after sorting the region's ids; never by images, labels or predictions. A region with fewer",
+        "than 3,000 chips gives all of them and Dhaka fills the shortfall by the same rule."
+      ],
+      "retention": [
+        "Every publisher feature of a kept chip is retained; empty chips are retained; nothing is",
+        "relabelled, dropped or padded."
+      ],
+      "extra": [
+        {
+          "region": "dhaka_bangladesh",
+          "doi": "10.34911/rdnt.848og9",
+          "source_pairs": 11905,
+          "source_publisher_features": 188284,
+          "source_empty_chips": 3059,
+          "kept_chips": 3000,
+          "kept_publisher_features": 48222,
+          "kept_empty_chips": 756,
+          "cut_by_cap": 8905,
+          "root": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/dhaka/coco/train",
+          "coco_sha256": "60bc5be4edf42d314fa691ae3da9b3ccfda2996ae4f55209d54fda9a750eb486",
+          "chip_ids_sha256": "14d5942c24e4ed4d5001b18b21971dcd2abba611368b05886a943fb14fb8cf26",
+          "source_index_sha256": "f3d19fb875d9c67ac57d4c869935d04aec9689f5c4afc260999481e1fca0de3d",
+          "zero_pixel_features": 4
+        },
+        {
+          "region": "barishal_bangladesh",
+          "doi": "10.34911/rdnt.cmejc0",
+          "source_pairs": 3024,
+          "source_publisher_features": 39834,
+          "source_empty_chips": 252,
+          "kept_chips": 3000,
+          "kept_publisher_features": 39551,
+          "kept_empty_chips": 251,
+          "cut_by_cap": 24,
+          "root": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/barishal/coco/train",
+          "coco_sha256": "9e367fb2b312dd39708c3e933a9a1a5ebdc036be956b29f1626e44a77d3f03f1",
+          "chip_ids_sha256": "9a17bd37ea9378ac8dddb4bfb1dc2c19e291076a13145d2722c0f0f6d60450c3",
+          "source_index_sha256": "418ebd12019649a966ea4c033c55fb4e80e16aa31ed33143c3831b059f59a75e",
+          "zero_pixel_features": 2
+        },
+        {
+          "region": "jashore_bangladesh",
+          "doi": "10.34911/rdnt.wn4jmp",
+          "source_pairs": 7310,
+          "source_publisher_features": 79058,
+          "source_empty_chips": 1735,
+          "kept_chips": 3000,
+          "kept_publisher_features": 32394,
+          "kept_empty_chips": 731,
+          "cut_by_cap": 4310,
+          "root": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/jashore/coco/train",
+          "coco_sha256": "b0f6bb1402d05f1b060d75b4a49e70dc761a5a615c1e663f9fbdd091bc9ace00",
+          "chip_ids_sha256": "34beeb63afc8d3085acba5e7743932287a939337fc2c1eca3e55d8c1a0f6922d",
+          "source_index_sha256": "750197c2a507f44858c198b0c500ecdc4d32ab2977cea2627184761262470d6f",
+          "zero_pixel_features": 1
+        }
+      ],
+      "exclusion_proof": [
+        "docs/evidence/gf-ai/building/b9/data.json (exclusion): no kept chip id is in the Karnataka",
+        "DEV/holdout, Cox's Bazar or Chittagong lists; no kept cluster is a Karnataka DEV/holdout",
+        "cell."
+      ],
+      "per_region_extra_chips": 3000,
+      "extra_pins": "Measured from the prepared shards; the rule of amendment 1 fixed them before preparation",
+      "extra_total": {
+        "chips": 9000,
+        "publisher_features": 120167,
+        "empty_chips": 1738
+      }
+    },
+    "recipe": {
+      "init_weights": "E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-004",
+      "init_weights_sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+      "optimizer": "Fresh AdamW; no optimizer, scheduler or patience state carried over",
+      "learning_rate_heads": 0.0001,
+      "learning_rate_backbone": 1e-05,
+      "batch_size": 1,
+      "gradient_accumulation_steps": 4,
+      "amp": "bf16",
+      "input_resolution": 432,
+      "loss_revision_in_b3_run1_config": "ulpin-rfdetr-empty-mask-scalar/1",
+      "seed": 26011,
+      "augmentation": {
+        "train_only": true,
+        "flips": "existing horizontal/vertical flips",
+        "scale_range": [
+          0.75,
+          1.33
+        ],
+        "scale": [
+          "Random factor, then crop or pad back to the tile; boxes and masks transformed with the",
+          "image; an instance that had a mask pixel and is left with none is removed from the targets",
+          "(amendment 1)"
+        ],
+        "colour_jitter": 0.2,
+        "colour": "Brightness, contrast and saturation jitter of at most +-0.2"
+      },
+      "dev_and_holdout_preprocessing": "byte-for-byte unchanged"
+    },
+    "budget": {
+      "runs": 1,
+      "max_epochs": 8,
+      "max_minutes": 480,
+      "reserved_memory_budget_bytes": 6442450944,
+      "early_stop": "Three epochs without an improvement of at least 0.001 in DEV recall at 0.5",
+      "early_stop_min_delta": 0.001,
+      "early_stop_patience": 3,
+      "relaunch": [
+        "One relaunch from the last saved epoch is allowed after a runtime fault (crash, driver,",
+        "disk), recorded in the ledger; never after a disappointing number."
+      ],
+      "max_minutes_counted_from": "the relaunch (amendment 1)"
+    },
+    "selection": {
+      "split": "dev",
+      "filter": {
+        "precision_at_050_min": 0.8,
+        "empty_chip_false_buildings_max": 40
+      },
+      "rule": [
+        "Among epochs passing the filter, the highest DEV recall at 0.5; a tie goes to the earlier",
+        "epoch."
+      ],
+      "threshold": "0.5, not tuned",
+      "dev_thresholds": [
+        0.5,
+        0.3,
+        0.7
+      ],
+      "reported_only": [
+        0.3,
+        0.7
+      ]
+    },
+    "outcomes": {
+      "pass_dev": {
+        "condition": "selected DEV recall >= 0.70",
+        "action": [
+          "Exactly one Karnataka holdout run of that epoch at 0.5 with the frozen evaluator, entered in",
+          "holdout-runs.jsonl as attempt 3. The claim is whatever that run returns (target: recall >=",
+          "0.70 with precision >= 0.80)."
+        ]
+      },
+      "improved": {
+        "condition": "selected DEV recall >= 0.6724 and < 0.70",
+        "action": "No holdout run; the lead decides."
+      },
+      "rejected": {
+        "condition": "anything else, or no epoch satisfies the selection filter",
+        "action": "No holdout run, no further training; the failure ledger gets the signature."
+      },
+      "in_every_outcome": {
+        "transfer": [
+          "No transfer evaluation: Cox's Bazar has no attempt left; Chittagong's preregistration",
+          "belongs to the B6 comparison."
+        ],
+        "serving": "No registration in ml-models.json, no export, no change to what the demo serves."
+      }
+    },
+    "implementation_notes": {
+      "loss": [
+        "Staging holds one loss implementation, revision ulpin-rfdetr-empty-mask-scalar-chunked/2",
+        "(B6b). It is the B3 objective with the mask terms summed in chunks, CPU-proven equal to",
+        "upstream in values and gradients (scripts/ml/test_chunked_mask_loss.py). The /1 code of",
+        "b3/run1-config.json is no longer on staging and rfdetr_loss.py is read-only for this task,",
+        "so the run records revision /2. No loss change is made here."
+      ],
+      "fresh_optimizer": [
+        "The trainer loads the epoch-4 weights through --init-weights and does not resume; epochs are",
+        "numbered 1 to 8."
+      ],
+      "early_stop": [
+        "The existing trainer comparison, improved when DEV recall at 0.5 exceeds the best of this",
+        "run by more than 0.001; the first epoch sets the best. It stops only at a fully scored epoch",
+        "end."
+      ],
+      "minutes": [
+        "The trainer checks its deadline only at epoch ends, so its deadline flag is 480 minus the",
+        "measured minutes of one epoch (training plus DEV scoring); no epoch starts that cannot",
+        "finish in time."
+      ],
+      "scale": [
+        "Zoom of the 432-pixel tile tensor (image bilinear with antialiasing, masks nearest), then a",
+        "random crop or a randomly placed black pad. Boxes move with the image and are clipped to the",
+        "tile. An instance whose mask had a pixel and has none left is dropped with its box and",
+        "class. A publisher zero-pixel feature keeps its class, zero mask and moved box unless the",
+        "box lies entirely outside the tile."
+      ],
+      "order": "On TRAIN: flips, colour jitter, scale. Python random seeded 26011, as the existing flips.",
+      "pass_dev_prerequisite": [
+        "The frozen evaluator's holdout reservation has no third slot and stays as it is (lead,",
+        "amendment 1). On pass_dev the outcome is reported and the task stops; the holdout run needs",
+        "the owner's decision first."
+      ]
+    },
+    "launch_gate": {
+      "amendment": 2,
+      "role": "Runtime sanity gate before launch; no part in selection",
+      "memory": "Peak reserved memory of the smoke within the 6 GiB budget",
+      "finite": "Every smoke step loss finite",
+      "same_chips": [
+        "On the smoke's own TRAIN chips, un-augmented, with the same sampled points: mean loss after",
+        "the smoke steps lower than before, and lower on at least two thirds of the chips that have",
+        "roofs"
+      ],
+      "evidence": "docs/evidence/gf-ai/building/b9/smoke.json (launch_gate)"
+    },
+    "run_id": "b9-ka-three-regions-20261010"
+  },
+  "plan_rooms": {
+    "status": "pending",
+    "holdout_runs_allowed": false
+  },
+  "storeys": {
+    "status": "pending",
+    "holdout_runs_allowed": false
+  }
+}

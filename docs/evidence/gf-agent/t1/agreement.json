@@ -1,0 +1,71 @@
+{
+  "task": "A4-step-1",
+  "method": "literal-only concept comparison; no outside source knowledge",
+  "qualification": "Measures pseudo-label teacher agreement, not student evaluation truth; labels unchanged.",
+  "compared": 44,
+  "dictionaryEntries": 57,
+  "excludedUnverified": 13,
+  "counts": {
+    "agree": 36,
+    "disagree": 3,
+    "not_comparable": 5
+  },
+  "positives": {
+    "agree": 5,
+    "disagree": 3,
+    "not_comparable": 0
+  },
+  "unknown": {
+    "agree": 31,
+    "disagree": 0,
+    "not_comparable": 5
+  },
+  "disagreements": [
+    {
+      "profileId": "0892015a17c692de54df37f2b93a224f024acef7b5912804f2d77cbfa45b2ee8",
+      "publisherMeaning": "Sanctioned No. of Floors",
+      "dictionaryCitation": {
+        "url": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf",
+        "locator": "PDF page 11, §17 Building Details",
+        "sha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691",
+        "strength": "publisher_manual"
+      },
+      "header": "Sanctioned No of Floor",
+      "leadTarget": "building.storeyLabel",
+      "classification": "disagree",
+      "reason": "Number of floors names a count, not a storey expression."
+    },
+    {
+      "profileId": "2ee704b50005ff6cb76e1e740e16e5bba1ea17c85de69470eb73a3d6f19d5aee",
+      "publisherMeaning": "Sanctioned No. of Floors",
+      "dictionaryCitation": {
+        "url": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf",
+        "locator": "PDF page 11, §17 Building Details",
+        "sha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691",
+        "strength": "publisher_manual"
+      },
+      "header": "Sanctioned No of Floor",
+      "leadTarget": "building.storeyLabel",
+      "classification": "disagree",
+      "reason": "Number of floors names a count, not a storey expression."
+    },
+    {
+      "profileId": "02e37e7707109d1f9d5f08cb9c2b9dd9b171acbe67b56ef47050760635a1916e",
+      "publisherMeaning": "Sanctioned No. of Floors",
+      "dictionaryCitation": {
+        "url": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf",
+        "locator": "PDF page 11, §17 Building Details",
+        "sha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691",
+        "strength": "publisher_manual"
+      },
+      "header": "Sanctioned No of Floor",
+      "leadTarget": "building.storeyLabel",
+      "classification": "disagree",
+      "reason": "Number of floors names a count, not a storey expression."
+    }
+  ],
+  "pairLedger": "E:\\BhuAayam-data\\task-data\\t1\\verifier\\labels-1791596171092\\publisher-agreement.jsonl",
+  "pairLedgerSha256": "7c1f6451008f859001fca64ed8a1eb3ed90ac955bc9af256025b83f372a544c3",
+  "meaningsSha256": "9de88921122b18ee5fd30a879e180866a6d4c47dd4c2441312863143dc929eb0",
+  "teacherLabelsSha256": "6b082a60f780260fd1719e3fe26e1b09444c59fbeeb59d408395f08b289a925d"
+}

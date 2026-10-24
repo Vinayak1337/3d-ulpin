@@ -1,0 +1,98 @@
+{
+ "task": "G1",
+ "gate": "GF-AGENT",
+ "codeCommit": "20bf2ed8",
+ "base": "069f771f",
+ "runAt": "2026-10-10T11:48:42.387Z",
+ "qualification": [
+  "Temporary files with made-up values only; no provider call.",
+  "The real demo configuration and runtime were not read, changed, started or stopped; the gateway stays off."
+ ],
+ "checks": [
+  {
+   "command": "node --test scripts/platform/*.test.mjs",
+   "exitCode": 0,
+   "tests": 10,
+   "pass": 10,
+   "fail": 0
+  },
+  {
+   "command": "pnpm typecheck:backend",
+   "exitCode": 0
+  },
+  {
+   "command": "git diff --check",
+   "exitCode": 0
+  },
+  {
+   "command": "awk length>120 on the three created files",
+   "exitCode": 0,
+   "longLines": 0
+  }
+ ],
+ "inputs": {
+  "good": "temporary configuration, flag 1, schema-valid test policy, key present: accepted",
+  "goodRoundTrip": "enable then disable restores the bytes, in LF and in CRLF",
+  "difficult": "flag 1, gate fields present, no price block: refused by the real ModelGatewayConfigSchema",
+  "difficultAftermath": "the configuration and its folder are left unchanged"
+ },
+ "notRun": {
+  "platform:doctor --profile demo": "needs the real demo configuration",
+  "doctorInstead": "gatewayReport() and gatewayReportLines() tested directly; doctor syntax and imports checked",
+  "demo-gateway.mjs status|enable|disable": "the command line always targets the real demo configuration",
+  "commandsInstead": "usage refusal run; the exported functions tested on temporary files"
+ },
+ "composeEnvFile": "docker compose config (no engine contact) reads a one-line JSON policy value unchanged",
+ "recordedInGit": [
+  {
+   "fields": "the three price.*PerMillionMicroInr rates",
+   "source": "docs/orchestration/NESTJS_MIGRATION.md:679",
+   "recorded": "published 105B tariff of 28 September, in rupees per million tokens, with the pricing URL",
+   "versionLabel": null,
+   "approvedForDemoPolicy": false
+  },
+  {
+   "fields": "the same rates in micro-INR, caps, call cap, pace, input bound",
+   "source": "scripts/agent/control-runtime.ts:29-48; tests/model-gateway/control.test.ts:16-20",
+   "recorded": "software-control configurations only",
+   "versionLabel": {
+    "policy": "a2-control/1 | control-policy-v1",
+    "funding": "control-only | control-funding-v1",
+    "price": "h20-control-only | h20-software-price-input-v1",
+    "bound": "control-byte-bound | control-byte-bound-v1"
+   },
+   "approvedForDemoPolicy": false
+  },
+  {
+   "fields": "replay placeholders",
+   "source": "packages/server/src/modules/model-gateway/runtime.ts:10-20",
+   "recorded": "schema placeholders; replay never dispatches or debits",
+   "versionLabel": "mapping-replay/1; offline-no-funding; offline-no-charge; offline-byte-bound/1",
+   "approvedForDemoPolicy": false
+  },
+  {
+   "fields": "any field from a live call",
+   "source": "docs/evidence/gf-agent/a2/**, docs/next-steps/**, fixtures/**",
+   "recorded": "none: A2 records no live call (liveResponseReplay pending_owner_key)",
+   "versionLabel": null,
+   "approvedForDemoPolicy": false
+  }
+ ],
+ "ownerInputsMissing": [
+  "projectId (label)",
+  "policyVersion (label)",
+  "fundingVersion (label)",
+  "gatewayExclusiveFunding (owner confirmation, true)",
+  "indiaPrivateApproved (owner confirmation, true)",
+  "projectCapMicroInr (micro-INR, total)",
+  "projectDailyCapMicroInr (micro-INR per day)",
+  "principalDailyCallCap (calls per principal per day)",
+  "price.version (label)",
+  "price.inputPerMillionMicroInr (micro-INR per million input tokens)",
+  "price.cachedInputPerMillionMicroInr (micro-INR per million cached input tokens)",
+  "price.outputPerMillionMicroInr (micro-INR per million output tokens)",
+  "inputBound.version (label)",
+  "inputBound.maxPromptTokens (tokens)",
+  "paceMs (milliseconds)"
+ ]
+}

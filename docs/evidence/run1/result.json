@@ -1,0 +1,55 @@
+{
+  "task": "RUN1",
+  "gate": "GF5",
+  "scope": "Documentation only; no runtime, Docker, provider or original-data access.",
+  "output": "docs/STUDIO_DEMO_GUIDE.md",
+  "sourcesRead": [
+    "AGENTS.md",
+    "docs/next-steps/00-STANDARDS.md",
+    "docs/next-steps/SPRINT-SELECTION.md",
+    "docs/next-steps/WORKERS.md",
+    "docs/STATUS.md",
+    "docs/STUDIO_DEMO_GUIDE.md (replaced September guide)",
+    "docs/backend/DEMO-RUNTIME.md",
+    "docs/backend/DOCKER-GUARD.md",
+    "docs/backend/LIVE-PROOF.md",
+    "docs/backend/DEMO-GATEWAY.md",
+    "docs/next-steps/INGESTION-ARCHITECTURE.md",
+    "docs/evidence/m1/AUDIT.md",
+    "docs/evidence/runtime/reh8/result.json",
+    "docs/evidence/runtime/reh8/act1.json",
+    "docs/evidence/runtime/reh8/act1.mjs",
+    "docs/evidence/runtime/reh8/dress.mjs",
+    "docs/evidence/runtime/reh9/result.json",
+    "docs/evidence/runtime/reh9/result.mjs",
+    "docs/evidence/runtime/reh9/dress.mjs",
+    "docs/evidence/runtime/reh9/verify.mjs",
+    "docs/evidence/runtime/reh9/act1-list.json",
+    "docs/evidence/runtime/reh9/act1-files.json",
+    "docs/evidence/runtime/reh9/act2-files.json",
+    "docs/evidence/runtime/reh9/step-b7-doctor.json",
+    "docs/evidence/runtime/r9/result.json",
+    "docs/evidence/runtime/r9/after.json"
+  ],
+  "inputs": {
+    "good": "Existing NYC footprint-to-card rehearsal receipt; no new ingestion.",
+    "difficult": "Existing HDB CSV and SLA parcel refusal receipts; no new ingestion."
+  },
+  "decisions": [
+    "Separate the desired cleaned NYC journey from the narrower completed rehearsal.",
+    "Use recorded button labels only; name missing labels and timings rather than guessing.",
+    "Treat later STATUS merges as pending rehearsal, not proof of successful browser execution.",
+    "Distinguish retained unread originals from refused uploads and source reads from recorded facts."
+  ],
+  "gaps": [
+    "No tracked docs/evidence/runtime/reh10 files in this checkout; STATUS lists the rehearsal as running.",
+    "No completed clean-start, in-batch LPC citation and surface-placement journey in the supplied receipts.",
+    "R9 retained populated demo storage; today's frontend bookmark and authorised cleaning need owner confirmation.",
+    "No new runtime qualification or held-out accuracy claim."
+  ],
+  "checks": {
+    "git diff --check": { "exitCode": 0 },
+    "python -B inline documentation checks": { "exitCode": 0 },
+    "changed-file line-length check": { "exitCode": 0 }
+  }
+}

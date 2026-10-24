@@ -18,12 +18,30 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT/"services/geo"))
-from geo.native_geoparquet import DEFAULT_LIMITS, Footer, GeoParquetError, json_metadata, profile, wkb_guard
+from geo.native_geoparquet import DEFAULT_LIMITS, Footer, GeoParquetError, json_metadata, profile, wkb_guard, selected_scan_batch_size
 
 spec = importlib.util.spec_from_file_location("geoparquet_cli", ROOT/"scripts/usp/desktop-geoparquet-read.py")
 cli = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cli)
 SOURCES = Path(os.environ["NATIVE_GEOPARQUET_TEST_SOURCES"]) if "NATIVE_GEOPARQUET_TEST_SOURCES" in os.environ else None
+
+
+class AggregateScanControls(unittest.TestCase):
+    def test_selected_groups_include_prefix_and_final_batch_overread(self):
+        # Technical metadata controls only: no generated Parquet or native run.
+        # Individually admissible groups can exceed the aggregate ceiling. Even
+        # 100000 required rows must refuse if a final batch adds one extra row.
+        groups = [{"startRowIndex": 0, "numRows": 99999},
+                  {"startRowIndex": 99999, "numRows": 10}]
+        with self.assertRaises(GeoParquetError) as caught:
+            selected_scan_batch_size(groups, 100000, 2)
+        self.assertEqual(caught.exception.code, "ROW_SCAN_LIMIT")
+        self.assertEqual(caught.exception.status, "limit")
+        boundary = [{"startRowIndex": 0, "numRows": 99998},
+                    {"startRowIndex": 99998, "numRows": 10}]
+        self.assertEqual(selected_scan_batch_size(boundary, 99999, 2), 2)
+        with self.assertRaises(GeoParquetError):
+            selected_scan_batch_size(boundary, 100001, 2)
 
 
 class LocalReferenceControls(unittest.TestCase):

@@ -1,0 +1,30 @@
+{
+  "task": "N01B",
+  "gate": "GF1",
+  "base": "afaf3e2f",
+  "change": {
+    "item": "the batch page's item detail shows a Table section for an item whose card states format csv or xlsx with family table and whose original is kept (its own sourceId, or for one sheet of a kept workbook the workbook's). The file name never decides.",
+    "press": "Read as a table: TableSelectionFields (reused; for a workbook the sheet is filled when the card states one sheet, and the card's sheets are offered as a list), then tableFromOriginal with a new request key and the workspace revision from readSourceCase",
+    "answers": "201 opens the table page; 202 shows TP1's queued and running words and resends the same request every 2 s until the job ends, then opens the page; a refusal shows the server's words and code on the item (TableRefusal) and the next press sends a new request key; a lost answer for the same choice resends the same key",
+    "already_a_table": "GET .../sources/{sourceId}/profile answers manual-tabular/1 once the source is a table: the section then says so and links Open the table; before that the read refuses and the press is shown",
+    "shared_hook": "table/useFollowTable.ts holds TP1's follow loop, job words and the opening of the table page; the import dialog (useRetainTable) and the batch item both use it",
+    "seams": "retain.ts: tableFormat(file) and formatSelection(format, sheet, rows) split out of tableSelection (same result for the dialog); TableImportFields.tsx: TableSelectionFields takes the format and optional stated sheets instead of the File",
+    "n01_routing": "unchanged: a dropped CSV or XLSX still opens the table import"
+  },
+  "tests": {
+    "file": "apps/studio/src/features/intake/BatchTableSection.test.tsx (stubbed fetch, static render)",
+    "good_input": "mi-d10-02.csv (fixtures/usp/D8-messy-india/dev/d1b, 4706 bytes, sha256 8299...c2a1) as a batch item: one request, contract-valid body with revision 7 and sheet csv header row 1; the 201 answer is the real table profile of this file kept in docs/evidence/gf1/ui/f3a; opens /studio/work/cases/<case>/tables/<source>",
+    "difficult_input": "mi-d19-01.xlsx (12398 bytes, one sheet T_18): the workbook item and its sheet item both read from the workbook's original; the sheet field lists T_18; missing header rows are refused before any request",
+    "large_csv_test_only": "202 queued, running, succeeded answers built to the 202 contract (no large file generated): followed with one request key, then opens",
+    "refusal": "409 words and code shown with role alert; next press a new key; a lost answer keeps the key; a failed job (TABULAR_CSV_MALFORMED) shows its words and the next press is a new key",
+    "nothing_shown": "a GeoJSON item, a ZIP, a CSV inside a ZIP (no original of its own), an item with no card and a .csv name with a vector card render nothing",
+    "tp1_dialog": "no dialog test existed; retain.test.ts and all other Studio tests pass unchanged"
+  },
+  "checks": {
+    "studio_typecheck": 0,
+    "studio_test": "0 (studio 82 files, 515 tests)",
+    "diff_check": 0,
+    "ui_scan": "0 (covers apps/web only; Studio reviewed by hand: form submit and link reachable by keyboard, labelled fields, refusal and job state in words with role alert and status)"
+  },
+  "not_measured": "No runtime was started; the table page opening after a real batch drop is for the runtime owner to see."
+}

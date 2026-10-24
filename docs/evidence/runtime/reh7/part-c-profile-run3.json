@@ -1,0 +1,108 @@
+{ "sampledSeconds": 131.4, "samples": 64615, "longestJsStretch": { "fromSecond": 91.2, "toSecond": 94.8, "ms": 3600 },
+"longTasksOver1s": [ { "at": 1792311824025, "ms": 3528 } ], "selfTime": [ { "ms": 517,
+"name": "remove /node_modules/.vite/deps/three.module-C1ZFymXr.js:9801" }, { "ms": 339,
+"name": "Float32BufferAttribute /node_modules/.vite/deps/three.module-C1ZFymXr.js:13465" }, { "ms": 269,
+"name": "offsetRing /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/look.ts:201" }, { "ms": 168,
+"name": "(garbage collector) (native)" }, { "ms": 157,
+"name": "BufferAttribute /node_modules/.vite/deps/three.module-C1ZFymXr.js:12749" }, { "ms": 150,
+"name": "EdgesGeometry /node_modules/.vite/deps/three.module-C1ZFymXr.js:22335" }, { "ms": 133,
+"name": "Uint16BufferAttribute /node_modules/.vite/deps/three.module-C1ZFymXr.js:13313" }, { "ms": 129,
+"name": "generateUUID /node_modules/.vite/deps/three.module-C1ZFymXr.js:2179" }, { "ms": 95,
+"name": "deleteVertexArrayObject /node_modules/.vite/deps/three.module-C1ZFymXr.js:42909" }, { "ms": 88,
+"name": "addShape /node_modules/.vite/deps/three.module-C1ZFymXr.js:25861" }, { "ms": 87,
+"name": "shapesFor /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/geometry.ts:19" }, { "ms": 80,
+"name": "ShapeGeometry /node_modules/.vite/deps/three.module-C1ZFymXr.js:25826" }, { "ms": 75,
+"name": "mergeGeometries /node_modules/.vite/deps/three_addons_utils_BufferGeometryUtils__js.js:56" }, { "ms": 73,
+"name": "deleteAttribute /node_modules/.vite/deps/three.module-C1ZFymXr.js:14000" }, { "ms": 70,
+"name": "BufferGeometry /node_modules/.vite/deps/three.module-C1ZFymXr.js:13790" }, { "ms": 55,
+"name": "remove /node_modules/.vite/deps/three.module-C1ZFymXr.js:42092" }, { "ms": 54,
+"name": "padGeometry /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/look.ts:239" }, { "ms": 50,
+"name": "mergeAttributes /node_modules/.vite/deps/three_addons_utils_BufferGeometryUtils__js.js:152" }, { "ms": 44,
+"name": "Shape /node_modules/.vite/deps/three.module-C1ZFymXr.js:24256" }, { "ms": 40,
+"name": "invert /node_modules/.vite/deps/three.module-C1ZFymXr.js:5194" } ], "inclusiveTime": [ { "ms": 3336,
+"name": "commitPassiveMountOnFiber /node_modules/.vite/deps/react-dom_client.js:8303" }, { "ms": 3336,
+"name": "recursivelyTraversePassiveMountEffects /node_modules/.vite/deps/react-dom_client.js:8298" }, { "ms": 3336,
+"name": "flushPassiveEffects /node_modules/.vite/deps/react-dom_client.js:9546" }, { "ms": 3336,
+"name": "(anonymous) /node_modules/.vite/deps/react-dom_client.js:9309" }, { "ms": 3336,
+"name": "performWorkUntilDeadline /node_modules/.vite/deps/react-dom_client.js:16" }, { "ms": 3335,
+"name": "setBuildings /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:751" }, { "ms": 3335,
+"name": "(anonymous) /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/react.tsx:57" }, { "ms": 3335,
+"name": "react_stack_bottom_frame /node_modules/.vite/deps/react-dom_client.js:14175" }, { "ms": 3335,
+"name": "runWithFiberInDEV /node_modules/.vite/deps/react-dom_client.js:940" }, { "ms": 3335,
+"name": "commitHookEffectListMount /node_modules/.vite/deps/react-dom_client.js:6894" }, { "ms": 3335,
+"name": "commitHookPassiveMountEffects /node_modules/.vite/deps/react-dom_client.js:6935" }, { "ms": 3012,
+"name": "removeBuilding /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:1104" }, { "ms": 2253,
+"name": "removeBuildingPad /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:1136" }, { "ms": 2226,
+"name": "padGeometry /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/look.ts:239" }, { "ms": 1073,
+"name": "ShapeGeometry /node_modules/.vite/deps/three.module-C1ZFymXr.js:25826" }, { "ms": 521,
+"name": "remove /node_modules/.vite/deps/three.module-C1ZFymXr.js:9801" }, { "ms": 439,
+"name": "Float32BufferAttribute /node_modules/.vite/deps/three.module-C1ZFymXr.js:13465" }, { "ms": 301,
+"name": "shapesFor /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/geometry.ts:19" }, { "ms": 282,
+"name": "addBuilding /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:1091" }, { "ms": 281,
+"name": "addShape /node_modules/.vite/deps/three.module-C1ZFymXr.js:25861" }, { "ms": 281,
+"name": "addFootprintBuilding /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/engine.ts:1173" }, { "ms": 280,
+"name": "(anonymous) /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/look.ts:242" }, { "ms": 269,
+"name": "offsetRing /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/look.ts:201" }, { "ms": 230,
+"name": "applyMatrix4 /node_modules/.vite/deps/three.module-C1ZFymXr.js:14051" }, { "ms": 220,
+"name": "dispatchEvent /node_modules/.vite/deps/three.module-C1ZFymXr.js:1900" }, { "ms": 215,
+"name": "dispose /node_modules/.vite/deps/three.module-C1ZFymXr.js:14608" }, { "ms": 214,
+"name": "(anonymous) /@fs/E:/Projects/ulpin-wt/ulpin-reh-02/packages/scene/src/geometry.ts:20" }, { "ms": 210,
+"name": "onGeometryDispose /node_modules/.vite/deps/three.module-C1ZFymXr.js:44356" }, { "ms": 199,
+"name": "setIndex /node_modules/.vite/deps/three.module-C1ZFymXr.js:13948" }, { "ms": 188,
+"name": "mergeGeometries /node_modules/.vite/deps/three_addons_utils_BufferGeometryUtils__js.js:56" } ],
+"halfSecondSplitMs": [ [ 0, 149, 42, 6, 303 ], [ 0.5, 326, 35, 8, 131 ], [ 1, 500, 0, 0, 0 ], [ 1.5, 499, 0, 0, 0 ], [
+2, 500, 0, 0, 0 ], [ 2.5, 402, 71, 0, 40 ], [ 3, 238, 159, 0, 91 ], [ 3.5, 500, 0, 0, 0 ], [ 4, 501, 0, 0, 0 ], [ 4.5,
+499, 0, 0, 0 ], [ 5, 482, 1, 0, 16 ], [ 5.5, 0, 463, 0, 37 ], [ 6, 313, 173, 0, 16 ], [ 6.5, 499, 0, 0, 0 ], [ 7, 500,
+0, 0, 0 ], [ 7.5, 500, 0, 0, 0 ], [ 8, 500, 0, 0, 0 ], [ 8.5, 133, 274, 10, 88 ], [ 9, 0, 385, 1, 110 ], [ 9.5, 0, 379,
+3, 125 ], [ 10, 0, 347, 3, 141 ], [ 10.5, 0, 371, 3, 138 ], [ 11, 0, 327, 3, 159 ], [ 11.5, 0, 358, 3, 138 ], [ 12, 0,
+346, 2, 160 ], [ 12.5, 0, 325, 1, 166 ], [ 13, 0, 348, 3, 149 ], [ 13.5, 0, 345, 9, 145 ], [ 14, 0, 329, 5, 171 ], [
+14.5, 0, 343, 0, 153 ], [ 15, 1, 328, 2, 174 ], [ 15.5, 0, 323, 1, 171 ], [ 16, 0, 344, 3, 153 ], [ 16.5, 0, 315, 4, 181
+], [ 17, 0, 316, 1, 185 ], [ 17.5, 0, 355, 1, 143 ], [ 18, 0, 323, 2, 185 ], [ 18.5, 0, 336, 4, 152 ], [ 19, 0, 309, 4,
+188 ], [ 19.5, 0, 335, 0, 167 ], [ 20, 0, 326, 2, 172 ], [ 20.5, 1, 318, 2, 179 ], [ 21, 0, 322, 1, 175 ], [ 21.5, 0,
+314, 2, 184 ], [ 22, 0, 356, 0, 144 ], [ 22.5, 0, 306, 1, 193 ], [ 23, 0, 346, 2, 174 ], [ 23.5, 0, 309, 5, 164 ], [ 24,
+0, 326, 3, 172 ], [ 24.5, 0, 324, 3, 172 ], [ 25, 0, 336, 0, 164 ], [ 25.5, 0, 331, 1, 169 ], [ 26, 0, 334, 3, 161 ], [
+26.5, 0, 356, 4, 141 ], [ 27, 0, 262, 1, 240 ], [ 27.5, 0, 350, 0, 150 ], [ 28, 0, 326, 2, 171 ], [ 28.5, 0, 326, 1, 172
+], [ 29, 0, 347, 5, 148 ], [ 29.5, 0, 280, 4, 235 ], [ 30, 0, 336, 0, 147 ], [ 30.5, 0, 326, 3, 170 ], [ 31, 0, 304, 2,
+194 ], [ 31.5, 0, 355, 0, 145 ], [ 32, 0, 316, 1, 183 ], [ 32.5, 0, 308, 3, 207 ], [ 33, 0, 355, 3, 124 ], [ 33.5, 0,
+347, 6, 147 ], [ 34, 0, 289, 2, 208 ], [ 34.5, 0, 315, 0, 187 ], [ 35, 0, 330, 1, 166 ], [ 35.5, 0, 347, 3, 151 ], [ 36,
+0, 338, 1, 160 ], [ 36.5, 0, 297, 1, 202 ], [ 37, 0, 305, 0, 194 ], [ 37.5, 0, 334, 2, 164 ], [ 38, 0, 308, 2, 192 ], [
+38.5, 0, 313, 3, 203 ], [ 39, 0, 340, 0, 148 ], [ 39.5, 0, 303, 2, 195 ], [ 40, 0, 303, 1, 190 ], [ 40.5, 0, 336, 1, 161
+], [ 41, 0, 295, 8, 199 ], [ 41.5, 0, 336, 0, 163 ], [ 42, 0, 303, 2, 196 ], [ 42.5, 0, 322, 1, 179 ], [ 43, 0, 334, 1,
+163 ], [ 43.5, 0, 336, 0, 162 ], [ 44, 0, 308, 4, 190 ], [ 44.5, 0, 342, 1, 157 ], [ 45, 0, 297, 4, 202 ], [ 45.5, 0,
+305, 1, 191 ], [ 46, 0, 271, 4, 225 ], [ 46.5, 0, 347, 1, 153 ], [ 47, 0, 351, 0, 149 ], [ 47.5, 0, 303, 3, 194 ], [ 48,
+0, 302, 3, 194 ], [ 48.5, 0, 320, 2, 196 ], [ 49, 0, 329, 5, 148 ], [ 49.5, 0, 361, 0, 140 ], [ 50, 0, 312, 3, 186 ], [
+50.5, 0, 285, 1, 216 ], [ 51, 0, 323, 1, 173 ], [ 51.5, 0, 357, 1, 141 ], [ 52, 0, 279, 3, 218 ], [ 52.5, 0, 293, 6, 201
+], [ 53, 0, 373, 2, 126 ], [ 53.5, 0, 352, 2, 146 ], [ 54, 0, 311, 4, 194 ], [ 54.5, 0, 313, 0, 178 ], [ 55, 0, 318, 1,
+182 ], [ 55.5, 0, 290, 3, 208 ], [ 56, 0, 353, 1, 146 ], [ 56.5, 0, 343, 0, 157 ], [ 57, 0, 305, 1, 194 ], [ 57.5, 0,
+295, 4, 202 ], [ 58, 0, 336, 1, 169 ], [ 58.5, 0, 319, 0, 175 ], [ 59, 0, 339, 3, 158 ], [ 59.5, 0, 342, 2, 155 ], [ 60,
+0, 267, 1, 232 ], [ 60.5, 0, 283, 2, 234 ], [ 61, 0, 332, 0, 149 ], [ 61.5, 0, 341, 1, 158 ], [ 62, 0, 330, 0, 170 ], [
+62.5, 0, 329, 2, 168 ], [ 63, 0, 301, 1, 199 ], [ 63.5, 0, 306, 1, 196 ], [ 64, 0, 332, 1, 179 ], [ 64.5, 0, 315, 0, 172
+], [ 65, 0, 313, 1, 186 ], [ 65.5, 0, 315, 2, 185 ], [ 66, 0, 321, 0, 178 ], [ 66.5, 0, 304, 2, 195 ], [ 67, 0, 313, 3,
+184 ], [ 67.5, 0, 333, 3, 164 ], [ 68, 0, 312, 4, 192 ], [ 68.5, 0, 324, 0, 188 ], [ 69, 0, 302, 2, 175 ], [ 69.5, 0,
+319, 2, 180 ], [ 70, 0, 309, 1, 190 ], [ 70.5, 0, 336, 5, 160 ], [ 71, 0, 327, 0, 175 ], [ 71.5, 0, 306, 5, 186 ], [ 72,
+0, 283, 4, 219 ], [ 72.5, 0, 309, 2, 184 ], [ 73, 0, 296, 2, 203 ], [ 73.5, 0, 314, 2, 183 ], [ 74, 0, 340, 1, 162 ], [
+74.5, 0, 321, 0, 176 ], [ 75, 0, 288, 1, 211 ], [ 75.5, 0, 324, 4, 171 ], [ 76, 0, 321, 1, 186 ], [ 76.5, 0, 329, 1, 162
+], [ 77, 0, 339, 0, 162 ], [ 77.5, 0, 315, 3, 181 ], [ 78, 0, 298, 1, 203 ], [ 78.5, 0, 325, 1, 173 ], [ 79, 0, 330, 2,
+174 ], [ 79.5, 0, 323, 3, 168 ], [ 80, 0, 325, 0, 173 ], [ 80.5, 0, 312, 1, 187 ], [ 81, 0, 310, 1, 189 ], [ 81.5, 0,
+298, 2, 201 ], [ 82, 0, 320, 1, 180 ], [ 82.5, 0, 306, 4, 189 ], [ 83, 0, 272, 1, 229 ], [ 83.5, 0, 304, 1, 197 ], [ 84,
+0, 290, 0, 210 ], [ 84.5, 0, 306, 1, 189 ], [ 85, 0, 336, 1, 162 ], [ 85.5, 0, 311, 1, 188 ], [ 86, 0, 305, 1, 202 ], [
+86.5, 1, 313, 1, 176 ], [ 87, 0, 321, 1, 179 ], [ 87.5, 0, 327, 1, 188 ], [ 88, 0, 280, 30, 185 ], [ 88.5, 129, 248, 0,
+110 ], [ 89, 500, 0, 0, 0 ], [ 89.5, 500, 0, 0, 0 ], [ 90, 500, 0, 0, 0 ], [ 90.5, 501, 0, 0, 0 ], [ 91, 166, 10, 30,
+294 ], [ 91.5, 0, 2, 24, 474 ], [ 92, 0, 0, 12, 489 ], [ 92.5, 0, 0, 24, 477 ], [ 93, 0, 0, 23, 476 ], [ 93.5, 0, 0, 22,
+480 ], [ 94, 0, 1, 21, 476 ], [ 94.5, 0, 169, 11, 320 ], [ 95, 0, 325, 5, 169 ], [ 95.5, 0, 339, 2, 160 ], [ 96, 0, 367,
+1, 148 ], [ 96.5, 0, 347, 0, 136 ], [ 97, 0, 365, 3, 132 ], [ 97.5, 1, 294, 25, 179 ], [ 98, 0, 337, 3, 161 ], [ 98.5,
+0, 327, 2, 176 ], [ 99, 0, 351, 1, 143 ], [ 99.5, 0, 366, 0, 133 ], [ 100, 0, 312, 5, 183 ], [ 100.5, 0, 364, 0, 136 ],
+[ 101, 0, 334, 1, 164 ], [ 101.5, 0, 360, 3, 137 ], [ 102, 0, 352, 1, 147 ], [ 102.5, 0, 345, 0, 156 ], [ 103, 0, 366,
+2, 133 ], [ 103.5, 0, 338, 1, 160 ], [ 104, 0, 329, 2, 169 ], [ 104.5, 2, 339, 0, 161 ], [ 105, 0, 313, 1, 185 ], [
+105.5, 0, 347, 1, 151 ], [ 106, 0, 347, 1, 151 ], [ 106.5, 0, 354, 2, 145 ], [ 107, 0, 364, 0, 136 ], [ 107.5, 0, 349,
+1, 152 ], [ 108, 0, 335, 3, 162 ], [ 108.5, 2, 343, 2, 154 ], [ 109, 0, 359, 2, 138 ], [ 109.5, 0, 342, 1, 158 ], [ 110,
+2, 349, 2, 148 ], [ 110.5, 0, 340, 3, 157 ], [ 111, 0, 352, 2, 150 ], [ 111.5, 0, 351, 0, 145 ], [ 112, 0, 336, 3, 162
+], [ 112.5, 0, 337, 1, 162 ], [ 113, 0, 339, 1, 169 ], [ 113.5, 0, 338, 1, 151 ], [ 114, 0, 353, 0, 148 ], [ 114.5, 0,
+306, 1, 192 ], [ 115, 0, 298, 3, 198 ], [ 115.5, 0, 320, 3, 176 ], [ 116, 0, 332, 3, 166 ], [ 116.5, 0, 343, 1, 156 ], [
+117, 0, 319, 0, 190 ], [ 117.5, 0, 321, 2, 167 ], [ 118, 0, 325, 3, 174 ], [ 118.5, 0, 353, 1, 143 ], [ 119, 0, 329, 0,
+189 ], [ 119.5, 0, 328, 1, 155 ], [ 120, 0, 343, 2, 154 ], [ 120.5, 0, 257, 1, 241 ], [ 121, 0, 331, 0, 180 ], [ 121.5,
+0, 324, 1, 163 ], [ 122, 0, 324, 2, 174 ], [ 122.5, 0, 309, 2, 190 ], [ 123, 0, 347, 0, 151 ], [ 123.5, 0, 336, 6, 159
+], [ 124, 0, 316, 2, 182 ], [ 124.5, 0, 312, 3, 190 ], [ 125, 0, 291, 1, 203 ], [ 125.5, 0, 294, 0, 223 ], [ 126, 0,
+282, 3, 197 ], [ 126.5, 0, 331, 1, 193 ], [ 127, 0, 282, 2, 193 ], [ 127.5, 0, 338, 2, 160 ], [ 128, 0, 303, 0, 198 ], [
+128.5, 0, 298, 1, 212 ], [ 129, 0, 321, 1, 165 ], [ 129.5, 0, 294, 1, 204 ], [ 130, 0, 331, 1, 176 ], [ 130.5, 0, 322,
+1, 170 ], [ 131, 0, 260, 0, 155 ] ] }

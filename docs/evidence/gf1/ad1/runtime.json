@@ -1,0 +1,328 @@
+{
+ "task": "AD1",
+ "phase": "walk",
+ "code": "task/ad1-area-draws dfd22096 + 96fe2f62 (both fixes), Studio under the Vite dev server",
+ "receipt": "E:/BhuAayam-data/task-data/ad1/walk-receipt-1.json",
+ "container": "ulpin-ad1-tmp-b42f600aed95704f",
+ "ownedContainerGone": true,
+ "startedAt": "2026-10-15T18:37:57.906Z",
+ "finishedAt": "2026-10-15T18:40:28.249Z",
+ "failures": [],
+ "originalHashesUnchanged": true,
+ "providers": 0,
+ "network": "Loopback tmpfs SQL, memory object storage, product Python offline",
+ "method": "Same harness and recording as step 0: each area screen opened cold in headless Chromium (SwiftShader WebGL, 1440x900). Times are ms from navigation start: requests from the Chrome DevTools network domain, drawing from the scene engine drawnBuildings() (count and pending) polled every 100 ms, page blocks from PerformanceObserver longtask entries over the whole visit. Whole area = every expected building drawn with nothing pending; parks, roads and parcels are base features handed to the scene from the context read and counted by the page note.",
+ "before": {
+  "buildings1661": {
+   "firstFootprintsMs": null,
+   "wholeAreaMs": null,
+   "drawnBuildings": 0,
+   "requests": [
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1875,
+     "ms": 991,
+     "bytes": 27888391
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 2962,
+     "ms": 109,
+     "bytes": null,
+     "failure": "net::ERR_ABORTED"
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 2974,
+     "ms": null,
+     "bytes": null
+    }
+   ]
+  },
+  "demoArea2148": {
+   "firstFootprintsMs": null,
+   "wholeAreaMs": null,
+   "drawnBuildings": 0,
+   "requests": [
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 422,
+     "startedMs": 1066,
+     "ms": 492,
+     "bytes": 541
+    }
+   ]
+  },
+  "niagara": {
+   "firstFootprintsMs": null,
+   "wholeAreaMs": 14,
+   "drawnBuildings": 0,
+   "requests": [
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 923,
+     "ms": 307,
+     "bytes": 1879199
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 1259,
+     "ms": 30,
+     "bytes": null,
+     "failure": "net::ERR_ABORTED"
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 1268,
+     "ms": null,
+     "bytes": null
+    }
+   ]
+  }
+ },
+ "after": {
+  "buildings1661": {
+   "areaId": "0d5be53d-4073-4710-81b7-03c5456a0b9e",
+   "recorded": [
+    {
+     "kind": "building",
+     "count": 1661
+    }
+   ],
+   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "firstFootprintsMs": 2785,
+   "wholeAreaMs": 3895,
+   "drawnBuildings": 1661,
+   "pending": 0,
+   "tasksOver200Ms": [
+    {
+     "startMs": 474,
+     "durationMs": 496
+    }
+   ],
+   "requests": [
+    {
+     "route": "/api/v1/areas",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1188,
+     "ms": 41,
+     "bytes": 1059
+    },
+    {
+     "route": "/api/v1/workspace-capabilities",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1188,
+     "ms": 6,
+     "bytes": 459
+    },
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1189,
+     "ms": 667,
+     "bytes": 27888399
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 1926,
+     "ms": 50,
+     "bytes": null,
+     "failure": "net::ERR_ABORTED"
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1935,
+     "ms": 792,
+     "bytes": 2827275
+    }
+   ],
+   "slowestDrawingRequestMs": 792,
+   "mainWords": "Tools\n\nEnhanced view\nAll 1,661 recorded features are drawn.\n\nEPSG:4326\nN\n200 m\n1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired.",
+   "console": [],
+   "screenshot": "E:/BhuAayam-data/task-data/ad1/b42f600aed95704f/buildings1661.png",
+   "contextServer": {
+    "ms": 403,
+    "bytes": 27888057,
+    "features": 1661,
+    "statements": 7
+   }
+  },
+  "demoArea2148": {
+   "areaId": "0d5be53d-4073-4710-81b7-03c5456a0b9e",
+   "recorded": [
+    {
+     "kind": "building",
+     "count": 1661
+    },
+    {
+     "kind": "public_land",
+     "count": 41
+    },
+    {
+     "kind": "road",
+     "count": 446
+    }
+   ],
+   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "firstFootprintsMs": 3138,
+   "wholeAreaMs": 5869,
+   "drawnBuildings": 1661,
+   "pending": 0,
+   "tasksOver200Ms": [
+    {
+     "startMs": 243,
+     "durationMs": 475
+    }
+   ],
+   "requests": [
+    {
+     "route": "/api/v1/areas",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 830,
+     "ms": 46,
+     "bytes": 1081
+    },
+    {
+     "route": "/api/v1/workspace-capabilities",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 831,
+     "ms": 4,
+     "bytes": 459
+    },
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 831,
+     "ms": 805,
+     "bytes": 46733226
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 1749,
+     "ms": 27,
+     "bytes": null,
+     "failure": "net::ERR_ABORTED"
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1756,
+     "ms": 1311,
+     "bytes": 5466154
+    }
+   ],
+   "slowestDrawingRequestMs": 1311,
+   "mainWords": "Public Land row-7jsk.aupf_atfk\nRoad row-xkwc.8iyq-hpuz\nRoad row-6tf7-zq9s.fxzr\nPublic Land row-a7ej-qysv_xcte\nTools\n\nEnhanced view\nAll 2,148 recorded features are drawn.\n\nEPSG:4326\nN\n200 m\n1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired.",
+   "console": [],
+   "screenshot": "E:/BhuAayam-data/task-data/ad1/b42f600aed95704f/demoArea2148.png",
+   "contextServer": {
+    "ms": null,
+    "bytes": null,
+    "features": null,
+    "statements": null,
+    "note": "The server timing harness reads areaContext with its default analytical bound, which refuses 2,148 features as intended; the HTTP display read answered in the browser."
+   }
+  },
+  "niagara": {
+   "areaId": "e1b7f7f6-7f14-4fff-800c-8986db4869a0",
+   "recorded": [
+    {
+     "kind": "parcel",
+     "count": 155
+    }
+   ],
+   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "firstFootprintsMs": null,
+   "wholeAreaMs": 15,
+   "drawnBuildings": 0,
+   "pending": 0,
+   "tasksOver200Ms": [
+    {
+     "startMs": 173,
+     "durationMs": 471
+    }
+   ],
+   "requests": [
+    {
+     "route": "/api/v1/areas",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 750,
+     "ms": 57,
+     "bytes": 1792
+    },
+    {
+     "route": "/api/v1/workspace-capabilities",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 751,
+     "ms": 3,
+     "bytes": 459
+    },
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 751,
+     "ms": 259,
+     "bytes": 1879199
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 1050,
+     "ms": 26,
+     "bytes": null,
+     "failure": "net::ERR_ABORTED"
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1059,
+     "ms": 404,
+     "bytes": 395288
+    }
+   ],
+   "slowestDrawingRequestMs": 404,
+   "mainWords": "Tools\n\nEnhanced view\nAll 155 recorded features are drawn.\n\nEPSG:2958\nN\n1 km",
+   "console": [],
+   "screenshot": "E:/BhuAayam-data/task-data/ad1/b42f600aed95704f/niagara.png",
+   "contextServer": {
+    "ms": 234,
+    "bytes": 1878859,
+    "features": 155,
+    "statements": 6
+   }
+  }
+ },
+ "longTasks": "One block over 200 ms per visit (471-496 ms), starting at 173-474 ms, before the first API request: Studio start-up under the dev server, the same as step 0. None during drawing.",
+ "abortedCanonical": "Each visit shows one canonical request aborted after 26-50 ms and repeated at once: the dev build mounts twice (React StrictMode). The drawing waits for the second."
+}

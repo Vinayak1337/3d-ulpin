@@ -86,3 +86,43 @@ test('one local parse/render at a time; a completed failure releases the slot',a
   await assert.rejects(service({inspect:async()=>{throw new AppError(422,'DOCUMENT_PAGE_NOT_FOUND','Technical invalid selection');}}).pages(sourceId,pin),error(422,'DOCUMENT_PAGE_NOT_FOUND'));
   assert.equal((await service().pages(sourceId,pin)).pageCount,1);
 });
+
+const rasterUrl=`/api/v1/sources/${sourceId}/pages/1/raster?revision=1&sha256=${hash}`;
+const large={...page,frame:{...page.frame,width:2586,height:1695},
+  mediaBox:[0,0,2586,1695] as [number,number,number,number],cropBox:[0,0,2586,1695] as [number,number,number,number],
+  renderSupport:'reduced' as const,reducedScalePxPerPt:0.5413766434648105};
+const largeListed={...metadata,pages:[large]};
+const largeDrawn={...largeListed,limit:1,
+  render:{...rendered.render,scale:large.reducedScalePxPerPt,reduced:true as const}};
+const integrity=error(503,'DOCUMENT_PAGES_RESULT_INTEGRITY');
+
+test('a page over the whole-page limit is listed as reduced with its scale and a url, and drawn only as reduced',
+  async()=>{
+    const s=service({inspect:async(_a,_b,selection)=>selection.page?{result:structuredClone(largeDrawn),png}:
+      {result:structuredClone(largeListed)}});
+    const listed=(await s.pages(sourceId,pin)).pages[0];
+    assert.equal(listed.renderSupport,'reduced');assert.equal(listed.reducedScalePxPerPt,large.reducedScalePxPerPt);
+    assert.equal(listed.url,rasterUrl);
+    const picture=await s.raster(sourceId,1,pin);
+    assert.equal(picture.render.reduced,true);assert.equal(picture.render.scale,listed.reducedScalePxPerPt);
+    // Refused: another scale than the listing states, the mark missing, and the mark on a page within the limit.
+    for(const result of [{...largeDrawn,render:{...largeDrawn.render,scale:0.5}},
+      {...largeDrawn,render:{...rendered.render,scale:large.reducedScalePxPerPt}},
+      {...rendered,render:{...rendered.render,reduced:true as const}}])
+      await assert.rejects(service({inspect:async()=>({result,png})}).raster(sourceId,1,pin),integrity);
+    // A scale without 'reduced', and 'reduced' without a scale, are not a listing.
+    const {reducedScalePxPerPt:_scale,...unstated}=large;
+    for(const pages of [[{...page,reducedScalePxPerPt:0.5}],[unstated]])
+      await assert.rejects(service({inspect:async()=>({result:{...metadata,pages}})}).pages(sourceId,pin),integrity);
+  });
+
+test('a page within the limit answers as before; an unsupported page keeps no url and no picture',async()=>{
+  const within=await service().pages(sourceId,pin);
+  assert.deepEqual(within.pages,[{...page,url:rasterUrl,locator:{kind:'pdf_page',page:1},calibration:null}]);
+  assert.deepEqual((await service().raster(sourceId,1,pin)).render,rendered.render);
+  const refused={...page,renderSupport:'unsupported' as const};
+  const listed=await service({inspect:async()=>({result:{...metadata,pages:[refused]}})}).pages(sourceId,pin);
+  assert.equal(listed.pages[0].url,null);assert.equal('reducedScalePxPerPt' in listed.pages[0],false);
+  await assert.rejects(service({inspect:async()=>({result:{...rendered,pages:[refused]},png})})
+    .raster(sourceId,1,pin),integrity);
+});

@@ -1,0 +1,103 @@
+{
+  "task": "N04",
+  "branch": "task/n04-reload-resume",
+  "base": "685cc1f4",
+  "outcome": "built",
+  "what": "The batch page lists this operator's open upload receipts in the case ('Uploads not finished'), resumes one with the same file (only the parts not received) or cancels it with its own guard, and keeps files not added and files still to add as words in sessionStorage so a reload says which files to pick again.",
+  "server": {
+    "route": "GET /api/v1/ingestion/cases/{caseId}/uploads",
+    "operationId": "GET_api_v1_ingestion_cases_caseId_uploads",
+    "schema": "LargeUploadListSchema (additive, at most 20 entries)",
+    "predicate": "heldReceipt, unchanged, filtered by case and the local operator subject, newest first"
+  },
+  "studio": {
+    "resume": "createUploadCommand({ resume: entry }): name and bytes checked before reading, SHA-256 checked after hashFile; on any difference 'This is not the file this upload was started with.' and no request; on a match the receipt status is read, received parts are skipped, a part bound before the reload is sent under its own request key, then the same finalize and status loop, then enrolment through intake/items.",
+    "cancel": "abortReceipt(transport, entry): the existing abort with the listed revision and case revision; the row leaves when the list no longer names it.",
+    "reload": "sessionStorage key ulpin.batch-waiting.<caseId>: name, size and refusal words only; read back when navigation state is absent; Dismiss clears it; a throwing storage is ignored.",
+    "finishCancelling": "A row in 'aborting' has 'Finish cancelling': cleanupReceipt(transport, entry) sends the existing cleanup route with the receipt's guard; the row leaves when the list no longer names it; a refusal shows the server's words on the row. Server rules unchanged."
+  },
+  "realInputs": [
+    {
+      "role": "good",
+      "path": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+      "bytes": 26660992,
+      "parts": 4,
+      "received": [
+        1,
+        2
+      ],
+      "sent": [
+        3,
+        4
+      ]
+    },
+    {
+      "role": "difficult",
+      "path": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson",
+      "bytes": 43263076,
+      "parts": 6,
+      "received": [
+        1,
+        2,
+        4
+      ],
+      "failedBound": [
+        3
+      ],
+      "sent": [
+        3,
+        5,
+        6
+      ],
+      "part3Key": "the key bound before the reload"
+    },
+    {
+      "role": "refusal",
+      "input": "test_only: the Niagara bytes with the last byte changed (same name and size), and one byte shorter; made in the test, never kept",
+      "sent": "nothing"
+    }
+  ],
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": {
+      "exit": 0,
+      "studio": "80 files, 508 tests passed"
+    },
+    "backendSet": {
+      "exit": 0,
+      "tests": 420,
+      "pass": 418,
+      "skipped": 2,
+      "fail": 0
+    },
+    "manual-ingestion.test.ts": {
+      "exit": 0,
+      "tests": 2
+    },
+    "openapi --check": 0,
+    "scripts/api/check.py": 0,
+    "git diff --check": 0,
+    "ui-design-check scan": {
+      "exit": 0,
+      "note": "scans apps/web only; Studio reviewed by hand: secondary and soft buttons, keyboard reachable, aria-labels name the file, the hidden file input is out of the tab order, states in words"
+    }
+  },
+  "gaps": [
+    {
+      "what": "A large-original/1 receipt left in 'aborting' after a failed cleanup is counted by heldReceipt until its expiry, and the abort route returns its status without retrying cleanup; only the cleanup route finishes it. The list shows it as being cancelled with no button. Addressed in Studio: 'Finish cancelling' calls the cleanup route; the server rule is unchanged.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/large-original.ts:103",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:374"
+      ],
+      "state": "handled_in_studio"
+    },
+    {
+      "what": "A large-original/1 receipt left in 'finalizing' by a server crash (upload lease expired) is held until expiry; a resume follows its status and does not finalize again, so it waits until the officer reloads and cancels it.",
+      "where": [
+        "apps/studio/src/features/intake/upload-command.ts:84"
+      ],
+      "state": "open"
+    }
+  ]
+}

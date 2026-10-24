@@ -1,6 +1,6 @@
 # Backend register and source-export contracts
 
-Updated 26 September 2026. The synthetic startup walkthrough is retired. [H10](usp-agent-handoffs/10-scoped-evidence-packets.md), [H01](usp-agent-handoffs/01-shared-contracts-and-ownership.md) and [H99](usp-agent-handoffs/99-ui-ux-and-integration.md) govern current backend planning; the user owns the controls and presentation.
+Updated 26 September 2026. The synthetic startup walkthrough is retired. [H10](archive/usp-agent-handoffs/10-scoped-evidence-packets.md), [H01](archive/usp-agent-handoffs/01-shared-contracts-and-ownership.md) and [H99](archive/usp-agent-handoffs/99-ui-ux-and-integration.md) govern current backend planning; the user owns the controls and presentation.
 
 A scoped register identifies exact record/revision and explicit building context. Invalid or foreign unit/floor membership cannot broaden an export to the building. Application identifiers are distinct from source-supplied official ULPIN assertions. Missing source assertions remain unavailable.
 

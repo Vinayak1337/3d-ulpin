@@ -1,0 +1,21 @@
+{ "at": "2026-10-22T12:44:06.481Z", "receipt": { "command": [
+"node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02" ],
+"from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 0, "seconds": 105.208, "output": [
+"Configured keys: ULPIN_DOCUMENT_PAGES_PYTHON, ULPIN_DOCUMENT_PAGES_SCRATCH, ULPIN_PACKET_R",
+"EGIONS_PYTHON, ULPIN_PACKET_REGIONS_PROFILE, ULPIN_PACKET_REGIONS_PROFILE_SHA256, ULPIN_PA", "CKET_REGIONS_SCRATCH",
+"ULPIN_PACKET_REGIONS_PROFILE_SHA256: [omitted non-source digest]",
+"document-runtime-paths.json SHA256: [omitted non-source digest]" ], "error": null }, "containers": [
+"ef0e5deb7d76 ulpin-reh-02-geo-1 ulpin-geo:git-a40b60238728 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"e8521a8b5474 ulpin-reh-02-worker-1 ulpin-geo:git-a40b60238728 exited" ], "state": { "volumes": [
+"ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ], "containers": [
+"ef0e5deb7d76 ulpin-reh-02-geo-1 ulpin-geo:git-a40b60238728 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"e8521a8b5474 ulpin-reh-02-worker-1 ulpin-geo:git-a40b60238728 exited" ], "networks": [ "ulpin-reh-02_default" ],
+"listeners": [] } }

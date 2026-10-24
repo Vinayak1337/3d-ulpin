@@ -1,0 +1,110 @@
+{
+  "task": "BR1", "gates": ["GF5", "M2"], "base": "39ed2dbb677dddd7310889c2cf970adb0e1c0639",
+  "branch": "task/br1-reads-name-what-records-hold",
+  "report": [
+    "C8: Server never published /api/v1/work-board; the Studio calls an aspirational draft-client route.",
+    "K2: Server never published /api/v1/buildings/{buildingId}/residents; also a draft-client route.",
+    "TASK   BR1 — Three reads name what their records hold            GATE GF5, M2",
+    "WORKS  Offline-proven history names records/actors, missing states omit advice, case rows list retained tables.",
+    "SEE IT pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/officer/*.test.ts",
+    "INPUTS Tower 3 revisions; Magnolia with a linked PDF and no spaces; cases holding one, five and no tables.",
+    "GAPS   PostgreSQL has not run changed queries; two unrelated glTF fixtures fail; receipt CRLF check fails.",
+    "DESIGN building-ledger-history.ts projects each revision's own body and revision-bound actor reference.",
+    "       register-missing.ts preserves facts and removes both advice halves; work-queue.ts aggregates table IDs.",
+    "       Contracts/OpenAPI/client generated types are additive; tableSourceIds is optional for stored answers.",
+    "COMMITS 2bc649ef docs(reads): BR1 Step 0 tracing and GET observations",
+    "        0e1d5923 feat(register): history kind, name and stored actor",
+    "        44631de9 fix(register): missing states without advice",
+    "        f8192a19 feat(officer): retained table list on case rows",
+    "        this commit: docs(reads): BR1 evidence",
+    "CHECKS pnpm typecheck:backend: 0 (initial test-assertion narrowing error 2, corrected)",
+    "       officer tests: 0, 25 before / 32 after; BR1 published-schema tests: 0, 2 pass",
+    "       register module tests: 1, 25 pass / 2 unrelated glTF fixture refusals",
+    "       refresh-contract.ts 39ed2dbb and pnpm studio:api-types: 0, run after each producer change",
+    "       openapi.ts --check: 0, 301 operations / 342 schemas, no listener or domain operation opened",
+    "       venv-plans python -B scripts/api/check.py: 1, API-DOC: runtime receipt changed (CRLF verified)",
+    "       pnpm studio:typecheck: 0 (initial required tableSourceIds broke an old fixture; made additive/optional)",
+    "       git diff --check: 0; no authored added line over 120; canonical generated hash lines excepted",
+    "NEXT   Lead: consume new fields in Studio, regenerate at merge, then runtime owner qualifies changed SQL."
+  ],
+  "delivered": {
+    "C7": {
+      "fields": ["recordKind", "recordName", "actor"], "optionalAndNullable": true,
+      "historicalBodyNotCurrentRecord": true, "orderAndExistingFieldsUnchanged": true,
+      "tower3Entries": 8, "entriesNamed": 8, "actorPublished": 6, "actorNull": 2,
+      "nullActorReason": [
+        "Building revision 1 holds no actor.",
+        "Space revision 2 retains its creation decision but holds no actor for the identity assignment."
+      ],
+      "unrecognizedOrAmbiguousActor": "null; no session, time, other row or carried decision supplies an actor"
+    },
+    "C12": {
+      "adviceHalvesRemoved": 2,
+      "absenceStatements": [
+        "A linked detailed representation changed.",
+        "No source-linked detailed spaces have been recorded for this property."
+      ],
+      "planCountNotAsserted": "pdf-reference-v2 is not a plan classification or a review-to-spaces count",
+      "forbiddenSentenceOpenings": ["Add ", "Review ", "Run ", "Upload ", "Choose ", "Confirm "],
+      "consumerTextMatch": "verify-officer.ts matches the retained absence substring; no consumer change needed"
+    },
+    "B3": {
+      "field": "tableSourceIds", "profile": "tabular-manual-v1",
+      "order": "created_at DESC, id DESC", "emptyCasesAndNonCaseRows": [],
+      "singleWinnerNeverSelected": true, "allRetainedSourceRowsIncluded": true,
+      "wireOptional": "Older queue fixtures/read answers compile; new producer SQL always emits the array.",
+      "sharedWorkItemUnchanged": "Outside owned paths; owned producer extends it with the new contract type."
+    }
+  },
+  "verification": {
+    "officerTests": { "before": 25, "after": 32, "passedAfter": 32, "exitCode": 0 },
+    "newPublishedSchemaTests": { "before": 0, "after": 2, "passed": 2, "exitCode": 0 },
+    "combinedFinalTests": { "total": 34, "passed": 34, "exitCode": 0 },
+    "registerModuleTests": { "total": 27, "passed": 25, "failed": 2, "exitCode": 1 },
+    "backendTypecheck": 0, "studioTypecheck": 0, "openapiCheck": 0, "diffCheck": 0,
+    "contractRegeneration": { "base": "39ed2dbb", "refreshExit": 0, "clientGenerateExit": 0 },
+    "apiCheck": { "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe", "exitCode": 1,
+      "stdout": "API-DOC: runtime receipt changed", "firstMismatchLfHashMatchesPin": true },
+    "changedQueriesExecutedOnPostgreSQL": false,
+    "demoChangedReadGETs": "Not possible: demo remains 18b5e74c; only baseline GETs were made.",
+    "SQLMethod": "Exported SQL text assertions, matching existing building-ledger.test.ts offline method.",
+    "lineLength": [
+      "No added authored TypeScript/evidence line exceeds 120 characters.",
+      "Seven generated source-pins.json hash lines exceed 120; openapi --check requires canonical JSON formatting."
+    ]
+  },
+  "failures": [
+    {
+      "signature": "TS2339/TS18046 in BR1 schema tests",
+      "cause": "assert.deepEqual narrowed generic schema objects before property access",
+      "fix": "Read property before equality assertion; backend typecheck passes."
+    },
+    {
+      "signature": "TS2322, optional tableSourceIds in existing Studio nextAction fixture",
+      "fix": "Keep wire field optional for stored answers; producer requires it; no Studio files edited."
+    },
+    {
+      "signature": "Accepted glTF inspection requires exact original, scene and reader/tool pins.",
+      "tests": "Two record-evidence.controller.test.ts fixtures refuse before BR1 projections.",
+      "evidence": "Fixture and gltf-ingestion.ts validator Git blobs match base exactly; not changed by BR1.",
+      "next": "Lead/runtime fixture owner diagnoses glTF tools and original/scene pins; no retry or scope edit."
+    },
+    {
+      "signature": "API-DOC: runtime receipt changed",
+      "evidence": [
+        "First mismatch: docs/evidence/usp/cityjson-validation-runtime.json; LF-normalized SHA matches its pin.",
+        "Also CRLF-only: current-runtime-20261003.json and source-evidence-history-20261005.json."
+      ],
+      "next": "Leave receipt pins and receipts untouched; lead handles checkout-independent qualification."
+    }
+  ],
+  "cleanup": "Register tests rewrote two K1 example JSONs; their generated changes were restored, not committed.",
+  "safety": { "demoWrites": 0, "databaseConnections": 0, "containersStarted": 0, "migrations": 0,
+    "credentialsRead": false, "excludedFoldersOpened": false, "pushed": false },
+  "next": [
+    "Studio owner reads recordKind/recordName/actor and tableSourceIds instead of current-record/source lookups.",
+    "Runtime owner executes the changed ledger and work-queue queries after integration; no live claim yet.",
+    "No work-board or residents endpoint was built; a separate feature decision is needed for C8/K2.",
+    "Lead regenerates source pins and client types at merge, and reviews both unrelated qualification gaps."
+  ]
+}

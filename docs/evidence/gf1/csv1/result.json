@@ -1,0 +1,71 @@
+{
+  "task": "CSV1",
+  "gate": "GF1",
+  "base": "ed7e2b00",
+  "reproduced": true,
+  "cause": {
+    "where": [
+      "packages/server/src/modules/usp/ingestion/column-profile.ts:372-373 (base): Papa.parse had no delimiter,",
+      "so it guessed one; parsed.errors was nonempty and readColumnCsv threw COLUMN_CSV_LIMIT_OR_INVALID,",
+      "which packages/server/src/modules/usp/ingestion/tabular-source.ts:170 maps to TABULAR_HEADER_OR_READER."
+    ],
+    "signature": [
+      "Papa error {type: Delimiter, code: UndetectableDelimiter}. The guess needs more than 1.99 fields per line",
+      "on average over the first 10 lines, and the empty line after a final line ending counts as a one-field",
+      "line. So a 2-column table of at most 8 records fails, and a 1-column table always fails."
+    ],
+    "why_tj1_and_not_reh9": [
+      "TJ1's register has 2 columns and 2 records: with the final newline the average is 5/3.",
+      "The NYC register has many records, so its first 10 lines hold no empty line."
+    ],
+    "second_defect": [
+      "column-profile.ts:373 (base) bounded raw records, blank ones included, to maxRows + 1: a table of exactly",
+      "2,000 records with a final line ending, or with a blank line between records, was refused."
+    ]
+  },
+  "matrix_before": {
+    "whole_path_refused_TABULAR_HEADER_OR_READER": [
+      "LF and CRLF, one or two records, one final line ending",
+      "LF and CRLF, two final line endings (blank last line)",
+      "one column, with or without a final line ending",
+      "empty field, then a final line ending",
+      "2,000 records, then a final line ending"
+    ],
+    "whole_path_read": ["LF and CRLF, two columns, no final line ending"],
+    "header_only": [
+      "whole: TABULAR_HEADER_OR_READER with a final line ending, TABULAR_HEADER_REQUIRED without;",
+      "stream: TABULAR_HEADER_REQUIRED in both."
+    ],
+    "stream_path": "every case read or refused as expected; it was never affected"
+  },
+  "change": {
+    "file": "packages/server/src/modules/usp/ingestion/column-profile.ts readColumnCsv",
+    "delimiter": [
+      "Fixed to the comma, the only delimiter the stream reader reads;",
+      "a semicolon or tab file is now read the same way on both paths."
+    ],
+    "bound": "Papa step mode: blank records are skipped and never counted; the read stops past maxRows records.",
+    "kept": [
+      "The first record is the header; a record of blanks only is skipped and its number is kept by the next",
+      "record; an empty cell stays empty text; a row longer than the header is refused."
+    ]
+  },
+  "tests": {
+    "file": "packages/server/src/modules/usp/ingestion/csv-final-line.test.ts",
+    "matrix": [
+      "LF and CRLF x (no final line ending, one, two) x (one record, two records), one column, a leading blank",
+      "record, empty cells, quoted line endings, header only. The whole read, the stream read and the stream read",
+      "one byte at a time give the same records, source rows and row hashes (SHA-256 of the cells)."
+    ],
+    "bound": "2,000 records with one or two final line endings, or a blank line between, are read; 2,001 are refused.",
+    "real_csv": [
+      "fixtures/usp/D8-messy-india/dev/d1b/mi-d10-02.csv (docs/api/datasets.json, test_only, BOM and CRLF):",
+      "with its final CRLF, without it, and with a blank last line, both paths give the same records."
+    ],
+    "before_fix": "5 of 8 new tests fail on the base reader; 8 of 8 pass after."
+  },
+  "not_measured": [
+    "Not run through the API or the demo stack. A CSV that mixes LF and CRLF endings can still differ between",
+    "the paths: Papa picks one line ending for the whole file, the stream reader accepts each."
+  ]
+}

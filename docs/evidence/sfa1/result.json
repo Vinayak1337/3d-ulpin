@@ -1,0 +1,68 @@
+{ "task": "SFA1", "gate": "GF5 / G14 surface admission",
+"verdict": "PASS: first readers start; orthophoto completes and LAZ parts stream onto the map.",
+"qualification": "Full 211-batch LAZ completion and smooth frame times are not qualified.", "runtime": "ulpin-reh-02",
+"baselineCommit": "58559aa35f66289e0184a5c26e76a12004774c0f",
+"servedCommit": "1952c5fbcd5a530ea087045b4cc067ab8e1c1bb8", "cause": { "primary": [
+"localPartsTx passed an untyped target parameter to overloaded PostGIS ST_Transform.",
+"PostgreSQL inferred text, interpreting 32618 as a PROJ definition, not an EPSG integer.",
+"Re-settling an older surface item failed XX000 and aborted admission before the REH10 items." ], "baseline": {
+"caseId": "76f1cdb3-1407-40b4-b9a2-20cea1c53380", "surfaceParts": 2, "partIndex": 0, "state": "planned", "jobId": null,
+"laneQueryExit": 0, "laneRows": 0,
+"dispatcher": "The intake-surface worker dispatched from job admission ended with error code XX000",
+"postgres": "could not parse proj string '32618'", "evidence": [ "diagnosis.json", "placement-sql.json" ] },
+"suspects": {
+"storage": "Not the surface cause: no job existed. Native readers succeed on the same large-originals keys.",
+"lanes": "Lane SQL runs on PostgreSQL; no surface job existed for memory or scratch admission to refuse.",
+"planning": "First parts were planned correctly. The later surface admission tick stopped in placement SQL." },
+"secondLiveDefect": [
+"After readers started, the fresh batch had no placement extent despite 1661 accepted footprints.",
+"draftedBounds joined a package's reconstruction case, not the intake item's package link.",
+"It also excluded the whole package because one rejected feature had a partial-quarantine receipt." ] }, "fix": {
+"file": "packages/server/src/modules/usp/ingestion/intake-surface.ts",
+"localPartsTx": "Cast the target parameter to integer to select the EPSG transform overload.", "draftedBounds": [
+"Follow the batch item's packageId or its published part's packageId, scoped to the same area.",
+"Keep accepted bounds under partial quarantine; exclude workspaces and zero accepted geometry." ],
+"storageChanged": false, "localStreamingHelperNeeded": false, "dispatcherChanged": false }, "tests": { "regressions": [
+{ "name": "placement binds the target EPSG code as an integer", "beforeExit": 1, "afterExit": 0 }, {
+"name": "drafted bounds follow the intake package link", "beforeExit": 1, "afterExit": 0 } ], "surfaceTests": {
+"exit": 0, "passed": 21, "failed": 0, "skipped": 0 }, "serverTypecheckExit": 0, "postgresPreparedPlacement": {
+"beforeExit": 3, "afterExit": 0, "placed": true }, "postgresBounds": { "beforeDrafted": null, "afterDraftedRounded": [
+0, 0, 1673, 1679 ] }, "contractReadback": { "exit": 0, "manifestPartsDisplaySchemas": "passed", "crossCaseRead": 404 },
+"originalHashes": { "matched": 4, "total": 4 }, "acceptedArtifacts": { "hashAndLengthMatched": 2, "total": 2 } },
+"live": { "caseId": "1ab6eab7-96ec-4f4c-ac36-eb6149e9deb6", "areaId": "6d38fd24-cf98-4995-bdbb-c72b153e45fb",
+"drop": "Studio: footprints, register CSV, orthophoto TIFF and LAZ together into a fresh case.",
+"layout": "Approved remembered building/bin layout; name and height not stated. No recording confirmation.",
+"dropToBatchSeconds": 3.227,
+"timingOrigin": "Layout approval, 2026-10-22T09:56:49.544Z; browser observation bounds, not benchmarks.",
+"orthophoto": { "firstJobQueuedSeconds": 29.104, "firstPlacedObservedSeconds": 43.15, "firstDrawnSeconds": 54.026,
+"allNineDrawnSeconds": 458.353, "read": 9, "planned": 9, "drawn": 9, "notPlaced": 0, "failed": 0,
+"layerWords": "Display only. 9 parts drawn and 0 not placed, of 9 read parts.", "verticalReference": {
+"status": "unknown", "name": null } }, "laz": { "firstJobQueuedSeconds": 41.614, "firstPlacedObservedSeconds": 93.219,
+"firstDrawnSeconds": 94.195, "fourthDrawnSeconds": 506.622, "readAtLastReadback": 4, "planned": 211,
+"drawnAtLastCapture": 4, "notPlaced": 0, "failed": 0, "layerWords": [
+"Display only. 4 parts drawn and 0 not placed, of 4 read parts.", "Coloured by height as written, not measured." ],
+"verticalReference": { "status": "known", "name": "NAVD88 height" },
+"endNote": "The batch observed a fifth accepted part during browser closure; full completion was not awaited." },
+"placement": "Both use the accepted drafted-footprint bounds; the area still has no recorded extent.",
+"difficultInput": "NYC footprints: 1661 accepted, one self-intersecting feature skipped; no geometry repaired.",
+"reload": "The open map followed later parts automatically, without reload.", "frames": { "largestMs": 733,
+"over50": 161, "over100": 46, "count": 30456 },
+"frameCaveat": "Includes initial map load and one deliberate API roll; no smoothness claim.",
+"readback": "readback-final.json", "screenshot": "E:/BhuAayam-data/task-data/sfa1/shots/final-1792663578245.png" },
+"roll": { "ownSchemaChange": false,
+"inheritedSchemaStep": "SV2 base added nullable usp_model_calls.diagnostics, ordinal 12.", "initialStartExit": 1,
+"initialStartReason": "Demo schema missing after explicit bootstrap migrations.",
+"migration": "Existing REH9 migrate.mjs, ulpin-reh-02 only; additive runners, no seed or reset; exit 0.",
+"finalDoctor": "28 PASS, 0 FAIL; gateway disabled", "processorPinUnchanged": true, "commitsObserved": [ "1f25407b",
+"b6c54356", "1952c5fb" ] }, "demo": { "readOnly": true, "doctorBeforeExit": 0, "doctorAfterExit": 0,
+"sameCommitProcessesAndContainers": true, "commit": "8d6e19fa91e1d08fa61d02946500b2f5227dd393", "apiPid": 13100,
+"dispatcherPid": 8824 }, "end": { "rehearsal": "Stopped; six containers exited and no owned native processes remain.",
+"data": "All volumes, originals, jobs, accepted parts and existing cases retained.", "studioAndBrowser": "Stopped.",
+"ulpinReh01": "Not touched." }, "gaps": [
+"The complete LAZ is not yet qualified; several old-case point readers compete for its bounded slots.",
+"Act 1 surfaces work progressively; the whole act still has other REH10 breaks.",
+"Table selection and evidence reading remain outside this change; merge their separate fixes.",
+"During the development-server roll, a stale route chunk produced TypeError; one reload restored it." ],
+"evidenceEncoding": "Long receipt strings are ordered chunks; concatenate them without a separator.",
+"scratch": "E:/BhuAayam-data/task-data/sfa1",
+"next": "Integrate the surface fixes, then rehearse a full-cloud finish with the other Act 1 repairs." }

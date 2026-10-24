@@ -1,0 +1,223 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import ts from 'typescript';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ApiError } from '@ulpin/api-client';
+import { expect, it, vi } from 'vitest';
+import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
+import runtime from '../../../../../docs/evidence/gf1/lr3/runtime.json';
+import type { IntakeItem } from './batch-model';
+import { LayoutQuestion } from './LayoutQuestion';
+import { createContractValidator } from '../../local/contract';
+import { createLayoutCommand } from './layout-command';
+import { layoutLines, type Recipe } from './layout-model';
+import { blankChoices, choicesFromRecipe, needsLayoutAnswer, type Choices, type Kind } from './question-model';
+import { tableKey } from './table/queries';
+import type { Command } from './LayoutAnswer';
+import { StreamedLayoutAnswer } from './StreamedLayoutAnswer';
+import { inventoryWords, streamedIdentifierPaths, streamedIdentifierWords, streamedNamePaths, streamedQuestionBody,
+  streamedSummary, type Inventory, type ProfileStatus } from './streamed-question-model';
+
+// The real body is kept; the spy only records the pin the answer hands it.
+vi.mock('./streamed-question-model', async original => {
+  const real = await original<typeof import('./streamed-question-model')>();
+  return { ...real, streamedQuestionBody: vi.fn(real.streamedQuestionBody) };
+});
+
+// The OBJECTID counts and the generation are LR3's sealed Niagara inventory. Every other value below is an
+// in-memory test control, not a dataset record.
+const niagara = runtime.runtime.evidence.evidence.niagara.layout.profile;
+const objectId = niagara.identifier as Inventory['paths'][number];
+const hash = 'c'.repeat(64);
+const control = (path: string, types: Inventory['paths'][number]['types'], extra = {}) => ({
+  path: `/features/*/properties/${path}`, types, values: niagara.recordsSeen, explicitNull: 0, absent: 0, unknown: 0,
+  ...extra });
+const inventory: Inventory = {
+  version: 'streamed-profile/1', jobId: niagara.jobId, rawJobId: '20000000-0000-4000-8000-000000000002',
+  source: { sourceId: '20000000-0000-4000-8000-000000000003', familyId: '20000000-0000-4000-8000-000000000004',
+    sourceRevision: 1, sourceSha256: 'a'.repeat(64), schemaFingerprint: hash },
+  readerSha256: 'b'.repeat(64), profilerSha256: 'b'.repeat(64), generation: niagara.generation,
+  generationHash: hash, previousHash: null, coverage: 'sealed', rawChunkIndex: null, rawResultSha256: null,
+  recordsSeen: niagara.recordsSeen, accepted: niagara.recordsSeen, quarantined: 0, unknownRemainder: false,
+  paths: [
+    { path: '/features/*/geometry', types: ['object'], values: niagara.recordsSeen, explicitNull: 0, absent: 0,
+      unknown: 0 },
+    objectId, control('TEXT_CONTROL', ['string']), control('MIXED_CONTROL', ['number', 'string']),
+    control('DECIMAL_CONTROL', ['number'], { integers: 3 }), control('UNCOUNTED_CONTROL', ['number']),
+  ],
+  geometryTypes: ['Polygon', 'MultiPolygon'], quarantineLocators: [],
+  reference: { sourceCrs: null, evidence: null, globalPlacement: 'not_qualified' },
+};
+const pin = { caseId: '20000000-0000-4000-8000-000000000005', caseRevision: 7 };
+const key = '20000000-0000-4000-8000-000000000006';
+const field = (name: string) => `/features/*/properties/${name}`;
+const choices: Choices = { ...blankChoices, kind: 'building', identifier: field('OBJECTID') };
+const root = resolve(import.meta.dirname, '../../../../..');
+const openapi = JSON.parse(readFileSync(resolve(root, 'docs/api/openapi.json'), 'utf8'));
+const validate = createContractValidator(openapi);
+const ref = (schema: { $ref: string }) => schema.$ref.split('/').at(-1)!;
+const authorSchema = ref(openapi.paths[
+  '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}/recipes']
+  .post.requestBody.content['application/json'].schema);
+const historySchema = ref(openapi.paths['/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}']
+  .get.responses['200'].content['application/json'].schema);
+const statusSchema = ref(openapi.paths[
+  '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}']
+  .get.responses['200'].content['application/json'].schema);
+
+/** One named function of a repository source file, transpiled as written (the KN2 test's method). */
+function sourceFunction<T>(path: string, name: string, end: string): T {
+  const source = readFileSync(resolve(root, path), 'utf8');
+  const start = source.indexOf(`function ${name}(`);
+  const code = ts.transpile(source.slice(start, source.indexOf(end, start)), { target: ts.ScriptTarget.ES2022 });
+  return new Function(`${code}; return ${name};`)() as T;
+}
+const layoutTargetsIssue = sourceFunction<(kind: string | undefined, targets: string[]) => string | null>(
+  'packages/contracts/src/usp/ingestion.ts', 'layoutTargetsIssue', 'export const MappingPlanSchema');
+
+it('offers text or whole-number identifiers and text names; mixed and uncounted fields are not offered', () => {
+  expect(objectId).toMatchObject({ types: ['number'], integers: objectId.values });
+  expect(streamedIdentifierPaths(inventory).map(path => path.path)).toEqual([field('OBJECTID'), field('TEXT_CONTROL')]);
+  expect(streamedNamePaths(inventory).map(path => path.path)).toEqual([field('TEXT_CONTROL')]);
+  expect(streamedIdentifierWords(objectId)).toBe('OBJECTID (whole number)');
+  expect(streamedIdentifierWords(control('TEXT_CONTROL', ['string']))).toBe('TEXT_CONTROL');
+});
+
+it('authors a sealed-inventory plan for a building and a parcel that the contract accepts, with no height', () => {
+  for (const kind of ['building', 'parcel'] as const satisfies readonly Kind[]) {
+    const body = streamedQuestionBody(inventory, { ...choices, kind }, pin, 0, key)!;
+    expect(validate(authorSchema, body)).toEqual([]);
+    expect(layoutTargetsIssue(kind, body.plan.operations.map(operation => operation.target))).toBeNull();
+    expect(body).toEqual({ requestKey: key, expectedRecipeRevision: 0, plan: {
+      version: 'streamed-mapping/1', mode: 'streamed_mapping', scope: 'accepted_source_features',
+      basis: 'officer_stated', source: inventory.source, caseId: pin.caseId, caseRevision: pin.caseRevision,
+      rawJobId: inventory.rawJobId, profileJobId: niagara.jobId, profileGeneration: niagara.generation,
+      profileHash: hash, semanticEvidence: [], kind, operations: [
+        { target: 'feature.sourceKey', sourcePath: field('OBJECTID'), conversionId: 'literal_integer_identifier@1' },
+        { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+      ] } });
+  }
+  const named = streamedQuestionBody(inventory, { ...choices, identifier: field('TEXT_CONTROL'),
+    name: field('TEXT_CONTROL') }, pin, 2, key)!;
+  expect(named.plan.operations).toEqual([
+    { target: 'feature.sourceKey', sourcePath: field('TEXT_CONTROL'), conversionId: 'literal_identifier@1' },
+    { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+    { target: 'feature.name', sourcePath: field('TEXT_CONTROL'), conversionId: 'literal_text@1' },
+  ]);
+  expect(named.expectedRecipeRevision).toBe(2);
+  const walk = sourceFunction<(caseId: string, revision: number, profile: Inventory) => unknown>(
+    'docs/evidence/gf1/lr3/runtime.ts', 'layout', '/** Step 3');
+  expect(streamedQuestionBody(inventory, choices, pin, 0, key)?.plan)
+    .toEqual(walk(pin.caseId, pin.caseRevision, inventory));
+  expect(streamedSummary(choices)).toBe('Each feature is a building, identified by OBJECTID. Name: not stated.');
+});
+
+it('makes no plan from an unoffered field, a refused kind or a missing choice', () => {
+  expect(streamedQuestionBody(inventory, blankChoices, pin, 0, key)).toBeNull();
+  expect(streamedQuestionBody(inventory, { ...choices, identifier: field('MIXED_CONTROL') }, pin, 0, key)).toBeNull();
+  expect(streamedQuestionBody(inventory, { ...choices, identifier: field('DECIMAL_CONTROL') }, pin, 0, key))
+    .toBeNull();
+  expect(streamedQuestionBody(inventory, { ...choices, name: field('OBJECTID') }, pin, 0, key)).toBeNull();
+  expect(streamedQuestionBody({ ...inventory, geometryTypes: ['LineString'] }, choices, pin, 0, key)).toBeNull();
+});
+
+it('opens the question only on a sealed inventory and says why otherwise', () => {
+  const status = { status: 'sealed', latest: inventory } as ProfileStatus;
+  expect(inventoryWords(status)).toBeNull();
+  for (const state of ['queued', 'running'] as const) {
+    expect(inventoryWords({ ...status, status: state, latest: null })).toMatch(/still being inventoried/);
+  }
+  expect(inventoryWords({ ...status, latest: null })).toMatch(/still being inventoried/);
+  expect(inventoryWords({ ...status, status: 'failed' })).toBe(
+    'The fields of this file could not be inventoried, so its layout question cannot be answered.');
+  expect(inventoryWords({ ...status, status: 'stale' })).toBe(
+    'This file changed after its fields were inventoried, so its layout question cannot be answered.');
+});
+
+it('keeps the server\'s words for a refused author and reviews the streamed receipt without a height', async () => {
+  const body = streamedQuestionBody(inventory, choices, pin, 0, key)!;
+  const words = 'A field required by the layout is not complete text or a whole number in every accepted record.';
+  const author = vi.fn(async () => {
+    throw new ApiError(422, '', { error: { code: 'STREAMED_MAPPING_COVERAGE', message: words } });
+  });
+  const states: { error: string; concern: string; uncertain: boolean }[] = [];
+  const command = createLayoutCommand({ author, approve: vi.fn() }, state => states.push(state), vi.fn());
+  await command.use(body);
+  expect(states.at(-1)).toMatchObject({ error: words, concern: '', uncertain: false });
+  const receipt = { id: key, revision: 1, state: 'proposed', plan: body.plan, planHash: hash,
+    authoredBy: 'test-control', authoredAt: '2026-10-17T00:00:00.000Z', approval: null } as Recipe;
+  expect(layoutLines(receipt, 'officer')).toEqual(['Each feature is: a building', 'Identifier: OBJECTID',
+    'Name: not stated', 'Height: not stated', 'Area: not supplied by the record', 'Written by an officer']);
+  expect(choicesFromRecipe(receipt)).toEqual(choices);
+});
+
+it('publishes a streamed receipt in the recipe history and the inventory\'s own case revision', () => {
+  const body = streamedQuestionBody(inventory, choices, pin, 0, key)!;
+  const receipt = { id: key, revision: 1, state: 'proposed', plan: body.plan, planHash: hash,
+    authoredBy: 'test-control', authoredAt: '2026-10-17T00:00:00.000Z', approval: null };
+  expect(validate(historySchema, [receipt])).toEqual([]);
+  const status = { version: 'streamed-profile/1', jobId: inventory.jobId, rawJobId: inventory.rawJobId,
+    caseId: pin.caseId, caseRevision: pin.caseRevision, sourceId: inventory.source.sourceId, sourceRevision: 1,
+    sourceSha256: 'a'.repeat(64), status: 'sealed', nextRawIndex: 1, latest: inventory, issueCode: null,
+    sourceComplete: true, usableCoverage: true, identityComplete: false };
+  expect(validate(statusSchema, status)).toEqual([]);
+  const { caseRevision: _, ...unpinned } = status;
+  expect(validate(statusSchema, unpinned)).not.toEqual([]);
+});
+
+/** A case advanced past the inventory: its current revision is not the one the server accepts. */
+const advanced = pin.caseRevision + 2;
+function seeded(item: IntakeItem, status?: Partial<ProfileStatus>) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  client.setQueryData(['source-case', item.caseId], { case: { revision: advanced } });
+  client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], captured.profile);
+  client.setQueryData(['streamed-profile', item.caseId, item.sourceId, item.streamedProfileJobId, item.updatedAt],
+    { status: 'sealed', latest: inventory, caseId: pin.caseId, caseRevision: pin.caseRevision, ...status });
+  return client;
+}
+
+function panel(item: IntakeItem, status?: Partial<ProfileStatus>) {
+  return renderToStaticMarkup(<QueryClientProvider client={seeded(item, status)}>
+    <LayoutQuestion caseId={item.caseId} item={item} refresh={vi.fn()} />
+  </QueryClientProvider>);
+}
+
+it('pins the inventory\'s case revision after the case has advanced', () => {
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId } as IntakeItem;
+  const plan = streamedQuestionBody(inventory, choices, pin, 0, key)!.plan;
+  const receipt = { id: key, revision: 1, state: 'proposed', plan, planHash: hash, authoredBy: 'test-control',
+    authoredAt: '2026-10-17T00:00:00.000Z', approval: null } as Recipe;
+  const command = { state: { busy: false, uncertain: false, error: '', concern: '' } } as unknown as Command;
+  const spy = vi.mocked(streamedQuestionBody);
+  spy.mockClear();
+  const html = renderToStaticMarkup(<QueryClientProvider client={seeded(item)}>
+    <StreamedLayoutAnswer caseId={item.caseId} item={item} receipt={receipt} command={command} />
+  </QueryClientProvider>);
+  expect(html).toContain('Use this layout');
+  expect(spy).toHaveBeenCalled();
+  for (const result of spy.mock.results) {
+    expect(result.value?.plan.caseRevision).toBe(pin.caseRevision);
+  }
+  expect(spy.mock.results.some(result => result.value)).toBe(true);
+});
+
+it('answers a large item from its streamed inventory and leaves a small item on its retained profile', () => {
+  const small = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
+  const large = { ...small, streamedProfileJobId: niagara.jobId };
+  expect(needsLayoutAnswer(large)).toBe(true);
+  const sealed = panel(large);
+  expect(sealed).toContain('OBJECTID (whole number)');
+  expect(sealed).toContain('A height is not stated for large files yet; heights stay unknown.');
+  expect(sealed).not.toContain('Does a field give its height?');
+  expect(sealed).not.toContain('MIXED_CONTROL');
+  const reading = panel(large, { status: 'running', latest: null });
+  expect(reading).toMatch(/still being inventoried/);
+  expect(reading).not.toContain('<select');
+  const failed = panel(large, { status: 'failed' });
+  expect(failed).toContain('could not be inventoried');
+  expect(failed).not.toContain('<select');
+  const retained = panel(small);
+  expect(retained).toContain('Does a field give its height?');
+  expect(retained).not.toContain('large files');
+});

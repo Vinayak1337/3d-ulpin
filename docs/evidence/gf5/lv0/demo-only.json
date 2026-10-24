@@ -1,0 +1,131 @@
+{
+  "scope": "Inventory of demo-only behavior; presence is not production qualification",
+  "items": [
+    {
+      "behavior": "Opt-in Vite same-origin transport; upload works independently of registry/backend health",
+      "where": ["scripts/demo-import/plugin.mjs:77-80,155-162", "apps/studio/src/api/demo-import.ts:11-31"],
+      "realInstead": "Nest import-packages inspect/create, real source case and registry authorities",
+      "realWhere": "apps/api/src/modules/intake/import-packages.controller.ts:80-119"
+    },
+    {
+      "behavior": "Exact NYC hash/profile allowlist, fixed projection, source-height conversion and display repair",
+      "where": ["scripts/demo-import/plugin.mjs:141-147", "scripts/demo-import/normalize.py:21-64,75-88"],
+      "realInstead": "Bounded GIS inspection/normalization, officer mapping, quarantine without repair",
+      "realWhere": ["services/geo/geo/gis_inspection.py:34-119", "packages/server/src/modules/areas/areas.ts:452-480"]
+    },
+    {
+      "behavior": "Eight-layer ZIP selection and deterministic LiDAR/raster fusion into existing footprint properties",
+      "where": ["scripts/demo-import/plugin.mjs:139-151", "scripts/demo-import/multimodal.py:14-79"],
+      "realInstead": "Separate archive inventory, raster-window and point-batch jobs; no automatic eight-layer fan-out",
+      "realWhere": [
+        "apps/api/src/modules/ingestion/raster-window.controller.ts:21-47",
+        "apps/api/src/modules/ingestion/point-batch.controller.ts:21-47",
+        "services/geo/geo/native_archive.py:55-143"
+      ]
+    },
+    {
+      "behavior": "Local d30d identities and filesystem jobs/snapshots/journal, reloaded on Vite restart",
+      "where": "scripts/demo-import/plugin.mjs:16-17,84-95,176-182",
+      "realInstead": "UUID records, immutable object storage, database jobs and durable case outbox",
+      "realWhere": [
+        "packages/server/src/modules/usp/ingestion/documents.ts:98-139",
+        "packages/server/src/modules/usp/ingestion/events.ts:56-63"
+      ]
+    },
+    {
+      "behavior": "Area SSE snapshot/metadata/chunk/complete replaces polling, appends displayFeatures to cache",
+      "where": "apps/studio/src/api/demo-import.ts:34-68",
+      "realInstead": "Case notifications + raw/mapped chunk GETs; map context/canonical poll; no delta bridge",
+      "realWhere": [
+        "apps/api/src/modules/ingestion/events.controller.ts:31-41,84-95",
+        "apps/studio/src/features/intake/table/queries.ts:25-53",
+        "apps/studio/src/api/queries.ts:223-242"
+      ]
+    },
+    {
+      "behavior": "Start worker on first subscriber; browser ack after two frames, bounded 1500 ms sender wait",
+      "where": ["scripts/demo-import/plugin.mjs:116-119,198-205", "apps/studio/src/api/demo-import.ts:59-62"],
+      "realInstead": "Existing fenced dispatcher jobs publish chunks; SSE controls response buffer, not scene pace",
+      "realWhere": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:25-36",
+        "apps/api/src/modules/ingestion/events.transport.ts:6-43"
+      ]
+    },
+    {
+      "behavior": "Demo footprints bypass canonical area read; source proposal geometry directly becomes scene input",
+      "where": ["apps/studio/src/features/map/canonicalScene.ts:64-70", "apps/studio/src/api/queries.ts:228-240"],
+      "realInstead": "toSceneInputs reads canonical area/building records; raw chunk global placement not qualified",
+      "realWhere": [
+        "apps/studio/src/features/map/canonicalScene.ts:28-35,64-70",
+        "packages/contracts/src/usp/streaming-vector.ts:49-50"
+      ]
+    },
+    {
+      "behavior": "Every incoming demo building gets a browser-generated projectCode without officer identity review",
+      "where": ["apps/studio/src/api/demo-import.ts:9", "apps/studio/src/local/codes.ts:7-20"],
+      "realInstead": "Registry identity review/assignment commands; no browser-issued identity",
+      "realWhere": "apps/studio/src/local/routes.ts:129-132"
+    },
+    {
+      "behavior": "Reserved-id source/package/context/register/ledger/resident responses mask ordinary Nest routes",
+      "where": "scripts/demo-import/plugin.mjs:157,206-235",
+      "realInstead": "Real source-file/context/canonical/register reads; no live residents route in route table",
+      "realWhere": "apps/studio/src/local/routes.ts:32-35,120-145"
+    },
+    {
+      "behavior": "Sample registry derives floors/units/ledger/shares/residents and makes document-shaped text on read",
+      "where": ["scripts/demo-import/plugin.mjs:20-74,186-194,219-233", "scripts/demo-import/sample-registry.mjs:1"],
+      "realInstead": "Reviewed source-supported floors/units only; no real equivalent to generated rights/residents",
+      "realWhere": "apps/studio/src/local/routes.ts:32-35,123-132"
+    },
+    {
+      "behavior": "Optional imagery and maximum-Z surface preview downloads, fixed-profile display-only offsets",
+      "where": ["scripts/demo-import/plugin.mjs:208-212", "scripts/demo-import/multimodal.py:38-50"],
+      "realInstead": "Canonical retained imagery can draw; native point/window artifacts alone do not become a map",
+      "realWhere": [
+        "apps/studio/src/features/map/MapWorkspace.tsx:139-177",
+        "packages/contracts/src/usp/raster-window.ts:40",
+        "packages/contracts/src/usp/point-batch.ts:43"
+      ]
+    },
+    {
+      "behavior": "Simulated whole-area plan comparison (not real approval evidence)",
+      "where": "scripts/demo-import/plugin.mjs:213-215",
+      "realInstead": "No automatic generic-area equivalent shown by this transport; backend assessment is separate",
+      "realWhere": "scripts/demo-import/plan-check.mjs:1-30"
+    },
+    {
+      "behavior": "Local MSW/fetch transport and historical timed visibility over retained fixture records",
+      "where": ["apps/studio/src/local/start.ts:11-53", "apps/studio/src/local/story.ts:21-62"],
+      "realInstead": "Live reads bypass local resolvers; reset-session never cleans the actual runtime",
+      "realWhere": ["apps/studio/src/local/routes.ts:120-145", "apps/studio/src/local/start.ts:15-23"]
+    },
+    {
+      "behavior": "AREA_STREAM_MS/FLOORS_STREAM_MS animate known data; document detection uses filename only",
+      "where": ["apps/studio/src/local/session.ts:11-12,44-48", "apps/studio/src/local/imports.ts:11-50"],
+      "realInstead": "Actual jobs and byte sniffing; no real building document import endpoint matching draft routes",
+      "realWhere": [
+        "packages/server/src/modules/usp/ingestion/document-native.ts:25-39",
+        "apps/studio/src/local/routes.ts:109-118"
+      ]
+    },
+    {
+      "behavior": "Local building import stores filenames/session time, not uploaded originals",
+      "where": "apps/studio/src/local/handlers.ts:66-74",
+      "realInstead": "Documents retention stores immutable bytes under case pins and queues extraction",
+      "realWhere": "packages/server/src/modules/usp/ingestion/documents.ts:98-139"
+    },
+    {
+      "behavior": "Local public/register requests, delete operations and saved-batch/page draft responses",
+      "where": "apps/studio/src/local/routes.ts:38-103",
+      "realInstead": "No live equivalents declared for those paths; published evidence page routes have another shape",
+      "realWhere": "apps/studio/src/local/routes.ts:46-52,87-103"
+    },
+    {
+      "behavior": "Local uploaded work-board rows can label finished demo imports recorded despite proposal state",
+      "where": "apps/studio/src/local/handlers.ts:24-45",
+      "realInstead": "Live work-queue authority; demo rows do not establish registry commitment",
+      "realWhere": "apps/studio/src/local/routes.ts:26-29"
+    }
+  ]
+}

@@ -27,7 +27,7 @@ export class ChunkMappingController{
   }
   @Get('jobs/:jobId') @param('caseId') @param('sourceId') @param('jobId')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId',
-    summary:'Read provisional mapped coverage, recipe/proposal and source closure state'})
+    summary:'Read retained mapped coverage and recipe pins with explicit current/history reasons'})
   @wireResponse(200,ChunkMappingStatusSchema)
   status(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,@Req()request:Request){
     noQuery(request);return this.mapping.status(caseId,sourceId,jobId);
@@ -35,7 +35,7 @@ export class ChunkMappingController{
   @Get('jobs/:jobId/chunks/:chunkIndex') @param('caseId') @param('sourceId') @param('jobId')
   @ApiParam({name:'chunkIndex',schema:{type:'integer',minimum:0,maximum:CHUNK_MAPPING_LIMITS.chunks}})
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId_chunks_chunkIndex',
-    summary:'Read one published private source-linked mapped draft chunk'})
+    summary:'Read one integrity-verified private mapped chunk, including obsolete pinned results'})
   @wireResponse(200,ChunkMappingChunkResponseSchema)
   chunk(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
     @Param('chunkIndex')chunkIndex:string,@Req()request:Request){

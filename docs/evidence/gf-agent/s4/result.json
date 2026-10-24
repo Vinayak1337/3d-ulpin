@@ -1,0 +1,143 @@
+{
+  "task": "S4",
+  "gates": ["AG-S1", "GF-AI gateway"],
+  "base": "e9dcebde",
+  "branch": "task/s4-proof-continues-after-key-move",
+  "offline": "no provider call, no key read, no database, no request to the demo; no .env, demo.env, sarvam-staged.env or runtime file opened",
+  "howTheGatewayKeysACall": {
+    "answer": "a new invocation key at attempt 1, not a new attempt number under the same key",
+    "ledgerRow": "unique on project, principal hash, hash(invocationKey) and attempt (packages/server/src/modules/model-gateway/ledger.ts:67-74)",
+    "sameKeySameAttempt": "after a key refusal the row is settled at zero with its error kind; asking again under the same invocation key and attempt returns the same refusal and sends nothing (gateway.ts:94-98)",
+    "attempt2": "kept for one model repair inside the original deadline (gateway.ts:76-85); the ledger admits attempts 1 and 2 only",
+    "whatTheProofDoes": "it passes no invocation key, so extractStoreyFacts and proposeMappingWithTeacher draw a new one per call; attempting the step again is a new ledger row at attempt 1. The receipt's own `attempts` counts the tries of the step: 1, 2, ..."
+  },
+  "item1": {
+    "codesReadFrom": "the error the gateway throws, noted by a wrapper around gateway.propose (observed() in scripts/agent/live-proof.ts); the callers fold it into TEACHER_BUDGET_EXHAUSTED, TEACHER_AUTH_FAILED or TEACHER_UNAVAILABLE, which cannot tell a key move from a stop",
+    "keyMoved": "AppError code MODEL_QUOTA_EXHAUSTED or MODEL_CREDENTIAL_INVALID with details.retryable true: the step's receipt gets keyMoves [{ attempt, state: key_moved_on, code }] and the step is attempted again",
+    "pastTheSecond": "after a second such answer on one step the report of key states is read (ownerKeyLedger().keyStates() in live mode); the step is attempted again only when a key is not used_up. An unreadable report stops the run. No attempt past the second is made without that read.",
+    "runBound": "at most one extra attempt per key of the policy (policy.secretReferences.length; 0 for a one-key policy), counted across the whole run",
+    "everyKeyMarked": "MODEL_KEYS_EXHAUSTED, or the report showing every key used_up: the walk ends, `stopped` says every key of the policy is marked used up, and `notRun` lists each step not reached with endState not_run",
+    "unchanged": "MODEL_RATE_LIMITED, MODEL_OUTCOME_UNKNOWN (a timeout is reported as this), MODEL_COOLDOWN and a one-key MODEL_QUOTA_EXHAUSTED (not retryable) are not attempted again and stop the run as before",
+    "betweenAttempts": "the run waits policy.paceMs (1500 ms in the built-in policy) so the gateway's pace does not refuse the new call; a mapping step gets a fresh mapper for its file, because the mapper keeps a failed plan per layout; a storey step keeps its last result only",
+    "plan": {
+      "writtenTo": "E:/BhuAayam-data/task-data/s1/s4-plan-final/plan.json",
+      "tariff": "lead-proposal-20261010, which the script still labels not approved",
+      "calls": 10,
+      "estimate": "₹1.14 (estimate)",
+      "atMost": "₹7.75 (upper bound), unchanged from S3",
+      "keyMoves": {
+        "keysInPolicy": 1,
+        "extraAttemptsAtMost": 0,
+        "costOfAMovedOnCall": "₹0.00 (upper bound)",
+        "ledgerRowsAtMost": 10,
+        "callsPerPersonPerDayAtMost": "6.67%"
+      },
+      "withAListOfThreeKeys": "test only: keysInPolicy 3, extraAttemptsAtMost 3, ledgerRowsAtMost 13, calls and atMost equal to the one-key plan"
+    },
+    "dryRun": {
+      "writtenTo": "E:/BhuAayam-data/task-data/s1/s4-dry-run-final/receipt.json",
+      "summary": { "steps": 15, "gatewayAsks": 11, "providerDispatches": 0, "ledgerReservations": 0, "fetchAttempts": 0, "requestsMatchingPlan": 10 },
+      "softwareOnly": "a key list of made-up names (ULPIN_PROVIDER_KEY_SOFTWARE_n) and a software ledger in front of a real ModelGateway whose provider is a software control that throws the failure; the error code is the one gateway.ts throws. No key is read.",
+      "oneKeyUsedUp": {
+        "keys": 2, "asksRefused": 1, "markedAtEnd": 1,
+        "step1": { "attempts": 2, "keyMoves": [{ "attempt": 1, "state": "key_moved_on", "code": "MODEL_QUOTA_EXHAUSTED" }], "endState": "replayed_software_control", "requestMatchesPlan": true },
+        "stopped": null, "stepsWalked": 15, "notRun": 0, "providerDispatches": 0, "fetchAttempts": 0
+      },
+      "everyKeyMarked": {
+        "keys": 2, "markedAtStart": 2, "asksRefused": 0,
+        "step1": { "attempts": 1, "keyMoves": [], "gatewayCode": "MODEL_KEYS_EXHAUSTED", "endState": "teacher_unavailable" },
+        "stopped": "storey-cf152f32-batch1: every key of the policy is marked used up (MODEL_KEYS_EXHAUSTED); nothing was sent",
+        "stepsWalked": 1, "notRun": 14, "providerDispatches": 0, "fetchAttempts": 0
+      }
+    },
+    "testsOnly": [
+      "3 keys, 3 refusals: 3 attempts, 3 key moves, then stopped by the report of key states; 1 step walked",
+      "2 keys, 1 marked at the start, 1 refusal: attempt 2 is answered MODEL_KEYS_EXHAUSTED; 1 step walked",
+      "a rejected key (403): key_moved_on with MODEL_CREDENTIAL_INVALID, attempt 2 walks on",
+      "rate limit, unknown outcome, one-key quota answer: 1 attempt, 0 key moves, 0 marks"
+    ]
+  },
+  "item2": {
+    "finding": "a storey request can still be refused. The selection asks the minimizer about each line alone (minimizeStructuredText); the gateway's rule on a whole message (data:, image_url or base64 anywhere in it, adapter.ts:43) is not asked there. A selected line holding `data:` is refused with MODEL_PROMPT_PRIVACY when the request is built.",
+    "inThePlan": "none of the 8 planned storey requests is refused today",
+    "test": "same name, same three assertions; the line is now one the selection keeps and the whole-message rule refuses. The case also screens the real 90-column development table mi-d22 (recorded derivative): 1 request, 1 refused, MODEL_PROMPT_PRIVACY, 90 columns screened as built.",
+    "result": "9 of 9 pass (8 of 9 on the base)"
+  },
+  "item3": {
+    "file": "docs/backend/LIVE-PROOF.md",
+    "section6": "the Tower 3 sentence now counts five lines under two reasons: 3 NOT_SELECTED_UNIT_NUMBER (2 in step 11's document, 1 in step 12's), 2 MODEL_PROMPT_PRIVACY (1 each)",
+    "section7": "one paragraph after the stop rules on what the run does when a key is moved on",
+    "notTouched": "section 5 and the four stop-rule bullets"
+  },
+  "productionFilesChanged": [],
+  "exportsAdded": [
+    "scripts/agent/live-proof.ts: keyMoveWalk, recordSoftwareControl, type KeyScenario (used by the dry run and by live-proof.test.ts)"
+  ],
+  "gaps": [
+    "The live path is not run: ownerKeyLedger().keyStates() and a real key list need the database and the runtime, which are not mine. The software ledger imitates the marks; it is not the PostgreSQL ledger.",
+    "The proof reads the gateway's code by wrapping gateway.propose, because the callers' results carry only teacher codes.",
+    "A moved-on call is a ledger row and counts toward the 150 calls per person per day; it holds no rupees.",
+    "Whether the real ledger's pace or a provider cooldown still refuses the second attempt after policy.paceMs was not observed; if it does, the answer is MODEL_COOLDOWN or a rate limit and the run stops, as today.",
+    "A mapping step attempted again uses a fresh mapper for its file. In this plan a calling chunk is the first of its file, so nothing reused is lost.",
+    "The built-in policy names one key, so the default plan prints 0 extra attempts. With the owner's list of eleven the bound is 11, read from the policy file given with --tariff.",
+    "The script still prints its built-in tariff as the lead's proposal, not approved. The owner approved the same rates and caps since; the label and section 5 follow worker GK's policy file.",
+    "The four stop-rule bullets of LIVE-PROOF.md section 7 still say no retry and stop at the first quota answer; the new paragraph states the exception. The bullets were not among my two places.",
+    "The storey selection gap found in item 2 is open: document-storey-agent.ts is not mine in this task."
+  ],
+  "checks": [
+    { "command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0 },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/live-proof.test.ts", "exitCode": 0, "pass": 10, "fail": 0,
+      "note": "6 on the base; 4 added",
+      "env": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe PYTHONDONTWRITEBYTECODE=1"
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/injection-screen.test.ts", "exitCode": 0, "pass": 9, "fail": 0,
+      "note": "8 and 1 on the base", "env": "the same"
+    },
+    { "command": "pnpm exec tsx scripts/agent/live-proof.ts --plan --out E:/BhuAayam-data/task-data/s1/s4-plan-final", "exitCode": 0 },
+    {
+      "command": "pnpm exec tsx scripts/agent/live-proof.ts --dry-run --out E:/BhuAayam-data/task-data/s1/s4-dry-run-final --recordings E:/BhuAayam-data/task-data/s1/s4-dry-run-final-recordings",
+      "exitCode": 0,
+      "note": "each was also run once before two small edits (s4-plan, s4-dry-run); the figures are the same"
+    },
+    { "command": "git diff --check", "exitCode": 0 },
+    { "command": "added lines over 120 characters against e9dcebde, in code, tests and LIVE-PROOF.md", "count": 0 }
+  ],
+  "report": {
+    "TASK": "S4 — The live proof continues after a key is moved on; the screen's refusal test uses a request that is still refused   GATE AG-S1, GF-AI gateway",
+    "WORKS": [
+      "On MODEL_QUOTA_EXHAUSTED or MODEL_CREDENTIAL_INVALID marked retryable, the step's receipt records key_moved_on with the code and the step is attempted once more.",
+      "The second attempt is a new call: a new invocation key at attempt 1. The gateway answers the closed call's own key with the same refusal and keeps attempt 2 for a repair.",
+      "After a second key move on one step, the step is attempted again only when the report of key states shows a key without a mark; a run makes at most one extra attempt per key of the policy.",
+      "MODEL_KEYS_EXHAUSTED ends the run at once with `every key of the policy is marked used up` and the steps not reached listed under notRun.",
+      "A rate limit, a timeout, an unknown outcome and a one-key quota answer are not attempted again.",
+      "Plan: 10 calls, estimate ₹1.14, at most ₹7.75 (upper bound) at the built-in tariff, unchanged. keyMoves prints the keys in the policy, the largest number of extra attempts, and ₹0.00 for a moved-on call.",
+      "Dry run: 15 steps, 0 provider dispatches, 0 fetch attempts. Software key list, case 1: step 1 refused as used up, attempt 2 answered from replay, all 15 steps walked. Case 2: both keys marked, 1 step walked, 14 listed as not run.",
+      "injection-screen.test.ts: 9 of 9. A storey request can still be refused, so the case keeps its name and its three assertions with a line the selection keeps; it also screens the real mi-d22 table over the message bound.",
+      "LIVE-PROOF.md: the Tower 3 sentence names both reasons (3 not selected, 2 privacy); one paragraph on a key move after the stop rules."
+    ],
+    "SEE IT": "pnpm exec tsx scripts/agent/live-proof.ts --dry-run   (receipt.json: keyMoves.oneKeyUsedUp.firstStep and keyMoves.everyKeyMarked.notRun); --plan prints keyMoves",
+    "INPUTS": "good: the 15 planned steps over the 8 storey documents and 2 mi-d10 files, with a software control's abstention recorded for step 1; difficult: a software key list of 1, 2 and 3 made-up names answering used up (429), rejected (403), rate limited and unknown, and every key marked at the start. Screen test: one synthetic storey line and the real 90-column mi-d22 derivative.",
+    "GAPS": "The live path with a real key list and the PostgreSQL ledger is not run; the software ledger imitates the marks. The built-in policy names one key, so the default plan shows 0 extra attempts (11 with the owner's list, from the policy file). A moved-on call counts toward the 150 calls per person per day. Whether the real pace or a provider cooldown refuses the second attempt after paceMs is not observed; it would stop the run. The built-in tariff is still printed as not approved; relabelling and section 5 follow GK's policy file. The four stop-rule bullets of section 7 were not among my two places and still say no retry.",
+    "DESIGN": [
+      "scripts/agent/live-proof.ts: observed() wraps gateway.propose and notes each AppError code and details.retryable, because extractStoreyFacts and proposeMappingWithTeacher fold the gateway's codes into teacher codes. No gateway file is changed and no export is needed: ownerKeyLedger().keyStates() already exists.",
+      "attemptStep() is the only loop: it goes round only after a retryable key code, keyMoveStop() bounds it by one extra attempt per key for the run and, past the second move on a step, by the report of key states.",
+      "A halt (every key marked) ends the walk and lists notRun; every other stop keeps the old behaviour: later steps ask the replay store and say afterStop.",
+      "The dry run's proof puts a software key list in front of a real ModelGateway with a software provider that throws ProviderFailure(quota_exhausted, 429), so the 503 and its retryable mark come from gateway.ts itself.",
+      "providerCalls in a live receipt counts each moved-on attempt once and not an attempt refused at admission."
+    ],
+    "COMMITS": [
+      "97c767c9 feat(agent): the live proof attempts a step again after its key is moved on, and stops when every key is marked",
+      "4c4fedb2 test(agent): the screen's refusal case uses a request the gateway still refuses",
+      "docs(agent): S4 evidence (this commit)"
+    ],
+    "CHECKS": "tsc -p scripts/agent/tsconfig.json: 0. live-proof.test.ts: 10 of 10 (6 on the base). injection-screen.test.ts: 9 of 9 (8 on the base). --plan and --dry-run: exit 0. git diff --check: 0. No added line over 120 characters. Not pushed.",
+    "NEXT": [
+      "document-storey-agent.ts (not mine here): the per-line check should also ask the whole-message rule (data:, image_url, base64), or one such OCR line refuses its whole storey request. When that lands, the storey half of the screen's refusal case needs another line or is dropped; the table half stays.",
+      "A result field carrying the gateway's own code from document-storey-agent.ts and mapping-teacher.ts would let the proof drop its wrapper.",
+      "LIVE-PROOF.md section 7 bullets 1 and 2 to be reworded with section 5 by worker GK; the plan's label to follow the approved policy file.",
+      "The first live run with the owner's key list is the only proof of the pace between attempts and of keyStates() against PostgreSQL."
+    ]
+  }
+}
