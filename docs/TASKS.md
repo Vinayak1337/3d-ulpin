@@ -145,7 +145,7 @@ Size S, code only. After: none (cut from 0aecb4f8; runs in parallel with S1.1 an
 
 ### S3.2 Bound in-process dispatcher reservations by the Node heap limit
 
-Size S, code only. After: none (parallel with S1.1, S3.1; disjoint files). **Status: running codex since 24 Oct 2026.**
+Size S, code only. After: none (parallel with S1.1, S3.1; disjoint files). **Status: done on task/int3-pre (24 Oct).**
 
 - **What:** dispatchMemoryBudgetMiB defaults to half of RAM, 16,231 MiB here (dispatch-lanes.ts:141-143). Every in-process worker shares one Node heap with heap_size_limit 4,288 MiB, and REH16 saw the dispatcher at 3,018 MB. Keep the machine budget for jobs the processor container runs. Add a second budget for in-process holds (rows without processor:true): v8 heap_size_limit less a stated reserve. Admit an in-process job only when both budgets fit. Never raise a lane cap.
 - **Files:** packages/server/src/modules/cases/dispatch-lanes.ts:104-143 (dispatchInProcessOperations, dispatchCost, dispatchMemoryBudgetMiB), 168-225 (fits, DispatchReservations.admit); packages/server/src/modules/cases/processing.ts:366-369 (budget call)
