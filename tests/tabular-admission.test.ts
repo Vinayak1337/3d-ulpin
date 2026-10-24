@@ -26,11 +26,17 @@ import {
 import { StreamingVectorService } from '../packages/server/src/modules/usp/ingestion/streaming-vector';
 import { ChunkMappingService } from '../packages/server/src/modules/usp/ingestion/chunk-mapping';
 import { tabularTeacherPolicy } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-tabular';
+import { caseOriginalTeacherGate } from '../packages/server/src/modules/usp/ingestion/adaptive-mapping-service';
+import { ModelGateway } from '../packages/server/src/modules/model-gateway/gateway';
+import { ReplayAdapter } from '../packages/server/src/modules/model-gateway/adapter';
+import { ModelGatewayConfigSchema, hash } from '../packages/server/src/modules/model-gateway/config';
+import type { PgModelCallLedger } from '../packages/server/src/modules/model-gateway/ledger';
 import { TabularChunkMapper } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { officerMappingMethod } from '../packages/server/src/modules/usp/ingestion/tabular-recipe';
 import { localRequestContext } from '../packages/server/src/modules/usp/principal';
 import {
-  manualTeacherPlan, mappingContextFromColumnProfile, mappingTeacherRequest,
+  columnProfileHash, manualTeacherPlan, mappingContextFromColumnProfile, mappingTeacherRequest,
+  proposeMappingWithTeacher,
 } from '../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { lookupMappingMemory } from '../packages/server/src/modules/usp/ingestion/mapping-memory';
 import { t1OfficerAnswers } from '../scripts/agent/a3c-officer-answers';
@@ -58,8 +64,10 @@ let savedEnvironment: Record<string, string | undefined>;
 beforeEach(() => {
   directory = mkdtempSync(join(tmpdir(), 'tb6-'));
   savedPool = globals.ulpinPool;
-  const names = ['ULPIN_LOCAL_OPERATOR_SUBJECT', 'ULPIN_TABULAR_LEARNING_DIR', 'ULPIN_TABULAR_LEARNER_SEED'];
+  const names = ['ULPIN_LOCAL_OPERATOR_SUBJECT', 'ULPIN_TABULAR_LEARNING_DIR', 'ULPIN_TABULAR_LEARNER_SEED',
+    'ULPIN_TEACHER_CASE_ORIGINALS'];
   savedEnvironment = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  delete process.env.ULPIN_TEACHER_CASE_ORIGINALS;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'tb6-protocol-control';
   process.env.ULPIN_TABULAR_LEARNING_DIR = join(directory, 'learning');
   process.env.ULPIN_TABULAR_LEARNER_SEED = join(directory, 'seed-unavailable');
@@ -376,6 +384,68 @@ test('every case-original teacher callback refuses before the request builder is
   }
   assert.equal(builder.mock.callCount(), 0);
 });
+
+test('only the exact owner opt-in allows case originals; invalid settings fail closed', () => {
+  assert.equal(settings.teacherCaseOriginals, 'off');
+  for (const value of ['off', '', 'on', 'MASKED_PROFILE', ' masked_profile ', 'masked_profile']) {
+    process.env.ULPIN_TEACHER_CASE_ORIGINALS = value;
+    assert.equal(settings.teacherCaseOriginals, value === 'masked_profile' ? 'masked_profile' : 'off');
+    assert.equal(caseOriginalTeacherGate().allowed, value === 'masked_profile');
+  }
+});
+
+test('masked_profile calls the replay teacher once for an admitted LGD case original, never for restricted data',
+  async () => {
+    process.env.ULPIN_TEACHER_CASE_ORIGINALS = 'masked_profile';
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    assert.equal(sha256(bytes), '9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce');
+    const table = readTabularSource(bytes, selection);
+    const config = ModelGatewayConfigSchema.parse({ projectId: 'case-profile-replay', policyVersion: 'test',
+      fundingVersion: 'test', gatewayExclusiveFunding: true, indiaPrivateApproved: true,
+      secretReference: 'ULPIN_PROVIDER_KEY_TEST', model: 'sarvam-105b', projectCapMicroInr: '1',
+      principalDailyCallCap: 1, paceMs: 1500, timeoutMs: 1000,
+      inputBound: { version: 'test', maxPromptTokens: 34816 },
+      price: { version: 'test', inputPerMillionMicroInr: '1', cachedInputPerMillionMicroInr: '0',
+        outputPerMillionMicroInr: '1' } });
+    for (const provenance of [{}, { licence: 'open' as const }, { licence: 'restricted' as const },
+      { containsPersonalData: 'yes' as const }]) {
+      const inventory = inspectTabularSource(bytes, selection, provenance);
+      assert('admission' in inventory.tabular);
+      const allowed = caseOriginalTeacherGate(inventory.tabular.admission).allowed;
+      const replay = mock.fn(async (profile: Parameters<typeof proposeMappingWithTeacher>[0],
+        options: Parameters<typeof proposeMappingWithTeacher>[1]) => {
+        assert.deepEqual(options.dataPolicy, { dataClass: 'public', split: 'unlabelled' });
+        assert(profile.columns.every(column => column.maskedSamples.length === 0));
+        const request = mappingTeacherRequest(profile);
+        const sent = JSON.parse(request.messages[1].content).columnProfile.columns;
+        assert(sent.every((column: { maskedSamples: unknown[] }) => column.maskedSamples.length === 0));
+        const output = { fields: request.aliases.map(({ alias: sourceField }) => ({ sourceField,
+          target: 'unknown', operation: { kind: 'copy' }, confidence: 'none',
+          rationale: 'Administrative labels do not establish building identity.' })) };
+        const response = { output, responseHash: hash(output), httpStatus: 200 };
+        const adapter = new ReplayAdapter(async replayKey => ({ inputHash: replayKey, replayKey,
+          sourceHashes: [columnProfileHash(profile)], responseHash: hash(response), response, eligible: true }));
+        const gateway = new ModelGateway(config, { reserve: async () => {
+          assert.fail('A replay must never reserve a provider call.');
+        } } as unknown as PgModelCallLedger, adapter);
+        return proposeMappingWithTeacher(profile, { ...options, gateway });
+      });
+      const draft = await new TabularChunkMapper().map({ jobId: randomUUID(), chunkIndex: 0,
+        headers: table.headers, rows: table.rows, sourceRef: 'protocol-control', selection }, {
+        context: localRequestContext('tabular-mapping'), authorize: async () => {},
+        memoryPath: join(directory, 'missing-memory'), ...tabularTeacherPolicy(inventory.tabular, replay),
+      });
+      assert.equal(replay.mock.callCount(), allowed ? 1 : 0);
+      assert.equal(draft.metrics.teacherCalls, allowed ? 1 : 0);
+      assert.equal(draft.proposal.replayed, allowed);
+      if (!allowed) {
+        const gate = caseOriginalTeacherGate(inventory.tabular.admission);
+        assert(draft.proposal.issues.every(issue => issue.code === gate.code));
+        assert(draft.proposal.plan.fields.every(field => field.rationale === gate.words));
+      }
+    }
+    assert.equal(sha256(bytes), '9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce');
+  });
 
 test('case-original routing still invokes the existing local learner without training', {
   skip: process.env.ULPIN_PROFILE_PYTHON && existsSync(process.env.ULPIN_PROFILE_PYTHON) ? false

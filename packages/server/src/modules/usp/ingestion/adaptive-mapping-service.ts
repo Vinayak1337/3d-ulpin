@@ -4,6 +4,7 @@ import {
   AdaptiveMappingResponseSchema,type AdaptiveMappingResponse,type SourceProfile,
 } from '@ulpin/contracts/usp';
 import {query} from '../../../infrastructure/db';
+import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {minimizeMessages} from '../../model-gateway/adapter';
@@ -14,6 +15,17 @@ import {assertIngestionBinding,ingestionBinding} from './events';
 import {ManualIngestionService} from './service';
 import {validateAdaptiveMapping} from './adaptive-mapping';
 import {compareWorkspacePins} from './source-pin';
+
+/** One owner switch for case-original tables and map layers; unknown provenance remains unknown. */
+export function caseOriginalTeacherGate(provenance: { licence?: string; containsPersonalData?: string } = {}) {
+  return {
+    allowed: settings.teacherCaseOriginals === 'masked_profile'
+      && provenance.licence !== 'restricted' && provenance.containsPersonalData !== 'yes',
+    code: 'CASE_ORIGINAL_TEACHER_REFUSED',
+    words: 'Teacher interpretation is not allowed for this case original. '
+      + 'An officer states what the file holds and which fields identify it.',
+  };
+}
 
 const uuid=z.string().uuid();
 const outputSchema=z.toJSONSchema(AdaptiveMappingModelOutputSchema);
