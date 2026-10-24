@@ -641,6 +641,26 @@ export const IntakeSurfacePartPageSchema = z.strictObject({
 export const IntakeSurfacePartsQuerySchema = z.strictObject({ after: z.coerce.number().int().min(-1).optional() });
 const xy = z.tuple([z.number().finite(), z.number().finite()]);
 const corners = z.tuple([xy, xy, xy, xy]);
+const previewLine = z.array(xy), previewPolygon = z.array(previewLine);
+const previewGeometry = z.discriminatedUnion('type', [
+  z.strictObject({ type: z.literal('Point'), coordinates: xy }),
+  z.strictObject({ type: z.literal('MultiPoint'), coordinates: previewLine }),
+  z.strictObject({ type: z.literal('LineString'), coordinates: previewLine }),
+  z.strictObject({ type: z.literal('MultiLineString'), coordinates: previewPolygon }),
+  z.strictObject({ type: z.literal('Polygon'), coordinates: previewPolygon }),
+  z.strictObject({ type: z.literal('MultiPolygon'), coordinates: z.array(previewPolygon) }),
+]);
+/** Published reader outlines only: no source properties, semantic identity or placement authority. */
+export const IntakeReadPreviewPageSchema = z.strictObject({
+  itemId: uuid, sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hash, rawJobId: uuid,
+  chunksRead: z.number().int().nonnegative(), reading: z.boolean(),
+  crsBasis: z.enum(['stated', 'rfc7946_no_crs_read_yet', 'sealed', 'unsupported'])
+    .describe('Replace the displayed preview when this basis changes.'),
+  features: z.array(z.strictObject({ featureIndex: z.number().int().nonnegative(), geometry: previewGeometry })).max(2000),
+  next: z.number().int().nonnegative().nullable().describe('Last scanned feature index; poll after it while reading.'),
+  words: z.string().min(1).max(1024),
+});
+export type IntakeReadPreviewPage = z.infer<typeof IntakeReadPreviewPageSchema>;
 export const IntakeSurfaceDisplaySchema = z.strictObject({
   version: z.literal(INTAKE_SURFACE_VERSION), caseId: uuid, itemId: uuid, partIndex: z.number().int().nonnegative(),
   jobId: uuid, original: z.strictObject({ sourceId: uuid, sourceRevision: z.number().int().positive(),
