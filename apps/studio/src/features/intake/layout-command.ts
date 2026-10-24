@@ -1,10 +1,10 @@
 import { ApiError } from '@ulpin/api-client';
 import { approvalBody, type Recipe } from './layout-model';
 import type { AuthorBody } from './question-model';
-import type { StreamedAuthorBody } from './streamed-question-model';
+import type { PrefixAuthorBody, StreamedAuthorBody } from './streamed-question-model';
 
 type Decision = ReturnType<typeof approvalBody>;
-export type LayoutBody = AuthorBody | StreamedAuthorBody;
+export type LayoutBody = AuthorBody | StreamedAuthorBody | PrefixAuthorBody;
 export interface LayoutTransport {
   author: (body: LayoutBody) => Promise<Recipe>;
   approve: (receipt: Recipe, body: Decision) => Promise<Recipe>;

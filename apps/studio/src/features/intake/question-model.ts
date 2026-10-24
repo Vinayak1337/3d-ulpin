@@ -114,13 +114,14 @@ function heightMembers(profile: MapProfile, choices: Choices) {
 
 export function choicesFromRecipe(receipt: Recipe): Choices {
   const plan = receipt.plan;
-  if (plan.version !== 'manual-geojson/1' && plan.version !== 'streamed-mapping/1') return { ...blankChoices };
+  const streamed = plan.version === 'streamed-mapping/1' || plan.version === 'streamed-prefix-mapping/1';
+  if (plan.version !== 'manual-geojson/1' && !streamed) return { ...blankChoices };
   const prefix = plan.kind === undefined ? 'building' : 'feature';
   const path = (name: string) => plan.operations
     .find(operation => operation.target === `${prefix}.${name}`)?.sourcePath;
   const stated = { ...blankChoices, kind: plan.kind ?? 'building', identifier: path('sourceKey') ?? '',
     name: path('name') ?? '' };
-  if (plan.version === 'streamed-mapping/1') return stated;
+  if (plan.version !== 'manual-geojson/1') return stated;
   const height = plan.heightField ? propertyPrefix + plan.heightField.replaceAll('~', '~0').replaceAll('/', '~1') : '';
   return { ...stated, height, unit: plan.heightUnit ?? '', meaning: plan.heightMeaning ?? '' };
 }

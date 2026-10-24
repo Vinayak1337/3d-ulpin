@@ -18,6 +18,7 @@ import type { Command } from './LayoutAnswer';
 import { StreamedLayoutAnswer } from './StreamedLayoutAnswer';
 import { inventoryWords, streamedIdentifierPaths, streamedIdentifierWords, streamedNamePaths, streamedQuestionBody,
   streamedSummary, type Inventory, type ProfileStatus } from './streamed-question-model';
+import { useLayoutCommand } from './useLayoutCommand';
 
 // The real body is kept; the spy only records the pin the answer hands it.
 vi.mock('./streamed-question-model', async original => {
@@ -62,6 +63,9 @@ const authorSchema = ref(openapi.paths[
   .post.requestBody.content['application/json'].schema);
 const historySchema = ref(openapi.paths['/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}']
   .get.responses['200'].content['application/json'].schema);
+const prefixSchema = ref(openapi.paths[
+  '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}/prefix-recipes']
+  .post.requestBody.content['application/json'].schema);
 const statusSchema = ref(openapi.paths[
   '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}']
   .get.responses['200'].content['application/json'].schema);
@@ -186,6 +190,8 @@ it('publishes a streamed receipt in the recipe history and the inventory\'s own 
 const advanced = pin.caseRevision + 2;
 function seeded(item: IntakeItem, status?: Partial<ProfileStatus>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  client.setQueryData(['streamed-generation', item.caseId, item.sourceId, item.streamedProfileJobId,
+    item.layoutProfile?.generation], firstPart);
   client.setQueryData(['source-case', item.caseId], { case: { revision: advanced } });
   client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], captured.profile);
   client.setQueryData(['streamed-profile', item.caseId, item.sourceId, item.streamedProfileJobId, item.updatedAt],
@@ -236,4 +242,95 @@ it('answers a large item from its streamed inventory and leaves a small item on 
   const retained = panel(small);
   expect(retained).toContain('Does a field give its height?');
   expect(retained).not.toContain('large files');
+});
+
+// test_only: the same controls read as the first published part, still open; the remainder is unknown.
+const firstPart: Inventory = { ...inventory, coverage: 'provisional', unknownRemainder: true,
+  rawChunkIndex: niagara.generation, rawResultSha256: 'd'.repeat(64) };
+const asked = (coverage: 'provisional' | 'sealed', source: Inventory) => ({ generation: source.generation,
+  generationHash: source.generationHash, coverage, recordsSeen: source.recordsSeen, accepted: source.accepted });
+
+/** Every request the transport sends, answered with the receipt the server would return. */
+function recordPosts() {
+  const posts: string[] = [];
+  let sent: Recipe | undefined;
+  vi.stubGlobal('fetch', vi.fn(async (request: Request) => {
+    posts.push(`${request.method} ${new URL(request.url).pathname}`);
+    const body = await request.json() as { plan?: Recipe['plan'] };
+    const plan = body.plan ?? sent!.plan;
+    sent = { id: key, revision: 1, state: body.plan ? 'proposed' : 'approved', plan, planHash: hash,
+      authoredBy: 'test-control', authoredAt: '2026-10-25T00:00:00.000Z', approval: null } as Recipe;
+    return new Response(JSON.stringify(sent), { status: body.plan ? 201 : 200,
+      headers: { 'content-type': 'application/json' } });
+  }));
+  return posts;
+}
+
+/** The Studio's own layout command, taken from its hook; each send is recorded with its route. */
+function studioCommand() {
+  let command: ReturnType<typeof useLayoutCommand> | undefined;
+  function Probe() {
+    command = useLayoutCommand(pin.caseId, inventory.source.sourceId, vi.fn());
+    return null;
+  }
+  renderToStaticMarkup(<Probe />);
+  return command!;
+}
+
+async function answer(send: (command: ReturnType<typeof useLayoutCommand>) => Promise<void>) {
+  const posts = recordPosts();
+  await send(studioCommand());
+  vi.unstubAllGlobals();
+  return posts;
+}
+
+it('authors a first-part question on the prefix route with its pins, then approves it there', async () => {
+  const body = streamedQuestionBody(firstPart, choices, pin, 0, key)!;
+  expect(validate(prefixSchema, body)).toEqual([]);
+  expect(body.plan).toMatchObject({ version: 'streamed-prefix-mapping/1',
+    scope: 'observed_prefix_and_later_compatible_features', profileGeneration: niagara.generation,
+    prefix: { throughRawChunkIndex: niagara.generation, rawResultSha256: 'd'.repeat(64),
+      recordsSeen: niagara.recordsSeen, accepted: niagara.recordsSeen } });
+  expect(streamedQuestionBody({ ...firstPart, rawResultSha256: null }, choices, pin, 0, key)).toBeNull();
+  const job = `/api/v1/ingestion/cases/${pin.caseId}/sources/${inventory.source.sourceId}/streamed-profile/jobs/`
+    + niagara.jobId;
+  expect(await answer(command => command.use(body)))
+    .toEqual([`POST ${job}/prefix-recipes`, `POST ${job}/prefix-recipes/${key}/approve`]);
+  expect(await answer(command => command.use(streamedQuestionBody(inventory, choices, pin, 0, key)!)))
+    .toEqual([`POST ${job}/recipes`, `POST ${job}/recipes/${key}/approve`]);
+  const receipt = { id: key, revision: 1, state: 'proposed', plan: body.plan, planHash: hash,
+    authoredBy: 'test-control', authoredAt: '2026-10-25T00:00:00.000Z', approval: null } as Recipe;
+  expect(await answer(command => command.approve(receipt))).toEqual([`POST ${job}/prefix-recipes/${key}/approve`]);
+  expect(layoutLines(receipt, 'officer')).toEqual(['Each feature is: a building', 'Identifier: OBJECTID',
+    'Name: not stated', `Taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read`,
+    'Height: not stated', 'Area: not supplied by the record', 'Written by an officer']);
+  expect(choicesFromRecipe(receipt)).toEqual(choices);
+});
+
+it('answers a first-part question from its pinned generation and says the rest is checked as it arrives', () => {
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+    layoutProfile: asked('provisional', firstPart) } as IntakeItem;
+  const words = `This layout is taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read. `
+    + 'The rest of the file is checked against it as it arrives, and packages follow when the whole file is read '
+    + 'and checked.';
+  const open = panel(item, { status: 'running', latest: firstPart });
+  expect(open).toContain(words);
+  expect(open).toContain('OBJECTID (whole number)');
+  expect(open).not.toMatch(/still being inventoried/);
+  const moved = panel({ ...item, layoutProfile: { ...item.layoutProfile!, generationHash: 'e'.repeat(64) } },
+    { status: 'running', latest: firstPart });
+  expect(moved).not.toContain('<select');
+  expect(panel({ ...item, layoutProfile: asked('sealed', inventory) })).not.toContain('first ');
+});
+
+it('asks again over the complete file in the item\'s words when a first-part field changed', () => {
+  const changed = 'A field used by the first-part layout changed or could not be read as stated. Nothing was drafted. '
+    + 'State the layout again for the complete file.';
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+    layoutProfile: asked('sealed', inventory), limitReason: changed } as IntakeItem;
+  const html = panel(item);
+  expect(html).toContain(changed);
+  expect(html).toContain('OBJECTID (whole number)');
+  expect(html).not.toContain('features read');
+  expect(panel({ ...item, limitReason: 'No approved layout matches this file.' })).not.toContain(changed);
 });
