@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,layoutTargetsIssue} from './ingestion';
-import {STREAMING_VECTOR_LIMITS} from './streaming-vector';
+import {STREAMING_VECTOR_LIMITS,StreamingVectorRecordSchema} from './streaming-vector';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
@@ -22,7 +22,8 @@ export const StreamedProfilePathSchema=z.strictObject({path:SourcePathSchema,...
   /** In a file of outlines with pins or lines, the same counts over the outlines an outline kind draws. */
   outline:z.strictObject({...streamedCounts,integers:streamedIntegers}).optional()});
 export const StreamedProfileLocatorSchema=z.strictObject({featureIndex:z.number().int().nonnegative(),
-  byteStart:z.number().int().nonnegative(),byteEnd:z.number().int().positive(),rawSha256:hash,issueCode:issue});
+  byteStart:z.number().int().nonnegative(),byteEnd:z.number().int().positive(),rawSha256:hash,issueCode:issue,
+  sequencePosition:StreamingVectorRecordSchema.shape.sequencePosition});
 export const StreamedProfileGenerationSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),
   jobId:id,rawJobId:id,source:SourcePinSchema,readerSha256:hash,profilerSha256:hash,
   generation:z.number().int().nonnegative().max(STREAMED_PROFILE_LIMITS.generations),generationHash:hash,

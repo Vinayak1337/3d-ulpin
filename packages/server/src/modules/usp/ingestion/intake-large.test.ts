@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import type { PoolClient } from 'pg';
-import { StreamedPrefixMappingPlanSchema, STREAMING_VECTOR_LIMITS as limits,
+import { StreamedPrefixMappingPlanSchema, StreamedProfileLocatorSchema, STREAMING_VECTOR_LIMITS as limits,
   type StreamedProfileGeneration, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { intakeLargeFailureReason, intakeLargeHoldsReason, intakeLargeNumbers, intakeLargePhase,
-  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, intakeLargeProjection, writeIntakeLargeReadTx,
+  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, intakeLargeProjection, intakeLargeEnd, writeIntakeLargeReadTx,
   type IntakeLargeRows, type IntakeLargeStore
 } from './intake-large';
 import { intakeItem, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
@@ -132,6 +133,56 @@ test('five GeoJSON chunks ask on the first prefix, map while open, and draft onl
     assert.equal(again.placement, 'needs_answer');
     assert.match(again.limitReason!, /Nothing was drafted.*complete file/);
     assert.equal((again.planRef!.layoutProfile as { coverage: string }).coverage, 'sealed');
+  }
+});
+
+const sequenceOriginal = readFileSync('fixtures/google-uttam/00-all-google-detections.geojson');
+const sequenceFeatures = JSON.parse(sequenceOriginal.toString()).features;
+
+for (const framing of ['geojson-lines', 'geojson-seq-rs', 'feature-collection'] as const) {
+  test(`${framing} end words name only retained sequence positions; collection words stay unchanged`, async () => {
+    // test_only: real public outlines with a bare geometry and deliberately broken JSON, not registry records.
+    const values = [sequenceFeatures[0], sequenceFeatures[0].geometry, sequenceFeatures[1],
+      sequenceFeatures[2], sequenceFeatures[3]];
+    const text = framing === 'feature-collection' ? JSON.stringify({ type: 'FeatureCollection', features: values })
+      : values.map((value, index) => `${framing === 'geojson-seq-rs' ? '\x1e' : ''}`
+        + `${index === 3 ? '{broken' : JSON.stringify(value)}\n`).join('');
+    const records: StreamingVectorRecord[] = [];
+    await readStreamingFeatures(Readable.from([text]), framing, async item => { records.push(sourceRecord(item)); });
+    const { inventory, quarantineLocators } = advanceStreamedInventory(emptyInventory(), records);
+    const retained = quarantineLocators.map(locator => StreamedProfileLocatorSchema.parse(
+      JSON.parse(JSON.stringify(locator))));
+    const positions = retained.flatMap(locator => locator.sequencePosition ? [locator.sequencePosition] : []);
+    const collection = framing === 'feature-collection';
+    assert.equal(inventory.quarantined, collection ? 1 : 2);
+    assert.deepEqual(positions, collection ? [] : [2, 4].map(number => ({
+      kind: framing === 'geojson-lines' ? 'line' : 'record', number })));
+    if (collection) assert.equal(Object.hasOwn(retained[0], 'sequencePosition'), false);
+    const end = intakeLargeEnd({ recordsRead: inventory.recordsSeen, accepted: inventory.accepted,
+      packages: 1, readerRejected: inventory.quarantined, readerRejectedPositions: positions,
+      duplicates: 0, oversized: 0 }, null);
+    const words = collection ? '1 not accepted by the reader.'
+      : `2 not accepted by the reader (${framing === 'geojson-lines' ? 'lines' : 'records'} 2 and 4).`;
+    assert.equal(end.limitReason, `5 records read; ${inventory.accepted} in 1 packages. ${words}`);
+    assert.deepEqual(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson'), sequenceOriginal);
+  });
+}
+
+test('seven bad NDJSON lines name only the first five retained positions in read order', async () => {
+  const records: StreamingVectorRecord[] = [];
+  await readStreamingFeatures(Readable.from([Array(7).fill('{broken\n').join('')]), 'geojson-lines',
+    async item => { records.push(sourceRecord(item)); });
+  const { inventory, quarantineLocators } = advanceStreamedInventory(emptyInventory(), records);
+  const positions = quarantineLocators.flatMap(locator => locator.sequencePosition ? [locator.sequencePosition] : [])
+    .slice(0, 5);
+  assert.equal(positions.length, 5);
+  assert.equal(intakeLargeHoldsReason({ recordsRead: inventory.recordsSeen, accepted: 0, packages: 0,
+    readerRejected: inventory.quarantined, readerRejectedPositions: positions, duplicates: 0, oversized: 0 }),
+  '7 records read; 0 in 0 packages. 7 not accepted by the reader (first at lines 1, 2, 3, 4 and 5).');
+  for (const position of [{ kind: 'line', number: 0 }, { kind: 'record', number: 1.5 },
+    { kind: 'feature', number: 1 }]) {
+    assert.equal(StreamedProfileLocatorSchema.safeParse({ ...quarantineLocators[0],
+      sequencePosition: position }).success, false);
   }
 });
 

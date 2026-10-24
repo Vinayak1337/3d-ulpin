@@ -2,7 +2,7 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import type { GisSetAside } from '@ulpin/contracts';
 import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits,
-  type IntakeCard, type IntakeItemSchema } from '@ulpin/contracts/usp';
+  type IntakeCard, type IntakeItemSchema, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { AREA_PROCESSOR_OPERATION } from '../../areas/areas';
@@ -175,6 +175,8 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
 export type IntakeLargeCounts = {
   recordsRead: number; accepted: number; packages: number;
   readerRejected: number; duplicates: number; oversized: number; setAside?: GisSetAside;
+  /** At most five retained set-aside sequence positions, in read order. */
+  readerRejectedPositions?: NonNullable<StreamingVectorRecord['sequencePosition']>[];
   wide?: number; outside?: number; unmeasured?: number;
 };
 const AREA_KM = AREA_NORMALIZER_EXTENT.metres / 1000;
@@ -185,7 +187,19 @@ export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null
   if (!counts.readerRejected && !counts.duplicates && !counts.oversized && !counts.wide && !counts.outside
     && !counts.unmeasured && counts.accepted === counts.recordsRead) return null;
   const sentences = [`${counts.recordsRead} records read; ${counts.accepted} in ${counts.packages} packages.`];
-  if (counts.readerRejected) sentences.push(`${counts.readerRejected} not accepted by the reader.`);
+  if (counts.readerRejected) {
+    const positions = counts.readerRejectedPositions?.slice(0, 5) ?? [];
+    let where = '';
+    if (positions.length) {
+      const numbers = positions.map(position => position.number);
+      const listed = numbers.length === 1 ? String(numbers[0])
+        : `${numbers.slice(0, -1).join(', ')} and ${numbers.at(-1)}`;
+      const kind = positions[0].kind === 'line' ? 'line' : 'record';
+      const first = counts.readerRejected > positions.length ? 'first at ' : '';
+      where = ` (${first}${kind}${numbers.length > 1 ? 's' : ''} ${listed})`;
+    }
+    sentences.push(`${counts.readerRejected} not accepted by the reader${where}.`);
+  }
   if (counts.duplicates) sentences.push(`${counts.duplicates} share an identifier with another record and are held.`);
   if (counts.oversized) sentences.push(`${counts.oversized} are larger than a package can hold and are held.`);
   if (counts.wide) sentences.push(`${counts.wide} are wider than one map area (${AREA_KM} km or `
