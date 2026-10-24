@@ -9,7 +9,7 @@ import {AppError} from '../../../infrastructure/errors';
 
 const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
 const decode=(bytes:Buffer)=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
-type Framing='feature-collection'|'geojson-seq-rs';
+type Framing='feature-collection'|'geojson-seq-rs'|'geojson-lines';
 
 /** Inspect the original JSON tokens before JS can round numbers or replace duplicate keys. */
 function parseSourceValue(raw:Buffer):{value:unknown;issueCode:string|null}{
@@ -121,14 +121,33 @@ class Cursor {
     const raw=Buffer.from(bytes);
     return {bytes:raw,start,end:this.offset};
   }
+  /** Physical delimiters recover a bad JSON record without trying to balance its broken tokens. */
+  async framedValue(lines:boolean){
+    const start=this.offset,bytes:number[]=[];
+    while(true){
+      const next=await this.peek();
+      if(next===null||!lines&&next===30)break;
+      const byte=this.position<this.chunk.length?this.takeBuffered():(await this.take())!;
+      bytes.push(byte);
+      if(bytes.length>limits.featureBytes+2)
+        throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
+      if(lines&&byte===10)break;
+    }
+    if(bytes.pop()!==10)
+      throw new AppError(422,'GEOJSON_SEQUENCE','Every sequence line or record must end with LF.');
+    if(bytes.at(-1)===13)bytes.pop();
+    if(bytes.length>limits.featureBytes)
+      throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
+    return {bytes:Buffer.from(bytes),start,end:start+bytes.length};
+  }
   digest(){return this.hash.digest('hex');}
 }
 
 export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;
-  valueIssueCode:string|null;rawSha256?:string;collectionTypeBeforeFeatures?:boolean};
+  valueIssueCode:string|null;rawSha256?:string;collectionTypeBeforeFeatures?:boolean;sourcePosition?:string};
 /** Late-type collections stage privately until closure; type-first collections can publish while reading. */
 export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
-  const cursor=new Cursor(body);let index=0,metadataBytes=0,collectionTypeBeforeFeatures=false;
+  const cursor=new Cursor(body);let index=0,metadataBytes=0,blankLines=0,collectionTypeBeforeFeatures=false;
   const metadata:Record<string,unknown>=Object.create(null);
   const feature=async()=>{
     const value=await cursor.value(limits.featureBytes);
@@ -166,13 +185,25 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
         'The root type must be FeatureCollection; nothing from this collection was published.');
     if(!foundFeatures)throw new AppError(422,'GEOJSON_CONTAINER','A FeatureCollection with complete features is required.');
   }else{
-    while(await cursor.nonspace()!==null){await cursor.expect(30);await feature();
-      // RFC 7464 JSON text sequences require LF after each JSON text.
-      if(await cursor.take()!==10)throw new AppError(422,'GEOJSON_SEQUENCE','Every RS framed feature must end with LF.');
+    const lines=framing==='geojson-lines';let position=0;
+    while((lines?await cursor.peek():await cursor.nonspace())!==null){
+      if(!lines)await cursor.expect(30);
+      const value=await cursor.framedValue(lines);position++;
+      if(lines&&value.bytes.every(whitespace)){blankLines++;continue;}
+      if(index>=limits.features)
+        throw new AppError(413,'STREAMING_FEATURE_BUDGET','The sequence exceeds the feature limit.');
+      let parsed:{value:unknown;issueCode:string|null};
+      try{parsed=parseSourceValue(value.bytes);}
+      catch(error){
+        if(!(error instanceof AppError)||error.code!=='GEOJSON_JSON')throw error;
+        parsed={value:null,issueCode:'GEOJSON_JSON'};
+      }
+      await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,
+        feature:parsed.value,valueIssueCode:parsed.issueCode,sourcePosition:`${lines?'Line':'Record'} ${position}`});
     }
   }
   if(await cursor.nonspace()!==null)throw new AppError(422,'GEOJSON_CONTAINER','Trailing source content is not part of the declared framing.');
-  return {features:index,metadata,bytes:cursor.offset,sha256:cursor.digest()};
+  return {features:index,metadata,blankLines,bytes:cursor.offset,sha256:cursor.digest()};
 }
 
 /** A CSV pinned above 16 MiB is read in row windows, never whole; each row cites its own byte range. */
@@ -290,7 +321,11 @@ export function streamedFeatureIssue(raw:Buffer):string|null{
   return parsed.issueCode??validateStreamingFeature(parsed.value);
 }
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
-  const issueCode=item.valueIssueCode??validateStreamingFeature(item.feature);
+  let issueCode=item.valueIssueCode??validateStreamingFeature(item.feature);
+  if(item.sourcePosition&&issueCode==='GEOJSON_JSON')
+    issueCode+=`: ${item.sourcePosition} is not valid JSON.`;
+  if(item.sourcePosition&&issueCode==='INVALID_FEATURE')
+    issueCode+=`: ${item.sourcePosition} is not a GeoJSON Feature.`;
   return {featureIndex:item.index,byteStart:item.start,byteEnd:item.end,
     rawSha256:createHash('sha256').update(item.raw).digest('hex'),
     disposition:issueCode?'quarantined':'accepted',issueCode,feature:issueCode?null:item.feature};

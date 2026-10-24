@@ -6,6 +6,7 @@ import { AppError, notFound } from '../../../infrastructure/errors';
 import { assertIngestionBinding } from './events';
 import { intakeSourceTx } from './intake-context';
 import { intakeLargeRequestKey } from './intake-large';
+import { intakeGeojsonFraming } from './intake-draft';
 import { featureExtent, measurableCrs, type SourceCrs } from './intake-package-extent';
 import { StreamingVectorService } from './streaming-vector';
 
@@ -17,6 +18,8 @@ const previewWords = 'Preview of the outlines read so far; not a record, not rev
 const crsWords = 'The preview needs a stated, supported CRS; the file’s coordinate system is unsupported or unread. ';
 const rfc7946Words = 'No coordinate system is stated so far, so the outlines are drawn as longitude and latitude '
   + '(RFC 7946); a later statement in the file replaces this preview. ';
+const sequenceWords = 'GeoJSON sequences have no collection members; the outlines use longitude and latitude '
+  + '(RFC 7946). ';
 const outsideWords = 'Some outlines are not in longitude and latitude and wait for the file\'s '
   + 'stated coordinate system.';
 const coordinateBytes = 4 * 1024 * 1024;
@@ -24,14 +27,16 @@ type Dependencies = { transaction: typeof transaction; reader: Pick<StreamingVec
 type PreviewCrs = { crs: SourceCrs | null; basis: IntakeReadPreviewPage['crsBasis'] };
 
 function previewCrs(inspection: Record<string, any> | null, card: any, source: { id: string; revision: number;
-  sha256: string; bytes: string | number }, rawJobId: string): PreviewCrs {
+  sha256: string; bytes: string | number }, rawJobId: string, framing: string): PreviewCrs {
   const receipt = StreamedMapOriginalReceiptSchema.safeParse(inspection?.streamedMapReceipt);
   if (receipt.success && receipt.data.rawJobId === rawJobId && receipt.data.sourceId === source.id
     && receipt.data.sourceRevision === source.revision && receipt.data.sourceSha256 === source.sha256
-    && receipt.data.sourceBytes === Number(source.bytes)) {
+    && receipt.data.sourceBytes === Number(source.bytes) && receipt.data.framing === framing) {
     const crs = measurableCrs(receipt.data.collectionMetadata);
     return { crs, basis: crs ? 'sealed' : 'unsupported' };
   }
+  // A sequence has no collection declaration; its exact-job receipt still needs to seal the whole read.
+  if (framing !== 'feature-collection') return { crs: measurableCrs({}), basis: 'rfc7946_no_crs_read_yet' };
   // RFC 7946 is provisional here: an exact-job sealed declaration replaces this basis.
   if (card?.crs?.state === 'absent') return { crs: measurableCrs({}), basis: 'rfc7946_no_crs_read_yet' };
   if (card?.crs?.state !== 'stated' || !card.crs.code) return { crs: null, basis: 'unsupported' };
@@ -70,28 +75,30 @@ export async function readIntakeReadPreview(caseIdValue: string, itemIdValue: st
     const item = (await client.query('SELECT * FROM usp_intake_items WHERE case_id=$1 AND item_id=$2',
       [caseId, itemId])).rows[0] ?? notFound('Intake item not found in this case.');
     const { source, binding } = await intakeSourceTx(client, caseId, item.source_id);
-    if (item.parent_item_id !== null || source.profile !== 'large-original-v1' || item.card?.format !== 'geojson'
+    const framing = item.card && intakeGeojsonFraming(item.card);
+    if (item.parent_item_id !== null || source.profile !== 'large-original-v1' || !framing
       || Number(source.bytes) > STREAMING_VECTOR_LIMITS.sourceBytes)
-      throw new AppError(422, 'INTAKE_READ_PREVIEW_ITEM', 'Only a top-level large GeoJSON has a read preview.');
+      throw new AppError(422, 'INTAKE_READ_PREVIEW_ITEM', 'Only a top-level retained GeoJSON has a read preview.');
     const operation = (await client.query(`SELECT result->>'jobId' job_id FROM operations
       WHERE case_id=$1 AND operation_key=$2 AND kind='streaming-vector'`,
     [caseId, `streaming-vector:${intakeLargeRequestKey(itemId, 'reader')}`])).rows[0];
     if (!operation) notFound('The file has no published reader parts yet.');
-    return { source, binding, card: item.card, rawJobId: uuid.parse(operation.job_id) };
+    return { source, binding, card: item.card, framing, rawJobId: uuid.parse(operation.job_id) };
   });
   const { source, rawJobId, binding } = context;
   const status = await deps.reader.status(caseId, source.id, rawJobId);
   if (status.sourceRevision !== source.revision || status.sourceSha256 !== source.sha256
-    || status.framing !== 'feature-collection')
+    || status.framing !== context.framing)
     throw new AppError(409, 'INTAKE_READ_PREVIEW_PIN', 'The reader differs from this retained GeoJSON.');
   if (status.issueCode === 'STREAMING_SOURCE_INTEGRITY')
     throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The retained original failed its pinned integrity check.');
   if (!status.nextPublishIndex) notFound('The file has no published reader parts yet.');
   const reading = ['queued', 'running'].includes(status.status);
-  const { crs, basis } = previewCrs(source.inspection, context.card, source, rawJobId);
+  const { crs, basis } = previewCrs(source.inspection, context.card, source, rawJobId, context.framing);
   let referenceWords = '';
   if (!crs) referenceWords = crsWords;
-  if (basis === 'rfc7946_no_crs_read_yet') referenceWords = rfc7946Words;
+  if (context.framing !== 'feature-collection') referenceWords = sequenceWords;
+  else if (basis === 'rfc7946_no_crs_read_yet') referenceWords = rfc7946Words;
   const page: IntakeReadPreviewPage = { itemId, sourceId: source.id, sourceRevision: source.revision,
     sourceSha256: source.sha256, rawJobId, chunksRead: status.nextPublishIndex, reading, crsBasis: basis,
     features: [], next: null, words: previewWords + referenceWords + readerWords(status.status) };

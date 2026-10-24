@@ -93,6 +93,28 @@ test('a type-first collection publishes its first part before the reader can rea
   }
 });
 
+test('both sequence framings publish without a collection seal and keep numbered refusals in stable tallies',
+  async () => {
+    for (const framing of ['geojson-lines', 'geojson-seq-rs'] as const) {
+      const store = collectionStore(), tally: Record<string, number> = {};
+      const parts = new StreamingPartWriter(async (index, records) => {
+        store.stage(index, records.length);
+        await publishStreamingPrefixTx(store.client, { ...input, framing });
+      });
+      const prefix = framing === 'geojson-lines' ? '' : '\x1e';
+      await readStreamingFeatures(Readable.from([Buffer.from(prefix + 'null\n' + prefix + '{broken\n')]),
+        framing, async item => {
+          const record = sourceRecord(item);
+          tallySetAside(tally, record);
+          await parts.add(record, 1);
+        });
+      assert.equal(store.state.sealed_chunks, null);
+      assert.equal(store.state.next_publish_index, 2);
+      assert.equal(store.events(), 2);
+      assert.deepEqual(tally, { INVALID_FEATURE: 1, GEOJSON_JSON: 1 });
+    }
+  });
+
 test('late-type collection parts publish only after the root and a late CRS pass', async () => {
   const feature = '{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},'
     + '"properties":{"name":"test_only"}}';

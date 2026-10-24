@@ -26,7 +26,7 @@ export const StreamingVectorGeometrySummarySchema=z.strictObject({
     z.number().int().positive().max(STREAMING_VECTOR_LIMITS.features)),
 });
 export type StreamingVectorGeometrySummary=z.infer<typeof StreamingVectorGeometrySummarySchema>;
-export const StreamingVectorFramingSchema=z.enum(['feature-collection','geojson-seq-rs']);
+export const StreamingVectorFramingSchema=z.enum(['feature-collection','geojson-seq-rs','geojson-lines']);
 export const StreamingVectorRequestSchema=z.strictObject({
   requestKey:id,expectedCaseRevision:z.number().int().nonnegative(),
   expectedSourceRevision:z.number().int().positive(),sourceSha256:hash,

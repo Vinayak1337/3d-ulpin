@@ -1,0 +1,48 @@
+{
+  "task": "S5.3",
+  "planStep": 5,
+  "status": "blocked_checkpoint_not_ready_to_merge",
+  "branch": "task/s5-3-geojson-lines",
+  "base": "cba6685f",
+  "blocker": {
+    "path": "packages/contracts/src/usp/ingestion.ts:104",
+    "reason": "StreamedMapOriginalReceiptSchema fixes framing to feature-collection. Sequence receipts throw; sequence previews cannot become sealed.",
+    "requiredChange": "Authorize this additional contract path and use StreamingVectorFramingSchema for receipt framing. No out-of-scope file was changed."
+  },
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson: 91 test_only Open Buildings polygons; sequence rewrites are in memory only",
+    "difficult": "Same features with one bare-geometry line and one invalid-JSON line: exactly two quarantined, with Line 2 and Line 3 explanations",
+    "protocols": "Nonobjects, FeatureCollection records, malformed JSON, blank lines, CRLF, missing LF, oversized values and pretty-printed RS records"
+  },
+  "implemented": [
+    "Card-selected framing shared by intake routing, large reader startup and read preview",
+    "Bounded LF/RS sequence reader, physical line/record explanations, blank-line count, source ranges and hashes",
+    "Sequence publication and RFC 7946 receipt construction; contract currently prevents sealing"
+  ],
+  "decisions": [
+    "Numbered refusal words use the existing issueCode string field; sealed tallies retain the stable code before the colon",
+    "Sequences never supply collection metadata or guess a CRS from coordinates"
+  ],
+  "checks": {
+    "targeted_TESTS_command": { "exit": 1, "tests": 170, "passed": 168, "failed": 2, "skipped": 0 },
+    "pnpm typecheck:backend": { "beforeExit": 0, "exit": 2, "errors": 3 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "exit": 0 },
+    "pnpm studio:test": { "beforeExit": 0, "exit": 0, "passed": 783, "skipped": 3, "files": 123 },
+    "WORKING-RULES_section_5_server_command": { "exit": 1, "tests": 969, "passed": 963, "failed": 2, "skipped": 4,
+      "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
+    "openapi.ts --check": { "exit": 1, "expectedStale": "docs/api/openapi.json" },
+    "python scripts/api/check.py": { "exit": 1, "expectedStalePin": "packages/contracts/src/usp/streaming-vector.ts" },
+    "git diff --check": { "exit": 0 },
+    "logs": "E:/ulpin-tmp/s5-3-*.log",
+    "baselineCaveat": "Initial server and later checks overlapped edits: initial server 946 passed/10 failed/4 skipped is not a clean baseline. Initial backend and Studio checks completed before edits."
+  },
+  "next": [
+    "Lead authorization for ingestion.ts receipt framing; resume sealing and preview acceptance checks",
+    "Fix checkpoint type errors: reader test source needs inspection:null; worker reference needs an explicit type",
+    "Finish diff cleanup and test indentation; enforce sequence reference against caller overrides and numbered non-Feature words when duplicate-key issues coexist",
+    "Split real-file acceptance cases so NDJSON sealing failure does not prevent RS and CRLF cases from running",
+    "Add focused sequence receipt SQL completion/startReaders coverage, then rerun checks",
+    "Separate UI step: apps/studio upload forecast words for .ndjson, .geojsonl and .geojsons; merger regenerates OpenAPI and pins"
+  ],
+  "safety": "No runtime, Docker, image, demo, provider or GPU action; no original, pin, generated contract or KEEP path changed"
+}

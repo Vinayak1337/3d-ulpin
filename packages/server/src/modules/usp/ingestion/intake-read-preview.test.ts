@@ -23,7 +23,7 @@ const feature = (geometry = { type: 'Polygon',
   type: 'Feature', id: 'test_only-key', properties: { name: 'test_only-name' }, geometry,
 });
 
-function fixture(features = Array.from({ length: 500 }, () => feature())) {
+function fixture(features = Array.from({ length: 500 }, () => feature()), framing = 'feature-collection') {
   const source = { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, bytes: 20_000_000,
     sha256: hash, profile: 'large-original-v1', object_key: 'original-must-not-be-read', name: 'test_only.geojson',
     status: 'received', inspection: { largeOriginal: { uploadId: sourceId, operatorSubject: localOperatorSubject(),
@@ -33,7 +33,9 @@ function fixture(features = Array.from({ length: 500 }, () => feature())) {
         acquiredAt: '2026-10-25T00:00:00.000Z', permissionReference: 'test_only', limitations: [],
         state: 'caller_declared' } } } };
   const item = { item_id: itemId, source_id: sourceId, parent_item_id: null,
-    card: { format: 'geojson', crs: { state: 'stated', code: 'EPSG:4326' } } };
+    card: { family: 'vector', format: framing === 'feature-collection' ? 'geojson'
+      : framing === 'geojson-lines' ? 'ndjson' : 'geojson-seq',
+    crs: { state: 'stated', code: 'EPSG:4326' } } };
   const state = { published: 3, running: true };
   const chunks: any[][] = [];
   let offset = 0, partBytes = 0;
@@ -66,7 +68,7 @@ function fixture(features = Array.from({ length: 500 }, () => feature())) {
     assert.fail(sql);
   } } as unknown as PoolClient;
   const deps: any = { transaction: async (action: (c: PoolClient) => unknown) => action(client), reader: {
-    status: async () => ({ sourceRevision: 1, sourceSha256: hash, framing: 'feature-collection', issueCode: null,
+    status: async () => ({ sourceRevision: 1, sourceSha256: hash, framing, issueCode: null,
       status: state.running ? 'running' : 'completed', nextPublishIndex: state.published }),
     chunk: async (_case: string, _source: string, _job: string, index: number) => {
       assert.ok(index < state.published, 'unpublished chunks stay unread');
@@ -81,7 +83,7 @@ function fixture(features = Array.from({ length: 500 }, () => feature())) {
     const accepted = chunks.flat().filter(record => record.disposition === 'accepted').length;
     const receipt = { version: 'streamed-map-original/1', coverage: 'sealed', unknownRemainder: false,
       sourceId, sourceRevision: 1, sourceBytes: source.bytes, sourceSha256: hash, readerVersion: 'geojson-stream/2',
-      rawJobId, framing: 'feature-collection', parts: chunks.length, features: features.length,
+      rawJobId, framing, parts: chunks.length, features: features.length,
       accepted, quarantined: features.length - accepted, rawManifestSha256: hash, collectionMetadata: metadata,
       reference: { sourceCrs: 'EPSG:4326', evidence: 'test_only', coordinateUnit: 'degree' } };
     Object.assign(source.inspection, { streamedMapReceipt: receipt });
@@ -121,6 +123,26 @@ test('five no-crs chunks preview on RFC 7946 before seal; paging returns accepte
     Array.from({ length: 500 }, (_, index) => index).filter(index => index !== 105));
   assert.equal(storage.mock.callCount(), 0);
   assert.ok(f.statements.every(sql => sql.startsWith('SELECT')));
+});
+
+test('sequence previews use RFC 7946 while reading and seal only under the matching framing', async () => {
+  const original = JSON.parse(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson', 'utf8'));
+  for (const framing of ['geojson-lines', 'geojson-seq-rs']) {
+    const f = fixture(original.features, framing);
+    f.state.published = 1;
+    f.item.card.crs = { state: 'unknown', code: null as any };
+    const before = await f.read();
+    assert.equal(before.crsBasis, 'rfc7946_no_crs_read_yet');
+    assert.equal(before.features.length, 91);
+    assert.match(before.words, /sequences have no collection members.*RFC 7946/);
+    assert.doesNotMatch(before.words, /later statement/);
+    const receipt = f.seal({});
+    assert.equal((await f.read()).crsBasis, 'sealed');
+    receipt.framing = 'feature-collection';
+    assert.equal((await f.read()).crsBasis, 'rfc7946_no_crs_read_yet');
+    f.item.card.format = 'geojson';
+    await assert.rejects(f.read(), { code: 'INTAKE_READ_PREVIEW_PIN' });
+  }
 });
 
 test('WGS 84 UTM 43N converts the known central-meridian point to 1e-7 degrees; Z is dropped', async () => {

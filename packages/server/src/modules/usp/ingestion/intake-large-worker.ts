@@ -139,8 +139,11 @@ async function caseRevision(input: IntakeLargeInput, attempt: UspJobAttempt | un
 async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt | undefined, state: State) {
   const pins = { expectedCaseRevision: await caseRevision(input, attempt),
     expectedSourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256 };
+  const { intakeGeojsonFraming } = await import('./intake-draft');
+  const framing = state.item.card && intakeGeojsonFraming(state.item.card);
+  if (!framing) conflict('The reading card does not name a supported GeoJSON framing.');
   const rawJobId = state.store.reader?.job_id ?? (await reader.enqueue(input.caseId, input.sourceId, {
-    requestKey: intakeLargeRequestKey(input.itemId, 'reader'), framing: 'feature-collection', ...pins })).jobId;
+    requestKey: intakeLargeRequestKey(input.itemId, 'reader'), framing, ...pins })).jobId;
   if (!state.store.profile) await profiler.enqueue(input.caseId, input.sourceId,
     { requestKey: intakeLargeRequestKey(input.itemId, 'profile'), rawJobId, ...pins });
 }

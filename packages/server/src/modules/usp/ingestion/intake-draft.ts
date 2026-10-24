@@ -235,9 +235,18 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
   return active?.id ?? null;
 }
 
+/** Only the probed card chooses framing; neither the name nor unread source bytes select a reader. */
+export function intakeGeojsonFraming(card: Pick<IntakeCard, 'format' | 'family'>) {
+  if (card.format === 'geojson') return 'feature-collection' as const;
+  if (card.family !== 'vector') return null;
+  if (card.format === 'ndjson') return 'geojson-lines' as const;
+  if (card.format === 'geojson-seq') return 'geojson-seq-rs' as const;
+  return null;
+}
+
 /** Byte-probed kinds select readers; a small byte count alone never selects the bounded feature adapter. */
 export function intakeReaderRoute(card: IntakeCard, source: Pick<IntakeSourceRow, 'bytes' | 'inspection'>): string {
-  if (card.format !== 'geojson') return card.format;
+  if (card.format !== 'geojson') return intakeGeojsonFraming(card) ? 'streamed_geojson' : card.format;
   // A derivative (a native layer, TC1's table rows) takes the large path whatever its size, as a dropped large file.
   const derivative = source.inspection?.nativeDerivative || source.inspection?.tableDerivative
     || source.inspection?.cellDerivative;
@@ -308,7 +317,7 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (!item || item.parent_item_id || item.family !== 'vector'
     || !['probed', 'planned', 'reading'].includes(item.state)) return null;
   if (publishedCard && item.plan_ref) return null;
-  const retainedGeojson = source.profile === 'large-original-v1' && item.card?.format === 'geojson';
+  const retainedGeojson = source.profile === 'large-original-v1' && item.card && intakeGeojsonFraming(item.card);
   const adapter = retainedGeojson ? await retainedGeojsonAdapterTx(client, item, source) : null;
   if (adapter === 'kept') return null;
   if (adapter === 'streamed') {
