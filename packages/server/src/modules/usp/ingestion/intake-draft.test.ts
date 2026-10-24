@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { settings } from '../../../infrastructure/config';
+import { AdaptiveMappingService, caseOriginalTeacherGate } from './adaptive-mapping-service';
 import type { PoolClient } from 'pg';
 import { SourceProfileSchema, AdaptiveMappingResponseSchema, type MappingReceipt } from '@ulpin/contracts/usp';
 import { ingestionBinding } from './events';
@@ -400,7 +402,8 @@ test('registration refuses a wrong source manifest using the operation-specific 
     { kind: 'intake', workspaceId: caseId, version: 1 }, caseId, fingerprint(fixture.jobs[0].payload)),
   { code: 'INTAKE_DRAFT_INPUT_SCOPE', status: 422 });
 });
-test('remembered operations are repinned to the new source and carry no approval', async () => {
+test('remembered operations are repinned to the new source and carry no approval', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'off');
   const next = structuredClone(profile);
   next.source.sourceId = caseId;
   next.source.sourceSha256 = 'b'.repeat(64);
@@ -441,7 +444,37 @@ test('layout memory keeps the officer stated kind, with generic targets and no p
   assert.deepEqual(proposal?.plan.operations, saved.plan.operations);
   assert(!('approval' in proposal!.plan));
 });
-test('unapproved and different-schema memory falls back only to the permitted existing proposer', async () => {
+test('a case GeoJSON with the switch off asks the officer without calling adaptive.propose', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'off');
+  const teacher = t.mock.method(AdaptiveMappingService.prototype, 'propose', async () => {
+    throw new Error('A refused original must never call the adaptive service.');
+  });
+  const gate = caseOriginalTeacherGate();
+  await assert.rejects(proposeIntakeLayout(profile, null, caseId), error => {
+    assert(error instanceof AppError);
+    assert.equal(error.code, gate.code);
+    assert.equal(officerQuestion(error), gate.words);
+    return true;
+  });
+  assert.equal(teacher.mock.callCount(), 0);
+});
+
+test('masked_profile permits one adaptive case GeoJSON proposal without transferring approval', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
+  const teacher = t.mock.method(AdaptiveMappingService.prototype, 'propose', async () =>
+    AdaptiveMappingResponseSchema.parse({ version: 'adaptive-geojson-proposal/1', requestKey: caseId,
+      source: profile.source, workspaceRevision: 0, workspaceFingerprint: hash,
+      status: 'proposed', code: null, plan, validationErrors: [], call: null,
+      validation: 'mechanics_only', reviewRequired: true }));
+  const proposed = await proposeIntakeLayout(profile, null, caseId);
+  assert.equal(teacher.mock.callCount(), 1);
+  assert.equal(proposed?.origin, 'teacher');
+  assert.deepEqual(proposed?.plan, plan);
+  assert(!('approval' in proposed!.plan));
+});
+
+test('unapproved and different-schema memory falls back only to the permitted existing proposer', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
   let calls = 0;
   const teacher = async () => {
     calls++;

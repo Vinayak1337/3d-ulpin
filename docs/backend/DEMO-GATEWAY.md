@@ -57,6 +57,15 @@ there unless it is the `--dry-run` form, so that no real key ever goes into a re
 - `enable` followed by `disable` restores the configuration byte for byte. The one exception is an adapter line that
   was already there: `enable` overwrites it and `disable` removes it.
 
+## Judges' files: one owner switch
+
+For the API and dispatcher, set `ULPIN_TEACHER_CASE_ORIGINALS=masked_profile` before starting them to allow
+case-original tables and batch GeoJSON profiles; set `ULPIN_TEACHER_CASE_ORIGINALS=off` (or unset it) to refuse.
+Restart both processes after changing it. Missing or unrecognised values fail closed. This switch does not enable
+the gateway, change its caps or grant approval: it sends column names, types and shape only, with no sample cell
+values or contact lines. Restricted licences and stated personal data still refuse. With it off, approved layout
+memory still works; otherwise the officer is asked what the file holds and which fields identify it.
+
 ## A list of keys: the owner's steps in order
 
 The gateway uses one key at a time: the first key of the list that is not marked used up. It moves to the next

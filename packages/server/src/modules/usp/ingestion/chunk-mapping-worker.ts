@@ -8,7 +8,7 @@ import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
-import {AdaptiveMappingService} from './adaptive-mapping-service';
+import {AdaptiveMappingService,caseOriginalTeacherGate} from './adaptive-mapping-service';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {assertChunkMappingInputTx} from './chunk-mapping';
 import {TabularChunkMapper} from './chunk-mapping-agent';
@@ -167,9 +167,16 @@ async function propose(input:ChunkMappingInput,attempt:UspJobAttempt){
   const current=await transaction(client=>assertChunkMappingInputTx(client,input));
   let proposal:AdaptiveMappingResponse|null=null,status:'needs_input'|'disabled'|'unavailable'='needs_input',code='MAPPING_PROFILE_UNSUPPORTED';
   if(current.profile?.version==='manual-geojson/1'){
-    proposal=await adaptive.propose(input.caseId,input.sourceId,{requestKey:input.jobId,
-      source:current.profile.source,workspaceRevision:current.profile.workspaceRevision,
-      workspaceFingerprint:current.profile.workspaceFingerprint});
+    const gate=caseOriginalTeacherGate();
+    const profile=current.profile;
+    proposal=gate.allowed
+      ?await adaptive.propose(input.caseId,input.sourceId,{requestKey:input.jobId,
+        source:profile.source,workspaceRevision:profile.workspaceRevision,
+        workspaceFingerprint:profile.workspaceFingerprint})
+      :{version:'adaptive-geojson-proposal/1',requestKey:input.jobId,source:profile.source,
+        workspaceRevision:profile.workspaceRevision,workspaceFingerprint:profile.workspaceFingerprint,
+        status:'needs_input',code:gate.code,plan:null,validationErrors:[gate.words],call:null,
+        validation:'mechanics_only',reviewRequired:true};
     status=proposal.status==='disabled'?'disabled':proposal.status==='unavailable'?'unavailable':'needs_input';
     code=proposal.code??'MAPPING_REVIEW_REQUIRED';
   }else if(current.profile?.version==='streamed-profile/1'){

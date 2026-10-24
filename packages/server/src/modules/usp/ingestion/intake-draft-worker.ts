@@ -11,7 +11,7 @@ import { getPackage } from '../../areas/areas';
 import { intakeDestination, intakeCaseArea } from './intake-destination';
 export { intakeDestination } from './intake-destination';
 import { ManualIngestionService } from './service';
-import { AdaptiveMappingService } from './adaptive-mapping-service';
+import { AdaptiveMappingService, caseOriginalTeacherGate } from './adaptive-mapping-service';
 import { compileMapping, setAsideWords } from './registry';
 import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntakeDraftTx,
   type IntakeDraftInput } from './intake-draft';
@@ -89,7 +89,7 @@ export async function lookupIntakeMemory(profile: SourceProfile, subject: string
   return null;
 }
 
-/** Reuse operations, never approval. The existing adaptive service owns every gateway policy/refusal. */
+/** Reuse operations, never approval. Every batch GeoJSON without memory is a gated case original. */
 export async function proposeIntakeLayout(profile: SourceProfile, remembered: MappingReceipt | null,
   requestKey: string, teacher = () => adaptive.propose(profile.caseId, profile.source.sourceId, {
     requestKey, source: profile.source, workspaceRevision: profile.workspaceRevision,
@@ -97,6 +97,8 @@ export async function proposeIntakeLayout(profile: SourceProfile, remembered: Ma
   })): Promise<Proposal | null> {
   const plan = memoryPlan(profile, remembered);
   if (plan) return { plan, origin: 'memory' };
+  const gate = caseOriginalTeacherGate();
+  if (!gate.allowed) throw new AppError(422, gate.code, gate.words);
   const response = await teacher();
   if (response.status !== 'proposed' || !response.plan) return null;
   return { plan: response.plan, origin: 'teacher' };
@@ -134,9 +136,11 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
   return proposal;
 }
 
-/** The refusals an officer answers: the file belongs elsewhere, or the area cannot hold it. */
+/** The refusals an officer answers: teacher permission, a different site, or an area that cannot hold the file. */
 export function officerQuestion(error: unknown): string | null {
   if (!(error instanceof AppError)) return null;
+  const gate = caseOriginalTeacherGate();
+  if (error.code === gate.code) return gate.words;
   if (error.code === 'AREA_SOURCE_DENIED') return otherSite;
   if (error.code === 'AREA_PROCESSING' && error.status === 422) return error.message.slice(0, 2000);
   return null;

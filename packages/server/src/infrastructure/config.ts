@@ -49,6 +49,10 @@ export const settings = {
   get fixtureRoot() {
     return process.env.ULPIN_FIXTURE_ROOT || path.join(repositoryRoot, "fixtures");
   },
+  /** Only the owner's exact opt-in permits masked case-original profiles to reach the teacher. */
+  get teacherCaseOriginals(): "off" | "masked_profile" {
+    return process.env.ULPIN_TEACHER_CASE_ORIGINALS === "masked_profile" ? "masked_profile" : "off";
+  },
   /** The dispatcher's memory budget in MiB; unset, the dispatcher uses half of this machine's memory. */
   get dispatchMemoryMib(): number | undefined {
     const value = process.env.DISPATCH_MEMORY_MIB;
