@@ -56,11 +56,11 @@ async function enqueue(client:PoolClient,caseId:string,sourceId:string,mode:Docu
   return {ctx,jobId};
 }
 /**
- * G10. A PDF in a batch is read by this reader. Its retained original gains the document receipt its bytes already
- * prove (same subject, hash and size) and one native_only job, so no page leaves for a provider. A source with a
+ * A batch PDF or Word document gains a receipt with its card's format (same subject, hash and size) and one
+ * native_only job, so no text leaves for a provider. The reader still checks the container. A source with a
  * document job keeps it: a later probe never reads the original again; a retry stays the officer's request.
  */
-export async function queueBatchDocumentTx(client:PoolClient,caseId:string,sourceId:string){
+export async function queueBatchDocumentTx(client:PoolClient,caseId:string,sourceId:string,format:'pdf'|'docx'){
   const prior=(await client.query(`SELECT id,status FROM jobs WHERE case_id=$1 AND source_id=$2
     AND operation='document-extraction' ORDER BY created_at DESC LIMIT 1`,[caseId,sourceId])).rows[0];
   if(prior)return {jobId:prior.id as string,status:prior.status as string};
@@ -69,7 +69,7 @@ export async function queueBatchDocumentTx(client:PoolClient,caseId:string,sourc
     [caseId,sourceId])).rows[0]??notFound('Source not found in this case.');
   if(!source.inspection?.documentOriginal){
     const documentOriginal=DocumentOriginalSchema.parse({version:DOCUMENT_VERSION,subject:scope.binding.subject,
-      format:'pdf',sha256:source.sha256,bytes:Number(source.bytes),receivedAt:new Date().toISOString()});
+      format,sha256:source.sha256,bytes:Number(source.bytes),receivedAt:new Date().toISOString()});
     await client.query(`UPDATE sources SET inspection=COALESCE(inspection,'{}'::jsonb) || $2::jsonb WHERE id=$1`,
       [sourceId,{documentOriginal}]);
   }
