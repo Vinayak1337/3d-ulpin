@@ -88,7 +88,7 @@ Reuse the real public files already on the data drive; acquire only what is miss
 
 ### S2.1 Practice kit part 1: pick about 8 real public files already on the data drive
 
-Size S, this PC: data drive. After: none (step 0 is done). **Status: open.**
+Size S, this PC: data drive. After: none (step 0 is done). **Status: running codex since 24 Oct 2026.**
 
 - **What:** Write the practice-kit manifest from originals already retained. Don't copy or change them: reference them in place. Cover all four families and the size range. Proposed list:
 - Niagara footprints, 25.4 MiB GeoJSON
