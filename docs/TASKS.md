@@ -56,7 +56,7 @@ Size M, this PC: Docker. After: none. **Status: done 24 Oct (4c704191 on int3-pr
 
 ### S1.2 Fresh-runtime rehearsal part 1: create ulpin-reh-03 and run act 1 (proves SA1 and EV2 live)
 
-Size L, this PC: Docker. After: S1.1, S3.1 merged onto int3-pre by the lead. **Status: open.**
+Size L, this PC: Docker. After: S1.1, S3.1 merged onto int3-pre by the lead. **Status: running codex (24 Oct), serving 0ce6cad8 on ulpin-reh-03; quiet PC.**
 
 - **What:** Rehearse the newest head (0aecb4f8 plus S1.1 fixes and S3.1) on a new, empty runtime, not reh-02: reh-02 carried old point-batch items that polluted REH16. Procedure (DEMO-RUNTIME.md:272-311): git worktree add E:/Projects/ulpin-wt/ulpin-reh-03 <serve sha>; pnpm install --frozen-lockfile; pnpm platform:start --profile demo --create --runtime ulpin-reh-03; demo-document-runtime.mjs build; demo-native-readers.mjs build then check (four verified); platform:start; platform:doctor all PASS. The image stays ulpin-geo:git-dc5deb405fb9; services/geo is unchanged since the pin. Ports are 21031-21036 (API 21036). Then act 1 with the REH16 run-a order: confirm evidence while the package prepare runs. Both cards; journey 8/8 with surfaces and citation passing. Run the demo doctor before and after. Quiet PC: no other agent runs. Leave reh-03 stopped, never removed.
 - **Files:** Read: docs/backend/DEMO-RUNTIME.md:272-311; _tasks/reh16.md, reh17.md; k3 branch task/reh16-rehearsal 8f7314b2 docs/evidence/runtime/reh16/{roll.json,launch.ps1,dress.mjs,journey.mjs,cards.mjs,citations.mjs,jobs.mjs,api-watch.ps1,act1-files.json} (copy with reh-03 ports and paths). Write: docs/evidence/step1/s1-2/result.json on its own branch.
@@ -299,7 +299,7 @@ Size S, code only. After: S4.2 (same file mapping-teacher.ts, one writer). **Sta
 
 ### S4.5 A dropped table is read and proposed without a press when its layout is certain
 
-Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (teacher policy applies to the proposal). **Status: server part running codex (24 Oct); the BatchTableSection change (read in progress instead of the press) waits for a UI chat session.**
+Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (teacher policy applies to the proposal). **Status: server part done 24 Oct (merged on int3-pre); the BatchTableSection change (read in progress instead of the press) waits for a UI chat session.**
 
 - **What:** A dropped CSV, TSV, XLSX or ODS rests as kept until the officer presses Read as a table. Its mapping jobs start from the browser, so its card has no field meanings until someone acts. When the selection is certain, queue the same server calls the press makes, from a job: tableFromOriginal, then StreamingVectorService.enqueue and ChunkMappingService.enqueue, as queueApprovedTabular does. Certain means a CSV or TSV (its only allowed header is row 1) or a one-sheet workbook with header row 1. A workbook with several sheets keeps the press, and its card names that question. The table section shows the read in progress instead of the press.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft.ts:147-173 (keptOnly, keptWords), 274-283 (route), 331-345 settleKeptTx; intake-draft-worker.ts:294-313 (job pattern); service.ts:677-700 tableFromOriginal; chunk-mapping-learning.ts:180-201 queueApprovedTabular (pattern, read only); packages/contracts/src/usp/ingestion.ts:136-146 (selection rule, read only); apps/studio/src/features/intake/BatchTableSection.tsx:36-80
