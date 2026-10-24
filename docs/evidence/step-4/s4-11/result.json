@@ -1,0 +1,53 @@
+{
+  "task": "S4.11",
+  "planStep": 4,
+  "result": "Read-only layout memory fills kind and paths; the current file still needs authoring and approval.",
+  "coverage": [
+    "Sealed and provisional inventories use existing number/hash/source-pin checks and mapping admission.",
+    "Newest matching local approval wins, at most 50; no same-revision, proposed or other-subject reuse.",
+    "Missing/type-changed fields are named; incompatible geometry, stale pins and corrupt history are refused.",
+    "The reading card uses the same lookup and marks remembered fields and drawing as memory.",
+    "SQL spy permits only reads; originals are unchanged; the route refuses query fields and non-large items."
+  ],
+  "inputs": {
+    "protocol": "test_only large-source receipts, approved recipes, sealed/prefix profiles; no live database",
+    "good": "fixtures/real-nyc/original.geojson: same bin path matches its streamed inventory",
+    "difficult": "fixtures/uttam-nagar/uttam-nagar-road-centrelines.geojson: bin is missing, no match"
+  },
+  "decisions": [
+    "The response contains kind, target/sourcePath pairs, recipeId, name, approvedAt and words; never approval.",
+    "Mechanical completeness and geometry admission are checked again before suggesting remembered choices.",
+    "Current inventory loaders are substituted in protocol tests; real-file paths use the streamed inventory reader."
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s4-11-{before,after}-*.log",
+    "streamed-memory.test.ts": { "exit": 0, "passed": 5 },
+    "intake-reading, intake-large, streamed-layout, intake-api tests": {
+      "before": { "exit": 0, "passed": 59 }, "after": { "exit": 0, "passed": 59 }
+    },
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    "pnpm studio:typecheck": { "beforeExit": 2, "afterExit": 2, "existingErrors": 1 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "passed": 783, "skipped": 3 },
+    "WORKING-RULES section 5 server command": {
+      "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "before": { "exit": 0, "passed": 960, "skipped": 4 },
+      "after": { "exit": 0, "passed": 965, "skipped": 4 }
+    },
+    "openapi.ts --check": { "beforeExit": 0, "afterExit": 1, "expected": "docs/api/openapi.json stale" },
+    "python scripts/api/check.py": { "beforeExit": 0, "afterExit": 1, "expected": "producer pins stale" },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0 }
+  },
+  "staleProducers": [
+    "apps/api/src/modules/ingestion/ingestion.controller.ts",
+    "apps/api/src/modules/ingestion/operation-manifest.json",
+    "packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts",
+    "packages/server/src/modules/usp/ingestion/streamed-memory.ts (new)"
+  ],
+  "next": [
+    "Studio: fill StreamedLayoutAnswer from layout-memory; retain existing author/approve routes.",
+    "Integration: refresh generated contracts and pins; they were deliberately left unchanged.",
+    "Existing Studio error: table-placement-command.ts:65 lacks decimalMark; outside this task's paths."
+  ]
+}
