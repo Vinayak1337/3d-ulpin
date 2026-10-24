@@ -48,14 +48,18 @@ export function ownedProcess(label, name = demoRuntime, { info = processInfo } =
 }
 export async function launchProcesses(env, name = demoRuntime) {
   const runtime = definedRuntime(name);
+  const exitDir = join('E:/ulpin-tmp', runtime.name);
+  mkdirSync(exitDir, { recursive: true });
   for (const label of labels) {
     if (ownedProcess(label, runtime)) continue;
     if (label === 'api') await freePort(env.API_PORT);
     const entry = join(root, label === 'api' ? 'apps/api/src/main.ts' : 'scripts/dispatcher.ts');
     const preload = join(root, 'scripts/platform/isolated-env.cjs');
+    const exitPreload = join(root, 'scripts/platform/exit-record.cjs');
     const log = openSync(join(runtime.dir, 'logs', `${label}.log`), 'a', 0o600);
-    const child = spawn(process.execPath, ['--require', preload, '--import', 'tsx', entry], {
-      cwd: root, env: { ...safeEnvironment(env), ...(label === 'api' ? { TSX_TSCONFIG_PATH: join(root, 'apps/api/tsconfig.json') } : {}) },
+    const child = spawn(process.execPath, ['--require', preload, '--require', exitPreload, '--import', 'tsx', entry], {
+      cwd: root, env: { ...safeEnvironment(env), ULPIN_EXIT_RECORD_FILE: join(exitDir, `${label}-exit.jsonl`),
+        ...(label === 'api' ? { TSX_TSCONFIG_PATH: join(root, 'apps/api/tsconfig.json') } : {}) },
       detached: true, windowsHide: true, stdio: ['ignore', log, log],
     });
     closeSync(log); child.unref();

@@ -1,0 +1,37 @@
+{
+  "task": "S3.1",
+  "planStep": 3,
+  "base": "e1e0af4f",
+  "result": "Redacted once-only process exit records and existing-pool health pressure are implemented and tested.",
+  "inputs": {
+    "code": ["scripts/dispatcher.ts", "apps/api/src/foundation/foundation.controller.ts"],
+    "good": "Child process normal exit and TypeError from the repository test file.",
+    "difficult": "Synthetic credential-shaped error message and invalid code; neither appears in the record.",
+    "dataFiles": "Not applicable to process diagnostics; no survey files or runtime configuration opened."
+  },
+  "decisions": [
+    "Use uncaughtExceptionMonitor to retain Node's default fatal outcome; restore default rejection throwing when no app handler exists.",
+    "SIGTERM records code null before shutdown; app handlers retain control, otherwise re-send the signal with our listener removed.",
+    "Keep record.preload as isolated-env.cjs for compatibility; add exit-record.cjs as a second require.",
+    "Pool and health tests live in the API workspace so its dependencies resolve; all dependency calls are stand-ins."
+  ],
+  "checks": [
+    {"command": "node --test scripts/platform/exit-record.test.mjs", "after": 0, "pass": 8},
+    {"command": "node --test scripts/platform/processes.test.mjs scripts/platform/runtime-stop.test.mjs", "before": 0, "beforePass": 11, "after": 0, "pass": 13},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test apps/api/src/foundation/pool-pressure.test.ts", "after": 0, "pass": 2},
+    {"command": "pnpm typecheck:backend", "before": 0, "after": 0, "projects": 2},
+    {"command": "pnpm studio:typecheck", "before": 0, "after": 0, "projects": 4},
+    {"command": "pnpm studio:test", "before": 1, "beforePass": 735, "beforeSkipped": 3, "beforeProcessCrashes": 2, "after": 0, "pass": 764, "skipped": 3},
+    {"command": "WORKING-RULES.md section 5 invariant test command", "before": 0, "after": 0, "pass": 874, "skipped": 5},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before": 0, "after": 1, "expected": "Stale docs/api/openapi.json after adding health.pool."},
+    {"command": "python scripts/api/check.py", "before": 0, "after": 1, "expected": "Producer changed: apps/api/src/foundation/foundation.controller.ts; baseline 332 operations, 376 schemas."},
+    {"command": "git diff --check", "before": 0, "after": 0}
+  ],
+  "execution": "TMP, TEMP and TMPDIR set to E:/ulpin-tmp. Server tests and OpenAPI check used isolated-env.cjs with ULPIN_PROFILE=demo; tests used REPO_DATA=false.",
+  "logs": "E:/ulpin-tmp/s3-1-{before,after}-*.log",
+  "limits": [
+    "No runtime launched; actual load survival remains for rehearsal. Demo and existing runtime folders were not touched.",
+    "SIGTERM delivery is simulated in the child test on Windows. Forced Windows termination and native aborts bypass JavaScript hooks."
+  ],
+  "next": "Lead regenerates OpenAPI, client types and source pins at integration; rehearse exit records and pool samples under load."
+}

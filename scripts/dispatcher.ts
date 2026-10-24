@@ -25,11 +25,14 @@ async function run() {
       try {
         await dispatchTick();
         reportedError = false;
-      } catch {
-        if (!reportedError)
-          console.error(
-            "Dispatcher cannot reach the application database. Start the platform and run db:migrate.",
-          );
+      } catch (error) {
+        if (!reportedError) {
+          const own = typeof error === "object" && error !== null && Object.hasOwn(error, "code")
+            ? Reflect.get(error, "code") : undefined;
+          let code = error instanceof Error ? error.name : "unknown";
+          if (typeof own === "string" && /^[A-Z0-9_]{1,40}$/.test(own)) code = own;
+          console.error(`Dispatcher tick failed with error code ${code}.`);
+        }
         reportedError = true;
       }
       await waitForDispatch(wake);
