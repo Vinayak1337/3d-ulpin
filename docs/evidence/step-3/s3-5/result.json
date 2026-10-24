@@ -1,0 +1,36 @@
+{
+  "task": "S3.5", "planStep": 3, "base": "e9728a87",
+  "result": "Read-only published-prefix preview with pinned source identity and strict geometry-only response.",
+  "bounds": { "features": 2000, "geometryBytes": 4194304, "rawPartsPerRequest": 32 },
+  "acceptance": {
+    "fiveTestOnlyChunks": "Running after chunk 2: reads 0-2, returns 299 outlines; quarantine excluded.",
+    "paging": "After returns the remaining 200 outlines once, in order; feature and byte bounds also tested.",
+    "privacy": "No properties, source keys or names; no original storage access or non-SELECT domain SQL.",
+    "coordinates": "EPSG:32643 known point within 1e-7 degrees; existing Mercator and UTM conversions reused.",
+    "refusals": "Unsupported/unread CRS, M/mixed dimensions, wrong source revision/access and non-large item.",
+    "route": "Unknown/repeated queries rejected; non-large source refused without a reader call."
+  },
+  "inputs": [
+    { "path": "fixtures/real-nyc/original.geojson", "features": 1, "use": "test_only" },
+    { "path": "fixtures/real-area/original.geojson", "features": 62, "use": "test_only; late CRS" }
+  ],
+  "checks": {
+    "typecheck:backend": { "before": 0, "after": 0, "diagnostics": 0 },
+    "studio:typecheck": { "before": 0, "after": 0, "diagnostics": 0 },
+    "studio:test": { "before": 0, "after": 0, "passed": 780, "skipped": 3 },
+    "workingRules5Server": { "before": 0, "after": 0, "passedBefore": 940, "passedAfter": 948, "skipped": 4 },
+    "previewAndStreamingWorker": { "exit": 0, "passed": 18, "failed": 0 },
+    "tests/intake-api.test.ts": { "exit": 1, "passed": 0, "failed": 1, "cause": "unreconciled new route" },
+    "openapi.ts --check": { "before": 0, "after": 1, "cause": "unreconciled new route" },
+    "scripts/api/check.py": { "before": 0, "after": 1, "cause": "expected stale controller producer pin" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "logs": "E:/ulpin-tmp/s3-5-*.log; server checks use isolated-env and the requested ULPIN_PROFILE_PYTHON.",
+  "decision": "Use an explicitly stated supported probe CRS, or exact-job sealed collection metadata; never guess.",
+  "gap": "No-crs, CRS84 and late declarations may wait for the seal: reader metadata is not published while reading.",
+  "next": [
+    "If earlier coverage is required, publish exact-job CRS metadata from the reader outside this task's owned paths.",
+    "Reconcile the new GET read-preview operation, refresh contract/pins and regenerate api-client during merge."
+  ],
+  "unchanged": "Packages still wait for whole-file duplicate-key checks; no runtime, UI or generated-file changes."
+}

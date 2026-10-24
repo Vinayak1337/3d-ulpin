@@ -13,12 +13,13 @@ import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifest
   IntakeLayerCrsSchema, IntakeTablePlacementSchema, IntakePlanOfferSchema, IntakePlanRequestSchema,
   IntakePlanReceiptSchema, IntakeNativeOmissionsSchema, IntakeReadingSchema } from '@ulpin/contracts/usp';
 import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
-  IntakeSurfaceDisplaySchema } from '@ulpin/contracts/usp';
+  IntakeSurfaceDisplaySchema, IntakeReadPreviewPageSchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
   IntakeKeyProfileInputSchema, IntakeKeyProfileSchema } from '@ulpin/contracts/usp';
 import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake-zip-layers';
 import { declareIntakeKeyProfile, readIntakeEvidence } from '@ulpin/server/modules/usp/ingestion/intake-evidence';
 import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake-large';
+import { readIntakeReadPreview } from '@ulpin/server/modules/usp/ingestion/intake-read-preview';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
@@ -87,6 +88,17 @@ export class IngestionController {
   @wireResponse(200,IntakeReadingSchema)
   intakeReading(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
     return this.intake.reading(caseId,itemId);
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/read-preview')
+  @Header('Cache-Control','private, no-store') @param('caseId') @param('itemId')
+  @ApiQuery({name:'after',required:false,schema:{type:'integer',minimum:-1}})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_read_preview',
+    summary:'Preview published GeoJSON outlines read so far; display only, not records, review or placement'})
+  @wireResponse(200,IntakeReadPreviewPageSchema)
+  intakeReadPreview(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return readIntakeReadPreview(caseId,itemId,strictQuery(request.originalUrl,IntakeSurfacePartsQuerySchema,['after'],
+      'INTAKE_READ_PREVIEW_QUERY','Use one optional after, and no other query fields.'));
   }
 
   @Get('cases/:caseId/intake/items/:itemId/parts')
