@@ -6,7 +6,14 @@ import test from 'node:test';
 import { zipSync, strToU8 } from 'fflate';
 import type { PoolClient } from 'pg';
 import { INTAKE_FORMAT_NAMES, IntakeReadingSchema, ChunkMappingPayloadSchema,
-  type MappingPlan, type MappingReceipt } from '@ulpin/contracts/usp';
+  DXFResultSchema, IFCSummarySchema, type DocumentResult, type MappingPlan, type MappingReceipt }
+  from '@ulpin/contracts/usp';
+import { fingerprint } from '../../cases/domain';
+import { dxfSummary } from './dxf-processor';
+import { citygmlSummary } from './citygml-processor';
+import { gltfSummary } from './gltf-processor';
+import { objSummary } from './obj-processor';
+import realIfc from '../../../../../../docs/evidence/gf1/ifc2/real-structures.json';
 import { ModelGateway } from '../../model-gateway/gateway';
 import { inspectedProfile } from './registry';
 import { profileTabularChunk } from './chunk-mapping-agent';
@@ -315,6 +322,184 @@ test('kind name words obey the same geometry acceptance as the layout question',
   }
   assert.equal(readingOf({ name: 'building parcels' }, card).drawing.as, 'outlines');
   assert.equal(readingOf({ name: 'roadmap' }, card).drawing.as, 'outlines');
+});
+
+const nativeRoot = 'E:/BhuAayam-data/task-data/desktop-';
+const savedReadings = [
+  ['dxf', 'dxf-native/runs/declared-final/drawing.json', 'dxf-native/sources/1_polylines.dxf', dxfSummary],
+  ['dxf', 'dxf-native/runs/absent-final/drawing.json', 'dxf-native/sources/ASCII_R12.dxf', dxfSummary],
+  ['citygml', 'citygml-native/run-02-lod2/projection.json',
+    'citygml-native/originals/Building_and_garage_LOD2-EPSG25832.gml', citygmlSummary],
+  ['citygml', 'citygml-native/run-02-local/projection.json',
+    'citygml-native/originals/Building_LOD1-LocalEngineeringCRS.gml', citygmlSummary],
+  ['glb', 'gltf-native/final-glb/gltf.json', 'gltf-native/originals/Box.glb', gltfSummary],
+  ['gltf', 'gltf-native/final-external-gltf/gltf.json', 'gltf-native/originals/Box.gltf', gltfSummary],
+  ['obj', 'obj-native/complete-run01/obj.json', 'obj-native/no_material.obj', objSummary],
+] as const;
+for (const [, saved, original, summarise] of savedReadings) {
+  test(`${original}: reading uses the saved native run, not a new reader`, { skip: !existsSync(nativeRoot + saved) },
+    async () => {
+      const raw = readFileSync(nativeRoot + saved), value = JSON.parse(raw.toString());
+      const pins = { sourceSha256: value.sourceSha256 ?? value.source.sha256,
+        sourceBytes: value.sourceBytes ?? value.source.bytes, sceneIndex: null, readerSha256: '0'.repeat(64) };
+      const summary = summarise(raw, pins as never);
+      const bytes = readFileSync(nativeRoot + original), card = await probe(bytes, basename(original));
+      const facts = { native: summary }, before = structuredClone(facts);
+      const reading = IntakeReadingSchema.parse(readingOf({}, card, facts));
+      assert.match(reading.drawing.words, /Kept as evidence, not placed/);
+      assert.doesNotMatch(reading.what.words + reading.drawing.words, /Not known/);
+      assert.ok(reading.holds.some(entry => /vertical reference: not stated/i.test(entry.words)));
+      if (summary.schemaVersion === 'dxf-native-inspection/1') assert.ok(reading.holds.some(entry =>
+        entry.words.includes(`${summary.projectedEntityCount} projected entities`)));
+      assert.deepEqual(facts, before);
+      assert.equal(digest(readFileSync(nativeRoot + original)), digest(bytes), 'original bytes remain unchanged');
+    });
+}
+
+test('IFC structure counts and types come from the retained run; an unread structure is never zero', () => {
+  const house = realIfc.files['ifc2x3-building-architecture.ifc'], facts = house.retainedNativeFacts;
+  const count = (type: string) => house.structure.nodes.filter(node => node.entityType === type).length;
+  const summary = IFCSummarySchema.parse({ schemaVersion: 'ulpin-native-ifc/1', sourceSha256: house.sha256,
+    sourceBytes: house.bytes, schema: facts.schema, entityCount: facts.sourceEntities,
+    recordCount: facts.projectedRecords, buildingCount: count('IfcBuilding'), storeyCount: count('IfcBuildingStorey'),
+    spaceCount: count('IfcSpace'), georeferenceState: facts.georeferenceState, inspectionFrame: 'source_local',
+    metadataOnly: true, geometry: 'unsupported', globalPlacement: 'not_qualified', unitConversionApplied: false,
+    storeysAreLegalUnits: false, rights: 'not_assessed', structure: house.structure });
+  const reading = readingOf({ format: 'ifc', family: 'model3d' }, null, { ifc: summary });
+  assert.ok(reading.holds.some(entry => /1 storey and 2 spaces/.test(entry.words)));
+  assert.ok(reading.holds.some(entry => /Structure object types:.*IfcBuildingStorey/.test(entry.words)));
+  const unread = readingOf({}, null, { ifc: { ...summary, structure: undefined } });
+  assert.match(unread.holds[0].words, /no structure scan/);
+  assert.doesNotMatch(unread.holds.map(entry => entry.words).join(' '), /0 storeys|0 spaces/);
+});
+
+// Summary formatting protocol controls, not source facts; nested values exercise future stored summary shapes.
+const summaryControl = (extra: Record<string, unknown>): NonNullable<ReadingFacts['native']> => ({
+  schemaVersion: 'source-native-cityjson/1', status: 'supported', objectCount: 0,
+  supportedGeometryCount: 0, unsupportedGeometryCount: 0, referenceSystemState: 'absent', ...extra,
+} as unknown as NonNullable<ReadingFacts['native']>);
+
+test('native summary values have plain path labels, not JSON or null wording', () => {
+  const native = summaryControl({ axes: { horizontal: { direction: 'east', unit: null }, origin: [0, 0, 0] },
+    crs: null, globalPlacement: { origin: [0, 0, 0] } });
+  const before = structuredClone(native);
+  const words = readingOf({}, null, { native }).holds.map(entry => entry.words);
+  for (const expected of ['Axes horizontal direction: east.', 'Axes horizontal unit: not stated.',
+    'Axes origin: 0, 0, 0.', 'Crs: not stated.', 'Global placement origin: 0, 0, 0.']) {
+    assert.ok(words.includes(expected), expected);
+  }
+  for (const text of words) assert.doesNotMatch(text, /[{}\[\]"]|\bnull\b/i);
+  assert.deepEqual(native, before);
+});
+
+test('nested summary values stop at two key steps or eight scalar leaves without partial output', () => {
+  const axes = (value: unknown) => readingOf({}, null, { native: summaryControl({ axes: value }) })
+    .holds.map(entry => entry.words).filter(words => words.startsWith('Axes'));
+  assert.deepEqual(axes({ horizontal: { direction: 'east' } }), ['Axes horizontal direction: east.']);
+  assert.deepEqual(axes([{ direction: 'east' }, { direction: 'north' }]),
+    ['Axes 1 direction: east.', 'Axes 2 direction: north.']);
+  assert.deepEqual(axes({ origin: Array(8).fill(0) }), ['Axes origin: 0, 0, 0, 0, 0, 0, 0, 0.']);
+  const fallback = ['Axes: stated; shown in the reader panel.'];
+  assert.deepEqual(axes({ horizontal: { direction: { name: 'east' } } }), fallback);
+  assert.deepEqual(axes({ known: 'east', origin: Array(8).fill(0) }), fallback);
+  assert.deepEqual(axes(Array(9).fill(0)), fallback);
+  assert.deepEqual(axes(Object.fromEntries(Array.from({ length: 9 }, (_, index) => [index, 'east']))), fallback);
+  assert.deepEqual(axes({}), fallback);
+});
+
+test('PDF page and OCR lines use only stored page locators and native no-text warnings', () => {
+  // Two text pages and one scanned-page protocol control, using the stored Magnolia warning/locator shape.
+  const native = { format: 'pdf', status: 'extracted', warnings: [3].map(page =>
+    `PDF page ${page} has no native text; image interpretation/OCR remains unresolved.`),
+  parts: [1, 2].map(page => ({ locator: { page } })) } as DocumentResult['native'];
+  const reading = readingOf({}, null, { document: native });
+  assert.ok(reading.holds.some(entry => entry.words === '3 pages in the stored reading (pages 1–3).'));
+  assert.ok(reading.holds.some(entry => entry.words === '1 page needs OCR: page 3.'));
+  assert.ok(reading.holds.every(entry => !/pages? read\b/.test(entry.words)));
+  const empty = readingOf({}, null, { document: { ...native, parts: [], warnings: [], status: 'tool_error' } });
+  assert.ok(empty.holds.every(entry => /not stated/.test(entry.words)));
+  assert.doesNotMatch(empty.holds.map(entry => entry.words).join(' '), /0 pages/);
+});
+
+test('stored surface header states points, pixels, bands and references without a probe guess', () => {
+  const header = { operation: 'point-batch', size: [314034], crsStated: true, authority: 'EPSG:2263',
+    vertical: { status: 'unknown', name: null } };
+  // Header protocol control; no new assertion about the source file's point count or CRS.
+  const reading = readingOf({ plan_ref: { header } }, null);
+  assert.deepEqual(reading.holds.map(entry => entry.words), ['314034 points.',
+    'Coordinate system stated: EPSG:2263.', 'Vertical reference: not stated.']);
+  const raster = readingOf({ plan_ref: { header: { ...header, operation: 'raster-window', size: [100, 200, 3],
+    vertical: { status: 'known', name: 'literal source vertical reference' } } } }, null);
+  assert.ok(raster.holds.some(entry => entry.words === 'Bands: 3.'));
+  assert.ok(raster.holds.some(entry => /height: 200 pixels/.test(entry.words)));
+  assert.ok(raster.holds.some(entry => /Vertical reference stated: literal source/.test(entry.words)));
+  const omitted = readingOf({}, null, { omissions: [{ layer: 'source layer', notWritten: 7 }] });
+  assert.match(omitted.holds[0].words, /Layer source layer: 7 features left out/);
+});
+
+test('reading route reads one accepted receipt, never an original, reader, model or write', async t => {
+  const saved = nativeRoot + savedReadings[0][1];
+  if (!existsSync(saved)) return t.skip('saved DXF run is absent');
+  const raw = readFileSync(saved), native = JSON.parse(raw.toString());
+  const id = '10000000-0000-4000-8000-000000000001', hash = '0'.repeat(64);
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'reading-protocol-control';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  });
+  const binding = ingestionBinding(id);
+  const input = { version: 'dxf-native/1', jobId: id, caseId: id, caseRevision: 0,
+    caseContextSha256: fingerprint({ frame: null, context: null, siteId: null }),
+    sourceId: id, sourceFamilyId: id, sourceRevision: 1, sourceSha256: native.sourceSha256,
+    sourceBytes: native.sourceBytes, objectKey: 'protocol-original', subject: binding.subject,
+    accessSha256: binding.access, readerSha256: hash, selection: 'complete_bounded_source',
+    tools: { platform: 'windows-x86_64', pythonSha256: hash, profileSha256: hash, readerSha256: hash,
+      supervisorSha256: hash, dependencyLockSha256: hash, codeSha256: hash } };
+  const result = DXFResultSchema.parse({ version: input.version, input, summary: dxfSummary(raw, input as never),
+    artifact: { key: 'protocol-artifact', sha256: digest(raw), bytes: raw.length,
+      mediaType: 'application/json', profile: 'dxf-native-inspection/1' }, createdAt: new Date(0).toISOString() });
+  const bytes = Buffer.from(JSON.stringify(result));
+  let objects = 0, sourceRevision = 1, caseRevision = 0, resultHash = digest(bytes);
+  const fullCard = await probe(readFileSync(nativeRoot + savedReadings[0][2]), '1_polylines.dxf');
+  const client = { query: async (sql: string) => {
+    assert.match(sql, /^SELECT /, 'reading cannot write');
+    if (sql.includes('FROM cases')) return { rows: [{ id, archived: false, revision: caseRevision }] };
+    if (sql.startsWith('SELECT i.*')) return { rows: [{ source_id: id, plan_ref: { nativeReaderJobId: id },
+      card: fullCard }] };
+    if (sql.includes('FROM jobs')) {
+      assert.match(sql, /a.state='accepted'/);
+      return { rows: [{ id, payload: input, input_sha256: fingerprint(input), frame: null, context: null,
+        site_id: null, result_ref: { sha256: resultHash } }] };
+    }
+    if (sql.includes('FROM sources')) return { rows: [{ id, case_id: id, revision: sourceRevision,
+      profile: 'dxf-native-v1', sha256: native.sourceSha256, bytes: native.sourceBytes,
+      object_key: input.objectKey, inspection: { dxfOriginal: { version: input.version, subject: binding.subject,
+        accessSha256: binding.access, sha256: native.sourceSha256, bytes: native.sourceBytes,
+        receivedAt: new Date(0).toISOString(), lineageState: 'caller_declared', lineage: { issuer: null,
+          originalUrl: null, acquiredAt: null, permissionReference: null, geography: null, limitations: [] } } } }] };
+    throw new Error(`Unexpected reading SQL: ${sql}`);
+  } } as unknown as PoolClient;
+  const forbidden = t.mock.fn(async () => { throw new Error('No original, reader or model on a reading.'); });
+  t.mock.method(ModelGateway.prototype, 'propose', forbidden);
+  const service = new IntakeService({ transaction: async action => action(client), read: forbidden,
+    probe: forbidden, planModel: forbidden, object: async key => {
+      assert.equal(key, `dxf-native/${id}/${resultHash}.json`);
+      objects++;
+      return bytes;
+    } });
+  assert.match((await service.reading(id, id)).drawing.words, /Kept as evidence, not placed/);
+  assert.equal(objects, 1);
+  caseRevision = 1;
+  await service.reading(id, id);
+  assert.equal(objects, 2, 'an unrelated case edit does not hide stored source facts');
+  sourceRevision = 2;
+  await service.reading(id, id);
+  assert.equal(objects, 2, 'stale source pins never open the receipt');
+  sourceRevision = 1;
+  resultHash = hash;
+  await assert.rejects(service.reading(id, id), { code: 'INTAKE_READING_INTEGRITY' });
+  assert.equal(forbidden.mock.callCount(), 0);
 });
 
 const pack = 'E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload';

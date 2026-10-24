@@ -4,7 +4,9 @@ import { z } from 'zod';
 import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
   IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, IntakeTablePlacementSchema, IntakePlanRequestSchema,
   AnyMappingReceiptSchema, MappingPlanSchema, SourceProfileSchema, ChunkMappingPayloadSchema, CHUNK_MAPPING_LIMITS,
-  type IntakeCard } from '@ulpin/contracts/usp';
+  CITYGML_LIMITS, CITYJSON_LIMITS, DXF_LIMITS, GLTF_LIMITS, IFC_LIMITS, OBJ_LIMITS,
+  CityGMLResultSchema, CityJSONResultSchema, DXFResultSchema, GltfResultSchema, IFCResultSchema, ObjResultSchema,
+  DocumentInputSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
@@ -25,6 +27,8 @@ import { planOcrPagesTx } from './intake-plan-processor';
 import { queueLateIntakeEvidenceTx } from './intake-evidence';
 import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
 import { readingOf, type ReadingFacts } from './intake-reading';
+import { readDocumentResult } from './documents';
+import { omissionFormat, omissionLayersTx } from './intake-native-omissions';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -276,6 +280,59 @@ export class IntakeService {
           const payload = ChunkMappingPayloadSchema.parse(JSON.parse(Buffer.from(bytes).toString('utf8')));
           if (payload.sourceId === row.source_id && payload.sourceSha256 === source.sha256
             && payload.sourceRevision === source.revision) facts.mapping = payload.mapping;
+        }
+      }
+      if (row.source_id && !row.parent_item_id) {
+        const readers = {
+          dxf: { schema: DXFResultSchema, limit: DXF_LIMITS.resultBytes },
+          citygml: { schema: CityGMLResultSchema, limit: CITYGML_LIMITS.resultBytes },
+          cityjson: { schema: CityJSONResultSchema, limit: CITYJSON_LIMITS.resultBytes },
+          gltf: { schema: GltfResultSchema, limit: GLTF_LIMITS.resultBytes },
+          obj: { schema: ObjResultSchema, limit: OBJ_LIMITS.resultBytes },
+          ifc: { schema: IFCResultSchema, limit: IFC_LIMITS.resultBytes },
+        };
+        const format = row.card?.format === 'glb' ? 'gltf' : row.card?.format;
+        const reader = Object.hasOwn(readers, format ?? '') ? readers[format as keyof typeof readers] : null;
+        const jobId = uuid.safeParse(row.plan_ref?.nativeReaderJobId ?? row.plan_ref?.ifcJobId);
+        if (format === 'pdf' || reader && jobId.success) {
+          const operation = format === 'pdf' ? 'document-extraction' : `${format}-native`;
+          const job = (await client.query(`SELECT j.id,j.payload,m.result_ref,m.input_sha256,
+            c.frame,c.context,c.site_id FROM jobs j JOIN cases c ON c.id=j.case_id
+            JOIN usp_job_metadata m ON m.job_id=j.id
+            JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence AND a.state='accepted'
+            WHERE j.case_id=$1 AND j.source_id=$2 AND j.operation=$3 AND ($4::uuid IS NULL OR j.id=$4)
+            AND j.status='succeeded' AND m.logical_state='succeeded' AND m.result_ref->>'version'='1'
+            AND a.completion_sha256=m.result_ref->>'sha256' AND a.input_sha256=m.input_sha256
+            AND NOT (j.payload ? 'ocrSelection') ORDER BY j.created_at DESC LIMIT 1`,
+          [caseId, source.id, operation, jobId.success ? jobId.data : null])).rows[0];
+          const input = job?.payload;
+          if (input && fingerprint(input) === job.input_sha256
+            && input.jobId === job.id && input.caseId === caseId && input.sourceId === source.id
+            && input.objectKey === source.object_key
+            && input.caseContextSha256 === fingerprint({ frame: job.frame, context: job.context, siteId: job.site_id })
+            && input.sourceSha256 === source.sha256 && input.sourceRevision === source.revision
+            && input.sourceBytes === Number(source.bytes) && input.subject === scope.binding.subject
+            && input.accessSha256 === scope.binding.access && input.caseRevision <= scope.current.revision) {
+            if (format === 'pdf') facts.document = (await readDocumentResult(DocumentInputSchema.parse(input),
+              job.result_ref.sha256, this.dependencies.object)).native;
+            else if (reader) {
+              const key = `${format}-native/${input.jobId}/${job.result_ref.sha256}.json`;
+              const bytes = await this.dependencies.object(key);
+              if (bytes.length > reader.limit || sha256(bytes) !== job.result_ref.sha256) {
+                throw new AppError(422, 'INTAKE_READING_INTEGRITY', 'The stored reading differs from its hash.');
+              }
+              const result = reader.schema.parse(JSON.parse(Buffer.from(bytes).toString('utf8')));
+              if (fingerprint(result.input) !== fingerprint(input)) {
+                throw new AppError(422, 'INTAKE_READING_INTEGRITY', 'The stored reading names different inputs.');
+              }
+              if (result.summary.schemaVersion === 'ulpin-native-ifc/1') facts.ifc = result.summary;
+              else facts.native = result.summary;
+            }
+          }
+        }
+        if (omissionFormat(row.card ?? null, row.name ?? '')) {
+          facts.omissions = (await omissionLayersTx(client, caseId, itemId, source)).map(({ lineage }) =>
+            ({ layer: lineage.layer, notWritten: lineage.notWritten }));
         }
       }
       assertIngestionBinding(scope.binding);
