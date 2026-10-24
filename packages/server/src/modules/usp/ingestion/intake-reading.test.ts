@@ -4,14 +4,15 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import test from 'node:test';
 import { zipSync, strToU8 } from 'fflate';
-import { IntakeReadingSchema } from '@ulpin/contracts/usp';
+import { INTAKE_FORMAT_NAMES, IntakeReadingSchema } from '@ulpin/contracts/usp';
+import { INTAKE_FORMAT_NAMES as browserFormatNames } from '@ulpin/contracts/upload-reader-limits';
 import { intakeItem } from './intake-ledger';
 import { probeOriginal } from './intake-probe';
 import { readingOf, type ReadingRow } from './intake-reading';
 
 const fixtures = [
-  ['fixtures/real-nyc/original.geojson', 'GeoJSON map layer', 'features'],
-  ['fixtures/real-area/original.geojson', 'GeoJSON map layer', 'features'],
+  ['fixtures/real-nyc/original.geojson', 'GeoJSON map layer', 'features?'],
+  ['fixtures/real-area/original.geojson', 'GeoJSON map layer', 'features?'],
   ['fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv', 'CSV table', 'profiled columns'],
   ['fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx', 'XLSX table', 'sheets'],
 ];
@@ -35,7 +36,10 @@ for (const [path, kind, count] of fixtures) test(`reading stored facts from ${pa
   assert.equal(reading.what.basis, 'reader');
   assert.deepEqual([reading.fields, reading.links], [[], []]);
   for (const [noun, value] of Object.entries(card.counts)) {
-    if (value !== null) assert.ok(reading.holds.some(entry => entry.words === `${value} ${noun}`));
+    if (value !== null) {
+      const words = `${value} ${value === 1 ? noun.slice(0, -1) : noun}`;
+      assert.ok(reading.holds.some(entry => entry.words === words));
+    }
   }
   assert.ok(reading.question);
   if (card.family === 'vector') {
@@ -54,6 +58,38 @@ for (const [path, kind, count] of fixtures) test(`reading stored facts from ${pa
   }
   assert.deepEqual(card, original);
   assert.equal(digest(readFileSync(path)), before, 'original bytes remain unchanged');
+});
+
+test('all recognised formats have shared plain names; unlisted tokens are left out of what', () => {
+  const formats = ['7z', 'bigtiff', 'citygml', 'cityjson', 'csv', 'dbf', 'dwg', 'dxf', 'e57', 'flatgeobuf',
+    'geojson', 'geojson-seq', 'geopackage', 'glb', 'gltf', 'gml', 'ifc', 'jpeg', 'kml', 'ndjson', 'obj',
+    'parquet', 'pdf', 'ply', 'png', 'rar', 'shapefile', 'sqlite', 'tiff', 'tsv', 'xls', 'zip', 'xlsx',
+    'ods', 'kmz', 'las', 'laz', 'geotiff', 'geoparquet', 'shapefile_zip'];
+  assert.ok(Object.isFrozen(INTAKE_FORMAT_NAMES));
+  assert.equal(browserFormatNames, INTAKE_FORMAT_NAMES);
+  for (const format of formats) {
+    assert.ok(Object.hasOwn(INTAKE_FORMAT_NAMES, format), format);
+    const name = INTAKE_FORMAT_NAMES[format];
+    assert.ok(name.trim().length, format);
+    const words = readingOf({ format, family: 'unknown' }, null).what.words;
+    assert.ok(words.includes(name), words);
+    assert.doesNotMatch(words, /\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/);
+  }
+  for (const format of ['UNLISTED-FORMAT', 'shapefile-index', 'toString']) {
+    assert.equal(readingOf({ format, family: 'table' }, null).what.words, 'table.');
+  }
+});
+
+test('one feature, row, page, member, point and band use singular nouns', async () => {
+  const card = await probe(Buffer.from('{"type":"FeatureCollection","features":[]}'), 'empty.geojson');
+  // Count grammar protocol control, not a dataset assertion.
+  card.counts = { features: 1, rows: 1, pages: 1, members: 1, points: 1, bands: 1 };
+  const reading = readingOf({}, card);
+  for (const noun of ['feature', 'row', 'page', 'member', 'point', 'band']) {
+    assert.ok(reading.what.words.includes(`1 ${noun}`));
+    assert.ok(reading.holds.some(entry => entry.words === `1 ${noun}`));
+    assert.doesNotMatch(reading.what.words, new RegExp(`\\b1 ${noun}s\\b`));
+  }
 });
 
 test('unknown counts stay omitted; a known zero is retained and item what uses the same assembler', async () => {

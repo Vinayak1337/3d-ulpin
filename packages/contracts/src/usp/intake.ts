@@ -16,6 +16,17 @@ export const IntakeFamilySchema = z.enum([
 ]);
 /** Table card formats a batch item is read from with "Open the table"; a TSV takes the delimited reader. */
 export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx', 'ods']);
+/** Plain format names shared by reading cards and the Studio; an unlisted format stays unnamed. */
+export const INTAKE_FORMAT_NAMES: Readonly<Record<string, string>> = Object.freeze({
+  '7z': '7-Zip', bigtiff: 'BigTIFF', citygml: 'CityGML', cityjson: 'CityJSON', csv: 'CSV', dbf: 'dBASE',
+  dwg: 'AutoCAD drawing', dxf: 'DXF', e57: 'E57', flatgeobuf: 'FlatGeobuf', geojson: 'GeoJSON',
+  'geojson-seq': 'GeoJSON sequence', geopackage: 'GeoPackage', glb: 'Binary glTF', gltf: 'glTF', gml: 'GML',
+  ifc: 'IFC', jpeg: 'JPEG', kml: 'KML', ndjson: 'Newline-delimited JSON', obj: 'Wavefront OBJ', parquet: 'Parquet',
+  pdf: 'PDF', ply: 'PLY', png: 'PNG', rar: 'RAR', shapefile: 'Shapefile', sqlite: 'SQLite', tiff: 'TIFF',
+  tsv: 'TSV', xls: 'Excel 97-2003', zip: 'ZIP', xlsx: 'XLSX', ods: 'OpenDocument spreadsheet',
+  kmz: 'Compressed KML', las: 'LAS', laz: 'LAZ', geotiff: 'GeoTIFF', geoparquet: 'GeoParquet',
+  shapefile_zip: 'Shapefile ZIP',
+});
 /** XL1: an Excel 97-2003 workbook (`xls`) is recognised and kept; no reader takes its cells. */
 export const INTAKE_LEGACY_WORKBOOK_WORDS = 'It is kept as evidence; this version does not read its cells. Save it '
   + 'as XLSX or ODS and add that file to place its rows on the map.';

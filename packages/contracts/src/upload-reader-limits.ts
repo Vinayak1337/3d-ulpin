@@ -5,7 +5,8 @@ export { POINT_BATCH_LIMITS } from './usp/point-batch';
 export { IFC_LIMITS } from './usp/ifc-ingestion';
 export { DOCUMENT_LIMITS, documentScannedPages } from './usp/document-ingestion';
 export { DOCUMENT_PAGE_LIMITS } from './document-pages';
-export { INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS } from './usp/intake';
+export { INTAKE_FORMAT_NAMES, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PAGE_IMAGE_LIMITS,
+  INTAKE_TABLE_READER_FORMATS } from './usp/intake';
 export { DXF_LIMITS } from './usp/dxf-ingestion';
 export { CITYGML_LIMITS } from './usp/citygml-ingestion';
 export { CITYJSON_LIMITS } from './usp/cityjson-ingestion';

@@ -894,6 +894,19 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/reading",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_reading",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "IntakeReadingSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "S4.3"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display",
       "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts_partIndex_display",
       "disposition": "added",

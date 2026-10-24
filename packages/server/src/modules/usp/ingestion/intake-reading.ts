@@ -1,4 +1,4 @@
-import type { IntakeCard, IntakeReading } from '@ulpin/contracts/usp';
+import { INTAKE_FORMAT_NAMES, type IntakeCard, type IntakeReading } from '@ulpin/contracts/usp';
 import { keptWords, zipParentWords } from './intake-draft';
 import { surfaceKind, surfaceReader } from './intake-surface';
 
@@ -13,10 +13,10 @@ const line = (words: string, basis: Line['basis'] = 'reader'): Line =>
   ({ words: words.replace(/\s+/g, ' ').trim().slice(0, 2000), basis });
 const families: Record<string, string> = { vector: 'map layer', table: 'table', raster: 'raster',
   point_cloud: 'point cloud', model3d: '3D model', document: 'document', image: 'image', archive: 'archive' };
-const formats: Record<string, string> = { geojson: 'GeoJSON', geopackage: 'GeoPackage', geotiff: 'GeoTIFF',
-  bigtiff: 'BigTIFF', citygml: 'CityGML', cityjson: 'CityJSON', gltf: 'glTF' };
-const countWords = (card: IntakeCard) => Object.entries(card.counts)
-  .flatMap(([noun, value]) => value === null ? [] : [`${value} ${noun}`]);
+const countWords = (card: IntakeCard) => Object.entries(card.counts).flatMap(([noun, value]) => {
+  if (value === null) return [];
+  return [`${value} ${value === 1 ? noun.slice(0, -1) : noun}`];
+});
 
 function byteCount(row: ReadingRow): number | null {
   if (row.size_bytes === null || row.size_bytes === undefined) return null;
@@ -32,8 +32,8 @@ function whatOf(row: ReadingRow, card: IntakeCard | null): Line {
   }
   const format = card?.format ?? row.format;
   const family = card?.family ?? row.family;
-  const kind = [format && format !== 'unknown' ? formats[format] ?? format.toUpperCase() : '',
-    family ? families[family] : ''].filter(Boolean).join(' ');
+  const formatName = format && Object.hasOwn(INTAKE_FORMAT_NAMES, format) ? INTAKE_FORMAT_NAMES[format] : '';
+  const kind = [formatName, family ? families[family] : ''].filter(Boolean).join(' ');
   const counts = card ? countWords(card) : [];
   if (card?.sheets.length) counts.push(`${card.sheets.length} sheets named`);
   if (card?.columns.length) counts.push(`${card.columns.length} profiled columns`);
