@@ -1,4 +1,4 @@
-"""Bounded literal CityGML 2.0 inspection; not a GML validator or converter.
+"""Bounded literal CityGML 1.0/2.0 inspection; not a GML validator or converter.
 
 Use desktop-citygml-read.py for externally supervised, original-first reads.
 Expat is imported only when extraction starts, after the CLI's process gate.
@@ -42,15 +42,15 @@ NUMBER = re.compile(rb"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?
 
 @dataclass(frozen=True)
 class Limits:
-    input_bytes: int = 32 * 1024**2
-    output_bytes: int = 16 * 1024**2
+    input_bytes: int = 33 * 1024**2
+    output_bytes: int = 259 * 1024**2
     memory_bytes: int = 2 * 1024**3
     seconds: float = 60
     threads: int = 2
-    elements: int = 25_000
+    elements: int = 302_777
     depth: int = 64
     string_bytes: int = 64 * 1024
-    coordinate_values: int = 100_000
+    coordinate_values: int = 449_342
 
     def __post_init__(self):
         if any(type(v) not in (int, float) or not math.isfinite(v) or v <= 0 for v in asdict(self).values()):
@@ -170,17 +170,25 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
     building_index = {}
     identifiers, findings = {}, []
     coordinate_count = 0
+    core, building, version = None, None, None
+    declared_versions = set()
 
     def locator(node, start=None, end=None, kind="element"):
         return {"element": node["ordinal"], "byteStart": node["locator"]["byteStart"] if start is None else start,
                 "byteEnd": node["locator"]["byteEnd"] if end is None else end, "kind": kind}
 
     def namespace(prefix, uri):
+        if (uri or "").startswith("http://www.opengis.net/citygml/"):
+            declared_version = uri.rsplit("/", 1)[-1]
+            declared_versions.add(declared_version)
+            if declared_version not in ("1.0", "2.0") or len(declared_versions) > 1:
+                fail("VERSION_PROFILE", "Only unmixed CityGML 1.0 or 2.0 namespaces are supported.", "unsupported")
         if len(namespaces) >= limits.elements or len((uri or "").encode()) > limits.string_bytes:
             fail("NAMESPACE_LIMIT", "Namespace declarations exceed the limit.", "limit")
         namespaces.append({"prefix": prefix, "uri": uri, "startTagByte": parser.CurrentByteIndex})
 
     def start(name, attributes):
+        nonlocal core, building, version
         if len(nodes) >= limits.elements or len(stack) >= limits.depth:
             fail("STRUCTURE_LIMIT", "XML element/depth limit exceeded.", "limit")
         offset = parser.CurrentByteIndex
@@ -205,8 +213,12 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
                 "parent": stack[-1]["node"]["ordinal"] if stack else None,
                 "locator": {"byteStart": offset, "byteEnd": None}, "attributes": [],
                 "interpretation": "literal_inventory", "text": None}
-        if not stack and name != CORE + "|CityModel":
-            fail("VERSION_PROFILE", "Only CityGML 2.0 CityModel documents are supported.", "unsupported", locator(node))
+        if not stack:
+            if local != "CityModel" or uri not in (CORE, "http://www.opengis.net/citygml/1.0"):
+                fail("VERSION_PROFILE", "Only CityGML 1.0 or 2.0 CityModel documents are supported.",
+                     "unsupported", locator(node))
+            core, version = uri, uri.rsplit("/", 1)[-1]
+            building = f"http://www.opengis.net/citygml/building/{version}"
         bindings = dict(stack[-1]["bindings"]) if stack else {"xml": XML}
         lexical = []
         for match in ATTRIBUTE.finditer(raw[offset:tag_end]):
@@ -254,9 +266,9 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
         context = None
         if not stack:
             context = "model"
-        elif parent_context == "model" and uri == CORE and local == "cityObjectMember":
+        elif parent_context == "model" and uri == core and local == "cityObjectMember":
             context = "member"
-        elif uri == BUILDING:
+        elif uri == building:
             if (parent_context, local) in (("member", "Building"), ("part_member", "BuildingPart")):
                 context = "building"
             elif parent_context == "building" and local == "consistsOfBuildingPart":
@@ -273,7 +285,7 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
                               "idState": "supplied" if ident is not None else "absent",
                               "parentBuildingElement": parent_owner, "properties": [], "lodDeclarations": []})
             building_index[ordinal] = buildings[-1]
-        elif uri not in (CORE, BUILDING, GML):
+        elif uri not in (core, building, GML):
             node["interpretation"] = "unsupported_module_or_ADE"
         geometry_supported = stack[-1]["geometry_supported"] if stack else True
         if uri == GML and local in GEOMETRY:
@@ -282,7 +294,7 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
         elif uri == GML and local not in LITERAL_GML | COORDINATES:
             node["interpretation"] = "unsupported_gml_profile"
             geometry_supported = False
-        if uri not in (CORE, BUILDING, GML):
+        if uri not in (core, building, GML):
             geometry_supported = False
         ident = attributes.get(GML + "|id")
         if ident is not None:
@@ -372,7 +384,7 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
                         and node["text"] is not None and not node["interpretation"].startswith("unsupported")):
                     owner["properties"].append(node["ordinal"])
                 if (frame["semantic_parent_context"] in ("building", "boundary_surface")
-                        and node["namespace"] == BUILDING and re.match(r"lod[0-4]", node["localName"])):
+                        and node["namespace"] == building and re.match(r"lod[0-4]", node["localName"])):
                     owner["lodDeclarations"].append({"element": node["ordinal"], "name": node["localName"],
                                                      "lodLiteral": node["localName"][3], "locator": locator(node)})
 
@@ -484,7 +496,7 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
                          "message": "Null, empty or dimension-conflicting coordinates remain explicit and unusable."})
     result = {"schemaVersion": "ulpin-native-citygml/1", "status": "partial" if findings else "available",
               "scope": "source_native_literal_inventory", "source": {"sha256": hashlib.sha256(raw).hexdigest(),
-              "bytes": len(raw), "citygmlVersion": "2.0", "encodingProfile": "XML 1.0 UTF-8",
+              "bytes": len(raw), "citygmlVersion": version, "encodingProfile": "XML 1.0 UTF-8",
               "locatorConvention": "zero-based byte spans [start,end); element ordinals in XML start order"},
               "parser": {"name": "CPython Expat", "version": expat.EXPAT_VERSION}, "limits": asdict(limits),
               "namespaces": namespaces, "elements": nodes, "buildings": buildings,

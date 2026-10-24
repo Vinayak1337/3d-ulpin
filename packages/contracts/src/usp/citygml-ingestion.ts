@@ -1,7 +1,8 @@
 import {z} from 'zod';
 
 export const CITYGML_VERSION='citygml-native/1' as const;
-export const CITYGML_LIMITS=Object.freeze({originalBytes:32*1024*1024,artifactBytes:16*1024*1024,
+export const CITYGML_LIMITS=Object.freeze({originalBytes:33*1024*1024,artifactBytes:259*1024*1024,
+  elements:302777,coordinateValues:449342,
   resultBytes:512*1024,statusBytes:512*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
   active:1,workerMs:150_000,requestMs:45_000,readMs:60_000});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative(),positive=z.number().int().positive();
@@ -22,11 +23,14 @@ export const CityGMLInputSchema=z.strictObject({version:z.literal(CITYGML_VERSIO
   sourceSha256:hash,sourceBytes:positive.max(CITYGML_LIMITS.originalBytes),objectKey:z.string().min(1).max(512),
   subject:z.string().min(1).max(256),accessSha256:hash,readerSha256:hash,tools:CityGMLToolPinsSchema.nullable()});
 export const CityGMLSummarySchema=z.strictObject({schemaVersion:z.literal('ulpin-native-citygml/1'),sourceSha256:hash,
-  sourceBytes:positive.max(CITYGML_LIMITS.originalBytes),citygmlVersion:z.literal('2.0'),encodingProfile:z.literal('XML 1.0 UTF-8'),
+  sourceBytes:positive.max(CITYGML_LIMITS.originalBytes),citygmlVersion:z.enum(['1.0','2.0']),
+  encodingProfile:z.literal('XML 1.0 UTF-8'),
   scope:z.literal('source_native_literal_inventory'),status:z.enum(['available','partial']),
-  elementCount:positive.max(25000),buildingAndPartCount:rev.max(25000),coordinateDeclarationCount:rev.max(25000),
-  decodedCoordinateValueCount:rev.max(100000),referenceCount:rev.max(25000),unsupportedElementCount:rev.max(25000),
-  unresolvedReferenceCount:rev.max(25000),findingCodes:z.array(z.enum(['UNSUPPORTED_CONTENT','REFERENCES_NOT_COMPOSED',
+  elementCount:positive.max(CITYGML_LIMITS.elements),buildingAndPartCount:rev.max(CITYGML_LIMITS.elements),
+  coordinateDeclarationCount:rev.max(CITYGML_LIMITS.elements),
+  decodedCoordinateValueCount:rev.max(CITYGML_LIMITS.coordinateValues),referenceCount:rev.max(CITYGML_LIMITS.elements),
+  unsupportedElementCount:rev.max(CITYGML_LIMITS.elements),unresolvedReferenceCount:rev.max(CITYGML_LIMITS.elements),
+  findingCodes:z.array(z.enum(['UNSUPPORTED_CONTENT','REFERENCES_NOT_COMPOSED',
     'ENVELOPE_CONFLICT','DIMENSION_ABSENT','COORDINATE_DECLARATION_INCOMPLETE'])).max(5),
   accuracy:z.literal('not_assessed'),validity:z.literal('not_assessed'),canonicalIdentity:z.literal('not_assessed'),
   analyticEligible:z.literal(false),registryAdmission:z.literal(false),learningLabels:z.literal(false),rights:z.literal('not_assessed')});

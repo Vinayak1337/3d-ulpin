@@ -8,7 +8,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from geo.area import normalize_area
-from geo.native_citygml import extract
+from geo.native_citygml import DEFAULT_LIMITS, extract
 from geo.native_gis import convert_native_file
 
 ORIGINALS = Path("E:/BhuAayam-data/task-data/desktop-citygml-native/originals")
@@ -73,6 +73,46 @@ def test_real_lod2_writes_one_building_outline_not_the_garage_part(tmp_path: Pat
     assert placed["sourceKey"] == GML_ID
     assert placed["sourceHeights"]["unit"] is None and placed["sourceHeights"]["reference"] is None
     assert placed["height"]["state"] == "unknown" and placed["height"]["value"] is None
+
+
+def test_version_one_namespace_sample_keeps_the_same_outline(tmp_path: Path) -> None:
+    if not GOOD.is_file():
+        pytest.skip("Retained OGC test_only sample is absent")
+    raw = GOOD.read_bytes()
+    path = tmp_path / "version-one.gml"
+    path.write_bytes(raw.replace(b'citygml/2.0', b'citygml/1.0')
+                     .replace(b'citygml/building/2.0', b'citygml/building/1.0')
+                     .replace(b'citygml/relief/2.0', b'citygml/relief/1.0'))
+    one, two = extract(path.read_bytes()), extract(raw)
+    assert one["source"]["citygmlVersion"] == "1.0"
+    for field in ("elements", "buildingsAndParts", "coordinateDeclarations", "decodedCoordinateValues"):
+        assert one["counts"][field] == two["counts"][field]
+    layer_one = convert(path, tmp_path / "one")
+    layer_two = convert(GOOD, tmp_path / "two")
+    assert written(layer_one)[0] == written(layer_two)[0]
+
+
+def test_outline_input_bound_names_the_same_default_limit(tmp_path: Path) -> None:
+    path = tmp_path / "over-limit.gml"
+    with path.open("wb") as stream:
+        stream.truncate(DEFAULT_LIMITS.input_bytes + 1)
+    layer = convert(path, tmp_path / "out")
+    assert layer["state"] == "not_converted"
+    assert f"input byte limit ({DEFAULT_LIMITS.input_bytes} bytes)" in layer["reason"]
+
+
+def test_real_berlin_keeps_its_adv_system_literal_and_unplaced(tmp_path: Path) -> None:
+    path = Path("E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/"
+                "LoD2_33_392_5820_1_BE.gml")
+    if not path.is_file():
+        pytest.skip("Berlin test_only practice-kit tile is absent")
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == (
+        "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5")
+    layer = convert(path, tmp_path / "out")
+    assert layer["state"] == "not_converted"
+    assert "urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH" in layer["reason"]
+    assert "stay unplaced" in layer["reason"]
+    assert not list((tmp_path / "out").iterdir())
 
 
 def test_real_local_system_stays_unplaced_in_words(tmp_path: Path) -> None:

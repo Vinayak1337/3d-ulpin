@@ -1,67 +1,79 @@
 {
-  "task": "S5.17",
-  "planStep": 5,
-  "status": "blocked_before_bounds_changes",
+  "task": "S5.17", "planStep": 5, "status": "reader_complete_integration_fixture_followups",
   "source": {
     "path": "E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/LoD2_33_392_5820_1_BE.gml",
-    "copy": "E:/ulpin-tmp/s5-17/berlin.gml",
-    "bytes": 27980798,
+    "copy": "E:/ulpin-tmp/s5-17/berlin.gml", "bytes": 27980798,
     "sha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
-    "originalAndCopyHashVerified": true,
-    "test_only": true,
-    "licence": "dl-de/zero-2-0; confirmed by receipt",
-    "coreNamespace": "http://www.opengis.net/citygml/1.0",
-    "buildingNamespace": "http://www.opengis.net/citygml/building/1.0",
+    "originalAndCopyHashVerifiedBeforeAndAfter": true,
+    "test_only": true, "licence": "dl-de/zero-2-0; confirmed by issuer receipt", "citygmlVersion": "1.0",
     "srsName": "urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH"
   },
   "measurement": {
-    "command": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe E:/ulpin-tmp/s5-17/measure.py untraced",
-    "exitCode": 1,
+    "method": "Separate fresh processes; extract then encode_result, including input read; Windows process counters.",
+    "logsAndMeasurementHelpers": "E:/ulpin-tmp/s5-17/",
     "testOnlyLimits": {
-      "input_bytes": 268435456,
-      "output_bytes": 2147483648,
-      "elements": 2000000,
-      "coordinate_values": 10000000,
-      "memory_bytes": 2147483648,
-      "seconds": 60,
-      "threads": 2
+      "input_bytes": 268435456, "output_bytes": 2147483648, "elements": 2000000,
+      "coordinate_values": 10000000, "memory_bytes": 2147483648, "seconds": 60, "threads": 2
     },
-    "code": "VERSION_PROFILE",
-    "message": "Only CityGML 2.0 CityModel documents are supported.",
-    "stage": "extract; root start tag; encode_result never reached",
-    "elementCount": null,
-    "buildingCount": null,
-    "coordinateValues": null,
-    "outputBytes": null,
-    "tracemallocPeakBytes": null,
-    "peakWorkingSetBytes": null,
-    "seconds": null,
-    "arithmetic": null,
-    "bindingLimit": "Unknown: version refusal prevents a complete size, memory or time measurement."
+    "elements": 244832, "buildings": 732, "parts": 873, "coordinateDeclarations": 22350,
+    "coordinateValues": 363348, "references": 20882, "outputBytes": 219287880,
+    "untraced": {
+      "extractSeconds": 5.100510, "encodeSeconds": 9.803455, "totalSeconds": 14.903965,
+      "peakWorkingSetBytes": 1351766016, "peakPrivateBytes": 1363558400
+    },
+    "traced": {
+      "tracemallocPeakBytes": 1302521155, "peakWorkingSetBytes": 2328571904, "peakPrivateBytes": 2391867392,
+      "extractSeconds": 46.635412, "encodeSeconds": 74.693305, "totalSeconds": 121.328717,
+      "note": "Instrumentation exceeds runtime budgets; use untraced process peak/time for production extrapolation."
+    },
+    "defaultLimitsVerification": {
+      "exitCode": 0, "outputBytes": 219287875, "totalSeconds": 14.626707,
+      "peakWorkingSetBytes": 1351397376, "peakPrivateBytes": 1363091456,
+      "note": "Five output bytes differ from raised-limits run because the result records its actual limits."
+    }
   },
-  "scopeBlockers": [
-    "native_citygml.py: CORE/BUILDING constants, VERSION_PROFILE guard and source.citygmlVersion need semantic edits.",
-    "citygml-ingestion.ts: CityGMLSummarySchema.citygmlVersion accepts only 2.0, outside authorized maxima edits.",
-    "citygml-processor.ts: native.source.citygmlVersion accepts only 2.0; authorization covers bounds, not versions.",
-    "citygml_outline.py: BUILDING namespace comparisons are 2.0-only; authorization covers bounds only."
-  ],
-  "next": [
-    "Authorize source-faithful CityGML 1.0 support through reader, outline and schemas, or supply a real 2.0 tile.",
-    "Never rewrite the tile or relabel its source version to bypass the guard. No production bounds changed here.",
-    "After authorization, repeat complete measurement before choosing bounds; output may be the binding constraint.",
-    "The outline recognizes stated EPSG references, not this adv URN: it stays unplaced with literal source words.",
-    "Do not map the adv URN to an EPSG code."
-  ],
+  "bounds": {
+    "input_bytes": 34603008, "output_bytes": 271581184, "elements": 302777, "coordinate_values": 449342,
+    "memory_bytes": 2147483648, "seconds": 60, "threads": 2,
+    "bindingConstraint": "Memory, including the expanded native inventory and output serialization, not read time.",
+    "arithmetic": [
+      "Conservative measured peak = max(untraced working set, private bytes, traced allocations) = 1363558400.",
+      "Memory/input = 1363558400 / 27980798 = 48.731934; 256 MiB predicts 13081378912 bytes, above 2 GiB.",
+      "20% memory reserve: 0.8 * 2147483648 * 27980798 / 1363558400 = 35253821.86 input bytes.",
+      "Largest whole-MiB input under that cap: floor(35253821.86 / 1048576) = 33 MiB = 34603008 bytes.",
+      "Scale = 34603008 / 27980798 = 1.236669805; projected peak = 1686271500 bytes, 21.48% spare.",
+      "Projected time = 14.903965 * scale = 18.431283 s, 69.28% spare; readMs remains 60000.",
+      "elements = ceil(244832 * scale) = 302777; coordinate_values = ceil(363348 * scale) = 449342.",
+      "output = ceil(219287880 * scale / 1048576) MiB = 259 MiB = 271581184, above 271186700 needed.",
+      "Output cap supports 34653344 input bytes at measured density, above the chosen 34603008 input cap."
+    ],
+    "caveat": "Tile-density extrapolation, not arbitrary XML; independent token/count caps and supervision remain.",
+    "memoryShape": "Unchanged; 33 MiB fits with reserve. All output fields and byte locators remain source-faithful."
+  },
+  "outline": {
+    "buildingsWithOwnGroundDeclaration": 546, "buildingsWithoutOwnGroundDeclaration": 186,
+    "placedOutlines": 0, "reason": "adv URN is not a stated EPSG code; it stays literal and unplaced, never guessed."
+  },
   "checks": {
-    "logsDirectory": "E:/ulpin-tmp/s5-17; before- and after- logs",
-    "python": {"exitCodes": [0, 0], "passed": 38, "skipped": 2},
-    "citygml": {"exitCodes": [0, 0], "passed": 8, "skipped": 1},
-    "backend": {"exitCodes": [127, 127], "detail": "tsc process initialization exits 3221225794 (0xc0000142)"},
-    "studio-typecheck": {"exitCodes": [2, 2], "detail": "table-placement-command.ts:65 missing decimalMark"},
-    "studio-test": {"exitCodes": [0, 0], "passed": 783, "skipped": 3},
-    "ingestion": {"exitCodes": [0, 0], "passed": 985, "skipped": 5},
-    "openapi": {"exitCodes": [0, 0], "operations": 335, "schemas": 379},
-    "pins": {"exitCodes": [0, 0], "producerChanges": 0},
-    "diff": {"exitCodes": [0, 0]}
-  }
+    "logsDirectory": "E:/ulpin-tmp/s5-17; before- and final- logs; entries are before/final exit codes",
+    "pytestNativeOutlineConversion": {"exitCodes": [0, 0], "passed": [38, 44], "skipped": [2, 2]},
+    "tsxCitygmlTests": {"exitCodes": [0, 0], "passed": 8, "skipped": 1},
+    "backendTypecheck": {"exitCodes": [127, 0], "standaloneRetryExitCode": 0},
+    "backendBaselineFault": "Windows tsc initialization 3221225794 / 0xc0000142, not a type error",
+    "studioTypecheck": {"exitCodes": [2, 2], "existingError": "table-placement-command.ts:65 missing decimalMark"},
+    "studioTest": {"exitCodes": [0, 1], "passed": [783, 782], "failed": [0, 1], "skipped": 3},
+    "ingestion": {"exitCodes": [0, 1], "passed": [985, 980], "failed": [0, 5], "skipped": 5},
+    "openapiCheck": {"exitCodes": [0, 1], "expected": "stale published schema; lead regenerates"},
+    "apiCheck": {"exitCodes": [0, 1], "expected": "producer changed: packages/contracts/src/usp/citygml-ingestion.ts"},
+    "diffCheck": {"exitCodes": [0, 0]},
+    "realOutputTypescriptSummary": {"exitCode": 0, "version": "1.0", "registryAdmission": false},
+    "oldOgcByteComparison": {"exitCode": 0, "files": 2, "identical": "Full encoded output under unchanged limits"}
+  },
+  "next": [
+    "Lead updates old-limit test inputs: packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts (3).",
+    "Lead updates saved-reading test inputs: packages/server/src/modules/usp/ingestion/intake-reading.test.ts (2).",
+    "Lead updates 32 MiB expectation: apps/studio/src/features/intake/upload-reader.test.tsx (1).",
+    "Lead regenerates contract/pins and host profiles; no image, runtime, demo, or data original was changed.",
+    "Berlin adv CRS remains unplaced; no EPSG mapping, geometry upgrade, measurement or rights claim was added."
+  ]
 }
