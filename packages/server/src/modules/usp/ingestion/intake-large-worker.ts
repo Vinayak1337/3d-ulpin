@@ -445,8 +445,11 @@ async function prepareReaders(input: IntakeLargeInput): Promise<boolean> {
     if (phase === 'map' && !state.store.mapping) await startMapping(input, undefined, state);
     return true;
   } catch (error) {
-    if (!(error instanceof AppError) || error.status !== 429
-      || !['STREAMING_CAPACITY', 'STREAMED_PROFILE_CAPACITY', 'MAPPING_CAPACITY'].includes(error.code)) throw error;
+    if (!(error instanceof AppError)) throw error;
+    const occupied = error.status === 429
+      && ['STREAMING_CAPACITY', 'STREAMED_PROFILE_CAPACITY', 'MAPPING_CAPACITY'].includes(error.code);
+    // A sibling arrival may win admission's revision race; waiting reasserts the source and access pins.
+    if (error.code !== 'STALE_REVISION' && !occupied) throw error;
     return waitForReader(input, error.code);
   }
 }

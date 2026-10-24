@@ -141,26 +141,32 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
 
 const card = { family: 'vector', format: 'geojson' } as IntakeCard;
 
-for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPPING_CAPACITY'] as const) {
-  test(`${capacity} waits three times without attempts, then starts readers; 30 minutes stops the wait`, async () => {
+for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPPING_CAPACITY',
+  'STALE_REVISION'] as const) {
+  const waitCount = capacity === 'STALE_REVISION' ? 2 : 3;
+  test(`${capacity} waits ${waitCount} times without attempts; starts readers or stops after 30 minutes`, async () => {
     const fixture = store();
     if (capacity === 'MAPPING_CAPACITY') Object.assign(fixture.tables, { source: retained,
       reader: sealedReader(), profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 },
       recipe: { id: recipeId, revision: 2, state: 'approved' } });
-    if (capacity === 'STREAMED_PROFILE_CAPACITY') fixture.tables.reader = { ...sealedReader(), state: 'running',
-      sealed_chunks: null };
+    if (capacity === 'STREAMED_PROFILE_CAPACITY' || capacity === 'STALE_REVISION') {
+      fixture.tables.reader = { ...sealedReader(), state: 'running', sealed_chunks: null };
+    }
     const initialReader = fixture.tables.reader;
     const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
     const job = fixture.jobs.get(jobId)!;
     Object.assign(job, { status: 'queued', attempts: 0 });
     const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
     const attempts: Record<string, any>[] = [], waits: number[] = [];
-    let refusals = 3;
+    let refusals = waitCount, currentRevision = 3;
+    const profileRevisions: number[] = [];
     const one = (row?: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
     const original = fixture.client.query.bind(fixture.client) as any;
     const query = async (sql: string, values: any[] = []) => {
       if (sql.startsWith("SELECT * FROM jobs WHERE id=$1 AND operation='intake-large'")) return one(job);
       if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
+      if (sql.startsWith('SELECT revision FROM cases') || sql.startsWith('SELECT id,revision,archived FROM cases'))
+        return one({ id: caseId, revision: currentRevision, archived: false });
       if (sql.startsWith('SELECT status,')) {
         assert.match(sql, /dispatched_at <= now\(\)-interval '30 minutes'/);
         return one({ ...job, expired: Number(job.dispatched_at) <= Date.now() - 1800000 });
@@ -207,7 +213,18 @@ for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
       if (capacity === 'STREAMING_CAPACITY' && refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
       return { jobId: readerJob };
     });
-    mock.method(StreamedProfileService.prototype, 'enqueue', async () => {
+    mock.method(StreamedProfileService.prototype, 'enqueue', async (
+      _caseId: string, _sourceId: string, value: unknown,
+    ) => {
+      if (capacity === 'STALE_REVISION') {
+        const revision = (value as { expectedCaseRevision: number }).expectedCaseRevision;
+        profileRevisions.push(revision);
+        assert.equal(revision, currentRevision);
+        if (refusals-- > 0) {
+          currentRevision++;
+          throw new AppError(409, capacity, 'The case changed before profile admission.');
+        }
+      }
       if (capacity === 'STREAMED_PROFILE_CAPACITY' && refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
       fixture.tables.reader ??= { ...sealedReader(), state: 'queued' };
       fixture.tables.profile = { job_id: profileJob, state: 'queued', sealed_generation: null };
@@ -220,7 +237,7 @@ for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     });
     try {
       let firstDispatch: unknown;
-      for (let count = 1; count <= 3; count++) {
+      for (let count = 1; count <= waitCount; count++) {
         const now = Date.now();
         await runIntakeLargeJob(jobId);
         assert.deepEqual([job.status, job.attempts, attempts.length, waits.length], ['queued', 0, 0, count]);
@@ -233,6 +250,7 @@ for (const capacity of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
       assert.equal(job.status, 'succeeded');
       assert.equal(job.attempts, 1, 'only the successful step claims an attempt');
       assert.equal(fixture.tables.profile!.job_id, profileJob);
+      if (capacity === 'STALE_REVISION') assert.deepEqual(profileRevisions, [3, 4, 5]);
       if (capacity === 'MAPPING_CAPACITY') fixture.tables.mapping = null;
       else {
         fixture.tables.reader = initialReader;

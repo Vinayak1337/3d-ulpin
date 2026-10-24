@@ -1,23 +1,30 @@
 {
   "task": "S1.3a", "planStep": 1, "base": "aaa9d698", "branch": "task/s1-3a-load-waits",
   "verdict": "Code checks pass; live load rehearsal still required. No runtime, image or demo action.",
-  "capacity": "The three occupied-lane 429 codes wait queued for 2 s before claiming an attempt. First dispatch anchors a durable 30 minute bound; expiry fails with the code and plain words. Counters and completed steps stay.",
+  "capacity": "The three occupied-lane 429 codes and enqueue STALE_REVISION wait queued for 2 s before claiming an attempt. Each retry reads the case revision afresh; waiting reasserts source/access pins. First dispatch anchors the same durable 30 minute bound. Expiry fails with the code and plain words; counters and completed steps stay.",
   "upload": "Append receipts allow advancing case revisions at admission, part I/O, v1 assembly/publication and v2 scheduling/renewal/publication. Future case/upload revisions and access changes refuse. New receipts persist the access digest; legacy receipts retain their operator guard.",
   "familyRule": "Upload contracts have no family replacement input: receipts insert new families. Existing-family retain checks remain exact in service.ts:481 and documents.ts:126; neither changed.",
-  "acceptance": "All three lane codes refuse three times with attempts=0 and next_attempt_at advanced each time, then start readers with one ordinary successful attempt. The dispatch anchor stays fixed. Past 30 minutes each code fails with attempts=0. Upload survives six sibling revision advances with hash unchanged; future/upload/access mismatches refuse part admission and finalization with zero stored bytes/sources.",
+  "acceptance": "Three lane codes refuse three times and profiler STALE_REVISION twice, all with attempts=0 and next_attempt_at advanced each time. Profiler retries read revisions 3, 4, 5; success starts readers with one ordinary successful attempt. The dispatch anchor stays fixed; past 30 minutes all four codes fail with attempts=0. Upload survives sibling arrivals unchanged; future/upload/access mismatches still refuse with zero stored bytes/sources.",
   "inputs": { "regressions": "In-memory job/receipt fixtures, not real LAZ content or runtime timing evidence.", "realGood": "Full-suite seattle-energy.csv, 38309 records", "realDifficult": "Full-suite baton-footprint.csv, 197392 records / 76920137 bytes", "faults": "e47274ed:docs/evidence/step-1/s1-3/{faults,result}.json; no rehearsal input bytes opened" },
   "checks": {
-    "logs": "E:/ulpin-tmp/s1-3a/{before,after,final}-*.log; tuples: exit, passed, failed, skipped",
+    "logs": "E:/ulpin-tmp/s1-3a/{before,after,final}-*.log; latest E:/ulpin-tmp/s1-3a-resume/{before,after,final}-*.log; tuples: exit, passed, failed, skipped",
     "pnpm typecheck:backend": { "before": 0, "after": 0, "errors": 0 },
     "pnpm studio:typecheck": { "before": 0, "after": 0, "errors": 0 },
     "pnpm studio:test": { "before": [0, 779, 0, 3], "after": [0, 779, 0, 3], "files": 123 },
-    "targeted": { "before": [0, 45, 0, 0], "after": [0, 52, 0, 0], "files": ["intake-large-steps.test.ts", "intake-large.test.ts", "tests/large-original.test.ts", "large-original-status.test.ts"] },
-    "WORKING-RULES section 5 server command": { "before": [0, 913, 0, 4], "after": [0, 920, 0, 4], "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
+    "targeted": { "before": [0, 45, 0, 0], "after": [0, 53, 0, 0], "files": ["intake-large-steps.test.ts", "intake-large.test.ts", "tests/large-original.test.ts", "large-original-status.test.ts"] },
+    "WORKING-RULES section 5 server command": { "before": [0, 913, 0, 4], "after": [0, 921, 0, 4], "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
     "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": { "before": 0, "after": 1, "baseline": "333 operations, 377 schemas", "reason": "Expected stale source-pins.json; not regenerated" },
     "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "before": 0, "after": 1, "reason": "Expected producer changed; stops at intake-large-worker.ts" },
     "staleProducerPaths": ["packages/server/src/modules/usp/ingestion/intake-large-worker.ts", "packages/server/src/modules/usp/ingestion/large-original.ts"],
     "git diff --check": { "before": 0, "after": 0, "errors": 0 },
     "draftFailure": "First regression run: two fixture failures; metadata stub returned the old job for a newly queued job. Scoped it to its job; regressions passed."
+  },
+  "resume": {
+    "base": "ba6a7c00", "scope": "Only prepareReaders enqueue refusals, its regression and this result changed; other STALE_REVISION paths untouched.",
+    "before": { "backend": 0, "studioTypes": 0, "studioTests": [0, 779, 0, 3], "targeted": [0, 52, 0, 0], "server": [0, 920, 0, 4], "openapi": 1, "apiCheck": 1, "diff": 0 },
+    "after": { "backend": 0, "studioTypes": 0, "studioTests": [0, 779, 0, 3], "targeted": [0, 53, 0, 0], "server": [0, 921, 0, 4], "openapi": 1, "apiCheck": 1, "diff": 0 },
+    "regression": "Before fix: exit 1, 19 passed / 1 failed with profiler STALE_REVISION. After fix: exit 0, 20 passed. Two waits preserve attempts=0; next try uses the new revision; shared deadline also tested.",
+    "draftTypecheck": "Exit 2: two mock parameters lacked explicit types. Added their string types; final backend check exits 0. Both contract checks report only the already-stale producer pins."
   },
   "revisionAudit": {
     "scope": "Read-only audit of batch automatic paths and adjacent receipt checks requested. Paths relative to packages/server/src/modules/usp/ingestion; lines at task base, unchanged files.",
@@ -25,7 +32,7 @@
     "automaticChecks": [
       ["streaming-vector.ts", [141], true, "Current case/request admission race"],
       ["streamed-profile.ts", [155], true, "Current case/request admission race"],
-      ["chunk-mapping.ts", [235], true, "Same race; table waits on STALE_REVISION, large path still spends ordinary attempts"],
+      ["chunk-mapping.ts", [235], true, "Same race; table and large paths now wait without attempts and retry with fresh case revision"],
       ["streamed-profile.ts", [48], false, "Immutable raw/profile input pins, not current case"],
       ["chunk-mapping.ts", [127, 165], false, "Immutable raw/mapped input pins"],
       ["semantic-chunks.ts", [92], false, "Published chunk versus immutable input"],
@@ -48,5 +55,5 @@
       ["source-pin.ts", [14, 26], false, "Shared comparisons already allow advancing revisions, as does intake-draft.ts:536; ZIP/native derivatives/evidence use source/access pins, not exact current-case equality"]
     ]
   },
-  "next": "Lead: regenerate pins on merge; review three remaining admission races separately. Rehearsal must prove live batch/LAZ behavior and timing; v2 storage assembly reviewed, not exercised end to end here."
+  "next": "Lead: regenerate pins on merge. Rehearsal must prove live batch/LAZ behavior and timing; v2 storage assembly reviewed, not exercised end to end here."
 }
