@@ -299,7 +299,7 @@ Size S, code only. After: S4.2 (same file mapping-teacher.ts, one writer). **Sta
 
 ### S4.5 A dropped table is read and proposed without a press when its layout is certain
 
-Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (teacher policy applies to the proposal). **Status: open.**
+Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (teacher policy applies to the proposal). **Status: server part running codex (24 Oct); the BatchTableSection change (read in progress instead of the press) waits for a UI chat session.**
 
 - **What:** A dropped CSV, TSV, XLSX or ODS rests as kept until the officer presses Read as a table. Its mapping jobs start from the browser, so its card has no field meanings until someone acts. When the selection is certain, queue the same server calls the press makes, from a job: tableFromOriginal, then StreamingVectorService.enqueue and ChunkMappingService.enqueue, as queueApprovedTabular does. Certain means a CSV or TSV (its only allowed header is row 1) or a one-sheet workbook with header row 1. A workbook with several sheets keeps the press, and its card names that question. The table section shows the read in progress instead of the press.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft.ts:147-173 (keptOnly, keptWords), 274-283 (route), 331-345 settleKeptTx; intake-draft-worker.ts:294-313 (job pattern); service.ts:677-700 tableFromOriginal; chunk-mapping-learning.ts:180-201 queueApprovedTabular (pattern, read only); packages/contracts/src/usp/ingestion.ts:136-146 (selection rule, read only); apps/studio/src/features/intake/BatchTableSection.tsx:36-80
