@@ -3,6 +3,7 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
   IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, IntakeTablePlacementSchema, IntakePlanRequestSchema,
+  AnyMappingReceiptSchema, MappingPlanSchema, SourceProfileSchema, ChunkMappingPayloadSchema, CHUNK_MAPPING_LIMITS,
   type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -23,7 +24,7 @@ import { planImage, planModel, queueIntakePlanTx } from './intake-plan';
 import { planOcrPagesTx } from './intake-plan-processor';
 import { queueLateIntakeEvidenceTx } from './intake-evidence';
 import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
-import { readingOf } from './intake-reading';
+import { readingOf, type ReadingFacts } from './intake-reading';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -40,6 +41,19 @@ const defaults = { transaction, read: readObjectRange, probe: probeOriginal, obj
   planOcrPages: planOcrPagesTx,
   resolve: (collection: Record<string, unknown>) =>
     areaGeo<{ authority: string }>('resolve-geojson-crs', { collection }) };
+
+function readingPlanFacts(source: IntakeSourceRow, stored?: Record<string, unknown>): ReadingFacts {
+  const profile = SourceProfileSchema.pick({ paths: true }).strip().safeParse(stored?.profile);
+  const facts: ReadingFacts = { profile: profile.success ? profile.data : null };
+  const recipe = AnyMappingReceiptSchema.safeParse(stored?.recipe);
+  const proposal = z.object({ plan: MappingPlanSchema,
+    origin: z.enum(['memory', 'teacher', 'officer']) }).safeParse(stored?.proposal);
+  const current = (pin: { sourceId: string; sourceSha256: string; sourceRevision: number }) =>
+    pin.sourceId === source.id && pin.sourceSha256 === source.sha256 && pin.sourceRevision === source.revision;
+  if (recipe.success && current(recipe.data.plan.source)) facts.recipe = recipe.data;
+  if (proposal.success && current(proposal.data.plan.source)) facts.proposal = proposal.data;
+  return facts;
+}
 
 /** CR1. The geo service decides whether it knows a code (pyproj builds it as a 2D system); none is ever guessed. */
 async function knownCrs(crs: string, resolve: typeof defaults.resolve) {
@@ -235,9 +249,37 @@ export class IntakeService {
     const itemId = uuid.parse(itemValue);
     return this.dependencies.transaction(async client => {
       const scope = await intakeCaseTx(client, caseId);
-      const { row } = await itemContextTx(client, caseId, itemId);
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      let facts: ReadingFacts = {};
+      if (row.source_id && ['table', 'vector'].includes(row.card?.family)) {
+        const stored = (await client.query(`SELECT s.inspection->'manualProfile' profile,r.body recipe,
+          p.result proposal,c.object_key,c.object_sha256,c.bytes FROM sources s
+          LEFT JOIN usp_mapping_recipes r ON r.source_id=s.id
+          LEFT JOIN LATERAL (SELECT o.result FROM operations o JOIN jobs j
+            ON o.operation_key='intake-draft-plan:' || j.id::text AND o.case_id=j.case_id
+            WHERE o.kind='intake-draft' AND j.operation='intake-draft' AND j.source_id=s.id
+            AND j.payload->>'itemId'=$3 AND j.payload->>'sourceSha256'=s.sha256
+            ORDER BY o.created_at DESC LIMIT 1) p ON true
+          LEFT JOIN LATERAL (SELECT slot.object_key,slot.object_sha256,slot.bytes
+            FROM usp_chunk_mapping_imports m JOIN usp_chunk_mapping_slots slot ON slot.job_id=m.job_id
+            WHERE m.case_id=s.case_id AND m.source_id=s.id AND m.source_revision=s.revision
+            AND slot.chunk_index=0 AND slot.published=true AND slot.status='ready'
+            ORDER BY m.created_at DESC LIMIT 1) c ON true
+          WHERE s.case_id=$1 AND s.id=$2`, [caseId, row.source_id, itemId])).rows[0];
+        facts = readingPlanFacts(source, stored);
+        if (row.card.family === 'table' && stored?.object_key
+          && Number(stored.bytes) <= CHUNK_MAPPING_LIMITS.chunkBytes) {
+          const bytes = await this.dependencies.object(stored.object_key);
+          if (bytes.length !== Number(stored.bytes) || sha256(bytes) !== stored.object_sha256) {
+            throw new AppError(422, 'INTAKE_READING_INTEGRITY', 'The stored field proposal differs from its hash.');
+          }
+          const payload = ChunkMappingPayloadSchema.parse(JSON.parse(Buffer.from(bytes).toString('utf8')));
+          if (payload.sourceId === row.source_id && payload.sourceSha256 === source.sha256
+            && payload.sourceRevision === source.revision) facts.mapping = payload.mapping;
+        }
+      }
       assertIngestionBinding(scope.binding);
-      return readingOf(row, row.card ?? null);
+      return readingOf(row, row.card ?? null, facts);
     });
   }
 
