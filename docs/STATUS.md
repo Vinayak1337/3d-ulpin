@@ -11,7 +11,7 @@ history only). Workers are Claude CLI (all UI work) and pi codex only; no cloud 
 17 files with receipts), S3.1, S3.2, S4.1 (one owner switch for Sarvam on judges' files, default off), S4.2 (header
 rules), S4.3 (reading card route), S4.5 server part (certain tables read without a press), S7.2, S7.3, S7.7. The S1.2
 rehearsal on a fresh `ulpin-reh-03` proved surface jobs (SA1) but failed act 1 on two faults from S4.1 and S4.5;
-S1.2a fixed both (merged 25 October), and act 1 runs again once the PC is quiet. S1.2b (the same rule for ZIP retains) and S4.6 (reading card fields: meaning and source) merged. S2.3 sealed the closed judge kit (12 files, 4 families, counts and hash only in Git). Running: S1.2 run 2 (act 1 again on reh-03 at aaa9d698, quiet PC). The Claude CLI account is still refused.
+S1.2a fixed both (merged 25 October), and act 1 runs again once the PC is quiet. S1.2b (the same rule for ZIP retains) and S4.6 (reading card fields: meaning and source) merged. S2.3 sealed the closed judge kit (12 files, 4 families, counts and hash only in Git). S1.2 run 2 passed act 1 (no 409, View layout answered, both cards, journey 8/8); open are the EV2 overlap (to S1.3) and a map stall while point parts draw. Running: S1.2c (stall diagnosis). The Claude CLI account is still refused.
 
 **UI list (owner left it to the lead, 24 October):** [UX review](design/UX-REVIEW-2026-10-24.md). Worst first: the
 batch page never says which step it is in or what needs the officer (S7.17), an action can vanish or sit disabled with
