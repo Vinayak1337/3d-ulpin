@@ -9,8 +9,10 @@ import pytest
 import shapefile
 from pyproj import CRS
 
+from geo import native_gis
 from geo.area import normalize_area
 from geo.native_gis import convert_native_file
+from geo.validation import InputError
 
 
 TWEED = Path(
@@ -23,6 +25,55 @@ OUTER = [[500000, 3100000, 10], [500000, 3100020, 11], [500020, 3100020, 12],
 HOLE = [[500005, 3100005, 20], [500010, 3100005, 21], [500010, 3100010, 22],
         [500005, 3100010, 23], [500005, 3100005, 20]]
 OTHER = [[point[0] + 30, point[1], point[2] + 30] for point in OUTER]
+
+
+def test_only_large_shapefile_set_passes_the_new_source_and_derivative_bounds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Synthetic test_only size control, not survey evidence; only a record or hash block is held at a time."""
+    base, records = tmp_path / "test_only", 4500
+    with shapefile.Writer(str(base), shapeType=shapefile.POINT) as writer:
+        for index in range(128):
+            writer.field(f"pad_{index}", "C", size=254)
+        for _ in range(records):
+            writer.point(*OUTER[0][:2])
+            writer.record(*(["x" * 254] * 128))
+    base.with_suffix(".prj").write_text(CRS.from_epsg(32643).to_wkt(), encoding="utf-8")
+
+    def digest(path: Path) -> str:
+        hashed = hashlib.sha256()
+        with path.open("rb") as stream:
+            while block := stream.read(1024 * 1024):
+                hashed.update(block)
+        return hashed.hexdigest()
+
+    members = []
+    for index, extension in enumerate(("shp", "shx", "dbf", "prj")):
+        path = base.with_suffix(f".{extension}")
+        source_id = f"10000000-0000-4000-8000-{index:012d}"
+        hashed = digest(path)
+        members.append({"extension": extension, "sourceId": source_id, "sha256": hashed,
+                        "bytes": path.stat().st_size, "objectKey": f"large-originals/{source_id}/{hashed}"})
+    pins = {key: members[0][key] for key in native_gis._PIN_FIELDS}
+    request = {**pins, "members": members, "layer": "test_only"}
+    old_bound = 128 * 1024 * 1024
+    assert native_gis.MAX_SOURCE_BYTES == native_gis.MAX_DERIVATIVE_BYTES == 1024 ** 3
+    assert members[0]["bytes"] + members[2]["bytes"] > old_bound
+    parts = native_gis._set_parts(request)
+    layer = native_gis._shapefile_set_layer(base, "test_only", pins["sha256"], parts, {})
+    assert (layer["state"], layer["features"], layer["notWritten"]) == ("converted", records, 0)
+    assert layer["geojson"]["bytes"] > old_bound
+    for name in ("geojson", "sidecar"):
+        entry = layer[name]
+        path = Path(entry["path"])
+        assert (entry["bytes"], entry["sha256"]) == (path.stat().st_size, digest(path))
+    assert all(digest(base.with_suffix(f".{part['extension']}")) == part["sha256"] for part in members)
+    with monkeypatch.context() as old:
+        old.setattr(native_gis, "MAX_SOURCE_BYTES", old_bound)
+        with pytest.raises(InputError, match=str(old_bound)):
+            native_gis._pins(*(members[2][key] for key in native_gis._PIN_FIELDS))
+    with pytest.raises(InputError, match="1 GiB"):
+        native_gis._pins(pins["sourceId"], pins["objectKey"], pins["sha256"], 1024 ** 3 + 1)
 
 
 def fixture_zip(tmp_path: Path, shape_type: int, measured: bool = False) -> Path:

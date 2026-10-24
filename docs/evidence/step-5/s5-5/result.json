@@ -1,0 +1,40 @@
+{
+  "task": "S5.5", "planStep": 5, "status": "complete_code_checks_with_known_base_failures", "base": "5cac94f3",
+  "change": "Native GIS source/set and derivative ceilings are 1 GiB, shared with the large vector path.",
+  "timing": { "source600MiBMs": 3000000, "set600MiBMs": 3000000, "source1GiBMs": 4800000 },
+  "deadlineReview": [
+    "runDerivativeJob and its processing.ts dispatcher have no total deadline.",
+    "jobs.ts renews a 180-second lease through the unchanged 60-second heartbeat.",
+    "convert-native is a synchronous FastAPI route served by uvicorn, with no route total deadline found."
+  ],
+  "largeTest": {
+    "label": "Generated test_only shapefile; no survey or registry evidence", "records": 4500,
+    "shpPlusDbfBytes": 146438729, "setBytes": 146476370,
+    "geojsonBytes": 153733598, "geojsonSha256": "5e52b228ad76e3163da80fbe7fae9ce35a45f3f22a501894e40a946ac7de13cf",
+    "sidecarBytes": 146986, "sidecarSha256": "53dab13906b3ba3e6590d178fe49a11119559560b5e0d1f72d2791afbb3b8353",
+    "checks": "Disk sizes/hashes match; source hashes unchanged; old 128 MiB _pins bound refuses; >1 GiB refused.",
+    "fixtureCorrection": "Shortened DBF field names to avoid truncation collisions; bounded rerun passed."
+  },
+  "checks": {
+    "large_case": { "exit": 0, "passed": 1 },
+    "base_python_three_files": { "exit": 1, "passed": 41, "failed": 7, "skipped": 11 },
+    "final_python_three_files": { "exit": 1, "passed": 42, "failed": 7, "skipped": 11 },
+    "targeted_ts": { "exit": 0, "passed": 33 },
+    "pnpm_typecheck_backend": { "exit": 0, "projects": 2 },
+    "working_rules_section_5_server": { "exit": 0, "passed": 989, "skipped": 4 },
+    "pnpm_studio_test": { "exit": 0, "passed": 783, "skipped": 3 },
+    "pnpm_studio_typecheck": { "exit": 2, "errors": 1, "baseIssue": "table-placement-command.ts:65 decimalMark" },
+    "openapi_check": { "exit": 1, "expected": "docs/api/source-pins.json stale; not regenerated" },
+    "api_check_py": { "exit": 1, "expected": "producer changed: packages/contracts/src/upload-reader-limits.d.ts" },
+    "git_diff_check": { "exit": 0 }
+  },
+  "baseComparison": "Clean git archive of 5cac94f3 at E:/ulpin-tmp/s5-5-base; all seven failing test IDs match.",
+  "pythonEnvironment": "All seven failures lack defusedxml. No install on continuation; prior temp overlay unused.",
+  "logs": "E:/ulpin-tmp/s5-5-{clean-base-python,large-fixed,final-python,after-*}.log",
+  "beforeChecks": "Initial targeted TS: 31 passed; backend: 0; Studio: 783 passed/3 skipped; known type error.",
+  "beforeCaveat": "Earlier sequential server/contract checks overlapped drafting; not a clean-base comparison.",
+  "inputs": "Real test_only Niagara/Tweed originals; difficult Tweed copy with unresolved CRS remains refused.",
+  "cleanup": "Removed only task-owned pytest folders by individual file removal and empty-directory rmdir.",
+  "scope": "Only authorised word assertions changed in the three added test files; KEEP paths unchanged.",
+  "next": "Runtime/image proof is S5.6; any forecast wording change is a UI step. Full 1 GiB I/O not exercised."
+}

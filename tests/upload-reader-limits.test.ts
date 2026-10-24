@@ -3,6 +3,11 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import * as readerLimits from '../packages/contracts/src/upload-reader-limits.ts';
 
+test('native GIS conversion shares the large vector path\'s 1 GiB source ceiling', () => {
+  assert.equal(readerLimits.NATIVE_GIS_LIMITS.sourceBytes, readerLimits.STREAMING_VECTOR_LIMITS.sourceBytes);
+  assert.equal(readerLimits.NATIVE_GIS_LIMITS.sourceBytes, 1024 ** 3);
+});
+
 test('upload reader declarations match runtime exports and expose finite numeric limits', () => {
   const declarations = readFileSync(
     new URL('../packages/contracts/src/upload-reader-limits.d.ts', import.meta.url),
