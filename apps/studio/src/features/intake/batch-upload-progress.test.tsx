@@ -129,7 +129,7 @@ async function openDrop(run: ReturnType<typeof transport>) {
 const flush = () => act(() => new Promise(resolve => setTimeout(resolve, 0)));
 afterEach(() => vi.unstubAllGlobals());
 
-it('opens the batch before retention and shows bytes and parts while a second file is still uploading', async () => {
+it('opens the batch before retention and shows sizes and parts while a second file is still uploading', async () => {
   const run = transport();
   const page = await openDrop(run);
   await act(async () => {
@@ -146,7 +146,7 @@ it('opens the batch before retention and shows bytes and parts while a second fi
   });
   await flush();
   expect(page.root.textContent).toContain('File 2 of 2: second.tif');
-  expect(page.root.textContent).toContain('83,88,608 of 1,67,77,217 bytes; part 2 of 3');
+  expect(page.root.textContent).toContain('8 MiB of 16 MiB; part 2 of 3');
   expect(page.client.getQueryData<BatchUpload>(batchUploadKey(caseId))?.rows[0]?.state).toBe('enrolled');
   expect(run.calls).not.toContain('finalize 2');
   await retryOnBatch(page, run);
