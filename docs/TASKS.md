@@ -184,7 +184,7 @@ Size M, this PC: runtime. After: S3.1 (exit and pool fields); runtime check afte
 
 ### S3.4 Large batch files: ask the layout from the first profile part, map while the reader continues
 
-Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if the merge is late. **Status: open.**
+Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if the merge is late. **Status: running 25 Oct (codex, from int3-pre c504eb64: S1.4 waits on S1.3 run 2).**
 
 - **What:** The batch path waits for the whole file to be read and the profile sealed before asking the layout (intake-large.ts:133-135). That is up to 80 min for 1 GiB (streaming-vector.ts:11-17), so first features in 60 s is impossible. Reuse the existing prefix route; no new format.
 1. Confirm with a test what prefix admission does with chunks after the observed prefix.
@@ -309,7 +309,7 @@ Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts w
 
 ### S4.4 A teacher field whose only fault is its rationale keeps its target as a question
 
-Size S, code only. After: S4.2 (same file mapping-teacher.ts, one writer). **Status: running 25 Oct (codex).**
+Size S, code only. After: S4.2 (same file mapping-teacher.ts, one writer). **Status: done 25 Oct (merged into task/int3-pre at 713a979a, pins c504eb64). A field failing only on its explanation keeps target, operation and confidence with code-owned withheld words and TEACHER_RATIONALE_WITHHELD; the plan stays needs_input; the teacher text reaches no plan, log or recording. Not yet live (S4.10).**
 
 - **What:** LP6 refused both live mapping plans, all 16 fields on fields.N.rationale. One digit, EPSG or 'coordinate' fails the schema, and retainValidFields then drops the field. SV3 changed only the prompt, and nothing live has passed since. Keep the rule unchanged. A field failing only its rationale keeps target, operation and confidence, with a code-owned rationale ('Withheld: the explanation stated a literal.') and issue TEACHER_RATIONALE_WITHHELD. It stays a question for the officer, and no literal reaches the stored plan. The lead approves this first: it changes SV3's consequence, not its rule.
 - **Files:** packages/server/src/modules/usp/ingestion/mapping-teacher.ts:86-109 (TeacherOutputSchema), 420-476 (unknownFields, validIsolatedField, retainValidFields), 557-562 acceptedResult; mapping-teacher-prompt.ts (read only); apps/studio/src/features/intake/table/model.ts:11-25 (one word line); docs/evidence/gf-ai/gateway/lp6/result.json (read only)
