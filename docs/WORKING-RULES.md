@@ -43,7 +43,8 @@ or agent from any project.
 
 **Limits.**
 - **At least two codex workers run at all times (owner, 25 October),** within the three-worker cap; the one exception
-  is a rehearsal, when only the rehearsal worker runs. When every codex account has run out, start a timer for the
+  is a rehearsal, when only the rehearsal worker runs. They may share one account: the pool fills the first ready
+  account before the next, which uses the limits up one account at a time. When every codex account has run out, start a timer for the
   soonest reset and wait; dispatch again when it fires.
 - **Start an unused account's timer (owner, 25 October):** whenever the refresh shows an account at 5h 0%, send it one
   short request on its own provider, so its five-hour window starts now instead of at the next real task:

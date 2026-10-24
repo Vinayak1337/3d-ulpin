@@ -309,7 +309,7 @@ Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts w
 
 ### S4.4 A teacher field whose only fault is its rationale keeps its target as a question
 
-Size S, code only. After: S4.2 (same file mapping-teacher.ts, one writer). **Status: open.**
+Size S, code only. After: S4.2 (same file mapping-teacher.ts, one writer). **Status: running 25 Oct (codex).**
 
 - **What:** LP6 refused both live mapping plans, all 16 fields on fields.N.rationale. One digit, EPSG or 'coordinate' fails the schema, and retainValidFields then drops the field. SV3 changed only the prompt, and nothing live has passed since. Keep the rule unchanged. A field failing only its rationale keeps target, operation and confidence, with a code-owned rationale ('Withheld: the explanation stated a literal.') and issue TEACHER_RATIONALE_WITHHELD. It stays a question for the officer, and no literal reaches the stored plan. The lead approves this first: it changes SV3's consequence, not its rule.
 - **Files:** packages/server/src/modules/usp/ingestion/mapping-teacher.ts:86-109 (TeacherOutputSchema), 420-476 (unknownFields, validIsolatedField, retainValidFields), 557-562 acceptedResult; mapping-teacher-prompt.ts (read only); apps/studio/src/features/intake/table/model.ts:11-25 (one word line); docs/evidence/gf-ai/gateway/lp6/result.json (read only)
@@ -350,7 +350,7 @@ Size M, code only. After: S4.2, S4.3. **Status: done 25 Oct (merged on task/int3
 
 ### S4.7 Reading card holds lines for 3D models, IFC, PDFs and surfaces, from their stored readings
 
-Size M, code only. After: S4.3; after S4.6 (same file intake-reading.ts). **Status: open.**
+Size M, code only. After: S4.3; after S4.6 (same file intake-reading.ts). **Status: running 25 Oct (codex).**
 
 - **What:** The item already names its stored readings: native reader job for DXF, CityGML, CityJSON, glTF and OBJ; ifcJobId; the PDF's document reading; plan_ref.header for orthophotos and point clouds. Read these once in the reading route and turn them into holds and drawing lines: objects and types, storeys and spaces, pages and pages needing OCR, pixels, bands, points, stated CRS and vertical reference. Add the layers a conversion left out. Reuse the Studio's existing summary words where they exist; no reader runs again.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-reading.ts; intake-ledger.ts:144-150 (job ids on the item); intake-native-readers.ts; intake-native-omissions.ts; intake-ifc.ts; documents.ts readDocumentResult (read only); intake-surface.ts:534-556; apps/studio/src/features/intake/native/reading-model.ts:45-60 (read only)
