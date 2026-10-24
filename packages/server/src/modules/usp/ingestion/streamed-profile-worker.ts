@@ -88,6 +88,7 @@ async function publishChunk(input:StreamedProfileInput,attempt:UspJobAttempt,raw
     await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.generation',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,generation:body.generation,
       generationHash:body.generationHash,coverage:'provisional',recordsSeen:body.recordsSeen},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 async function seal(input:StreamedProfileInput,attempt:UspJobAttempt){
