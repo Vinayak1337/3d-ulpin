@@ -28,6 +28,7 @@ import { queueLateIntakeEvidenceTx } from './intake-evidence';
 import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
 import { readingOf, type ReadingFacts } from './intake-reading';
 import { streamedLayoutMemoryTx } from './streamed-memory';
+import { intakeGeojsonFraming } from './geojson-framing';
 import { readDocumentResult } from './documents';
 import { omissionFormat, omissionLayersTx } from './intake-native-omissions';
 
@@ -289,11 +290,15 @@ export class IntakeService {
           WHERE s.case_id=$1 AND s.id=$2`, [caseId, row.source_id, itemId])).rows[0];
         facts = await storedFacts(row, source, stored);
       }
-      if (source.profile === 'large-original-v1' && row.card?.format === 'geojson'
-        && intakeItem(row).layoutQuestion) {
-        const memory = await this.dependencies.layoutMemory(client, caseId, itemId);
-        facts.layoutMemory = memory.answer.memory;
-        facts.profile = memory.profile;
+      if (source.profile === 'large-original-v1' && row.card && intakeGeojsonFraming(row.card)
+        && row.placement === 'needs_answer') {
+        try {
+          const memory = await this.dependencies.layoutMemory(client, caseId, itemId);
+          facts.layoutMemory = memory.answer.memory;
+          facts.profile = memory.profile;
+        } catch (error) {
+          if (!(error instanceof AppError) || error.status < 400 || error.status >= 500) throw error;
+        }
       }
       // Only stored fields and extents can suggest a link; an unread card has neither.
       const peers = row.card ? (await client.query(`SELECT i.*,s.name,to_jsonb(s) AS reading_source,${planColumns}

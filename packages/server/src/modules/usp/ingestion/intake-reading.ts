@@ -331,17 +331,17 @@ function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): Field[] {
   if (card?.family === 'table') return tableFields(card, facts);
   if (card?.family === 'vector' && facts.layoutMemory) {
     const memory = facts.layoutMemory;
+    const kind = memory.kind === 'public_land' ? 'public land' : memory.kind;
     return memory.operations.map(({ target, sourcePath }) => {
-      const header = keyProperty(sourcePath) ?? sourcePath;
+      const header = keyProperty(sourcePath) ?? (sourcePath === '/features/*/id' ? 'id' : 'geometry');
       if (target.endsWith('.geometry')) return { field: sourcePath, header, target: null,
-        ...line(`Geometry for the suggested ${memory.kind} layout; check it and approve.`, 'memory') };
+        ...line(`Geometry for the suggested ${kind} layout; check it and approve.`, 'memory') };
       const key = target.endsWith('.sourceKey');
-      const field = fieldLine(sourcePath, key ? 'building.sourceKey' : 'building.name', 'memory');
-      if (memory.kind !== 'building') {
-        field.target = null;
-        field.words = field.words.replaceAll('Building', memory.kind.replace('_', ' '));
-      }
-      return { ...field, header };
+      let meaning: Field['target'] = null;
+      if (memory.kind === 'building') meaning = key ? 'building.sourceKey' : 'building.name';
+      const words = key ? `${header} identifies each ${kind} in the source; not an allocated application ID.`
+        : `${header} holds the ${kind} name as stated in the source.`;
+      return { field: sourcePath, header, target: meaning, ...line(`${words} Check it and approve.`, 'memory') };
     });
   }
   if (card?.family !== 'vector' || !facts.profile) return [];

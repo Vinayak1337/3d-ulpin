@@ -6,9 +6,11 @@ import type { PoolClient } from 'pg';
 import { AnyStreamedMappingPlanSchema, IntakeLayoutMemorySchema, StreamedMappingReceiptSchema,
   type StreamedProfileGeneration } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
+import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { probeOriginal } from './intake-probe';
 import { IntakeService } from './intake-service';
+import { readingOf } from './intake-reading';
 import { streamedLayoutMemory, streamedLayoutMemoryTx } from './streamed-memory';
 import { streamedGenerationHash } from './streamed-profile';
 import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
@@ -76,12 +78,14 @@ async function fixture(prefix = false, priorPrefix = prefix) {
   const row = { body: receipt(old) as any, inventory: old, body_sha256: fingerprint(old),
     reading_source: { ...structuredClone(source), id: id(6), name: 'first.geojson' } };
   const rows = [row], statements: string[] = [], loads: string[] = [];
+  const stored: Record<string, unknown> = {};
   const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
     statements.push(sql);
     assert.match(sql, /^(SELECT|BEGIN|COMMIT|ROLLBACK)/, 'no writes, approvals or queued work');
     if (sql.includes('LIMIT 65')) return { rows: [] };
     if (sql.startsWith('SELECT i.*') || sql.includes('FROM usp_intake_items i')) return { rows: [{ ...item,
-      name: source.name }] };
+      name: source.name, streamed_profile_job_id: sql.includes("i.card->>'format'='geojson'")
+        && item.card.format !== 'geojson' ? null : jobId }] };
     if (sql.includes('SELECT r.body')) {
       assert.match(sql, /LIMIT 50/);
       assert.match(sql, /approval'->>'at' DESC/);
@@ -91,7 +95,7 @@ async function fixture(prefix = false, priorPrefix = prefix) {
     if (sql.includes('FROM cases')) return { rows: [{ id: caseId, revision: 1, archived: false }] };
     if (sql.includes('FROM usp_streamed_profile_imports p')) return { rows: [{ payload: input,
       sealed_generation: 0, hash: current.generationHash }] };
-    if (sql.startsWith('SELECT s.inspection')) return { rows: [] };
+    if (sql.startsWith('SELECT s.inspection')) return { rows: [stored] };
     if (sql.includes('FROM sources')) return { rows: [source] };
     if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
     assert.fail(sql);
@@ -106,7 +110,7 @@ async function fixture(prefix = false, priorPrefix = prefix) {
   const deps = { transaction: async <T>(action: (c: PoolClient) => Promise<T>) => action(client),
     sealed: load.bind(null, 'sealed'), prefix: load.bind(null, 'prefix') };
   const read = () => streamedLayoutMemory(caseId, itemId, deps);
-  return { read, deps, client, current, old, row, rows, item, source, input, statements, loads };
+  return { read, deps, client, current, old, row, rows, item, source, input, stored, statements, loads };
 }
 
 test('sealed and prefix memory fills a second large file and its reading, without copying approval', async () => {
@@ -121,7 +125,9 @@ test('sealed and prefix memory fills a second large file and its reading, withou
       ({ target, sourcePath }: any) => ({ target, sourcePath })),
     recipeId: id(9), name: 'first.geojson', approvedAt: at });
     assert.equal(answer.words,
-      `Filled in from the layout you approved for first.geojson on ${at}; check it and approve.`);
+      'Filled in from the layout you approved for first.geojson on 25 October 2026; '
+      + 'check it and approve. Fields used: OBJECTID, NAME, geometry.');
+    assert.doesNotMatch(answer.words, /T\d\d:|Z\b|\/features\/\*/);
     assert.equal(IntakeLayoutMemorySchema.safeParse({ ...answer,
       memory: { ...answer.memory, approval: f.row.body.approval } }).success, false);
     const service = new IntakeService({ transaction: f.deps.transaction,
@@ -129,6 +135,9 @@ test('sealed and prefix memory fills a second large file and its reading, withou
     const reading = await service.reading(caseId, itemId);
     assert.equal(reading.fields.find(field => field.field === keyPath)?.basis, 'memory');
     assert.equal(reading.fields.find(field => field.field === namePath)?.basis, 'memory');
+    assert.match(reading.fields.find(field => field.field === keyPath)!.words, /OBJECTID identifies each parcel/);
+    assert.match(reading.fields.find(field => field.field === namePath)!.words, /NAME holds the parcel name/);
+    assert.doesNotMatch(reading.fields.map(field => field.words).join(' '), /[Bb]uilding|\/features\/\*/);
     assert.equal(reading.drawing.as, answer.memory?.kind);
     assert.equal(reading.drawing.basis, 'memory');
     assert.ok(reading.question);
@@ -140,14 +149,63 @@ test('sealed and prefix memory fills a second large file and its reading, withou
 });
 
 test('missing and changed key types name the field; incompatible geometry has no memory', async () => {
-  for (const change of ['missing', 'string', 'geometry']) {
+  for (const change of ['missing', 'string', 'incomplete', 'geometry']) {
     const f = await fixture();
     f.current.paths = f.current.paths.filter(path => change !== 'missing' || path.path !== keyPath)
       .map(path => change === 'string' && path.path === keyPath ? { ...path, types: ['string'] } : path);
+    if (change === 'incomplete') f.current.paths = f.current.paths.map(path => path.path === keyPath
+      ? { ...path, values: 2, integers: 2, absent: 1 } : path);
     if (change === 'geometry') f.current.geometryTypes = ['LineString'];
     const answer = await f.read();
     assert.equal(answer.memory, null);
-    assert.ok(answer.words.includes(change === 'geometry' ? 'shapes' : keyPath));
+    assert.ok(answer.words.includes(change === 'geometry' ? 'shapes' : 'OBJECTID'));
+    assert.doesNotMatch(answer.words, /\/features\/\*/);
+  }
+});
+
+test('large line and sequence items get the same memory in the answer and reading card', async () => {
+  for (const format of ['ndjson', 'geojson-seq']) {
+    const f = await fixture(true);
+    f.item.card.format = format;
+    f.item.format = format;
+    const answer = await f.read();
+    assert.equal(answer.memory?.kind, 'parcel');
+    const service = new IntakeService({ transaction: f.deps.transaction,
+      layoutMemory: (client, c, i) => streamedLayoutMemoryTx(client, c, i, f.deps) });
+    const reading = await service.reading(caseId, itemId);
+    assert.equal(reading.fields.find(field => field.field === keyPath)?.basis, 'memory');
+    assert.equal(reading.fields.find(field => field.field === namePath)?.basis, 'memory');
+    assert.ok(f.loads.length >= 2, 'the card reads memory even without a collection-only manifest marker');
+  }
+});
+
+test('memory read refusals leave the card and stored profile intact; unexpected errors still throw', async () => {
+  const f = await fixture();
+  const profile = { paths: f.current.paths.map(({ path, types, values, explicitNull, absent }) => ({
+    path, types, values, explicitNull, absent, literalIdEligible: false, literalTextEligible: false })) };
+  f.stored.profile = profile;
+  const expected = readingOf({ ...f.item, name: f.source.name, plan_ref: null }, f.item.card, { profile });
+  const read = (error: Error) => new IntakeService({ transaction: f.deps.transaction,
+    layoutMemory: async () => { throw error; } }).reading(caseId, itemId);
+  for (const status of [403, 404, 409, 422]) {
+    const card = await read(new AppError(status, 'TEST_ONLY_MEMORY_UNAVAILABLE', 'Inventory unavailable.'));
+    assert.deepEqual(card, expected);
+    assert.ok(card.fields.length > 0, 'the earlier stored profile is retained');
+    assert.ok(card.fields.every(field => field.basis !== 'memory'));
+  }
+  for (const error of [new AppError(500, 'TEST_ONLY_MEMORY_FAILED', 'Unexpected failure.'), new Error('Unexpected')]) {
+    await assert.rejects(read(error), error);
+  }
+});
+
+test('remembered kind names are written directly for key and name fields', async () => {
+  const f = await fixture(), { memory } = await f.read();
+  assert.ok(memory);
+  for (const kind of ['building', 'parcel', 'road', 'public_land', 'utility'] as const) {
+    const card = readingOf({ ...f.item, plan_ref: null }, f.item.card, { layoutMemory: { ...memory, kind } });
+    const noun = kind === 'public_land' ? 'public land' : kind;
+    assert.ok(card.fields.find(field => field.field === keyPath)!.words.includes(`OBJECTID identifies each ${noun}`));
+    assert.ok(card.fields.find(field => field.field === namePath)!.words.includes(`NAME holds the ${noun} name`));
   }
 });
 
@@ -206,7 +264,8 @@ test('real NYC inventory matches its used field; a road file missing that field 
   Object.assign(f.current, inventory('fixtures/uttam-nagar/uttam-nagar-road-centrelines.geojson'));
   const answer = await f.read();
   assert.equal(answer.memory, null);
-  assert.match(answer.words, /properties\/bin/);
+  assert.match(answer.words, /used bin, which is missing here/);
+  assert.doesNotMatch(answer.words, /\/features\/\*/);
 });
 
 test('route refuses query fields and non-large items, and publishes a strict memory-only contract', async t => {

@@ -10,6 +10,8 @@ import { localOperatorSubject } from '../principal';
 import { assertIngestionBinding, ingestionBinding } from './events';
 import { assertIntakeSource, intakeSourceTx, type IntakeSourceRow } from './intake-context';
 import { intakeItem } from './intake-ledger';
+import { intakeGeojsonFraming } from './geojson-framing';
+import { keyProperty } from './intake-evidence';
 import { compileStreamedMapping } from './streamed-mapping';
 import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx, streamedGenerationHash }
   from './streamed-profile';
@@ -19,6 +21,8 @@ const defaults = { transaction, sealed: loadSealedStreamedProfileTx, prefix: loa
 const receiptSchema = StreamedMappingReceiptSchema.extend({ state: z.enum(['proposed', 'approved', 'executed']) });
 type MemoryRow = { body: unknown; inventory: unknown; body_sha256: string; reading_source: IntakeSourceRow };
 type Answer = z.infer<typeof IntakeLayoutMemorySchema>;
+const approvalDate = new Intl.DateTimeFormat('en-IN', { dateStyle: 'long', timeZone: 'UTC' });
+const fieldName = (path: string) => keyProperty(path) ?? (path === '/features/*/id' ? 'id' : 'geometry');
 
 /** Repin only to check mechanical admission. No publisher evidence or approval crosses to this source. */
 function checkLayout(plan: StreamedMappingPlan, profile: StreamedProfileGeneration) {
@@ -40,9 +44,9 @@ function mismatch(plan: StreamedMappingPlan, before: StreamedProfileGeneration, 
   for (const { sourcePath } of plan.operations) {
     const used = before.paths.find(path => path.path === sourcePath);
     const current = now.paths.find(path => path.path === sourcePath);
-    if (!current) return `The earlier layout used ${sourcePath}, which is missing here.`;
+    if (!current) return `The earlier layout used ${fieldName(sourcePath)}, which is missing here.`;
     if (!used || fingerprint([...used.types].sort()) !== fingerprint([...current.types].sort())) {
-      return `The earlier layout used ${sourcePath}, which holds other kinds of values here.`;
+      return `The earlier layout used ${fieldName(sourcePath)}, which holds other kinds of values here.`;
     }
   }
   try {
@@ -51,7 +55,8 @@ function mismatch(plan: StreamedMappingPlan, before: StreamedProfileGeneration, 
   } catch (error) {
     if (!(error instanceof AppError) || error.status !== 422) throw error;
     if (error.code === 'STREAMED_MAPPING_COVERAGE') {
-      const fields = plan.operations.filter(op => !op.target.endsWith('.geometry')).map(op => op.sourcePath);
+      const fields = plan.operations.filter(op => !op.target.endsWith('.geometry'))
+        .map(op => fieldName(op.sourcePath));
       return `The earlier layout used ${fields.join(' and ')}, which do not have complete usable values here.`;
     }
     return 'No earlier layout fits the kinds of shapes and fields read in this file.';
@@ -113,8 +118,10 @@ async function rememberedTx(client: PoolClient, profile: StreamedProfileGenerati
     const memory = { kind: plan.kind ?? 'building',
       operations: plan.operations.map(({ target, sourcePath }) => ({ target, sourcePath })),
       recipeId: receipt.id, name: row.reading_source.name, approvedAt: receipt.approval!.at };
-    return { memory, words: `Filled in from the layout you approved for ${memory.name} on ${memory.approvedAt}; `
-      + 'check it and approve.' };
+    const date = approvalDate.format(new Date(memory.approvedAt));
+    const fields = memory.operations.map(op => fieldName(op.sourcePath)).join(', ');
+    return { memory, words: `Filled in from the layout you approved for ${memory.name} on ${date}; `
+      + `check it and approve. Fields used: ${fields}.` };
   }
   return { memory: null, words };
 }
@@ -152,7 +159,8 @@ export async function streamedLayoutMemoryTx(client: PoolClient, caseId: string,
     WHERE i.case_id=$1 AND i.item_id=$2`, [caseId, itemId])).rows[0]
     ?? notFound('Intake item not found in this case.');
   const { source, binding } = await intakeSourceTx(client, caseId, row.source_id);
-  if (row.parent_item_id !== null || source.profile !== 'large-original-v1' || row.card?.format !== 'geojson') {
+  if (row.parent_item_id !== null || source.profile !== 'large-original-v1'
+    || !row.card || !intakeGeojsonFraming(row.card)) {
     throw new AppError(422, 'INTAKE_LAYOUT_MEMORY_ITEM', 'Only a large GeoJSON can reuse a streamed layout.');
   }
   const item = intakeItem(row);

@@ -1,12 +1,15 @@
 {
   "task": "S4.11",
   "planStep": 4,
+  "revisionBase": "b7f119f7 merged without conflicts",
   "result": "Read-only layout memory fills kind and paths; the current file still needs authoring and approval.",
   "coverage": [
     "Sealed and provisional inventories use existing number/hash/source-pin checks and mapping admission.",
     "Newest matching local approval wins, at most 50; no same-revision, proposed or other-subject reuse.",
     "Missing/type-changed fields are named; incompatible geometry, stale pins and corrupt history are refused.",
-    "The reading card uses the same lookup and marks remembered fields and drawing as memory.",
+    "GeoJSON collections, NDJSON and GeoJSON sequences use the same memory and reading-card lookup.",
+    "Words name fields as written, give the en-IN long date, and describe key/name meanings for the stated kind.",
+    "A 4xx memory refusal leaves the reading card and its stored profile intact; unexpected errors still throw.",
     "SQL spy permits only reads; originals are unchanged; the route refuses query fields and non-large items."
   ],
   "inputs": {
@@ -17,24 +20,26 @@
   "decisions": [
     "The response contains kind, target/sourcePath pairs, recipeId, name, approvedAt and words; never approval.",
     "Mechanical completeness and geometry admission are checked again before suggesting remembered choices.",
+    "Dates use the approval's UTC calendar day; approvedAt and sourcePath data remain unchanged.",
+    "The lookup enforces the open question; reading does not rely on a collection-only manifest marker.",
     "Current inventory loaders are substituted in protocol tests; real-file paths use the streamed inventory reader."
   ],
   "checks": {
-    "logs": "E:/ulpin-tmp/s4-11-{before,after}-*.log",
-    "streamed-memory.test.ts": { "exit": 0, "passed": 5 },
-    "intake-reading, intake-large, streamed-layout, intake-api tests": {
-      "before": { "exit": 0, "passed": 59 }, "after": { "exit": 0, "passed": 59 }
+    "logs": "E:/ulpin-tmp/s4-11-r2-{before,after}-*.log",
+    "streamed-memory.test.ts": { "exit": 0, "passed": 8 },
+    "memory, intake-reading, intake-large, streamed-layout, intake-api tests": {
+      "before": { "exit": 0, "passed": 64 }, "after": { "exit": 0, "passed": 67 }
     },
     "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "errors": 0 },
     "pnpm studio:typecheck": { "beforeExit": 2, "afterExit": 2, "existingErrors": 1 },
     "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "passed": 783, "skipped": 3 },
     "WORKING-RULES section 5 server command": {
       "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
-      "before": { "exit": 0, "passed": 960, "skipped": 4 },
-      "after": { "exit": 0, "passed": 965, "skipped": 4 }
+      "before": { "exit": 0, "passed": 978, "skipped": 4 },
+      "after": { "exit": 0, "passed": 981, "skipped": 4 }
     },
-    "openapi.ts --check": { "beforeExit": 0, "afterExit": 1, "expected": "docs/api/openapi.json stale" },
-    "python scripts/api/check.py": { "beforeExit": 0, "afterExit": 1, "expected": "producer pins stale" },
+    "openapi.ts --check": { "beforeExit": 1, "afterExit": 1, "expected": "docs/api/openapi.json stale" },
+    "python scripts/api/check.py": { "beforeExit": 1, "afterExit": 1, "expected": "producer pins stale" },
     "git diff --check": { "beforeExit": 0, "afterExit": 0 }
   },
   "staleProducers": [
