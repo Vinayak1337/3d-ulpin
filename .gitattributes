@@ -5,12 +5,10 @@
 repo-data/** -text -diff
 repo-data/README.md text eol=lf diff
 repo-data/manifest.json -text diff
-apps/web/public/scene-assets/** -text
 fixtures/** -text
 data-bundles/** -text
 data-bundles/**/README.md text eol=lf diff
 data-bundles/**/manifest.json -text diff
-apps/web/public/datasets/** -text
 fixtures/**/*.csv whitespace=cr-at-eol
 
 # Keep verified CSV source/export bytes, including CRLF, unchanged on checkout.
@@ -32,7 +30,6 @@ services/geo/geo/contracts/** -text
 database/sql/** -text
 
 # Preserve original/source-package and screenshot bytes through every checkout.
-apps/web/public/reference/** -text
 data-source/** -text
 data-source/*.md text eol=lf
 # Exact-byte runtime receipts referenced by docs/api/runtime-qualification.json.

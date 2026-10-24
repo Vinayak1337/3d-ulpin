@@ -1,6 +1,6 @@
 ---
 name: ui-design-check
-description: Check changed 3D ULPIN web UI against docs/design-system before handing it off, and report the findings. Trigger when a change adds or edits screens, components or CSS under apps/web (tsx/jsx/css), or when asked to review or polish UI. Do not trigger for backend, data, migration or docs-only changes. Report first; edit only after approval.
+description: Check changed 3D ULPIN web UI against docs/design-system before handing it off, and report the findings. Trigger when a change adds or edits screens, components or CSS under apps/studio, packages/ui or packages/scene (tsx/ts/css), or when asked to review or polish UI. Do not trigger for backend, data, migration or docs-only changes. Report first; edit only after approval.
 ---
 
 # UI design check
@@ -15,13 +15,12 @@ Compares a UI change with the repository design language and returns a findings 
   - `docs/design-system/components.md` and `reference/components.css`: component anatomy
   - `docs/design-system/surfaces-and-layout.md` and `map-and-3d.md`: frame, panels, scene
   - `AGENTS.md`: current UI delivery scope and official-source data rules
-  - `apps/web/AGENTS.md`: Next.js version rules, before any code change
 
 ## Steps
 
 1. Run the mechanical scan from the repository root:
    `node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs [base-ref]`
-   It lists added lines in `apps/web` that use literal colours or fonts, `lucide-react`, placeholder images or names, provenance words the product bans, or theme-switch code. Exit 1 means it found candidates. Each one still needs your judgement.
+   It lists added lines in `apps/studio/src`, `packages/ui/src` and `packages/scene/src` that use literal colours or fonts, `lucide-react`, placeholder images or names, provenance words the product bans, or theme-switch code. Exit 1 means it found candidates. Each one still needs your judgement.
 2. Read each changed screen or component and check the rules the scan cannot see:
    - `--ui-*` tokens only. Radii follow the shape lock. Never a border, a shadow and a tinted fill on one element.
    - Status words come only from the fixed list. Sentence case. Units always shown. Identifiers in mono and copyable.

@@ -1,4 +1,4 @@
-/** List added apps/web UI lines that need a design-system check. Usage: scan-ui-diff.mjs [base-ref] */
+/** List added Studio UI lines that need a design-system check. Usage: scan-ui-diff.mjs [base-ref] */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -8,6 +8,7 @@ const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8'
 const base = process.argv[2] ?? git('merge-base', 'HEAD', 'staging').trim();
 const uiFile = /\.(?:css|[cm]?[jt]sx?)$/;
 const tokenFile = /(?:^|\/)tokens\.css$/;
+const uiPaths = ['apps/studio/src', 'packages/ui/src', 'packages/scene/src'];
 
 const rules = [
   ['literal-colour', /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch)\(/, 'use a --ui-* colour token'],
@@ -21,13 +22,13 @@ const rules = [
 const added = [];
 let file = '';
 let line = 0;
-for (const row of git('diff', '--unified=0', '--no-color', base, '--', 'apps/web').split('\n')) {
+for (const row of git('diff', '--unified=0', '--no-color', base, '--', ...uiPaths).split('\n')) {
   if (row.startsWith('+++ ')) { file = row.startsWith('+++ b/') ? row.slice(6) : ''; continue; }
   const hunk = row.match(/^@@ -\S+ \+(\d+)/);
   if (hunk) { line = Number(hunk[1]); continue; }
   if (row.startsWith('+')) added.push([file, line++, row.slice(1)]);
 }
-for (const name of git('ls-files', '--others', '--exclude-standard', '--', 'apps/web').split('\n')) {
+for (const name of git('ls-files', '--others', '--exclude-standard', '--', ...uiPaths).split('\n')) {
   if (!name) continue;
   readFileSync(resolve(root, name), 'utf8').split('\n').forEach((text, i) => added.push([name, i + 1, text]));
 }
@@ -45,7 +46,8 @@ for (const [name, number, text] of added) {
   }
 }
 
-console.log(`Base ${base.slice(0, 12)}; ${added.length} added line(s) in apps/web.`);
+const perPath = uiPaths.map(path => `${path} ${added.filter(([name]) => name.startsWith(`${path}/`)).length}`);
+console.log(`Base ${base.slice(0, 12)}; ${added.length} added line(s): ${perPath.join(', ')}.`);
 if (found.length) {
   console.log(`${found.length} candidate(s) for review:`);
   for (const row of found) console.log(row);

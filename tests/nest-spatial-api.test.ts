@@ -13,7 +13,6 @@ import { guardLocalRequest } from '../apps/api/src/common/request-context';
 import { setRuntimeLoopbackPort } from '../packages/server/src/infrastructure/loopback-host';
 import { saveSpatialDataset } from '../packages/server/src/modules/spatial/spatial-datasets';
 import { AppError } from '../packages/server/src/infrastructure/errors';
-import { GET as legacyCalibrationRead } from '../apps/web/app/api/v1/spatial/calibration/[kind]/[...asset]/route';
 
 // Resolve the API's public dependencies from its package, without changing any
 // package manifest or requiring a root dependency on Nest.
@@ -55,11 +54,6 @@ test('native spatial/AI routes publish all 33 operations and enforce non-statefu
     assert.match(intake.error.replacement, /import-packages/);
     const calibration = await request('/api/v1/spatial/calibration/garden/manifest.json', 410);
     assert.equal(calibration.error.code, 'RETIRED_SYNTHETIC_CALIBRATION');
-    const legacyCalibration = await legacyCalibrationRead(new Request(base + '/api/v1/spatial/calibration/garden/manifest.json'),
-      { params: Promise.resolve({ kind: 'garden', asset: ['manifest.json'] }) });
-    assert.equal(legacyCalibration.status, 410);
-    assert.equal(legacyCalibration.headers.get('Cache-Control'), 'no-store');
-    assert.deepEqual(await legacyCalibration.json(), calibration);
     const crossSite = await request('/api/v1/spatial-ml/status', 403, { headers: { 'Sec-Fetch-Site': 'cross-site' } });
     assert.equal(crossSite.error.code, 'CROSS_ORIGIN_READ');
     await request('/api/v1/spatial/calibration/unknown/manifest.json', 404);

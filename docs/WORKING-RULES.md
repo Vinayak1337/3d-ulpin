@@ -26,16 +26,16 @@ worker's exit wakes the lead.
 - **Failed or timed out:** read `logs/<task>.log`, then `git status` and `git log` in the worktree; resume the same
   session or re-dispatch with a RESUME file.
 
-**Spawners, in this order** (owner, 23 October):
+**Spawners: only these two** (owner, 24 October):
 
-1. **Claude Code CLI workers** and **pi codex-pool workers** on this PC, whichever has limit. When both have limit,
-   the CLI takes tasks that need this PC's runtime, Docker, GPU or data drive, and codex takes code-only tasks.
-2. **Cloud agents**, only when the CLI and every codex account are out of limit, and only for a task that runs the
-   same way in the cloud: it reads only pushed code and needs no Docker, GPU, data drive, `_tasks` folder, worktree or
-   local runtime.
+1. **Claude Code CLI workers** (`claude-worker.sh`) take every UI task: step 7 and any change under `apps/studio`,
+   `packages/ui` or `packages/scene`. They also take tasks that need this PC's runtime, Docker, GPU or data drive.
+2. **pi codex-pool workers** (`codex-subagent-win.mjs`) take the other code tasks (backend, contracts, services,
+   scripts). When the CLI is out of limit, codex may take any non-UI task; a UI task waits for the CLI.
 
-The lead's own local background agents get no build task. Cloud agents never do teacher or learner work; for teacher
-work, Claude teaches and codex does the learner work, so that a different model checks the labels.
+No cloud agents and no build work by the lead's own background agents (Agent tool). When both spawners are out of
+limit, start a timer for the soonest reset and stop. For teacher work, Claude teaches and codex does the learner work,
+so that a different model checks the labels.
 
 **Capacity.** At most three workers at once, and only one of them may use this PC's runtime, Docker or GPU. Each shared
 file has one writer at a time, named in the task. During a rehearsal only the one rehearsal worker runs: no other worker
@@ -43,8 +43,8 @@ or agent from any project.
 
 **Limits.**
 - When a codex worker stops on a limit, refresh every account first, on its own, before any other dispatch (owner,
-  22 October). Then continue the task from its checkpoint on the other local spawner; when both are limited, on a
-  cloud agent if the task qualifies; otherwise start a timer for the soonest reset and stop.
+  22 October). Then continue the task from its checkpoint on the other spawner if the task is not UI work; otherwise,
+  or when both are limited, start a timer for the soonest reset and stop.
 - A timer only wakes the lead; it never dispatches anything by itself. Each background job lasts two hours at most, so
   chain the next timer when one returns.
 - **Hand-over:** the next worker gets `<task>-resume.full.md`: a RESUME header (branch and last commit, any uncommitted
@@ -75,11 +75,7 @@ bash pool-watch.sh "YYYY-MM-DD HH:MM:SS +0530"     # codex
 bash claude-watch.sh "YYYY-MM-DD HH:MM:SS +0530"   # Claude CLI
 ```
 
-- Local task file: `bash mk-full.sh <id>` joins `<id>.md` and `worker-rules.md` into `<id>.full.md`.
-- Cloud task: write `heads/<id>.txt` (line 1 the TASK line, line 2 `@@START task/<id>-<slug>`, then the task), run
-  `bash mk-cloud.sh <id>`, then `& E:/Projects/ulpin-wt/_tasks/start-cloud.ps1 E:/Projects/ulpin-wt/_tasks/<id>-cloud.txt`.
-  It starts from `origin/staging`, so push first. `start-cloud.ps1` sets no attribution switch: check every cloud
-  commit before merging.
+- Task file: `bash mk-full.sh <id>` joins `<id>.md` and `worker-rules.md` into `<id>.full.md`.
 
 ## 3. The task file: one page
 
@@ -98,9 +94,8 @@ TESTS  the important existing test files that guard the touched code (from TASKS
 LIMIT  time box (about 90 minutes) and about 400 net changed lines
 ```
 
-- Under about 2,500 characters, plain ASCII, no double quotes, so a cloud task with its start lines and
-  `worker-rules.md` (about 4,500 characters) stays under `start-cloud.ps1`'s 7,600-character limit. `mk-full.sh` and
-  `mk-cloud.sh` print the size and the double-quote count.
+- Under about 2,500 characters, plain ASCII, no double quotes (the Windows launchers cut a prompt at its first double
+  quote). `mk-full.sh` prints the size and the double-quote count.
 - **The lead reads the code a task targets before writing it.** Steps must not contradict each other or the data model.
 - The shared rules every worker gets are in `_tasks/worker-rules.md`. Keep that file short and in step with this one.
 
@@ -110,7 +105,7 @@ LIMIT  time box (about 90 minutes) and about 400 net changed lines
 - A change wider than the task goes back to the same worker with an exact list of what to undo or change.
 - Merge each accepted task as soon as it is reviewed, one branch at a time, into the integration branch: `task/int3-pre`
   (checked out at `E:/Projects/ulpin-wt/int3`) until plan step 1 merges it into `staging`, then `staging` (checked out
-  at `E:/Projects/3d-ulpin`). Push it at least once a day and before any cloud dispatch. Only one lead session: check `git log` and `git status` before every
+  at `E:/Projects/3d-ulpin`). Push it at least once a day. Only one lead session: check `git log` and `git status` before every
   lead commit.
 - **Generated files** (`docs/api/openapi.json`, `packages/api-client/src/schema.d.ts`, `docs/api/source-pins.json`)
   are regenerated by the merger only. After each merge that touched `apps/api/src`, `packages/server/src`,

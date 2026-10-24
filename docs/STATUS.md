@@ -4,6 +4,9 @@
 running; the demo runtime stays up. This page stays under one page; the board before today is in
 [archive/STATUS-2026-10-22.md](archive/STATUS-2026-10-22.md).
 
+**24 October.** The old Next.js app `apps/web` and the tests and tools that only exercised it are removed (in Git
+history only). Workers are Claude CLI (all UI work) and pi codex only; no cloud agents.
+
 ## What works
 
 - Our own New York files (building outlines, a landmarks register, an aerial photo, a laser scan) go from one drop to

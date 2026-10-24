@@ -1,3 +1,0 @@
-/** Temporary compatibility export; implementation: packages/server/src/modules/spatial/spatial-ml.ts. */
-export { applySpatialMlItem, assertSpatialMlSourceCurrent, cancelSpatialMlItem, createSpatialMlBatch, deriveSpatialMlGeometry, failSpatialMlJob, getSpatialMlBatch, getSpatialMlItem, getSpatialMlItemRecord, ingestSpatialMlJob, listSpatialMlBatches, markSpatialMlRunning, retainArtifact, retrySpatialMlItem, spatialMlApplySchema, spatialMlArtifact, spatialMlBatchSchema, spatialMlCalibrationSchema, spatialMlRoutes, spatialMlStatus, validateRetainedInference, validateSpatialMlPixels } from "@ulpin/server/modules/spatial/spatial-ml";
-export type { InferencePayload, SpatialMlItemRecord } from "@ulpin/server/modules/spatial/spatial-ml";
