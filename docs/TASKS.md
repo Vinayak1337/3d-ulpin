@@ -658,7 +658,7 @@ Read only. Verify first that the map feature id equals the target's featureId.
 
 ### S6.2 The reading card suggests links by shared key, address and place
 
-Size M, this PC: data drive. After: S4.6. **Status: running 25 Oct (codex, from int3-pre 023d143b).**
+Size M, this PC: data drive. After: S4.6. **Status: done 25 Oct (merged into task/int3-pre, pins 695029f2). Links by key (same identifier meaning, or the same header with no meaning), address and intersecting stored extents, each with its reason; nothing recorded, no counts; up to 64 items compared, 20 shown. Place links need stored extents: S6.2a.**
 
 - **What:** Links exist only after a hand-declared key, from a drafted map layer to tables or documents. There is no address or place linking for map or table items. Fill links[] from the case's other items:
 - by key: the same identifier meaning (building.sourceKey, parcel.*, document.registrationNo or sanctionNo), or the same header as written;
@@ -672,6 +672,13 @@ Each is a suggestion with its reason. Nothing is recorded and no match count is 
 - No address link, because the footprints name no address.
 - lgd-gurugram.csv alone gives no links.
 - **Tests:** intake-reading.test.ts; packages/server/src/modules/usp/ingestion/intake-evidence.test.ts; tests/intake-evidence-contract.test.ts
+
+### S6.2a Place links work for kept GeoJSON files, and link words carry no codes
+
+Size S, code only. After: S6.2. **Status: running 25 Oct (codex).**
+
+- **What:** citeIntakeReceipt copies the stored measured extent into the card only for wide files, so a kept GeoJSON that fits one area never gets a place link. Copy it for every kept GeoJSON with a stored intakeExtent (cited, never measured anew), and drop the bracketed target code from the link words.
+- **Files:** intake-ledger.ts (citeIntakeReceipt); intake-reading.ts (fieldReason); tests/intake-ledger.test.ts; intake-reading.test.ts
 
 ### S6.3 A suggested key or address link is declared in one press
 
