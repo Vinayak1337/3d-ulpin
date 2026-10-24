@@ -79,7 +79,7 @@ Size S, code only. After: S1.2a (merged). **Status: done 25 Oct (merged on task/
 
 ### S1.3 Fresh-runtime rehearsal part 2: our own act 2 files alone and under load, with timings
 
-Size L, this PC: Docker. After: S1.2. **Status: open.**
+Size L, this PC: Docker. After: S1.2. **Status: running 25 Oct (codex; reh-03 at aaa9d698, production Studio build, GPU Chromium, EV2 under load added).**
 
 - **What:** On ulpin-reh-03, run REH16's act 2 list. First file b (the zp1 ZIP) alone, measuring LQ1: layout, first map, both parts. Then file f (Niagara 26 MB GeoJSON) alone. Then the load phase, each file in its own batch. Record per file: forecast and tray words, reader outcome, map yes/no, seconds. Record job queue, execution and retry split, any S3.1 exit lines, health pool numbers every 5 s, and host CPU. Fix the REH17 act2-list CityJSON path first; it points at a reh16 file that doesn't exist. Stop reh-03 at the end.
 - **Files:** k3 docs/evidence/runtime/reh16/{act2-list.json,watch.mjs,jobs.mjs,checkpoint.json}; _tasks/reh17.md steps 4-5; E:/BhuAayam-data/task-data/reh16/act2 prepared inputs. Write: docs/evidence/step1/s1-3/result.json.
