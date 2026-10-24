@@ -839,6 +839,22 @@ Size S, code only. After: S7.17. **Status: open.**
 
 - **What:** Finding 12: How it works on the empty Batches page with Try our sample files (our NYC kit, test_only); after an answer, focus moves to the next Needs-you action.
 
+### S7.22 The map scene reads clearly: light, edges, fog and a drawn outline first (UX review V1 and V2)
+
+Size M, code only. After: S7.6 and S7.9 if they run at the same time (MapWorkspace.tsx); packages/scene is free. **Status: open.**
+
+- **What:** [UX review](design/UX-REVIEW-2026-10-24.md) V1 and V2. Measured today: building fill on ground 1.2:1, edges on ground 1.8:1; fog in the ground colour from 1.4 spans; hemisphere 1.6 and sun 1.35 both white; a sky gradient the design system forbids. Make the sun the key light (about 2 : 1 over the fill, south-west at 45°), building edges at least 3:1 against the rendered wall, fog starting past the framed area and a step lighter than the ground, a flat horizon in both looks. When the area context arrives and nothing is drawn, draw its extent as a dashed parcel-line outline and frame on it. Token values stay as the design system sets them.
+- **Files:** packages/scene/src/engine.ts:244-262 (lights, fog, sky), 312-332 (looks), 1959-1980 (fitFog, ground), look.ts, palette.ts (read only); apps/studio/src/features/map/MapWorkspace.tsx (extent outline only)
+- **Check:** a new packages/scene test renders the real NYC fixture offscreen and samples pixels: sunlit wall against ground at least 1.5:1, edge against wall at least 3:1, a building at the far edge of the framed area not fogged; the engine has no sky gradient. Before and after screenshots at 1440x900 of the same camera.
+- **Tests:** packages/scene engine.test.ts, look.test.ts, camera.test.ts, incremental.test.ts; apps/studio map-frames.test.tsx
+
+### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
+
+Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
+
+- **What:** V4 and V6. One studio-title per screen (the batch name), panel titles studio-heading; History and Evidence by key start collapsed with their count; one primary button per view, the rest secondary; file, batch and building names in Noto Sans, mono only for identifiers, hashes and coordinates; on the verify page the name first and the ID under it at id-code size.
+- **Check:** node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging passes; a test counts at most one primary button per rendered view of BatchPage, VerifyPage and AddFilesDialog.
+
 ## Step 8: Rehearsal 1 on the closed kit
 
 Thursday 29. Only the rehearsal worker runs on the PC.

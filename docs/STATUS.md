@@ -16,7 +16,8 @@ fixes them. Running: S1.2a, S4.6, S2.3 (codex) and S7.7 (chat session). The Clau
 **UI list (owner left it to the lead, 24 October):** [UX review](design/UX-REVIEW-2026-10-24.md). Worst first: the
 batch page never says which step it is in or what needs the officer (S7.17), an action can vanish or sit disabled with
 no way out (S7.18, S1.2a), one long page instead of a file list and a detail pane (S7.11), status as long prose and
-machine words (S7.5), a legal-wall confirmation (S7.19).
+machine words (S7.5), a legal-wall confirmation (S7.19). Visuals (25 October): the map scene is washed out,
+buildings 1.2:1 against the ground, flat light and fog (S7.22); no visual lead on the batch page (S7.23).
 
 ## What works
 
