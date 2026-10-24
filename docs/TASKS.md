@@ -675,7 +675,7 @@ Each is a suggestion with its reason. Nothing is recorded and no match count is 
 
 ### S6.2a Place links work for kept GeoJSON files, and link words carry no codes
 
-Size S, code only. After: S6.2. **Status: running 25 Oct (codex).**
+Size S, code only. After: S6.2. **Status: done 25 Oct (merged into task/int3-pre, pins fc671fe6). Every kept GeoJSON with stored, valid intakeExtent bounds cites them on its card; a CRS conflict still clears them; link words name the meaning and its basis, no code.**
 
 - **What:** citeIntakeReceipt copies the stored measured extent into the card only for wide files, so a kept GeoJSON that fits one area never gets a place link. Copy it for every kept GeoJSON with a stored intakeExtent (cited, never measured anew), and drop the bracketed target code from the link words.
 - **Files:** intake-ledger.ts (citeIntakeReceipt); intake-reading.ts (fieldReason); tests/intake-ledger.test.ts; intake-reading.test.ts
@@ -741,7 +741,7 @@ Size M, code only. After: none; parallel with S7.1, S7.2, S7.4, S7.5, S7.6, S7.7
 
 ### S7.4 Plain words from the server on the judges' path
 
-Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.5, S7.6, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.5, S7.6, S7.7. **Status: server strings running 25 Oct (codex, from fc671fe6); the SourceHeader details line waits for a UI session.**
 
 - **What:** Rewrite four server strings in plain words, keeping every fact: licence unconfirmed, personal data unknown, how many features were left out and why, original unchanged. The strings are: the table-page limitations ('officer_supplied; licence unconfirmed; containsPersonalData unknown.', 'The D8 manifest omits held-out original hashes...'), the quarantine toast ('INVALID_GEOMETRY: Ring Self-intersection[...]'), the record-page 'canonical geometry qualification is unavailable' line, and the stop line that names an item UUID. Codes stay in their structured fields, not in the sentence. The table page's limitation list starts closed.
 - **Files:** packages/server/src/modules/usp/ingestion/tabular-source.ts:199-209 (admissionLimitations); packages/server/src/modules/areas/gis-quarantine.ts:3-10; packages/server/src/modules/officer/register-missing.ts:9-19; packages/server/src/modules/usp/ingestion/intake-evidence.ts:690-698; apps/studio/src/features/intake/table/SourceHeader.tsx:45-48 (details open)
