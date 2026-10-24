@@ -2,21 +2,26 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import type { PoolClient } from 'pg';
 import { zipSync } from 'fflate';
+import { settings } from '../packages/server/src/infrastructure/config';
+import { attachTableTx } from '../packages/server/src/modules/usp/ingestion/service';
+import { inspectTabularSource } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { ArchiveMemberLineageSchema, INTAKE_PROBE_LIMITS, ZIP_LAYER_LIMITS, type IntakeCard }
   from '../packages/contracts/src/usp/intake';
 import { LargeUploadCreateSchema } from '../packages/contracts/src/usp/ingestion';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { locateZipMember, readZipMember, streamZipMember }
   from '../packages/server/src/modules/usp/ingestion/intake-zip';
-import { queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE }
+import { IntakeArchiveService, queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE }
   from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
 import { listedIntakeRows } from '../packages/server/src/modules/usp/ingestion/intake-ledger';
 import { AppError } from '../packages/server/src/infrastructure/errors';
 import { geojsonInventory } from '../packages/server/src/modules/usp/ingestion/registry';
 
+const { S3Client } = createRequire(new URL('../packages/server/package.json', import.meta.url))('@aws-sdk/client-s3');
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 // Real public layers kept in the repository (OSM / Google Open Buildings, test_only); zipped here, never committed.
 const real = {
@@ -284,6 +289,95 @@ async function configured(action: () => Promise<void>) {
     if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
     else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
   }
+}
+
+for (const change of ['sibling table read', 'future revision', 'access before transaction', 'access before store']) {
+  test(`archive retention after ${change} keeps its revision and access fences`, t => configured(async () => {
+    const bytes = zipSync(real);
+    const ledger = new Ledger(bytes, await probeOriginal(reader(bytes), bytes.length, 'layers.zip'));
+    const register = readFileSync('E:/BhuAayam-data/datasets/nyc-10013-linked/'
+      + 'nyc-landmarks-preservation-commission/gpmc-yuvp.csv');
+    const table = { ...ledger.archive, id: randomUUID(), family_id: randomUUID(), profile: 'large-original-v1',
+      name: 'gpmc-yuvp.csv', bytes: register.length, sha256: sha(register),
+      inspection: { largeOriginal: { operatorSubject: 'zip-layer-control' } } };
+    const sources = [table], operations = new Map<string, any>(), stored: Uint8Array[] = [];
+    const query = async (sql: string, values: any[] = []): Promise<any> => {
+      if (sql.startsWith('SELECT id,revision FROM cases')) return { rows: [{ revision: ledger.revision }] };
+      if (sql.includes('FROM registry_case_feature_mappings') || sql.includes('FROM import_packages')) {
+        return { rows: [], rowCount: 0 };
+      }
+      if (sql.includes('FROM operations')) {
+        return { rows: operations.has(values[1]) ? [operations.get(values[1])] : [] };
+      }
+      if (sql.startsWith('INSERT INTO operations')) {
+        operations.set(values[1], { payload_hash: values[2], result: values[3] });
+        return { rows: [] };
+      }
+      if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return { rows: sources };
+      if (sql.startsWith('SELECT * FROM sources') || sql.startsWith('SELECT id FROM sources')) {
+        if (sql.includes('sha256=$2')) {
+          if (change === 'access before store') process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'changed-zip-context';
+          return { rows: sources.filter(row => row.sha256 === values[1] && row.profile === values[2]) };
+        }
+        return { rows: sources.filter(row => row.id === values[sql.includes('WHERE case_id=') ? 1 : 0]) };
+      }
+      if (sql.startsWith('INSERT INTO sources')) {
+        sources.push({ id: values[0], case_id: values[1], family_id: values[0], revision: 1,
+          name: values[2], profile: values[3], bytes: values[4], sha256: values[5], object_key: values[6],
+          status: 'needs_input', inspection: values[7] });
+        return { rows: [] };
+      }
+      if (sql.startsWith('UPDATE sources SET inspection=')) {
+        Object.assign(table.inspection, JSON.parse(values[1]));
+        return { rows: [] };
+      }
+      if (sql.startsWith('UPDATE cases SET revision=')) {
+        ledger.revision++;
+        return { rows: [] };
+      }
+      return ledger.query(sql, values);
+    };
+    for (const name of ['s3Endpoint', 's3Region', 's3Bucket', 's3AccessKey', 's3SecretKey'] as const) {
+      t.mock.getter(settings, name, () => 'zip-retain-test-only');
+    }
+    t.mock.method(S3Client.prototype, 'send', async (command: any) => {
+      if (command.constructor.name === 'GetObjectCommand') {
+        return { Body: { transformToByteArray: async () => stored.at(-1) } };
+      }
+      assert.equal(command.constructor.name, 'PutObjectCommand');
+      stored.push(command.input.Body);
+      return {};
+    });
+    const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+    globals.ulpinPool = { query, connect: async () => {
+      if (change === 'access before transaction') process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'changed-zip-context';
+      return { query, release: () => {} };
+    } };
+    try {
+      const dropRevision = ledger.revision;
+      if (change === 'sibling table read') {
+        await attachTableTx({ query } as unknown as PoolClient, { caseId: ledger.caseId, sourceId: table.id,
+          actor: 'zip-layer-control', expectedWorkspaceRevision: null, read: table },
+        inspectTabularSource(register, { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }));
+        assert.equal(ledger.revision, dropRevision + 1);
+      }
+      const retain = (requestKey: string) => new IntakeArchiveService().retain(ledger.caseId,
+        { requestKey, expectedWorkspaceRevision: dropRevision + (change === 'future revision' ? 1 : 0) },
+        { name: 'layers.zip', bytes });
+      if (change === 'sibling table read') {
+        const requestKey = randomUUID(), receipt = await retain(requestKey);
+        assert.deepEqual(await retain(requestKey), receipt);
+        assert.deepEqual(await retain(randomUUID()), receipt);
+        assert.equal(receipt.sha256, sha(bytes));
+        assert.equal(sha(stored[0]), sha(bytes));
+        assert.deepEqual([stored.length, sources.length, ledger.revision], [1, 2, dropRevision + 2]);
+      } else {
+        await assert.rejects(retain(randomUUID()),
+          { code: change === 'future revision' ? 'STALE_REVISION' : 'INGESTION_ACCESS_CHANGED' });
+        assert.deepEqual([stored.length, sources.length, operations.size, ledger.revision], [0, 1, 0, dropRevision]);
+      }
+    } finally { globals.ulpinPool = previous; }
+  }));
 }
 
 const paths = 'uttam/01-google-building-footprints.geojson, uttam/02-osm-road-centrelines.geojson, '

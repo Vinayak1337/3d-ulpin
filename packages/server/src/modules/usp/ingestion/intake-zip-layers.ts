@@ -10,7 +10,7 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { putOriginal, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { originalAttempt } from '../../cases/original-attempt';
-import { appendCaseIngestionTx, appendIntakeItemTx, assertIngestionBinding } from './events';
+import { appendCaseIngestionTx, appendIntakeItemTx, ingestionBinding, assertIngestionBinding } from './events';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { zipParentWords, type ZipLayerStage } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
@@ -51,6 +51,7 @@ export class IntakeArchiveService {
   async retain(caseValue: string, raw: unknown, file: { name: string; bytes: Uint8Array }) {
     const caseId = uuid.parse(caseValue);
     const input = IntakeArchiveRetainSchema.parse(raw);
+    const binding = ingestionBinding(caseId);
     if (!file.bytes.length || file.bytes.length > ZIP_LAYER_LIMITS.archiveBytes) throw new AppError(413,
       'ARCHIVE_SIZE', 'Choose a nonempty ZIP of at most 16 MiB here; a larger ZIP is retained through the uploads route.');
     if (detectIntakeKind(file.bytes.subarray(0, 64)).format !== 'zip') {
@@ -61,7 +62,8 @@ export class IntakeArchiveService {
     const sourceId = randomUUID();
     const objectKey = `sources/${sourceId}/${hash}`;
     return originalAttempt('sources', sourceId, async rememberOriginal => transaction(async client => {
-      const { binding } = await intakeCaseTx(client, caseId, true);
+      assertIngestionBinding(binding);
+      await intakeCaseTx(client, caseId, true);
       const scope = await lockUnassignedSourceCase(client, caseId);
       const digest = fingerprint({ input, name: file.name, hash, subject: binding.subject });
       const prior = await priorTx(client, caseId, key, digest);
@@ -71,9 +73,11 @@ export class IntakeArchiveService {
       let result;
       if (duplicate) result = archiveReceipt((await intakeSourceTx(client, caseId, duplicate.id)).source);
       else {
-        if (scope.revision !== input.expectedWorkspaceRevision) {
+        // Retention appends an original; sibling arrivals and table readings do not change its pins.
+        if (scope.revision < input.expectedWorkspaceRevision) {
           conflict('The source case changed; refresh before retaining another original.');
         }
+        assertIngestionBinding(binding);
         rememberOriginal(objectKey);
         await putOriginal(objectKey, file.bytes, 'application/zip');
         await client.query(`INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,
