@@ -13,7 +13,7 @@ import { readObject, readObjectRange, sha256 } from '../../../infrastructure/sto
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo } from '../../areas/areas';
-import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSourcesTx, openCellBatchesTx,
+import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSource, assertIntakeSourcesTx, openCellBatchesTx,
   type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt, cellFileRefs }
   from './intake-ledger';
@@ -254,34 +254,50 @@ export class IntakeService {
     return this.dependencies.transaction(async client => {
       const scope = await intakeCaseTx(client, caseId);
       const { row, source } = await itemContextTx(client, caseId, itemId);
-      let facts: ReadingFacts = {};
-      if (row.source_id && ['table', 'vector'].includes(row.card?.family)) {
-        const stored = (await client.query(`SELECT s.inspection->'manualProfile' profile,r.body recipe,
-          p.result proposal,c.object_key,c.object_sha256,c.bytes FROM sources s
-          LEFT JOIN usp_mapping_recipes r ON r.source_id=s.id
+      const planColumns = `s.inspection->'manualProfile' profile,r.body recipe,
+        p.result proposal,c.object_key,c.object_sha256,c.bytes`;
+      const planJoins = `LEFT JOIN usp_mapping_recipes r ON r.source_id=s.id
           LEFT JOIN LATERAL (SELECT o.result FROM operations o JOIN jobs j
             ON o.operation_key='intake-draft-plan:' || j.id::text AND o.case_id=j.case_id
             WHERE o.kind='intake-draft' AND j.operation='intake-draft' AND j.source_id=s.id
-            AND j.payload->>'itemId'=$3 AND j.payload->>'sourceSha256'=s.sha256
+            AND j.payload->>'itemId'=i.item_id::text AND j.payload->>'sourceSha256'=s.sha256
             ORDER BY o.created_at DESC LIMIT 1) p ON true
           LEFT JOIN LATERAL (SELECT slot.object_key,slot.object_sha256,slot.bytes
             FROM usp_chunk_mapping_imports m JOIN usp_chunk_mapping_slots slot ON slot.job_id=m.job_id
             WHERE m.case_id=s.case_id AND m.source_id=s.id AND m.source_revision=s.revision
             AND slot.chunk_index=0 AND slot.published=true AND slot.status='ready'
-            ORDER BY m.created_at DESC LIMIT 1) c ON true
-          WHERE s.case_id=$1 AND s.id=$2`, [caseId, row.source_id, itemId])).rows[0];
-        facts = readingPlanFacts(source, stored);
-        if (row.card.family === 'table' && stored?.object_key
+            ORDER BY m.created_at DESC LIMIT 1) c ON true`;
+      const storedFacts = async (item: typeof row, retained: IntakeSourceRow, stored?: Record<string, unknown>) => {
+        const facts = readingPlanFacts(retained, stored);
+        if (item.card?.family === 'table' && stored?.object_key
           && Number(stored.bytes) <= CHUNK_MAPPING_LIMITS.chunkBytes) {
-          const bytes = await this.dependencies.object(stored.object_key);
+          const bytes = await this.dependencies.object(z.string().parse(stored.object_key));
           if (bytes.length !== Number(stored.bytes) || sha256(bytes) !== stored.object_sha256) {
             throw new AppError(422, 'INTAKE_READING_INTEGRITY', 'The stored field proposal differs from its hash.');
           }
           const payload = ChunkMappingPayloadSchema.parse(JSON.parse(Buffer.from(bytes).toString('utf8')));
-          if (payload.sourceId === row.source_id && payload.sourceSha256 === source.sha256
-            && payload.sourceRevision === source.revision) facts.mapping = payload.mapping;
+          if (payload.sourceId === item.source_id && payload.sourceSha256 === retained.sha256
+            && payload.sourceRevision === retained.revision) facts.mapping = payload.mapping;
         }
+        return facts;
+      };
+      let facts: ReadingFacts = {};
+      if (row.source_id && ['table', 'vector'].includes(row.card?.family)) {
+        const stored = (await client.query(`SELECT ${planColumns} FROM sources s
+          JOIN usp_intake_items i ON i.source_id=s.id AND i.item_id=$3 ${planJoins}
+          WHERE s.case_id=$1 AND s.id=$2`, [caseId, row.source_id, itemId])).rows[0];
+        facts = await storedFacts(row, source, stored);
       }
+      // Only stored fields and extents can suggest a link; an unread card has neither.
+      const peers = row.card ? (await client.query(`SELECT i.*,s.name,to_jsonb(s) AS reading_source,${planColumns}
+        FROM usp_intake_items i JOIN sources s ON s.id=i.source_id AND s.case_id=i.case_id ${planJoins}
+        WHERE i.case_id=$1 AND i.parent_item_id IS NULL AND i.item_id<>$2
+        ORDER BY s.name,i.item_id LIMIT 65`, [caseId, itemId])).rows : [];
+      const compared = peers.slice(0, 64);
+      for (const peer of compared) assertIntakeSource(peer.reading_source, scope.binding);
+      const items = [];
+      for (const peer of compared) items.push({ itemId: peer.item_id, name: peer.name,
+        card: peer.card ?? null, facts: await storedFacts(peer, peer.reading_source, peer) });
       if (row.source_id && !row.parent_item_id) {
         const readers = {
           dxf: { schema: DXFResultSchema, limit: DXF_LIMITS.resultBytes },
@@ -336,7 +352,7 @@ export class IntakeService {
         }
       }
       assertIngestionBinding(scope.binding);
-      return readingOf(row, row.card ?? null, facts);
+      return readingOf(row, row.card ?? null, facts, { items, more: peers.length > 64 });
     });
   }
 
