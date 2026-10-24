@@ -13,7 +13,10 @@ import { anchorItems, documentChoices, tableChoices, type Outcome } from './mode
 import batch from '../Batch.module.css';
 import styles from './Evidence.module.css';
 
-/** The batch section "Evidence by key": declare a key, then read what each source matched. */
+/**
+ * The batch section "Evidence by key": declare a key, then read what each source matched. It shows only once a map
+ * item of this batch has drafted buildings.
+ */
 export function EvidenceByKey({ caseId, items }: { caseId: string; items: readonly IntakeItem[] }) {
   const targetPage = useBatchPackages(caseId);
   const client = useQueryClient();
@@ -21,21 +24,20 @@ export function EvidenceByKey({ caseId, items }: { caseId: string; items: readon
   const read = useReadTables(caseId, items, declaring);
   const choices: DeclareChoices = { anchors: anchorItems(items, targetPage.data?.packages ?? []),
     tables: tableChoices(items, read), documents: documentChoices(items) };
+  if (!choices.anchors.length) return null;
   return <section className={batch.question} aria-labelledby="evidence-by-key">
     <h2 className="ul-heading" id="evidence-by-key">Evidence by key</h2>
     {declaring ? <DeclareKey caseId={caseId} choices={choices} cancel={() => setDeclaring(false)} done={() => {
       setDeclaring(false);
       void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
-    }} /> : <DeclareStart drafted={choices.anchors.length > 0} declare={() => setDeclaring(true)} />}
+    }} /> : <DeclareStart declare={() => setDeclaring(true)} />}
     <EvidenceSection caseId={caseId} items={items} targets={targetPage.data?.items ?? []} />
   </section>;
 }
 
-function DeclareStart({ drafted, declare }: { drafted: boolean; declare: () => void }) {
+function DeclareStart({ declare }: { declare: () => void }) {
   return <div className="ul-row">
-    <Button variant="soft" disabled={!drafted} onClick={declare}>Link a register by a key</Button>
-    {drafted ? null : <span className="ul-help">A key can be declared once a map item of this batch has drafted
-      buildings.</span>}
+    <Button variant="soft" onClick={declare}>Link a register by a key</Button>
   </div>;
 }
 

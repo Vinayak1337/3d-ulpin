@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
@@ -27,6 +27,7 @@ import { runKey } from './run/useTargets';
 import type { BatchLocationState } from './retain-batch';
 import { useSourceCase } from './table/queries';
 import { BatchUploadProgress } from './BatchUploadProgress';
+import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import { keepWaiting, readWaiting, sizeWords, type UploadEntry, type WaitingFile } from './upload-model';
 import { useBatchStream } from './useBatchStream';
 import styles from './Batch.module.css';
@@ -126,6 +127,8 @@ function BatchRecords({ batch, choose }: {
 }) {
   const { caseId, manifest, sourceCase, packages, items, refresh } = batch;
   const listedPackages = packages.error ? [] : packages.data?.packages ?? [];
+  const { data: upload } = useQuery<BatchUpload | null>({ queryKey: batchUploadKey(caseId),
+    queryFn: () => null, enabled: false });
   return <>
     {manifest.isPending ? <Skeleton /> : null}
     {manifest.error ? <Banner tone="danger">
@@ -141,7 +144,9 @@ function BatchRecords({ batch, choose }: {
         View PDF reading · {item.name}
       </Button>)}
     </nav> : null}
-    {!manifest.isPending && !items.length ? <p>No files are enrolled in this batch.</p> : null}
+    {!manifest.isPending && !items.length ? <p role="status">{upload?.pending
+      ? 'The dropped files are being kept; each is listed here once it is kept.'
+      : 'No files are enrolled in this batch.'}</p> : null}
   </>;
 }
 

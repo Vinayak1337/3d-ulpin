@@ -4,8 +4,8 @@ import { Packages } from './Packages';
 import { Progress } from './Progress';
 import { TargetList } from './TargetList';
 import { failureWords } from './api';
-import { beingRecorded, countsLine, hasRecordedPackage, INTAKE_TARGET_LIMITS, noCardWords,
-  type TargetPage } from './model';
+import { beingRecorded, confirmablePackages, countsLine, hasRecordedPackage, INTAKE_TARGET_LIMITS, noCardWords,
+  nothingDrafted, nothingDraftedWords, type TargetPage } from './model';
 import { useRun } from './useRun';
 import styles from './Run.module.css';
 
@@ -23,8 +23,10 @@ function Run({ caseId }: { caseId: string }) {
     <Panel title="Ready buildings and packages">
       {run.targets.summary.isPending ? <p role="status">Reading the batch…</p> : null}
       <ReadErrors run={run} />
-      <Button onClick={run.refresh} disabled={locked}>Refresh batch</Button>
-      {page ? <>
+      {page && nothingDrafted(page) ? <p>{nothingDraftedWords}</p> : <Button onClick={run.refresh} disabled={locked}>
+        Refresh batch
+      </Button>}
+      {page && !nothingDrafted(page) ? <>
         <p>{countsLine(page.counts)}</p>
         {packagePage ? <Packages packages={packagePage.packages} reasons={run.discovery.reasons}
           truncated={packagePage.packagesTruncated} />
@@ -39,7 +41,8 @@ function Run({ caseId }: { caseId: string }) {
           locked={locked} />
       </> : null}
     </Panel>
-    {page && packagePage ? <Confirm page={run.command.preview ?? packagePage} choice={run.choice} cards={run.cards}
+    {page && packagePage && canConfirm(run, run.command.preview ?? packagePage) ? <Confirm
+      page={run.command.preview ?? packagePage} choice={run.choice} cards={run.cards}
       closeCards={run.closeCards} acknowledgement={run.acknowledgement}
       setAcknowledgement={run.setAcknowledgement} busy={run.command.busy} uncertain={run.command.uncertain}
       stale={Boolean(run.targets.summary.error || run.targets.packagePage.error)} error={run.command.error}
@@ -57,6 +60,12 @@ function Run({ caseId }: { caseId: string }) {
 }
 
 type RunState = ReturnType<typeof useRun>;
+
+/** The confirmation shows while a package or a cards list can be confirmed, or a press is still unanswered. */
+function canConfirm(run: RunState, page: TargetPage): boolean {
+  const pressed = run.command.busy || run.command.uncertain || Boolean(run.command.error);
+  return Boolean(run.cards) || pressed || confirmablePackages(page).length > 0;
+}
 
 /** Once a package is recorded, the buildings it left without a card can be listed for one more confirmation. */
 export function CardsAction({ run, page, locked }: { run: RunState; page: TargetPage; locked: boolean }) {

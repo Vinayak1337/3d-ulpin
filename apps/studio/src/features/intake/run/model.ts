@@ -44,6 +44,14 @@ export function hasNoBuildings(pkg: Package): boolean {
   return Object.values(pkg.counts).every(count => count === 0);
 }
 
+export const nothingDraftedWords = 'No buildings are drafted from this batch yet; '
+  + 'they appear after a map layout is used.';
+
+/** No package is listed and every count is 0: nothing is drafted from the batch. */
+export function nothingDrafted(page: TargetPage): boolean {
+  return page.packages.length === 0 && Object.values(page.counts).every(count => count === 0);
+}
+
 export function confirmationWords(chosen: number): string {
   if (chosen === 0) return 'These packages will be recorded in the register. '
     + 'No building is chosen, so no card is made now.';
