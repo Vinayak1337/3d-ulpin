@@ -8,7 +8,7 @@ import type { Pool, PoolClient } from 'pg';
 import { SourceProfileSchema, TabularSourceProfileSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { sha256 } from '../../../infrastructure/storage';
-import { ManualIngestionService, assertTableByteKind, prepareRetainedGeojsonTx } from './service';
+import { ManualIngestionService, assertTableByteKind, attachTableTx, prepareRetainedGeojsonTx } from './service';
 import { intakeReaderRoute } from './intake-draft';
 import { inspectTabularSource } from './tabular-source';
 import { probeOriginal } from './intake-probe';
@@ -224,12 +224,14 @@ class RetainStore {
       return [];
     }
     if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return this.sources;
-    if (sql.startsWith('SELECT id FROM sources WHERE case_id=')
-      || sql.startsWith('SELECT * FROM sources WHERE case_id='))
-      return this.sources.filter(row => row.inspection.manualProfile);
+    if (sql.includes('FROM sources WHERE case_id=$1 AND sha256=$2'))
+      return this.sources.filter(row => row.sha256 === args[1] && row.profile === args[2]
+        && (!sql.includes("inspection ? 'manualProfile'") || row.inspection.manualProfile));
+    if (sql.startsWith('SELECT * FROM sources WHERE case_id=$1 AND family_id=$2'))
+      return this.sources.filter(row => row.family_id === args[1]).sort((a, b) => b.revision - a.revision);
     if (sql.startsWith('SELECT * FROM sources WHERE id=')) return this.sources.filter(row => row.id === args[0]);
-    if (sql.includes('max(revision)')) return [{ revision: 1 }];
-    if (sql.startsWith('SELECT id,revision FROM sources WHERE case_id=')) return this.sources;
+    if (sql.includes('max(revision)')) return [{ revision: Math.max(...this.sources
+      .filter(row => row.family_id === args[1]).map(row => row.revision)) }];
     if (sql.startsWith('SELECT id FROM sources WHERE id=')) return this.sources.filter(row => row.id === args[0]);
     const written = this.write(sql, args);
     if (written) return written;
@@ -244,6 +246,10 @@ class RetainStore {
     }
     if (sql.startsWith('UPDATE cases SET revision=revision+1')) {
       this.revision++;
+      return [];
+    }
+    if (sql.startsWith('UPDATE sources SET inspection=')) {
+      Object.assign(this.sources.find(row => row.id === args[0])!.inspection, JSON.parse(args[1]));
       return [];
     }
     if (sql.startsWith('UPDATE sources SET mime_type=')) {
@@ -312,6 +318,66 @@ for (const [label, name, bytes, code] of [
       assert.equal(store.revision, 0);
       assert.equal(io.objects.size, 0);
     });
+}
+
+test('an outline retain survives a sibling auto table receipt and unrelated arrival at the drop revision', async () => {
+  const register = readFileSync(root
+    + 'datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv');
+  const io = storage(nyc), store = new RetainStore();
+  const table = stored(register, 'gpmc-yuvp.csv');
+  store.sources.push(table);
+  store.revision = 1;
+  store.install();
+  const dropRevision = store.revision;
+  // S4.5's publication step: a server read pins its original, not the drop's case revision.
+  await attachTableTx({ query: store.query } as unknown as PoolClient, { caseId, sourceId, actor: subject,
+    expectedWorkspaceRevision: null, read: { sha256: table.sha256, revision: table.revision,
+      object_key: table.object_key } }, inspectTabularSource(register,
+    { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }));
+  assert.equal(store.revision, dropRevision + 1);
+  mock.getter(settings, 'geoUrl', () => 'http://rt1.invalid');
+  mock.getter(settings, 'geoToken', () => 'test-only');
+  mock.method(globalThis, 'fetch', async () => {
+    store.sources.push({ ...table, id: crypto.randomUUID(), family_id: crypto.randomUUID() });
+    store.revision++;
+    return Response.json({ format: 'geojson', sourceSha256: sha256(nyc),
+      featureCount: geojsonFeatureCount(nyc), sourceCrs: 'EPSG:4326', crsUnit: 'degree',
+      crsEvidence: 'test_only processor boundary stub', geometryTypes: ['Polygon'], fields: [], layer: null });
+  });
+  const result = SourceProfileSchema.parse(await new ManualIngestionService().retain(caseId,
+    { requestKey: crypto.randomUUID(), expectedWorkspaceRevision: dropRevision, format: 'geojson' },
+    { name: 'buildings-original.geojson', bytes: nyc }));
+  assert.equal(result.source.sourceSha256, sha256(nyc));
+  assert.equal(table.inspection!.manualProfile.version, 'manual-tabular/1');
+  assert.equal(store.revision, dropRevision + 3);
+  assert.equal(io.objects.size, 1);
+});
+
+for (const change of ['original', 'access', 'future revision'] as const) {
+  test(`a retain still refuses a changed ${change} before storing bytes`, async () => {
+    const io = storage(nyc), store = new RetainStore();
+    store.sources.push({ ...stored(pdf, 'test_only prior revision'), profile: 'geojson-manual-v1',
+      revision: 2, inspection: { actor: subject } });
+    store.revision = 2;
+    store.install();
+    mock.getter(settings, 'geoUrl', () => 'http://rt1.invalid');
+    mock.getter(settings, 'geoToken', () => 'test-only');
+    mock.method(globalThis, 'fetch', async () => {
+      if (change === 'access') process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'test-only-other-context';
+      return Response.json({ format: 'geojson', sourceSha256: sha256(nyc),
+        featureCount: geojsonFeatureCount(nyc), sourceCrs: 'EPSG:4326', crsUnit: 'degree',
+        crsEvidence: 'test_only processor boundary stub', geometryTypes: ['Polygon'], fields: [], layer: null });
+    });
+    await assert.rejects(new ManualIngestionService().retain(caseId,
+      { requestKey: crypto.randomUUID(), expectedWorkspaceRevision: change === 'future revision' ? 3 : 1,
+        format: 'geojson',
+        ...(change === 'original' ? { familyId: sourceId, expectedSourceRevision: 1 } : {}) },
+      { name: 'buildings-original.geojson', bytes: nyc }),
+    { code: change === 'access' ? 'INGESTION_ACCESS_CHANGED' : 'STALE_REVISION' });
+    assert.equal(io.objects.size, 0);
+    assert.equal(store.sources.length, 1);
+    assert.equal(store.revision, 2);
+  });
 }
 
 test('an unavailable processor still keeps the small GeoJSON original once, before answering', async () => {

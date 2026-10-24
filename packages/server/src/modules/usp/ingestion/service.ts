@@ -29,7 +29,7 @@ import type { IntakeSourcePins } from './intake-draft';
 import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
   from './intake-destination';
 import { assertAreaRowLive } from '../../areas/area-retire';
-import { appendCaseIngestionTx } from './events';
+import { appendCaseIngestionTx, ingestionBinding, assertIngestionBinding } from './events';
 import { inspectTabularSource, inspectTabularStream, assertTabularPin, TABULAR_ROW_LIMIT } from './tabular-source';
 import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
 import { readTableWindows } from './tabular-stream';
@@ -456,21 +456,23 @@ inventory:TableInventory):Promise<AnySourceProfile>{
 type RetainOriginalContext = {
   caseId: string; input: z.infer<typeof AnyRetainSourceSchema>; file: { name: string; bytes: Uint8Array };
   profileName: string; hash: string; digest: string; actor: string; lineage?: ArchiveMemberLineage;
-  batchSourceId?: string;
+  batchSourceId?: string; binding: ReturnType<typeof ingestionBinding>;
 };
 
 /** The source row commits before its receipt is attached, so a later failure cannot orphan or remove it. */
 async function keepManualOriginal(context: RetainOriginalContext) {
-  const { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId } = context;
+  const { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId, binding } = context;
   const key = `manual-gis:${input.requestKey}:original`;
   const sourceId = randomUUID(), objectKey = `sources/${sourceId}/${hash}`;
   return originalAttempt('sources', sourceId, rememberOriginal => transaction(async client => {
+    assertIngestionBinding(binding);
     const scope = await workspace(client, caseId, batchSourceId), replay = await operation(client, caseId, key, digest);
     if (replay) return replay as { id: string; revision: number };
     const duplicate = (await client.query('SELECT id,revision FROM sources WHERE case_id=$1 AND sha256=$2 '
       + 'AND profile=$3 ORDER BY revision DESC LIMIT 1', [caseId, hash, profileName])).rows[0];
     if (duplicate) return duplicate as { id: string; revision: number };
-    if (scope.revision !== input.expectedWorkspaceRevision)
+    // Retention appends an original; sibling arrivals and table readings do not change that original's pins.
+    if (scope.revision < input.expectedWorkspaceRevision)
       conflict('The source workspace changed; refresh before retaining another original.');
     let familyId: string = sourceId, revision = 1;
     if (input.familyId) {
@@ -620,6 +622,7 @@ export class ManualIngestionService {
   async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array},
     lineage?: ArchiveMemberLineage): Promise<AnySourceProfile> {
     const caseId=uuid.parse(caseIdValue), input=AnyRetainSourceSchema.parse(inputValue), actor=localOperatorSubject();
+    const binding=ingestionBinding(caseId,actor);
     const batchSourceId=lineage?uuid.parse(lineage.parentSourceId):undefined;
     const profileName=input.format==='geojson'?'geojson-manual-v1':'tabular-manual-v1';
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
@@ -628,6 +631,7 @@ export class ManualIngestionService {
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor,...(lineage?{lineage}:{})}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
+      assertIngestionBinding(binding);
       const scope=await workspace(client,caseId,batchSourceId),replay=await operation(client,caseId,key,digest);
       if(replay){
         if(input.format!=='geojson')
@@ -646,13 +650,14 @@ export class ManualIngestionService {
     });
     if(previous)return previous;
     // A new original is kept once every refusal is decided, and before its receipt is attached.
-    const context = { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId };
+    const context = { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId, binding };
     const { tabular, inspection, inventory } = await readManualOriginal(context);
     const retained = await keepManualOriginal(context);
     const sourceId=retained.id;
     const mime=input.format==='geojson'?'application/geo+json':input.format==='csv'?'text/csv'
       :'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     return transaction(async client=>{
+      assertIngestionBinding(binding);
       const scope=await workspace(client,caseId,batchSourceId);
       const replay=await operation(client,caseId,key,digest);
       if(replay){

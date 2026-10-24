@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import { settings } from '../../../infrastructure/config';
-import { AdaptiveMappingService, caseOriginalTeacherGate } from './adaptive-mapping-service';
+import { AdaptiveMappingService } from './adaptive-mapping-service';
 import type { PoolClient } from 'pg';
 import { SourceProfileSchema, AdaptiveMappingResponseSchema, type MappingReceipt } from '@ulpin/contracts/usp';
 import { ingestionBinding } from './events';
@@ -12,7 +12,8 @@ import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
   assertIntakeDraftTx, certainTableSelection, type DraftItem } from './intake-draft';
 import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
-  lookupIntakeMemory } from './intake-draft-worker';
+  lookupIntakeMemory, runIntakeDraftJob } from './intake-draft-worker';
+import { intakeItem } from './intake-ledger';
 import type { MapArea } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { registerUspJobInputTx } from '../jobs';
@@ -59,7 +60,7 @@ const remembered: MappingReceipt = { id: caseId, revision: 3, state: 'executed',
 function source(): IntakeSourceRow {
   return { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, name: 'Protocol control',
     profile: 'geojson-manual-v1', bytes: 100, sha256: hash, object_key: 'protocol-control', status: 'needs_input',
-    inspection: { actor: binding.subject, manualProfile: profile } };
+    inspection: { actor: binding.subject, manualProfile: storedInventory() } };
 }
 function item(): DraftItem {
   return { item_id: sourceId, source_id: sourceId, case_id: caseId, parent_item_id: null,
@@ -77,13 +78,14 @@ type Protocol = {
   tray: DraftItem;
   jobs: any[];
   state: { recipeRevision: number; revision: number; operations: Map<string, any>;
-    events: number; projection: Record<string, any> };
+    events: number; projection: Record<string, any>; attempt?: Record<string, any>; registered?: Set<string> };
 };
 function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
   if (sql.startsWith('SELECT * FROM usp_intake_items')) return [tray];
   if (sql.includes('FROM operations')) return state.operations.has(values[1]) ? [state.operations.get(values[1])] : [];
-  if (sql.startsWith('SELECT id,revision FROM cases')) return [{ id: caseId, revision: state.revision }];
+  if (sql.startsWith('SELECT id,revision FROM cases') || sql.startsWith('SELECT id FROM cases'))
+    return [{ id: caseId, revision: state.revision }];
   if (sql.includes('FROM registry_case_feature_mappings') || sql.includes('FROM import_packages')) return [];
   if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return [src];
   if (sql.startsWith('SELECT id,revision,archived FROM cases'))
@@ -92,7 +94,13 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT max(revision)')) return [{ revision: src.revision }];
   if (sql.startsWith('SELECT revision FROM usp_mapping_recipes'))
     return state.recipeRevision ? [{ revision: state.recipeRevision }] : [];
-  if (sql.startsWith('SELECT * FROM usp_job_metadata') || sql.startsWith('SELECT pg_advisory')) return [];
+  if (sql.startsWith('SELECT * FROM usp_job_metadata')) {
+    const job = jobs.find(job => job.id === values[0]);
+    return job && state.registered?.has(job.id) ? [{ logical_state: job.status, input_sha256: job.input_fingerprint,
+      input_manifest_id: job.source_id }] : [];
+  }
+  if (sql.startsWith('SELECT * FROM usp_job_attempts')) return state.attempt ? [state.attempt] : [];
+  if (sql.includes('FROM usp_mapping_recipes') || sql.startsWith('SELECT pg_advisory')) return [];
   if (sql.startsWith('SELECT state,placement,plan_ref')) return [state.projection];
   if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
@@ -104,7 +112,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
     return jobs.filter(job => ['queued', 'running'].includes(job.status));
   if (sql.startsWith('SELECT id,status,payload FROM jobs WHERE source_id'))
     return jobs.filter(job => job.operation === 'intake-native-derivative');
-  if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
+  if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs')
+    || sql.startsWith('SELECT status FROM jobs WHERE id='))
     return jobs.filter(row => row.id === values[0]);
   return null;
 }
@@ -141,7 +150,27 @@ function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | n
     state.events++;
     return [];
   }
-  if (sql.startsWith('INSERT INTO usp_outbox_streams') || sql.startsWith('INSERT INTO usp_job_metadata')) return [];
+  return protocolJobWrite(sql, values, fixture);
+}
+function protocolJobWrite(sql: string, values: any[], { jobs, state }: Protocol): any[] | null {
+  if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+    state.attempt = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
+      state: 'active', lease_until: new Date(Date.now() + 180000).toISOString() };
+    return [state.attempt];
+  }
+  if (sql.startsWith('UPDATE usp_job_attempts SET state=')) {
+    state.attempt!.state = /SET state='([^']+)'/.exec(sql)![1];
+    return [];
+  }
+  if (sql.startsWith('UPDATE jobs SET status=')) {
+    jobs.find(job => job.id === values[0]).status = /SET status='([^']+)'/.exec(sql)?.[1] ?? values[1];
+    return [];
+  }
+  if (sql.startsWith('INSERT INTO usp_job_metadata')) {
+    (state.registered ??= new Set()).add(values[0]);
+    return [];
+  }
+  if (sql.startsWith('INSERT INTO usp_outbox_streams') || sql.startsWith('UPDATE usp_job_metadata')) return [];
   return null;
 }
 function protocol() {
@@ -614,13 +643,29 @@ test('a case GeoJSON with the switch off asks the officer without calling adapti
   const teacher = t.mock.method(AdaptiveMappingService.prototype, 'propose', async () => {
     throw new Error('A refused original must never call the adaptive service.');
   });
-  const gate = caseOriginalTeacherGate();
-  await assert.rejects(proposeIntakeLayout(profile, null, caseId), error => {
-    assert(error instanceof AppError);
-    assert.equal(error.code, gate.code);
-    assert.equal(officerQuestion(error), gate.words);
-    return true;
-  });
+  assert.equal(await proposeIntakeLayout(profile, null, caseId), null);
+  const fixture = protocol();
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+  const globals = globalThis as any;
+  const previous = globals.ulpinPool;
+  globals.ulpinPool = { query: fixture.client.query.bind(fixture.client),
+    connect: async () => ({ query: fixture.client.query.bind(fixture.client), release() {} }) };
+  try {
+    await runIntakeDraftJob(jobId!);
+  } finally {
+    globals.ulpinPool = previous;
+  }
+  const published = intakeItem({ ...fixture.tray, ...fixture.state.projection, card: null,
+    name: 'case-original.geojson', format: 'geojson', size_bytes: null, size_class: null, wave: 1,
+    member_path: null, card_sha256: null, probe_version: null, parts_planned: null, parts_done: 0,
+    pinned_by_officer: false, created_at: new Date(), updated_at: new Date() });
+  assert.equal(published.state, 'probed');
+  assert.equal(published.placement, 'needs_answer');
+  assert.equal(published.layoutQuestion, true);
+  assert.equal(published.plan, null);
+  assert.equal(fixture.jobs[0].status, 'succeeded');
+  assert.equal(fixture.state.attempt!.state, 'accepted');
+  assert(!fixture.statements.some(sql => sql.startsWith('INSERT INTO usp_mapping_recipes')));
   assert.equal(teacher.mock.callCount(), 0);
 });
 
