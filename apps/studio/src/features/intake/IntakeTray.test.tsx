@@ -62,3 +62,14 @@ it('a 2,100-feature ZIP member offers View layout while keeping the archive pref
   expect(tray(item)).toContain(item.limitReason);
   expect(tray({ ...item, limitReason: reason })).toContain('>View layout</button>');
 });
+
+it('a captured row fits five columns, with its size in KiB or MiB and no raw bytes or Not applicable', () => {
+  const html = tray(captured.manifest.items[0] as unknown as IntakeItem);
+  const headers = [...html.matchAll(/<th[ >]/g)];
+  expect(headers.length).toBeLessThanOrEqual(5);
+  for (const header of ['File', 'Status', 'Holds', 'Coordinates', 'Next step']) expect(html).toContain(`>${header}<`);
+  expect(html).toMatch(/\d(\.\d)? (KiB|MiB)/);
+  expect(html).toContain('1,662 features');
+  expect(html).not.toContain('bytes');
+  expect(html).not.toContain('Not applicable');
+});

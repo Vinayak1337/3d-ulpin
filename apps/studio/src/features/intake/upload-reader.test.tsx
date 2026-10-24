@@ -25,6 +25,15 @@ it('discloses reader eligibility beside each file before retention, without crea
   expect(html).not.toContain('disabled');
 });
 
+it('shows the progress of a retaining row in MiB, with no bytes', () => {
+  const upload = { phase: 'uploading', doneBytes: 12 * 1024 ** 2, totalBytes: 40 * 1024 ** 2, part: 2,
+    parts: 5 } as const;
+  const html = renderToStaticMarkup(<DropOutcomes readers rows={[
+    { name: 'footprints.geojson', sizeBytes: 40 * 1024 ** 2, state: 'retaining', upload }]} />);
+  expect(html).toContain('12 MiB of 40 MiB; part 2 of 5');
+  expect(html).not.toContain('bytes');
+});
+
 it('uses each reader ceiling inclusively', () => {
   const limits = [
     ['geojson', STREAMING_VECTOR_LIMITS.sourceBytes], ['ifc', IFC_LIMITS.originalBytes],

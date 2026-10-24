@@ -4,7 +4,7 @@ import { useWorkQueue } from '../../api/queries';
 import { SourceCaseFields } from './table/TableImportFields';
 import { useRetainBatch } from './useRetainBatch';
 import { viaUpload, type FileOutcome } from './retain-batch';
-import { readerEligibility, uploadWords } from './upload-model';
+import { readerEligibility, sizeWords, uploadWords } from './upload-model';
 import styles from './Batch.module.css';
 
 export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, onClose, routed }: {
@@ -52,15 +52,15 @@ export function DropOutcomes({ rows, readers = false }: { rows: FileOutcome[]; r
   return <DataTable caption={readers ? 'Files to retain' : 'Files in this drop'} rows={rows}
     rowKey={(row) => String(rows.indexOf(row))} columns={[
     { header: 'File', cell: (row) => row.name },
-    { header: 'Size', numeric: true, cell: (row) => `${row.sizeBytes.toLocaleString('en-IN')} bytes` },
+    { header: 'Size', numeric: true, cell: (row) => sizeWords(row.sizeBytes) },
     ...(readers ? [{ header: 'Reader estimate', cell: (row: FileOutcome) =>
       readerEligibility({ name: row.name, size: row.sizeBytes }).words }] : []),
     { header: 'Outcome', cell: (row) => row.state === 'retaining' && row.upload
       ? uploadWords(row.upload) : outcomeWords[row.state] },
     { header: 'Upload progress', cell: (row) => row.state === 'retaining' && row.upload
-      ? `${row.upload.doneBytes.toLocaleString('en-IN')} of ${row.upload.totalBytes.toLocaleString('en-IN')} bytes; `
-        + `part ${row.upload.part} of ${row.upload.parts}` : 'Not applicable' },
-    { header: 'Reason', cell: (row) => row.message ?? 'Not applicable' },
+      ? `${sizeWords(row.upload.doneBytes)} of ${sizeWords(row.upload.totalBytes)}; `
+        + `part ${row.upload.part} of ${row.upload.parts}` : null },
+    { header: 'Reason', cell: (row) => row.message ?? null },
   ]} />;
 }
 
