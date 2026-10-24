@@ -42,6 +42,13 @@ file has one writer at a time, named in the task. During a rehearsal only the on
 or agent from any project.
 
 **Limits.**
+- **At least two codex workers run at all times (owner, 25 October),** within the three-worker cap; the one exception
+  is a rehearsal, when only the rehearsal worker runs. When every codex account has run out, start a timer for the
+  soonest reset and wait; dispatch again when it fires.
+- **Start an unused account's timer (owner, 25 October):** whenever the refresh shows an account at 5h 0%, send it one
+  short request on its own provider, so its five-hour window starts now instead of at the next real task:
+  `... cli.js -p --no-session --provider codex-<N> --model gpt-6-luna "Reply with the single word ok."` (the pool
+  provider would send it to the first ready account instead). Check every account each time the pool is refreshed.
 - When a codex worker stops on a limit, refresh every account first, on its own, before any other dispatch (owner,
   22 October). Then continue the task from its checkpoint on the other spawner if the task is not UI work; otherwise,
   or when both are limited, start a timer for the soonest reset and stop.
