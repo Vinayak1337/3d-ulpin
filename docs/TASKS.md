@@ -65,7 +65,7 @@ Size L, this PC: Docker. After: S1.1, S3.1 merged onto int3-pre by the lead. **S
 
 ### S1.2b A ZIP retain tolerates sibling reads like any other original
 
-Size S, code only. After: S1.2a (merged). **Status: running 25 Oct (codex).**
+Size S, code only. After: S1.2a (merged). **Status: done 25 Oct (merged on task/int3-pre).**
 
 - **What:** S1.2a let a new original be retained after a sibling arrival or a server table read had moved the case revision on; it still refuses a changed family revision and a changed access context. The ZIP archive retain in packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:74 still demands the exact drop revision, so a ZIP dropped beside a CSV can meet the same 409. Apply the same rule there and nothing else.
 - **Check:** a new test in tests/intake-zip-layers.test.ts: a ZIP retain sent with the drop revision after a sibling table read passes; a future revision and a changed access context still refuse, with no bytes stored.
