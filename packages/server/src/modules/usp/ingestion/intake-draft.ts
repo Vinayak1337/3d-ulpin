@@ -159,7 +159,7 @@ function keptOnly(card: IntakeCard, source: IntakeSourceRow): boolean {
 }
 
 /** NU1. What the probe saw of a kept file, from its card's family and format and the original's byte count. */
-function keptWords(card: IntakeCard, bytes: number): string {
+export function keptWords(card: IntakeCard, bytes: number): string {
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
   if (card.format === 'xls') return `Excel 97-2003 workbook (${sizeWords(bytes)}). ${INTAKE_LEGACY_WORKBOOK_WORDS}`;

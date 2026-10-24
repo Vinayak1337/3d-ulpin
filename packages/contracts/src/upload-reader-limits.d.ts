@@ -15,6 +15,7 @@ export declare function documentScannedPages(native: {
 }): number[];
 export declare const INTAKE_PAGE_IMAGE_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const INTAKE_TABLE_READER_FORMATS: readonly string[];
+export declare const INTAKE_FORMAT_NAMES: Readonly<Record<string, string>>;
 export declare const INTAKE_LEGACY_WORKBOOK_WORDS: string;
 export declare const DXF_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const CITYGML_LIMITS: Readonly<{ originalBytes: number }>;
