@@ -13,7 +13,7 @@ import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
 import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
   type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
-import {resolveStreamedReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
+import {resolveStreamedReference,streamedSequenceReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
 import {queueIntakeLargeTx,writeIntakeLargeReadTx} from './intake-large';
 import {AREA_PROCESSOR_OPERATION} from '../../areas/areas';
 import {readTableWindows} from './tabular-stream';
@@ -64,7 +64,7 @@ export async function completeStreamingReadTx(client:PoolClient,input:AnyStreami
   const status=state.quarantined?'completed_with_rejections':'completed';
   await client.query(`UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now()
     WHERE job_id=$1`,[input.jobId,status]);
-  if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,closure,reference);
+  if(input.framing!=='tabular')await writeSealedMapReceiptTx(client,input,closure,reference);
   if(input.framing!=='tabular')await writeStreamingGeometrySummaryTx(client,input,counts,state.accepted);
   return status;
 }
@@ -341,7 +341,9 @@ export async function runStreamingVectorJob(jobId:string){
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');
     if(!result.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
     await parts.flush();const nextIndex=parts.index;
-    const reference=input.framing==='feature-collection'?await resolveStreamedReference(result.metadata):undefined;
+    let reference:Awaited<ReturnType<typeof resolveStreamedReference>>|undefined;
+    if(input.framing==='feature-collection')reference=await resolveStreamedReference(result.metadata);
+    else if(input.framing!=='tabular')reference=streamedSequenceReference();
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];

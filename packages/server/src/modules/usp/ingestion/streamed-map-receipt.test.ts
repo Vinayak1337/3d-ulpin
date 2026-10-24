@@ -7,6 +7,7 @@ import { resolveStreamedReference, sealedMapReceipt, streamedSourceReference,
 import { isRetainedMapOriginal } from './retained-map-original';
 import { permitsFeatureRecordSource } from '../../registry/registry-reference-policy';
 import { assertIntakeSource } from './intake-context';
+import { completeStreamingReadTx } from './streaming-vector-worker';
 
 const input = {
   version: 'geojson-stream/2', jobId: '11111111-1111-4111-8111-111111111111',
@@ -111,6 +112,38 @@ test('receipt SQL write occurs only after closed state and exact source authorit
   assert.equal(writes, 0);
   await writeSealedMapReceiptTx(client as any, input, closure);
   assert.equal(writes, 1);
+});
+
+test('sequence completion writes an exact sealed receipt with empty metadata and the RFC 7946 reference', async () => {
+  for (const framing of ['geojson-lines', 'geojson-seq-rs'] as const) {
+    const framed = { ...input, framing }, closed = { ...closure, metadata: {} };
+    let stored: ReturnType<typeof sealedMapReceipt> | undefined;
+    let state = 'running';
+    const client = { query: async (sql: string, values: unknown[]) => {
+      if (sql.startsWith('SELECT accepted,quarantined')) return { rows: [{ accepted: 2, quarantined: 1 }] };
+      if (sql.startsWith('UPDATE usp_streaming_vector_imports')) {
+        state = values[1] as string;
+        return { rows: [] };
+      }
+      if (sql.startsWith('SELECT * FROM sources')) return { rows: [{ ...source(),
+        case_id: input.caseId, object_key: input.objectKey }] };
+      if (sql.startsWith('SELECT * FROM usp_streaming_vector_imports')) return { rows: [{ state,
+        unknown_remainder: false, sealed_chunks: 1, next_publish_index: 1, records: 3, accepted: 2, quarantined: 1 }] };
+      if (sql.startsWith('SELECT chunk_index')) return { rows: slots };
+      assert(sql.startsWith('UPDATE sources'));
+      stored = JSON.parse(values[1] as string);
+      return { rows: [] };
+    } };
+    assert.equal(await completeStreamingReadTx(client as any, framed, closed, {}), 'completed_with_rejections');
+    assert(stored);
+    assert.equal(stored.framing, framing);
+    assert.deepEqual(stored.collectionMetadata, {});
+    assert.equal(stored.reference.sourceCrs, 'EPSG:4326');
+    assert.match(stored.reference.evidence, /states no coordinate system; read as RFC 7946 longitude and latitude/);
+    assert.throws(() => sealedMapReceipt(framed, closure, slots), /no collection members/);
+    const override = { sourceCrs: 'EPSG:3857', coordinateUnit: 'metre', evidence: 'Protocol-only override' };
+    assert.deepEqual(sealedMapReceipt(framed, closed, slots, override).reference, stored.reference);
+  }
 });
 
 const named = (name: string) => ({ type: 'name', properties: { name } });

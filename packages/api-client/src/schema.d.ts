@@ -72136,7 +72136,7 @@ export interface components {
             expectedSourceRevision: number;
             sourceSha256: string;
             /** @enum {string} */
-            framing: "feature-collection" | "geojson-seq-rs";
+            framing: "feature-collection" | "geojson-seq-rs" | "geojson-lines";
         } | {
             /** Format: uuid */
             requestKey: string;
@@ -72342,6 +72342,11 @@ export interface components {
                     /** @enum {string} */
                     disposition: "accepted" | "quarantined";
                     issueCode: string | null;
+                    sequencePosition?: {
+                        /** @enum {string} */
+                        kind: "line" | "record";
+                        number: number;
+                    };
                     feature: unknown;
                 }[];
             } | null;
