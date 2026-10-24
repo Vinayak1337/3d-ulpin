@@ -273,7 +273,7 @@ Size M, code only. After: none (wave 1). **Status: open.**
 
 ### S4.3 Reading card: contract, assembler and route for what a file is, what it holds and how it is drawn
 
-Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: running codex since 24 Oct 2026.**
+Size M, code only. After: none (wave 1; sole writer of contracts usp/intake.ts while open). **Status: sent back 24 Oct (route catalogue entry, plain format names in contracts, singular counts); running codex.**
 
 - **What:** The tray shows family, format, counts, CRS, extent and a reason, but never says in plain words what a file is or how it will be drawn. Add IntakeReadingSchema (intake-reading/1: what, holds[], fields[], drawing{as,words}, links[], question; each line has a basis: reader, memory, rule, sarvam or officer). Also add an optional one-line what on IntakeItem, computed from the row with no extra read. A new pure assembler builds what, holds, drawing and the open question from the row, its IntakeCard and source.inspection, reusing keptWords, zipParentWords and surfaceWords; fields and links stay empty here. Add GET cases/:caseId/intake/items/:itemId/reading under the item route's authority. The holds lines also show what the intake card already has but the Studio never shows (merged from the UI reader's S4.8): layers, geometry types, raster size and bands, point format and scale, format version, CRS words and extent. Unknown stays unknown; nothing is invented.
 - **Files:** packages/contracts/src/usp/intake.ts:205-249 (IntakeItemSchema; new IntakeReadingSchema after it); new packages/server/src/modules/usp/ingestion/intake-reading.ts; intake-ledger.ts:122-153 intakeItem; intake-service.ts:221-230 one() (add reading()); apps/api/src/modules/ingestion/ingestion.controller.ts:76-81; intake-draft.ts:73-173 (export keptWords only); intake-surface.ts:534-556 (export surfaceWords only)
@@ -350,6 +350,7 @@ Size M, code only. After: S4.3 merged with openapi.json and api-client types reg
 - how it will be drawn, or why not;
 - the one open question, with a button to the existing answer (View layout, Open the table, layer CRS, page choice).
 Values come only from the reading. This is the single writer of ReadingCard.tsx. Each field's row shows its meaning and where it came from (memory, rule, Sarvam not confirmed, confirmed by you, not known); a Sarvam meaning carries Needs review until the officer confirms it; a file without links says so (merged from S4.8).
+- **Lead note (24 Oct):** once S4.3 adds INTAKE_FORMAT_NAMES to the contracts, make batch-model.ts formatWords use it and drop the Studio copy of the map that S7.2 added, so the server and the Studio name formats from one list.
 - **Files:** new apps/studio/src/features/intake/ReadingCard.tsx and reading-model.ts; BatchPage.tsx:108-122 ItemDetail; IntakeTray.tsx:25-48 (Contents cell 27-29); batch-queries.ts (one query, existing pattern); Batch.module.css
 - **Check:** pnpm --filter @ulpin/studio exec vitest run src/features/intake/batch-page.test.tsx src/features/intake/reading-card.test.tsx
 - An item with the NYC footprints reading shows what, holds, three field lines with their basis, and the layout question button.
@@ -693,7 +694,7 @@ Size S, code only. After: none; parallel with S7.2, S7.3, S7.4, S7.5, S7.6, S7.7
 
 ### S7.2 Batch table rows that fit at 1440 px
 
-Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: sent back 24 Oct: the drop table upload progress still shows raw bytes.**
+Size M, code only. After: none; parallel with S7.1, S7.3, S7.4, S7.5, S7.6, S7.7 (disjoint files). **Status: done 11e779fc on task/int3-pre (24 Oct).**
 
 - **What:** Cut the table from 10 columns to 5: File (name, kind and format in words, size in KiB/MiB/GiB), Status (state and placement in one line, the reason below it as help text, part progress), Holds (features, rows, pages or points with a unit), Coordinates (crsWords only; the raw native extent moves to the reading card, S4.8) and Next step. Remove the min-width and overflow-wrap:anywhere that split words into letters. Give every format named in intake-signatures a plain name, use 'Unknown' rather than 'Not known', and in the drop table replace raw bytes and 'Not applicable' with sizeWords and empty cells. Every value stays read from the item.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx:24-49 (columns; keep NextStep 52-76); apps/studio/src/features/intake/batch-model.ts:45-99 (stateWords, countWords:64-66, formatWords:86-91, sizeClassWords); apps/studio/src/features/intake/Batch.module.css:31-59; apps/studio/src/features/intake/IntakeDropDialog.tsx:51-63 (DropOutcomes); reuse sizeWords in upload-model.ts:57-61; the format list is packages/server/src/modules/usp/ingestion/intake-signatures.ts:276-285
