@@ -410,7 +410,7 @@ Size S, this PC: runtime. After: S4.4 merged into the served commit; the lead co
 
 ### S4.11 A large file or cell batch with an already-approved layout needs only one confirmation
 
-Size M, code only. After: S4.9. **Status: open.**
+Size M, code only. After: S4.9. **Status: running 25 Oct (codex, from int3-pre 685e5210; server part: a read-only layout-memory route and the reading card basis memory; StreamedLayoutAnswer filling stays for a UI step).**
 
 - **What:** A large GeoJSON's layout is officer-only: streamed recipes have no memory, while small files reuse approved recipes whose paths are contained. So every cell batch of a wide file and every converted layer asks the same question again. Reuse the containment check against the streamed profile paths to fill the streamed answer from the operator's newest approved recipe, shown as 'from memory'. Approval stays the officer's press. Cut candidate.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:51-90 (export profileContained logic); streamed-mapping.ts:120-160; intake-large.ts:380-397 intakeLargePlan; intake-ledger.ts:98-110 (cell batches, read only); intake-reading.ts; apps/studio/src/features/intake/StreamedLayoutAnswer.tsx
@@ -493,7 +493,7 @@ Size M, this PC: Docker. After: S5.4, S5.5, S2 (practice kit). The only runtime 
 
 ### S5.7 Decimal-comma coordinates can be placed when the officer states the mark
 
-Size S, this PC: data drive. After: S1. Parallel with everything in this family (disjoint files). **Status: running 25 Oct (codex, from int3-pre cba6685f; server and contract part only; the decimal-mark choice in PlaceOnMapDialog stays for a UI step).**
+Size S, this PC: data drive. After: S1. Parallel with everything in this family (disjoint files). **Status: done 25 Oct (merged into task/int3-pre, contract and pins 685e5210; server part only). IntakeTablePlacementSchema.decimalMark (point by default, never detected); comma turns one comma per cell into a point; WKT refuses comma; the lineage records the mark. Open: the decimal-mark choice in PlaceOnMapDialog (UI step).**
 
 - **What:** A semicolon CSV with decimal commas is read, but its rows cannot be placed: coordinateText accepts only a decimal point, so every row is skipped as not_a_number. Add an officer-stated decimal mark to IntakeTablePlacementSchema (point by default, never guessed) and a choice for it in PlaceOnMapDialog. When the mark is comma, rowGeometry turns one comma per cell into a point before the existing exact-number check. WKT stays point-only. The merger regenerates openapi.json.
 - **Files:** packages/contracts/src/usp/intake.ts:85-93 (IntakeTablePlacementSchema); packages/server/src/modules/usp/ingestion/wkt.ts:17-21 (coordinateText); table-geojson.ts:85-99 (rowGeometry), 34-41 (input schema); apps/studio/src/features/intake/PlaceOnMapDialog.tsx:60-90; table-placement-command.ts:10-40
