@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { StreamedMappingPlanSchema, type StreamedProfileGeneration,
+import { StreamedMappingPlanSchema, StreamedPrefixMappingPlanSchema, type StreamedProfileGeneration,
   type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { normalizeMappedChunk } from './chunk-mapping-normalizer';
 import { assertIntegerKeyTokens } from './proved-area-part';
@@ -131,6 +131,28 @@ test('streamed mixed names use every outline across chunks and leave set-aside n
     if (value === undefined) delete properties.NAME;
     assert.throws(() => compileStreamedMapping(named, inventoried()), { code: 'STREAMED_MAPPING_COVERAGE' });
   }
+});
+
+test('prefix admission maps later compatible chunks and holds later drift against the unchanged prefix pins', () => {
+  // test_only: five raw chunk records, not registry records or evaluation truth.
+  const records = [1, 2, 'changed-type', undefined, 5].map((value, featureIndex) => ({
+    featureIndex, byteStart: featureIndex * 10, byteEnd: featureIndex * 10 + 9, rawSha256: hash,
+    disposition: 'accepted', issueCode: null, feature: { type: 'Feature',
+      properties: { ...(value === undefined ? {} : { OBJECTID: value }), NAME: 'Fixture' },
+      geometry: { type: 'Polygon', coordinates: [] } },
+  })) as StreamingVectorRecord[];
+  const observed = profile({ ...advanceStreamedInventory(emptyInventory(), records.slice(0, 1)).inventory,
+    generation: 0, coverage: 'provisional', unknownRemainder: true, rawChunkIndex: 0, rawResultSha256: hash });
+  const prefix = StreamedPrefixMappingPlanSchema.parse({ ...plan(), version: 'streamed-prefix-mapping/1',
+    scope: 'observed_prefix_and_later_compatible_features', profileGeneration: 0,
+    prefix: { throughRawChunkIndex: 0, rawResultSha256: hash, recordsSeen: 1, accepted: 1 } });
+  const result = records.map((record, index) => normalizeMappedChunk([record], prefix, observed,
+    ids.rawJobId, index, []));
+  assert.deepEqual(result.map(chunk => chunk.records[0].disposition),
+    ['observed', 'observed', 'unresolved', 'unresolved', 'observed']);
+  assert(result[2].records[0].issueCodes.includes('SCHEMA_DRIFT_TYPE'));
+  assert(result[3].records[0].issueCodes.includes('SCHEMA_DRIFT_ABSENT'));
+  assert(result.every(chunk => chunk.schemaFingerprint === observed.source.schemaFingerprint));
 });
 
 test('a part refuses a whole-number key the file does not write as plain digits', () => {

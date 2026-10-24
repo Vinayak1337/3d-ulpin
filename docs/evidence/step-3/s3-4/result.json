@@ -1,0 +1,39 @@
+{
+  "task": "S3.4",
+  "planStep": 3,
+  "status": "blocked_scope",
+  "completedSteps": [1],
+  "productionChanges": false,
+  "baselinePrefixAdmission": {
+    "recordedBeforeAdmissionChanges": true,
+    "test": "streamed-layout.test.ts: prefix admission maps later compatible chunks and holds later drift against the unchanged prefix pins",
+    "exit": 0,
+    "tests": 9,
+    "answer": "Later compatible chunks are mapped against the immutable observed prefix. Later type or absent-path drift is held unresolved, not refused as a whole job. The pinned schema fingerprint stays unchanged.",
+    "decision": "The mapper supports later compatible chunks, but batch drafting and typed question projection require changes outside the owned paths. Do not ship an early question whose approval the batch cannot use."
+  },
+  "baseline": { "backendTypes": 0, "studioTypes": 0, "studioTests": 0,
+    "server": { "exit": 0, "tests": 925, "pass": 921, "skip": 4 }, "apiCheck": 0,
+    "openapi": 0, "studioTestCounts": { "pass": 780, "skip": 3 }
+  },
+  "blockers": [
+    { "path": "packages/server/src/modules/usp/ingestion/intake-part-draft.ts:26-39",
+      "reason": "assertClosedMappingTx requires closed raw and mapped jobs with matching whole-file counts; prefix drafts are refused. Global duplicate-key closure also needs an explicit safe streaming policy." },
+    { "path": "packages/server/src/modules/usp/ingestion/proved-area-part.ts:76-135",
+      "reason": "approvedPartLayoutTx rejects prefix plans outright; loadPartFeatures and prepareProvedAreaPartTx require source closure and the sealed original receipt. No prefix approval can draft even after seal under this path." },
+    { "path": "packages/server/src/modules/usp/ingestion/intake-ledger.ts:28-33,131-152",
+      "reason": "Typed IntakeItem projection is assembled here, outside OWN. Extra question metadata in plan_ref is not exposed; adding a contract field alone cannot publish the generation and coverage." }
+  ],
+  "next": "Expand scope to these three files, define safe pre-seal drafting and later duplicate handling, then implement steps 2-5 with sealed used-path comparison. Keep current production behavior until that work is integrated.",
+  "inputs": { "fixture": "Five explicit test_only raw chunk records in streamed-layout.test.ts",
+    "realGood": null, "realDifficult": null, "runtimeOrProviderCalls": false },
+  "checks": {
+    "prefixBaseline": { "exit": 0, "tests": 9, "pass": 9 },
+    "requestedTests": { "exit": 0, "tests": 103, "pass": 103 },
+    "backendTypes": 0, "studioTypes": 0,
+    "studioTests": { "exit": 0, "pass": 780, "skip": 3 },
+    "workingRulesServer": { "exit": 0, "tests": 926, "pass": 922, "skip": 4 },
+    "openapi": 0, "apiCheck": 0, "diffCheck": 0,
+    "logs": "E:/ulpin-tmp/s3-4-{before,after}-*.log; s3-4-targeted.log; s3-4-prefix-before.log"
+  }
+}
