@@ -1,0 +1,42 @@
+{
+  "task": "S4.4",
+  "planStep": 4,
+  "base": "aaa9d698d1912dc06b10d612d21ed106c20e2b72",
+  "result": "Otherwise-valid mappings with literal explanations remain officer questions, not accepted answers.",
+  "acceptance": {
+    "input": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+    "response": "LP6-shaped software control, not recovered live output or source-meaning truth",
+    "fields": 8,
+    "paths": ["control settlement and recording", "raw response replay", "sanitized recording replay"],
+    "kept": ["target", "operation", "confidence"],
+    "rationale": "Withheld: the explanation stated a literal.",
+    "issue": "TEACHER_RATIONALE_WITHHELD",
+    "state": "needs_input",
+    "literalExplanationsInResultLedgerOrRecording": 0,
+    "otherFaultCasesDropped": 8,
+    "rawLiteralSchemaRefusals": 5,
+    "safeExplanationAccepted": true
+  },
+  "design": "Sanitize before settlement/recording; the rationale marker keeps proposed mappings as questions.",
+  "ui": "One question sentence, tested; no unanswered label, layout, colour or interaction changes.",
+  "checks": {
+    "targeted": {"beforeExit": 0, "beforePass": 56, "afterExit": 0, "afterPass": 58},
+    "pnpm typecheck:backend": {"beforeExit": 0, "afterExit": 0, "projects": 2},
+    "pnpm studio:typecheck": {"beforeExit": 0, "afterExit": 0, "projects": 4},
+    "pnpm studio:test": {"beforeExit": 0, "beforePass": 779, "afterExit": 0, "afterPass": 780, "skip": 3},
+    "WORKING-RULES section 5 server command": {"beforeExit": 0, "afterExit": 0, "pass": 913, "skip": 4},
+    "openapi.ts --check": {"beforeExit": 0, "afterExit": 1, "reason": "expected stale source pin"},
+    "python scripts/api/check.py": {"beforeExit": 0, "afterExit": 1, "changedProducers": 1},
+    "git diff --check": {"beforeExit": 0, "afterExit": 0},
+    "mapping-teacher-review.test.ts and diagnostics.test.ts": {"exit": 1, "pass": 11, "fail": 1}
+  },
+  "expectedStaleProducer": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+  "extraCheckFailure": "Unchanged UTF-16 profile equality test includes differing encoding and encodingBasis metadata.",
+  "testEnvironment": "isolated-env.cjs; ULPIN_PROFILE=demo; REPO_DATA=false",
+  "profilePython": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+  "logs": "E:/ulpin-tmp/s4-4/{before,after}-*.log",
+  "realRegressionInputs": ["lgd-gurugram.csv", "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json"],
+  "unchanged": ["rationale rule", "prompt", "rules", "contracts", "pins", "gateway", "source bytes"],
+  "liveCalls": 0,
+  "next": "Lead reviews and regenerates pins at integration; unrelated UTF-16 assertion needs its own correction."
+}

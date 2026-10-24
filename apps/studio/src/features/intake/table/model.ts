@@ -46,6 +46,7 @@ function unansweredQuestion(question: Question | undefined, target: Target, orig
 
 // A question whose reason is a code, as a sentence. A reason not listed here is the server's own wording.
 const QUESTION_WORDS: Record<string, string> = {
+  TEACHER_RATIONALE_WITHHELD: 'The explanation included a value, so it was withheld; confirm the proposed target.',
   TEACHER_UNAVAILABLE: 'No teacher was available when this table was imported: this column is unmapped.',
   CASE_ORIGINAL_TEACHER_REFUSED: 'The original file was not sent to the teacher; this column needs officer input.',
   TEACHER_DATA_DENIED: 'Data policy does not permit asking the teacher; this column needs officer input.',

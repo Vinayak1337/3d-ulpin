@@ -160,6 +160,66 @@ test('rationale: prompt states the rule and examples; schema still rejects liter
   assert(validateTeacherOutput(output('the column header names a registration number'), profile).success);
 });
 
+// LP6-shaped software control, not recovered live output or source-meaning truth.
+function literalRationaleOutput() {
+  const targets = ['building.sourceKey', 'building.name', 'building.addressLiteral', 'parcel.plot',
+    'unit.unitNo', 'level.label', 'space.name', 'document.issuer'];
+  return { fields: targets.map((target, index) => ({ sourceField: `column_${String.fromCharCode(97 + index)}`,
+    target, operation: index === 1 ? { kind: 'parse_literal', literalKind: 'text_literal' } : { kind: 'copy' },
+    confidence: index % 2 ? 'medium' : 'high', rationale: `column ${index + 1}` })) };
+}
+
+test('LP6-shaped replay: targets stay questions; settlement and recording withhold literal rationales', async () => {
+  const { profile } = profileColumnFile(goodFile);
+  const output = literalRationaleOutput();
+  assert.equal(output.fields.length, profile.columns.length);
+  const response = { output, rawResponse: { output }, responseHash: hash(output), httpStatus: 200,
+    usage: { promptTokens: 2000, completionTokens: 1000 } };
+  const recordings = new TeacherRecordings(mkdtempSync(join(tmpdir(), 's4-4-withheld-')));
+  const profileHash = columnProfileHash(profile);
+  const ledger = new ControlLedger();
+  const replay = new ReplayAdapter(async key => ({ inputHash: hash('software-control'), sourceHashes: [profileHash],
+    replayKey: key, responseHash: hash(response), response, eligible: true }));
+  for (const adapter of [new ControlAdapter(async () => response), replay,
+    new ReplayAdapter(key => recordings.replay(key))]) {
+    const result = await proposeMappingWithTeacher(profile, {
+      ...options(new ModelGateway(controlConfig(), ledger, adapter)), recordings,
+    });
+    assert.equal(result.replayed, adapter.kind === 'replay');
+    assert.equal(result.state, 'needs_input');
+    assert.equal(result.attempts, 1);
+    assert.deepEqual(result.plan.fields.map(field => [field.target, field.operation, field.confidence]),
+      output.fields.map(field => [field.target, field.operation, field.confidence === 'high' ? 0.9 : 0.5]));
+    assert(result.plan.fields.every(field => field.rationale === 'Withheld: the explanation stated a literal.'));
+    assert.deepEqual(result.issues, profile.columns.map(column => ({ sourceField: column.name,
+      state: 'needs_input', code: 'TEACHER_RATIONALE_WITHHELD' })));
+    const stored = JSON.stringify([result, [...ledger.calls.values()], ...readdirSync(recordings.directory)
+      .map(file => readFileSync(join(recordings.directory, file), 'utf8'))]);
+    for (const field of output.fields) assert(!stored.includes(field.rationale));
+  }
+  assert.equal(ledger.dispatched, 1, 'Replay must not dispatch or reserve another call.');
+  assert.equal(ledger.reserved, 1);
+});
+
+test('withheld rationale never rescues bad targets, operations, confidence or field shape', async () => {
+  const { profile } = profileColumnFile(goodFile);
+  for (const fault of [{ target: 'not-a-target' }, { operation: { kind: 'invent' } },
+    { operation: { kind: 'parse_literal', literalKind: 'date_iso' } }, { confidence: 'certain' },
+    { extra: 'unexpected' }, { sourceField: 'not-an-alias' }, { rationale: null }, { rationale: '' }]) {
+    const output = literalRationaleOutput();
+    Object.assign(output.fields[0], fault);
+    const adapter = new ControlAdapter(async request => ({ ...unknownResponse(request), output }));
+    const result = await proposeMappingWithTeacher(profile,
+      { ...options(new ModelGateway(controlConfig(), new ControlLedger(), adapter)), maxAttempts: 1 });
+    assert.equal(result.state, 'needs_input');
+    assert.equal(result.plan.fields[0].target, 'unknown', JSON.stringify(fault));
+    assert.equal(result.issues[0].code, 'TEACHER_INVALID_PLAN');
+    assert(result.plan.fields.slice(1)
+      .every(field => field.rationale === 'Withheld: the explanation stated a literal.'));
+    assert(result.issues.slice(1).every(issue => issue.code === 'TEACHER_RATIONALE_WITHHELD'));
+  }
+});
+
 test('gateway: a message that is only too long is refused as size; shape and content refusals stay privacy', () => {
   const long = 'x'.repeat(32769);
   assert.equal(minimizeMessages([{ role: 'user', content: 'x'.repeat(20000) }]).length, 1);

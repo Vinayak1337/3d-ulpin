@@ -37,6 +37,7 @@ export const MAPPING_TEACHER_MODEL = 'sarvam-105b';
 export const MAPPING_TEACHER_METHOD = 'model:sarvam-105b@2026-10-10';
 /** The request is over the gateway's size bound: with no samples left, the gateway is not asked. */
 const TEACHER_INPUT_LIMIT = 'TEACHER_INPUT_LIMIT';
+const WITHHELD_RATIONALE = 'Withheld: the explanation stated a literal.';
 const MANUAL_MAPPING_METHOD_PREFIX = 'manual:';
 /** Names a plan nobody interpreted, outside the `model:` namespace. */
 export const manualMappingMethod = (code: string) => `${MANUAL_MAPPING_METHOD_PREFIX}${code}`;
@@ -433,6 +434,20 @@ function suppliedFields(raw: unknown): unknown[] {
   return raw.fields;
 }
 
+/** Remove literal explanations before settlement or recording; all other field errors remain errors. */
+function withholdLiteralRationales(raw: unknown): unknown {
+  if (!isRecord(raw) || !Array.isArray(raw.fields)) return raw;
+  const supplied = raw.fields;
+  const fields = supplied.map((field: unknown) => {
+    const parsed = TeacherOutputSchema.shape.fields.element.safeParse(field);
+    if (parsed.success || !isRecord(field)) return field;
+    const literal = parsed.error.issues.some(issue =>
+      issue.code === 'custom' && issue.path.length === 1 && issue.path[0] === 'rationale');
+    return literal ? { ...field, rationale: WITHHELD_RATIONALE } : field;
+  });
+  return fields.some((field, index) => field !== supplied[index]) ? { ...raw, fields } : raw;
+}
+
 function validIsolatedField(
   supplied: unknown[],
   index: number,
@@ -451,7 +466,7 @@ function validIsolatedField(
 function retainValidFields(lastRaw: unknown, profile: ColumnProfileDocument) {
   const unknowns = unknownFields(profile);
   const retained = [...unknowns];
-  const supplied = suppliedFields(lastRaw);
+  const supplied = suppliedFields(withholdLiteralRationales(lastRaw));
   const seenTargets = new Set<string>();
   const duplicateFields = new Set<string>();
   for (let index = 0; index < unknowns.length; index++) {
@@ -467,12 +482,12 @@ function retainValidFields(lastRaw: unknown, profile: ColumnProfileDocument) {
   const checked = validateTeacherOutput({ fields: retained }, profile);
   const plan = checked.success ? checked.plan : manualTeacherPlan(profile, 'TEACHER_INVALID_PLAN').plan;
   const issues: TeacherIssue[] = plan.fields
-    .filter((field) => field.target === 'unknown' || field.confidence < 0.5)
-    .map((field) => ({
-      sourceField: field.sourceField,
-      state: 'needs_input',
-      code: duplicateFields.has(field.sourceField) ? 'TEACHER_DUPLICATE_TARGET' : 'TEACHER_INVALID_PLAN',
-    }));
+    .filter((field) => field.target === 'unknown' || field.confidence < 0.5 || field.rationale === WITHHELD_RATIONALE)
+    .map((field): TeacherIssue => {
+      const code = duplicateFields.has(field.sourceField) ? 'TEACHER_DUPLICATE_TARGET' : 'TEACHER_INVALID_PLAN';
+      return { sourceField: field.sourceField, state: 'needs_input',
+        code: field.rationale === WITHHELD_RATIONALE ? 'TEACHER_RATIONALE_WITHHELD' : code };
+    });
   return { plan, issues };
 }
 
@@ -511,12 +526,14 @@ async function recordTeacherResponse(
 ) {
   const { profile, gateway, recordings } = call;
   const raw = event.result?.semanticError ? {} : event.result?.output;
-  const validation = validateTeacherOutput(raw, profile);
+  const output = withholdLiteralRationales(raw);
+  const result = event.result && output !== raw ? { ...event.result, output, rawResponse: output } : event.result;
+  const validation = validateTeacherOutput(output, profile);
   const profileHash = columnProfileHash(profile);
   await recordings?.record({
     adapterKind: gateway.adapterKind, templateVersion: MAPPING_TEACHER_TEMPLATE,
     model: MAPPING_TEACHER_MODEL, profileHash, replayKey: teacherReplayKey(profileHash), attempt, ...event,
-    parsedPlan: validation.plan, validation, price: gateway.config.price,
+    ...(result ? { result } : {}), parsedPlan: validation.plan, validation, price: gateway.config.price,
   });
 }
 
@@ -548,7 +565,7 @@ async function callTeacherOnce(
       outputSchema: request.schema,
       replayKey,
       authorize: options.authorize,
-      minimizeOutput: (output) => output,
+      minimizeOutput: withholdLiteralRationales,
       validationIssues: (output) => teacherValidationIssues(output, profile),
       observeResponse: event => recordTeacherResponse(event, attempt, call),
     },
@@ -557,8 +574,9 @@ async function callTeacherOnce(
 
 function acceptedResult(plan: MappingPlanV2, metadata: AttemptMetadata): MappingTeacherResult {
   const issues: TeacherIssue[] = plan.fields
-    .filter((field) => field.target === 'unknown' || field.confidence < 0.5)
-    .map((field) => ({ sourceField: field.sourceField, state: 'needs_input', code: 'TEACHER_UNCERTAIN' }));
+    .filter((field) => field.target === 'unknown' || field.confidence < 0.5 || field.rationale === WITHHELD_RATIONALE)
+    .map((field) => ({ sourceField: field.sourceField, state: 'needs_input',
+      code: field.rationale === WITHHELD_RATIONALE ? 'TEACHER_RATIONALE_WITHHELD' : 'TEACHER_UNCERTAIN' }));
   return { plan, issues, state: issues.length ? 'needs_input' : 'candidate', ...metadata };
 }
 
