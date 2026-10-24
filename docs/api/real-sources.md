@@ -1,5 +1,36 @@
 # Official source index and retained dataset catalogue
 
+## S2.1 practice kit part 1
+
+Eight unchanged public originals are referenced in place under `E:/BhuAayam-data/`, **test_only** and local development
+only. The [practice manifest](../evidence/step-2/s2-1/manifest.json) records paths relative to its root, recomputed
+SHA-256, bytes, format, binary-MiB size bands, the four plan families, origin, issuer and per-file licence state.
+[Verification and gaps](../evidence/step-2/s2-1/result.json) distinguish sibling receipts from fallback pins.
+Total: **292,295,571 bytes**; no original or receipt was copied, moved, changed or repaired.
+
+- **Maps and tables:** DA1 City of Niagara Falls footprints (26,660,992 bytes, GeoJSON), Halifax Regional Municipality
+  Buildings (107,832,285 bytes, GeoJSON), Tweed Shire Council buildings (12,849 bytes, Shapefile ZIP); DQ1 Building
+  and Construction Authority energy data (98,040 bytes, XLSX); City of Baton Rouge / Parish of East Baton Rouge
+  footprints (76,920,137 bytes, WKT CSV). DA1 and DQ1 origins and confirmed licences remain those documented below.
+  Baton Rouge's [original URL](https://data.brla.gov/api/views/w2dv-n5tp/rows.csv?accessType=DOWNLOAD) is catalogued;
+  permission remains **unconfirmed**. The literal Public Domain description is not treated as a permission grant.
+- **Documents and plans:** DQ1 Housing & Development Board native-text PDF (251,862 bytes), Singapore Open Data
+  Licence v1.0. This substitutes for the proposed approximately 6.3 MiB RERA scan because no matching receipt was
+  located through permitted catalogue records; excluded acquisition and split material was not searched.
+  **This does not cover scanned plans.** No new acquisition or wider permission is implied.
+- **3D models:** [FZK-Haus IFC4](https://www.ifcwiki.org/images/e/e3/AC20-FZK-Haus.ifc), 2,570,803 bytes,
+  `kit-iai-fzk-haus-ifc4-20261004` in datasets.json; KIT/IAI as attributed by IFC Wiki. Its
+  [publisher notice](https://www.ifcwiki.org/index.php?title=KIT_IFC_Examples&oldid=552) is not a model-specific
+  formal licence: **unconfirmed**. This is a fictional development building with unknown physical geography.
+- **Imagery and point clouds:** whole NYC `20170504_980200.copc.laz` (77,948,603 bytes), not the smaller cropped
+  derivative; original NOAA distribution URL is preserved from datasets.json `localDemoSources`. Exact issuing
+  agency and licence URL are unstated there and remain null; permission **unconfirmed**, no redistribution grant.
+
+All eight recomputed hashes match existing metadata: six sibling receipts, the NYC pack manifest and the Baton Rouge
+catalogue pin. **Strict sibling-receipt acceptance is incomplete for NYC and Baton Rouge.** No replacement receipt was
+invented and no prohibited folder or closed judge-kit material was opened. Existing catalogue entries and learning
+splits are unchanged; this practice selection does not authorize training, provider use or operational claims.
+
 ## DQ1 sealed rehearsal set - 18 October 2026 IST
 
 - **Publisher family:** Singapore government agencies through the [data.gov.sg portal](https://data.gov.sg/),

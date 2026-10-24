@@ -1,0 +1,64 @@
+{
+  "task": "S2.1",
+  "planStep": 2,
+  "status": "partial_receipt_acceptance",
+  "base": "e35441d715e672e261fa4101e017d89faa394c14",
+  "manifest": "docs/evidence/step-2/s2-1/manifest.json",
+  "verified": {
+    "files": 8,
+    "totalOriginalBytes": 292295571,
+    "families": 4,
+    "familyCounts": {"maps and tables": 5, "documents and plans": 1, "3D models": 1, "imagery and point clouds": 1},
+    "sha256AndByteMatches": 8,
+    "hashMismatches": 0,
+    "siblingReceiptMatches": 6,
+    "fallbackMatches": {"Baton Rouge": "existing catalogue pin", "NYC COPC": "existing pack manifest /originals/0"},
+    "licenceStates": {"confirmed": 5, "unconfirmed": 3, "restricted": 0},
+    "existingCatalogueEntriesUnchanged": true,
+    "dataDriveWrites": 0,
+    "prohibitedMaterialOpened": false
+  },
+  "decisions": [
+    "Use root-relative paths to reference originals in place; receipt pointers permit exact metadata replay.",
+    "Keep the difficult Baton Rouge WKT CSV and whole NYC COPC, explicitly distinguishing their fallback pins.",
+    "Replace proposed ~6.3 MiB RERA scan with receipted DQ1 HDB native-text PDF: no safe matching receipt located.",
+    "Baton Rouge, IFC and NYC permissions stay unconfirmed; NYC exact issuing agency and licence URL stay null.",
+    "No acquisition, import, profiling, provider call, learning, runtime change or generated-pin refresh."
+  ],
+  "checks": [
+    {"command": "python -I -c <hash, bytes, receipt-pointer and family assertions>", "exit": 0, "matches": 8},
+    {"command": "python -I -c <strict sibling-receipt assertions>", "exit": 1, "present": 6, "missing": 2},
+    {"command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "errors": 0},
+    {"command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "errors": 0},
+    {"command": "pnpm studio:test", "beforeExit": 0, "beforePassed": 773, "skipped": 3,
+      "afterExit": 1, "afterPassed": 771, "afterFailed": 2},
+    {"command": "WORKING-RULES.md section 5 ingestion command", "beforeExit": 0, "afterExit": 0,
+      "passed": 874, "skipped": 5, "failed": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 1, "expectedStaleFile": "docs/api/source-pins.json"},
+    {"command": "python scripts/api/check.py", "beforeExit": 0, "afterExit": 1,
+      "expectedStaleProducer": "docs/api/datasets.json", "baselineOperations": 332, "baselineSchemas": 376},
+    {"command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0},
+    {"command": "python -I -c <compare catalogue to base after removing practice entry>", "exit": 0,
+      "newEntries": 1, "changedExistingEntries": 0}
+  ],
+  "boundedComparison": {
+    "hypothesis": "Two 5000 ms Studio timeouts are scheduling-sensitive; no executable code changed.",
+    "baseline": "Full post-change suite: upload.test.ts and map/surface/parts.test.ts each timed out once.",
+    "command": "pnpm --dir apps/studio exec vitest run src/features/intake/upload.test.ts",
+    "argumentsContinued": "src/features/map/surface/parts.test.ts --maxWorkers=1",
+    "successCriterion": "Both files pass at the unchanged default timeout; one run only.",
+    "stopCondition": "Stop after this comparison whether passing or failing; do not change tests or timeouts.",
+    "exit": 0,
+    "passed": 23,
+    "failed": 0,
+    "qualification": "Scheduling hypothesis supported, not proof that the entire post-change suite passes."
+  },
+  "executionNote": "Combined after-check shell timed out at 240 s during ingestion; standalone ingestion completed.",
+  "logs": "E:/ulpin-tmp/s2-1-{before-*,after-*,hash-check,sibling-check,studio-bounded,catalogue-preservation}.log",
+  "next": [
+    "Locate permitted sibling receipts for Baton Rouge and NYC, or explicitly approve their existing fallback pins.",
+    "Supply an accessible receipted scanned-plan original; the substituted PDF does not prove scanned-plan coverage.",
+    "Lead regenerates pins after integration and reruns the full Studio suite on a quiet PC."
+  ]
+}
