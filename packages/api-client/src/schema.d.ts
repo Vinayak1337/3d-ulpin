@@ -14986,6 +14986,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -18136,6 +18137,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -19139,6 +19141,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                     } | {
                         /** @enum {string} */
@@ -20238,6 +20241,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -20310,6 +20314,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         nativeBounds: (number)[];
                         bands: {
@@ -20320,6 +20325,8 @@ export interface components {
                             nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                             maskedPixels: number;
                             validPixels: number;
+                            validMin?: number | null;
+                            validMax?: number | null;
                         }[];
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -37628,6 +37635,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -37700,6 +37708,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         nativeBounds: (number)[];
                         bands: {
@@ -37710,6 +37719,8 @@ export interface components {
                             nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                             maskedPixels: number;
                             validPixels: number;
+                            validMin?: number | null;
+                            validMax?: number | null;
                         }[];
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -52544,6 +52555,7 @@ export interface components {
                     y: number;
                     width: number;
                     height: number;
+                    step?: number;
                 };
             } | {
                 /** @enum {string} */
@@ -53635,6 +53647,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         nativeBounds: (number)[];
                         bands: {
@@ -53645,6 +53658,8 @@ export interface components {
                             nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                             maskedPixels: number;
                             validPixels: number;
+                            validMin?: number | null;
+                            validMax?: number | null;
                         }[];
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -54836,6 +54851,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                     } | {
                         /** @enum {string} */
@@ -55954,6 +55970,7 @@ export interface components {
                                 y: number;
                                 width: number;
                                 height: number;
+                                step?: number;
                             };
                             nativeBounds: (number)[];
                             bands: {
@@ -55964,6 +55981,8 @@ export interface components {
                                 nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                                 maskedPixels: number;
                                 validPixels: number;
+                                validMin?: number | null;
+                                validMax?: number | null;
                             }[];
                             /** @enum {string} */
                             globalPlacement: "not_qualified";
@@ -57294,6 +57313,7 @@ export interface components {
                                     y: number;
                                     width: number;
                                     height: number;
+                                    step?: number;
                                 };
                             } | {
                                 /** @enum {string} */
@@ -57546,6 +57566,7 @@ export interface components {
                                 y: number;
                                 width: number;
                                 height: number;
+                                step?: number;
                             };
                         } | {
                             /** @enum {string} */
@@ -66467,6 +66488,7 @@ export interface components {
                         y: number;
                         width: number;
                         height: number;
+                        step?: number;
                     } | null;
                 } | {
                     /** @enum {string} */
@@ -66510,6 +66532,7 @@ export interface components {
                     y: number;
                     width: number;
                     height: number;
+                    step?: number;
                 } | null;
             } | {
                 /** @enum {string} */
@@ -66528,6 +66551,7 @@ export interface components {
                     y: number;
                     width: number;
                     height: number;
+                    step?: number;
                 } | null;
             } | {
                 /** @enum {string} */
@@ -73329,6 +73353,7 @@ export interface components {
                 y: number;
                 width: number;
                 height: number;
+                step?: number;
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_raster_windows_Response_202_application_json: {
@@ -73376,6 +73401,7 @@ export interface components {
                         y: number;
                         width: number;
                         height: number;
+                        step?: number;
                     };
                     nativeBounds: (number)[];
                     bands: {
@@ -73386,6 +73412,8 @@ export interface components {
                         nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                         maskedPixels: number;
                         validPixels: number;
+                        validMin?: number | null;
+                        validMax?: number | null;
                     }[];
                     /** @enum {string} */
                     globalPlacement: "not_qualified";
