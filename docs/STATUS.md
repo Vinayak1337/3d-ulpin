@@ -9,9 +9,9 @@ history only). Workers are Claude CLI (all UI work) and pi codex only; no cloud 
 
 **24 to 25 October.** Merged into `task/int3-pre` and pushed: S1.1 (full checks), S2.1 and S2.2 (practice kit,
 17 files with receipts), S3.1, S3.2, S4.1 (one owner switch for Sarvam on judges' files, default off), S4.2 (header
-rules), S4.3 (reading card route), S4.5 server part (certain tables read without a press), S7.2, S7.3. The S1.2
-rehearsal on a fresh `ulpin-reh-03` proved surface jobs (SA1) but failed act 1 on two faults from S4.1 and S4.5; S1.2a
-fixes them. Running: S1.2a, S4.6, S2.3 (codex) and S7.7 (chat session). The Claude CLI account is still refused.
+rules), S4.3 (reading card route), S4.5 server part (certain tables read without a press), S7.2, S7.3, S7.7. The S1.2
+rehearsal on a fresh `ulpin-reh-03` proved surface jobs (SA1) but failed act 1 on two faults from S4.1 and S4.5;
+S1.2a fixed both (merged 25 October), and act 1 runs again once the PC is quiet. Running: S4.6 and S2.3 (codex). The Claude CLI account is still refused.
 
 **UI list (owner left it to the lead, 24 October):** [UX review](design/UX-REVIEW-2026-10-24.md). Worst first: the
 batch page never says which step it is in or what needs the officer (S7.17), an action can vanish or sit disabled with

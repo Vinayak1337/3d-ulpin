@@ -56,12 +56,20 @@ Size M, this PC: Docker. After: none. **Status: done 24 Oct (4c704191 on int3-pr
 
 ### S1.2 Fresh-runtime rehearsal part 1: create ulpin-reh-03 and run act 1 (proves SA1 and EV2 live)
 
-Size L, this PC: Docker. After: S1.1, S3.1 merged onto int3-pre by the lead. **Status: failed 24 Oct (evidence 2cea614c on task/s1-2-rehearsal): SA1 passed (9 raster, 211 point jobs), but a 409 on one retain and no View layout with the S4.1 switch off blocked both cards and EV2; fix S1.2a running codex, then act 1 again on reh-03.**
+Size L, this PC: Docker. After: S1.1, S3.1 merged onto int3-pre by the lead. **Status: failed 24 Oct (evidence 2cea614c on task/s1-2-rehearsal): SA1 passed (9 raster, 211 point jobs), but a 409 on one retain and no View layout with the S4.1 switch off blocked both cards and EV2. Fix S1.2a done 25 Oct (bea97a14 on task/int3-pre); act 1 again on reh-03 at the int3 head, on a quiet PC.**
 
 - **What:** Rehearse the newest head (0aecb4f8 plus S1.1 fixes and S3.1) on a new, empty runtime, not reh-02: reh-02 carried old point-batch items that polluted REH16. Procedure (DEMO-RUNTIME.md:272-311): git worktree add E:/Projects/ulpin-wt/ulpin-reh-03 <serve sha>; pnpm install --frozen-lockfile; pnpm platform:start --profile demo --create --runtime ulpin-reh-03; demo-document-runtime.mjs build; demo-native-readers.mjs build then check (four verified); platform:start; platform:doctor all PASS. The image stays ulpin-geo:git-dc5deb405fb9; services/geo is unchanged since the pin. Ports are 21031-21036 (API 21036). Then act 1 with the REH16 run-a order: confirm evidence while the package prepare runs. Both cards; journey 8/8 with surfaces and citation passing. Run the demo doctor before and after. Quiet PC: no other agent runs. Leave reh-03 stopped, never removed.
 - **Files:** Read: docs/backend/DEMO-RUNTIME.md:272-311; _tasks/reh16.md, reh17.md; k3 branch task/reh16-rehearsal 8f7314b2 docs/evidence/runtime/reh16/{roll.json,launch.ps1,dress.mjs,journey.mjs,cards.mjs,citations.mjs,jobs.mjs,api-watch.ps1,act1-files.json} (copy with reh-03 ports and paths). Write: docs/evidence/step1/s1-2/result.json on its own branch.
 - **Check:** pnpm journey:check --case <act 1 case> passes 8/8 with nothing skipped. The act 1 TIF and LAZ each get raster-window and point-batch jobs (SA1). The cited card is reached in the run-a order with at most one re-confirmation (EV2). Demo doctor before and after shows 4ffd801a, exit 0.
 - **Tests:** pnpm platform:doctor --profile demo --runtime ulpin-reh-03; pnpm journey:check
+
+### S1.2b A ZIP retain tolerates sibling reads like any other original
+
+Size S, code only. After: S1.2a (merged). **Status: open.**
+
+- **What:** S1.2a let a new original be retained after a sibling arrival or a server table read had moved the case revision on; it still refuses a changed family revision and a changed access context. The ZIP archive retain in packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:74 still demands the exact drop revision, so a ZIP dropped beside a CSV can meet the same 409. Apply the same rule there and nothing else.
+- **Check:** a new test in tests/intake-zip-layers.test.ts: a ZIP retain sent with the drop revision after a sibling table read passes; a future revision and a changed access context still refuse, with no bytes stored.
+- **Tests:** tests/intake-zip-layers.test.ts, retain-routing.test.ts; the section 5 server command
 
 ### S1.3 Fresh-runtime rehearsal part 2: our own act 2 files alone and under load, with timings
 
@@ -739,7 +747,7 @@ Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: open.**
 
 ### S7.7 Header area switcher names the right area
 
-Size S, code only. After: none; parallel with S7.1-S7.6. **Status: ready 24 Oct: task file and worktree prepared; waits for the owner to start its chat session.**
+Size S, code only. After: none; parallel with S7.1-S7.6. **Status: done 25 Oct (merged on task/int3-pre).**
 
 - **What:** On batch and table pages the header names an unrelated area: REH15 'table page header named another case (Niagara Falls, Revision 0)', and REH16 act 1 the same. The switcher falls back to the remembered area or the first area on every route. Off map routes, show 'Choose an area' with no subtitle. Add the area's short id in mono to the subtitle and the menu, so two areas both named 'buildings original' (REH16 a03 against a09) can be told apart. A count of 0 shows as '0 features'.
 - **Files:** apps/studio/src/app/Frame.tsx:114-181 (areaSubtitle 114-116, fallback 122-123, label 144); apps/studio/src/app/Frame.module.css (areaMeta)
