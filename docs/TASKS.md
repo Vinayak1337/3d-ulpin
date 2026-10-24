@@ -410,7 +410,7 @@ Size S, this PC: runtime. After: S4.4 merged into the served commit; the lead co
 
 ### S4.11 A large file or cell batch with an already-approved layout needs only one confirmation
 
-Size M, code only. After: S4.9. **Status: running 25 Oct (codex, from int3-pre 685e5210; server part: a read-only layout-memory route and the reading card basis memory; StreamedLayoutAnswer filling stays for a UI step).**
+Size M, code only. After: S4.9. **Status: done 25 Oct, merged into task/int3-pre (contract and pins c27d1094; sent back once: dates, field names and the reading card fallback). A read-only layout-memory route and the reading card basis memory; server set 982 pass. Open: a UI step fills StreamedLayoutAnswer from the route.**
 
 - **What:** A large GeoJSON's layout is officer-only: streamed recipes have no memory, while small files reuse approved recipes whose paths are contained. So every cell batch of a wide file and every converted layer asks the same question again. Reuse the containment check against the streamed profile paths to fill the streamed answer from the operator's newest approved recipe, shown as 'from memory'. Approval stays the officer's press. Cut candidate.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:51-90 (export profileContained logic); streamed-mapping.ts:120-160; intake-large.ts:380-397 intakeLargePlan; intake-ledger.ts:98-110 (cell batches, read only); intake-reading.ts; apps/studio/src/features/intake/StreamedLayoutAnswer.tsx
