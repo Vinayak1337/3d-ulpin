@@ -592,7 +592,7 @@ Size M, this PC: data drive. After: Step 2 practice kit holds a real CityGML til
 
 ### S5.18 CityJSON reader takes a real tile and a CityJSONSeq file
 
-Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel with S5.17 and S5.19. **Status: open.**
+Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel with S5.17 and S5.19. **Status: running 25 Oct (codex, from int3-pre e3a03186; the CityJSONSeq part only, on the cjval sample sequences; the bounds wait for a real CityJSON tile, which the practice kit lacks).**
 
 - **What:** native_cityjson.py stops at 8 MiB, 1,000 CityObjects, 100,000 vertices and 15 s, and reads CityJSON 2.0 only, so a typical 3DBAG tile is over its limits. A CityJSONSeq (.city.jsonl) is detected as cityjson by its first object but is not one JSON document; it is expected to fail (not run). Raise the bounds and CITYJSON_LIMITS to what the practice kit's CityJSON needs, as measured, and read a CityJSONSeq as its header plus each feature line through the existing CityJSONFeature path, so outlines with a declared EPSG reach the map path (B3D1).
 - **Files:** services/geo/geo/native_cityjson.py:14-21 (bounds), 230-290 (envelopes and features, 249-267); services/geo/geo/cityjson_outline.py (read; change only if the sequence needs it); packages/server/src/modules/usp/ingestion/intake-signatures.ts:116-133 (jsonKind for the sequence); packages/contracts/src/usp/cityjson-ingestion.ts:4-5; services/geo/tests/test_native_cityjson.py, test_cityjson_outline.py
