@@ -191,7 +191,7 @@ Size M, code only. After: S1.3l. **Status: merged 25 Oct (int3-pre 9e863382, tas
 
 ### S1.3p The doctor reports each format's busiest case and kept bytes against free disk
 
-Size S, code only. After: S1.3o. **Status: running 25 Oct (codex, task/s1-3p-doctor-retention from int3-pre 9e863382).**
+Size S, code only. After: S1.3o. **Status: merged 25 Oct (int3-pre bf9bccbc, task/s1-3p-doctor-retention db3868f7; platform tests 124 pass, server set 1,093 tests, 0 failed). Ten busiest-case lines and one storage line, read only, counts only; the format numbers are copied with a parity test against the helper. Found on the way: scripts/platform/processes.test.mjs had failed since S1.3g (its sandbox lacked the new dispatcher pool names, and it is not in the section 5 set); the lead added the two names. Not yet run against a live database or object store; run 5's doctor reads it.**
 
 - **What:** Ten doctor lines (busiest case per format, sources and MiB against the per-case budget, warning at 75 percent), replacing S1.3l's whole-service raster and point lines, and one storage line: kept original bytes against the object store's free bytes, warning below 20 GiB or below the kept bytes.
 - **Files:** scripts/platform/ingestion-quotas.mjs and its test; scripts/platform/doctor (one call); demo-config.mjs (one free-bytes helper if needed)
