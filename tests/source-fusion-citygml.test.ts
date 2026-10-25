@@ -11,7 +11,8 @@ import {acceptedFusionCityGMLTx} from '../packages/server/src/modules/usp/ingest
 import {captureAssociationFusion,proposeFusionAssociations} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations';
 import {associationLiterals,associationManualSelection} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations-projection';
 import {resolveFusionCitationsTx} from '../packages/server/src/modules/usp/ingestion/source-fusion-citations';
-import {citygmlArtifactKey,citygmlResultKey,citygmlReaderSha} from '../packages/server/src/modules/usp/ingestion/citygml';
+import {citygmlArtifactKey,citygmlResultKey,citygmlReaderSha}
+  from '../packages/server/src/modules/usp/ingestion/citygml';
 import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';

@@ -10,7 +10,7 @@ const name = 'Building_and_garage_LOD2-EPSG25832.gml';
 const path = `${CITYGML_JOURNEY_ROOT}/${name}`;
 const present = existsSync(`${path}.native.json`) && existsSync(`${path}.journey.json`);
 
-test('unchanged historical CityGML limits remain readable after the inventory ceiling changes', { skip: !present }, () => {
+test('historical CityGML limits remain readable after inventory ceiling changes', { skip: !present }, () => {
   const bytes = readFileSync(`${path}.native.json`);
   const result = CityGMLResultSchema.parse(JSON.parse(readFileSync(`${path}.journey.json`, 'utf8')).accepted);
   assert.equal(sha256(bytes), result.artifact.sha256);

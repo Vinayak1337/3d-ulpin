@@ -79,7 +79,8 @@ function fixture(){
   };
   const client=Object.assign(new EventEmitter(),{query,release:()=>{active=false;}}),pool={connect:async()=>client,query};
   const request:typeof fetch=async(_url,options)=>{assert(!active);nativeCalls++;io.push('native');assert(options!.signal);deadlines.push(Date.now());
-    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,sha256:input.sourceSha256,bytes:input.sourceBytes,batch:input.batch});
+    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,
+      sha256:input.sourceSha256,bytes:input.sourceBytes,batch:input.batch});
     if(mode==='oversize')return new Response(new ReadableStream({cancel(){bodyCancelled=true;}}),{headers:{'content-length':String(POINT_NATIVE_REPLY_BYTES+1)}});
     if(mode==='cancel'||mode==='timeout'){if(mode==='cancel')setTimeout(()=>controller.abort(),10);return new Response(new ReadableStream({
       start(c){c.enqueue(Buffer.from('{"metadata":'));},cancel(){bodyCancelled=true;}}));}
@@ -195,7 +196,7 @@ test('current whole-cloud native overview accepts its full bounded base64 reply'
   assert.deepEqual(output.metadata.batch,metadata.batch);assert.deepEqual(output.bytes,bytes);
 }));
 
-test('native explicit batches normalize absent step to one and reject a changed step',{skip:!present},()=>isolated(async f=>{
+test('native explicit batches normalize missing step and reject changed step',{skip:!present},()=>isolated(async f=>{
   const body=JSON.parse(f.nativeBody.toString('utf8'));
   body.metadata.batch.step=1;
   const output=await nativePointBatch(f.input,{deadlineAt:Date.now()+1000},async()=>Response.json(body));

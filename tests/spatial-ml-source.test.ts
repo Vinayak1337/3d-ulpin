@@ -116,7 +116,9 @@ async function fixture(work: (f: any) => Promise<void>) {
 
 test('strict source-only input pins one actual page/frame/region and rejects package/processor fields', () => {
   assert(spatialMlSourceBatchSchema.safeParse(input).success);
-  for (const extra of [{ packageId: key }, { partId: key }, { objectKey: 'caller' }, { task: 'building' }, { page: 101 }, { sourceBytes: DOCUMENT_PAGE_LIMITS.originalBytes + 1 }, { region: { x: .9, y: 0, width: .2, height: .1 } }])
+  for (const extra of [{ packageId: key }, { partId: key }, { objectKey: 'caller' }, { task: 'building' },
+    { page: 101 }, { sourceBytes: DOCUMENT_PAGE_LIMITS.originalBytes + 1 },
+    { region: { x: .9, y: 0, width: .2, height: .1 } }])
     assert(!spatialMlSourceBatchSchema.safeParse({ ...input, ...extra }).success);
 });
 
