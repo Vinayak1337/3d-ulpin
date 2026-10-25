@@ -10,6 +10,7 @@ import { Readable } from 'node:stream';
 import type { StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-selection.fixture';
 import { DISPATCH_LANES, dispatchCost, dispatchHeapBudgetMiB } from './dispatch-lanes';
+import { loadMappingWorker, mappingWorkerFixture } from '../usp/ingestion/chunk-mapping-worker.fixture';
 import { probeOriginal } from '../usp/ingestion/intake-probe';
 import { readZipMember } from '../usp/ingestion/intake-zip';
 import { loadProfileWorker, profileWorkerFixture } from '../usp/ingestion/streamed-profile-worker.fixture';
@@ -28,7 +29,8 @@ type Row = SelectionFixtureJob & { status: string; itemCreated: number; stage: s
 type Event = { at: number; finish: () => void };
 type Driver = { dispatchTick: () => Promise<number>; dispatchWakeVersion: () => number };
 type Controls = { worker: (id: string) => Promise<void>; surface: () => Promise<void> };
-const globals = globalThis as typeof globalThis & { ulpinPool?: unknown; lq1Replay?: Controls; s13cProfile?: unknown };
+const globals = globalThis as typeof globalThis & { ulpinPool?: unknown; lq1Replay?: Controls;
+  s13cProfile?: unknown; s13hMapping?: unknown; s13hPreparation?: unknown };
 async function removeReplay(folder: string) {
   for (const name of await readdir(folder)) await rm(join(folder, name));
   await rmdir(folder);
@@ -37,6 +39,7 @@ async function removeReplay(folder: string) {
 async function withReplay(run: (folder: string) => Promise<void>) {
   const folder = await mkdtemp('E:/ulpin-tmp/s3-7-replay-');
   const previousPool = globals.ulpinPool, previousControls = globals.lq1Replay, previousProfile = globals.s13cProfile;
+  const previousMapping = globals.s13hMapping, previousPreparation = globals.s13hPreparation;
   const budget = process.env.DISPATCH_MEMORY_MIB;
   process.env.DISPATCH_MEMORY_MIB = '1536';
   try {
@@ -45,6 +48,8 @@ async function withReplay(run: (folder: string) => Promise<void>) {
     globals.ulpinPool = previousPool;
     globals.lq1Replay = previousControls;
     globals.s13cProfile = previousProfile;
+    globals.s13hMapping = previousMapping;
+    globals.s13hPreparation = previousPreparation;
     if (budget === undefined) delete process.env.DISPATCH_MEMORY_MIB;
     else process.env.DISPATCH_MEMORY_MIB = budget;
     await removeReplay(folder);
@@ -76,8 +81,10 @@ async function realMix() {
 }
 
 /** Only dependency imports change: both versions execute their actual tick, reservations and worker finally paths. */
-async function loadDriver(folder: string, baseline: boolean | 'lane'): Promise<Driver> {
-  const revision = baseline === 'lane' ? 'a8c67f15' : '70560f89';
+async function loadDriver(folder: string, baseline: boolean | 'lane' | 'draft'): Promise<Driver> {
+  let revision = '70560f89';
+  if (baseline === 'lane') revision = 'a8c67f15';
+  else if (baseline === 'draft') revision = '1710369c';
   let source = baseline ? execFileSync('git', ['show', `${revision}:packages/server/src/modules/cases/processing.ts`],
     { encoding: 'utf8' }) : await readFile(sourcePath, 'utf8');
   if (baseline === 'lane') {
@@ -89,7 +96,7 @@ async function loadDriver(folder: string, baseline: boolean | 'lane'): Promise<D
     source = source.replace("'./dispatch-lanes'", JSON.stringify(path));
   }
   const workers = new Set(['intake-large-worker', 'streaming-vector-worker', 'streamed-profile-worker',
-    'chunk-mapping-worker', 'intake-native-derivative-worker']);
+    'chunk-mapping-worker', 'intake-native-derivative-worker', 'intake-draft-worker']);
   source = source.replace(/import \{(\w+)\} from '(\.\.\/usp\/ingestion\/([^']+))';/g,
     (original, name: string, _specifier: string, module: string) => {
       if (workers.has(module)) return `const ${name} = (id: string) => globalThis.lq1Replay.worker(id);`;
@@ -335,6 +342,232 @@ test('run 2 stream replay: a later ZIP starts within one tick while both whole-f
     assert.ok(firstZipMs - 750 <= 750, 'the ZIP must start within one tick of creation, not after stream EOF');
     assert.equal(state.rows.filter(row => row.status === 'succeeded').length, 46);
     assert.deepEqual(peaks, { memory: 1865, heap: 1865, vector: 2, stream: 2 });
+  });
+});
+
+test('run 4 full-lane replay: the baseline draft starts within one tick, so the wait is not reproduced', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withReplay(async folder => {
+    process.env.DISPATCH_MEMORY_MIB = '4096';
+    const driver = await loadDriver(folder, 'draft'), state = replayState();
+    state.rows.length = 0;
+    const finish: (() => void)[] = [];
+    const selections: { at: number; ids: string[]; fullLanes: unknown }[] = [];
+    const readyAt = epoch + 750;
+    globals.lq1Replay = { surface: async () => {}, worker: async id => {
+      const row = state.rows.find(row => row.id === id)!;
+      assert.equal(row.status, 'queued');
+      row.status = 'running';
+      admissionPeaks(state.rows, 4096);
+      state.dispatched.push({ id, at: Date.now() - epoch });
+      await new Promise<void>(resolve => { finish.push(resolve); });
+      row.status = 'succeeded';
+    } };
+    globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+      // Model a durable next_attempt_at gate, not the time the draft row was created.
+      const eligible = state.rows.filter(row => row.stage !== 'draft' || Date.now() >= readyAt);
+      const rows = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, eligible) : [];
+      if (sql.includes('AS file_rank')) selections.push({ at: Date.now() - epoch,
+        ids: rows.map(row => String(row.id)), fullLanes: values[4] });
+      return { rows, rowCount: rows.length };
+    } };
+    try {
+      // Real run-4 shape, not file execution: CN1 and the ZIP occupy all stream and vector slots.
+      for (const [index, file] of ['cn1', 'zip'].entries()) {
+        state.enqueue(file, 'streaming-vector', 'raw', index);
+        state.enqueue(file, 'streamed-profile', 'profile', index);
+        state.enqueue(file, 'intake-large', 'layout', index);
+      }
+      state.enqueue('table', 'intake-draft', 'draft', 2);
+      await driver.dispatchTick();
+      await flush();
+      assert.equal(state.dispatched.length, 6, 'the draft is not ready during the first tick');
+      for (const [file, count] of [['cn1', 16], ['zip', 43]] as const) {
+        for (let index = 0; index < count; index++) state.enqueue(file, 'intake-large', `part-${index}`, 0);
+        for (let index = 0; index < 12; index++) state.enqueue(file, 'streamed-profile', `stream-${index}`, 0);
+      }
+      t.mock.timers.tick(750);
+      await driver.dispatchTick();
+      await flush();
+      const draft = state.dispatched.find(row => row.id === 'table:draft');
+      assert.ok(draft, 'baseline already selects and starts the ready draft despite 83 blocked followers');
+      assert.equal(draft.at - (readyAt - epoch), 0);
+      assert.deepEqual(selections[1], { at: 750, ids: ['table:draft'], fullLanes: ['stream', 'vector'] });
+      assert.equal(state.rows.filter(row => row.status === 'running').length, 7);
+      assert.equal(state.rows.filter(row => row.status === 'queued').length, 83);
+      console.log(JSON.stringify({ replay: 'run 4 full-lane shape; offline scheduling stubs, not file execution',
+        baseline: '1710369c', reproducedWait: false, blockedFollowers: 83, draftReadyMs: 750,
+        draftStartMs: draft.at, draftReadyToStartMs: draft.at - (readyAt - epoch),
+        activeMemoryMiB: admissionPeaks(state.rows, 4096).memory,
+        memoryBudgetMiB: 4096, heapBudgetMiB: dispatchHeapBudgetMiB(),
+        selection: selections[1], stop: 'No production fix: the specified replay does not reproduce the wait.' }));
+    } finally {
+      for (const release of finish) release();
+      await flush();
+    }
+  });
+});
+
+async function loadTablePreparation(folder: string, baseline: boolean, controls: unknown) {
+  globals.s13hPreparation = controls;
+  const root = dirname(sourcePath), ingestion = resolve(root, '../usp/ingestion');
+  const service = await readFile(join(ingestion, 'chunk-mapping.ts'), 'utf8');
+  const guard = service.slice(service.indexOf('const active=Number'),
+    service.indexOf('const jobId=randomUUID(),base='));
+  assert.ok(guard.includes('MAPPING_CAPACITY') && guard.includes('MAPPING_HISTORY_CAPACITY'));
+  const contractPath = 'packages/contracts/src/usp/chunk-mapping.ts';
+  const contract = baseline ? execFileSync('git', ['show', `1710369c:${contractPath}`], { encoding: 'utf8' })
+    : await readFile(contractPath, 'utf8');
+  const active = Number(/readMs:12\*60\*1000,active:(\d+)/.exec(contract)![1]);
+  let source = await readFile(join(ingestion, 'intake-table-auto.ts'), 'utf8');
+  const draftImport = "import { assertIntakeDraftTx, intakeDraftKey, type IntakeDraftInput } from './intake-draft';";
+  source = source.replace(draftImport,
+    'const assertIntakeDraftTx = globalThis.s13hPreparation.assertInput;\n'
+      + "import { intakeDraftKey, type IntakeDraftInput } from './intake-draft';");
+  for (const [name, module] of [['ManualIngestionService', 'service'], ['StreamingVectorService', 'streaming-vector']])
+    source = source.replace(`import { ${name} } from './${module}';`,
+      `const ${name} = globalThis.s13hPreparation.${name};`);
+  source = source.replace("import { ChunkMappingService } from './chunk-mapping';",
+    `const enqueue = globalThis.s13hPreparation.enqueue;\nclass ChunkMappingService {
+      async enqueue(...args) { await transaction(async client => { const limits = { active: ${active} };
+        ${guard} }); return enqueue(...args); }
+    }`);
+  source = source.replace(/(['"])(\.\.?\/[^'"]+)\1/g,
+    (_match, _quote: string, specifier: string) => JSON.stringify(resolve(ingestion, specifier)));
+  const target = join(folder, `preparation-${baseline ? 'before' : 'after'}.ts`);
+  await writeFile(target, source);
+  return import(pathToFileURL(target).href) as Promise<{ prepareIntakeTable: (input: unknown) => Promise<boolean> }>;
+}
+
+function mappingReplayState() {
+  const fixtures = Array.from({ length: 4 }, (_, index) => mappingWorkerFixture(index * 10));
+  const state = replayState(), admitted = new Set([fixtures[0].input.jobId]), claims = new Map<string, number>();
+  state.rows.length = 0;
+  const addMapping = (fixture: typeof fixtures[number]) => state.rows.push({
+    id: fixture.input.jobId, operation: 'chunk-mapping', source_id: fixture.input.sourceId,
+    case_id: fixture.input.caseId, created_at: new Date(), status: 'queued', itemCreated: 0, stage: 'mapping',
+  });
+  for (const fixture of fixtures.slice(1)) {
+    fixture.publish();
+    fixture.raw.state = 'completed_with_rejections';
+    fixture.raw.unknown_remainder = false;
+    state.rows.push({ id: `${fixture.input.jobId}:draft`, operation: 'intake-draft',
+      source_id: fixture.input.sourceId, case_id: fixture.input.caseId, created_at: new Date(),
+      status: 'queued', itemCreated: 0, stage: 'draft' });
+  }
+  addMapping(fixtures[0]);
+  return { fixtures, state, admitted, claims, addMapping, nextDraft: fixtures.map(() => epoch),
+    pending: [] as Promise<void>[], failures: [] as unknown[],
+    workers: new Map<string, (id: string) => Promise<void>>() };
+}
+type MappingReplay = ReturnType<typeof mappingReplayState>;
+async function mappingReplayQuery(replay: MappingReplay, sql: string, values: any[] = []) {
+  const { fixtures, state, admitted, claims, nextDraft } = replay;
+  if (sql.includes('AS file_rank')) {
+    const eligible = state.rows.filter(row => {
+      const index = fixtures.findIndex(fixture => row.id === `${fixture.input.jobId}:draft`);
+      if (index >= 0) return Date.now() >= epoch + index * 750 && Date.now() >= nextDraft[index];
+      const mapping = fixtures.find(fixture => fixture.input.jobId === row.id);
+      return !mapping || Date.now() >= mapping.job.next_attempt_at.getTime();
+    }).map(row => ({ ...row, status: claims.has(row.id) ? 'succeeded' : row.status }));
+    const rows = dispatchFixtureSelection(sql, values, eligible);
+    return { rows, rowCount: rows.length };
+  }
+  if (sql.includes('count(*)::int n FROM usp_chunk_mapping_imports')) return { rows: [{ n:
+    [...admitted].filter(id => !sql.includes('WHERE state')
+      || ['queued', 'running'].includes(fixtures.find(row => row.input.jobId === id)!.state.state)).length }] };
+  if (sql.includes('FROM operations')) {
+    const fixture = fixtures.find(row => row.input.caseId === values[0])!;
+    const jobId = values[2] === 'streaming-vector' ? fixture.input.rawJobId : fixture.input.jobId;
+    return { rows: values[2] === 'streaming-vector' || admitted.has(jobId) ? [{ result: { jobId } }] : [] };
+  }
+  if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: 1 }] };
+  if (sql.startsWith('UPDATE usp_outbox_streams')) return { rows: [{ sequence: '1' }] };
+  const draft = fixtures.findIndex(row => `${row.input.jobId}:draft` === values[0]);
+  if (draft >= 0 && sql.startsWith('UPDATE jobs SET next_attempt_at')) {
+    nextDraft[draft] = Date.now() + 2000;
+    return { rows: [] };
+  }
+  const fixture = fixtures.find(row => row.input.jobId === values[0] || row.input.rawJobId === values[0]);
+  if (fixture) return fixture.query(sql, values);
+  return { rows: [], rowCount: 0 };
+}
+function tablePreparationControls(replay: MappingReplay) {
+  return {
+    assertInput: async () => ({ source: { inspection: { manualProfile: { version: 'manual-tabular/1' } } } }),
+    ManualIngestionService: class { async inspectAny() { return { version: 'manual-tabular/1', tabular: {} }; } },
+    StreamingVectorService: class { async enqueue() { assert.fail('the existing raw receipt must be reused'); } },
+    enqueue: async (caseId: string) => {
+      const fixture = replay.fixtures.find(row => row.input.caseId === caseId)!;
+      replay.admitted.add(fixture.input.jobId);
+      replay.addMapping(fixture);
+      return { jobId: fixture.input.jobId };
+    },
+  };
+}
+async function mappingReplayWorker(replay: MappingReplay,
+  prepare: (input: unknown) => Promise<boolean>, id: string) {
+  const fixture = replay.fixtures.find(row => row.input.jobId === id || `${row.input.jobId}:draft` === id)!;
+  if (id.endsWith(':draft')) {
+    const ready = await prepare({ ...fixture.input, jobId: id, itemId: fixture.input.sourceId })
+      .catch(error => { replay.failures.push(error); return false; });
+    if (ready) replay.claims.set(id, Date.now() - epoch);
+  } else {
+    const run = replay.workers.get(id)!(id).then(() => {
+      replay.state.rows.find(row => row.id === id)!.status = fixture.job.status;
+    }, error => { replay.failures.push(error); });
+    replay.pending.push(run);
+    await run;
+  }
+}
+async function mappingAdmissionReplay(folder: string, baseline: boolean, tick: (ms: number) => void) {
+  const replay = mappingReplayState(), { fixtures, claims } = replay;
+  for (const fixture of fixtures) {
+    const worker = await loadMappingWorker(folder, fixture, baseline);
+    replay.workers.set(fixture.input.jobId, worker.runChunkMappingJob);
+  }
+  const preparation = await loadTablePreparation(folder, baseline, tablePreparationControls(replay));
+  const query = (sql: string, values?: any[]) => mappingReplayQuery(replay, sql, values);
+  globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) };
+  globals.lq1Replay = { surface: async () => {},
+    worker: id => mappingReplayWorker(replay, preparation.prepareIntakeTable, id) };
+  const driver = await loadDriver(folder, baseline ? 'draft' : false);
+  for (let turn = 0; turn < 800 && claims.size < 3; turn++) {
+    if (Date.now() - epoch >= 536810) {
+      fixtures[0].raw.state = 'completed';
+      fixtures[0].raw.unknown_remainder = false;
+    }
+    await driver.dispatchTick();
+    for (let micro = 0; micro < 10; micro++) await flush();
+    if (replay.failures.length) throw replay.failures[0];
+    tick(750);
+  }
+  assert.equal(claims.size, 3, JSON.stringify({ reason: 'bounded mapping admission replay did not finish',
+    fixtures: fixtures.map(row => ({ status: row.job.status, state: row.state.state,
+      error: row.job.error, attempts: row.attempts.length })), admitted: [...replay.admitted] }));
+  fixtures[0].raw.state = 'completed';
+  fixtures[0].raw.unknown_remainder = false;
+  tick(2000);
+  for (let micro = 0; micro < 10; micro++) await flush();
+  await Promise.all(replay.pending);
+  const readyToClaimMs = fixtures.slice(1).map((fixture, index) =>
+    claims.get(`${fixture.input.jobId}:draft`)! - (index + 1) * 750);
+  return { readyToClaimMs, admitted: replay.admitted.size, halifaxAttempts: fixtures[0].attempts.length,
+    halifaxState: fixtures[0].state.state };
+}
+
+test('run 4 mapping admission: yielding Halifax lets three table drafts start within one ready tick', async t => {
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: epoch });
+  await withReplay(async folder => {
+    const before = await mappingAdmissionReplay(folder, true, ms => t.mock.timers.tick(ms));
+    t.mock.timers.setTime(epoch);
+    const after = await mappingAdmissionReplay(folder, false, ms => t.mock.timers.tick(ms));
+    assert.ok(before.readyToClaimMs.every(ms => ms > 500000), 'baseline waits for Halifax mapping closure');
+    assert.ok(after.readyToClaimMs.every(ms => ms <= 750), 'every draft gets mapping admission within one tick');
+    assert.equal(after.halifaxAttempts, 0, 'waiting on raw creates no attempt and spends no table lane reservation');
+    console.log(JSON.stringify({ replay: 'offline worker/preparation replay; mapping payloads and source pins stubbed',
+      baseline: '1710369c', rawClosureMs: 536810, before, after,
+      baselineAcceptancePassed: false, fixedAcceptancePassed: true }));
   });
 });
 
