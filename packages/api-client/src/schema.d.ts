@@ -97196,6 +97196,8 @@ export interface operations {
     GET_api_v1_ingestion_cases_caseId_intake_evidence: {
         parameters: {
             query?: {
+                /** @description Only the candidates whose anchors name this map feature; the counts stay case-wide. */
+                featureId?: string;
                 /** @description Only the candidates of this table or document; the counts stay case-wide. */
                 itemId?: string;
                 /** @description Only the candidates read under this key profile; the counts stay case-wide. */

@@ -42761,6 +42761,16 @@
         "operationId": "GET_api_v1_ingestion_cases_caseId_intake_evidence",
         "parameters": [
           {
+            "name": "featureId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Only the candidates whose anchors name this map feature; the counts stay case-wide."
+          },
+          {
             "name": "itemId",
             "required": false,
             "in": "query",
