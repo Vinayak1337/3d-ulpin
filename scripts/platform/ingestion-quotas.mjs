@@ -47,24 +47,69 @@ export const ingestionQuotas = [
   ['upload v1 busiest case', 2, busiest('usp_source_uploads u', upload(1), 'u.case_id')],
   ['upload v1 busiest operator', 2, busiest('usp_source_uploads u', upload(1), 'u.operator_subject')],
   ['upload v2 open', 1, count('usp_source_uploads u', upload(2))],
-  ['raster sources', 64, count('sources', "profile='geotiff-raster-v1'")],
-  ['point sources', 64, count('sources', "profile='laz-point-v1'")],
   ['raster active', 2, count('jobs', "operation='raster-window' AND status IN ('queued','running')")],
   ['point active', 2, count('jobs', "operation='point-batch' AND status IN ('queued','running')")],
 ];
+// Copied from retention-budget.ts and contract limits; parity is checked without a production TS import.
+export const retentionQuotas = [
+  ['geotiff-raster-v1', 'raster', 64, 256],
+  ['laz-point-v1', 'point', 64, 256],
+  ['kml-native-v1', 'KML', 64, 256],
+  ['citygml-native-v1', 'CityGML', 64, 256],
+  ['cityjson-native-v1', 'CityJSON', 64, 128],
+  ['dxf-native-v1', 'DXF', 64, 256],
+  ['geoparquet-native-v1', 'GeoParquet', 64, 256],
+  ['gltf-native-v1', 'glTF', 64, 256],
+  ['ifc-native-v1', 'IFC', 64, 256],
+  ['obj-native-v1', 'OBJ', 64, 256],
+];
+const MiB = 1024 ** 2;
+const GiB = 1024 ** 3;
+const retentionQuery = ([profile, , sources, mib]) => `SELECT json_build_array(n,b::text) FROM
+  (SELECT count(*) n,coalesce(sum(bytes),0) b FROM sources WHERE profile='${profile}' GROUP BY case_id) scoped
+  ORDER BY greatest(n::numeric/${sources},b::numeric/${mib * MiB}) DESC,n DESC,b DESC LIMIT 1`;
 export function ingestionQuotaQuery() {
-  const fields = ingestionQuotas.map(([, , sql], index) => `'q${index}',(${sql})`).join(',');
-  return `BEGIN READ ONLY; SET LOCAL statement_timeout='3000ms'; SELECT json_build_object(${fields}); ROLLBACK;`;
+  const fields = ingestionQuotas.map(([, , sql], index) => `'q${index}',(${sql})`);
+  fields.push(...retentionQuotas.map((quota, i) => `'r${i}',coalesce((${retentionQuery(quota)}),'[0,"0"]'::json)`));
+  fields.push("'kept',(SELECT coalesce(sum(bytes),0)::text FROM sources)");
+  return "BEGIN READ ONLY; SET LOCAL statement_timeout='3000ms'; "
+    + `SELECT json_build_object(${fields.join(',')}); ROLLBACK;`;
 }
-export async function ingestionQuotaLines(reader) {
+function bytes(value) {
+  if (typeof value !== 'string' || !/^\d+$/.test(value)) throw new Error('Invalid bytes.');
+  return BigInt(value);
+}
+const gib = value => (Number(value) / GiB).toFixed(1);
+async function storageLine(kept, freeBytesReader) {
+  try {
+    const free = bytes(String(await freeBytesReader()));
+    const warn = free < 20n * BigInt(GiB) || free < kept;
+    return `${warn ? 'WARN' : 'PASS'} Storage originals: ${gib(kept)} GiB kept, ${gib(free)} GiB free`;
+  } catch {
+    return 'SKIP Storage originals (object-storage free bytes unavailable)';
+  }
+}
+export async function ingestionQuotaLines(reader, freeBytesReader) {
+  let lines, kept;
   try {
     const counts = JSON.parse(await reader(ingestionQuotaQuery()));
-    return ingestionQuotas.map(([name, limit], index) => {
+    lines = ingestionQuotas.map(([name, limit], index) => {
       const counted = counts[`q${index}`];
       if (!Number.isSafeInteger(counted) || counted < 0) throw new Error('Invalid count.');
       return `${counted >= limit * 0.75 ? 'WARN' : 'PASS'} Ingestion ${name}: ${counted} of ${limit} counted`;
     });
+    lines.push(...retentionQuotas.map(([, name, limit, mib], i) => {
+      const [n, rawBytes] = counts[`r${i}`];
+      const kept = bytes(rawBytes);
+      if (!Number.isSafeInteger(n) || n < 0) throw new Error('Invalid count.');
+      const warn = n >= limit * 0.75 || kept * 4n >= BigInt(mib * MiB) * 3n;
+      return `${warn ? 'WARN' : 'PASS'} Ingestion ${name} busiest case: ${n} of ${limit} sources, `
+        + `${(Number(kept) / MiB).toFixed(1)} of ${mib} MiB`;
+    }));
+    kept = bytes(counts.kept);
   } catch {
-    return ['SKIP Ingestion quotas (aggregate reader unavailable)'];
+    return ['SKIP Ingestion quotas (aggregate reader unavailable)',
+      'SKIP Storage originals (aggregate reader unavailable)'];
   }
+  return [...lines, await storageLine(kept, freeBytesReader)];
 }
