@@ -1,0 +1,59 @@
+{
+  "task": "S5.18b", "planStep": 5, "base": "a8c67f159b404f373d4259a5675542c4f939a5eb",
+  "status": "blocked_official_hosts_three_connection_timeouts",
+  "dateUtc": "2026-10-25",
+  "acquisition": {
+    "intendedRoot": "E:/BhuAayam-data/datasets/practice-kit-20261024/3dbag/",
+    "classification": "test_only", "geography": "Netherlands; foreign development only",
+    "attempts": [
+      {"url": "https://docs.3dbag.nl/en/download/", "exit": 28, "connectTimeoutSeconds": 15,
+       "observedTimeoutMilliseconds": 15005, "httpResponse": false},
+      {"url": "https://data.3dbag.nl/", "exit": 28, "connectTimeoutSeconds": 15,
+       "observedTimeoutMilliseconds": 15004, "resolvedAddress": "131.180.126.111:443", "httpResponse": false},
+      {"url": "http://data.3dbag.nl/", "exit": 28, "connectTimeoutSeconds": 15,
+       "observedTimeoutMilliseconds": 15019, "resolvedAddress": "131.180.126.111:80", "httpResponse": false}
+    ],
+    "diagnosis": "DNS succeeded for data.3dbag.nl; TCP connection did not complete, before TLS or HTTP.",
+    "boundedComparison": {
+      "hypothesis": "The failure might be specific to HTTPS/port 443; official HTTP/port 80 might respond.",
+      "baseline": "Two HTTPS requests timed out before HTTP responses.",
+      "successCriterion": "An HTTP response from the official download host within 15 s connection/30 s total.",
+      "stopCondition": "One HTTP request only; third timeout ends acquisition, no further hosts or mirrors.",
+      "outcome": "Port 80 also timed out; stopped."
+    },
+    "tileAcquired": false, "receiptCreated": false, "sourceBytes": null, "sourceSha256": null,
+    "licenceVerifiedThisRun": false,
+    "catalogue": "No acquired source exists; real-sources.md and datasets.json remain unchanged."
+  },
+  "bounds": {
+    "changed": false, "inputBytes": 8388608, "objects": 1000, "vertices": 100000,
+    "boundaryIndices": 500000, "nodes": 1000000, "depth": 64, "outputBytes": 33554432, "seconds": 15,
+    "reason": "No real tile, counts, memory/time measurements or scaling arithmetic; raising bounds is unjustified.",
+    "memoryAndThreads": "Unchanged; no runtime, image or processing configuration action."
+  },
+  "acceptance": {
+    "realTileDefaultReadAndHashTest": "not_run: no original or SHA-256 acquired",
+    "measuredObjectCount": null, "outputBytes": null, "peakMemoryBytes": null, "seconds": null,
+    "newBoundOverflowTests": "not_added: no measured new bounds to test",
+    "goodAndDifficultRealInputs": "No new real files acquired; existing CityJSON regression suite only."
+  },
+  "checks": {
+    "literalTaskPytestFromRepoRoot": {"exit": 1, "passed": 24, "failed": 2,
+      "reason": "Child python -m geo.cityjson_processing cannot import geo from repo-root cwd; no code changed."},
+    "pytestFromServicesGeo": {"beforeExit": 0, "afterExit": 0, "passed": 26},
+    "cityjsonAuthority": {"beforeExit": 0, "afterExit": 0, "passed": 2},
+    "backendTypecheck": {"beforeExit": 0, "afterExit": 0, "packages": 2},
+    "studioTypecheck": {"beforeExit": 0, "afterExit": 0, "packages": 4},
+    "studioTests": {"beforeExit": 0, "afterExit": 0, "passed": 785, "skipped": 3},
+    "workingRulesSection5Ingestion": {"beforeExit": 0, "afterExit": 0, "passed": 1036, "skipped": 5},
+    "openapiCheck": {"beforeExit": 0, "afterExit": 0, "operations": 335, "schemas": 379},
+    "apiCheck": {"beforeExit": 0, "afterExit": 0, "staleProducers": []},
+    "diffCheck": {"beforeExit": 0, "afterExit": 0}
+  },
+  "logs": "E:/ulpin-tmp/s5-18b/{before,after}-*.log; data-request.log; data-http-request.log; docs.headers",
+  "next": [
+    "Lead/owner: restore official 3DBAG host reachability or supply an immutable official tile with its receipt.",
+    "Then acquire/catalogue one tile, measure a scratch copy, calculate margins, change limits and add acceptance tests.",
+    "Do not infer memory or thread budget changes from this blocked attempt."
+  ]
+}
