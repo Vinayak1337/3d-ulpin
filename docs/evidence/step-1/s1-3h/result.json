@@ -1,64 +1,79 @@
 {
-  "task": "S1.3h",
-  "planStep": 1,
-  "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf",
-  "verdict": "stopped_not_reproduced; historical cause unproven; no production change",
-  "inputs": {
-    "revision": "5972c394",
-    "files": ["docs/evidence/step-1/s1-3/run4/jobs.json", "docs/evidence/step-1/s1-3/run4/admission.json"],
-    "observedDraftQueueSeconds": {"c-encoding": 433.26, "d-wkt": 416.659, "wd2": 410.595},
-    "qualification": "Saved summaries, not per-tick readiness or reservations; no rehearsal files reopened."
+  "task": "S1.3h", "planStep": 1, "baseline": "1710369c", "fix": "e213dc45",
+  "verdict": "Mapping source waits yield; three table drafts pass the offline one-ready-tick acceptance.",
+  "cause": {
+    "classification": "c: pre-claim dependency admission, not pending selection or a long teacher proposal",
+    "chain": [
+      "intake-draft-worker.ts:417-418 prepares a table before claiming; first dispatch is first claim.",
+      "intake-table-auto.ts:44-70 retries MAPPING_CAPACITY after 2 s; mapping must be admitted before claim.",
+      "chunk-mapping.ts:251-252 counts queued/running imports against active=1 on the baseline.",
+      "Baseline chunk-mapping-worker.ts:337-395 waits in process for raw, retaining its lane/memory and admission.",
+      "Run4 Halifax mapping wall 536.81 s; c-encoding/d-wkt/wd2 creation-to-claim 433.26/416.659/410.595 s."
+    ],
+    "selection": "Full-lane replay retained: baseline excludes 83 blocked followers; draft starts at readiness."
   },
-  "codeFindings": {
-    "aFullLanes": "processing.ts:347-359 excludes held jobs, busy operations and full lanes before LIMIT 12.",
-    "aMemoryScratch": "Not ruled out: admission follows LIMIT; refused IDs are retained, not excluded (361-370).",
-    "bTeacher": "dispatch-lanes.ts:45 cap 2; processing.ts:489 singleton effectively allows one draft per process.",
-    "bEvidence": "Other draft wall maxima: b-load 6.938 s, ev2-load 10.691 s; no holder overlap timeline is saved.",
-    "cReady": "processing.ts:346-352 checks next_attempt_at and active leases; item state only affects ordering.",
-    "cClaim": "intake-draft-worker.ts:417-419 prepares tables BEFORE claim; usp/jobs.ts:257-258 stamps dispatch.",
-    "cPreparation": "intake-table-auto.ts:23-28,44-59,66-70 can requeue profile/capacity/revision waits for 2 s.",
-    "dMeasurement": "Creation-to-first-claim is not necessarily creation-to-first-worker-entry or ready queue time.",
-    "conclusion": "Full-lane window starvation not reproduced; preparation/readiness remains an unproven alternative."
+  "design": {
+    "worker": "mappingState (24) reads durable updated_at expiry; first entry starts clock, publication advances it.",
+    "wait": "waitForSource (303) mirrors streamed-profile pre-claim requeue or fenced yield; no updated_at reset.",
+    "deadline": "12 minutes unchanged; raw slots and table windows both drain ready data before yielding.",
+    "authority": "jobs.ts:21 adds chunk-mapping only to YIELD_OPERATIONS; yields do not spend the three failures.",
+    "admission": "CHUNK_MAPPING_LIMITS.active 1 -> 4 only; queued waits still count against these four places.",
+    "unchanged": "Selection, lanes, heap, memory, scratch, history limit, catch block, pins, OpenAPI and client schema."
   },
-  "boundedReplay": {
-    "test": "processing-latency.test.ts: run 4 full-lane replay",
-    "hypothesis": "Full stream/vector lanes let their followers consume all 12 rows and hide a ready teacher job.",
-    "method": "Execute baseline processing.ts and unchanged real reservations; SQLite selection; worker stubs.",
-    "shape": {"activeStream": 4, "activeVector": 2, "cn1Parts": 16, "zipParts": 43, "streamFollowers": 24},
-    "draftCreatedMs": 0,
-    "draftReadyMs": 750,
-    "draftWorkerEntryMs": 750,
-    "readyToEntryMs": 0,
-    "selectedAtReady": ["table:draft"],
-    "excludedFullLanes": ["stream", "vector"],
-    "blockedFollowers": 83,
-    "activeMemoryMiBIncludingDraft": 2834,
-    "memoryBudgetMiB": 4096,
-    "heapBudgetMiB": 3264,
-    "scratchMiB": 0,
-    "successCriterion": "Baseline waits for the named selection defect; fixed draft enters within one ready tick.",
-    "result": "Baseline already enters within one tick; failure reproduction criterion NOT met.",
-    "stopCondition": "Triggered: no selection fix or second comparison attempted."
+  "comparison": {
+    "hypothesis": "A long raw-dependent mapping consumes the only admission place, delaying draft preparation.",
+    "method": "Real baseline/fixed workers, attempt authority, dispatcher and table preparation; real admission guard.",
+    "boundaries": "In-memory SQL protocol, SQLite selection; source assertions and mapping payload work stubbed.",
+    "rawClosureMs": 536810, "pollMs": 750,
+    "beforeReadyToDraftClaimMs": [540000, 537750, 535500],
+    "afterReadyToDraftClaimMs": [0, 0, 0],
+    "beforeAcceptance": false, "afterAcceptance": true,
+    "afterWaitingHalifaxAttempts": 0, "admittedEach": 4,
+    "qualification": "Offline scheduling proof, not a rerun or exact reproduction of run4 wall timings."
   },
-  "checksBeforeAfter": {
-    "pnpm typecheck:backend": {"exit": [0, 0]},
-    "pnpm studio:typecheck": {"exit": [0, 0]},
-    "pnpm studio:test": {"exit": [0, 0], "passedEach": 831, "skippedEach": 3},
-    "processing-latency,processing,dispatch-heap,dispatch-scratch": {
-      "exit": [0, 0], "passed": [52, 53], "skippedEach": 4
+  "coverage": "10 controls: slots/windows, no-claim waits, live lease, stale pin, proposal resume, bursts, deadline.",
+  "historyAudit": {
+    "limit": "128 imports across every state globally; chunk-mapping.ts:253-254, unchanged.",
+    "removal": "No normal deletion/TTL path found; chunk-mapping.sql references have no ON DELETE CASCADE.",
+    "referenceAct1": {"path": "docs/evidence/runtime/reh15/jobs-act1.json", "mappings": 1},
+    "referenceAct2": {"revision": "5972c394", "path": "docs/evidence/step-1/s1-3/run4/jobs.json", "mappings": 7},
+    "act2Breakdown": {"cn1": 1, "b-load": 2, "ev2-load": 1, "c-encoding": 1, "d-wkt": 1, "wd2": 1},
+    "combinedReference": 8,
+    "qualification": "Not a fixed future count: new keys, recipe versions and standalone controls can add rows."
+  },
+  "inputs": [
+    "5972c394 run4/jobs.json and admission.json; metadata only, no rehearsal originals reopened.",
+    "Existing latency regressions read development zp1 ZIP: 464736 bytes, NYC member 2100 features and six KML layers."
+  ],
+  "checks": {
+    "before": "c3adf37d checks: backend/studio types 0; studio 831 pass/3 skip; focused 53/4; server 1060/5.",
+    "pnpm typecheck:backend": {"exit": 0, "errors": 0},
+    "pnpm studio:typecheck": {"exit": 0, "errors": 0},
+    "pnpm studio:test": {"exit": 0, "passed": 831, "skipped": 3},
+    "processing-latency,processing,dispatch-heap,dispatch-scratch,chunk-mapping-worker": {
+      "exit": 0, "passed": 64, "skipped": 4
     },
-    "WORKING-RULES section 5 server set": {"exit": [0, 0], "passedEach": 1060, "skippedEach": 5},
-    "openapi.ts --check": {"exit": [0, 0], "operations": 336, "schemas": 379},
-    "python scripts/api/check.py": {"exit": [0, 0], "operations": 336, "schemas": 379},
-    "git diff --check": {"exit": [0, 0]},
-    "isolated baseline replay": {"exit": 0, "passed": 1},
-    "skips": "Focused: four PostgreSQL tests lack ULPIN_DISPATCH_TEST_DATABASE_URL; unchanged before/after.",
-    "logs": "E:/ulpin-tmp/s1-3h-{before,after}-*.log and s1-3h-replay.log; no stale producer pins."
+    "section5Server": {"exit": 0, "passed": 1070, "skipped": 5},
+    "a3d-completion,a3d-history": {"exit": 0, "passed": 4},
+    "optionalA3bWiring": {
+      "exit": 1, "passed": 5, "failed": 3,
+      "issues": "Unowned dev-source fingerprint, native reader unavailable, old storage stub body.destroy mismatch."
+    },
+    "openapi.ts --check": {"exit": 1, "expected": "source-pins.json stale"},
+    "python scripts/api/check.py": {
+      "exit": 1, "expected": "producer changed: packages/contracts/src/usp/chunk-mapping.ts"
+    },
+    "staleProducerPaths": [
+      "packages/contracts/src/usp/chunk-mapping.ts",
+      "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts", "packages/server/src/modules/usp/jobs.ts"
+    ],
+    "git diff --check": {"exit": 0},
+    "logs": "E:/ulpin-tmp/s1-3h-final-*.log; earlier accepted comparison s1-3h-{before,after}-*.log"
   },
   "next": [
-    "Lead needs per-tick selected/refused/held IDs, resource budgets, full lanes and worker entry/exit times.",
-    "Capture each draft's next_attempt_at history, preparation outcome, raw/mapping creation and claim times.",
-    "Trace pre-claim SQL lock waits and singleton occupants; summaries cannot name minute-long holders.",
-    "If preparation is confirmed, intake-table-auto.ts and downstream admission services are outside OWN."
+    "Integration dependency: untouched chunk-mapping-worker.ts:458 still tests attempt.number >= 3, counting yields.",
+    "S1.3g must use spent jobs.attempts in its catch block, as streamed profiles do; test failures after four yields.",
+    "Lead regenerates pins: contract active changed; converter hashes also change for future jobs.",
+    "Lead handles finite history separately and proves small-table latency live; no runtime actions taken here."
   ]
 }
