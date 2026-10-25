@@ -222,7 +222,7 @@ Size M, code only. After: S3.4 (question shape). **Status: done 25 Oct (merged i
 
 ### S3.7 Vector-lane readers start up to the lane cap, not one per process
 
-Size M, code only. After: S3.2 (same file dispatch-lanes.ts); dispatch only if S1.3 still shows vector-lane queue time above execution time. **Status: running 25 Oct (codex, from int3-pre a8c67f15; owner said run it now rather than wait for S1.3 run 2)**
+Size M, code only. After: S3.2 (same file dispatch-lanes.ts); dispatch only if S1.3 still shows vector-lane queue time above execution time. **Status: done 25 Oct, merged into task/int3-pre (pins 3b83c535). Streaming-vector, streamed-profile, chunk-mapping and intake-large start one per job up to the lane cap and heap budget; offline 12-file replay: two vector starts in one tick, summed first dispatch 165,302 to 155,172 ms; PostgreSQL controls 46 pass. The live effect is measured in S1.3 run 2**
 
 - **What:** streaming-vector, streamed-profile, chunk-mapping and intake-large each have one module slot (processing.ts:46-50, 391, 475, 489, 547), although the vector lane allows 2 (dispatch-lanes.ts:27). unavailableOperations blocks a second start of a held operation (dispatch-lanes.ts:235-240). REH15 under load: queue 1,559.5 s against 15.1 s of execution. Replace those four singletons with per-operation sets bounded by the lane concurrency and the S3.2 heap budget. Fencing and attempts are unchanged.
 - **Files:** packages/server/src/modules/cases/processing.ts:45-50,385-395,475-500,545-552; packages/server/src/modules/cases/dispatch-lanes.ts:232-241
