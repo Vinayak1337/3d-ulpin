@@ -36,10 +36,8 @@ export function unreadRegister(error: unknown): string {
 /** Why the Residents tab lists no one: the read is not served, the server holds no extract, or the read failed. */
 export type ResidentsStatement = { kind: 'unserved' | 'none' | 'failed'; text: string };
 
-const RESIDENTS_UNSERVED = 'This server does not serve the residents read yet, so nothing is stated here about '
-  + 'who holds or lives in this building.';
-const NO_EXTRACT = 'The server holds no register extract for this building. Holders come from the deed index; '
-  + 'residents from the society or tenant register.';
+const RESIDENTS_UNSERVED = 'This server does not serve the residents read.';
+const NO_EXTRACT = 'No register extract is held for this building.';
 const UNREAD_RESIDENTS = 'The residents of this building could not be read';
 
 /**
@@ -62,9 +60,8 @@ type Canonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
 
 /** What the building's own record is, by the record state of its canonical read, when it has no register. */
 const UNRECORDED: Record<Canonical['recordState'], string> = {
-  candidate: 'The server holds this building as a candidate from its sources. '
-    + 'Nothing of it is recorded in the registry, so there is no register to open.',
-  reviewed: 'The server holds a reviewed record of this building and no register for it.',
+  candidate: 'This building is a candidate from its sources, not recorded in the registry.',
+  reviewed: 'This building has a reviewed record and no register.',
 };
 const NO_RECORD = 'The server holds no record of this building.';
 const UNREAD_RECORD = 'The record of this building could not be read';

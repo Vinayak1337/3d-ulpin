@@ -5,7 +5,7 @@ import { useBuildingCanonical } from '../../api/queries';
 import { geometryGaps } from '../map/sceneGeometry';
 import styles from './RegisterPage.module.css';
 
-const TITLE = 'No geometry is recorded for this building';
+const TITLE = 'No geometry recorded';
 
 /**
  * What stands where the scene would be when its inputs hold nothing to draw for the building: the title and the

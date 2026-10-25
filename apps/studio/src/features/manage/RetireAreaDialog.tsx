@@ -6,10 +6,6 @@ import { retireArea } from '../../api/queries';
 
 export type RetireTarget = { id: string; name: string; revision: number };
 
-/** What retiring keeps: the dialog says it before the officer confirms. */
-export const RETIRE_KEEPS = 'Nothing is deleted. The original files, sources, packages, review history and receipts '
-  + 'stay, and the retirement is recorded with your reason. The area can be restored.';
-
 /**
  * Confirms retiring an area. A retired area and its features leave the area lists, the map and the batch's area
  * choices; the server records who retired it, when and why.
@@ -47,9 +43,8 @@ export function RetireAreaDialog({ target, onClose, onRetired }: {
       )}>
       <div className="ul-stack">
         <p style={{ margin: 0 }}>
-          {target.name} and its features leave the area lists, the map and the batch&apos;s area choices.
+          {target.name} leaves the area lists and the map. Nothing is deleted; it can be restored.
         </p>
-        <p className="ul-help" style={{ margin: 0 }}>{RETIRE_KEEPS}</p>
         <label className="ul-field" htmlFor={id}>
           <span className="ul-label">Reason (required)</span>
           <textarea id={id} className="ul-input" rows={3} maxLength={2000} required value={reason}

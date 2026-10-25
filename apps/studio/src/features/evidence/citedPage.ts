@@ -51,8 +51,7 @@ export function pageViewState(page: PagesResponse['pages'][number], hasRegion: b
     case 'supported': return { kind: 'supported', statement: null, offersRegion: false };
     case 'reduced': return {
       kind: 'reduced',
-      statement: `This sheet is shown whole at a reduced scale of ${scale!.toFixed(2)} px per pt. ` +
-        'Small text is not readable at this scale.',
+      statement: `Shown whole at a reduced scale of ${scale!.toFixed(2)} px per pt.`,
       offersRegion: hasRegion,
     };
     case 'unsupported': return { kind: 'unsupported', statement: null, offersRegion: hasRegion };

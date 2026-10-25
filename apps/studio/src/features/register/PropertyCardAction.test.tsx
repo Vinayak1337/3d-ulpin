@@ -25,7 +25,7 @@ const shown = (offer: CardOffer) => renderToStaticMarkup(<MemoryRouter>
 const words = (markup: string) => markup.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, '');
 
 describe('the record page Property Card', () => {
-  it('a building with a card shows that card, its revision and the record revision it cites; no Blocked line', () => {
+  it('a building with a card shows that card, its revision and the record revision it cites; no blocked line', () => {
     const offer = cardOffer({ unitSelected: false, unitCode: null, registryCard: false, target: cited });
     expect(offer).toMatchObject({ kind: 'building', recordRevision: 2,
       card: { id: '93fd4362-041b-4708-b45c-b72b179a2277', revision: 1 } });
@@ -34,7 +34,7 @@ describe('the record page Property Card', () => {
     expect(markup).toContain('title="93fd4362-041b-4708-b45c-b72b179a2277"');
     expect(markup).toMatch(/<button[^>]*>.*Property Card<\/button>/);
     expect(markup).not.toMatch(/<button[^>]*disabled/);
-    expect(markup).not.toContain('Blocked');
+    expect(markup).not.toContain(UNIT_BLOCKED);
   });
 
   it('a card made with no confirmed evidence cites the revision its target records', () => {
@@ -43,12 +43,12 @@ describe('the record page Property Card', () => {
     expect(words(shown(offer))).toContain(`Card ${carded.artefacts.card!.id.slice(0, 8)} · revision 1 · cites record revision 1`);
   });
 
-  it('a building with no card and no unit code keeps the Blocked line and a disabled button', () => {
+  it('a building with no card and no unit code keeps the blocked line and a disabled button', () => {
     for (const target of [recorded, null, undefined]) {
       const offer = cardOffer({ unitSelected: false, unitCode: null, registryCard: false, target });
       expect(offer).toEqual({ kind: 'blocked', words: UNIT_BLOCKED });
       const markup = shown(offer);
-      expect(markup).toContain('Blocked: select a unit with an assigned proposed code');
+      expect(markup).toContain('Select a unit with a proposed code');
       expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>.*Property Card<\/button>/);
       expect(markup).not.toContain('cites record revision');
     }
@@ -56,7 +56,7 @@ describe('the record page Property Card', () => {
 
   it('a selected unit keeps its own card flow: blocked without a code, open with a code or a listed card', () => {
     expect(cardOffer({ unitSelected: true, unitCode: null, registryCard: false, target: cited }))
-      .toEqual({ kind: 'blocked', words: 'Blocked: assign a proposed code first' });
+      .toEqual({ kind: 'blocked', words: 'Assign a proposed code first' });
     expect(cardOffer({ unitSelected: true, unitCode: 'code', registryCard: false, target: null })).toEqual({ kind: 'unit' });
     expect(cardOffer({ unitSelected: true, unitCode: null, registryCard: true, target: null })).toEqual({ kind: 'unit' });
   });

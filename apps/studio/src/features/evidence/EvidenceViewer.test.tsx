@@ -65,7 +65,6 @@ describe('candidate evidence navigation and reduced sheet controls', () => {
   it('draws a reduced whole sheet with an outline and offers the region only on a press', () => {
     const markup = viewer([source], true, true);
     expect(markup).toContain('reduced scale of 0.54 px per pt');
-    expect(markup).toContain('Small text is not readable at this scale.');
     expect(markup).toContain('Show the cited region');
     expect(markup).toContain('<rect');
     expect(markup).not.toContain('drawn by the server from the original');

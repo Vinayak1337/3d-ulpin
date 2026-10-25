@@ -53,17 +53,16 @@ function BatchesBody({ items, pending, error, retry, filtered }: {
   if (error) {
     return (
       <EmptyState icon={WarningCircle} title="Batches could not be loaded" action={<Button onClick={retry}>Try again</Button>}>
-        {error.message} Check that the Studio API is running, then try again.
+        {error.message} Check that the Studio API is running, then retry.
       </EmptyState>
     );
   }
   if (!items.length) {
     return filtered ? (
-      <EmptyState icon={Stack} title="No batches match">Clear the search to see every batch.</EmptyState>
+      <EmptyState icon={Stack} title="No batches match" />
     ) : (
-      <EmptyState icon={Stack} title="No batches yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
-        Add plans, survey files or GIS layers to start a batch.
-      </EmptyState>
+      <EmptyState icon={Stack} title="No batches yet"
+        action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>} />
     );
   }
   return (

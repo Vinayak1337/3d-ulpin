@@ -6,8 +6,8 @@ import { BuildingCardDialog } from '../map/inspector/BuildingCard';
 import { cardState } from '../map/inspector/cardState';
 import styles from './RegisterPage.module.css';
 
-export const UNIT_BLOCKED = 'Blocked: select a unit with an assigned proposed code';
-export const CODE_BLOCKED = 'Blocked: assign a proposed code first';
+export const UNIT_BLOCKED = 'Select a unit with a proposed code';
+export const CODE_BLOCKED = 'Assign a proposed code first';
 
 /**
  * What the record page's Property Card offers. A selected unit keeps its own card flow. With no unit selected, the
