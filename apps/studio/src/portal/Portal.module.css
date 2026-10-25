@@ -1,4 +1,4 @@
-.frame { min-height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); background: var(--ui-background); }
+.frame { min-height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; background: var(--ui-background); }
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: 16px; top: 8px; z-index: 100; padding: 8px 12px; background: var(--ui-surface); border-radius: var(--ui-radius-8); box-shadow: var(--ui-focus-ring); }
 .header {
@@ -12,6 +12,7 @@
 .nav a[aria-current="page"] { background: var(--ui-primary-soft); color: var(--ui-primary); }
 .nav a:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
 .main { min-height: 0; }
+.footer { padding: var(--ui-space-4) var(--ui-space-6); border-top: 1px solid var(--ui-divider); font-size: 13px; line-height: 19px; color: var(--ui-muted); background: var(--ui-surface); }
 
 .wrap { max-width: var(--ui-portal-content); margin: 0 auto; padding: 40px 32px 56px; display: grid; gap: 28px; align-content: start; }
 .wrap h1 { margin: 0; }
@@ -60,7 +61,7 @@
 .verifyForm :global(.ul-field) { max-width: none; }
 
 /* Public map */
-.mapFrame { position: relative; height: calc(100dvh - var(--ui-portal-header-height)); min-height: 480px; background: var(--ui-map-ground); }
+.mapFrame { position: relative; height: calc(100dvh - var(--ui-portal-header-height) - 52px); min-height: 480px; background: var(--ui-map-ground); }
 .mapPanel { position: absolute; top: 16px; left: 16px; bottom: 16px; width: 340px; display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; z-index: 2; }
 .mapSearch { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--ui-divider); color: var(--ui-muted); }
 .mapSearch input { flex: 1; border: 0; outline: none; background: transparent; font: 400 15px/22px var(--ui-font-sans); color: var(--ui-ink); }

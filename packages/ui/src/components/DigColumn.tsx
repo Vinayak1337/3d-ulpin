@@ -17,6 +17,7 @@ export function DigColumn({ range, bands, actions }: { range: string; bands: Dig
         <span className="ul-caption ul-num">{range}</span>
       </header>
       <div className="ul-panel__body ul-dig">
+        <p className="ul-help">Screening only, not a dig clearance.</p>
         {bands.map((band) => (
           <div key={band.id} className={`ul-band${band.unknown ? ' ul-band--unknown' : ''}`}>
             <span className="ul-num">{band.depth}</span>

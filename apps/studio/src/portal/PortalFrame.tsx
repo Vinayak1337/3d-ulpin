@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router';
 import styles from './Portal.module.css';
 
-/** The public portal frame: wordmark and its tasks. No sign-in is needed to search, view or verify. */
+/** The public portal frame: wordmark, its tasks and the record disclaimer. No sign-in is needed to search, view or verify. */
 export function PortalFrame() {
   return (
     <div className={styles.frame}>
@@ -16,6 +16,7 @@ export function PortalFrame() {
         </nav>
       </header>
       <main id="portal-main" className={styles.main}><Outlet /></main>
+      <footer className={styles.footer}>Not a title document. Owner names and documents are not public.</footer>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export function BuildingPage() {
       <div className={styles.split}>
         <div className={styles.stack}>
           <div className={styles.sceneBox}>
-            {map ? <PublicScene className={styles.canvas} map={map} building={b} levelId={null} spaceId={null} label={`3D view of ${b.name}`} /> : null}
+            {map ? <PublicScene className={styles.canvas} map={map} building={b} levelId={null} spaceId={null} label={`3D view of ${b.name}, view only`} /> : null}
             <span className={styles.illustrative}>Illustrative</span>
           </div>
           {levels ? (

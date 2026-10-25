@@ -153,7 +153,7 @@ export function RequestPage() {
 
         <label className={styles.consent}>
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-          <span>The details I give are correct.</span>
+          <span>The details I give are correct. My name and mobile go only to the land records office.</span>
         </label>
         {error ? <p className={styles.formError} role="alert">{error}</p> : null}
         <div className={styles.doneActions}>

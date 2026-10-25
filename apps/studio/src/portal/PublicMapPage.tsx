@@ -48,7 +48,7 @@ export function PublicMapPage() {
   return (
     <div className={styles.mapFrame}>
       <PublicScene className={styles.canvas} map={map.data} building={building} levelId={levelId} spaceId={record?.id ?? null} onPick={onPick} onReady={setEngine} onView={() => setTick((t) => (t + 1) % 1_000_000)}
-        label={`3D map of ${map.data.area.name}`} />
+        label={`3D map of ${map.data.area.name}, view only`} />
       <aside className={`ul-float ${styles.mapPanel}`} aria-label="Released records">
         <label className={styles.mapSearch}>
           <Icon icon={MagnifyingGlass} />

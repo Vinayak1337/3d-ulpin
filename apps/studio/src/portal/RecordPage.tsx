@@ -58,7 +58,7 @@ export function RecordPage() {
       <div className={styles.split}>
         <div className={styles.stack}>
           <div className={styles.sceneBox}>
-            {map && building ? <PublicScene className={styles.canvas} map={map} building={building} levelId={r.levelId} spaceId={r.id} label={`${r.name} on ${r.level}`} /> : null}
+            {map && building ? <PublicScene className={styles.canvas} map={map} building={building} levelId={r.levelId} spaceId={r.id} label={`${r.name} on ${r.level}, view only`} /> : null}
             <span className={styles.illustrative}>Illustrative</span>
           </div>
           {building ? (

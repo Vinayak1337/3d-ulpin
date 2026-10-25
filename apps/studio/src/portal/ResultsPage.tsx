@@ -45,7 +45,7 @@ export function ResultsPage() {
           )}
         </div>
         <div className={styles.sceneBox}>
-          {map && building ? <PublicScene className={styles.canvas} map={map} building={building} levelId={null} spaceId={null} label={`3D view of ${building.name}`} /> : null}
+          {map && building ? <PublicScene className={styles.canvas} map={map} building={building} levelId={null} spaceId={null} label={`3D view of ${building.name}, view only`} /> : null}
           <span className={styles.illustrative}>Illustrative</span>
         </div>
       </div>

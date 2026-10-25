@@ -3,9 +3,9 @@
  "scope": "apps/studio/src/app/, apps/studio/src/portal/, packages/ui/src/; line numbers at base 2a4d18c0",
  "totals": {
   "before": 218,
-  "cut": 36,
-  "shortened": 26,
-  "kept": 154,
+  "cut": 34,
+  "shortened": 20,
+  "kept": 162,
   "kept_as_state": 2
  },
  "strings": [
@@ -24,8 +24,8 @@
   {
    "at": "apps/studio/src/app/Frame.tsx:20",
    "old": "aria-label BhuAayam Studio, Batches",
-   "verdict": "shorten",
-   "new": "none: the visible BhuAayam Studio names the link"
+   "verdict": "keep",
+   "new": null
   },
   {
    "at": "apps/studio/src/app/Frame.tsx:21",
@@ -198,8 +198,8 @@
   {
    "at": "apps/studio/src/portal/PortalFrame.tsx:22",
    "old": "A technical record of land and buildings, not a title document. Owner names and documents are not public.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Not a title document. Owner names and documents are not public."
   },
   {
    "at": "apps/studio/src/portal/PortalFrame.tsx:29",
@@ -342,8 +342,8 @@
   {
    "at": "apps/studio/src/portal/ResultsPage.tsx:48",
    "old": "scene name 3D view of {building}, view only",
-   "verdict": "shorten",
-   "new": "3D view of {building}"
+   "verdict": "keep",
+   "new": null
   },
   {
    "at": "apps/studio/src/portal/ResultsPage.tsx:49",
@@ -444,8 +444,8 @@
   {
    "at": "apps/studio/src/portal/RecordPage.tsx:63",
    "old": "scene name {record} on {level}, view only",
-   "verdict": "shorten",
-   "new": "{record} on {level}"
+   "verdict": "keep",
+   "new": null
   },
   {
    "at": "apps/studio/src/portal/RecordPage.tsx:64",
@@ -510,8 +510,8 @@
   {
    "at": "apps/studio/src/portal/BuildingPage.tsx:50",
    "old": "scene name 3D view of {building}, view only",
-   "verdict": "shorten",
-   "new": "3D view of {building}"
+   "verdict": "keep",
+   "new": null
   },
   {
    "at": "apps/studio/src/portal/BuildingPage.tsx:51",
@@ -942,8 +942,8 @@
   {
    "at": "apps/studio/src/portal/RequestPage.tsx:159",
    "old": "The details I give are correct. My name and mobile number go only to the land records office and are not shown on this portal.",
-   "verdict": "shorten",
-   "new": "The details I give are correct."
+   "verdict": "keep",
+   "new": "The details I give are correct. My name and mobile go only to the land records office."
   },
   {
    "at": "apps/studio/src/portal/RequestPage.tsx:163",
@@ -984,8 +984,8 @@
   {
    "at": "apps/studio/src/portal/PublicMapPage.tsx:51",
    "old": "scene name 3D map of {area}, view only. The panel lists the released records.",
-   "verdict": "shorten",
-   "new": "3D map of {area}"
+   "verdict": "keep",
+   "new": "3D map of {area}, view only"
   },
   {
    "at": "apps/studio/src/portal/PublicMapPage.tsx:52",
@@ -1152,8 +1152,8 @@
   {
    "at": "packages/ui/src/components/DigColumn.tsx:20",
    "old": "Screening only. Not a clearance or dig permission. Unknown bands need a survey.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Screening only, not a dig clearance."
   },
   {
    "at": "packages/ui/src/components/EvidenceChip.tsx:27",

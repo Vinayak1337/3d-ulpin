@@ -17,7 +17,7 @@ export function Frame() {
     <div className={styles.frame}>
       <a className={styles.skip} href="#main">Skip to content</a>
       <header className={styles.header}>
-        <Link to="/studio/work" className={styles.wordmark}>BhuAayam <small>Studio</small></Link>
+        <Link to="/studio/work" className={styles.wordmark} aria-label="BhuAayam Studio, Batches">BhuAayam <small>Studio</small></Link>
         <nav className={styles.nav} aria-label="Studio">
           <NavLink to="/studio/work">Batches</NavLink>
           <MapNavLink />
