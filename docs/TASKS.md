@@ -239,7 +239,7 @@ Size S, code only. After: S1.3 run 5. **Status: running 25 Oct (task/s1-3s-mappi
 
 ### S1.3t Why browser requests time out under load (diagnosis first)
 
-Size S, code only. After: S1.3 run 5. **Status: running 25 Oct (task/s1-3t-request-timeouts from int3-pre bac06934).**
+Size S, code only. After: S1.3 run 5. **Status: diagnosis merged 26 Oct into int3-pre 0c8d4ade (branch d6cc59f4); cause not proven, no setting changed. Offline, through the real Vite proxy and a stub API, one in 33 requests failed ERR_CONNECTION_TIMED_OUT and one upstream connect timed out with no API work behind it: local TCP connects fail on this PC under load. The proxy opens a new upstream connection per request (26 upload connections against 4 with keep-alive), but keep-alive did not change the failure count in one comparison. The test runs hit out-of-memory starts while other projects' tests ran, and run 5's CPU averaged 48 percent (run 4: 19). Run 6 applies the recorder patch (run6-recorder.patch: timing, in-flight list and health error codes) and samples TCP state counts, memory and commit every 5 s, so a failure is classed as no accept, upstream connect failure, API stall or recorder lag before any fix.**
 
 - **What:** Run 5's Halifax enrolment POST and one evidence GET failed net::ERR_CONNECTION_TIMED_OUT after about 1 s, and one health fetch left a 10 s gap (run 4: no1 failed to fetch). Line them up with the load, reproduce offline through vite preview against a stub API, and fix vite.config.ts or the API server settings with a failing-first test, or name the recorder change or the runtime check needed.
 - **Files:** apps/studio/vite.config.ts; the API bootstrap server settings
