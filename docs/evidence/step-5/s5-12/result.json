@@ -1,0 +1,57 @@
+{
+  "task": "S5.12", "planStep": 5, "base": "de44073c8b95439cd0de2204cdeb1a08d45fd034",
+  "what": "The batch item detail draws a kept raster or point cloud that its display reads say is not placed (no batch area, outside the area, no stated CRS) in the file's own frame: raster parts as one canvas mosaic laid out by their sourceCorners, point parts as a top-down scatter. Words: the not-placed reason as the route states it and 'Display only, not on the map.' No new route; nothing is placed, converted or measured.",
+  "reuse": {
+    "routes": "parts page, part display read, raster-window and point-batch artifact routes through browserSurfaceIo (bytes checked against the display read's size and SHA-256)",
+    "decode": "SurfaceDecoder worker (decodePart): TIFF to picture, LAS records placed between the part's sourceCorners, so points stay in source coordinates",
+    "gate": "isSurfaceItem and item placement other than on_map; the section appears only once a display read answers not_placed"
+  },
+  "bounds": "Display reads in part order, at most 256 per file and 4 in flight (SURFACE_LIMITS, the map's own); a placed part is counted, its artifact never read",
+  "frame": "One scale on both axes, fitted to 640 x 400 canvas pixels; the first part's first corner (window upper left, batch north-west) is drawn at the top, so no axis is assumed from a CRS",
+  "check": {
+    "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/surface", "exit": 0, "tests": 4, "passed": 4,
+    "cases": [
+      "raster no_batch_area: 2 parts drawn by drawImage at setTransform [160,0,0,160,0,0] and [160,0,0,160,320,0] with 'Not placed: 2 parts: Read but not placed: the batch has no map area yet.' and the display-only words",
+      "point batch no_stated_crs: 3 native LAS format 1 records decoded by decodePart land at canvas pixels (0,318), (638,159), (319,0); 12 pixels painted",
+      "placed display read: no section, no artifact read; opensPreview false for on_map and for a table",
+      "300 published parts: 256 display reads, at most 4 in flight, cap named in words"
+    ],
+    "contract": "every display body in the test is checked against docs/api/openapi.json"
+  },
+  "realLook": {
+    "how": "Throwaway local harness (kept outside Git under E:/ulpin-tmp/s5-12/harness) served from this worktree on port 5212; MSW answered the four existing routes with bodies made by the repository's own readers (raster_window._read_native, point_batch._read_native_batch) from the kept originals; the real decode worker drew them. No demo or rehearsal runtime, no sign-in.",
+    "inputs": [
+      { "file": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-ortho-2018.tif",
+        "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716", "use": "test_only",
+        "parts": "4 windows at step 2 (256x256, 128x256, 256x128, 128x128), sourceCrs EPSG:3857 as stated" },
+      { "file": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-lidar-2017.laz",
+        "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790", "use": "test_only",
+        "parts": "1 overview batch (start 0, count 32,571, step 53), sourceCrs EPSG:6347 as stated" }
+    ],
+    "observed": "ortho mosaic 400 x 400 canvas pixels with 0 transparent pixels (the 4 windows meet with no gap); point scatter 366 x 400 with the Z-rank note; placement words shown as the bodies state them",
+    "screenshot": "batch-preview-1440.jpg (1440 px viewport, scaled capture)"
+  },
+  "uiDesignCheck": {
+    "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs de44073c: exit 0, no candidates",
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": [
+      "--ui-* tokens only; panel matches IfcStructure (border, surface, radius 12); canvas has a subtle fill and radius 8, no border or shadow",
+      "Words come from the display reads and part counts; nothing hard-coded or copied from the mockups",
+      "Sentence case; no number without a unit shown; no status word added",
+      "Canvas is role img with an aria-label; no new control, so no focus or primary-button change; max-width 100% keeps it readable at 200% zoom",
+      "Desktop, light only; no theme code"
+    ]
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-12/*.log",
+    "listed tests (parts, useSurfaceLayer, tiff, batch-page)": { "exit": 0, "files": 4, "passed": 23, "skipped": 1 },
+    "pnpm studio:test": { "exit": 0, "studio": "114 files, 737 passed, 2 skipped", "scene": "63 passed, 1 skipped",
+      "ui": "7 passed", "apiClient": "2 passed" },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:build": { "exit": 0 },
+    "git diff --check": { "exit": 0 }
+  },
+  "skipped": "The skipped tests are the real-window decodes in tiff.test.ts and las.test.ts, which need ULPIN_SURFACE_WINDOWS",
+  "next": "A runtime look on a rehearsal batch with no area once the lead rolls it; S5.11 overview windows (step) feed the same preview unchanged"
+}
