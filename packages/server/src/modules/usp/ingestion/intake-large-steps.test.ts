@@ -419,10 +419,13 @@ test('a stored prefix comparison wakes drafting or the sealed question; stale co
       assert.notEqual(after.key, before.key, 'the comparison queues a new durable step');
       assert.equal(intakeLargePhase(intakeLargeRows(after.store, after.source)), changed ? 'question' : 'draft');
     }
-    fixture.tables.recipe!.plan_hash = 'c'.repeat(64);
-    const stale = (await largeStateKey(fixture.client, sourceId))!;
-    assert.equal(stale.store.prefixCheck, undefined);
-    assert.equal(intakeLargePhase(intakeLargeRows(stale.store, stale.source)), 'compare');
+    for (const key of [prefixSealCheckKey('c'.repeat(64), hash, mappingJob),
+      prefixSealCheckKey(hash, 'c'.repeat(64), mappingJob), prefixSealCheckKey(hash, hash, readerJob)]) {
+      fixture.tables.source!.inspection!.intakePrefixSealCheck = { key, mappingJobId: mappingJob, changed: true };
+      const stale = (await largeStateKey(fixture.client, sourceId))!;
+      assert.equal(stale.store.prefixCheck, undefined, 'stale plan, generation or mapping key is not a changed field');
+      assert.equal(intakeLargePhase(intakeLargeRows(stale.store, stale.source)), 'compare');
+    }
   });
 
 test('each stored state has its row: question, proposed and approved layout, mapping and drafting', () => {

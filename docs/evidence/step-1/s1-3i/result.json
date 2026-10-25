@@ -1,0 +1,76 @@
+{
+  "task": "S1.3i",
+  "planStep": 1,
+  "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf",
+  "verdict": "FALSE_REJECTION; STOPPED_AT_OWN_BOUNDARY; NO_PRODUCTION_FIX",
+  "evidence": "5972c394:docs/evidence/step-1/s1-3/run4/{result,faults,files,jobs}.json; cn1",
+  "codeRoot": "packages/server/src/modules/usp/ingestion/",
+  "changedWriter": [
+    "intake-large-worker.ts:385 negates prefixLayoutMatchesSealed; :389 skips the held-slot scan once true;",
+    ":397-399 stores changed=true. intake-large.ts:313-315 reads that exact seal key."
+  ],
+  "candidates": {
+    "a": [
+      "Ruled out: all 172409 original OBJECTID values are safe integers; absent/null/text/fractional/unsafe all 0.",
+      "registry.ts:195-198, chunk-mapping-normalizer.ts:23-25, streamed-profile-inventory.ts:37 enforce integers."
+    ],
+    "b": [
+      "Independent false rejection: streamed-profile-inventory.ts:49-54 excludes quarantines from accepted fields;",
+      ":86 sets unknown=quarantined. streamed-mapping.ts:78 compares unknown>0 as field shape: prefix 0, sealed 11."
+    ],
+    "c": [
+      "Ruled out: one raw job (two attempts), one profile job, one mapping job in run4.",
+      "streamed-profile-worker.ts:22-32 hashes immutable generation content, not attempt/fence.",
+      "streamed-mapping.ts:103-104 keys plan/seal/mapping; intake-large.ts:311-315 ignores stale keys, not changed."
+    ],
+    "d": [
+      "FIRST RETURN: streamed-mapping.ts:75-76 requires identical geometryTypes: Polygon vs Polygon+MultiPolygon.",
+      "registry.ts:18,173 accepts both for the approved building/geojson_geometry@1 layout. No operation broke."
+    ]
+  },
+  "countsOnlyRead": {
+    "script": "E:/ulpin-tmp/s1-3i/inspect-counts.ts",
+    "input": "Halifax original under datasets/map-formats/halifax-regional-municipality; read in place",
+    "records": 172409, "structurallyAccepted": 172408, "structurallyQuarantined": 1,
+    "polygon": 172372, "multiPolygon": 36, "firstStructuralMultiPolygonOrdinal": 29375,
+    "firstStructuralQuarantineOrdinal": 72554, "mappedIdentityFailures": 0, "runtimeQuarantinedFromRun4": 11,
+    "qualification": [
+      "No runtime/PostGIS action. Structural read does not reproduce the additional 10 topology quarantines.",
+      "At least 26 MultiPolygons survive those 10 rejections: the geometry-set mismatch is certain.",
+      "Only counts reported; no original bytes, properties or per-record reading committed."
+    ]
+  },
+  "comparison": {
+    "hypothesis": "Compatible polygon geometry and quarantine unknown are mistaken for changed used fields.",
+    "success": "Synthetic GeoJSON: 172409 records, first 100 Polygon, later 36 MultiPolygon and 11 quarantines.",
+    "result": [
+      "Baseline rejection reproduced. Ignoring unknown alone: false; ignoring added geometry alone: false;",
+      "ignoring both: true. Sealed compilation succeeds. Quarantines stay 11. Five invalid integer variants reject.",
+      "Byte-zero replay keeps generation hash; stale plan/seal/mapping keys return to compare, not changed."
+    ],
+    "stop": [
+      "chunk-mapping-normalizer.ts:51-71,142,166-167 outside OWN also holds compatible later MultiPolygons",
+      "as SCHEMA_DRIFT_GEOMETRY. intake-package-cuts.ts:89 excludes them. Test proves seal-only fix is incomplete."
+    ]
+  },
+  "proposedOfficerWords": [
+    "The stated building layout still fits the readable records. Later MultiPolygon outlines fit this layout.",
+    "11 records remain quarantined. No used field was found to break the layout."
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s1-3i/{before,after}-*.{log,exit}",
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
+    "pnpm studio:test": { "before": 0, "after": 0, "passed": 831, "skipped": 3 },
+    "section5 server command": { "before": [0, 1060, 5], "after": [0, 1063, 5], "order": "exit,pass,skip" },
+    "tsx --test ingestion/{intake-large*,streamed-mapping*}.test.ts": { "exit": 0, "passed": 63 },
+    "openapi.ts --check": { "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    "python scripts/api/check.py": { "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    "git diff --check": { "before": 0, "after": 0 },
+    "intermediate": "Test callback typecheck failed once; corrected to Promise<void>; rerun passed. No stale pins."
+  },
+  "next": [
+    "Extend OWN to chunk-mapping-normalizer.ts and tests. Fix compatible geometry handling and quarantine unknown;",
+    "preserve true identity/text drift refusals and prove later compatible outlines reach drafts. No retry-key fix."
+  ]
+}
