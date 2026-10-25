@@ -10,6 +10,7 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { putOriginal, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { originalAttempt } from '../../cases/original-attempt';
+import { DISPATCH_HEAD_OF_LINE_MS } from '../../cases/dispatch-lanes';
 import { appendCaseIngestionTx, appendIntakeItemTx, ingestionBinding, assertIngestionBinding } from './events';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { zipParentWords, type ZipLayerStage } from './intake-draft';
@@ -33,6 +34,8 @@ export const IntakeZipLayersInputSchema = z.strictObject({
 export type IntakeZipLayersInput = z.infer<typeof IntakeZipLayersInputSchema>;
 // A member read may page a large archive's directory and up to 17 one-MiB ranges.
 const MEMBER_READ_MS = 60_000;
+// One outer bound from the archive's immutable retain time; re-enrolment never starts it again.
+export const ZIP_RECEIPT_WAIT_MS = 30 * 60_000;
 
 function archiveReceipt(row: IntakeSourceRow) {
   return IntakeArchiveReceiptSchema.parse({ sourceId: row.id, sourceRevision: row.revision, sha256: row.sha256,
@@ -205,7 +208,7 @@ function failureCode(error: unknown): string {
 }
 
 /** Officer words carry a code and bounds only; parser or provider text may hold a source value. */
-function notKept(code: string, member: MemberRow): string {
+function notKept(code: string, member: MemberRow, waitedSeconds = 0): string {
   const sized = `this member${member.size_bytes === null ? '' : ` of ${member.size_bytes} bytes`}`;
   if (code === 'ZIP_EMPTY_MEMBER') return 'ZIP_EMPTY_MEMBER: this empty file is kept inside the archive; '
     + 'the original receipt accepts nonempty members only.';
@@ -214,8 +217,8 @@ function notKept(code: string, member: MemberRow): string {
   if (code === 'ZIP_LAYER_SIZE') return `ZIP_LAYER_SIZE: ${sized} is kept inside the archive; members above `
     + `${STREAMING_VECTOR_LIMITS.sourceBytes} bytes are not kept as their own original.`;
   if (code === 'UPLOAD_QUOTA') return `UPLOAD_QUOTA: ${sized} stays inside the archive; the large-original receipt `
-    + 'allowance is full, so it was not kept as its own original. Enrol the archive again to retry once a receipt '
-    + 'is free.';
+    + `allowance is still full after waiting ${waitedSeconds} seconds (30-minute bound from archive retention), `
+    + 'so it was not kept as its own original. Enrol the archive again to retry once a receipt is free.';
   return `${code}: this member stays inside the archive and was not kept as its own original. `
     + 'Enrol the archive again to retry.';
 }
@@ -229,9 +232,9 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
   const itemId = uuid.parse(itemValue);
   const scope = await dependencies.transaction(client => zipScopeTx(client, caseId, itemId));
   if (!scope || scope.depth > INTAKE_PROBE_LIMITS.nestingDepth) return [];
-  const kept = await keepMembers(caseId, itemId, scope.source, scope.members, dependencies);
-  for (const member of kept) await enrolMember(caseId, itemId, member, scope.depth, dependencies);
-  return kept.map(member => member.sourceId);
+  const result = await keepMembers(caseId, itemId, scope.source, scope.members, dependencies, scope.retainedAt);
+  for (const member of result.kept) await enrolMember(caseId, itemId, member, scope.depth, dependencies);
+  return result.retryAt === null ? result.kept.map(member => member.sourceId) : { retryAt: result.retryAt };
 }
 
 async function zipScopeTx(client: PoolClient, caseId: string, itemId: string) {
@@ -243,11 +246,29 @@ async function zipScopeTx(client: PoolClient, caseId: string, itemId: string) {
     [member.name, at]));
   const members = zipLayerMembers(item.card, await membersTx(client, caseId, itemId))
     .sort((a, b) => order.get(a.member_path)! - order.get(b.member_path)!);
-  return { source, members, depth: await archiveDepthTx(client, source) };
+  const retainedAt = new Date((source as IntakeSourceRow & { created_at: Date | string }).created_at).getTime();
+  if (!Number.isFinite(retainedAt)) conflict('The archive retention time is unavailable.');
+  return { source, members, retainedAt, depth: await archiveDepthTx(client, source) };
+}
+
+/** Only quota admission waits; receipt expiry is a latest-free time, capped by the archive's own bound. */
+function receiptWait(member: MemberRow, error: AppError, retainedAt: number) {
+  const now = Date.now();
+  const deadline = retainedAt + ZIP_RECEIPT_WAIT_MS;
+  if (now >= deadline) return { retryAt: null,
+    reason: notKept('UPLOAD_QUOTA', member, Math.max(0, Math.floor((now - retainedAt) / 1000))) };
+  const freesAt = Date.parse(String((error.details as { freesAt?: unknown } | undefined)?.freesAt));
+  // At least two seconds between yields bounds a 30-minute wait to 900 yielded attempt rows.
+  return { retryAt: Math.min(deadline, Math.max(now + 2000, Number.isFinite(freesAt) && freesAt > now
+    ? freesAt : now + DISPATCH_HEAD_OF_LINE_MS)),
+    reason: 'UPLOAD_QUOTA: Waiting for a free receipt; '
+      + 'this member stays in the archive and will be taken out automatically. '
+      + 'The wait ends 30 minutes after archive retention.' };
 }
 
 async function keepMembers(caseId: string, itemId: string, source: IntakeSourceRow, members: MemberRow[],
-  dependencies: ZipLayerDependencies): Promise<Kept[]> {
+  dependencies: ZipLayerDependencies, retainedAt: number) {
+  let retryAt: number | null = null;
   const kept = members.filter(member => member.source_id)
     .map(member => ({ member, sourceId: member.source_id! }));
   const pending = members.filter(member => !member.source_id);
@@ -259,11 +280,16 @@ async function keepMembers(caseId: string, itemId: string, source: IntakeSourceR
   for (const member of pending.slice(0, room).filter(waiting)) {
     try { kept.push({ member, sourceId: await keepLayer(caseId, itemId, source, member, dependencies) }); }
     catch (error) {
-      await dependencies.transaction(client => noteTx(client, caseId, member.item_id,
-        notKept(failureCode(error), member)));
+      let reason = notKept(failureCode(error), member);
+      if (error instanceof AppError && error.code === 'UPLOAD_QUOTA') {
+        const wait = receiptWait(member, error, retainedAt);
+        reason = wait.reason;
+        if (wait.retryAt !== null) retryAt = Math.min(retryAt ?? wait.retryAt, wait.retryAt);
+      }
+      await dependencies.transaction(client => noteTx(client, caseId, member.item_id, reason));
     }
   }
-  return kept;
+  return { kept, retryAt };
 }
 
 async function memberReason(caseId: string, member: MemberRow, reason: string | null,

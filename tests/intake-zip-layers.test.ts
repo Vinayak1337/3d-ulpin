@@ -14,7 +14,8 @@ import { LargeUploadCreateSchema } from '../packages/contracts/src/usp/ingestion
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { locateZipMember, readZipMember, streamZipMember }
   from '../packages/server/src/modules/usp/ingestion/intake-zip';
-import { IntakeArchiveService, queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE }
+import { IntakeArchiveService, queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE,
+  ZIP_RECEIPT_WAIT_MS }
   from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
 import { listedIntakeRows } from '../packages/server/src/modules/usp/ingestion/intake-ledger';
@@ -79,7 +80,7 @@ class Ledger {
   constructor(readonly bytes: Uint8Array, readonly card: IntakeCard) {
     this.archive = { id: this.archiveId, case_id: this.caseId, family_id: this.archiveId, revision: 1,
       name: 'layers.zip', profile: ZIP_ARCHIVE_PROFILE, bytes: bytes.length, sha256: sha(bytes),
-      object_key: `sources/${this.archiveId}/${sha(bytes)}`, status: 'needs_input',
+      object_key: `sources/${this.archiveId}/${sha(bytes)}`, status: 'needs_input', created_at: new Date(),
       inspection: { actor: 'zip-layer-control' } };
     // The archive's own item as ZF2 settles it: read, undecided, its words its reason.
     this.rows.set(this.itemId, { item_id: this.itemId, case_id: this.caseId, source_id: this.archiveId,
@@ -112,7 +113,8 @@ class Ledger {
     if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) {
       return this.jobs.filter(job => job.source_id === values[0]);
     }
-    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')) {
+    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')
+      || sql.startsWith('SELECT operation FROM jobs')) {
       return this.jobs.filter(job => job.id === values[0]);
     }
     if (sql.startsWith('INSERT INTO jobs')) {
@@ -125,6 +127,8 @@ class Ledger {
       return [];
     }
     if (sql.startsWith('UPDATE jobs SET status=')) {
+      if (sql.includes('next_attempt_at=COALESCE')) this.job(values[0]).next_attempt_at = values[1];
+      if (sql.includes('attempts=$2')) this.job(values[0]).attempts = values[1];
       this.job(values[0]).status = /status='(\w+)'/.exec(sql)![1];
       return [];
     }
@@ -140,6 +144,9 @@ class Ledger {
     }
     const attempts = this.attempts.filter(attempt => attempt.job_id === values[0]);
     const latest = attempts.at(-1);
+    if (sql.startsWith('SELECT count(*)::int n FROM usp_job_attempts')) {
+      return [{ n: attempts.filter(attempt => attempt.state !== 'yielded').length }];
+    }
     if (sql.startsWith('SELECT * FROM usp_job_attempts')) return latest ? [latest] : [];
     if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) {
       return attempts.filter(attempt => attempt.state === 'active' && attempt.lease_until > new Date());
@@ -483,6 +490,20 @@ test('layers held back by the layer limit or size queue no retry', () => configu
   assert.equal(await queue(), null);
 }));
 
+test('an empty member stays final while its real sibling is kept, without a quota wait', () =>
+  configured(async () => {
+    const fixture = await layersJob(zipSync({ 'empty.csv': new Uint8Array(),
+      'uttam/README.md': real['uttam/README.md'] }));
+    const jobId = (await fixture.queue())!;
+    await fixture.run(jobId);
+    assert.equal(fixture.ledger.member('empty.csv').limit_reason,
+      'ZIP_EMPTY_MEMBER: this empty file is kept inside the archive; '
+      + 'the original receipt accepts nonempty members only.');
+    assert.equal(fixture.ledger.job(jobId).status, 'succeeded');
+    assert.equal(fixture.retained.length, 1);
+    assert.equal(await fixture.queue(), null);
+  }));
+
 test('the mixed Lake View fixture retains and enrols its PDFs, tables and unsupported models', () =>
   configured(async () => {
     const pack = readFileSync('fixtures/lake-view-complete-inputs.zip');
@@ -507,6 +528,18 @@ test('a changed archive source makes the claim refuse; the job ends stale with t
     assert.equal(ledger.attempts.length, 0);
     assert.deepEqual([ledger.job(jobId).status, ledger.job(jobId).error], ['stale', 'STALE_REVISION']);
     assert.equal(ledger.rows.get(ledger.itemId).limit_reason, stopped('STALE_REVISION'));
+  }));
+
+test('an active attempt prevents another claim from touching members', () =>
+  configured(async () => {
+    const fixture = await layersJob(zipSync(real));
+    const jobId = (await fixture.queue())!;
+    fixture.ledger.job(jobId).status = 'running';
+    fixture.ledger.attempts.push({ job_id: jobId, state: 'active', lease_until: new Date(Date.now() + 180_000) });
+    await fixture.run(jobId);
+    assert.equal(fixture.retained.length, 0);
+    assert.equal(fixture.ledger.attempts.length, 1);
+    assert.equal(fixture.ledger.job(jobId).status, 'running');
   }));
 
 test('a job that fails as a whole writes its code only, and enrolling again queues a fresh job', () =>
@@ -648,7 +681,7 @@ test('a large layer whose CRC-32 does not match keeps nothing and says so', () =
   assert.match(member.limit_reason, /^ZIP_MEMBER_INTEGRITY: this member stays inside the archive/);
 }));
 
-test('a layer above the large ceiling or past a full receipt allowance stays in the ZIP in words', () =>
+test('a layer above the large ceiling stays in the ZIP in words', () =>
   configured(async () => {
     const above = await layersJob(largePack());
     const unused = receipts(above.ledger);
@@ -658,13 +691,85 @@ test('a layer above the large ceiling or past a full receipt allowance stays in 
     assert.equal(above.ledger.member(largePath).limit_reason, 'ZIP_LAYER_SIZE: this member of 1073741825 '
       + 'bytes is kept inside the archive; members above 1073741824 bytes are not kept as their own original.');
     assert.equal(await above.queue(), null);
-    const full = await layersJob(largePack());
-    const refused = receipts(full.ledger, new AppError(429, 'UPLOAD_QUOTA', 'receipt text'));
-    await full.run((await full.queue())!, { large: refused.service });
-    assert.equal(full.ledger.member(largePath).limit_reason, `UPLOAD_QUOTA: this member of ${large.length} `
-      + 'bytes stays inside the archive; the large-original receipt allowance is full, so it was not kept as its '
-      + 'own original. Enrol the archive again to retry once a receipt is free.');
-    assert.notEqual(await full.queue(), null);
+  }));
+
+for (const expiry of ['known', 'null', 'immediate'] as const) {
+  test(`a full allowance (${expiry} freesAt) waits without spending attempts, then keeps the member automatically`,
+    t => configured(async () => {
+      const fixture = await layersJob(zipSync({ 'uttam/README.md': real['uttam/README.md'] }));
+      const { ledger, queue, run } = fixture;
+      let now = ledger.archive.created_at.getTime(), full = true;
+      t.mock.method(Date, 'now', () => now);
+      const { service, log } = receipts(ledger);
+      const create = service.create;
+      service.create = async (...args) => {
+        assert.equal(ledger.attempts.at(-1).state, 'active', 'receipt work is fenced');
+        if (full) throw new AppError(429, 'UPLOAD_QUOTA', 'must not reach officer words',
+          { limit: 'open_receipts_operator',
+            freesAt: expiry === 'null' ? null : new Date(now + (expiry === 'known' ? 10_000 : 1)).toISOString() });
+        return create(...args);
+      };
+      const retainMember = (caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
+        lineage: any) => retainZipMemberOriginal(caseId, revision, file, lineage, { large: service } as never);
+      const jobId = (await queue())!;
+      for (let retry = 0; retry < 5; retry++) {
+        await run(jobId, { retainMember });
+        const member = ledger.member('uttam/README.md');
+        assert.equal(member.source_id, null);
+        assert.match(member.limit_reason, /Waiting for a free receipt/);
+        assert.doesNotMatch(member.limit_reason, /must not reach|Enrol/);
+        assert.equal(ledger.job(jobId).status, 'queued');
+        assert.equal(ledger.attempts.length, retry + 1);
+        assert.ok(ledger.attempts.every(attempt => attempt.state === 'yielded'));
+        assert.equal(ledger.job(jobId).attempts, 1, 'ZIP yields do not spend failure attempts');
+        const delay = { known: 10_000, null: 120_000, immediate: 2000 }[expiry];
+        assert.equal(Date.parse(ledger.job(jobId).next_attempt_at), now + delay);
+        now = Date.parse(ledger.job(jobId).next_attempt_at);
+      }
+      full = false;
+      await run(jobId, { retainMember });
+      assert.equal(ledger.job(jobId).status, 'succeeded');
+      assert.equal(ledger.member('uttam/README.md').source_id, log.sourceId);
+      assert.equal(ledger.member('uttam/README.md').limit_reason, null);
+      assert.equal(log.hash.digest('hex'), sha(real['uttam/README.md']));
+      assert.equal(log.created.length, 1);
+      assert.equal(ledger.attempts.length, 6);
+      assert.equal(ledger.attempts.at(-1).state, 'accepted');
+      assert.equal(ledger.job(jobId).attempts, 1);
+      assert.deepEqual(fixture.order, [`register:${log.sourceId}`]);
+      assert.equal(await queue(), null);
+    }));
+}
+
+test('a large member waits only until the durable archive-retention bound, then says how long it waited',
+  t => configured(async () => {
+    const fixture = await layersJob(largePack());
+    const { ledger, queue, run } = fixture;
+    let now = ledger.archive.created_at.getTime();
+    t.mock.method(Date, 'now', () => now);
+    const { service, log } = receipts(ledger, new AppError(429, 'UPLOAD_QUOTA', 'receipt text',
+      { limit: 'open_receipts', freesAt: new Date(now + 24 * 60 * 60_000).toISOString() }));
+    const jobId = (await queue())!;
+    await run(jobId, { large: service });
+    assert.match(ledger.member(largePath).limit_reason, /Waiting for a free receipt/);
+    assert.equal(Date.parse(ledger.job(jobId).next_attempt_at), now + ZIP_RECEIPT_WAIT_MS);
+    assert.equal(ledger.attempts.length, 1);
+    assert.equal(ledger.attempts[0].state, 'yielded');
+    assert.equal(await queue(), null, 're-enrolment cannot reset the same waiting job');
+    ledger.member(largePath).limit_reason = 'UPLOAD_QUOTA: officer words are not scheduling state.';
+    now = Date.parse(ledger.job(jobId).next_attempt_at);
+    await run(jobId, { large: service });
+    assert.match(ledger.member(largePath).limit_reason,
+      /UPLOAD_QUOTA:.*after waiting 1800 seconds \(30-minute bound from archive retention\)/);
+    assert.match(ledger.member(largePath).limit_reason, /Enrol the archive again/);
+    assert.equal(ledger.job(jobId).status, 'succeeded');
+    assert.equal(log.created.length, 0);
+    assert.equal(fixture.retained.length, 4, 'kept siblings are not copied again');
+    assert.equal(sha(ledger.bytes), ledger.archive.sha256);
+    // A new job is still bounded by the same retain, not its new dispatch time.
+    await run((await queue())!, { large: service });
+    assert.equal(ledger.jobs.at(-1).status, 'succeeded');
+    assert.doesNotMatch(ledger.member(largePath).limit_reason, /Waiting for a free receipt/);
   }));
 
 test('a large layer of 600 MiB is copied under a 50-minute deadline, as the large reader reads it', () =>

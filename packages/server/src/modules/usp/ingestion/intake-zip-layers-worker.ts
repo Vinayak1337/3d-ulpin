@@ -5,7 +5,8 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
-import { claimUspJobAttempt, heartbeatUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt,
+import { claimUspJobAttempt, heartbeatUspJobAttempt, yieldUspJobAttempt,
+  assertUspJobAttemptTx, acceptUspJobAttempt,
   type UspJobAttempt } from '../jobs';
 import { assertIntakeDraftTx } from './intake-draft';
 import { IntakeService } from './intake-service';
@@ -24,7 +25,7 @@ const defaults: ZipLayerDependencies = { transaction, read: readObjectRange,
   retainMember: (caseId, revision, file, lineage) =>
     retainZipMemberOriginal(caseId, revision, file, lineage, { large }),
   register: (caseId, raw) => intake.register(caseId, raw), large };
-// ZL1: a large layer is read twice in 1 MiB ranges, longer than one lease; its reads renew it at most this often.
+// A large layer can outlast a lease; its bounded reads renew the attempt at most this often.
 const READ_RENEW_MS = 60_000;
 
 /** The archive's pins hold; the case revision may have moved forward, never back. */
@@ -75,7 +76,32 @@ async function complete(input: IntakeZipLayersInput, attempt: UspJobAttempt, kep
     }, pinned(input));
 }
 
-/** ZJ1. The dispatcher's fenced job runs the fan-out the enrol request used to run inline. */
+/** Every member is read, retained and enrolled under the claimed attempt, including quota retries. */
+async function prepareMembers(input: IntakeZipLayersInput, attempt: UspJobAttempt,
+  dependencies: Partial<ZipLayerDependencies>) {
+  const own = { ...defaults, ...dependencies };
+  const renew = () => heartbeatUspJobAttempt(attempt, pinned(input));
+  let renewed = Date.now();
+  const kept = await fanOutZipLayers(input.caseId, input.itemId, { ...own,
+    transaction: (work, ...args) => own.transaction(async client => {
+      await pinned(input)(client);
+      await assertUspJobAttemptTx(client, attempt);
+      return work(client);
+    }, ...args),
+    read: async (...args) => {
+      if (Date.now() - renewed >= READ_RENEW_MS) {
+        await renew();
+        renewed = Date.now();
+      }
+      return own.read(...args);
+    },
+    retain: async (...args) => { await renew(); return own.retain(...args); },
+    retainMember: async (...args) => { await renew(); return own.retainMember(...args); },
+    register: async (...args) => { await renew(); return own.register(...args); } });
+  return kept;
+}
+
+/** ZJ1. The dispatcher owns retry timing; the fenced completion accepts the idempotently retained members. */
 export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial<ZipLayerDependencies> = {}) {
   const job = (await query("SELECT * FROM jobs WHERE id=$1 AND operation='intake-zip-layers'", [jobId])).rows[0];
   if (!job || !['queued', 'running'].includes(job.status)) return;
@@ -87,22 +113,12 @@ export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial
     await unclaimedFailure(input, error);
     return;
   }
-  const own = { ...defaults, ...dependencies };
-  // A large ZIP outlasts one lease; each layer's retain and enrolment renews it first.
-  const renew = () => heartbeatUspJobAttempt(attempt);
-  let renewed = Date.now();
   try {
-    const kept = await fanOutZipLayers(input.caseId, input.itemId, { ...own,
-      read: async (...args) => {
-        if (Date.now() - renewed >= READ_RENEW_MS) {
-          await renew();
-          renewed = Date.now();
-        }
-        return own.read(...args);
-      },
-      retain: async (...args) => { await renew(); return own.retain(...args); },
-      retainMember: async (...args) => { await renew(); return own.retainMember(...args); },
-      register: async (...args) => { await renew(); return own.register(...args); } });
+    const kept = await prepareMembers(input, attempt, dependencies);
+    if (!Array.isArray(kept)) {
+      await yieldUspJobAttempt(attempt, new Date(kept.retryAt).toISOString());
+      return;
+    }
     await complete(input, attempt, kept);
   } catch (error) {
     await fail(input, attempt, error);

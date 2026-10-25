@@ -1,0 +1,54 @@
+{
+  "task": "S1.3e",
+  "planStep": 1,
+  "status": "review_corrections_complete",
+  "branch": "task/s1-3e-zip-quota-wait",
+  "reviewBase": "3bad8262",
+  "implementationCommit": "d16eb247",
+  "decision": {
+    "fence": "Claim before fan-out; reads renew via heartbeatUspJobAttempt; member transactions assert the fence.",
+    "yield": "Quota retry uses yieldUspJobAttempt at retryAt; yielded rows do not spend failure attempts.",
+    "allowlist": "One YIELD_OPERATIONS set: streamed-profile and intake-zip-layers only; profile keeps 2 seconds.",
+    "bound": "30 minutes from the archive source created_at, unchanged by restart or re-enrolment.",
+    "elapsed": "No first-refusal column exists; waited seconds derive from archive retention, never officer words.",
+    "schedule": "freesAt capped at the bound, with a 2-second minimum step; null uses head-of-line 120 seconds.",
+    "attemptRows": "One automatic 1800-second quota wait: at most ceil(1800/2)=900 yielded rows, plus 1 final row.",
+    "rowScope": "Quota-only bound excludes separate failed attempts or later officer-requested re-enrolment jobs.",
+    "unchanged": "Quota numbers, final non-quota refusals, dispatcher, protected readers, storage and pins."
+  },
+  "acceptance": [
+    "Known, null and immediate freesAt: five fenced yields then automatic retain/enrol; spent attempt count is 1.",
+    "Immediate expiry waits 2 seconds, bounding attempt-row growth; receipt work observes an active attempt.",
+    "Timeout at retain + 1800 seconds reports 1800 seconds even after replacing the officer words.",
+    "Re-enrolment cannot reset the bound; kept siblings are reused and source/member hashes stay unchanged.",
+    "Empty, size and layer-count refusals stay final; an active attempt prevents another claim."
+  ],
+  "inputs": {
+    "good": "Public test_only Uttam GeoJSON fixtures and README; extracted bytes and hashes checked.",
+    "difficult": "Mixed Lake View ZIP; stored 20 MiB test layer repeats a real Google Open Buildings feature.",
+    "reportedFailure": "S1.3 run 3 KML Absolute/Relative quota refusals; no rehearsal files or runtime opened."
+  },
+  "checks": [
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-zip-layers.test.ts",
+      "before": { "exit": 0, "passed": 41 }, "after": { "exit": 0, "passed": 42, "failed": 0 } },
+    { "command": "Exact server set in docs/WORKING-RULES.md section 5",
+      "before": { "exit": 0, "passed": 1058, "skipped": 5 },
+      "after": { "exit": 0, "passed": 1059, "skipped": 5, "failed": 0 } },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4, "errors": 0 },
+    { "command": "pnpm studio:test", "before": { "exit": 0, "passed": 829, "skipped": 3 },
+      "after": { "exit": 0, "passed": 829, "skipped": 3, "failed": 0 } },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 1, "afterExit": 1, "reason": "Expected stale producer pins; no route/schema change." },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 1, "afterExit": 1,
+      "reason": "Expected stale producer pins; stops at intake-zip-layers-worker.ts." },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "stalePins": [
+    "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts",
+    "packages/server/src/modules/usp/jobs.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s1-3e-review/before-*.log and after-*.log; checks run separately, without parallel load.",
+  "next": "Lead review and regenerate pins on integration; no runtime rehearsal performed."
+}
