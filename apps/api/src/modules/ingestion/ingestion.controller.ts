@@ -329,13 +329,17 @@ export class IngestionController {
     description:'Only the candidates read under this key profile; the counts stay case-wide.'})
   @ApiQuery({name:'itemId',required:false,schema:{type:'string',format:'uuid'},
     description:'Only the candidates of this table or document; the counts stay case-wide.'})
+  @ApiQuery({name:'featureId',required:false,schema:{type:'string',format:'uuid'},
+    description:'Only the candidates whose anchors name this map feature; the counts stay case-wide.'})
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_evidence',
     summary:'Read exact-key profiles, source coverage, stored evidence confirmations and a page of candidate '
       +'table rows and document parts for the batch, with counts by outcome'})
   @wireResponse(200,IntakeEvidencePageSchema)
   intakeEvidence(@Param('caseId') caseId:string,@Req() request:Request){
-    const query=strictQuery(request.originalUrl,IntakeEvidenceQuerySchema,['outcome','cursor','profileId','itemId'],
-      'INTAKE_EVIDENCE_QUERY','Use one optional outcome, cursor, profileId and itemId, and no other query fields.');
+    const query=strictQuery(request.originalUrl,IntakeEvidenceQuerySchema,
+      ['outcome','cursor','profileId','itemId','featureId'],
+      'INTAKE_EVIDENCE_QUERY','Use one optional outcome, cursor, profileId, itemId and featureId, '
+        +'and no other query fields.');
     return readIntakeEvidence(caseId,query);
   }
 

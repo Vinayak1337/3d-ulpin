@@ -552,6 +552,7 @@ export const IntakeEvidenceQuerySchema = z.strictObject({
   outcome: IntakeEvidenceOutcomeSchema.optional(), cursor: uuid.optional(),
   profileId: uuid.optional().describe('Only the candidates read under this key profile.'),
   itemId: uuid.optional().describe('Only the candidates of this table or document.'),
+  featureId: uuid.optional().describe('Only the candidates whose anchors name this map feature.'),
 });
 /** AU4-B2: a stored evidence confirmation as the read lists it. It is never changed by a later source. */
 export const IntakeEvidenceConfirmationStateSchema = z.strictObject({

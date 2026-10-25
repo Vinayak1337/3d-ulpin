@@ -99,8 +99,12 @@ test('a failed reading carries job state, code and words without inventing cover
 
 test('the evidence read may name one key profile and one file; each is a uuid and no other field is taken', () => {
   assert(ok(IntakeEvidenceQuerySchema, {}));
-  assert(ok(IntakeEvidenceQuerySchema, { outcome: 'matched', cursor: id, profileId: id, itemId: other }));
-  for (const field of ['profileId', 'itemId']) assert(!ok(IntakeEvidenceQuerySchema, { [field]: 'register.csv' }));
+  assert(ok(IntakeEvidenceQuerySchema, { featureId: id }));
+  assert(ok(IntakeEvidenceQuerySchema, { outcome: 'matched', cursor: id, profileId: id, itemId: other,
+    featureId: id }));
+  for (const field of ['profileId', 'itemId', 'featureId']) {
+    assert(!ok(IntakeEvidenceQuerySchema, { [field]: 'register.csv' }));
+  }
   assert(!ok(IntakeEvidenceQuerySchema, { key: '12-A' }));
 });
 

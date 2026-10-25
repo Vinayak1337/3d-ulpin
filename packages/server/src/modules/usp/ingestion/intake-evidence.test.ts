@@ -14,7 +14,8 @@ import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { NOT_READ, anchorsDigestTx, closeEvidence, documentAssertions, evidenceAnchor, evidenceConfirmationIssue,
   evidenceLinkManifest, keyLiteral, newerSources, partLiterals, queueFinishedTableEvidenceTx, queueIntakeEvidenceTx,
-  tableAssertions, writeIntakeEvidenceTx, type EvidenceState, type IntakeEvidenceInput } from './intake-evidence';
+  readIntakeEvidence, tableAssertions, writeIntakeEvidenceTx, type EvidenceState,
+  type IntakeEvidenceInput } from './intake-evidence';
 import { windowedTableReading } from './intake-evidence-worker';
 import type { IntakeSourceRow } from './intake-context';
 import { stableUuid } from './intake-run';
@@ -22,6 +23,8 @@ import { createIntakeTargetsTx, prepareIntakeTargetsTx } from './intake-targets'
 import { windowRows } from './table-windows';
 import { readTabularSource } from './tabular-source';
 import { readTableWindows, readTabularWindows } from './tabular-stream';
+
+process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-evidence-protocol';
 
 type Part = DocumentResult['native']['parts'][number];
 type TableRowLocator = Extract<IntakeEvidenceLocator, { kind: 'table_row' }>;
@@ -119,6 +122,47 @@ test('the LPC register and the footprints sharing BINs: matched, a real conflict
     assert.equal(new Set(conflict.map(candidate => candidate.conflictGroup)).size, 1);
     const missing = candidates.find(candidate => candidate.outcome === 'no_match')!;
     assert.equal(anchors.some(anchor => anchor.literal === missing.key.literal), false);
+  });
+
+test('a footprint reads only its LPC rows, including conflicts, with case-wide counts and a cursor', { skip },
+  async () => {
+    const anchors = anchorsOf(readFileSync(buildingsPath));
+    const candidates = close(registerReading(readFileSync(registerPath)), anchors)
+      .sort((a, b) => a.candidateId.localeCompare(b.candidateId));
+    const counts = { matched: 612, conflicting: 81, no_match: 60, several: 0 };
+    const query = async (sql: string, args: any[] = []) => {
+      let rows: unknown[] = [];
+      if (sql.includes('SELECT id,revision,archived FROM cases')) rows = [{ id: caseId, revision: 1, archived: false }];
+      if (sql.includes('SELECT candidate FROM')) {
+        const [, outcome, cursor, profile, item, feature, limit] = args;
+        rows = candidates.filter(row => (outcome === null || row.outcome === outcome)
+          && (cursor === null || row.candidateId > cursor) && (profile === null || row.key.profileId === profile)
+          && (item === null || row.evidence.itemId === item)
+          && (feature === null || row.anchors.some(anchor => anchor.featureId === feature)))
+          .slice(0, limit).map(candidate => ({ candidate }));
+      }
+      if (sql.includes('SELECT outcome,count')) rows = Object.entries(counts).map(([outcome, n]) => ({ outcome, n }));
+      return { rows, rowCount: rows.length };
+    };
+    globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) } as never;
+    const matched = candidates.find(row => row.outcome === 'matched')!;
+    const featureId = matched.anchors[0].featureId;
+    assert.deepEqual((await readIntakeEvidence(caseId, { featureId })).candidates, [matched]);
+    const group = candidates.filter(row => row.key.literal === '1002123');
+    const filter = { featureId: group[0].anchors[0].featureId, outcome: 'conflicting' };
+    const page = await readIntakeEvidence(caseId, filter);
+    assert.deepEqual(page.candidates, group);
+    assert.ok(page.candidates.every(row => row.anchors.some(anchor => anchor.featureId === filter.featureId)));
+    assert.deepEqual((await readIntakeEvidence(caseId, { ...filter, cursor: group[0].candidateId })).candidates,
+      group.slice(1));
+    assert.deepEqual((await readIntakeEvidence(caseId, { ...filter, outcome: 'matched' })).candidates, []);
+    const unlinked = anchors.find(anchor => !candidates.some(row =>
+      row.anchors.some(named => named.featureId === anchor.featureId)))!;
+    assert.ok(unlinked, 'a real footprint has no register anchor');
+    const empty = await readIntakeEvidence(caseId, { featureId: unlinked.featureId });
+    assert.deepEqual(empty.candidates, []);
+    assert.equal(empty.nextCursor, null);
+    for (const read of [page, empty]) assert.deepEqual(read.counts, counts);
   });
 
 test('the same sources read in any order give the same candidates and closure', { skip }, () => {

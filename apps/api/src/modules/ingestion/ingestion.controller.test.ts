@@ -6,6 +6,7 @@ import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { z } from 'zod';
+import type { Pool } from 'pg';
 import { IntakeEvidenceConfirmationSchema, IntakeEvidencePageSchema, IntakeKeyProfileSchema }
   from '@ulpin/contracts/usp';
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
@@ -18,6 +19,7 @@ import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
   providers: [PrivateSpatialGuard, { provide: ManualIngestionService, useValue: {} }] })
 class IntakeEvidenceTestModule {}
 
+process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-evidence-controller-protocol';
 const id = '10000000-0000-4000-8000-000000000001';
 const hash = 'a'.repeat(64);
 const body = (value: unknown) => Object.assign(Readable.from([Buffer.from(JSON.stringify(value))]), { headers: {} });
@@ -53,13 +55,32 @@ test('the three batch-evidence routes publish their contracts and refuse bad inp
         assert.equal(operation.responses[501], undefined, `${path} no longer answers 501`);
       }
       assert.match(doc.paths[`${base}/confirmations`]!.post!.summary!, /nothing is written to the registry/);
+      const featureParam = doc.paths[base]!.get!.parameters!.find((param: any) => param.name === 'featureId');
+      assert.deepEqual((featureParam as any).schema, { type: 'string', format: 'uuid' });
       const ingestion = app.get(IngestionController);
       const run = app.get(IntakeRunController);
       const url = `/api/v1/ingestion/cases/${id}/intake/evidence`;
-      for (const query of ['outcome=matched&outcome=no_match', 'subject=other', 'outcome=absent', 'cursor=0']) {
+      for (const query of ['outcome=matched&outcome=no_match', 'subject=other', 'outcome=absent', 'cursor=0',
+        'featureId=not-a-uuid', `featureId=${id}&featureId=${id}`]) {
         assert.throws(() => ingestion.intakeEvidence(id, { originalUrl: `${url}?${query}` } as any), refused);
       }
       await assert.rejects(ingestion.intakeEvidence('not-a-case', { originalUrl: url } as any), refused);
+      const globals = globalThis as unknown as { ulpinPool?: Pool }, saved = globals.ulpinPool;
+      const seen: unknown[][] = [];
+      const query = async (sql: string, args: unknown[] = []) => {
+        if (sql.includes('SELECT candidate FROM')) seen.push(args);
+        const rows = sql.includes('SELECT id,revision,archived FROM cases')
+          ? [{ id, revision: 1, archived: false }] : [];
+        return { rows, rowCount: rows.length };
+      };
+      try {
+        globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) } as never;
+        await ingestion.intakeEvidence(id, { originalUrl: `${url}?featureId=${id}` } as any);
+        assert.equal(seen.length, 1);
+        assert.equal(seen[0][5], id, 'featureId reaches the candidate SQL through readIntakeEvidence');
+      } finally {
+        globals.ulpinPool = saved;
+      }
       for (const [call, value] of [
         [ingestion.keyProfile.bind(ingestion), { ...profile, kind: 'number' }],
         [ingestion.keyProfile.bind(ingestion), { ...profile, rights: 'owner' }],
