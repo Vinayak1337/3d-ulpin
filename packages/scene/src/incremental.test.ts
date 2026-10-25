@@ -22,7 +22,7 @@ function engineFixture() {
     padBatches: new Map(), pendingPads: new Map(),
     dressing: new Group(), trees: new Group(), detail: new Group(), anchors: new Map(),
     baseInputs: [], renderedBase: new Set(), baseBox: new Box3(), arrivedBox: new Box3(),
-    arrivalBounds: new Map(),
+    arrivalBounds: new Map(), importIds: new Set(),
     areaBox: new Box3(), options: {}, state: { mode: 'area' }, cameraKey: '', dressingAt: -Infinity,
     m: { bldg: material, edge: material, pad: material }, requestRender: vi.fn(), apply: vi.fn(),
     fitGroundAndShadow: vi.fn(), buildDressing: vi.fn(), applyCamera: vi.fn(function () {

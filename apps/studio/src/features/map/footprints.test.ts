@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import context from '../../local/data/nyc-bronx-context.json';
 import type { AreaFeature } from '../../api/queries';
-import { drawnCountNote, polygonsOf, toBase, toFootprints, undrawnNote } from './footprints';
+import { drawnCountNote, packageFeatureIds, polygonsOf, toBase, toFootprints, undrawnNote } from './footprints';
 
 describe('toFootprints on the derived NYC OTI area', () => {
   const footprints = toFootprints(context.features as unknown as AreaFeature[]);
@@ -67,6 +67,15 @@ const recorded: AreaFeature = {
   sourceRevisionId: 'revision-1',
 };
 const square = { type: 'Polygon' as const, coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] };
+
+describe('packageFeatureIds', () => {
+  const of = (id: string, proposalPackageId?: string) => ({ id, proposalPackageId }) as never;
+  it('names the features the package in the URL proposed, so the map frames only them', () => {
+    const features = [of('a', 'package-1'), of('b', 'package-2'), of('c'), of('d', 'package-2')];
+    expect([...packageFeatureIds(features, 'package-2')]).toEqual(['b', 'd']);
+    expect(packageFeatureIds(features, null).size).toBe(0);
+  });
+});
 
 describe('scene inputs retained by feature object', () => {
   const features = context.features as unknown as AreaFeature[];
