@@ -13,6 +13,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {dxfConfig,assertDXFReadTools} from './dxf-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
@@ -225,9 +226,7 @@ export class DXFIngestionService{
         const priorRow=await dxfStatusTx(client,caseId,receipt.sourceId,receipt.jobId);
         if(priorRow.stale)conflict('The DXF receipt context changed; use a new explicit request.');return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before DXF receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='dxf-native-v1'")).rows[0];
-      if(Number(budget.sources)>=DXF_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>DXF_LIMITS.retainedBytes)
-        throw new AppError(429,'DXF_RETENTION_BUDGET','The finite retained DXF source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'dxf',DXF_LIMITS,file.bytes.length);
       const original=DXFOriginalSchema.parse({version:DXF_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       await putOriginal(key,file.bytes,'application/octet-stream',bounds.signal);

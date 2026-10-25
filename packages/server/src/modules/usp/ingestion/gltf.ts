@@ -12,6 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {gltfConfig,assertGltfReadTools,gltfReadReaderCompatible,GLTF_PRE_BUFFER_READER_SHA} from './gltf-config';
 import {gltfSummary} from './gltf-processor';
@@ -199,9 +200,7 @@ export class GltfIngestionService{
         const priorRow=await gltfStatusTx(client,caseId,receipt.sourceId,receipt.jobId);
         if(priorRow.stale)conflict('The Gltf receipt context changed; use a new explicit request.');return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before Gltf receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='gltf-native-v1'")).rows[0];
-      if(Number(budget.sources)>=GLTF_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>GLTF_LIMITS.retainedBytes)
-        throw new AppError(429,'GLTF_RETENTION_BUDGET','The finite retained Gltf source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'gltf',GLTF_LIMITS,file.bytes.length);
       const original=GltfOriginalSchema.parse({version:GLTF_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       await putOriginal(key,file.bytes,'application/octet-stream',bounds.signal);

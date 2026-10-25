@@ -14,6 +14,7 @@ import {putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {originalAttempt} from '../../cases/original-attempt';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 import {readRasterObject,rasterReadDeadline,rasterReadLive} from './raster-window-object';
@@ -157,9 +158,7 @@ export class RasterWindowService{
       const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='raster-retain'",[caseId,operationKey])).rows[0];
       if(prior){if(prior.payload_hash!==digest)conflict('This request key names different raster bytes or lineage.');return RasterRetainReceiptSchema.parse(prior.result);}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before raster receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='geotiff-raster-v1'")).rows[0];
-      if(Number(budget.sources)>=RASTER_WINDOW_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>RASTER_WINDOW_LIMITS.retainedBytes)
-        throw new AppError(429,'RASTER_RETENTION_BUDGET','The finite retained raster source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'raster',RASTER_WINDOW_LIMITS,file.bytes.length);
       const original=RasterOriginalSchema.parse({version:RASTER_WINDOW_VERSION,subject:binding.subject,
         sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       remember(key);await putOriginal(key,file.bytes,'image/tiff');

@@ -12,6 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {objConfig,assertObjReadTools} from './obj-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
@@ -164,9 +165,7 @@ export class ObjIngestionService{
         const priorRow=await objStatusTx(client,caseId,receipt.sourceId,receipt.jobId);
         if(priorRow.stale)conflict('The Obj receipt context changed; use a new explicit request.');return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before Obj receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='obj-native-v1'")).rows[0];
-      if(Number(budget.sources)>=OBJ_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>OBJ_LIMITS.retainedBytes)
-        throw new AppError(429,'OBJ_RETENTION_BUDGET','The finite retained Obj source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'obj',OBJ_LIMITS,file.bytes.length);
       const original=ObjOriginalSchema.parse({version:OBJ_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       await putOriginal(key,file.bytes,'application/octet-stream',bounds.signal);
