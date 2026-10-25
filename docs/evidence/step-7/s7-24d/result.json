@@ -3,7 +3,7 @@
   "title": "Cut taglines, helper text and secondary labels in the map and its inspectors",
   "plan_step": 7,
   "base": "bac06934",
-  "strings": {"file": "strings.json", "before": 373, "cut": 37, "shortened": 69, "kept": 267},
+  "strings": {"file": "strings.json", "before": 373, "cut": 33, "shortened": 69, "kept": 267, "keptAsState": 4},
   "net_lines_apps": {"added": 169, "removed": 250},
   "layout_fixes": [
     "No-geometry card: the line naming the Tools list became a button that opens Tools on the buildings without geometry",
@@ -24,7 +24,7 @@
   ],
   "checks": {
     "studio_typecheck": {"before": 0, "after": 0},
-    "studio_test": {"before": "761 passed, 2 skipped", "after": "761 passed, 2 skipped", "exit": 0},
+    "studio_test": {"before": "761 passed, 2 skipped", "after": "763 passed, 2 skipped (after the review fix ff7a9054)", "exit": 0},
     "studio_build": {"before": 0, "after": 0},
     "typecheck_backend": 0,
     "openapi_check": 0,
