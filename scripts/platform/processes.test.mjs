@@ -55,7 +55,7 @@ test('dispatcher reports safe codes once per failure streak, without blaming eve
       throw error;
     },
     waitForDispatch: async () => { if (ticks === 4) signals.SIGTERM(); },
-    closePool: async () => {}, closeStorageClient() {},
+    closePool: async () => {}, closeStorageClient() {}, useDispatcherPool() {}, dispatchPoolSize: () => 33,
   });
   assert.deepEqual(printed, ['Dispatcher tick failed with error code READER_FAILED.',
     'Dispatcher tick failed with error code TypeError.']);
