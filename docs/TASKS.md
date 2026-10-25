@@ -103,7 +103,7 @@ Size S, code only. After: S1.3 run 2. **Status: merged 25 Oct (int3-pre 511da8d4
 - **Tests:** processing-latency, processing, dispatch-heap and dispatch-scratch tests; pnpm typecheck:backend; the section 5 server command
 ### S1.3c One large file's profile no longer blocks every other file's profile
 
-Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3c-profile-admission from 726bb2e8). First pass (74e0707a) stopped as told: a waiting profile polls in process and holds a stream slot and 512 MiB for its whole wait. Resumed with the design: a profile with no ready chunk gives its slot back and is requeued, the 12-minute wait is measured durably, then the cap rises to 4.**
+Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3c-profile-admission from 726bb2e8). First pass (74e0707a) stopped as told: a waiting profile polls in process and holds a stream slot and 512 MiB for its whole wait. Resumed with the design: a profile with no ready chunk gives its slot back and is requeued, the 12-minute wait is measured durably, then the cap rises to 4. Second stop (24017374): every claim counts toward three attempts; resumed again with a narrow yield in jobs.ts that does not count as an attempt.**
 
 - **What:** STREAMED_PROFILE_LIMITS.active is 1 across the service, so a large file's profile row stops every other file at profile admission. Raise it to 2, half the stream lane, keeping S1.3b's proof that profiles and raw readers cannot fill the lane; replays for a ZIP beside a long large file and for every profile waiting on raw.
 - **Files:** packages/contracts/src/usp/streamed-profile.ts; streamed-profile tests; processing-latency.test.ts
@@ -111,7 +111,7 @@ Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3
 
 ### S1.3d Why the 108 MB raw read passed its deadline under load
 
-Size S, code only (reh-03 read-only if needed). After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3d-raw-deadline from 726bb2e8).**
+Size S, code only (reh-03 read-only if needed). After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3d-raw-deadline from 726bb2e8). First pass (b7735667): Halifax published all 923 parts with at most 16 s between them and timed out at 601 s because the whole-read bound counts serial publishing under load; the retry restarts at byte zero. Resumed with a 2-minute no-progress bound and a 30-minute-per-128-MiB outer bound, for the raw read only.**
 
 - **What:** The streaming read has one wall deadline (10 minutes per started 128 MiB) that also counts time held by backpressure; under load Halifax passed it and started again. Find where the read waited, then one bounded comparison; if the deadline counts waiting, bound lack of progress instead under a stated outer bound. Also say why the PB1 enrolment got 502 ETIMEDOUT through the preview proxy.
 - **Files:** the streaming-vector reader and worker; packages/server/src/infrastructure/storage.ts (openObjectStream)
@@ -697,7 +697,7 @@ Size M, this PC: Docker. After: Step 1, the step 2 kit, and S5.11 to S5.20 accep
 
 ### S5.22b Every demo-profile runtime starts with the large-original/2 storage reservation set
 
-Size S, this PC: code. After: S5.22 run 1. **Status: running 25 Oct (codex, task/s5-22b-v2-capacity from 726bb2e8).**
+Size S, this PC: code. After: S5.22 run 1. **Status: merged 25 Oct (int3-pre b0053538, no pin change). Every demo-profile start sets the reservation from the contract (22 GiB); the doctor prints it beside the object-storage volume free bytes and fails below it. Live proof in the S5.22 rerun.**
 
 - **What:** large-original.ts refuses every large-original/2 upload with 503 UPLOAD_CAPACITY_UNCONFIGURED while ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES is unset, and no platform script sets it. The platform start environment sets it to the contract's maxStoredBytesIncludingTemporaryCopies; the doctor reports it beside the free bytes of the storage disk and fails below it.
 - **Files:** scripts/platform/demo-config.mjs; the platform start and doctor scripts; their tests; docs/backend/DEMO-RUNTIME.md
@@ -705,7 +705,7 @@ Size S, this PC: code. After: S5.22 run 1. **Status: running 25 Oct (codex, task
 
 ### S5.8a DXF count bounds measured on real drawings
 
-Size S, this PC: data drive. After: S5.22 run 1. Before: S5.8. **Status: running 25 Oct (codex, task/s5-8a-dxf-bounds from 726bb2e8). First pass (2fe1c41c) measured WikiHouse: 25,064 entities, 253,681 tags; the 16 MiB output is full after 28 percent because each tag is written up to three times. Resumed with inspection profile 2 (each tag value once, readers accept 1 and 2), then bounds from the output budget.**
+Size S, this PC: data drive. After: S5.22 run 1. Before: S5.8. **Status: running 25 Oct (codex, task/s5-8a-dxf-bounds from 726bb2e8). First pass (2fe1c41c) measured WikiHouse: 25,064 entities, 253,681 tags; the 16 MiB output is full after 28 percent because each tag is written up to three times. Resumed with inspection profile 2 (each tag value once, readers accept 1 and 2), then bounds from the output budget. Profile 2 (5fc1c2ed) still fills 16 MiB after 37 percent of WikiHouse; now measuring the full output by part before the next design.**
 
 - **What:** The practice-kit WikiHouse drawing (4,519,566 bytes) stops at MAX_ENTITIES 10,000. Measure it and 1_polylines.dxf with test-only raised counts, then set entity, record, point and tag bounds so a 16 MiB drawing stays inside the unchanged memory, time and output budgets with a stated margin, as S5.17 did. DXF_LIMITS follow exactly.
 - **Files:** services/geo/geo/native_dxf.py (bounds); packages/contracts/src/usp/dxf-ingestion.ts (limits); services/geo/tests/test_native_dxf.py
