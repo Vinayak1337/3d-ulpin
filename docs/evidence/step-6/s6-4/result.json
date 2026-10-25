@@ -13,6 +13,7 @@
     "changed": [
       "apps/studio/src/features/map/MapSidebar.tsx: KeySection (a key entry may carry an icon, a key a note); an entry without a colour shows no swatch; the note under its key",
       "apps/studio/src/features/map/MapWorkspace.tsx: the linkBands import (line 39), useLinkRead before useBuildingScene and the outcomes passed to it (132-134), the link key beside the legend (330-331, 505), the Link option (514). The S7.6 lines (8, 71-75, 127, 397-401, 574-580) and line 7 are untouched; the nearest hunk is three unchanged lines from line 127.",
+      "apps/studio/src/features/map/MapSidebar.module.css: one rule, .keyIcon { vertical-align: -3px; margin-right: 4px; }, used on the key's Icon only (with the existing ul-ico--sm size). Not on the task's file list; authorized by the lead on 25 October. Nothing else in the file changed.",
       "apps/studio/src/features/map/useBuildingScene.ts: an optional links argument; Colour by link fills footprints through linkFootprints",
       "apps/studio/src/state/selection.ts: 'link' in the ColourBy type, and in the colour URL parameter list on line 38 (without it a saved ?colour=link reads back as auto)"
     ],
@@ -61,11 +62,11 @@
     "viewport": "1440 x 900, built-in browser, Studio served from this worktree (vite on 127.0.0.1:5288)",
     "screenshots": "E:/ulpin-tmp/s6-4-shots/link-all-read-1440.jpg (all pages read: 37 buildings coloured from 41 candidates) and link-reading-1440.jpg (10 a page, last page held back: 37 buildings coloured from 40 of 41 candidates read); outside Git",
     "seen": "Green matched, blue several, amber conflicting buildings and default buildings; the five Colour by options fit the two-column segment grid of the tools panel; the key and note wrap inside it.",
-    "open": "The key's status icons sit a little above the text baseline with no gap. The fix is one rule in MapSidebar.module.css, which is not this task's file; asked the lead."
+    "icons": "The key's status icons first sat above the text baseline with no gap; with the lead-authorized .keyIcon rule they sit on the text line with a 4 px gap (link-all-read-1440.jpg was retaken after the fix)."
   },
   "uiDesignCheck": {
     "blocking": "None.",
-    "designSystem": "Open: the key icon alignment above. Several buildings uses --ui-seq-400 so it stays distinct from amber conflicting on the map; S6.1b gives both the warning tone in the list, and the key gives both the warning icon.",
+    "designSystem": "None open. Several buildings uses --ui-seq-400 so it stays distinct from amber conflicting on the map; S6.1b gives both the warning tone in the list, and the key gives both the warning icon.",
     "checkedNoIssue": [
       "Every count is read from the evidence page; the coloured-building count is computed from the drawn footprints; nothing is typed in.",
       "Red is not used: conflicting is --ui-mark-warning with the warning icon and the word Conflicting (docs/design-system/README.md, Colour).",
@@ -76,12 +77,11 @@
     "scan": {
       "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs de44073c",
       "exit": 0,
-      "result": "217 added lines in apps/studio/src, 0 in packages/ui/src and packages/scene/src; no candidates"
+      "result": "216 added lines in apps/studio/src, 0 in packages/ui/src and packages/scene/src; no candidates"
     }
   },
   "next": [
     "Live check on a runtime with the NYC act 1 batch: open the area with ?colour=link and see the key read 612 matched, 60 unmatched, 81 conflicting (as the server counts them), with matched and conflicting buildings coloured.",
-    "An area whose buildings belong to more than one batch is coloured from one batch only (the probe building's); reading every batch would need an area-to-case read.",
-    "If the lead allows MapSidebar.module.css, add .keyIcon { vertical-align: -3px; margin-right: 4px; } to the key icon."
+    "An area whose buildings belong to more than one batch is coloured from one batch only (the probe building's); reading every batch would need an area-to-case read."
   ]
 }

@@ -89,7 +89,7 @@ export function MapSidebar({
                 {item.color || item.hatch
                   ? <span className={`${styles.swatch}${item.hatch ? ' ul-hatch' : ''}`} style={{ backgroundColor: item.color }} />
                   : <span />}
-                <span className={styles.keyLabel}>{item.icon ? <Icon icon={item.icon} size={16} /> : null}{item.label}</span>
+                <span className={styles.keyLabel}>{item.icon ? <Icon icon={item.icon} size={16} className={`ul-ico--sm ${styles.keyIcon}`} /> : null}{item.label}</span>
                 {item.count !== undefined ? <span className="ul-num ul-muted">{item.count}</span> : null}
               </li>
             ))}
