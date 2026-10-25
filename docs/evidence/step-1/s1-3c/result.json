@@ -2,8 +2,18 @@
   "task": "S1.3c",
   "planStep": 1,
   "base": "726bb2e82151a8f78453125876eed9d970e56c4f",
-  "verdict": "Stopped after step 1 under DO 4: running profiles retain memory admission throughout raw waits.",
+  "verdict": "Resume stopped at OWN boundary: non-failing post-publication yields need shared attempt authority support.",
   "changes": "Evidence only; active remains 1. No caps, history bound, tests, pins or runtime changed.",
+  "resume": {
+    "requiredOutsideOwn": "packages/server/src/modules/usp/jobs.ts and its attempt-authority regression tests",
+    "cause": "claimUspJobAttempt derives the next attempt number from the latest row and refuses number 4, regardless of why the previous attempt ended (jobs.ts:242-247).",
+    "preclaimWait": "intake-large-worker.ts:479-547 waits before claiming; this handles a profile with no ready chunk at entry, but not a profile that publishes ready chunks and then yields.",
+    "postPublishWait": "streamed-profile-worker.ts:156-165 fences and requeues; the next claim spends another attempt. Four successful publish-and-yield dispatches would exhaust the three-attempt limit without a processing failure.",
+    "rejectedWorkaround": "Do not delete or renumber attempt history, reuse fences, or implement a profile-local claim/resume authority.",
+    "proposedWaitSeconds": 2,
+    "proposedClock": "Reuse import updated_at: initialize at first dispatch, advance only on chunk publication while live, and leave unchanged on subsequent running/requeue transitions.",
+    "checksThisResume": "git diff --check exit 0; code tests not rerun because implementation stopped before any producer or test changes. Existing before/after counts below belong to the earlier DO 1 stop."
+  },
   "findings": {
     "queuedRow": "An undispatched queued row holds no dispatcher reservation or processor slot by itself.",
     "runningRow": "Not just a state row: an in-process invocation retains a stream slot and memory/heap reservation.",
@@ -53,5 +63,5 @@
       "git diff --check": {"exit": 0}
     }
   },
-  "next": "Lead must authorize a wait/release scheduling design or reconsider DO 4 before raising admission to 2."
+  "next": "Extend OWN to jobs.ts and attempt-authority tests for a fenced non-failing yield/resume through the existing authority; then implement A-D. No implementation or runtime validation is claimed."
 }
