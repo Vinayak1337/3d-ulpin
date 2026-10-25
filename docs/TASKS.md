@@ -203,7 +203,7 @@ Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if th
 
 ### S3.5 Large batch files: drafts follow mapped parts so the first part reaches the map early
 
-Size M, code only. After: S3.4 (same files; sequential). **Status: done 25 Oct (merged into task/int3-pre; display-only preview of the outlines read so far)**
+Size M, code only. After: S3.4 (same files; sequential). **Status: done 25 Oct (merged into task/int3-pre; display-only preview of the outlines read so far; S3.5d draws it on both area maps as a dashed edge, int3-pre 62df84dc)**
 
 - **What:** Drafting starts only in the draft phase, after every chunk is mapped (intake-large.ts:136-141; intake-large-worker.ts:370-372). REH15 measured approve-to-first-map at 310 s. Let the draft step consume each mapped part as it is published, under the existing INTAKE_UNFINISHED_PACKAGE_LIMIT. partsDone and partsPlanned stay truthful while mapping continues, and the end projection still waits for the sealed mapping.
 - **Lead note (25 Oct, from S3.4 run 1):** drafting today needs whole-file closure: assertClosedMappingTx (intake-part-draft.ts:26-50) wants closed raw and mapped jobs with matching counts, and a key duplicated anywhere keeps both copies out of a package; loadPartFeatures and prepareProvedAreaPartTx (proved-area-part.ts:100-140) want the closed original and its sealed receipt. The rule for parts drafted before the seal: they are drawn on the map as provisional and cannot be confirmed until the mapping closes; at the close, a package holding a key that a later chunk duplicated is withdrawn with plain words and its other features are cut again. Add intake-part-draft.ts and proved-area-part.ts to the files.
@@ -517,7 +517,7 @@ Size M, this PC: data drive. After: S1. Parallel with S5.1, S5.3, S5.4 (disjoint
 
 ### S5.9 PDFs above 16 MiB: page view and one-page OCR up to 1 GiB
 
-Size L, this PC: runtime. After: S1, S2 (a scanned PDF above 16 MiB in the practice kit). Not in parallel with S5.6 (one runtime task at a time). **Status: code part S5.9a merged 25 Oct (int3-pre 6d9c05a5; a 1 GiB test PDF lists, renders and reads one page by OCR in 2 to 4 s, full page request 6.9 s); the live check on reh-02 and the Studio 1 GiB words remain**
+Size L, this PC: runtime. After: S1, S2 (a scanned PDF above 16 MiB in the practice kit). Not in parallel with S5.6 (one runtime task at a time). **Status: code part S5.9a merged 25 Oct (int3-pre 6d9c05a5; a 1 GiB test PDF lists, renders and reads one page by OCR in 2 to 4 s, full page request 6.9 s); S5.9b (the Studio says 1 GiB) running 25 Oct; the live check on reh-02 remains**
 
 - **What:** A batch PDF above 16 MiB is kept and not read. Page inspection and the document worker read the whole original into memory, and the OCR helper refuses above 16 MiB. Stream the original once per job into its private scratch file and pass the path to the page renderer and to one-page OCR. Raise the page and OCR original bound to 1 GiB. Keep the 10 MiB text-layer bound and say so in the item words and the forecast. Refresh the host document profile through the existing documents step. Split at the page-view / OCR seam if it grows past 400 lines.
 - **Files:** packages/contracts/src/document-pages.ts:4-5 (DOCUMENT_PAGE_LIMITS); packages/contracts/src/usp/document-ingestion.ts:6-9; packages/server/src/modules/usp/ingestion/document-pages.ts:56-120 (original, inspectPrivateDocumentPages); document-worker.ts:44-60; document-ocr.ts:140-160; services/geo/geo/usp_document_candidates/docling_tesseract.py:23-24, 90-105; intake-draft.ts:364-415 (queueBatchPdfTx, textLayerUnread); apps/studio/src/features/intake/upload-model.ts:105-110; scripts/platform/demo-document-runtime.mjs (documents step, use)
@@ -628,7 +628,7 @@ Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned
 
 ### S5.20 IFC panel draws the storey outlines in their own frame
 
-Size S, code only. After: S5.19 (artifact fields). **Status: open.**
+Size S, code only. After: S5.19 (artifact fields). **Status: running 25 Oct (UI session)**
 
 - **What:** The IfcStructure panel shows only the building, storey and space tree. Read S5.19's outlines from the accepted IFC artifact through the existing .../ifc/jobs/{jobId}/native route and draw them as SVG in the file's own frame, one per storey, with words saying they are not placed on the map. This is display only.
 - **Files:** apps/studio/src/features/intake/ifc/IfcStructure.tsx, structure-model.ts, useIfcStructure.ts, IfcStructure.module.css, IfcStructure.test.tsx
@@ -660,7 +660,7 @@ The only working link is an exact key the officer declares by hand (it works for
 
 ### S6.1 The record panel lists a building's links to register rows and pages, with the reason
 
-Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: server half S6.1a merged 25 Oct (int3-pre 3d595027; server set 1001 pass); the Links list in the record panel is a UI step**
+Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: server half S6.1a merged 25 Oct (int3-pre 3d595027; server set 1001 pass); UI half S6.1b (the Links list in the record panel) running 25 Oct**
 
 - **What:** A building's register match shows only in the batch evidence list, or later as a citation. The map's record panel shows only geometry, height and ledger sources. Add an optional featureId filter to the evidence read, matched through candidate->'anchors'. Add a Links list to the inspector; per candidate it shows:
 - the file, and the row or page in words;
@@ -768,7 +768,7 @@ Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.5, S7.6, S7.7
 
 ### S7.5 Plain words in readings, layouts and packages
 
-Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7. **Status: running 25 Oct (UI session)**
 
 - **What:** Five fixes in the Studio: (1) Finding counts end in raw codes such as '(BOUNDARY_CONTACT)' (REH16 a16): drop the code. (2) Each package is headed by its UUID and 'Revision N' (a13): head it with its anchor item's file name (Package.anchorItemId to the manifest item name), with the id copyable in a caption. (3) The native reading prints nested values as JSON, 'Not stated (stored as null)' and 'result SHA-256', with tokens such as globalPlacement and axes (lead-queue NR4 note): show labelled lines and put hashes in closed details. (4) The layout lists 'This layout also states: version, mode...': drop that line and say the origin plainly. (5) 'Its review has not run yet.' and 'The package review has not run yet.' appear together (REH14 act2-mx1-keyed-layout.png): show the review line once.
 - **Files:** apps/studio/src/features/intake/run/Packages.tsx:5-43 (findingWords 5-13, line 20, heading 29, revision 37, reasons 33-35); apps/studio/src/features/intake/native/reading-model.ts:116-150; apps/studio/src/features/intake/native/NativeReading.tsx:38-49; apps/studio/src/features/intake/layout-model.ts:13-48; apps/studio/src/features/intake/LayoutQuestion.tsx:57-77
