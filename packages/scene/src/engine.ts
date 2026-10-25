@@ -14,7 +14,7 @@ import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, loo
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
   OverlayInput, ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
-  SurfacePartInput,
+  SurfacePartInput, PreviewOutlineInput,
 } from './types';
 
 export interface SceneEngineOptions {
@@ -210,6 +210,7 @@ export class SceneEngine {
   private readonly overlays = new Group();
   private readonly surface = new Group();
   private readonly surfaceParts = new Map<string, { input: SurfacePartInput; object: Group }>();
+  private readonly preview = new Group();
   private surfaceQueue = new Map<string, SurfacePartInput>();
   private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
@@ -285,7 +286,7 @@ export class SceneEngine {
     this.base.add(this.kerbs);
     this.dressing.add(this.trees);
     this.scene.add(this.ground, this.overlays, this.dressing, this.plate, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
-    this.scene.add(this.surface);
+    this.scene.add(this.surface, this.preview);
 
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', this.onPointerDown);
@@ -461,6 +462,23 @@ export class SceneEngine {
     const object = surfacePartObject(part, this.options.palette.comparisonPlan ?? this.options.palette.selected);
     this.surface.add(object);
     this.surfaceParts.set(id, { input: part, object });
+  }
+
+  /**
+   * Outlines read so far from a file still being read, display only: one dashed line set with no fill or height,
+   * replaced whole on every call and never picked, so no inspector or measurement reaches it.
+   */
+  setPreviewOutlines(outlines: PreviewOutlineInput[]): void {
+    for (const child of [...this.preview.children] as LineSegments[]) {
+      child.geometry.dispose();
+      (child.material as Material).dispose();
+    }
+    this.preview.clear();
+    if (outlines.length) {
+      const { palette } = this.options;
+      this.preview.add(previewLines(outlines, palette.preview ?? palette.comparisonPlan ?? palette.selected));
+    }
+    this.requestRender();
   }
 
   /** Shows or hides base-map layers. */
@@ -1043,6 +1061,7 @@ export class SceneEngine {
     for (const tiles of this.tilesets) tiles.dispose();
     this.setOverlays([]);
     this.setSurfaceParts([]);
+    this.setPreviewOutlines([]);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
     for (const material of [...Object.values(this.m), ...this.spaceMaterials.values()] as Material[]) {
       (material as MeshBasicMaterial).map?.dispose();
@@ -2253,6 +2272,30 @@ function disposeObject(object: Object3D) {
 
 /** Surface outlines and points sit just above the ground pictures, under every record. */
 const SURFACE_LIFT_M = 0.05;
+
+/** Dash and gap of a preview outline, in metres: a draft edge, never the solid edge of a record. */
+const PREVIEW_DASH_M = { dashSize: 2, gapSize: 1.5 };
+
+/** Every ring of the preview outlines as one set of segments, closed where the ring is not, just above the ground. */
+function previewLines(outlines: PreviewOutlineInput[], colour: string): LineSegments {
+  const positions: number[] = [];
+  for (const { polygons } of outlines) {
+    for (const ring of polygons.flat()) {
+      for (let i = 0; i < ring.length; i++) {
+        const [x0, y0] = ring[i]!, [x1, y1] = ring[(i + 1) % ring.length]!;
+        if (x0 === x1 && y0 === y1) continue;
+        positions.push(x0, SURFACE_LIFT_M, -y0, x1, SURFACE_LIFT_M, -y1);
+      }
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  const lines = new LineSegments(geometry, new LineDashedMaterial({ color: colour, ...PREVIEW_DASH_M }));
+  lines.computeLineDistances();
+  lines.raycast = () => {};
+  lines.userData.preview = true;
+  return lines;
+}
 
 /** One read surface part: its outline, and its picture as a ground picture or its points laid flat. */
 function surfacePartObject(part: SurfacePartInput, outlineColour: string): Group {

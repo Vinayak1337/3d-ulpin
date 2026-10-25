@@ -102,6 +102,15 @@ export interface SurfacePartInput {
   points?: { positions: Float32Array; colors: Float32Array; sizeM: number };
 }
 
+/**
+ * One outline of a file still being read, for display only: drawn as a dashed provisional edge with no fill and no
+ * height, never picked, inspected or measured, and replaced whole when the file's read moves on.
+ */
+export interface PreviewOutlineInput {
+  id: string;
+  polygons: MultiPolygon;
+}
+
 /** Base-map layers the viewer can switch off. Buildings and the selection always stay. */
 export interface SceneLayers {
   parcels: boolean;
@@ -232,5 +241,7 @@ export interface ScenePalette {
   soilDeep: string;
   critical: string;
   comparisonPlan?: string;
+  /** Outlines read so far from a file still being read; never a record or proposal style. */
+  preview?: string;
   utilities: Record<string, string>;
 }

@@ -39,6 +39,8 @@ import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
 import { createViewFrames, type ViewFrames } from './viewFrames';
 import { useSurfaceLayer } from './surface/useSurfaceLayer';
+import { PreviewKey } from './preview/PreviewKey';
+import { useReadPreview } from './preview/useReadPreview';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
 import { BuildingCard } from './inspector/BuildingCard';
@@ -130,6 +132,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     windowMode ? windowed.footprints : drawn.footprints);
   const [mapView, setMapView] = useMapView();
   const surface = useSurfaceLayer(context.area.siteId, engine);
+  const preview = useReadPreview(surface.items, engine, context.area.reference as AreaReference | null);
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);
   const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
@@ -519,6 +522,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                   </>}
                 />
               </details>
+              <PreviewKey className={styles.mapTools} lines={preview} />
               {viewNotes.length ? (
                 <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p>
               ) : null}

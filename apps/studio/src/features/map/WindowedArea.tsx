@@ -15,6 +15,8 @@ import { createViewFrames } from './viewFrames';
 import { useMapView } from './useMapView';
 import { SurfaceKey } from './surface/SurfaceKey';
 import { useSurfaceLayer } from './surface/useSurfaceLayer';
+import { PreviewKey } from './preview/PreviewKey';
+import { useReadPreview } from './preview/useReadPreview';
 import styles from './MapWorkspace.module.css';
 
 const KIND_LABEL: Record<string, string> = {
@@ -36,6 +38,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   const [mapView] = useMapView();
   const windowed = useAreaWindow(areaId, engine, true);
   const surface = useSurfaceLayer(area?.siteId, engine);
+  const preview = useReadPreview(surface.items, engine, reference);
   const selected = windowed.features.find((feature) => feature.id === selection.buildingId) ?? null;
   const sceneState = useMemo<SceneState>(() => ({
     mode: 'area', buildingId: selected?.id ?? null, levelId: null, spaceId: null, tool: 'select', finding: null,
@@ -74,10 +77,11 @@ export function WindowedArea({ areaId }: { areaId: string }) {
             </div>
           ) : null}
           {windowed.empty ? <WindowEmpty /> : null}
-          {windowed.line || surface.lines.length ? (
+          {windowed.line || surface.lines.length || preview.length ? (
             <div className={styles.leftStack}>
               {windowed.line ? <WindowKey /> : null}
               <SurfaceKey className={styles.mapTools} lines={surface.lines} onShow={surface.show} />
+              <PreviewKey className={styles.mapTools} lines={preview} />
               {windowed.line ? <p className={styles.viewNote} role="status">{windowed.line}</p> : null}
             </div>
           ) : null}

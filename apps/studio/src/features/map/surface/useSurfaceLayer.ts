@@ -60,5 +60,5 @@ export function useSurfaceLayer(siteId: string | undefined, engine: SceneEngine 
     if (on) next.delete(itemId); else next.add(itemId);
     return next;
   });
-  return { lines: view.lines.map((line) => ({ ...line, checked: !hidden.has(line.itemId) })), show };
+  return { lines: view.lines.map((line) => ({ ...line, checked: !hidden.has(line.itemId) })), show, items };
 }
