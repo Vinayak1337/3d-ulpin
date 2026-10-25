@@ -69,7 +69,7 @@ describe('a table the server reads in windows opens the streamed rows page', () 
   it('renders the rows page with its marks for a workbook above 16 MiB', () => {
     const markup = render(original('xlsx', MiB16 + 1));
     expect(markup).toContain(rowsPage);
-    expect(markup).toContain('title="Formula with no stored result">Formula with no stored result</span>');
+    expect(markup).toContain('>Formula, no stored result</span>');
   });
 
   it('keeps the whole-read page for a workbook at or below 16 MiB', () => {

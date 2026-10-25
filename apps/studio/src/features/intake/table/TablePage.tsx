@@ -15,19 +15,6 @@ import { useTableData } from './useTableData';
 import type { ChunkMapping, MappingJob, Metrics, TableProfile } from './types';
 import styles from './Table.module.css';
 
-/**
- * WD1. This page is the table-only step. Placing rows that hold coordinates is a separate batch action, whose GeoJSON
- * item can reach the map and a card; these words never say a table cannot.
- */
-export function TableStepNotice() {
-  return <Banner tone="info">
-    This page is the table-only step: it maps columns into draft rows, not buildings, and by itself puts nothing in
-    the registry or on the map. To place rows that hold coordinates, use Place on the map on this table&apos;s line
-    in a batch. Its rows become a GeoJSON file taken in as its own item,
-    which follows the batch&apos;s path to the map and to a property card that an officer confirms.
-  </Banner>;
-}
-
 export function TablePage() {
   const { caseId = '', sourceId = '' } = useParams();
   return <TableImport key={`${caseId}:${sourceId}`} caseId={caseId} sourceId={sourceId} />;
@@ -40,7 +27,7 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
   if (profile.isPending) return <div className={styles.page}><Skeleton /><Skeleton /><Skeleton /></div>;
   if (profile.error) return <div className={styles.page}><TableRefusal error={profile.error} /></div>;
   if (profile.data.version !== 'manual-tabular/1') {
-    return <div className={styles.page}><Banner tone="warning">This retained source is not a table.</Banner></div>;
+    return <div className={styles.page}><Banner tone="warning">Not a table.</Banner></div>;
   }
   const stale = staleReasons(freshness);
   const name = sourceCase.data?.sources.find((source) => source.id === sourceId)?.name;
@@ -49,7 +36,6 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
       <Link to="/studio/work">Batches</Link>
       <SourceHeader profile={profile.data} name={name} />
       <RereadTable key={profile.data.source.schemaFingerprint} profile={profile.data} />
-      <TableStepNotice />
       <StartJobs profile={profile.data} />
       <TablePlacement caseId={caseId} sourceId={sourceId} name={name ?? 'this table'} profile={profile.data} />
       {stale ? <StaleNotice reasons={stale} /> : null}

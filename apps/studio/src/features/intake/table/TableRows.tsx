@@ -10,20 +10,19 @@ type CellMark = NonNullable<TableRow['marks']>[number]['mark'];
 
 /** XW1M: how the workbook reader marked a cell, in words; nothing is calculated and no value is shown for it. */
 const MARK_WORDS: Record<CellMark, string> = {
-  formula_cached: 'Formula (its stored result is not used)',
-  formula_uncached: 'Formula with no stored result',
+  formula_cached: 'Formula, stored result not used',
+  formula_uncached: 'Formula, no stored result',
   no_value: 'No value',
-  error: 'Error value in the workbook',
+  error: 'Workbook error',
   unsupported: 'Not read',
 };
-const UNAVAILABLE_WORDS = 'Not read from the workbook (formula, error or no value)';
 
 const markOf = (row: TableRow, column: number) => row.marks?.find((item) => item.column === column)?.mark;
 
 /** A cell as written: an empty cell and a cell the record does not have are both shown, never as 0. A workbook cell
  * the reader marked shows the mark's words, never its stored text. */
 function Written({ value, mark }: { value: string | null; mark?: CellMark }) {
-  if (mark) return <span className={styles.muted} title={MARK_WORDS[mark]}>{MARK_WORDS[mark]}</span>;
+  if (mark) return <span className={styles.muted}>{MARK_WORDS[mark]}</span>;
   if (value === null) return <span className={styles.muted}>Absent</span>;
   if (value === '') return <span className={styles.muted}>Empty</span>;
   return <>{value}</>;
@@ -36,9 +35,7 @@ function Mapped({ row }: { row: TableRow }) {
   return <span className={styles.question}>{named.map((cell) => (
     <span key={cell.sourceField}>
       {targetDefinition(cell.target).displayLabel}: {cell.issueCode === 'TABULAR_CELL_UNAVAILABLE'
-        ? <span title={UNAVAILABLE_WORDS}>{UNAVAILABLE_WORDS}</span>
-        : cell.value === null ? 'Unknown' : String(cell.value)}
-      <small className={styles.targetId}>{cell.state.replaceAll('_', ' ')}</small>
+        ? 'Not read' : cell.value === null ? 'Unknown' : String(cell.value)} · {cell.state.replaceAll('_', ' ')}
     </span>
   ))}</span>;
 }
@@ -62,17 +59,17 @@ export function TableRows({ caseId, sourceId }: { caseId: string; sourceId: stri
         {data?.windows.failed.map((item) => (
           <Banner key={item.window} tone="warning">
             Records {(item.firstRecord + 1).toLocaleString('en-IN')}–{(item.lastRecord + 1).toLocaleString('en-IN')}
-            {' '}were not mapped: {item.message ?? 'no reason supplied by the server'}
+            {' '}were not mapped: {item.message ?? 'no reason given'}
             {item.issueCode ? ` (${item.issueCode})` : ''}
           </Banner>
         ))}
         {page.isPending ? <Skeleton /> : null}
-        {data && !data.rows.length ? <p>No records have been read yet.</p> : null}
+        {data && !data.rows.length ? <p>No records yet.</p> : null}
       </div>
       {data?.rows.length ? (
         <div className={`${styles.scroll} ${styles.columns}`} tabIndex={0}
-          aria-label="Records table, scroll for more columns and rows">
-          <DataTable caption="Table records as written, with mapped fields" rows={data.rows}
+          aria-label="Records table">
+          <DataTable caption="Records" rows={data.rows}
             rowKey={(row) => String(row.record)} columns={[
               { header: 'Record', numeric: true, cell: (row) => (row.record + 1).toLocaleString('en-IN') },
               { header: 'Source row', numeric: true, cell: (row) => row.sourceRow.toLocaleString('en-IN') },

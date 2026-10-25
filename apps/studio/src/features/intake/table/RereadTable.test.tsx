@@ -15,17 +15,15 @@ const profile = { caseId: 'case', source: { sourceId: 'source' }, tabular: { sel
   encodingBasis: 'fallback_windows_1252',
 } } } as unknown as TableProfile;
 
-it('offers only the fixed supported encodings with BOM and unchanged-byte words', () => {
+it('offers only the fixed supported encodings, with no helper sentences', () => {
   const html = renderToStaticMarkup(<EncodingRereadForm encoding="" setEncoding={vi.fn()} pending={false}
     submit={vi.fn()} error={null} reading={null} />);
   for (const encoding of ['UTF-8', 'Windows-1252', 'ISO-8859-1', 'UTF-16 LE', 'UTF-16 BE']) {
     expect(html).toContain(encoding);
   }
-  expect(html).toContain('Officer-stated encoding');
-  expect(html).toContain('matching BOM');
-  expect(html).toContain('not supported or inferred');
-  expect(html).toContain('The original stays unchanged.');
-  expect(html).toContain('original byte ranges');
+  expect(html).toContain('Stated encoding');
+  expect(html).toContain('>Read again</button>');
+  expect(html).not.toContain('ul-help');
   expect(html).not.toContain('value="ISCII"');
   expect(html).toContain('disabled=""');
 });

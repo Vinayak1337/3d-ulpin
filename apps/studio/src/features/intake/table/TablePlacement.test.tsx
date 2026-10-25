@@ -74,12 +74,12 @@ const render = (fields: Partial<Parameters<typeof PlacementBody>[0]>) => renderT
     opened={false} enrol={idle} {...fields} />
 </MemoryRouter>);
 
-it('TB2: a table not yet in a batch offers Place on the map and says the same kept original joins the batch', () => {
+it('TB2: a table not yet in a batch offers only Place on the map, with no link to a batch line yet', () => {
   const html = render({});
+  expect(html).toContain('aria-label="Place mi-d10-02.csv on the map"');
   expect(html).toContain('>Place on the map</button>');
-  expect(html).toContain('It first joins its case&#x27;s batch as an item, from the same kept original; no second '
-    + 'copy is kept.');
-  expect(html).toContain('You then choose the coordinate columns and the coordinate system; none is chosen for you.');
+  expect(html).not.toContain('href=');
+  expect(html).not.toContain('<p');
   expect(render({ enrol: { ...idle, pending: true } })).toContain('disabled=""');
 });
 
@@ -87,11 +87,8 @@ it('TB2: once in the batch, the batch\'s own opener is offered with a link to th
   const html = render({ itemId: enrolled.itemId });
   expect(html).toContain('>Place on the map</button>');
   expect(html).toContain(`href="/studio/work/cases/${caseId}/intake"`);
-  expect(html).toContain('says how many rows were prepared and how many were skipped, and why.');
-  expect(html).toContain('That GeoJSON file is then taken in as its own item in this batch, and its own line says '
-    + 'whether it is on the map.');
-  expect(html).not.toContain('rows were placed');
-  expect(html).not.toContain('joins its case');
+  expect(html).toContain('>Its line in the batch</a>');
+  expect(html).not.toContain('<p');
 });
 
 it.each(['utf-16le', 'utf-16be'] as const)('a BOM %s table offers placement before and after enrolment', encoding => {
@@ -106,8 +103,8 @@ it.each(['utf-16le', 'utf-16be'] as const)('a BOM %s table offers placement befo
     </MemoryRouter></QueryClientProvider>);
     expect(html).toContain('>Place on the map</button>');
     expect(html).not.toContain('Save the table as CSV UTF-8');
-    if (items.length) expect(html).toContain('This file is an item of its case&#x27;s batch.');
-    else expect(html).toContain('It first joins its case&#x27;s batch as an item');
+    if (items.length) expect(html).toContain('>Its line in the batch</a>');
+    else expect(html).not.toContain('href=');
     client.clear();
   }
 });

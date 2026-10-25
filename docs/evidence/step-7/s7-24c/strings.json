@@ -1,0 +1,1154 @@
+{
+ "task": "S7.24c",
+ "base": "bac06934",
+ "scope": "apps/studio/src/features/intake/table/",
+ "note": "Line numbers are at the base commit. Grouped rows (a table header row, a fixed list) count once.",
+ "totals": {
+  "before": 190,
+  "cut": 27,
+  "shortened": 58,
+  "kept": 105
+ },
+ "strings": [
+  {
+   "at": "AnswerForm.tsx:37",
+   "old": "Choose a meaning and give a reason for every column, including unknown fields. Unchanged targets keep the proposed operation; a changed target copies source literals. The server checks the plan, units and types before recording it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "AnswerForm.tsx:42",
+   "old": "aria-label Column answers, scroll for more",
+   "verdict": "shorten",
+   "new": "Column answers"
+  },
+  {
+   "at": "AnswerForm.tsx:44",
+   "old": "Column",
+   "verdict": "keep",
+   "new": "Column"
+  },
+  {
+   "at": "AnswerForm.tsx:44",
+   "old": "Meaning",
+   "verdict": "keep",
+   "new": "Meaning"
+  },
+  {
+   "at": "AnswerForm.tsx:44",
+   "old": "Reason for this decision",
+   "verdict": "shorten",
+   "new": "Reason"
+  },
+  {
+   "at": "AnswerForm.tsx:54",
+   "old": "Unanswered: {columns}",
+   "verdict": "keep",
+   "new": "Unanswered: {columns}"
+  },
+  {
+   "at": "AnswerForm.tsx:56",
+   "old": "Record the mapping",
+   "verdict": "keep",
+   "new": "Record the mapping"
+  },
+  {
+   "at": "AnswerForm.tsx:69",
+   "old": "{position} · {header} / Empty header",
+   "verdict": "keep",
+   "new": "{position} · {header} / Empty header"
+  },
+  {
+   "at": "AnswerForm.tsx:71",
+   "old": "aria-label Target for column {n}",
+   "verdict": "keep",
+   "new": "Target for column {n}"
+  },
+  {
+   "at": "AnswerForm.tsx:73",
+   "old": "Choose a meaning",
+   "verdict": "keep",
+   "new": "Choose a meaning"
+  },
+  {
+   "at": "AnswerForm.tsx:74",
+   "old": "Question candidates",
+   "verdict": "shorten",
+   "new": "Candidates"
+  },
+  {
+   "at": "AnswerForm.tsx:79",
+   "old": "All meanings",
+   "verdict": "keep",
+   "new": "All meanings"
+  },
+  {
+   "at": "AnswerForm.tsx:83",
+   "old": "{target meaning} under the select",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "AnswerForm.tsx:85",
+   "old": "aria-label Reason for column {n}",
+   "verdict": "keep",
+   "new": "Reason for column {n}"
+  },
+  {
+   "at": "ColumnsTable.tsx:7",
+   "old": "—",
+   "verdict": "keep",
+   "new": "—"
+  },
+  {
+   "at": "ColumnsTable.tsx:8",
+   "old": "No confidence: nobody answered",
+   "verdict": "shorten",
+   "new": "No confidence"
+  },
+  {
+   "at": "ColumnsTable.tsx:13",
+   "old": "aria-label Column mapping candidates",
+   "verdict": "shorten",
+   "new": "Columns"
+  },
+  {
+   "at": "ColumnsTable.tsx:15",
+   "old": "Columns",
+   "verdict": "keep",
+   "new": "Columns"
+  },
+  {
+   "at": "ColumnsTable.tsx:16",
+   "old": "Proposals are candidates, not recorded facts",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "ColumnsTable.tsx:19",
+   "old": "aria-label Column mapping table, scroll for more columns and rows",
+   "verdict": "shorten",
+   "new": "Column mapping"
+  },
+  {
+   "at": "ColumnsTable.tsx:20",
+   "old": "caption Column mapping candidates (visually hidden table name)",
+   "verdict": "keep",
+   "new": "Column mapping candidates"
+  },
+  {
+   "at": "ColumnsTable.tsx:22",
+   "old": "Position",
+   "verdict": "keep",
+   "new": "Position"
+  },
+  {
+   "at": "ColumnsTable.tsx:23",
+   "old": "Literal header",
+   "verdict": "shorten",
+   "new": "Header"
+  },
+  {
+   "at": "ColumnsTable.tsx:23",
+   "old": "Empty header",
+   "verdict": "keep",
+   "new": "Empty header"
+  },
+  {
+   "at": "ColumnsTable.tsx:24",
+   "old": "Inferred type",
+   "verdict": "keep",
+   "new": "Inferred type"
+  },
+  {
+   "at": "ColumnsTable.tsx:25",
+   "old": "Declared unit / Unknown",
+   "verdict": "keep",
+   "new": "Declared unit / Unknown"
+  },
+  {
+   "at": "ColumnsTable.tsx:26",
+   "old": "Proposed target / Unmapped",
+   "verdict": "keep",
+   "new": "Proposed target / Unmapped"
+  },
+  {
+   "at": "ColumnsTable.tsx:27",
+   "old": "title {target meaning}",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "ColumnsTable.tsx:29",
+   "old": "{target code} under the label",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "ColumnsTable.tsx:32",
+   "old": "Confidence",
+   "verdict": "keep",
+   "new": "Confidence"
+  },
+  {
+   "at": "ColumnsTable.tsx:33",
+   "old": "From / {origin} / Unknown",
+   "verdict": "keep",
+   "new": "From / {origin} / Unknown"
+  },
+  {
+   "at": "ColumnsTable.tsx:36",
+   "old": "Needs review · No answer · {reason}",
+   "verdict": "keep",
+   "new": "Needs review · No answer · {reason}"
+  },
+  {
+   "at": "ColumnsTable.tsx:39",
+   "old": "Question / Unknown / None reported",
+   "verdict": "keep",
+   "new": "Question / Unknown / None reported"
+  },
+  {
+   "at": "ColumnsTable.tsx:43",
+   "old": "Needs review · {question words}",
+   "verdict": "keep",
+   "new": "Needs review · {question words}"
+  },
+  {
+   "at": "LearnerPanel.tsx:10",
+   "old": "aria-label Mapping learner",
+   "verdict": "keep",
+   "new": "Mapping learner"
+  },
+  {
+   "at": "LearnerPanel.tsx:12",
+   "old": "Mapping learner",
+   "verdict": "keep",
+   "new": "Mapping learner"
+  },
+  {
+   "at": "LearnerPanel.tsx:13",
+   "old": "Counts as published by the mapping job",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "LearnerPanel.tsx:17",
+   "old": "Chunks without an unanswered count were recorded before the server counted unanswered fields. Their teacher fields with no teacher call are fallback columns, not teacher responses.",
+   "verdict": "cut",
+   "new": "{n} fallback in that chunk's Teacher fields cell"
+  },
+  {
+   "at": "LearnerPanel.tsx:22",
+   "old": "No chunk metrics received yet. Totals are unknown.",
+   "verdict": "shorten",
+   "new": "No chunk metrics yet."
+  },
+  {
+   "at": "LearnerPanel.tsx:26",
+   "old": "Summed over {n} chunks · ... · {n} open questions, each counted once · {ms} ms",
+   "verdict": "shorten",
+   "new": "Total: {n} chunks · ... · Open questions: {n} · {ms} ms"
+  },
+  {
+   "at": "LearnerPanel.tsx:31",
+   "old": "Open questions: not read yet",
+   "verdict": "keep",
+   "new": "Open questions: not read yet"
+  },
+  {
+   "at": "LearnerPanel.tsx:47",
+   "old": "aria-label Learner table, scroll horizontally",
+   "verdict": "shorten",
+   "new": "Learner metrics"
+  },
+  {
+   "at": "LearnerPanel.tsx:48",
+   "old": "caption Learner metrics per chunk (visually hidden)",
+   "verdict": "keep",
+   "new": "Learner metrics per chunk"
+  },
+  {
+   "at": "LearnerPanel.tsx:50",
+   "old": "Chunk, Layout, Teacher calls, Memory hits, Student fields, Teacher fields",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "LearnerPanel.tsx:56",
+   "old": "Unanswered / Not reported",
+   "verdict": "keep",
+   "new": "Unanswered / Not reported"
+  },
+  {
+   "at": "LearnerPanel.tsx:57",
+   "old": "Columns needing input in this chunk",
+   "verdict": "shorten",
+   "new": "Needs input"
+  },
+  {
+   "at": "LearnerPanel.tsx:58",
+   "old": "Latency ms, Learner version / Unknown",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "Progress.tsx:10",
+   "old": "{refusal message} ({code})",
+   "verdict": "keep",
+   "new": "{refusal message} ({code})"
+  },
+  {
+   "at": "Progress.tsx:12",
+   "old": "Queued behind another import. Retry to request admission again.",
+   "verdict": "shorten",
+   "new": "Another import is ahead; retry shortly."
+  },
+  {
+   "at": "Progress.tsx:14",
+   "old": "Retry",
+   "verdict": "keep",
+   "new": "Retry"
+  },
+  {
+   "at": "Progress.tsx:23",
+   "old": "Raw rows / Field mapping",
+   "verdict": "keep",
+   "new": "Raw rows / Field mapping"
+  },
+  {
+   "at": "Progress.tsx:26",
+   "old": "aria-label Import progress",
+   "verdict": "keep",
+   "new": "Import progress"
+  },
+  {
+   "at": "Progress.tsx:28",
+   "old": "Import progress",
+   "verdict": "keep",
+   "new": "Import progress"
+  },
+  {
+   "at": "Progress.tsx:29",
+   "old": "Polling · stream unavailable / Event stream",
+   "verdict": "shorten",
+   "new": "Stream lost · polling / Live"
+  },
+  {
+   "at": "Progress.tsx:30",
+   "old": "Reconnect stream",
+   "verdict": "keep",
+   "new": "Reconnect stream"
+  },
+  {
+   "at": "Progress.tsx:32",
+   "old": "caption Job progress (visually hidden)",
+   "verdict": "keep",
+   "new": "Job progress"
+  },
+  {
+   "at": "Progress.tsx:33",
+   "old": "Job, Status, Chunks published, Records, Issue",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "Progress.tsx:35",
+   "old": "Unknown · job status unavailable",
+   "verdict": "shorten",
+   "new": "Unknown"
+  },
+  {
+   "at": "Progress.tsx:36",
+   "old": "Unknown (chunks, records, issue)",
+   "verdict": "keep",
+   "new": "Unknown"
+  },
+  {
+   "at": "Progress.tsx:40",
+   "old": "None reported",
+   "verdict": "shorten",
+   "new": "None"
+  },
+  {
+   "at": "Progress.tsx:41",
+   "old": "No reason supplied by the server",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "Progress.tsx:45",
+   "old": "{validation errors}",
+   "verdict": "keep",
+   "new": "{validation errors}"
+  },
+  {
+   "at": "RecipeConfirmation.tsx:15",
+   "old": "Propose this mapping? / Approve this mapping?",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "RecipeConfirmation.tsx:16",
+   "old": "Cancel / Confirm proposal / Confirm approval",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "RecipeConfirmation.tsx:23",
+   "old": "Save {n} reasoned column decisions as an unapproved recipe. Approval is a separate step.",
+   "verdict": "shorten",
+   "new": "Column decisions: {n} · with the shared reason: {k}"
+  },
+  {
+   "at": "RecipeConfirmation.tsx:25",
+   "old": "Approve recipe revision {n} under the configured local operator.",
+   "verdict": "shorten",
+   "new": "Revision {n}"
+  },
+  {
+   "at": "RecipeConfirmation.tsx:26",
+   "old": "Columns carrying the shared reason: {k}.",
+   "verdict": "shorten",
+   "new": "merged into the line above"
+  },
+  {
+   "at": "RecipeConfirmation.tsx:28",
+   "old": "Approval lets the server map draft rows and train the learner. It does not create buildings, complete identity, write the registry or place anything on the map.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "RecipeConfirmation.tsx:31",
+   "old": "The server records the operator; this screen does not choose or impersonate one.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "RecipeHistory.tsx:7",
+   "old": "Recipe revision history · {n}",
+   "verdict": "shorten",
+   "new": "Revisions · {n}"
+  },
+  {
+   "at": "RecipeHistory.tsx:8",
+   "old": "caption Recipe revisions (visually hidden)",
+   "verdict": "keep",
+   "new": "Recipe revisions"
+  },
+  {
+   "at": "RecipeHistory.tsx:9",
+   "old": "Revision, State, Proposed by, Proposed at, Approval / Not approved",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "RecipeReview.tsx:20",
+   "old": "aria-label Officer mapping review",
+   "verdict": "shorten",
+   "new": "Mapping review"
+  },
+  {
+   "at": "RecipeReview.tsx:22",
+   "old": "Officer mapping review",
+   "verdict": "shorten",
+   "new": "Mapping review"
+  },
+  {
+   "at": "RecipeReview.tsx:24",
+   "old": "Reading recipe revisions…",
+   "verdict": "shorten",
+   "new": "Reading revisions…"
+  },
+  {
+   "at": "RecipeReview.tsx:25",
+   "old": "No officer recipe is selected for this source.",
+   "verdict": "shorten",
+   "new": "No recipe yet."
+  },
+  {
+   "at": "RecipeReview.tsx:29",
+   "old": "Answer mapping questions",
+   "verdict": "keep",
+   "new": "Answer mapping questions"
+  },
+  {
+   "at": "RecipeReview.tsx:59",
+   "old": "Approve mapping",
+   "verdict": "keep",
+   "new": "Approve mapping"
+  },
+  {
+   "at": "RecipeReview.tsx:63",
+   "old": "Retry approved mapping job",
+   "verdict": "keep",
+   "new": "Retry approved mapping job"
+  },
+  {
+   "at": "RecipeReview.tsx:72",
+   "old": "badge Reviewed / Draft beside Mapping {state}",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "RecipeReview.tsx:73",
+   "old": "Mapping {state} · revision {n}",
+   "verdict": "keep",
+   "new": "Mapping {state} · revision {n}"
+  },
+  {
+   "at": "RecipeReview.tsx:75",
+   "old": "Copy recipe ID",
+   "verdict": "keep",
+   "new": "Copy recipe ID"
+  },
+  {
+   "at": "RecipeReview.tsx:77",
+   "old": "Approved by {subject} · {time}",
+   "verdict": "keep",
+   "new": "Approved by {subject} · {time}"
+  },
+  {
+   "at": "RecipeReview.tsx:79",
+   "old": "Approval recorded; waiting for the server’s approved mapping job. / Approval recorded; following the approved mapping job.",
+   "verdict": "shorten",
+   "new": "Waiting for the approved mapping job. / Following the approved mapping job."
+  },
+  {
+   "at": "RecipeReview.tsx:81",
+   "old": "Busy admission may require replaying the same approval request. No registry execution is available for tables.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "RereadTable.tsx:60",
+   "old": "Read again with a stated encoding",
+   "verdict": "keep",
+   "new": "Read again with a stated encoding"
+  },
+  {
+   "at": "RereadTable.tsx:65",
+   "old": "State the encoding from the file's source, not from how its labels look. This replaces the current table reading; previous mappings must be reviewed against the new reading. Row citations keep using the original byte ranges.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "RereadTable.tsx:71",
+   "old": "Read again with stated encoding",
+   "verdict": "shorten",
+   "new": "Read again"
+  },
+  {
+   "at": "SharedUnknown.tsx:15",
+   "old": "Shared reason for unknown fields (label and aria-label)",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SharedUnknown.tsx:21",
+   "old": "Columns this will change: {n}. Only unanswered columns with an empty or unknown target are included. Answered columns and other targets stay unchanged.",
+   "verdict": "shorten",
+   "new": "Unanswered columns: {n}"
+  },
+  {
+   "at": "SharedUnknown.tsx:25",
+   "old": "Mark every unanswered column as Unknown field",
+   "verdict": "shorten",
+   "new": "Mark unanswered as Unknown field"
+  },
+  {
+   "at": "SourceHeader.tsx:10",
+   "old": "The text was not valid UTF-8 and was shown as Windows-1252 as a fallback. Labels may be wrong if the file uses another encoding. The original is kept unchanged.",
+   "verdict": "shorten",
+   "new": "Not valid UTF-8: read as Windows-1252, labels may be wrong."
+  },
+  {
+   "at": "SourceHeader.tsx:17",
+   "old": "BOM / Valid UTF-8 / Officer-stated encoding",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:18",
+   "old": "Encoding choice basis: Unknown",
+   "verdict": "shorten",
+   "new": "Basis unknown"
+  },
+  {
+   "at": "SourceHeader.tsx:19",
+   "old": "Read with {delimiter}, {encoding} · {basis}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:33",
+   "old": "{source name} / Table import",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:34",
+   "old": "Draft / Needs review badges",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:38",
+   "old": "{FORMAT} · Sheet {sheet} (Sheet csv for every CSV)",
+   "verdict": "shorten",
+   "new": "{FORMAT}, and · Sheet {sheet} for a workbook only"
+  },
+  {
+   "at": "SourceHeader.tsx:39",
+   "old": "Header rows {rows}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:41",
+   "old": "{n} records · {n} columns",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:42",
+   "old": "SHA-256 {hash}…",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:43",
+   "old": "Copy hash / Copied",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "SourceHeader.tsx:46",
+   "old": "Source limitations (open by default)",
+   "verdict": "shorten",
+   "new": "Limitations · {n} (a section the officer opens)"
+  },
+  {
+   "at": "SourceHeader.tsx:47",
+   "old": "{server limitations}",
+   "verdict": "keep",
+   "new": "unchanged, inside the closed section"
+  },
+  {
+   "at": "StaleNotice.tsx:16",
+   "old": "These results are from an earlier state of the case: {reasons}. Nothing can be recorded or approved from them.",
+   "verdict": "shorten",
+   "new": "Out of date ({reasons}): nothing can be recorded or approved."
+  },
+  {
+   "at": "StartJobs.tsx:17",
+   "old": "Import queue keys are missing. Reopen Add files to start an import.",
+   "verdict": "shorten",
+   "new": "Import keys are missing; reopen Add files."
+  },
+  {
+   "at": "StartJobs.tsx:39",
+   "old": "Requesting raw-row and mapping jobs…",
+   "verdict": "shorten",
+   "new": "Starting jobs…"
+  },
+  {
+   "at": "StartJobs.tsx:41",
+   "old": "Retry job admission",
+   "verdict": "shorten",
+   "new": "Retry"
+  },
+  {
+   "at": "TableImportDialog.tsx:62",
+   "old": "Import as a table",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportDialog.tsx:63",
+   "old": "Back to files",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportDialog.tsx:65",
+   "old": "Retry / Retain table and start mapping",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportDialog.tsx:69",
+   "old": "{file name}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportDialog.tsx:71",
+   "old": "The file is kept unchanged first, then read as a table; a table of more than 2,000 records is read as a stream. Tables create mapped draft rows, not buildings; nothing enters the registry.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableImportDialog.tsx:76",
+   "old": "{upload words} / Retry upload / {reading words}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportDialog.tsx:80",
+   "old": "This file is already read as a table in this batch.",
+   "verdict": "shorten",
+   "new": "Already read as a table in this batch."
+  },
+  {
+   "at": "TableImportDialog.tsx:81",
+   "old": "Open that table",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportDialog.tsx:91",
+   "old": "This workbook is above 16 MiB. It is uploaded in parts, kept unchanged, and the sheet you name is read as a stream of up to 1,000,000 records. Formulas are not calculated; a formula's stored result is kept and read as unknown.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableImportDialog.tsx:95",
+   "old": "This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to 1,000,000 records.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableImportFields.tsx:14",
+   "old": "Source case",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:17",
+   "old": "Choose an existing case / Create an unassigned source case",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:22",
+   "old": "Case ID (label and aria-label)",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:26",
+   "old": "{case names}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:29",
+   "old": "Select a listed case or enter its ID. Site assignment is checked before retention.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableImportFields.tsx:32",
+   "old": "New case name",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:41",
+   "old": "UTF-8, Windows-1252, ISO-8859-1, UTF-16 LE, UTF-16 BE",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:49",
+   "old": "CSV · sheet csv · header row 1",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableImportFields.tsx:51",
+   "old": "Officer-stated encoding",
+   "verdict": "shorten",
+   "new": "Stated encoding"
+  },
+  {
+   "at": "TableImportFields.tsx:54",
+   "old": "Choose the encoding stated for this file",
+   "verdict": "shorten",
+   "new": "Choose an encoding"
+  },
+  {
+   "at": "TableImportFields.tsx:58",
+   "old": "UTF-16 LE/BE needs a matching BOM. Other encodings, including Indic legacy encodings, are not supported or inferred. The original stays unchanged.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableImportFields.tsx:73",
+   "old": "Exact sheet name (label and aria-label)",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:81",
+   "old": "The file's card states this sheet / these sheets: {sheets}.",
+   "verdict": "keep",
+   "new": "unchanged: the stated sheet names are values from the card"
+  },
+  {
+   "at": "TableImportFields.tsx:82",
+   "old": "The API cannot list sheets. Enter the name from the workbook.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableImportFields.tsx:86",
+   "old": "Header row numbers (label and aria-label)",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableImportFields.tsx:89",
+   "old": "1–5 increasing row numbers, separated by commas.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TablePage.tsx:23",
+   "old": "This page is the table-only step: it maps columns into draft rows, not buildings, and by itself puts nothing in the registry or on the map. To place rows that hold coordinates, use Place on the map on this table's line in a batch. Its rows become a GeoJSON file taken in as its own item, which follows the batch's path to the map and to a property card that an officer confirms.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TablePage.tsx:43",
+   "old": "This retained source is not a table.",
+   "verdict": "shorten",
+   "new": "Not a table."
+  },
+  {
+   "at": "TablePage.tsx:49",
+   "old": "Batches",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TablePage.tsx:54",
+   "old": "this table (name in the placement aria-label)",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TablePlacement.tsx:64",
+   "old": "This file is an item of its case's batch. Its line in the batch says how many rows were prepared and how many were skipped, and why. That GeoJSON file is then taken in as its own item in this batch, and its own line says whether it is on the map.",
+   "verdict": "cut",
+   "new": "link Its line in the batch beside the button"
+  },
+  {
+   "at": "TablePlacement.tsx:71",
+   "old": "If its rows hold coordinates, this table can be placed on the map as in a batch. It first joins its case's batch as an item, from the same kept original; no second copy is kept. You then choose the coordinate columns and the coordinate system; none is chosen for you.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TablePlacement.tsx:75",
+   "old": "Place on the map (button)",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TablePlacement.tsx:78",
+   "old": "aria-label Place {name} on the map",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TablePlacement.tsx:79",
+   "old": "Place on the map (heading repeated by the button)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableRows.tsx:13",
+   "old": "Formula (its stored result is not used)",
+   "verdict": "shorten",
+   "new": "Formula, stored result not used"
+  },
+  {
+   "at": "TableRows.tsx:14",
+   "old": "Formula with no stored result",
+   "verdict": "shorten",
+   "new": "Formula, no stored result"
+  },
+  {
+   "at": "TableRows.tsx:15",
+   "old": "No value",
+   "verdict": "keep",
+   "new": "No value"
+  },
+  {
+   "at": "TableRows.tsx:16",
+   "old": "Error value in the workbook",
+   "verdict": "shorten",
+   "new": "Workbook error"
+  },
+  {
+   "at": "TableRows.tsx:17",
+   "old": "Not read",
+   "verdict": "keep",
+   "new": "Not read"
+  },
+  {
+   "at": "TableRows.tsx:19",
+   "old": "Not read from the workbook (formula, error or no value)",
+   "verdict": "shorten",
+   "new": "Not read"
+  },
+  {
+   "at": "TableRows.tsx:26",
+   "old": "title {mark words} repeating the cell",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableRows.tsx:27",
+   "old": "Absent / Empty",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:33",
+   "old": "Not mapped / No field mapped",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:39",
+   "old": "title {unavailable words} repeating the cell",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "TableRows.tsx:40",
+   "old": "{label}: {value} / Unknown",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:41",
+   "old": "{cell state} as a small second line",
+   "verdict": "shorten",
+   "new": " · {cell state} inline after the value"
+  },
+  {
+   "at": "TableRows.tsx:54",
+   "old": "aria-label Table records",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:56",
+   "old": "Records",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:57",
+   "old": "{n} records · {n} windows read · {n} mapped / Reading records…",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:64",
+   "old": "Records {a}–{b} were not mapped: {message} ({code})",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:65",
+   "old": "no reason supplied by the server",
+   "verdict": "shorten",
+   "new": "no reason given"
+  },
+  {
+   "at": "TableRows.tsx:70",
+   "old": "No records have been read yet.",
+   "verdict": "shorten",
+   "new": "No records yet."
+  },
+  {
+   "at": "TableRows.tsx:74",
+   "old": "aria-label Records table, scroll for more columns and rows",
+   "verdict": "shorten",
+   "new": "Records table"
+  },
+  {
+   "at": "TableRows.tsx:75",
+   "old": "caption Table records as written, with mapped fields (visually hidden)",
+   "verdict": "shorten",
+   "new": "Records"
+  },
+  {
+   "at": "TableRows.tsx:77",
+   "old": "Record, Source row, {n}. {header} / Empty header, Mapped fields",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:87",
+   "old": "Previous {n} / Next {n}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "TableRows.tsx:88",
+   "old": "No records on this page / Records {a}–{b}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "model.ts:5",
+   "old": "case advanced, reader changed, converter changed, source superseded",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "model.ts:11",
+   "old": "13 no-answer reasons (teacher unavailable ... teacher answer failed its schema)",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "model.ts:49",
+   "old": "The explanation included a value, so it was withheld; confirm the proposed target.",
+   "verdict": "shorten",
+   "new": "Explanation withheld; confirm the target."
+  },
+  {
+   "at": "model.ts:50",
+   "old": "No teacher was available when this table was imported: this column is unmapped.",
+   "verdict": "shorten",
+   "new": "Choose a target."
+  },
+  {
+   "at": "model.ts:51",
+   "old": "The original file was not sent to the teacher; this column needs officer input.",
+   "verdict": "shorten",
+   "new": "Choose a target."
+  },
+  {
+   "at": "model.ts:52",
+   "old": "Data policy does not permit asking the teacher; this column needs officer input.",
+   "verdict": "shorten",
+   "new": "Choose a target."
+  },
+  {
+   "at": "model.ts:53",
+   "old": "This table is too wide for the mapping teacher, so the teacher was not asked and the columns are left for the officer.",
+   "verdict": "shorten",
+   "new": "Choose a target."
+  },
+  {
+   "at": "model.ts:95",
+   "old": "Officer decision / Source header rule / Unknown / {n}%",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "model.ts:166",
+   "old": "Not reported for {n} of {m} chunks",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "useFollowTable.ts:187",
+   "old": "The {kind} is kept unchanged. Its reading as a table is queued on the server.",
+   "verdict": "shorten",
+   "new": "Reading the {kind}: queued on the server."
+  },
+  {
+   "at": "useFollowTable.ts:189",
+   "old": "The server is reading the {kind} as a stream. A large table takes minutes; the reading continues on the server if this dialog closes.",
+   "verdict": "shorten",
+   "new": "Reading the {kind} on the server…"
+  },
+  {
+   "at": "useFollowTable.ts:192",
+   "old": "The table is read. Opening its table page.",
+   "verdict": "shorten",
+   "new": "Opening the table…"
+  },
+  {
+   "at": "useFollowTable.ts:204",
+   "old": "Reading this table stopped.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "useFollowTable.ts:209",
+   "old": "This dialog stopped following the table read; it continues on the server.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "retain.ts:24",
+   "old": "Enter the exact sheet name and 1–5 increasing header row numbers, separated by commas.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "retain.ts:40",
+   "old": "Unsupported table encoding. Choose UTF-8, Windows-1252, ISO-8859-1, UTF-16 LE or UTF-16 BE.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "retain.ts:56",
+   "old": "The server did not return a table profile.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "retain.ts:68",
+   "old": "Choose an active, unassigned source case. This table cannot be attached to a site.",
+   "verdict": "shorten",
+   "new": "Choose an active source case that is not attached to a site."
+  },
+  {
+   "at": "retain.ts:79",
+   "old": "This batch case is archived; its table cannot be read here.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "useRetainTable.ts:23",
+   "old": "The upload was cancelled; nothing was imported.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "recipe.ts:28",
+   "old": "{n}: {header} / Empty header",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "recipe.ts:42",
+   "old": "Give a reason for marking unanswered fields as unknown.",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "recipe.ts:59",
+   "old": "Answer every column and give a reason: {columns}",
+   "verdict": "keep",
+   "new": "unchanged"
+  },
+  {
+   "at": "recipe-api.ts:26",
+   "old": "This recipe does not belong to this retained table. Open its own source page.",
+   "verdict": "shorten",
+   "new": "This recipe belongs to another table; open its own source page."
+  }
+ ]
+}

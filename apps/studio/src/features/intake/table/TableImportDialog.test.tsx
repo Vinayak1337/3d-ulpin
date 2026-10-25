@@ -31,7 +31,7 @@ function render(status: number, details?: unknown, message = words) {
 
 it('TL1: the duplicate-table refusal in the dialog points to the existing table page', () => {
   const html = render(409, { existingTable: { caseId, sourceId, tableId: sourceId } });
-  expect(html).toContain('This file is already read as a table in this batch.');
+  expect(html).toContain('Already read as a table in this batch.');
   expect(html).toContain(`href="/studio/work/cases/${caseId}/tables/${sourceId}"`);
   expect(html).toContain('>Open that table</a>');
   expect(html).not.toContain(words);

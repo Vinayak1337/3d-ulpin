@@ -44,18 +44,13 @@ function unansweredQuestion(question: Question | undefined, target: Target, orig
   return NO_ANSWER_WORDS[question.reason] ?? null;
 }
 
-// A question whose reason is a code, as a sentence. A reason not listed here is the server's own wording.
-const QUESTION_WORDS: Record<string, string> = {
-  TEACHER_RATIONALE_WITHHELD: 'The explanation included a value, so it was withheld; confirm the proposed target.',
-  TEACHER_UNAVAILABLE: 'No teacher was available when this table was imported: this column is unmapped.',
-  CASE_ORIGINAL_TEACHER_REFUSED: 'The original file was not sent to the teacher; this column needs officer input.',
-  TEACHER_DATA_DENIED: 'Data policy does not permit asking the teacher; this column needs officer input.',
-  TEACHER_INPUT_LIMIT: 'This table is too wide for the mapping teacher, so the teacher was not asked '
-    + 'and the columns are left for the officer.',
-};
-
+/**
+ * A question whose reason is a code, in words. Why nobody answered is already in the row's From cell, so such a
+ * question only asks for a target. A reason not listed here is the server's own wording.
+ */
 export function questionWords(reason: string): string {
-  return QUESTION_WORDS[reason] ?? reason;
+  if (reason === 'TEACHER_RATIONALE_WITHHELD') return 'Explanation withheld; confirm the target.';
+  return reason in NO_ANSWER_WORDS ? 'Choose a target.' : reason;
 }
 
 export function targetDefinition(target: Target) {

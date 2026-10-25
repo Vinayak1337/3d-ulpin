@@ -1,5 +1,4 @@
 import { api, unwrap } from '@ulpin/api-client';
-import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
 import type { Selection, TableJob, TableProfile } from './types';
 
 export type TableFormat = Selection['format'];
@@ -24,13 +23,6 @@ export function formatSelection(format: TableFormat, sheet: string, rows: string
     throw new Error('Enter the exact sheet name and 1–5 increasing header row numbers, separated by commas.');
   }
   return { format, sheet, table: null, headerRows };
-}
-
-/** A CSV, XLSX or ODS above 16 MiB is read on the server as a stream into a table by a job; a workbook's
- * one sheet is read with the sheet and header rows the officer typed. TB2: every table is kept through the uploads
- * route; this only chooses the dialog's words. */
-export function streamedImport(file: File) {
-  return /\.(csv|xlsx|ods)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
 }
 
 export function officerEncodingSelection(selection: Selection, encoding: string): Selection {
@@ -65,7 +57,7 @@ export async function createSourceCase(name: string) {
 export async function readSourceCase(caseId: string) {
   const detail = unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } }));
   if (detail.case.siteId || detail.case.archived) {
-    throw new Error('Choose an active, unassigned source case. This table cannot be attached to a site.');
+    throw new Error('Choose an active source case that is not attached to a site.');
   }
   return detail.case;
 }
