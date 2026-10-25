@@ -199,7 +199,7 @@ Size S, code only. After: S1.3o. **Status: merged 25 Oct (int3-pre bf9bccbc, tas
 
 ### S1.3j A file dropped while two uploads are open waits for a free slot
 
-Size S, UI (Claude session). After: S1.3 run 4. **Status: proposed 25 Oct.**
+Size S, UI (Claude session). After: S1.3 run 4. **Status: running 25 Oct (Claude CLI worker, task/s1-3j-upload-wait from int3-pre bf9bccbc; started on the owner's word).**
 
 - **What:** The server allows two open large-original receipts per person; a third file dropped during the load phase was refused with 429 UPLOAD_QUOTA and a Retry upload button, and the officer had to notice. Studio keeps the file, says it waits for a free upload slot, and starts the upload itself when a receipt frees (poll the upload status, bounded by the refusal's freesAt and an outer bound), as S1.3e did for ZIP members on the server.
 - **Files:** apps/studio/src/features/intake/upload-api.ts, upload-model.ts, table/TableImportDialog.tsx and the map drop path that uploads
@@ -207,7 +207,7 @@ Size S, UI (Claude session). After: S1.3 run 4. **Status: proposed 25 Oct.**
 
 ### S1.3k After an import, the map frames the imported features so they are visible
 
-Size S, UI (Claude session). After: S1.3 run 4. **Status: proposed 25 Oct.**
+Size S, UI (Claude session). After: S1.3 run 4. **Status: running 25 Oct (Claude CLI worker, task/s1-3k-import-framing from int3-pre bf9bccbc; started on the owner's word).**
 
 - **What:** In run 4 the ZIP's first package (2,000 NYC footprints) showed as a speck at 1 km scale, and the second package (66 features) at 20 m scale on empty ground (run4/b-first.png, b-second-blank.png). Name why the frame misses each package, and fix the framing so each package's features fill the view after import.
 - **Files:** apps/studio/src/features/ map and import view framing; packages/scene camera fit
