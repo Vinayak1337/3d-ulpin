@@ -43,11 +43,11 @@ import {DispatchReservations,dispatchInProcessOperations,dispatchLaneParameters,
   dispatchHeapBudgetMiB,dispatchScratchBudgetMiB,type DispatchJob} from './dispatch-lanes';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
-let streamingVectorWorker:Promise<void>|undefined;
-let chunkMappingWorker:Promise<void>|undefined;
-let streamedProfileWorker:Promise<void>|undefined;
+const streamingVectorWorkers=new Set<string>();
+const chunkMappingWorkers=new Set<string>();
+const streamedProfileWorkers=new Set<string>();
 let intakeDraftWorker:Promise<void>|undefined;
-let intakeLargeWorker:Promise<void>|undefined;
+const intakeLargeWorkers=new Set<string>();
 let intakeZipLayersWorker:Promise<void>|undefined;
 let intakePageImageWorker:Promise<void>|undefined;
 let intakeNativeDerivativeWorker:Promise<void>|undefined;
@@ -389,10 +389,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
         return;
       }
       if(job.operation==='streaming-vector'){
-        if(!streamingVectorWorker&&admit(job))streamingVectorWorker=runStreamingVectorJob(job.id)
-          // Fenced attempt and durable job state permit replay after restart.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{streamingVectorWorker=undefined;reservations.release(job.id);});
+        if(!streamingVectorWorkers.has(job.id)&&admit(job)){
+          streamingVectorWorkers.add(job.id);
+          void runStreamingVectorJob(job.id)
+            // Fenced attempt and durable job state permit replay after restart.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{streamingVectorWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='raster-window'){
@@ -473,10 +476,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
         return;
       }
       if(job.operation==='chunk-mapping'){
-        if(!chunkMappingWorker&&admit(job))chunkMappingWorker=runChunkMappingJob(job.id)
-          // The shared attempt fence owns retry and durable terminal state.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{chunkMappingWorker=undefined;reservations.release(job.id);});
+        if(!chunkMappingWorkers.has(job.id)&&admit(job)){
+          chunkMappingWorkers.add(job.id);
+          void runChunkMappingJob(job.id)
+            // The shared attempt fence owns retry and durable terminal state.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{chunkMappingWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='intake-draft'){
@@ -487,10 +493,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
         return;
       }
       if(job.operation==='intake-large'){
-        if(!intakeLargeWorker&&admit(job))intakeLargeWorker=runIntakeLargeJob(job.id)
-          // The fenced attempt and the stored step rows own recovery.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{intakeLargeWorker=undefined;reservations.release(job.id);});
+        if(!intakeLargeWorkers.has(job.id)&&admit(job)){
+          intakeLargeWorkers.add(job.id);
+          void runIntakeLargeJob(job.id)
+            // The fenced attempt and the stored step rows own recovery.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{intakeLargeWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='intake-zip-layers'){
@@ -545,10 +554,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
         return;
       }
       if(job.operation==='streamed-profile'){
-        if(!streamedProfileWorker&&admit(job))streamedProfileWorker=runStreamedProfileJob(job.id)
-          // The shared attempt fence owns retry and durable terminal state.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{streamedProfileWorker=undefined;reservations.release(job.id);});
+        if(!streamedProfileWorkers.has(job.id)&&admit(job)){
+          streamedProfileWorkers.add(job.id);
+          void runStreamedProfileJob(job.id)
+            // The shared attempt fence owns retry and durable terminal state.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{streamedProfileWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='document-extraction'){
