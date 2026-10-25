@@ -1,0 +1,5903 @@
+{
+ "task": "S7.24b",
+ "scope": "apps/studio/src/features/intake/ except table/",
+ "method": "JSX text, title/placeholder/aria-label/label/caption/header/alt attributes, and word literals in non-test files, listed before and after; a string present after is kept as state, else cut or shortened",
+ "totals": {
+  "before": 980,
+  "cut": 88,
+  "shortened": 84,
+  "kept": 808,
+  "after": 891
+ },
+ "notes": [
+  "AddFilesDialog.tsx: title={blocked} on Continue cut; it repeated the one-line Blocked reason below the table.",
+  "IntakeTray.tsx: the small line under each file name (kind · format · size) is now the Contents column (format · size · counts), replacing Holds; the row keeps five columns.",
+  "run/Progress.tsx: the server confirmation.reason is no longer shown as a note under the confirmation.",
+  "run/Progress.tsx and run/TargetList.tsx: rows show readinessLabels (Ready to record) instead of the readinessWords sentences, which stay exported for map/inspector/BuildingCard.",
+  "run/Confirm.tsx: the count line repeating the chosen-building count is cut; Recording cannot be undone stays as the one warning before an irreversible press.",
+  "aria-describedby removed with its cut help in LayerCrsAnswer, PlaceOnMapDialog, BatchPdfSection and Confirm.",
+  "PlanReadingSection.tsx: the overlay link aria-label (opens a new tab) is dropped; the link text is the name."
+ ],
+ "strings": [
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:29",
+   "old": "Reading…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:33",
+   "old": "Drop files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:33",
+   "old": "Check what we found",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:33",
+   "old": "Confirm",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:91",
+   "old": "Add files · ${register?.property.name ?? 'building'}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:95",
+   "old": "Close",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:96",
+   "old": "Start import",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:104",
+   "old": "Drop plans, level schedules, unit inventories or deeds",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:106",
+   "old": "CSV and Excel are read here and their floors and units appear on the map. A PDF is kept in a batch, where its pages are read and what they name waits for your review.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:113",
+   "old": "Files for this building",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:114",
+   "old": "File",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:115",
+   "old": "Detected",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:116",
+   "old": "Reads",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:117",
+   "old": "Size",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:118",
+   "old": "Mapping",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:118",
+   "old": "Kept as evidence",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:118",
+   "old": "Proposed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:180",
+   "old": "retain the files in the batch, or import each table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:181",
+   "old": "wait for every file to pass the NYC profile check",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:209",
+   "old": "Add files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:213",
+   "old": "Close",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:215",
+   "old": "Continue with other files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:217",
+   "old": "Continue",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:218",
+   "old": "Start import",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:231",
+   "old": "Drop files here, or choose files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:233",
+   "old": "GeoJSON, GeoPackage and ZIP files are kept unchanged and checked in one batch, one item per layer; the batch converts a GeoPackage or a shapefile set into layers. A CSV, XLSX or ODS dropped alone keeps its table import; dropped with other files, it is kept in their batch and read there as a table. Every other file is kept unchanged as an original in the batch.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:243",
+   "old": "imported as a table. The other files still wait for their route below.",
+   "verdict": "shorten",
+   "new": "imported as a table."
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:249",
+   "old": "Files in this batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:253",
+   "old": "File",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:254",
+   "old": "Detected",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:255",
+   "old": "CRS unverified",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:256",
+   "old": "Contents",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:259",
+   "old": "Mapping",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:261",
+   "old": "Imported as a table · open the table",
+   "verdict": "shorten",
+   "new": "Open the table"
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:263",
+   "old": "Import as a table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:266",
+   "old": "Retain files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:268",
+   "old": "Proposed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:279",
+   "old": "Blocked:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:286",
+   "old": "Reused mapping",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:286",
+   "old": "Proposed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:286",
+   "old": "Manual",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:300",
+   "old": "Add files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:300",
+   "old": "Close",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:301",
+   "old": "Add files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:301",
+   "old": "Close",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:301",
+   "old": "This batch could not be opened.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:306",
+   "old": "choose the coordinate system of ${unverified.map((f) => f.name).join(', ')}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:306",
+   "old": "answer ${open.length} mapping question${open.length > 1 ? 's' : ''}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:309",
+   "old": "${b.name}: import started",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:315",
+   "old": "Add files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:317",
+   "old": "· saved",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:320",
+   "old": "Blocked:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:321",
+   "old": "Save and continue later",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:322",
+   "old": "Start import",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:329",
+   "old": "Files in this batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:330",
+   "old": "File",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:331",
+   "old": "Detected",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:337",
+   "old": "Coordinate system of ${f.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:338",
+   "old": "${f.name}: CRS set to ${e.target.value}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:339",
+   "old": "Choose",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:342",
+   "old": "CRS unverified",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:342",
+   "old": "Choose",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:344",
+   "old": "Contents",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:345",
+   "old": "Mapping",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:351",
+   "old": "Mapping question for ${q.field}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:355",
+   "old": "Reviewed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:356",
+   "old": "Converted to m²",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:356",
+   "old": "Kept as is",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:356",
+   "old": "Mapped to ${value.replace(/^field:/, '')}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:357",
+   "old": "Change",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:360",
+   "old": "Field",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:361",
+   "old": "${q.file}: ${q.field} mapped to ${e.target.value}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:362",
+   "old": "Choose field",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:368",
+   "old": "Choose field",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:381",
+   "old": "Steps",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:391",
+   "old": "GeoJSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:391",
+   "old": "ArcGIS JSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:391",
+   "old": "GeoPackage",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:391",
+   "old": "Shapefile (zip)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:391",
+   "old": "LiDAR (LAZ)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:391",
+   "old": "GeoTIFF",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/AddFilesDialog.tsx:391",
+   "old": "Mixed layers",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:83",
+   "old": "Batches",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:85",
+   "old": "Batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:87",
+   "old": "Continue with other files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:87",
+   "old": "Add files to batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:90",
+   "old": "Originals stay unchanged. These files prepare drafts; recording needs your confirmation.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:93",
+   "old": "Live updates are disconnected.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:93",
+   "old": "The batch is checked no more than once every five seconds.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:94",
+   "old": "Reconnect updates",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:102",
+   "old": "Batch recording and cards",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:138",
+   "old": "The tray shows the last successful read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:145",
+   "old": "PDF readings",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:147",
+   "old": "View PDF reading ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:151",
+   "old": "The dropped files are being kept; each is listed here once it is kept.",
+   "verdict": "shorten",
+   "new": "The dropped files are being kept."
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:152",
+   "old": "No files are enrolled in this batch.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:159",
+   "old": "Files not added to the tray",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:160",
+   "old": "Files not confirmed in the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:161",
+   "old": "These are this upload's responses, not files confirmed in the batch.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:219",
+   "old": "Files waiting before the reload",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:220",
+   "old": "These files were waiting when the page reloaded:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:220",
+   "old": ". Pick them again to add them.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPage.tsx:227",
+   "old": "Dismiss",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:77",
+   "old": "PDF reading in ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:78",
+   "old": "PDF reading ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:79",
+   "old": "OCR reads words only. Passages are candidates, not record fields. No rooms, levels or units are created; the original stays unchanged.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:104",
+   "old": "Pick the pages to read. One press reads them one after another, one OCR job per page; a page already read is not read again. OCR opens a PDF of at most",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:105",
+   "old": "pages.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:106",
+   "old": "Pages OCR can read",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:126",
+   "old": "Choose one page number from this",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:126",
+   "old": "-page PDF. One press reads only that page, up to",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:127",
+   "old": "pixels. The renderer opens originals of at most",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:128",
+   "old": "pages and",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:129",
+   "old": "Page number",
+   "verdict": "shorten",
+   "new": "Page number, 1 to {count}"
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:135",
+   "old": "Choose a page number from 1 to ${count} without a text-layer reading.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:145",
+   "old": "Leaving this page stops later pages from being requested; a page already requested finishes.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:148",
+   "old": "Read the words on the selected pages (OCR)",
+   "verdict": "shorten",
+   "new": "Read the selected pages (OCR)"
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:162",
+   "old": "Candidate OCR passages on page ${run.page}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchPdfSection.tsx:168",
+   "old": "Candidate OCR passage",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchTableSection.tsx:69",
+   "old": "Table in ${name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchTableSection.tsx:70",
+   "old": "Table ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchTableSection.tsx:81",
+   "old": "This file is already read as a table.",
+   "verdict": "shorten",
+   "new": "Read as a table."
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchTableSection.tsx:83",
+   "old": "Open the table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchTableSection.tsx:114",
+   "old": "The original stays unchanged. Reading it as a table creates mapped draft rows, not buildings; nothing enters the register or appears on the map.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchTableSection.tsx:121",
+   "old": "Read as a table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:30",
+   "old": "The server did not answer.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:39",
+   "old": "This drop has finished. See each file’s outcome below.",
+   "verdict": "shorten",
+   "new": "This drop has finished."
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:41",
+   "old": "Waiting to send the first file.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:53",
+   "old": "Files being retained",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:54",
+   "old": "Retaining files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:54",
+   "old": "Upload outcomes",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:56",
+   "old": "Keep this page open while files are sent, one at a time. After a reload, resume unfinished uploads below and pick waiting files again.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:60",
+   "old": "Try again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx:61",
+   "old": "Cancel upload",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:21",
+   "old": "Retain files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:22",
+   "old": "Back to files",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:24",
+   "old": "Opening batch…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:24",
+   "old": "Retain files and open batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:28",
+   "old": "Each original is retained unchanged, then checked in this batch. Nothing is recorded yet.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:30",
+   "old": "Choose the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:37",
+   "old": "Reader estimates use file names and sizes, not checked contents. Other reader limits and questions are checked after upload. Reading does not mean placement on the map or a recorded property.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:40",
+   "old": "The batch opens before upload finishes. Keep its page open to send the files and see progress.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:44",
+   "old": "Other files stay separate. Continue with them from the batch after these files are retained.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:52",
+   "old": "Files to retain",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:52",
+   "old": "Files in this drop",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:54",
+   "old": "File",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:55",
+   "old": "Size",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:56",
+   "old": "Reader estimate",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:58",
+   "old": "Outcome",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:60",
+   "old": "Upload progress",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:64",
+   "old": "Reason",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:69",
+   "old": "Waiting",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:69",
+   "old": "Retaining original",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:69",
+   "old": "Added to batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:70",
+   "old": "Refused",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeDropDialog.tsx:70",
+   "old": "Not confirmed in batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:25",
+   "old": "Files in this batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:26",
+   "old": "Files in this batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:27",
+   "old": "File",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:31",
+   "old": "Status",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:38",
+   "old": "Holds",
+   "verdict": "shorten",
+   "new": "Contents (format · size · counts, one column instead of a small line under the file name)"
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:39",
+   "old": "Coordinates",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:40",
+   "old": "Next step",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:52",
+   "old": "Open package",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:52",
+   "old": "Package prepared",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:55",
+   "old": "Open that area",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:57",
+   "old": "View layout",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:59",
+   "old": "Open the table: ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:59",
+   "old": "Open the table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:60",
+   "old": "View structure",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:62",
+   "old": "Open the reading: ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:62",
+   "old": "Open the reading",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:64",
+   "old": "View page image: ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:64",
+   "old": "View page image",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:66",
+   "old": "View the surface: ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:66",
+   "old": "View the surface",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:78",
+   "old": "Separate cell batches of ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:82",
+   "old": "Open the batch of cell",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:82",
+   "old": "Cell",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:82",
+   "old": ": a separate batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:84",
+   "old": "In that batch:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:97",
+   "old": "Page 1",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/IntakeTray.tsx:98",
+   "old": "Review pages",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayerCrsAnswer.tsx:12",
+   "old": ", stated by the officer",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayerCrsAnswer.tsx:33",
+   "old": "Coordinate system of",
+   "verdict": "shorten",
+   "new": "EPSG code of {layer}"
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayerCrsAnswer.tsx:34",
+   "old": "EPSG:32643",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayerCrsAnswer.tsx:38",
+   "old": "The file states none. Give the EPSG code its coordinates are in.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayerCrsAnswer.tsx:44",
+   "old": "The outcome is not known. The same answer is sent again.",
+   "verdict": "shorten",
+   "new": "The outcome is not known."
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutAnswer.tsx:25",
+   "old": "This retained profile does not support the map layout question.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutAnswer.tsx:33",
+   "old": "No height is stated; heights stay unknown.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutAnswer.tsx:57",
+   "old": "Your layout answers",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutAnswer.tsx:64",
+   "old": "The outcome is not known. Send the same layout again; your choices and request stay unchanged.",
+   "verdict": "shorten",
+   "new": "The outcome is not known."
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutAnswer.tsx:73",
+   "old": "Using this layout…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutAnswer.tsx:74",
+   "old": "Send same layout again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutAnswer.tsx:75",
+   "old": "Use this layout",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:32",
+   "old": "Layout for ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:33",
+   "old": "Layout ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:42",
+   "old": "Layout: not supplied by the record",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:64",
+   "old": "Revision",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:68",
+   "old": "The outcome is not known. Send the same approval again; its layout and request stay unchanged.",
+   "verdict": "shorten",
+   "new": "The outcome is not known."
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:75",
+   "old": "Change",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:81",
+   "old": "Approving layout…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:82",
+   "old": "Send same approval again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/LayoutQuestion.tsx:83",
+   "old": "Approve layout",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PageImageQuestion.tsx:49",
+   "old": "Page image ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PageImageQuestion.tsx:50",
+   "old": "Page image ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PageImageQuestion.tsx:54",
+   "old": "What does this page image show?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PageImageQuestion.tsx:61",
+   "old": "The outcome is not known. Choosing the same answer sends the same request again.",
+   "verdict": "shorten",
+   "new": "The outcome is not known."
+  },
+  {
+   "file": "apps/studio/src/features/intake/PageImageQuestion.tsx:68",
+   "old": "No preview:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PageImageQuestion.tsx:68",
+   "old": "none was made",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:13",
+   "old": "Point (12.34)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:13",
+   "old": "Comma (12,34)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:24",
+   "old": "Place on the map",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:40",
+   "old": "Place on the map · ${name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:55",
+   "old": "Preparing the rows of this table as a GeoJSON file has started. The table&apos;s line in this batch will say how many rows were prepared and how many were skipped, and why. That GeoJSON file is then taken in as its own item in this batch, and its own line says whether it is on the map.",
+   "verdict": "shorten",
+   "new": "Preparing the rows of this table as a GeoJSON file has started."
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:59",
+   "old": "Close",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:66",
+   "old": "The original stays unchanged. Each row with usable coordinates becomes one feature of a new GeoJSON file that cites its row; a row without them is skipped and counted, never placed at 0,0. Points stay points.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:71",
+   "old": "How the rows give their place",
+   "verdict": "shorten",
+   "new": "Coordinates from"
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:74",
+   "old": "An x or longitude column and a y or latitude column",
+   "verdict": "shorten",
+   "new": "x and y columns"
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:75",
+   "old": "One column of WKT text",
+   "verdict": "shorten",
+   "new": "One WKT column"
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:79",
+   "old": "x or longitude",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:81",
+   "old": "y or latitude",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:84",
+   "old": "Decimal mark in the coordinate cells",
+   "verdict": "shorten",
+   "new": "Decimal mark"
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:92",
+   "old": "WKT column",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:94",
+   "old": "WKT text is read with a decimal point, as in 12.34.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:97",
+   "old": "Coordinate system",
+   "verdict": "shorten",
+   "new": "EPSG code"
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:98",
+   "old": "EPSG:32643",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:102",
+   "old": "Give the EPSG code these coordinates are in. None is assumed and the coordinates are not converted.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:108",
+   "old": "Cancel",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlaceOnMapDialog.tsx:111",
+   "old": "The outcome is not known. The same answer is sent again.",
+   "verdict": "shorten",
+   "new": "The outcome is not known."
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:12",
+   "old": "candidate room reading is queued.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:13",
+   "old": "candidate room reading stopped (${reading.error ?? 'reason unknown'}). Nothing was recorded.",
+   "verdict": "shorten",
+   "new": "candidate room reading stopped (${reading.error ?? 'reason unknown'})."
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:15",
+   "old": "no candidate room reading is available.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:18",
+   "old": "${count} candidate ${count === 1 ? 'room' : 'rooms'} · ${scale}. Review before use.",
+   "verdict": "shorten",
+   "new": "${count} candidate ${count === 1 ? 'room' : 'rooms'} · ${scale}."
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:22",
+   "old": "no scale",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:24",
+   "old": "scale from page dimensions: ${result.scale.metresPerPoint.toPrecision(6)} m per page ${frameUnit}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:30",
+   "old": "Candidate room readings",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:34",
+   "old": "Photo labels were not read by OCR; literal room classes are unknown.",
+   "verdict": "shorten",
+   "new": "Room classes unknown: labels not read."
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:48",
+   "old": "View candidate room overlay (opens a new tab)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:48",
+   "old": "View candidate room overlay",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:88",
+   "old": "Candidate rooms in ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:89",
+   "old": "Candidate rooms ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:90",
+   "old": "This separate plan reading proposes room outlines in page pixels. It creates no map placement, levels, units or records. A metric scale needs verified page dimension lines; without them the reading says no scale.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:94",
+   "old": "The plan reader could not be checked.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:98",
+   "old": "If the outcome is not known, pressing again sends the same request.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:109",
+   "old": "This original is above the plan reader's 16 MiB limit.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:110",
+   "old": "Read the words on a selected PDF page (OCR) first. Only an already-read page can propose rooms.",
+   "verdict": "shorten",
+   "new": "Read a page by OCR first."
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:116",
+   "old": "Plan page",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:118",
+   "old": "Page",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:122",
+   "old": "Read candidate rooms again on the selected page",
+   "verdict": "shorten",
+   "new": "Read candidate rooms again"
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:122",
+   "old": "Read candidate rooms on the selected page",
+   "verdict": "shorten",
+   "new": "Read candidate rooms"
+  },
+  {
+   "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:124",
+   "old": "That page has a candidate room reading; it will not be queued again.",
+   "verdict": "shorten",
+   "new": "That page is already read."
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:21",
+   "old": "Which field is its name?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:33",
+   "old": "What is each feature in this file?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:35",
+   "old": "What is each feature in this file?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:37",
+   "old": "Choose what each feature is",
+   "verdict": "shorten",
+   "new": "Choose"
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:58",
+   "old": "Which field identifies each one?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:61",
+   "old": "No field of this file can identify its features: every feature needs a different, non-empty text value or whole number.",
+   "verdict": "shorten",
+   "new": "No field identifies every feature."
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:64",
+   "old": "Fields that cannot identify each feature",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:66",
+   "old": ": repeats, has blanks, or is neither text nor a whole number",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:75",
+   "old": "Does a field give its height?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:78",
+   "old": "Height unit",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:79",
+   "old": "Height unit",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:81",
+   "old": "Choose the source unit",
+   "verdict": "shorten",
+   "new": "Choose"
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:82",
+   "old": "Metres",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:82",
+   "old": "Feet",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:85",
+   "old": "What the height means",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:87",
+   "old": "What the height means",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:91",
+   "old": "Say what the height measures and from where, as the publisher states it. Without a unit and a meaning no height is recorded.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:103",
+   "old": "Not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/QuestionFields.tsx:103",
+   "old": "Choose a field",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/StoppedRetry.tsx:15",
+   "old": "Trying again from the steps already done (retry",
+   "verdict": "shorten",
+   "new": "Trying again (retry {n})."
+  },
+  {
+   "file": "apps/studio/src/features/intake/StoppedRetry.tsx:20",
+   "old": "The outcome is not known. The same retry is sent again.",
+   "verdict": "shorten",
+   "new": "The outcome is not known."
+  },
+  {
+   "file": "apps/studio/src/features/intake/StreamedLayoutAnswer.tsx:13",
+   "old": "A height is not stated for large files yet; heights stay unknown.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/StreamedLayoutAnswer.tsx:52",
+   "old": "Which field identifies each one?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/StreamedLayoutAnswer.tsx:54",
+   "old": "No field of this file holds only text or only whole numbers, so no field can identify its features.",
+   "verdict": "shorten",
+   "new": "No field holds only text or only whole numbers."
+  },
+  {
+   "file": "apps/studio/src/features/intake/StreamedLayoutAnswer.tsx:57",
+   "old": "Which field is its name?",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:23",
+   "old": "Uploads not finished",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:24",
+   "old": "Uploads not finished",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:25",
+   "old": "Each one holds an upload slot until it finishes, is cancelled or expires. Resume it with the same file, or cancel it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:35",
+   "old": "${entry.receivedParts} of ${entry.partCount} parts received",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:36",
+   "old": "${parts}. Being cancelled; the slot frees when its parts are cleaned.",
+   "verdict": "shorten",
+   "new": "${parts}. Being cancelled."
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:37",
+   "old": "${parts}. Being verified.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:38",
+   "old": "${parts}. Expires on ${formatDateTime(entry.expiresAt)}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:41",
+   "old": "The server did not answer.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:85",
+   "old": "Finish cancelling ${entry.filename}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:86",
+   "old": "Finish cancelling",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:90",
+   "old": "Try again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:91",
+   "old": "Resume",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:92",
+   "old": "Cancel upload of ${entry.filename}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/UnfinishedUploads.tsx:93",
+   "old": "Cancel upload",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:9",
+   "old": "Original received",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:9",
+   "old": "File checked",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:9",
+   "old": "Layout prepared",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:9",
+   "old": "Reading file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:10",
+   "old": "Read",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:10",
+   "old": "Read to the limit",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:10",
+   "old": "Part could not be read",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:11",
+   "old": "File could not be checked",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:15",
+   "old": "Not placed yet",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:15",
+   "old": "On the map",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:15",
+   "old": "Attached to a record",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:16",
+   "old": "Waiting for a matching map record",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:16",
+   "old": "Needs an answer",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:17",
+   "old": "Not understood",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:31",
+   "old": "Reading: ${countWords(item.recordsSeen)} records so far",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:37",
+   "old": "The features of this file outside its first map area are in these separate",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:38",
+   "old": "batches, each with its own layout and cards.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:66",
+   "old": "Unknown",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:76",
+   "old": "Map features",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:76",
+   "old": "Table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:76",
+   "old": "Raster",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:76",
+   "old": "Point cloud",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:77",
+   "old": "3D model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:77",
+   "old": "Document",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:77",
+   "old": "Image",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:77",
+   "old": "Archive",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:77",
+   "old": "Unknown",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:84",
+   "old": "GeoJSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:84",
+   "old": "GeoJSON sequence",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:84",
+   "old": "Newline-delimited JSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:85",
+   "old": "Shapefile",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:85",
+   "old": "Shapefile attribute table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:85",
+   "old": "Shapefile index",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:86",
+   "old": "Shapefile ZIP",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:86",
+   "old": "GeoPackage",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:86",
+   "old": "GeoPackage",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:86",
+   "old": "SQLite database",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:87",
+   "old": "Parquet table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:87",
+   "old": "GeoParquet",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:87",
+   "old": "FlatGeobuf",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:87",
+   "old": "Google Earth KML",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:88",
+   "old": "Google Earth KMZ",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:88",
+   "old": "CityGML",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:88",
+   "old": "TIFF image",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:88",
+   "old": "BigTIFF image",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:89",
+   "old": "GeoTIFF image",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:89",
+   "old": "PNG image",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:89",
+   "old": "JPEG image",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:89",
+   "old": "LAS point cloud",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:89",
+   "old": "LAZ point cloud",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:90",
+   "old": "E57 point cloud",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:90",
+   "old": "PLY mesh",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:90",
+   "old": "Comma-separated table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:90",
+   "old": "Tab-separated table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:91",
+   "old": "Excel workbook",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:91",
+   "old": "Excel 97-2003 workbook",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:91",
+   "old": "OpenDocument spreadsheet",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:92",
+   "old": "Word document",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:92",
+   "old": "PDF document",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:92",
+   "old": "IFC building model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:92",
+   "old": "glTF binary model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:93",
+   "old": "glTF model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:93",
+   "old": "OBJ model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:93",
+   "old": "AutoCAD drawing",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:93",
+   "old": "DXF drawing",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:93",
+   "old": "ZIP archive",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:94",
+   "old": "7-Zip archive",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:94",
+   "old": "RAR archive",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:98",
+   "old": "Unknown",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:104",
+   "old": "Unknown size",
+   "verdict": "shorten",
+   "new": "size unknown"
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:121",
+   "old": "Unknown",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:122",
+   "old": "Stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:122",
+   "old": "Stated in a companion file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:122",
+   "old": "Not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:123",
+   "old": "Conflicting statements",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-model.ts:123",
+   "old": "Not applicable",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/batch-queries.ts:88",
+   "old": "The preview differs from the size kept on this file.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:33",
+   "old": "a file no longer listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:81",
+   "old": "Nothing can be confirmed until the evidence is read again.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:82",
+   "old": "Read the current evidence again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:89",
+   "old": "Reading the current evidence and package reviews…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:127",
+   "old": "Confirming the evidence…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:139",
+   "old": "Confirm the evidence of the key ${profile.input.namespace}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:145",
+   "old": "An accepted row or part becomes a citation on its building only; it never becomes a field, a right or an issuance. Several and conflicting candidates are questions: reject one with your reason, or leave it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:155",
+   "old": "Nothing is accepted or rejected: confirm that this key adds no citations",
+   "verdict": "shorten",
+   "new": "This key adds no citations"
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:158",
+   "old": "Your acknowledgement, in your words",
+   "verdict": "shorten",
+   "new": "Your acknowledgement"
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:165",
+   "old": "Confirm the evidence",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:167",
+   "old": "Cancel",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:169",
+   "old": "This key cannot be confirmed while a source is unavailable.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:170",
+   "old": "${reading.join(', ')} ${reading.length === 1 ? 'is' : 'are'} still being read. Confirm when the reading closes, or exclude it with your reason to confirm",
+   "verdict": "shorten",
+   "new": "{files} is (are) still being read."
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:172",
+   "old": "this key without it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:177",
+   "old": "Read the current evidence, check your selections and confirm again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:187",
+   "old": "Confirmation",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:189",
+   "old": "The citations are written when the building is carried to its card.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:191",
+   "old": "Close",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:204",
+   "old": "Files read under this key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:205",
+   "old": "No file is read under this key yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:211",
+   "old": "Excluded with your reason.",
+   "verdict": "shorten",
+   "new": "Excluded."
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:211",
+   "old": "Included.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:212",
+   "old": "Can be confirmed when its reading closes.",
+   "verdict": "shorten",
+   "new": "Still being read."
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:221",
+   "old": "Reason for excluding ${name(source.itemId)}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:239",
+   "old": "Accept every exact single match of this file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:242",
+   "old": "${name} is still being read; its matches can be accepted when the reading",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:244",
+   "old": "Reading every exact single match of ${name}…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:255",
+   "old": "Candidates of this key on this page",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:262",
+   "old": "Decide each candidate",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:263",
+   "old": "Key as written",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:264",
+   "old": "Evidence",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:265",
+   "old": "Outcome",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:266",
+   "old": "Decision",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:269",
+   "old": "No candidate of this key on this page names a building.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:288",
+   "old": "A question, never accepted. Buildings: ${building}.",
+   "verdict": "shorten",
+   "new": "Question · ${building}"
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:294",
+   "old": "Reason for rejecting ${candidate.key.literal}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:312",
+   "old": "Your decisions",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:313",
+   "old": "Your decisions: ${accepted} accepted, ${chosen.length - accepted} rejected",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:319",
+   "old": "Undo the decision on ${words}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx:320",
+   "old": "Undo",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:36",
+   "old": "Link a register by a key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:41",
+   "old": "A row or a document part is proposed for a building only when it holds the key exactly as the building's field holds it. Every match stays a candidate until you confirm it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:53",
+   "old": "Declare the key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:54",
+   "old": "Cancel",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:56",
+   "old": "Declaring the key…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:65",
+   "old": "Key namespace, in your words",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:68",
+   "old": "Name the register's identifier. It is never taken as an official ULPIN.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:71",
+   "old": "Key kind",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:74",
+   "old": "Text, exactly as written",
+   "verdict": "shorten",
+   "new": "Text"
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:75",
+   "old": "Whole number, its digits as written",
+   "verdict": "shorten",
+   "new": "Whole number"
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:87",
+   "old": "Map item with drafted buildings",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:90",
+   "old": "Choose a map item",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:95",
+   "old": "Key field of its buildings",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:98",
+   "old": "Its card lists no fields",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:99",
+   "old": "Choose a field",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:110",
+   "old": "Tables: the column holding the key",
+   "verdict": "shorten",
+   "new": "Key column of each table"
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:112",
+   "old": "No kept table of this batch states its header row yet. Read a kept CSV or workbook as a table first.",
+   "verdict": "shorten",
+   "new": "Read a CSV or workbook as a table first."
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:118",
+   "old": "Not used",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/DeclareKey.tsx:132",
+   "old": "Documents (optional): read their text for the key",
+   "verdict": "shorten",
+   "new": "Documents (optional)"
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:29",
+   "old": "Evidence by key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:40",
+   "old": "Link a register by a key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:54",
+   "old": "This shows the last successful read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:75",
+   "old": "Confirm the evidence of a key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx:82",
+   "old": "Confirm the evidence of",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:17",
+   "old": "No key is declared for this batch yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:21",
+   "old": "Candidates by outcome",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:22",
+   "old": "Candidates by outcome",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:41",
+   "old": "Key ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:42",
+   "old": "A file has a newer evidence reading. Confirm its current matches again before trying the stopped building again; the earlier confirmation does not cover the newer reading.",
+   "verdict": "shorten",
+   "new": "A file has a newer evidence reading; confirm its matches again."
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:47",
+   "old": "A file no longer listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:51",
+   "old": "No source is read under this key yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:60",
+   "old": "Show candidates",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:63",
+   "old": "Every outcome",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:69",
+   "old": "Candidate rows and document parts",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:71",
+   "old": "Key as written",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:72",
+   "old": "Evidence",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:73",
+   "old": "Outcome",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:74",
+   "old": "Buildings",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:76",
+   "old": "No candidates match this read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:78",
+   "old": "First page",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:79",
+   "old": "Next page",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/EvidenceRead.tsx:80",
+   "old": "Reading candidates…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/api.ts:54",
+   "old": "The evidence pages did not advance. Read them again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:97",
+   "old": "more than ${matches.length}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:99",
+   "old": "This file has no exact single match under this key.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:101",
+   "old": "This file has ${total} exact single matches; one confirmation takes ${limit}. Confirm these, then",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:102",
+   "old": "accept the next ${limit}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:104",
+   "old": "${others} other ${others === 1 ? 'decision is' : 'decisions are'} already made, so",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:105",
+   "old": "${chosen.length} are selected.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:110",
+   "old": "was confirmed already here and is",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:110",
+   "old": "were confirmed already here and are",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:111",
+   "old": "${before} ${again} not offered again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:112",
+   "old": "Every exact single match of this file read here was confirmed already.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:115",
+   "old": "Only the first ${INTAKE_EVIDENCE_LIMITS.page * INTAKE_EVIDENCE_LIMITS.decisions} candidates of this",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:116",
+   "old": "file are read; more remain.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:163",
+   "old": "The package review or evidence reading changed for: ${updated.join(', ')}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:164",
+   "old": "Your selections remain.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:165",
+   "old": "Selections removed: ${dropped.join(', ')}. The candidate disappeared or its",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:166",
+   "old": "evidence, building or outcome changed.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:204",
+   "old": "${state.name(source.itemId)}: this key cannot be confirmed while a source is unavailable.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:210",
+   "old": "Give your reason for excluding ${state.name(source.itemId)}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:215",
+   "old": "${state.name(source.itemId)} can be confirmed when its reading closes. Exclude it with your reason to",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:216",
+   "old": "confirm this key without it.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:219",
+   "old": "Include at least one file whose reading closed.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:227",
+   "old": "Accept or reject a candidate, or confirm that this key adds no citations.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:230",
+   "old": "One confirmation decides at most ${INTAKE_EVIDENCE_LIMITS.decisions} candidates;",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:231",
+   "old": "${choices.length} are decided. Undo some and confirm them next.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:235",
+   "old": "A decision names a candidate of ${state.name(choice.candidate.evidence.itemId)}, which is not",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:236",
+   "old": "included. Undo it or include the file.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:239",
+   "old": "${choice.candidate.key.literal} is a question, not an exact single match; it is never accepted.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:241",
+   "old": "Give your reason for each rejected candidate.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:247",
+   "old": "No building is named by a candidate of this key on this page yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:249",
+   "old": "One confirmation names at most ${INTAKE_TARGET_LIMITS.confirmationTargets} buildings;",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:250",
+   "old": "${state.buildings.length} are named. Undo some and confirm them next.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:255",
+   "old": "The package of ${building.locator} is not in the targets read. Refresh the batch and try again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:257",
+   "old": "${building.locator}: its package has no current review, so it cannot be named yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-model.ts:272",
+   "old": "Type your acknowledgement in your own words.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:13",
+   "old": "This key is no longer listed. Close this form and choose a current key.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:18",
+   "old": "Not all selected evidence could be read. Narrow the selection and read again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:27",
+   "old": "a file no longer listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:28",
+   "old": "The evidence reading changed for: ${names.join(', ')}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:63",
+   "old": "The current evidence and package reviews were read again. Check your selections and confirm again;",
+   "verdict": "shorten",
+   "new": "Check your selections and confirm again."
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:64",
+   "old": "nothing was confirmed automatically.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:75",
+   "old": "The declared key changed.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:81",
+   "old": "a building of this key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/confirm-refresh.ts:82",
+   "old": "The package review changed for ${building} (revision ${pkg.revision}).",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:34",
+   "old": "Matched one building",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:34",
+   "old": "No building holds this key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:34",
+   "old": "Several buildings hold this key",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:35",
+   "old": "Conflicting: the key is on more than one row of this table",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:38",
+   "old": "Reading",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:38",
+   "old": "Partial",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:38",
+   "old": "Closed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:45",
+   "old": "not known yet",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:49",
+   "old": "Not read yet: every count is not known yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:51",
+   "old": "with a key, ${knownWords(coverage.keyless)} without a key, ${knownWords(coverage.unread)} unread,",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:52",
+   "old": "${knownWords(coverage.failed)} could not be read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:100",
+   "old": "Name the key in your own words.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:101",
+   "old": "Choose the map item and its key field.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:102",
+   "old": "Choose at least one table column or document.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:110",
+   "old": "whole number written as digits",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:110",
+   "old": "text exactly as written",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:117",
+   "old": "a file no longer listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/evidence/model.ts:127",
+   "old": "None",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:41",
+   "old": "Table · kept in the batch, then read there as a table",
+   "verdict": "shorten",
+   "new": "Table · joins the batch"
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:46",
+   "old": "Table · opens the table import",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:47",
+   "old": "ZIP · the batch reads what it holds",
+   "verdict": "shorten",
+   "new": "ZIP · joins the batch"
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:48",
+   "old": "Map file · joins the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:49",
+   "old": "Shapefile part · read with its other parts as one shapefile",
+   "verdict": "shorten",
+   "new": "Shapefile part · joins the batch"
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:50",
+   "old": "Document · joins the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:52",
+   "old": "Excel 97-2003 workbook · kept as evidence; its cells are not read",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:54",
+   "old": "Image or raster · joins the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:55",
+   "old": "Image · joins the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:56",
+   "old": "Point cloud · joins the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:57",
+   "old": "Building model · joins the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/file-route.ts:58",
+   "old": "Original · kept in the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/hash-file.ts:17",
+   "old": "The file could not be checked.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:16",
+   "old": "Structure stated in ${name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:17",
+   "old": "Structure stated in the file ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:19",
+   "old": "Candidates read from the IFC as stated, without geometry. A storey is a level, not a unit. Nothing here is confirmed or recorded in the register.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:31",
+   "old": "The structure was not read:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:35",
+   "old": ", as candidates",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:41",
+   "old": "not under a storey",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:43",
+   "old": "The file states no building.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:44",
+   "old": "Storeys not under a building",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:45",
+   "old": "Storeys the file does not place under a building",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:48",
+   "old": "not under a building or storey",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:57",
+   "old": "STEP #",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:58",
+   "old": "· GlobalId",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:64",
+   "old": "No storey under this building in the file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:73",
+   "old": "in this storey",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:74",
+   "old": "No space under this storey in the file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:85",
+   "old": "The storey outlines were not read:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:88",
+   "old": "Storey outlines are drawn in the file's own frame (",
+   "verdict": "shorten",
+   "new": "Storey outlines: own frame ({unit}), each to its own size, not on the map."
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:88",
+   "old": "), each fitted to its own size. They are not placed on the map, and no global transform was applied. They show shape only; nothing is measured.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:104",
+   "old": "Outline of storey ${storey.title}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:105",
+   "old": "(STEP #${storey.stepId}) in the file's own frame, not placed on the map",
+   "verdict": "shorten",
+   "new": "Outline of storey ${storey.title}"
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:109",
+   "old": "From",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:109",
+   "old": "From",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:109",
+   "old": "elements in the file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:39",
+   "old": "Candidate building",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:39",
+   "old": "Candidate level",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:39",
+   "old": "Candidate space",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:56",
+   "old": "No IFC reading has been run for this file, so its structure has not been read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:57",
+   "old": "The IFC structure is waiting to be read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:57",
+   "old": "The IFC structure is being read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:58",
+   "old": "This reading is out of date: the file, the case or the reader changed after it ran.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:60",
+   "old": "The IFC reading stopped${status.code ? ` (${status.code})` : ''}. Its structure has not been read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:62",
+   "old": "The reading finished without an accepted result.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:64",
+   "old": "This file was read before the structure scan existed.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:65",
+   "old": "Its structure has not been read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:76",
+   "old": "IfcBuilding",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:77",
+   "old": "IfcBuildingStorey",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:78",
+   "old": "IfcSpace",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:82",
+   "old": "IfcBuildingStorey",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:83",
+   "old": "IfcSpace",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:86",
+   "old": "IfcBuilding",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:86",
+   "old": "IfcBuildingStorey",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:87",
+   "old": "IfcSpace",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:92",
+   "old": "Elevation not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:97",
+   "old": "unit not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:98",
+   "old": "unit: the file states more than one length unit",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:99",
+   "old": "unit: stated without a name",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:100",
+   "old": "unit: ${`${unit.prefix ?? ''}${unit.name}`.toLowerCase()}, as stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:109",
+   "old": "${node.candidate ? candidateWords[node.candidate] : node.entityType} from the file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:115",
+   "old": "Name not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:135",
+   "old": "IfcSpace",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:164",
+   "old": "The storey outlines in this reading are not in the shape the reader writes,",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:165",
+   "old": "so they are not drawn.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:167",
+   "old": "No outline: the file states no slab or space in this storey.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:225",
+   "old": "IfcSlab",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/structure-model.ts:225",
+   "old": "IfcSpace",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/useIfcStructure.ts:37",
+   "old": "The storey outlines could not be read from the accepted result: ${native.error.message}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/useIfcStructure.ts:39",
+   "old": "The storey outlines are being read from the accepted result.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/useIfcStructure.ts:55",
+   "old": "its bytes differ from the size and SHA-256 the reading states.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/ifc/useIfcStructure.ts:59",
+   "old": "it is not readable JSON.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layer-crs-command.ts:20",
+   "old": "Stating…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layer-crs-command.ts:21",
+   "old": "Send the same answer again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layer-crs-command.ts:22",
+   "old": "Submit",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layer-crs-command.ts:41",
+   "old": "Write the code as EPSG and its number, for example EPSG:32643.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layer-crs-command.ts:55",
+   "old": "The server gave no answer. Send the same answer again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-command.ts:48",
+   "old": "The authored layout was not supplied by the record.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-command.ts:100",
+   "old": "The server gave no answer. Send the same layout again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:12",
+   "old": "The layout changed. Read the current layout before approving it.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:13",
+   "old": "not supplied by the record",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:15",
+   "old": "Remembered from an approved layout of the same columns",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:16",
+   "old": "Proposed by the model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:17",
+   "old": "Written by an officer",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:30",
+   "old": "Approved; the file is being read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:31",
+   "old": "This layout has prepared the file's package and can no longer be changed.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:32",
+   "old": "Proposed; read the layout before using it.",
+   "verdict": "shorten",
+   "new": "Proposed."
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:38",
+   "old": "new area",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:38",
+   "old": "existing area",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:40",
+   "old": "The record does not say who proposed this layout.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:46",
+   "old": "Each feature is: ${notSupplied}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:52",
+   "old": "a building (the older layout form states nothing else)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:53",
+   "old": "Each feature is: ${feature}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:55",
+   "old": "Name: not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:57",
+   "old": "Taken from the first ${countWords(plan.prefix.recordsSeen)} features read",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:59",
+   "old": "Height: not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/layout-model.ts:60",
+   "old": "Height: not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:21",
+   "old": "Reading of ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:22",
+   "old": "Reading ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:24",
+   "old": "What the reader stated about the file, as stored. A reading is a candidate: nothing here is placed on the map, confirmed or recorded in the register.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:28",
+   "old": "reading",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:34",
+   "old": "Features not written",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:35",
+   "old": "Features not written",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:46",
+   "old": "Read",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:49",
+   "old": "File fingerprints and reader format",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:58",
+   "old": "Own frame preview",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:59",
+   "old": "Own frame · display only",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:82",
+   "old": "This browser could not draw the preview; the reading above is unchanged.",
+   "verdict": "shorten",
+   "new": "This browser could not draw the preview."
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:84",
+   "old": "1px solid var(--ui-divider)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/NativeReading.tsx:104",
+   "old": "listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:21",
+   "old": "CityGML",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:21",
+   "old": "CityJSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:52",
+   "old": "CityGML",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:57",
+   "old": "Reader format",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:71",
+   "old": "Stated as empty",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:78",
+   "old": "Not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:79",
+   "old": "Yes",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:79",
+   "old": "No",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:81",
+   "old": "None listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:108",
+   "old": "No ${name} reading is named for this file.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:110",
+   "old": "The ${name} reading stopped${status.code ? ` (${status.code})` : ''}; there is no reading to open.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:112",
+   "old": "This reading is out of date: the file, the case or the reader changed after it ran.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:114",
+   "old": "The ${name} reading is waiting to start.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:114",
+   "old": "The ${name} file is being read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:115",
+   "old": "The reading finished without an accepted result.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:118",
+   "old": "Stored reading SHA-256",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:126",
+   "old": "${count(layer.written)} written, ${count(layer.notWritten)} not written",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:128",
+   "old": "nothing left out",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:130",
+   "old": "the first ${count(layer.listed.length)} of ${count(layer.notWritten)} listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:130",
+   "old": "all listed",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:131",
+   "old": "${count(layer.listed.length)} listed from the start of its locator file, not checked against its SHA-256",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:132",
+   "old": "not listed in this read; counts only",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:156",
+   "old": "Drawn from the stored positions in the file's own frame, centred in the view. It is",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:157",
+   "old": "not placed on the map, and nothing is converted, placed or measured: the drawing is for display only.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:158",
+   "old": "The accepted result is not in the shape its reader writes, so no preview is drawn.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:159",
+   "old": "The model is being read from the accepted result.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:160",
+   "old": "The reading holds no polygon the preview can draw.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:162",
+   "old": "This reading states ${count(stated)} positions; the preview draws a model of",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:163",
+   "old": "at most ${count(MODEL_PREVIEW_MAX_POSITIONS)}, so it is not drawn.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:196",
+   "old": "Not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:231",
+   "old": "glTF model in its own frame, ${drawn}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:233",
+   "old": "Axes as the reading states",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:234",
+   "old": "Unit as the reading states",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:235",
+   "old": "Drawn",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:236",
+   "old": "Not drawn",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:236",
+   "old": "${counted(skipped, 'primitive')} not a projected triangle list",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:237",
+   "old": "None",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:238",
+   "old": "Node transforms",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:238",
+   "old": "Not applied: the reading keeps them as declarations",
+   "verdict": "shorten",
+   "new": "Not applied"
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:273",
+   "old": "OBJ model in its own frame, ${drawn}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:275",
+   "old": "Axes as the reading states",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:276",
+   "old": "Units as the reading states",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:277",
+   "old": "Drawn",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:278",
+   "old": "Not drawn",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:278",
+   "old": "${counted(skipped, 'face')} the reader did not project",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:278",
+   "old": "None",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:279",
+   "old": "Faces of more than three corners",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:280",
+   "old": "${count(fans)}, filled as fans for display; the stored faces are unchanged",
+   "verdict": "shorten",
+   "new": "${count(fans)}, filled as fans for display"
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:290",
+   "old": "View",
+   "verdict": "shorten",
+   "new": "Drawn as up"
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:291",
+   "old": "Drag to turn, scroll to zoom. The second value (y) is drawn as up; this sets the view only.",
+   "verdict": "shorten",
+   "new": "The second value (y)"
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/reading-model.ts:302",
+   "old": "The model could not be read from the accepted result: ${read.error.message}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/useNativeReading.ts:53",
+   "old": "its bytes differ from the size and SHA-256 the reading states.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/native/useNativeReading.ts:57",
+   "old": "it is not readable JSON.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:18",
+   "old": "Plan",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:18",
+   "old": "Elevation",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:18",
+   "old": "Photo",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:18",
+   "old": "Something else",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:21",
+   "old": "a plan",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:21",
+   "old": "an elevation",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:21",
+   "old": "a photo",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:21",
+   "old": "something else",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:36",
+   "old": "size not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:37",
+   "old": "Preview of a ${read.format.toUpperCase()} page image, ${size}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:41",
+   "old": "Answer: ${labelWords[read.label.value]} (candidate label, not reviewed).",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:42",
+   "old": "Not answered yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/page-image-model.ts:77",
+   "old": "The server gave no answer. Choose the same answer again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:58",
+   "old": "OCR opens a PDF of at most ${DOCUMENT_PAGE_LIMITS.pages} pages; this",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:59",
+   "old": "one has ${pageCount}, so no page of it can be read by OCR. The original stays kept with its SHA-256.",
+   "verdict": "shorten",
+   "new": "OCR opens a PDF of at most {n} pages; this one has ${pageCount}."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:87",
+   "old": "The PDF reading changed while its passages were read. Open the reading again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:120",
+   "old": "Choose a page number from 1 to ${DOCUMENT_PAGE_LIMITS.pages}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:130",
+   "old": "The selected page is not in this PDF. Choose an existing page number.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:180",
+   "old": "OCR stopped on page ${page} (${status.code ?? 'reason unknown'}); the pages after it",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:181",
+   "old": "were not requested.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:189",
+   "old": "No document reading is available for this",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:190",
+   "old": "file yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:194",
+   "old": "This PDF is ${size}, above ${bound}, the largest original the document reader and OCR take, so it is not",
+   "verdict": "shorten",
+   "new": "This PDF is ${size}, above the ${bound} limit, so it is not read."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:195",
+   "old": "read. The original is kept with its SHA-256.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:199",
+   "old": "The PDF reading is queued.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:200",
+   "old": "The PDF is being read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:201",
+   "old": "This PDF reading is out of date. Open the batch again before retrying.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:202",
+   "old": "The PDF reading stopped before it finished (${reading.code ?? 'reason unknown'}).",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:204",
+   "old": "Only the selected page was requested for OCR;",
+   "verdict": "shorten",
+   "new": "The text layer was not read."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:205",
+   "old": "the text layer was not read.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:206",
+   "old": "The text layer was not read: the page reader takes a PDF of at most",
+   "verdict": "shorten",
+   "new": "The text layer was not read: the PDF is above {10 MiB}."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:207",
+   "old": "${sizeWords(DOCUMENT_LIMITS.nativeBytes)}. OCR takes a PDF of up to",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:208",
+   "old": "${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so its pages can still be read as scanned pages.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:209",
+   "old": "The text-layer reading stopped; a selected page may still be read by OCR",
+   "verdict": "shorten",
+   "new": "The text-layer reading stopped."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:210",
+   "old": "within the page renderer’s bounds.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:211",
+   "old": "The text-layer reading is complete.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:216",
+   "old": "This file can take ${left} more document readings (its history keeps",
+   "verdict": "shorten",
+   "new": "This file can take ${left} more readings; pick at most ${left} pages."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:217",
+   "old": "${DOCUMENT_LIMITS.jobs}); pick at most ${left} pages.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:218",
+   "old": "Every selected page has been read already; nothing will be requested.",
+   "verdict": "shorten",
+   "new": "Every selected page is read already."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:219",
+   "old": "${pages} ${pages === 1 ? 'page' : 'pages'} will be read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:224",
+   "old": "Page ${page}: waiting for the OCR worker.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:225",
+   "old": "Page ${page}: OCR is reading it.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:227",
+   "old": "Page ${page}: not read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:228",
+   "old": "Page ${page}: OCR did not read it. ${ocr.issues.join(' ')} Configure",
+   "verdict": "shorten",
+   "new": "Page ${page}: OCR did not read it. ${ocr.issues.join(' ')}"
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:229",
+   "old": "the document OCR runtime or resolve the stated limit before retrying.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:231",
+   "old": "Page ${page}: read; ${count} candidate ${count === 1 ? 'passage' : 'passages'} with page-and-region",
+   "verdict": "shorten",
+   "new": "Page ${page}: read; ${count} candidate passages, completeness unverified[, partial]."
+  },
+  {
+   "file": "apps/studio/src/features/intake/pdf-reading.ts:232",
+   "old": "citations. Text completeness is unverified.${ocr.outputStatus === 'partial' ? ' The reading is partial.' : ''}",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:20",
+   "old": "a building",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:20",
+   "old": "a land parcel",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:20",
+   "old": "a road",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:20",
+   "old": "public land",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:20",
+   "old": "a utility",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:22",
+   "old": "Point",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:22",
+   "old": "MultiPoint",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:22",
+   "old": "LineString",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:22",
+   "old": "MultiLineString",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:22",
+   "old": "Polygon",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:22",
+   "old": "MultiPolygon",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:23",
+   "old": "Polygon",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:23",
+   "old": "MultiPolygon",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:25",
+   "old": "land parcels",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:26",
+   "old": "public land",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:27",
+   "old": "Point",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:27",
+   "old": "MultiPoint",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:27",
+   "old": "LineString",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:27",
+   "old": "MultiLineString",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:39",
+   "old": "LineString",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:39",
+   "old": "MultiLineString",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:40",
+   "old": "This file holds lines; ${kindWords[kind]} must be an outline.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:41",
+   "old": "This file does not hold outlines only; ${kindWords[kind]} must be an outline.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:42",
+   "old": "The record does not state geometry this kind can use.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:66",
+   "old": "(whole number)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:135",
+   "old": "and",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:136",
+   "old": "${subject.charAt(0).toUpperCase()}${subject.slice(1)} in this file are kept in the original",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:137",
+   "old": "but not drawn as ${drawn}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:141",
+   "old": "Choose what each feature is and which field identifies it.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:142",
+   "old": "not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:143",
+   "old": "not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:145",
+   "old": "unit not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:149",
+   "old": "Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:150",
+   "old": "Name: ${name}. Height: ${height}. It goes to this batch's area,",
+   "verdict": "shorten",
+   "new": "Name: ${name}. Height: ${height}."
+  },
+  {
+   "file": "apps/studio/src/features/intake/question-model.ts:151",
+   "old": "or to a new area named after the file if the batch has none.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retain-batch.ts:28",
+   "old": "Choose an active case for this batch.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retain-batch.ts:50",
+   "old": "The server did not return a map file profile.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retain-batch.ts:71",
+   "old": "Sent through upload after the first route refused it: ${error.message}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retain-batch.ts:99",
+   "old": "Upload cancelled.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retain-batch.ts:111",
+   "old": "The file outcome is not known.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retry-command.ts:13",
+   "old": "Preparing this file stopped after repeated errors;",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retry-command.ts:14",
+   "old": "the steps already done are kept. Nothing more was prepared from it.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retry-command.ts:21",
+   "old": "Trying again…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retry-command.ts:22",
+   "old": "Send same retry again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retry-command.ts:23",
+   "old": "Try again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/retry-command.ts:48",
+   "old": "The server gave no answer. Send the same retry again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/ArtefactLinks.tsx:10",
+   "old": "Open record",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/ArtefactLinks.tsx:14",
+   "old": "Open card PDF",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/ArtefactLinks.tsx:16",
+   "old": "Verification",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/ArtefactLinks.tsx:19",
+   "old": "Card consistent",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:34",
+   "old": "One confirmation",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:40",
+   "old": "Recording cannot be undone.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:40",
+   "old": "If a building stops, completed steps are kept. A card proves what the record cites, not ownership or a right. Buildings do not receive a space identity.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:42",
+   "old": "Your acknowledgement",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:46",
+   "old": "Type your own words. They will be stored exactly as you type them.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:47",
+   "old": "of at most",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:47",
+   "old": "buildings chosen for a card.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:50",
+   "old": "The outcome is not known. Send the same confirmation again to find or store it; the buildings and your words stay unchanged.",
+   "verdict": "shorten",
+   "new": "The outcome is not known."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:56",
+   "old": "Type your acknowledgement before confirming.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:57",
+   "old": "Only packages with a current review, not being recorded, and with ready buildings or no",
+   "verdict": "shorten",
+   "new": "No package can be recorded yet. (or: Type your acknowledgement before confirming.)"
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:58",
+   "old": "buildings can be recorded.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:60",
+   "old": "The current batch could not be read. Refresh it before confirming.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:74",
+   "old": "Next",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:74",
+   "old": "packages",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:75",
+   "old": "Back to the first packages",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:85",
+   "old": "Every recorded building without",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:86",
+   "old": "a card is already listed in a confirmation; its card is made in turn.",
+   "verdict": "shorten",
+   "new": "Every recorded building without a card is already in a confirmation."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:92",
+   "old": "Back to recording packages",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:97",
+   "old": "Storing confirmation…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:98",
+   "old": "Send same confirmation again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:99",
+   "old": "Make these cards",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Confirm.tsx:99",
+   "old": "Record packages and make chosen cards",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:25",
+   "old": "Ready buildings and packages",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:26",
+   "old": "Reading the batch…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:29",
+   "old": "Refresh batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:35",
+   "old": "Reading the next packages…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:56",
+   "old": "Reading a stored confirmation…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:79",
+   "old": "Make cards for the next",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:82",
+   "old": "This lists them on the confirmation below; nothing is made before you confirm.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:88",
+   "old": "buildings chosen for a card.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:91",
+   "old": "Choose the first",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:91",
+   "old": "ready",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:93",
+   "old": "Clear choice",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/IntakeRunPanel.tsx:95",
+   "old": "Choose ready buildings here or tick their rows below. Other buildings stay listed.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:7",
+   "old": "Boundary contact only; no positive footprint-area overlap",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:8",
+   "old": "Horizontal line or point intersection",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:9",
+   "old": "Building footprints overlap horizontally",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:10",
+   "old": "Building and road overlap horizontally",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:11",
+   "old": "Building and public land overlap horizontally",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:12",
+   "old": "Building and utility intersect horizontally",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:13",
+   "old": "The utility relationship lacks evidence for a 3D check",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:20",
+   "old": "Review findings are not available.",
+   "verdict": "shorten",
+   "new": "Findings not available."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:21",
+   "old": "The review names no findings.",
+   "verdict": "shorten",
+   "new": "No findings."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:24",
+   "old": "A finding the Studio has no words for:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:32",
+   "old": "Package",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:34",
+   "old": "Package of a file the batch list does not name",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:43",
+   "old": "Package",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:44",
+   "old": "Being recorded by confirmation",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:45",
+   "old": ". Its buildings cannot be chosen until that run ends.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:51",
+   "old": "Revision",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:54",
+   "old": "This package is already recorded.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Packages.tsx:65",
+   "old": "More packages belong to this batch than this read lists. Only the listed packages can be named in this confirmation.",
+   "verdict": "shorten",
+   "new": "This batch has more packages than listed here."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Progress.tsx:13",
+   "old": "recorded ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Progress.tsx:13",
+   "old": "carded ·",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Progress.tsx:14",
+   "old": "stopped",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Progress.tsx:59",
+   "old": "This confirmation expired",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Progress.tsx:59",
+   "old": "This confirmation expires",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/Progress.tsx:62",
+   "old": "Try the stopped ones again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:24",
+   "old": "Buildings of the batch",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:25",
+   "old": "Show buildings",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:28",
+   "old": "Any readiness",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:33",
+   "old": "Paged building list",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:36",
+   "old": "No buildings match this read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:38",
+   "old": "Reading buildings…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:38",
+   "old": "Show more",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/TargetList.tsx:55",
+   "old": "Being recorded with its package; it cannot be chosen now.",
+   "verdict": "shorten",
+   "new": "Being recorded with its package."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/api.ts:73",
+   "old": "The server gave no answer. Refresh the batch before making another confirmation.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:16",
+   "old": "The package is being prepared for review.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:17",
+   "old": "Ready to record and make a card.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:18",
+   "old": "An answer is needed before this building can continue.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:19",
+   "old": "This building cannot continue with the current evidence.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:20",
+   "old": "The officer has confirmed this building for a card.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:21",
+   "old": "This building is in the register.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:22",
+   "old": "Its property card is made and verified.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:23",
+   "old": "Work stopped; the completed steps are kept.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:27",
+   "old": "Being prepared",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:27",
+   "old": "Ready to record",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:27",
+   "old": "Needs an answer",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:27",
+   "old": "Held",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:28",
+   "old": "Confirmed for a card",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:28",
+   "old": "Recorded",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:28",
+   "old": "Card made and verified",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:28",
+   "old": "Stopped",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:32",
+   "old": "Read the source",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:32",
+   "old": "Draft the package",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:32",
+   "old": "Record in the register",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:32",
+   "old": "Link supporting records",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:33",
+   "old": "Keep a snapshot of the record",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:33",
+   "old": "Check whether an identity applies",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:34",
+   "old": "Make the evidence plan and packet",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:34",
+   "old": "Make and verify the property card",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:37",
+   "old": "Its review has not run yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:60",
+   "old": "No buildings are drafted from this batch yet;",
+   "verdict": "shorten",
+   "new": "No buildings are drafted from this batch yet."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:61",
+   "old": "they appear after a map layout is used.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:69",
+   "old": "These packages will be recorded in the register.",
+   "verdict": "shorten",
+   "new": "These packages will be recorded; no card is made."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:70",
+   "old": "No building is chosen, so no card is made now.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:71",
+   "old": "These packages will be recorded in the register. The ${chosen} chosen buildings will then",
+   "verdict": "shorten",
+   "new": "These packages will be recorded, with cards for the ${chosen} chosen buildings."
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:72",
+   "old": "get a snapshot, an evidence plan and packet, and a property card made and verified without another press.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:73",
+   "old": "Every other ready building of these packages will be recorded without a card.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:78",
+   "old": "This recorded building will get a snapshot, an evidence plan and packet, and a property",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:79",
+   "old": "card made and verified, without another press. Nothing is recorded again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:80",
+   "old": "These ${chosen} recorded buildings will each get a snapshot, an evidence plan and packet, and a property",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:81",
+   "old": "card made and verified, in the order listed, without another press. Nothing is recorded again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:85",
+   "old": "After these ${listed} packages, ${after} more packages of this batch are not yet recorded.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:89",
+   "old": "${counts.recorded} recorded buildings have no card yet.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:116",
+   "old": "No building in this package; its features will be recorded.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/run/model.ts:117",
+   "old": "${pkg.counts.ready} ready buildings will be recorded.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/stream-reader.ts:13",
+   "old": "Live batch updates stopped answering.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/stream-reader.ts:44",
+   "old": "The server did not supply live batch updates.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/stream-reader.ts:53",
+   "old": "Live batch updates ended. Reconnecting.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/stream-reader.ts:56",
+   "old": "The live update exceeded the bounded frame size.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:23",
+   "old": "The fields of this file could not be inventoried, so its layout question cannot be answered.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:26",
+   "old": "This file changed after its fields were inventoried, so its layout question cannot be answered.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:29",
+   "old": "The fields of this file are still being inventoried. The question opens here when every record is read.",
+   "verdict": "shorten",
+   "new": "The fields of this file are still being inventoried."
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:63",
+   "old": "(whole number)",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:69",
+   "old": "This layout is taken from the first ${countWords(item.layoutProfile.recordsSeen)} features read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:70",
+   "old": "The rest of the file is checked against it as it arrives, and packages follow when the whole file is read",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:71",
+   "old": "and checked.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:77",
+   "old": "A field used by the first-part layout",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:120",
+   "old": "Choose what each feature is and which field identifies it.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:121",
+   "old": "not stated",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/streamed-question-model.ts:122",
+   "old": "Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/SurfacePreview.tsx:38",
+   "old": "Not on the map: ${item.name}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/SurfacePreview.tsx:39",
+   "old": "Drawn in the file's own frame ·",
+   "verdict": "shorten",
+   "new": "Own frame · display only · {name}"
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/SurfacePreview.tsx:41",
+   "old": "The read parts are laid out by their corners in the file's own coordinates and units. Nothing is placed, converted or measured.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/SurfacePreview.tsx:45",
+   "old": "Not placed:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/SurfacePreview.tsx:48",
+   "old": "Read parts of ${item.name} in the file's own frame, display only, not on the map",
+   "verdict": "shorten",
+   "new": "Read parts of ${item.name}"
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:5",
+   "old": "Display only, not on the map.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:33",
+   "old": "It could not be read.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:99",
+   "old": "Its parts could not be listed: ${words(error)}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:178",
+   "old": "its content could not be read: ${words(error)}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:185",
+   "old": "The point display read does not state its exact batch count.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:192",
+   "old": "${count(this.placed.size, 'part is', 'parts are')} placed and drawn on the map.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:194",
+   "old": "Only the first ${SURFACE_LIMITS.drawnPerItem} read parts are shown here;",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:196",
+   "old": "Not drawn: ${line}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:197",
+   "old": "Not read: ${line}",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/surface/preview-model.ts:198",
+   "old": "${count(this.quarantined.size, 'part')} could not be read by the reader.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:21",
+   "old": "Which coordinate system are these coordinates in? State its EPSG code, for example",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:22",
+   "old": "EPSG:4326 for longitude and latitude; none is assumed.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:32",
+   "old": "Choose the column of x or longitude and the column of y or latitude.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:33",
+   "old": "Choose two different columns for x and y.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:39",
+   "old": "Choose the column that holds the WKT text.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:44",
+   "old": "Write the code as EPSG and its number, for example EPSG:32643.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:48",
+   "old": "Placing…",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:49",
+   "old": "Send the same answer again",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:50",
+   "old": "Place on the map",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/table-placement-command.ts:87",
+   "old": "The server gave no answer. Send the same answer again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:8",
+   "old": "This is not the file this upload was started with.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:9",
+   "old": "The last finish was interrupted; finishing the upload again.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:14",
+   "old": "uploads are open on this service",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:15",
+   "old": "of your uploads are open",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:16",
+   "old": "uploads are open in this case",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:21",
+   "old": "no upload slot became free within 30 minutes",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:118",
+   "old": "The server did not publish a retained original.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:159",
+   "old": "Waiting for a free upload slot; an earlier file",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:160",
+   "old": "goes first. It starts by itself.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:201",
+   "old": "the open uploads are at their limit",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:202",
+   "old": "Waiting for a free upload slot; ${reason}. It starts by itself.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:248",
+   "old": "The server reports a different immutable part binding. Cancel this upload.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:265",
+   "old": "the server did not answer",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-command.ts:274",
+   "old": "Send the same request again to find the upload before cancelling it.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:28",
+   "old": "This file exceeds the upload maximum of ${limits.largeProfile.limits.maxOriginalBytes .toLocaleString('en-IN')} bytes.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:43",
+   "old": "Checking the file: ${percent}%",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:44",
+   "old": "Waiting for a free upload slot. It starts by itself.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:47",
+   "old": "Verifying the upload",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:48",
+   "old": "Upload cancelled",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:49",
+   "old": "The upload stopped at part ${progress.part} of ${progress.parts}:",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:74",
+   "old": "Its reading is kept as evidence, not placed on the map.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:75",
+   "old": "Building ground outlines may be prepared when the file states a usable horizontal EPSG",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:76",
+   "old": "system and holds supported ground geometry. The outline file's own line says whether it reaches the map;",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:77",
+   "old": "otherwise its reading is kept as evidence.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:78",
+   "old": "point cloud",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:79",
+   "old": "Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most",
+   "verdict": "shorten",
+   "new": "Points are read from LAS 1.2 to 1.4, formats 0–3 or 6–8, up to {n} million points"
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:80",
+   "old": "${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:81",
+   "old": "Waveform formats 4/5/9/10, extra dimensions and other versions or formats are kept, not read.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:84",
+   "old": "Choose Read as a table after upload.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:87",
+   "old": "GeoJSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:88",
+   "old": "GeoJSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:89",
+   "old": "Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:90",
+   "old": "A CityJSON is read up to ${sizeWords(CITYJSON_LIMITS.originalBytes)} and glTF JSON up to",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:91",
+   "old": "${sizeWords(GLTF_LIMITS.originalBytes)}; other JSON is kept, not read. CityJSON building ground outlines",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:92",
+   "old": "may be prepared when the file states a usable horizontal EPSG system and holds supported ground geometry.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:93",
+   "old": "The outline file's own line says whether it reaches the map; otherwise, and for glTF, the reading is kept",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:94",
+   "old": "as evidence.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:95",
+   "old": "CityJSON",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:96",
+   "old": "Read by the CityJSON reader when its bytes show a CityJSON city model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:101",
+   "old": "CityGML",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:102",
+   "old": "Read by the CityGML reader when its bytes show a CityGML city model",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:103",
+   "old": "Other GML is kept, not read. ${groundOutlines}",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:104",
+   "old": "native GIS conversion",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:105",
+   "old": "native GIS conversion",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:106",
+   "old": "native GIS conversion",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:107",
+   "old": "native GIS conversion",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:108",
+   "old": "A complete shapefile set is needed.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:109",
+   "old": "IFC structure",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:110",
+   "old": "PDF native text",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:111",
+   "old": "PDF document",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:112",
+   "old": "Text layer not read above ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, but its pages can be read by OCR",
+   "verdict": "shorten",
+   "new": "Pages read by OCR when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages"
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:113",
+   "old": "when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages, checked after upload; above",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:114",
+   "old": "${DOCUMENT_LIMITS.ocrBatchPages} pages, choose one page number",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:119",
+   "old": "page image preview",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:120",
+   "old": "page image preview",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:121",
+   "old": "page image preview",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:132",
+   "old": "Kind not known yet: will be kept and recognised after upload",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/upload-model.ts:140",
+   "old": "Will be kept, not read: larger than the ${sizeWords(top.bytes)} ${top.name} reader",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/useRetainBatch.ts:34",
+   "old": "The batch could not be retained.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/useRetainBatch.ts:64",
+   "old": "This batch is already uploading files. Wait for them to finish before adding more.",
+   "verdict": "keep as state",
+   "new": null
+  },
+  {
+   "file": "apps/studio/src/features/intake/useRetainBatch.ts:72",
+   "old": "The batch could not be opened.",
+   "verdict": "keep as state",
+   "new": null
+  }
+ ]
+}

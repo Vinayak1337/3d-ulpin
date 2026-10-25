@@ -1,0 +1,45 @@
+{
+  "task": "S7.24b",
+  "title": "Cut taglines, helper text and secondary labels in the intake screens other than tables",
+  "plan_step": 7,
+  "branch": "task/s7-24b-cut-intake",
+  "base": "bac06934",
+  "strings": {
+    "file": "docs/evidence/step-7/s7-24b/strings.json",
+    "before": 980,
+    "cut": 88,
+    "shortened": 84,
+    "kept_as_state": 808,
+    "after": 891
+  },
+  "layout_fixes": [
+    "Batch tray: the small kind, format and size line under each file name became the Contents column (format, size, counts), replacing Holds; still five columns",
+    "EPSG fields are labelled EPSG code instead of a placeholder example and a help line (layer CRS answer, place on the map)",
+    "Single-page OCR: the page field is labelled Page number, 1 to N instead of a help paragraph",
+    "Large-file layout summary states Height: not stated instead of a separate help line",
+    "Recording rows show the short readiness label instead of a sentence",
+    "Every unknown-outcome note is one line, The outcome is not known., with role status; the button already says Send again"
+  ],
+  "decisions": [
+    "Recording cannot be undone. stays as the one line before an irreversible press; the rest of that paragraph is cut",
+    "Reader estimate column keeps the forecast and size ceiling only; its notes (evidence only, outlines may be prepared, choose Read as a table) are cut",
+    "Server confirmation.reason is no longer shown under a stored confirmation; server reasons stay where they are the state (limit reasons, refusals, errors)",
+    "readinessWords and cardsOnlyWords text unchanged: map/inspector/BuildingCard also renders them"
+  ],
+  "net_lines": "source and tests: 219 added, 406 removed",
+  "build_chunks_kb": { "BatchPage": [124.76, 116.42], "AddFilesDialog": [32.45, 30.96] },
+  "checks": {
+    "pnpm studio:typecheck": "exit 0 before and after",
+    "pnpm studio:test": "before: one run exit 1 with no studio output, a second run exit 0; after exit 0; studio 116 files, 761 passed, 2 skipped both times",
+    "intake and map inspector vitest": "before 54 files 339 passed (intake only); after 56 files 353 passed",
+    "pnpm studio:build": "exit 0 before and after, 125 assets",
+    "pnpm typecheck:backend": "exit 0",
+    "openapi --check": "exit 0, 336 operations, no stale pins",
+    "scripts/api/check.py": "exit 0",
+    "git diff --check": "exit 0"
+  },
+  "outside_own": [
+    "apps/studio/src/features/intake/run/model.ts cardsOnlyWords and readinessWords sentences are long but shared with apps/studio/src/features/map/inspector/BuildingCard.tsx, which also adds A card proves what the record cites, not ownership or a right.",
+    "INTAKE_LEGACY_WORKBOOK_WORDS (packages/contracts) is shown as the .xls reader estimate"
+  ]
+}
