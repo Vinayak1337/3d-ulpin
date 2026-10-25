@@ -9,6 +9,7 @@ import {
 import { processorImageProblems, readPin } from './processor-image-pin.mjs';
 import {
   readDemo, readDemoOcrPaths, readDemoDocumentRuntime, demoRuntime, runtimeDefinition, largeOriginalCapacityReport,
+  objectStoreFreeBytes,
 } from './demo-config.mjs';
 import { documentRuntimeReport } from './demo-document-runtime.mjs';
 import { gatewayReport, gatewayReportLines } from './demo-gateway.mjs';
@@ -164,9 +165,12 @@ async function doctor() {
   if (postgres?.state === 'running' && problems.length === 0) {
     const lines = await ingestionQuotaLines(query => exec(runtime, postgres,
       ['sh', '-ec', 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "$1"',
-        'doctor', query]));
+        'doctor', query]), () => objectStoreFreeBytes(selectedProject, runtime, minio));
     lines.forEach(line => console.log(line));
-  } else skip('Ingestion quotas');
+  } else {
+    skip('Ingestion quotas');
+    skip('Storage originals');
+  }
 
   if (minio?.state === 'running' && problems.length === 0) await attempt('Object store reachable (read-only)', async () =>
     (await get(portUrl(minio, 9000, '/minio/health/ready'))).ok,

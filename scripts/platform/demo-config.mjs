@@ -19,19 +19,23 @@ export function demoStartEnvironment(env) {
 }
 
 /** Probe the filesystem mounted at MinIO's object-storage path, not the checkout's host disk. Read-only. */
-export function largeOriginalCapacityReport(env, runtime, minio) {
+export function objectStoreFreeBytes(project, runtime, minio) {
   if (!minio?.mounts.some(mount => mount.Type === 'volume' && mount.Destination === '/data'
-    && mount.Name === `${env.COMPOSE_PROJECT_NAME}_minio-data`)) {
+    && mount.Name === `${project}_minio-data`)) {
     throw new Error('Object-storage volume binding unavailable.');
   }
   const output = runtime.docker('exec', minio.id, 'stat', '-f', '-c', '%a %S', '/data');
   if (!/^\d+ \d+$/.test(output)) throw new Error('Object-storage free bytes unavailable.');
   const [blocks, blockBytes] = output.split(' ').map(BigInt);
+  return blocks * blockBytes;
+}
+
+export function largeOriginalCapacityReport(env, runtime, minio) {
+  const freeBytes = objectStoreFreeBytes(env.COMPOSE_PROJECT_NAME, runtime, minio);
   const configuredBytes = env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES;
-  const freeBytes = blocks * blockBytes;
   return { configuredBytes, freeBytes: String(freeBytes),
     passed: /^\d+$/.test(configuredBytes ?? '') && BigInt(configuredBytes) > 0n
-      && blockBytes > 0n && freeBytes >= BigInt(configuredBytes) };
+      && freeBytes >= BigInt(configuredBytes) };
 }
 
 export const demoRuntime = 'ulpin-demo';
