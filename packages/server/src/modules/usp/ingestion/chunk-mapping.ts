@@ -16,7 +16,7 @@ import {readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
-import {assertStreamingInputTx,streamingReadContextTx} from './streaming-vector';
+import {assertStreamingInputTx,streamingReadContextTx,lockStreamingRowsTx} from './streaming-vector';
 import {compareSourcePins,compareWorkspacePins} from './source-pin';
 import {manualProfileForLockedSourceTx,tabularProfileForLockedSourceTx} from './service';
 import {isTableSource} from './table-windows';
@@ -156,6 +156,7 @@ export async function chunkMappingReadContextTx(
     throw new AppError(403,'MAPPING_READ_BINDING','The retained job belongs to another private source context.');
   if(fingerprint(base)!==inputFingerprint||storedHash!==fingerprint(input))
     throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its immutable input receipt.');
+  await lockStreamingRowsTx(client,caseId,sourceId);
   const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
     "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[input.rawJobId,caseId,sourceId])).rows[0]
     ??notFound('Source streaming job not found.');
@@ -340,6 +341,7 @@ export class ChunkMappingService{
     }
     assertIngestionBinding(binding);
     const fresh=await transaction(async client=>{
+      await lockStreamingRowsTx(client,caseId,sourceId);
       const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
         "AND source_id=$3 AND operation='chunk-mapping' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
         ??notFound('Chunk mapping job not found.');

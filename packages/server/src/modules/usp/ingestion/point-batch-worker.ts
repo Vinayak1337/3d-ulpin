@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {POINT_BATCH_VERSION,POINT_BATCH_LIMITS,PointBatchInputSchema,PointBatchResultSchema,type PointBatchInput} from '@ulpin/contracts/usp';
 import {query,transaction,DbCommitOutcomeUnknown,type DbDeadline} from '../../../infrastructure/db';
-import {AppError,conflict} from '../../../infrastructure/errors';
+import {AppError} from '../../../infrastructure/errors';
 import {putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx,type UspJobAttempt} from '../jobs';
@@ -13,15 +13,26 @@ import {acceptIntakeSurfacePartTx,failIntakeSurfacePartTx,pointRecordsExtent} fr
 
 type Dependencies={request:typeof fetch;put:typeof putOriginal;read:typeof readPointObject};
 const defaults:Dependencies={request:fetch,put:putOriginal,read:readPointObject};
-function failureCode(error:unknown){
+export function pointBatchFailureCode(error:unknown){
   if(error instanceof AppError){
     if(error.code==='DB_DEADLINE'||error.code==='POINT_READ_DEADLINE')return 'POINT_TIMEOUT';
     if(/^POINT_[A-Z_]{1,60}$/.test(error.code))return error.code;
-    if(error.status===409)return 'POINT_INPUT_STALE';
+    // A lease, cancellation or competing attempt changed; this says nothing about source freshness.
+    if(error.status===409)return 'POINT_ATTEMPT_CHANGED';
     if(error.status===403||error.status===404)return 'POINT_ACCESS_REVOKED';
     if(error.code==='STORAGE_TIMEOUT')return 'POINT_STORAGE_UNAVAILABLE';
   }
   return 'POINT_PROCESSING_FAILED';
+}
+/** Only the source-pin assertion can establish stale input, not a job-authority conflict. */
+async function assertCurrentPointInputTx(client:Parameters<typeof assertPointInputTx>[0],
+  input:PointBatchInput,lock=false){
+  try{return await assertPointInputTx(client,input,lock);}
+  catch(error){
+    if(error instanceof AppError&&error.status===409)
+      throw new AppError(409,'POINT_INPUT_STALE',error.message);
+    throw error;
+  }
 }
 /** A successful/replayed conditional PUT verifies pinned bounded bytes. An
  * uncertain PUT recovers only by verifying the same immutable address. */
@@ -88,12 +99,17 @@ async function executePointBatchJob(jobId:string,deps:Dependencies,bounds:DbDead
   if(!job||!['queued','running'].includes(job.status))return;
   const terminal=async(error:unknown,attempt?:UspJobAttempt)=>{
     if(error instanceof DbCommitOutcomeUnknown){console.warn('Point commit outcome requires an authoritative read; no output or attempt is rewritten.');return;}
-    try{await failPointBatchJob(jobId,typeof error==='string'?error:failureCode(bounds.signal?.aborted?bounds.signal.reason:error),attempt);}
+    try{
+      const code=typeof error==='string'?error:pointBatchFailureCode(bounds.signal?.aborted?bounds.signal.reason:error);
+      await failPointBatchJob(jobId,code,attempt);
+    }
     catch{console.warn('Point terminal bookkeeping deferred; canonical fence/lease recovery is retained.');}
   };
   const parsed=PointBatchInputSchema.safeParse(job.payload);if(!parsed.success){await terminal('POINT_JOB_INTEGRITY');return;}
   const input:PointBatchInput=parsed.data;
-  const beforeLocks=async(client:Parameters<typeof assertPointInputTx>[0])=>{pointPublicationLive(bounds);await assertPointInputTx(client,input,true);};
+  const beforeLocks=async(client:Parameters<typeof assertPointInputTx>[0])=>{
+    pointPublicationLive(bounds);await assertCurrentPointInputTx(client,input,true);
+  };
   let attempt:UspJobAttempt|undefined;
   try{
     assertPointJobRow(job,input);attempt=await claimUspJobAttempt(jobId,`point:${randomUUID()}`,beforeLocks,bounds);
@@ -133,8 +149,10 @@ async function executePointBatchJob(jobId:string,deps:Dependencies,bounds:DbDead
       assertPointJobRow({...currentJob,...enrollment},input);
       if(fingerprint(accepted)!==fingerprint(asset)||accepted.sha256!==preflight.resultSha256||currentJob.input_fingerprint!==preflight.inputSha256||
         owned.inputSha256!==preflight.inputSha256||artifact.sha256!==preflight.artifactSha256||artifact.bytes!==preflight.artifactBytes)
-        conflict('The exact prepared point publication or enrolled input changed.');
-      await assertPointInputTx(client,input);await assertUspJobAttemptTx(client,owned);pointPublicationLive(bounds);
+        throw new AppError(409,'POINT_PUBLICATION_CHANGED',
+          'The prepared point result or enrolled input changed before publication. Nothing was accepted.');
+      await assertCurrentPointInputTx(client,input);
+      await assertUspJobAttemptTx(client,owned);pointPublicationLive(bounds);
     },beforeLocks,async client=>{
       await appendCaseIngestionTx(client,input.caseId,{kind:'point-batch.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
