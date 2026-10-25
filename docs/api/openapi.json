@@ -375779,7 +375779,7 @@
                       "additionalProperties": false
                     }
                   ],
-                  "description": "The part asked of the original; a null window or batch is the reader's first part."
+                  "description": "The part asked of the original; a null window or batch reads a whole-extent overview."
                 },
                 "partKey": {
                   "type": "string",
@@ -375997,7 +375997,7 @@
                 "additionalProperties": false
               }
             ],
-            "description": "The part asked of the original; a null window or batch is the reader's first part."
+            "description": "The part asked of the original; a null window or batch reads a whole-extent overview."
           },
           "read": {
             "oneOf": [

@@ -66492,7 +66492,7 @@ export interface components {
                 partIndex: number;
                 /** @enum {string} */
                 state: "planned" | "queued" | "published" | "quarantined";
-                /** @description The part asked of the original; a null window or batch is the reader's first part. */
+                /** @description The part asked of the original; a null window or batch reads a whole-extent overview. */
                 locator: {
                     /** @enum {string} */
                     operation: "raster-window";
@@ -66537,7 +66537,7 @@ export interface components {
                 sha256: string;
                 bytes: number;
             };
-            /** @description The part asked of the original; a null window or batch is the reader's first part. */
+            /** @description The part asked of the original; a null window or batch reads a whole-extent overview. */
             locator: {
                 /** @enum {string} */
                 operation: "raster-window";
