@@ -47,10 +47,8 @@ function CitationWords({ evidence, place, pin }: { evidence: EvidenceRef; place:
       <dt>Source</dt>
       <dd className="ul-row">
         <span className="ul-mono">{evidence.sourceId} · revision {pin.revision}</span>
+        {evidence.pin ? null : <span className="ul-unknown">from the register, not the citation</span>}
         <SourceReadingNote sourceId={evidence.sourceId} />
-        {!evidence.pin ? <span className="ul-help">
-          This citation names no revision. The preview uses the retained source revision in the loaded register.
-        </span> : null}
         <Button variant="ghost" onClick={() => void navigator.clipboard.writeText(evidence.sourceId)}>
           Copy source ID
         </Button>
@@ -76,7 +74,7 @@ function PageRefusal({ error, retry, openFile, regionRead = false }: {
   if (failure.kind === 'changed' && !regionRead) {
     return (
       <EmptyState icon={WarningCircle} title="The original changed after this was cited">
-        {detail} The page is not shown.
+        {detail}
       </EmptyState>
     );
   }
@@ -167,13 +165,12 @@ function PageWithRegion({ page, place, href, provenance, sha256 }: {
           transform={crop?.matrix} />
         {box ? <rect x={box.x} y={box.y} width={box.width} height={box.height} className={styles.region} /> : null}
       </svg>
-      <figcaption className="ul-help">
-        {provenance ? <>
-          Region of page {provenance.page}, drawn by the server from the original ·{' '}
-          <span className="ul-mono">{sha256?.slice(0, 8)}</span><br />
-        </> : null}
-        {outline ? outline.note : 'The citation names this page, not a region.'}
-      </figcaption>
+      {outline && !outline.drawn ? <p className="ul-help" role="status">{outline.note}</p> : null}
+      {provenance ? (
+        <figcaption className="ul-help">
+          Region of page {provenance.page} · <span className="ul-mono">{sha256?.slice(0, 8)}</span>
+        </figcaption>
+      ) : null}
     </figure>
   );
 }

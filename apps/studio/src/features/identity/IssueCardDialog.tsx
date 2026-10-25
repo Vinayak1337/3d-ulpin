@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useBuildingCanonical, useBuildingRegister, type ListedCard } from '../../api/queries';
-import { sourceLabelGaps, type RecordedUnit } from '../review/recorded/model';
+import type { RecordedUnit } from '../review/recorded/model';
 import { assignSubject } from './assignment';
 import { expiryError, expiryInstant, inclusionError, type IssueTarget } from './issue';
 import { AnsweredFacts, IssueForm, PreviewFacts, TypedReason, type IssueEntries } from './IssueParts';
@@ -11,13 +11,8 @@ import { useFieldFocus } from './useFieldFocus';
 import { useIssueFlow, type IssueFlow } from './useIssueFlow';
 import styles from './Registry.module.css';
 
-const STORES = 'Prepare is not a dry run: it stores a snapshot, a plan and a packet in the registry. '
-  + 'Only Issue card stores a card.';
-const READS = 'Prepare reads the listed card and the rows its next revision would state. It stores nothing. '
-  + 'Only Issue new revision stores a card.';
-const NO_CARD_YET = 'No card exists yet. Closing this dialog undoes nothing; opening it again starts a new Prepare.';
-const SAME_REQUEST = 'The registry lists no new card for this unit. The card request can be sent again: it goes '
-  + 'with the same key, so the registry stores at most one card for it.';
+const NO_CARD_YET = 'No card exists yet.';
+const SAME_REQUEST = 'The registry lists no new card for this unit; the request can be sent again.';
 
 /** What the steps and the reads after them left to say: a stop, a refusal, an unknown outcome, a stored card. */
 function Outcome({ flow }: { flow: IssueFlow }) {
@@ -35,8 +30,7 @@ function Outcome({ flow }: { flow: IssueFlow }) {
       ) : null}
       {card && !flow.busy && !flow.readError ? (
         <Banner tone="warning">
-          The registry answered card {card.cardId}, revision {card.revision}. The cards read after it do not list
-          this revision.
+          Card {card.cardId} revision {card.revision} was answered and is not listed.
         </Banner>
       ) : null}
     </>
@@ -74,7 +68,6 @@ function Prepared({ flow, first, sent, form }: {
   const reason = first && sent ? <TypedReason typed={sent} /> : null;
   return (
     <>
-      <p>{first ? STORES : READS}</p>
       {prepared ? reason : form}
       <AnsweredFacts answered={flow.answered} />
       {prepared ? <PreviewFacts preview={prepared.preview} /> : null}
@@ -126,8 +119,7 @@ export function IssueCardDialog({ buildingId, unit, floorLabel, target, listed, 
       footer={footer(flow, primary, onClose)}>
       {subject ? (
         <div ref={body} className={styles.body}>
-          <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} gaps={sourceLabelGaps(building!.gaps)}
-            withCode />
+          <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} withCode />
           {typeof subject === 'string' ? (
             <Banner tone="warning">The record does not state {subject}, so no card can be prepared.</Banner>
           ) : null}

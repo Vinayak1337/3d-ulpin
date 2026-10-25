@@ -5,8 +5,8 @@ import { Button, Dialog } from '@ulpin/ui';
 import { deleteBuilding } from '../../api/queries';
 
 /**
- * Confirms deleting one building. Deletion reaches the public portal too, so the dialog says what goes and asks
- * once. An area is retired instead (RetireAreaDialog); nothing of it is deleted.
+ * Confirms deleting one building: the dialog says what goes and asks once. An area is retired instead
+ * (RetireAreaDialog); nothing of it is deleted.
  */
 export function DeleteDialog({ target, onClose, onDeleted }: {
   target: { kind: 'building'; id: string; name: string; detail: string };
@@ -37,7 +37,6 @@ export function DeleteDialog({ target, onClose, onDeleted }: {
       )}>
       <div className="ul-stack">
         <p style={{ margin: 0 }}>{target.detail}</p>
-        <p className="ul-help" style={{ margin: 0 }}>It is removed from the Studio and the public portal. Requests filed for it stay in Requests.</p>
         {error ? <p className="ul-help" role="alert" style={{ margin: 0, color: 'var(--ui-danger)' }}>{error}</p> : null}
       </div>
     </Dialog>

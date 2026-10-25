@@ -44,7 +44,7 @@ describe('commandFailure', () => {
   it('keeps a fault that is answered before any write as a refusal', () => {
     const error = refusal(503, 'LOCAL_OPERATOR_CONFIGURATION', 'The local operator is not configured.');
     expect(commandFailure(error).unknown).toBe(false);
-    expect(commandFailure(error).text).toContain('Nothing was written. (LOCAL_OPERATOR_CONFIGURATION)');
+    expect(commandFailure(error).text).toContain('nothing was written. (LOCAL_OPERATOR_CONFIGURATION)');
   });
 
   it('says that the running server has no such route', () => {

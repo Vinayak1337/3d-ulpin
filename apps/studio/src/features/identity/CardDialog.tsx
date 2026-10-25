@@ -14,7 +14,7 @@ export function verifyPath(workflow: SpaceWorkflow) {
 }
 
 /**
- * S14: the card preview with scope and audience; party names are forced off for Public. The code, revisions
+ * S14: the card preview with its audience; party names are forced off for Public. The code, revisions
  * and chain are this browser's own (local/workflow.ts), so the dialog says it is a draft on this device.
  */
 export function CardDialog({ workflow, space, level, buildingName, unanswered = null, onClose }: {
@@ -60,18 +60,10 @@ export function CardDialog({ workflow, space, level, buildingName, unanswered = 
         />
         <div className="ul-stack" style={{ alignContent: 'start', gap: 20 }}>
           <div className="ul-stack" style={{ gap: 6 }}>
-            <span className="ul-caption">Scope</span>
-            <span className="ul-body-sm">Unit · one space</span>
-          </div>
-          <div className="ul-stack" style={{ gap: 6 }}>
             <span className="ul-caption">Audience</span>
             <SegmentedControl label="Audience" value={audience} onChange={setAudience} options={[{ value: 'public', label: 'Public' }, { value: 'owner', label: 'Owner' }, { value: 'officer', label: 'Officer' }]} />
           </div>
           <Toggle label="Party names" checked={audience !== 'public' && names} disabled={audience === 'public'} onChange={setNames} />
-          <div className="ul-stack" style={{ gap: 6 }}>
-            <span className="ul-caption">QR opens</span>
-            <span className="ul-body-sm">Verification page for this code and revision</span>
-          </div>
         </div>
       </div>
     </Dialog>

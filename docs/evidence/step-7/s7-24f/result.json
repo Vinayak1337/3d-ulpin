@@ -1,0 +1,40 @@
+{
+  "task": "S7.24f",
+  "title": "Cut taglines, helper text and secondary labels in the register, identity, evidence, verify, manage, batches and placeholder screens",
+  "plan_step": 7,
+  "base": "2a4d18c0",
+  "strings": {"file": "strings.json", "before": 565, "cut": 57, "shortened": 61, "kept": 446, "keptAsState": 1},
+  "net_lines_apps": {"added": 166, "removed": 248},
+  "layout_fixes": [
+    "Register index: the header is the Register title and its tabs; the request row and head drop the kind that the title already names",
+    "Reject: the tooltip and the two-sentence note became one line, Reject needs a note, shown only while the note is empty",
+    "Card verification: the checked time is a Checked row and the signature a Signature row; a revocation reason code sits beside the verdict",
+    "Cited page: a revision taken from the register is marked from the register, not the citation, beside the revision itself",
+    "Issue card: the 24-hour rule is in the Valid until label and appears as the error only when the expiry is refused",
+    "Sources: the file name shows only when it differs from the chip name; the count beside Sources (the Documents tab count) is gone"
+  ],
+  "kept_as_state": [
+    "Disabled reasons in one short line: Needs a sanctioned plan and an observed survey; Select a unit with a proposed code",
+    "Counts with their record state: N reviewed levels from a level schedule; This case holds N retained sources; Rows a to b of n",
+    "Server refusals and reading statements where they are the state of the thing; region notes only when the region is not drawn",
+    "The deviation exclusions list and the What the sources do not say list stay as the record states them",
+    "Draft on this device, not a registry record stays as the draft state of a browser-made code"
+  ],
+  "not_changed_outside_own": [
+    "app/router.tsx passes PlannedPage a milestone; the placeholder title now carries it, so no prop is dead",
+    "portal/RecordPage.tsx passes DraftNotice its own words; DraftNotice keeps the children prop and drops only its default",
+    "map/MapWorkspace.tsx passes DeleteDialog its own detail line; the dialog's second help line is cut for both callers",
+    "identity/outcome.ts refusal words are shared with intake and review screens; they are joined into one sentence each, and no test outside OWN asserts them",
+    "The export builders register/registry.ts, workbook.ts and exporters.ts write files (PDF, workbook, package readme), not screens, and are unchanged"
+  ],
+  "checks": {
+    "studio_typecheck": {"before": 0, "after": 0},
+    "studio_test": {"before": "761 passed, 2 skipped", "after": "761 passed, 2 skipped", "exit": 0},
+    "studio_build": {"before": 0, "after": 0, "index_chunk_kb": {"before": 244.84, "after": 244.55}},
+    "typecheck_backend": 0,
+    "openapi_check": 0,
+    "check_py": 0,
+    "git_diff_check": 0,
+    "ui_design_scan": "0, no candidates"
+  }
+}

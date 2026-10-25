@@ -21,7 +21,7 @@ describe('the verification report of a registry card', () => {
   it('orders the verdict: revoked, not consistent, expired, superseded', () => {
     const superseded = withLifecycle({ superseded: true, latestRevision: 2 });
     expect(verdictOf(superseded)).toEqual({ tone: 'warning', text: 'Superseded by a later revision',
-      detail: 'Latest revision: 2' });
+      detail: null });
     const expired = withLifecycle({ superseded: true, latestRevision: 2, expired: true });
     expect(verdictOf(expired)).toMatchObject({ tone: 'warning', text: 'Expired 11 Oct 2026, 19:09' });
     const inconsistent: CardVerification = { ...expired, result: 'inconsistent' };
@@ -48,7 +48,7 @@ describe('the verification report of a registry card', () => {
 
   it('states the signature as not assessed with its reason, never as unsigned or valid', () => {
     const text = signatureText(report.signature);
-    expect(text).toBe('Signature: not assessed. Reason: no trusted key policy exists (NO_TRUSTED_KEY_POLICY).');
+    expect(text).toBe('not assessed · no trusted key policy exists (NO_TRUSTED_KEY_POLICY)');
     expect(text).not.toMatch(/unsigned|valid/i);
   });
 
