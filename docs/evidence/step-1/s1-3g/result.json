@@ -1,50 +1,54 @@
 {
-  "task": "S1.3g",
-  "planStep": 1,
-  "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf",
-  "verdict": "BLOCKED: stopped at the explicit OWN boundary; no product fix or causal claim.",
-  "reviewedEvidence": "5972c394:docs/evidence/step-1/s1-3/run4/{result,faults,jobs,telemetry}.json",
-  "findings": [
-    "All five named workers discard non-AppError details when writing their generic failure code.",
-    "jobs.error is text used for the existing code; payload is immutable input, not diagnostic storage.",
-    "usp_job_attempts has no cause column; completion_sha256 cannot hold diagnostics.",
-    "db.ts uses max 8 and connectionTimeoutMillis 5000; DISPATCH_LANES concurrencies sum to 31.",
-    "Run 4 records six recovered generic-error jobs, but no underlying exception.",
-    "Health has 192 samples, waiting maximum 2 at 749.557 s; this does not identify a timeout."
-  ],
-  "scopeBlocker": {
-    "requiredOutsideOwn": [
-      "database/manifest.json",
-      "packages/server/src/modules/usp/migrations.ts"
-    ],
-    "reason": "A new additive cause-column migration must be hash-registered and invoked by the existing USP migration transaction. sql-loader.ts only accepts manifest-registered SQL. Neither wiring file is owned; no alternate migration loader or request-time DDL was introduced.",
-    "migration": null,
-    "contractChanged": false
+  "task": "S1.3g", "planStep": 1,
+  "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf", "implementation": "ea4f2f34",
+  "verdict": "Mechanism reproduced; conditional fix implemented. Integration needs SQL audit allowlist and refreshed pins. Historical run-4 cause remains unknown.",
+  "inputs": "5972c394:docs/evidence/step-1/s1-3/run4/{result,faults,jobs,telemetry}.json; Halifax/ZIP receipts reviewed, originals not reopened.",
+  "cause": {
+    "column": "usp_job_attempts.failure_cause nullable jsonb",
+    "migration": "usp_job_failure_cause_001: database/sql/60-usp/{26-job-failure-cause-check,27-job-failure-cause-schema,28-job-failure-cause-mark}.sql",
+    "example": { "errorCode": "STREAMING_WORKER_ERROR", "class": "Error", "message": "timeout exceeded when trying to connect" },
+    "behavior": "recordUspJobFailure asserts the live fence and saves before retry/terminal handling; later success preserves diagnostics. Historical rows stay null. One safeWorkerCause helper retains bounded class, SQLSTATE/Node code, errno, syscall. Four exact pg transport messages allowed; all other text withheld. No SQL, parameters, URLs, paths, stack/detail/hint copied; message <=200 characters. Officer words/API contract unchanged."
   },
   "comparison": {
-    "hypothesis": "Concurrent jobs exhaust the dispatcher pool and wait over 5 seconds for acquisition.",
-    "success": "A bounded run-4-shaped test against the test database stores the actual pg acquire-timeout cause.",
-    "stop": "No acquire timeout means no pool or retry-policy changes.",
-    "executed": false,
-    "reason": "Stopped at migration wiring boundary. ULPIN_DISPATCH_TEST_DATABASE_URL, TEST_DATABASE_URL and DATABASE_URL are also unset; no credentials or runtime files were read.",
-    "qualification": "Neither reproduced nor disproved; no baseline-fail/fixed-pass claim. Future diagnostics must retain class, SQLSTATE/errno, syscall and a scrubbed message capped at 200 characters."
+    "method": "Real pg Pool/pg-pool, fake Client through Pool Client option; no database/network. Execute original db.ts from git show and current db.ts with controlled imports. Assert initial timeout 5000 ms, scale 1:100 to 50 ms; holders await 120 ms (modeled 12 s slow I/O, NOT measured latency).",
+    "run4LaneCounts": { "table": 8, "vector": 79, "stream": 27, "teacher": 10, "link": 4, "other": 1, "point": 55, "raster": 11, "model3d": 5, "document": 3 },
+    "shape": "203 jobs; min(count,lane cap)=21 holders + tick/heartbeat=23. Lane-cap stress envelope, NOT actual run-4 concurrency: singleton/memory/scratch admission is not replayed.",
+    "baseline": { "pool": 8, "accepted": 8, "acquireTimeouts": 15 },
+    "fixed": { "pool": 33, "accepted": 23, "acquireTimeouts": 0 },
+    "proof": "Actual fenced writer stores each pg exception as the example above. Five actual generic catch bodies, redaction, expired-fence refusal, busy acquisition, SQL non-replay and socket-error release pass.",
+    "counterexample": "S13G_BASELINE_DB=1 substitutes original db.ts for the fixed arm: exit 1, [15,15] != required [15,0]. Normal test passes. Infrastructure substitution only, not a whole baseline checkout.",
+    "decision": "More than eight possible: stream 4 + intake-large 2 + mapping 2 + ZIP 1 already equals nine allowed jobs, before nested acquisitions/housekeeping. Long holds below exceed 5 s; conditional fix warranted, historical causation unproven."
   },
-  "postgresConnectionLimit": {
-    "value": null,
-    "reason": "compose.yaml pins PostgreSQL 17 but states no max_connections; no number assumed. Runtime reads/actions were prohibited."
+  "connectionReadingRoot": "packages/server/src/; ingestion/ below abbreviates modules/usp/ingestion/. Lines at ea4f2f34.",
+  "connectionReading": {
+    "streaming-vector": "ingestion/streaming-vector-worker.ts:124-164,302-354: S3 PUT/read, raw consumption and CRS HTTP outside SQL scopes. Only topology owns separate SQL (streaming-vector-validation.ts:6-14), statement timeout 2000 ms. No SQL connection spans external I/O.",
+    "streamed-profile": "ingestion/streamed-profile-worker.ts:243-250: rawService.chunk between window/publication transactions. streaming-vector.ts:187-212 releases before S3 read at 203. No external-I/O hold; ordinary SQL/lock waits have no overall deadline.",
+    "chunk-mapping": "ingestion/chunk-mapping-worker.ts:29-80,166-191,353-384: ordinary S3/teacher work outside SQL. Exception: chunk-mapping-tabular.ts:92-100 -> chunk-mapping-learning.ts:157-174 holds a transaction across retained-original read (infrastructure/storage.ts:236-237, 30 s), then development learning spawnSync (:100-102, 60 s). Case-original learning skips child execution; lock/filesystem time adds.",
+    "intake-large-draft": "ingestion/intake-large-worker.ts:319-333 -> intake-part-draft.ts:56,80,89 -> proved-area-part.ts:125,151: pinned connection spans mapped/raw readers, nested acquisitions and unbounded readObject (infrastructure/storage.ts:52-64). modules/areas/areas.ts:561-579,632 additionally awaits HTTP normalize (areaGeo:94-109, 60 s/call). No overall transaction deadline; draft's 60 s check is after a cut.",
+    "intake-large-cells": "ingestion/intake-large-worker.ts:260-289 -> intake-cell-files.ts:133-148: separate transaction spans measurement, sidecar I/O, heartbeat and receipt. Range 30 s/call; sidecar PUT/verify separate 30 s signals; v1 finalization 120 s (packages/contracts/src/usp/ingestion.ts:235). No whole-cell bound; receipt/heartbeat acquire while parent holds. Other admission/step/compare scopes SQL-only.",
+    "intake-zip-layers": "ingestion/intake-zip-layers-worker.ts:82-102 renews before I/O. intake-zip-layers.ts:352-356 -> service.ts:467-487 holds small-map retention transaction across putOriginal/verification, no application deadline (infrastructure/storage.ts:137-162). Other receipt S3 runs between SQL scopes (large-original.ts:283-296,350-383); registration probes outside SQL (intake-service.ts:145-151).",
+    "heartbeat": "modules/usp/jobs.ts:292-302: connection spans beforeLocks/UPDATE; all five callers supply SQL-only assertions, no external I/O. Ordinary lock waits unbounded. Cell path can already hold a parent connection."
   },
-  "no1": "Same cause not established. apps/studio/vite.config.ts API_PROXY forwards /api to ULPIN_API_TARGET (default loopback port 3188), including preview. A browser failed-to-fetch and absent case do not prove a pg timeout. API and dispatcher have separate process pools; changing only the dispatcher pool would not directly resize the POST pool. Studio unchanged.",
+  "poolFix": "db.ts recognizes scripts/dispatcher.ts or .js: sum lane concurrency 31 + tick/heartbeat 2 =33; API/migration stay 8. Dispatcher-only queue-acquire timeout backs off 2 s before SQL, without failure/reclaim/attempt mutation. Never replay SQL, establishment faults or unknown commits; deadline/cancellation retained. Admission budgets unchanged.",
+  "postgresLimit": {
+    "basis": "Lead-approved PostgreSQL 17 documented defaults: compose.yaml sets no max_connections/-c override; NOT a live SHOW.",
+    "maxConnections": 100, "superuserReserved": 3, "ordinarySlots": 97,
+    "budget": "33 dispatcher + 8 API + 1 serial doctor psql + 8 conservative migration pool cap =50, leaving 47 ordinary slots.",
+    "citation": "https://www.postgresql.org/docs/17/runtime-config-connection.html#GUC-MAX-CONNECTIONS ; #GUC-SUPERUSER-RESERVED-CONNECTIONS"
+  },
+  "no1": "Not established. apps/studio/vite.config.ts API_PROXY forwards /api in preview/development to ULPIN_API_TARGET (default loopback 3188). POST uses a separate API pool, unchanged. Failed-to-fetch, absent case and health waiting max 2 supply no exception/upstream cause. Dispatcher fix does not qualify this failure. Studio unchanged.",
   "checks": {
-    "phase": "before and after; detailed logs E:/ulpin-tmp/s1-3g/{before,after}-*.log",
-    "pnpm typecheck:backend": { "exit": [0, 0], "projects": 2 },
-    "pnpm studio:typecheck": { "exit": [0, 0], "projects": 4 },
-    "pnpm studio:test": { "exit": [0, 0], "passed": 831, "skipped": 3, "files": 128 },
-    "WORKING-RULES section 5 server set": { "exit": [0, 0], "passed": 1060, "skipped": 5, "total": 1065 },
-    "openapi.ts --check": { "exit": [0, 0], "operations": 336, "schemas": 379 },
-    "python scripts/api/check.py": { "exit": [0, 0], "operations": 336, "schemas": 379 },
-    "git diff --check": { "exit": [0, 0] },
-    "new regression test": { "exit": null, "reason": "Not implemented: task stopped before product changes." }
+    "logs": "E:/ulpin-tmp/s1-3g/; baseline standard checks all 0. After:",
+    "pnpm typecheck:backend": "0; 2 projects", "pnpm studio:typecheck": "0; 4 projects",
+    "pnpm studio:test": "0; 831 passed, 3 skipped, 128 files",
+    "section5ServerSet": "0; 1060 passed, 5 skipped, total 1065; optional DB cases untouched",
+    "newTestAndDbTransactionMode": "0; 11 passed, 0 skipped; tests/worker-failure.test.ts + tests/db-transaction-mode.test.ts",
+    "targetedZipAndNewAndDbMode": "0; 53 passed", "baselineDbCounterexample": "1 expected; 8 passed, 2 failed including parent",
+    "openapi.ts --check": "1 expected stale source-pins; catalogue unchanged, 336 operations/379 schemas",
+    "python scripts/api/check.py": "1 expected producer changed: packages/server/src/infrastructure/db.ts",
+    "python scripts/db/verify_extraction.py": "1: closed task-ID allowlist excludes S1.3g; out-of-scope file unchanged",
+    "git diff --check": "0"
   },
-  "inputs": "Run-4 Halifax and ZIP job receipts reviewed only; no real input file reopened or processed.",
-  "next": "Lead must extend OWN to migration wiring, supply an authorized test-database connection without exposing credentials, and identify an allowed source for PostgreSQL max_connections before resuming. Cause retention, five failure-path tests, bounded comparison and any conditional pool/busy-wait fix remain undone."
+  "next": "Lead: allow S1.3g in scripts/db/verify_extraction.py; refresh pins for db.ts, worker-failure.ts, five workers, jobs.ts and migrations.ts. Apply migration/load only in an authorized runtime step; read failure_cause to establish actual causes. No runtime, Docker, image, provider, GPU, demo or credential action.",
+  "size": "413 net implementation/test lines: 307 plus 106 manifest-registration boilerplate; above approximate task limit."
 }
