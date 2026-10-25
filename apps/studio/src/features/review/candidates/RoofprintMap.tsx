@@ -25,7 +25,7 @@ export function RoofprintMap({ cards, selectedId, onSelect }: {
   return (
     <div className={styles.canvasWrap}>
       <SceneView look={look} className={styles.canvas} buildings={footprints} detail={null} state={state}
-        onPick={onPick} label="Map of roofprint candidates" />
+        onPick={onPick} label={`Map of ${cards.length} roofprint candidates, drawn as ghosted outlines`} />
     </div>
   );
 }

@@ -203,7 +203,7 @@ function CandidateSheet({ review, actions, buildingId, onContinue, levels }: { r
       </div>
       <div className={styles.sheet}>
         {image.data ? (
-          <svg viewBox={cal ? view : '0 0 842 595'} className={styles.sheetSvg} role="img" aria-label={`${sheet.source}, page ${pageNo}`}>
+          <svg viewBox={cal ? view : '0 0 842 595'} className={styles.sheetSvg} role="img" aria-label={`${sheet.source}, page ${pageNo}, with ${review.candidates.length} room candidates`}>
             <image href={image.data} width="842" height="595" />
             {cal ? review.candidates.map((c) => {
               const d = decisions.get(c.id);
@@ -348,7 +348,7 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
     <div className={styles.check}>
       <div className={styles.canvasWrap}>
         {noGeometry ? <NoGeometry buildingId={register.property.id} /> : <>
-        {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={state} label={`3D view of ${register.property.name}`} /> : null}
+        {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={state} label={`3D view of ${register.property.name} with the open finding`} /> : null}
         {finding ? <span className={`ul-float ${styles.findingPill}`}>{finding.message}</span> : null}
         </>}
       </div>
