@@ -1,4 +1,5 @@
 import type { GetResponse } from '@ulpin/api-client';
+import { MODEL_PREVIEW_MAX_POSITIONS, type ModelPreviewInput } from '@ulpin/scene';
 import type { IntakeItem } from '../batch-model';
 
 /**
@@ -118,6 +119,7 @@ export function readingView(reader: NativeReader, status: NativeStatus | null): 
 }
 
 const count = (value: number) => value.toLocaleString('en-US');
+const counted = (value: number, noun: string) => `${count(value)} ${noun}${value === 1 ? '' : 's'}`;
 
 /** One line per layer: what was written, what was not and how the list was read. */
 export function layerWords(layer: Layer): string {
@@ -134,3 +136,170 @@ export function layerWords(layer: Layer): string {
 
 export const positionWords = (layer: Layer, position: number | string) =>
   layer.positionKind ? `${layer.positionKind} ${position}` : String(position);
+
+/**
+ * S5.21. A glTF or OBJ reading's accepted result drawn in the file's own frame. Only the stored positions and the
+ * polygons that name them are read; axes and units are reported as the reading states them, node transforms are not
+ * applied, and nothing is converted, placed or measured.
+ */
+export type ModelReader = Extract<NativeReader, 'gltf' | 'obj'>;
+export type ModelArtifactPins = { sha256: string; bytes: number };
+export type ModelView =
+  | { state: 'none' }
+  | { state: 'words'; words: string }
+  | { state: 'mesh'; model: ModelPreviewInput; label: string; lines: SummaryLine[] };
+/** Before the accepted result is read: nothing to draw, words, or the pins of the result to read. */
+export type ModelPreviewPlan =
+  | Exclude<ModelView, { state: 'mesh' }>
+  | { state: 'read'; reader: ModelReader; artifact: ModelArtifactPins; summary: Record<string, unknown> };
+
+export const OWN_FRAME_WORDS = 'Drawn from the stored positions in the file\'s own frame, centred in the view. It is '
+  + 'not placed on the map, and nothing is converted, placed or measured: the drawing is for display only.';
+export const MODEL_MALFORMED = 'The accepted result is not in the shape its reader writes, so no preview is drawn.';
+const MODEL_READING = 'The model is being read from the accepted result.';
+const NOTHING_TO_DRAW = 'The reading holds no polygon the preview can draw.';
+
+const capWords = (stated: number) => `This reading states ${count(stated)} positions; the preview draws a model of `
+  + `at most ${count(MODEL_PREVIEW_MAX_POSITIONS)}, so it is not drawn.`;
+
+/** The result to read for a completed glTF or OBJ reading, or words when it holds nothing the preview can draw. */
+export function modelPreviewPlan(reader: NativeReader | null, status: NativeStatus | undefined): ModelPreviewPlan {
+  if ((reader !== 'gltf' && reader !== 'obj') || status?.status !== 'completed' || !status.result) {
+    return { state: 'none' };
+  }
+  const summary = status.result.summary as Record<string, unknown>;
+  if (summary.geometryProjectionStatus === 'unavailable') return { state: 'words', words: NOTHING_TO_DRAW };
+  const stated = reader === 'gltf' ? summary.projectedPositions : summary.vertexCount;
+  if (typeof stated === 'number' && stated > MODEL_PREVIEW_MAX_POSITIONS) {
+    return { state: 'words', words: capWords(stated) };
+  }
+  const { sha256, bytes } = status.result.artifact;
+  return { state: 'read', reader, artifact: { sha256, bytes }, summary };
+}
+
+type Json = Record<string, unknown>;
+const isRecord = (value: unknown): value is Json =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+/** Words for a result the preview refuses; any other fault reads as the malformed words. */
+class Refusal extends Error {}
+function need(ok: unknown): asserts ok {
+  if (!ok) throw new Refusal(MODEL_MALFORMED);
+}
+const isIndex = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
+/** The first three stored values of a position; an OBJ weight past them is 1 when the reader marks it eligible. */
+function triple(value: unknown): [number, number, number] {
+  need(Array.isArray(value) && value.length >= 3 && value.slice(0, 3).every(Number.isFinite));
+  return [value[0], value[1], value[2]];
+}
+/** A stored literal such as `right_handed_Y_up` in words ("Right handed Y up"); an absent one is Not stated. */
+const frameWords = (value: unknown) => typeof value === 'string'
+  ? value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ') : 'Not stated';
+
+type Built = { model: ModelPreviewInput; lines: SummaryLine[]; label: string };
+
+/** glTF: each projected triangle-list primitive's POSITION values, by its indices or, when absent, stored order. */
+function gltfModel(native: Json): Built {
+  need(Array.isArray(native.primitives));
+  const positions: [number, number, number][] = [];
+  const polygons: number[][] = [];
+  let skipped = 0;
+  for (const primitive of native.primitives) {
+    need(isRecord(primitive));
+    const mode = isRecord(primitive.mode) ? primitive.mode.value : undefined;
+    if (primitive.status !== 'available_local_projection' || mode !== 4) {
+      skipped += 1;
+      continue;
+    }
+    const projection = primitive.projection;
+    need(isRecord(projection) && isRecord(projection.POSITION) && isRecord(projection.indices)
+      && Array.isArray(projection.POSITION.values));
+    const values = projection.POSITION.values.map(triple);
+    const indices: unknown = projection.indices.status === 'available' ? projection.indices.values
+      : values.map((_, at) => at);
+    need(Array.isArray(indices) && indices.length % 3 === 0
+      && indices.every(index => isIndex(index) && index < values.length));
+    const offset = positions.length;
+    if (offset + values.length > MODEL_PREVIEW_MAX_POSITIONS) throw new Refusal(capWords(offset + values.length));
+    positions.push(...values);
+    for (let at = 0; at < indices.length; at += 3) {
+      polygons.push([offset + indices[at], offset + indices[at + 1], offset + indices[at + 2]]);
+    }
+  }
+  const qualification = isRecord(native.qualification) ? native.qualification : {};
+  const frame = isRecord(qualification.localFrame) ? qualification.localFrame : {};
+  const drawn = counted(polygons.length, 'triangle');
+  return { model: { positions, polygons }, label: `glTF model in its own frame, ${drawn}`,
+    lines: [
+      { label: 'Axes as the reading states', value: frameWords(frame.axes) },
+      { label: 'Unit as the reading states', value: frameWords(frame.linearUnit) },
+      { label: 'Drawn', value: `${drawn} from ${counted(positions.length, 'stored position')}` },
+      { label: 'Not drawn', value: skipped ? `${counted(skipped, 'primitive')} not a projected triangle list`
+        : 'None' },
+      { label: 'Node transforms', value: 'Not applied: the reading keeps them as declarations' },
+    ] };
+}
+
+/** OBJ: each face the reader marked eligible, by its resolved vertex indices, in stored corner order. */
+function objModel(native: Json, summary: Json): Built {
+  need(Array.isArray(native.vertices) && Array.isArray(native.faces));
+  const vertices: unknown[] = native.vertices;
+  const positions: [number, number, number][] = [];
+  const drawnAt = new Map<number, number>();
+  const polygons: number[][] = [];
+  let skipped = 0;
+  let fans = 0;
+  for (const face of native.faces) {
+    need(isRecord(face) && Array.isArray(face.references) && face.references.length >= 3);
+    if (face.projectionEligible !== true) {
+      skipped += 1;
+      continue;
+    }
+    polygons.push(face.references.map((reference: unknown) => {
+      need(isRecord(reference) && isRecord(reference.vertex) && isIndex(reference.vertex.resolvedIndex));
+      const source = reference.vertex.resolvedIndex;
+      let at = drawnAt.get(source);
+      if (at === undefined) {
+        const vertex = vertices[source];
+        need(isRecord(vertex) && vertex.cartesianProjectionEligible === true);
+        if (positions.length >= MODEL_PREVIEW_MAX_POSITIONS) throw new Refusal(capWords(vertices.length));
+        at = positions.push(triple(vertex.values)) - 1;
+        drawnAt.set(source, at);
+      }
+      return at;
+    }));
+    if (face.references.length > 3) fans += 1;
+  }
+  const drawn = counted(polygons.length, 'polygon');
+  return { model: { positions, polygons }, label: `OBJ model in its own frame, ${drawn}`,
+    lines: [
+      { label: 'Axes as the reading states', value: frameWords(summary.axes) },
+      { label: 'Units as the reading states', value: frameWords(summary.units) },
+      { label: 'Drawn', value: `${drawn} from ${counted(positions.length, 'stored position')}` },
+      { label: 'Not drawn', value: skipped ? `${counted(skipped, 'face')} the reader did not project` : 'None' },
+      ...(fans ? [{ label: 'Faces of more than three corners',
+        value: `${count(fans)}, filled as fans for display; the stored faces are unchanged` }] : []),
+    ] };
+}
+
+/** The accepted result as a preview, checked field by field; anything off the reader's shape becomes words. */
+export function modelView(reader: ModelReader, native: unknown, summary: Record<string, unknown>): ModelView {
+  try {
+    need(isRecord(native));
+    const built = reader === 'gltf' ? gltfModel(native) : objModel(native, summary);
+    if (!built.model.polygons.length) return { state: 'words', words: NOTHING_TO_DRAW };
+    return { state: 'mesh', model: built.model, label: built.label, lines: [...built.lines, { label: 'View',
+      value: 'Drag to turn, scroll to zoom. The second value (y) is drawn as up; this sets the view only.' }] };
+  } catch (error) {
+    return { state: 'words', words: error instanceof Refusal ? error.message : MODEL_MALFORMED };
+  }
+}
+
+/** The plan and the read of its result as one view: words while it is read or when the read is refused. */
+export function previewView(plan: ModelPreviewPlan,
+  read: { data: unknown; error: Error | null; isPending: boolean }): ModelView {
+  if (plan.state !== 'read') return plan;
+  if (read.error) return { state: 'words',
+    words: `The model could not be read from the accepted result: ${read.error.message}` };
+  if (read.isPending) return { state: 'words', words: MODEL_READING };
+  return modelView(plan.reader, read.data, plan.summary);
+}
