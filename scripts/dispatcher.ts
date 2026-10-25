@@ -1,5 +1,6 @@
 import { dispatchTick, dispatchWakeVersion, waitForDispatch } from "@ulpin/server/modules/cases/processing";
-import { closePool } from "@ulpin/server/infrastructure/db";
+import { closePool, useDispatcherPool } from "@ulpin/server/infrastructure/db";
+import { dispatchPoolSize } from "@ulpin/server/modules/cases/dispatch-lanes";
 import { closeStorageClient } from "@ulpin/server/infrastructure/storage";
 import { localOperatorSubject } from "@ulpin/server/modules/usp/principal";
 
@@ -11,6 +12,7 @@ process.on("SIGTERM", () => {
   stopping = true;
 });
 async function run() {
+  useDispatcherPool(dispatchPoolSize());
   try { localOperatorSubject(); }
   catch {
     console.error("Set a valid ULPIN_LOCAL_OPERATOR_SUBJECT before starting the dispatcher; no jobs were dispatched.");

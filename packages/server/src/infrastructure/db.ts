@@ -1,7 +1,6 @@
 import { sql } from "./sql-loader";
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from "pg";
 import { setTimeout as delay } from 'node:timers/promises';
-import { DISPATCH_LANES } from '../modules/cases/dispatch-lanes';
 import { migrateRegistry } from "../modules/registry/registry-db";
 import { migrateAreas } from "../modules/areas/area-db";
 import { migrateOfficer } from "../modules/officer/officer-db";
@@ -21,17 +20,19 @@ function transactionBegin(mode?:DbTransactionMode){
 export class DbCommitOutcomeUnknown extends AppError {
   constructor(){super(503,'DB_COMMIT_UNKNOWN','Commit was dispatched before cancellation; its outcome requires a fresh authoritative read.');}
 }
-/** The dedicated dispatcher entry point; API and migration processes keep their existing pool. */
-function dispatcherProcess() {
-  return /(?:^|[\\/])scripts[\\/]dispatcher\.(?:ts|js)$/.test(process.argv[1] ?? '');
-}
 const globals = globalThis as unknown as { ulpinPool?: Pool };
+let dispatcherPoolMax: number | undefined;
+/** Explicit dispatcher startup only; every other process retains its existing size and acquisition behavior. */
+export function useDispatcherPool(max: number): void {
+  if (globals.ulpinPool) throw new Error('Dispatcher pool must be configured before the pool is created.');
+  if (!Number.isSafeInteger(max) || max < 1) throw new Error('A positive dispatcher pool size is required.');
+  dispatcherPoolMax = max;
+}
 export function pool(): Pool {
   if (!globals.ulpinPool) {
     const connectionPool = new Pool({
       connectionString: settings.databaseUrl,
-      // One per admitted lane slot, plus the tick and heartbeat; no admission budget changes.
-      max: dispatcherProcess() ? Object.values(DISPATCH_LANES).reduce((sum, lane) => sum + lane.concurrency, 2) : 8,
+      max: dispatcherPoolMax ?? 8,
       connectionTimeoutMillis: 5000,
     });
     // pg removes a failed idle connection. Handle its event so a database
@@ -66,7 +67,7 @@ async function acquire(deadline?: DbDeadline): Promise<PoolClient> {
       throw new AppError(504, 'DB_DEADLINE', 'The absolute database deadline expired.');
     try { return await owner.connect(); }
     catch (error) {
-      if (!dispatcherProcess() || !(error instanceof Error)
+      if (dispatcherPoolMax === undefined || !(error instanceof Error)
         || error.message !== 'timeout exceeded when trying to connect') throw error;
       // No worker failure or new attempt: work starts only once a connection is acquired.
       await delay(Math.min(2000, deadline ? Math.max(1, deadline.deadlineAt - Date.now()) : 2000));
@@ -79,7 +80,7 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   deadline?:DbDeadline,
 ) {
   if(deadline)return transaction(client=>client.query<T>(text,values),deadline);
-  if (!dispatcherProcess()) return pool().query<T>(text, values);
+  if (dispatcherPoolMax === undefined) return pool().query<T>(text, values);
   const client = await acquire();
   // Preserve pg-pool.query's error listener and discard-on-error behavior after admission.
   return new Promise<QueryResult<T>>((resolve, reject) => {

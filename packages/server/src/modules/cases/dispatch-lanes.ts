@@ -46,6 +46,11 @@ export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.fr
   other: { concurrency: 2, mib: 512, scratchMiB: 0 },
 });
 
+/** One connection per lane slot, plus the dispatcher's tick and heartbeat connections. */
+export function dispatchPoolSize(): number {
+  return Object.values(DISPATCH_LANES).reduce((sum, lane) => sum + lane.concurrency, 2);
+}
+
 /**
  * Every operation the dispatcher tick can see, its lane, its own worst-case MiB where one is known, and whether the
  * tick hands it to the processor (as it does any operation not named here) rather than running it in this process.

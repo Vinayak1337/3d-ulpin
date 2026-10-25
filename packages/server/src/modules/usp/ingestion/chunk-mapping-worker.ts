@@ -399,8 +399,9 @@ export async function runChunkMappingJob(jobId:string){
     const stale=error instanceof AppError&&[403,404,409].includes(error.status);
     try{
       await recordUspJobFailure(attempt,code,error);
+      const spent=Number((await query('SELECT attempts FROM jobs WHERE id=$1',[jobId])).rows[0]?.attempts??3);
       if(stale)await terminal(input,attempt,'MAPPING_CONTEXT_STALE',true);
-      else if(attempt.number>=3||error instanceof AppError&&[413,422].includes(error.status))await terminal(input,attempt,code);
+      else if(spent>=3||error instanceof AppError&&[413,422].includes(error.status))await terminal(input,attempt,code);
       else await retry(input,attempt,code);
     }catch{/* A newer fence owns durable state. */}
   }
