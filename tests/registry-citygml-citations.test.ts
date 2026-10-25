@@ -11,7 +11,7 @@ import {amendRegistryDocumentCitationsTx,readRegistryDocumentCitationsTx,assertR
   documentReviewContext,publicRegistryBody,publicRegistryReview,citationId} from '../packages/server/src/modules/registry/registry-document-evidence';
 import {registryCityGMLCitationSourceTx} from '../packages/server/src/modules/registry/registry-citygml-citation-source';
 import {commitRegistryReviewTx} from '../packages/server/src/modules/registry/registry';
-import {citygmlInput,citygmlArtifactKey,citygmlResultKey} from '../packages/server/src/modules/usp/ingestion/citygml';
+import {citygmlInput,citygmlArtifactKey,citygmlResultKey,citygmlReaderSha} from '../packages/server/src/modules/usp/ingestion/citygml';
 import {citygmlSummary} from '../packages/server/src/modules/usp/ingestion/citygml-processor';
 import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
@@ -52,7 +52,8 @@ function fixture(name:keyof typeof samples='Building_and_garage_LOD2-EPSG25832.g
     source={id:sourceId,case_id:caseId,family_id:sourceId,revision:1,profile:'citygml-native-v1',status:'received',sha256:sha256(raw),bytes:raw.length,
       object_key:`sources/${sourceId}/${sha256(raw)}`,inspection:{citygmlOriginal:original}},
     tools={platform:'windows-x86_64' as const,pythonSha256:digest,profileSha256:digest,readerSha256:digest,supervisorSha256:digest,dependencyLockSha256:digest,codeSha256:digest},
-    input=citygmlInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId})} as any,jobId,{...tools,readerSha256:saved.input.readerSha256}),
+    input=citygmlInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId})} as any,
+      jobId,{...tools,readerSha256:citygmlReaderSha()}),
     result=CityGMLResultSchema.parse({...saved,input,summary:citygmlSummary(artifact,input),artifact:{...saved.artifact,key:citygmlArtifactKey(jobId,sha256(artifact))},createdAt:'2026-10-03T00:00:00Z'}),
     resultBytes=Buffer.from(JSON.stringify(result)),
     selection:Extract<SourceFusionSelection,{kind:'citygml'}>={kind:'citygml',pin:{caseId,caseRevision:1,sourceId,sourceRevision:1,sourceSha256:sha256(raw),jobId,
