@@ -51,12 +51,35 @@ it('sends the stated columns and code as the contract body to the item route, th
   await place(form({ kind: 'wkt', column: '1', crs: 'EPSG:32643' }));
   expect(bodies).toEqual([
     { requestKey: '30000000-0000-4000-8000-000000000001', coordinates: { kind: 'columns', x: 3, y: 2 },
-      crs: 'EPSG:4326' },
+      crs: 'EPSG:4326', decimalMark: 'point' },
     { requestKey: '30000000-0000-4000-8000-000000000002', coordinates: { kind: 'wkt', column: 1 },
-      crs: 'EPSG:32643' }]);
+      crs: 'EPSG:32643', decimalMark: 'point' }]);
   for (const body of bodies) expect(validate(requestSchema, body)).toEqual([]);
   expect(states.at(-1)).toEqual({ ...idle, started: true });
   expect(refresh).toHaveBeenCalledTimes(2);
+});
+
+it('S5.7b: sends the stated decimal mark for x and y columns; WKT text always goes with a point', async () => {
+  const send = vi.fn(async (_body: TablePlacementBody) => item);
+  const { place } = command(send);
+  await place(form({ x: '3', y: '2', crs: 'EPSG:4326', decimalMark: 'comma' }));
+  await place(form({ kind: 'wkt', column: '1', crs: 'EPSG:32643', decimalMark: 'comma' }));
+  const bodies = send.mock.calls.map(call => call[0]);
+  expect(bodies.map(body => body.decimalMark)).toEqual(['comma', 'point']);
+  for (const body of bodies) expect(validate(requestSchema, body)).toEqual([]);
+});
+
+it('S5.7b: after a lost answer, only another decimal mark is a new key; the same choice keeps its key', async () => {
+  const send = vi.fn().mockRejectedValueOnce(new TypeError('Connection lost'))
+    .mockRejectedValueOnce(new TypeError('Connection lost')).mockResolvedValue(item);
+  const { place } = command(send);
+  const point = form({ x: '3', y: '2', crs: 'EPSG:4326' });
+  await place(point);
+  await place({ ...point, decimalMark: 'comma' });
+  await place({ ...point, decimalMark: 'comma' });
+  expect(send.mock.calls.map(call => [call[0].requestKey, call[0].decimalMark])).toEqual([
+    ['30000000-0000-4000-8000-000000000001', 'point'], ['30000000-0000-4000-8000-000000000002', 'comma'],
+    ['30000000-0000-4000-8000-000000000002', 'comma']]);
 });
 
 it('asks for the coordinate system and the columns before any request; nothing is assumed', async () => {
@@ -108,7 +131,15 @@ it('the dialog offers the read headers by position, preselects no column or syst
   expect(html.match(/<option value="" selected="">Choose a field<\/option>/g)).toHaveLength(2);
   expect(html).toMatch(/<input[^>]*placeholder="EPSG:32643"[^>]*value=""\/>/);
   expect(html).toContain('never placed at 0,0. Points stay points.');
-  expect(markup({ kind: 'wkt' })).toContain('aria-label="WKT column"');
+  // S5.7b: the officer states the decimal mark of x and y cells, point at first; WKT offers no choice.
+  expect(html).toContain('<legend class="ul-label">Decimal mark in the coordinate cells</legend>');
+  expect(html).toMatch(/<input type="radio"[^>]*checked="" value="point"\/>Point \(12\.34\)/);
+  expect(html).toMatch(/<input type="radio"[^>]*value="comma"\/>Comma \(12,34\)/);
+  expect(markup({ decimalMark: 'comma' })).toMatch(/checked="" value="comma"/);
+  const wkt = markup({ kind: 'wkt', decimalMark: 'comma' });
+  expect(wkt).toContain('aria-label="WKT column"');
+  expect(wkt).not.toContain('type="radio"');
+  expect(wkt).toContain('WKT text is read with a decimal point, as in 12.34.');
   expect(markup({}, { ...idle, error: UNSTATED_CRS })).toContain('role="alert"');
   const started = markup({}, { ...idle, started: true });
   expect(started).toContain('role="status"');

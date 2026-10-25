@@ -9,9 +9,11 @@ import styles from './Batch.module.css';
 
 type Column = { path: string; header: string };
 const columnWords = (column: Column) => `${Number(column.path) + 1}. ${column.header || 'Empty header'}`;
+// Stated by the officer; the cells are never read to guess it.
+const decimalMarks = [['point', 'Point (12.34)'], ['comma', 'Comma (12,34)']] as const;
 
 /**
- * TC1. For an item already read as a table: the officer states its coordinate columns and system, nothing else.
+ * TC1. For an item already read as a table: the officer states its coordinate columns, system and decimal mark.
  * TB2: `opened` shows the dialog at once, after a press on the table page has just made the item.
  */
 export function PlaceOnMap({ caseId, itemId, name, headers, opened = false }: {
@@ -78,8 +80,19 @@ export function PlaceOnMapForm({ headers, form, change, state, submit, close }: 
           choose={x => change({ x })} />
         <FieldChoice label="y or latitude" value={form.y} paths={columns} words={columnWords}
           choose={y => change({ y })} />
-      </> : <FieldChoice label="WKT column" value={form.column} paths={columns} words={columnWords}
-        choose={column => change({ column })} />}
+        <fieldset className={styles.fieldset}>
+          <legend className="ul-label">Decimal mark in the coordinate cells</legend>
+          {decimalMarks.map(([mark, words]) => <label key={mark} className="ul-row">
+            <input type="radio" name={`${id}-mark`} value={mark} checked={form.decimalMark === mark}
+              onChange={() => change({ decimalMark: mark })} />
+            {words}
+          </label>)}
+        </fieldset>
+      </> : <>
+        <FieldChoice label="WKT column" value={form.column} paths={columns} words={columnWords}
+          choose={column => change({ column })} />
+        <p className="ul-help">WKT text is read with a decimal point, as in 12.34.</p>
+      </>}
       <label className="ul-field" htmlFor={id}>
         <span className="ul-label">Coordinate system</span>
         <input id={id} className="ul-input" value={form.crs} placeholder="EPSG:32643" autoComplete="off"
