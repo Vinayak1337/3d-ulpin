@@ -1,0 +1,46 @@
+{
+  "task": "S5.2a",
+  "planStep": 5,
+  "base": "3d59502711bc07f7e7ab952078b601f6359c27f7",
+  "result": "Optional local XY lines/pins for non-buildings; polygon answer bytes unchanged.",
+  "design": [
+    "AreaWindowFeatureSchema: optional lines (two or more pairs per path) and pins.",
+    "windowFeature calls lines/pins beside outline; omits empty fields and excludes buildings.",
+    "GeometryCollection is not traversed; display drops Z. SQL unchanged: ST_Intersects already selects lines/points."
+  ],
+  "coverage": "Proposed four-vertex road; five kinds x seven types; Z; parsing; short-line refusal; polygon bytes.",
+  "inputs": [
+    "Existing in-memory square/window controls only, adapted for display tests; not operational records.",
+    "Inspected fixtures/google-uttam/02-osm-road-centrelines.geojson: OSM, ODbL-1.0, test_only, 35 LineStrings.",
+    "Fixture not used: geographic coordinates, no local-metre projection in the listed test helpers.",
+    "No coordinates relabelled as metres. No good/difficult real-file pair exercised."
+  ],
+  "environment": [
+    "TMP, TEMP, TMPDIR=E:/ulpin-tmp",
+    "Focused/server: NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false",
+    "Server: ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+    "Initial backend/studio script attempts exited 1: relative preload failed after pnpm changed directory.",
+    "Before edits, reran those scripts without NODE_OPTIONS as section 5 specifies; results below."
+  ],
+  "checksBeforeAfter": [
+    { "command": "focused tsx tests: area-display-window + area-display-read", "exit": [0, 0], "pass": [20, 56] },
+    { "command": "pnpm typecheck:backend", "exit": [0, 0], "errors": [0, 0] },
+    { "command": "pnpm studio:typecheck", "exit": [2, 2], "errors": [1, 1] },
+    { "command": "pnpm studio:test", "exit": [0, 0], "pass": [783, 783], "skip": [3, 3], "files": [123, 123] },
+    { "command": "section 5 server command", "exit": [0, 0], "pass": [1001, 1037], "skip": [4, 4] },
+    { "command": "openapi.ts --check", "exit": [0, 1], "baselineOperations": 335, "baselineSchemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": [0, 1] },
+    { "command": "git diff --check", "exit": [0, 0], "errors": [0, 0] }
+  ],
+  "knownFailures": [
+    "Studio TS2322: table-placement-command.ts:65 missing decimalMark (S5.7), unchanged from base.",
+    "Expected stale docs/api/openapi.json; check.py first reports packages/contracts/src/area.ts producer pin."
+  ],
+  "logs": "E:/ulpin-tmp/s5-2a-{before,after}-*.log; suffixes match the checks above.",
+  "next": [
+    "S5.1/S5.2b: packages/scene drawing and apps/studio windowScene consumption; unchanged here.",
+    "Lead regenerates OpenAPI, schema.d.ts and source pins for the contract/server producers.",
+    "S5.7 fixes base Studio typecheck; projected real-file coverage remains absent."
+  ],
+  "safety": "No runtime, image, demo, provider, GPU, Docker, generated contract or data-drive mutation."
+}
