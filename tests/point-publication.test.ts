@@ -32,7 +32,8 @@ function fixture(){
         upstreamBytes:upstream.bytes,upstreamRetained:true,parentSha256:upstream.sha256,limitations:manifest.limitations,note:'memory-only authority control'}}),
     source={id:old.sourceId,case_id:current.id,family_id:old.sourceId,revision:earlier.first.sourceRevision,profile:'laz-point-v1',sha256:old.sourceSha256,
       bytes:old.sourceBytes,object_key:`sources/${old.sourceId}/${old.sourceSha256}`,inspection:{pointOriginal:marker}},
-    input=pointInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId:null})},retained.jobId,null),digest=fingerprint(input),
+    input=pointInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId:null})},
+      retained.jobId,retained.metadata.batch),digest=fingerprint(input),
     job:any={id:input.jobId,case_id:input.caseId,source_id:input.sourceId,case_revision:input.caseRevision,operation:'point-batch',
       payload:input,input_fingerprint:digest,status:'queued',error:null,attempts:0},
     meta:any={input_manifest_id:source.id,input_sha256:digest,scope:{kind:'intake',workspaceId:current.id,version:2},
@@ -78,7 +79,7 @@ function fixture(){
   };
   const client=Object.assign(new EventEmitter(),{query,release:()=>{active=false;}}),pool={connect:async()=>client,query};
   const request:typeof fetch=async(_url,options)=>{assert(!active);nativeCalls++;io.push('native');assert(options!.signal);deadlines.push(Date.now());
-    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,sha256:input.sourceSha256,bytes:input.sourceBytes,batch:null});
+    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,sha256:input.sourceSha256,bytes:input.sourceBytes,batch:input.batch});
     if(mode==='oversize')return new Response(new ReadableStream({cancel(){bodyCancelled=true;}}),{headers:{'content-length':String(POINT_NATIVE_REPLY_BYTES+1)}});
     if(mode==='cancel'||mode==='timeout'){if(mode==='cancel')setTimeout(()=>controller.abort(),10);return new Response(new ReadableStream({
       start(c){c.enqueue(Buffer.from('{"metadata":'));},cancel(){bodyCancelled=true;}}));}
@@ -117,7 +118,8 @@ test('controlled native reply and immutable replay publish through canonical fen
   f.setMode('replay');await run(f);assert.equal(f.job.status,'succeeded');assert.equal(f.meta.logical_state,'succeeded');assert.equal(f.meta.accepted_fence,1);
   assert.equal(f.attempts[0].state,'accepted');const bytes=f.objects.get(pointResultKey(f.input.jobId,f.meta.result_ref.sha256))!,result=PointBatchResultSchema.parse(JSON.parse(bytes.toString('utf8')));
   assert.equal(f.meta.result_ref.sha256,sha256(bytes));assert.equal(f.attempts[0].completion_sha256,sha256(bytes));
-  assert.deepEqual(result.metadata,f.retained.metadata);assert.equal(result.input.batch,null);assert.deepEqual(result.input,f.input);
+  assert.deepEqual(result.metadata,f.retained.metadata);assert.deepEqual(result.input.batch,f.retained.metadata.batch);
+  assert.deepEqual(result.input,f.input);
   assert.deepEqual(f.objects.get(result.artifact.key),f.technical);assert.equal(result.artifact.sha256,sha256(f.technical));
   assert(f.events.some(e=>e.type==='job.succeeded'));assert(f.events.some(e=>e.change?.status==='completed'));
   assert.equal(f.stats().replayReads,4);assert(f.streams.every(s=>s.destroyed));assert.equal(new Set(f.deadlines.filter(n=>n>Date.now()+1000)).size,1);
