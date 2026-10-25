@@ -448,7 +448,7 @@ Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3,
 
 ### S5.2 The display window sends lines and pins
 
-Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: open.**
+Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: server half S5.2a running 25 Oct (codex, from int3-pre 3d595027); windowScene passing lines and pins is a UI step after S5.1**
 
 - **What:** Large areas are drawn through GET /api/v1/areas/{areaId}/display-window. Its outline() keeps polygons only, its feature schema has only polygons, and windowScene skips a feature with no polygons, so lines and pins vanish in window mode even after S5.1. Add optional lines and pins to AreaWindowFeatureSchema, fill them next to outline() from the same local GeoJSON, and pass them to the scene in windowScene. The merger regenerates openapi.json and the api-client.
 - **Files:** packages/contracts/src/area.ts:356-365 (AreaWindowFeatureSchema); packages/server/src/modules/areas/area-display-window.ts:120-147 (row mapping, outline); apps/studio/src/features/map/areaWindow.ts:41-52 (windowScene)
@@ -648,7 +648,7 @@ The only working link is an exact key the officer declares by hand (it works for
 
 ### S6.1 The record panel lists a building's links to register rows and pages, with the reason
 
-Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: server half S6.1a running 25 Oct (codex, from int3-pre be375bb6); the Links list is a UI step after it**
+Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: server half S6.1a merged 25 Oct (int3-pre 3d595027; server set 1001 pass); the Links list in the record panel is a UI step**
 
 - **What:** A building's register match shows only in the batch evidence list, or later as a citation. The map's record panel shows only geometry, height and ledger sources. Add an optional featureId filter to the evidence read, matched through candidate->'anchors'. Add a Links list to the inspector; per candidate it shows:
 - the file, and the row or page in words;
