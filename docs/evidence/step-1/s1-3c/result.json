@@ -1,0 +1,57 @@
+{
+  "task": "S1.3c",
+  "planStep": 1,
+  "base": "726bb2e82151a8f78453125876eed9d970e56c4f",
+  "verdict": "Stopped after step 1 under DO 4: running profiles retain memory admission throughout raw waits.",
+  "changes": "Evidence only; active remains 1. No caps, history bound, tests, pins or runtime changed.",
+  "findings": {
+    "queuedRow": "An undispatched queued row holds no dispatcher reservation or processor slot by itself.",
+    "runningRow": "Not just a state row: an in-process invocation retains a stream slot and memory/heap reservation.",
+    "processorSlots": 0,
+    "streamSlotsPerRunningProfile": 1,
+    "reservedMemoryMiBPerRunningProfile": 512,
+    "reservedHeapMiBPerRunningProfile": 512,
+    "reservedScratchMiBPerRunningProfile": 0,
+    "actualResidentMemoryMiB": null,
+    "qualification": "512 MiB is a conservative scheduler reservation, not measured resident memory or allocation.",
+    "pollMs": 1000,
+    "noChunkWaitMsPerAttempt": 720000,
+    "waitResetsAfterPublishedChunk": true,
+    "streamConcurrency": 4,
+    "twoWaitingProfilesReservedMiB": 1024,
+    "twoRawReadersPlusTwoProfilesReservedMiB": 1854,
+    "historyRows": 128,
+    "citations": [
+      "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts:169-196 claims and starts the attempt.",
+      "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts:197-212: no-slot polling does not return.",
+      "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts:199-204 loads payload only when published.",
+      "packages/contracts/src/usp/streamed-profile.ts:7-8 states active 1 and the 12 minute no-chunk wait.",
+      "packages/server/src/modules/cases/dispatch-lanes.ts:29,57,60: stream 4, raw 415 MiB, profile default 512 MiB.",
+      "packages/server/src/modules/cases/dispatch-lanes.ts:108-119,183-186 classifies profiles as in-process.",
+      "packages/server/src/modules/cases/dispatch-lanes.ts:199-200: holds last until the worker finally releases.",
+      "packages/server/src/modules/cases/dispatch-lanes.ts:230-244 retains lane/memory/heap until explicit release.",
+      "packages/server/src/modules/usp/ingestion/streamed-profile.ts:161-164 counts queued/running; history stays 128."
+    ]
+  },
+  "inputs": {
+    "good": "Existing replay read zp1-geojson-kml-csv.zip, 464736 bytes, NYC member 2100 features; test_only.",
+    "difficult": "Task-supplied run 3 Halifax 108 MB GeoJSON blockage; not reopened or rerun.",
+    "runtimeRun": false
+  },
+  "checks": {
+    "environment": "TMP=TEMP=TMPDIR=E:/ulpin-tmp; targeted/server use isolated-env.cjs, demo, REPO_DATA=false.",
+    "logPrefix": "E:/ulpin-tmp/s1-3c-{before,after}-",
+    "logSuffixes": "{backend,studio-typecheck,studio-test,targeted,server,openapi,api-check,diff}.log",
+    "beforeAndAfter": {
+      "pnpm typecheck:backend": {"exit": 0, "projects": 2},
+      "pnpm studio:typecheck": {"exit": 0, "projects": 4},
+      "pnpm studio:test": {"exit": 0, "passed": 827, "skipped": 3, "failed": 0},
+      "processing-latency.test.ts + streamed-{layout,memory}.test.ts": {"exit": 0, "passed": 23, "failed": 0},
+      "WORKING-RULES section 5 exact server set": {"exit": 0, "passed": 1045, "skipped": 5, "failed": 0},
+      "openapi.ts --check": {"exit": 0, "operations": 335, "schemas": 379},
+      "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {"exit": 0, "operations": 335, "schemas": 379},
+      "git diff --check": {"exit": 0}
+    }
+  },
+  "next": "Lead must authorize a wait/release scheduling design or reconsider DO 4 before raising admission to 2."
+}
