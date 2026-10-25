@@ -175,7 +175,7 @@ Size S, code only. After: S1.3h. **Status: merged 25 Oct (int3-pre 068c1da7, tas
 
 ### S1.3n Profile and mapping history are kept per case
 
-Size S, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3n-case-history from int3-pre e86869b2).**
+Size S, code only. After: S1.3l. **Status: merged 25 Oct (int3-pre 9b9bcf12, task/s1-3n-case-history 31a9602b; pins regenerated; server set 1,088 tests, 0 failed). Profile and mapping history now count only the requesting case's live or current rows (a profile is current while sealed and not superseded by a newer raw, reader or profiler pin); refusals name the case and what frees a slot, with {limit, freesAt:null}. The doctor reports the busiest case for both, with parity tests against the admission SQL. Global active limits (4 and 4) unchanged.**
 
 - **What:** The profile history refuses every large file once 128 profiles exist in the whole service, and nothing frees one; finished mappings in old cases still fill the mapping quota. Count both per case, as the streaming history already is, and count only live or current rows; the global active limits stay.
 - **Files:** streamed-profile.ts and chunk-mapping.ts (admission count and words); their quota tests; scripts/platform/ingestion-quotas.mjs and its test
