@@ -13,6 +13,7 @@ import {
 import { documentRuntimeReport } from './demo-document-runtime.mjs';
 import { gatewayReport, gatewayReportLines } from './demo-gateway.mjs';
 import { ownedProcess } from './processes.mjs';
+import { ingestionQuotaLines } from './ingestion-quotas.mjs';
 
 let failures = 0;
 const infraOnly = process.argv.includes('--infra-only');
@@ -159,6 +160,13 @@ async function doctor() {
     return typeof dbIdentity.postgis === 'string';
   }, 'restore the existing database connection and metadata attestation permission; do not initialize another cluster.');
   else skip('DB reachable / PostGIS');
+
+  if (postgres?.state === 'running' && problems.length === 0) {
+    const lines = await ingestionQuotaLines(query => exec(runtime, postgres,
+      ['sh', '-ec', 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "$1"',
+        'doctor', query]));
+    lines.forEach(line => console.log(line));
+  } else skip('Ingestion quotas');
 
   if (minio?.state === 'running' && problems.length === 0) await attempt('Object store reachable (read-only)', async () =>
     (await get(portUrl(minio, 9000, '/minio/health/ready'))).ok,
