@@ -1,4 +1,4 @@
-// Owner-run builder of the batch's native reader profiles (DXF, CityGML, glTF/GLB, OBJ). Dry runs use
+// Owner-run builder of the batch's native reader profiles (DXF, CityGML, glTF/GLB, OBJ, IFC). Dry runs use
 // task-private output and never read demo.env.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -10,20 +10,22 @@ import { definedRuntime, demoRuntime, nativeReaderKeys, nativeReaders, readDemoN
 import { assertBuildLocation, privateBuildDirectory, serverHelper } from './demo-document-runtime.mjs';
 import { root } from './runtime.mjs';
 
-const usage = 'Usage: demo-native-readers.mjs build [--python <absolute file>] [--dry-run --out <temporary folder>]'
+const usage = 'Usage: demo-native-readers.mjs build [--python <absolute file>] [--ifc-python <absolute file>]'
+  + ' [--dry-run --out <temporary folder>]'
   + '\n       demo-native-readers.mjs check [--paths <absolute native-reader-paths.json>]'
   + '\nEither action takes --runtime <name> (default ulpin-demo) and works on that runtime only.';
 const pathsName = 'native-reader-paths.json';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 /**
- * The base interpreter every reader runs: the one the glTF and OBJ runtime scripts name
- * (scripts/usp/desktop-gltf-http-runtime.mjs, desktop-obj-http-runtime.mjs). --python replaces it.
+ * The four CPython 3.13 readers use the base named by the glTF/OBJ runtime scripts. IFC has its own
+ * unzip-only CPython 3.12 base; --python never overrides it.
  */
 export const defaultPython = 'C:/Python313/python.exe';
+export const defaultIfcPython = 'E:/BhuAayam-data/tools/cpython-3.12.10/tools/python.exe';
 /**
- * Each reader's own isolated environment (null: standard library only) and the repository lock its packages must
- * match. The environments are the ones each reader was accepted with (intake-native-readers.test.ts roots).
+ * Existing environments are read only. IFC gets a fresh environment built from its pinned offline wheels;
+ * the other readers reuse their accepted environments (null: standard library only).
  */
 export const readerSetup = Object.freeze({
   dxf: { environment: 'E:/BhuAayam-data/task-data/desktop-dxf-native/env',
@@ -32,6 +34,9 @@ export const readerSetup = Object.freeze({
     lock: 'scripts/usp/citygml/runtime-lock.json', config: 'citygmlConfig' },
   gltf: { environment: 'E:/BhuAayam-data/task-data/desktop-gltf-native/env', lock: null, config: 'gltfConfig' },
   obj: { environment: null, lock: null, config: 'objConfig' },
+  ifc: { python: defaultIfcPython, version: '3.12', environment: null,
+    lock: 'docs/evidence/usp/native-ifc/requirements-win-py312.lock', config: 'ifcConfig',
+    wheels: 'E:/BhuAayam-data/task-data/desktop-ifc-native/wheels' },
 });
 
 /** A closed reason: no path, profile content or child diagnostic ever leaves this script. */
@@ -39,12 +44,29 @@ class Unavailable extends Error {}
 const unavailable = reason => { throw new Unavailable(reason); };
 const sameFolder = (a, b) => resolve(realpathSync(a)).toLowerCase() === resolve(realpathSync(b)).toLowerCase();
 
-/** The base interpreter: absolute, present and a CPython 3.13 install folder, as each reader's config requires. */
-function baseInterpreter(python) {
+/** Check the actual version, not just the filename; errors name the reader and version, never the private path. */
+function baseInterpreter(reader, python) {
+  const version = readerSetup[reader].version ?? '3.13';
+  const flag = reader === 'ifc' ? '--ifc-python' : '--python';
+  let actual;
   try {
-    if (!python || !isAbsolute(python) || !statSync(python).isFile()
-      || !statSync(join(dirname(python), 'python313.dll')).isFile()) throw new Error('unusable');
-  } catch { throw new Error('Native reader interpreter unavailable: supply --python <absolute CPython 3.13 python.exe>.'); }
+    if (!python || !isAbsolute(python) || !statSync(python).isFile()) throw new Error('unusable');
+    const script = 'import sys; print(sys.implementation.name + " " + ".".join(map(str, sys.version_info[:2])))';
+    actual = execFileSync(python, ['-I', '-S', '-B', '-c', script], {
+      env: safeEnvironment({}), encoding: 'utf8', timeout: 10000, windowsHide: true,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    throw new Error(`Native reader interpreter unavailable for ${reader}: supply ${flag} <absolute CPython ${version}`
+      + ' python.exe>.');
+  }
+  if (actual !== `cpython ${version}`) {
+    throw new Error(`Native reader ${reader} requires CPython ${version}; supplied interpreter has another version.`);
+  }
+  const dll = join(dirname(python), `python${version.replace('.', '')}.dll`);
+  if (!existsSync(dll) || !statSync(dll).isFile()) {
+    throw new Error(`Native reader ${reader} requires a full CPython ${version} install folder.`);
+  }
   return python;
 }
 
@@ -113,10 +135,25 @@ export function verifyReader(reader, profile, hash) {
   return printed === hash ? null : (/^[A-Z0-9_]{3,64}$/.test(printed) ? printed : 'REFUSED');
 }
 
+/** New IFC environment only: offline, hash-locked wheels; pip never installs into the base or retained environment. */
+function buildIfcEnvironment(python, folder) {
+  const environment = join(folder, 'environment');
+  const options = { cwd: folder, env: safeEnvironment({ PYTHONDONTWRITEBYTECODE: '1' }),
+    timeout: 180000, windowsHide: true, stdio: 'ignore' };
+  try {
+    execFileSync(python, ['-I', '-B', '-m', 'venv', '--without-pip', environment], options);
+    execFileSync(python, ['-I', '-B', '-m', 'pip', '--isolated', '--disable-pip-version-check', '--no-cache-dir',
+      '--python', join(environment, 'Scripts/python.exe'), 'install', '--no-index', '--no-deps', '--require-hashes',
+      '--no-compile', '--find-links', readerSetup.ifc.wheels, '-r', join(root, readerSetup.ifc.lock)], options);
+  } catch { unavailable('IFC offline environment setup failed; check the pinned wheels and CPython 3.12 base'); }
+  return environment;
+}
+
 function buildReader(reader, python, environment, directory) {
-  if (environment) checkEnvironment(reader, environment, python);
   const folder = join(directory, reader);
   mkdirSync(folder, { mode: 0o700 });
+  if (reader === 'ifc' && !environment) environment = buildIfcEnvironment(python, folder);
+  if (environment) checkEnvironment(reader, environment, python);
   const built = runProfileHelper(reader, python, environment, folder);
   const refusal = verifyReader(reader, built.profile, built.hash);
   if (refusal) unavailable(`reader configuration refused the new profile: ${refusal}`);
@@ -128,20 +165,21 @@ function buildReader(reader, python, environment, directory) {
  * replaced. A reader that cannot be built here is reported with its reason and left out; the others still build.
  * Nothing is written to the pointer when no reader could be built. The second argument is for tests.
  */
-export function buildNativeReaders({ dryRun = false, out, python: configured, runtime } = {},
+export function buildNativeReaders({ dryRun = false, out, python: configured, ifcPython, runtime } = {},
   { environments = {}, readers = nativeReaders } = {}) {
   const definition = definedRuntime(runtime);
   const output = assertBuildLocation(dryRun, out, definition, 'native reader');
   if (dryRun && existsSync(join(output, pathsName))) {
     throw new Error('--out already contains native reader keys; choose a fresh folder.');
   }
-  const python = baseInterpreter(configured ?? defaultPython);
+  const interpreters = Object.fromEntries(readers.map(reader => [reader, baseInterpreter(reader,
+    reader === 'ifc' ? ifcPython ?? readerSetup.ifc.python : configured ?? defaultPython)]));
   const directory = privateBuildDirectory(output);
   const paths = {}, results = [];
   for (const reader of readers) {
     const environment = Object.hasOwn(environments, reader) ? environments[reader] : readerSetup[reader].environment;
     try {
-      const built = buildReader(reader, python, environment, directory);
+      const built = buildReader(reader, interpreters[reader], environment, directory);
       const [profileKey, hashKey] = nativeReaderKeys(reader);
       Object.assign(paths, { [profileKey]: built.profile, [hashKey]: built.hash });
       results.push({ reader, status: 'built', profileSha256: built.hash, files: built.files });
@@ -177,13 +215,13 @@ export function checkNativeReaders({ runtime, paths: file } = {}) {
 function options(arguments_) {
   const [action, ...flags] = arguments_;
   if (!['build', 'check'].includes(action)) throw new Error(usage);
-  const allowed = action === 'build' ? ['--out', '--python', '--runtime'] : ['--paths', '--runtime'];
+  const allowed = action === 'build' ? ['--out', '--python', '--ifc-python', '--runtime'] : ['--paths', '--runtime'];
   const result = { action };
   for (let index = 0; index < flags.length; index++) {
     const flag = flags[index];
     if (flag === '--dry-run' && action === 'build' && !result.dryRun) result.dryRun = true;
     else if (allowed.includes(flag) && flags[index + 1] && !flags[index + 1].startsWith('--')) {
-      const key = flag.slice(2);
+      const key = flag === '--ifc-python' ? 'ifcPython' : flag.slice(2);
       if (result[key] !== undefined) throw new Error(usage);
       result[key] = flags[++index];
     } else throw new Error(usage);

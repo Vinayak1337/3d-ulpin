@@ -21,11 +21,12 @@ Worker worktrees must never serve the demo: lazy imports would mix unreviewed ch
    If selecting an interpreter explicitly, append `--python <absolute existing interpreter file>`.
    It refuses a normal build outside `E:/Projects/ulpin-wt/demo` or while a recorded native process is running.
 5a. **On every rollout, right after step 5 and before step 6**, rebuild the batch's native reader profiles there
-   (DXF, CityGML, glTF/GLB, OBJ; [Native reader profiles](#native-reader-profiles)):
+   (DXF, CityGML, glTF/GLB, OBJ, IFC; [Native reader profiles](#native-reader-profiles)):
    `node scripts/platform/demo-native-readers.mjs build`
    then verify, still before startup: `node scripts/platform/demo-native-readers.mjs check`
-   Require build exit 0 and four `verified` lines from check (exit 0). Build exit 2 means the file was written
-   without the readers whose line says `unavailable (<reason>)`: those formats stay `<READER>_UNAVAILABLE` in a
+   Require build exit 0 and five `verified` lines from check (exit 0), including IFC on its own CPython 3.12.
+   Build exit 2 means the file was written without the readers whose line says `unavailable (<reason>)`:
+   those formats stay `<READER>_UNAVAILABLE` in a
    batch; report the reason, do not retry. Build exit 1 writes nothing and leaves the previous file unchanged.
 6. Move the processors onto the pinned image ([The processor image](#the-processor-image)), which must already be
    built and rehearsed: `node scripts/platform/processor-image.mjs roll`
@@ -126,7 +127,7 @@ refuses the whole result as `OCR_BOX_OUTSIDE_REGION`.
 
 ## Native reader profiles
 
-A batch reads DXF, CityGML, glTF/GLB and OBJ through four local native readers. Each reader's own configuration
+A batch reads DXF, CityGML, glTF/GLB, OBJ and IFC through five local native readers. Each reader's own configuration
 (`packages/server/src/modules/usp/ingestion/<reader>-config.ts`) accepts a job only with `ULPIN_<READER>_PROFILE`
 and `ULPIN_<READER>_PROFILE_SHA256`, and then checks the profile hash, the full inventory of the interpreter,
 its environment and the serving checkout's reader code and caches. Without them every such file ends
@@ -144,18 +145,26 @@ non-secret `native-reader-paths.json`. Old directories are kept. Output is key n
 appear in a message. Dry runs: `build --dry-run --out <absolute temporary folder>` and
 `check --paths <that folder>/native-reader-paths.json`, from any checkout; never reuse a dry-run profile.
 
-| Reader | Interpreter (all four) | Environment | Locked packages checked before the build |
+| Reader | Interpreter | Environment | Locked packages checked before the build |
 | --- | --- | --- | --- |
 | DXF | `C:/Python313/python.exe`, or `--python` | `E:/BhuAayam-data/task-data/desktop-dxf-native/env` | `docs/evidence/usp/native-dxf/requirements.lock` (ezdxf, numpy, fonttools, pyparsing, typing_extensions) |
 | CityGML | the same | `E:/BhuAayam-data/task-data/desktop-citygml-native/env` | `scripts/usp/citygml/runtime-lock.json` (psutil 7.2.2) |
 | glTF/GLB | the same | `E:/BhuAayam-data/task-data/desktop-gltf-native/env` | none (standard library) |
 | OBJ | the same | none | none (standard library); a fresh native lock is written |
+| IFC | CPython 3.12, below | new private environment per build | hash-pinned IFC lock and wheels, below |
 
-The interpreter is the CPython 3.13.7 install the glTF and OBJ runtime scripts name; each environment must have
-been made from it (its `pyvenv.cfg` `home`). Nothing is installed. The profiles pin that install and any
-`__pycache__` in `scripts/usp` and `services/geo/geo` as they are at build time, so a **later FAIL after a
-PASS** (`<READER>_TOOL_CHANGED`) means the install was updated or a Python run without `-B` wrote bytecode
-there: rebuild at the next roll-out and state the cause.
+The four existing readers use the CPython 3.13 install the glTF and OBJ runtime scripts name. IFC uses the
+unzip-only Python Software Foundation NuGet CPython 3.12.10 package at
+`E:/BhuAayam-data/tools/cpython-3.12.10/tools/python.exe`, with its URL, publisher, version, bytes, SHA-256 and date
+in the package folder's `acquisition.json`. Its lock is `docs/evidence/usp/native-ifc/requirements-win-py312.lock`;
+its offline wheels are in `E:/BhuAayam-data/task-data/desktop-ifc-native/wheels`. `--python` changes only the four
+3.13 readers; `--ifc-python` changes only IFC. A wrong Python version is refused before any build directory is made.
+Each environment must name its own base in `pyvenv.cfg` `home`. The existing environments are read only. IFC creates
+an isolated environment in its new private build folder and installs only the lock's hash-pinned wheels, offline,
+without bytecode writes; nothing is installed into either base or the retained IFC environment.
+The profiles pin each install and any `__pycache__` in `scripts/usp` and `services/geo/geo` as they are at build time,
+so a **later FAIL after a PASS** (`<READER>_TOOL_CHANGED`) means the install was updated or a Python run without `-B`
+wrote bytecode there: rebuild at the next roll-out and state the cause.
 
 ## Changing the document interpreter
 
@@ -305,7 +314,8 @@ Run the commands from the rehearsal's own checkout, a worktree at a lead-reviewe
    `node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-01`
    It writes `document-runtime-paths.json` and a new private profile directory in the rehearsal's folder.
    Then the native readers: `node scripts/platform/demo-native-readers.mjs build --runtime ulpin-reh-01` and
-   `node scripts/platform/demo-native-readers.mjs check --runtime ulpin-reh-01` (four `verified`, exit 0).
+   `node scripts/platform/demo-native-readers.mjs check --runtime ulpin-reh-01` (five `verified`, exit 0;
+   IFC uses its own CPython 3.12 base, the other four use 3.13).
 3. Start: `pnpm platform:start --profile demo --runtime ulpin-reh-01`
 4. Doctor: `pnpm platform:doctor --profile demo --runtime ulpin-reh-01`
 5. Stop: `pnpm platform:stop --profile demo --runtime ulpin-reh-01`

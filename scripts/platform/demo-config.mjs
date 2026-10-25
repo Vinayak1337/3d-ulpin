@@ -78,7 +78,7 @@ const documentRuntimeGroups = [
 ];
 export const demoOcrProfileFile = demo.ocrProfileFile;
 /** The batch's native readers; each is configured by its own profile file and that file's SHA-256, or absent. */
-export const nativeReaders = Object.freeze(['dxf', 'citygml', 'gltf', 'obj']);
+export const nativeReaders = Object.freeze(['dxf', 'citygml', 'gltf', 'obj', 'ifc']);
 export const nativeReaderKeys = reader => {
   const name = reader.toUpperCase();
   return [`ULPIN_${name}_PROFILE`, `ULPIN_${name}_PROFILE_SHA256`];
