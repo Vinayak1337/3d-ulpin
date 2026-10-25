@@ -73,14 +73,13 @@ export function PlanLocalPanel({ cards, selectedId, onSelect }: {
   const span = Math.max(box.maxX - box.minX, box.maxY - box.minY);
   const bar = scaleLengthM(span);
   const barY = -box.minY + span * 0.04;
+  const title = selected.levelLiteral ?? 'Level not stated';
   return (
     <div className={`ul-panel ${styles.plan}`}>
       <header className="ul-panel__head">
-        <h2 className="ul-panel__title">{selected.levelLiteral ?? 'Level not stated'}</h2>
-        <span className="ul-caption">Plan-local metres · placement unknown · not on the map</span>
+        <h2 className="ul-panel__title">{title}</h2>
       </header>
-      <svg className={styles.planSvg} viewBox={viewBoxOf(box)} role="img"
-        aria-label={`${sameFrame.length} room candidates of ${selected.levelLiteral ?? 'one panel'}, in plan metres`}>
+      <svg className={styles.planSvg} viewBox={viewBoxOf(box)} role="img" aria-label={`Plan, ${title}`}>
         {sameFrame.map((card) => (
           <RoomShape key={card.id} card={card} selected={card.id === selectedId} fontSize={span / 45}
             onSelect={() => onSelect(card.id)} />

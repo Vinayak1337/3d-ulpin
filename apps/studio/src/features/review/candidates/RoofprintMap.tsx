@@ -25,10 +25,7 @@ export function RoofprintMap({ cards, selectedId, onSelect }: {
   return (
     <div className={styles.canvasWrap}>
       <SceneView look={look} className={styles.canvas} buildings={footprints} detail={null} state={state}
-        onPick={onPick} label={`Map of ${cards.length} roofprint candidates, drawn as ghosted outlines`} />
-      <span className={`ul-float ${styles.canvasNote}`}>
-        Candidates stay ghosted until a roofprint is recorded in the registry.
-      </span>
+        onPick={onPick} label="Map of roofprint candidates" />
     </div>
   );
 }

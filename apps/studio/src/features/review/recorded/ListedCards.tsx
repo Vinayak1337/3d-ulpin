@@ -48,7 +48,7 @@ export function ListedCards({ cards, snapshotCreatedAt }: { cards: UnitCards; sn
           columns={severalCards(rows) ? [CARD, ...COLUMNS] : COLUMNS} />
       </div>
       {cards.truncated ? (
-        <p className="ul-help">The registry holds more cards for this unit than the {cards.cards.length} listed.</p>
+        <p className="ul-help">More cards than the {cards.cards.length} listed.</p>
       ) : null}
       {searchGaps(cards).map((gap) => <p key={gap} className="ul-help">{gap}</p>)}
     </div>

@@ -20,7 +20,8 @@ describe('recorded floors and units', () => {
     const [floor] = recordedFloors(withoutCode.levels);
     expect(recordedFloors(withoutCode.levels)).toHaveLength(1);
     expect(floor).toMatchObject({ label: '2ND FLOOR PLAN', reviewed: true, lower: unknown, upper: unknown,
-      origin: 'Recorded from a source label · geometry not recorded' });
+      origin: 'Geometry not recorded' });
+    expect(recordedFloors([{ ...withoutCode.levels[0]!, polygons: undefined }])[0]!.origin).toBeNull();
     expect(Object.values(floor!).filter((value) => typeof value === 'number')).toEqual([]);
     const cited = withoutCode.levels[0]!.label.citations[0]!;
     expect(floor!.citations).toEqual([{ key: `${cited.sourceId}:0`, sourceId: cited.sourceId, source: '5293cd72',
@@ -70,11 +71,11 @@ describe('recorded floors and units', () => {
     expect(floorIdentifier({ records: [other, entry], failed: false }, floor!.registerId))
       .toEqual({ text: 'READ-STATED:F001', known: true });
     expect(floorIdentifier({ records: [other], failed: false }, floor!.registerId))
-      .toEqual({ text: 'The register read states no identifier for this floor.', known: false });
+      .toEqual({ text: 'Not stated', known: false });
     expect(floorIdentifier({ records: undefined, failed: false }, floor!.registerId))
       .toEqual({ text: 'Reading the register…', known: false });
     expect(floorIdentifier({ records: undefined, failed: true }, floor!.registerId))
-      .toEqual({ text: 'The register could not be read, so no identifier is shown.', known: false });
+      .toEqual({ text: 'Register could not be read', known: false });
   });
 
   it('lists a floor linked to a schedule row once, under that row, with only its recorded units', () => {
@@ -88,7 +89,7 @@ describe('recorded floors and units', () => {
     const floors = recordedFloors([linked, unlinked]);
     expect(floors).toHaveLength(1);
     expect(floors[0]).toMatchObject({ id: 'schedule-row', reviewed: false,
-      origin: 'Level schedule row · a floor recorded from a source label is linked to it' });
+      origin: 'Level schedule row' });
     expect(floors[0]!.units.map((unit) => unit.label)).toEqual(['UNIT-3B']);
   });
 

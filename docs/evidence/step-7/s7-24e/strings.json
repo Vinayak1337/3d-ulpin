@@ -1,0 +1,1920 @@
+{
+ "task": "S7.24e",
+ "scope": "apps/studio/src/features/review/, line numbers at base bac06934; no CSS content strings",
+ "totals": {
+  "before": 318,
+  "cut": 23,
+  "shortened": 46,
+  "kept": 249
+ },
+ "strings": [
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:10",
+   "old": "Blocking",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:11",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:12",
+   "old": "Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:13",
+   "old": "Passed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:29",
+   "old": "aria-label {group title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:32",
+   "old": "{rows in the group} (count badge)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:39",
+   "old": "{check name} {check detail} (server words, the state of the check)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/CheckGroups.tsx:40",
+   "old": "{action label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:30",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:30",
+   "old": "Review details",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:30",
+   "old": "Check and record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:46",
+   "old": "This workspace could not be opened",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:46",
+   "old": "Back to Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:47",
+   "old": "{register read failure}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:80",
+   "old": "aria-label Workspace stage",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:85",
+   "old": "{building name} · {level or revision}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:87",
+   "old": "Open register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:129",
+   "old": "Choose a level in the level register to read what waits for review on it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:130",
+   "old": "The register of this building holds no level, so there is no level to review.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:131",
+   "old": "The server holds no review of this level, so what waits for review on it is not known here.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:132",
+   "old": "The server did not read the review of this level out · {code}",
+   "verdict": "shorten",
+   "new": "{code}"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:150",
+   "old": "No level is selected",
+   "verdict": "shorten",
+   "new": "No level selected / No levels in the register"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:155",
+   "old": "The review of {level} could not be read",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:161",
+   "old": "No review of {level} is held",
+   "verdict": "shorten",
+   "new": "No review of {level} held"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:167",
+   "old": "High confidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:168",
+   "old": "Medium confidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:169",
+   "old": "Low confidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:211",
+   "old": "aria-label Pages",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:213",
+   "old": "title {page label} (not shown otherwise)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:214",
+   "old": "p.{page}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:220",
+   "old": "aria-label {source}, page {n}, with {n} room candidates",
+   "verdict": "shorten",
+   "new": "aria-label {source}, page {n}"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:228",
+   "old": "svg title {candidate label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:237",
+   "old": "{n} of {m} to review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:237",
+   "old": "Extracted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:240",
+   "old": "aria-label Room name",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:241",
+   "old": "Save",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:242",
+   "old": "Cancel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:246",
+   "old": "Accept",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:247",
+   "old": "Adjust",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:248",
+   "old": "Reject",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:252",
+   "old": "{candidate label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:254",
+   "old": "{confidence label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:258",
+   "old": "{dimensions} · {area} m² · {method}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:263",
+   "old": "Change decision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:264",
+   "old": "Decided {time} by {officer}.",
+   "verdict": "shorten",
+   "new": "{time} · {officer}"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:268",
+   "old": "All candidates reviewed (heading that repeats the Reviewed badge)",
+   "verdict": "shorten",
+   "new": "{n} of {n} decided"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:268",
+   "old": "Continue to checks",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:269",
+   "old": "{n} of {n} decided. (moved into the heading)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:269",
+   "old": "Unit prisms are built from these polygons and the level register.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:279",
+   "old": "Accepted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:280",
+   "old": "Rejected",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:281",
+   "old": "Adjusted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:292",
+   "old": "{level} · {lower} to {upper} m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:294",
+   "old": "{record title} · {time}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:294",
+   "old": "Undo",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:297",
+   "old": "Add level evidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:301",
+   "old": "Keep as provisional",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:304",
+   "old": "{level question} (server words, the state of the level)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:304",
+   "old": "The limits of this level are estimated. (repeats the Estimated badge)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:304",
+   "old": "Nothing on this level is waiting for review.",
+   "verdict": "shorten",
+   "new": "Nothing to review."
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:305",
+   "old": "An estimated level stays hatched in 3D and cannot support a proposed code until a source confirms it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:312",
+   "old": "Estimated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:314",
+   "old": "Reviewed / Needs evidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:323",
+   "old": "Level register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:323",
+   "old": "m · {site datum} (unit and datum of the table, shown once)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:324",
+   "old": "caption Levels (visually hidden table name)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:325",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:325",
+   "old": "· stilt",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:326",
+   "old": "Lower",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:326",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:326",
+   "old": "est.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:327",
+   "old": "Upper",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:328",
+   "old": "State",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:364",
+   "old": "label 3D view of {building} with the open finding",
+   "verdict": "shorten",
+   "new": "label 3D view of {building}"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:365",
+   "old": "{finding message} (server words, the finding shown in 3D)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:369",
+   "old": "Checks",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:369",
+   "old": "{check method} (server note beside the heading)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:371",
+   "old": "Shown in 3D / Open in 3D",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:373",
+   "old": "Not assessed: no checks have run on this building's records.",
+   "verdict": "shorten",
+   "new": "No checks run."
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:375",
+   "old": "In the register at r{revision}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:378",
+   "old": "Recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:378",
+   "old": "{time} · {officer}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:385",
+   "old": "Record reviewed details",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:387",
+   "old": "Blocked: {n} blocking finding(s) open",
+   "verdict": "shorten",
+   "new": "{n} blocking finding(s) open"
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:394",
+   "old": "{count} {of} (register counts)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/WorkspacePage.tsx:397",
+   "old": "{level summary, for example G + 3 · stilt}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recordTitle.ts:8",
+   "old": "Reviewed details recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recordTitle.ts:12",
+   "old": "{level} kept provisional: estimate stays flagged",
+   "verdict": "shorten",
+   "new": "{level} kept provisional"
+  },
+  {
+   "at": "apps/studio/src/features/review/registerCounts.ts:171",
+   "old": "unit / units",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/registerCounts.ts:172",
+   "old": "level / levels",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/registerCounts.ts:173",
+   "old": "shared space / shared spaces",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/registerCounts.ts:175",
+   "old": "space, use not stated / spaces, use not stated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateBanner.tsx:17",
+   "old": "{n} roofprint candidates from a model are waiting for an officer.",
+   "verdict": "shorten",
+   "new": "{n} roofprint candidates need review"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateBanner.tsx:18",
+   "old": "{n} room candidates from a plan are waiting for an officer.",
+   "verdict": "shorten",
+   "new": "{n} room candidates need review"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateBanner.tsx:19",
+   "old": "Review candidates",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:16",
+   "old": "Deterministic extraction; no model (repeats the method)",
+   "verdict": "shorten",
+   "new": "No model"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:17",
+   "old": "From the candidate polygon in the plan's own metres, at the plan's candidate scale; not a measurement.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:24",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:30",
+   "old": "Model",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:31",
+   "old": "Method",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:32",
+   "old": "Confidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:36",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:37",
+   "old": "Floor title in the drawing",
+   "verdict": "shorten",
+   "new": "Floor title"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:39",
+   "old": "Frame",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:50",
+   "old": "Image result",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:50",
+   "old": "{state}, {n} components",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:52",
+   "old": "Batch",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:52",
+   "old": "{batch} · {n} images",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:54",
+   "old": "Development split",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:55",
+   "old": "Claim",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:56",
+   "old": "Licence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:58",
+   "old": "aria-label Model",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:59",
+   "old": "Model card summary",
+   "verdict": "shorten",
+   "new": "Model card"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:67",
+   "old": "Bounding extent",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:67",
+   "old": "Area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:70",
+   "old": "{extent} (estimated)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:71",
+   "old": "{area} (estimated)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:79",
+   "old": "aria-label Estimated size",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:80",
+   "old": "Estimated size",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:89",
+   "old": "aria-label Limitations",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:90",
+   "old": "Limitations",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:92",
+   "old": "{limitations the record states}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:94",
+   "old": "Unknown: the record states no limitations.",
+   "verdict": "shorten",
+   "new": "Not stated"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:113",
+   "old": "aria-label Stated size",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:114",
+   "old": "Stated on the sheet: {literal}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:129",
+   "old": "aria-label Citations",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:130",
+   "old": "Citations",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:142",
+   "old": "Unknown: the record cites no source.",
+   "verdict": "shorten",
+   "new": "No citation recorded"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:152",
+   "old": "aria-label Decision on record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:153",
+   "old": "Accepted / Rejected · {time}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:154",
+   "old": "{officer reason}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:155",
+   "old": "By {officer}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:165",
+   "old": "{kind} candidate (eyebrow over the title)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateCardView.tsx:166",
+   "old": "{card title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:9",
+   "old": "All",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:10",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:11",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:12",
+   "old": "Rejected",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:25",
+   "old": "{card title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:26",
+   "old": "{confidence}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:39",
+   "old": "{group title} · {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:57",
+   "old": "{n} in the record (the All chip shows the same count)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:59",
+   "old": "Candidates",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:61",
+   "old": "aria-label Filter by state",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:63",
+   "old": "{filter label} {count}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:67",
+   "old": "aria-label Candidates",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateQueue.tsx:73",
+   "old": "{n} more entries in the record carry no geometry.",
+   "verdict": "shorten",
+   "new": "{n} more without geometry"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:30",
+   "old": "The candidates could not be read",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:31",
+   "old": "Back to Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:32",
+   "old": "{read error}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:53",
+   "old": "The area was not found.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:63",
+   "old": "Roofprint candidates",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:63",
+   "old": "{area name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:64",
+   "old": "Open map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:85",
+   "old": "The building was not found.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:90",
+   "old": "Room candidates",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:90",
+   "old": "Name unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/CandidateReviewPage.tsx:91",
+   "old": "Open area map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/commands.ts:48",
+   "old": "The request failed.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:25",
+   "old": "Reading the package revision.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:36",
+   "old": "Recorded {n} decisions in draft package {id}; registry recording is still needed.",
+   "verdict": "shorten",
+   "new": "Recorded {n} decisions in draft package {id}"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:37",
+   "old": "Recorded {n} decisions; rejected candidates stay in the record without a draft package.",
+   "verdict": "shorten",
+   "new": "Recorded {n} decisions; no draft package"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:44",
+   "old": "aria-label Decisions staged on this image (repeats the heading)",
+   "verdict": "shorten",
+   "new": "aria-label Staged decisions"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:45",
+   "old": "Staged on this image · {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:49",
+   "old": "Accept / Reject {title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:50",
+   "old": "Remove",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:54",
+   "old": "{why recording is off}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:55",
+   "old": "{server refusal} ({code})",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/DecisionSheet.tsx:58",
+   "old": "Record {n} decision(s)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/decisions.ts:17",
+   "old": "No reviewed levels yet — a level schedule is needed first",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/decisions.ts:31",
+   "old": "Give a reason of at least 3 characters.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/decisions.ts:52",
+   "old": "Stage a decision first.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/HistoryPanel.tsx:11",
+   "old": "No decisions are recorded on these candidates yet.",
+   "verdict": "shorten",
+   "new": "No decisions yet."
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/HistoryPanel.tsx:17",
+   "old": "aria-label Decisions on record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/HistoryPanel.tsx:22",
+   "old": "Accepted / Rejected · {time}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/HistoryPanel.tsx:23",
+   "old": "{card title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/HistoryPanel.tsx:24",
+   "old": "{officer reason}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/HistoryPanel.tsx:25",
+   "old": "By {officer}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/LevelPicker.tsx:12",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/LevelPicker.tsx:16",
+   "old": "No level available (repeats the disabled reason)",
+   "verdict": "shorten",
+   "new": "None"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/LevelPicker.tsx:16",
+   "old": "Choose a reviewed level",
+   "verdict": "shorten",
+   "new": "Choose a level"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/LevelPicker.tsx:19",
+   "old": "{disabled reason}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:79",
+   "old": "Unlabelled region",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:80",
+   "old": "Not attached to a level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:95",
+   "old": "p.{page} · x {x}, y {y} · {w} × {h} {unit}, and the row, cell, entity, feature and point locators",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:110",
+   "old": "Not scored",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:112",
+   "old": "{score} · uncalibrated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:113",
+   "old": "{score} · calibration not recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:127",
+   "old": "Rejected",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:128",
+   "old": "Reviewed / Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:153",
+   "old": "Label {state}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:154",
+   "old": "{label} ({state})",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:165",
+   "old": "Level not listed in this record · {id}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:170",
+   "old": "Roofprint {id} / {room label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:199",
+   "old": "aria-label Open cited source {source} at {locator}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:208",
+   "old": "Room / Roofprint (kind label of the cut eyebrow)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:213",
+   "old": "Not recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:222",
+   "old": "Not recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/model.ts:252",
+   "old": "Image {id} / Level not stated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/modelCard.ts:21",
+   "old": "recall {r}, precision {p} on {n} chips",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/PlanLocalPanel.tsx:51",
+   "old": "aria-label {card title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/PlanLocalPanel.tsx:53",
+   "old": "svg title {card title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/PlanLocalPanel.tsx:56",
+   "old": "{card title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/PlanLocalPanel.tsx:79",
+   "old": "{floor title} / Level not stated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/PlanLocalPanel.tsx:80",
+   "old": "Plan-local metres · placement unknown · not on the map",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/PlanLocalPanel.tsx:83",
+   "old": "aria-label {n} room candidates of {floor title}, in plan metres",
+   "verdict": "shorten",
+   "new": "aria-label Plan, {floor title}"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/PlanLocalPanel.tsx:90",
+   "old": "{bar} m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReasonDialog.tsx:6",
+   "old": "The reason is kept with the decision, with who decided and when.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReasonDialog.tsx:27",
+   "old": "Cancel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReasonDialog.tsx:29",
+   "old": "{confirm label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReasonDialog.tsx:35",
+   "old": "Reason (required)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReasonDialog.tsx:39",
+   "old": "{reason error}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReasonDialog.tsx:40",
+   "old": "{server refusal}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:9",
+   "old": "The geometry of this draft has not been qualified, and recording needs that first. The qualification command is not published in the API yet.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:26",
+   "old": "Blocked: {server refusal} ({code})",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:38",
+   "old": "aria-label Registry",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:39",
+   "old": "Registry",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:41",
+   "old": "Draft",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:42",
+   "old": "Draft package {id}, revision {n} (repeats the Draft badge)",
+   "verdict": "shorten",
+   "new": "Package {id}, revision {n}"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:44",
+   "old": "Accepted as a source selection only. It is not recorded in the registry.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:46",
+   "old": "Registry review prepared. Recording is the next step.",
+   "verdict": "shorten",
+   "new": "Registry review prepared."
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RegistryStep.tsx:49",
+   "old": "Review for the registry",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:32",
+   "old": "Select a candidate",
+   "verdict": "shorten",
+   "new": "No candidate selected"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:33",
+   "old": "Choose one in the queue or on the canvas to see its record.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:55",
+   "old": "Candidate",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:56",
+   "old": "History {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:64",
+   "old": "{heading}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:65",
+   "old": "{scope}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:67",
+   "old": "{back link label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:75",
+   "old": "aria-label Inspector",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/ReviewShell.tsx:80",
+   "old": "{recorded notice}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintDecisions.tsx:12",
+   "old": "Accepting selects this roof projection as a source candidate. It does not record a building in the registry.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintDecisions.tsx:14",
+   "old": "A rejected candidate stays in the record with your reason.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintDecisions.tsx:43",
+   "old": "Accept",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintDecisions.tsx:44",
+   "old": "Reject",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintDecisions.tsx:48",
+   "old": "Staged: accept / reject. Reason: {reason}",
+   "verdict": "shorten",
+   "new": "Staged: accept / reject · {reason}"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintDecisions.tsx:55",
+   "old": "Accept / Reject {title}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintDecisions.tsx:56",
+   "old": "Stage acceptance / Stage rejection",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintMap.tsx:28",
+   "old": "label Map of {n} roofprint candidates, drawn as ghosted outlines",
+   "verdict": "shorten",
+   "new": "label Map of roofprint candidates"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoofprintMap.tsx:30",
+   "old": "Candidates stay ghosted until a roofprint is recorded in the registry.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:42",
+   "old": "Recorded the rejection of {title}; the candidate stays in the record.",
+   "verdict": "shorten",
+   "new": "Rejected {title}"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:43",
+   "old": "Attached {title} to the chosen level.",
+   "verdict": "shorten",
+   "new": "Attached {title} to {level label}"
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:59",
+   "old": "Reject {title} / Accept {title} on a level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:62",
+   "old": "aria-label Decision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:63",
+   "old": "Attach to a level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:67",
+   "old": "Accept on this level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:69",
+   "old": "Reject",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:72",
+   "old": "Record rejection / Accept",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:77",
+   "old": "A rejected candidate stays in the record with your reason.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/candidates/RoomDecisions.tsx:78",
+   "old": "This attaches the candidate to the level. It does not place the room on the map.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:23",
+   "old": "No card has been issued for this unit.",
+   "verdict": "shorten",
+   "new": "No card issued."
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:24",
+   "old": "No card is listed under the snapshots of this building that were read.",
+   "verdict": "shorten",
+   "new": "No card listed in the snapshots read."
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:25",
+   "old": "Older or unreadable snapshots of this building were not searched.",
+   "verdict": "shorten",
+   "new": "Older or unreadable snapshots were not searched."
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:27",
+   "old": "At its present revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:28",
+   "old": "Changed since this card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:37",
+   "old": "Revoked {time}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:38",
+   "old": "Inconsistent",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:39",
+   "old": "Expired {time}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:41",
+   "old": "Valid until {time}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:43",
+   "old": "Expiry not reported",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:73",
+   "old": "Read under {n} snapshots; the newest that lists a card is of {time}",
+   "verdict": "shorten",
+   "new": "{n} snapshots read · newest with a card {time}"
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/cards.ts:83",
+   "old": "{n} of {m} snapshots could not be read.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/CitationControls.tsx:13",
+   "old": "No citation recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:14",
+   "old": "aria-label Open card PDF, card {id}, revision {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:15",
+   "old": "Open card PDF",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:19",
+   "old": "aria-label Verification, card {id}, revision {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:20",
+   "old": "Verification",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:27",
+   "old": "Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:27",
+   "old": "title {full card id} (the cell shows eight characters)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:30",
+   "old": "Revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:31",
+   "old": "Issued",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:31",
+   "old": "Not reported",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:32",
+   "old": "Status",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:33",
+   "old": "Unit in its snapshot",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:33",
+   "old": "Not reported",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:34",
+   "old": "Actions",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:47",
+   "old": "caption Property cards of this unit (visually hidden table name)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ListedCards.tsx:51",
+   "old": "The registry holds more cards for this unit than the {n} listed.",
+   "verdict": "shorten",
+   "new": "More cards than the {n} listed."
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:55",
+   "old": "Not reported",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:65",
+   "old": "Not recorded / {state word}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:96",
+   "old": "Level schedule row · a floor recorded from a source label is linked to it",
+   "verdict": "shorten",
+   "new": "Level schedule row"
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:98",
+   "old": "Recorded from a source label · geometry not recorded",
+   "verdict": "shorten",
+   "new": "Geometry not recorded"
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:99",
+   "old": "Recorded from a source label (repeats the panel and list name)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:148",
+   "old": "The register could not be read, so no identifier is shown.",
+   "verdict": "shorten",
+   "new": "Register could not be read"
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:149",
+   "old": "Reading the register…",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/model.ts:151",
+   "old": "The register read states no identifier for this floor.",
+   "verdict": "shorten",
+   "new": "Not stated"
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:26",
+   "old": "{floor label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:27",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:31",
+   "old": "Identifier",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:32",
+   "old": "Lower height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:33",
+   "old": "Upper height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:34",
+   "old": "Citation",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:37",
+   "old": "aria-label Units recorded under {floor}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedFloorItem.tsx:42",
+   "old": "No unit is recorded under this floor.",
+   "verdict": "shorten",
+   "new": "No units recorded."
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedPanel.tsx:23",
+   "old": "Recorded floors and units",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedPanel.tsx:25",
+   "old": "{source label gap the building states} (a list the record states)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedPanel.tsx:27",
+   "old": "aria-label Floors recorded from a source label",
+   "verdict": "shorten",
+   "new": "aria-label Recorded floors"
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedPanel.tsx:33",
+   "old": "No floor or unit has been recorded from a source label for this building.",
+   "verdict": "shorten",
+   "new": "No floors recorded."
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedUnitItem.tsx:15",
+   "old": "No code assigned",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedUnitItem.tsx:53",
+   "old": "{unit label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedUnitItem.tsx:55",
+   "old": "Kind",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedUnitItem.tsx:56",
+   "old": "Area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedUnitItem.tsx:57",
+   "old": "Citation",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/RecordedUnitItem.tsx:58",
+   "old": "Application code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:15",
+   "old": "Read again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:16",
+   "old": "The reviews of this unit could not be read. {failure}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:23",
+   "old": "{review state}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:24",
+   "old": "Review and assign code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:30",
+   "old": "The registry lists this review for the unit. No assignment has used it.",
+   "verdict": "shorten",
+   "new": "Listed review, not yet assigned."
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:32",
+   "old": "Assign code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:47",
+   "old": "aria-label Review and code of {unit}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitAssignment.tsx:48",
+   "old": "Review and code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitCards.tsx:13",
+   "old": "The cards of this unit could not be read. {failure}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitCards.tsx:17",
+   "old": "{no card text}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitCards.tsx:34",
+   "old": "aria-label Cards of {unit}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitCards.tsx:35",
+   "old": "Cards",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/UnitCards.tsx:37",
+   "old": "{issue action label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/review/recorded/ValueText.tsx:5",
+   "old": "{value} / {state word}",
+   "verdict": "keep",
+   "new": null
+  }
+ ]
+}

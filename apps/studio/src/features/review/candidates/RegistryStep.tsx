@@ -5,11 +5,6 @@ import type { CandidateCard } from './model';
 import { useReviewDraft } from './useCandidateMutations';
 import styles from './CandidateReview.module.css';
 
-const BLOCKED_HELP: Record<string, string> = {
-  USP_GEOMETRY_PAYLOAD_UNQUALIFIED: 'The geometry of this draft has not been qualified, and recording needs '
-    + 'that first. The qualification command is not published in the API yet.',
-};
-
 /** The draft package that holds this candidate: the one whose feature came from this component. */
 function useDraftFor(card: CandidateCard) {
   const item = useSpatialMlItem(card.itemId).data;
@@ -20,13 +15,7 @@ function useDraftFor(card: CandidateCard) {
 
 function Blocked({ error }: { error: unknown }) {
   const refusal = refusalOf(error);
-  const help = refusal.code ? BLOCKED_HELP[refusal.code] : undefined;
-  return (
-    <>
-      <Banner tone="warning">Blocked: {refusal.message}{refusal.code ? ` (${refusal.code})` : ''}</Banner>
-      {help ? <p className="ul-help">{help}</p> : null}
-    </>
-  );
+  return <Banner tone="warning">Blocked: {refusal.message}{refusal.code ? ` (${refusal.code})` : ''}</Banner>;
 }
 
 /** An accepted roofprint is a source selection and a draft. Recording it in the registry is a separate step. */
@@ -39,11 +28,10 @@ export function RegistryStep({ card }: { card: CandidateCard }) {
       <h3 className={styles.sectionTitle}>Registry</h3>
       <span className="ul-row">
         <StatusBadge status="Draft" />
-        <span className="ul-help">Draft package {draft.id.slice(0, 8)}, revision {draft.revision}</span>
+        <span>Package {draft.id.slice(0, 8)}, revision {draft.revision}</span>
       </span>
-      <p className="ul-help">Accepted as a source selection only. It is not recorded in the registry.</p>
       {review.error ? <Blocked error={review.error} /> : null}
-      {review.isSuccess ? <Banner tone="info">Registry review prepared. Recording is the next step.</Banner> : null}
+      {review.isSuccess ? <Banner tone="info">Registry review prepared.</Banner> : null}
       <div className={styles.actions}>
         <Button disabled={review.isPending} onClick={() => review.mutate(draft.revision)}>
           Review for the registry

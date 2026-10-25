@@ -1,0 +1,39 @@
+{
+  "task": "S7.24e",
+  "title": "Cut taglines, helper text and secondary labels in the review screens",
+  "plan_step": 7,
+  "base": "bac06934",
+  "strings": {"file": "strings.json", "before": 318, "cut": 23, "shortened": 46, "kept": 249},
+  "net_lines_apps": {"added": 78, "removed": 155},
+  "layout_fixes": [
+    "Candidate sheet: the All candidates reviewed panel is titled with its count (n of n decided) beside the Reviewed badge; the body sentence is gone",
+    "Level question: an estimated level with no question shows the Estimated badge alone; the sentence repeating it is gone",
+    "Candidate card: the kind eyebrow over the title is gone, and with it the card's kindLabel field",
+    "Reason dialog: the field shows its error only when there is one; the children slot that held the helper lines is removed",
+    "Room attach toast names the level the officer chose instead of the chosen level",
+    "Recorded floor: the origin line shows only what sets a floor apart (Level schedule row, Geometry not recorded)"
+  ],
+  "kept_as_state": [
+    "Counts with their record state: register counts, n of m to review, n more without geometry, snapshots read and not read",
+    "Lists the record states: a candidate's limitations, the building's source label gap banner",
+    "Server words where they are the state of the thing: refusals, the level question, the finding in 3D, check details"
+  ],
+  "removed_dead_css": ["Workspace.module.css .candidateList and .levelRegister (unused at base)", "CandidateReview.module.css .canvasNote"],
+  "not_changed_outside_own": [
+    "cards.ts noCardText is also read by identity/registryCard.ts; its test asserts were not searched, which the shortened words keep",
+    "ListedCards is also opened by identity/UnitCardDialog.tsx; its shortened lines show there too",
+    "CheckGroups is also used by register/RegisterPage.tsx; no string in it changed",
+    "UnitAssignment shows state.text from identity/assignment.ts unchanged"
+  ],
+  "checks": {
+    "studio_typecheck": {"before": 0, "after": 0},
+    "studio_test": {"before": "761 passed, 2 skipped", "after": "761 passed, 2 skipped", "exit": 0},
+    "studio_build": {"before": 0, "after": 0, "assets": "125 before, 125 after"},
+    "typecheck_backend": {"before": 0, "after": 0},
+    "server_tests": {"before": "1093 passed, 5 skipped, 0 failed", "after": "1093 passed, 5 skipped, 0 failed"},
+    "openapi_check": {"before": 0, "after": 0},
+    "check_py": {"before": 0, "after": 0},
+    "git_diff_check": 0,
+    "ui_design_scan": "0, no candidates"
+  }
+}

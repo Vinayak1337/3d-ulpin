@@ -38,9 +38,8 @@ function useRoomDecision(props: Props, levelId: string) {
     };
     const onSuccess = () => {
       close();
-      const message = action === 'reject'
-        ? `Recorded the rejection of ${props.card.title}; the candidate stays in the record.`
-        : `Attached ${props.card.title} to the chosen level.`;
+      const level = props.choices.options.find((option) => option.id === levelId)?.label ?? 'the chosen level';
+      const message = action === 'reject' ? `Rejected ${props.card.title}` : `Attached ${props.card.title} to ${level}`;
       props.onRecorded(message);
     };
     if (action === 'reject') reject.mutate(rejectRoomBody(input), { onSuccess });
@@ -71,13 +70,7 @@ export function RoomDecisions(props: Props) {
       {decision.action ? (
         <ReasonDialog title={title} confirmLabel={rejecting ? 'Record rejection' : 'Accept'} busy={decision.busy}
           failure={failure ? `${failure.message}${failure.code ? ` (${failure.code})` : ''}` : null}
-          onConfirm={decision.confirm} onClose={decision.close}>
-          <p className="ul-help">
-            {rejecting
-              ? 'A rejected candidate stays in the record with your reason.'
-              : 'This attaches the candidate to the level. It does not place the room on the map.'}
-          </p>
-        </ReasonDialog>
+          onConfirm={decision.confirm} onClose={decision.close} />
       ) : null}
     </section>
   );
