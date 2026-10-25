@@ -12,7 +12,7 @@ export function PublicMapIndex() {
   const areas = usePublicAreas();
   if (areas.isPending) return <div className={styles.wrap}><Skeleton height={420} /></div>;
   const first = areas.data?.[0];
-  if (!first) return <div className={styles.wrap}><EmptyState icon={Buildings} title="No area is on record yet">Areas appear here once the land records office imports them.</EmptyState></div>;
+  if (!first) return <div className={styles.wrap}><EmptyState icon={Buildings} title="No area is on record yet" /></div>;
   return <Navigate to={`/portal/map/${first.id}`} replace />;
 }
 
@@ -42,13 +42,13 @@ export function PublicMapPage() {
   }, [building, set]);
 
   if (map.isPending) return <div className={styles.mapFrame} />;
-  if (!map.data) return <div className={styles.wrap}><EmptyState icon={Buildings} title="This area has no public map">It may have been removed.</EmptyState></div>;
+  if (!map.data) return <div className={styles.wrap}><EmptyState icon={Buildings} title="This area has no public map" /></div>;
   const picked = buildingId ? map.data.buildings.find((f) => f.id === buildingId) : null;
 
   return (
     <div className={styles.mapFrame}>
       <PublicScene className={styles.canvas} map={map.data} building={building} levelId={levelId} spaceId={record?.id ?? null} onPick={onPick} onReady={setEngine} onView={() => setTick((t) => (t + 1) % 1_000_000)}
-        label={`3D map of ${map.data.area.name}, view only. The panel lists the released records.`} />
+        label={`3D map of ${map.data.area.name}`} />
       <aside className={`ul-float ${styles.mapPanel}`} aria-label="Released records">
         <label className={styles.mapSearch}>
           <Icon icon={MagnifyingGlass} />
@@ -78,7 +78,7 @@ export function PublicMapPage() {
                     <span className={styles.resultHead}><b>{record.name}</b><StatusBadge status={record.status === 'assigned' ? 'Assigned' : 'Recorded'} /></span>
                     <span className="portal-body-sm ul-muted">{record.level}{record.carpetAreaM2 !== null ? ` · carpet area ${record.carpetAreaM2.toFixed(2)} m²` : ''}</span>
                     <Link to={`/portal/records/${record.id}`} className={styles.open}>Open record <Icon icon={ArrowRight} size={16} /></Link>
-                    <button type="button" className="ul-btn ul-btn--ghost" onClick={() => set({ record: null })}>All records in this building</button>
+                    <button type="button" className="ul-btn ul-btn--ghost" onClick={() => set({ record: null })}>All records</button>
                   </div>
                 ) : (
                   <>
@@ -95,7 +95,7 @@ export function PublicMapPage() {
             ) : (
               <>
                 <span className="portal-body-sm ul-muted">{[picked.parcelUlpin ? `Parcel ${picked.parcelUlpin}` : null, picked.heightM !== null ? `${picked.heightM.toFixed(1)} m high` : null].filter(Boolean).join(' · ')}</span>
-                <span className="portal-body-sm">Floors and flats are not recorded yet.</span>
+                <span className="portal-body-sm">Floors not recorded yet</span>
                 <Link to={`/portal/request?building=${picked.id}&kind=register`} className="ul-btn ul-btn--primary" style={{ justifySelf: 'start', textDecoration: 'none' }}>Request its register</Link>
                 <Link to={`/portal/buildings/${picked.id}`} className={styles.open}>Open building <Icon icon={ArrowRight} size={16} /></Link>
               </>
@@ -104,7 +104,7 @@ export function PublicMapPage() {
         ) : (
           <div className={styles.mapBody}>
             <span className="portal-h3">{map.data.area.name}</span>
-            <span className="portal-body-sm ul-muted">{map.data.buildings.length} buildings, each with its 3D ULPIN. Select one on the map or in the list.</span>
+            <span className="portal-body-sm ul-muted">{map.data.buildings.length} buildings</span>
             <ul className={styles.mapList}>
               {[...map.data.buildings].sort((a, b) => b.records - a.records || b.levels - a.levels).map((b) => (
                 <li key={b.id}><button type="button" onClick={() => set({ building: b.id })}>
@@ -125,7 +125,7 @@ export function PublicMapPage() {
         id: r.buildingId, text: `${map.data!.features.find((f) => f.id === r.buildingId)?.name ?? 'Building'} · ${r.records} released`,
         onSelect: () => set({ building: r.buildingId }),
       }))} /> : null}
-      <span className={styles.viewOnlyMap}>View only · illustrative look</span>
+      <span className={styles.illustrativeMap}>Illustrative</span>
     </div>
   );
 }

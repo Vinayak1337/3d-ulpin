@@ -38,14 +38,13 @@ export function RequestPage() {
   if (!buildingId) {
     return (
       <div className={styles.wrap}>
-        <EmptyState icon={FileArrowUp} title="Find the building first" action={<Link to="/portal/map">Open the map</Link>}>
-          Requests are filed from a building's page. Search for it by name, 3D ULPIN or parcel ULPIN, or pick it on the map.
-        </EmptyState>
+        <EmptyState icon={FileArrowUp} title="Find the building first"
+          action={<Link to="/portal/map">Open the map</Link>} />
       </div>
     );
   }
   if (building.isPending) return <div className={styles.wrap}><Skeleton width="50%" height={36} /><Skeleton height={240} /></div>;
-  if (!b) return <div className={styles.wrap}><EmptyState icon={FileArrowUp} title="This building is not on record" action={<Link to="/portal">Search again</Link>}>It may have been removed.</EmptyState></div>;
+  if (!b) return <div className={styles.wrap}><EmptyState icon={FileArrowUp} title="This building is not on record" action={<Link to="/portal">Search again</Link>} /></div>;
   const record = recordId ? b.records.find((r) => r.id === recordId) ?? null : null;
   const allowed = (k: RequestKind) => (k === 'register' ? !hasFloors : requiresFloors(k) ? hasFloors : true);
   const effectiveKind: RequestKind = allowed(kind) ? kind : hasFloors ? 'floors' : 'register';
@@ -85,9 +84,8 @@ export function RequestPage() {
       <div className={styles.wrap}>
         <div className={styles.done} role="status">
           <span className="ul-row" style={{ color: 'var(--ui-success)' }}><Icon icon={CheckCircle} size={32} /><span className="portal-h3">Request received</span></span>
-          <p className="portal-body">Your reference number is</p>
+          <span className="portal-label">Reference number</span>
           <span className={styles.refBig}>{done.ref}</span>
-          <p className="portal-body ul-muted">Keep it with the mobile number you gave. The land records office reviews requests in the order they arrive; you can check progress any time.</p>
           <div className={styles.doneActions}>
             <Link to={`/portal/track?ref=${encodeURIComponent(done.ref)}`} className="ul-btn ul-btn--primary">Track this request</Link>
             <Link to={`/portal/buildings/${b.id}`} className="ul-btn">Back to {b.name}</Link>
@@ -111,7 +109,8 @@ export function RequestPage() {
             <label key={k}>
               <input type="radio" name="kind" value={k} checked={effectiveKind === k} onChange={() => setKind(k)} disabled={!allowed(k)} />
               <span className="portal-h3">{REQUEST_KINDS[k].label}</span>
-              <span className="portal-body-sm ul-muted">{k === 'register' && hasFloors ? 'Its floors are already recorded.' : REQUEST_KINDS[k].help}</span>
+              {k === 'register' && hasFloors
+                ? <span className="portal-body-sm ul-muted">Floors already recorded</span> : null}
             </label>
           ))}
         </fieldset>
@@ -120,7 +119,7 @@ export function RequestPage() {
           <label className="ul-field"><span className="portal-label">Your name</span>
             <input className={`ul-input ${styles.bigInput}`} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required maxLength={120} /></label>
           <label className="ul-field"><span className="portal-label">Mobile number</span>
-            <input className={`ul-input ${styles.bigInput}`} value={mobile} onChange={(e) => setMobile(e.target.value.replace(/[^\d ]/g, ''))} inputMode="numeric" autoComplete="tel-national" placeholder="10 digits" required maxLength={12} /></label>
+            <input className={`ul-input ${styles.bigInput}`} value={mobile} onChange={(e) => setMobile(e.target.value.replace(/[^\d ]/g, ''))} inputMode="numeric" autoComplete="tel-national" required maxLength={12} /></label>
         </div>
         <label className="ul-field"><span className="portal-label">You are the</span>
           <select className={`ul-input ${styles.bigInput}`} value={relation} onChange={(e) => setRelation(e.target.value)}>
@@ -128,18 +127,16 @@ export function RequestPage() {
           </select>
         </label>
         <label className="ul-field"><span className="portal-label">{({ register: 'Tell us about the building', floors: 'What changed on which floors?', correction: 'What is wrong, and what should it be?', residents: 'What changed, and from when?', copy: 'What do you need the copy for?', other: 'What should change?' } as const)[effectiveKind]}</span>
-          <textarea className="ul-input" value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={2000}
-            placeholder={REQUEST_KINDS[effectiveKind].placeholder} />
+          <textarea className="ul-input" value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={2000} />
         </label>
 
         <div className="ul-stack">
-          <span className="portal-label">Documents <span className="ul-muted">{effectiveKind === 'floors' || effectiveKind === 'register' ? '(plans, level schedule, unit list)' : '(optional)'}</span></span>
+          <span className="portal-label">Documents</span>
           <label className={styles.drop} data-over={over}
             onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
             onDrop={(e) => { e.preventDefault(); setOver(false); add(e.dataTransfer.files); }}>
             <Icon icon={FileArrowUp} size={32} />
             <span><b>Choose files</b> or drop them here</span>
-            <span className="portal-body-sm">Sale deed, sanctioned plan, occupancy certificate. PDF or image, up to 10 files.</span>
             <input ref={input} type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.csv,.xlsx" onChange={(e) => { add(e.target.files); e.target.value = ''; }} />
           </label>
           {files.length ? (
@@ -156,7 +153,7 @@ export function RequestPage() {
 
         <label className={styles.consent}>
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-          <span>The details I give are correct. My name and mobile number go only to the land records office and are not shown on this portal.</span>
+          <span>The details I give are correct.</span>
         </label>
         {error ? <p className={styles.formError} role="alert">{error}</p> : null}
         <div className={styles.doneActions}>

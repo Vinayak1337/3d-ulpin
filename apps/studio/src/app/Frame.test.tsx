@@ -45,6 +45,13 @@ describe('area switcher', () => {
     expect(areaButton(root).textContent).toBe('Choose an area');
   });
 
+  it('says No areas and stays closed when there are none', async () => {
+    const root = await mount('/studio/work', []);
+
+    expect(areaButton(root).textContent).toBe('No areas');
+    expect(attributes(areaButton(root)).disabled).toBe(true);
+  });
+
   it('names the area of the page and tells two areas of one name apart', async () => {
     const root = await mount(`/studio/areas/${second.id}`, [first, second]);
     const button = areaButton(root);
