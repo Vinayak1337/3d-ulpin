@@ -655,13 +655,37 @@ Size M, code only. After: None; can run in parallel with anything. Dispatch it l
 
 ### S5.22 Processor image and host reader profiles with the step 5 readers; practice-kit 3D and imagery files on reh-02
 
-Size M, this PC: Docker. After: Step 1, the step 2 kit, and S5.11 to S5.20 accepted and integrated. This is the only runtime task in the area and needs a quiet PC. **Status: image part S5.22a merged 25 Oct (int3-pre 87634448). The reh-02 roll and live file checks (with the S5.6 GeoParquet and S5.9 PDF checks) running 25 Oct on int3-pre 9acfe29f (codex).**
+Size M, this PC: Docker. After: Step 1, the step 2 kit, and S5.11 to S5.20 accepted and integrated. This is the only runtime task in the area and needs a quiet PC. **Status: image part S5.22a merged 25 Oct (int3-pre 87634448). Live run 25 Oct on reh-02 at int3-pre 9acfe29f failed (evidence on task/s5-22-reh02-files 3a1a5d32): glTF, OBJ, IFC, DOCX, PDF and the LAZ draw or read; both rasters and the 800 MB GeoJSON sequence are refused because the large-original/2 storage reservation is not set on any runtime (S5.22b); the 4.5 MB WikiHouse DXF stops at the 10,000-entity bound (S5.8a); a LAZ in a mixed batch has no row action, so its preview cannot open (S5.22c); the LAZ alone stopped at 4 of 54 parts with no queued job (cause unproven, before S1.3b: S1.3 run 3 watches it). CityGML output limit, GeoParquet countries with no kind and no GIS file above 128 MiB in the kit are as designed or not produced. Runs again after S5.22b, S5.8a and S5.22c.**
 
 - **What:** The readers changed in S5.11 to S5.19 run in two places: the processor image (raster, point, CityJSON and both outline converters) and the host profiles built by the NP1 step (CityGML, glTF, OBJ, IFC). Build and pin the image from services/geo, roll ulpin-reh-02 to the integrated head with the native-reader step, and drop each practice-kit 3D and imagery file in its own batch, then all together. For each file, record the route, reader outcome, how it is drawn (map or own frame) or its words, and seconds to the first and last part. Fix configuration only; any code fault becomes a new task.
 - **Files:** scripts/platform/processor-image.json; scripts/platform/demo-native-readers.mjs (run, not edited); docs/backend/DEMO-RUNTIME.md (roll steps); docs/evidence/5/s5-12/result.json
 - **Check:** On reh-02, every practice-kit file of the 3D and imagery families is drawn (on the map or in its own frame) or kept with plain words; each surface's first part appears within 60 s of its drop (or of its area, when it has one); pnpm journey:check --case <act 1 case> passes its surfaces step.
 - **Tests:** pnpm journey:check; node scripts/platform/demo-native-readers.mjs check
 
+
+### S5.22b Every demo-profile runtime starts with the large-original/2 storage reservation set
+
+Size S, this PC: code. After: S5.22 run 1. **Status: running 25 Oct (codex, task/s5-22b-v2-capacity from 726bb2e8).**
+
+- **What:** large-original.ts refuses every large-original/2 upload with 503 UPLOAD_CAPACITY_UNCONFIGURED while ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES is unset, and no platform script sets it. The platform start environment sets it to the contract's maxStoredBytesIncludingTemporaryCopies; the doctor reports it beside the free bytes of the storage disk and fails below it.
+- **Files:** scripts/platform/demo-config.mjs; the platform start and doctor scripts; their tests; docs/backend/DEMO-RUNTIME.md
+- **Tests:** node --test on the platform tests; scripts/agent/a3c-demo-paths.test.ts; pnpm typecheck:backend
+
+### S5.8a DXF count bounds measured on real drawings
+
+Size S, this PC: data drive. After: S5.22 run 1. Before: S5.8. **Status: running 25 Oct (codex, task/s5-8a-dxf-bounds from 726bb2e8).**
+
+- **What:** The practice-kit WikiHouse drawing (4,519,566 bytes) stops at MAX_ENTITIES 10,000. Measure it and 1_polylines.dxf with test-only raised counts, then set entity, record, point and tag bounds so a 16 MiB drawing stays inside the unchanged memory, time and output budgets with a stated margin, as S5.17 did. DXF_LIMITS follow exactly.
+- **Files:** services/geo/geo/native_dxf.py (bounds); packages/contracts/src/usp/dxf-ingestion.ts (limits); services/geo/tests/test_native_dxf.py
+- **Tests:** pytest test_native_dxf.py in the pinned DXF env; tests/dxf-read-compatibility.test.ts; pnpm typecheck:backend
+
+### S5.22c A surface row in a batch has a View the surface action
+
+Size XS, UI (Claude session). After: S5.12. **Status: proposed 25 Oct (worktree E:/Projects/ulpin-wt/s5-22c, task/s5-22c-surface-row from 726bb2e8).**
+
+- **What:** IntakeTray NextStep offers no action for a raster or point cloud not on the map, so in a batch of several files its preview never opens. Add a View the surface button when opensPreview(item).
+- **Files:** apps/studio/src/features/intake/IntakeTray.tsx; IntakeTray.test.tsx
+- **Tests:** pnpm studio:typecheck; pnpm studio:test; pnpm studio:build
 
 ## Step 6: Linking
 
