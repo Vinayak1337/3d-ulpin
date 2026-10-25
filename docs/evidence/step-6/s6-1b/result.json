@@ -1,0 +1,93 @@
+{
+  "task": "S6.1b",
+  "planStep": 6,
+  "base": "a8c67f15",
+  "branch": "task/s6-1b-links-list",
+  "behavior": "The map inspector's Evidence tab lists the building's links to register rows and document pages, read only. It reads the building's intake target by feature (the same query and key as the property card), then GET /api/v1/ingestion/cases/{caseId}/intake/evidence with featureId = the selected building's feature id through @ulpin/api-client, and the batch manifest for file names. Each link shows the file name, the row or page in the native reader's words (CSV logical row N, Sheet S, row N, Page N), the key as written (the column header and cell literal, or the officer's key name and the quoted literal for a document), the outcome in words (Matched, Several buildings, Conflicting, Unmatched; with the batch's outcome words beside a non-match and the other buildings a conflicting or several key also names), and the review: cited on the record revision the target's evidence artefact names, confirmed by the officer, confirmed before its file was read again, or a candidate not confirmed. No targets, no candidates: 'No register row or page names this building.' A failed target or evidence read says so with the server's words inside the section only; the rest of the panel stays. Case-wide counts are not shown. No raw codes or UUIDs, no hard-coded sample values; a first page with a next cursor says more links are listed in the batch and links to it.",
+  "files": {
+    "added": [
+      "apps/studio/src/features/map/inspector/BuildingLinks.tsx"
+    ],
+    "changed": [
+      "apps/studio/src/features/map/inspector/BuildingInspector.tsx",
+      "apps/studio/src/features/map/inspector/evidence.ts",
+      "apps/studio/src/features/map/inspector/Inspector.module.css",
+      "apps/studio/src/features/map/inspector/BuildingCard.test.tsx",
+      "docs/evidence/step-6/s6-1b/result.json"
+    ],
+    "reused": "buildingWords and outcomeWords from apps/studio/src/features/intake/evidence/model.ts (import only, unchanged); buildingTargetKey and readTargetByFeature (the property card's read); useIntakeManifest; evidenceKey (the links sit under the batch's evidence key, so a batch refresh reads them again).",
+    "notReused": "evidenceWords words a row as 'row N' with its column; the task and the native reader word it 'CSV logical row N', so evidence.ts adds linkPlaceWords, matching packages/server/src/modules/registry/registry-table-evidence.ts tableRowLocatorWords (read only)."
+  },
+  "fixture": {
+    "label": "test_only",
+    "origin": "The captured E3B carded target (docs/evidence/gf1/e3b/confirmation.json) and an evidence page built to the published contract and parsed by IntakeEvidencePageSchema. The row is real: E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv logical row 444 (header row 1) has bin 1084419, read on 25 October. Every pin, hash and id in the page is a test value."
+  },
+  "checks": {
+    "focused": {
+      "command": "pnpm --filter @ulpin/studio exec vitest run src/features/map/inspector/",
+      "exit": 0,
+      "passed": 14,
+      "failed": 0,
+      "new": [
+        "register link row: gpmc-yuvp.csv, CSV logical row 444, key bin 1084419 as written, Matched, Confirmed by the officer; cited on the record revision; not confirmed; reread",
+        "conflicting row with its outcome words and the other building named",
+        "empty: no candidates, and no target",
+        "failed read: evidence read and target read, each said in the section"
+      ]
+    },
+    "studioTest": {
+      "command": "pnpm -s studio:test",
+      "exit": 0,
+      "perPackage": {
+        "api-client": {
+          "passed": 2
+        },
+        "ui": {
+          "passed": 7
+        },
+        "scene": {
+          "passed": 62,
+          "skipped": 1
+        },
+        "studio": {
+          "files": 112,
+          "passed": 718,
+          "skipped": 2,
+          "failed": 0
+        }
+      }
+    },
+    "studioTypecheck": {
+      "command": "pnpm -s studio:typecheck",
+      "exit": 0
+    },
+    "studioBuild": {
+      "command": "pnpm -s studio:build",
+      "exit": 0,
+      "note": "existing chunk-size warning only"
+    },
+    "logs": "E:/ulpin-tmp/s6-1b-{test,typecheck,build}.log"
+  },
+  "uiDesignCheck": {
+    "blocking": "None.",
+    "designSystem": "None open. Fixed during the check: a conflicting link first used the danger tone; docs/design-system/README.md (Colour) keeps red for blocking findings only, so conflicting and several use the warning tone with an icon and a word.",
+    "checkedNoIssue": [
+      "BuildingLinks.tsx: every value is read from the target, the evidence page and the manifest; no sample values. Case-wide counts are not shown. No UUIDs or codes as headings; the key literal is in mono.",
+      "Unknown and absent stay distinct: no links says 'No register row or page names this building.'; a failed read says it could not be read with the server's words (role=alert); a file name not yet read or not readable says so, never blank.",
+      "Inspector.module.css: --ui-* tokens only (space, divider, ink, ink-soft); rows are divided by --ui-divider hairlines, no border, shadow and fill together; text wraps with overflow-wrap so the 300 px column and 200% zoom keep every line.",
+      "Read only: no new buttons; the only control is the existing 'Open batch' link when more links remain, reachable by keyboard with the default focus style. One primary button per view is unchanged.",
+      "Desktop and light only; no theme or mobile variant added. Sentence case throughout."
+    ],
+    "scan": {
+      "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs a8c67f15",
+      "exit": 0,
+      "result": "282 added lines in apps/studio/src, no candidates"
+    },
+    "notRun": "Browser keyboard, contrast and 200% zoom screenshots were not run; no visual qualification is claimed."
+  },
+  "next": [
+    "Live check on a runtime with the NYC act 1 batch: pick a matched BIN building and a BIN 1002123 building on the map, open Evidence, and see one matched row and the conflicting pair.",
+    "The list shows the first evidence page (200) and links to the batch when more remain; the feature filter keeps it to a building's own rows, so paging is not added here.",
+    "S6.4 (Colour by link) can reuse linkOutcomeWords from inspector/evidence.ts."
+  ]
+}
