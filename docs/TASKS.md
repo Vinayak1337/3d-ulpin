@@ -427,7 +427,7 @@ Size M, code only. After: S4.9. **Status: done 25 Oct, merged into task/int3-pre
 
 ### S4.12 After the owner's yes, Sarvam names the remaining map-layer field meanings
 
-Size M, code only. After: S4.1, S4.2, S4.6; switched on only after the owner's yes on PLAN Needs you 3. **Status: running 25 Oct (codex, from int3-pre a8c67f15; owner yes 25 Oct on PLAN Needs you 3: up to five masked sample values per column)**
+Size M, code only. After: S4.1, S4.2, S4.6; switched on only after the owner's yes on PLAN Needs you 3. **Status: sent back 25 Oct (checkpoint 156ee4d5): the meanings step must never fail the draft (formats and sizes beyond the bounded GeoJSON reader return nothing) and must not replace the existing layout proposal; intake-ledger.ts intakePlan authorized for the stored meanings**
 
 - **What:** Map layers reach Sarvam only through the building-key proposal, which takes only EPSG:4326 building polygons. Every other property stays unknown or rule-named. In the intake draft job, after memory and rules: profile the first 100 features as gis_attributes with masked samples, and call proposeMapping (teacher only under the S4.1 switch). Store the routed result in an operations row keyed by item and source revision. The reading shows those fields as Sarvam, not confirmed. Cut candidate.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:119-135 preparedProposal; column-profile.ts:93-102 maskColumnSample, 255-265 profileGisAttributes; mapping-teacher.ts:841-873 (call only); adaptive-mapping.ts:148-150 (read only); intake-reading.ts (read the stored row)
@@ -628,7 +628,7 @@ Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned
 
 ### S5.20 IFC panel draws the storey outlines in their own frame
 
-Size S, code only. After: S5.19 (artifact fields). **Status: running 25 Oct (UI session)**
+Size S, code only. After: S5.19 (artifact fields). **Status: done 25 Oct, merged into task/int3-pre (b5f93a8e): each storey outline drawn beside its storey in the file's own frame, from the accepted artifact checked by size and SHA-256; display only**
 
 - **What:** The IfcStructure panel shows only the building, storey and space tree. Read S5.19's outlines from the accepted IFC artifact through the existing .../ifc/jobs/{jobId}/native route and draw them as SVG in the file's own frame, one per storey, with words saying they are not placed on the map. This is display only.
 - **Files:** apps/studio/src/features/intake/ifc/IfcStructure.tsx, structure-model.ts, useIfcStructure.ts, IfcStructure.module.css, IfcStructure.test.tsx
@@ -660,7 +660,7 @@ The only working link is an exact key the officer declares by hand (it works for
 
 ### S6.1 The record panel lists a building's links to register rows and pages, with the reason
 
-Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: server half S6.1a merged 25 Oct (int3-pre 3d595027; server set 1001 pass); UI half S6.1b (the Links list in the record panel) running 25 Oct**
+Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: done 25 Oct: server half S6.1a (int3-pre 3d595027) and UI half S6.1b (int3-pre 38fac8aa): the Evidence tab lists each link with its file, row or page, key as written, outcome and review, read only**
 
 - **What:** A building's register match shows only in the batch evidence list, or later as a citation. The map's record panel shows only geometry, height and ledger sources. Add an optional featureId filter to the evidence read, matched through candidate->'anchors'. Add a Links list to the inspector; per candidate it shows:
 - the file, and the row or page in words;
