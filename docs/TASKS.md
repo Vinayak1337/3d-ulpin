@@ -183,11 +183,19 @@ Size S, code only. After: S1.3l. **Status: merged 25 Oct (int3-pre 9b9bcf12, tas
 
 ### S1.3o Per-format retained-source budgets are kept per case
 
-Size M, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3o-case-retention from int3-pre 068c1da7), resumed once. The first pass stopped as asked: after the change nothing bounds the service total of direct-retained originals. Lead decision: no new service total, because large uploads (the path of every big file) already have none, so a total on small direct retains alone would protect little and bring back a lifetime cap; the object store disk is the real bound, and the doctor will report retained bytes against free disk.**
+Size M, code only. After: S1.3l. **Status: merged 25 Oct (int3-pre 9e863382, task/s1-3o-case-retention 3d7e2e15, resumed once; pins regenerated; server set 1,093 tests, 0 failed). The ten direct-retain budgets (same 64 sources and 256 MiB, CityJSON 128 MiB) now count the requesting case only, through one helper (retention-budget.ts) called on one line in each format; superseded revisions still count; each 429 code kept with {limit, freesAt:null}. No service total, by the lead's decision. Doctor lines follow in S1.3p.**
 
 - **What:** Ten direct-retain paths (raster, point, KML, CityGML, CityJSON, DXF, GeoParquet, glTF, IFC, OBJ) refuse a new original once the whole service holds 64 sources or 256 MiB of that format, never freed; one rehearsal ZIP retains six KML. Count each per case with the same numbers through one shared helper, and stop if nothing then bounds the service total.
 - **Files:** the ten format modules (budget lines only), one helper, retention-budget.test.ts
 - **Tests:** 64 in case A do not stop case B; 64 in one case refuse; the byte limit per case; pnpm typecheck:backend; the section 5 server set
+
+### S1.3p The doctor reports each format's busiest case and kept bytes against free disk
+
+Size S, code only. After: S1.3o. **Status: running 25 Oct (codex, task/s1-3p-doctor-retention from int3-pre 9e863382).**
+
+- **What:** Ten doctor lines (busiest case per format, sources and MiB against the per-case budget, warning at 75 percent), replacing S1.3l's whole-service raster and point lines, and one storage line: kept original bytes against the object store's free bytes, warning below 20 GiB or below the kept bytes.
+- **Files:** scripts/platform/ingestion-quotas.mjs and its test; scripts/platform/doctor (one call); demo-config.mjs (one free-bytes helper if needed)
+- **Tests:** node --test scripts/platform/*.test.mjs; pnpm typecheck:backend; the section 5 server set
 
 ### S1.3j A file dropped while two uploads are open waits for a free slot
 
