@@ -8,7 +8,7 @@ const MiB = 1024 ** 2, GiB = 1024 ** 3;
 const fixture = () => Object.fromEntries([
   ...ingestionQuotas.map(([, limit], i) => [`q${i}`, Math.ceil(limit * 0.75)]),
   ...retentionQuotas.map(([, , limit, mib], i) => [`r${i}`, [limit * 0.75, String(mib * MiB * 0.75)]]),
-  ['kept', String(Math.floor(3.2 * GiB))],
+  ['streamCase', 12], ['streamRunning', 3], ['kept', String(Math.floor(3.2 * GiB))],
 ]);
 
 for (const [file, alias, index] of [
@@ -60,6 +60,25 @@ test('doctor uses one read-only transaction, prints counts only, and warns at ex
   assert.doesNotMatch(lines.join('\n'), /never print|FAIL/);
 });
 
+test('streaming reports separate queue and dispatcher bounds, warning at each 75 percent edge', async () => {
+  const source = readFileSync(new URL('../../packages/server/src/modules/usp/ingestion/streaming-vector.ts',
+    import.meta.url), 'utf8');
+  assert.ok(source.includes('perCase: 16, service: 64'));
+  assert.equal(ingestionQuotas[3][1], 64);
+  const queueSql = ingestionQuotas[3][2];
+  assert.ok(queueSql.includes("i.state='queued' AND j.status='queued'"));
+  assert.ok(ingestionQuotaQuery().includes("operation='streaming-vector' AND status='running'"));
+  for (const key of ['q3', 'streamCase', 'streamRunning']) {
+    const counts = { ...fixture(), q3: 47, streamCase: 11, streamRunning: 2 };
+    for (const atEdge of [false, true]) {
+      if (atEdge) counts[key]++;
+      const lines = await ingestionQuotaLines(() => JSON.stringify(counts), () => 21 * GiB);
+      assert.equal(lines[3], `${atEdge ? 'WARN' : 'PASS'} Ingestion streaming: ${counts.q3} of 64 queued, `
+        + `${counts.streamCase} of 16 queued in busiest case, ${counts.streamRunning} of 4 running`);
+    }
+  }
+});
+
 test('unavailable or malformed readers skip without exposing values or failing doctor', async () => {
   for (const reader of [() => { throw new Error('private row'); }, () => 'private row', () => '{"q0":"private"}']) {
     assert.deepEqual(await ingestionQuotaLines(reader), ['SKIP Ingestion quotas (aggregate reader unavailable)',
@@ -88,6 +107,8 @@ test('each format warns independently at the exact count or byte edge, not one b
   for (const edge of ['below', 'count', 'bytes']) {
     const counts = fixture();
     ingestionQuotas.forEach(([, limit], i) => { counts[`q${i}`] = Math.ceil(limit * 0.75) - 1; });
+    counts.streamCase = 11;
+    counts.streamRunning = 2;
     retentionQuotas.forEach(([, , limit, mib], i) => {
       counts[`r${i}`] = [limit * 0.75 - (edge === 'count' ? 0 : 1),
         String(mib * MiB * 0.75 - (edge === 'bytes' ? 0 : 1))];

@@ -1,3 +1,12 @@
+import { readFileSync } from 'node:fs';
+
+// Read the dispatcher bound without importing its production TS dependency tree into the plain-Node doctor.
+const lanes = readFileSync(new URL('../../packages/server/src/modules/cases/dispatch-lanes.ts', import.meta.url),
+  'utf8');
+const streamingBounds = { perCase: 16, queued: 64,
+  running: Number(lanes.match(/stream: \{ concurrency: (\d+)/)[1]) };
+const streamingQueue = `usp_streaming_vector_imports i JOIN jobs j ON j.id=i.job_id`;
+const waiting = "i.state='queued' AND j.status='queued'";
 // Aggregate counts only. Parity tests guard the per-case profile and mapping admission predicates.
 const mapping = `SELECT count(*)::int n FROM usp_chunk_mapping_imports m
   LEFT JOIN jobs j ON j.id=m.job_id
@@ -40,7 +49,7 @@ export const ingestionQuotas = [
   ['mapping busiest case', 128, busiestHistory(mapping, 'm')],
   ['mapping active', 4, count('usp_chunk_mapping_imports', active)],
   ['streaming busiest case', 128, busiest('operations', "kind='streaming-vector'", 'case_id')],
-  ['streaming active', 2, count('usp_streaming_vector_imports', active)],
+  ['streaming queued', streamingBounds.queued, count(streamingQueue, waiting)],
   ['profile busiest case', 128, busiestHistory(profile, 'p')],
   ['profile active', 4, count('usp_streamed_profile_imports', active)],
   ['upload v1 open', 4, count('usp_source_uploads u', upload(1))],
@@ -71,6 +80,8 @@ const retentionQuery = ([profile, , sources, mib]) => `SELECT json_build_array(n
 export function ingestionQuotaQuery() {
   const fields = ingestionQuotas.map(([, , sql], index) => `'q${index}',(${sql})`);
   fields.push(...retentionQuotas.map((quota, i) => `'r${i}',coalesce((${retentionQuery(quota)}),'[0,"0"]'::json)`));
+  fields.push(`'streamCase',(${busiest(streamingQueue, waiting, 'i.case_id')})`,
+    `'streamRunning',(${count('jobs', "operation='streaming-vector' AND status='running'")})`);
   fields.push("'kept',(SELECT coalesce(sum(bytes),0)::text FROM sources)");
   return "BEGIN READ ONLY; SET LOCAL statement_timeout='3000ms'; "
     + `SELECT json_build_object(${fields.join(',')}); ROLLBACK;`;
@@ -96,6 +107,16 @@ export async function ingestionQuotaLines(reader, freeBytesReader) {
     lines = ingestionQuotas.map(([name, limit], index) => {
       const counted = counts[`q${index}`];
       if (!Number.isSafeInteger(counted) || counted < 0) throw new Error('Invalid count.');
+      if (name === 'streaming queued') {
+        const { streamCase, streamRunning } = counts;
+        if (![streamCase, streamRunning].every(n => Number.isSafeInteger(n) && n >= 0))
+          throw new Error('Invalid streaming count.');
+        const warn = counted >= limit * 0.75 || streamCase >= streamingBounds.perCase * 0.75
+          || streamRunning >= streamingBounds.running * 0.75;
+        return `${warn ? 'WARN' : 'PASS'} Ingestion streaming: ${counted} of ${limit} queued, `
+          + `${streamCase} of ${streamingBounds.perCase} queued in busiest case, `
+          + `${streamRunning} of ${streamingBounds.running} running`;
+      }
       return `${counted >= limit * 0.75 ? 'WARN' : 'PASS'} Ingestion ${name}: ${counted} of ${limit} counted`;
     });
     lines.push(...retentionQuotas.map(([, name, limit, mib], i) => {
