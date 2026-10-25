@@ -183,7 +183,7 @@ Size S, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3n-cas
 
 ### S1.3o Per-format retained-source budgets are kept per case
 
-Size M, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3o-case-retention from int3-pre 068c1da7).**
+Size M, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3o-case-retention from int3-pre 068c1da7), resumed once. The first pass stopped as asked: after the change nothing bounds the service total of direct-retained originals. Lead decision: no new service total, because large uploads (the path of every big file) already have none, so a total on small direct retains alone would protect little and bring back a lifetime cap; the object store disk is the real bound, and the doctor will report retained bytes against free disk.**
 
 - **What:** Ten direct-retain paths (raster, point, KML, CityGML, CityJSON, DXF, GeoParquet, glTF, IFC, OBJ) refuse a new original once the whole service holds 64 sources or 256 MiB of that format, never freed; one rehearsal ZIP retains six KML. Count each per case with the same numbers through one shared helper, and stop if nothing then bounds the service total.
 - **Files:** the ten format modules (budget lines only), one helper, retention-budget.test.ts
