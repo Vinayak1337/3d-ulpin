@@ -2,9 +2,10 @@
   "task": "S5.14",
   "planStep": 5,
   "base": "db2b80e917f17659184aba5e33da0bae7947f75c",
-  "status": "scope_blocked_checkpoint",
+  "status": "scope_blocked_browser_declaration",
+  "reviewedCheckpoint": "585dda21",
   "classification": "test_only public NYC research inputs; no Indian operational claim",
-  "logs": "E:/ulpin-tmp/s5-14/{before,after}-*.log",
+  "logs": "E:/ulpin-tmp/s5-14/{before,after,review}-*.log",
   "copc": {
     "path": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/originals/20170504_980200.copc.laz",
     "bytes": 77948603,
@@ -12,7 +13,7 @@
     "batch": {"start": 0, "count": 32709, "step": 368},
     "recordBytes": 30,
     "artifactBytes": 981270,
-    "coldSeconds": [3.830, 6.652],
+    "coldSeconds": [3.830, 6.546, 7.375],
     "boundary": "fresh fake-S3 download, SHA-256 verification, cache write, decode and thin; not a live worker",
     "assertions": "all XYZ within header bounds; seven source indices byte-equal; nonzero COPC batch byte-equal"
   },
@@ -35,19 +36,19 @@
   "checkTuple": "[exit, passed, failed, skipped]; typechecks and catalogue checks use exit only",
   "checks": {
     "pytest point_batch + surface_readers + verified_cache": {
-      "before": [0, 36, 0, 0], "after": [1, 42, 1, 0]
+      "before": [0, 36, 0, 0], "after": [0, 43, 0, 0]
     },
     "pytest test_point_batch.py -s": {"after": [0, 20, 0, 0]},
-    "tsx point-batch-formats + intake-surface": {"after": [1, 37, 1, 0]},
+    "tsx point-batch-formats + intake-surface": {"after": [0, 38, 0, 0]},
     "tsx point-batch-formats + point-publication + registry-point-citations + later-receipt + sufficiency": {
       "before": [1, 7, 2, 0], "after": [1, 10, 2, 0]
     },
     "pnpm typecheck:backend": {"before": [0], "after": [0]},
     "WORKING-RULES section 5 server command": {
-      "before": [0, 991, 0, 4], "after": [1, 990, 1, 4],
+      "before": [0, 991, 0, 4], "after": [0, 991, 0, 4],
       "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
     },
-    "pnpm studio:test (Studio)": {"before": [0, 712, 0, 2], "after": [1, 711, 1, 2]},
+    "pnpm studio:test (Studio)": {"before": [0, 712, 0, 2], "after": [0, 712, 0, 2]},
     "pnpm studio:test (api-client, scene, ui)": {"before": [0, 71, 0, 1], "after": [0, 71, 0, 1]},
     "pnpm studio:typecheck": {"before": [2], "after": [2]},
     "tsx apps/api/scripts/openapi.ts --check": {"before": [0], "after": [1]},
@@ -56,16 +57,26 @@
   },
   "environment": "TMP, TEMP, TMPDIR=E:/ulpin-tmp; VERIFIED_CACHE_DIR under E:/ulpin-tmp/s5-14",
   "expectedStaleProducer": "packages/contracts/src/usp/point-batch.ts",
-  "baselineFailures": [
-    "Studio table-placement-command.ts:65 missing decimalMark (S5.7).",
-    "point-publication and raster-point-later-receipt tests: intake-surface reader initialization cycle."
-  ],
+  "baselineTypecheckFailure": "Studio table-placement-command.ts:65 missing decimalMark (S5.7).",
+  "baselineInitializationFailures": {
+    "base": "db2b80e9",
+    "verification": "Saved pre-edit logs from the clean base; the same five requested TypeScript files.",
+    "log": "E:/ulpin-tmp/s5-14/before-points.log",
+    "tests/point-publication.test.ts": "ReferenceError: Cannot access 'pointReaderSha' before initialization",
+    "tests/raster-point-later-receipt.test.ts":
+      "ReferenceError: Cannot access 'rasterReaderSha' before initialization",
+    "reviewLog": "E:/ulpin-tmp/s5-14/review-points.log",
+    "comparison": "Identical first errors at base and task head; no branch-only initialization failures."
+  },
+  "scopeBlocker": {
+    "file": "packages/contracts/src/upload-reader-limits.d.ts:4",
+    "firstError": "error TS2339: Property 'batchPoints' does not exist on the narrow POINT_BATCH_LIMITS type.",
+    "needed": "Add batchPoints: number to the existing readonly declaration; runtime already exports it.",
+    "reason": "This declaration file is outside OWN; stopped without casts, duplicate limits or shim changes."
+  },
   "next": [
-    "Scope extension: services/geo/tests/test_surface_readers.py:88-99 assumes the old null-batch prefix/hash.",
-    "Scope extension: apps/studio/src/features/intake/upload-reader.test.tsx:84-87 expects 5 million / 16 MiB.",
-    "Owned follow-up: intake-surface.test.ts:337 still uses 16 rather than 1024 MiB in the over-limit fixture.",
-    "Owned follow-up: las.ts must import POINT_BATCH_LIMITS from @ulpin/contracts/upload-reader-limits.",
-    "The Studio usp declaration shim lacks this constant; use the existing browser limits export instead.",
-    "Stopped code edits at the first outside-OWN test dependency; checkpoint is not integration-ready."
+    "Authorize the single browser declaration property, rerun checks, then integrate and refresh pins/schema.",
+    "Authorized point-only fixture updates are complete; Studio tests and the section 5 server command pass.",
+    "Studio typecheck still has the confirmed decimalMark baseline error plus the declaration blocker."
   ]
 }

@@ -1,4 +1,5 @@
-import { POINT_BATCH_LIMITS, POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp';
+import { POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp';
+import { POINT_BATCH_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { SurfaceRefusal } from './tiff';
 
 /** Native LAS batches; format 6 remains the default for earlier stored display reads. */

@@ -334,7 +334,7 @@ test('a part read outside the batch area is not on the map, and says so', async 
 for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geotiff'],
   ['LAZ', 'point', 'point_cloud', 'laz']] as const) {
   test(`a kept ${name} whose receipt is over its reader's bound rests with words; the publish goes on`, async () => {
-    const limitMiB = profile === 'raster' ? 2048 : 16;
+    const limitMiB = profile === 'raster' ? 2048 : POINT_BATCH_LIMITS.originalBytes / 1024 ** 2;
     const sha = 'd'.repeat(64), sourceId = '30000000-0000-4000-8000-000000000005';
     const over = (limitMiB + 1) * 1024 ** 2;
     const item: Record<string, any> = { item_id: itemId, case_id: caseId, source_id: sourceId, plan_ref: null,

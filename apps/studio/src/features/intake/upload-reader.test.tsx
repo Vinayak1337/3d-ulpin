@@ -82,12 +82,12 @@ it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page 
 it('forecasts only what the name and size settle: points, JSON, CityJSON, DXF, glTF, OBJ and GML kinds', () => {
   const words = (name: string, size = 1024) => readerEligibility({ name, size }).words;
   const points = 'Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most '
-    + '5 million points (within 16 MiB). Waveform formats 4/5/9/10, extra dimensions and other versions or formats '
+    + '500 million points (within 1 GiB). Waveform formats 4/5/9/10, extra dimensions and other versions or formats '
     + 'are kept, not read.';
   expect(words('scan.laz')).toBe(points);
   expect(words('scan.las')).toBe(points);
   expect(words('scan.laz', POINT_BATCH_LIMITS.originalBytes + 1))
-    .toBe('Will be kept, not read: larger than the 16 MiB point cloud reader');
+    .toBe('Will be kept, not read: larger than the 1 GiB point cloud reader');
   expect(words('city.json')).toBe('Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked '
     + '(within 1 GiB). A CityJSON is read up to 8 MiB and glTF JSON up to 16 MiB; other JSON is kept, not read. '
     + 'CityJSON building ground outlines may be prepared when the file states a usable horizontal EPSG system '

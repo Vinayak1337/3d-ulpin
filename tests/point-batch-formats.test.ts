@@ -79,7 +79,7 @@ test('point selections admit bounded whole-number steps without changing old sel
   assert(POINT_BATCH_LIMITS.batchPoints * 38 <= POINT_BATCH_LIMITS.artifactBytes);
 });
 
-test('point receipts agree with whole-cloud thinning, preserve only exact legacy defaults and compare steps', async () => {
+test('point receipts match whole-cloud thinning, exact legacy defaults and requested steps', async () => {
   // Initialise the normal composition root before loading its point service (the existing modules form a cycle).
   await import('../packages/server/src/modules/cases/processing');
   const { readPointResult } = await import('../packages/server/src/modules/usp/ingestion/point-batch');
