@@ -178,7 +178,7 @@ function RequestDetail({ request: r }: { request: RegisterRequest }) {
             <Button variant="danger" icon={X} disabled={Boolean(busy) || !note.trim()} onClick={() => void decide('rejected')}>
               {busy === 'rejected' ? 'Rejecting…' : 'Reject'}
             </Button>
-            {note.trim() ? null : <span className="ul-help">Reject needs a note</span>}
+            {note.trim() ? null : <span className="ul-help">Reject needs a note; the applicant sees it.</span>}
           </div>
           {error ? <p className={styles.error} role="alert">{error}</p> : null}
         </div>

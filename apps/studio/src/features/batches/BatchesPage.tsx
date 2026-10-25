@@ -53,7 +53,7 @@ function BatchesBody({ items, pending, error, retry, filtered }: {
   if (error) {
     return (
       <EmptyState icon={WarningCircle} title="Batches could not be loaded" action={<Button onClick={retry}>Try again</Button>}>
-        {error.message}
+        {error.message} Check that the Studio API is running, then retry.
       </EmptyState>
     );
   }

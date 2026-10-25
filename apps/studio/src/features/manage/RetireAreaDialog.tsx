@@ -42,6 +42,9 @@ export function RetireAreaDialog({ target, onClose, onRetired }: {
         </>
       )}>
       <div className="ul-stack">
+        <p style={{ margin: 0 }}>
+          {target.name} leaves the area lists and the map. Nothing is deleted; it can be restored.
+        </p>
         <label className="ul-field" htmlFor={id}>
           <span className="ul-label">Reason (required)</span>
           <textarea id={id} className="ul-input" rows={3} maxLength={2000} required value={reason}

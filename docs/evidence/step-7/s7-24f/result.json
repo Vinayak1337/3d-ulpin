@@ -3,11 +3,11 @@
   "title": "Cut taglines, helper text and secondary labels in the register, identity, evidence, verify, manage, batches and placeholder screens",
   "plan_step": 7,
   "base": "2a4d18c0",
-  "strings": {"file": "strings.json", "before": 565, "cut": 57, "shortened": 61, "kept": 446, "keptAsState": 1},
-  "net_lines_apps": {"added": 166, "removed": 248},
+  "strings": {"file": "strings.json", "before": 565, "cut": 46, "shortened": 59, "kept": 459, "keptAsState": 1},
+  "net_lines_apps": {"added": 211, "removed": 229},
   "layout_fixes": [
     "Register index: the header is the Register title and its tabs; the request row and head drop the kind that the title already names",
-    "Reject: the tooltip and the two-sentence note became one line, Reject needs a note, shown only while the note is empty",
+    "Reject: the tooltip and the two-sentence note became one line, Reject needs a note; the applicant sees it, shown only while the note is empty",
     "Card verification: the checked time is a Checked row and the signature a Signature row; a revocation reason code sits beside the verdict",
     "Cited page: a revision taken from the register is marked from the register, not the citation, beside the revision itself",
     "Issue card: the 24-hour rule is in the Valid until label and appears as the error only when the expiry is refused",
@@ -23,13 +23,19 @@
   "not_changed_outside_own": [
     "app/router.tsx passes PlannedPage a milestone; the placeholder title now carries it, so no prop is dead",
     "portal/RecordPage.tsx passes DraftNotice its own words; DraftNotice keeps the children prop and drops only its default",
-    "map/MapWorkspace.tsx passes DeleteDialog its own detail line; the dialog's second help line is cut for both callers",
+    "map/MapWorkspace.tsx passes DeleteDialog its own detail line; the dialog's second line, now one short line, shows for both callers",
     "identity/outcome.ts refusal words are shared with intake and review screens; they are joined into one sentence each, and no test outside OWN asserts them",
     "The export builders register/registry.ts, workbook.ts and exporters.ts write files (PDF, workbook, package readme), not screens, and are unchanged"
   ],
+  "kept_on_review": [
+    "Record gaps: the building's source-label gaps show again under the unit in the assign and issue dialogs",
+    "Values and next steps: the superseded verdict names Latest revision N; the batches load error says check the Studio API, then retry",
+    "Card statement: Application summary. No official ULPIN issuance, title or legal approval is implied, under the verdict",
+    "Before a press: what Prepare stores (first card or new revision), what deleting also removes and what retiring does"
+  ],
   "checks": {
     "studio_typecheck": {"before": 0, "after": 0},
-    "studio_test": {"before": "761 passed, 2 skipped", "after": "761 passed, 2 skipped", "exit": 0},
+    "studio_test": {"before": "761 passed, 2 skipped", "after": "764 passed, 2 skipped", "exit": 0},
     "studio_build": {"before": 0, "after": 0, "index_chunk_kb": {"before": 244.84, "after": 244.55}},
     "typecheck_backend": 0,
     "openapi_check": 0,

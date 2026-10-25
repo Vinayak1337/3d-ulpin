@@ -37,6 +37,7 @@ export function DeleteDialog({ target, onClose, onDeleted }: {
       )}>
       <div className="ul-stack">
         <p style={{ margin: 0 }}>{target.detail}</p>
+        <p className="ul-help" style={{ margin: 0 }}>Also removed from the public portal; its requests stay.</p>
         {error ? <p className="ul-help" role="alert" style={{ margin: 0, color: 'var(--ui-danger)' }}>{error}</p> : null}
       </div>
     </Dialog>

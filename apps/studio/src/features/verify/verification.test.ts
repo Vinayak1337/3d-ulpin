@@ -21,7 +21,7 @@ describe('the verification report of a registry card', () => {
   it('orders the verdict: revoked, not consistent, expired, superseded', () => {
     const superseded = withLifecycle({ superseded: true, latestRevision: 2 });
     expect(verdictOf(superseded)).toEqual({ tone: 'warning', text: 'Superseded by a later revision',
-      detail: null });
+      detail: 'Latest revision 2' });
     const expired = withLifecycle({ superseded: true, latestRevision: 2, expired: true });
     expect(verdictOf(expired)).toMatchObject({ tone: 'warning', text: 'Expired 11 Oct 2026, 19:09' });
     const inconsistent: CardVerification = { ...expired, result: 'inconsistent' };

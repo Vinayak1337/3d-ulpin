@@ -3,9 +3,9 @@
  "scope": "apps/studio/src/features/{register,identity,evidence,verify,manage,batches,placeholder}/ non-test .ts and .tsx, line numbers at base 2a4d18c0; the export builders register/registry.ts, workbook.ts and exporters.ts write files, not screens, and are not listed",
  "totals": {
   "before": 565,
-  "cut": 57,
-  "shortened": 61,
-  "kept": 446,
+  "cut": 46,
+  "shortened": 59,
+  "kept": 459,
   "kept_as_state": 1
  },
  "strings": [
@@ -864,26 +864,26 @@
   {
    "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:14",
    "old": "Prepare is not a dry run: it stores a snapshot, a plan and a packet in the registry. ",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Prepare stores a snapshot, a plan and a packet."
   },
   {
    "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:15",
    "old": "Only Issue card stores a card.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Only Issue stores a card."
   },
   {
    "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:16",
    "old": "Prepare reads the listed card and the rows its next revision would state. It stores nothing. ",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Prepare stores nothing."
   },
   {
    "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:17",
    "old": "Only Issue new revision stores a card.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Only Issue stores a card."
   },
   {
    "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:18",
@@ -1638,20 +1638,20 @@
   {
    "at": "apps/studio/src/features/manage/DeleteDialog.tsx:40",
    "old": "It is removed from the Studio and the public portal. Requests filed for it stay in Requests.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Also removed from the public portal; its requests stay."
   },
   {
    "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:10",
    "old": "Nothing is deleted. The original files, sources, packages, review history and receipts ",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Nothing is deleted;"
   },
   {
    "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:11",
    "old": "stay, and the retirement is recorded with your reason. The area can be restored.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "it can be restored."
   },
   {
    "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:34",
@@ -2652,8 +2652,8 @@
   {
    "at": "apps/studio/src/features/register/RequestsPage.tsx:190",
    "old": "Rejecting needs a reason. The applicant sees your note.",
-   "verdict": "shorten",
-   "new": "Reject needs a note (only while the note is empty)"
+   "verdict": "keep",
+   "new": "Reject needs a note; the applicant sees it. (only while the note is empty)"
   },
   {
    "at": "apps/studio/src/features/register/RequestsPage.tsx:203",
@@ -2910,7 +2910,7 @@
   {
    "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:11",
    "old": "Application summary. No official ULPIN issuance, title or legal approval is implied.",
-   "verdict": "cut",
+   "verdict": "keep",
    "new": null
   },
   {
@@ -3180,8 +3180,8 @@
   {
    "at": "apps/studio/src/features/verify/verification.ts:63",
    "old": "Latest revision: ${latestRevision}",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "Latest revision ${latestRevision}"
   },
   {
    "at": "apps/studio/src/features/verify/verification.ts:65",
@@ -3306,14 +3306,14 @@
   {
    "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:50",
    "old": "{target.name} and its features leave the area lists, the map and the batch's area choices.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "{target.name} leaves the area lists and the map."
   },
   {
    "at": "apps/studio/src/features/batches/BatchesPage.tsx:56",
    "old": "{error.message} Check that the Studio API is running, then try again.",
-   "verdict": "shorten",
-   "new": "{error.message}"
+   "verdict": "keep",
+   "new": "{error.message} Check that the Studio API is running, then retry."
   },
   {
    "at": "apps/studio/src/features/batches/BatchesPage.tsx:65",
@@ -3360,7 +3360,7 @@
   {
    "at": "apps/studio/src/features/identity/UnitDecided.tsx:21",
    "old": "{gap} (the record sentence on what a source-stated label does not establish)",
-   "verdict": "cut",
+   "verdict": "keep",
    "new": null
   },
   {

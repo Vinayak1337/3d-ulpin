@@ -50,7 +50,7 @@ export function cardAddress(cardId: string | undefined, revision: string | undef
 
 /** The first that the report states, in the order revoked, not consistent, expired, superseded, consistent. */
 export function verdictOf(report: CardVerification): Verdict {
-  const { revocation, expired, expiresAt, superseded } = report.lifecycle;
+  const { revocation, expired, expiresAt, superseded, latestRevision } = report.lifecycle;
   if (revocation) {
     return { tone: 'danger', text: `Revoked ${formatDateTime(revocation.revokedAt)}`,
       detail: `Reason code: ${revocation.reasonCode}` };
@@ -60,7 +60,7 @@ export function verdictOf(report: CardVerification): Verdict {
     return { tone: 'warning', text: expiresAt ? `Expired ${formatDateTime(expiresAt)}` : 'Expired', detail: null };
   }
   if (superseded) {
-    return { tone: 'warning', text: 'Superseded by a later revision', detail: null };
+    return { tone: 'warning', text: 'Superseded by a later revision', detail: `Latest revision ${latestRevision}` };
   }
   return { tone: 'success', text: 'Consistent', detail: null };
 }

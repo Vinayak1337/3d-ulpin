@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useBuildingCanonical, useBuildingRegister, type ListedCard } from '../../api/queries';
-import type { RecordedUnit } from '../review/recorded/model';
+import { sourceLabelGaps, type RecordedUnit } from '../review/recorded/model';
 import { assignSubject } from './assignment';
 import { expiryError, expiryInstant, inclusionError, type IssueTarget } from './issue';
 import { AnsweredFacts, IssueForm, PreviewFacts, TypedReason, type IssueEntries } from './IssueParts';
@@ -12,6 +12,11 @@ import { useIssueFlow, type IssueFlow } from './useIssueFlow';
 import styles from './Registry.module.css';
 
 const NO_CARD_YET = 'No card exists yet.';
+/** What Prepare stores, said before the officer presses it. */
+export const PREPARE_STORES = {
+  first: 'Prepare stores a snapshot, a plan and a packet. Only Issue stores a card.',
+  next: 'Prepare stores nothing. Only Issue stores a card.',
+};
 const SAME_REQUEST = 'The registry lists no new card for this unit; the request can be sent again.';
 
 /** What the steps and the reads after them left to say: a stop, a refusal, an unknown outcome, a stored card. */
@@ -61,13 +66,14 @@ function typedNow(entries: IssueEntries): Typed | null {
 }
 
 /** The form until Prepare answered; after it what was sent, what the registry answered and the rows of the card. */
-function Prepared({ flow, first, sent, form }: {
+export function Prepared({ flow, first, sent, form }: {
   flow: IssueFlow; first: boolean; sent: Typed | null; form: ReactNode;
 }) {
   const { prepared } = flow;
   const reason = first && sent ? <TypedReason typed={sent} /> : null;
   return (
     <>
+      {prepared ? null : <p className="ul-help">{first ? PREPARE_STORES.first : PREPARE_STORES.next}</p>}
       {prepared ? reason : form}
       <AnsweredFacts answered={flow.answered} />
       {prepared ? <PreviewFacts preview={prepared.preview} /> : null}
@@ -119,7 +125,8 @@ export function IssueCardDialog({ buildingId, unit, floorLabel, target, listed, 
       footer={footer(flow, primary, onClose)}>
       {subject ? (
         <div ref={body} className={styles.body}>
-          <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} withCode />
+          <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} gaps={sourceLabelGaps(building!.gaps)}
+            withCode />
           {typeof subject === 'string' ? (
             <Banner tone="warning">The record does not state {subject}, so no card can be prepared.</Banner>
           ) : null}

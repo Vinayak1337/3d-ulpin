@@ -8,15 +8,14 @@ import { RetireAreaDialog } from './RetireAreaDialog';
 const target = { id: '10000000-0000-4000-8000-000000000020', name: 'area name', revision: 3 };
 
 describe('RetireAreaDialog', () => {
-  it('asks for a reason and holds the action until one is given, with no helper sentence', () => {
+  it('says what retiring does, asks for a reason and holds the action until one is given', () => {
     const markup = renderToStaticMarkup(
       <QueryClientProvider client={new QueryClient()}>
         <RetireAreaDialog target={target} onClose={() => {}} onRetired={() => {}} />
       </QueryClientProvider>,
     );
     expect(markup).toContain('Retire area name?');
-    expect(markup).not.toContain('Nothing is deleted');
-    expect(markup).not.toContain('leave the area lists');
+    expect(markup).toContain('area name leaves the area lists and the map. Nothing is deleted; it can be restored.');
     expect(markup).toMatch(/<textarea[^>]*required=""/);
     expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>.*Retire area<\/button>/s);
     expect(markup).not.toContain('Delete');

@@ -7,6 +7,8 @@ import { cardAddress, checkRows, recordText, signatureText, verdictOf } from './
 import { ResultBanner, VerifyFrame } from './VerifyFrame';
 import styles from './VerifyPage.module.css';
 
+// The sentence the registry's card PDF prints under its heading (docs/evidence/runtime/r3, step3.printed.card).
+export const CARD_STATEMENT = 'Application summary. No official ULPIN issuance, title or legal approval is implied.';
 const NOT_AN_ADDRESS = 'The server was not asked: this address names no card id and revision.';
 
 /** The server's verification report of one registry card revision: what it checked, when, and what it found. */
@@ -68,7 +70,7 @@ function Checks({ report }: { report: CardVerification }) {
   );
 }
 
-function Report({ report }: { report: CardVerification }) {
+export function Report({ report }: { report: CardVerification }) {
   const verdict = verdictOf(report);
   const { lifecycle } = report;
   const expires = lifecycle.expiresAt ? formatDateTime(lifecycle.expiresAt) : <em className="ul-unknown">Unknown</em>;
@@ -77,6 +79,7 @@ function Report({ report }: { report: CardVerification }) {
       <ResultBanner tone={verdict.tone}>
         {verdict.detail ? `${verdict.text} · ${verdict.detail}` : verdict.text}
       </ResultBanner>
+      <p className="ul-help">{CARD_STATEMENT}</p>
       <section className="ul-panel ul-pad ul-stack">
         <h1 className="ul-heading">Property card verification</h1>
         <DescriptionList items={[

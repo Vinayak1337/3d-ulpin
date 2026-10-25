@@ -1,7 +1,7 @@
 import { useId, useState, type ReactNode } from 'react';
 import { Banner, Button, DescriptionList, Dialog, formatDateTime } from '@ulpin/ui';
 import { useBuildingCanonical, useBuildingRegister, type IdentityReview } from '../../api/queries';
-import type { RecordedUnit } from '../review/recorded/model';
+import { sourceLabelGaps, type RecordedUnit } from '../review/recorded/model';
 import { assignSubject, reasonError, type AssignSubject, type ReviewedAssignment } from './assignment';
 import { CopyableId } from './CopyableId';
 import { UnitDecided, UnitUnread } from './UnitDecided';
@@ -117,7 +117,7 @@ export function AssignCodeDialog({ buildingId, unit, floorLabel, listed, onClose
       onClose={onClose} footer={footer(flow, done, primary, onClose)}>
       {subject ? (
         <div ref={body} className={styles.body}>
-          <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} />
+          <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} gaps={sourceLabelGaps(building!.gaps)} />
           {done || flow.assign.isSuccess ? <Assigned code={unit.code} flow={flow} /> : null}
           {!done && !flow.assign.isSuccess && review ? <ReviewFacts review={review} /> : null}
           {!done && !review ? <ReasonField reason={reason} onChange={setReason} /> : null}
