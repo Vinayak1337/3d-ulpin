@@ -590,6 +590,12 @@ Size M, this PC: data drive. After: Step 2 practice kit holds a real CityGML til
 - **Check:** With the CityGML reader environment (E:/BhuAayam-data/task-data/desktop-citygml-native/env), run python -m pytest services/geo/tests/test_native_citygml.py services/geo/tests/test_citygml_outline.py (exit 0). Then run once on the practice kit's largest CityGML: the read completes under the new bounds with peak memory under 2 GiB and time under the deadline, and the converter writes one outline per Building that has a ground surface (outline and Building counts in result.json).
 - **Tests:** services/geo/tests/test_native_citygml.py; services/geo/tests/test_citygml_outline.py; tests/citygml-authority.test.ts; tests/citygml-read-compatibility.test.ts; tests/registry-citygml-citations.test.ts (journey pin, regenerated as CG2 did)
 
+### S5.17a Reading card says when a CityGML inventory was too large to list
+
+Size S, code only. After: S5.17. **Status: running 25 Oct (codex, from int3-pre 4e1c7690).**
+
+- **What:** A CityGML above the 16 MiB inventory bound still has its outlines read, but its reading card is silent about the inventory. Load the failed native job code CITYGML_OUTPUT_LIMIT as one fact and say in one line that the element inventory is larger than the reader lists, outlines being read from the unchanged original.
+
 ### S5.18 CityJSON reader takes a real tile and a CityJSONSeq file
 
 Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel with S5.17 and S5.19. **Status: merged 25 Oct into int3-pre (sequence part only, db2b80e9: cjval cube_20_1.jsonl reads, line pointers /N; bounds wait for a real CityJSON tile).**
@@ -601,7 +607,7 @@ Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel wit
 
 ### S5.19 IFC reading adds a storey outline in the file's own frame
 
-Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned after this change). Can run in parallel with S5.15, S5.17 and S5.18. **Status: running 25 Oct (codex, from int3-pre db2b80e9; code only, the host profile is repinned after S5.13).**
+Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned after this change). Can run in parallel with S5.15, S5.17 and S5.18. **Status: merged 25 Oct into int3-pre (pins 4e1c7690; AC20-FZK-Haus 2 outlines; bounds measured on a test_only 99,766-entity model, 13 s; host profile repinned after S5.13).**
 
 - **What:** The IFC reader is structure-only (native_ifc.py:1 and 617, GEOMETRY_NOT_INTERPRETED), but the plan's cut order still keeps an IFC 'summary and outline'. Add a bounded second pass using the pinned IfcOpenShell 0.8.5 geometry and shapely (dependencies.json): project each storey's IfcSlab shapes (else IfcSpace) to plan in the file's own frame and length unit, and join them into closed outline rings per storey. Store them in the accepted artifact with an outline count in the summary; the words say 'own frame, not placed', and a failed pass leaves the structure reading intact.
 - **Files:** services/geo/geo/native_ifc.py:27-52 (Limits), 383-460 (pass 1), 590-630 (result and findings); packages/contracts/src/usp/ifc-ingestion.ts (optional summary and artifact outline fields); packages/server/src/modules/usp/ingestion/intake-ifc.ts:48-56 (intakeIfcReadWords); services/geo/tests/test_native_ifc.py
