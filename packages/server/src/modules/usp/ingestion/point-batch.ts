@@ -13,6 +13,7 @@ import {putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {originalAttempt} from '../../cases/original-attempt';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 import {retainedLargeOriginal} from './raster-window';
@@ -146,9 +147,7 @@ export class PointBatchService{
       const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='point-retain'",[caseId,operationKey])).rows[0];
       if(prior){if(prior.payload_hash!==digest)conflict('This request key names different point bytes or lineage.');return PointRetainReceiptSchema.parse(prior.result);}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before point receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='laz-point-v1'")).rows[0];
-      if(Number(budget.sources)>=POINT_BATCH_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>POINT_BATCH_LIMITS.retainedBytes)
-        throw new AppError(429,'POINT_RETENTION_BUDGET','The finite retained point source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'point',POINT_BATCH_LIMITS,file.bytes.length);
       const original=PointOriginalSchema.parse({version:POINT_BATCH_VERSION,subject:binding.subject,
         sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       remember(key);await putOriginal(key,file.bytes,'application/vnd.laszip');
