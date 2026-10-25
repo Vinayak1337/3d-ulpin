@@ -3,10 +3,10 @@ import {execFileSync,spawn,spawnSync} from 'node:child_process';
 import {access,mkdtemp,mkdir,open,realpath,rm,writeFile} from 'node:fs/promises';
 import {dirname,isAbsolute,join,relative,resolve,sep} from 'node:path';
 import {z} from 'zod';
-import {DocumentOcrSchema,DocumentOcrExecutionSchema,measureOcrRegionEdge,
+import {DOCUMENT_LIMITS,DocumentOcrSchema,DocumentOcrExecutionSchema,measureOcrRegionEdge,
   type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
 import {settings} from '../../../infrastructure/config';
-import {sha256} from '../../../infrastructure/storage';
+import {sha256,streamRetainedOriginal} from '../../../infrastructure/storage';
 import {documentFormat} from './document-native';
 
 const names=['ULPIN_DOCUMENT_OCR_PYTHON','ULPIN_DOCUMENT_OCR_MODELS','ULPIN_DOCUMENT_OCR_TESSERACT',
@@ -130,10 +130,11 @@ function execute(python:string,args:string[],env:Record<string,string>,seconds:n
     child.on('error',()=>finish(null));child.on('close',code=>finish(timedOut?null:code));
   });
 }
-export async function runSourceOcr(input:OcrInput,original:Uint8Array,deadline:number):Promise<NonNullable<DocumentResult['ocr']>>{
+export async function runSourceOcr(input:OcrInput&Pick<DocumentInput,'objectKey'>,
+  original:Uint8Array|undefined,deadline:number):Promise<NonNullable<DocumentResult['ocr']>>{
   if(!input.ocrSelection)throw new Error('OCR_SELECTION_REQUIRED');
   if(process.platform!=='win32')return unavailable(input,'OCR_PLATFORM_UNAVAILABLE');
-  if(documentFormat(original)!=='pdf')return unavailable(input,'OCR_PDF_REQUIRED');
+  if(original&&documentFormat(original)!=='pdf')return unavailable(input,'OCR_PDF_REQUIRED');
   const [python,models,tesseract,tessdata,scratch]=names.map(name=>process.env[name]);
   if(!python||!models||!tesseract||!tessdata||!scratch)return unavailable(input,'OCR_RUNTIME_UNAVAILABLE');
   if([python,models,tesseract,tessdata,scratch].some(path=>! /^[A-Za-z]:[\\/]/.test(path)))
@@ -149,7 +150,14 @@ export async function runSourceOcr(input:OcrInput,original:Uint8Array,deadline:n
   try{
     dir=await privateOcrDirectory(scratch,input.jobId);
     const source=join(dir,'original.pdf'),output=join(dir,'output');
-    await writeFile(source,original,{flag:'wx',mode:0o600});
+    if(original)await writeFile(source,original,{flag:'wx',mode:0o600});
+    else{
+      await streamRetainedOriginal(input.objectKey,input.sourceBytes,input.sourceSha256,source,
+        DOCUMENT_LIMITS.originalBytes,Math.max(1,deadline-Date.now()));
+      const file=await open(source,'r'),header=Buffer.alloc(5);
+      try{await file.read(header,0,header.length,0);}finally{await file.close();}
+      if(documentFormat(header)!=='pdf')return unavailable(input,'OCR_PDF_REQUIRED');
+    }
     seconds=Math.min(90,Math.floor((deadline-Date.now()-12000)/1000));
     if(seconds<1)return failed(input,'OCR_DEADLINE');
     const args=[join(settings.repositoryRoot,'scripts/usp/document-models/run_source_ocr.py'),

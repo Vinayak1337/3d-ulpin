@@ -12,8 +12,9 @@ import sys
 
 SCRIPT = Path(__file__).resolve()
 REPO = SCRIPT.parents[3]
+sys.path.insert(0, str(SCRIPT.parent))
 sys.path.insert(0, str(REPO / "services" / "geo"))
-MAX_SOURCE = 16 * 1024**2
+MAX_SOURCE = 1024**3
 MAX_RESULT = 128 * 1024
 MEMORY = 2 * 1024**3
 
@@ -30,7 +31,7 @@ def _encode(value: dict) -> bytes:
 
 
 def _offline_worker() -> None:
-    # MuPDF opens only the supplied in-memory original; it does not execute PDF
+    # MuPDF opens only the supplied private original path; it does not execute PDF
     # JavaScript or resolve hyperlinks. Also deny Python network APIs here.
     import socket
     def denied(*args, **kwargs):
@@ -64,23 +65,32 @@ def _deny_external_files(document) -> None:
             raise PageError("DOCUMENT_PAGES_EXTERNAL_RESOURCE_UNSUPPORTED")
 
 
+def _verify_source(source: Path, expected_hash: str) -> int:
+    if not source.is_file() or not 0 < source.stat().st_size <= MAX_SOURCE:
+        raise PageError("DOCUMENT_PAGES_SOURCE_LIMIT")
+    digest, count = hashlib.sha256(), 0
+    with source.open("rb") as stream:
+        if stream.read(5) != b"%PDF-":
+            raise PageError("DOCUMENT_PAGES_PDF_REQUIRED")
+        stream.seek(0)
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            count += len(block)
+            if count > MAX_SOURCE:
+                raise PageError("DOCUMENT_PAGES_SOURCE_LIMIT")
+            digest.update(block)
+    if digest.hexdigest() != expected_hash:
+        raise PageError("DOCUMENT_PAGES_SOURCE_INTEGRITY")
+    return count
+
+
 def inspect_pages(source: Path, expected_hash: str, offset: int, limit: int,
                   selected_page: int | None, output: Path) -> dict:
     import fitz
     from geo.usp_document_candidates.docling_tesseract import (
         render_pdf_selection, SourceOcrError, whole_page_view_scale, MAX_SELECTED_SOURCE_PAGES,
     )
-    if not source.is_file() or not 0 < source.stat().st_size <= MAX_SOURCE:
-        raise PageError("DOCUMENT_PAGES_SOURCE_LIMIT")
-    with source.open("rb") as stream:
-        original = stream.read(MAX_SOURCE + 1)
-    if len(original) > MAX_SOURCE:
-        raise PageError("DOCUMENT_PAGES_SOURCE_LIMIT")
-    if hashlib.sha256(original).hexdigest() != expected_hash:
-        raise PageError("DOCUMENT_PAGES_SOURCE_INTEGRITY")
-    if not original.startswith(b"%PDF-"):
-        raise PageError("DOCUMENT_PAGES_PDF_REQUIRED")
-    with fitz.open(stream=original, filetype="pdf") as document:
+    source_bytes = _verify_source(source, expected_hash)
+    with fitz.open(source) as document:
         if document.needs_pass:
             raise PageError("DOCUMENT_PAGES_ENCRYPTED")
         if document.xref_length() > 50_000 or not 1 <= document.page_count <= MAX_SELECTED_SOURCE_PAGES:
@@ -114,6 +124,8 @@ def inspect_pages(source: Path, expected_hash: str, offset: int, limit: int,
                           "mediaBox": list(page.mediabox), "cropBox": list(page.cropbox),
                           "boxConvention": "pymupdf_page_rectangles/1", "renderSupport": support,
                           **({} if reduced is None else {"reducedScalePxPerPt": reduced})})
+    if _verify_source(source, expected_hash) != source_bytes:
+        raise PageError("DOCUMENT_PAGES_SOURCE_INTEGRITY")
     rendered = None
     if selected_page is not None:
         if pages[0]["renderSupport"] == "unsupported":
@@ -122,14 +134,14 @@ def inspect_pages(source: Path, expected_hash: str, offset: int, limit: int,
         # a page over the whole-page limit, reduced; nothing reads it back as an input.
         frame = render_pdf_selection(source, expected_hash, selected_page, None, output / "page.png",
                                      viewing=True, selected_page=True)
-        if frame["source"] != {"bytes": len(original), "sha256": expected_hash}:
+        if frame["source"] != {"bytes": source_bytes, "sha256": expected_hash}:
             raise PageError("DOCUMENT_PAGES_SOURCE_INTEGRITY")
         image = frame["render"]
         rendered = {"page": selected_page, "sha256": image["pngSha256"], "bytes": image["pngBytes"],
                     "pixels": image["pixels"], "scale": image["scale"], "pixelOrigin": image["pixelOrigin"], "dpi": image["dpi"]}
         if pages[0]["renderSupport"] == "reduced":
             rendered["reduced"] = True
-    return {"version": "document-pages-local/1", "sourceSha256": expected_hash, "sourceBytes": len(original),
+    return {"version": "document-pages-local/1", "sourceSha256": expected_hash, "sourceBytes": source_bytes,
             "pageCount": count, "offset": offset, "limit": limit, "pages": pages, "render": rendered}
 
 

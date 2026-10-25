@@ -3,6 +3,9 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
+import { access, mkdtemp, readFile, rm, rmdir, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { Pool } from 'pg';
 import { zipSync } from 'fflate';
 import { DOCUMENT_LIMITS, documentScannedPages, DocumentStatusSchema, type DocumentInput, type DocumentResult }
@@ -14,7 +17,7 @@ import { batchPdfSettlement, queueIntakeDraftTx, pageWords, stopBatchPdfTx }
 import type { IntakeSourceRow } from '../packages/server/src/modules/usp/ingestion/intake-context';
 import { failDocumentJob, runDocumentJob } from '../packages/server/src/modules/usp/ingestion/document-worker';
 import { extractSourceDocument } from '../packages/server/src/modules/usp/ingestion/document-native';
-import { closeStorageClient, sha256 } from '../packages/server/src/infrastructure/storage';
+import { closeStorageClient, sha256, streamRetainedOriginal } from '../packages/server/src/infrastructure/storage';
 import { settings } from '../packages/server/src/infrastructure/config';
 
 // G10 protocol controls, test_only: an in-process pool and object store as in document-later-receipt.test.ts.
@@ -264,11 +267,11 @@ test('a scanned PDF with no text layer is said to be unread, and nothing is prop
 
 test('a PDF above the reader bound rests kept in words, and a stopped read says so', async () => {
   await isolated(async control => {
-    const large = control.retainPdf(pdfBytes('declared large'), 16 * 1024 * 1024 + 1);
+    const large = control.retainPdf(pdfBytes('declared large'), 1024 ** 3 + 1);
     assert.equal(await queueIntakeDraftTx(clientOf(control), large, card), null);
     assert.equal(control.jobs.size, 0);
     assert.deepEqual([control.item!.state, control.item!.placement, control.item!.limit_reason], ['probed',
-      'not_understood', 'Kept as a PDF document (16 MB). The page reader in a batch reads a PDF of at most 16 MB, '
+      'not_understood', 'Kept as a PDF document (1 GB). The page reader in a batch reads a PDF of at most 1 GB, '
         + 'so this one is not read; the original is kept with its SHA-256.']);
     const source = control.retainPdf(pdfBytes('stopped'));
     const jobId = (await queueIntakeDraftTx(clientOf(control), source, card))!;
@@ -282,14 +285,13 @@ test('a PDF above the reader bound rests kept in words, and a stopped read says 
 test('a PDF above the page reader byte bound says its text layer was not read, and OCR when the original allows', () => {
   const native = { status: 'tool_error', format: 'pdf', readerSha256: 'a'.repeat(64),
     code: 'NATIVE_READER_BYTE_LIMIT', warnings: [], parts: [] } as const;
-  const unread = 'The page reader reads a PDF of at most 10 MB, so the text layer of this one was not read; the '
-    + 'original is kept with its SHA-256.';
+  const unread = 'Its text layer is not read above 10 MB; the original is kept with its SHA-256.';
   assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes), { state: 'failed_part',
-    placement: 'not_understood', limitReason: `${unread} Its pages can be read by OCR from the PDF reading, for a `
+    placement: 'not_understood', limitReason: `${unread} Its pages can be opened to view, and read by OCR for a `
       + 'PDF of at most 400 pages; above 8 pages, choose one page number. '
       + 'Nothing read is a fact until you confirm it.' });
   assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes + 1), { state: 'failed_part',
-    placement: 'not_understood', limitReason: unread });
+    placement: 'not_understood', limitReason: `${unread} Page opening is limited to 1 GB.` });
 });
 
 function ocrPage(input: DocumentInput, page: number): NonNullable<DocumentResult['ocr']> {
@@ -521,6 +523,70 @@ test('an unsupported DOCX or a container read as something else settles plainly 
       assert.equal(control.sources.get(source.id)!.sha256, source.sha256);
     });
   }
+});
+
+test('a 59 MB stated PDF queues without reading its text layer or whole original', async () => {
+  await isolated(async control => {
+    const source = control.retainPdf(pdfBytes('large declared scan'), 59_335_907);
+    const jobId = (await queueIntakeDraftTx(clientOf(control), source, card))!;
+    assert.ok(jobId);
+    assert.match(control.item!.limit_reason, /text layer is not read above 10 MB/);
+    assert.match(control.item!.limit_reason,
+      /Its pages can be opened to view, and read by OCR for a PDF of at most 400 pages/);
+    const noRead = async (): Promise<never> => assert.fail('Whole-original memory read above nativeBytes.');
+    await runDocumentJob(jobId, { read: noRead, extract: noRead });
+    assert.equal(control.jobs.get(jobId)!.status, 'succeeded');
+    assert.equal(control.sources.get(source.id)!.inspection.documentAccepted.nativeStatus, 'tool_error');
+    const service = new DocumentIngestionService();
+    const queued = await service.retry(control.current.id, source.id, { requestKey: randomUUID(),
+      expectedCaseRevision: control.current.revision, expectedSourceRevision: 1, sourceSha256: source.sha256,
+      mode: 'native_only', ocrSelection: { page: 1, singlePage: true } });
+    let selections = 0;
+    await runDocumentJob(queued.jobId, { read: noRead, extract: noRead, ocr: async (input, original) => {
+      selections++; assert.equal(original, undefined);
+      return ocrPage(input, 1);
+    } });
+    assert.equal(selections, 1);
+    assert.equal(control.jobs.get(queued.jobId)!.status, 'succeeded');
+    assert.equal(control.item!.records_seen, 0);
+    const exactBound = control.retainPdf(pdfBytes('stated exact page bound'), 1024 ** 3);
+    assert.ok(await queueIntakeDraftTx(clientOf(control), exactBound, card));
+  });
+});
+
+test('streamed originals verify exact bytes and hash and remove only their own failed file', async () => {
+  await isolated(async control => {
+    const original = pdfBytes('streamed byte control'), source = control.retainPdf(original);
+    const dir = await mkdtemp(join(tmpdir(), 's5-9a-stream-'));
+    const path = join(dir, 'original.pdf');
+    const copy = (bytes = original.length, hash = source.sha256) =>
+      streamRetainedOriginal(source.object_key, bytes, hash, path, DOCUMENT_LIMITS.originalBytes);
+    try {
+      await copy(); assert.deepEqual(await readFile(path), original);
+      await assert.rejects(copy(), { code: 'EEXIST' });
+      assert.deepEqual(await readFile(path), original);
+      await rm(path);
+      await assert.rejects(copy(original.length, '0'.repeat(64)), { code: 'INTAKE_SOURCE_INTEGRITY' });
+      await assert.rejects(access(path), { code: 'ENOENT' });
+      for (const count of [original.length - 1, original.length + 1]) {
+        S3Client.prototype.send = async () => ({ Body: Readable.from([original.subarray(0, 5),
+          original.subarray(5)]), ContentLength: count, ETag: 'control' });
+        await assert.rejects(copy(count), { code: 'INTAKE_SOURCE_INTEGRITY' });
+        await assert.rejects(access(path), { code: 'ENOENT' });
+      }
+      S3Client.prototype.send = async () => ({ Body: Readable.from((async function* () {
+        yield original.subarray(0, 5);
+        await new Promise(resolve => setTimeout(resolve, 50));
+        yield original.subarray(5);
+      })()), ContentLength: original.length, ETag: 'control' });
+      await assert.rejects(streamRetainedOriginal(source.object_key, original.length, source.sha256, path,
+        DOCUMENT_LIMITS.originalBytes, 10), { code: 'STORAGE_TIMEOUT' });
+      await assert.rejects(access(path), { code: 'ENOENT' });
+      await writeFile(path, original);
+      await assert.rejects(copy(), { code: 'EEXIST' });
+      assert.deepEqual(await readFile(path), original);
+    } finally { await rm(path, { force: true }); await rmdir(dir); }
+  });
 });
 
 test('page numbers read as runs', () => {

@@ -66,16 +66,16 @@ it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page 
     .toMatchObject({ reader: 'PDF native text', ceilingBytes: DOCUMENT_LIMITS.nativeBytes, withinCeiling: true });
   expect(words(DOCUMENT_LIMITS.nativeBytes)).toBe('Will be read by the PDF native text reader (within 10 MiB)');
   const ocr = 'Text layer not read above 10 MiB, but its pages can be read by OCR when the PDF has at most 400 '
-    + 'pages, checked after upload; above 8 pages, choose one page number (within 16 MiB)';
+    + 'pages, checked after upload; above 8 pages, choose one page number (within 1 GiB)';
   for (const size of [DOCUMENT_LIMITS.nativeBytes + 1, DOCUMENT_LIMITS.originalBytes]) {
     expect(words(size)).toBe(ocr);
     expect(readerEligibility({ name: 'plan.pdf', size }))
       .toMatchObject({ ceilingBytes: DOCUMENT_LIMITS.originalBytes, withinCeiling: true });
   }
-  expect(words(DOCUMENT_LIMITS.originalBytes + 1)).toBe('Will be kept, not read: larger than the 16 MiB PDF '
+  expect(words(DOCUMENT_LIMITS.originalBytes + 1)).toBe('Will be kept, not read: larger than the 1 GiB PDF '
     + 'document reader');
   expect(readerEligibility({ name: 'plan.pdf', size: DOCUMENT_LIMITS.originalBytes + 1 }).withinCeiling).toBe(false);
-  // The 10–16 MiB band never calls the file "not read": OCR may still read its pages.
+  // Above the native-text bound, OCR may still read a selected page within the original bound.
   expect(words(DOCUMENT_LIMITS.nativeBytes + 1)).not.toContain('kept, not read');
 });
 

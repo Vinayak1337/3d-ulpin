@@ -11,6 +11,7 @@ import { createPdfOcrPress, createPdfOcrRun, pagesToRead, pdfOcrOffer, readPdfJo
   type PdfReading } from './pdf-reading';
 import { button, container, elements, propsOf, type FakeElement } from './fake-dom';
 import type { IntakeItem } from './batch-model';
+import { DOCUMENT_LIMITS } from '@ulpin/contracts/usp';
 
 const openapi = JSON.parse(readFileSync(new URL('../../../../../docs/api/openapi.json', import.meta.url), 'utf8'));
 const validate = createContractValidator(openapi);
@@ -179,7 +180,7 @@ it('a PDF above the page reader byte bound offers every page to OCR, within the 
   const page = await render(unread, { pageCount: 3 });
   try {
     expect(page.root.textContent).toContain('The text layer was not read: the page reader takes a PDF of at most '
-      + '10 MiB. OCR takes a PDF of up to 16 MiB, so its pages can still be read as scanned pages.');
+      + '10 MiB. OCR takes a PDF of up to 1024 MiB, so its pages can still be read as scanned pages.');
     expect(boxes(page.root)).toHaveLength(3);
     expect(action(page.root)).toBeDefined();
   } finally { await page.unmount(); }
@@ -202,10 +203,11 @@ it('offers one selected page of a long scan and refuses beyond the renderer page
 
 it('says a PDF above the document runtime byte bound is kept and not read, never that a reading is coming',
   async () => {
-    // The byte count of the retained 28 MiB sanctioned building plan (RERAP01282025205138-1), the difficult input.
-    const page = await render(reading(), { jobs: [], file: { ...item, sizeBytes: 28181151 } });
+    // test_only stated size: one byte above the document original bound.
+    const page = await render(reading(), { jobs: [], file: { ...item,
+      sizeBytes: DOCUMENT_LIMITS.originalBytes + 1 } });
     try {
-      expect(page.root.textContent).toContain('This PDF is 26.9 MiB, above 16 MiB, the largest original the '
+      expect(page.root.textContent).toContain('This PDF is 1024.0 MiB, above 1024 MiB, the largest original the '
         + 'document reader and OCR take, so it is not read. The original is kept with its SHA-256.');
       expect(page.root.textContent).not.toContain('yet');
       expect(action(page.root)).toBeUndefined();

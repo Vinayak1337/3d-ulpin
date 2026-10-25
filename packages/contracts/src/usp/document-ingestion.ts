@@ -3,6 +3,7 @@ import {GisQuarantineSchema} from '../gis-quarantine';
 import {DOCUMENT_PAGE_LIMITS} from '../document-pages';
 export const DOCUMENT_VERSION='source-document/1' as const;
 export const DOCUMENT_POLICY='source-document-native/1' as const;
+// Original opening follows the page profile; native text stays bounded to 10 MiB independently.
 export const DOCUMENT_LIMITS=Object.freeze({originalBytes:DOCUMENT_PAGE_LIMITS.originalBytes,
   nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
   characters:250000,parts:10000,partCharacters:4096,page:25,candidates:40,modelCharacters:12000,modelParts:12,jobs:32,

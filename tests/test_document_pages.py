@@ -4,6 +4,8 @@ import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
+import subprocess
+import sys
 
 import fitz
 
@@ -28,6 +30,11 @@ class DocumentControl:
 
 
 class ExternalFileControls(unittest.TestCase):
+    def test_isolated_interpreter_can_import_the_existing_supervisor(self):
+        code = f"import runpy; runpy.run_path({str(helper)!r}, run_name='page_test'); import run_trial"
+        subprocess.run([sys.executable, "-I", "-B", "-c", code], check=True, timeout=15,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+
     def test_external_stream_reference_and_script_cannot_reach_renderer(self):
         for entry in ({(1, "F"): ("string", "private-file"), (1, "_stream"): True},
                       {(1, "Ref/F"): ("xref", "2 0 R")},
@@ -71,7 +78,11 @@ class WholePageViewing(unittest.TestCase):
                 for _ in range(12):
                     document.new_page(width=612, height=792)
                 document.save(source)
-            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            with source.open("ab") as stream:
+                stream.truncate(17 * 1024**2)
+            from geo.usp_document_candidates.docling_tesseract import sha256_file
+            digest = sha256_file(source)
+            self.assertEqual(pages.MAX_SOURCE, 1024**3)
             result = pages.inspect_pages(source, digest, 10, 1, 11, folder)
             self.assertEqual(result["pageCount"], 12)
             self.assertEqual(result["pages"], [{**self.info(612, 792, "supported"), "page": 11, "label": "Page 11"}])
@@ -80,6 +91,18 @@ class WholePageViewing(unittest.TestCase):
             for page in [0, 13]:
                 with self.assertRaisesRegex(pages.PageError, "DOCUMENT_PAGE_NOT_FOUND"):
                     pages.inspect_pages(source, digest, 0, 1, page, folder)
+
+    def test_page_count_still_refuses_401_pages(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            source = folder / "test_only-401.pdf"
+            with fitz.open() as document:
+                for _ in range(401):
+                    document.new_page(width=72, height=72)
+                document.save(source)
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(pages.PageError, "DOCUMENT_PAGES_PDF_LIMIT"):
+                pages.inspect_pages(source, digest, 0, 25, None, folder)
 
     def test_page_within_the_limit_answers_with_exactly_the_fields_it_had(self):
         with tempfile.TemporaryDirectory() as directory:
