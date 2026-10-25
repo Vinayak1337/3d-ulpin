@@ -1,0 +1,74 @@
+[
+ {
+  "path": "E:/BhuAayam-data/task-data/reh14/act2/mx1-mixed-points-lines-polygons.geojson",
+  "bytes": 7840,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/task-data/reh14/act2/mx1-keyed-points-lines-polygons.geojson",
+  "bytes": 6972,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/task-data/reh14/act2/zp1-geojson-kml-csv.zip",
+  "bytes": 464736,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/task-data/reh14/act2/csv2-edmonton-heritage-semicolon-decimal-comma.csv",
+  "bytes": 460,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/task-data/reh14/act2/csv2-bengaluru-bus-stops-windows-1252.csv",
+  "bytes": 540,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses-prefix-128.csv",
+  "bytes": 24024,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint-prefix-128.csv",
+  "bytes": 54419,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf",
+  "bytes": 82846,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_and_garage_LOD2-EPSG25832.gml",
+  "bytes": 19499,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": [
+   "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+   "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson"
+  ],
+  "bytes": 26660992,
+  "recordedSha256": null,
+  "recordedIn": null
+ },
+ {
+  "path": [
+   "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+   "Niagara_Falls_Condominiums_7254610803234545967.geojson"
+  ],
+  "bytes": 157817,
+  "recordedSha256": null,
+  "recordedIn": null
+ }
+]

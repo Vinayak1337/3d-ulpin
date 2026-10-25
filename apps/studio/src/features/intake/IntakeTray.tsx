@@ -15,6 +15,7 @@ import { crsWords, fileDetailWords, holdsWords, placementWords, stateWords, pack
 import type { CellBatch, IntakeItem } from './batch-model';
 import { isIfcItem } from './ifc/structure-model';
 import { opensReading } from './native/reading-model';
+import { opensPreview } from './surface/preview-model';
 import styles from './Batch.module.css';
 
 export function IntakeTray({ caseId, items, packages, choose, refresh }: {
@@ -61,6 +62,8 @@ function NextStep({ caseId, item, items, packages, choose, refresh }: {
       aria-label={`Open the reading: ${item.name}`}>Open the reading</Button> : null}
     {isPageImage(item) ? <Button variant="soft" onClick={() => choose(item)}
       aria-label={`View page image: ${item.name}`}>View page image</Button> : null}
+    {opensPreview(item) ? <Button variant="soft" onClick={() => choose(item)}
+      aria-label={`View the surface: ${item.name}`}>View the surface</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
     {opensPages(item) ? <ReviewPages caseId={caseId} item={item} /> : null}
     {item.layerCrs?.length ? <LayerCrsAnswers caseId={caseId} item={item} refresh={refresh} /> : null}

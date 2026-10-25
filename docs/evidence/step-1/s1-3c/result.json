@@ -1,0 +1,60 @@
+{
+  "task": "S1.3c",
+  "planStep": 1,
+  "base": "726bb2e82151a8f78453125876eed9d970e56c4f",
+  "verdict": "Offline checks pass: waiting profiles return stream admission; a small member profiles and schedules mapping beside a long raw read. No runtime claim.",
+  "design": {
+    "requeueSeconds": 2,
+    "beforeClaim": "window(input,true) checks source pins, ready chunk and raw terminal state; a wait requeues without creating an attempt row.",
+    "afterClaim": "Drain every published chunk, then yieldUspJobAttempt queues the job and marks its exact live attempt yielded; the dispatcher existing finally releases admission.",
+    "attempts": "Only streamed profiles discount yielded rows; attempt numbers and fences still increase. Three non-yielded failures still terminate, including after four successful yields.",
+    "durableClock": "Reuse imports.updated_at: initialize on first dispatch, advance on chunk publication, never on subsequent live running/requeue/retry transitions. At 720000 ms without publication fail STREAMED_PROFILE_SOURCE_WAIT.",
+    "migration": "None: usp_job_attempts.state is unconstrained text (database/sql/60-usp/03-f1-schema.sql:28-34); updated_at already exists.",
+    "admission": "active=4 <= unchanged stream concurrency 4; memory, heap, scratch, other lane caps and 128-row history unchanged.",
+    "dispatch": "processing.ts unchanged: streamed-profile branch finally already deletes its in-process entry and releases reservations (lines 556-563).",
+    "scopeSize": "67 net production lines; additional lines are authority regressions, real-worker protocol fixture and scheduling replay."
+  },
+  "originalFinding": {
+    "queuedRow": "An undispatched queued row alone holds no reservation.",
+    "oldRunningRow": "At base streamed-profile-worker.ts:197-212 polled in process, retaining one stream slot and 512 MiB each of memory/heap admission (scratch 0), not a processor slot. Reservations are not measured resident memory.",
+    "current": "streamed-profile-worker.ts:200-210 returns before claiming when waiting; :256-257 yields after publication. No polling remains."
+  },
+  "inputs": {
+    "good": "Existing test_only zp1-geojson-kml-csv.zip, 464736 bytes; nyc-footprints-2100.geojson, 2100 real features read into 100-record chunks by the real reader.",
+    "difficult": "Task-supplied run 3 Halifax 108 MB GeoJSON capacity blockage; not reopened or run. Long reader is an explicit scheduling stub, not a new latency measurement.",
+    "protocol": "Null raw records test quarantine continuity; no invented geometry, identifiers or publisher meanings used as operational facts.",
+    "runtimeRun": false
+  },
+  "replay": {
+    "qualification": "Actual dispatcher, reservations, profile worker, inventory and attempt authority; SQL/storage fixture and mapping scheduling stub. No application database or external calls.",
+    "tickMs": 750,
+    "smallProfileAdmissionDelayMs": 0,
+    "mappingStartsMsFromReplayStart": 750,
+    "largeRawStillRunningAtMappingStart": true,
+    "peakReservedMemoryMiB": 927,
+    "peakReservedHeapMiB": 927,
+    "memoryBudgetMiB": 927,
+    "scratchMiB": 0
+  },
+  "checks": {
+    "environment": "TMP=TEMP=TMPDIR=E:/ulpin-tmp; targeted/server: NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false",
+    "logs": "E:/ulpin-tmp/s1-3c-resume-{before,after}-{backend,studio-typecheck,studio-test,targeted,server,openapi,api-check}.log",
+    "pnpm typecheck:backend": {"beforeExit": 0, "afterExit": 0, "projects": 2},
+    "pnpm studio:typecheck": {"beforeExit": 0, "afterExit": 0, "projects": 4},
+    "pnpm studio:test": {"beforeExit": 0, "afterExit": 0, "passed": 827, "skipped": 3, "failed": 0},
+    "processing-latency.test.ts + streamed*.test.ts + jobs.test.ts": {
+      "beforeExit": 0, "beforePassed": 44, "afterExit": 0, "afterPassed": 54, "failed": 0
+    },
+    "WORKING-RULES section 5 exact server set": {
+      "beforeExit": 0, "beforePassed": 1045, "afterExit": 0, "afterPassed": 1051, "skipped": 5, "failed": 0
+    },
+    "openapi.ts --check": {"beforeExit": 0, "afterExit": 1, "operations": 335, "schemas": 379,
+      "reason": "Expected stale docs/api/source-pins.json; not regenerated."},
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {"beforeExit": 0, "afterExit": 1,
+      "reason": "Expected producer changed: packages/contracts/src/usp/streamed-profile.ts (first reported pin)."},
+    "changedPinnedProducers": ["packages/contracts/src/usp/streamed-profile.ts",
+      "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts", "packages/server/src/modules/usp/jobs.ts"],
+    "git diff --check": {"beforeExit": 0, "afterExit": 0}
+  },
+  "next": "Lead reviews and integrates, regenerates source pins, and reruns the Halifax plus small ZIP scenario on an authorized rehearsal runtime. No push, deployment or runtime changes made."
+}

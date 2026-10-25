@@ -44,6 +44,7 @@ Worker worktrees must never serve the demo: lazy imports would mix unreviewed ch
 Never edit application files in the demo checkout, copy/read credentials, use `--create`, reset/reseed,
 stop or replace containers (step 6's two processors aside), remove volumes, fetch unreviewed code, or use `down -v`.
 The platform start command resumes the existing project only; populated storage and external credentials remain intact.
+Every demo-profile start supplies `ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES` from the contract's full storage envelope.
 If doctor fails, preserve the runtime and diagnose its specific failure; do not initialise replacement storage.
 Code changes merge on staging first, then roll here in a separately authorised runtime task.
 

@@ -242,16 +242,37 @@ export async function claimUspJobAttempt(jobId: string, owner: string,beforeLock
     const attempts = (await client.query('SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1', [jobId])).rows[0];
     if (attempts?.state === 'active' && new Date(attempts.lease_until).getTime() > Date.now()) conflict('An attempt still owns this job.');
     const number = Number(attempts?.number ?? 0) + 1;
-    if (number > MAX_ATTEMPTS) throw new AppError(422, 'USP_JOB_ATTEMPTS', 'Explicit retry is required after the attempt limit.');
+    const spent = job.operation === 'streamed-profile'
+      ? Number((await client.query(`SELECT count(*)::int n FROM usp_job_attempts
+        WHERE job_id=$1 AND state<>'yielded'`, [jobId])).rows[0].n)
+      : number - 1;
+    if (spent >= MAX_ATTEMPTS)
+      throw new AppError(422, 'USP_JOB_ATTEMPTS', 'Explicit retry is required after the attempt limit.');
     const fence = Number(attempts?.fence ?? 0) + 1;
     const row = (await client.query(`INSERT INTO usp_job_attempts(job_id,number,fence,owner,input_sha256,lease_until,state)
       VALUES($1,$2,$3,$4,$5,now()+interval '180 seconds','active') RETURNING lease_until`,
       [jobId, number, fence, owner, meta.input_sha256])).rows[0];
     await client.query(`UPDATE usp_job_metadata SET logical_state='running',version=version+1 WHERE job_id=$1`, [jobId]);
     await client.query(`UPDATE jobs SET status='running',attempts=$2,
-      dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1`, [jobId, number]);
+      dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1`, [jobId, spent + 1]);
     return { jobId, number, fence, owner, leaseUntil: new Date(row.lease_until).toISOString(), inputSha256: meta.input_sha256 };
   },deadline);
+}
+
+/** Only a streamed profile may return ready-work admission without spending a failure attempt. */
+export async function yieldUspJobAttempt(attempt: Attempt) {
+  await transaction(async client => {
+    await assertUspJobAttemptTx(client, attempt);
+    const job = (await client.query('SELECT operation FROM jobs WHERE id=$1', [attempt.jobId])).rows[0];
+    if (job?.operation !== 'streamed-profile')
+      throw new AppError(422, 'USP_JOB_OPERATION', 'Only streamed profiles may yield a fenced attempt.');
+    await client.query("UPDATE usp_job_attempts SET state='yielded' WHERE job_id=$1 AND number=$2",
+      [attempt.jobId, attempt.number]);
+    await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
+      [attempt.jobId]);
+    await client.query(`UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds',error=NULL
+      WHERE id=$1`, [attempt.jobId]);
+  });
 }
 
 export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(client:PoolClient)=>Promise<void>,deadline?:DbDeadline) {

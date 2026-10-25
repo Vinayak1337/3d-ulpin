@@ -204,6 +204,20 @@ it('lists an unavailable file without accept or exclude controls and never sends
   expect(send).not.toHaveBeenCalled();
 });
 
+// S1.3 run 3: pressed with words typed while late.csv was still being read; no request was sent and nothing showed.
+it('EV2: holds the press while an included file is still being read and says why in plain words', () => {
+  const typed = { ...ready, choices: acceptRegister(), exclusions: {} };
+  const html = form(typed);
+  expect(html).toMatch(/<button[^>]*disabled=""[^>]*>\s*Confirm the evidence\s*<\/button>/);
+  expect(html).toContain('late.csv is still being read. Confirm when the reading closes, or exclude it with your '
+    + 'reason to confirm this key without it.');
+  expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Accept every exact single match of this file<\/button>/);
+  expect(html).toContain('late.csv is still being read; its matches can be accepted when the reading closes.');
+  const excluded = form({ ...typed, exclusions: ready.exclusions });
+  expect(excluded).not.toMatch(/<button[^>]*disabled=""[^>]*>\s*Confirm the evidence\s*<\/button>/);
+  expect(excluded).not.toContain('still being read. Confirm');
+});
+
 it('never accepts a conflicting or several candidate; the officer may reject one with reason words', async () => {
   for (const question of [conflicting, several]) {
     expect(setAccept({}, question, true)).toEqual({});

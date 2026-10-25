@@ -1,0 +1,8 @@
+{ "at": "2026-10-22T17:40:52.751Z", "caseId": "ee8a66df-3cea-45df-a800-965bd16519e3", "source": "all", "jobs": 34,
+"span": { "firstCreated": "2026-10-22T16:55:19.708807+00:00", "lastCompleted": "2026-10-22T17:30:03.955802+00:00" },
+"queueSumS": 5797.942, "execSumS": 1144.107, "byOperation": { "intake-large": { "jobs": 24, "queueMaxS": 553.8,
+"execMaxS": 86.942, "retries": 0, "notDone": 2 }, "streaming-vector": { "jobs": 1, "queueMaxS": 25.63,
+"execMaxS": 329.358, "retries": 1, "notDone": 0 }, "streamed-profile": { "jobs": 1, "queueMaxS": 25.597,
+"execMaxS": 330.375, "retries": 0, "notDone": 0 }, "chunk-mapping": { "jobs": 1, "queueMaxS": 18.012,
+"execMaxS": 166.067, "retries": 0, "notDone": 0 }, "intake-run": { "jobs": 7, "queueMaxS": 401.236, "execMaxS": 27.516,
+"retries": 0, "notDone": 0 } } }

@@ -5,7 +5,7 @@ import {STREAMING_VECTOR_LIMITS,StreamingVectorRecordSchema} from './streaming-v
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
 export const STREAMED_PROFILE_LIMITS=Object.freeze({version:'streamed-profile/1',paths:64,
-  generations:STREAMING_VECTOR_LIMITS.chunks+1,quarantineLocators:100,bodyBytes:65536,active:1,waitMs:12*60*1000});
+  generations:STREAMING_VECTOR_LIMITS.chunks+1,quarantineLocators:100,bodyBytes:65536,active:4,waitMs:12*60*1000});
 export const StreamedProfileRequestSchema=z.strictObject({requestKey:id,rawJobId:id,
   expectedCaseRevision:z.number().int().nonnegative(),expectedSourceRevision:z.number().int().positive(),sourceSha256:hash});
 export const StreamedProfileInputSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),jobId:id,
