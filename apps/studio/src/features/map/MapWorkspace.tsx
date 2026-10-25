@@ -5,7 +5,7 @@ import { Archive, FilePlus, SlidersHorizontal, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
 import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
-import { useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
+import { packageStreaming, useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
@@ -71,8 +71,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const { selection, dispatch, patch } = useSelection();
   const [searchParams, setSearchParams] = useSearchParams();
   const packageId = searchParams.get('package');
-  const streamingPackage = packageId ? context.packages.find((pkg) => pkg.id === packageId) : null;
-  const importStreaming = Boolean(packageId) && (!streamingPackage || streamingPackage.state === 'RECEIVED');
+  const importStreaming = packageId !== null && packageStreaming(context, packageId);
   const buildingImportId = searchParams.get('building-import');
   const buildingImport = useBuildingImport(buildingImportId);
   const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
@@ -124,7 +123,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const findings = register?.findings ?? [];
   const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
 
-  const drawn = useCanonicalFootprints(context.area.id, feature?.id, features, Boolean(packageId));
+  const drawn = useCanonicalFootprints(context.area.id, feature?.id, features, importStreaming);
   // The canonical read refused the area as too large: its buildings are read by the part in view instead.
   const windowMode = isAreaLimit(drawn.error);
   const windowed = useAreaWindow(context.area.id, engine, windowMode);
@@ -398,7 +397,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
   const tray = packageId ? (
-    <MapImportTray packageId={packageId} engine={engine} frames={frames}
+    <MapImportTray packageId={packageId} context={context} engine={engine} frames={frames}
       onClose={() => closeParam('package')} />
   )
     : buildingImportId ? <BuildingImportTray importId={buildingImportId} onClose={() => closeParam('building-import')} /> : selection.mode === 'findings' && findings.length ? (
@@ -575,10 +574,10 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 }
 
 /** Keep the drawn count current without re-rendering the workspace on every camera or streamed frame. */
-function MapImportTray({ packageId, engine, frames, onClose }: {
-  packageId: string; engine: SceneEngine | null; frames: ViewFrames; onClose: () => void;
+function MapImportTray({ packageId, context, engine, frames, onClose }: {
+  packageId: string; context: AreaContext; engine: SceneEngine | null; frames: ViewFrames; onClose: () => void;
 }) {
   const count = useCallback(() => engine?.drawnBuildings().count, [engine]);
   const drawnBuildings = useSyncExternalStore(frames.subscribe, count, count);
-  return <ImportTray packageId={packageId} drawnBuildings={drawnBuildings} onClose={onClose} />;
+  return <ImportTray packageId={packageId} context={context} drawnBuildings={drawnBuildings} onClose={onClose} />;
 }

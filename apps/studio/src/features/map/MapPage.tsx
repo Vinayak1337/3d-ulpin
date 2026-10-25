@@ -39,7 +39,8 @@ export function MapIndexRedirect() {
 export function MapPage() {
   const { areaId } = useParams();
   const [params] = useSearchParams();
-  const context = useAreaContext(areaId, params.has('package'));
+  // Read again only while the package in the URL streams into this area.
+  const context = useAreaContext(areaId, params.get('package'));
   if (context.isPending) return <MapSkeleton />;
   // An area with more features than one display read carries is drawn by the part in view.
   if (areaId && isAreaLimit(context.error)) return <WindowedArea key={areaId} areaId={areaId} />;

@@ -227,18 +227,34 @@ export function useAreas() {
  */
 export const AREA_LIVE_REFRESH_MS = 5000;
 
-export const areaContextQuery = (areaId: string | undefined, live: boolean) => ({
+/**
+ * Whether the import package `packageId` is still streaming into the area the context describes: it is listed as
+ * RECEIVED, or the area has not been read yet. The context lists the area's newest packages and the map opens a
+ * package only once it exists, so a package it does not list is an older one that has settled.
+ */
+export function packageStreaming(context: Pick<AreaContext, 'packages'> | undefined, packageId: string) {
+  if (!context) return true;
+  return context.packages.some((pkg) => pkg.id === packageId && pkg.state === 'RECEIVED');
+}
+
+/**
+ * `live`: true reads the area again until the page closes; a package id reads it again only while that package
+ * streams, so the reads stop with the read that reports the package settled, whatever the URL still says.
+ */
+export const areaContextQuery = (areaId: string | undefined, live: boolean | string | null) => ({
   queryKey: queryKeys.areaContext(areaId ?? ''),
   enabled: Boolean(areaId) && !isDemoId(areaId),
   queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', {
     params: { path: { areaId: areaId! } },
   })),
   staleTime: 60_000,
-  refetchInterval: live && !isDemoId(areaId) ? AREA_LIVE_REFRESH_MS : false as const,
+  refetchInterval: ({ state }: { state: { data?: unknown } }) => (
+    !isDemoId(areaId) && (typeof live === 'string' ? packageStreaming(state.data as AreaContext | undefined, live) : live)
+      ? AREA_LIVE_REFRESH_MS : false as const),
 });
 
 /** `live`: an import into this area is streaming, so poll until it settles (SSE replaces this later). */
-export function useAreaContext(areaId: string | undefined, live = false) {
+export function useAreaContext(areaId: string | undefined, live: boolean | string | null = false) {
   useDemoAreaStream(areaId);
   return useQuery(areaContextQuery(areaId, live));
 }
