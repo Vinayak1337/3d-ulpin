@@ -7,9 +7,11 @@ import captured from '../../../../../../docs/evidence/gf1/lq1a/controls-second.j
 import { createContractValidator } from '../../../local/contract';
 import type { IntakeItem } from '../batch-model';
 import { IntakeTray } from '../IntakeTray';
-import { OmissionsBody, ReadingBody } from './NativeReading';
-import { hasConvertedLayers, nativeReaderOf, opensReading, readingView, type NativeOmissions,
-  type NativeStatus } from './reading-model';
+import { api } from '@ulpin/api-client';
+import { ModelPreviewBody, OmissionsBody, ReadingBody } from './NativeReading';
+import { hasConvertedLayers, modelPreviewPlan, modelView, nativeReaderOf, opensReading, previewView, readingView,
+  type NativeOmissions, type NativeStatus } from './reading-model';
+import { readModelArtifact } from './useNativeReading';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
 const openapi = JSON.parse(readFileSync(resolve(root, 'docs/api/openapi.json'), 'utf8'));
@@ -131,4 +133,133 @@ it('lists the features left out per layer with position kind and reason, and say
   expect(html).toContain('4 written, 123 not written · the first 50 of 123 listed');
   expect(html).toContain('<span class="ul-mono">fid 1</span>: geometry_header');
   expect(html).toMatch(/<details class="[^"]*"><summary>50 listed<\/summary>/);
+});
+
+// test_only: a unit cube as six faces of four corners, in the shape the Box.glb reading states (2 nodes,
+// 1 primitive, 24 positions, 36 indices); a protocol control, not a dataset record.
+const boxPositions = [[2, 1], [2, -1], [0, 1], [0, -1], [1, 1], [1, -1]].flatMap(([axis, side]) =>
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([u, v]) => {
+    const at = [0, 0, 0];
+    at[axis!] = side! * 0.5;
+    at[(axis! + 1) % 3] = u! * 0.5;
+    at[(axis! + 2) % 3] = v! * 0.5;
+    return at;
+  }));
+const boxIndices = Array.from({ length: 6 }, (_, face) => [0, 1, 2, 3, 2, 1].map(k => face * 4 + k)).flat();
+const gltfArtifact = { schemaVersion: 'gltf-local-inspection/1', status: 'inspected_local',
+  geometryProjectionStatus: 'available', representation: 'context_mesh',
+  nodes: [{ sourceNodeIndex: 0, declaration: { children: [1],
+    matrix: [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1] } }, { sourceNodeIndex: 1, declaration: { mesh: 0 } }],
+  primitives: [{ sourceMeshIndex: 0, sourcePrimitiveIndex: 0, mode: { value: 4, origin: 'source' },
+    status: 'available_local_projection', projection: { POSITION: { status: 'available', values: boxPositions },
+      indices: { status: 'available', values: boxIndices } } }],
+  counts: { nodes: 2, primitives: 1, projectedPositions: 24, projectedIndices: 36 },
+  qualification: { globalPlacement: 'unknown', measurements: false, rendering: false,
+    localFrame: { axes: 'right_handed_Y_up', linearUnit: 'metre', origin: 'glTF_2.0_specification_semantics' },
+    coordinates: 'source_accessor_values; node transforms are declarations only' } };
+
+function gltfStatus(bytes: Uint8Array<ArrayBuffer>, sha256: string, projectedPositions = 24): NativeStatus {
+  const summary = { schemaVersion: 'gltf-local-inspection/1', sourceSha256: 'a'.repeat(64), sourceBytes: 1_664,
+    status: 'inspected_local', geometryProjectionStatus: 'available', representation: 'context_mesh',
+    selectedSceneIndex: 0, selectedSceneOrigin: 'source', nodeCount: 2, primitiveCount: 1, projectedPositions,
+    projectedIndices: 36, missingCompanionCount: 0, unsupportedPrimitiveCount: 0, globalPlacement: 'unknown',
+    accuracy: 'not_assessed', validity: 'not_assessed', canonicalIdentity: 'not_assessed', analyticEligible: false,
+    registryAdmission: false, measurements: false, learningLabels: false, rights: 'not_assessed' };
+  return { version: 'gltf-native/1', caseId: ids.caseId, sourceId: ids.sourceId, jobId: ids.jobId,
+    currentCaseRevision: 4, sourceRevision: 1, sourceSha256: 'a'.repeat(64), status: 'completed', code: null,
+    result: { summary, createdAt: '2026-10-22T10:00:00.000Z', artifact: { key: `gltf-native/${ids.jobId}.json`,
+      sha256, bytes: bytes.byteLength, mediaType: 'application/json', profile: 'gltf-local-inspection/1' } } } as
+    NativeStatus;
+}
+
+const encoded = (value: unknown) => new TextEncoder().encode(JSON.stringify(value));
+const sha = async (bytes: Uint8Array<ArrayBuffer>) => Array.from(
+  new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), (b) => b.toString(16).padStart(2, '0')).join('');
+const served = (bytes: Uint8Array<ArrayBuffer>) => ({ response: new Response(null, { status: 200 }),
+  data: bytes.slice().buffer, error: undefined }) as never;
+
+it('a Box-shaped glTF result is read once by its pins and drawn as 12 triangles in its own frame', async () => {
+  const bytes = encoded(gltfArtifact);
+  const status = gltfStatus(bytes, await sha(bytes));
+  expect(validate(schemaOf('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/gltf/jobs/{jobId}'), status))
+    .toEqual([]);
+  const plan = modelPreviewPlan('gltf', status);
+  if (plan.state !== 'read') throw new Error('Wrong test plan');
+  const get = vi.spyOn(api, 'GET').mockResolvedValue(served(bytes));
+  const native = await readModelArtifact('gltf', ids, plan.artifact, new AbortController().signal);
+  expect(get).toHaveBeenCalledOnce();
+  expect(get.mock.calls[0]![0]).toBe('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/gltf/jobs/{jobId}/native');
+  get.mockRestore();
+  const view = previewView(plan, { data: native, error: null, isPending: false });
+  if (view.state !== 'mesh') throw new Error('Wrong test view');
+  expect(view.model.positions).toEqual(boxPositions);
+  expect(view.model.polygons).toHaveLength(12);
+  expect(view.model.polygons.every(polygon => polygon.length === 3)).toBe(true);
+  const html = renderToStaticMarkup(<ModelPreviewBody view={view} />);
+  expect(html).toContain('Own frame · display only');
+  expect(html).toContain('own frame, centred in the view. It is not placed on the map, and nothing is converted, '
+    + 'placed or measured: the drawing is for display only.');
+  expect(html).toContain('role="img" aria-label="glTF model in its own frame, 12 triangles"');
+  expect(html).toMatch(/Axes as the reading states<\/dt><dd>Right handed Y up<\/dd>/);
+  expect(html).toMatch(/Unit as the reading states<\/dt><dd>Metre<\/dd>/);
+  expect(html).toMatch(/Drawn<\/dt><dd>12 triangles from 24 stored positions<\/dd>/);
+  expect(html).toMatch(/Node transforms<\/dt><dd>Not applied: the reading keeps them as declarations<\/dd>/);
+  expect(html).not.toMatch(/<button|Confirm|Place on/);
+});
+
+it('an OBJ result with two faces gives two polygons; axes and units stay Unknown as the reading states', () => {
+  // test_only: two quads sharing an edge, in the OBJ reader's artifact shape.
+  const vertex = (index: number, values: number[]) => ({ directive: 'v', index, values, status: 'source_values',
+    cartesianProjectionEligible: true });
+  const face = (index: number, corners: number[]) => ({ directive: 'f', index, projectionEligible: true,
+    projectionReasons: [], references: corners.map(at => ({ form: 'v', vertex: { literal: String(at + 1),
+      sourceIndex: at + 1, resolvedIndex: at }, texture: null, normal: null })) });
+  const artifact = { schemaVersion: 'obj-source-context/1', vertices: [vertex(0, [0, 0, 0]), vertex(1, [4, 0, 0]),
+    vertex(2, [4, 0, 3]), vertex(3, [0, 0, 3]), vertex(4, [4, 2.5, 0]), vertex(5, [0, 2.5, 0])],
+  faces: [face(0, [0, 1, 2, 3]), face(1, [0, 1, 4, 5])] };
+  const view = modelView('obj', artifact, { axes: 'unknown', units: 'unknown' });
+  if (view.state !== 'mesh') throw new Error('Wrong test view');
+  expect(view.model.polygons).toEqual([[0, 1, 2, 3], [0, 1, 4, 5]]);
+  expect(view.model.positions).toEqual(artifact.vertices.map(entry => entry.values));
+  const html = renderToStaticMarkup(<ModelPreviewBody view={view} />);
+  expect(html).toContain('aria-label="OBJ model in its own frame, 2 polygons"');
+  expect(html).toMatch(/Axes as the reading states<\/dt><dd>Unknown<\/dd>/);
+  expect(html).toMatch(/Units as the reading states<\/dt><dd>Unknown<\/dd>/);
+  expect(html).toMatch(/Drawn<\/dt><dd>2 polygons from 6 stored positions<\/dd>/);
+  expect(html).toContain('2, filled as fans for display; the stored faces are unchanged');
+  // A face the reader did not project is counted, not drawn.
+  const partial = modelView('obj', { ...artifact, faces: [artifact.faces[0], { ...artifact.faces[1],
+    projectionEligible: false }] }, {});
+  if (partial.state !== 'mesh') throw new Error('Wrong test view');
+  expect(partial.model.polygons).toHaveLength(1);
+  expect(partial.lines).toContainEqual({ label: 'Not drawn', value: '1 face the reader did not project' });
+  expect(partial.lines).toContainEqual({ label: 'Drawn', value: '1 polygon from 4 stored positions' });
+});
+
+it('a pin mismatch, a malformed result and a model past the cap show words, never a drawing', async () => {
+  const bytes = encoded(gltfArtifact);
+  const status = gltfStatus(bytes, 'c'.repeat(64));
+  const plan = modelPreviewPlan('gltf', status);
+  if (plan.state !== 'read') throw new Error('Wrong test plan');
+  const get = vi.spyOn(api, 'GET').mockResolvedValue(served(bytes));
+  const error = await readModelArtifact('gltf', ids, plan.artifact, new AbortController().signal)
+    .catch((caught: Error) => caught);
+  get.mockRestore();
+  const refused = previewView(plan, { data: undefined, error: error as Error, isPending: false });
+  expect(refused).toEqual({ state: 'words', words: 'The model could not be read from the accepted result: its '
+    + 'bytes differ from the size and SHA-256 the reading states.' });
+  expect(renderToStaticMarkup(<ModelPreviewBody view={refused} />)).not.toContain('role="img"');
+  const broken = { ...gltfArtifact, primitives: [{ ...gltfArtifact.primitives[0], projection: { POSITION: {
+    status: 'available', values: boxPositions }, indices: { status: 'available', values: [0, 1, 99] } } }] };
+  expect(previewView(plan, { data: broken, error: null, isPending: false })).toEqual({ state: 'words',
+    words: 'The accepted result is not in the shape its reader writes, so no preview is drawn.' });
+  expect(previewView(plan, { data: 'not an object', error: null, isPending: false }).state).toBe('words');
+  expect(previewView(plan, { data: undefined, error: null, isPending: true })).toEqual({ state: 'words',
+    words: 'The model is being read from the accepted result.' });
+  expect(modelPreviewPlan('gltf', gltfStatus(bytes, 'c'.repeat(64), 60_000))).toEqual({ state: 'words',
+    words: 'This reading states 60,000 positions; the preview draws a model of at most 50,000, so it is not drawn.' });
+  // A reader with no mesh, or a reading not completed, plans nothing.
+  expect(modelPreviewPlan('dxf', dxfStatus())).toEqual({ state: 'none' });
+  expect(modelPreviewPlan('gltf', { ...status, status: 'running', result: null } as NativeStatus))
+    .toEqual({ state: 'none' });
 });

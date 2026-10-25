@@ -1,8 +1,10 @@
+import { useEffect, useRef, useState } from 'react';
+import { ModelPreview, readPalette, type ModelPreviewInput } from '@ulpin/scene';
 import { Banner, Skeleton, formatDateTime } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
-import { hasConvertedLayers, layerWords, nativeReaderOf, positionWords, readerWords, readingView,
-  type NativeOmissions, type ReadingView, type SummaryLine } from './reading-model';
-import { useNativeOmissions, useNativeStatus } from './useNativeReading';
+import { OWN_FRAME_WORDS, hasConvertedLayers, layerWords, nativeReaderOf, positionWords, readerWords, readingView,
+  type ModelView, type NativeOmissions, type ReadingView, type SummaryLine } from './reading-model';
+import { useModelPreview, useNativeOmissions, useNativeStatus } from './useNativeReading';
 import styles from '../ifc/IfcStructure.module.css';
 
 /**
@@ -12,7 +14,9 @@ import styles from '../ifc/IfcStructure.module.css';
 export function NativeReading({ caseId, item }: { caseId: string; item: IntakeItem }) {
   const reader = nativeReaderOf(item);
   const converted = hasConvertedLayers(item);
-  const status = useNativeStatus(reader, { caseId, sourceId: item.sourceId ?? '', jobId: item.nativeReaderJobId ?? '' });
+  const pins = { caseId, sourceId: item.sourceId ?? '', jobId: item.nativeReaderJobId ?? '' };
+  const status = useNativeStatus(reader, pins);
+  const model = useModelPreview(reader, pins, status.data);
   const omissions = useNativeOmissions(converted, caseId, item.itemId);
   return <section className={styles.panel} aria-label={`Reading of ${item.name}`}>
     <h2 className="ul-heading">Reading · {item.name}</h2>
@@ -26,6 +30,7 @@ export function NativeReading({ caseId, item }: { caseId: string; item: IntakeIt
       {status.error ? <Banner tone="warning">{status.error.message}</Banner> : null}
       {status.data ? <ReadingBody view={readingView(reader, status.data)} /> : null}
     </section> : null}
+    <ModelPreviewBody view={model} />
     {converted ? <section aria-label="Features not written">
       <h3 className="ul-heading">Features not written</h3>
       {omissions.isPending ? <Skeleton /> : null}
@@ -45,6 +50,38 @@ export function ReadingBody({ view }: { view: ReadingView }) {
       <Lines lines={view.hashes} mono />
     </details>
   </div>;
+}
+
+/** S5.21. The model in its own frame, with the reading's axes and units; words when it cannot be drawn. */
+export function ModelPreviewBody({ view }: { view: ModelView }) {
+  if (view.state === 'none') return null;
+  return <section aria-label="Own frame preview">
+    <h3 className="ul-heading">Own frame · display only</h3>
+    {view.state === 'words' ? <p>{view.words}</p> : <div className={styles.tree}>
+      <p className="ul-help">{OWN_FRAME_WORDS}</p>
+      <ModelCanvas model={view.model} label={view.label} />
+      <Lines lines={view.lines} />
+    </div>}
+  </section>;
+}
+
+/** One preview per mount, released on unmount; a browser that cannot draw it gets words instead. */
+function ModelCanvas({ model, label }: { model: ModelPreviewInput; label: string }) {
+  const container = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let preview: ModelPreview;
+    try {
+      preview = new ModelPreview(container.current!, model, readPalette());
+    } catch {
+      setFailed(true);
+      return;
+    }
+    return () => preview.dispose();
+  }, [model]);
+  if (failed) return <p>This browser could not draw the preview; the reading above is unchanged.</p>;
+  return <div ref={container} role="img" aria-label={label} style={{ height: '20rem', overflow: 'hidden',
+    border: '1px solid var(--ui-divider)', borderRadius: 'var(--ui-radius-8)', cursor: 'grab' }} />;
 }
 
 function Lines({ lines, mono = false }: { lines: readonly SummaryLine[]; mono?: boolean }) {
