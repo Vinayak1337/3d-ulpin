@@ -7,7 +7,8 @@ import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
-import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
+import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,
+  recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
 import {readStreamingRaw,readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
@@ -380,6 +381,7 @@ export async function runStreamingVectorJob(jobId:string){
     const kind=streamingFailureKind(error);
     const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
     try{
+      await recordUspJobFailure(attempt,code,error);
       if(kind==='final'){
         // Held parts stay private on refusal; type-first, sequence and tabular prefixes keep their publication.
         await parts.flush();await terminal(input,attempt,code,parts.index,nextFeatureIndex,holdCollection,false,words);

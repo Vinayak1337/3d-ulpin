@@ -90,6 +90,9 @@ test('three processing failures still terminate after more than three successful
       await worker();
       assert.equal(fixture.job.status, index < 3 ? 'queued' : 'failed');
       assert.equal(fixture.job.attempts, index);
+      assert.deepEqual(fixture.attempts.at(-1)?.failure_cause, {
+        errorCode: 'STREAMED_PROFILE_WORKER_ERROR', class: 'Error', message: 'Error detail withheld.',
+      });
       t.mock.timers.tick(2000);
     }
     assert.equal(fixture.job.error, 'STREAMED_PROFILE_WORKER_ERROR');

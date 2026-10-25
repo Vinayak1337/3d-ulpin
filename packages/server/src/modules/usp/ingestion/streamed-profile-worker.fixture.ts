@@ -40,6 +40,11 @@ export function profileWorkerFixture(offset = 0) {
       attempts.push(row);
       return one(row);
     }
+    if (sql.startsWith('UPDATE usp_job_attempts SET failure_cause=')) {
+      const row = attempts.find(row => row.number === values[1]);
+      if (row) row.failure_cause = values[2];
+      return one();
+    }
     if (sql.startsWith('UPDATE usp_job_attempts')) {
       const row = attempts.find(row => row.number === (values[2] ?? values[1])) ?? attempts.at(-1);
       if (row) row.state = /state='(\w+)'/.exec(sql)![1];

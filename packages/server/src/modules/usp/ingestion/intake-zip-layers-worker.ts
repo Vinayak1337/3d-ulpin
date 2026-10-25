@@ -6,7 +6,7 @@ import { readObjectRange } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { claimUspJobAttempt, heartbeatUspJobAttempt, yieldUspJobAttempt,
-  assertUspJobAttemptTx, acceptUspJobAttempt,
+  assertUspJobAttemptTx, acceptUspJobAttempt, recordUspJobFailure,
   type UspJobAttempt } from '../jobs';
 import { assertIntakeDraftTx } from './intake-draft';
 import { IntakeService } from './intake-service';
@@ -121,6 +121,7 @@ export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial
     }
     await complete(input, attempt, kept);
   } catch (error) {
+    await recordUspJobFailure(attempt, 'INTAKE_ZIP_LAYERS_FAILED', error);
     await fail(input, attempt, error);
     throw error;
   }

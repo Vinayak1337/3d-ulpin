@@ -2669,6 +2669,108 @@
       }
     },
     {
+      "id": "usp.job-failure-cause.check",
+      "source": {
+        "path": "database/sql/60-usp/26-job-failure-cause-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3g",
+        "acceptedBase": "1710369c64ae2029ad492123dec4147e48ec1dcf"
+      },
+      "file": "sql/60-usp/26-job-failure-cause-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "jobFailureCauseName",
+          "value": "usp_job_failure_cause_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 57,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.job-failure-cause.schema",
+      "source": {
+        "path": "database/sql/60-usp/27-job-failure-cause-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3g",
+        "acceptedBase": "1710369c64ae2029ad492123dec4147e48ec1dcf"
+      },
+      "file": "sql/60-usp/27-job-failure-cause-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.job-failure-cause.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.job-failure-cause.check",
+      "callMode": "one-query-call",
+      "order": 58,
+      "sha256": "c4d36996577a389248508d28a73966b8adda0cdf50a5e3ae2e037c1f37d17082",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "83378416200801d59891bfe8eee306f20891697244ab211f08930e1ae1e7b4c1"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.job-failure-cause.mark",
+      "source": {
+        "path": "database/sql/60-usp/28-job-failure-cause-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3g",
+        "acceptedBase": "1710369c64ae2029ad492123dec4147e48ec1dcf"
+      },
+      "file": "sql/60-usp/28-job-failure-cause-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.job-failure-cause.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "jobFailureCauseName",
+          "value": "usp_job_failure_cause_001"
+        }
+      ],
+      "guardedBy": "usp.job-failure-cause.check",
+      "callMode": "one-query-call",
+      "order": 59,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
       "id": "ingestion.intake.schema",
       "source": {
         "path": "database/sql/95-ingestion/intake-ledger.sql",
@@ -2685,7 +2787,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 57,
+      "order": 60,
       "sha256": "d9547bf5458beb07024b12c6a4c5ab3a8bd50fbc9720a65035b573c6801f1e65",
       "statements": [
         {
@@ -2747,7 +2849,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 58,
+      "order": 61,
       "sha256": "f4f334fa42f4051064f8c450780f9fd0a3ff13a9ceafb15c609e93ab36ab8daf",
       "statements": [
         {
@@ -2797,7 +2899,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 59,
+      "order": 62,
       "sha256": "66a35a2bb0fd571e941aa7bcbab065269ce65d2d67ffad617621f3988aeeaad2",
       "statements": [
         {
@@ -2847,7 +2949,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 60,
+      "order": 63,
       "sha256": "db74fdcc3b72e558efbced500693e1d3f0494394fe2108caf311eec167509e60",
       "statements": [
         {

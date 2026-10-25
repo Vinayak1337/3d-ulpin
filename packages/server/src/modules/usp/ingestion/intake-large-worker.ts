@@ -11,7 +11,7 @@ import { createSourceCase } from '../../cases/source-cases';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
-  USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
+  recordUspJobFailure, USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
 import { ChunkMappingService } from './chunk-mapping';
 import { caseScopedDestination, intakeCaseArea, intakeDestination, retiredFileAreaWords } from './intake-destination';
 import { assertIntakeDraftTx } from './intake-draft';
@@ -554,6 +554,7 @@ export async function runIntakeLargeJob(jobId: string) {
     if (admissionError) throw admissionError;
     await step(input, attempt);
   } catch (error) {
+    await recordUspJobFailure(attempt, 'INTAKE_LARGE_STEP_FAILED', error);
     await fail(input, attempt, error).catch(() => {/* A newer fence owns the job's durable state. */});
     throw error;
   }
