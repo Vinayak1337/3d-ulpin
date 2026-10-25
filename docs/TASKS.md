@@ -223,7 +223,7 @@ Size S, code only. After: S1.3 run 5. **Status: merged 25 Oct into int3-pre c94a
 
 ### S1.3r A streaming import started while the lane is busy waits instead of being refused
 
-Size S, code only. After: S1.3 run 5. **Status: running 25 Oct (task/s1-3r-stream-queue from int3-pre bac06934).**
+Size S, code only. After: S1.3 run 5. **Status: merged 26 Oct into int3-pre 998cd525 (branch 8c1618e9). Admission no longer counts running imports; the dispatcher's stream lane bounds them. A queue of 16 per case and 64 per service refuses 429 STREAMING_CAPACITY only past it, with plain words; queued jobs still cancel and supersede. The doctor prints queued, busiest-case queued and running against their bounds. Server set 1098 pass, platform 129 pass. Studio words for a queued import deferred (it shows the queued state today).**
 
 - **What:** streaming-vector.ts admission refused at 2 queued plus running imports while the stream lane runs 4. Admission queues the job; the lane bounds running; a named per-case and service queue limit refuses only past it; the doctor shows queued and running against their bounds.
 - **Files:** packages/server/src/modules/usp/ingestion/streaming-vector.ts; dispatch-lanes.ts (one constant); scripts/platform/ingestion-quotas.mjs
