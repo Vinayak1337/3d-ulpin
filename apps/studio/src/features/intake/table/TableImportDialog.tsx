@@ -4,7 +4,7 @@ import { ApiError } from '@ulpin/api-client';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
 import { uploadWords, type UploadProgress } from '../upload-model';
-import { streamedImport, tableFormat } from './retain';
+import { tableFormat } from './retain';
 import { TableRefusal } from './Progress';
 import { jobWords, tablePath, type Opened } from './useFollowTable';
 import { useRetainTable } from './useRetainTable';
@@ -67,32 +67,16 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
     )}>
       <div className={styles.form}>
         <p className="ul-id">{file.name}</p>
-        <Banner tone="info">
-          The file is kept unchanged first, then read as a table; a table of more than 2,000 records is read as a
-          stream. Tables create mapped draft rows, not buildings; nothing enters the registry.
-        </Banner>
-        {streamedImport(file) ? <StreamedHelp workbook={workbook} /> : null}
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>
         {upload ? <p role="status">{uploadWords(upload)}</p> : null}
         {upload?.phase === 'stopped' ? <div><Button onClick={retryUpload}>Retry upload</Button></div> : null}
         {reading ? <p role="status">{reading}</p> : null}
         {existing ? <div className="ul-stack" role="alert">
-          <Banner tone="warning">This file is already read as a table in this batch.</Banner>
+          <Banner tone="warning">Already read as a table in this batch.</Banner>
           <Link to={tablePath(existing)}>Open that table</Link>
         </div> : null}
         {error && !existing ? <TableRefusal error={error} /> : null}
       </div>
     </Dialog>
   );
-}
-
-function StreamedHelp({ workbook }: { workbook: boolean }) {
-  return workbook ? <p className="ul-help">
-    This workbook is above 16 MiB. It is uploaded in parts, kept unchanged, and the sheet you name is read as a
-    stream of up to 1,000,000 records. Formulas are not calculated; a formula's stored result is kept and read as
-    unknown.
-  </p> : <p className="ul-help">
-    This CSV is above 16 MiB. It is uploaded in parts, kept unchanged, and read as a stream of up to
-    1,000,000 records.
-  </p>;
 }

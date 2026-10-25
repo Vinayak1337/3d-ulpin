@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
-import { readBatchCase, readSourceCase, streamedImport, tableSelection } from './retain';
+import { readBatchCase, readSourceCase, tableSelection } from './retain';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -47,14 +46,5 @@ describe('the table selection the officer pins', () => {
       expect(() => tableSelection(xlsx, 'T_18', rows)).toThrow('increasing');
     }
     expect(() => tableSelection(xlsx, '', '4,5')).toThrow('exact sheet');
-  });
-
-  it('streams CSV, XLSX and ODS from 16 MiB and 1 byte', () => {
-    const sized = (name: string, size: number) => Object.defineProperty(new File([], name), 'size', { value: size });
-    expect(streamedImport(sized('register.xlsx', LARGE_UPLOAD_MINIMUM))).toBe(true);
-    expect(streamedImport(sized('register.CSV', LARGE_UPLOAD_MINIMUM))).toBe(true);
-    expect(streamedImport(sized('register.xlsx', LARGE_UPLOAD_MINIMUM - 1))).toBe(false);
-    expect(streamedImport(sized('register.ods', LARGE_UPLOAD_MINIMUM))).toBe(true);
-    expect(streamedImport(sized('register.ODS', LARGE_UPLOAD_MINIMUM - 1))).toBe(false);
   });
 });

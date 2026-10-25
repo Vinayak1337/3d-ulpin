@@ -58,25 +58,13 @@ export function PlacementBody({ caseId, itemId, name, headers, opened, enrol }: 
   opened: boolean; enrol: Enrol;
 }) {
   let body: React.ReactNode;
-  if (itemId) body = <>
+  if (itemId) body = <div className="ul-row">
     <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={headers} opened={opened} />
-    <p className="ul-help">
-      This file is an item of its case&apos;s batch. <Link to={`/studio/work/cases/${caseId}/intake`}>Its line in
-      the batch</Link> says how many rows were prepared and how many were skipped, and why. That GeoJSON file is
-      then taken in as its own item in this batch, and its own line says whether it is on the map.
-    </p>
-  </>;
+    <Link to={`/studio/work/cases/${caseId}/intake`}>Its line in the batch</Link>
+  </div>;
   else body = <>
-    <p className="ul-help">
-      If its rows hold coordinates, this table can be placed on the map as in a batch. It first joins its case&apos;s
-      batch as an item, from the same kept original; no second copy is kept. You then choose the coordinate columns
-      and the coordinate system; none is chosen for you.
-    </p>
     <div><Button variant="soft" disabled={enrol.pending} onClick={enrol.press}>Place on the map</Button></div>
     {enrol.error ? <TableRefusal error={enrol.error} /> : null}
   </>;
-  return <section className="ul-stack" aria-label={`Place ${name} on the map`}>
-    <h2 className="ul-heading">Place on the map</h2>
-    {body}
-  </section>;
+  return <section className="ul-stack" aria-label={`Place ${name} on the map`}>{body}</section>;
 }

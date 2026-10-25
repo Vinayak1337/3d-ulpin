@@ -1,4 +1,4 @@
-import { Banner, Button, Dialog } from '@ulpin/ui';
+import { Button, Dialog } from '@ulpin/ui';
 import { TableRefusal } from './Progress';
 import type { RecipeBody } from './types';
 
@@ -20,15 +20,9 @@ export function RecipeConfirmation({ confirmation, pending, error, confirm, clos
     )}>
       <div className="ul-stack">
         {proposal ? <p>
-          Save {confirmation.body.plan.decisions.length} reasoned column decisions as an unapproved recipe.
-          Approval is a separate step.
-        </p> : <p>Approve recipe revision {confirmation.revision} under the configured local operator.</p>}
-        {proposal ? <p>Columns carrying the shared reason: {confirmation.sharedReasonCount}.</p> : null}
-        <Banner tone="info">
-          Approval lets the server map draft rows and train the learner. It does not create buildings,
-          complete identity, write the registry or place anything on the map.
-        </Banner>
-        <p className="ul-help">The server records the operator; this screen does not choose or impersonate one.</p>
+          Column decisions: {confirmation.body.plan.decisions.length} · with the shared reason:
+          {' '}{confirmation.sharedReasonCount}
+        </p> : <p>Revision {confirmation.revision}</p>}
         {error ? <TableRefusal error={error} /> : null}
       </div>
     </Dialog>

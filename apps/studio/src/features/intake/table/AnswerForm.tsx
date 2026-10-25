@@ -33,15 +33,10 @@ function ColumnAnswers({ profile, mapping, answers, change, record, pending, can
       event.preventDefault();
       if (canRecord) record();
     }}>
-      <p className="ul-help">
-        Choose a meaning and give a reason for every column, including unknown fields.
-        Unchanged targets keep the proposed operation; a changed target copies source literals.
-        The server checks the plan, units and types before recording it.
-      </p>
       <fieldset className={styles.fieldset} disabled={pending}>
-        <div className={`${styles.scroll} ${styles.answers}`} tabIndex={0} aria-label="Column answers, scroll for more">
+        <div className={`${styles.scroll} ${styles.answers}`} tabIndex={0} aria-label="Column answers">
           <table className="ul-table">
-            <thead><tr><th>Column</th><th>Meaning</th><th>Reason for this decision</th></tr></thead>
+            <thead><tr><th>Column</th><th>Meaning</th><th>Reason</th></tr></thead>
             <tbody>{profile.profile.columns.map((column, index) => (
               <ColumnAnswer key={column.name} position={index + 1} header={profile.headers[index] ?? ''}
                 answer={answers[column.name]!} candidates={mapping.questions.find((question) =>
@@ -71,7 +66,7 @@ function ColumnAnswer({ position, header, answer, candidates, change }: {
         <select className="ul-input" aria-label={`Target for column ${position}`} value={answer.target}
           onChange={(event) => change({ ...answer, target: event.target.value as OfficerAnswer['target'] })}>
           <option value="">Choose a meaning</option>
-          {options.first.length ? <optgroup label="Question candidates">
+          {options.first.length ? <optgroup label="Candidates">
             {options.first.map((target) => <option key={target} value={target}>
               {targetDefinition(target).displayLabel}
             </option>)}
@@ -80,7 +75,6 @@ function ColumnAnswer({ position, header, answer, candidates, change }: {
             {targetDefinition(target).displayLabel}
           </option>)}</optgroup>
         </select>
-        {answer.target ? <p className="ul-help">{targetDefinition(answer.target).meaning}</p> : null}
       </td>
       <td><textarea className="ul-input" aria-label={`Reason for column ${position}`} required
         value={answer.reason} maxLength={2000} rows={2}

@@ -8,12 +8,9 @@ const FOLLOW_MS = 2000;
 
 /** TP1, XW1: words for the server job reading a large CSV or workbook while Studio follows it. */
 export function jobWords(job: TableJob, kind: 'CSV' | 'workbook') {
-  if (job.status === 'queued') return `The ${kind} is kept unchanged. Its reading as a table is queued on the server.`;
-  if (job.status === 'running') {
-    return `The server is reading the ${kind} as a stream. A large table takes minutes; the reading continues on ` +
-      'the server if this dialog closes.';
-  }
-  return job.status === 'succeeded' ? 'The table is read. Opening its table page.' : null;
+  if (job.status === 'queued') return `Reading the ${kind}: queued on the server.`;
+  if (job.status === 'running') return `Reading the ${kind} on the server…`;
+  return job.status === 'succeeded' ? 'Opening the table…' : null;
 }
 
 /** TP1: the server reads a large CSV in a job; the same request, sent again, answers that job until it ends. */

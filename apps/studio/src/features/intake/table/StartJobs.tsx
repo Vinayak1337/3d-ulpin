@@ -36,8 +36,8 @@ export function StartJobs({ profile }: { profile: TableProfile }) {
   }, [keys, start.mutate]);
   if (!keys) return null;
   return <div className="ul-stack" role="status">
-    {start.isPending ? <p>Requesting raw-row and mapping jobs…</p> : null}
+    {start.isPending ? <p>Starting jobs…</p> : null}
     {start.error ? <TableRefusal error={start.error} /> : null}
-    {start.error ? <Button onClick={() => start.mutate()}>Retry job admission</Button> : null}
+    {start.error ? <Button onClick={() => start.mutate()}>Retry</Button> : null}
   </div>;
 }

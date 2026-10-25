@@ -102,8 +102,7 @@ describe('published chunks', () => {
 
 describe('rule and data-policy words', () => {
   it('asks for confirmation when a proposed target has a withheld explanation', () => {
-    expect(questionWords('TEACHER_RATIONALE_WITHHELD'))
-      .toBe('The explanation included a value, so it was withheld; confirm the proposed target.');
+    expect(questionWords('TEACHER_RATIONALE_WITHHELD')).toBe('Explanation withheld; confirm the target.');
   });
 
   it('names a source-header rule without presenting it as a measured percentage', () => {
@@ -151,7 +150,7 @@ describe('columns nobody answered', () => {
 });
 
 describe('a column of a table imported without a teacher', () => {
-  const SENTENCE = 'No teacher was available when this table was imported: this column is unmapped.';
+  const SENTENCE = 'Choose a target.';
 
   // The demo's stored job: a model is named as the field's source, the plan proposes no target at confidence 0,
   // and the question carries the code.
@@ -179,9 +178,7 @@ describe('a column of a table imported without a teacher', () => {
     const row = columnRows(profile, copy)[0]!;
     expect(row).toMatchObject({ noAnswer: 'table too wide; mapping teacher not asked', confidence: null });
     expect(isUnmapped(row)).toBe(true);
-    expect(questionWords(row.question!.reason))
-      .toBe('This table is too wide for the mapping teacher, so the teacher was not asked '
-        + 'and the columns are left for the officer.');
+    expect(questionWords(row.question!.reason)).toBe(SENTENCE);
     copy.fieldSources[0]!.source = 'memory';
     copy.fieldSources[0]!.method = 'cache';
     expect(columnRows(profile, copy)[0]!.noAnswer).toBe('table too wide; mapping teacher not asked');

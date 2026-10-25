@@ -25,9 +25,6 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
         <datalist id="table-source-cases">
           {cases.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </datalist>
-        <span className="ul-help">
-          Select a listed case or enter its ID. Site assignment is checked before retention.
-        </span>
       </label> : <label className="ul-field">
         <span className="ul-label">New case name</span>
         <input className="ul-input" value={name} disabled={locked} maxLength={200} required
@@ -45,20 +42,18 @@ export const encodingLabels: Record<NonNullable<Selection['encoding']>, string> 
 function DelimitedSelectionFields({ encoding, setEncoding }: {
   encoding?: string; setEncoding?: (value: string) => void;
 }) {
-  return <>
-    <p className="ul-help">CSV · sheet csv · header row 1</p>
-    {setEncoding ? <label className="ul-field">
-      <span className="ul-label">Officer-stated encoding</span>
+  if (!setEncoding) return null;
+  return (
+    <label className="ul-field">
+      <span className="ul-label">Stated encoding</span>
       <select className="ul-input" value={encoding ?? ''} required
         onChange={(event) => setEncoding(event.target.value)}>
-        <option value="">Choose the encoding stated for this file</option>
+        <option value="">Choose an encoding</option>
         {Object.entries(encodingLabels).map(([value, label]) =>
           <option key={value} value={value}>{label}</option>)}
       </select>
-      <span className="ul-help">UTF-16 LE/BE needs a matching BOM. Other encodings, including Indic legacy
-        encodings, are not supported or inferred. The original stays unchanged.</span>
-    </label> : null}
-  </>;
+    </label>
+  );
 }
 
 /** `sheets` are the sheet names a kept file's card states; without them the officer types the name. */
@@ -77,16 +72,14 @@ export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, se
         {sheets?.length ? <datalist id="table-stated-sheets">
           {sheets.map((name) => <option key={name} value={name} />)}
         </datalist> : null}
-        <span className="ul-help">
-          {sheets?.length ? `The file's card states ${sheets.length === 1 ? 'this sheet' : 'these sheets'}: ` +
-            `${sheets.join(', ')}.` : 'The API cannot list sheets. Enter the name from the workbook.'}
-        </span>
+        {sheets?.length ? <span className="ul-help">
+          {`The file's card states ${sheets.length === 1 ? 'this sheet' : 'these sheets'}: ${sheets.join(', ')}.`}
+        </span> : null}
       </label>
       <label className="ul-field">
         <span className="ul-label">Header row numbers</span>
         <input className="ul-input" aria-label="Header row numbers" value={rows} required
           onChange={(event) => setRows(event.target.value)} />
-        <span className="ul-help">1–5 increasing row numbers, separated by commas.</span>
       </label>
     </div>
   );
