@@ -556,7 +556,7 @@ Size S, this PC: data drive. After: Owner prerequisite: a stable CPython 3.12 ba
 
 ### S5.14 Point reader: thinned batches from LAS/LAZ/COPC up to 1 GiB
 
-Size M, this PC: data drive. After: S5.11 (shared verified-copy helper). Can run in parallel with S5.12, S5.13, S5.17 and S5.18. **Status: running 25 Oct (codex, from int3-pre db2b80e9).**
+Size M, this PC: data drive. After: S5.11 (shared verified-copy helper). Can run in parallel with S5.12, S5.13, S5.17 and S5.18. **Status: merged 25 Oct into int3-pre (pins 739c8da0; NYC COPC whole-cloud sample of 32,709 exact records at step 368 in 3.8 s).**
 
 - **What:** point_batch.py refuses more than 16 MiB or 5 million points, so the real 74 MB NYC COPC (12,036,869 points) is kept, not drawn. Accept up to 1 GiB and 500 million points, and give the batch selection an optional `step`: it reads source points [start, start+count*step) with laspy's chunk iterator and keeps every step-th native record unchanged; batch null becomes a whole-cloud sample of at most 32,768 points. Batches grow to 32,768 points (artifactBytes 2 MiB) and the Studio LAS bound follows. It uses S5.11's verified cache.
 - **Files:** services/geo/geo/point_batch.py:18-21, 27-37 (_batch), 61-70 (_validate_header), 107-129 (_read_native_batch), 132-151; packages/contracts/src/usp/point-batch.ts:5-7 (POINT_BATCH_LIMITS), 24-25 (PointBatchSelectionSchema, optional step); apps/studio/src/features/map/surface/las.ts:5 (LAS_LIMITS.points); services/geo/tests/test_point_batch.py
@@ -565,7 +565,7 @@ Size M, this PC: data drive. After: S5.11 (shared verified-copy helper). Can run
 
 ### S5.15 Surface plan: whole-extent overview first, then at most 64 preview parts, with honest words
 
-Size M, this PC: data drive. After: S5.11 and S5.14 (contracts). Can run in parallel with S5.12, S5.13, S5.17, S5.18 and S5.19. **Status: open.**
+Size M, this PC: data drive. After: S5.11 and S5.14 (contracts). Can run in parallel with S5.12, S5.13, S5.17, S5.18 and S5.19. **Status: running 25 Oct (codex, from int3-pre 739c8da0; server plan and words only; the Studio forecast words follow as a UI step).**
 
 - **What:** intake-surface.ts plans every full-resolution window or 8,192-point batch of the whole original, caps them at 32 or 611, and refuses more than 16 MiB. With S5.11 and S5.14, part 0 becomes the whole-extent overview. Rasters are tiled in 256-px tiles at the smallest power-of-two step that keeps the long side within 2,048 px; points are planned as at most 64 contiguous thinned batches of 32,768 at step ceil(points/2,097,152). Raise jobsPerSource to cover rereads, let part 0 be read before the batch area exists (the existing reread path reads it again under the area), keep legacy items' plans as they are, and say 'a preview at 1:s' or 'every s-th point' in the item words and the Studio forecast rows.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-surface.ts:41-67 (surfaceReader limits and words), 145-150 and 177 (waitsForAreaTx holds only parts after 0), 339-353 (rasterPlan, pointPlan), 376-388 (acceptedHeader), 410-431 (acceptIntakeSurfacePartTx, caps), 534-551 (surfaceWords); packages/contracts/src/usp/intake.ts:598 (INTAKE_SURFACE_LIMITS); packages/contracts/src/usp/raster-window.ts:7 and point-batch.ts:7 (jobsPerSource); apps/studio/src/features/intake/upload-model.ts:77-80, 114-117
