@@ -18,7 +18,7 @@ import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema,
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
-const YIELD_OPERATIONS = new Set(['streamed-profile', 'intake-zip-layers']);
+const YIELD_OPERATIONS = new Set(['streamed-profile', 'intake-zip-layers', 'chunk-mapping']);
 export type UspJobAttempt = { jobId: string; number: number; fence: number; owner: string; leaseUntil: string; inputSha256: string };
 type Attempt = UspJobAttempt;
 
