@@ -5,11 +5,13 @@ import { MemoryRouter } from 'react-router';
 import { expect, it, vi } from 'vitest';
 import captured from '../../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import real from '../../../../../../docs/evidence/gf1/ifc2/real-structures.json';
+import outlined from '../../../../../../docs/evidence/step-5/s5-20/result.json';
 import { createContractValidator } from '../../../local/contract';
 import type { IntakeItem } from '../batch-model';
 import { IntakeTray } from '../IntakeTray';
 import { StructureBody } from './IfcStructure';
-import { isIfcItem, latestIfcJob, structureView, type IfcStatus } from './structure-model';
+import { isIfcItem, latestIfcJob, OUTLINES_MALFORMED, outlineArtifact, outlineDrawing, outlinesView, structureView,
+  type IfcStatus, type OutlinesView } from './structure-model';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
 const openapi = JSON.parse(readFileSync(resolve(root, 'docs/api/openapi.json'), 'utf8'));
@@ -38,7 +40,16 @@ function status(structure: unknown, state = 'completed'): IfcStatus {
       createdAt: '2026-10-21T00:00:00.000Z' } : null } as IfcStatus;
 }
 
-const html = (value: IfcStatus | null) => renderToStaticMarkup(<StructureBody view={structureView(value)} />);
+const html = (value: IfcStatus | null, outlines?: OutlinesView) => renderToStaticMarkup(
+  <StructureBody view={structureView(value)} outlines={outlines} />).replaceAll('&#x27;', "'");
+/** The real AC20-FZK-Haus reading (S5.20 result.json): its structure and storey outlines, copied unchanged. */
+const fzk = outlined.realHouse;
+const withOutlines = (count?: number) => {
+  const body = status(fzk.structure);
+  if (count !== undefined) body.result!.summary.storeyOutlineCount = count;
+  return body;
+};
+const paths = (markup: string) => [...markup.matchAll(/<path d="([^"]*)" fill-rule="evenodd"/g)].map(match => match[1]);
 
 it('reads the real IFC2X3 tree in an officer\'s words: building, storey with stated elevation and unit, spaces', () => {
   const body = status(house.structure);
@@ -121,6 +132,82 @@ it('says in words when there is no reading, a reading in progress, a stop or an 
   delete older.result!.summary.structure;
   expect(validate(statusSchema, older)).toEqual([]);
   expect(html(older)).toContain('read before the structure scan existed');
+});
+
+it("the real AC20-FZK-Haus outlines draw two closed paths beside their storeys, in the file's own frame", () => {
+  const body = withOutlines(2);
+  expect(validate(statusSchema, body)).toEqual([]);
+  expect(outlineArtifact(body)).toBe(body.result!.artifact);
+  const outlines = outlinesView({ storeyOutlines: fzk.storeyOutlines });
+  if (outlines.state !== 'read') throw new Error(outlines.state);
+  expect([...outlines.storeys.keys()]).toEqual([479, 35065]);
+  const markup = html(body, outlines);
+  expect(paths(markup)).toEqual(['M12 10L0 10L0 0L12 0Z', 'M0 0L13 0L13 5.5L13 11L0 11L0 5.5Z']);
+  expect(markup).toContain('viewBox="-0.48 -0.48 12.96 10.96"');
+  expect(markup).toContain("Storey outlines are drawn in the file's own frame (unit: metre, as stated), each fitted "
+    + 'to its own size. They are not placed on the map, and no global transform was applied.');
+  expect(markup).toContain('aria-label="Outline of storey Erdgeschoss · ACID00000001-0000-0000-0000-000000000000 '
+    + `(STEP #479) in the file's own frame, not placed on the map"`);
+  expect(markup).toContain('From IfcSlab <span class="ul-mono">STEP #59290, #59553, #59753</span>');
+  expect(markup.match(/role="img"/g)).toHaveLength(2);
+  expect(markup).not.toMatch(/m²|sq|area/i);
+});
+
+it('a reading or artifact without outlines shows the tree as today', () => {
+  const today = html(status(fzk.structure));
+  expect(outlineArtifact(status(fzk.structure))).toBeNull();
+  expect(outlineArtifact(withOutlines(0))).toBeNull();
+  expect(outlineArtifact({ ...withOutlines(2), status: 'stale' })).toBeNull();
+  const { storeyOutlines: _, ...older } = { storeyOutlines: null, schemaVersion: 'ulpin-native-ifc/1' };
+  expect(outlinesView(older)).toEqual({ state: 'none' });
+  expect(html(withOutlines(2), outlinesView(older))).toBe(today);
+  expect(today).not.toContain('<svg');
+});
+
+it('a not_read outline pass shows its reason; a storey without slab or space says so in words', () => {
+  const notRead = outlinesView({ storeyOutlines: { state: 'not_read', code: 'OUTLINE_LENGTH_UNIT',
+    reason: 'The file does not state one supported length unit.' } });
+  const markup = html(withOutlines(2), notRead);
+  expect(markup).toContain('The storey outlines were not read: The file does not state one supported length unit. '
+    + '<span class="ul-caption ul-mono">OUTLINE_LENGTH_UNIT</span>');
+  expect(markup).not.toContain('<svg');
+  // Test-only variant of the real reading: the upper storey listed as the reader lists one with no slab or space.
+  const [ground] = fzk.storeyOutlines.storeys;
+  const partial = outlinesView({ storeyOutlines: { ...fzk.storeyOutlines, storeys: [ground],
+    withoutOutline: [{ stepId: 35065, reason: 'no_slab_or_space' }] } });
+  const drawn = html(withOutlines(1), partial);
+  expect(paths(drawn)).toHaveLength(1);
+  expect(drawn).toContain('No outline: the file states no slab or space in this storey.');
+});
+
+it('a malformed outline pass shows words and keeps the tree; nothing throws', () => {
+  const good = fzk.storeyOutlines;
+  const [ground] = good.storeys;
+  const openRing = { ...ground, polygons: [{ exterior: ground!.polygons[0]!.exterior.slice(0, -1), interiors: [] }] };
+  for (const storeyOutlines of [
+    'read', null, { ...good, globalTransformApplied: true }, { ...good, frame: 'map' },
+    { ...good, storeys: [openRing] }, { ...good, storeys: [ground, ground] },
+    { ...good, storeys: [{ ...ground, polygons: [{ exterior: [[0, 0], [1, 0], [0, Infinity], [0, 0]],
+      interiors: [] }] }] },
+    { ...good, withoutOutline: [{ stepId: 479, reason: 'no_slab_or_space' }] },
+    { ...good, withoutOutline: [{ stepId: 9, reason: 'guessed' }] }, { ...good, rounding: {} },
+    { state: 'not_read', code: 'OUTLINE_GEOMETRY' },
+  ]) expect(outlinesView({ storeyOutlines })).toEqual({ state: 'words', words: OUTLINES_MALFORMED });
+  expect(outlinesView([])).toEqual({ state: 'words', words: OUTLINES_MALFORMED });
+  const markup = html(withOutlines(2), outlinesView({ storeyOutlines: { ...good, storeys: [openRing] } }));
+  expect(markup).toContain(OUTLINES_MALFORMED);
+  expect(markup).toContain('Erdgeschoss');
+  expect(markup).not.toContain('<svg');
+});
+
+it("a hole is its own subpath for evenodd, and y is flipped inside the outline's own bounds", () => {
+  // test_only, generated here: a square with a square hole; not a reading of any file.
+  const square = (low: number, high: number) => [[low, low], [high, low], [high, high], [low, high], [low, low]] as
+    [number, number][];
+  const drawing = outlineDrawing({ stepId: 1, elementSource: 'IfcSpace', elementStepIds: [2],
+    polygons: [{ exterior: square(100, 110), interiors: [square(102, 104)] }] }, 3);
+  expect(drawing.path).toBe('M0 10L10 10L10 0L0 0ZM2 8L4 8L4 6L2 6Z');
+  expect(drawing.viewBox).toBe('-0.4 -0.4 10.8 10.8');
 });
 
 it('finds the newest native IFC reading of this source only', () => {
