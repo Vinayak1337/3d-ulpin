@@ -155,6 +155,12 @@ export function polygonsOf(geometry: AreaFeature['geometry']): MultiPolygon {
   return [];
 }
 
+/** Ids of the features a package proposed: the map frames them after that package's import. */
+export function packageFeatureIds(features: AreaFeature[], packageId: string | null): ReadonlySet<string> {
+  if (!packageId) return new Set();
+  return new Set(features.filter((feature) => feature.proposalPackageId === packageId).map((feature) => feature.id));
+}
+
 /**
  * How many of the area's recorded features the map draws, from the real counts, so a feature that is not drawn is
  * always counted. A proposal not yet recorded is not counted.

@@ -15,7 +15,7 @@ import { DeleteDialog } from '../manage/DeleteDialog';
 import { RetireAreaDialog } from '../manage/RetireAreaDialog';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { drawnCountNote, polygonsOf, undrawnNote } from './footprints';
+import { drawnCountNote, packageFeatureIds, polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
 import { isAreaLimit, useAreaWindow } from './areaWindow';
 import { WindowEmpty } from './WindowedArea';
@@ -262,6 +262,9 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
   }, [engine, context.area.id]);
 
   useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
+  // The package in the URL frames the map by its own features once drawn; the whole area when none is named.
+  const packageIds = useMemo(() => packageFeatureIds(features, packageId), [features, packageId]);
+  useEffect(() => { engine?.setImportFocus(packageId, packageIds); }, [engine, packageId, packageIds]);
 
   const { onView: readView } = windowed;
   const onView = useCallback(() => { frames.emit(); readView(); }, [frames, readView]);

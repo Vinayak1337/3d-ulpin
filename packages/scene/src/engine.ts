@@ -7,6 +7,7 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
+import { readablePlanBox } from './import-frame';
 import { startProgramWarmUp, type ProgramWarmUp } from './warm-programs';
 import { FLAT_THICKNESS_M, boundsOf, buildingLook, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
 import type { BuildingLook } from './geometry';
@@ -174,6 +175,14 @@ export class SceneEngine {
   private framedBox: Box3 | null = null;
   private importStreaming = false;
   private followImport = false;
+  // The package the map shows, its own feature ids and the readable box of those drawn (null: not yet worked out).
+  private importKey: string | null = null;
+  private importIds: ReadonlySet<string> = new Set();
+  private importBox: Box3 | null = null;
+  // The framed box is the package's own: growth inside it keeps the view.
+  private framedOwn = false;
+  // The officer moved the camera since the running import began: later packages keep their view.
+  private officerMoved = false;
   private hovered: string | null = null;
   private frameRequested = false;
   private disposed = false;
@@ -563,6 +572,7 @@ export class SceneEngine {
     if (this.state.mode !== 'area') return;
     this.cameraKey = cameraKeyOf(this.state);
     this.framedBox = new Box3(new Vector3(minX, 0, -maxY), new Vector3(maxX, 0, -minY));
+    this.framedOwn = false;
     this.frameTarget('area', { bounds: { minX, minY, maxX, maxY }, focusY: 0, extentY: 0 }, false);
   }
 
@@ -784,7 +794,24 @@ export class SceneEngine {
   setImportStreaming(active: boolean): void {
     if (active === this.importStreaming) return;
     this.importStreaming = active;
+    if (active) this.officerMoved = false;
     this.followImport = active && this.state.mode === 'area' && !this.state.buildingId;
+    this.followArrivedContent();
+  }
+
+  /**
+   * The package the map was opened on and the ids of its own features. The area view frames those features once
+   * drawn, not the whole area; a new package moves the view to itself, unless the officer moved the camera since
+   * the running import began.
+   */
+  setImportFocus(key: string | null, ids: ReadonlySet<string>): void {
+    this.importIds = ids;
+    this.importBox = null;
+    if (key !== this.importKey) {
+      this.importKey = key;
+      this.followImport = Boolean(key) && !this.officerMoved && this.state.mode === 'area' && !this.state.buildingId;
+      if (this.followImport) this.framedBox = null;
+    }
     this.followArrivedContent();
   }
 
@@ -812,21 +839,44 @@ export class SceneEngine {
       this.arrivedBox.makeEmpty();
       for (const box of this.arrivalBounds.values()) this.arrivedBox.union(box);
     }
+    this.importBox = null;
   }
 
   private stopFollowingImport() {
     this.followImport = false;
   }
 
+  /** A pointer or wheel on the map: the officer's own camera is kept for the rest of this import. */
+  private officerMovesCamera() {
+    this.officerMoved = true;
+    this.stopFollowingImport();
+  }
+
+  /** The readable part of the shown package's drawn features; null before any of them is drawn. */
+  private importFrame(): Box3 | null {
+    if (this.importIds.size && !this.importBox) {
+      const boxes = [...this.importIds].flatMap((id) => this.arrivalBounds.get(id) ?? []);
+      this.importBox = readablePlanBox(boxes);
+    }
+    return this.importBox && !this.importBox.isEmpty() ? this.importBox.clone() : null;
+  }
+
+  /** What the area view frames: the shown package once drawn, else everything drawn. */
+  private areaFrameBox(): Box3 {
+    return this.importFrame() ?? this.baseBox.clone().union(this.arrivedBox);
+  }
+
   private followArrivedContent() {
     if (this.state.mode !== 'area' || this.state.buildingId || this.flight) return;
-    const box = this.baseBox.clone().union(this.arrivedBox);
+    const own = this.importFrame();
+    const box = own ?? this.baseBox.clone().union(this.arrivedBox);
     if (box.isEmpty()) return;
     if (!this.cameraKey) {
       this.applyCamera(true);
       return;
     }
-    if (!this.followImport || this.framedBox && containsPlanBox(this.framedBox, box)) return;
+    if (!this.followImport) return;
+    if (this.framedBox && containsPlanBox(this.framedBox, box) && (this.framedOwn || !own)) return;
     this.cameraKey = '';
     this.applyCamera(false);
   }
@@ -1673,7 +1723,10 @@ export class SceneEngine {
     const target = this.cameraTarget(mode, buildingId, levelId, finding);
     if (!target) return;
     this.cameraKey = key;
-    if (mode === 'area') this.framedBox = this.baseBox.clone().union(this.arrivedBox);
+    if (mode === 'area') {
+      this.framedOwn = Boolean(this.importFrame());
+      this.framedBox = this.areaFrameBox();
+    }
     this.frameTarget(mode, target, instant);
   }
 
@@ -1794,7 +1847,7 @@ export class SceneEngine {
     const box = new Box3();
     let focusY: number;
     if (mode === 'area') {
-      box.copy(this.baseBox).union(this.arrivedBox);
+      box.copy(this.areaFrameBox());
       focusY = 4;
     } else if (mode === 'level') {
       for (const e of this.entries.values()) if (e.kind === 'space' && e.levelId === levelId) box.union(e.bounds);
@@ -2020,7 +2073,7 @@ export class SceneEngine {
   }
 
   private readonly onPointerDown = (event: PointerEvent) => {
-    this.stopFollowingImport();
+    this.officerMovesCamera();
     this.flight = null;
     this.downAt = { x: event.clientX, y: event.clientY };
   };
@@ -2063,7 +2116,7 @@ export class SceneEngine {
    * (reported with Ctrl) fall through to the controls and zoom.
    */
   private readonly onWheel = (event: WheelEvent) => {
-    this.stopFollowingImport();
+    this.officerMovesCamera();
     this.flight = null;
     if (event.ctrlKey || !this.controls.enabled) return;
     const mouseWheel = event.deltaMode !== 0 || (event.deltaX === 0 && Math.abs(event.deltaY) >= 40 && Number.isInteger(event.deltaY));

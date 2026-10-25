@@ -8,7 +8,7 @@ function fixture(reducedMotion = false) {
   const engine = Object.assign(Object.create(SceneEngine.prototype), {
     programWarmUp: { settled: true },
     state: { mode: 'area' }, options: { reducedMotion }, cameraKey: '', flight: null,
-    baseBox: new Box3(), arrivedBox: new Box3(), arrivalBounds: new Map(), framedBox: null,
+    baseBox: new Box3(), arrivedBox: new Box3(), arrivalBounds: new Map(), importIds: new Set(), framedBox: null,
     buildingInputs: new Map(), buildingQueue: new Map(), buildingBounds: new Map(),
     baseInputs: [], baseNeedsDraw: false, base: new Group(), kerbs: new Group(), raised: [],
     baseEntries: new Map(), baseBatches: new Set(), baseQueue: new Map(), lands: [],
@@ -115,6 +115,100 @@ describe('streaming area camera', () => {
     const fits = vi.spyOn(engine, 'applyCamera');
     arrive(engine, [building('later', 1000)]);
     expect(fits).not.toHaveBeenCalled();
+  });
+});
+
+/** Synthetic test-only squares of `size` metres, `columns` to a row at `pitch` metres from (x, y). */
+function grid(prefix: string, count: number, [x, y]: [number, number], pitch: number, columns: number, size: number) {
+  return Array.from({ length: count }, (_, i): FootprintInput => {
+    const [left, bottom] = [x + (i % columns) * pitch, y + Math.floor(i / columns) * pitch];
+    return {
+      id: `${prefix}-${i}`, heightM: 20, heightState: 'source_supported',
+      polygons: [[[[left, bottom], [left + size, bottom], [left + size, bottom + size], [left, bottom + size],
+        [left, bottom]]]],
+    };
+  });
+}
+
+/** Screen box (normalised, -1 to 1) of a plan box (east, north) under the fixture's 1440 x 900 canvas. */
+function onScreen(engine: ReturnType<typeof fixture>, [minX, minY, maxX, maxY]: number[]) {
+  engine.camera.aspect = 1440 / 900;
+  engine.camera.updateProjectionMatrix();
+  engine.camera.lookAt(engine.controls.target);
+  engine.camera.updateMatrixWorld();
+  const box = new Box3();
+  for (const x of [minX!, maxX!]) {
+    for (const y of [minY!, maxY!]) box.expandByPoint(new Vector3(x, 0, -y).project(engine.camera));
+  }
+  return box;
+}
+
+/** How much of the view a plan box spans on its longer screen axis (1 = edge to edge); 0 when it leaves the view. */
+function viewShare(engine: ReturnType<typeof fixture>, plan: number[]) {
+  const box = onScreen(engine, plan);
+  if (box.min.x < -1 || box.min.y < -1 || box.max.x > 1 || box.max.y > 1) return 0;
+  return Math.max(box.max.x - box.min.x, box.max.y - box.min.y) / 2;
+}
+
+const idsOf = (inputs: FootprintInput[]) => new Set(inputs.map((input) => input.id));
+
+describe('framing an imported package', () => {
+  // A wide base map already drawn, a first package of 2,000 small footprints in one block, a second of 66 elsewhere.
+  const areaRoads: BaseFeatureInput = {
+    id: 'area-roads', kind: 'road', polygons: [[[[0, 0], [6000, 0], [6000, 4000], [0, 4000], [0, 0]]]],
+  };
+  const first = grid('first', 2000, [4000, 2500], 8, 50, 6);
+  const second = grid('second', 66, [1000, 500], 12, 11, 10);
+
+  function importFirst() {
+    const engine = fixture(true);
+    engine.setImportStreaming(true);
+    engine.setBase([areaRoads]);
+    engine.setImportFocus('package-1', idsOf(first));
+    arrive(engine, first);
+    return engine;
+  }
+
+  it('frames the first package by its own footprints, not the area around them', () => {
+    const engine = importFirst();
+    expect(viewShare(engine, [4000, 2500, 4398, 2818])).toBeGreaterThan(0.6);
+  });
+
+  it('moves the view to a second package elsewhere', () => {
+    const engine = importFirst();
+    engine.setImportFocus('package-2', idsOf(second));
+    arrive(engine, [...first, ...second]);
+    expect(viewShare(engine, [1000, 500, 1130, 594])).toBeGreaterThan(0.6);
+    expect(viewShare(engine, [4000, 2500, 4398, 2818])).toBe(0);
+  });
+
+  it('keeps the officer camera for packages arriving after they moved it, until the next import starts', () => {
+    const engine = importFirst();
+    const kept = engine.camera.position.clone();
+    engine.officerMovesCamera(); // what a pointer down or a wheel on the map calls
+    arrive(engine, [...first, ...grid('late', 4, [5000, 3500], 12, 2, 10)]);
+    engine.setImportFocus('package-2', idsOf(second));
+    arrive(engine, [...first, ...second]);
+    expect(engine.camera.position.equals(kept)).toBe(true);
+    engine.setImportStreaming(false);
+    engine.setImportStreaming(true);
+    engine.setImportFocus('package-3', idsOf(second));
+    expect(viewShare(engine, [1000, 500, 1130, 594])).toBeGreaterThan(0.6);
+  });
+
+  it('frames the dense part of a package spread across a city so its footprints stay readable', () => {
+    // The rehearsal's first package spread 2,000 footprints of about 20 m over 5.3 km by 11 km: fitting all of them
+    // left each footprint under two pixels. Synthetic squares of that shape: a scattered grid and one dense block.
+    const scattered = grid('scattered', 1700, [0, 0], 230, 23, 20);
+    const dense = grid('dense', 300, [2000, 6000], 25, 20, 20);
+    const engine = fixture(true);
+    engine.setImportStreaming(true);
+    engine.setImportFocus('package-1', idsOf([...scattered, ...dense]));
+    arrive(engine, [...scattered, ...dense]);
+    expect(viewShare(engine, [2000, 6000, 2495, 6370])).toBeGreaterThan(0);
+    const footprint = onScreen(engine, [2240, 6175, 2260, 6195]);
+    const pixels = (footprint.max.x - footprint.min.x) / 2 * 1440;
+    expect(pixels).toBeGreaterThan(8);
   });
 });
 
