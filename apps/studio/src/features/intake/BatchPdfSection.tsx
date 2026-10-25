@@ -9,6 +9,7 @@ import { useSourceCase } from './table/queries';
 import { createPdfOcrRun, latestPdfJob, pagesToRead, pdfJobs, pdfJobsLeft, pdfNeedsPageCount, pdfNoReadingWords,
   pdfOcrOffer, pdfOcrPageWords, pdfOcrPressWords, pdfOcrWords, readPdfJob, readPdfOcrRuns, readPdfPageCount,
   type OcrPageProgress, type OcrPageRun, type PdfReading } from './pdf-reading';
+import { sizeWords } from './upload-model';
 import styles from './Batch.module.css';
 
 export const isBatchPdf = (item: IntakeItem) => item.format === 'pdf' && Boolean(item.sourceId);
@@ -124,7 +125,7 @@ function SingleOcrPage({ sourceId, count, selected, eligible, choose, pending, r
   return <>
     <p id={helpId}>Choose one page number from this {count}-page PDF. One press reads only that page, up to{' '}
       {DOCUMENT_PAGE_LIMITS.pixels.toLocaleString('en-IN')} pixels. The renderer opens originals of at most{' '}
-      {DOCUMENT_PAGE_LIMITS.pages} pages and {DOCUMENT_PAGE_LIMITS.originalBytes / 1024 ** 2} MiB.</p>
+      {DOCUMENT_PAGE_LIMITS.pages} pages and {sizeWords(DOCUMENT_PAGE_LIMITS.originalBytes)}.</p>
     <label>Page number <input type="number" min={1} max={count} step={1} value={page ?? ''}
       disabled={pending} aria-describedby={helpId} aria-invalid={page !== undefined && !valid}
       onChange={event => choose(event.target.value === ''
