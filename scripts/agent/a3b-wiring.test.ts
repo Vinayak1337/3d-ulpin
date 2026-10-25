@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire, syncBuiltinESMExports } from 'node:module';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { mock, test } from 'node:test';
 import type { PoolClient } from 'pg';
@@ -35,6 +37,7 @@ import { options } from './control-runtime';
 
 const requireServer = createRequire(new URL('../../packages/server/package.json', import.meta.url));
 const { S3Client } = requireServer('@aws-sdk/client-s3');
+const childProcess = requireServer('node:child_process') as typeof import('node:child_process');
 const selection = { format: 'csv' as const, sheet: 'csv', table: null, headerRows: [1] };
 function real(id: string) {
   const asset = developmentManifest().assets.find(item => item.id === id);
@@ -62,7 +65,10 @@ class ProtocolDb {
     if (sql.includes('max(revision)')) return [{ revision: 1 }];
     if (sql.startsWith('SELECT id,family_id,revision,sha256')) return this.sourceExists ? [this.scope.source] : [];
     if (sql.includes('FROM cases')) return [{ id: this.scope.caseId, revision: this.caseRevision, archived: false }];
-    if (sql.includes('FROM sources')) return this.sourceExists ? [this.source] : [];
+    if (sql.includes('FROM sources')) {
+      const qualified = !sql.includes("inspection ? 'manualProfile'") || this.source.inspection?.manualProfile;
+      return this.sourceExists && qualified ? [this.source] : [];
+    }
     if (sql.includes('FROM usp_mapping_recipes')) return this.receipt ? [{ body: this.receipt }] : [];
     if (sql.includes('FROM usp_job_attempts')) return [{ state: 'active', fence: 1, owner: 'control',
       input_sha256: fingerprint(this.input), lease_until: new Date(Date.now() + 180000).toISOString() }];
@@ -99,7 +105,10 @@ class ProtocolDb {
     } else if (sql.startsWith('INSERT INTO operations')) {
       this.operations.set(args[1], { payload_hash: args[2], result: structuredClone(args[3]) });
     } else if (sql.startsWith('INSERT INTO sources(')) this.insertSource(args);
-    else if (sql.startsWith('UPDATE cases SET revision=')) this.caseRevision++;
+    else if (sql.startsWith('UPDATE sources SET mime_type=')) {
+      this.source.mime_type = args[1];
+      Object.assign(this.source.inspection, JSON.parse(args[2]));
+    } else if (sql.startsWith('UPDATE cases SET revision=')) this.caseRevision++;
     else if (sql.startsWith('INSERT INTO jobs(')) this.queuedInput = args[5];
     else if (sql.startsWith('UPDATE usp_mapping_recipes')) this.receipt = structuredClone(args[3]);
     else if (sql.startsWith('INSERT INTO usp_mapping_recipes(')) this.receipt = structuredClone(args[5]);
@@ -163,9 +172,10 @@ async function controls<T>(run: () => Promise<T>) {
   const subject = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
   const path = process.env.ULPIN_TABULAR_LEARNING_DIR;
   const adapter = process.env.ULPIN_MAPPING_TEACHER_ADAPTER;
+  const seed = process.env.ULPIN_TABULAR_LEARNER_SEED;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'local-os:a3b-software-control';
   process.env.ULPIN_MAPPING_TEACHER_ADAPTER = 'manual';
-  const artifactRoot = process.env.ULPIN_AGENT_TASK_ROOT ?? 'E:/BhuAayam-data/task-data/a3b';
+  const artifactRoot = process.env.ULPIN_AGENT_TASK_ROOT ?? join(tmpdir(), 'a3b-wiring');
   process.env.ULPIN_TABULAR_LEARNING_DIR = `${artifactRoot}/controls/${randomUUID()}`;
   try { return await run(); }
   finally {
@@ -176,7 +186,10 @@ async function controls<T>(run: () => Promise<T>) {
     else process.env.ULPIN_TABULAR_LEARNING_DIR = path;
     if (adapter === undefined) delete process.env.ULPIN_MAPPING_TEACHER_ADAPTER;
     else process.env.ULPIN_MAPPING_TEACHER_ADAPTER = adapter;
+    if (seed === undefined) delete process.env.ULPIN_TABULAR_LEARNER_SEED;
+    else process.env.ULPIN_TABULAR_LEARNER_SEED = seed;
     mock.restoreAll();
+    syncBuiltinESMExports();
   }
 }
 function pool(db: ProtocolDb) {
@@ -192,7 +205,8 @@ function objectBytes(bytes: Buffer) {
   mock.method(S3Client.prototype, 'send', async (command: any) => {
     if (command.constructor.name === 'PutObjectCommand') return {};
     assert.equal(command.constructor.name, 'GetObjectCommand');
-    return { Body: { transformToByteArray: async () => bytes } };
+    const body = Object.assign(Readable.from([bytes]), { transformToByteArray: async () => bytes });
+    return { Body: body, ContentLength: bytes.length, ETag: `"${sha256(bytes)}"` };
   });
 }
 
@@ -256,14 +270,21 @@ test('difficult duplicate headers retain positional raw cells without invented g
   }));
 
 test('native XLSX admission reuses selected physical headers and unchanged native bounds', () => controls(async () => {
-  const asset = developmentManifest().assets.find(item => item.family === 'mi-d19');
-  assert(asset);
-  const table = sourceTables(asset)[0];
-  const bytes = readFileSync(asset.original.externalPath);
-  const inventory = inspectTabularSource(bytes, { format: 'xlsx', sheet: table.name, table: null,
-    headerRows: table.headerRows });
-  assert.equal(inventory.headers.length, table.headers.length);
-  assert.equal(sha256(bytes), asset.original.sha256);
+  const previous = process.env.ULPIN_PROFILE_PYTHON;
+  process.env.ULPIN_PROFILE_PYTHON ??= 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
+  try {
+    const asset = developmentManifest().assets.find(item => item.family === 'mi-d19');
+    assert(asset);
+    const table = sourceTables(asset)[0];
+    const bytes = readFileSync(asset.original.externalPath);
+    const inventory = inspectTabularSource(bytes, { format: 'xlsx', sheet: table.name, table: null,
+      headerRows: table.headerRows });
+    assert.equal(inventory.headers.length, table.headers.length);
+    assert.equal(sha256(bytes), asset.original.sha256);
+  } finally {
+    if (previous === undefined) delete process.env.ULPIN_PROFILE_PYTHON;
+    else process.env.ULPIN_PROFILE_PYTHON = previous;
+  }
 }));
 
 test('GIS DTOs remain valid while tabular drafts require explicit plan and selection pins', () => controls(async () => {
@@ -320,6 +341,8 @@ test('existing recipe commands record officer reasons, append approval once and 
     (error: any) => error.code === 'TABULAR_REGISTRY_UNQUALIFIED');
     await assert.rejects(() => learnApprovedTabularTx(f.db as unknown as PoolClient, authored, f.profile, f.source),
       (error: any) => error.code === 'TABULAR_APPROVAL_REQUIRED');
+    // Keep the subprocess boundary offline; exercise artifact validation and SQL recovery, not model quality.
+    const partialFits = offlineLearner();
     // Simulate SQL rollback after complete immutable learning, then recover without a second partial_fit.
     let recovered: any;
     await assert.rejects(() => transaction(async client => {
@@ -332,8 +355,33 @@ test('existing recipe commands record officer reasons, append approval once and 
     const replay = await transaction(client => learnApprovedTabularTx(client, approved, f.profile, f.source));
     assert.deepEqual(replay, learned);
     assertOfficerCheckpoint(learned.model);
+    assert.equal(partialFits.mock.callCount(), 1);
     await assertOfficerReuse(f, learned);
   }));
+
+function offlineLearner() {
+  const seed = join(tabularLearningPaths().root, 'seed');
+  mkdirSync(seed, { recursive: true });
+  writeFileSync(join(seed, 'manifest.json'), JSON.stringify({ modelSha256: fingerprint('protocol-parent') }));
+  process.env.ULPIN_TABULAR_LEARNER_SEED = seed;
+  let partialFitCalls = 0;
+  const spawn = mock.method(childProcess, 'spawnSync', (_command: any, args: any[]) => {
+    partialFitCalls++;
+    assert.deepEqual(args.slice(0, 3), ['-m', 'geo.usp_learning.stage_a', 'online']);
+    const examples = args[args.indexOf('--examples') + 1], out = args[args.indexOf('--out') + 1];
+    const model = join(out, 'v44'), bytes = Buffer.from('protocol checkpoint; not model weights');
+    mkdirSync(model, { recursive: true });
+    writeFileSync(join(model, 'model.npz'), bytes);
+    writeFileSync(join(model, 'manifest.json'), JSON.stringify({ version: 'v44', threshold: null,
+      approvedBatchSha256: sha256(readFileSync(examples)), modelSha256: sha256(bytes),
+      parentModelSha256: fingerprint('protocol-parent'),
+      trainingExamples: readFileSync(examples, 'utf8').trim().split('\n').map(line => JSON.parse(line)) }));
+    writeFileSync(join(model, 'metrics.json'), JSON.stringify({ partialFitCalls }));
+    return { status: 0, stdout: JSON.stringify({ model, version: 'v44' }) } as any;
+  });
+  syncBuiltinESMExports();
+  return spawn;
+}
 
 function assertOfficerCheckpoint(model: string) {
   const manifest = JSON.parse(readFileSync(`${model}/manifest.json`, 'utf8'));
