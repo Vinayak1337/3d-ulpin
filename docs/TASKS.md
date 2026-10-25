@@ -103,7 +103,7 @@ Size S, code only. After: S1.3 run 2. **Status: merged 25 Oct (int3-pre 511da8d4
 - **Tests:** processing-latency, processing, dispatch-heap and dispatch-scratch tests; pnpm typecheck:backend; the section 5 server command
 ### S1.3c One large file's profile no longer blocks every other file's profile
 
-Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3c-profile-admission from 726bb2e8).**
+Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3c-profile-admission from 726bb2e8). First pass (74e0707a) stopped as told: a waiting profile polls in process and holds a stream slot and 512 MiB for its whole wait. Resumed with the design: a profile with no ready chunk gives its slot back and is requeued, the 12-minute wait is measured durably, then the cap rises to 4.**
 
 - **What:** STREAMED_PROFILE_LIMITS.active is 1 across the service, so a large file's profile row stops every other file at profile admission. Raise it to 2, half the stream lane, keeping S1.3b's proof that profiles and raw readers cannot fill the lane; replays for a ZIP beside a long large file and for every profile waiting on raw.
 - **Files:** packages/contracts/src/usp/streamed-profile.ts; streamed-profile tests; processing-latency.test.ts
@@ -705,7 +705,7 @@ Size S, this PC: code. After: S5.22 run 1. **Status: running 25 Oct (codex, task
 
 ### S5.8a DXF count bounds measured on real drawings
 
-Size S, this PC: data drive. After: S5.22 run 1. Before: S5.8. **Status: running 25 Oct (codex, task/s5-8a-dxf-bounds from 726bb2e8).**
+Size S, this PC: data drive. After: S5.22 run 1. Before: S5.8. **Status: running 25 Oct (codex, task/s5-8a-dxf-bounds from 726bb2e8). First pass (2fe1c41c) measured WikiHouse: 25,064 entities, 253,681 tags; the 16 MiB output is full after 28 percent because each tag is written up to three times. Resumed with inspection profile 2 (each tag value once, readers accept 1 and 2), then bounds from the output budget.**
 
 - **What:** The practice-kit WikiHouse drawing (4,519,566 bytes) stops at MAX_ENTITIES 10,000. Measure it and 1_polylines.dxf with test-only raised counts, then set entity, record, point and tag bounds so a 16 MiB drawing stays inside the unchanged memory, time and output budgets with a stated margin, as S5.17 did. DXF_LIMITS follow exactly.
 - **Files:** services/geo/geo/native_dxf.py (bounds); packages/contracts/src/usp/dxf-ingestion.ts (limits); services/geo/tests/test_native_dxf.py
