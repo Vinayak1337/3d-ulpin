@@ -416,15 +416,18 @@ async function queueBatchPdfTx(client: PoolClient, source: IntakeSourceRow,
   const kind = format === 'pdf' ? 'PDF document' : 'Word document';
   const reader = format === 'pdf' ? 'page reader' : 'Word document reader';
   const file = format === 'pdf' ? 'PDF' : 'Word document';
-  if (bytes > DOCUMENT_LIMITS.originalBytes) {
+  const originalLimit = format === 'pdf' ? DOCUMENT_LIMITS.originalBytes : 16 * 1024 ** 2;
+  const bound = format === 'pdf' ? '1 GiB' : sizeWords(originalLimit);
+  if (bytes > originalLimit) {
     await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
       planRef: null, recordsSeen: 0, limitReason: `Kept as a ${kind} (${sizeWords(bytes)}). The ${reader} `
-        + `in a batch reads a ${file} of at most ${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so this one is not read; `
+        + `in a batch reads a ${file} of at most ${bound}, so this one is not read; `
         + 'the original is kept with its SHA-256.' });
     return null;
   }
   const { jobId, status } = await queueBatchDocumentTx(client, item.case_id, source.id, format);
-  const next = documentJobWords(format, status);
+  const next = { ...documentJobWords(format, status) };
+  if (format === 'pdf' && bytes > DOCUMENT_LIMITS.nativeBytes) next.limitReason = textLayerUnread(bytes);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { ...next, planRef: null, recordsSeen: 0 });
   return jobId;
 }
@@ -450,12 +453,10 @@ const ascending = (pages: Iterable<number>) => [...new Set(pages)].sort((a, b) =
 
 /** PL1. The page reader stopped on its byte bound; OCR opens an original within the document bound. */
 function textLayerUnread(sourceBytes: number) {
-  const unread = `The page reader reads a PDF of at most ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, so the text `
-    + 'layer of this one was not read; the original is kept with its SHA-256.';
-  if (sourceBytes > DOCUMENT_LIMITS.originalBytes) return unread;
-  return `${unread} Its pages can be read by OCR from the PDF reading, for a PDF of at most `
-    + `${DOCUMENT_LIMITS.ocrMaxPage} pages; above ${DOCUMENT_LIMITS.ocrBatchPages} pages, choose one page number. `
-    + 'Nothing read is a fact until you confirm it.';
+  const unread = 'Its text layer is not read above 10 MiB; the original is kept with its SHA-256.';
+  if (sourceBytes > DOCUMENT_LIMITS.originalBytes) return `${unread} Page opening is limited to 1 GiB.`;
+  return `${unread} Open its pages to view them or read one page by OCR (up to `
+    + `${DOCUMENT_LIMITS.ocrMaxPage} pages). Nothing read is a fact until you confirm it.`;
 }
 
 /**

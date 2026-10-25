@@ -20,7 +20,8 @@ import fitz
 from PIL import Image
 
 
-MAX_SOURCE_BYTES = 16 * 1024**2
+MAX_SOURCE_BYTES = 1024**3
+MAX_LEGACY_SOURCE_BYTES = 16 * 1024**2
 MAX_SOURCE_PAGES = 8
 # Selected-page profile matches DOCUMENT_PAGE_LIMITS.pages; all other callers retain the eight-page bound.
 MAX_SELECTED_SOURCE_PAGES = 400
@@ -91,20 +92,21 @@ def verify_assets(models: Path, tesseract: Path, tessdata: Path) -> dict[str, An
 
 
 def verify_source(source: Path, expected_sha256: str) -> dict[str, Any]:
-    if not source.is_file() or source.stat().st_size > MAX_SOURCE_BYTES:
+    if not source.is_file() or not 0 < source.stat().st_size <= MAX_SOURCE_BYTES:
         raise SourceOcrError("source_missing_or_over_byte_limit")
     if len(expected_sha256) != 64 or any(c not in "0123456789abcdef" for c in expected_sha256):
         raise SourceOcrError("invalid_expected_source_sha256")
+    digest, count = hashlib.sha256(), 0
     with source.open("rb") as stream:
-        data = stream.read(MAX_SOURCE_BYTES + 1)
-        if stream.read(1):
-            raise SourceOcrError("source_missing_or_over_byte_limit")
-    if len(data) > MAX_SOURCE_BYTES:
-        raise SourceOcrError("source_missing_or_over_byte_limit")
-    actual = hashlib.sha256(data).hexdigest()
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            count += len(block)
+            if count > MAX_SOURCE_BYTES:
+                raise SourceOcrError("source_missing_or_over_byte_limit")
+            digest.update(block)
+    actual = digest.hexdigest()
     if actual != expected_sha256:
         raise SourceOcrError("source_hash_mismatch")
-    return {"bytes": len(data), "sha256": actual}
+    return {"bytes": count, "sha256": actual}
 
 
 def _selection(page: fitz.Page, region: list[float] | None, *,
@@ -183,23 +185,27 @@ def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
                          region: list[float] | None, png_path: Path, *,
                          viewing: bool = False, selected_page: bool = False) -> dict[str, Any]:
     """Render once inside the supervised worker; expose its exact pixel affine."""
-    # Open exactly the bytes we hash. A path hash followed by a second parser
-    # open could cite a replacement file if the path changes between them.
-    if not source.is_file() or source.stat().st_size > MAX_SOURCE_BYTES:
-        raise SourceOcrError("source_missing_or_over_byte_limit")
-    with source.open("rb") as stream:
-        original = stream.read(MAX_SOURCE_BYTES + 1)
-        if stream.read(1):
+    # Selected pages use the private scratch path, with block hashes before the
+    # parser opens and after it closes: refuse changed bytes rather than cite them.
+    # Eight-page callers still open exactly the bounded in-memory bytes they hash.
+    if selected_page:
+        verified = verify_source(source, expected_sha256)
+        document_input = {"filename": str(source)}
+    else:
+        if not source.is_file() or source.stat().st_size > MAX_LEGACY_SOURCE_BYTES:
             raise SourceOcrError("source_missing_or_over_byte_limit")
-    if len(original) > MAX_SOURCE_BYTES:
-        raise SourceOcrError("source_missing_or_over_byte_limit")
-    actual_sha256 = hashlib.sha256(original).hexdigest()
-    if actual_sha256 != expected_sha256:
-        raise SourceOcrError("source_hash_mismatch")
-    verified = {"bytes": len(original), "sha256": actual_sha256}
+        with source.open("rb") as stream:
+            original = stream.read(MAX_LEGACY_SOURCE_BYTES + 1)
+        if len(original) > MAX_LEGACY_SOURCE_BYTES:
+            raise SourceOcrError("source_missing_or_over_byte_limit")
+        actual_sha256 = hashlib.sha256(original).hexdigest()
+        if actual_sha256 != expected_sha256:
+            raise SourceOcrError("source_hash_mismatch")
+        verified = {"bytes": len(original), "sha256": actual_sha256}
+        document_input = {"stream": original, "filetype": "pdf"}
     if isinstance(page_number, bool) or not isinstance(page_number, int) or page_number < 1:
         raise SourceOcrError("invalid_page_number")
-    with fitz.open(stream=original, filetype="pdf") as document:
+    with fitz.open(**document_input) as document:
         if document.xref_length() > 50_000:
             raise SourceOcrError("pdf_object_count_unsupported", unsupported=True)
         if document.needs_pass:
@@ -224,7 +230,7 @@ def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
             if not isinstance(dpi, tuple) or len(dpi) != 2 or min(dpi) <= 0:
                 raise SourceOcrError("render_dpi_unavailable")
             dpi_x, dpi_y = float(dpi[0]), float(dpi[1])
-        return {
+        result = {
             "source": verified,
             "pageNumber": page_number,
             "pageFrame": {"kind": "pdf_display_page_top_left_points", "rotation": 0,
@@ -238,6 +244,9 @@ def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
                        "pngBytes": png_path.stat().st_size,
                        "pngSha256": sha256_file(png_path)},
         }
+    if selected_page and verify_source(source, expected_sha256) != verified:
+        raise SourceOcrError("source_hash_mismatch")
+    return result
 
 
 def rect_value(value: float) -> float:
