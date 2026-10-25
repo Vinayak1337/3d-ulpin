@@ -21,12 +21,13 @@ import { pointSourceTx, enqueuePointBatchTx, pointReaderSha, pointBatchCaptureTx
  */
 type Operation = IntakeSurfaceLocator['operation'];
 type Header = { operation: Operation; crsStated: boolean; authority: string | null;
-  vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number };
+  vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number;
+  preview?: { step: number } };
 type Plan = { version: typeof INTAKE_SURFACE_VERSION; operation: Operation; header: Header | null;
   reread?: { pin: string; parts: number }; admissionIssue?: string; admissionTriedAt?: string };
 type Item = { item_id: string; case_id: string; source_id: string; plan_ref: Plan };
 
-const readers = { 'raster-window': rasterReaderSha, 'point-batch': pointReaderSha };
+const readers = { 'raster-window': () => rasterReaderSha(), 'point-batch': () => pointReaderSha() };
 const mib = (bytes: number) => `${(bytes / 1024 ** 2).toFixed(1).replace(/\.0$/, '')} MiB`;
 const kept = 'so it is not read or on the map; the original is kept with its SHA-256.';
 
@@ -142,7 +143,7 @@ async function sourceRefusalTx(client: PoolClient, item: { case_id: string; sour
   }
 }
 
-/** Before a batch has an area, a vector still drafting may bind one; a part read now would be stale then. */
+/** Later parts wait while a vector may bind an area; the overview can be read now and again under that area. */
 async function waitsForAreaTx(client: PoolClient, caseId: string) {
   return Boolean((await client.query(`SELECT 1 FROM cases c WHERE c.id=$1 AND c.site_id IS NULL AND EXISTS (
     SELECT 1 FROM usp_intake_items i WHERE i.case_id=c.id AND i.family='vector' AND i.placement='undecided'
@@ -175,7 +176,6 @@ async function markRereadTx(client: PoolClient, item: Item, pin: string, now: st
  */
 async function admitSurfaceItemTx(client: PoolClient, item: Item): Promise<boolean> {
   const operation = item.plan_ref.operation;
-  if (await waitsForAreaTx(client, item.case_id)) return false;
   let partIndex: number | undefined;
   try {
     // The case and source authority is taken before the admission lock, in the publishing transaction's order.
@@ -190,11 +190,18 @@ async function admitSurfaceItemTx(client: PoolClient, item: Item): Promise<boole
       ORDER BY p.part_index LIMIT 1 FOR UPDATE OF p`, [item.item_id, ctx.latest, ...now])).rows[0];
     if (!part) return false;
     partIndex = part.part_index as number;
+    if (partIndex !== 0 && await waitsForAreaTx(client, item.case_id)) return false;
     const { partKey: key, ...stored } = part.locator;
     const parsed = IntakeSurfaceLocatorSchema.safeParse(stored);
     if (!parsed.success || parsed.data.operation !== operation)
       throw new AppError(422, 'SURFACE_LOCATOR_INVALID', 'The stored part locator is invalid for its reader.');
-    const locator = parsed.data;
+    let locator = parsed.data;
+    const header = item.plan_ref.header;
+    // Legacy part 0 was a first window or batch, not an overview: its reread must cover that same old area.
+    if (partIndex === 0 && header && !header.preview) locator = operation === 'raster-window'
+      ? { operation, window: { x: 0, y: 0, width: Math.min(256, header.size[0]),
+        height: Math.min(256, header.size[1]) } }
+      : { operation, batch: { start: 0, count: Math.min(8192, header.size[0]) } };
     // Stored part keys keep their original reader; each new admission also pins the reader running now.
     const pin = fingerprint({ context: ctx.context, access: ctx.binding.access, readerSha256: now[2] });
     const jobId = stableUuid(`${INTAKE_SURFACE_VERSION}:${item.item_id}:${ctx.source.revision}:${key}:${pin}`);
@@ -339,21 +346,25 @@ export async function admitIntakeSurfaceParts() {
 
 function rasterPlan(result: RasterWindowResult) {
   const { sourceWidth: width, sourceHeight: height } = result.metadata, side = INTAKE_SURFACE_LIMITS.windowSide;
+  let step = 1;
+  while (Math.ceil(Math.max(width, height) / step) > INTAKE_SURFACE_LIMITS.previewSide) step *= 2;
   const windows: IntakeSurfaceLocator[] = [];
-  for (let y = 0; y < height; y += side) for (let x = 0; x < width; x += side) windows.push({ operation:
-    'raster-window', window: { x, y, width: Math.min(side, width - x), height: Math.min(side, height - y) } });
+  for (let y = 0; y < height; y += side * step) for (let x = 0; x < width; x += side * step) windows.push({
+    operation: 'raster-window', window: { x, y, width: Math.min(side, Math.ceil((width - x) / step)),
+      height: Math.min(side, Math.ceil((height - y) / step)), step } });
   return windows;
 }
 
 function pointPlan(result: PointBatchResult) {
   const total = result.metadata.sourcePointCount, side = INTAKE_SURFACE_LIMITS.batchPoints;
+  const step = Math.max(1, Math.ceil(total / (side * INTAKE_SURFACE_LIMITS.previewParts)));
   const batches: IntakeSurfaceLocator[] = [];
-  for (let start = 0; start < total; start += side) batches.push({ operation: 'point-batch',
-    batch: { start, count: Math.min(side, total - start) } });
+  for (let start = 0; start < total; start += side * step) batches.push({ operation: 'point-batch',
+    batch: { start, count: Math.min(side, Math.ceil((total - start) / step)), step } });
   return batches;
 }
 
-/** Every planned part of a whole original, as its first accepted read found it. Exported for the real-input test. */
+/** Preview parts after the whole-extent part 0, from its accepted source size; also used by the real-input test. */
 export function surfacePlan(result: { operation: 'raster-window'; value: RasterWindowResult }
   | { operation: 'point-batch'; value: PointBatchResult }) {
   return result.operation === 'raster-window' ? rasterPlan(result.value) : pointPlan(result.value);
@@ -374,17 +385,18 @@ type Accepted = { jobId: string; resultSha256: string }
   & ({ operation: 'raster-window'; value: RasterWindowResult }
     | { operation: 'point-batch'; value: PointBatchResult; extent: number[] | null });
 
-function acceptedHeader(accepted: Accepted, planned: number, total: number): Header {
+function acceptedHeader(accepted: Accepted, planned: number, step: number): Header {
   const m = accepted.value.metadata;
   const vertical = { status: m.verticalReferenceStatus, name: m.verticalReference };
+  const preview = { step }, total = planned;
   if (accepted.operation === 'raster-window') {
     const r = accepted.value.metadata;
     return { operation: 'raster-window', crsStated: Boolean(r.sourceCrsWkt), authority: r.sourceCrsAuthority,
-      vertical, size: [r.sourceWidth, r.sourceHeight, r.sourceBands], planned, total };
+      vertical, size: [r.sourceWidth, r.sourceHeight, r.sourceBands], planned, total, preview };
   }
   const p = accepted.value.metadata;
   return { operation: 'point-batch', crsStated: Boolean(p.crsWkt), authority: p.horizontalAuthority, vertical,
-    size: [p.sourcePointCount], planned, total };
+    size: [p.sourcePointCount], planned, total, preview };
 }
 
 /** The accepted read as the part cites it: exact job, result, artifact, locator read and source-frame corners. */
@@ -421,12 +433,12 @@ export async function acceptIntakeSurfacePartTx(client: PoolClient, accepted: Ac
   const plan: Plan = part.plan_ref;
   if (!plan.header) {
     const all = accepted.operation === 'raster-window' ? rasterPlan(accepted.value) : pointPlan(accepted.value);
-    const cap = accepted.operation === 'raster-window' ? RASTER_WINDOW_LIMITS.jobsPerSource
-      : POINT_BATCH_LIMITS.jobsPerSource, planned = Math.min(all.length, cap);
+    const preview = all.slice(0, INTAKE_SURFACE_LIMITS.previewParts), first = preview[0];
+    const step = (first.operation === 'raster-window' ? first.window?.step : first.batch?.step)!;
     const source = { sha256: accepted.value.input.sourceSha256 };
-    await insertPartsTx(client, part.item_id, source, 1, all.slice(1, planned));
+    await insertPartsTx(client, part.item_id, source, 1, preview);
     await client.query('UPDATE usp_intake_items SET plan_ref=$2 WHERE item_id=$1',
-      [part.item_id, { ...plan, header: acceptedHeader(accepted, planned, all.length) }]);
+      [part.item_id, { ...plan, header: acceptedHeader(accepted, 1 + preview.length, step) }]);
   }
   await settleSurfaceItemTx(client, part.item_id);
 }
@@ -544,12 +556,20 @@ function surfaceWords(header: Header | null, state: string, done: number, failed
     + `${header.size[2] === 1 ? '' : 's'}` : `${header.size[0]} points`;
   const parts = `Read ${done} of ${header.planned} ${raster ? 'windows' : 'batches'} (${what}`
     + `${header.authority ? `, ${header.authority}` : ''}).`;
+  let preview = '';
+  if (header.preview) {
+    const step = header.preview.step;
+    const suffix = step % 100 >= 11 && step % 100 <= 13 ? 'th'
+      : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[step % 10] ?? 'th';
+    preview = raster ? ` A preview at 1:${step}${step === 1 ? ' (full resolution)' : ''}.`
+      : ` A preview taking every ${step}${suffix} point.`;
+  }
   const limit = header.total > header.planned ? ` The reader takes at most ${header.planned} parts of one original, `
     + `so ${header.total - header.planned} are not read.` : '';
   const vertical = header.vertical.status === 'known' ? ` Vertical reference stated: ${header.vertical.name}.`
     : ' The file states no vertical reference.';
-  return `${again ? `${again} ` : ''}${parts}${limit}${where ? ` ${where}` : ''}${vertical} Display only: no height, `
-    + 'measurement or record is taken from it.';
+  return `${again ? `${again} ` : ''}${parts}${preview}${limit}${where ? ` ${where}` : ''}${vertical}`
+    + ' Display only: no height, measurement or record is taken from it.';
 }
 
 /**
