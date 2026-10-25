@@ -41,7 +41,7 @@ export function SurfacePreview({ item }: { item: IntakeItem }) {
       {view.reasons.map((reason) => <li key={reason}>Not placed: {reason}</li>)}
     </ul>
     {frame ? <canvas ref={canvas} className={styles.canvas} width={frame.width} height={frame.height} role="img"
-      aria-label={`Read parts of ${item.name}`} /> : null}
+      aria-label={`Read parts of ${item.name}, display only, not on the map`} /> : null}
     {view.notes.map((note) => <p key={note} className="ul-caption">{note}</p>)}
   </section>;
 }

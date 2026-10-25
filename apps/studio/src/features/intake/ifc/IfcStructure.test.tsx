@@ -146,7 +146,8 @@ it("the real AC20-FZK-Haus outlines draw two closed paths beside their storeys, 
   expect(markup).toContain('viewBox="-0.48 -0.48 12.96 10.96"');
   expect(markup).toContain('Storey outlines: own frame (unit: metre, as stated), each to its own size, '
     + 'not on the map.');
-  expect(markup).toContain('aria-label="Outline of storey Erdgeschoss · ACID00000001-0000-0000-0000-000000000000"');
+  expect(markup).toContain('aria-label="Outline of storey Erdgeschoss · ACID00000001-0000-0000-0000-000000000000 '
+    + `in the file's own frame, not placed on the map"`);
   expect(markup).toContain('From IfcSlab <span class="ul-mono">STEP #59290, #59553, #59753</span>');
   expect(markup.match(/role="img"/g)).toHaveLength(2);
   expect(markup).not.toMatch(/m²|sq|area/i);

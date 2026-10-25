@@ -4,10 +4,11 @@
  "method": "JSX text, title/placeholder/aria-label/label/caption/header/alt attributes, and word literals in non-test files, listed before and after; a string present after is kept as state, else cut or shortened",
  "totals": {
   "before": 980,
-  "cut": 88,
-  "shortened": 84,
+  "cut": 85,
+  "shortened": 80,
   "kept": 808,
-  "after": 891
+  "after": 894,
+  "kept_on_review": 7
  },
  "notes": [
   "AddFilesDialog.tsx: title={blocked} on Continue cut; it repeated the one-line Blocked reason below the table.",
@@ -16,7 +17,7 @@
   "run/Progress.tsx and run/TargetList.tsx: rows show readinessLabels (Ready to record) instead of the readinessWords sentences, which stay exported for map/inspector/BuildingCard.",
   "run/Confirm.tsx: the count line repeating the chosen-building count is cut; Recording cannot be undone stays as the one warning before an irreversible press.",
   "aria-describedby removed with its cut help in LayerCrsAnswer, PlaceOnMapDialog, BatchPdfSection and Confirm.",
-  "PlanReadingSection.tsx: the overlay link aria-label (opens a new tab) is dropped; the link text is the name."
+  "Review: verdict keep for the overlay link aria-label (opens a new tab), the storey outline and surface preview aria-labels (own frame, not on the map), the failed OCR page next step, and the reason no package can be recorded; after counts the three literals put back."
  ],
  "strings": [
   {
@@ -1450,8 +1451,8 @@
   {
    "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:48",
    "old": "View candidate room overlay (opens a new tab)",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "View candidate room overlay (opens a new tab)"
   },
   {
    "file": "apps/studio/src/features/intake/PlanReadingSection.tsx:48",
@@ -3286,8 +3287,8 @@
   {
    "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:105",
    "old": "(STEP #${storey.stepId}) in the file's own frame, not placed on the map",
-   "verdict": "shorten",
-   "new": "Outline of storey ${storey.title}"
+   "verdict": "keep",
+   "new": "in the file's own frame, not placed on the map"
   },
   {
    "file": "apps/studio/src/features/intake/ifc/IfcStructure.tsx:109",
@@ -4330,14 +4331,14 @@
   {
    "file": "apps/studio/src/features/intake/pdf-reading.ts:228",
    "old": "Page ${page}: OCR did not read it. ${ocr.issues.join(' ')} Configure",
-   "verdict": "shorten",
-   "new": "Page ${page}: OCR did not read it. ${ocr.issues.join(' ')}"
+   "verdict": "keep",
+   "new": "Page ${page}: OCR did not read it. ${ocr.issues.join(' ')} Configure"
   },
   {
    "file": "apps/studio/src/features/intake/pdf-reading.ts:229",
    "old": "the document OCR runtime or resolve the stated limit before retrying.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "the document OCR runtime or resolve the stated limit, then retry."
   },
   {
    "file": "apps/studio/src/features/intake/pdf-reading.ts:231",
@@ -4708,14 +4709,14 @@
   {
    "file": "apps/studio/src/features/intake/run/Confirm.tsx:57",
    "old": "Only packages with a current review, not being recorded, and with ready buildings or no",
-   "verdict": "shorten",
-   "new": "No package can be recorded yet. (or: Type your acknowledgement before confirming.)"
+   "verdict": "keep",
+   "new": "No package can be recorded: each needs a current review,"
   },
   {
    "file": "apps/studio/src/features/intake/run/Confirm.tsx:58",
    "old": "buildings can be recorded.",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep",
+   "new": "ready buildings or none, and no recording under way."
   },
   {
    "file": "apps/studio/src/features/intake/run/Confirm.tsx:60",
@@ -5410,8 +5411,8 @@
   {
    "file": "apps/studio/src/features/intake/surface/SurfacePreview.tsx:48",
    "old": "Read parts of ${item.name} in the file's own frame, display only, not on the map",
-   "verdict": "shorten",
-   "new": "Read parts of ${item.name}"
+   "verdict": "keep",
+   "new": "Read parts of ${item.name}, display only, not on the map"
   },
   {
    "file": "apps/studio/src/features/intake/surface/preview-model.ts:5",

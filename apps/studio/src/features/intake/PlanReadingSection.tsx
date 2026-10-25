@@ -42,7 +42,8 @@ function PlanOverlayLink({ overlay }: { overlay: NonNullable<NonNullable<Reading
     setHref(url);
     return () => URL.revokeObjectURL(url);
   }, [overlay.base64, overlay.mediaType]);
-  return href ? <a href={href} target="_blank" rel="noreferrer">View candidate room overlay</a> : null;
+  return href ? <a href={href} target="_blank" rel="noreferrer"
+    aria-label="View candidate room overlay (opens a new tab)">View candidate room overlay</a> : null;
 }
 
 function usePlanPress(caseId: string, itemId: string, refresh: () => void) {

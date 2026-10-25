@@ -99,8 +99,10 @@ it('enables zero-selection confirmation only with packages and nonblank acknowle
   expect(enabled).not.toContain('disabled=""');
   expect(renderToStaticMarkup(createElement(Confirm, { ...props, acknowledgement: '   ' })))
     .toContain('disabled=""');
-  expect(renderToStaticMarkup(createElement(Confirm, { ...props, page: { ...page, packages: [] } })))
-    .toContain('disabled=""');
+  const none = renderToStaticMarkup(createElement(Confirm, { ...props, page: { ...page, packages: [] } }));
+  expect(none).toContain('disabled=""');
+  expect(none).toContain('No package can be recorded: each needs a current review, ready buildings or none, and no '
+    + 'recording under way.');
   const details = renderToStaticMarkup(createElement(PackageDetails, { pkg: empty, confirming: true }));
   expect(details).toContain(confirmingPackageWords(empty));
   expect(details).not.toContain('0 ready buildings will be recorded');

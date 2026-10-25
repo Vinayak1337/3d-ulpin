@@ -252,6 +252,8 @@ it('shows a page OCR did not read rather than claiming an empty successful readi
   const page = await render(reading(), { pageCount: 1, runs: [run(unavailable)] });
   try {
     expect(page.root.textContent).toContain('Page 1: OCR did not read it. OCR_RUNTIME_UNAVAILABLE');
+    expect(page.root.textContent).toContain('Configure the document OCR runtime or resolve the stated limit, then '
+      + 'retry.');
     expect(page.root.textContent).not.toContain('candidate passage with');
     expect(page.root.textContent).toContain('1 page will be read.');
   } finally { await page.unmount(); }

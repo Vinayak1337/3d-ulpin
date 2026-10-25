@@ -42,6 +42,7 @@ it('links an overlay only when the stored result includes one', async () => {
   await act(async () => view.render(<PlanReadingSummary readings={withOverlay} />));
   const link = elements(root).find(node => node.tagName === 'A')!;
   expect(link.textContent).toBe('View candidate room overlay');
+  expect(propsOf(link)['aria-label']).toBe('View candidate room overlay (opens a new tab)');
   expect(propsOf(link).href).toBe('blob:test-only-overlay');
   await act(async () => view.unmount());
   expect(revoke).toHaveBeenCalledWith('blob:test-only-overlay');

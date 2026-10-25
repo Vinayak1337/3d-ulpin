@@ -94,7 +94,8 @@ function StoreyOutlineFigure({ storey, outlines }: { storey: StoreyLine; outline
   const { viewBox, path } = outlineDrawing(outline, outlines.decimalPlaces);
   const { source, count, steps } = outlineSources(outline);
   return <figure className={styles.outline}>
-    <svg className={styles.drawing} viewBox={viewBox} role="img" aria-label={`Outline of storey ${storey.title}`}>
+    <svg className={styles.drawing} viewBox={viewBox} role="img" aria-label={`Outline of storey ${storey.title} `
+      + `in the file's own frame, not placed on the map`}>
       <path d={path} fillRule="evenodd" vectorEffect="non-scaling-stroke" />
     </svg>
     <figcaption className="ul-caption">

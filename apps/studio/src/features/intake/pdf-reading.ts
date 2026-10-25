@@ -220,7 +220,8 @@ export function pdfOcrPageWords(page: number, run: OcrPageRun | undefined, progr
   if (progress?.status === 'running') return `Page ${page}: OCR is reading it.`;
   const ocr = run?.reading.ocr;
   if (!run || !ocr) return `Page ${page}: not read.`;
-  if (ocr.outputStatus === 'failed') return `Page ${page}: OCR did not read it. ${ocr.issues.join(' ')}`.trim();
+  if (ocr.outputStatus === 'failed') return `Page ${page}: OCR did not read it. ${ocr.issues.join(' ')} Configure `
+    + 'the document OCR runtime or resolve the stated limit, then retry.';
   const count = run.passages.length;
   return `Page ${page}: read; ${count} candidate ${count === 1 ? 'passage' : 'passages'}, completeness unverified`
     + `${ocr.outputStatus === 'partial' ? ', partial' : ''}.`;

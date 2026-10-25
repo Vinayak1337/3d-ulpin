@@ -29,7 +29,8 @@ export function Confirm(props: Props) {
   const packages = confirmablePackages(props.page);
   const { cards } = props;
   const locked = props.busy || props.uncertain;
-  const allowed = (cards ? cards.length : packages.length) > 0 && props.acknowledgement.trim().length > 0;
+  const typed = props.acknowledgement.trim().length > 0;
+  const allowed = (cards ? cards.length : packages.length) > 0 && typed;
   return <Panel title="One confirmation" className={styles.stack}>
     {cards ? <CardsList cards={cards} close={props.closeCards} locked={locked} /> : <>
       <p>{confirmationWords(props.choice.length)}</p>
@@ -47,8 +48,9 @@ export function Confirm(props: Props) {
       onClick={props.press}>
       {pressLabel(props.busy, props.uncertain, Boolean(cards))}
     </Button>
-    {!allowed && !props.uncertain ? <p>{props.acknowledgement.trim() ? 'No package can be recorded yet.'
-      : 'Type your acknowledgement before confirming.'}</p> : null}
+    {!typed && !props.uncertain ? <p>Type your acknowledgement before confirming.</p> : null}
+    {!allowed && !props.uncertain && typed && !cards ? <p>No package can be recorded: each needs a current review,
+      ready buildings or none, and no recording under way.</p> : null}
     {props.stale ? <p>The current batch could not be read. Refresh it before confirming.</p> : null}
   </Panel>;
 }
