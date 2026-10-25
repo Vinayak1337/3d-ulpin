@@ -1,0 +1,19 @@
+{
+  "task": "S5.13",
+  "planStep": 5,
+  "status": "blocked_scope",
+  "base": "a8c67f15",
+  "blocker": {
+    "path": "scripts/platform/demo-config.mjs",
+    "owned": false,
+    "details": [
+      "Line 81 exports nativeReaders containing only dxf, citygml, gltf and obj.",
+      "readDemoNativeReaders at lines 262-272 rejects keys outside nativeReaders, including ULPIN_IFC_PROFILE.",
+      "demo-native-readers.mjs uses that list for both build and check and validates the new pointer with that reader.",
+      "demo-native-readers.test.mjs explicitly expects ULPIN_IFC_PROFILE to be rejected as an unexpected key."
+    ]
+  },
+  "changes": "Evidence only; stopped before acquisition or implementation as required by the owned-path stop rule.",
+  "checks": "Not run: scope blocker found during initial reading; no build or runtime change attempted.",
+  "next": "Authorize scripts/platform/demo-config.mjs so the shared reader list and path validator can admit IFC."
+}
