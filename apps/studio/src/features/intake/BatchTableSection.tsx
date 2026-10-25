@@ -78,7 +78,7 @@ function ItemTable({ caseId, itemId, name, source }: {
 export function ReadTable({ opened, reading }: { opened: Opened; reading?: TableProfile['profile'] }) {
   const words = reading ? tableReadingWords(reading) : null;
   return <>
-    <p>This file is already read as a table.</p>
+    <p>Read as a table.</p>
     {words ? <p>{words}</p> : null}
     <div><Link className="ul-btn" to={tablePath(opened)}>Open the table</Link></div>
   </>;
@@ -110,10 +110,6 @@ export function ReadAsTableForm({ source, sheet, setSheet, rows, setRows, pendin
     event.preventDefault();
     submit();
   }}>
-    <p className="ul-help">
-      The original stays unchanged. Reading it as a table creates mapped draft rows, not buildings; nothing enters
-      the register or appears on the map.
-    </p>
     <fieldset className={styles.fieldset} disabled={pending}>
       <TableSelectionFields format={source.format} sheets={source.sheets} sheet={sheet} setSheet={setSheet}
         rows={rows} setRows={setRows} />

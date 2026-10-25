@@ -147,7 +147,6 @@ export function answerSummary(choices: Choices, types: readonly string[] = []): 
     height = `${fieldWords(choices.height)}, in ${unit}: ${choices.meaning || 'meaning not stated'}`;
   }
   const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
-    + `Name: ${name}. Height: ${height}. It goes to this batch's area, `
-    + 'or to a new area named after the file if the batch has none.';
+    + `Name: ${name}. Height: ${height}.`;
   return [summary, setAsideWords(choices.kind, types)].filter(Boolean).join(' ');
 }

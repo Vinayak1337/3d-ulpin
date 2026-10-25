@@ -51,28 +51,20 @@ export function PlaceOnMapForm({ headers, form, change, state, submit, close }: 
   const id = useId();
   const columns = headers.map((header, index) => ({ path: String(index), header }));
   if (state.started) return <div className={styles.stack}>
-    <p role="status">
-      Preparing the rows of this table as a GeoJSON file has started. The table&apos;s line in this batch will say
-      how many rows were prepared and how many were skipped, and why. That GeoJSON file is then taken in as its own
-      item in this batch, and its own line says whether it is on the map.
-    </p>
+    <p role="status">Preparing the rows of this table as a GeoJSON file has started.</p>
     <div><Button variant="primary" onClick={close}>Close</Button></div>
   </div>;
   return <form className={styles.stack} onSubmit={event => {
     event.preventDefault();
     submit();
   }}>
-    <p className="ul-help">
-      The original stays unchanged. Each row with usable coordinates becomes one feature of a new GeoJSON file that
-      cites its row; a row without them is skipped and counted, never placed at 0,0. Points stay points.
-    </p>
     <fieldset className={styles.fieldset} disabled={state.busy}>
       <label className="ul-field">
-        <span className="ul-label">How the rows give their place</span>
+        <span className="ul-label">Coordinates from</span>
         <select className="ul-input" value={form.kind}
           onChange={event => change({ kind: event.target.value === 'wkt' ? 'wkt' : 'columns' })}>
-          <option value="columns">An x or longitude column and a y or latitude column</option>
-          <option value="wkt">One column of WKT text</option>
+          <option value="columns">x and y columns</option>
+          <option value="wkt">One WKT column</option>
         </select>
       </label>
       {form.kind === 'columns' ? <>
@@ -81,7 +73,7 @@ export function PlaceOnMapForm({ headers, form, change, state, submit, close }: 
         <FieldChoice label="y or latitude" value={form.y} paths={columns} words={columnWords}
           choose={y => change({ y })} />
         <fieldset className={styles.fieldset}>
-          <legend className="ul-label">Decimal mark in the coordinate cells</legend>
+          <legend className="ul-label">Decimal mark</legend>
           {decimalMarks.map(([mark, words]) => <label key={mark} className="ul-row">
             <input type="radio" name={`${id}-mark`} value={mark} checked={form.decimalMark === mark}
               onChange={() => change({ decimalMark: mark })} />
@@ -91,16 +83,11 @@ export function PlaceOnMapForm({ headers, form, change, state, submit, close }: 
       </> : <>
         <FieldChoice label="WKT column" value={form.column} paths={columns} words={columnWords}
           choose={column => change({ column })} />
-        <p className="ul-help">WKT text is read with a decimal point, as in 12.34.</p>
       </>}
       <label className="ul-field" htmlFor={id}>
-        <span className="ul-label">Coordinate system</span>
-        <input id={id} className="ul-input" value={form.crs} placeholder="EPSG:32643" autoComplete="off"
-          aria-invalid={state.error ? true : undefined} aria-describedby={`${id}-help`}
-          onChange={event => change({ crs: event.target.value })} />
-        <span id={`${id}-help`} className="ul-help">
-          Give the EPSG code these coordinates are in. None is assumed and the coordinates are not converted.
-        </span>
+        <span className="ul-label">EPSG code</span>
+        <input id={id} className="ul-input" value={form.crs} autoComplete="off"
+          aria-invalid={state.error ? true : undefined} onChange={event => change({ crs: event.target.value })} />
       </label>
     </fieldset>
     <div className="ul-row">
@@ -108,6 +95,6 @@ export function PlaceOnMapForm({ headers, form, change, state, submit, close }: 
       <Button type="button" variant="ghost" onClick={close}>Cancel</Button>
     </div>
     {state.error ? <p role="alert" className="ul-error">{state.error}</p> : null}
-    {state.uncertain ? <p className="ul-help">The outcome is not known. The same answer is sent again.</p> : null}
+    {state.uncertain ? <p role="status">The outcome is not known.</p> : null}
   </form>;
 }

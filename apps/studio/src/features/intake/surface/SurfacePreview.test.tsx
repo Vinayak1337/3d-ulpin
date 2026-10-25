@@ -8,7 +8,7 @@ import { createContractValidator } from '../../../local/contract';
 import { decodePart, type DecodeReply } from '../../map/surface/decode';
 import { SURFACE_LIMITS, type IntakeItem, type PartDisplay, type PartPage, type SurfaceIo }
   from '../../map/surface/parts';
-import { DISPLAY_ONLY, opensPreview, SurfacePreviewReader, type PreviewView } from './preview-model';
+import { opensPreview, SurfacePreviewReader, type PreviewView } from './preview-model';
 
 // The parts, display and artifact routes and the decode worker are answered in memory; no record is invented.
 const facts = vi.hoisted(() => ({ io: null as unknown }));
@@ -164,7 +164,7 @@ it('draws a raster\'s not-placed parts as one mosaic at their source corners, wi
   const read = fakeIo(2, (n) => display(n, corners[n]!, notPlaced('no_batch_area', NO_AREA)), picture);
   const view = await mounted(item());
   await settle();
-  expect(view.host.textContent).toContain(`${DISPLAY_ONLY} The read parts are laid out by their corners`);
+  expect(view.host.textContent).toContain('Own frame · display only · ');
   expect(view.host.textContent).toContain(`Not placed: 2 parts: ${NO_AREA}`);
   // 20 by 10 source units fit 640 by 320 canvas pixels; each 2-pixel picture spans 320, its upper left first.
   // The canvas repaints each view the reader publishes, so only its last frame is what is on screen.

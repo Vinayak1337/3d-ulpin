@@ -3,7 +3,7 @@ import { Button, Panel, formatDateTime } from '@ulpin/ui';
 import { ArtefactLinks } from './ArtefactLinks';
 import { failureWords, retryConfirmation } from './api';
 import { Findings } from './Packages';
-import { readinessWords, stageWords, type Confirmation, type Target } from './model';
+import { readinessLabels, stageWords, type Confirmation, type Target } from './model';
 import styles from './Run.module.css';
 
 export function Progress({ caseId, confirmation, refresh, onOpen }: {
@@ -13,7 +13,6 @@ export function Progress({ caseId, confirmation, refresh, onOpen }: {
     <p>{confirmation.counts.recorded} recorded · {confirmation.counts.carded} carded ·
       {' '}{confirmation.counts.stopped} stopped</p>
     <p className={styles.reason}>{confirmation.acknowledgement}</p>
-    <p className="ul-help">{confirmation.reason}</p>
     <Findings counts={confirmation.findingCounts} />
     <Retry caseId={caseId} confirmation={confirmation} refresh={refresh} />
     <ul className={styles.list}>
@@ -23,7 +22,7 @@ export function Progress({ caseId, confirmation, refresh, onOpen }: {
           {target.reason && target.readiness !== 'stopped'
             ? <p className={styles.reason}>{target.reason}</p> : null}
         </details>
-        <p>{readinessWords[target.readiness]}</p>
+        <p>{readinessLabels[target.readiness]}</p>
         {target.readiness === 'stopped' && target.reason ? <p className={styles.reason}>{target.reason}</p> : null}
         <ArtefactLinks target={target} onOpen={() => onOpen(target)} />
       </li>)}

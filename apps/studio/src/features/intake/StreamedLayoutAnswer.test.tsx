@@ -130,7 +130,8 @@ it('authors a sealed-inventory plan for a building and a parcel that the contrac
     'docs/evidence/gf1/lr3/runtime.ts', 'layout', '/** Step 3');
   expect(streamedQuestionBody(inventory, choices, pin, 0, key)?.plan)
     .toEqual(walk(pin.caseId, pin.caseRevision, inventory));
-  expect(streamedSummary(choices)).toBe('Each feature is a building, identified by OBJECTID. Name: not stated.');
+  expect(streamedSummary(choices)).toBe('Each feature is a building, identified by OBJECTID. Name: not stated. '
+    + 'Height: not stated.');
 });
 
 it('makes no plan from an unoffered field, a refused kind or a missing choice', () => {
@@ -230,7 +231,7 @@ it('answers a large item from its streamed inventory and leaves a small item on 
   expect(needsLayoutAnswer(large)).toBe(true);
   const sealed = panel(large);
   expect(sealed).toContain('OBJECTID (whole number)');
-  expect(sealed).toContain('A height is not stated for large files yet; heights stay unknown.');
+  expect(sealed).toContain('Choose what each feature is and which field identifies it.');
   expect(sealed).not.toContain('Does a field give its height?');
   expect(sealed).not.toContain('MIXED_CONTROL');
   const reading = panel(large, { status: 'running', latest: null });
@@ -307,12 +308,10 @@ it('authors a first-part question on the prefix route with its pins, then approv
   expect(choicesFromRecipe(receipt)).toEqual(choices);
 });
 
-it('answers a first-part question from its pinned generation and says the rest is checked as it arrives', () => {
+it('answers a first-part question from its pinned generation and says how many features it covers', () => {
   const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
     layoutProfile: asked('provisional', firstPart) } as IntakeItem;
-  const words = `This layout is taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read. `
-    + 'The rest of the file is checked against it as it arrives, and packages follow when the whole file is read '
-    + 'and checked.';
+  const words = `This layout is taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read.`;
   const open = panel(item, { status: 'running', latest: firstPart });
   expect(open).toContain(words);
   expect(open).toContain('OBJECTID (whole number)');

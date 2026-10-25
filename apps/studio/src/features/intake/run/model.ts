@@ -57,8 +57,7 @@ export function hasNoBuildings(pkg: Package): boolean {
   return Object.values(pkg.counts).every(count => count === 0);
 }
 
-export const nothingDraftedWords = 'No buildings are drafted from this batch yet; '
-  + 'they appear after a map layout is used.';
+export const nothingDraftedWords = 'No buildings are drafted from this batch yet.';
 
 /** No package is listed and every count is 0: nothing is drafted from the batch. */
 export function nothingDrafted(page: TargetPage): boolean {
@@ -66,11 +65,8 @@ export function nothingDrafted(page: TargetPage): boolean {
 }
 
 export function confirmationWords(chosen: number): string {
-  if (chosen === 0) return 'These packages will be recorded in the register. '
-    + 'No building is chosen, so no card is made now.';
-  return `These packages will be recorded in the register. The ${chosen} chosen buildings will then `
-    + 'get a snapshot, an evidence plan and packet, and a property card made and verified without another press. '
-    + 'Every other ready building of these packages will be recorded without a card.';
+  if (chosen === 0) return 'These packages will be recorded; no card is made.';
+  return `These packages will be recorded, with cards for the ${chosen} chosen buildings.`;
 }
 
 /** A cards-only confirmation records nothing and cards its buildings in the order listed. */

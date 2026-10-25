@@ -30,15 +30,14 @@ function QuestionForm({ profile, receipt, command }: { profile: MapProfile; rece
   return <AnswerForm receipt={receipt} command={command}
     summary={choices => answerSummary(choices, profile.geometryTypes)}
     body={choices => questionBody(profile, choices, receipt?.revision ?? 0, '')}
-    help={choices => choices.height ? null : 'No height is stated; heights stay unknown.'}
     fields={(choices, choose) => <QuestionFields profile={profile} choices={choices} choose={choose}
       error={command.state.error} concern={command.state.concern} />} />;
 }
 
 /** The answer's choices, summary and send button; each file kind supplies its own fields and body. */
-export function AnswerForm({ receipt, command, body, summary, help, fields }: {
+export function AnswerForm({ receipt, command, body, summary, fields }: {
   receipt?: Recipe; command: Command; body: (choices: Choices) => LayoutBody | null;
-  summary: (choices: Choices) => string; help: (choices: Choices) => string | null;
+  summary: (choices: Choices) => string;
   fields: (choices: Choices, choose: Choose) => ReactNode;
 }) {
   const [choices, setChoices] = useState<Choices>(() => receipt ? choicesFromRecipe(receipt) : { ...blankChoices });
@@ -51,18 +50,15 @@ export function AnswerForm({ receipt, command, body, summary, help, fields }: {
   const choose = (field: keyof Choices, value: string) => {
     setChoices(current => ({ ...current, [field]: value }));
   };
-  const helpWords = help(choices);
   return <div className={styles.stack}>
     <fieldset className={styles.fieldset} disabled={locked}>
       <legend className="ul-visually-hidden">Your layout answers</legend>
       {fields(choices, choose)}
     </fieldset>
     <p>{summary(choices)}</p>
-    {helpWords ? <p className="ul-help">{helpWords}</p> : null}
     {command.state.phase === 'author' && !command.state.concern && command.state.error ?
       <p role="alert">{command.state.error}</p> : null}
-    {command.state.uncertain ? <p>The outcome is not known. Send the same layout again;
-      your choices and request stay unchanged.</p> : null}
+    {command.state.uncertain ? <p role="status">The outcome is not known.</p> : null}
     <Button variant="primary" disabled={command.state.busy || (!command.state.uncertain && !answer)} onClick={press}>
       {buttonWords(command.state.busy, command.state.uncertain)}
     </Button>

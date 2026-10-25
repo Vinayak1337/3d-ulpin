@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ModelPreview, readPalette, type ModelPreviewInput } from '@ulpin/scene';
 import { Banner, Skeleton, formatDateTime } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
-import { OWN_FRAME_WORDS, hasConvertedLayers, layerWords, nativeReaderOf, positionWords, readerWords, readingView,
+import { hasConvertedLayers, layerWords, nativeReaderOf, positionWords, readerWords, readingView,
   type ModelView, type NativeOmissions, type ReadingView, type SummaryLine } from './reading-model';
 import { useModelPreview, useNativeOmissions, useNativeStatus } from './useNativeReading';
 import styles from '../ifc/IfcStructure.module.css';
@@ -20,10 +20,6 @@ export function NativeReading({ caseId, item }: { caseId: string; item: IntakeIt
   const omissions = useNativeOmissions(converted, caseId, item.itemId);
   return <section className={styles.panel} aria-label={`Reading of ${item.name}`}>
     <h2 className="ul-heading">Reading · {item.name}</h2>
-    <p className="ul-help">
-      What the reader stated about the file, as stored. A reading is a candidate: nothing here is placed on the map,
-      confirmed or recorded in the register.
-    </p>
     {reader ? <section aria-label={`${readerWords[reader]} reading`}>
       <h3 className="ul-heading">{readerWords[reader]} reading</h3>
       {status.isPending ? <Skeleton /> : null}
@@ -58,7 +54,6 @@ export function ModelPreviewBody({ view }: { view: ModelView }) {
   return <section aria-label="Own frame preview">
     <h3 className="ul-heading">Own frame · display only</h3>
     {view.state === 'words' ? <p>{view.words}</p> : <div className={styles.tree}>
-      <p className="ul-help">{OWN_FRAME_WORDS}</p>
       <ModelCanvas model={view.model} label={view.label} />
       <Lines lines={view.lines} />
     </div>}
@@ -79,7 +74,7 @@ function ModelCanvas({ model, label }: { model: ModelPreviewInput; label: string
     }
     return () => preview.dispose();
   }, [model]);
-  if (failed) return <p>This browser could not draw the preview; the reading above is unchanged.</p>;
+  if (failed) return <p>This browser could not draw the preview.</p>;
   return <div ref={container} role="img" aria-label={label} style={{ height: '20rem', overflow: 'hidden',
     border: '1px solid var(--ui-divider)', borderRadius: 'var(--ui-radius-8)', cursor: 'grab' }} />;
 }

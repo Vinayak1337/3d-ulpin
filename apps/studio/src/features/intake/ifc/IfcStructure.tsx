@@ -15,10 +15,6 @@ export function IfcStructure({ caseId, sourceId, name }: { caseId: string; sourc
   const pending = sourceCase.isPending || (Boolean(jobId) && status.isPending);
   return <section className={styles.panel} aria-label={`Structure stated in ${name}`}>
     <h2 className="ul-heading">Structure stated in the file · {name}</h2>
-    <p className="ul-help">
-      Candidates read from the IFC as stated, without geometry. A storey is a level, not a unit.
-      Nothing here is confirmed or recorded in the register.
-    </p>
     {pending ? <Skeleton /> : null}
     {error ? <Banner tone="warning">{error.message}</Banner> : null}
     {!pending && !error ? <StructureBody view={structureView(status.data ?? null)} outlines={outlines} /> : null}
@@ -84,10 +80,7 @@ function OutlinesNote({ outlines }: { outlines: OutlinesView }) {
   if (outlines.state === 'not_read') return <p>
     The storey outlines were not read: {outlines.reason} <span className="ul-caption ul-mono">{outlines.code}</span>
   </p>;
-  return <p className="ul-help">
-    Storey outlines are drawn in the file's own frame ({outlines.unit}), each fitted to its own size. They are not
-    placed on the map, and no global transform was applied. They show shape only; nothing is measured.
-  </p>;
+  return <p>Storey outlines: own frame ({outlines.unit}), each to its own size, not on the map.</p>;
 }
 
 /** One storey's outline beside it in the tree, or the reader's words for why it has none. */
@@ -102,7 +95,7 @@ function StoreyOutlineFigure({ storey, outlines }: { storey: StoreyLine; outline
   const { source, count, steps } = outlineSources(outline);
   return <figure className={styles.outline}>
     <svg className={styles.drawing} viewBox={viewBox} role="img" aria-label={`Outline of storey ${storey.title} `
-      + `(STEP #${storey.stepId}) in the file's own frame, not placed on the map`}>
+      + `in the file's own frame, not placed on the map`}>
       <path d={path} fillRule="evenodd" vectorEffect="non-scaling-stroke" />
     </svg>
     <figcaption className="ul-caption">

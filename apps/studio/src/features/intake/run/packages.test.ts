@@ -98,7 +98,7 @@ it('a package a confirmation is recording is shown "Being recorded" and its buil
     recording: beingRecorded(page.packages), onOpen: () => {}, showMore: () => {}, hasMore: false, loading: false,
     locked: false }));
   expect(list.match(/<input type="checkbox"[^>]*disabled=""/g)).toHaveLength(page.items.length);
-  expect(list.match(/Being recorded with its package; it cannot be chosen now\./g)).toHaveLength(page.items.length);
+  expect(list.match(/Being recorded with its package\./g)).toHaveLength(page.items.length);
 });
 
 it('a recording package leaves the counts and "Next 100 packages" as they were, and is not named', () => {

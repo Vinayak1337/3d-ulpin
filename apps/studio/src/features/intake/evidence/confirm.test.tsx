@@ -209,13 +209,12 @@ it('EV2: holds the press while an included file is still being read and says why
   const typed = { ...ready, choices: acceptRegister(), exclusions: {} };
   const html = form(typed);
   expect(html).toMatch(/<button[^>]*disabled=""[^>]*>\s*Confirm the evidence\s*<\/button>/);
-  expect(html).toContain('late.csv is still being read. Confirm when the reading closes, or exclude it with your '
-    + 'reason to confirm this key without it.');
+  expect(html).toContain('<p>late.csv is still being read.</p>');
   expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Accept every exact single match of this file<\/button>/);
-  expect(html).toContain('late.csv is still being read; its matches can be accepted when the reading closes.');
+  expect(html).toMatch(/late\.csv<\/strong>\. [^<]* Still being read\./);
   const excluded = form({ ...typed, exclusions: ready.exclusions });
   expect(excluded).not.toMatch(/<button[^>]*disabled=""[^>]*>\s*Confirm the evidence\s*<\/button>/);
-  expect(excluded).not.toContain('still being read. Confirm');
+  expect(excluded).not.toContain('<p>late.csv is still being read.</p>');
 });
 
 it('never accepts a conflicting or several candidate; the officer may reject one with reason words', async () => {
@@ -226,7 +225,7 @@ it('never accepts a conflicting or several candidate; the officer may reject one
   const html = form({ ...blankDraft, choices: setReject({}, conflicting, '') });
   expect(html).not.toContain('Accept 12/6');
   expect(html).not.toContain('Accept 12/7');
-  expect(html).toContain('A question, never accepted. Buildings: Feature 14 of outlines.geojson.');
+  expect(html).toContain('Question · Feature 14 of outlines.geojson');
   expect(html).toContain('<input type="checkbox" checked=""/>Reject 12/6');
   expect(html).toContain('Reason for rejecting 12/6');
   const send = vi.fn();
@@ -253,9 +252,9 @@ it('EV2: a newer reading is offered again and can be confirmed against the commi
   const show = (current: EvidencePage) => renderToStaticMarkup(<EvidenceRead page={current} items={items}
     targets={targets} paging={{ outcome: '', first: true, loading: false, setOutcome: vi.fn(),
       firstPage: vi.fn(), nextPage: null }} />);
-  expect(show(newer)).toContain('Confirm its current matches');
+  expect(show(newer)).toContain('A file has a newer evidence reading; confirm its matches again.');
   expect(show({ ...newer, confirmations: [...newer.confirmations, { ...newer.confirmations[0]!,
-    confirmationId: id(93), superseded: false }] })).not.toContain('Confirm its current matches');
+    confirmationId: id(93), superseded: false }] })).not.toContain('A file has a newer evidence reading');
   const choices = acceptFile({}, { itemId: register.itemId, matches: [first], more: false },
     confirmedOf(newer, profile)).choices;
   expect(Object.keys(choices)).toEqual([first.candidateId]);
@@ -326,7 +325,6 @@ it('sends closed sources with every pin, named buildings with fingerprints and t
     const html = form(ready, { result });
     expect(html).toContain(`<p>${note}</p>`);
     expect(html).toContain(`Confirmation <span class="ul-mono">${id(80)}</span>.`);
-    expect(html).toContain('The citations are written when the building is carried to its card.');
   });
 
 it('confirms no additions only when asked, naming the buildings of the key\'s candidates; an unreviewed package is '
@@ -413,7 +411,7 @@ it('accepts a file\'s matches over every page, 100 at a time; the next press con
     const filter = { outcome: 'matched', profileId: profile.profileId, itemId: register.itemId };
     expect(reads).toEqual([filter, { ...filter, cursor: cut }]);
     const html = form({ ...ready, choices: once.choices }, { files: { ...idle, words: { [register.itemId]: words } } });
-    expect(html).toContain(`<p class="ul-help" role="status">${words}</p>`);
+    expect(html).toContain(`<p role="status">${words}</p>`);
     expect(html).toContain('Your decisions: 100 accepted, 0 rejected');
 
     const send = createEvidenceConfirmation(caseId);

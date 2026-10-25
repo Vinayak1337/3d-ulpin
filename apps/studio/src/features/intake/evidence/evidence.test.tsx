@@ -79,7 +79,8 @@ it('offers drafted map items, their card fields, kept CSVs with a header row and
   expect(html).toContain('<option value="/features/*/properties/a~1b~0c" selected="">a/b~c</option>');
   expect(html).not.toContain('/features/*/id');
   expect(html).toContain('<option value="1" selected="">House no</option>');
-  expect(html).toContain('never taken as an official ULPIN');
+  expect(html).toContain('<span class="ul-label">Key namespace, in your words</span>');
+  expect(html).not.toContain('class="ul-help"');
 });
 
 it('TJ1: a table read in the batch is offered with the headers and selection of its read', () => {

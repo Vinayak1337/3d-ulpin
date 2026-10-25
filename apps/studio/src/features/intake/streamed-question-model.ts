@@ -26,7 +26,7 @@ export function inventoryWords(status: ProfileStatus, firstPart = false): string
     return 'This file changed after its fields were inventoried, so its layout question cannot be answered.';
   }
   if (!firstPart && (status.status !== 'sealed' || !status.latest)) {
-    return 'The fields of this file are still being inventoried. The question opens here when every record is read.';
+    return 'The fields of this file are still being inventoried.';
   }
   return null;
 }
@@ -66,9 +66,7 @@ export function streamedIdentifierWords(path: InventoryPath): string {
 /** Words for a question over only the first part of a large file; null when it covers the whole file. */
 export function prefixWords(item: Pick<IntakeItem, 'layoutProfile'>): string | null {
   if (item.layoutProfile?.coverage !== 'provisional') return null;
-  return `This layout is taken from the first ${countWords(item.layoutProfile.recordsSeen)} features read. `
-    + 'The rest of the file is checked against it as it arrives, and packages follow when the whole file is read '
-    + 'and checked.';
+  return `This layout is taken from the first ${countWords(item.layoutProfile.recordsSeen)} features read.`;
 }
 
 /** The item's own words when the complete file no longer matches the first-part layout. */
@@ -120,7 +118,7 @@ export function streamedSummary(choices: Choices, types: readonly string[] = [])
   if (!choices.kind || !choices.identifier) return 'Choose what each feature is and which field identifies it.';
   const name = choices.name ? fieldWords(choices.name) : 'not stated';
   const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
-    + `Name: ${name}.`;
+    + `Name: ${name}. Height: not stated.`;
   return [summary, setAsideWords(choices.kind, types)].filter(Boolean).join(' ');
 }
 

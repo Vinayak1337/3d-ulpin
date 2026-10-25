@@ -87,10 +87,9 @@ function IntakeBatch({ caseId }: { caseId: string }) {
         {remainingFiles.length ? 'Continue with other files' : 'Add files to batch'}
       </Button>
     </header>
-    <p className="ul-help">Originals stay unchanged. These files prepare drafts; recording needs your confirmation.</p>
     <BatchRecords batch={batch} choose={setSelected} />
     {stream.disconnected ? <Banner tone="warning">
-      {stream.error || 'Live updates are disconnected.'} The batch is checked no more than once every five seconds.
+      {stream.error || 'Live updates are disconnected.'}
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
     </Banner> : null}
     <BatchUploadProgress caseId={caseId} refresh={refresh} settled={waiting.settle} />
@@ -148,7 +147,7 @@ function BatchRecords({ batch, choose }: {
       </Button>)}
     </nav> : null}
     {!manifest.isPending && !items.length ? <p role="status">{upload?.pending
-      ? 'The dropped files are being kept; each is listed here once it is kept.'
+      ? 'The dropped files are being kept.'
       : 'No files are enrolled in this batch.'}</p> : null}
   </>;
 }
@@ -158,7 +157,6 @@ function FilesNotAdded({ state }: { state: BatchLocationState | null }) {
   if (!rows.length) return null;
   return <section className={styles.stack} aria-label="Files not added to the tray">
     <h2 className="ul-heading">Files not confirmed in the batch</h2>
-    <p className="ul-help">These are this upload's responses, not files confirmed in the batch.</p>
     <DropOutcomes rows={rows} />
   </section>;
 }

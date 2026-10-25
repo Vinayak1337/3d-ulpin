@@ -34,7 +34,7 @@ export function KindField(props: Answers & { geometryTypes: readonly string[] })
       <select className="ul-input" value={props.choices.kind} aria-describedby={help}
         aria-label="What is each feature in this file?"
         onChange={event => props.choose('kind', event.target.value)}>
-        <option value="">Choose what each feature is</option>
+        <option value="">Choose</option>
         {kinds.map(kind => <option key={kind} value={kind}
           disabled={Boolean(kindRefusal(kind, props.geometryTypes))}>
           {kindWords[kind]}
@@ -58,8 +58,7 @@ function IdentifierField(props: Props) {
     <FieldChoice label="Which field identifies each one?" value={props.choices.identifier} paths={paths}
       choose={value => props.choose('identifier', value)}
       words={path => identifierWords(path, props.choices.kind)} />
-    {!paths.length ? <p>No field of this file can identify its features:
-      every feature needs a different, non-empty text value or whole number.</p> : null}
+    {!paths.length ? <p>No field identifies every feature.</p> : null}
     {refused.length ? <details>
       <summary>Fields that cannot identify each feature</summary>
       <ul>{refused.map(path => <li key={path.path}>
@@ -78,7 +77,7 @@ function HeightFields(props: Props) {
       <label className="ul-field"><span className="ul-label">Height unit</span>
         <select className="ul-input" value={props.choices.unit} required aria-label="Height unit"
           onChange={event => props.choose('unit', event.target.value)}>
-          <option value="">Choose the source unit</option>
+          <option value="">Choose</option>
           <option value="m">Metres</option><option value="ft">Feet</option>
         </select>
       </label>
@@ -88,8 +87,6 @@ function HeightFields(props: Props) {
           onChange={event => props.choose('meaning', event.target.value)} />
       </label>
     </> : null}
-    <p className="ul-help">Say what the height measures and from where, as the publisher states it.
-      Without a unit and a meaning no height is recorded.</p>
     <ChoiceError {...props} field="height" />
   </div>;
 }

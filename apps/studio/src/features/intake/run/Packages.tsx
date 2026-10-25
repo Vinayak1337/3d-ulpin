@@ -17,8 +17,8 @@ const findingWords: Record<string, string> = {
 export type AnchorItems = readonly Pick<IntakeItem, 'itemId' | 'name'>[];
 
 export function Findings({ counts }: { counts: Package['findingCounts'] }) {
-  if (counts === null) return <p className="ul-help">Review findings are not available.</p>;
-  if (Object.keys(counts).length === 0) return <p className="ul-help">The review names no findings.</p>;
+  if (counts === null) return <p>Findings not available.</p>;
+  if (Object.keys(counts).length === 0) return <p>No findings.</p>;
   return <ul className={styles.findings}>
     {Object.entries(counts).map(([code, count]) => <li key={code}>
       {count} · {findingWords[code] ?? <>A finding the Studio has no words for: <span
@@ -42,8 +42,7 @@ export function PackageDetails({ pkg, items, reasons = [], confirming = false }:
     <h3 className="studio-heading">{packageHeading(pkg, items)}</h3>
     <p className="ul-caption">Package <CopyableId id={pkg.packageId} name="package identifier" /></p>
     {pkg.recordingConfirmationId ? <p>Being recorded by confirmation <CopyableId
-      id={pkg.recordingConfirmationId} name="confirmation identifier" />. Its buildings cannot be chosen until that
-      run ends.</p> : null}
+      id={pkg.recordingConfirmationId} name="confirmation identifier" />.</p> : null}
     {review ? <>
       <p>{review}</p>
       {reasonsBesideReview(pkg, reasons).map(reason => <p key={reason}>{reason}</p>)}
@@ -62,7 +61,6 @@ export function Packages({ packages, items, reasons, truncated }: {
   return <div className={styles.stack}>
     {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} items={items}
       reasons={reasons[pkg.packageId]} />)}
-    {truncated ? <p>More packages belong to this batch than this read lists. Only the listed packages can be
-      named in this confirmation.</p> : null}
+    {truncated ? <p>This batch has more packages than listed here.</p> : null}
   </div>;
 }

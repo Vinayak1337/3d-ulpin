@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
-import { DOCUMENT_LIMITS, DOCUMENT_PAGE_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { pageFailure } from '../evidence/citedPage';
 import type { IntakeItem } from './batch-model';
@@ -9,7 +8,6 @@ import { useSourceCase } from './table/queries';
 import { createPdfOcrRun, latestPdfJob, pagesToRead, pdfJobs, pdfJobsLeft, pdfNeedsPageCount, pdfNoReadingWords,
   pdfOcrOffer, pdfOcrPageWords, pdfOcrPressWords, pdfOcrWords, readPdfJob, readPdfOcrRuns, readPdfPageCount,
   type OcrPageProgress, type OcrPageRun, type PdfReading } from './pdf-reading';
-import { sizeWords } from './upload-model';
 import styles from './Batch.module.css';
 
 export const isBatchPdf = (item: IntakeItem) => item.format === 'pdf' && Boolean(item.sourceId);
@@ -76,8 +74,6 @@ function PdfReadingSection({ caseId, item }: { caseId: string; item: IntakeItem 
   const error = ocr.press.error ?? read.error ?? sourceCase.error ?? ocr.pageCount.error ?? ocr.runs.error;
   return <section className={styles.question} aria-label={`PDF reading in ${item.name}`}>
     <h2 className="ul-heading">PDF reading · {item.name}</h2>
-    <p className="ul-help">OCR reads words only. Passages are candidates, not record fields. No rooms, levels or
-      units are created; the original stays unchanged.</p>
     {sourceCase.isPending || (jobId && read.isPending) ? <Skeleton /> : null}
     {!jobId && !sourceCase.isPending ? <p>{pdfNoReadingWords(item.sizeBytes)}</p> : null}
     {status ? <p role="status">{pdfOcrWords(status)}</p> : null}
@@ -98,16 +94,13 @@ function PdfOcrPages({ sourceId, reading, ocr }: {
   const toggle = (page: number, on: boolean) => ocr.setChosen(on ? [...selected, page] : selected
     .filter(value => value !== page));
   return <div className={styles.stack}>
-    {offer.singlePage ? <SingleOcrPage sourceId={sourceId} count={ocr.pageCount.data!} selected={selected}
+    {offer.singlePage ? <SingleOcrPage count={ocr.pageCount.data!} selected={selected}
       eligible={offer.pages} choose={page => ocr.setChosen(page)} pending={ocr.press.isPending} runs={runs}
-      progress={ocr.progress} /> : <>
-    <p>Pick the pages to read. One press reads them one after another, one OCR job per page; a page already read
-      is not read again. OCR opens a PDF of at most {DOCUMENT_LIMITS.ocrBatchPages} pages.</p>
-    <ul aria-label="Pages OCR can read">{offer.pages.map(page => <li key={page}>
-      <label><input type="checkbox" checked={selected.includes(page)} disabled={ocr.press.isPending}
-        onChange={event => toggle(page, event.target.checked)} /> {pdfOcrPageWords(page,
-        runs.find(run => run.page === page), ocr.progress?.page === page ? ocr.progress : undefined)}</label>
-    </li>)}</ul></>}
+      progress={ocr.progress} /> : <ul aria-label="Pages OCR can read">{offer.pages.map(page => <li key={page}>
+        <label><input type="checkbox" checked={selected.includes(page)} disabled={ocr.press.isPending}
+          onChange={event => toggle(page, event.target.checked)} /> {pdfOcrPageWords(page,
+          runs.find(run => run.page === page), ocr.progress?.page === page ? ocr.progress : undefined)}</label>
+      </li>)}</ul>}
     <OcrPress selected={selected.filter(page => offer.pages.includes(page))} runs={runs} left={ocr.left}
       pending={ocr.press.isPending} submit={pages => ocr.press.mutate(pages)} />
     {runs.filter(run => run.reading.ocr?.outputStatus !== 'failed').map(run => <OcrPassages key={run.page}
@@ -115,19 +108,15 @@ function PdfOcrPages({ sourceId, reading, ocr }: {
   </div>;
 }
 
-function SingleOcrPage({ sourceId, count, selected, eligible, choose, pending, runs, progress }: {
-  sourceId: string; count: number; selected: number[]; eligible: number[]; choose: (pages: number[]) => void;
+function SingleOcrPage({ count, selected, eligible, choose, pending, runs, progress }: {
+  count: number; selected: number[]; eligible: number[]; choose: (pages: number[]) => void;
   pending: boolean; runs: OcrPageRun[]; progress: OcrPageProgress | null;
 }) {
   const page = selected[0];
   const valid = page !== undefined && Number.isInteger(page) && eligible.includes(page);
-  const helpId = `pdf-page-help-${sourceId}`;
   return <>
-    <p id={helpId}>Choose one page number from this {count}-page PDF. One press reads only that page, up to{' '}
-      {DOCUMENT_PAGE_LIMITS.pixels.toLocaleString('en-IN')} pixels. The renderer opens originals of at most{' '}
-      {DOCUMENT_PAGE_LIMITS.pages} pages and {sizeWords(DOCUMENT_PAGE_LIMITS.originalBytes)}.</p>
-    <label>Page number <input type="number" min={1} max={count} step={1} value={page ?? ''}
-      disabled={pending} aria-describedby={helpId} aria-invalid={page !== undefined && !valid}
+    <label>Page number, 1 to {count} <input type="number" min={1} max={count} step={1} value={page ?? ''}
+      disabled={pending} aria-invalid={page !== undefined && !valid}
       onChange={event => choose(event.target.value === ''
         ? [] : [Number(event.target.value)])} /></label>
     {page !== undefined ? <p role="status">{valid ? pdfOcrPageWords(page, runs.find(run => run.page === page),
@@ -142,10 +131,9 @@ function OcrPress({ selected, runs, left, pending, submit }: {
 }) {
   const pages = pagesToRead(selected, runs);
   return <>
-    <p>{pdfOcrPressWords(pages.length, left)} Leaving this page stops later pages from being requested; a page
-      already requested finishes.</p>
+    <p>{pdfOcrPressWords(pages.length, left)}</p>
     <div><Button variant="soft" disabled={pending || !pages.length || pages.length > left}
-      onClick={() => submit(pages)}>Read the words on the selected pages (OCR)</Button></div>
+      onClick={() => submit(pages)}>Read the selected pages (OCR)</Button></div>
   </>;
 }
 

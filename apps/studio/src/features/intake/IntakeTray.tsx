@@ -10,8 +10,8 @@ import { StoppedRetry } from './StoppedRetry';
 import { PlanReadingSummary } from './PlanReadingSection';
 import { useSourceCase } from './table/queries';
 import { LayerCrsAnswers } from './LayerCrsAnswer';
-import { crsWords, fileDetailWords, holdsWords, placementWords, stateWords, packagePath, partProgressWords,
-  opensPages, CELL_BATCHES_WORDS, cellBatchPath } from './batch-model';
+import { contentsWords, crsWords, placementWords, stateWords, packagePath, partProgressWords, opensPages,
+  cellBatchPath } from './batch-model';
 import type { CellBatch, IntakeItem } from './batch-model';
 import { isIfcItem } from './ifc/structure-model';
 import { opensReading } from './native/reading-model';
@@ -24,10 +24,8 @@ export function IntakeTray({ caseId, items, packages, choose, refresh }: {
 }) {
   return <div className={styles.tray} tabIndex={0} role="region" aria-label="Files in this batch">
     <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId} columns={[
-      { header: 'File', cell: (item) => <>
-        {item.name}
-        <p className="ul-help">{fileDetailWords(item)}</p>
-      </> },
+      { header: 'File', cell: (item) => item.name },
+      { header: 'Contents', cell: contentsWords },
       { header: 'Status', cell: (item) => <>
         {stateWords(item.state)} · {placementWords(item.placement)}
         {partProgressWords(item) ? <p className="ul-help">{partProgressWords(item)}</p> : null}
@@ -35,7 +33,6 @@ export function IntakeTray({ caseId, items, packages, choose, refresh }: {
         {item.planReadings?.length ? <div className="ul-help"><PlanReadingSummary readings={item.planReadings} /></div>
           : null}
       </> },
-      { header: 'Holds', cell: (item) => holdsWords(item.card) },
       { header: 'Coordinates', cell: (item) => crsWords(item.card) },
       { header: 'Next step', cell: (item) => <NextStep caseId={caseId} item={item} items={items} packages={packages}
         choose={choose} refresh={refresh} /> },
@@ -74,7 +71,6 @@ function NextStep({ caseId, item, items, packages, choose, refresh }: {
 /** CN1. A wide file's cell files, each its own batch with its own layout and cards; none is on this batch's map. */
 function CellBatches({ item, batches }: { item: IntakeItem; batches: readonly CellBatch[] }) {
   return <div className={styles.stack}>
-    <p className="ul-help">{CELL_BATCHES_WORDS}</p>
     <ul aria-label={`Separate cell batches of ${item.name}`}>{batches.map((batch) => {
       const path = cellBatchPath(batch);
       const cell = <span className="ul-mono">{batch.cellKey}</span>;

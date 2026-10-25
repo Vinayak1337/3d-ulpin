@@ -30,17 +30,13 @@ function LayerCrsForm({ caseId, itemId, entry, refresh }: {
     void command.current?.(code);
   }}>
     <label className="ul-field" htmlFor={id}>
-      <span className="ul-label">Coordinate system of {entry.layer}</span>
-      <input id={id} className="ul-input" value={code} placeholder="EPSG:32643" autoComplete="off"
-        aria-invalid={state.error ? true : undefined} aria-describedby={`${id}-help`}
-        onChange={event => setCode(event.target.value)} />
-      <span id={`${id}-help`} className="ul-help">
-        The file states none. Give the EPSG code its coordinates are in.
-      </span>
+      <span className="ul-label">EPSG code of {entry.layer}</span>
+      <input id={id} className="ul-input" value={code} autoComplete="off"
+        aria-invalid={state.error ? true : undefined} onChange={event => setCode(event.target.value)} />
     </label>
     <Button type="submit" variant="soft" disabled={state.busy}
       aria-label={`${layerCrsWords(state)}: ${entry.layer}`}>{layerCrsWords(state)}</Button>
     {state.error ? <p role="alert" className="ul-error">{state.error}</p> : null}
-    {state.uncertain ? <p className="ul-help">The outcome is not known. The same answer is sent again.</p> : null}
+    {state.uncertain ? <p role="status">The outcome is not known.</p> : null}
   </form>;
 }

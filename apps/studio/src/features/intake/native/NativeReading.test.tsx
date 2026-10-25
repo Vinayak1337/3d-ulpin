@@ -197,13 +197,12 @@ it('a Box-shaped glTF result is read once by its pins and drawn as 12 triangles 
   expect(view.model.polygons.every(polygon => polygon.length === 3)).toBe(true);
   const html = renderToStaticMarkup(<ModelPreviewBody view={view} />);
   expect(html).toContain('Own frame · display only');
-  expect(html).toContain('own frame, centred in the view. It is not placed on the map, and nothing is converted, '
-    + 'placed or measured: the drawing is for display only.');
   expect(html).toContain('role="img" aria-label="glTF model in its own frame, 12 triangles"');
   expect(html).toMatch(/Axes as the reading states<\/dt><dd>Right handed Y up<\/dd>/);
   expect(html).toMatch(/Unit as the reading states<\/dt><dd>Metre<\/dd>/);
   expect(html).toMatch(/Drawn<\/dt><dd>12 triangles from 24 stored positions<\/dd>/);
-  expect(html).toMatch(/Node transforms<\/dt><dd>Not applied: the reading keeps them as declarations<\/dd>/);
+  expect(html).toMatch(/Node transforms<\/dt><dd>Not applied<\/dd>/);
+  expect(html).toMatch(/Drawn as up<\/dt><dd>The second value \(y\)<\/dd>/);
   expect(html).not.toMatch(/<button|Confirm|Place on/);
 });
 
@@ -226,7 +225,7 @@ it('an OBJ result with two faces gives two polygons; axes and units stay Unknown
   expect(html).toMatch(/Axes as the reading states<\/dt><dd>Unknown<\/dd>/);
   expect(html).toMatch(/Units as the reading states<\/dt><dd>Unknown<\/dd>/);
   expect(html).toMatch(/Drawn<\/dt><dd>2 polygons from 6 stored positions<\/dd>/);
-  expect(html).toContain('2, filled as fans for display; the stored faces are unchanged');
+  expect(html).toContain('2, filled as fans for display');
   // A face the reader did not project is counted, not drawn.
   const partial = modelView('obj', { ...artifact, faces: [artifact.faces[0], { ...artifact.faces[1],
     projectionEligible: false }] }, {});

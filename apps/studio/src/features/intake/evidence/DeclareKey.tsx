@@ -37,10 +37,6 @@ export function DeclareKeyForm({ choices, declaration, change, pending, submit, 
     event.preventDefault();
     submit();
   }}>
-    <p className="ul-help">
-      A row or a document part is proposed for a building only when it holds the key exactly as the building's field
-      holds it. Every match stays a candidate until you confirm it.
-    </p>
     <fieldset className={batch.fieldset} disabled={pending}>
       <div className={styles.fields}>
         <KeyFields declaration={declaration} change={change} />
@@ -65,14 +61,13 @@ function KeyFields({ declaration, change }: { declaration: Declaration; change: 
       <span className="ul-label">Key namespace, in your words</span>
       <input className="ul-input" value={declaration.namespace} maxLength={150} required
         onChange={(event) => change({ namespace: event.target.value })} />
-      <span className="ul-help">Name the register's identifier. It is never taken as an official ULPIN.</span>
     </label>
     <label className="ul-field">
       <span className="ul-label">Key kind</span>
       <select className="ul-input" value={declaration.kind}
         onChange={(event) => change({ kind: event.target.value as Declaration['kind'] })}>
-        <option value="text">Text, exactly as written</option>
-        <option value="integer">Whole number, its digits as written</option>
+        <option value="text">Text</option>
+        <option value="integer">Whole number</option>
       </select>
     </label>
   </>;
@@ -107,10 +102,8 @@ function TableFields({ tables, declaration, change }: {
   tables: TableChoice[]; declaration: Declaration; change: Change;
 }) {
   return <fieldset className={styles.group}>
-    <legend className="ul-label">Tables: the column holding the key</legend>
-    {tables.length ? null : <p className="ul-help">
-      No kept table of this batch states its header row yet. Read a kept CSV or workbook as a table first.
-    </p>}
+    <legend className="ul-label">Key column of each table</legend>
+    {tables.length ? null : <p>Read a CSV or workbook as a table first.</p>}
     {tables.map((table) => <label key={table.itemId} className="ul-field">
       <span className="ul-label">{table.name}</span>
       <select className="ul-input" value={declaration.columns[table.itemId] ?? ''}
@@ -129,7 +122,7 @@ function DocumentFields({ documents, declaration, change }: {
   const toggle = (itemId: string, on: boolean) => change({ documents: on ? [...declaration.documents, itemId]
     : declaration.documents.filter((id) => id !== itemId) });
   return <fieldset className={styles.group}>
-    <legend className="ul-label">Documents (optional): read their text for the key</legend>
+    <legend className="ul-label">Documents (optional)</legend>
     {documents.map((item) => <label key={item.itemId} className="ul-row">
       <input type="checkbox" checked={declaration.documents.includes(item.itemId)}
         onChange={(event) => toggle(item.itemId, event.target.checked)} />
