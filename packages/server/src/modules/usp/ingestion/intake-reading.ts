@@ -1,6 +1,6 @@
 import { CANONICAL_TARGETS, canonicalTarget, type MappingTarget, type ColumnProfileDocument } from '@ulpin/contracts';
-import { INTAKE_FORMAT_NAMES, type AnyMappingReceipt, type ChunkMappingPayload, type IntakeCard, type IntakeReading,
-  type MappingPlan, type SourceProfile, type IntakeLayoutMemorySchema,
+import { CITYGML_LIMITS, INTAKE_FORMAT_NAMES, type AnyMappingReceipt, type ChunkMappingPayload, type IntakeCard,
+  type IntakeReading, type MappingPlan, type SourceProfile, type IntakeLayoutMemorySchema,
   documentScannedPages, type DocumentResult, type IFCResult }
   from '@ulpin/contracts/usp';
 import { z } from 'zod';
@@ -25,6 +25,7 @@ export type ReadingRow = {
 };
 export type ReadingFacts = {
   native?: Parameters<typeof intakeNativeReadWords>[0] | null;
+  nativeStopped?: { format: 'citygml'; code: 'CITYGML_OUTPUT_LIMIT' };
   ifc?: IFCResult['summary'] | null;
   document?: DocumentResult['native'] | null;
   omissions?: { layer: string; notWritten: number }[];
@@ -235,6 +236,12 @@ function storedHolds(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
   }
   if (facts.native) holds.push(line(intakeNativeReadWords(facts.native)), ...summaryHolds(facts.native),
     line('Object types and vertical reference: not stated in the stored summary.'));
+  if (card?.format === 'citygml' && facts.nativeStopped?.format === 'citygml'
+    && facts.nativeStopped.code === 'CITYGML_OUTPUT_LIMIT') {
+    holds.push(line('The CityGML element inventory is larger than the reader lists '
+      + `(${CITYGML_LIMITS.artifactBytes / (1024 * 1024)} MiB), so its elements are not listed here; `
+      + 'building outlines are read directly from the unchanged original.'));
+  }
   if (facts.ifc) {
     holds.push(line(intakeIfcReadWords(facts.ifc)),
       line('Coordinate system code and vertical reference: not stated in the stored summary.'));
