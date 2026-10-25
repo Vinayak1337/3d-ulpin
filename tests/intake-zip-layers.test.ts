@@ -160,6 +160,10 @@ class Ledger {
     if (sql.startsWith('UPDATE usp_job_attempts SET lease_until')) {
       return latest?.state === 'active' && latest.fence === values[2] ? [{ lease_until: latest.lease_until }] : [];
     }
+    if (sql.startsWith('UPDATE usp_job_attempts SET failure_cause=')) {
+      attempts.find(attempt => attempt.number === values[1]).failure_cause = values[2];
+      return [];
+    }
     if (sql.startsWith('UPDATE usp_job_attempts SET state=')) {
       latest.state = /state='(\w+)'/.exec(sql)![1];
       return [];
@@ -553,6 +557,9 @@ test('a job that fails as a whole writes its code only, and enrolling again queu
     assert.equal(retained.length, 0);
     assert.deepEqual([ledger.job(jobId).status, ledger.job(jobId).error], ['failed', 'INTAKE_ZIP_LAYERS_FAILED']);
     assert.equal(ledger.attempts[0].state, 'fenced');
+    assert.deepEqual(ledger.attempts[0].failure_cause, {
+      errorCode: 'INTAKE_ZIP_LAYERS_FAILED', class: 'Error', message: 'Error detail withheld.',
+    });
     const reason = ledger.rows.get(ledger.itemId).limit_reason;
     assert.equal(reason, stopped('INTAKE_ZIP_LAYERS_FAILED'));
     assert.doesNotMatch(reason, /connection lost/);

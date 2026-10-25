@@ -12,6 +12,7 @@ import {ObjInputSchema} from '../../../../contracts/src/usp/obj-ingestion';
 import {GltfInputSchema} from '../../../../contracts/src/usp/gltf-ingestion';
 import {KMLInputSchema} from '../../../../contracts/src/usp/kml-ingestion';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
+import { safeWorkerCause } from '../../infrastructure/worker-failure';
 import { appendUspOutboxTx } from './commands';
 import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, AnyStreamingInputSchema,
   StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema, PointBatchInputSchema, CityJSONInputSchema, IFCInputSchema, DXFInputSchema } from '@ulpin/contracts/usp';
@@ -21,6 +22,23 @@ const MAX_ATTEMPTS = 3;
 const YIELD_OPERATIONS = new Set(['streamed-profile', 'intake-zip-layers', 'chunk-mapping']);
 export type UspJobAttempt = { jobId: string; number: number; fence: number; owner: string; leaseUntil: string; inputSha256: string };
 type Attempt = UspJobAttempt;
+
+/** Best-effort diagnostics on the exact attempt; never block the existing retry or terminal failure path. */
+export async function recordUspJobFailure(attempt: Attempt, code: string, error: unknown) {
+  try {
+    const cause = safeWorkerCause(error);
+    if (!cause) return;
+    await transaction(async client => {
+      await assertUspJobAttemptTx(client, attempt);
+      await client.query('UPDATE usp_job_attempts SET failure_cause=$3 WHERE job_id=$1 AND number=$2',
+        [attempt.jobId, attempt.number, { errorCode: code, ...cause }]);
+    });
+  } catch (failure) {
+    const rawCode = (failure as { code?: unknown } | null)?.code;
+    const errorCode = typeof rawCode === 'string' && /^[A-Z0-9_]{1,40}$/.test(rawCode) ? rawCode : 'UNKNOWN_ERROR';
+    console.warn(`Job ${attempt.jobId} attempt ${attempt.number} cause write failed (${errorCode}).`);
+  }
+}
 
 /** Attach immutable USP input pins to an existing logical job, never creating a second broker. */
 export async function registerUspJobInputTx(client: PoolClient, jobId: string,

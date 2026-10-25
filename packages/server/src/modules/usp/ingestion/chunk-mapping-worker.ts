@@ -7,7 +7,7 @@ import {AppError,conflict} from '../../../infrastructure/errors';
 import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,yieldUspJobAttempt,
-  type UspJobAttempt} from '../jobs';
+  recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {AdaptiveMappingService,caseOriginalTeacherGate} from './adaptive-mapping-service';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
@@ -454,8 +454,11 @@ export async function runChunkMappingJob(jobId:string){
   }catch(error){
     const code=error instanceof AppError?error.code:'MAPPING_WORKER_ERROR';
     const stale=error instanceof AppError&&[403,404,409].includes(error.status);
-    try{if(stale)await terminal(input,attempt,'MAPPING_CONTEXT_STALE',true);
-      else if(attempt.number>=3||error instanceof AppError&&[413,422].includes(error.status))await terminal(input,attempt,code);
+    try{
+      await recordUspJobFailure(attempt,code,error);
+      const spent=Number((await query('SELECT attempts FROM jobs WHERE id=$1',[jobId])).rows[0]?.attempts??3);
+      if(stale)await terminal(input,attempt,'MAPPING_CONTEXT_STALE',true);
+      else if(spent>=3||error instanceof AppError&&[413,422].includes(error.status))await terminal(input,attempt,code);
       else await retry(input,attempt,code);
     }catch{/* A newer fence owns durable state. */}
   }

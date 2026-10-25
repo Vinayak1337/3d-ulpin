@@ -6,7 +6,7 @@ import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,yieldUspJobAttempt,
-  type UspJobAttempt} from '../jobs';
+  recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {advanceStreamedInventory,emptyInventory} from './streamed-profile-inventory';
@@ -259,8 +259,10 @@ export async function runStreamedProfileJob(jobId:string){
   }catch(error){
     const code=error instanceof AppError?error.code:'STREAMED_PROFILE_WORKER_ERROR';
     const stale=error instanceof AppError&&[403,404,409].includes(error.status);
-    const spent=Number((await query('SELECT attempts FROM jobs WHERE id=$1',[jobId])).rows[0]?.attempts??3);
-    try{if(stale||spent>=3||error instanceof AppError&&[413,422].includes(error.status))
+    try{
+      await recordUspJobFailure(attempt,code,error);
+      const spent=Number((await query('SELECT attempts FROM jobs WHERE id=$1',[jobId])).rows[0]?.attempts??3);
+      if(stale||spent>=3||error instanceof AppError&&[413,422].includes(error.status))
       await fail(input,attempt,stale?'STREAMED_PROFILE_CONTEXT_STALE':code,stale);
     else await retry(input,attempt,code);}catch{/* A newer fence owns durable state. */}
   }
