@@ -1,12 +1,14 @@
-import { useState, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import { Buildings, MapTrifold, Shovel, Stack, WarningOctagon, type Icon as PhosphorIcon } from '@phosphor-icons/react';
-import { Icon, Toggle, type LegendSection } from '@ulpin/ui';
+import { Icon, Toggle, type LegendItem } from '@ulpin/ui';
 import type { ColourBy } from '../../state/selection';
 import type { SpaceModel } from '../../model/building';
 import styles from './MapSidebar.module.css';
 
 type Colour = Exclude<ColourBy, 'auto'>;
 export type ViewKey = 'area' | 'building' | 'level' | 'findings' | 'underground';
+/** One key of the active Colour by: an entry may carry its status icon beside its word, and the key a note. */
+export interface KeySection { title: string; items: (LegendItem & { icon?: PhosphorIcon })[]; note?: string }
 
 export interface LayerSwitch {
   key: string;
@@ -42,7 +44,7 @@ export function MapSidebar({
   viewFooter?: ReactNode;
   views: SidebarView[]; active: ViewKey; onView: (key: ViewKey) => void;
   colour: Colour; colourOptions: { value: Colour; label: string; disabled?: boolean }[]; onColour: (c: Colour) => void;
-  keySections: LegendSection[];
+  keySections: KeySection[];
   layers: LayerSwitch[]; onLayer: (key: string, on: boolean) => void; layersNote?: string | null;
   floor: string | null; spaces: SpaceModel[]; rightsColour: (id: string) => string | null; selectedSpaceId: string | null; onSelectSpace: (s: SpaceModel) => void;
 }) {
@@ -80,17 +82,20 @@ export function MapSidebar({
               <button key={o.value} type="button" role="radio" aria-checked={colour === o.value} disabled={o.disabled} onClick={() => onColour(o.value)}>{o.label}</button>
             ))}
         </div>
-        {keySections.map((section) => (
-          <ul key={section.title} className={styles.key} aria-label={section.title}>
+        {keySections.map((section) => <Fragment key={section.title}>
+          <ul className={styles.key} aria-label={section.title}>
             {section.items.map((item) => (
               <li key={item.label}>
-                <span className={`${styles.swatch}${item.hatch ? ' ul-hatch' : ''}`} style={{ backgroundColor: item.color }} />
-                <span className={styles.keyLabel}>{item.label}</span>
+                {item.color || item.hatch
+                  ? <span className={`${styles.swatch}${item.hatch ? ' ul-hatch' : ''}`} style={{ backgroundColor: item.color }} />
+                  : <span />}
+                <span className={styles.keyLabel}>{item.icon ? <Icon icon={item.icon} size={16} /> : null}{item.label}</span>
                 {item.count !== undefined ? <span className="ul-num ul-muted">{item.count}</span> : null}
               </li>
             ))}
           </ul>
-        ))}
+          {section.note ? <p className={styles.note}>{section.note}</p> : null}
+        </Fragment>)}
       </section> : null}
 
       {section === 'layers' && layers.length ? (
