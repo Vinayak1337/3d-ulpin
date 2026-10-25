@@ -544,7 +544,7 @@ Size M, this PC: data drive. After: Step 1: the base rehearsal shows the act 1 T
 
 ### S5.12 Batch screen draws a kept raster or point cloud in its own frame when it is not on the map
 
-Size M, code only. After: None: it works with today's readers. Can run in parallel with S5.11, S5.13 and S5.14 (Studio files only). **Status: running 25 Oct (UI session).**
+Size M, code only. After: None: it works with today's readers. Can run in parallel with S5.11, S5.13 and S5.14 (Studio files only). **Status: merged 25 Oct (521b2fda).**
 
 - **What:** A surface with no batch area, outside the area or with no stated CRS is read but never drawn: frameTx returns not_placed and the map layer exists only for the area's site. Add a surface preview to the batch item detail. It reuses the existing parts page, display read, artifact routes and decode worker, draws raster parts as one canvas mosaic by their sourceCorners and point parts as a top-down scatter, and shows the not-placed words plus 'display only'. No new route; nothing is placed.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:115-117 (mount beside IfcStructure and NativeReading); apps/studio/src/features/map/surface/api.ts (browserSurfaceIo, reused), parts.ts:19-22 (isSurfaceItem), decode.ts, pixels.ts:68-73, las.ts:15-31; new apps/studio/src/features/intake/surface/SurfacePreview.tsx and its test
@@ -716,7 +716,7 @@ The officer checks it and presses the existing declare button, and the existing 
 
 ### S6.4 The map can colour buildings by link outcome and count them
 
-Size S, code only. After: S6.1. **Status: running 25 Oct (UI session).**
+Size S, code only. After: S6.1. **Status: merged 25 Oct (77e48638); an area whose buildings come from several batches is coloured from one batch only.**
 
 - **What:** Step 6 needs links shown on the map as well. Add a 'Link' option to the existing Colour by control, using FootprintInput.color as Colour by height does. Read the case's evidence page counts and candidate anchors (200 per page) and colour buildings by outcome: matched, several, conflicting, no match, none. The legend shows the counts as read, for example NYC act 1: 612 matched, 60 no match, 81 conflicting. Read only, no new route.
 - **Files:** apps/studio/src/features/map/MapSidebar.tsx:77-92 (colour options, key list); MapWorkspace.tsx:260-340 (colourBy, legend), 500-512 (options); useBuildingScene.ts:18-60; heightBands.ts (pattern); apps/studio/src/state/selection.ts (ColourBy type); packages/scene/src/types.ts:26-42 (color field, read only); apps/studio/src/features/intake/evidence/api.ts (useEvidencePage, reuse)
@@ -777,7 +777,7 @@ Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7
 
 ### S7.6 The map reads lightly while a package streams
 
-Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: running 25 Oct (UI session).**
+Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: running 25 Oct (UI session; sent back once: a cached context from before the package must not read as settled).**
 
 - **What:** Today, while a package streams, the map downloads it every 700 ms, re-reads the whole area every 5 s and invalidates every query in the app when the import settles. Three changes: (1) Count features by kind from context.displayFeatures by proposalPackageId, and take state and quarantine from context.packages, which are already polled, instead of the 700 ms GET of the whole package (every feature with three geometries). (2) Stop the 5 s re-reads of the area context and the canonical area once the package leaves RECEIVED, even if ?package= stays in the URL. (3) When it settles, invalidate only this area's and this batch's keys. The demo-import path (isDemoId, demo-import.ts:110) keeps working.
 - **Files:** apps/studio/src/features/map/ImportTray.tsx:16-66 (useSettled 17-24, poll 33-37, counts 43-48); apps/studio/src/features/map/MapWorkspace.tsx:71-75, 125, 397-401, 574-580 (MapImportTray); apps/studio/src/features/map/MapPage.tsx:39-43; apps/studio/src/api/queries.ts:228-260; apps/studio/src/features/map/canonicalScene.ts:66-80
