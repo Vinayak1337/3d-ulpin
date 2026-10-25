@@ -310,7 +310,7 @@ export function fusionDXFCitationFields(source:Extract<SourceFusionContext['sour
   const fields=SourceFusionLiteralObjectSchema.parse(entry.record.fields);
   return {document:fusionCitationDocumentPin(source.pin),inputSha256:source.pin.inputSha256,readerSha256:source.pin.readerSha256,
     acceptedFence:source.pin.acceptedFence,resultBytes:source.pin.resultBytes,
-    dxf:{artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,profile:'dxf-native-inspection/1' as const,
+    dxf:{artifactSha256:source.artifactSha256,artifactBytes:source.artifactBytes,profile:source.summary.schemaVersion,
       selectionSha256:fingerprint({version:'source-fusion-dxf-selection/1',sourceSha256:source.pin.sourceSha256,
         artifact:{sha256:source.artifactSha256,bytes:source.artifactBytes},entityOrdinals:[ordinal]}),
       entityOrdinal:ordinal,entityType:entry.record.type,handle:SourceFusionLiteralObjectSchema.parse(fields.handle),

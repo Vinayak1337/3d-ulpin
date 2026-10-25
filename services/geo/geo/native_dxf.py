@@ -21,11 +21,13 @@ import time
 
 PARSER_VERSION = "1.4.3"
 MAX_INPUT_BYTES = 16 * 1024**2
-MAX_RECORDS = 100_000
-MAX_ENTITIES = 10_000
-MAX_POINTS = 100_000
-MAX_TAGS = 500_000
+MAX_RECORDS = 65_000
+MAX_ENTITIES = 60_000
+MAX_POINTS = 60_000
+MAX_TAGS = 600_000
 MAX_OUTPUT_BYTES = 16 * 1024**2
+MAX_PAGE_BYTES = 8 * 1024**2
+MAX_PAGES = 20
 MAX_MEMORY_BYTES = 2 * 1024**3
 MAX_SECONDS = 45
 
@@ -48,17 +50,10 @@ class _Budget:
     def __init__(self):
         self.deadline = time.monotonic() + MAX_SECONDS
         self.points = 0
-        self.output = 0
 
     def check(self):
         if time.monotonic() > self.deadline:
             _fail("TIME_LIMIT", "DXF inspection exceeded its deadline.", status="limit")
-
-    def add(self, item):
-        self.check()
-        self.output += len(_encode(item))
-        if self.output > MAX_OUTPUT_BYTES:
-            _fail("OUTPUT_LIMIT", "DXF projection exceeds 16 MiB.", status="limit")
 
 
 def _encode(item):
@@ -83,7 +78,7 @@ def _codepage_declaration(text, budget):
     header, section_name, pending, declaration = False, False, None, None
     for index, tag in enumerate(ascii_tags_loader(io.StringIO(text, newline=None), skip_comments=False)):
         if index >= MAX_TAGS:
-            _fail("TAG_LIMIT", "DXF exceeds 500,000 source tags.", status="limit")
+            _fail("TAG_LIMIT", f"DXF exceeds {MAX_TAGS:,} source tags.", status="limit")
         if index % 512 == 0:
             budget.check()
         if tag.code == 0:
@@ -124,8 +119,7 @@ def _typed(tag):
 def _field(tags, codes):
     selected = [t for t in tags if t["code"] in codes]
     return {"state": "supplied" if selected else "absent", "tags": [
-        {"code": t["code"], "value": _typed(t), "rawValue": t["rawValue"],
-         "locator": _locator(t["tagIndex"])} for t in selected]}
+        {"code": t["code"], "value": _typed(t), "tagIndex": t["tagIndex"]} for t in selected]}
 
 
 def _one(tags, code):
@@ -213,8 +207,7 @@ def _project(record, budget):
     fields = {name: _field(tags, codes) for name, codes in {**COMMON, **FIELDS.get(typ, {})}.items()}
     result = {**record, "fields": fields,
               "status": "supported" if typ in FIELDS else "unsupported",
-              "space": _space(record, tags),
-              "coordinateSemantics": "source values; WCS for LINE/3D POLYLINE, OCS for CIRCLE/ARC/TEXT/2D polylines/INSERT; MTEXT follows supplied direction"}
+              "space": _space(record, tags)}
     missing = [code for code in REQUIRED.get(typ, ()) if not any(t["code"] == code for t in tags)]
     if typ == "MTEXT" and not any(t["code"] in (1, 3) for t in tags):
         missing.append(1)
@@ -241,7 +234,7 @@ def _project(record, budget):
         if _one(tags, 90) != len(vertices):
             _fail("VERTEX_COUNT", "LWPOLYLINE declared/source vertex counts differ.", record["locator"])
     if budget.points > MAX_POINTS:
-        _fail("POINT_LIMIT", "DXF projection exceeds 100,000 points.", status="limit")
+        _fail("POINT_LIMIT", f"DXF projection exceeds {MAX_POINTS:,} points.", status="limit")
     flags = _one(tags, 70) if typ == "POLYLINE" else None
     reasons = []
     if flags is not None and flags & (2 | 4 | 16 | 64):
@@ -261,6 +254,11 @@ def _project(record, budget):
         reasons.append("Text chunks and formatting codes retained; columns, font shaping and rich-text rendering unsupported.")
     result["limitations"] = reasons
     return result
+
+
+def _check_entity_count(count: int) -> None:
+    if count > MAX_ENTITIES:
+        _fail("ENTITY_LIMIT", f"DXF exceeds {MAX_ENTITIES:,} projected entities including children.", status="limit")
 
 
 def read_dxf(raw):
@@ -305,12 +303,12 @@ def read_dxf(raw):
     tags = []
     for index, tag in enumerate(ascii_tags_loader(stream, skip_comments=False)):
         if index >= MAX_TAGS:
-            _fail("TAG_LIMIT", "DXF exceeds 500,000 source tags.", status="limit")
+            _fail("TAG_LIMIT", f"DXF exceeds {MAX_TAGS:,} source tags.", status="limit")
         if index % 512 == 0:
             budget.check()
         budget.points += tag.code in POINT_CODES
         if budget.points > MAX_POINTS:
-            _fail("POINT_LIMIT", "DXF exceeds 100,000 source coordinate/vector starts.", status="limit")
+            _fail("POINT_LIMIT", f"DXF exceeds {MAX_POINTS:,} source coordinate/vector starts.", status="limit")
         tags.append({"tagIndex": index, "code": tag.code, "rawValue": tag.value})
     if not tags or tags[-1]["code"] != 0 or tags[-1]["rawValue"] != "EOF" or stream.read().strip():
         _fail("EOF", "DXF requires a complete EOF record without trailing content.")
@@ -341,7 +339,7 @@ def read_dxf(raw):
                 _fail("SECTION", "Source record outside a DXF section.", _locator(t["tagIndex"]))
             record_count += 1
             if record_count > MAX_RECORDS:
-                _fail("RECORD_LIMIT", "DXF exceeds 100,000 records.", status="limit")
+                _fail("RECORD_LIMIT", f"DXF exceeds {MAX_RECORDS:,} records.", status="limit")
             current = {"type": typ, "section": section, "blockName": block_name,
                        "locator": {"kind": "dxf_ascii_tags", **_locator(t["tagIndex"])}, "sourceTags": []}
             if section in ("BLOCKS", "ENTITIES"):
@@ -388,8 +386,7 @@ def read_dxf(raw):
         _fail("DXF_VERSION", "Only declared DXF R12 through R2018 versions are supported.", status="unsupported")
     if "ENTITIES" not in sections:
         _fail("ENTITIES_SECTION", "Missing original ENTITIES section.")
-    if len(records) > MAX_ENTITIES:
-        _fail("ENTITY_LIMIT", "DXF exceeds 10,000 projected entities including children.", status="limit")
+    _check_entity_count(len(records))
     # Existing parser validates/loads the drawing. Projection exclusively uses
     # original tags: its R12 upgrades and generated defaults are discarded.
     try:
@@ -424,7 +421,7 @@ def read_dxf(raw):
             if parent is not None:
                 _fail("POLYLINE_SEQUENCE", "POLYLINE sequence lacks SEQEND.", r["locator"])
             projected.append(entity)
-        budget.add(entity)
+        budget.check()
     if parent is not None:
         _fail("POLYLINE_SEQUENCE", "POLYLINE sequence lacks SEQEND.")
     layer_records = [{**r, "fields": {"name": _field(r["sourceTags"], (2,)),
@@ -443,7 +440,9 @@ def read_dxf(raw):
             r["expansion"] = "not_performed"
     unsupported = [{"type": r["type"], "status": r["status"], "locator": r["locator"], "limitations": r["limitations"]}
                    for r in projected if r["status"] != "supported" or r["limitations"]]
-    result = {"schemaVersion": "dxf-native-inspection/1", "status": "available",
+    result = {"schemaVersion": "dxf-native-inspection/2", "status": "available",
+              "locatorRule": {"codeLine": "2 * tagIndex + 1", "valueLine": "2 * tagIndex + 2"},
+              "coordinateSemantics": "source values; WCS for LINE/3D POLYLINE, OCS for CIRCLE/ARC/TEXT/2D polylines/INSERT; MTEXT follows supplied direction",
               "sourceSha256": hashlib.sha256(raw).hexdigest(), "sourceBytes": len(raw),
               "parser": {"name": "ezdxf", "version": PARSER_VERSION, "recovery": False},
               "dxfVersion": version, "encoding": {"name": encoding,
@@ -460,11 +459,49 @@ def read_dxf(raw):
               "limitations": ["No DWG, inferred scale/CRS, room/floor/area reconstruction, curve flattening or block expansion.",
                   "Missing fields stay absent; raw tags preserve lexemes. Parser defaults are not source declarations.",
                   "Only HEADER, layer definitions, block definitions and drawing entities are projected; other tables/objects remain in the unchanged original."]}
+    return result
+
+
+def write_dxf_pages(result: dict, directory: Path) -> dict:
+    """Keep each complete parent/child record together; stdout carries only the head."""
+    entities = result.pop("entities")
+    result["pages"] = []
+    ordinal = 0
+    while ordinal < len(entities):
+        index = len(result["pages"])
+        if index >= MAX_PAGES:
+            _fail("OUTPUT_LIMIT", f"DXF exceeds {MAX_PAGES} pages of 8 MiB; head limit is 16 MiB.", status="limit")
+        prefix = _encode({"schemaVersion": "dxf-native-entity-page/1", "sourceSha256": result["sourceSha256"],
+                          "pageIndex": index, "firstOrdinal": ordinal})[:-1] + b',"entities":['
+        parts, size, end = [prefix], len(prefix) + 2, ordinal
+        while end < len(entities):
+            record = _encode(entities[end])
+            if size + len(record) + (end > ordinal) > MAX_PAGE_BYTES:
+                break
+            if end > ordinal:
+                parts.append(b",")
+                size += 1
+            parts.append(record)
+            size += len(record)
+            end += 1
+        if end == ordinal:
+            _fail("OUTPUT_LIMIT", "One complete DXF entity exceeds the 8 MiB page limit.", status="limit")
+        encoded = b"".join(parts) + b"]}"
+        digest = hashlib.sha256(encoded).hexdigest()
+        with (directory / (digest + ".page.json")).open("xb") as output:
+            output.write(encoded)
+        last = entities[end - 1]
+        last = last.get("sequenceEnd", last)
+        result["pages"].append({"pageIndex": index, "firstOrdinal": ordinal, "entityCount": end - ordinal,
+                                "firstTagIndex": entities[ordinal]["locator"]["tagIndex"],
+                                "lastTagIndex": last["locator"]["endTagExclusive"] - 1,
+                                "bytes": len(encoded), "sha256": digest})
+        ordinal = end
     encode_dxf_result(result)
     return result
 
 
-def inspect_dxf(raw, *, temporary_parent=None):
+def inspect_dxf(raw, *, page_directory, temporary_parent=None):
     """Run the pinned reader with the existing memory guard and a hard deadline."""
     if not raw or len(raw) > MAX_INPUT_BYTES:
         _fail("INPUT_LIMIT", "DXF requires 1 byte to 16 MiB.", status="limit")
@@ -472,6 +509,7 @@ def inspect_dxf(raw, *, temporary_parent=None):
     worker = ("import sys;sys.path.insert(0," + repr(str(root)) + ");"
               "from geo.native_dxf import _worker;_worker()")
     env = {k: os.environ[k] for k in ("SystemRoot", "WINDIR", "TEMP", "TMP") if k in os.environ}
+    env["DXF_PAGE_DIRECTORY"] = str(Path(page_directory).resolve(strict=True))
     env.update({"OMP_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "2", "MKL_NUM_THREADS": "2",
                 "NUMEXPR_NUM_THREADS": "2", "CUDA_VISIBLE_DEVICES": ""})
     started = time.monotonic()
@@ -520,7 +558,8 @@ def _worker():
         except (OSError, ValueError):
             _fail("ISOLATION", "Cannot enforce the native DXF process memory ceiling.", status="unavailable")
         result = read_dxf(sys.stdin.buffer.read(MAX_INPUT_BYTES + 1))
-        sys.stdout.buffer.write(encode_dxf_result(result))
+        head = write_dxf_pages(result, Path(os.environ["DXF_PAGE_DIRECTORY"]))
+        sys.stdout.buffer.write(encode_dxf_result(head))
     except DXFError as error:
         sys.stdout.buffer.write(_encode({"error": error.as_dict()}))
         raise SystemExit(2)

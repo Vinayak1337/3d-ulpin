@@ -70,8 +70,25 @@ export class DXFController{
   async artifact(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
     @Req()request:Request,@Res()response:Response){
     noQuery(request);const result=await this.dxf.artifact(caseId,sourceId,jobId);
-    response.set({'Content-Type':'application/json','Cache-Control':'private, no-store','Content-Length':String(result.bytes.length),'X-DXF-Native-Profile':'dxf-native-inspection/1',
+    response.set({'Content-Type':'application/json','Cache-Control':'private, no-store','Content-Length':String(result.bytes.length),'X-DXF-Native-Profile':result.profile,
       'X-Content-SHA256':result.sha256});response.send(result.bytes);
+  }
+  @Header('Cache-Control','private, no-store') @Header('X-Content-Type-Options','nosniff')
+  @Get('sources/:sourceId/dxf/jobs/:jobId/native/pages/:pageIndex')
+  @param('caseId') @param('sourceId') @param('jobId')
+  @ApiParam({name:'pageIndex',schema:{type:'integer',minimum:0,maximum:DXF_LIMITS.pages-1}})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex',
+    summary:'Download one exact hash-checked accepted native DXF entity page'})
+  @wireResponse(200,binary)
+  async page(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
+    @Param('pageIndex')pageIndex:string,@Req()request:Request,@Res()response:Response){
+    noQuery(request);
+    if(!/^(0|[1-9][0-9]*)$/.test(pageIndex)||Number(pageIndex)>=DXF_LIMITS.pages)
+      throw new AppError(422,'DXF_PAGE_INDEX','Choose a page index within the bounded DXF reading.');
+    const result=await this.dxf.artifact(caseId,sourceId,jobId,Number(pageIndex));
+    response.set({'Content-Type':'application/json','Content-Length':String(result.bytes.length),
+      'X-DXF-Native-Profile':result.profile,'X-Content-SHA256':result.sha256});
+    response.send(result.bytes);
   }
   @Header('Cache-Control','private, no-store') @Header('X-Content-Type-Options','nosniff')
   @Get('sources/:sourceId/dxf/original') @param('caseId') @param('sourceId')

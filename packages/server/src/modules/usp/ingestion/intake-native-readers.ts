@@ -223,7 +223,7 @@ function objWords(summary: ObjSummary): string {
 }
 
 function summaryWords(summary: NativeSummary): string {
-  if (summary.schemaVersion === 'dxf-native-inspection/1') return dxfWords(summary);
+  if ('dxfVersion' in summary) return dxfWords(summary);
   if (summary.schemaVersion === 'ulpin-native-citygml/1') return citygmlWords(summary);
   if (summary.schemaVersion === 'gltf-local-inspection/1') return gltfWords(summary);
   if (summary.schemaVersion === 'obj-source-context/1') return objWords(summary);
@@ -236,7 +236,7 @@ export function intakeNativeReadWords(summary: NativeSummary): string {
 }
 
 function recordsSeen(summary: NativeSummary): number {
-  if (summary.schemaVersion === 'dxf-native-inspection/1') return summary.recordCount;
+  if ('dxfVersion' in summary) return summary.recordCount;
   if (summary.schemaVersion === 'ulpin-native-citygml/1') return summary.elementCount;
   if (summary.schemaVersion === 'gltf-local-inspection/1') return summary.nodeCount;
   if (summary.schemaVersion === 'obj-source-context/1') return summary.polygonCount;
@@ -252,6 +252,15 @@ export type IntakeNativeReaderEnd =
   | { format: NativeReaderFormat; status: 'failed' | 'stale'; code: string };
 
 function stoppedWords(end: Extract<IntakeNativeReaderEnd, { status: string }>): string {
+  if (end.format === 'dxf' && end.status === 'failed') {
+    let limit: string | undefined;
+    if (end.code === 'DXF_ENTITY_LIMIT') limit = `${DXF_LIMITS.entities.toLocaleString('en-IN')} entities including children`;
+    if (end.code === 'DXF_OUTPUT_LIMIT') {
+      limit = `${DXF_LIMITS.pages} pages of ${mib(DXF_LIMITS.pageBytes)} MiB or a ${mib(DXF_LIMITS.artifactBytes)} MiB head`;
+    }
+    if (limit) return `The DXF reading exceeds its limit of ${limit}, so it is not read. `
+      + 'The original is kept with its SHA-256.';
+  }
   const why = end.status === 'stale' ? 'went out of date: the file, the case or the reader changed' : 'stopped';
   return `The ${readers[end.format].label} reading ${why} (${end.code}), so it is not read. `
     + 'The original is kept with its SHA-256.';

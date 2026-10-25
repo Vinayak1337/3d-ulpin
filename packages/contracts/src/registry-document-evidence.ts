@@ -66,8 +66,8 @@ export const RegistryIFCCitationSchema=z.strictObject({...citationBase,version:z
 export const RegistryDXFCitationSchema=z.strictObject({...citationBase,version:z.literal('registry-dxf-citation/1'),
   resultBytes:z.number().int().positive().max(DXF_LIMITS.resultBytes),
   dxf:z.strictObject({artifactSha256:hash,artifactBytes:z.number().int().positive().max(DXF_LIMITS.artifactBytes),
-    profile:z.literal('dxf-native-inspection/1'),selectionSha256:hash,
-    entityOrdinal:z.number().int().min(0).max(9999),entityType:z.string().min(1).max(128),
+    profile:z.enum(['dxf-native-inspection/1','dxf-native-inspection/2']),selectionSha256:hash,
+    entityOrdinal:z.number().int().min(0).max(DXF_LIMITS.entities-1),entityType:z.string().min(1).max(128),
     handle:SourceFusionLiteralObjectSchema,recordPointer:z.string().regex(/^\/entities\/\d+$/),recordSha256:hash,
     locator:SourceFusionLiteralObjectSchema,identifierScope:z.literal('source_native_only; not_canonical_registry_ids')})});
 /** Explicit feature evidence; KML membership/names/IDs do not assert identity. */

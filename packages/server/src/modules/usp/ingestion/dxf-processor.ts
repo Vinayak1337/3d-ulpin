@@ -1,26 +1,32 @@
 import {spawn} from 'node:child_process';
 import {mkdtemp,writeFile,readFile,stat,rm,realpath} from 'node:fs/promises';
-import {join,relative,isAbsolute} from 'node:path';
+import {join,relative,isAbsolute,basename} from 'node:path';
 import {z} from 'zod';
-import {DXF_LIMITS,DXFSummarySchema,type DXFInput} from '@ulpin/contracts/usp';
-import {sha256} from '../../../infrastructure/storage';
+import {DXF_LIMITS,DXFSummarySchema,DXFPagesSchema,DXFArtifactSchema,type DXFInput} from '@ulpin/contracts/usp';
+import {sha256,putOriginal} from '../../../infrastructure/storage';
+import {dxfArtifactKey,dxfPageKey,dxfNativeEntities} from './dxf';
 import {AppError} from '../../../infrastructure/errors';
 import {assertDXFTools,type DXFConfig} from './dxf-config';
 
 const count=z.number().int().nonnegative();
-const native=z.object({schemaVersion:z.literal('dxf-native-inspection/1'),status:z.literal('available'),
+const native=z.object({schemaVersion:DXFSummarySchema.shape.schemaVersion,status:z.literal('available'),
   sourceSha256:z.string(),sourceBytes:z.number(),dxfVersion:DXFSummarySchema.shape.dxfVersion,
   parser:z.object({name:z.literal('ezdxf'),version:z.literal('1.4.3'),recovery:z.literal(false)}),
-  recordCount:count.max(100000),projectedEntityCountIncludingChildren:count.max(10000),pointCount:count.max(100000),
-  entities:z.array(z.object({type:z.string()})).max(10000),unsupportedFindings:z.array(z.unknown()).max(10000),
+  recordCount:count.max(100000),projectedEntityCountIncludingChildren:count.max(DXF_LIMITS.entities),pointCount:count.max(100000),
+  entities:z.array(z.object({type:z.string()})).max(DXF_LIMITS.entities).optional(),pages:DXFPagesSchema.optional(),
+  unsupportedFindings:z.array(z.unknown()).max(DXF_LIMITS.entities),
   units:z.object({...DXFSummarySchema.shape.units.shape,conversion:z.null()}),
   qualification:z.object({scope:z.literal('source_local_inspection'),globalPlacement:z.literal('not_assessed'),
     geometryValidity:z.literal('not_assessed'),analyticEligible:z.literal(false),operationalRecords:z.literal(false),trainingLabels:z.literal(false)})});
 export function dxfSummary(bytes:Buffer,input:DXFInput){
   if(bytes.length>DXF_LIMITS.artifactBytes)throw new AppError(413,'DXF_OUTPUT_LIMIT','DXF native output exceeds its profile.');
   const value=native.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
-  if(value.sourceSha256!==input.sourceSha256||value.sourceBytes!==input.sourceBytes||
-    value.entities.length>value.projectedEntityCountIncludingChildren||value.projectedEntityCountIncludingChildren>value.recordCount)
+  const paged=value.schemaVersion==='dxf-native-inspection/2';
+  const entities=paged?value.pages?.reduce((n,p)=>n+p.entityCount,0):value.entities?.length;
+  if(value.sourceSha256!==input.sourceSha256||value.sourceBytes!==input.sourceBytes||entities===undefined||
+    (paged&&(value.entities!==undefined||value.recordCount>DXF_LIMITS.records||value.pointCount>DXF_LIMITS.points))||
+    (!paged&&value.pages!==undefined)||entities>value.projectedEntityCountIncludingChildren||
+    value.projectedEntityCountIncludingChildren>value.recordCount)
     throw new AppError(422,'DXF_ARTIFACT_INTEGRITY','Native result differs from the enrolled source.');
   const {conversion:_,...units}=value.units;
   return DXFSummarySchema.parse({schemaVersion:value.schemaVersion,sourceSha256:value.sourceSha256,sourceBytes:value.sourceBytes,
@@ -83,7 +89,21 @@ export async function processDXF(input:DXFInput,source:Buffer,signal:AbortSignal
     const info=await stat(output);if(!info.isFile()||info.size>DXF_LIMITS.artifactBytes)throw new AppError(413,'DXF_OUTPUT_LIMIT','Local DXF output exceeds its profile.');
     const bytes=await readFile(output,{signal}),summary=dxfSummary(bytes,input);
     if(sha256(await readFile(sourcePath,{signal}))!==input.sourceSha256)throw new AppError(422,'DXF_SOURCE_INTEGRITY','Local DXF original changed.');
-    assertDXFTools(input.tools,deadlineAt);signal.throwIfAborted();return {bytes,summary,hash:sha256(bytes)};
+    const hash=sha256(bytes),pages=JSON.parse(bytes.toString('utf8')).pages;
+    const artifact=DXFArtifactSchema.parse({key:dxfArtifactKey(input.jobId,hash),sha256:hash,bytes:bytes.length,
+      mediaType:'application/json',profile:summary.schemaVersion,...(pages?{pages}:{})});
+    const local=async(key:string,size:number)=>{
+      const path=join(scratch,basename(key)===basename(artifact.key)?'native.json':basename(key)),info=await stat(path);
+      if(!info.isFile()||info.size!==size)throw new AppError(422,'DXF_ARTIFACT_INTEGRITY','Local page size changed.');
+      return readFile(path,{signal});
+    };
+    await dxfNativeEntities(artifact,[],signal,local,true);
+    if(artifact.profile==='dxf-native-inspection/2')for(const page of artifact.pages){
+      const key=dxfPageKey(input.jobId,page.sha256),content=await local(key,page.bytes);
+      if(sha256(content)!==page.sha256)throw new AppError(422,'DXF_ARTIFACT_INTEGRITY','Local page changed.');
+      await putOriginal(key,content,'application/json',signal);
+    }
+    assertDXFTools(input.tools,deadlineAt);signal.throwIfAborted();return {bytes,summary,hash,artifact};
   }catch(error){if(error instanceof AppError&&error.code==='DXF_REAP_UNAVAILABLE')cleanup=false;throw error;}
   finally{
     const child=relative(config.scratchRoot,await realpath(scratch));if(!child||child.startsWith('..')||isAbsolute(child))throw new AppError(503,'DXF_CLEANUP_SCOPE','Owned DXF temporary path changed.');

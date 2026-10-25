@@ -12,17 +12,17 @@ const require=createRequire(new URL('../apps/api/package.json',import.meta.url))
 require('reflect-metadata');
 const {NestFactory}=require('@nestjs/core'),{GUARDS_METADATA,HEADERS_METADATA}=require('@nestjs/common/constants');
 
-test('five private DXF routes have native schema metadata without a listener or generated-file write',async()=>{
+test('six private DXF routes have native schema metadata without a listener or generated-file write',async()=>{
   const app=await NestFactory.create(AppModule,{logger:false,bodyParser:false,abortOnError:false});
   try{
     const document=createApiDocument(app),routes=Object.entries(document.paths).filter(([path])=>/\/dxf(?:\/|$)/.test(path));
-    assert.equal(routes.length,5);
+    assert.equal(routes.length,6);
     for(const [path,item] of routes){
       const operation=(item!.post??item!.get)!;assert.match(operation.operationId!,/_dxf(?:_|$)/);
       const status=path.endsWith('/dxf')?'201':path.endsWith('/retries')?'202':'200';assert.ok(operation.responses[status]);
     }
     assert.deepEqual(Reflect.getMetadata(GUARDS_METADATA,DXFController),[PrivateSpatialGuard]);
-    for(const method of ['retain','enqueue','status','artifact','original'] as const){
+    for(const method of ['retain','enqueue','status','artifact','page','original'] as const){
       const headers=Reflect.getMetadata(HEADERS_METADATA,DXFController.prototype[method]);
       assert.ok(headers.some((h:any)=>h.name==='Cache-Control'&&h.value==='private, no-store'));
       assert.ok(headers.some((h:any)=>h.name==='X-Content-Type-Options'&&h.value==='nosniff'));
@@ -32,6 +32,10 @@ test('five private DXF routes have native schema metadata without a listener or 
     assert.throws(()=>controller.enqueue('case','source',request),(e:any)=>e.code==='DXF_QUERY');
     assert.throws(()=>controller.status('case','source','job',request),(e:any)=>e.code==='DXF_QUERY');
     await assert.rejects(()=>controller.artifact('case','source','job',request,{} as any),(e:any)=>e.code==='DXF_QUERY');
+    await assert.rejects(()=>controller.page('case','source','job','0',request,{} as any),
+      (e:any)=>e.code==='DXF_QUERY');
+    await assert.rejects(()=>controller.page('case','source','job','-1',{originalUrl:'/private'} as any,{} as any),
+      (e:any)=>e.code==='DXF_PAGE_INDEX');
     await assert.rejects(()=>controller.original('case','source',request,{} as any),(e:any)=>e.code==='DXF_QUERY');
   }finally{await app.close();}
 });
