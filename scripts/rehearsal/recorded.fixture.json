@@ -1,0 +1,25 @@
+{
+  "test_only": true,
+  "source": "task/s1-3-rehearsal docs/evidence/step-1/s1-3/{result,files,frames,jobs}.json",
+  "jobRowsSource": "E:/ulpin-tmp/s1-3/jobs-rows/jobs-a.json",
+  "runtime": "ulpin-reh-03",
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "files": [{
+    "key": "a", "caseId": "e66b554c-5cc8-434c-a5d2-53d1a019dbfb", "state": "read", "placement": "on_map",
+    "parts": [0, null], "tray": "3 pins and 2 lines are kept in the original but not drawn as buildings.",
+    "mapDrawn": true, "card": false
+  }],
+  "frames": {
+    "columns": ["capture", "frames", "maxMs", "over100", "longestTaskMs"],
+    "captures": [["page-a-final-tray.json", 20, 125, 1, 93], ["page-a-map.json", 7469, 78, 0, 67]]
+  },
+  "jobs": {
+    "columns": ["key", "caseId", "jobs", "pending", "failed", "queueMeasured", "queueMaxS", "queueSumS",
+      "wallMeasured", "wallMaxS", "wallSumS", "retries", "missingDispatch", "rawSha256"],
+    "cases": [["a", "e66b554c-5cc8-434c-a5d2-53d1a019dbfb", 3, 0, 0, 3, 0.566, 1.067, 3, 0.377, 0.57, 0, 0,
+      "33f0820855edc6e4e08f88ad24dd654bdd24af7fff848a002b9dcfc776380ec5"]]
+  },
+  "jobRows": [{ "id": "d7358881-4ff1-57bf-9c09-60f708f0fd56", "operation": "intake-draft",
+    "status": "succeeded", "source": "mx1-mixed-points-lines-polygons.geojson", "attempts": 1,
+    "queue_s": 0.421, "exec_s": 0.092, "retries": 0 }]
+}
