@@ -18,6 +18,7 @@ import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema,
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
+const YIELD_OPERATIONS = new Set(['streamed-profile', 'intake-zip-layers']);
 export type UspJobAttempt = { jobId: string; number: number; fence: number; owner: string; leaseUntil: string; inputSha256: string };
 type Attempt = UspJobAttempt;
 
@@ -242,7 +243,7 @@ export async function claimUspJobAttempt(jobId: string, owner: string,beforeLock
     const attempts = (await client.query('SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1', [jobId])).rows[0];
     if (attempts?.state === 'active' && new Date(attempts.lease_until).getTime() > Date.now()) conflict('An attempt still owns this job.');
     const number = Number(attempts?.number ?? 0) + 1;
-    const spent = job.operation === 'streamed-profile'
+    const spent = YIELD_OPERATIONS.has(job.operation)
       ? Number((await client.query(`SELECT count(*)::int n FROM usp_job_attempts
         WHERE job_id=$1 AND state<>'yielded'`, [jobId])).rows[0].n)
       : number - 1;
@@ -259,19 +260,20 @@ export async function claimUspJobAttempt(jobId: string, owner: string,beforeLock
   },deadline);
 }
 
-/** Only a streamed profile may return ready-work admission without spending a failure attempt. */
-export async function yieldUspJobAttempt(attempt: Attempt) {
+/** Allowlisted operations may return ready-work admission without spending a failure attempt. */
+export async function yieldUspJobAttempt(attempt: Attempt, nextAttemptAt?: string) {
   await transaction(async client => {
     await assertUspJobAttemptTx(client, attempt);
     const job = (await client.query('SELECT operation FROM jobs WHERE id=$1', [attempt.jobId])).rows[0];
-    if (job?.operation !== 'streamed-profile')
-      throw new AppError(422, 'USP_JOB_OPERATION', 'Only streamed profiles may yield a fenced attempt.');
+    if (!YIELD_OPERATIONS.has(job?.operation))
+      throw new AppError(422, 'USP_JOB_OPERATION', 'This operation may not yield a fenced attempt.');
     await client.query("UPDATE usp_job_attempts SET state='yielded' WHERE job_id=$1 AND number=$2",
       [attempt.jobId, attempt.number]);
     await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
       [attempt.jobId]);
-    await client.query(`UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds',error=NULL
-      WHERE id=$1`, [attempt.jobId]);
+    await client.query(`UPDATE jobs SET status='queued',
+      next_attempt_at=COALESCE($2::timestamptz,now()+interval '2 seconds'),error=NULL
+      WHERE id=$1`, [attempt.jobId, nextAttemptAt ?? null]);
   });
 }
 

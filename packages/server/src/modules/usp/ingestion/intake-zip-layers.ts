@@ -252,16 +252,16 @@ async function zipScopeTx(client: PoolClient, caseId: string, itemId: string) {
 }
 
 /** Only quota admission waits; receipt expiry is a latest-free time, capped by the archive's own bound. */
-function receiptWait(member: MemberRow, error: AppError, deadline: number) {
+function receiptWait(member: MemberRow, error: AppError, retainedAt: number) {
   const now = Date.now();
-  const since = Date.parse(/free receipt since ([^;]+);/.exec(member.limit_reason ?? '')?.[1] ?? '');
-  const started = Number.isFinite(since) ? since : now;
+  const deadline = retainedAt + ZIP_RECEIPT_WAIT_MS;
   if (now >= deadline) return { retryAt: null,
-    reason: notKept('UPLOAD_QUOTA', member, Math.max(0, Math.floor((now - started) / 1000))) };
+    reason: notKept('UPLOAD_QUOTA', member, Math.max(0, Math.floor((now - retainedAt) / 1000))) };
   const freesAt = Date.parse(String((error.details as { freesAt?: unknown } | undefined)?.freesAt));
-  return { retryAt: Math.min(deadline, Number.isFinite(freesAt) && freesAt > now
-    ? freesAt : now + DISPATCH_HEAD_OF_LINE_MS),
-    reason: `UPLOAD_QUOTA: Waiting for a free receipt since ${new Date(started).toISOString()}; `
+  // At least two seconds between yields bounds a 30-minute wait to 900 yielded attempt rows.
+  return { retryAt: Math.min(deadline, Math.max(now + 2000, Number.isFinite(freesAt) && freesAt > now
+    ? freesAt : now + DISPATCH_HEAD_OF_LINE_MS)),
+    reason: 'UPLOAD_QUOTA: Waiting for a free receipt; '
       + 'this member stays in the archive and will be taken out automatically. '
       + 'The wait ends 30 minutes after archive retention.' };
 }
@@ -269,7 +269,6 @@ function receiptWait(member: MemberRow, error: AppError, deadline: number) {
 async function keepMembers(caseId: string, itemId: string, source: IntakeSourceRow, members: MemberRow[],
   dependencies: ZipLayerDependencies, retainedAt: number) {
   let retryAt: number | null = null;
-  const deadline = retainedAt + ZIP_RECEIPT_WAIT_MS;
   const kept = members.filter(member => member.source_id)
     .map(member => ({ member, sourceId: member.source_id! }));
   const pending = members.filter(member => !member.source_id);
@@ -283,7 +282,7 @@ async function keepMembers(caseId: string, itemId: string, source: IntakeSourceR
     catch (error) {
       let reason = notKept(failureCode(error), member);
       if (error instanceof AppError && error.code === 'UPLOAD_QUOTA') {
-        const wait = receiptWait(member, error, deadline);
+        const wait = receiptWait(member, error, retainedAt);
         reason = wait.reason;
         if (wait.retryAt !== null) retryAt = Math.min(retryAt ?? wait.retryAt, wait.retryAt);
       }

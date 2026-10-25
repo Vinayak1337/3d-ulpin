@@ -5,7 +5,8 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
-import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt,
+import { claimUspJobAttempt, heartbeatUspJobAttempt, yieldUspJobAttempt,
+  assertUspJobAttemptTx, acceptUspJobAttempt,
   type UspJobAttempt } from '../jobs';
 import { assertIntakeDraftTx } from './intake-draft';
 import { IntakeService } from './intake-service';
@@ -24,7 +25,7 @@ const defaults: ZipLayerDependencies = { transaction, read: readObjectRange,
   retainMember: (caseId, revision, file, lineage) =>
     retainZipMemberOriginal(caseId, revision, file, lineage, { large }),
   register: (caseId, raw) => intake.register(caseId, raw), large };
-// A large layer can outlast a lease; recheck the archive's pins during its bounded admission reads.
+// A large layer can outlast a lease; its bounded reads renew the attempt at most this often.
 const READ_RENEW_MS = 60_000;
 
 /** The archive's pins hold; the case revision may have moved forward, never back. */
@@ -75,39 +76,16 @@ async function complete(input: IntakeZipLayersInput, attempt: UspJobAttempt, kep
     }, pinned(input));
 }
 
-/** Admission checks the same source, access, job and active-attempt guards as intake-large's reader wait. */
-async function admissionReadyTx(client: PoolClient, input: IntakeZipLayersInput) {
-  await pinned(input)(client);
-  const job = (await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE', [input.jobId])).rows[0];
-  const active = (await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
-    AND state='active' AND lease_until>now() LIMIT 1`, [input.jobId])).rowCount;
-  return !active && ['queued', 'running'].includes(job?.status);
-}
-
-/** The existing dispatcher owns the next due time; no lease or attempt is held while receipts are busy. */
-async function waitForReceipt(input: IntakeZipLayersInput, retryAt: number): Promise<false> {
-  await transaction(async client => {
-    if (!await admissionReadyTx(client, input)) return;
-    await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [input.jobId]);
-    await zipParentStageTx(client, input.caseId, input.itemId, 'taking');
-    await client.query(`UPDATE jobs SET status='queued',dispatched_at=COALESCE(dispatched_at,now()),
-      next_attempt_at=$2,error='UPLOAD_QUOTA' WHERE id=$1`, [input.jobId, new Date(retryAt).toISOString()]);
-  });
-  return false;
-}
-
-/** Like intake-large reader admission, receipt admission precedes claims so a full allowance spends no attempt. */
-async function prepareMembers(input: IntakeZipLayersInput, dependencies: Partial<ZipLayerDependencies>) {
-  if (!await transaction(client => admissionReadyTx(client, input))) return false;
+/** Every member is read, retained and enrolled under the claimed attempt, including quota retries. */
+async function prepareMembers(input: IntakeZipLayersInput, attempt: UspJobAttempt,
+  dependencies: Partial<ZipLayerDependencies>) {
   const own = { ...defaults, ...dependencies };
-  const assertReady = async (client: PoolClient) => {
-    if (!await admissionReadyTx(client, input)) conflict('The ZIP layer job is no longer admitting members.');
-  };
-  const renew = () => transaction(assertReady);
+  const renew = () => heartbeatUspJobAttempt(attempt, pinned(input));
   let renewed = Date.now();
   const kept = await fanOutZipLayers(input.caseId, input.itemId, { ...own,
     transaction: (work, ...args) => own.transaction(async client => {
-      await assertReady(client);
+      await pinned(input)(client);
+      await assertUspJobAttemptTx(client, attempt);
       return work(client);
     }, ...args),
     read: async (...args) => {
@@ -120,8 +98,7 @@ async function prepareMembers(input: IntakeZipLayersInput, dependencies: Partial
     retain: async (...args) => { await renew(); return own.retain(...args); },
     retainMember: async (...args) => { await renew(); return own.retainMember(...args); },
     register: async (...args) => { await renew(); return own.register(...args); } });
-  if (Array.isArray(kept)) return kept;
-  return waitForReceipt(input, kept.retryAt);
+  return kept;
 }
 
 /** ZJ1. The dispatcher owns retry timing; the fenced completion accepts the idempotently retained members. */
@@ -129,12 +106,6 @@ export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial
   const job = (await query("SELECT * FROM jobs WHERE id=$1 AND operation='intake-zip-layers'", [jobId])).rows[0];
   if (!job || !['queued', 'running'].includes(job.status)) return;
   const input = IntakeZipLayersInputSchema.parse(job.payload);
-  let kept: string[] = [], admissionError: unknown;
-  try {
-    const prepared = await prepareMembers(input, dependencies);
-    if (prepared === false) return;
-    kept = prepared;
-  } catch (error) { admissionError = error; }
   let attempt: UspJobAttempt;
   try {
     attempt = await claimUspJobAttempt(jobId, `intake-zip-layers:${randomUUID()}`, pinned(input));
@@ -143,7 +114,11 @@ export async function runIntakeZipLayersJob(jobId: string, dependencies: Partial
     return;
   }
   try {
-    if (admissionError) throw admissionError;
+    const kept = await prepareMembers(input, attempt, dependencies);
+    if (!Array.isArray(kept)) {
+      await yieldUspJobAttempt(attempt, new Date(kept.retryAt).toISOString());
+      return;
+    }
     await complete(input, attempt, kept);
   } catch (error) {
     await fail(input, attempt, error);

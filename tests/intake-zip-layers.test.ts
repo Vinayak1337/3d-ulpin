@@ -113,7 +113,8 @@ class Ledger {
     if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) {
       return this.jobs.filter(job => job.source_id === values[0]);
     }
-    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')) {
+    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')
+      || sql.startsWith('SELECT operation FROM jobs')) {
       return this.jobs.filter(job => job.id === values[0]);
     }
     if (sql.startsWith('INSERT INTO jobs')) {
@@ -126,7 +127,8 @@ class Ledger {
       return [];
     }
     if (sql.startsWith('UPDATE jobs SET status=')) {
-      if (sql.includes('next_attempt_at=$2')) this.job(values[0]).next_attempt_at = values[1];
+      if (sql.includes('next_attempt_at=COALESCE')) this.job(values[0]).next_attempt_at = values[1];
+      if (sql.includes('attempts=$2')) this.job(values[0]).attempts = values[1];
       this.job(values[0]).status = /status='(\w+)'/.exec(sql)![1];
       return [];
     }
@@ -142,6 +144,9 @@ class Ledger {
     }
     const attempts = this.attempts.filter(attempt => attempt.job_id === values[0]);
     const latest = attempts.at(-1);
+    if (sql.startsWith('SELECT count(*)::int n FROM usp_job_attempts')) {
+      return [{ n: attempts.filter(attempt => attempt.state !== 'yielded').length }];
+    }
     if (sql.startsWith('SELECT * FROM usp_job_attempts')) return latest ? [latest] : [];
     if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) {
       return attempts.filter(attempt => attempt.state === 'active' && attempt.lease_until > new Date());
@@ -525,7 +530,7 @@ test('a changed archive source makes the claim refuse; the job ends stale with t
     assert.equal(ledger.rows.get(ledger.itemId).limit_reason, stopped('STALE_REVISION'));
   }));
 
-test('an active attempt prevents unclaimed receipt admission from touching members', () =>
+test('an active attempt prevents another claim from touching members', () =>
   configured(async () => {
     const fixture = await layersJob(zipSync(real));
     const jobId = (await fixture.queue())!;
@@ -688,7 +693,7 @@ test('a layer above the large ceiling stays in the ZIP in words', () =>
     assert.equal(await above.queue(), null);
   }));
 
-for (const expiry of ['known', 'null'] as const) {
+for (const expiry of ['known', 'null', 'immediate'] as const) {
   test(`a full allowance (${expiry} freesAt) waits without spending attempts, then keeps the member automatically`,
     t => configured(async () => {
       const fixture = await layersJob(zipSync({ 'uttam/README.md': real['uttam/README.md'] }));
@@ -698,9 +703,10 @@ for (const expiry of ['known', 'null'] as const) {
       const { service, log } = receipts(ledger);
       const create = service.create;
       service.create = async (...args) => {
+        assert.equal(ledger.attempts.at(-1).state, 'active', 'receipt work is fenced');
         if (full) throw new AppError(429, 'UPLOAD_QUOTA', 'must not reach officer words',
           { limit: 'open_receipts_operator',
-            freesAt: expiry === 'known' ? new Date(now + 10_000).toISOString() : null });
+            freesAt: expiry === 'null' ? null : new Date(now + (expiry === 'known' ? 10_000 : 1)).toISOString() });
         return create(...args);
       };
       const retainMember = (caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
@@ -710,11 +716,14 @@ for (const expiry of ['known', 'null'] as const) {
         await run(jobId, { retainMember });
         const member = ledger.member('uttam/README.md');
         assert.equal(member.source_id, null);
-        assert.match(member.limit_reason, /Waiting for a free receipt since/);
+        assert.match(member.limit_reason, /Waiting for a free receipt/);
         assert.doesNotMatch(member.limit_reason, /must not reach|Enrol/);
         assert.equal(ledger.job(jobId).status, 'queued');
-        assert.equal(ledger.attempts.length, 0);
-        assert.equal(Date.parse(ledger.job(jobId).next_attempt_at), now + (expiry === 'known' ? 10_000 : 120_000));
+        assert.equal(ledger.attempts.length, retry + 1);
+        assert.ok(ledger.attempts.every(attempt => attempt.state === 'yielded'));
+        assert.equal(ledger.job(jobId).attempts, 1, 'ZIP yields do not spend failure attempts');
+        const delay = { known: 10_000, null: 120_000, immediate: 2000 }[expiry];
+        assert.equal(Date.parse(ledger.job(jobId).next_attempt_at), now + delay);
         now = Date.parse(ledger.job(jobId).next_attempt_at);
       }
       full = false;
@@ -724,6 +733,9 @@ for (const expiry of ['known', 'null'] as const) {
       assert.equal(ledger.member('uttam/README.md').limit_reason, null);
       assert.equal(log.hash.digest('hex'), sha(real['uttam/README.md']));
       assert.equal(log.created.length, 1);
+      assert.equal(ledger.attempts.length, 6);
+      assert.equal(ledger.attempts.at(-1).state, 'accepted');
+      assert.equal(ledger.job(jobId).attempts, 1);
       assert.deepEqual(fixture.order, [`register:${log.sourceId}`]);
       assert.equal(await queue(), null);
     }));
@@ -741,8 +753,10 @@ test('a large member waits only until the durable archive-retention bound, then 
     await run(jobId, { large: service });
     assert.match(ledger.member(largePath).limit_reason, /Waiting for a free receipt/);
     assert.equal(Date.parse(ledger.job(jobId).next_attempt_at), now + ZIP_RECEIPT_WAIT_MS);
-    assert.equal(ledger.attempts.length, 0);
+    assert.equal(ledger.attempts.length, 1);
+    assert.equal(ledger.attempts[0].state, 'yielded');
     assert.equal(await queue(), null, 're-enrolment cannot reset the same waiting job');
+    ledger.member(largePath).limit_reason = 'UPLOAD_QUOTA: officer words are not scheduling state.';
     now = Date.parse(ledger.job(jobId).next_attempt_at);
     await run(jobId, { large: service });
     assert.match(ledger.member(largePath).limit_reason,
