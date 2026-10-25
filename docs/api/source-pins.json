@@ -561,7 +561,7 @@
     "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts": "af53ef6c89663a0271a5111fc3224762efa265c83763115c116649816750eff9",
     "packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts": "7e2b8206843c5ecc77ec09add81eb8cc2ca7b88c7595448b2f6c5b024d7c3fb0",
     "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts": "60509d3adc22d3f8c2c738f9a1d95c8dbb0c1c3d7ea776657a01f2c6363c5516",
-    "packages/server/src/modules/usp/ingestion/streaming-vector.ts": "5f701d6c410fbeb6c37ceaeddf19fb4dcddff86d667c38cea21a86a98eab2166",
+    "packages/server/src/modules/usp/ingestion/streaming-vector.ts": "4748548f30a6b3200170230a6803fe6a13905cdc45d7c1daabb894bb0b98888f",
     "packages/server/src/modules/usp/ingestion/sufficiency-context.ts": "bac7e53455d4313279da142d57d6fd535906cd3063f1dcca5be3d369feb1b23a",
     "packages/server/src/modules/usp/ingestion/sufficiency-ifc.ts": "aafd16b432d4bba75eb60f399e2da9caebe3c8aff7b1dc19ed42f1f1eacb94f0",
     "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts": "62ad2464cbdfd303c7aa9a34c77c8a89396e3524b1c74f1b35baeca812e2c1fd",
