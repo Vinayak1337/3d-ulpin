@@ -250,8 +250,26 @@ export class ChunkMappingService{
         conflict('A reviewed source prefix recipe must be approved before mapped admission.');
       const active=Number((await client.query("SELECT count(*)::int n FROM usp_chunk_mapping_imports WHERE state IN ('queued','running')")).rows[0].n);
       if(active>=limits.active)throw new AppError(429,'MAPPING_CAPACITY','The bounded mapping worker is occupied.');
-      const history=Number((await client.query('SELECT count(*)::int n FROM usp_chunk_mapping_imports')).rows[0].n);
-      if(history>=128)throw new AppError(429,'MAPPING_HISTORY_CAPACITY','The finite mapping history is full.');
+      // Retain every receipt; only work and completed mappings under current source/recipe/raw pins spend quota.
+      const history=Number((await client.query(`SELECT count(*)::int n FROM usp_chunk_mapping_imports m
+        LEFT JOIN jobs j ON j.id=m.job_id
+        LEFT JOIN sources s ON s.id=m.source_id
+        LEFT JOIN usp_mapping_recipes r ON r.source_id=m.source_id AND r.state IN ('approved','executed')
+        WHERE m.state IN ('queued','running','needs_input') OR (
+          m.state IN ('completed','completed_with_rejections') AND s.revision=m.source_revision
+          AND NOT EXISTS (SELECT 1 FROM sources newer WHERE newer.case_id=s.case_id
+            AND newer.family_id=s.family_id AND newer.revision>s.revision)
+          AND j.payload->>'recipeId' IS NOT DISTINCT FROM r.id::text
+          AND j.payload->>'recipeRevision' IS NOT DISTINCT FROM r.revision::text
+          AND j.payload->>'planHash' IS NOT DISTINCT FROM r.body->>'planHash'
+          AND NOT EXISTS (SELECT 1 FROM usp_chunk_mapping_imports newer JOIN jobs nj ON nj.id=newer.job_id
+            WHERE newer.source_id=m.source_id AND (newer.created_at,newer.job_id)>(m.created_at,m.job_id)
+              AND (newer.raw_job_id<>m.raw_job_id
+                OR nj.payload->>'readerSha256' IS DISTINCT FROM j.payload->>'readerSha256'))
+        )`)).rows[0].n);
+      if(history>=128)throw new AppError(429,'MAPPING_HISTORY_CAPACITY',
+        `${history} live or current mappings count toward the service quota of 128; a slot frees when work finishes `
+        +'without a current completed mapping, or a newer source revision, recipe or raw reader supersedes it.');
       const jobId=randomUUID(),base={version:limits.version,jobId,caseId,caseRevision:raw.caseRevision,
         sourceId,sourceRevision:raw.sourceRevision,sourceFamilyId:raw.sourceFamilyId,sourceSha256:raw.sourceSha256,
         rawJobId:request.rawJobId,rawInputFingerprint,readerSha256:raw.readerSha256,
