@@ -1,0 +1,50 @@
+{
+  "task": "S1.3g",
+  "planStep": 1,
+  "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf",
+  "verdict": "BLOCKED: stopped at the explicit OWN boundary; no product fix or causal claim.",
+  "reviewedEvidence": "5972c394:docs/evidence/step-1/s1-3/run4/{result,faults,jobs,telemetry}.json",
+  "findings": [
+    "All five named workers discard non-AppError details when writing their generic failure code.",
+    "jobs.error is text used for the existing code; payload is immutable input, not diagnostic storage.",
+    "usp_job_attempts has no cause column; completion_sha256 cannot hold diagnostics.",
+    "db.ts uses max 8 and connectionTimeoutMillis 5000; DISPATCH_LANES concurrencies sum to 31.",
+    "Run 4 records six recovered generic-error jobs, but no underlying exception.",
+    "Health has 192 samples, waiting maximum 2 at 749.557 s; this does not identify a timeout."
+  ],
+  "scopeBlocker": {
+    "requiredOutsideOwn": [
+      "database/manifest.json",
+      "packages/server/src/modules/usp/migrations.ts"
+    ],
+    "reason": "A new additive cause-column migration must be hash-registered and invoked by the existing USP migration transaction. sql-loader.ts only accepts manifest-registered SQL. Neither wiring file is owned; no alternate migration loader or request-time DDL was introduced.",
+    "migration": null,
+    "contractChanged": false
+  },
+  "comparison": {
+    "hypothesis": "Concurrent jobs exhaust the dispatcher pool and wait over 5 seconds for acquisition.",
+    "success": "A bounded run-4-shaped test against the test database stores the actual pg acquire-timeout cause.",
+    "stop": "No acquire timeout means no pool or retry-policy changes.",
+    "executed": false,
+    "reason": "Stopped at migration wiring boundary. ULPIN_DISPATCH_TEST_DATABASE_URL, TEST_DATABASE_URL and DATABASE_URL are also unset; no credentials or runtime files were read.",
+    "qualification": "Neither reproduced nor disproved; no baseline-fail/fixed-pass claim. Future diagnostics must retain class, SQLSTATE/errno, syscall and a scrubbed message capped at 200 characters."
+  },
+  "postgresConnectionLimit": {
+    "value": null,
+    "reason": "compose.yaml pins PostgreSQL 17 but states no max_connections; no number assumed. Runtime reads/actions were prohibited."
+  },
+  "no1": "Same cause not established. apps/studio/vite.config.ts API_PROXY forwards /api to ULPIN_API_TARGET (default loopback port 3188), including preview. A browser failed-to-fetch and absent case do not prove a pg timeout. API and dispatcher have separate process pools; changing only the dispatcher pool would not directly resize the POST pool. Studio unchanged.",
+  "checks": {
+    "phase": "before and after; detailed logs E:/ulpin-tmp/s1-3g/{before,after}-*.log",
+    "pnpm typecheck:backend": { "exit": [0, 0], "projects": 2 },
+    "pnpm studio:typecheck": { "exit": [0, 0], "projects": 4 },
+    "pnpm studio:test": { "exit": [0, 0], "passed": 831, "skipped": 3, "files": 128 },
+    "WORKING-RULES section 5 server set": { "exit": [0, 0], "passed": 1060, "skipped": 5, "total": 1065 },
+    "openapi.ts --check": { "exit": [0, 0], "operations": 336, "schemas": 379 },
+    "python scripts/api/check.py": { "exit": [0, 0], "operations": 336, "schemas": 379 },
+    "git diff --check": { "exit": [0, 0] },
+    "new regression test": { "exit": null, "reason": "Not implemented: task stopped before product changes." }
+  },
+  "inputs": "Run-4 Halifax and ZIP job receipts reviewed only; no real input file reopened or processed.",
+  "next": "Lead must extend OWN to migration wiring, supply an authorized test-database connection without exposing credentials, and identify an allowed source for PostgreSQL max_connections before resuming. Cause retention, five failure-path tests, bounded comparison and any conditional pool/busy-wait fix remain undone."
+}
