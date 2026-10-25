@@ -5,7 +5,7 @@ import {type ChunkMappingObservation,type MappingPlan,type SourceProfile,type St
   type StreamedProfileGeneration,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {sha256} from '../../../infrastructure/storage';
 import {compileMapping,setAsideGeometryTypes} from './registry';
-import {compileStreamedMapping} from './streamed-mapping';
+import {compileStreamedMapping,prefixGeometryCompatible} from './streamed-mapping';
 
 type Plan=MappingPlan|StreamedMappingPlan;
 type Profile=SourceProfile|StreamedProfileGeneration;
@@ -48,7 +48,7 @@ export function candidateKeyHashes(records:StreamingVectorRecord[],plan:Plan|Map
 }
 
 /** Compare each actual source record with the pinned inventory, including its permitted null and absent variants. */
-function sourceShapeIssues(feature:Record<string,unknown>,profile:Profile){
+function sourceShapeIssues(feature:Record<string,unknown>,profile:Profile,geometryMatches:(type:string)=>boolean){
   const issues=new Set<string>(),paths=new Map(profile.paths.map(item=>[item.path,item]));
   const properties=feature.properties;
   const attributes=properties&&typeof properties==='object'&&!Array.isArray(properties)
@@ -67,7 +67,7 @@ function sourceShapeIssues(feature:Record<string,unknown>,profile:Profile){
     if(!observed.has(expected.path)&&expected.absent===0)issues.add('SCHEMA_DRIFT_ABSENT');
   const geometry=feature.geometry;
   if(!geometry||typeof geometry!=='object'||Array.isArray(geometry)
-    ||!profile.geometryTypes.includes(String((geometry as Record<string,unknown>).type)))
+    ||!geometryMatches(String((geometry as Record<string,unknown>).type)))
     issues.add('SCHEMA_DRIFT_GEOMETRY');
   return [...issues];
 }
@@ -127,6 +127,12 @@ function normalizeLegacyMappedChunk(records:StreamingVectorRecord[],plan:Plan,pr
   const namePath=plan.operations.find(op=>op.target.endsWith('.name'))?.sourcePath;
   const byHash=new Map(existing.map(row=>[row.source_key_sha256,{value:row.source_key,firstIndex:row.first_feature_index}]));
   const keys:KeyDecision[]=[],observations:ChunkMappingObservation[]=[];
+  const geometryTypes=new Map<string,boolean>();
+  const geometryMatches=(type:string)=>{
+    if(!geometryTypes.has(type))geometryTypes.set(type,plan.version==='streamed-prefix-mapping/1'
+      ?prefixGeometryCompatible(plan,profile as StreamedProfileGeneration,type):profile.geometryTypes.includes(type));
+    return geometryTypes.get(type)!;
+  };
   for(const record of records){
     const issues:string[]=[];
     if(record.disposition!=='accepted'){
@@ -139,7 +145,7 @@ function normalizeLegacyMappedChunk(records:StreamingVectorRecord[],plan:Plan,pr
     const feature=record.feature as Record<string,unknown>;
     const geometryRef={rawJobId,chunkIndex,featureIndex:record.featureIndex,rawSha256:record.rawSha256,
       sourcePath:'/features/*/geometry' as const};
-    issues.push(...sourceShapeIssues(feature,profile));
+    issues.push(...sourceShapeIssues(feature,profile,geometryMatches));
     if(setAsideGeometryTypes(kind,[String((feature.geometry as {type?:unknown}|null|undefined)?.type)]).length){
       observations.push(setAsideObservation(record,field(feature,keyPath,integer),namePath,geometryRef,issues));
       continue;
