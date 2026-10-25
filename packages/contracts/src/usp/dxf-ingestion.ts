@@ -3,7 +3,8 @@ import {z} from 'zod';
 export const DXF_VERSION='dxf-native/1' as const;
 export const DXF_LIMITS=Object.freeze({originalBytes:16*1024*1024,artifactBytes:16*1024*1024,
   resultBytes:16*1024,statusBytes:16*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
-  active:1,workerMs:150_000,requestMs:45_000,readMs:60_000});
+  active:1,workerMs:150_000,requestMs:45_000,readMs:60_000,
+  entities:60_000,records:65_000,points:60_000,tags:600_000,pages:20,pageBytes:8*1024*1024});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative(),positive=z.number().int().positive();
 export const DXFLineageSchema=z.strictObject({issuer:z.string().min(1).max(300).nullable(),
   originalUrl:z.url().max(2048).nullable(),acquiredAt:z.iso.datetime().nullable(),
@@ -22,18 +23,36 @@ export const DXFInputSchema=z.strictObject({version:z.literal(DXF_VERSION),jobId
   sourceSha256:hash,sourceBytes:positive.max(DXF_LIMITS.originalBytes),objectKey:z.string().min(1).max(512),
   subject:z.string().min(1).max(256),accessSha256:hash,readerSha256:hash,tools:DXFToolPinsSchema.nullable(),
   selection:z.literal('complete_bounded_source')});
-export const DXFSummarySchema=z.strictObject({schemaVersion:z.literal('dxf-native-inspection/1'),sourceSha256:hash,
+export const DXFProfileSchema=z.enum(['dxf-native-inspection/1','dxf-native-inspection/2']);
+export const DXFPageSchema=z.strictObject({pageIndex:rev.max(DXF_LIMITS.pages-1),firstOrdinal:rev,
+  entityCount:positive.max(DXF_LIMITS.entities),firstTagIndex:rev,lastTagIndex:rev,
+  bytes:positive.max(DXF_LIMITS.pageBytes),sha256:hash});
+export const DXFPagesSchema=z.array(DXFPageSchema).max(DXF_LIMITS.pages).superRefine((pages,ctx)=>{
+  let ordinal=0,lastTag=-1;
+  for(const [index,page] of pages.entries()){
+    if(page.pageIndex!==index||page.firstOrdinal!==ordinal||page.firstTagIndex<=lastTag||
+      page.lastTagIndex<page.firstTagIndex||ordinal+page.entityCount>DXF_LIMITS.entities)
+      ctx.addIssue({code:'custom',message:'DXF pages require contiguous ordinals and ordered source tag ranges.'});
+    ordinal+=page.entityCount;lastTag=page.lastTagIndex;
+  }
+});
+export const DXFSummarySchema=z.strictObject({schemaVersion:DXFProfileSchema,sourceSha256:hash,
   sourceBytes:positive.max(DXF_LIMITS.originalBytes),dxfVersion:z.enum(['AC1009','AC1012','AC1014','AC1015','AC1018','AC1021','AC1024','AC1027','AC1032']),
-  recordCount:rev.max(100000),projectedEntityCount:rev.max(10000),pointCount:rev.max(100000),unsupportedFindingCount:rev.max(10000),
+  recordCount:rev.max(100000),projectedEntityCount:rev.max(DXF_LIMITS.entities),pointCount:rev.max(100000),
+  unsupportedFindingCount:rev.max(DXF_LIMITS.entities),
   units:z.strictObject({state:z.enum(['absent','unitless','declared','unsupported']),code:z.number().int().nullable(),name:z.string().max(100).nullable()}),
   inspectionFrame:z.literal('source_local'),geometryValidity:z.literal('not_assessed'),globalPlacement:z.literal('not_assessed'),
   unitConversionApplied:z.literal(false),blockExpansion:z.literal('not_performed'),analyticEligible:z.literal(false),
   operationalRecords:z.literal(false),trainingLabels:z.literal(false),rights:z.literal('not_assessed')});
-export const DXFArtifactSchema=z.strictObject({key:z.string().min(1).max(512),sha256:hash,
-  bytes:positive.max(DXF_LIMITS.artifactBytes),mediaType:z.literal('application/json'),profile:z.literal('dxf-native-inspection/1')});
+const artifact={key:z.string().min(1).max(512),sha256:hash,
+  bytes:positive.max(DXF_LIMITS.artifactBytes),mediaType:z.literal('application/json')};
+export const DXFArtifactSchema=z.discriminatedUnion('profile',[
+  z.strictObject({...artifact,profile:z.literal('dxf-native-inspection/1')}),
+  z.strictObject({...artifact,profile:z.literal('dxf-native-inspection/2'),pages:DXFPagesSchema})]);
 export const DXFResultSchema=z.strictObject({version:z.literal(DXF_VERSION),input:DXFInputSchema,
   summary:DXFSummarySchema,artifact:DXFArtifactSchema,createdAt:z.iso.datetime()}).superRefine((v,ctx)=>{
-  if(!v.input.tools||v.summary.sourceSha256!==v.input.sourceSha256||v.summary.sourceBytes!==v.input.sourceBytes)
+  if(!v.input.tools||v.summary.sourceSha256!==v.input.sourceSha256||v.summary.sourceBytes!==v.input.sourceBytes||
+    v.summary.schemaVersion!==v.artifact.profile)
     ctx.addIssue({code:'custom',message:'An accepted native result requires exact original and configured tool pins.'});
 });
 export const DXFStatusSchema=z.strictObject({version:z.literal(DXF_VERSION),caseId:id,sourceId:id,jobId:id,

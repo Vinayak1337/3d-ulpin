@@ -11,7 +11,7 @@ import {amendRegistryDocumentCitationsTx,readRegistryDocumentCitationsTx,assertR
   documentReviewContext,publicRegistryBody,publicRegistryReview,citationId} from '../packages/server/src/modules/registry/registry-document-evidence';
 import {registryDXFCitationSourceTx} from '../packages/server/src/modules/registry/registry-dxf-citation-source';
 import {commitRegistryReviewTx} from '../packages/server/src/modules/registry/registry';
-import {dxfInput,dxfArtifactKey,dxfResultKey} from '../packages/server/src/modules/usp/ingestion/dxf';
+import {dxfInput,dxfArtifactKey,dxfResultKey,dxfPageKey} from '../packages/server/src/modules/usp/ingestion/dxf';
 import {dxfSummary} from '../packages/server/src/modules/usp/ingestion/dxf-processor';
 import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
@@ -39,10 +39,14 @@ const present=Object.keys(samples).every(name=>existsSync(root+'/'+name+'.native
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`,digest='a'.repeat(64);
 async function local(work:()=>Promise<void>){const prior=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='registry-dxf-protocol';
   try{await work();}finally{if(prior===undefined)delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=prior;}}
-function fixture(name:keyof typeof samples='1_polylines.dxf',kind:'building'|'floor'|'space'='building'){
-  const sample=samples[name],raw=readFileSync(originals+'/'+name),artifact=readFileSync(root+'/'+name+'.native.json'),native=JSON.parse(artifact.toString('utf8')),
+const pagedRoot=process.env.ULPIN_DXF_DECLARED_PAGES??'E:/ulpin-tmp/s5-8b/declared-pages';
+function fixture(name:keyof typeof samples='1_polylines.dxf',kind:'building'|'floor'|'space'='building',paged=false){
+  const sample=samples[name],raw=readFileSync(originals+'/'+name),
+    artifact=readFileSync(paged?pagedRoot+'/drawing.json':root+'/'+name+'.native.json'),
+    native=JSON.parse(artifact.toString('utf8')),
     saved=DXFStatusSchema.parse(JSON.parse(readFileSync(root+'/'+name+'.journey.json','utf8')).status).result!;
-  assert.equal(sha256(raw),sample.source);assert.equal(sha256(artifact),sample.artifact);
+  assert.equal(sha256(raw),sample.source);
+  if(!paged)assert.equal(sha256(artifact),sample.artifact);
   const siteId=id(10),caseId=id(1),sourceId=id(2),jobId=id(3),draftId=id(20),binding=ingestionBinding(caseId),
     current={id:caseId,revision:1,archived:false,frame:null,context:null,site_id:siteId},
     original=DXFOriginalSchema.parse({version:'dxf-native/1',subject:binding.subject,accessSha256:binding.access,sha256:sha256(raw),bytes:raw.length,
@@ -52,14 +56,17 @@ function fixture(name:keyof typeof samples='1_polylines.dxf',kind:'building'|'fl
       object_key:`sources/${sourceId}/${sha256(raw)}`,inspection:{dxfOriginal:original}},
     tools={platform:'windows-x86_64' as const,pythonSha256:digest,profileSha256:digest,readerSha256:digest,supervisorSha256:digest,dependencyLockSha256:digest,codeSha256:digest},
     input=dxfInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId})} as any,jobId,'complete_bounded_source',tools),
-    result=DXFResultSchema.parse({version:'dxf-native/1',input,summary:dxfSummary(artifact,input),artifact:{...saved.artifact,key:dxfArtifactKey(jobId,sha256(artifact))},createdAt:'2026-10-03T00:00:00Z'}),
+    result=DXFResultSchema.parse({version:'dxf-native/1',input,summary:dxfSummary(artifact,input),
+      artifact:{...saved.artifact,key:dxfArtifactKey(jobId,sha256(artifact)),sha256:sha256(artifact),
+        bytes:artifact.length,profile:native.schemaVersion,...(paged?{pages:native.pages}:{})},
+      createdAt:'2026-10-03T00:00:00Z'}),
     resultBytes=Buffer.from(JSON.stringify(result)),
     selection:Extract<SourceFusionSelection,{kind:'dxf'}>={kind:'dxf',pin:{caseId,caseRevision:1,sourceId,sourceRevision:1,sourceSha256:sha256(raw),jobId,
       resultSha256:sha256(resultBytes),readerSha256:input.readerSha256,inputSha256:fingerprint(input),acceptedFence:1,resultBytes:resultBytes.length},entityOrdinals:[sample.ordinal]},
     job={id:jobId,operation:'dxf-native',case_id:caseId,source_id:sourceId,case_revision:1,payload:input,input_fingerprint:fingerprint(input),input_sha256:fingerprint(input),
       status:'succeeded',logical_state:'succeeded',result_ref:{assetId:`dxf:${jobId}:${resultBytes.length}`,version:1,sha256:sha256(resultBytes)},
       accepted_fence:1,attempt_state:'accepted',attempt_fence:1,attempt_input_sha256:fingerprint(input),completion_sha256:sha256(resultBytes)};
-  assert.deepEqual(result.summary,saved.summary);
+  if(!paged)assert.deepEqual(result.summary,saved.summary);
   const documentBytes=readFileSync(documentPath),document=DocumentResultSchema.parse(JSON.parse(documentBytes.toString('utf8'))),
     enrollment=JSON.parse(readFileSync(new URL('../docs/evidence/usp/reference-document-enrollment/manifest.json',import.meta.url),'utf8')).enrollments.find((row:any)=>row.id==='epsg7415');
   assert.equal(sha256(documentBytes),enrollment.resultSha256);
@@ -105,6 +112,16 @@ function fixture(name:keyof typeof samples='1_polylines.dxf',kind:'building'|'fl
   }} as PoolClient;
   const objects=new Map([[dxfResultKey(jobId,sha256(resultBytes)),resultBytes],[result.artifact.key,artifact],
     [documentResultKey(document.input.jobId,sha256(documentBytes)),documentBytes]]);
+  if(paged){
+    // Reassemble only this test's expected projection; production reads selected pages.
+    native.entities=[];
+    for(const pin of native.pages){
+      const bytes=readFileSync(pagedRoot+'/'+pin.sha256+'.page.json');
+      assert.equal(sha256(bytes),pin.sha256);assert.equal(bytes.length,pin.bytes);
+      objects.set(dxfPageKey(jobId,pin.sha256),bytes);
+      native.entities.push(...JSON.parse(bytes.toString('utf8')).entities);
+    }
+  }
   const dependencies:RegistryDocumentDependencies={source:async(_client,_ctx,pin)=>{
     assert.equal(pin.sourceId,docSelection.pin.sourceId);return document.input;
   },result:async()=>document,registrySource:async(_client,_site,sourceId)=>sourceId===docSelection.pin.sourceId?
@@ -122,7 +139,8 @@ function fixture(name:keyof typeof samples='1_polylines.dxf',kind:'building'|'fl
     fusionSourceProjection(docSelection,{kind:'document',result:document})]);
   const request={requestKey:id(30),expectedDraftRevision:1,recordId:record.id,expectedRecordRevision:1,
     addFusion:{contextSha256:context.contextSha256,selection:{sources:[selection,docSelection]}}};
-  return {client,dependencies,state,record,body,current,source,job,selection,request,draftId,siteId,native,raw,context,result,document,docSelection};
+  return {client,dependencies,state,record,body,current,source,job,selection,request,draftId,siteId,native,raw,context,
+    result,document,docSelection,objects};
 }
 function prepareReview(f:ReturnType<typeof fixture>){
   const record=f.state.draft.records[0],reviewContext=documentReviewContext();
@@ -161,6 +179,23 @@ test('selected DXF entity and native document traverse draft/private read/review
         recordedBody:f.state.row.body,historicalRead:historical,qualification:'not_assessed',toolInventory:'stubbed; not current runtime qualification'},null,2)+'\n',{flag:'wx'});}
   }
 }));
+test('profile /2 citation reads its exact stored entity and refuses a changed page',
+  {skip:!present||!existsSync(pagedRoot+'/drawing.json')},()=>local(async()=>{
+  const f=fixture('1_polylines.dxf','building',true);
+  await amendRegistryDocumentCitationsTx(f.client,f.draftId,f.request,f.dependencies);
+  const pin=f.state.draft.records[0].documentCitations![0];assert(pin.version==='registry-dxf-citation/1');
+  assert.equal(pin.dxf.profile,'dxf-native-inspection/2');
+  const evidence=await readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies),entry=evidence.citations[0];
+  assert('entity' in entry);assert.deepEqual(entry.entity,f.native.entities[33]);
+  assert.equal(pin.dxf.recordSha256,fingerprint(entry.entity));
+  assert.equal(f.result.artifact.profile,'dxf-native-inspection/2');
+  if(f.result.artifact.profile!=='dxf-native-inspection/2')assert.fail('missing page pins');
+  const key=dxfPageKey(f.job.id,f.result.artifact.pages[0].sha256),changed=Buffer.from(f.objects.get(key)!);
+  changed[0]^=1;f.objects.set(key,changed);
+  await assert.rejects(()=>readRegistryDocumentCitationsTx(f.client,f.draftId,f.dependencies),
+    (error:any)=>error.code==='SOURCE_FUSION_INTEGRITY');
+}));
+
 test('DXF wrong/stale/revoked citation denies amendment/read/commit; removed denied source needs no artifact read', {skip:!present},()=>local(async()=>{
   const f=fixture();await registryDXFCitationSourceTx(f.client,f.siteId,f.selection.pin);
   await assert.rejects(()=>registryDXFCitationSourceTx(f.client,id(99),f.selection.pin),(error:any)=>error.status===403);

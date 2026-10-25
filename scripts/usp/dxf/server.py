@@ -187,7 +187,8 @@ def main():
             sys.path.insert(0,str(root/'services/geo'))
             from geo import native_dxf
             native_dxf.subprocess=VerifiedCacheSubprocess(profile['python'],environment,root/'services/geo')
-            result=native_dxf.inspect_dxf(raw,temporary_parent=Path(request['output']).parent)
+            result=native_dxf.inspect_dxf(raw,page_directory=Path(request['output']).parent,
+                                          temporary_parent=Path(request['output']).parent)
             encoded=native_dxf.encode_dxf_result(result)
             dependency_profile.verify(profile)
             if digest(bounded(request['profilePath'],2*1024**2))!=pins['profileSha256'] or digest(bounded(source,16*1024**2))!=request['sourceSha256']:
