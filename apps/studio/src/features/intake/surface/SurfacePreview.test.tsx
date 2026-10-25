@@ -114,12 +114,47 @@ function canvasRecorder() {
   return { calls, restore: () => { owner.createElement = make; } };
 }
 
+type Calls = ReturnType<typeof canvasRecorder>['calls'];
+
+/** The frames painted, each from its clearRect on: the last is what the officer sees on the canvas now. */
+function frames(calls: Calls): Calls[] {
+  return calls.reduce<Calls[]>((painted, call) => {
+    if (call[0] === 'clearRect') painted.push([]);
+    painted.at(-1)?.push(call);
+    return painted;
+  }, []);
+}
+
+/** Each picture in a frame by the transform it is drawn under, so its corners on the canvas. */
+function pictures(frame: Calls): unknown[][] {
+  let transform: unknown[] = [];
+  return frame.flatMap(([call, ...args]) => {
+    if (call === 'setTransform') transform = args;
+    return call === 'drawImage' ? [transform] : [];
+  });
+}
+
 async function mounted(listed: IntakeItem) {
   const canvas = canvasRecorder();
   const host = container();
   const view = createRoot(host as never);
   await act(async () => view.render(<SurfacePreview item={listed} />));
   return { host, canvas, close: async () => { await act(async () => view.unmount()); canvas.restore(); } };
+}
+
+/**
+ * Decodes part 1 only once released. Part 0's picture waits until part 1's decode is asked, so part 1's display read
+ * has answered and the first view drawn holds both parts' corners with part 0's picture alone.
+ */
+function lateSecond() {
+  let asked!: () => void, release!: () => void;
+  const secondAsked = new Promise<void>((done) => { asked = done; });
+  const released = new Promise<void>((done) => { release = done; });
+  const decoded = async (_request: unknown, partIndex: number) => {
+    if (partIndex === 1) { asked(); await released; } else await secondAsked;
+    return picture();
+  };
+  return { decoded, release };
 }
 
 const settle = () => act(async () => { await new Promise((done) => setTimeout(done, 20)); });
@@ -132,13 +167,50 @@ it('draws a raster\'s not-placed parts as one mosaic at their source corners, wi
   expect(view.host.textContent).toContain(`${DISPLAY_ONLY} The read parts are laid out by their corners`);
   expect(view.host.textContent).toContain(`Not placed: 2 parts: ${NO_AREA}`);
   // 20 by 10 source units fit 640 by 320 canvas pixels; each 2-pixel picture spans 320, its upper left first.
-  const pictures = view.canvas.calls.filter(([name]) => name === 'drawImage');
-  expect(pictures).toHaveLength(2);
-  const transforms = view.canvas.calls.filter(([name]) => name === 'setTransform').map(([, ...args]) => args);
-  expect(transforms).toContainEqual([160, 0, 0, 160, 0, 0]);
-  expect(transforms).toContainEqual([160, 0, 0, 160, 320, 0]);
+  // The canvas repaints each view the reader publishes, so only its last frame is what is on screen.
+  const shown = frames(view.canvas.calls).at(-1)!;
+  expect(pictures(shown)).toEqual([[160, 0, 0, 160, 0, 0], [160, 0, 0, 160, 320, 0]]);
   expect(read.artifacts.sort()).toEqual([0, 1]);
   await view.close();
+});
+
+it('repaints the mosaic once per view when a part decodes after the first is drawn, each part once a frame', async () => {
+  const corners: Corners[] = [[[0, 10], [10, 10], [10, 0], [0, 0]], [[10, 10], [20, 10], [20, 0], [10, 0]]];
+  const second = lateSecond();
+  fakeIo(2, (n) => display(n, corners[n]!, notPlaced('no_batch_area', NO_AREA)), second.decoded);
+  const view = await mounted(item());
+  await settle();
+  // Part 0 alone: one frame, its picture once, sized for both parts' corners.
+  const first = frames(view.canvas.calls);
+  expect(first).toHaveLength(1);
+  expect(pictures(first[0]!)).toEqual([[160, 0, 0, 160, 0, 0]]);
+  await act(async () => second.release());
+  await settle();
+  // Part 1 decoded: one more frame, cleared first, with each picture once at its own corners.
+  const painted = frames(view.canvas.calls);
+  expect(painted).toHaveLength(2);
+  expect(pictures(painted[1]!)).toEqual([[160, 0, 0, 160, 0, 0], [160, 0, 0, 160, 320, 0]]);
+  await view.close();
+});
+
+it('keeps each published view as it was: a picture decoded later does not reach an earlier view', async () => {
+  const corners: Corners[] = [[[0, 10], [10, 10], [10, 0], [0, 0]], [[10, 10], [20, 10], [20, 0], [10, 0]]];
+  const second = lateSecond();
+  fakeIo(2, (n) => display(n, corners[n]!, notPlaced('no_batch_area', NO_AREA)), second.decoded);
+  let seen = (_view: PreviewView) => {};
+  const holding = (pictures: number) => new Promise<PreviewView>((done) => {
+    seen = (view) => { if (view.parts.filter((part) => part.image).length === pictures) done(view); };
+  });
+  const reader = new SurfacePreviewReader(facts.io as SurfaceIo, (next) => seen(next));
+  const one = holding(1);
+  reader.sync(item());
+  const early = await one;
+  expect(early.parts.map((part) => Boolean(part.image))).toEqual([true, false]);
+  const two = holding(2);
+  second.release();
+  expect((await two).parts.map((part) => Boolean(part.image))).toEqual([true, true]);
+  expect(early.parts.map((part) => Boolean(part.image))).toEqual([true, false]);
+  reader.dispose();
 });
 
 it('draws a point batch from above at its places between its source corners', async () => {
