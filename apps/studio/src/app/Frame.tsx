@@ -101,7 +101,7 @@ function HeaderSearch() {
         id="studio-search"
         ref={inputRef}
         type="search"
-        placeholder="Search batches, buildings, codes"
+        placeholder="Search"
         value={value}
         maxLength={150}
         onChange={(event) => setValue(event.target.value)}
@@ -149,7 +149,7 @@ function AreaSwitcher() {
     };
   }, [open]);
 
-  const label = current?.name ?? (areas.isPending ? 'Loading areas' : areas.data?.length ? 'Choose an area' : 'No areas yet');
+  const label = current?.name ?? (areas.isPending ? 'Loading areas' : areas.data?.length ? 'Choose an area' : 'No areas');
   return (
     <div className={styles.areaSwitcher} ref={rootRef}>
       <button
@@ -191,9 +191,7 @@ function AreaSwitcher() {
 function OperatorMenu() {
   const capabilities = useCapabilities();
   const runtime = capabilities.data?.runtime;
-  const title =
-    runtime === 'external-configured' ? 'Operator configured by the identity service.'
-      : 'Duty officer on this workstation.';
+  const title = runtime === 'external-configured' ? 'Operator' : 'Duty officer';
   return (
     <span className={styles.operator} title={title}>
       <Icon icon={UserCircle} size={24} label={title} />

@@ -50,7 +50,7 @@
 
 /*
  * One row needs about 1100 px (1140 px with a request count). Narrower, as at 200% zoom, the header wraps in
- * reading order: the search stays beside the navigation while its hint fits, and the actions take a row of
+ * reading order: the search stays beside the navigation while it fits, and the actions take a row of
  * their own. The page keeps at least half the height, so a tall header scrolls away instead of covering it.
  */
 @media (max-width: 1140px) {
