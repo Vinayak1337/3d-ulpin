@@ -222,7 +222,7 @@ Size M, code only. After: S3.4 (question shape). **Status: done 25 Oct (merged i
 
 ### S3.7 Vector-lane readers start up to the lane cap, not one per process
 
-Size M, code only. After: S3.2 (same file dispatch-lanes.ts); dispatch only if S1.3 still shows vector-lane queue time above execution time. **Status: open.**
+Size M, code only. After: S3.2 (same file dispatch-lanes.ts); dispatch only if S1.3 still shows vector-lane queue time above execution time. **Status: running 25 Oct (codex, from int3-pre a8c67f15; owner said run it now rather than wait for S1.3 run 2)**
 
 - **What:** streaming-vector, streamed-profile, chunk-mapping and intake-large each have one module slot (processing.ts:46-50, 391, 475, 489, 547), although the vector lane allows 2 (dispatch-lanes.ts:27). unavailableOperations blocks a second start of a held operation (dispatch-lanes.ts:235-240). REH15 under load: queue 1,559.5 s against 15.1 s of execution. Replace those four singletons with per-operation sets bounded by the lane concurrency and the S3.2 heap budget. Fencing and attempts are unchanged.
 - **Files:** packages/server/src/modules/cases/processing.ts:45-50,385-395,475-500,545-552; packages/server/src/modules/cases/dispatch-lanes.ts:232-241
@@ -427,7 +427,7 @@ Size M, code only. After: S4.9. **Status: done 25 Oct, merged into task/int3-pre
 
 ### S4.12 After the owner's yes, Sarvam names the remaining map-layer field meanings
 
-Size M, code only. After: S4.1, S4.2, S4.6; switched on only after the owner's yes on PLAN Needs you 3. **Status: open.**
+Size M, code only. After: S4.1, S4.2, S4.6; switched on only after the owner's yes on PLAN Needs you 3. **Status: running 25 Oct (codex, from int3-pre a8c67f15; owner yes 25 Oct on PLAN Needs you 3: up to five masked sample values per column)**
 
 - **What:** Map layers reach Sarvam only through the building-key proposal, which takes only EPSG:4326 building polygons. Every other property stays unknown or rule-named. In the intake draft job, after memory and rules: profile the first 100 features as gis_attributes with masked samples, and call proposeMapping (teacher only under the S4.1 switch). Store the routed result in an operations row keyed by item and source revision. The reading shows those fields as Sarvam, not confirmed. Cut candidate.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:119-135 preparedProposal; column-profile.ts:93-102 maskColumnSample, 255-265 profileGisAttributes; mapping-teacher.ts:841-873 (call only); adaptive-mapping.ts:148-150 (read only); intake-reading.ts (read the stored row)
@@ -490,7 +490,7 @@ Size M, code only. After: S5.4 (same file, native_gis.py). **Status: done 25 Oct
 
 ### S5.6 Processor image with GeoParquet and 1 GiB conversion, checked on reh-02
 
-Size M, this PC: Docker. After: S5.4, S5.5, S2 (practice kit). The only runtime task while it runs. **Status: open.**
+Size M, this PC: Docker. After: S5.4, S5.5, S2 (practice kit). The only runtime task while it runs. **Status: folded into S5.22 (one image from the integrated head carries S5.4 and S5.5); its GeoParquet and 1 GiB checks run on reh-02 with S5.22**
 
 - **What:** The services/geo changes from S5.4 and S5.5 reach a runtime only through a new processor image pinned in scripts/platform/processor-image.json. Build the image from staging after both merge, pin it, and roll ulpin-reh-02 as REH16 did (its roll.json steps, doctor PASS). Then drop the practice kit's GeoParquet and its largest GeoPackage or shapefile above 128 MiB into one batch. Keep the old images. Roll back and stop reh-02 at the end. The demo is not touched.
 - **Files:** scripts/platform/processor-image.json; scripts/platform/processor-image.mjs and processor-image-pin.mjs (use, no change expected); docs/evidence/5/s5.6/result.json
@@ -499,7 +499,7 @@ Size M, this PC: Docker. After: S5.4, S5.5, S2 (practice kit). The only runtime 
 
 ### S5.7 Decimal-comma coordinates can be placed when the officer states the mark
 
-Size S, this PC: data drive. After: S1. Parallel with everything in this family (disjoint files). **Status: done 25 Oct (merged into task/int3-pre, contract and pins 685e5210; server part only). IntakeTablePlacementSchema.decimalMark (point by default, never detected); comma turns one comma per cell into a point; WKT refuses comma; the lineage records the mark. Open, first: the regenerated client makes decimalMark required, so pnpm studio:typecheck on int3-pre fails at table-placement-command.ts:65 until the Studio sends it; the UI step S5.7b adds the decimal-mark choice in PlaceOnMapDialog and sends it.**
+Size S, this PC: data drive. After: S1. Parallel with everything in this family (disjoint files). **Status: done 25 Oct: server part (contract and pins 685e5210) and UI part S5.7b (int3-pre a8c67f15: the officer states point or comma for x/y columns; WKT uses point). Studio type check, tests and build pass**
 
 - **What:** A semicolon CSV with decimal commas is read, but its rows cannot be placed: coordinateText accepts only a decimal point, so every row is skipped as not_a_number. Add an officer-stated decimal mark to IntakeTablePlacementSchema (point by default, never guessed) and a choice for it in PlaceOnMapDialog. When the mark is comma, rowGeometry turns one comma per cell into a point before the existing exact-number check. WKT stays point-only. The merger regenerates openapi.json.
 - **Files:** packages/contracts/src/usp/intake.ts:85-93 (IntakeTablePlacementSchema); packages/server/src/modules/usp/ingestion/wkt.ts:17-21 (coordinateText); table-geojson.ts:85-99 (rowGeometry), 34-41 (input schema); apps/studio/src/features/intake/PlaceOnMapDialog.tsx:60-90; table-placement-command.ts:10-40
@@ -553,7 +553,7 @@ Size M, code only. After: None: it works with today's readers. Can run in parall
 
 ### S5.13 IFC reader configured on fresh demo and rehearsal runtimes
 
-Size S, this PC: data drive. After: Owner prerequisite: a stable CPython 3.12 base on E: (downloading it needs the owner's yes). Otherwise use the codex-runtime interpreter the existing profile names (fragile). Can run in parallel with S5.11 and S5.12. **Status: open.**
+Size S, this PC: data drive. After: Owner prerequisite: a stable CPython 3.12 base on E: (downloading it needs the owner's yes). Otherwise use the codex-runtime interpreter the existing profile names (fragile). Can run in parallel with S5.11 and S5.12. **Status: running 25 Oct (codex, from int3-pre a8c67f15; owner yes 25 Oct to download CPython 3.12 to E:)**
 
 - **What:** The batch queues an IFC reading (intake-ifc.ts:24-43), but no demo or rehearsal script sets ULPIN_IFC_PROFILE: demo-native-readers.mjs builds only dxf, citygml, gltf and obj on a Python 3.13 base, and ifcConfig needs a Python 3.12 runtime. Add an ifc entry with its own base interpreter and the pinned environment from E:/BhuAayam-data/task-data/desktop-ifc-native (wheels, dependencies.json). The roll's native-reader step then builds and checks five readers, and a fresh runtime reads an IFC instead of stopping with IFC_UNAVAILABLE.
 - **Files:** scripts/platform/demo-native-readers.mjs:20-35 (defaultPython, readerSetup), the baseInterpreter check after line 40 (each reader's own Python version), build and check paths; scripts/platform/demo-native-readers.test.mjs; packages/server/src/modules/usp/ingestion/ifc-config.ts:30-46 (read only: profile rules); scripts/usp/ifc/profile.py (read); docs/backend/DEMO-RUNTIME.md (NP1 step words)
@@ -611,6 +611,12 @@ Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel wit
 - **Check:** E:/BhuAayam-data/task-data/d3/geo-py311/Scripts/python.exe -I -m pytest services/geo/tests/test_native_cityjson.py services/geo/tests/test_cityjson_outline.py, exit 0. The practice kit's CityJSON (or its .city.jsonl) reads within the new bounds and writes its Building outlines with the stated EPSG basis (counts in result.json); E:/BhuAayam-data/task-data/reh15/act2/d1-3dbag-single-roof.city.json gives the same outline as today.
 - **Tests:** services/geo/tests/test_native_cityjson.py; services/geo/tests/test_cityjson_outline.py; services/geo/tests/test_cityjson_processing.py; services/geo/tests/test_cityjson_processing_pins.py; tests/cityjson-authority.test.ts; packages/server/src/modules/usp/ingestion/intake-signatures.test.ts
 
+### S5.18b CityJSON reader bounds measured on a real 3DBAG tile
+
+Size S, this PC: data drive. After: S5.18. **Status: running 25 Oct (codex, from int3-pre a8c67f15).**
+
+- **What:** S5.18 kept the 8 MiB bounds because no real CityJSON tile existed. Acquire one official 3DBAG tile (CC BY 4.0, test_only) into the practice kit with its receipt, measure the reader on it, and set the bounds from the numbers with a stated margin, as S5.17 did for CityGML.
+
 ### S5.19 IFC reading adds a storey outline in the file's own frame
 
 Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned after this change). Can run in parallel with S5.15, S5.17 and S5.18. **Status: merged 25 Oct into int3-pre (pins 4e1c7690; AC20-FZK-Haus 2 outlines; bounds measured on a test_only 99,766-entity model, 13 s; host profile repinned after S5.13).**
@@ -640,7 +646,7 @@ Size M, code only. After: None; can run in parallel with anything. Dispatch it l
 
 ### S5.22 Processor image and host reader profiles with the step 5 readers; practice-kit 3D and imagery files on reh-02
 
-Size M, this PC: Docker. After: Step 1, the step 2 kit, and S5.11 to S5.20 accepted and integrated. This is the only runtime task in the area and needs a quiet PC. **Status: open.**
+Size M, this PC: Docker. After: Step 1, the step 2 kit, and S5.11 to S5.20 accepted and integrated. This is the only runtime task in the area and needs a quiet PC. **Status: image part S5.22a running 25 Oct (codex: build and pin the processor image from int3-pre a8c67f15; owner yes 25 Oct to image builds); the reh-02 roll and file checks follow it**
 
 - **What:** The readers changed in S5.11 to S5.19 run in two places: the processor image (raster, point, CityJSON and both outline converters) and the host profiles built by the NP1 step (CityGML, glTF, OBJ, IFC). Build and pin the image from services/geo, roll ulpin-reh-02 to the integrated head with the native-reader step, and drop each practice-kit 3D and imagery file in its own batch, then all together. For each file, record the route, reader outcome, how it is drawn (map or own frame) or its words, and seconds to the first and last part. Fix configuration only; any code fault becomes a new task.
 - **Files:** scripts/platform/processor-image.json; scripts/platform/demo-native-readers.mjs (run, not edited); docs/backend/DEMO-RUNTIME.md (roll steps); docs/evidence/5/s5-12/result.json
