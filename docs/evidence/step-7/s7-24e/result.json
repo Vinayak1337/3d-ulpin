@@ -3,7 +3,7 @@
   "title": "Cut taglines, helper text and secondary labels in the review screens",
   "plan_step": 7,
   "base": "bac06934",
-  "strings": {"file": "strings.json", "before": 318, "cut": 23, "shortened": 46, "kept": 249},
+  "strings": {"file": "strings.json", "before": 318, "cut": 22, "shortened": 43, "kept": 253},
   "net_lines_apps": {"added": 78, "removed": 155},
   "layout_fixes": [
     "Candidate sheet: the All candidates reviewed panel is titled with its count (n of n decided) beside the Reviewed badge; the body sentence is gone",
