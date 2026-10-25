@@ -380,6 +380,9 @@ async function readPageImageTx(client: PoolClient, source: IntakeSourceRow, card
   return queuePageImageTx(client, source, card, item);
 }
 
+// The Word reader keeps its 16 MiB original bound independently of the PDF page profile.
+const WORD_ORIGINAL_BYTES = 16 * 1024 ** 2;
+
 /** G10. Words while the document reader reads a batch PDF, and after a stopped or stale read. */
 const pdfReading = 'Reading the text layer of each page. Nothing is recorded until you confirm it.';
 const pdfStopped = 'The page reader stopped before it finished; the original is kept unchanged with its SHA-256.';
@@ -416,8 +419,8 @@ async function queueBatchPdfTx(client: PoolClient, source: IntakeSourceRow,
   const kind = format === 'pdf' ? 'PDF document' : 'Word document';
   const reader = format === 'pdf' ? 'page reader' : 'Word document reader';
   const file = format === 'pdf' ? 'PDF' : 'Word document';
-  const originalLimit = format === 'pdf' ? DOCUMENT_LIMITS.originalBytes : 16 * 1024 ** 2;
-  const bound = format === 'pdf' ? '1 GiB' : sizeWords(originalLimit);
+  const originalLimit = format === 'pdf' ? DOCUMENT_LIMITS.originalBytes : WORD_ORIGINAL_BYTES;
+  const bound = sizeWords(originalLimit);
   if (bytes > originalLimit) {
     await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
       planRef: null, recordsSeen: 0, limitReason: `Kept as a ${kind} (${sizeWords(bytes)}). The ${reader} `
@@ -453,10 +456,13 @@ const ascending = (pages: Iterable<number>) => [...new Set(pages)].sort((a, b) =
 
 /** PL1. The page reader stopped on its byte bound; OCR opens an original within the document bound. */
 function textLayerUnread(sourceBytes: number) {
-  const unread = 'Its text layer is not read above 10 MiB; the original is kept with its SHA-256.';
-  if (sourceBytes > DOCUMENT_LIMITS.originalBytes) return `${unread} Page opening is limited to 1 GiB.`;
-  return `${unread} Open its pages to view them or read one page by OCR (up to `
-    + `${DOCUMENT_LIMITS.ocrMaxPage} pages). Nothing read is a fact until you confirm it.`;
+  const unread = `Its text layer is not read above ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}; `
+    + 'the original is kept with its SHA-256.';
+  if (sourceBytes > DOCUMENT_LIMITS.originalBytes)
+    return `${unread} Page opening is limited to ${sizeWords(DOCUMENT_LIMITS.originalBytes)}.`;
+  return `${unread} Its pages can be opened to view, and read by OCR for a PDF of at most `
+    + `${DOCUMENT_LIMITS.ocrMaxPage} pages; above ${DOCUMENT_LIMITS.ocrBatchPages} pages, choose one page number. `
+    + 'Nothing read is a fact until you confirm it.';
 }
 
 /**

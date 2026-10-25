@@ -271,7 +271,7 @@ test('a PDF above the reader bound rests kept in words, and a stopped read says 
     assert.equal(await queueIntakeDraftTx(clientOf(control), large, card), null);
     assert.equal(control.jobs.size, 0);
     assert.deepEqual([control.item!.state, control.item!.placement, control.item!.limit_reason], ['probed',
-      'not_understood', 'Kept as a PDF document (1 GB). The page reader in a batch reads a PDF of at most 1 GiB, '
+      'not_understood', 'Kept as a PDF document (1 GB). The page reader in a batch reads a PDF of at most 1 GB, '
         + 'so this one is not read; the original is kept with its SHA-256.']);
     const source = control.retainPdf(pdfBytes('stopped'));
     const jobId = (await queueIntakeDraftTx(clientOf(control), source, card))!;
@@ -285,12 +285,13 @@ test('a PDF above the reader bound rests kept in words, and a stopped read says 
 test('a PDF above the page reader byte bound says its text layer was not read, and OCR when the original allows', () => {
   const native = { status: 'tool_error', format: 'pdf', readerSha256: 'a'.repeat(64),
     code: 'NATIVE_READER_BYTE_LIMIT', warnings: [], parts: [] } as const;
-  const unread = 'Its text layer is not read above 10 MiB; the original is kept with its SHA-256.';
+  const unread = 'Its text layer is not read above 10 MB; the original is kept with its SHA-256.';
   assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes), { state: 'failed_part',
-    placement: 'not_understood', limitReason: `${unread} Open its pages to view them or read one page by OCR `
-      + '(up to 400 pages). Nothing read is a fact until you confirm it.' });
+    placement: 'not_understood', limitReason: `${unread} Its pages can be opened to view, and read by OCR for a `
+      + 'PDF of at most 400 pages; above 8 pages, choose one page number. '
+      + 'Nothing read is a fact until you confirm it.' });
   assert.deepEqual(batchPdfSettlement(native, DOCUMENT_LIMITS.originalBytes + 1), { state: 'failed_part',
-    placement: 'not_understood', limitReason: `${unread} Page opening is limited to 1 GiB.` });
+    placement: 'not_understood', limitReason: `${unread} Page opening is limited to 1 GB.` });
 });
 
 function ocrPage(input: DocumentInput, page: number): NonNullable<DocumentResult['ocr']> {
@@ -529,8 +530,9 @@ test('a 59 MB stated PDF queues without reading its text layer or whole original
     const source = control.retainPdf(pdfBytes('large declared scan'), 59_335_907);
     const jobId = (await queueIntakeDraftTx(clientOf(control), source, card))!;
     assert.ok(jobId);
-    assert.match(control.item!.limit_reason, /text layer is not read above 10 MiB/);
-    assert.match(control.item!.limit_reason, /Open its pages to view them or read one page by OCR/);
+    assert.match(control.item!.limit_reason, /text layer is not read above 10 MB/);
+    assert.match(control.item!.limit_reason,
+      /Its pages can be opened to view, and read by OCR for a PDF of at most 400 pages/);
     const noRead = async (): Promise<never> => assert.fail('Whole-original memory read above nativeBytes.');
     await runDocumentJob(jobId, { read: noRead, extract: noRead });
     assert.equal(control.jobs.get(jobId)!.status, 'succeeded');
@@ -572,6 +574,14 @@ test('streamed originals verify exact bytes and hash and remove only their own f
         await assert.rejects(copy(count), { code: 'INTAKE_SOURCE_INTEGRITY' });
         await assert.rejects(access(path), { code: 'ENOENT' });
       }
+      S3Client.prototype.send = async () => ({ Body: Readable.from((async function* () {
+        yield original.subarray(0, 5);
+        await new Promise(resolve => setTimeout(resolve, 50));
+        yield original.subarray(5);
+      })()), ContentLength: original.length, ETag: 'control' });
+      await assert.rejects(streamRetainedOriginal(source.object_key, original.length, source.sha256, path,
+        DOCUMENT_LIMITS.originalBytes, 10), { code: 'STORAGE_TIMEOUT' });
+      await assert.rejects(access(path), { code: 'ENOENT' });
       await writeFile(path, original);
       await assert.rejects(copy(), { code: 'EEXIST' });
       assert.deepEqual(await readFile(path), original);

@@ -214,7 +214,11 @@ export async function streamRetainedOriginal(key: string, bytes: number, expecte
       if (count > bytes) throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY',
         'The retained original exceeds its pinned byte count.');
       hash.update(chunk);
-      await file.writeFile(chunk);
+      for (let offset = 0; offset < chunk.length;) {
+        const { bytesWritten } = await file.write(chunk.subarray(offset));
+        if (!bytesWritten) throw new Error('Retained original copy made no write progress.');
+        offset += bytesWritten;
+      }
     }
     if (count !== bytes || hash.digest('hex') !== expectedHash)
       throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original differs from its byte/hash pins.');
