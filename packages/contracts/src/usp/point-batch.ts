@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 export const POINT_BATCH_VERSION='point-batch/1' as const;
-// SB1 (AU3 pointOfficerLimits): 611 jobs per original, one per 8192-point part of the 5 million points read.
+// SB1: (1 overview + 64 preview batches) under three pins = 195 jobs; 611 keeps legacy plans within the cap.
 export const POINT_BATCH_LIMITS=Object.freeze({originalBytes:1024**3,directRetainBytes:16*1024*1024,retainedSources:64,
   retainedBytes:256*1024*1024,sourcePoints:500_000_000,batchPoints:32_768,
   artifactBytes:2*1024*1024,resultBytes:32*1024,jobsPerSource:611,active:2});

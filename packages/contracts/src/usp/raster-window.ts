@@ -1,11 +1,12 @@
 import {z} from 'zod';
 
 export const RASTER_WINDOW_VERSION='raster-window/1' as const;
+// SB1: (1 overview + 64 preview tiles) under three pins = 195 jobs per original.
 export const RASTER_WINDOW_LIMITS=Object.freeze({originalBytes:2*1024**3,directRetainBytes:16*1024*1024,
   sourcePixels:2_000_000_000,
   retainedSources:64,retainedBytes:256*1024*1024,
   sourceBands:4,windowSide:256,windowPixels:256*256,windowRawBytes:2*1024*1024,
-  artifactBytes:4*1024*1024,resultBytes:32*1024,jobsPerSource:32,active:2});
+  artifactBytes:4*1024*1024,resultBytes:32*1024,jobsPerSource:195,active:2});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const positive=z.number().int().positive();
 export const RasterPixelWindowSchema=z.strictObject({x:rev.max(100_000),y:rev.max(100_000),

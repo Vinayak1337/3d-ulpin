@@ -634,12 +634,13 @@ export type IntakeEvidenceConfirmation = z.infer<typeof IntakeEvidenceConfirmati
 
 /** SB1: an orthophoto, terrain raster or point cloud of a batch read in parts by its existing reader; display only. */
 export const INTAKE_SURFACE_VERSION = 'intake-surface/1' as const;
-export const INTAKE_SURFACE_LIMITS = Object.freeze({ windowSide: 256, batchPoints: 8192, page: 64 });
+export const INTAKE_SURFACE_LIMITS = Object.freeze({ windowSide: 256, batchPoints: 32_768,
+  previewSide: 2048, previewParts: 64, page: 64 });
 export const IntakeSurfaceOperationSchema = z.enum(['raster-window', 'point-batch']);
 export const IntakeSurfaceLocatorSchema = z.discriminatedUnion('operation', [
   z.strictObject({ operation: z.literal('raster-window'), window: RasterPixelWindowSchema.nullable() }),
   z.strictObject({ operation: z.literal('point-batch'), batch: PointBatchSelectionSchema.nullable() }),
-]).describe('The part asked of the original; a null window or batch is the reader\'s first part.');
+]).describe('The part asked of the original; a null window or batch reads a whole-extent overview.');
 export const IntakeSurfacePartSchema = z.strictObject({
   partIndex: z.number().int().nonnegative(), state: z.enum(['planned', 'queued', 'published', 'quarantined']),
   locator: IntakeSurfaceLocatorSchema, partKey: hash, jobId: uuid.nullable(), resultSha256: hash.nullable(),
