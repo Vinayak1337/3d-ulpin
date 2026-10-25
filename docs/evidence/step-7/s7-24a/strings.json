@@ -1,0 +1,1321 @@
+{
+ "task": "S7.24a",
+ "scope": "apps/studio/src/app/, apps/studio/src/portal/, packages/ui/src/; line numbers at base 2a4d18c0",
+ "totals": {
+  "before": 218,
+  "cut": 36,
+  "shortened": 26,
+  "kept": 154,
+  "kept_as_state": 2
+ },
+ "strings": [
+  {
+   "at": "apps/studio/src/app/Frame.tsx:18",
+   "old": "Skip to content",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:20",
+   "old": "BhuAayam Studio (wordmark, Studio names the officer app)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:20",
+   "old": "aria-label BhuAayam Studio, Batches",
+   "verdict": "shorten",
+   "new": "none: the visible BhuAayam Studio names the link"
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:21",
+   "old": "aria-label Studio",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:22",
+   "old": "Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:51",
+   "old": "Map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:63",
+   "old": "aria-label Register, {n} open requests / Register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:64",
+   "old": "Register {count}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:99",
+   "old": "Search batches (visually hidden label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:104",
+   "old": "placeholder Search batches, buildings, codes",
+   "verdict": "shorten",
+   "new": "Search"
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:109",
+   "old": "kbd / (the shortcut key)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:119",
+   "old": "Revision {r} · {id8} · {n} features (tells two areas of one name apart)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:152",
+   "old": "Loading areas",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:152",
+   "old": "Choose an area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:152",
+   "old": "No areas yet",
+   "verdict": "shorten",
+   "new": "No areas"
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:170",
+   "old": "aria-label Areas",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:195",
+   "old": "title and icon name: Operator configured by the identity service.",
+   "verdict": "shorten",
+   "new": "Operator"
+  },
+  {
+   "at": "apps/studio/src/app/Frame.tsx:196",
+   "old": "title and icon name: Duty officer on this workstation.",
+   "verdict": "shorten",
+   "new": "Duty officer"
+  },
+  {
+   "at": "apps/studio/src/app/PageError.tsx:8",
+   "old": "Unknown error",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/PageError.tsx:20",
+   "old": "This page could not be shown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/PageError.tsx:21",
+   "old": "Retry",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/PageError.tsx:23",
+   "old": "{error name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/app/router.tsx:68",
+   "old": "PlannedPage title Dataset, milestone M5 (props; its sentence lives outside OWN)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:8",
+   "old": "Skip to content",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:11",
+   "old": "BhuAayam",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:12",
+   "old": "Land records (second label beside the wordmark)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:14",
+   "old": "aria-label Portal",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:15",
+   "old": "Search",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:16",
+   "old": "Map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:17",
+   "old": "Verify a card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:18",
+   "old": "Track a request",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:22",
+   "old": "A technical record of land and buildings, not a title document. Owner names and documents are not public.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:29",
+   "old": "aria-label Breadcrumb",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PortalFrame.tsx:32",
+   "old": "/ (crumb separator, aria-hidden)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:13",
+   "old": "Find a building or property record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:16",
+   "old": "What this record shows",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:17",
+   "old": "Every building has a 3D ULPIN. Released flats show level, elevations, carpet area and undivided share. No owner names. A technical record, not a title document.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:20",
+   "old": "aria-label Tasks",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:21",
+   "old": "Verify a Property Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:21",
+   "old": "Check a card's code and revision",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:22",
+   "old": "Explore the map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:22",
+   "old": "Every building with its 3D ULPIN, in 3D",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:23",
+   "old": "Track a request",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/HomePage.tsx:23",
+   "old": "A register, floor data, correction or copy you asked for",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/SearchForm.tsx:18",
+   "old": "3D ULPIN, parcel ULPIN, building or address (the field label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/SearchForm.tsx:19",
+   "old": "placeholder Building name, flat or code",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/SearchForm.tsx:21",
+   "old": "Search",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:22",
+   "old": "Home / Results",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:23",
+   "old": "Results",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:28",
+   "old": "Search is not available + {error message}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:33",
+   "old": "1 building / {n} buildings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:35",
+   "old": "{n} more buildings match. Add the building number or its code.",
+   "verdict": "shorten",
+   "new": "{n} more buildings match."
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:38",
+   "old": "1 released record / {n} released records",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:41",
+   "old": "{n} other matching units are not released yet.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:43",
+   "old": "No record matches {q}. Try a 3D ULPIN, a parcel ULPIN or a building name.",
+   "verdict": "shorten",
+   "new": "No record matches {q}."
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:48",
+   "old": "scene name 3D view of {building}, view only",
+   "verdict": "shorten",
+   "new": "3D view of {building}"
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:49",
+   "old": "View only · illustrative look",
+   "verdict": "shorten",
+   "new": "Illustrative"
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:59",
+   "old": "{record}, {building} + Assigned / Recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:61",
+   "old": "{address} · {level} · carpet area {x} m²",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:62",
+   "old": "Open record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:70",
+   "old": "{building} + {area name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:72",
+   "old": "Parcel {p} · {n} levels recorded / Floors not recorded yet · {n} released records",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/ResultsPage.tsx:73",
+   "old": "Open building",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:13",
+   "old": "DraftNotice words: the code and the Property Card of this record were made in this browser and are not checked by the server.",
+   "verdict": "shorten",
+   "new": "this code and its Property Card."
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:32",
+   "old": "This record is not released + Search again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:33",
+   "old": "Only recorded units are public. This one may still be under review. (fallback under the title; a server error message still shows)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:41",
+   "old": "Level, Elevations, Carpet area, Undivided share, Shared spaces, Last updated and their values (Unknown, None on this level, site datum, r{n})",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:51",
+   "old": "Home / {building} / {record}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:52",
+   "old": "{record}, {building}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:55",
+   "old": "3D ULPIN (proposed): not assigned yet",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:56",
+   "old": "Parcel ULPIN {p}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:59",
+   "old": "Released details only. Owner names and documents are not public.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:63",
+   "old": "scene name {record} on {level}, view only",
+   "verdict": "shorten",
+   "new": "{record} on {level}"
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:64",
+   "old": "View only · illustrative look",
+   "verdict": "shorten",
+   "new": "Illustrative"
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:67",
+   "old": "{level} · {record} (section label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:75",
+   "old": "Download draft Property Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:77",
+   "old": "A Property Card is issued once a proposed 3D ULPIN is assigned to this unit.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RecordPage.tsx:78",
+   "old": "Something wrong? Request a correction with your deed or plan.",
+   "verdict": "shorten",
+   "new": "Request a correction (a button beside the card download)"
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:24",
+   "old": "This building is not on record + Search again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:25",
+   "old": "It may have been removed, or the link is incomplete.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:32",
+   "old": "Area, Parcel ULPIN, Address, Height, Floors recorded, Released records and their values (Unknown, {n} levels, Not recorded yet, {n} released · {m} not released yet, None)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:43",
+   "old": "Home / Map / {building}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:44",
+   "old": "{building}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:50",
+   "old": "scene name 3D view of {building}, view only",
+   "verdict": "shorten",
+   "new": "3D view of {building}"
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:51",
+   "old": "View only · illustrative look",
+   "verdict": "shorten",
+   "new": "Illustrative"
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:62",
+   "old": "Released records (list heading)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:67",
+   "old": "{record} · {level} + Assigned / Recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:74",
+   "old": "Show all {n} records",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:80",
+   "old": "Update this building's record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:81",
+   "old": "Send new floor data, report a wrong value, register a change of holder or tenant, or ask for a certified copy. Attach your deed or plan.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:83",
+   "old": "Add or update floor data / Request a correction / Change of holder or residents / Certified copy",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:91",
+   "old": "Floors and flats of this building are not recorded yet (repeats the Floors recorded row)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:92",
+   "old": "Owners, tenants and resident associations can request its register. Attach the building's plans, level schedule or deeds if you have them.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/BuildingPage.tsx:93",
+   "old": "Request this building's register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/VerifyPortal.tsx:19",
+   "old": "Verify a Property Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/VerifyPortal.tsx:20",
+   "old": "Enter the 3D ULPIN printed on the card, or scan its QR code with your phone camera.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/VerifyPortal.tsx:22",
+   "old": "3D ULPIN",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/VerifyPortal.tsx:23",
+   "old": "placeholder P3-…",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/VerifyPortal.tsx:24",
+   "old": "Revision (optional)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/VerifyPortal.tsx:25",
+   "old": "placeholder r3",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/VerifyPortal.tsx:26",
+   "old": "Verify",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:11",
+   "old": "Received",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:11",
+   "old": "Your request reached the land records office.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:12",
+   "old": "In review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:12",
+   "old": "An officer is checking your request and documents.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:13",
+   "old": "Decided",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:13",
+   "old": "The office has decided on your request.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:29",
+   "old": "Could not find this request.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:35",
+   "old": "Track a request",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:36",
+   "old": "Enter the reference number you received and the mobile number you gave.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:38",
+   "old": "Reference number",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:39",
+   "old": "placeholder RQ-…",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:40",
+   "old": "Mobile number",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:42",
+   "old": "Checking… / Check status",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:55",
+   "old": "aria-label Request {ref}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:56",
+   "old": "{ref} · {kind short} (the kind repeats the title below it)",
+   "verdict": "shorten",
+   "new": "{ref}"
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:57",
+   "old": "{kind title of building and record}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:63",
+   "old": "Accepted / Not accepted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:64",
+   "old": "The office could not take this request up.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:64",
+   "old": "REQUEST_KINDS accepted line (The office will ...)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:70",
+   "old": "{date and time reached}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:72",
+   "old": "Note from the office: {note}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:79",
+   "old": "View {building}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/TrackPage.tsx:80",
+   "old": "Refresh",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:11",
+   "old": "Owner, Joint owner, Tenant, Resident association, Builder or developer, Legal heir, Other",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:41",
+   "old": "Find the building first + Open the map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:42",
+   "old": "Requests are filed from a building's page. Search for it by name, 3D ULPIN or parcel ULPIN, or pick it on the map.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:48",
+   "old": "This building is not on record + Search again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:48",
+   "old": "It may have been removed.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:63",
+   "old": "Confirm that the details are correct.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:77",
+   "old": "The request could not be sent. Try again.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:87",
+   "old": "Request received",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:88",
+   "old": "Your reference number is",
+   "verdict": "shorten",
+   "new": "Reference number"
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:89",
+   "old": "{ref}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:90",
+   "old": "Keep it with the mobile number you gave. The land records office reviews requests in the order they arrive; you can check progress any time.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:92",
+   "old": "Track this request",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:93",
+   "old": "Back to {building}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:103",
+   "old": "Home / {building} / Request",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:104",
+   "old": "Request the register of {b} / Request a correction to {r} / {kind label}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:109",
+   "old": "What do you need?",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:113",
+   "old": "{kind label} x6",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:114",
+   "old": "Its floors are already recorded. (why Register is disabled)",
+   "verdict": "shorten",
+   "new": "Floors already recorded"
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:114",
+   "old": "REQUEST_KINDS help line under each kind",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:120",
+   "old": "Your name",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:122",
+   "old": "Mobile number",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:123",
+   "old": "placeholder 10 digits",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:125",
+   "old": "You are the",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:130",
+   "old": "message label per kind x6 (Tell us about the building, What changed on which floors?, ...)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:132",
+   "old": "placeholder REQUEST_KINDS example (For example: ...)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:136",
+   "old": "Documents",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:136",
+   "old": "(plans, level schedule, unit list) / (optional)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:141",
+   "old": "Choose files or drop them here",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:142",
+   "old": "Sale deed, sanctioned plan, occupancy certificate. PDF or image, up to 10 files.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:149",
+   "old": "{file} · {n} KB",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:150",
+   "old": "aria-label Remove {file}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:159",
+   "old": "The details I give are correct. My name and mobile number go only to the land records office and are not shown on this portal.",
+   "verdict": "shorten",
+   "new": "The details I give are correct."
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:163",
+   "old": "Sending… / Send request",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/RequestPage.tsx:164",
+   "old": "Cancel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:15",
+   "old": "No area is on record yet",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:15",
+   "old": "Areas appear here once the land records office imports them.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:45",
+   "old": "This area has no public map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:45",
+   "old": "It may have been removed.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:51",
+   "old": "scene name 3D map of {area}, view only. The panel lists the released records.",
+   "verdict": "shorten",
+   "new": "3D map of {area}"
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:52",
+   "old": "aria-label Released records",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:55",
+   "old": "placeholder Search this map (the only visible name of the field)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:55",
+   "old": "aria-label Search released records",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:61",
+   "old": "{building} + {code part}…",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:65",
+   "old": "{record}, {building} + {level}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:67",
+   "old": "No building or record matches.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:71",
+   "old": "{building}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:75",
+   "old": "{address} · Parcel {p}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:78",
+   "old": "{record} + Assigned / Recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:79",
+   "old": "{level} · carpet area {x} m²",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:80",
+   "old": "Open record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:81",
+   "old": "All records in this building",
+   "verdict": "shorten",
+   "new": "All records"
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:85",
+   "old": "{n} released · {m} not released yet",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:88",
+   "old": "{record} + {level}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:91",
+   "old": "Open building",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:97",
+   "old": "Parcel {p} · {h} m high",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:98",
+   "old": "Floors and flats are not recorded yet.",
+   "verdict": "shorten",
+   "new": "Floors not recorded yet"
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:99",
+   "old": "Request its register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:100",
+   "old": "Open building",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:106",
+   "old": "{area}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:107",
+   "old": "{n} buildings, each with its 3D ULPIN. Select one on the map or in the list.",
+   "verdict": "shorten",
+   "new": "{n} buildings"
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:111",
+   "old": "{n} released / {n} levels / footprint",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:125",
+   "old": "{building or Building} · {n} released",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/portal/PublicMapPage.tsx:128",
+   "old": "View only · illustrative look",
+   "verdict": "shorten",
+   "new": "Illustrative"
+  },
+  {
+   "at": "apps/studio/src/portal/queries.ts:48",
+   "old": "The request could not be sent ({status}).",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/DigColumn.tsx:16",
+   "old": "Below this trench",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/DigColumn.tsx:17",
+   "old": "{range}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/DigColumn.tsx:20",
+   "old": "Screening only. Not a clearance or dig permission. Unknown bands need a survey.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/EvidenceChip.tsx:27",
+   "old": "title {source} · {exact or locator} / Open evidence: ... (carries the unrounded value; tested)",
+   "verdict": "keep_as_state",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/FindingCard.tsx:8",
+   "old": "Blocking / Needs review / Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/ImportStream.tsx:36",
+   "old": "Saved / Failed / Reading",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/LevelRail.tsx:28",
+   "old": "aria-label Levels",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/LevelRail.tsx:29",
+   "old": "m · {reference} / Vertical reference not stated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/LevelRail.tsx:33",
+   "old": "ground / {g} ground",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/LevelRail.tsx:45",
+   "old": "? / est.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/Legend.tsx:16",
+   "old": "aria-label Legend",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/Menu.tsx:43",
+   "old": "Planned",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/PropertyCard.tsx:18",
+   "old": "BhuAayam Property Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/PropertyCard.tsx:26",
+   "old": "Technical record, not a title document. (the printed card states what it is)",
+   "verdict": "keep_as_state",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/ReadinessMeter.tsx:11",
+   "old": "aria-label Readiness for {task}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/ReadinessMeter.tsx:12",
+   "old": "Ready to {task}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/ReadinessMeter.tsx:21",
+   "old": "Unknown / Ready / Not ready",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/RevisionTimeline.tsx:18",
+   "old": "History",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/RevisionTimeline.tsx:19",
+   "old": "Chain consistent / Chain broken / Chain not checked",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/StatusBadge.tsx:9",
+   "old": "the fixed status words",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/StrataSection.tsx:29",
+   "old": "aria-label Vertical section of parcel {p}, {level} highlighted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/StrataSection.tsx:38",
+   "old": "{level}, {lo} to {hi} m · {datum}, {h} roof, {g} ground, Parcel {p}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/Toggle.tsx:9",
+   "old": "· {hint} (prop stays; callers are outside OWN)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/UlpinCode.tsx:17",
+   "old": "3D ULPIN (proposed) · {state}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/UlpinCode.tsx:19",
+   "old": "aria-label 3D ULPIN (proposed) {code}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/UlpinCode.tsx:24",
+   "old": "aria-label Copy code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/components/UlpinCode.tsx:30",
+   "old": "Code assigned after review",
+   "verdict": "shorten",
+   "new": "Not assigned"
+  },
+  {
+   "at": "packages/ui/src/components/UlpinCode.tsx:34",
+   "old": "Location (display only)",
+   "verdict": "shorten",
+   "new": "Location"
+  },
+  {
+   "at": "packages/ui/src/components/UlpinCode.tsx:36",
+   "old": "title Parcel anchor / Structure / Level / Space (names a segment)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "packages/ui/src/format.ts:42",
+   "old": "Unknown, just now, {n} min ago, {n} h ago, {n} d ago",
+   "verdict": "keep",
+   "new": null
+  }
+ ]
+}
