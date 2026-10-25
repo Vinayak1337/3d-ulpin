@@ -81178,6 +81178,48 @@
                   "nullable": true,
                   "type": "number"
                 },
+                "lines": {
+                  "description": "Display only, in the area's local metres, from the same stored geometry.",
+                  "type": "array",
+                  "items": {
+                    "minItems": 2,
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  }
+                },
+                "pins": {
+                  "description": "Display only, in the area's local metres, from the same stored geometry.",
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                },
                 "heightState": {
                   "type": "string",
                   "enum": [

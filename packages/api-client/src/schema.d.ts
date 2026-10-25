@@ -8004,6 +8004,10 @@ export interface components {
                 kind: "building" | "parcel" | "road" | "public_land" | "utility";
                 polygons: (number)[][][][];
                 heightM: number | null;
+                /** @description Display only, in the area's local metres, from the same stored geometry. */
+                lines?: (number)[][][];
+                /** @description Display only, in the area's local metres, from the same stored geometry. */
+                pins?: (number)[][];
                 /** @enum {string} */
                 heightState: "unresolved" | "estimated" | "source_supported" | "reviewed" | "unknown";
                 /** @enum {string} */
