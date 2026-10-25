@@ -11,7 +11,7 @@ import { createPdfOcrPress, createPdfOcrRun, pagesToRead, pdfOcrOffer, readPdfJo
   type PdfReading } from './pdf-reading';
 import { button, container, elements, propsOf, type FakeElement } from './fake-dom';
 import type { IntakeItem } from './batch-model';
-import { DOCUMENT_LIMITS } from '@ulpin/contracts/usp';
+import { DOCUMENT_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
 const openapi = JSON.parse(readFileSync(new URL('../../../../../docs/api/openapi.json', import.meta.url), 'utf8'));
 const validate = createContractValidator(openapi);
