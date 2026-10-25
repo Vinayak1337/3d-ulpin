@@ -58,6 +58,103 @@
     "diffCheck": {"exitCode": 0},
     "priorChecks": "Baseline and unchanged-code checks recorded in 2fe1c41c: unittest 6 pass; compatibility 3 pass/1 skip; backend/studio typechecks pass; Studio 827 pass/3 skip; ingestion 1045 pass/5 skip; OpenAPI and API check pass. Not rerun after the explicit stop condition; production code is unchanged."
   },
+  "profile2Breakdown": {
+    "status": "measurement_complete_no_production_changes",
+    "method": {
+      "script": "E:/ulpin-tmp/s5-8a/breakdown.py",
+      "inputs": "Same SHA-checked WikiHouse copy as above; fresh untraced process per variant.",
+      "testOnlyBounds": {"outputBytes": 268435456, "entities": 2000000,
+        "records": 2000000, "points": 2000000, "tags": 2000000},
+      "unchanged": {"inputBytes": 16777216, "memoryBytes": 2147483648, "seconds": 45, "threads": 2},
+      "supervision": "native_pdf memory guard and outer 45-second timeout; reader deadline unchanged.",
+      "timing": "read_dxf plus encode_dxf_result, including imports inside reader; analysis excluded.",
+      "memory": "GetProcessMemoryInfo peaks sampled immediately after final encoding, before analysis.",
+      "noSourceTags": "Profile /2 postprocessing before final encoding: every sourceTags array becomes firstTagIndex and tagCount; all other values unchanged. Peaks include construction of the full /2 projection, not an optimized range-only reader.",
+      "componentBytes": "Compact UTF-8 JSON values, without property names. Arrays include brackets/commas; tag entries are summed individual objects; recordHeaders are summed objects containing only the eight requested header properties. Components overlap: vertices include nested record headers, fields and sourceTags; layers/blocks include their fields and tags. Do not sum these components.",
+      "recordHeaders": ["type", "section", "blockName", "locator", "space", "status",
+        "limitations", "missingRequiredGroupCodes"],
+      "fieldTags": "Every tags array, including nested vertices and units.source; entries counted once per occurrence.",
+      "topLevelAccounting": "Disjoint member bytes include property name and colon. otherIncludingPunctuation is the remainder; these totals sum exactly to outputBytes.",
+      "capacity": "Exact serialized prefix in ascending original locator.tagIndex order, including nested VERTEX and SEQEND. All non-entity metadata, counts and full findings stay fixed; POLYLINE children are added incrementally. These are hypothetical wire-size prefixes, not publishable partial drawings or unchanged _Budget.add limits. Full-size identity and each threshold prefix were checked by actual serialization.",
+      "thresholds": "16 MiB = 16777216 bytes. Exact 20% reserve = floor(0.8 * 16777216) = 13421772 bytes (12.8 MiB). Literal 13.4 MiB = 14050918 bytes, only 16.25% reserve; both are reported."
+    },
+    "profile1": {
+      "outputBytes": 60095545, "seconds": 2.983403,
+      "peakWorkingSetBytes": 563068928, "peakPrivateBytes": 704282624,
+      "componentBytes": {"sourceTagsArrays": 13729462, "fieldsTagEntries": 18388370,
+        "fieldsTagArrays": 19165702, "verticesArrays": 56344487, "recordHeaders": 8805443,
+        "recordFieldsObjects": 33357511, "recordRangeProperties": 0,
+        "layers": 8737, "blocks": 4787, "headerVariables": 10981,
+        "unsupportedFindings": 84905, "opaqueRecordTypes": 2104},
+      "disjointTopLevelBytes": {"entities": 59982689, "layers": 8746, "blocks": 4796,
+        "headerVariables": 10999, "unsupportedFindings": 84927, "opaqueRecordTypes": 2124,
+        "otherIncludingPunctuation": 1264},
+      "fixedBytesWithEmptyEntities": 112869,
+      "archiveOrderCapacity": {
+        "16MiB": {"entitiesIncludingChildren": 6991, "prefixBytes": 16776515, "nextBytes": 16778944},
+        "20PercentReserve": {"entitiesIncludingChildren": 5529, "prefixBytes": 13421018, "nextBytes": 13423447},
+        "13.4MiBLiteral": {"entitiesIncludingChildren": 5785, "prefixBytes": 14050197, "nextBytes": 14052626}
+      }
+    },
+    "profile2": {
+      "outputBytes": 45647094, "seconds": 2.683573,
+      "peakWorkingSetBytes": 490139648, "peakPrivateBytes": 588029952,
+      "componentBytes": {"sourceTagsArrays": 13729462, "fieldsTagEntries": 7402015,
+        "fieldsTagArrays": 8179347, "verticesArrays": 42687963, "recordHeaders": 8805443,
+        "recordFieldsObjects": 22371156, "recordRangeProperties": 0,
+        "layers": 6807, "blocks": 4025, "headerVariables": 10981,
+        "unsupportedFindings": 84905, "opaqueRecordTypes": 2104},
+      "disjointTopLevelBytes": {"entities": 45536710, "layers": 6816, "blocks": 4034,
+        "headerVariables": 10999, "unsupportedFindings": 84927, "opaqueRecordTypes": 2124,
+        "otherIncludingPunctuation": 1484},
+      "fixedBytesWithEmptyEntities": 110397,
+      "archiveOrderCapacity": {
+        "16MiB": {"entitiesIncludingChildren": 9303, "prefixBytes": 16777196, "nextBytes": 16779032},
+        "20PercentReserve": {"entitiesIncludingChildren": 7378, "prefixBytes": 13421721, "nextBytes": 13423557},
+        "13.4MiBLiteral": {"entitiesIncludingChildren": 7740, "prefixBytes": 14049487, "nextBytes": 14051322}
+      }
+    },
+    "profile2NoSourceTags": {
+      "outputBytes": 32482566, "seconds": 3.000874,
+      "peakWorkingSetBytes": 445513728, "peakPrivateBytes": 528338944,
+      "componentBytes": {"sourceTagsArrays": 0, "fieldsTagEntries": 7402015,
+        "fieldsTagArrays": 8179347, "verticesArrays": 30543020, "recordHeaders": 8805443,
+        "recordFieldsObjects": 22371156, "recordRangeProperties": 941059,
+        "layers": 3731, "blocks": 2241, "headerVariables": 10981,
+        "unsupportedFindings": 84905, "opaqueRecordTypes": 2104},
+      "disjointTopLevelBytes": {"entities": 32377042, "layers": 3740, "blocks": 2250,
+        "headerVariables": 10999, "unsupportedFindings": 84927, "opaqueRecordTypes": 2124,
+        "otherIncludingPunctuation": 1484},
+      "fixedBytesWithEmptyEntities": 105537,
+      "archiveOrderCapacity": {
+        "16MiB": {"entitiesIncludingChildren": 12977, "prefixBytes": 16777044, "nextBytes": 16778368},
+        "20PercentReserve": {"entitiesIncludingChildren": 10418, "prefixBytes": 13420804, "nextBytes": 13422126},
+        "13.4MiBLiteral": {"entitiesIncludingChildren": 10898, "prefixBytes": 14050485, "nextBytes": 14051809}
+      }
+    },
+    "counts": {"entitiesIncludingChildren": 25064, "records": 25235, "points": 24384,
+      "recordsWithSourceTagsOrRanges": 25075, "sourceTagEntriesBeforeRemoval": 251465,
+      "fieldTagEntries": 147954, "verticesArrays": 852},
+    "caveats": [
+      "All complete runs remain inside 2 GiB and 45 seconds, but all exceed the unchanged production output cap.",
+      "Range-only removal does not preserve every source tag value in fields: projections select a subset, and typed values do not retain raw lexemes. Unprojected/raw values remain only in the immutable original. This experiment is not a citation/schema compatibility claim.",
+      "No production files, limits, pins, schemas, profiles or source originals changed; no drawing output committed."
+    ],
+    "checks": {"completeRunsExitCodes": [0, 0, 0], "completedVariants": 3,
+      "serializedCapacityBoundaryChecks": 9, "disjointByteReconciliations": 3,
+      "originalAndCopyHashChecks": 2, "evidenceVerificationExitCode": 0,
+      "preEdit": "unittest 0 (6 pass), compatibility 0 (3 pass/1 skip), backend 0, Studio typecheck 0. Studio test wrapper recorded 0 but summary log was incomplete after restart; ingestion interrupted, not a reported test failure.",
+      "afterEdit": {"unittest": {"exit": 0, "passed": 6},
+        "compatibility": {"exit": 0, "passed": 3, "skipped": 1},
+        "backendTypecheck": 0, "studioTypecheck": 0,
+        "ingestion": {"exit": 0, "passed": 1045, "skipped": 5},
+        "openapi": 0, "apiCheck": 0, "diffCheck": 0,
+        "studioTests": {"wrapperTimedOutSeconds": 150, "childExitInLog": 1,
+          "sharedPackagesPassed": 76, "sharedPackagesSkipped": 1,
+          "observedStudioFailure": "SurfacePreview.test.tsx:136 expects 2 drawImage calls, observed 3.",
+          "unhandledErrors": 13,
+          "runtimeFailure": "Vitest worker forks exited during starting state with code 3221225794; no complete Studio count. No retry or unrelated production fix."}}}
+  },
   "next": [
     "Lead must authorize a further projection design or revise acceptance; specified profile /2 does not suffice.",
     "Keep input/output, memory, seconds and threads unchanged. Reuse the saved experiment for any newly authorized comparison.",
