@@ -135,7 +135,7 @@ Size S, UI (Claude session). After: S1.3 run 3. **Status: merged 25 Oct (int3-pr
 
 ### S1.3g Name and fix the generic worker errors under load
 
-Size M, code only. After: S1.3 run 4. **Status: running 25 Oct (codex, task/s1-3g-worker-errors from int3-pre 1710369c).**
+Size M, code only. After: S1.3 run 4. **Status: merged 25 Oct (int3-pre 0206219a, task/s1-3g-worker-errors cd7897f2; migration usp_job_failure_cause_001 added to the SQL audit; pins regenerated; server set 1,077 tests, 0 failed). Cause confirmed: the dispatcher's database pool held 8 connections while its lanes run up to 31 jobs, so under load a job waited more than 5 s for a connection and ended its attempt with a generic error. Fixed: the dispatcher sizes its pool from the lane table (33, inside the PostgreSQL default of 100 with the API's 8), a connection wait no longer spends an attempt, and each generic failure keeps a safe cause (class, code, a message only when it is a known connection message). Reviewed twice: writing the cause can never stop a retry, the dispatcher sets its pool size at startup, and a mapping's yields do not count as failures. The no1 case creation failure is not explained by this (the API keeps its own pool); it is checked again in run 5.**
 
 - **What:** Under load the Halifax raw read, the ZIP raw read, its mapping and three profiles ended attempts on generic worker errors (any error that is not an AppError) and recovered on retry; the underlying error is kept nowhere. Keep a safe cause (class, SQLSTATE or errno, a scrubbed message) beside the code. Then test the lead's hypothesis: the dispatcher's one pg pool (max 8, 5 s acquire timeout) is smaller than the about 30 jobs its lanes run at once. If so, size the dispatcher pool from the lane table within max_connections, and make an acquire timeout a busy wait that spends no attempt. Also say whether this explains the no1 case POST that failed to fetch.
 - **Files:** packages/server/src/infrastructure/db.ts; the catch blocks of the streaming-vector, streamed-profile, chunk-mapping, intake-large and intake-zip-layers workers; jobs.ts (cause write only)
@@ -164,6 +164,14 @@ Size M, code only. After: S1.3h. **Status: running 25 Oct (codex, task/s1-3l-ren
 - **What:** Mapping admission refuses every table and large map layer once 128 mapping imports exist in the whole service, of any state, and nothing frees one; one act 1 and act 2 run makes about 8, so a runtime used for rehearsals fills it. Design item B2 decided quotas instead of lifetime caps. List every lifetime cap B2 names (what it counts, whether anything frees it), make the mapping count only rows that hold work or are the current mapping of their source, add a read-only doctor line per cap with a warning at 75 percent, and say which other caps the same rule fits. No row is deleted and the other caps do not change in this task.
 - **Files:** packages/server/src/modules/usp/ingestion/chunk-mapping.ts (admission count) and its tests; scripts/platform/doctor and a new ingestion-quotas.mjs with its test
 - **Tests:** 200 superseded plus 10 live rows admit, 128 live rows refuse; the doctor test prints counts only; pnpm typecheck:backend; the section 5 server set
+
+### S1.3m The a3b agent wiring test passes again
+
+Size S, code only. After: S1.3h. **Status: running 25 Oct (codex, task/s1-3m-a3b-wiring from int3-pre 89c7e4d9).**
+
+- **What:** scripts/agent/a3b-wiring.test.ts fails 3 of 8 on int3-pre and 2 of 8 on staging; it last changed 11 Oct and is not in the section 5 set, so nothing caught it. Name each cause (stale test double or real fault), update stale doubles without weakening an assertion, and stop on a real fault.
+- **Files:** scripts/agent/a3b-wiring.test.ts and its own fixtures
+- **Tests:** the a3b test 8 of 8; pnpm typecheck:backend; the section 5 server set
 
 ### S1.3j A file dropped while two uploads are open waits for a free slot
 
