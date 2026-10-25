@@ -65,7 +65,9 @@ export const IFCSummarySchema=z.strictObject({schemaVersion:z.literal('ulpin-nat
   metadataOnly:z.literal(true),geometry:z.literal('unsupported'),globalPlacement:z.literal('not_qualified'),
   unitConversionApplied:z.literal(false),storeysAreLegalUnits:z.literal(false),rights:z.literal('not_assessed'),
   /** Absent only for a native result read before the structure scan existed. */
-  structure:IFCStructureSchema.optional()});
+  structure:IFCStructureSchema.optional(),
+  /** Absent for older results or when the outline pass was not read. */
+  storeyOutlineCount:rev.max(10000).optional()});
 export const IFCArtifactSchema=z.strictObject({key:z.string().min(1).max(512),sha256:hash,
   bytes:positive.max(IFC_LIMITS.artifactBytes),mediaType:z.literal('application/json'),profile:z.literal('ulpin-native-ifc/1')});
 export const IFCResultSchema=z.strictObject({version:z.literal(IFC_VERSION),input:IFCInputSchema,
