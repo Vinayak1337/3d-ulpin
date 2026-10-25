@@ -1,0 +1,70 @@
+{
+  "task": "S1.3d", "planStep": 1, "base": "726bb2e8",
+  "result": "Cause reproduced; production fix STOPPED at protected whole-read contract; test/evidence only.",
+  "scratch": "E:/ulpin-tmp/s1-3d/", "run3": "E:/ulpin-tmp/s1-3r3/",
+  "input": {
+    "name": "Buildings_4912564227567820355.geojson", "bytes": 107832285,
+    "sha256": "d94886859416fa97c160e11dd5785b73bf064e47e92b5916f3d64b301f62cff9",
+    "jobId": "23fcfb72-520e-4c3c-8751-ea3893444fb8",
+    "seconds": { "aloneReported": 181, "run2Loaded": 522.668, "run3Unfinished": true },
+    "qualification": "Existing run rows only; no original/closed-kit file opened or replayed."
+  },
+  "timelineUtc": {
+    "attempt1Claim": "2026-10-25T07:27:33.337319Z", "running": "2026-10-25T07:27:33.351486Z",
+    "firstChunk": [0, "2026-10-25T07:27:33.808793Z"],
+    "lastChunk": [922, "2026-10-25T07:37:33.747636Z"],
+    "timeoutRequeue": "2026-10-25T07:37:34.127803Z", "attempt2Claim": "2026-10-25T07:37:36.399064Z",
+    "counts": { "chunks": 923, "records": 92300, "accepted": 92298, "quarantined": 2 },
+    "maxPublicationGapSeconds": 15.767493, "lastChunkToRequeueSeconds": 0.380167,
+    "everyChunk": "timeline.json: 923 ordered rows; all attempt 1, none newly published by attempt 2.",
+    "timelineSha256": "baa223f71693208db3cdae3b1716ea79cf3864b4b9ad8d1bd0cdd9a4a26b1b35",
+    "qualification": "SQL transaction timestamps, not wire times. Exact timer fire absent; requeue 600.790484 s after claim."
+  },
+  "inspection": {
+    "method": "Platform demoCompose start postgres only; PGOPTIONS=-c default_transaction_read_only=on; platform stop.",
+    "exits": [0, 0, 0], "receipts": "attempts.json (readOnly=on), events.json, timeline.json, pg-{start,stop}.log",
+    "safety": "No API/dispatcher/processors started. All reh-03 containers stopped afterwards; volumes retained."
+  },
+  "code": {
+    "prefix": "packages/server/src/modules/usp/ingestion/",
+    "storage": "../../../infrastructure/storage.ts:176-193: wall timer includes GET and all consumer waits; no byte reset.",
+    "parse": "streaming-vector-reader.ts:86-120,153-156,175: await buffer; scan/parse; await each feature callback.",
+    "validate": "streaming-vector-worker.ts:324-332; streaming-vector-validation.ts:6-10: heartbeat, per-feature PostGIS.",
+    "publish": "streaming-vector-worker.ts:112-129,138-164,297-302: serial PUT/readback, SQL locks/events/tray refresh.",
+    "bounds": "8 lookahead slots/64 MiB staged constants have NO implementation uses. One part <=512 KiB/100 features.",
+    "profile": "No downstream profile-capacity or lookahead-full wait in raw loop; scheduling/SQL contention possible.",
+    "retry": "streaming-vector-worker.ts:226-241,289,297-319: 503 retries after 2 s, max 3; starts byte/part index zero.",
+    "replay": "145-151 checks old slot hashes AFTER reread/revalidation/PUT; no byte-range or hash-checkpoint resume.",
+    "finding": "Progress reached wall bound. STORAGE_TIMEOUT does not prove storage outage; wait-time breakdown unknown."
+  },
+  "comparison": {
+    "hypothesis": "Consumer hold alone times out ready source bytes.",
+    "baseline": "Two-feature test_only stream; 100-ms deadline; no hold: succeeds.",
+    "intervention": "101-ms virtual hold in first publisher, bytes buffered: 503 STORAGE_TIMEOUT, classified retry.",
+    "success": "Baseline succeeds, held case times out without network I/O: PASS, 1 test.",
+    "stop": "One baseline/held pair, mocked time, no runtime load/retry.",
+    "test": "packages/server/src/modules/usp/ingestion/streaming-vector-deadline.test.ts",
+    "setup": "Initial missing S3_ENDPOINT failure corrected with mocked settings getters; no credentials read."
+  },
+  "pb1": {
+    "windowUtc": ["2026-10-25T07:28:14.360Z", "2026-10-25T07:28:15.058Z"],
+    "logs": "dress-log.jsonl:730 POST 502/698 ms; studio-final.err:4-6 connect ETIMEDOUT 127.0.0.1:21036.",
+    "concurrent": "targets/intake GET 200 in 330/336 ms at 07:28:15.068/.074Z.",
+    "health": "07:28:11.720Z/16.726Z ok=true, 96/91 ms, pool waiting=0; API CPU +0.4 s over enclosing 5 s.",
+    "finding": "Accept queue versus event-loop hold UNKNOWN: neither measured. 5-s samples cannot rule out brief hold."
+  },
+  "checks": {
+    "logs": "{before,after}-*.log; comparison.log; after-scale.log; arrays=[exit,pass,skip]",
+    "typecheckBackend": [0, 0], "studioTypecheck": [0, 0], "diffCheck": [0, 0],
+    "studioTestBeforeAfter": [[0, 827, 3], [0, 827, 3]],
+    "section5ServerSetBeforeAfter": [[0, 1045, 5], [0, 1046, 5]],
+    "scale": [0, 2, 0], "scaleFeatures": 500000, "scaleParts": 5000,
+    "openapiBeforeAfter": [0, 0], "apiCheckPyBeforeAfter": [0, 0],
+    "operations": 335, "schemas": 379, "stalePins": []
+  },
+  "next": [
+    "STOP: packages/contracts/src/usp/streaming-vector.ts:11-17, outside OWN: readMs=600000/readSpanBytes=134217728",
+    "bounds the WHOLE read. Letting this progressing read continue needs a revised independent idle/outer contract.",
+    "Approve semantics/values first; no silent outer multiplier. Resume is not already supported. PB1 report only."
+  ]
+}
