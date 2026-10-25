@@ -1,7 +1,7 @@
-import { Banner, Skeleton } from '@ulpin/ui';
+import { Banner, Skeleton, formatDateTime } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
 import { hasConvertedLayers, layerWords, nativeReaderOf, positionWords, readerWords, readingView,
-  type NativeOmissions, type ReadingView } from './reading-model';
+  type NativeOmissions, type ReadingView, type SummaryLine } from './reading-model';
 import { useNativeOmissions, useNativeStatus } from './useNativeReading';
 import styles from '../ifc/IfcStructure.module.css';
 
@@ -38,14 +38,22 @@ export function NativeReading({ caseId, item }: { caseId: string; item: IntakeIt
 export function ReadingBody({ view }: { view: ReadingView }) {
   if (view.state === 'words') return <p>{view.words}</p>;
   return <div className={styles.tree}>
-    <p className="ul-caption">Read {view.createdAt} · result SHA-256 <span className="ul-mono">{view.sha256}</span></p>
-    <dl className={styles.list}>
-      {view.lines.map(line => <div key={line.label} className={styles.line}>
-        <dt className={styles.name}>{line.label}</dt>
-        <dd className="ul-mono">{line.value}</dd>
-      </div>)}
-    </dl>
+    <p className="ul-caption">Read {formatDateTime(view.createdAt)}</p>
+    <Lines lines={view.lines} />
+    <details className={styles.group}>
+      <summary>File fingerprints and reader format</summary>
+      <Lines lines={view.hashes} mono />
+    </details>
   </div>;
+}
+
+function Lines({ lines, mono = false }: { lines: readonly SummaryLine[]; mono?: boolean }) {
+  return <dl className={styles.list}>
+    {lines.map(line => <div key={line.label} className={styles.line}>
+      <dt className={styles.name}>{line.label}</dt>
+      <dd className={mono ? 'ul-mono' : undefined}>{line.value}</dd>
+    </div>)}
+  </dl>;
 }
 
 export function OmissionsBody({ omissions }: { omissions: NativeOmissions }) {

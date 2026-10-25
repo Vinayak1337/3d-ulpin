@@ -1,4 +1,5 @@
 import { Button, Panel } from '@ulpin/ui';
+import { useIntakeManifest } from '../batch-queries';
 import { Confirm } from './Confirm';
 import { Packages } from './Packages';
 import { Progress } from './Progress';
@@ -16,6 +17,7 @@ export function IntakeRunPanel({ caseId }: { caseId: string }) {
 
 function Run({ caseId }: { caseId: string }) {
   const run = useRun(caseId);
+  const manifest = useIntakeManifest(caseId);
   const page = run.targets.summary.data;
   const packagePage = run.targets.packagePage.data;
   const locked = run.command.busy || run.command.uncertain || run.choosing || run.opening;
@@ -28,8 +30,8 @@ function Run({ caseId }: { caseId: string }) {
       </Button>}
       {page && !nothingDrafted(page) ? <>
         <p>{countsLine(page.counts)}</p>
-        {packagePage ? <Packages packages={packagePage.packages} reasons={run.discovery.reasons}
-          truncated={packagePage.packagesTruncated} />
+        {packagePage ? <Packages packages={packagePage.packages} items={manifest.data?.items}
+          reasons={run.discovery.reasons} truncated={packagePage.packagesTruncated} />
           : run.targets.packagePage.error ? null : <p role="status">Reading the next packages…</p>}
         <CardsAction run={run} page={page} locked={locked} />
         <ChoiceControls run={run} locked={locked} />
@@ -42,7 +44,7 @@ function Run({ caseId }: { caseId: string }) {
       </> : null}
     </Panel>
     {page && packagePage && canConfirm(run, run.command.preview ?? packagePage) ? <Confirm
-      page={run.command.preview ?? packagePage} choice={run.choice} cards={run.cards}
+      page={run.command.preview ?? packagePage} items={manifest.data?.items} choice={run.choice} cards={run.cards}
       closeCards={run.closeCards} acknowledgement={run.acknowledgement}
       setAcknowledgement={run.setAcknowledgement} busy={run.command.busy} uncertain={run.command.uncertain}
       stale={Boolean(run.targets.summary.error || run.targets.packagePage.error)} error={run.command.error}

@@ -23,6 +23,10 @@ vi.mock('./useRun', () => ({
   }),
 }));
 
+// The panel reads the batch's file list to name its packages; none is read here.
+vi.mock('../batch-queries', async original => ({ ...await original<typeof import('../batch-queries')>(),
+  useIntakeManifest: () => ({ data: undefined }) }));
+
 const { IntakeRunPanel } = await import('./IntakeRunPanel');
 const show = (shown: TargetPage, cards: unknown = null, command: unknown = {}) => {
   Object.assign(state, { page: shown, cards, command });

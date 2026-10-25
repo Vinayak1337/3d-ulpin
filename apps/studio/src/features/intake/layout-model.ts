@@ -16,10 +16,6 @@ const origins = {
   teacher: 'Proposed by the model',
   officer: 'Written by an officer',
 };
-const knownMembers = new Set(['version', 'mode', 'source', 'caseId', 'workspaceRevision', 'workspaceFingerprint',
-  'kind', 'operations', 'heightField', 'heightUnit', 'heightMeaning']);
-const streamedMembers = new Set(['version', 'mode', 'scope', 'basis', 'source', 'caseId', 'caseRevision', 'rawJobId',
-  'profileJobId', 'profileGeneration', 'profileHash', 'semanticEvidence', 'kind', 'operations', 'prefix']);
 
 export function latestRecipe(history: readonly Recipe[]): Recipe | undefined {
   return history.reduce<Recipe | undefined>((latest, receipt) =>
@@ -41,10 +37,7 @@ export function layoutLines(receipt: Recipe, origin: NonNullable<IntakeItem['pla
   const destination = 'destination' in receipt ? receipt.destination : undefined;
   const areaKind = destination?.kind === 'new_area' ? 'new area' : 'existing area';
   lines.push(destination ? `Area: ${destination.name} · ${areaKind}` : `Area: ${notSupplied}`);
-  lines.push(origin ? origins[origin] : `Proposal origin: ${notSupplied}`);
-  const known = isStreamedPlan(receipt.plan) ? streamedMembers : knownMembers;
-  const members = Object.keys(receipt.plan).filter(name => !known.has(name));
-  if (members.length) lines.push(`This layout also states: ${members.join(', ')}`);
+  lines.push(origin ? origins[origin] : 'The record does not say who proposed this layout.');
   return lines;
 }
 

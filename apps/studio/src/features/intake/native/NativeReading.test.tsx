@@ -74,14 +74,44 @@ it('opens the reading with the reader\'s summary fields as stored, and words for
     .toEqual([]);
   const html = renderToStaticMarkup(<ReadingBody view={readingView('dxf', body)} />);
   expect(html).toContain('<dt class="');
-  expect(html).toMatch(/Projected entity count<\/dt><dd class="ul-mono">640<\/dd>/);
-  expect(html).toMatch(/Units<\/dt><dd class="ul-mono">\{&quot;state&quot;:&quot;absent&quot;/);
-  expect(html).toMatch(/Global placement<\/dt><dd class="ul-mono">not_assessed<\/dd>/);
+  expect(html).toMatch(/Projected entity count<\/dt><dd>640<\/dd>/);
+  expect(html).toMatch(/DXF version<\/dt><dd>AC1027<\/dd>/);
+  expect(html).toMatch(/Global placement<\/dt><dd>Not assessed<\/dd>/);
+  expect(html).toMatch(/Unit conversion applied<\/dt><dd>No<\/dd>/);
   expect(html).not.toMatch(/<button|Confirm|Place on/);
   const stopped = renderToStaticMarkup(<ReadingBody view={readingView('dxf', dxfStatus('failed'))} />);
   expect(stopped).toContain('The DXF reading stopped (DXF_READ_LIMIT); there is no reading to open.');
   expect(renderToStaticMarkup(<ReadingBody view={readingView('dxf', dxfStatus('queued'))} />))
     .toContain('waiting to start');
+});
+
+it('a nested summary value reads as labelled lines in words; fingerprints sit in a closed details', () => {
+  const body = dxfStatus();
+  const html = renderToStaticMarkup(<ReadingBody view={readingView('dxf', body)} />);
+  expect(html).toMatch(/Units · state<\/dt><dd>Absent<\/dd>/);
+  expect(html).toMatch(/Units · code<\/dt><dd>Not stated<\/dd>/);
+  expect(html).toMatch(/Units · name<\/dt><dd>Not stated<\/dd>/);
+  expect(html).not.toMatch(/[{}]|null|result SHA-256|not_assessed|globalPlacement/);
+  const details = html.slice(html.indexOf('<details'));
+  expect(details).toMatch(/^<details class="[^"]*"><summary>File fingerprints and reader format<\/summary>/);
+  expect(details).toMatch(/Source SHA-256<\/dt><dd class="ul-mono">a{64}<\/dd>/);
+  expect(details).toMatch(/Stored reading SHA-256<\/dt><dd class="ul-mono">b{64}<\/dd>/);
+  expect(details).toContain('Reader format</dt><dd class="ul-mono">dxf-native-inspection/1</dd>');
+  expect(html.slice(0, html.indexOf('<details'))).not.toMatch(/a{64}|b{64}|dxf-native-inspection/);
+  // test_only: an array of objects, an empty list, a stored null and the state "null" stay apart in words.
+  const view = readingView('gltf', { ...body, result: { ...body.result!, summary: {
+    companions: [{ kind: 'buffer', state: 'missing', reason: 'NOT_SUPPLIED', sha256: null }], findingCodes: [],
+    selectedSceneIndex: null, referenceSystemState: 'null', globalPlacement: 'unknown',
+    decodedBounds: { minimum: [1.5, 2, 3], maximum: [4, 5, 6.25] } } } } as unknown as NativeStatus);
+  if (view.state !== 'read') throw new Error('Wrong test view');
+  expect(view.lines).toEqual([
+    { label: 'Companions 1 · kind', value: 'Buffer' }, { label: 'Companions 1 · state', value: 'Missing' },
+    { label: 'Companions 1 · reason', value: 'Not supplied' }, { label: 'Finding codes', value: 'None listed' },
+    { label: 'Selected scene index', value: 'Not stated' },
+    { label: 'Reference system state', value: 'Stated as empty' },
+    { label: 'Global placement', value: 'Unknown' }, { label: 'Decoded bounds · minimum', value: '1.5, 2, 3' },
+    { label: 'Decoded bounds · maximum', value: '4, 5, 6.25' }]);
+  expect(view.hashes[0]).toEqual({ label: 'Companions 1 · SHA-256', value: 'Not stated' });
 });
 
 it('lists the features left out per layer with position kind and reason, and says when the list is bounded', () => {

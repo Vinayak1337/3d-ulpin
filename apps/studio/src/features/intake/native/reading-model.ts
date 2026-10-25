@@ -45,26 +45,62 @@ export function hasConvertedLayers(item: Pick<IntakeItem, 'card' | 'format' | 'n
 export const opensReading = (item: IntakeItem) => nativeReaderOf(item) !== null || hasConvertedLayers(item);
 
 export type SummaryLine = { label: string; value: string };
+/** The summary in words, and apart from it the fingerprints and the reader's format, which an officer opens. */
+export type SummaryLines = { lines: SummaryLine[]; hashes: SummaryLine[] };
 
-const label = (key: string) => {
-  const words = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
-  return words.charAt(0).toUpperCase() + words.slice(1);
+const labelWords: Record<string, string> = { citygml: 'CityGML', crs: 'CRS', dxf: 'DXF', gltf: 'glTF', obj: 'OBJ',
+  sha256: 'SHA-256' };
+
+/** A field name in words, in sentence case; a nested field's name (`capital` false) follows its parent's. */
+const label = (key: string, capital = true) => {
+  if (key === 'schemaVersion') return 'Reader format';
+  const words = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase().split(' ')
+    .map(word => labelWords[word] ?? word).join(' ');
+  return capital ? words.charAt(0).toUpperCase() + words.slice(1) : words;
 };
 
-function valueWords(value: unknown): string {
-  if (value === null) return 'Not stated (stored as null)';
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return JSON.stringify(value);
+const technical = (key: string) => key === 'schemaVersion' || /sha256$/i.test(key);
+
+/**
+ * A stored state such as `not_assessed` or `UNSUPPORTED_CONTENT` in words ("Not assessed"); the state `null` (a
+ * field the file wrote as empty) reads "Stated as empty". Names, versions and other literals stay as stored.
+ */
+function textWords(key: string, value: string): string {
+  if (key === 'name' || !/^[a-z]+(_[a-z0-9]+)*$|^[A-Z]+(_[A-Z0-9]+)+$/.test(value)) return value;
+  if (value === 'null') return 'Stated as empty';
+  const words = value.replace(/_/g, ' ').toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-/** The reader's summary fields as stored, one line each; a nested value is shown as its stored JSON. */
-export function summaryLines(summary: Record<string, unknown>): SummaryLine[] {
-  return Object.entries(summary).map(([key, value]) => ({ label: label(key), value: valueWords(value) }));
+/** A stored null is "Not stated", apart from the states Unknown, Absent and Stated as empty. */
+function valueWords(key: string, value: unknown): string {
+  if (value === null) return 'Not stated';
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value === 'string') return technical(key) ? value : textWords(key, value);
+  if (Array.isArray(value)) return value.length ? value.map(entry => valueWords(key, entry)).join(', ') : 'None listed';
+  return String(value);
+}
+
+function addLines(into: SummaryLines, name: string, key: string, value: unknown) {
+  if (Array.isArray(value) && value.some(entry => entry !== null && typeof entry === 'object')) {
+    value.forEach((entry, index) => addLines(into, `${name} ${index + 1}`, key, entry));
+  } else if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    for (const [child, inner] of Object.entries(value)) {
+      addLines(into, `${name} · ${label(child, false)}`, child, inner);
+    }
+  } else (technical(key) ? into.hashes : into.lines).push({ label: name, value: valueWords(key, value) });
+}
+
+/** The reader's summary fields as stored, one labelled line each; a nested value gives one line per field. */
+export function summaryLines(summary: Record<string, unknown>): SummaryLines {
+  const into: SummaryLines = { lines: [], hashes: [] };
+  for (const [key, value] of Object.entries(summary)) addLines(into, label(key), key, value);
+  return into;
 }
 
 export type ReadingView =
   | { state: 'words'; words: string }
-  | { state: 'read'; lines: SummaryLine[]; createdAt: string; sha256: string };
+  | { state: 'read'; lines: SummaryLine[]; hashes: SummaryLine[]; createdAt: string };
 
 export function readingView(reader: NativeReader, status: NativeStatus | null): ReadingView {
   const name = readerWords[reader];
@@ -76,8 +112,9 @@ export function readingView(reader: NativeReader, status: NativeStatus | null): 
   if (status.status !== 'completed') return { state: 'words', words: status.status === 'queued'
     ? `The ${name} reading is waiting to start.` : `The ${name} file is being read.` };
   if (!status.result) return { state: 'words', words: 'The reading finished without an accepted result.' };
-  return { state: 'read', lines: summaryLines(status.result.summary as Record<string, unknown>),
-    createdAt: status.result.createdAt, sha256: status.result.artifact.sha256 };
+  const { lines, hashes } = summaryLines(status.result.summary as Record<string, unknown>);
+  return { state: 'read', lines, createdAt: status.result.createdAt,
+    hashes: [...hashes, { label: 'Stored reading SHA-256', value: status.result.artifact.sha256 }] };
 }
 
 const count = (value: number) => value.toLocaleString('en-US');

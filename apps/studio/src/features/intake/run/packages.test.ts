@@ -6,7 +6,7 @@ import { IntakeConfirmSchema } from '../../../../../../packages/contracts/src/us
 import captured from '../../../../../../docs/evidence/gf1/e3b/targets.json';
 import { readTargets } from './api';
 import { Confirm, PackagePages } from './Confirm';
-import { PackageDetails } from './Packages';
+import { Findings, PackageDetails } from './Packages';
 import { TargetList } from './TargetList';
 import { beingRecorded, chooseReady, confirmablePackages, confirmBody, remainingPackagesWords, type Package,
   type TargetPage } from './model';
@@ -112,4 +112,28 @@ it('a recording package leaves the counts and "Next 100 packages" as they were, 
   const named = confirmBody(page, [], 'Record these.', uuid(900)).packages.map(row => row.packageId);
   expect(named).toEqual(page.packages.filter((_row, index) => index !== 4).map(row => row.packageId));
   expect(page.packages[4]!.counts).toEqual(base.packages[0]!.counts);
+});
+
+it('a finding count reads in words with its count and no upper-case code', () => {
+  const html = renderToStaticMarkup(createElement(Findings, { counts: { BOUNDARY_CONTACT: 1694 } }));
+  expect(html).toContain('1694 · Boundary contact only; no positive footprint-area overlap');
+  expect(html).not.toMatch(/BOUNDARY_CONTACT|[A-Z]+_[A-Z_]+/);
+  // test_only: a code the Studio has no words for is still named, so no finding is hidden.
+  expect(renderToStaticMarkup(createElement(Findings, { counts: { NEW_KIND: 2 } })))
+    .toContain('2 · A finding the Studio has no words for: <span class="ul-mono">NEW_KIND</span>');
+});
+
+it("a package is headed by its anchor file's name, with its identifier copyable in the caption", () => {
+  const pkg = base.packages[0]!;
+  // test_only: the manifest item the package was drafted from, named by the test.
+  const items = [{ itemId: pkg.anchorItemId, name: 'test-outlines.geojson' }];
+  const html = renderToStaticMarkup(createElement(PackageDetails, { pkg, items }));
+  expect(html).toMatch(/<h3 class="studio-heading">test-outlines\.geojson<\/h3>/);
+  expect(html).toMatch(new RegExp(`<p class="ul-caption">Package <span class="ul-code"><span class="ul-code__seg">${
+    pkg.packageId}</span><button[^>]*aria-label="Copy package identifier ${pkg.packageId}"`));
+  expect(html.slice(0, html.indexOf('</h3>'))).not.toContain(pkg.packageId);
+  const missing = renderToStaticMarkup(createElement(PackageDetails, { pkg, items: [] }));
+  expect(missing).toContain('<h3 class="studio-heading">Package of a file the batch list does not name</h3>');
+  expect(renderToStaticMarkup(createElement(PackageDetails, { pkg })))
+    .toContain('<h3 class="studio-heading">Package</h3>');
 });
