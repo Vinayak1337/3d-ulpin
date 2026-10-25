@@ -12,10 +12,12 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
   scope:z.literal('source_native_literal_inventory'),source:z.object({sha256:CityGMLSummarySchema.shape.sourceSha256,
     bytes:CityGMLSummarySchema.shape.sourceBytes,citygmlVersion:z.enum(['1.0','2.0']),
     encodingProfile:z.literal('XML 1.0 UTF-8')}),
-  limits:z.object({input_bytes:z.literal(CITYGML_LIMITS.originalBytes),output_bytes:z.literal(CITYGML_LIMITS.artifactBytes),
-    memory_bytes:z.literal(2*1024**3),seconds:z.literal(60),threads:z.literal(2),
-    elements:z.literal(CITYGML_LIMITS.elements),depth:z.literal(64),
-    string_bytes:z.literal(65536),coordinate_values:z.literal(CITYGML_LIMITS.coordinateValues)}),
+  limits:z.intersection(z.object({output_bytes:z.literal(CITYGML_LIMITS.artifactBytes),
+    memory_bytes:z.literal(2*1024**3),seconds:z.literal(60),threads:z.literal(2),depth:z.literal(64),
+    string_bytes:z.literal(65536)}),z.union([
+    z.object({input_bytes:z.literal(32*1024*1024),elements:z.literal(25000),coordinate_values:z.literal(100000)}),
+    z.object({input_bytes:z.literal(CITYGML_LIMITS.originalBytes),elements:z.literal(CITYGML_LIMITS.elements),
+      coordinate_values:z.literal(CITYGML_LIMITS.coordinateValues)})])),
   elements:z.array(z.object({interpretation:z.string()})).max(CITYGML_LIMITS.elements),
   buildings:z.array(z.unknown()).max(CITYGML_LIMITS.elements),
   coordinates:z.array(z.object({values:z.array(z.unknown()).max(CITYGML_LIMITS.coordinateValues).nullable()}))
@@ -31,7 +33,9 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
 export function citygmlSummary(bytes:Buffer,input:CityGMLInput){
   if(bytes.length>CITYGML_LIMITS.artifactBytes)throw new AppError(413,'CITYGML_OUTPUT_LIMIT','CityGML native output exceeds its profile.');
   const value=native.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes))),c=value.counts;
-  if(value.source.sha256!==input.sourceSha256||value.source.bytes!==input.sourceBytes||c.elements!==value.elements.length
+  if(value.source.bytes>value.limits.input_bytes||c.elements>value.limits.elements||
+    c.decodedCoordinateValues>value.limits.coordinate_values||
+    value.source.sha256!==input.sourceSha256||value.source.bytes!==input.sourceBytes||c.elements!==value.elements.length
     ||c.buildingsAndParts!==value.buildings.length||c.coordinateDeclarations!==value.coordinates.length||c.references!==value.references.length
     ||c.decodedCoordinateValues!==value.coordinates.reduce((n,c)=>n+(c.values?.length??0),0)
     ||(value.status==='partial')!==(value.findings.length>0))

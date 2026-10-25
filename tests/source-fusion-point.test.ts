@@ -5,7 +5,7 @@ import {Readable} from 'node:stream';
 // Import leaf first: shared-union initialization must remain independent.
 import {SourceFusionPointSelectionSchema} from '../packages/contracts/src/source-fusion-point';
 import {SOURCE_FUSION_LIMITS,SourceFusionRequestSchema} from '../packages/contracts/src/source-fusion';
-import {PointOriginalSchema,PointBatchResultSchema} from '../packages/contracts/src/usp/point-batch';
+import {POINT_BATCH_LIMITS,PointOriginalSchema,PointBatchResultSchema} from '../packages/contracts/src/usp/point-batch';
 import {DocumentResultSchema} from '../packages/contracts/src/usp/document-ingestion';
 import {pointInput,pointResultKey,pointArtifactKey,PointBatchService} from '../packages/server/src/modules/usp/ingestion/point-batch';
 import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
@@ -179,7 +179,8 @@ test('point receipt HEAD/ETag and native-artifact byte caps refuse before buffer
     open:async()=>{opened++;assert.fail('oversized receipt GET');}}),code('POINT_OBJECT_LIMIT'));assert.equal(opened,0);
   await assert.rejects(()=>readPointObject(key,f.point.pin.resultSha256,null,bounds,{head:async()=>({bytes:f.bytes.length,etag:undefined}),
     open:async()=>assert.fail('missing ETag GET')}),code('POINT_RESULT_INTEGRITY'));
-  await assert.rejects(()=>readPointObject(f.result.artifact.key,f.result.artifact.sha256,524289,bounds),code('POINT_OBJECT_LIMIT'));
+  await assert.rejects(()=>readPointObject(f.result.artifact.key,f.result.artifact.sha256,
+    POINT_BATCH_LIMITS.artifactBytes+1,bounds),code('POINT_OBJECT_LIMIT'));
   const body=Readable.from([Buffer.concat([f.bytes,Buffer.from('excess')])]);
   await assert.rejects(()=>readPointObject(key,f.point.pin.resultSha256,f.bytes.length,bounds,{head:async()=>assert.fail('known-size HEAD'),
     open:async()=>({body,etag:'memory'})}),code('POINT_OBJECT_INTEGRITY'));assert(body.destroyed);
