@@ -27,7 +27,7 @@ export async function registerIntakeItemTx(client: PoolClient, source: IntakeSou
 function intakePlan(value: unknown) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   // CN1: a wide file's cell batches are kept beside its plan, not in it.
-  const { cellFiles: _cells, ...stored } = value as Record<string, unknown>;
+  const { cellFiles: _cells, layerMeanings: _meanings, ...stored } = value as Record<string, unknown>;
   const plan = IntakeItemPlanSchema.safeParse({ ...stored, packageId: stored.packageId ?? null });
   return plan.success ? plan.data : null;
 }

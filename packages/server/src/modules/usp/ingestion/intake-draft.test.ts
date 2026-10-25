@@ -6,7 +6,8 @@ import { Readable } from 'node:stream';
 import { settings } from '../../../infrastructure/config';
 import { AdaptiveMappingService } from './adaptive-mapping-service';
 import type { PoolClient } from 'pg';
-import { SourceProfileSchema, AdaptiveMappingResponseSchema, type MappingReceipt } from '@ulpin/contracts/usp';
+import { SourceProfileSchema, AdaptiveMappingRequestSchema, AdaptiveMappingResponseSchema,
+  type MappingReceipt } from '@ulpin/contracts/usp';
 import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
@@ -25,6 +26,13 @@ import { StreamingVectorService } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
 import { ManualIngestionService } from './service';
 import { sha256 } from '../../../infrastructure/storage';
+import { ModelGateway } from '../../model-gateway/gateway';
+import { ReplayAdapter } from '../../model-gateway/adapter';
+import { hash as gatewayHash } from '../../model-gateway/config';
+import type { PgModelCallLedger } from '../../model-gateway/ledger';
+import { readingOf } from './intake-reading';
+import { profileGisAttributes } from './column-profile';
+import { proposeMappingRules } from './mapping-rules';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'ca0-protocol-operator';
 const caseId = '10000000-0000-4000-8000-000000000001';
@@ -78,7 +86,8 @@ type Protocol = {
   tray: DraftItem;
   jobs: any[];
   state: { recipeRevision: number; revision: number; operations: Map<string, any>;
-    events: number; projection: Record<string, any>; attempt?: Record<string, any>; registered?: Set<string> };
+    events: number; projection: Record<string, any>; attempt?: Record<string, any>; registered?: Set<string>;
+    receipt?: MappingReceipt };
 };
 function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
@@ -100,7 +109,12 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
       input_manifest_id: job.source_id }] : [];
   }
   if (sql.startsWith('SELECT * FROM usp_job_attempts')) return state.attempt ? [state.attempt] : [];
-  if (sql.includes('FROM usp_mapping_recipes') || sql.startsWith('SELECT pg_advisory')) return [];
+  if (sql.startsWith('SELECT body FROM usp_mapping_recipes WHERE source_id='))
+    return state.receipt ? [{ body: state.receipt }] : [];
+  if (sql.startsWith('SELECT state FROM usp_mapping_recipes WHERE source_id='))
+    return state.receipt ? [{ state: state.receipt.state }] : [];
+  if (sql.startsWith('SELECT a.id FROM cases') || sql.includes('FROM usp_mapping_recipes')
+    || sql.startsWith('SELECT pg_advisory')) return [];
   if (sql.startsWith('SELECT state,placement,plan_ref')) return [state.projection];
   if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
@@ -905,3 +919,189 @@ test('a small retained GeoJSON with its bounded receipt queues the same draft au
     assert.equal(fixture.jobs[0].id, jobId);
     assert.equal(fixture.jobs[0].operation, 'intake-draft');
   });
+
+function replayLayout(fixture: Protocol) {
+  fixture.src.inspection!.gis = { suggestedTitle: 'Protocol control', suggestedNamespace: 'Protocol control' };
+  const teacher = mock.method(AdaptiveMappingService.prototype, 'propose', async (_case: string,
+    _source: string, raw: unknown) => {
+    const request = AdaptiveMappingRequestSchema.parse(raw);
+    return AdaptiveMappingResponseSchema.parse({ version: 'adaptive-geojson-proposal/1',
+      requestKey: request.requestKey,
+      source: request.source, workspaceRevision: request.workspaceRevision,
+      workspaceFingerprint: request.workspaceFingerprint, status: 'proposed', code: null,
+      plan: { ...plan, source: request.source, workspaceRevision: request.workspaceRevision,
+        workspaceFingerprint: request.workspaceFingerprint },
+      validationErrors: [], call: null, validation: 'mechanics_only', reviewRequired: true });
+  });
+  mock.method(ManualIngestionService.prototype, 'author', async (_case: string, _source: string, raw: unknown) => {
+    const request = raw as { requestKey: string; plan: MappingReceipt['plan'] };
+    const receipt: MappingReceipt = { ...remembered, revision: 1, state: 'proposed', plan: request.plan,
+      approval: null, execution: null };
+    fixture.state.receipt = receipt;
+    fixture.state.recipeRevision = receipt.revision;
+    fixture.state.operations.set(`manual-author:${request.requestKey}`, { result: receipt });
+    return receipt;
+  });
+  return teacher;
+}
+
+for (const path of ['E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson',
+  'fixtures/usp/D4/gf0-context-v1/osm-road-centrelines.geojson']) {
+  test(`layer meanings: one masked replay, unknown columns only, durable candidates: ${path}`, async () => {
+    const bytes = readFileSync(path);
+    const originalHash = sha256(bytes);
+    const features = JSON.parse(bytes.toString('utf8')).features;
+    const fixture = protocol();
+    Object.assign(fixture.src, { bytes: bytes.length, sha256: originalHash });
+    fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, path);
+    const profiled = profileGisAttributes(features.slice(0, 100).map((feature: any) => feature.properties)).profile;
+    const known = new Set(proposeMappingRules(profiled).map(rule => rule.field.sourceField));
+    const unknown = profiled.columns.filter(column => !known.has(column.name)).map(column => column.name);
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+    await tableCommands(fixture, bytes, async () => {
+      mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
+      const layoutTeacher = replayLayout(fixture);
+      const propose = ModelGateway.prototype.propose;
+      const requests: any[] = [];
+      mock.method(ModelGateway.prototype, 'propose', async function (this: ModelGateway,
+        ...[context, request, trusted]: Parameters<ModelGateway['propose']>) {
+        const sent = JSON.parse((request.input as any).messages[1].content).columnProfile;
+        requests.push(sent);
+        assert.equal(sent.sourceKind, 'gis_attributes');
+        assert.deepEqual(sent.columns.map((column: any) => column.header), unknown);
+        for (const column of sent.columns) {
+          assert(column.maskedSamples.length <= 5);
+          assert(column.maskedSamples.every((sample: string) => !/[0-9०-९@]|phone|email/i.test(sample)));
+          const observed = profiled.columns.find(value => value.name === column.header)!;
+          assert.deepEqual(column.valueShapes, observed.valueShapes);
+        }
+        const output = { fields: sent.columns.map((column: any) => ({ sourceField: column.sourceField,
+          target: 'unknown', operation: { kind: 'copy' }, confidence: 'none',
+          rationale: 'Review the source before assigning a meaning.' })) };
+        const response = { output, responseHash: gatewayHash(output), httpStatus: 200 };
+        const adapter = new ReplayAdapter(async replayKey => ({ inputHash: replayKey, replayKey,
+          sourceHashes: trusted.sourceHashes, responseHash: gatewayHash(response), response, eligible: true }));
+        const replay = new ModelGateway(this.config, { reserve: async () => {
+          assert.fail('Replay cannot reserve a live provider request.');
+        } } as unknown as PgModelCallLedger, adapter);
+        return propose.call(replay, context, request, trusted);
+      });
+      await runIntakeDraftJob(jobId!);
+      assert.equal(requests.length, 1);
+      assert(requests[0].columns.some((column: any) => column.maskedSamples.length === 5));
+      assert.equal(layoutTeacher.mock.callCount(), 1, 'The existing layout proposal still runs independently.');
+      assert.equal(fixture.jobs[0].status, 'succeeded');
+      assert.equal(fixture.state.projection.state, 'planned', 'Same proposed-layout state as the base path.');
+      assert.equal(fixture.state.projection.placement, 'undecided');
+      assert.equal(fixture.state.projection.plan_ref.recipeState, 'proposed');
+      assert.equal(fixture.state.projection.plan_ref.origin, 'teacher');
+      const row = fixture.state.projection;
+      const meanings = row.plan_ref.layerMeanings;
+      assert.equal(meanings.labelKind, 'pseudo_label');
+      assert.equal(meanings.sourceSha256, originalHash);
+      assert.equal(meanings.replayed, true);
+      assert.equal(meanings.attempts, 1);
+      assert.equal([...fixture.state.operations.keys()].filter(key => key.startsWith('intake-layer-meanings:'))
+        .length, 1);
+      const reading = readingOf({ ...row, source_id: sourceId }, card);
+      const named = reading.fields.filter(field => field.basis === 'sarvam');
+      assert.deepEqual(named.map(field => field.field.split('/').at(-1)), unknown);
+      assert(named.every(field => /candidate.*not confirmed/i.test(field.words)));
+      const published = intakeItem({ ...fixture.tray, ...row, card, name: path, format: 'geojson',
+        size_bytes: bytes.length, size_class: 'S', wave: 1, member_path: null, card_sha256: null,
+        probe_version: null, parts_planned: null, parts_done: 0, pinned_by_officer: false,
+        created_at: new Date(), updated_at: new Date() });
+      assert.equal(published.plan?.recipeId, fixture.state.receipt!.id);
+      assert.equal(published.plan?.recipeState, 'proposed', 'Supplemental meanings do not hide the recipe.');
+      assert(!fixture.statements.some(sql => /INSERT INTO registry_/.test(sql)));
+      fixture.jobs[0].status = 'queued';
+      fixture.state.attempt = undefined;
+      await runIntakeDraftJob(jobId!);
+      assert.equal(requests.length, 1, 'A replayed draft uses the operations row, not another teacher call.');
+      const nextJob = await queueIntakeDraftTx(fixture.client, fixture.src);
+      assert.notEqual(nextJob, jobId);
+      fixture.state.attempt = undefined;
+      await runIntakeDraftJob(nextJob!);
+      assert.equal(requests.length, 1, 'A later layout revision reuses the same source meanings.');
+      assert.equal(readingOf({ ...row, source_id: caseId }, card).fields.length, 0, 'A different source is ignored.');
+      assert.equal(sha256(readFileSync(path)), originalHash);
+    });
+  });
+}
+
+for (const scenario of ['large count', 'large content', 'kml', 'parse error', 'teacher error']) {
+  test(`optional layer meanings preserve the base draft outcome on ${scenario}`, async () => {
+    const original = readFileSync('E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson');
+    let bytes = original;
+    if (scenario.startsWith('large')) {
+      const collection = JSON.parse(original.toString('utf8'));
+      // Count-bound control: repeat retained features, without inventing geometry or property values.
+      const features = [...collection.features, ...collection.features];
+      bytes = Buffer.from(JSON.stringify({ ...collection, features }));
+    }
+    if (scenario === 'kml' || scenario === 'parse error')
+      bytes = readFileSync('E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml');
+    const outcomes: Record<string, any>[] = [];
+    for (const mode of ['off', 'masked_profile'] as const) {
+      const fixture = protocol();
+      Object.assign(fixture.src, { bytes: bytes.length, sha256: sha256(bytes) });
+      fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+      const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+      if (scenario === 'large count')
+        fixture.src.inspection!.manualProfile.featureCount = JSON.parse(bytes.toString('utf8')).features.length;
+      if (scenario === 'kml') fixture.tray.card!.format = 'kml';
+      await tableCommands(fixture, bytes, async () => {
+        mock.getter(settings, 'teacherCaseOriginals', () => mode);
+        const meanings = mock.method(ModelGateway.prototype, 'propose', async () => {
+          throw new Error('Field interpretation is unavailable.');
+        });
+        const layout = mock.method(AdaptiveMappingService.prototype, 'propose', async () =>
+          AdaptiveMappingResponseSchema.parse({ version: 'adaptive-geojson-proposal/1', requestKey: caseId,
+            source: profile.source, workspaceRevision: 0, workspaceFingerprint: hash, status: 'disabled',
+            code: 'MODEL_DISABLED', plan: null, validationErrors: [], call: null,
+            validation: 'mechanics_only', reviewRequired: true }));
+        await runIntakeDraftJob(jobId!);
+        assert.equal(meanings.mock.callCount(), mode === 'masked_profile' && scenario === 'teacher error' ? 1 : 0);
+        assert.equal(layout.mock.callCount(), mode === 'masked_profile' ? 1 : 0);
+        assert.equal(fixture.state.projection.plan_ref.layerMeanings, undefined);
+        assert.equal(fixture.state.projection.state, 'probed');
+        assert.equal(fixture.jobs[0].status, 'succeeded');
+        outcomes.push(fixture.state.projection);
+      });
+    }
+    assert.deepEqual(outcomes[1], outcomes[0], 'Only the optional meanings step differs from the base path.');
+  });
+}
+
+test('optional meanings never swallow an error from the existing layout path', async () => {
+  const bytes = readFileSync('E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson');
+  const fixture = protocol();
+  Object.assign(fixture.src, { bytes: bytes.length, sha256: sha256(bytes) });
+  fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+  await tableCommands(fixture, bytes, async () => {
+    mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
+    mock.method(ModelGateway.prototype, 'propose', async () => { throw new Error('Meanings unavailable.'); });
+    mock.method(AdaptiveMappingService.prototype, 'propose', async () => { throw new Error('Layout failed.'); });
+    await assert.rejects(runIntakeDraftJob(jobId!), /Layout failed/);
+    assert.equal(fixture.jobs[0].status, 'failed');
+  });
+});
+
+test('layer meanings: switch off never reaches a gateway or reads sample cells', async () => {
+  const bytes = readFileSync('E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson');
+  const fixture = protocol();
+  Object.assign(fixture.src, { bytes: bytes.length, sha256: sha256(bytes) });
+  fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+  await tableCommands(fixture, bytes, async () => {
+    mock.getter(settings, 'teacherCaseOriginals', () => 'off');
+    const teacher = mock.method(ModelGateway.prototype, 'propose', async () =>
+      assert.fail('A refused profile cannot dispatch.'));
+    mock.method(AdaptiveMappingService.prototype, 'propose', async () => assert.fail('No layout teacher is allowed.'));
+    await runIntakeDraftJob(jobId!);
+    assert.equal(teacher.mock.callCount(), 0);
+    assert.equal(fixture.state.projection.plan_ref.layerMeanings, undefined);
+  });
+});
