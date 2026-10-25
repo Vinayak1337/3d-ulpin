@@ -15,6 +15,8 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import time
+import tracemalloc
 import unittest
 from unittest.mock import patch
 
@@ -265,6 +267,111 @@ class StoreyOutlineTests(unittest.TestCase):
                     replace(DEFAULT_LIMITS, **{field: value})
 
 
+def apartment_ifc(tmp_path: Path, storeys: int = 20, per_storey: int = 50) -> Path:
+    """test_only procedural load fixture, never a source record; bytes exist only in the temporary directory."""
+    import numpy as np
+    from ifcopenshell.api import aggregate, context, geometry, project, root, spatial, unit
+    model = project.create_file(version="IFC4")
+    building_project = root.create_entity(model, ifc_class="IfcProject", name="test_only apartment load")
+    unit.assign_unit(model, length={"is_metric": True, "raw": "METERS"})
+    parent = context.add_context(model, context_type="Model")
+    body = context.add_context(model, context_type="Model", context_identifier="Body",
+                               target_view="MODEL_VIEW", parent=parent)
+    building = root.create_entity(model, ifc_class="IfcBuilding", name="test_only")
+    aggregate.assign_object(model, products=[building], relating_object=building_project)
+    levels = [root.create_entity(model, ifc_class="IfcBuildingStorey", name=f"test_only {i}")
+              for i in range(storeys + 1)]
+    aggregate.assign_object(model, products=levels, relating_object=building)
+    for i, level in enumerate(levels):
+        elements = []
+        spaces = i == storeys
+        for j in range(50 if spaces else per_storey):
+            element = root.create_entity(model, ifc_class="IfcSpace" if spaces else "IfcSlab", name="test_only")
+            representation = geometry.add_slab_representation(
+                model, context=body, depth=3.0 if spaces else 0.2,
+                polyline=[(0.0, 0.0), (8.0, 0.0), (8.0, 6.0), (0.0, 6.0), (0.0, 0.0)])
+            geometry.assign_representation(model, product=element, representation=representation)
+            matrix = np.eye(4)
+            matrix[:3, 3] = ((j % 10) * 8, (j // 10) * 6, i * 3)
+            geometry.edit_object_placement(model, product=element, matrix=matrix)
+            elements.append(element)
+        if spaces:
+            aggregate.assign_object(model, products=elements, relating_object=level)
+        else:
+            spatial.assign_container(model, products=elements, relating_structure=level)
+    path = tmp_path/"test_only-apartment.ifc"
+    model.write(str(path))
+    return path
+
+
+def measure_outline_pass(model, structure: dict) -> tuple[dict, dict]:
+    import ifcopenshell.geom
+    counts = []
+    create_shape = ifcopenshell.geom.create_shape
+
+    def mesh(settings, element):
+        shape = create_shape(settings, element)
+        counts.append(len(shape.geometry.faces))
+        return shape
+
+    started = time.perf_counter()
+    with patch("ifcopenshell.geom.create_shape", mesh):
+        outlines = storey_outlines(model, structure, DEFAULT_LIMITS)
+    seconds = time.perf_counter() - started
+    tracemalloc.start()
+    traced = storey_outlines(model, structure, DEFAULT_LIMITS)
+    _, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    return outlines, {"elements": len(counts), "triangleVertices": sum(counts),
+                      "outlineSeconds": seconds, "outlineTracemallocPeak": peak,
+                      "tracedOutlineState": traced["state"],
+                      "outlineBytes": len(json.dumps(outlines, separators=(",", ":")))}
+
+
+def measure_full_extract(raw: bytes) -> dict:
+    import psutil
+    with patch("geo.native_ifc.storey_outlines", return_value={"state": "not_read",
+               "code": "TEST_ONLY_METADATA_BASELINE", "reason": "test_only budget measurement"}):
+        started = time.perf_counter()
+        baseline = extract(raw)
+        metadata_seconds = time.perf_counter() - started
+        tracemalloc.start()
+        extract(raw)
+        _, metadata_peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+    started = time.perf_counter()
+    result = extract(raw)
+    seconds = time.perf_counter() - started
+    memory = psutil.Process().memory_info()
+    return {"metadataBytes": len(encode_result(baseline)), "metadataSeconds": metadata_seconds,
+            "metadataTracemallocPeak": metadata_peak, "fullExtractSeconds": seconds,
+            "fullExtractOutlineState": result["storeyOutlines"]["state"], "artifactBytes": len(encode_result(result)),
+            "processPeakBytes": getattr(memory, "peak_pagefile", memory.rss)}
+
+
+class ApartmentOutlineTests(unittest.TestCase):
+    def test_apartment_scale_outlines_and_budget_measurement(self):
+        import ifcopenshell
+        per_storey = int(os.environ.get("NATIVE_IFC_TEST_SLABS_PER_STOREY", "50"))
+        with tempfile.TemporaryDirectory(prefix="ifc-test-only-apartment-") as directory:
+            path = apartment_ifc(Path(directory), per_storey=per_storey)
+            raw = path.read_bytes()
+            model = ifcopenshell.open(str(path))
+            outlines, metrics = measure_outline_pass(model, structure_or_reason(raw, DEFAULT_LIMITS))
+            metrics.update(measure_full_extract(raw))
+            metrics.update({"entities": len(list(model)), "sourceBytes": len(raw)})
+            print("IFC_OUTLINE_BENCHMARK " + json.dumps(metrics, sort_keys=True))
+            self.assertEqual(outlines["state"], "read", outlines)
+            self.assertEqual(metrics["tracedOutlineState"], "read")
+            self.assertEqual(metrics["fullExtractOutlineState"], "read")
+            self.assertEqual(len(outlines["storeys"]), 21)
+            self.assertEqual([s["elementSource"] for s in outlines["storeys"]], ["IfcSlab"] * 20 + ["IfcSpace"])
+            self.assertEqual(sum(len(s["elementStepIds"]) for s in outlines["storeys"]), 20 * per_storey + 50)
+            self.assertEqual(metrics["triangleVertices"], (20 * per_storey + 50) * 36)
+            self.assertLessEqual(metrics["artifactBytes"], DEFAULT_LIMITS.output_bytes)
+            self.assertEqual(path.read_bytes(), raw)
+
+
 HAUS = Path("E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/originals/AC20-FZK-Haus.ifc")
 
 
@@ -307,9 +414,12 @@ class RealStoreyOutlineTests(unittest.TestCase):
         for field, value, code in (("outline_seconds", 1e-9, "OUTLINE_TIME_LIMIT"),
                                    ("outline_vertices", 1, "OUTLINE_VERTEX_LIMIT"),
                                    ("outline_elements", 1, "OUTLINE_ELEMENT_LIMIT"),
-                                   ("outline_output_bytes", 1, "OUTLINE_OUTPUT_LIMIT")):
+                                   ("outline_output_bytes", 1, "OUTLINE_OUTPUT_LIMIT"),
+                                   ("output_bytes", len(encode_result(self.result)) - 256, "OUTLINE_OUTPUT_LIMIT")):
             with self.subTest(field=field):
-                result = extract(self.raw, replace(DEFAULT_LIMITS, **{field: value}))
+                limits = replace(DEFAULT_LIMITS, **{field: value})
+                result = extract(self.raw, limits)
+                self.assertLessEqual(len(encode_result(result, limits)), limits.output_bytes)
                 self.assertEqual(result.pop("storeyOutlines")["code"], code)
                 result.pop("limits")
                 self.assertEqual(encode_result(result), encode_result(baseline))

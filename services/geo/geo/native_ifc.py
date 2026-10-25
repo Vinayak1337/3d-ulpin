@@ -39,11 +39,12 @@ class Limits:
     structure_statement_bytes: int = 4 * 1024**2
     structure_output_bytes: int = 48 * 1024
     structure_seconds: float = 20
-    # AC20-FZK-Haus: 4 elements, 204 triangle vertices, <1 KiB, 0.062 s; generous bounded headroom.
-    outline_elements: int = 128
-    outline_vertices: int = 32_768
-    outline_output_bytes: int = 64 * 1024
-    outline_seconds: float = 5
+    # test_only apartment: 99,766 entities, 7,670 meshes, 276,120 triangle vertices in 8.30 s.
+    # Evidence records margins against the remaining 60 s / 2 GiB reader budget.
+    outline_elements: int = 100_000
+    outline_vertices: int = 1_000_000
+    outline_output_bytes: int = 4 * 1024**2
+    outline_seconds: float = 25
 
     def __post_init__(self):
         if any(not math.isfinite(v) or v <= 0 for v in asdict(self).values()):
@@ -755,6 +756,14 @@ def extract(raw: bytes, limits: Limits = DEFAULT_LIMITS):
     if referenced_units:
         result["findings"].append({"code": "PROJECT_UNITS_MISSING", "status": "needs_input", "stepIds": referenced_units})
     result["storeyOutlines"] = storey_outlines(model, result["structure"], limits)
+    if result["storeyOutlines"]["state"] == "read":
+        try:
+            encode_result(result, limits)
+        except IFCError as error:
+            if error.code != "OUTPUT_LIMIT":
+                raise
+            result["storeyOutlines"] = {"state": "not_read", "code": "OUTLINE_OUTPUT_LIMIT",
+                                       "reason": "Storey outlines exceed the remaining artifact byte budget."}
     return result
 
 

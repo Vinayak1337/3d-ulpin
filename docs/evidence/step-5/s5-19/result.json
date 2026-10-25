@@ -1,58 +1,69 @@
 {
   "task": "S5.19", "planStep": 5, "base": "db2b80e917f17659184aba5e33da0bae7947f75c",
-  "dataRoot": "E:/BhuAayam-data/task-data", "testOnly": true,
-  "inputs": [
+  "reviewBase": "4cb6e68c", "testOnly": true, "dataRoot": "E:/BhuAayam-data/task-data",
+  "realInputs": [
     {"file": "paired-building-floor-sources-20261004-run01/originals/AC20-FZK-Haus.ifc",
-      "sha256": "70cc8ff245fc0894201d96496c031005a5cbd7a96b22d8a1b87c5a883fb77994", "bytes": 2570803,
-      "schema": "IFC4", "unit": "METRE", "storeys": 2, "outlines": 2},
+      "sha256": "70cc8ff245fc0894201d96496c031005a5cbd7a96b22d8a1b87c5a883fb77994", "bytes": 2570803},
     {"file": "desktop-ifc-native/originals/ifc4-building-architecture.ifc",
       "sha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80", "bytes": 142325,
-      "difficulty": "MILLI METRE and supplied map conversion", "outlines": 1, "globalTransformApplied": false},
+      "difficulty": "MILLI METRE and supplied map conversion; one outline, no global transform"},
     {"file": "desktop-ifc-native/originals/ifc2x3-building-architecture.ifc",
-      "sha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885", "bytes": 92542,
-      "schema": "IFC2X3", "unit": "MILLI METRE", "outlines": 1}
+      "sha256": "c4db65ba847f6b369a95d6c54fa11f4750cbe6d59f021934e8923d8d578e5885", "bytes": 92542}
   ],
-  "measurement": {"parser": "IfcOpenShell 0.8.5", "shapely": "2.1.2", "elements": 4,
-    "triangleVertices": 204, "outlineBytes": 713, "artifactBytes": 140820,
-    "initialMeshUnionSeconds": 0.062, "finalOutlineSeconds": 0.031, "fullExtractSeconds": 1.907,
-    "storeys": [{"stepId": 479, "slabs": [34509], "triangleVertices": 36, "polygons": 1},
-      {"stepId": 35065, "slabs": [59290, 59553, 59753], "triangleVertices": 168, "polygons": 1}]},
-  "bounds": {"outline_elements": 128, "outline_vertices": 32768,
-    "outline_output_bytes": 65536, "outline_seconds": 5},
-  "margin": "32x elements; over 160x triangle vertices; over 90x output bytes; over 80x slower observed pass time.",
-  "decisions": [
-    "use-world-coords=true; convert-back-units=true preserves file units, never applies map conversion.",
-    "Largest stated context Precision selects a decimal grid no finer than any context; absent precision refuses.",
-    "Haus Precision 0.00001: five decimal places; topology-aware grid rounding retains valid closed rings.",
-    "Unsupported or ambiguous length units refuse outlines, never assume metres. Existing metadata stays intact.",
-    "Outline limits are cooperative between native calls; existing external native-process hard bounds stay unchanged.",
-    "Count is absent for old artifacts and not_read passes; a read pass without eligible elements counts zero."
-  ],
+  "realHouse": {"outlines": 2, "slabs": 4, "triangleVertices": 204, "outlineBytes": 713, "unit": "METRE"},
+  "bounds": {"outline_elements": 100000, "outline_vertices": 1000000,
+    "outline_output_bytes": 4194304, "outline_seconds": 25, "output_bytes": 16777216},
+  "capacityCalibration": {
+    "testOnly": true, "generator": "services/geo/tests/test_native_ifc.py:apartment_ifc (IfcOpenShell API IFC4)",
+    "storage": "TemporaryDirectory/tmp_path only; no synthetic IFC bytes retained or committed",
+    "layout": "20 storeys of contiguous extruded slabs, plus one storey of 50 extruded spaces; source unit METRE",
+    "ceilingRun": "NATIVE_IFC_TEST_SLABS_PER_STOREY=381; IFC Python script with ApartmentOutlineTests -v",
+    "small": {"slabsPerStorey": 50, "entities": 13706, "sourceBytes": 692819, "elements": 1050,
+      "triangleVertices": 37800, "outlineSeconds": 1.206186, "fullExtractSeconds": 1.789933,
+      "metadataSeconds": 0.578097, "outlineTracemallocPeak": 188995, "metadataTracemallocPeak": 20246314,
+      "processPeakBytes": 959438848, "outlineBytes": 15517, "artifactBytes": 456196},
+    "ceiling": {"slabsPerStorey": 381, "entities": 99766, "sourceBytes": 5199749, "elements": 7670,
+      "triangleVertices": 276120, "outlineSeconds": 8.295225, "fullExtractSeconds": 13.113833,
+      "metadataSeconds": 4.235354, "outlineTracemallocPeak": 878480, "metadataTracemallocPeak": 140875551,
+      "processPeakBytes": 1508892672, "outlineBytes": 73905, "artifactBytes": 834846},
+    "timeArithmetic": [
+      "Entity-ceiling factor = 100000 / 99766 = 1.002345489; scaled full extract = 13.144592 s.",
+      "60 - 13.144592 = 46.855408 s remaining, conservatively subtracting the full extract INCLUDING its outline.",
+      "Scaled outline = 8.314682 s; 3x = 24.944046 s, rounded up to 25 s; extra reader headroom = 21.855408 s."
+    ],
+    "memoryArithmetic": [
+      "Windows peak_pagefile includes native memory, API construction and repeat reads: conservative process peak.",
+      "ceil(1508892672 * 100000 / 99766) = 1512431763; 2147483648 - 1512431763 = 635051885 bytes remaining.",
+      "Largest storey meshes 381 * 36 = 13716 vertices; measured pass tracemalloc peak = 878480 bytes.",
+      "4x envelope at 1000000 vertices = ceil(4 * 878480 * 1000000 / 13716) = 256191310 bytes.",
+      "Reserve 4 * output_bytes = 67108864 for encoding; 635051885 - 256191310 - 67108864 = 311751711 margin."
+    ],
+    "outputArithmetic": "Read outlines require <=4 MiB AND full encode <=16 MiB; else OUTLINE_OUTPUT_LIMIT only.",
+    "binding": "For measured extrusions, time binds at 25 s before 1M vertices (~30 s) or 100000 meshed elements.",
+    "scope": "Family extrapolation, not a universal IFC cost guarantee; tracemalloc excludes native allocations.",
+    "hardBounds": "Unchanged external 60 s / 2 GiB supervision; storeys meshed and unioned one at a time.",
+    "otherLimits": "Existing structure/entity/input limits unchanged; the ceiling case keeps 21 storeys and 50 spaces."
+  },
   "regressions": [
-    "Both structure fixture canonical results match base hashes, excluding only added limits/key and finding message.",
-    "Haus old fields are byte-identical to base after those exclusions; source hashes unchanged after reads.",
-    "All four lowered limits and forced geometry exceptions yield not_read without changing other result fields.",
-    "Real in-memory space fallback initially failed with independently rounded invalid rings.",
-    "Bounded comparison: source-precision topology rounding changed not_read to read; no further repair attempted.",
-    "Real slab/space fallback, no_slab_or_space, closed exterior/interior rings and disconnected polygons pass."
+    "Both structure fixture canonical base hashes still match after excluding added limits/key and finding message.",
+    "Lowered outline bounds, forced geometry exception and exhausted WHOLE artifact budget preserve other fields.",
+    "House, millimetres, no global transform, closed rings/holes, space fallback and no_slab_or_space still pass.",
+    "Synthetic full extract reads all 21 outlines at both sizes; input bytes remain unchanged; output fits 16 MiB."
   ],
   "checks": {
     "countsOrder": ["passed", "failed", "skipped"],
-    "IFC Python script -v": {"beforeExit": 0, "before": [12, 0, 0], "afterExit": 0, "after": [18, 0, 0]},
-    "task TESTS focused IFC tsx command": {"afterExit": 0, "after": [27, 0, 1]},
-    "actual Haus artifact through ifcSummary and intakeIfcReadWords": {"exit": 0, "after": [1, 0, 0]},
+    "IFC Python script -v": {"beforeExit": 0, "before": [18, 0, 0], "afterExit": 0, "after": [19, 0, 0]},
+    "ceiling ApartmentOutlineTests -v": {"exit": 0, "after": [1, 0, 0]},
+    "task TESTS focused IFC tsx command": {"beforeExit": 0, "afterExit": 0, "after": [27, 0, 1]},
     "pnpm typecheck:backend": {"beforeExit": 0, "afterExit": 0},
-    "pnpm studio:typecheck": {"beforeExit": 2, "afterExit": 2,
-      "unchangedFailure": "table-placement-command.ts:65 TS2322, missing decimalMark (S5.7)"},
-    "pnpm studio:test": {"beforeExit": 0, "before": [783, 0, 3], "afterExit": 0, "after": [783, 0, 3]},
-    "WORKING-RULES section 5 server command": {
-      "profilePython": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
-      "beforeExit": 0, "before": [991, 0, 4], "afterExit": 0, "after": [993, 0, 4]},
-    "openapi.ts --check": {"beforeExit": 0, "afterExit": 1, "expected": "docs/api/openapi.json stale"},
-    "python scripts/api/check.py": {"beforeExit": 0, "afterExit": 1,
-      "expectedProducer": "packages/contracts/src/usp/ifc-ingestion.ts"},
-    "git diff --check": {"beforeExit": 0, "afterExit": 0}
+    "WORKING-RULES section 5 server command": {"beforeExit": 0, "afterExit": 0, "after": [993, 0, 4],
+      "profilePython": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"},
+    "pnpm studio:typecheck": {"exit": 2, "unchanged": "table-placement-command.ts:65 TS2322 (S5.7)"},
+    "pnpm studio:test": {"exit": 0, "after": [783, 0, 3]},
+    "openapi.ts --check": {"exit": 1, "expected": "docs/api/openapi.json stale"},
+    "python scripts/api/check.py": {"exit": 1, "expectedProducer": "packages/contracts/src/usp/ifc-ingestion.ts"},
+    "git diff --check": {"exit": 0}
   },
-  "logs": "E:/ulpin-tmp/s519-before-* and s519-after-*; TMP, TEMP and TMPDIR on E:/ulpin-tmp",
+  "logs": "E:/ulpin-tmp/s519-r1-{before,after}-* and s519-r1-ceiling-final.log; TMP/TEMP/TMPDIR on E:/ulpin-tmp",
   "next": ["S5.20 draws outlines in Studio", "Lead repins native reader after S5.13 and refreshes contract pins"]
 }
