@@ -1,0 +1,40 @@
+{
+  "task": "S5.8b",
+  "planStep": 5,
+  "status": "stopped_scope_extension_required",
+  "base": "97f7f2fb14b855014fddd5de00b0b7791782603d",
+  "productionChanges": "None; stopped at the explicit OWN boundary before implementing paging.",
+  "blockers": [
+    {
+      "path": "packages/contracts/src/source-fusion.ts",
+      "outsideOwn": true,
+      "locations": [35, 133, 138, 140],
+      "reason": "DXF selection and projection ordinals are capped at 9999; availableNativeEntities and findings are capped at 10000. Higher entity bounds require corresponding DXF contract bounds so valid paged readings remain selectable and projectable. Do not change other formats."
+    },
+    {
+      "path": "packages/contracts/src/registry-document-evidence.ts",
+      "outsideOwn": "entityOrdinal change; OWN authorizes the DXF profile literal only",
+      "locations": [70],
+      "reason": "The DXF citation entityOrdinal is capped at 9999 and must match the newly measured entity bound. Changing only the profile literal cannot enable citations for higher global ordinals."
+    }
+  ],
+  "checks": {
+    "scopeProbe": {
+      "exitCode": 0,
+      "rejectionsConfirmed": 4,
+      "details": "Existing contracts reject selection ordinal 10000, projected ordinal 10000, coverage 10001 and citation ordinal 10000.",
+      "script": "E:/ulpin-tmp/s5-8b/probe.ts"
+    },
+    "targetedDXFTests": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/source-fusion-dxf.test.ts tests/registry-dxf-citations.test.ts tests/dxf-read-compatibility.test.ts",
+      "exitCode": 0,
+      "passed": 8,
+      "skipped": 1,
+      "failed": 0
+    },
+    "diffCheck": {"exitCode": 0},
+    "remainingChecks": "Not run after the scope stop; no producer code changed. No paging, WikiHouse completion, process-peak or new-limit acceptance claimed."
+  },
+  "inputs": "Read S5.8a measurement evidence and profile-2 patch; no drawing opened or processed in this task.",
+  "next": "Lead to authorize DXF-only edits in source-fusion.ts and the registry DXF entityOrdinal bound, then resume the dispatched design. Pins, OpenAPI, runtime and host profiles remain unchanged."
+}
