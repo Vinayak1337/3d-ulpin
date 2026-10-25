@@ -1,4 +1,4 @@
-"""Source-native IFC metadata projection using pinned IfcOpenShell, without geometry.
+"""Source-native IFC metadata and storey plan outlines using pinned IfcOpenShell.
 
 Call through desktop-ifc-read.py for the mandatory external native-process bounds.
 The lexical index only supplies original-byte locators and integrity checks; IFC
@@ -39,6 +39,11 @@ class Limits:
     structure_statement_bytes: int = 4 * 1024**2
     structure_output_bytes: int = 48 * 1024
     structure_seconds: float = 20
+    # AC20-FZK-Haus: 4 elements, 204 triangle vertices, <1 KiB, 0.062 s; generous bounded headroom.
+    outline_elements: int = 128
+    outline_vertices: int = 32_768
+    outline_output_bytes: int = 64 * 1024
+    outline_seconds: float = 5
 
     def __post_init__(self):
         if any(not math.isfinite(v) or v <= 0 for v in asdict(self).values()):
@@ -437,6 +442,130 @@ def structure_or_reason(raw: bytes, limits: Limits):
         return {"state": "not_read", "code": error.code, "reason": str(error)}
 
 
+def outline_rounding(model) -> dict:
+    contexts = model.by_type("IfcGeometricRepresentationContext", include_subtypes=False)
+    precisions = [c.Precision for c in contexts]
+    if not precisions or any(p is None or not math.isfinite(p) or p <= 0 for p in precisions):
+        fail("OUTLINE_PRECISION_UNSTATED", "A positive plan precision is not stated in every context.")
+    precision = max(precisions)
+    return {"decimalPlaces": -math.ceil(math.log10(precision)), "sourcePrecision": precision,
+            "contextStepIds": sorted(c.id() for c in contexts),
+            "method": "decimal_rounding_not_finer_than_context_precision"}
+
+
+def outline_polygons(geometry, places: int) -> list:
+    from shapely import set_precision
+    from shapely.geometry import Polygon
+
+    # Topology-aware rounding avoids ring crossings caused by rounding each coordinate in isolation.
+    geometry = set_precision(geometry, 10.0 ** -places)
+
+    def ring(coords):
+        points = []
+        for x, y in coords:
+            if not math.isfinite(x) or not math.isfinite(y):
+                fail("OUTLINE_GEOMETRY", "A plan coordinate is not finite.")
+            point = [round(x, places), round(y, places)]
+            if not points or point != points[-1]:
+                points.append(point)
+        return points
+
+    polygons = [geometry] if geometry.geom_type == "Polygon" else list(geometry.geoms)
+    result = []
+    for polygon in polygons:
+        exterior = ring(polygon.exterior.coords)
+        interiors = [ring(r.coords) for r in polygon.interiors]
+        rounded = Polygon(exterior, interiors)
+        if rounded.is_empty or not rounded.is_valid or rounded.area <= 0:
+            fail("OUTLINE_GEOMETRY", "A rounded plan polygon is empty or invalid.")
+        result.append({"exterior": exterior, "interiors": interiors})
+    if not result:
+        fail("OUTLINE_GEOMETRY", "No polygon could be read from the selected elements.")
+    return result
+
+
+def outline_triangles(settings, elements: dict, limits: Limits, counts: dict, check_time) -> list:
+    import ifcopenshell.geom
+    from shapely.geometry import Polygon
+    triangles = []
+    for ident in sorted(elements):
+        counts["elements"] += 1
+        if counts["elements"] > limits.outline_elements:
+            fail("OUTLINE_ELEMENT_LIMIT", "Too many elements to mesh for storey outlines.", "limit")
+        check_time()
+        shape = ifcopenshell.geom.create_shape(settings, elements[ident])
+        check_time()
+        vertices, faces = shape.geometry.verts, shape.geometry.faces
+        if counts["vertices"] + max(len(faces), len(vertices) // 3) > limits.outline_vertices:
+            fail("OUTLINE_VERTEX_LIMIT", "Storey meshes exceed the triangle vertex ceiling.", "limit")
+        counts["vertices"] += len(faces)
+        for i in range(0, len(faces), 3):
+            check_time()
+            triangle = Polygon([(vertices[faces[k]*3], vertices[faces[k]*3+1]) for k in range(i, i+3)])
+            if triangle.area == 0:
+                continue  # Vertical triangles project to lines, not plan area.
+            if not triangle.is_valid:
+                fail("OUTLINE_GEOMETRY", "A projected triangle is invalid.")
+            triangles.append(triangle)
+    return triangles
+
+
+def read_storey_outlines(model, structure: dict, limits: Limits, check_time) -> dict:
+    import ifcopenshell.geom
+    from shapely.ops import unary_union
+    check_time()
+    unit = structure["lengthUnit"]
+    if unit["state"] != "supplied" or unit["entityType"] not in ("IfcSIUnit", "IfcConversionBasedUnit"):
+        fail("OUTLINE_LENGTH_UNIT", "The file does not state one supported length unit.")
+    rounding = outline_rounding(model)
+    settings = ifcopenshell.geom.settings()
+    settings.set("use-world-coords", True)
+    # IfcOpenShell 0.8.5 convert-back-units stops the default conversion to metres.
+    # World placements are IFC-local only; no IfcMapConversion/global transform is applied.
+    settings.set("convert-back-units", True)
+    result = {"state": "read", "frame": "source_local", "globalTransformApplied": False,
+              "lengthUnit": unit, "rounding": rounding, "storeys": [], "withoutOutline": []}
+    counts = {"elements": 0, "vertices": 0}
+    for storey in sorted(model.by_type("IfcBuildingStorey"), key=lambda e: e.id()):
+        check_time()
+        slabs = {e.id(): e for r in storey.ContainsElements for e in r.RelatedElements if e.is_a("IfcSlab")}
+        spaces = {e.id(): e for r in storey.IsDecomposedBy if r.is_a("IfcRelAggregates")
+                  for e in r.RelatedObjects if e.is_a("IfcSpace")}
+        elements = slabs or spaces
+        if not elements:
+            result["withoutOutline"].append({"stepId": storey.id(), "reason": "no_slab_or_space"})
+            continue
+        triangles = outline_triangles(settings, elements, limits, counts, check_time)
+        rings = outline_polygons(unary_union(triangles), rounding["decimalPlaces"])
+        check_time()
+        result["storeys"].append({"stepId": storey.id(), "elementSource": "IfcSlab" if slabs else "IfcSpace",
+                                  "elementStepIds": sorted(elements), "polygons": rings})
+    size = len(json.dumps(result, ensure_ascii=True, allow_nan=False, separators=(",", ":")))
+    if size > limits.outline_output_bytes:
+        fail("OUTLINE_OUTPUT_LIMIT", "Storey outlines exceed their output byte ceiling.", "limit")
+    check_time()
+    return result
+
+
+def storey_outlines(model, structure: dict, limits: Limits) -> dict:
+    """Pass 2 is all-or-nothing; native calls also retain the external worker's hard bounds."""
+    if structure["state"] != "read":
+        return {"state": "not_read", "code": "OUTLINE_STRUCTURE_NOT_READ",
+                "reason": "Storey outlines require a read structure."}
+    started = time.monotonic()
+
+    def check_time():
+        if time.monotonic() - started > limits.outline_seconds:
+            fail("OUTLINE_TIME_LIMIT", "The storey outline pass exceeded its time ceiling.", "limit")
+
+    try:
+        return read_storey_outlines(model, structure, limits, check_time)
+    except IFCError as error:
+        return {"state": "not_read", "code": error.code, "reason": str(error)}
+    except Exception:
+        return {"state": "not_read", "code": "OUTLINE_GEOMETRY", "reason": "Storey plan geometry could not be read."}
+
+
 def extract(raw: bytes, limits: Limits = DEFAULT_LIMITS):
     """Runs only inside an externally bounded worker; preserves original values."""
     index = lexical_index(raw, limits)
@@ -614,7 +743,9 @@ def extract(raw: bytes, limits: Limits = DEFAULT_LIMITS):
         "georeference": {"state": "supplied_unqualified" if any(e.is_a() == "IfcMapConversion" for e in geo) else "missing_or_unqualified",
                          "inspectionFrame": "source_local", "globalTransformApplied": False,
                          "mapConversionStepIds": [e.id() for e in geo if e.is_a() == "IfcMapConversion"]},
-        "findings": [{"code": "GEOMETRY_NOT_INTERPRETED", "status": "unsupported", "message": "Representation references and type inventory retained; no geometry, tessellation or measurement is produced."},
+        "findings": [{"code": "GEOMETRY_NOT_INTERPRETED", "status": "unsupported",
+                      "message": "Only storey plan outlines in the file's own frame are produced; "
+                                 "no measurement is produced."},
                      {"code": "GLOBAL_PLACEMENT_NOT_QUALIFIED", "status": "not_assessed", "message": "Supplied reference fields do not qualify global placement; inspect in the source-local frame."}],
         "semantics": {"storeysAreLegalUnits": False, "rights": "not_assessed", "propertyRegistration": "not_assessed",
                       "unitConversionApplied": False, "unprojectedContent": "retained_in_unchanged_original"},
@@ -623,6 +754,7 @@ def extract(raw: bytes, limits: Limits = DEFAULT_LIMITS):
         result["findings"].append({"code": "PLACEMENT_UNSUPPORTED", "status": "unsupported", "stepIds": unknown_placement})
     if referenced_units:
         result["findings"].append({"code": "PROJECT_UNITS_MISSING", "status": "needs_input", "stepIds": referenced_units})
+    result["storeyOutlines"] = storey_outlines(model, result["structure"], limits)
     return result
 
 
