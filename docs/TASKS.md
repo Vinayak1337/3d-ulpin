@@ -54,6 +54,12 @@ Size M, this PC: Docker. After: none. **Status: done 24 Oct (4c704191 on int3-pr
 - **Check:** Full backend command (pnpm exec tsx --tsconfig docs/evidence/int2/tsconfig.tests.json --test --test-concurrency=4 tests/*.test.ts packages/server/src/**/*.test.ts) exits 0 with 0 failed. pnpm --filter @ulpin/studio exec vitest run exits 0 with 0 failed. geo pytest exits 0. The processing.test.ts PostgreSQL cases run (not skipped) and pass.
 - **Tests:** pnpm typecheck:backend; pnpm studio:typecheck; pnpm studio:test; openapi.ts --check; python scripts/api/check.py; python scripts/db/verify_extraction.py; services/geo pytest (INT2 command); node --test scripts/platform/*.test.mjs
 
+### S1.1b Full check set again on int3-pre 41d7a1c7, fix only what fails
+
+Size M, this PC: Docker (one disposable PostGIS container, no volume). After: S5.2a merged. **Status: running 25 Oct (codex, from int3-pre 41d7a1c7).**
+
+- **What:** S1.1 passed at 4c704191; about 40 merges have landed since. Run the same check set (S1.1 evidence lists it) plus the three geo interpreters now needed (CityJSON and points, rasters, IFC) before S1.4 merges int3-pre into staging. Fix only failing tests or real bugs, one commit each; Studio source failures are reported, not fixed.
+
 ### S1.2 Fresh-runtime rehearsal part 1: create ulpin-reh-03 and run act 1 (proves SA1 and EV2 live)
 
 Size L, this PC: Docker. After: S1.1, S3.1 merged onto int3-pre by the lead. **Status: failed 24 Oct (evidence 2cea614c on task/s1-2-rehearsal): SA1 passed (9 raster, 211 point jobs), but a 409 on one retain and no View layout with the S4.1 switch off blocked both cards and EV2. Fix S1.2a done 25 Oct (bea97a14 on task/int3-pre). Run 2 at aaa9d698 (evidence a2be0ff0): four retains with no 409, View layout answered, 1,661 recorded, both cards consistent, journey 8/8, SA1 passed, cited row matches. Open: the EV2 overlap was not produced (prepare took 3.3 s and ended before the confirmation; carried to S1.3 under load), and the map stalled while point parts drew (155 frames over 100 ms; diagnosis S1.2c).**
@@ -175,7 +181,7 @@ Size S, code only. After: none (parallel with S1.1, S3.1; disjoint files). **Sta
 
 ### S3.3 Kit-drop runner under scripts/rehearsal, served from a production Studio build
 
-Size M, this PC: runtime. After: S3.1 (exit and pool fields); runtime check after S1.3 frees reh-03. **Status: open.**
+Size M, this PC: runtime. After: S3.1 (exit and pool fields); runtime check after S1.3 frees reh-03. **Status: code part running 25 Oct (codex, from int3-pre 6d9c05a5); the live check runs later, alone**
 
 - **What:** Move REH16's rehearsal scripts out of docs/evidence: presenter with frame recorder, read-only job timing, intake watch, process watch. Put them in scripts/rehearsal/ as one runner parameterised by --runtime ulpin-reh-NN, --kit <manifest> and --out. Serve the Studio from pnpm studio:build plus vite preview on 5189 (vite.config.ts:37 has the proxy) so frame times match the finale, not the dev server. Launch Chromium on the PC GPU (ANGLE D3D11, headed if headless cannot) and write the WebGL renderer string into result.json; a SwiftShader renderer marks the frame numbers as not a smoothness verdict (S1.2c, 25 Oct: SwiftShader 164 slow frames, RTX 3070 D3D11 3, all at startup). The runner drops every kit file in one Add files action. It records per file: retain, layout shown, first and last part on the map, card or limit words. It also records frames per page (max, over 100 ms, longest task), queue/exec/retry per job, S3.1 exit lines and pool numbers. Output is one compact result.json.
 - **Files:** Source: k3 task/reh16-rehearsal 8f7314b2 docs/evidence/runtime/reh16/{dress.mjs,jobs.mjs,watch.mjs,api-watch.ps1,launch.ps1}. Write: scripts/rehearsal/*. Read: apps/studio/vite.config.ts:7-37.
@@ -197,7 +203,7 @@ Size L, code only. After: S1.4 (cut from merged staging), or from int3-pre if th
 
 ### S3.5 Large batch files: drafts follow mapped parts so the first part reaches the map early
 
-Size M, code only. After: S3.4 (same files; sequential). **Status: running 25 Oct (codex, from int3-pre e9728a87). Lead decision: instead of packages before the seal, a display-only preview of the outlines read so far (new read-preview route; no properties, no record, never reviewed); packages still wait for the whole file. The lead note below is replaced by this. Sent back once (25 Oct): a file with no crs member (our NYC buildings) drew nothing until the seal; it now draws as RFC 7946 longitude and latitude with a crsBasis field, and out-of-range positions are left out with words. Done 25 Oct: merged into task/int3-pre (route reconciled in the operation manifest; contract, client and pins d8e5d108). Drawing it on the map: S3.5d (UI session, worktree E:/Projects/ulpin-wt/s3-5d, branch task/s3-5d-preview-draw from cba6685f).**
+Size M, code only. After: S3.4 (same files; sequential). **Status: done 25 Oct (merged into task/int3-pre; display-only preview of the outlines read so far)**
 
 - **What:** Drafting starts only in the draft phase, after every chunk is mapped (intake-large.ts:136-141; intake-large-worker.ts:370-372). REH15 measured approve-to-first-map at 310 s. Let the draft step consume each mapped part as it is published, under the existing INTAKE_UNFINISHED_PACKAGE_LIMIT. partsDone and partsPlanned stay truthful while mapping continues, and the end projection still waits for the sealed mapping.
 - **Lead note (25 Oct, from S3.4 run 1):** drafting today needs whole-file closure: assertClosedMappingTx (intake-part-draft.ts:26-50) wants closed raw and mapped jobs with matching counts, and a key duplicated anywhere keeps both copies out of a package; loadPartFeatures and prepareProvedAreaPartTx (proved-area-part.ts:100-140) want the closed original and its sealed receipt. The rule for parts drafted before the seal: they are drawn on the map as provisional and cannot be confirmed until the mapping closes; at the close, a package holding a key that a later chunk duplicated is withdrawn with plain words and its other features are cut again. Add intake-part-draft.ts and proved-area-part.ts to the files.
@@ -448,7 +454,7 @@ Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3,
 
 ### S5.2 The display window sends lines and pins
 
-Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: server half S5.2a running 25 Oct (codex, from int3-pre 3d595027); windowScene passing lines and pins is a UI step after S5.1**
+Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: server half S5.2a merged 25 Oct (int3-pre 41d7a1c7; server set 1037 pass); windowScene passing lines and pins is a UI step after S5.1**
 
 - **What:** Large areas are drawn through GET /api/v1/areas/{areaId}/display-window. Its outline() keeps polygons only, its feature schema has only polygons, and windowScene skips a feature with no polygons, so lines and pins vanish in window mode even after S5.1. Add optional lines and pins to AreaWindowFeatureSchema, fill them next to outline() from the same local GeoJSON, and pass them to the scene in windowScene. The merger regenerates openapi.json and the api-client.
 - **Files:** packages/contracts/src/area.ts:356-365 (AreaWindowFeatureSchema); packages/server/src/modules/areas/area-display-window.ts:120-147 (row mapping, outline); apps/studio/src/features/map/areaWindow.ts:41-52 (windowScene)
@@ -511,7 +517,7 @@ Size M, this PC: data drive. After: S1. Parallel with S5.1, S5.3, S5.4 (disjoint
 
 ### S5.9 PDFs above 16 MiB: page view and one-page OCR up to 1 GiB
 
-Size L, this PC: runtime. After: S1, S2 (a scanned PDF above 16 MiB in the practice kit). Not in parallel with S5.6 (one runtime task at a time). **Status: code part S5.9a running 25 Oct (codex, from int3-pre b5f0ed48; offline on the practice PDF); the live check on reh-02 follows as a runtime step.**
+Size L, this PC: runtime. After: S1, S2 (a scanned PDF above 16 MiB in the practice kit). Not in parallel with S5.6 (one runtime task at a time). **Status: code part S5.9a merged 25 Oct (int3-pre 6d9c05a5; a 1 GiB test PDF lists, renders and reads one page by OCR in 2 to 4 s, full page request 6.9 s); the live check on reh-02 and the Studio 1 GiB words remain**
 
 - **What:** A batch PDF above 16 MiB is kept and not read. Page inspection and the document worker read the whole original into memory, and the OCR helper refuses above 16 MiB. Stream the original once per job into its private scratch file and pass the path to the page renderer and to one-page OCR. Raise the page and OCR original bound to 1 GiB. Keep the 10 MiB text-layer bound and say so in the item words and the forecast. Refresh the host document profile through the existing documents step. Split at the page-view / OCR seam if it grows past 400 lines.
 - **Files:** packages/contracts/src/document-pages.ts:4-5 (DOCUMENT_PAGE_LIMITS); packages/contracts/src/usp/document-ingestion.ts:6-9; packages/server/src/modules/usp/ingestion/document-pages.ts:56-120 (original, inspectPrivateDocumentPages); document-worker.ts:44-60; document-ocr.ts:140-160; services/geo/geo/usp_document_candidates/docling_tesseract.py:23-24, 90-105; intake-draft.ts:364-415 (queueBatchPdfTx, textLayerUnread); apps/studio/src/features/intake/upload-model.ts:105-110; scripts/platform/demo-document-runtime.mjs (documents step, use)
