@@ -143,7 +143,7 @@ Size M, code only. After: S1.3 run 4. **Status: running 25 Oct (codex, task/s1-3
 
 ### S1.3h Small table drafts no longer wait minutes behind a large file
 
-Size S, code only. After: S1.3 run 4. **Status: running 25 Oct (codex, task/s1-3h-draft-queue from int3-pre 1710369c).**
+Size S, code only. After: S1.3 run 4. **Status: merged 25 Oct (int3-pre 89c7e4d9, task/s1-3h-draft-queue b476b6a6; pins regenerated; server set 1,077 tests, 0 failed). Cause: not the pending query. Only one table mapping could run in the whole service, and a mapping waiting for its source held that slot (the table drafts waited 535 to 540 s in the replay). Fixed: four mappings may run, and a mapping whose source is not ready gives its slot back and waits without spending an attempt, ending after 12 minutes with no part. Found on the way: mapping history stops all mapping after 128 imports in the whole service, never freed (S1.3l).**
 
 - **What:** Three small tables waited 410 to 433 s for their intake-draft job's first dispatch, then ran in milliseconds. Name the cause; the lead's lead candidate is the dispatcher's pending query taking only 12 ready jobs per tick, all from full lanes. Fix it so a job in a lane with room is never kept out by jobs that cannot start this tick, keeping file fairness, waves, layout-first and item FIFO.
 - **Files:** packages/server/src/modules/cases/processing.ts (pending selection); processing-latency.test.ts
@@ -156,6 +156,14 @@ Size S, code only. After: S1.3 run 4. **Status: merged 25 Oct (int3-pre d5758dc4
 - **What:** The officer approved OBJECTID as the key and the geometry on the first part; after the raw retry and 11 quarantined records the closure said a field changed or could not be read, and nothing was drafted. Name the rule that fired: a real bad value, a quarantined record, or a stale check key after the retry. Fix a wrong check; if the rule is right, make the words name the field and the first record that broke it.
 - **Files:** intake-large.ts (prefix check), streamed-mapping.ts (seal check) and their tests
 - **Tests:** a run 4 shaped test; pnpm typecheck:backend; the section 5 server set
+
+### S1.3l Lifetime ingestion caps become renewable quotas, starting with mapping
+
+Size M, code only. After: S1.3h. **Status: running 25 Oct (codex, task/s1-3l-renewable-caps from int3-pre 89c7e4d9).**
+
+- **What:** Mapping admission refuses every table and large map layer once 128 mapping imports exist in the whole service, of any state, and nothing frees one; one act 1 and act 2 run makes about 8, so a runtime used for rehearsals fills it. Design item B2 decided quotas instead of lifetime caps. List every lifetime cap B2 names (what it counts, whether anything frees it), make the mapping count only rows that hold work or are the current mapping of their source, add a read-only doctor line per cap with a warning at 75 percent, and say which other caps the same rule fits. No row is deleted and the other caps do not change in this task.
+- **Files:** packages/server/src/modules/usp/ingestion/chunk-mapping.ts (admission count) and its tests; scripts/platform/doctor and a new ingestion-quotas.mjs with its test
+- **Tests:** 200 superseded plus 10 live rows admit, 128 live rows refuse; the doctor test prints counts only; pnpm typecheck:backend; the section 5 server set
 
 ### S1.3j A file dropped while two uploads are open waits for a free slot
 
