@@ -7,10 +7,11 @@
   "strings": {
     "file": "docs/evidence/step-7/s7-24b/strings.json",
     "before": 980,
-    "cut": 88,
-    "shortened": 84,
+    "cut": 85,
+    "shortened": 80,
     "kept_as_state": 808,
-    "after": 891
+    "kept_on_review": 7,
+    "after": 894
   },
   "layout_fixes": [
     "Batch tray: the small kind, format and size line under each file name became the Contents column (format, size, counts), replacing Holds; still five columns",
