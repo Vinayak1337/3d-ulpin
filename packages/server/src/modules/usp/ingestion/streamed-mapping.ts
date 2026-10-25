@@ -123,7 +123,7 @@ export function prefixMappingFailure(records: ChunkMappingObservation[], raw?: S
     let sourcePath: string | null = null;
     if (record.issueCodes.some(code => /^MAPPING_IDENTITY_(INVALID|ABSENT|NULL)$/.test(code)))
       sourcePath = record.sourceKey.sourcePath;
-    else if (record.name.sourcePath && record.name.state !== 'known' && !record.issueCodes.includes('GEOMETRY_KIND'))
+    else if (record.issueCodes.includes('MAPPING_TEXT_INVALID'))
       sourcePath = record.name.sourcePath;
     else if (record.issueCodes.includes('SCHEMA_DRIFT_GEOMETRY')) sourcePath = '/features/*/geometry';
     if (!sourcePath) continue;

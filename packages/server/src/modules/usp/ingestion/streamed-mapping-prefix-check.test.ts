@@ -125,6 +125,26 @@ test('an approved mixed prefix keeps set-aside points exactly as the base invent
     { after: -1, conflicts: new Set(), kind: 'building' }).length, 99);
 });
 
+test('optional mapped name absences keep a matched seal; invalid text names its path and ordinal', async () => {
+  const records: StreamingVectorRecord[] = [];
+  await read(100, record => records.push(record));
+  const inventory = advanceStreamedInventory(emptyInventory(), records).inventory;
+  const observed = profile(inventory), layout = plan(observed);
+  const mapped = normalizeMappedChunk(records, layout, observed, id, 0, []);
+  const namePath = '/features/*/properties/NAME';
+  // Exercise optional mapped-name observations independently of profile admission.
+  mapped.records[0].name = { state: 'absent', value: null, sourcePath: namePath };
+  mapped.records[1].name = { state: 'null', value: null, sourcePath: namePath };
+  assert(mapped.records.every(record => record.disposition === 'observed'));
+  assert.equal(prefixLayoutMatchesSealed(layout, observed, profile(inventory, true)), true);
+  assert.equal(prefixMappingFailure(mapped.records), undefined);
+  assert.equal(prefixMappingUsedPathHeld(mapped.records), false, 'ordinary optional-name blanks keep the seal matched');
+  mapped.records[2].name = { state: 'unknown', value: null, sourcePath: namePath };
+  mapped.records[2].disposition = 'unresolved';
+  mapped.records[2].issueCodes = ['MAPPING_TEXT_INVALID'];
+  assert.deepEqual(prefixMappingFailure(mapped.records), { sourcePath: namePath, recordOrdinal: 3 });
+});
+
 test('byte-zero replay preserves prefix generation hash; a different mapping job cannot reuse its seal key',
   async () => {
     const passes: StreamedProfileGeneration[] = [];

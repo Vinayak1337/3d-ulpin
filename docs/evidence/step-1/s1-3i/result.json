@@ -33,6 +33,8 @@
     "trueRejections": "New Point/LineString reject; absent/null/fractional/text/unsafe OBJECTID still reject.",
     "words": "Actual comparePrefix body scans past a quarantine, stores first failure at ordinal 102, then stops.",
     "wordTests": "Stored OBJECTID or Point detail projects record 102; stale-key failure detail is ignored.",
+    "optionalNames": ["Mapped absent/null names do not overturn a matched seal; only MAPPING_TEXT_INVALID fails.",
+      "Unit boundary: mapped observations are independent of profile admission. Invalid text names NAME, ordinal 3."],
     "retry": "Byte-zero replay keeps generation hash; stale plan/seal/mapping keys and failure details remain ignored."
   },
   "design": [
@@ -43,12 +45,16 @@
     "No registry lists copied. No catch blocks, intake-package-cuts.ts, pins or runtime changed."
   ],
   "checks": {
-    "logs": "E:/ulpin-tmp/s1-3i/review2/{before,after}-*.{log,exit}; targeted.log; base-comparison.log",
+    "logs": "E:/ulpin-tmp/s1-3i/review3/{before,after}-*.{log,exit}; targeted.log; regression-before.log",
     "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
     "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
     "pnpm studio:test": { "before": 0, "after": 0, "passed": 831, "skipped": 3 },
-    "section5 server command": { "before": [0, 1063, 5], "after": [0, 1066, 5], "order": "exit,pass,skip" },
-    "tsx intake-large*,streamed-mapping*,streamed-layout,chunk-mapping-normalizer tests": { "exit": 0, "passed": 76 },
+    "section5 server command": {
+      "before": [1, 1064, 2, 5], "after": [0, 1067, 0, 5], "order": "exit,pass,fail,skip"
+    },
+    "beforeServerFailures": "Two intake-zip-layers cases exceeded INTAKE_PROBE_BUDGET; unrelated to this one-line fix.",
+    "optionalNameRegressionBeforeFix": { "exit": 1, "failed": 1, "cause": "absent name reported as record 1 failure" },
+    "tsx intake-large*,streamed-mapping*,streamed-layout tests": { "exit": 0, "passed": 77 },
     "openapi.ts --check": { "before": 1, "after": 1, "reason": "expected stale source-pins.json" },
     "python scripts/api/check.py": { "before": 1, "after": 1, "reason": "expected changed producer pins" },
     "git diff --check": { "before": 0, "after": 0 },
