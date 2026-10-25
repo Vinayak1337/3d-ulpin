@@ -1,16 +1,16 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
-import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,AnyStreamingInputSchema,streamingReadMs,
+import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,AnyStreamingInputSchema,
   StreamingVectorPayloadSchema,StreamingVectorGeometrySummarySchema,StreamingVectorGeometryKindSchema,
   type StreamingVectorGeometrySummary,type AnyStreamingInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
-import {openObjectStream,putOriginal,readObject,sha256} from '../../../infrastructure/storage';
+import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
-import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
+import {readStreamingRaw,readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
   type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
 import {resolveStreamedReference,streamedSequenceReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
@@ -279,14 +279,17 @@ export async function runStreamingVectorJob(jobId:string){
     });
     return;
   }
-  await transaction(async client=>{
+  const initialPublishIndex=await transaction(async client=>{
     await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
     await client.query("UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()),next_attempt_at=now()+interval '180 seconds' WHERE id=$1",[jobId]);
-    await client.query("UPDATE usp_streaming_vector_imports SET state='running',issue_code=NULL,updated_at=now() WHERE job_id=$1",[jobId]);
+    const state=(await client.query(`UPDATE usp_streaming_vector_imports SET state='running',issue_code=NULL,
+      updated_at=now() WHERE job_id=$1 RETURNING next_publish_index`,[jobId])).rows[0];
     await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);
+    return state.next_publish_index as number;
   });
   let nextFeatureIndex=0,lastHeartbeat=Date.now(),lastProgress=0;
+  let rawProgress=()=>{};
   let holdCollection=input.framing==='feature-collection';
   const setAside:Record<string,number>={};
   const geometryCounts:StreamingVectorGeometrySummary['counts']={};
@@ -300,6 +303,7 @@ export async function runStreamingVectorJob(jobId:string){
     // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
     const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
     await acceptSlot(input,attempt,slot,progress,holdCollection);
+    if(!holdCollection&&index>=initialPublishIndex)rawProgress();
   });
   // G13: a window is written by its own transaction; the part index follows the windows so the seal counts them.
   type WindowsInput=Parameters<typeof readTableWindows>;
@@ -311,14 +315,14 @@ export async function runStreamingVectorJob(jobId:string){
         await writeTableWindowTx(client,input,attempt,window,headers);
       });
       parts.index=window.index+1;nextFeatureIndex=window.rows.at(-1)!.index+1;
+      if(window.index>=initialPublishIndex)rawProgress();
     });
     return {features:read.records,metadata:{},bytes:read.bytes,sha256:read.sha256};
   };
   try{
     const etag=(await query('SELECT inspection FROM sources WHERE id=$1',[input.sourceId])).rows[0]?.inspection?.largeOriginal?.objectEtag;
-    const object=await openObjectStream(input.objectKey,input.sourceBytes,streamingReadMs(input.sourceBytes),etag);
-    let result;
-    try{
+    const result=await readStreamingRaw(input.objectKey,input.sourceBytes,etag,async(body,published)=>{
+      rawProgress=published;
       const consume=async(item:SourceFeature)=>{
         if(input.framing==='feature-collection')holdCollection=item.collectionTypeBeforeFeatures!==true;
         await pulse();const record=input.framing==='tabular'?tabularSourceRecord(item):sourceRecord(item);
@@ -332,15 +336,18 @@ export async function runStreamingVectorJob(jobId:string){
         await parts.add(record,countLimit);tallySetAside(setAside,record);
       };
       // G13: a large CSV's or workbook's records go to the window table, one row per window; no slot holds them.
-      result=isWindowedTable(input)&&input.framing==='tabular'
-        ?await readWindows(object.body,{selection:input.tabular.selection,bytes:input.sourceBytes})
-        :input.framing==='tabular'?await readStreamingTabular(object.body,input.tabular,consume)
-        :await readStreamingFeatures(object.body,input.framing,consume);
-    }finally{object.body.destroy();}
-    if(result.bytes!==input.sourceBytes||result.sha256!==input.sourceSha256)
-      throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');
-    if(!result.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
-    await parts.flush();const nextIndex=parts.index;
+      const read=isWindowedTable(input)&&input.framing==='tabular'
+        ?await readWindows(body,{selection:input.tabular.selection,bytes:input.sourceBytes})
+        :input.framing==='tabular'?await readStreamingTabular(body,input.tabular,consume)
+        :await readStreamingFeatures(body,input.framing,consume);
+      if(read.bytes!==input.sourceBytes||read.sha256!==input.sourceSha256)
+        throw new AppError(422,'STREAMING_SOURCE_INTEGRITY',
+          'The retained original differs from its pinned hash or byte count.');
+      if(!read.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
+      await parts.flush();return read;
+    });
+    rawProgress=()=>{};
+    const nextIndex=parts.index;
     let reference:Awaited<ReturnType<typeof resolveStreamedReference>>|undefined;
     if(input.framing==='feature-collection')reference=await resolveStreamedReference(result.metadata);
     else if(input.framing!=='tabular')reference=streamedSequenceReference();
@@ -368,6 +375,7 @@ export async function runStreamingVectorJob(jobId:string){
         await queueIntakeLargeTx(client,input.sourceId);
       });
   }catch(error){
+    rawProgress=()=>{};
     const code=error instanceof AppError?error.code:'STREAMING_WORKER_ERROR';
     const kind=streamingFailureKind(error);
     const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
