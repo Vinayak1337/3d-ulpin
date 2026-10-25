@@ -3,7 +3,7 @@ import test from 'node:test';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
 import {Readable} from 'node:stream';
 import {EventEmitter} from 'node:events';
-import {PointOriginalSchema,PointBatchResultSchema} from '../packages/contracts/src/usp/point-batch';
+import {POINT_BATCH_LIMITS,PointOriginalSchema,PointBatchResultSchema} from '../packages/contracts/src/usp/point-batch';
 import {pointInput,pointResultKey} from '../packages/server/src/modules/usp/ingestion/point-batch';
 import {readPointObject} from '../packages/server/src/modules/usp/ingestion/point-batch-object';
 import {runPointBatchJob,failPointBatchJob} from '../packages/server/src/modules/usp/ingestion/point-batch-worker';
@@ -182,6 +182,27 @@ test('lost canonical acceptance COMMIT reply preserves possibly committed output
   assert(!f.queries.some(q=>q.includes("logical_state='failed'")||q.includes("state='fenced'")));
   save('ambiguous-publication-control.json',{qualification:'memory SQL outcome models possibly durable COMMIT with lost reply; no real PostgreSQL durability claim',
     stats:f.stats(),retainedObjects:[...f.objects.keys()],resultRef:f.meta.result_ref,terminalRewrite:false,possiblyCommitted:true});
+}));
+
+test('current whole-cloud native overview accepts its full bounded base64 reply',{skip:!present},()=>isolated(async f=>{
+  const metadata=structuredClone(f.retained.metadata),points=metadata.sourcePointCount;
+  const step=Math.ceil(points/POINT_BATCH_LIMITS.batchPoints);
+  metadata.batch={start:0,count:Math.ceil(points/step),step};
+  const bytes=Buffer.alloc(metadata.batch.count*metadata.recordLength);
+  const body={metadata,artifactBase64:bytes.toString('base64'),artifactSha256:sha256(bytes),artifactBytes:bytes.length};
+  const output=await nativePointBatch({...f.input,batch:null},{deadlineAt:Date.now()+1000},
+    async()=>Response.json(body));
+  assert.deepEqual(output.metadata.batch,metadata.batch);assert.deepEqual(output.bytes,bytes);
+}));
+
+test('native explicit batches normalize absent step to one and reject a changed step',{skip:!present},()=>isolated(async f=>{
+  const body=JSON.parse(f.nativeBody.toString('utf8'));
+  body.metadata.batch.step=1;
+  const output=await nativePointBatch(f.input,{deadlineAt:Date.now()+1000},async()=>Response.json(body));
+  assert.equal(output.metadata.batch.step,1);
+  body.metadata.batch.step=2;
+  await assert.rejects(()=>nativePointBatch(f.input,{deadlineAt:Date.now()+1000},async()=>Response.json(body)),
+    {code:'POINT_BATCH_SCOPE'});
 }));
 
 test('bounded point error replies and default/explicit batches keep exact semantics; terminal work preserves unknown owners',{skip:!present},()=>isolated(async f=>{
