@@ -63,7 +63,7 @@ export function surfaceReader(card: IntakeCard, bytes: number): { operation: Ope
     + `this is ${card.format.toUpperCase()} `
     + `${card.formatVersion ?? 'of an unread version'}${card.point ? ` format ${card.point.format}` : ''}, ${kept}` };
   if (point && (card.counts.points ?? 0) > POINT_BATCH_LIMITS.sourcePoints) return { limit: 'Kept. The batch reads '
-    + `a point cloud of at most 5 million points; this one states `
+    + `a point cloud of at most ${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points; this one states `
     + `${((card.counts.points ?? 0) / 1e6).toFixed(1)} million, ${kept}` };
   return { operation: raster ? 'raster-window' : 'point-batch' };
 }

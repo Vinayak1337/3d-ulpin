@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PointBatchMetadataSchema, PointBatchResultSchema } from '../packages/contracts/src/usp/point-batch';
+import { createHash } from 'node:crypto';
+import { POINT_BATCH_LIMITS, PointBatchInputSchema, PointBatchMetadataSchema, PointBatchResultSchema,
+  PointBatchSelectionSchema } from '../packages/contracts/src/usp/point-batch';
 
 // test_only: literal format-0 layout; no source CRS, GPS time or RGB is asserted.
 const format0 = {
@@ -63,4 +65,54 @@ test('legacy GPS and RGB dimensions are optional by format, not padded values', 
   assert(!PointBatchMetadataSchema.safeParse({ ...format1, recordLength: 30 }).success);
   assert(!PointBatchMetadataSchema.safeParse({ ...format0, pointFormatId: 4 }).success);
   assert(!PointBatchMetadataSchema.safeParse({ ...format0, lasVersion: '1.1' }).success);
+});
+
+test('point selections admit bounded whole-number steps without changing old selection pins', () => {
+  assert.deepEqual(PointBatchSelectionSchema.parse({ start: 0, count: 32_768, step: 368 }),
+    { start: 0, count: 32_768, step: 368 });
+  assert.deepEqual(PointBatchSelectionSchema.parse({ start: 1, count: 2 }), { start: 1, count: 2 });
+  for (const step of [0, 1.5, true, 65_537]) {
+    assert(!PointBatchSelectionSchema.safeParse({ start: 0, count: 1, step }).success);
+  }
+  assert.equal(POINT_BATCH_LIMITS.originalBytes, 1024 ** 3);
+  assert.equal(POINT_BATCH_LIMITS.sourcePoints, 500_000_000);
+  assert(POINT_BATCH_LIMITS.batchPoints * 38 <= POINT_BATCH_LIMITS.artifactBytes);
+});
+
+test('point receipts agree with whole-cloud thinning, preserve only exact legacy defaults and compare steps', async () => {
+  // Initialise the normal composition root before loading its point service (the existing modules form a cycle).
+  await import('../packages/server/src/modules/cases/processing');
+  const { readPointResult } = await import('../packages/server/src/modules/usp/ingestion/point-batch');
+  type Batch = { start: number; count: number; step?: number };
+  async function read(batch: Batch, selected: Batch | null = null, points = 12_036_869) {
+    const pins = PointBatchInputSchema.parse({ ...input, batch: selected });
+    const receipt = { ...result({ ...format0, sourcePointCount: points, batch }, batch.count * 20), input: pins };
+    const bytes = Buffer.from(JSON.stringify(receipt));
+    const hash = createHash('sha256').update(bytes).digest('hex');
+    return readPointResult(pins, hash, undefined, async () => bytes);
+  }
+  const overview = await read({ start: 0, count: 32_709, step: 368 });
+  assert.deepEqual(overview.metadata.batch, { start: 0, count: 32_709, step: 368 });
+  await read({ start: 0, count: 8192 });
+  await read({ start: 0, count: 2 }, null, 2);
+  for (const batch of [{ start: 0, count: 8191 }, { start: 1, count: 8192 },
+    { start: 0, count: 32_709 }, { start: 0, count: 8192, step: 1 }]) {
+    await assert.rejects(read(batch), { code: 'POINT_RESULT_SCOPE' });
+  }
+  await read({ start: 1, count: 2, step: 368 }, { start: 1, count: 2, step: 368 });
+  await read({ start: 1, count: 2, step: 1 }, { start: 1, count: 2 });
+  await read({ start: 1, count: 2 }, { start: 1, count: 2, step: 1 });
+  await assert.rejects(read({ start: 1, count: 2, step: 2 }, { start: 1, count: 2, step: 3 }),
+    { code: 'POINT_RESULT_SCOPE' });
+});
+
+test('direct point retain still refuses 16 MiB plus one byte before storage or SQL', async () => {
+  await import('../packages/server/src/modules/cases/processing');
+  const { PointBatchService } = await import('../packages/server/src/modules/usp/ingestion/point-batch');
+  const lineage = { kind: 'unknown', issuer: null, originalUrl: null, acquiredAt: null,
+    permissionReference: null, geography: null, upstreamBytes: null, upstreamRetained: null,
+    parentSha256: null, limitations: [], note: null };
+  await assert.rejects(new PointBatchService().retain(uuid, { requestKey: uuid, expectedCaseRevision: 0, lineage },
+    { name: 'test-only.laz', bytes: new Uint8Array(16 * 1024 ** 2 + 1) }),
+  { code: 'POINT_ORIGINAL_SIZE', message: 'Retain a nonempty original of at most 16 MiB. No bytes were truncated.' });
 });

@@ -15,10 +15,10 @@ import laspy
 from . import settings
 from .validation import InputError
 
-MAX_SOURCE_BYTES = 16 * 1024 * 1024
-MAX_SOURCE_POINTS = 5_000_000
-MAX_BATCH_POINTS = 8192
-MAX_ARTIFACT_BYTES = 512 * 1024
+MAX_SOURCE_BYTES = 1024 ** 3
+MAX_SOURCE_POINTS = 500_000_000
+MAX_BATCH_POINTS = 32_768
+MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 RECORD_LENGTHS = {0: 20, 1: 28, 2: 26, 3: 34, 6: 30, 7: 36, 8: 38}
 KEY = re.compile(r"^(?:sources|large-originals)/([0-9a-f-]{36})/([0-9a-f]{64})$")
 HASH = re.compile(r"^[0-9a-f]{64}$")
@@ -27,13 +27,15 @@ HASH = re.compile(r"^[0-9a-f]{64}$")
 def _batch(value: Any) -> dict | None:
     if value is None:
         return None
-    if not isinstance(value, dict) or set(value) != {"start", "count"}:
+    if (not isinstance(value, dict) or not {"start", "count"} <= set(value)
+            or set(value) - {"start", "count", "step"}):
         raise InputError("Select an exact bounded point-index batch.")
-    start, count = value["start"], value["count"]
-    if (any(isinstance(v, bool) or not isinstance(v, int) for v in (start, count))
-            or start < 0 or start >= MAX_SOURCE_POINTS or count < 1 or count > MAX_BATCH_POINTS):
+    start, count, step = value["start"], value["count"], value.get("step", 1)
+    if (any(isinstance(v, bool) or not isinstance(v, int) for v in (start, count, step))
+            or start < 0 or start >= MAX_SOURCE_POINTS or count < 1 or count > MAX_BATCH_POINTS
+            or not 1 <= step <= 65_536):
         raise InputError("Point-index batch exceeds the bounded reader profile.")
-    return value
+    return {**value, "step": step}
 
 
 def _source_path(body: Any, directory: str, size: int, digest: str) -> Path:
@@ -99,21 +101,41 @@ def _metadata(header: laspy.LasHeader, batch: dict) -> dict:
             "globalPlacement": "not_qualified"}
 
 
+def _native_records(source: Any, batch: dict) -> bytes:
+    start, count, step = (batch[k] for k in ("start", "count", "step"))
+    end = start + (count - 1) * step + 1
+    records = bytearray()
+    # The installed lazrs seeks incorrectly across COPC variable-size chunks; stream the prefix instead.
+    copc = any(vlr.user_id == "copc" and vlr.record_id == 1 for vlr in source.header.vlrs)
+    offset = 0 if copc else start
+    source.seek(offset)
+    for points in source.chunk_iterator(min(end - offset, 1_048_576)):
+        if points.array.dtype != source.header.point_format.dtype():
+            raise InputError("The selected native point batch could not be decoded exactly.")
+        stop = min(len(points), end - offset)
+        first = max(start - offset, (start - offset) % step)
+        records.extend(points.array[first:stop:step].tobytes())
+        offset += stop
+        del points
+        if offset == end:
+            break
+    if offset != end or len(records) != count * source.header.point_format.size:
+        raise InputError("The selected native point batch could not be decoded exactly.")
+    return bytes(records)
+
+
 def _read_native_batch(path: Path, requested: dict | None) -> dict:
     try:
-        # lazrs is the processor image's installed LAZ backend; plain LAS needs no backend.
-        with laspy.open(path, mode="r", laz_backend=laspy.LazBackend.LazrsParallel) as source:
+        # Sequential lazrs avoids the parallel decoder's allocation of COPC's variable-chunk sentinel.
+        with laspy.open(path, mode="r", laz_backend=laspy.LazBackend.Lazrs) as source:
             header = source.header
             _validate_header(header)
-            batch = requested or {"start": 0, "count": min(MAX_BATCH_POINTS, header.point_count)}
-            if batch["start"] + batch["count"] > header.point_count:
+            step = (header.point_count + MAX_BATCH_POINTS - 1) // MAX_BATCH_POINTS
+            batch = requested or {"start": 0, "count": (header.point_count + step - 1) // step, "step": step}
+            if batch["start"] + (batch["count"] - 1) * batch["step"] >= header.point_count:
                 raise InputError("Point batch is outside the retained source point count.")
             metadata = _metadata(header, batch)
-            source.seek(batch["start"])
-            points = source.read_points(batch["count"])
-            if len(points) != batch["count"] or points.array.dtype != header.point_format.dtype():
-                raise InputError("The selected native point batch could not be decoded exactly.")
-            records = points.array.tobytes()
+            records = _native_records(source, batch)
             if len(records) != batch["count"] * header.point_format.size or len(records) > MAX_ARTIFACT_BYTES:
                 raise InputError("The native point artifact exceeds the bounded byte budget.")
             return {"metadata": metadata, "artifactBase64": base64.b64encode(records).decode("ascii"),
@@ -133,7 +155,7 @@ def read_point_batch(data: Any, s3: Any = None) -> dict:
             or not HASH.fullmatch(digest) or match.group(2) != digest):
         raise InputError("Point object key must match its retained source ID and SHA-256.")
     if isinstance(size, bool) or not isinstance(size, int) or not 1 <= size <= MAX_SOURCE_BYTES:
-        raise InputError("This point reader supports originals of at most 16 MiB.")
+        raise InputError("This point reader supports originals of at most 1 GiB.")
     requested = _batch(data["batch"])
     client = s3 or boto3.client("s3", endpoint_url=settings.S3_ENDPOINT, aws_access_key_id=settings.S3_ACCESS_KEY,
                                 aws_secret_access_key=settings.S3_SECRET_KEY, region_name=settings.S3_REGION,

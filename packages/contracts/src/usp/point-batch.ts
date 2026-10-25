@@ -2,9 +2,9 @@ import {z} from 'zod';
 
 export const POINT_BATCH_VERSION='point-batch/1' as const;
 // SB1 (AU3 pointOfficerLimits): 611 jobs per original, one per 8192-point part of the 5 million points read.
-export const POINT_BATCH_LIMITS=Object.freeze({originalBytes:16*1024*1024,retainedSources:64,
-  retainedBytes:256*1024*1024,sourcePoints:5_000_000,batchPoints:8192,
-  artifactBytes:512*1024,resultBytes:32*1024,jobsPerSource:611,active:2});
+export const POINT_BATCH_LIMITS=Object.freeze({originalBytes:1024**3,directRetainBytes:16*1024*1024,retainedSources:64,
+  retainedBytes:256*1024*1024,sourcePoints:500_000_000,batchPoints:32_768,
+  artifactBytes:2*1024*1024,resultBytes:32*1024,jobsPerSource:611,active:2});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const positive=z.number().int().positive(),finite=z.number().finite();
 export const POINT_BATCH_RECORD_LENGTHS = Object.freeze({ 0: 20, 1: 28, 2: 26, 3: 34, 6: 30, 7: 36, 8: 38 });
@@ -22,7 +22,7 @@ const POINT_DIMENSIONS = {
   8: [...FORMAT_6_DIMENSIONS, ...RGB_DIMENSIONS, 'nir'],
 };
 export const PointBatchSelectionSchema=z.strictObject({start:rev.max(POINT_BATCH_LIMITS.sourcePoints-1),
-  count:positive.max(POINT_BATCH_LIMITS.batchPoints)});
+  count:positive.max(POINT_BATCH_LIMITS.batchPoints),step:positive.max(65_536).optional()});
 export const PointLineageSchema=z.strictObject({kind:z.enum(['original','native_point_derivative','unknown']),
   issuer:z.string().min(1).max(300).nullable(),originalUrl:z.url().max(2048).nullable(),
   acquiredAt:z.iso.datetime().nullable(),permissionReference:z.string().max(2048).nullable(),

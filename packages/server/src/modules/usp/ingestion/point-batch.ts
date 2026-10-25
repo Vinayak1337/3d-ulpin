@@ -83,8 +83,12 @@ export async function readPointResult(input:PointBatchInput,hash:string,bounds:D
   const result=PointBatchResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==pointArtifactKey(input.jobId,result.artifact.sha256))
     throw new AppError(422,'POINT_RESULT_SCOPE','The batch receipt belongs to another original or job.');
-  const batch=input.batch??{start:0,count:Math.min(POINT_BATCH_LIMITS.batchPoints,result.metadata.sourcePointCount)};
-  if(fingerprint(result.metadata.batch)!==fingerprint(batch))
+  const points=result.metadata.sourcePointCount,step=Math.ceil(points/POINT_BATCH_LIMITS.batchPoints);
+  const batch=input.batch?{...input.batch,step:input.batch.step??1}:{start:0,count:Math.ceil(points/step),step};
+  const legacyBatch={start:0,count:Math.min(8192,points)};
+  const legacyDefault=input.batch===null&&result.metadata.batch.step===undefined
+    &&fingerprint(result.metadata.batch)===fingerprint(legacyBatch);
+  if(!legacyDefault&&fingerprint({...result.metadata.batch,step:result.metadata.batch.step??1})!==fingerprint(batch))
     throw new AppError(422,'POINT_RESULT_SCOPE','The receipt describes another point batch.');
   pointReadLive(bounds);
   return result;
@@ -128,7 +132,7 @@ export class PointBatchService{
     const caseId=uuid.parse(caseValue),request=PointRetainSchema.parse(raw),hash=sha256(file.bytes);
     if(!z.string().min(1).max(150).regex(/^[^\\/\u0000-\u001f]+$/).safeParse(file.name).success)
       throw new AppError(422,'POINT_FILENAME','Use a bounded plain filename without path separators or control characters.');
-    if(!file.bytes.length||file.bytes.length>POINT_BATCH_LIMITS.originalBytes)
+    if(!file.bytes.length||file.bytes.length>POINT_BATCH_LIMITS.directRetainBytes)
       throw new AppError(413,'POINT_ORIGINAL_SIZE','Retain a nonempty original of at most 16 MiB. No bytes were truncated.');
     if(Buffer.from(file.bytes.subarray(0,4)).toString('ascii')!=='LASF')
       throw new AppError(415,'POINT_FORMAT','Only LAS-family magic bytes are admitted; the reader checks native LAZ/COPC support.');

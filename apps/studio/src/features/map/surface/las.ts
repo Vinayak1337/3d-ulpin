@@ -1,8 +1,8 @@
-import { POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp';
+import { POINT_BATCH_LIMITS, POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp';
 import { SurfaceRefusal } from './tiff';
 
 /** Native LAS batches; format 6 remains the default for earlier stored display reads. */
-export const LAS_LIMITS = Object.freeze({ record: 30, points: 8192 });
+export const LAS_LIMITS = Object.freeze({ record: 30, points: POINT_BATCH_LIMITS.batchPoints });
 /** Drawn point size in metres. */
 export const POINT_SIZE_M = 0.6;
 
