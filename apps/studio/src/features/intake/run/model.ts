@@ -34,10 +34,23 @@ export const stageWords: Record<number, string> = {
   7: 'Make the evidence plan and packet', 8: 'Make and verify the property card',
 };
 
+const notRunWords = 'Its review has not run yet.';
+
 export function reviewWords(pkg: Package): string | null {
   if (pkg.reviewRefusal) return pkg.reviewRefusal.message;
-  if (!pkg.reviewFingerprint && pkg.state !== 'COMMITTED') return 'Its review has not run yet.';
+  if (!pkg.reviewFingerprint && pkg.state !== 'COMMITTED') return notRunWords;
   return null;
+}
+
+/**
+ * The stored target reasons shown under a package's review line. A refusal says only its message. Before the review
+ * runs, a waiting target stores "The package review has not run…" (intake-targets.ts); the review line already says
+ * so, so that reason is shown once, as the review line.
+ */
+export function reasonsBesideReview(pkg: Package, reasons: readonly string[]): readonly string[] {
+  if (pkg.reviewRefusal) return [];
+  if (reviewWords(pkg) !== notRunWords) return reasons;
+  return reasons.filter(reason => !/^The package review has not run\b/.test(reason));
 }
 
 export function hasNoBuildings(pkg: Package): boolean {

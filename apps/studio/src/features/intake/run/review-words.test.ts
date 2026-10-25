@@ -33,3 +33,14 @@ it('unreviewed and refused are different; a committed package is never described
   expect(reviewWords({ ...pkg, state: 'COMMITTED', reviewFingerprint: null })).toBeNull();
   expect(reviewWords({ ...pkg, reviewRefusal: null })).toBeNull();
 });
+
+it('an unreviewed package says its review has not run once, beside the target reasons that say something else', () => {
+  const pkg = { ...(capture.packages[0] as Package), reviewFingerprint: null, reviewRefusal: null };
+  // The reasons the server stores on a waiting target (intake-targets.ts) beside one reason of another kind.
+  const reasons = ['The package review has not run yet.', 'The package review has not run on its current revision.',
+    'Controlled stored target reason.'];
+  const html = renderToStaticMarkup(createElement(PackageDetails, { pkg, reasons }));
+  expect(html.match(/review has not run/g)).toHaveLength(1);
+  expect(html).toContain('Its review has not run yet.');
+  expect(html).toContain(reasons[2]);
+});

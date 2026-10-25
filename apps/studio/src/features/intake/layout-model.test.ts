@@ -29,13 +29,13 @@ it('shows each proposal origin from the item, never infers one from an author', 
     teacher: 'Proposed by the model', officer: 'Written by an officer' })) {
     expect(layoutLines(receipt, origin as NonNullable<IntakeItem['plan']>['origin'])).toContain(words);
   }
-  expect(layoutLines(receipt, null)).toContain('Proposal origin: not supplied by the record');
+  expect(layoutLines(receipt, null)).toContain('The record does not say who proposed this layout.');
   expect(recipeStateWords('approved')).toBe('Approved; the file is being read.');
   expect(recipeStateWords('executed')).toBe("This layout has prepared the file's package and can no longer be changed.");
   expect(recipeStateWords('proposed')).toBe('Proposed; read the layout before using it.');
 });
 
-it('states literal fields, absent name/height and all otherwise unrepresented plan members', () => {
+it('states literal fields and absent name/height; plan members it does not show are not listed as codes', () => {
   const lines = layoutLines(receipt, 'officer');
   expect(lines).toContain('Identifier: doitt_id');
   expect(lines).toContain('Name: not stated');
@@ -44,8 +44,21 @@ it('states literal fields, absent name/height and all otherwise unrepresented pl
   expect(lines).toContain('Each feature is: a building (the older layout form states nothing else)');
   expect(lines.join('\n')).not.toMatch(/Operation:|namespace|sha256|literal_identifier|geojson_polygon/);
   const extended = { ...receipt, plan: { ...receipt.plan, futureMember: 'test control' } };
-  expect(layoutLines(extended, 'officer').join('\n')).toContain('futureMember');
-  expect(lines.join('\n')).not.toContain('This layout also states:');
+  expect(layoutLines(extended, 'officer')).toEqual(lines);
+});
+
+it('a streamed receipt says the origin plainly and lists no plan members by their codes', () => {
+  // test_only: a streamed plan's own members (version, mode, scope and the rest) beside one the Studio does not show.
+  const streamed = { ...receipt, plan: { version: 'streamed-mapping/1', mode: 'manual_mapping',
+    scope: 'accepted_source_features', kind: 'building', futureMember: 'test control', operations: [
+      { target: 'feature.sourceKey', sourcePath: '/features/*/properties/OBJECTID',
+        conversionId: 'literal_identifier@1' }] },
+  } as unknown as Recipe;
+  const lines = layoutLines(streamed, null);
+  expect(lines.join('\n')).not.toContain('This layout also states');
+  expect(lines.join('\n')).not.toMatch(/version|mode|scope|futureMember/);
+  expect(lines).toContain('Identifier: OBJECTID');
+  expect(lines.at(-1)).toBe('The record does not say who proposed this layout.');
 });
 
 it('shows escaped property names, Feature.id, height units/meaning and an existing destination exactly', () => {

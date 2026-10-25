@@ -1,12 +1,14 @@
 import { useEffect, useId, useRef } from 'react';
 import { Button, Panel } from '@ulpin/ui';
-import { PackageDetails } from './Packages';
+import { PackageDetails, type AnchorItems } from './Packages';
 import { cardsOnlyWords, confirmablePackages, confirmationWords, INTAKE_TARGET_LIMITS, PACKAGE_PAGE,
   remainingPackagesWords, type Target, type TargetPage } from './model';
 import styles from './Run.module.css';
 
 interface Props {
   page: TargetPage;
+  /** The batch's files, to head each package with its file's name. */
+  items?: AnchorItems;
   choice: readonly Target[];
   cards: readonly Target[] | null;
   closeCards: () => void;
@@ -32,7 +34,7 @@ export function Confirm(props: Props) {
   return <Panel title="One confirmation" className={styles.stack}>
     {cards ? <CardsList cards={cards} close={props.closeCards} locked={locked} /> : <>
       <p>{confirmationWords(props.choice.length)}</p>
-      {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} confirming />)}
+      {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} items={props.items} confirming />)}
       <PackagePages page={props.page} next={props.next} first={props.first} locked={locked} />
     </>}
     <p>{cards ? '' : 'Recording cannot be undone. '}If a building stops, completed steps are kept. A card proves
