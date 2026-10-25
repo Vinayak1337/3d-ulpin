@@ -544,7 +544,7 @@ Size M, this PC: data drive. After: Step 1: the base rehearsal shows the act 1 T
 
 ### S5.12 Batch screen draws a kept raster or point cloud in its own frame when it is not on the map
 
-Size M, code only. After: None: it works with today's readers. Can run in parallel with S5.11, S5.13 and S5.14 (Studio files only). **Status: open.**
+Size M, code only. After: None: it works with today's readers. Can run in parallel with S5.11, S5.13 and S5.14 (Studio files only). **Status: running 25 Oct (UI session).**
 
 - **What:** A surface with no batch area, outside the area or with no stated CRS is read but never drawn: frameTx returns not_placed and the map layer exists only for the area's site. Add a surface preview to the batch item detail. It reuses the existing parts page, display read, artifact routes and decode worker, draws raster parts as one canvas mosaic by their sourceCorners and point parts as a top-down scatter, and shows the not-placed words plus 'display only'. No new route; nothing is placed.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:115-117 (mount beside IfcStructure and NativeReading); apps/studio/src/features/map/surface/api.ts (browserSurfaceIo, reused), parts.ts:19-22 (isSurfaceItem), decode.ts, pixels.ts:68-73, las.ts:15-31; new apps/studio/src/features/intake/surface/SurfacePreview.tsx and its test
@@ -637,7 +637,7 @@ Size S, code only. After: S5.19 (artifact fields). **Status: done 25 Oct, merged
 
 ### S5.21 glTF/GLB and OBJ drawn in their own frame in the reading panel
 
-Size M, code only. After: None; can run in parallel with anything. Dispatch it last and drop it first: it is cut 1. **Status: open.**
+Size M, code only. After: None; can run in parallel with anything. Dispatch it last and drop it first: it is cut 1. **Status: running 25 Oct (UI session).**
 
 - **What:** glTF and OBJ readings appear only as words ('kept as evidence, not on the map', intake-native-readers.ts:132, 207-223), although each accepted artifact already holds projected positions and indices (native_gltf.py:603-616; native_obj.py:200-207). Add a small own-frame mesh preview to packages/scene (three.js is already a dependency) and show it in the NativeReading panel from the existing .../gltf/jobs/{jobId}/native and .../obj/jobs/{jobId}/native routes. It is flat-lit and can be orbited, with words: own frame, axes and units as the reading states, not placed.
 - **Files:** new packages/scene/src/model-preview.ts plus its export in packages/scene/src/index.ts; apps/studio/src/features/intake/native/NativeReading.tsx:17-48, useNativeReading.ts, reading-model.ts (positions and indices from the artifact); apps/api/src/modules/ingestion/gltf.controller.ts:70-77 and obj.controller.ts:70-72 (read only)
@@ -716,7 +716,7 @@ The officer checks it and presses the existing declare button, and the existing 
 
 ### S6.4 The map can colour buildings by link outcome and count them
 
-Size S, code only. After: S6.1. **Status: open.**
+Size S, code only. After: S6.1. **Status: running 25 Oct (UI session).**
 
 - **What:** Step 6 needs links shown on the map as well. Add a 'Link' option to the existing Colour by control, using FootprintInput.color as Colour by height does. Read the case's evidence page counts and candidate anchors (200 per page) and colour buildings by outcome: matched, several, conflicting, no match, none. The legend shows the counts as read, for example NYC act 1: 612 matched, 60 no match, 81 conflicting. Read only, no new route.
 - **Files:** apps/studio/src/features/map/MapSidebar.tsx:77-92 (colour options, key list); MapWorkspace.tsx:260-340 (colourBy, legend), 500-512 (options); useBuildingScene.ts:18-60; heightBands.ts (pattern); apps/studio/src/state/selection.ts (ColourBy type); packages/scene/src/types.ts:26-42 (color field, read only); apps/studio/src/features/intake/evidence/api.ts (useEvidencePage, reuse)
@@ -768,7 +768,7 @@ Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.5, S7.6, S7.7
 
 ### S7.5 Plain words in readings, layouts and packages
 
-Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7. **Status: running 25 Oct (UI session)**
+Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7. **Status: merged 25 Oct (de44073c).**
 
 - **What:** Five fixes in the Studio: (1) Finding counts end in raw codes such as '(BOUNDARY_CONTACT)' (REH16 a16): drop the code. (2) Each package is headed by its UUID and 'Revision N' (a13): head it with its anchor item's file name (Package.anchorItemId to the manifest item name), with the id copyable in a caption. (3) The native reading prints nested values as JSON, 'Not stated (stored as null)' and 'result SHA-256', with tokens such as globalPlacement and axes (lead-queue NR4 note): show labelled lines and put hashes in closed details. (4) The layout lists 'This layout also states: version, mode...': drop that line and say the origin plainly. (5) 'Its review has not run yet.' and 'The package review has not run yet.' appear together (REH14 act2-mx1-keyed-layout.png): show the review line once.
 - **Files:** apps/studio/src/features/intake/run/Packages.tsx:5-43 (findingWords 5-13, line 20, heading 29, revision 37, reasons 33-35); apps/studio/src/features/intake/native/reading-model.ts:116-150; apps/studio/src/features/intake/native/NativeReading.tsx:38-49; apps/studio/src/features/intake/layout-model.ts:13-48; apps/studio/src/features/intake/LayoutQuestion.tsx:57-77
@@ -777,7 +777,7 @@ Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7
 
 ### S7.6 The map reads lightly while a package streams
 
-Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: open.**
+Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: running 25 Oct (UI session).**
 
 - **What:** Today, while a package streams, the map downloads it every 700 ms, re-reads the whole area every 5 s and invalidates every query in the app when the import settles. Three changes: (1) Count features by kind from context.displayFeatures by proposalPackageId, and take state and quarantine from context.packages, which are already polled, instead of the 700 ms GET of the whole package (every feature with three geometries). (2) Stop the 5 s re-reads of the area context and the canonical area once the package leaves RECEIVED, even if ?package= stays in the URL. (3) When it settles, invalidate only this area's and this batch's keys. The demo-import path (isDemoId, demo-import.ts:110) keeps working.
 - **Files:** apps/studio/src/features/map/ImportTray.tsx:16-66 (useSettled 17-24, poll 33-37, counts 43-48); apps/studio/src/features/map/MapWorkspace.tsx:71-75, 125, 397-401, 574-580 (MapImportTray); apps/studio/src/features/map/MapPage.tsx:39-43; apps/studio/src/api/queries.ts:228-260; apps/studio/src/features/map/canonicalScene.ts:66-80
