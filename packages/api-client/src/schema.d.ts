@@ -5015,6 +5015,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/jobs/{jobId}/native/pages/{pageIndex}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download one exact hash-checked accepted native DXF entity page */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/original": {
         parameters: {
             query?: never;
@@ -14702,7 +14719,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -17854,7 +17871,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -19661,7 +19678,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -37057,7 +37074,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -53115,7 +53132,7 @@ export interface components {
                 } | {
                     summary: {
                         /** @enum {string} */
-                        schemaVersion: "dxf-native-inspection/1";
+                        schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
@@ -55441,7 +55458,7 @@ export interface components {
                     } | {
                         summary: {
                             /** @enum {string} */
-                            schemaVersion: "dxf-native-inspection/1";
+                            schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
@@ -73834,7 +73851,7 @@ export interface components {
             result: {
                 summary: {
                     /** @enum {string} */
-                    schemaVersion: "dxf-native-inspection/1";
+                    schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                     sourceSha256: string;
                     sourceBytes: number;
                     /** @enum {string} */
@@ -73876,6 +73893,23 @@ export interface components {
                     mediaType: "application/json";
                     /** @enum {string} */
                     profile: "dxf-native-inspection/1";
+                } | {
+                    key: string;
+                    sha256: string;
+                    bytes: number;
+                    /** @enum {string} */
+                    mediaType: "application/json";
+                    /** @enum {string} */
+                    profile: "dxf-native-inspection/2";
+                    pages: {
+                        pageIndex: number;
+                        firstOrdinal: number;
+                        entityCount: number;
+                        firstTagIndex: number;
+                        lastTagIndex: number;
+                        bytes: number;
+                        sha256: string;
+                    }[];
                 };
                 /** Format: date-time */
                 createdAt: string;
@@ -106648,6 +106682,121 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result; Content-Type follows the retained source or generated artifact format. */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pageIndex: number;
                 jobId: string;
                 sourceId: string;
                 caseId: string;
