@@ -1,0 +1,20 @@
+{
+  "task": "S1.3e",
+  "planStep": 1,
+  "status": "blocked_owned_paths",
+  "base": "726bb2e8",
+  "branch": "task/s1-3e-zip-quota-wait",
+  "codeChanged": false,
+  "finding": "fanOutZipLayers catches UPLOAD_QUOTA as member words and returns kept source IDs. runIntakeZipLayersJob unconditionally accepts that return as success; every thrown error instead fences the attempt and marks the job failed. The dispatcher only selects queued/running jobs whose next_attempt_at is due, so neither outcome schedules a quota retry.",
+  "requiredAdditionalPath": "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts",
+  "next": "Add the job runner to OWN. It must handle a quota-wait outcome by fencing the current attempt and atomically requeuing the job at freesAt, or DISPATCH_HEAD_OF_LINE_MS when null, instead of accepting or failing it. Persist an outer deadline derived from archive retention so restart and re-enrolment cannot extend the wait. Keep quota numbers and other final refusals unchanged.",
+  "inputs": {
+    "examined": "Existing ZIP tests use public Uttam GeoJSON layers and a mixed Lake View archive; no originals were opened or processed for this blocked task.",
+    "reportedFailure": "S1.3 run 3: Absolute and Relative KML members refused with UPLOAD_QUOTA under a 20-file drop; rehearsal not opened or rerun."
+  },
+  "checks": [
+    { "command": "git diff --check", "exitCode": 0, "whitespaceErrors": 0 },
+    { "command": "Acceptance, server set, typechecks, Studio tests and contract checks", "exitCode": null,
+      "reason": "Not run: stopped at the explicit owned-path boundary before implementation; no test result is claimed." }
+  ]
+}
