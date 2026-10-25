@@ -42,18 +42,18 @@ describe('linkKey', () => {
       ['Matched', 17], ['Several buildings', 2], ['Conflicting', 9], ['Unmatched', 4], ['No link', undefined],
     ]);
     expect(key.items.slice(0, 4).every((item) => item.icon)).toBe(true);
-    expect(key.note).toBe('3 buildings coloured from 32 candidates. Unmatched rows and pages name no building.');
+    expect(key.note).toBe('3 buildings coloured from 32 candidates.');
   });
   it('says how many buildings were coloured from how many candidates read when pages remain', () => {
     const read = Array.from({ length: 5 }, () => candidate('matched', 'B-1'));
     expect(linkKey({ state: 'read', counts, candidates: read, reading: false, more: true }, 1).note)
-      .toBe('1 building coloured from 5 of 32 candidates read; the rest are listed in the batch.');
+      .toBe('1 building coloured from 5 of 32 candidates read.');
     expect(linkKey({ state: 'read', counts, candidates: read, reading: true, more: false }, 1).note)
       .toBe('1 building coloured from 5 of 32 candidates read.');
   });
   it('colours nothing and says why when no batch names a building or the read fails', () => {
     expect(linkKey({ state: 'none' }, 0)).toMatchObject({ items: [],
-      note: 'No batch names a building of this area.' });
-    expect(linkKey({ state: 'failed', message: 'Refused.' }, 0).note).toBe('The links could not be read. Refused.');
+      note: 'No links.' });
+    expect(linkKey({ state: 'failed', message: 'Refused.' }, 0).note).toBe('Links could not be read. Refused.');
   });
 });

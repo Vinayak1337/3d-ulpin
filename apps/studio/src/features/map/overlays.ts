@@ -60,8 +60,6 @@ export interface LoadedOverlay {
   /** Layer key and what the overlay shows, for the Layers panel. */
   layer: 'imagery' | 'lidar';
   label: string;
-  note: string;
-  caption: string;
 }
 
 /** Reads an overlay file, refused unless the application API serves it. */
@@ -139,8 +137,6 @@ async function imageryOverlay(d: SupplementalDataset, ref: AreaReference, signal
   return {
     layer: 'imagery',
     label: `Aerial${d.captureYear ? ` · ${d.captureYear}` : ''}`,
-    caption: `Aerial ${d.captureYear ?? 'date unknown'} · georeferenced`,
-    note: `${d.name}: georeferenced image; source coverage only.`,
     input: {
       id: d.sourceId, kind: 'image', role: 'ground',
       corners: [local(west, south), local(east, south), local(east, north), local(west, north)], image: canvas,
@@ -179,9 +175,7 @@ async function lidarOverlay(d: SupplementalDataset, ref: AreaReference, signal: 
   });
   return {
     layer: 'lidar',
-    label: `LiDAR${d.captureYear ? ` · ${d.captureYear}` : ''}`,
-    caption: `LiDAR ${d.captureYear ?? "date unknown"} · approximate alignment`,
-    note: `${surface.resolutionM} m surface · ${cells.length.toLocaleString('en-IN')} cells · Z offset ${(-floor).toFixed(2)} m. Approximate alignment; display only. Source elevations and gaps retained.`,
+    label: `LiDAR${d.captureYear ? ` · ${d.captureYear}` : ''} · approximate`,
     input: { id: `${d.sourceId}:surface`, kind: 'points', positions, colors, sizeM: surface.resolutionM * 0.9 },
   };
 }
@@ -223,10 +217,10 @@ export interface RetainedImages {
 }
 
 const CLASSIFICATION_WORDS: Record<RetainedImagery['classification'], string> = {
-  test_only: 'Test data, not official imagery',
+  test_only: 'Test data',
 };
 const ELIGIBILITY_WORDS: Record<RetainedImagery['analyticalEligibility'], string> = {
-  not_assessed: 'Not assessed for measurement',
+  not_assessed: 'Not assessed',
 };
 // The read's chips carry no capture field: acquiredAt is when the project retained the file.
 const CAPTURE_UNKNOWN = 'Capture date unknown';

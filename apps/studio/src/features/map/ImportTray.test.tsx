@@ -118,8 +118,7 @@ it('reads the streaming package from the area context alone, and stops reading o
   expect(api.reads.context).toBeLessThanOrEqual(7);
   expect(api.reads.canonical).toBeLessThanOrEqual(7);
   expect(root.textContent).toContain(`Importing into ${nyc.area.name}`);
-  expect(root.textContent).toContain(`${formatCount(buildings)} buildings accepted for review`);
-  expect(root.textContent).toContain(`${formatCount(buildings)} features`);
+  expect(root.textContent).toContain(`${formatCount(buildings)} buildings to review`);
 
   // The next area read reports the package recorded. That read is the context's last; the canonical area is read
   // once more for the records saved after its last read, and the tray reads the package once for its name.
@@ -156,7 +155,7 @@ it('opens a package over an area read cached from before it existed as streaming
   await wait(30 * SECOND);
   expect(api.reads.package).toBe(0);
   expect(api.reads.context).toBeLessThanOrEqual(7);
-  expect(root.textContent).toContain(`${formatCount(buildings)} buildings accepted for review`);
+  expect(root.textContent).toContain(`${formatCount(buildings)} buildings to review`);
   expect(root.textContent).not.toContain('Done');
 });
 
@@ -193,10 +192,13 @@ it('keeps the demo import reading its own stream, with no API read', async () =>
   await show('RECEIVED');
   await wait(30 * SECOND);
   expect(root.textContent).toContain(`Importing ${nyc.area.name}`);
-  expect(root.textContent).toContain(`${formatCount(shown.length)} features received · ${formatCount(buildings)} buildings drawn`);
+  expect(root.textContent)
+    .toContain(`${formatCount(shown.length)} features, ${formatCount(buildings)} buildings drawn`);
   await show('READY_FOR_REVIEW');
   await wait(30 * SECOND);
   expect(root.textContent).toContain(`Imported ${nyc.area.name}`);
-  expect(root.textContent).toContain(`${formatCount(buildings)} buildings accepted for review`);
+  expect(root.textContent).toContain(`${formatCount(buildings)} buildings to review`);
+  expect(root.textContent)
+    .toContain(`${formatCount(shown.length)} features, candidates, ${formatCount(buildings)} buildings drawn`);
   expect(api.fetch).not.toHaveBeenCalled();
 });

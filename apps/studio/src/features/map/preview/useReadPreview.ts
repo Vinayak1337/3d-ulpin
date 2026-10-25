@@ -5,8 +5,7 @@ import { utmForward, utmZone, type AreaReference } from '../overlays';
 import type { IntakeItem } from '../surface/parts';
 import { ReadPreviews, type PreviewFeature, type PreviewFile, type PreviewIo } from './readPreview';
 
-const NO_FRAME = 'The outlines read so far are not drawn: this map\'s frame is not a WGS 84 UTM zone with a stated '
-  + 'origin.';
+const NO_FRAME = 'Not drawn: the map has no WGS 84 UTM zone with a stated origin.';
 
 /** One file's words beside the map. */
 export interface PreviewLine {

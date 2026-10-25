@@ -170,8 +170,8 @@ export function drawnCountNote(features: AreaFeature[], drawnIds: ReadonlySet<st
   if (!recorded.length) return null;
   const drawn = recorded.filter((feature) => drawnIds.has(feature.id)).length;
   const total = recorded.length.toLocaleString('en-IN');
-  if (drawn === recorded.length) return `All ${total} recorded features are drawn.`;
-  return `${drawn.toLocaleString('en-IN')} of ${total} recorded features are drawn.`;
+  if (drawn === recorded.length) return `${total} features drawn`;
+  return `${drawn.toLocaleString('en-IN')} of ${total} features drawn`;
 }
 
 /**
@@ -187,5 +187,5 @@ export function undrawnNote(features: AreaFeature[]): string | null {
   }
   if (!counts.size) return null;
   const parts = [...counts].map(([kind, count]) => `${count} ${kind.replace('_', ' ')} ${count === 1 ? 'feature' : 'features'}`);
-  return `Not drawn: ${parts.join(', ')} recorded as lines, points or without geometry. The map draws areas only.`;
+  return `Not drawn: ${parts.join(', ')} (lines, points or no geometry)`;
 }

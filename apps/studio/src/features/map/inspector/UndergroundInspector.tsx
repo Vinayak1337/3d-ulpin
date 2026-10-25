@@ -20,7 +20,7 @@ export function UndergroundInspector({ utilities, trench, onClear }: { utilities
       <section className="ul-panel" style={{ alignSelf: 'start' }}>
         <div className="ul-panel__body">
           <EmptyState icon={Ruler} title="Draw a trench">
-            {trench?.points.length === 1 ? 'Click the second end of the trench on the ground.' : 'Click two points on the ground to draw a trench. Everything recorded below it is listed here.'}
+            {trench?.points.length === 1 ? 'Click the other end on the ground.' : 'Click two points on the ground.'}
           </EmptyState>
         </div>
       </section>
@@ -35,7 +35,7 @@ export function UndergroundInspector({ utilities, trench, onClear }: { utilities
   const rows: DigBand[] = [];
   let depth = 0;
   for (const band of bands) {
-    if (band.top - depth > 0.05) rows.push({ id: `gap-${depth}`, depth: `${depth.toFixed(1)} to ${band.top.toFixed(1)} m`, unknown: true, label: <><strong>Unknown</strong> · no utility survey</> });
+    if (band.top - depth > 0.05) rows.push({ id: `gap-${depth}`, depth: `${depth.toFixed(1)} to ${band.top.toFixed(1)} m`, unknown: true, label: <><strong>Unknown</strong> · no survey</> });
     const profile = (band.feature.utilityProfile ?? {}) as Record<string, unknown>;
     const details = [
       typeof profile.quality_level === 'string' ? `quality ${profile.quality_level}` : null,
@@ -49,7 +49,7 @@ export function UndergroundInspector({ utilities, trench, onClear }: { utilities
     });
     depth = band.bottom;
   }
-  if (range - depth > 0.05) rows.push({ id: 'gap-end', depth: `${depth.toFixed(1)} to ${range.toFixed(1)} m`, unknown: true, label: <><strong>Unknown</strong> · no utility survey</> });
+  if (range - depth > 0.05) rows.push({ id: 'gap-end', depth: `${depth.toFixed(1)} to ${range.toFixed(1)} m`, unknown: true, label: <><strong>Unknown</strong> · no survey</> });
   return (
     <DigColumn
       range={`0 to ${range} m`}

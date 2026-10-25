@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Archive, FilePlus, SlidersHorizontal, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
-import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, formatCount, type LegendSection } from '@ulpin/ui';
 import { packageStreaming, useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
@@ -169,11 +169,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     ] : []),
   ], [retainedShown, retainedImages, loadedOverlays, supplementalOn.imagery, supplementalOn.lidar,
     showContextOverlays, activePlan]);
-  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]);
-  const overlayNotes = visibleOverlays.map((o) => o.note);
   const viewNotes = [
-    mapView.look === 'enhanced' ? 'Enhanced view' : null,
-    ...visibleOverlays.map((o) => o.caption),
     ...(retainedShown ? imageryAttribution(drawn.area?.imagery ?? []) : []),
     windowMode ? windowed.line : drawn.pending ? null : drawnCountNote(features, sceneIds),
     undrawnNote(features),
@@ -375,11 +371,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
   const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
   const readoutTitle = reference
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
-    : 'No reference system: this area stays in its source’s local frame.';
-  const hint = selection.mode === 'underground' && !trench?.ring ? (trench?.points.length === 1 ? 'Click the other end of the trench' : 'Click two points on the ground to draw a trench')
-    : selection.mode === 'area' && !feature ? null
-      : selection.mode === 'building' && model?.levels.length ? 'Select a floor'
-        : selection.mode === 'level' && !space ? 'Select a unit' : null;
+    : undefined;
 
   let inspector;
   if (selection.mode === 'underground' && feature) inspector = <UndergroundInspector utilities={utilities} trench={trench} onClear={() => engine?.clearTrench()} />;
@@ -440,17 +432,17 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
               flat={false}
               layers={mapView.layers}
               overlays={overlayInputs}
-              label={`3D map of ${context.area.name}. Search offers the same buildings; selected details open in the inspector.`}
+              label={`3D map of ${context.area.name}`}
             />
             {!reference ? (
               <div className={styles.banner}>
-                <Banner tone="info">This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.</Banner>
+                <Banner tone="info">Not placed on the map: the source states no coordinate reference system.</Banner>
               </div>
             ) : null}
             <CandidateBanner className={styles.banner} areaId={context.area.id} buildingId={feature?.id ?? null} />
             {drawn.error && !windowMode ? (
               <div className={styles.banner}>
-                <Banner tone="danger">The canonical record of this area could not be read, so its buildings are not drawn. {drawn.error.message}</Banner>
+                <Banner tone="danger">Buildings not drawn: the area record could not be read. {drawn.error.message}</Banner>
               </div>
             ) : null}
             {showRail && model ? (
@@ -467,9 +459,11 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
             {nothingToDraw ? (
               <div className={styles.noGeometry}>
                 <div className={`ul-float ${styles.emptyCard}`}>
-                  <span>No geometry is recorded for this area yet</span>
+                  <span>No geometry recorded</span>
                   {drawn.undrawn.length && !toolsOpen ? (
-                    <span>Buildings recorded without geometry are listed under Tools.</span>
+                    <Button variant="ghost" onClick={() => setToolsOpen(true)}>
+                      {formatCount(drawn.undrawn.length)} buildings without geometry
+                    </Button>
                   ) : null}
                 </div>
               </div>
@@ -507,7 +501,6 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                   onView={chooseView}
                   keySections={linkSection ? [linkSection, ...legend] : legend}
                   layers={layerSwitches} onLayer={onLayer}
-                  layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
                   colour={colour} onColour={chooseColour}
                   colourOptions={[
                     { value: 'none', label: 'None' },
@@ -521,13 +514,10 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                   rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
                   selectedSpaceId={selection.spaceId}
                   onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
-                  viewFooter={<>
-                    <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
-                    {!feature && !isDemoId(context.area.id) ? (
-                      <Button variant="ghost" icon={Archive} className={styles.retireArea}
-                        onClick={() => setDialog('retire-area')}>Retire area</Button>
-                    ) : null}
-                  </>}
+                  viewFooter={!feature && !isDemoId(context.area.id) ? (
+                    <Button variant="ghost" icon={Archive} className={styles.retireArea}
+                      onClick={() => setDialog('retire-area')}>Retire area</Button>
+                  ) : null}
                 />
               </details>
               <PreviewKey className={styles.mapTools} lines={preview} />
@@ -551,7 +541,6 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                 }} />
               </div>
             )}
-            {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
             {nothingToDraw || windowed.empty ? null : (
               <div className={styles.readout}>
                 <ScaleAndNorth engine={engine} frames={frames} title={readoutTitle} prefix={readout} />
@@ -566,7 +555,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
 
       {dialog === 'files' && feature ? <AddFilesDialog buildingId={feature.id} onClose={() => setDialog(null)} /> : null}
       {dialog === 'delete-building' && feature ? (
-        <DeleteDialog target={{ kind: 'building', id: feature.id, name: feature.name, detail: `${feature.name} and its register (floors, units, findings and history) are deleted from ${context.area.name}.` }}
+        <DeleteDialog target={{ kind: 'building', id: feature.id, name: feature.name, detail: `Deletes ${feature.name} with its floors, units, findings and history.` }}
           onClose={() => setDialog(null)} onDeleted={() => { setDialog(null); dispatch({ type: 'selectBuilding', id: null }); setNotice(`${feature.name} deleted`); }} />
       ) : null}
       {dialog === 'retire-area' ? (

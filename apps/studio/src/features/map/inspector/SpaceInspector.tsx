@@ -19,11 +19,8 @@ import styles from './Inspector.module.css';
 
 type Tab = 'overview' | 'rights' | 'evidence';
 
-const NOT_RECORDED = 'The registry lists no recorded unit for this space, so no review, code or card is recorded '
-  + 'for it from here.';
+const NOT_RECORDED = 'No recorded unit.';
 const UNREAD = 'The record of this building could not be read.';
-const AT_ITS_UNIT = 'The review, the code and the cards of this unit are recorded in the registry from its '
-  + 'recorded unit.';
 
 /** The way to the recorded unit: the inspector's one button, or a text link when a card holds that place. */
 function UnitLink({ buildingId, unit, asText }: { buildingId: string; unit: RecordedUnit; asText: boolean }) {
@@ -38,8 +35,8 @@ function UnitLink({ buildingId, unit, asText }: { buildingId: string; unit: Reco
  * Space variant: the status and the code the registry states, facts with inline evidence, and the way on. The
  * inspector writes nothing and reads nothing from this browser's store: a recorded unit links to its block on
  * the record page, where it is reviewed, assigned its code and issued a card through the registry. A card the
- * registry lists for the unit enables the Property Card action by itself; the link to the recorded unit is then
- * text beside its note, so the actions hold one button.
+ * registry lists for the unit enables the Property Card action by itself; the link to the recorded unit is then a
+ * text link in the body, so the actions hold one button.
  */
 export function SpaceInspector({
   space, level, model, register, ledger, buildingId, crumbs, datum, onSelectSpace, onCard, onFinding,
@@ -116,7 +113,7 @@ export function SpaceInspector({
   }
   if (parent) rows.push({ label: 'Within', value: <button type="button" className="ul-evid" onClick={() => onSelectSpace(parent.id)}><b>{parent.name}</b></button> });
   if (rooms.length) rows.push({ label: 'Rooms', value: <span className="ul-row">{rooms.map((r) => <button key={r.id} type="button" className="ul-evid" onClick={() => onSelectSpace(r.id)}><b>{r.shortName}</b></button>)}</span> });
-  if (card.opens === 'registry') rows.push({ label: 'Cards', value: 'Listed by the registry' });
+  if (card.opens === 'registry') rows.push({ label: 'Cards', value: 'Listed' });
 
   const cardButton = card.opens
     ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button> : null;
@@ -147,14 +144,13 @@ export function SpaceInspector({
           <DescriptionList items={rows} />
           {card.unanswered ? <p className={styles.note}>{card.unanswered}</p> : null}
           {unread ? <p className={styles.note}>{unread}</p> : null}
-          {canonical.data ? (
-            <p className={styles.note}>{unit ? AT_ITS_UNIT : NOT_RECORDED} {listed ? unitLink : null}</p>
-          ) : null}
+          {canonical.data && !unit ? <p className={styles.note}>{NOT_RECORDED}</p> : null}
+          {listed ? unitLink : null}
         </>
       ) : tab === 'rights' ? (
         <DescriptionList items={[
           { label: 'Rights', value: rights === 'unknown' ? <StatusBadge status="Unknown" /> : <span className="ul-row"><span className="ul-swatch" style={{ backgroundColor: `var(${RIGHTS_TOKEN[rights]})` }} />{RIGHTS_LABEL[rights]}</span> },
-          { label: 'Parties', value: <span className="ul-row"><StatusBadge status="Unknown" /><span className={styles.note}>not in the public record</span></span> },
+          { label: 'Parties', value: <StatusBadge status="Unknown" /> },
           { label: 'Share', value: facts?.sharePct ? `${facts.sharePct.value.toFixed(2)} %` : <StatusBadge status="Unknown" /> },
         ]} />
       ) : (

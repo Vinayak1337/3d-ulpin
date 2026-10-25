@@ -63,9 +63,9 @@ export function linkReview(candidate: Candidate, confirmations: EvidencePage['co
 
 export function linkReviewWords(review: LinkReview): string {
   switch (review.state) {
-    case 'cited': return `Confirmed by the officer and cited on the record, revision ${review.revision}.`;
-    case 'confirmed': return 'Confirmed by the officer. The record does not cite it yet.';
-    case 'reread': return 'Confirmed by the officer before its file was read again. It must be confirmed again.';
-    case 'candidate': return 'Not confirmed. It stays a candidate until the officer confirms it.';
+    case 'cited': return `Cited on the record, revision ${review.revision}.`;
+    case 'confirmed': return 'Confirmed, not cited yet.';
+    case 'reread': return 'File read again. Confirm again.';
+    case 'candidate': return 'Candidate';
   }
 }

@@ -8,11 +8,11 @@ import { INTAKE_EVIDENCE_VERSION, IntakeEvidencePageSchema } from '../../../../.
 import capturedConfirmation from '../../../../../../docs/evidence/gf1/e3b/confirmation.json';
 import capturedTargets from '../../../../../../docs/evidence/gf1/e3b/targets.json';
 import { readTargetByFeature } from '../../intake/run/api';
-import { cardsOnlyWords, confirmBody, readinessLabels, readinessWords, type Confirmation, type Target,
+import { confirmBody, readinessLabels, type Confirmation, type Target,
   type TargetPage } from '../../intake/run/model';
 import { useConfirmationCommand } from '../../intake/run/useConfirmationCommand';
 import { intakeKey } from '../../intake/batch-queries';
-import type { Candidate, EvidencePage } from '../../intake/evidence/model';
+import { outcomeWords, type Candidate, type EvidencePage } from '../../intake/evidence/model';
 import { BuildingCard, BuildingCardDialog, TargetCard, buildingTargetKey } from './BuildingCard';
 import { BuildingLinks, featureLinksKey, readFeatureLinks } from './BuildingLinks';
 import { linkReview } from './evidence';
@@ -52,10 +52,8 @@ it('a recorded building with no card: one press stores the cards-only confirmati
   + 'card, and the card dialog opens', async () => {
   expect(cardState(recorded)).toBe('make');
   const offer = shown(<TargetCard target={recorded} name="763933" refetch={() => {}} />);
-  expect(offer).toContain(cardsOnlyWords(1));
-  expect(cardsOnlyWords(1)).toMatch(/^This recorded building will get/);
-  expect(offer).toContain('Your acknowledgement');
-  expect(offer).toMatch(/<button[^>]*disabled=""[^>]*>Make the property card<\/button>/);
+  expect(offer).toContain('Acknowledgement');
+  expect(offer).toMatch(/<button[^>]*disabled=""[^>]*>Make card<\/button>/);
 
   let command: ReturnType<typeof useConfirmationCommand> | undefined;
   let stored = 0;
@@ -90,7 +88,7 @@ it('a recorded building with no card: one press stores the cards-only confirmati
   const making = shown(<TargetCard target={listed} name="763933" refetch={() => {}} />);
   expect(making).toContain(listed.reason);
   expect(making).toContain('feature 763933');
-  expect(making).not.toContain('Make the property card');
+  expect(making).not.toContain('Make card');
 
   const dialog = shown(<BuildingCardDialog target={carded} name="763933" onClose={() => {}} />);
   expect(dialog).toContain('role="dialog"');
@@ -103,7 +101,7 @@ it('a recorded building with no card: one press stores the cards-only confirmati
 it('a carded building offers its card and opens it only when asked', () => {
   expect(cardState(carded)).toBe('carded');
   const markup = shown(<TargetCard target={carded} name="763933" refetch={() => {}} />);
-  expect(markup).toContain('Open the property card');
+  expect(markup).toContain('Open card');
   expect(markup).not.toContain('role="dialog"');
   expect(followCard(false, 'carded')).toEqual({ watched: false, open: false });
 });
@@ -112,9 +110,8 @@ it('a building not recorded states its readiness in words and links its batch; n
   expect(cardState(ready)).toBe('other');
   const markup = shown(<TargetCard target={ready} name="763933" refetch={() => {}} />);
   expect(markup).toContain(readinessLabels.ready);
-  expect(markup).toContain(readinessWords.ready);
   expect(markup).toContain(`href="/studio/work/cases/${ready.caseId}/intake"`);
-  expect(markup).not.toContain('Make the property card');
+  expect(markup).not.toContain('Make card');
   expect(cardState({ ...carded, artefacts: {} })).toBe('other');
 });
 
@@ -141,9 +138,8 @@ it('a recorded building picked in a windowed area offers the same press, read by
     polygons: [], heightM: null, heightState: 'unknown', displayState: 'recorded' };
   const markup = shown(<WindowedInspector feature={feature} areaName="Area" onClose={() => {}} />, client);
   expect(markup).toContain('>Open register</a>');
-  expect(markup).toContain(cardsOnlyWords(1));
-  expect(markup).toContain('Your acknowledgement');
-  expect(markup).toContain('Make the property card');
+  expect(markup).toContain('Acknowledgement');
+  expect(markup).toContain('Make card');
   const parcel = shown(<WindowedInspector feature={{ ...feature, kind: 'parcel' }} areaName="Area"
     onClose={() => {}} />, client);
   expect(parcel).not.toContain('Property card');
@@ -164,7 +160,7 @@ it('a proposal picked in a windowed area reads its target by feature in the pack
   expect(reads).toEqual([{ featureId: ready.featureId, packageId: ready.packageId }]);
   const markup = shown(inspector, client);
   expect(markup).toContain('Open batch to confirm');
-  expect(markup).toContain(readinessWords.ready);
+  expect(markup).toContain(readinessLabels.ready);
 });
 
 // test_only: an evidence page built to the published contract for the captured carded building. The row is the real
@@ -216,17 +212,18 @@ it('the inspector lists a building\'s register link: the file, the row in words,
   expect(markup).toContain('Links to register rows and pages');
   expect(markup).toContain('<b>gpmc-yuvp.csv</b>');
   expect(markup).toContain('CSV logical row 444');
-  expect(markup).toContain('Key <span class="ul-mono">bin 1084419</span>, as written');
+  expect(markup).toContain('Key <span class="ul-mono">bin 1084419</span>');
   expect(markup).toContain('Matched');
-  expect(markup).toContain('Confirmed by the officer. The record does not cite it yet.');
+  expect(markup).not.toContain(outcomeWords.matched);
+  expect(markup).toContain('Confirmed, not cited yet.');
   expect(markup).not.toContain(row.candidateId);
   expect(markup).not.toContain('612');
 
   expect(linksShown(cited, linkPage([row])))
-    .toContain('Confirmed by the officer and cited on the record, revision 1.');
+    .toContain('Cited on the record, revision 1.');
   expect(linkReview(row, [{ ...evidenceConfirmation, superseded: true }], carded)).toEqual({ state: 'reread' });
   expect(linksShown(carded, linkPage([row], [])))
-    .toContain('Not confirmed. It stays a candidate until the officer confirms it.');
+    .toContain('Candidate');
 });
 
 it('a conflicting row names its outcome and the other buildings that hold the key', () => {
@@ -234,14 +231,16 @@ it('a conflicting row names its outcome and the other buildings that hold the ke
   const conflict = { ...row, outcome: 'conflicting', conflictGroup: linkId(10), anchors: [anchor, other] } as Candidate;
   expect(IntakeEvidencePageSchema.safeParse(linkPage([conflict])).success).toBe(true);
   const markup = linksShown(carded, linkPage([conflict], []));
-  expect(markup).toContain('Conflicting: the key is on more than one row of this table');
+  expect(markup).toContain('Conflicting');
+  expect(markup)
+    .toContain(`Key <span class="ul-mono">bin 1084419</span><span class="ul-muted"> · ${outcomeWords.conflicting}`);
   expect(markup).toContain('Also names Feature 15 of buildings.geojson');
   expect(markup).not.toContain(`Also names ${carded.locator}`);
 });
 
 it('a building no register row or page names says so plainly, with or without a batch', () => {
-  expect(linksShown(carded, linkPage([]))).toContain('No register row or page names this building.');
-  expect(linksShown(null)).toContain('No register row or page names this building.');
+  expect(linksShown(carded, linkPage([]))).toContain('No links.');
+  expect(linksShown(null)).toContain('No links.');
 });
 
 it('a failed read of the links, or of the batch that holds the building, says so in its own section', async () => {
@@ -255,9 +254,9 @@ it('a failed read of the links, or of the batch that holds the building, says so
       ? featureLinksKey(carded.caseId, carded.featureId) : buildingTargetKey(carded.featureId) });
     const markup = shown(<BuildingLinks featureId={carded.featureId} />, client);
     expect(markup).toContain('Links to register rows and pages');
-    expect(markup).toContain('The links of this building could not be read.');
+    expect(markup).toContain('Links could not be read.');
     expect(markup).toContain('The evidence store is not reachable.');
     expect(markup).toContain('role="alert"');
-    expect(markup).not.toContain('No register row or page names this building.');
+    expect(markup).not.toContain('No links.');
   }
 });

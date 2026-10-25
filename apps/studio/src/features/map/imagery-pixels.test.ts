@@ -70,8 +70,7 @@ describe('imagery worker lifecycle', () => {
     expect(loaded.warnings).toEqual([]);
     expect(loaded.overlays).toHaveLength(1);
     expect(loaded.overlays[0]).toMatchObject({
-      layer: 'imagery', label: 'Aerial', caption: 'Aerial date unknown · georeferenced',
-      note: 'Aerial: georeferenced image; source coverage only.',
+      layer: 'imagery', label: 'Aerial',
       input: { id: 'imagery', kind: 'image', role: 'ground', image: canvas },
     });
     expect(pixels.data).toEqual(rgba);
