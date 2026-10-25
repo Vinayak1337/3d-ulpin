@@ -36,6 +36,7 @@ import {
 } from './overlays';
 import { noFloorsState } from './floorState';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
+import { linkKey, useLinkRead } from './linkBands';
 import { SceneLabels } from './SceneLabels';
 import { createViewFrames, type ViewFrames } from './viewFrames';
 import { useSurfaceLayer } from './surface/useSurfaceLayer';
@@ -128,8 +129,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   // The canonical read refused the area as too large: its buildings are read by the part in view instead.
   const windowMode = isAreaLimit(drawn.error);
   const windowed = useAreaWindow(context.area.id, engine, windowMode);
+  const links = useLinkRead(buildings, packageId, feature, colour === 'link');
   const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour,
-    windowMode ? windowed.footprints : drawn.footprints);
+    windowMode ? windowed.footprints : drawn.footprints, links.outcomes);
   const [mapView, setMapView] = useMapView();
   const surface = useSurfaceLayer(context.area.siteId, engine);
   const preview = useReadPreview(surface.items, engine, context.area.reference as AreaReference | null);
@@ -325,6 +327,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   }
 
   // Legend: only the active Colour by, plus the evidence key on a floor.
+  const linkSection = colour === 'link'
+    ? linkKey(links.read, footprints.filter((f) => links.outcomes?.has(f.id)).length) : null;
   const legend: LegendSection[] = [];
   if (colour === 'height') {
     const { counts, unknown } = heightCounts(buildings.filter((b) => drawnIds.has(b.id)));
@@ -498,7 +502,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                   ]}
                   active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
                   onView={chooseView}
-                  keySections={legend}
+                  keySections={linkSection ? [linkSection, ...legend] : legend}
                   layers={layerSwitches} onLayer={onLayer}
                   layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
                   colour={colour} onColour={chooseColour}
@@ -507,6 +511,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                     { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
                     { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
                     { value: 'height', label: 'Height', disabled: !footprints.length },
+                    { value: 'link', label: 'Link', disabled: !footprints.length },
                   ]}
                   floor={selection.mode === 'level' && level ? level.label : null}
                   spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
