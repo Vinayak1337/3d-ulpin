@@ -68,6 +68,8 @@ export function FindingsInspector({ register, ledger, findingId, buildingId, cru
         ) : undefined}
         actions={detail?.actions.length ? <>{detail.actions.map(action)}</> : undefined}
       />
+      {finding.limitations?.length
+        ? <ul className={styles.gaps}>{finding.limitations.map((l) => <li key={l}>{l}</li>)}</ul> : null}
     </div>
   );
 }

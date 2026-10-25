@@ -83,12 +83,14 @@ export function ImportTray({ packageId, context, contextFresh = true, drawnBuild
     const n = features.filter((f) => kinds.includes(String(f.kind))).length;
     return { id: label, file: label, state: running ? 'running' : 'saved', detail: n ? `${formatCount(n)} ${unit} ${recorded ? 'recorded' : 'to review'}` : running ? 'reading' : 'none' };
   });
-  const drawn = demo && drawnBuildings !== undefined ? `${formatCount(drawnBuildings)} buildings drawn` : undefined;
+  const state = running ? null : recorded ? 'recorded' : 'candidates';
+  const drawn = demo && drawnBuildings !== undefined ? `${formatCount(drawnBuildings)} buildings drawn` : null;
+  const counts = [`${formatCount(features.length)} features`, state, drawn].filter(Boolean).join(', ');
   const title = pkg ? `${running ? 'Importing' : 'Imported'} ${pkg.name}` : `Importing into ${context.area.name}`;
   return (
     <div>
       <ImportStream title={title} rows={rows}
-        meta={notice ?? drawn}
+        meta={notice ?? counts}
         aside={!running ? <Button variant="ghost" onClick={onClose}>Done</Button> : null} />
       {quarantine ? <details className="ul-panel ul-pad">
         <summary>{formatCount(quarantine.rejected)} skipped features</summary>

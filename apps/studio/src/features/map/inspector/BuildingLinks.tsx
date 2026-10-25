@@ -6,7 +6,8 @@ import { Badge } from '@ulpin/ui';
 import type { IntakeItem } from '../../intake/batch-model';
 import { useIntakeManifest } from '../../intake/batch-queries';
 import { evidenceKey } from '../../intake/evidence/api';
-import { buildingWords, type Candidate, type EvidencePage, type Outcome } from '../../intake/evidence/model';
+import { buildingWords, outcomeWords, type Candidate, type EvidencePage,
+  type Outcome } from '../../intake/evidence/model';
 import { readTargetByFeature } from '../../intake/run/api';
 import type { Target } from '../../intake/run/model';
 import { buildingTargetKey } from './BuildingCard';
@@ -84,7 +85,9 @@ function LinkRow({ candidate, file, page, target }: {
       <Badge tone={look.tone} icon={look.icon}>{linkOutcomeWords[candidate.outcome]}</Badge>
     </span>
     <span>{linkPlaceWords(evidence)}</span>
-    <span>Key <span className="ul-mono">{linkKeyWords(candidate)}</span></span>
+    <span>Key <span className="ul-mono">{linkKeyWords(candidate)}</span>
+      {candidate.outcome !== 'matched'
+        ? <span className="ul-muted"> · {outcomeWords[candidate.outcome]}</span> : null}</span>
     {evidence.kind === 'document_part' ? <span className="ul-muted">“{evidence.quote}”</span> : null}
     {others.length ? <span className="ul-muted">
       Also names {buildingWords({ ...candidate, anchors: others }, [])}

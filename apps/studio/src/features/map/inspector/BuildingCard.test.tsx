@@ -12,7 +12,7 @@ import { confirmBody, readinessLabels, type Confirmation, type Target,
   type TargetPage } from '../../intake/run/model';
 import { useConfirmationCommand } from '../../intake/run/useConfirmationCommand';
 import { intakeKey } from '../../intake/batch-queries';
-import type { Candidate, EvidencePage } from '../../intake/evidence/model';
+import { outcomeWords, type Candidate, type EvidencePage } from '../../intake/evidence/model';
 import { BuildingCard, BuildingCardDialog, TargetCard, buildingTargetKey } from './BuildingCard';
 import { BuildingLinks, featureLinksKey, readFeatureLinks } from './BuildingLinks';
 import { linkReview } from './evidence';
@@ -214,6 +214,7 @@ it('the inspector lists a building\'s register link: the file, the row in words,
   expect(markup).toContain('CSV logical row 444');
   expect(markup).toContain('Key <span class="ul-mono">bin 1084419</span>');
   expect(markup).toContain('Matched');
+  expect(markup).not.toContain(outcomeWords.matched);
   expect(markup).toContain('Confirmed, not cited yet.');
   expect(markup).not.toContain(row.candidateId);
   expect(markup).not.toContain('612');
@@ -231,6 +232,8 @@ it('a conflicting row names its outcome and the other buildings that hold the ke
   expect(IntakeEvidencePageSchema.safeParse(linkPage([conflict])).success).toBe(true);
   const markup = linksShown(carded, linkPage([conflict], []));
   expect(markup).toContain('Conflicting');
+  expect(markup)
+    .toContain(`Key <span class="ul-mono">bin 1084419</span><span class="ul-muted"> · ${outcomeWords.conflicting}`);
   expect(markup).toContain('Also names Feature 15 of buildings.geojson');
   expect(markup).not.toContain(`Also names ${carded.locator}`);
 });

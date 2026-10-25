@@ -192,10 +192,13 @@ it('keeps the demo import reading its own stream, with no API read', async () =>
   await show('RECEIVED');
   await wait(30 * SECOND);
   expect(root.textContent).toContain(`Importing ${nyc.area.name}`);
-  expect(root.textContent).toContain(`${formatCount(buildings)} buildings drawn`);
+  expect(root.textContent)
+    .toContain(`${formatCount(shown.length)} features, ${formatCount(buildings)} buildings drawn`);
   await show('READY_FOR_REVIEW');
   await wait(30 * SECOND);
   expect(root.textContent).toContain(`Imported ${nyc.area.name}`);
   expect(root.textContent).toContain(`${formatCount(buildings)} buildings to review`);
+  expect(root.textContent)
+    .toContain(`${formatCount(shown.length)} features, candidates, ${formatCount(buildings)} buildings drawn`);
   expect(api.fetch).not.toHaveBeenCalled();
 });

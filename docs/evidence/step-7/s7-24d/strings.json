@@ -3,9 +3,10 @@
  "scope": "apps/studio/src/features/map/, line numbers at base bac06934",
  "totals": {
   "before": 373,
-  "cut": 37,
+  "cut": 33,
   "shortened": 69,
-  "kept": 267
+  "kept": 267,
+  "kept_as_state": 4
  },
  "strings": [
   {
@@ -545,8 +546,8 @@
   {
    "at": "apps/studio/src/features/map/ImportTray.tsx:86",
    "old": "{n} features received (meta, repeats the rows)",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep as state",
+   "new": "{n} features (meta, with the state and drawn count)"
   },
   {
    "at": "apps/studio/src/features/map/ImportTray.tsx:88",
@@ -557,8 +558,8 @@
   {
    "at": "apps/studio/src/features/map/ImportTray.tsx:89",
    "old": "· recorded / · unrecorded proposals (meta, repeats the rows)",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep as state",
+   "new": ", recorded / , candidates (meta, nothing while running)"
   },
   {
    "at": "apps/studio/src/features/map/ImportTray.tsx:90",
@@ -1829,8 +1830,8 @@
   {
    "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:91",
    "old": "{outcome sentence} (repeats the outcome badge)",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep as state",
+   "new": "· {outcome words} beside the key, when not matched"
   },
   {
    "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:93",
@@ -1955,8 +1956,8 @@
   {
    "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:72",
    "old": "{server limitations} as a note under the finding",
-   "verdict": "cut",
-   "new": null
+   "verdict": "keep as state",
+   "new": "{limitations stated in the record} as a list under the finding"
   },
   {
    "at": "apps/studio/src/features/map/inspector/InspectorShell.tsx:24",
