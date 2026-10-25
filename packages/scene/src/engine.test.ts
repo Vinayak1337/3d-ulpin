@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Points, Raycaster, Vector3 } from 'three';
+import {
+  Group, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, PerspectiveCamera, Points, Raycaster, Vector3,
+} from 'three';
 import { SceneEngine } from './engine';
 import { FLAT_THICKNESS_M, prismGeometry } from './geometry';
-import type { ImageOverlayInput, MultiPolygon, SurfacePartInput } from './types';
+import type { ImageOverlayInput, MultiPolygon, PreviewOutlineInput, SurfacePartInput } from './types';
 
 function imageMesh(role?: 'ground'): Mesh {
   // Exercise the engine's actual overlay builder without a browser/WebGL renderer.
@@ -196,5 +198,35 @@ describe('the read parts of a kept surface', () => {
     engine.setSurfaceParts([b]);
     expect(surface.children.map((group) => group.userData.surface)).toEqual(['i:1']);
     expect(new Raycaster(new Vector3(5, 10, -5), new Vector3(0, -1, 0)).intersectObject(surface, true)).toEqual([]);
+  });
+});
+
+describe('the outlines read so far of a file still being read', () => {
+  function previewEngine() {
+    const preview = new Group();
+    const engine = Object.assign(Object.create(SceneEngine.prototype), {
+      preview, options: { palette: { selected: '#1f6feb', preview: '#1c5cab' } }, requestRender: vi.fn(),
+    }) as Pick<SceneEngine, keyof SceneEngine>;
+    return { engine, preview };
+  }
+  const ring: PreviewOutlineInput = { id: 'i:0', polygons: [[[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]] };
+
+  it('draws every ring as one dashed, flat, unpicked line set and replaces it whole', () => {
+    const { engine, preview } = previewEngine();
+    engine.setPreviewOutlines([ring, { id: 'i:1', polygons: [[[[20, 0], [30, 0], [30, 10]]]] }]);
+    expect(preview.children).toHaveLength(1);
+    const lines = preview.children[0] as LineSegments;
+    expect(lines.material).toBeInstanceOf(LineDashedMaterial);
+    expect((lines.material as LineDashedMaterial).color.getHexString()).toBe('1c5cab');
+    // Four closed edges, and three for the ring the source left open: two points each, three numbers a point.
+    expect(lines.geometry.getAttribute('position').count).toBe((4 + 3) * 2);
+    lines.geometry.computeBoundingBox();
+    expect(lines.geometry.boundingBox!.max.y - lines.geometry.boundingBox!.min.y).toBe(0);
+    expect(new Raycaster(new Vector3(5, 10, -5), new Vector3(0, -1, 0)).intersectObject(preview, true)).toEqual([]);
+    engine.setPreviewOutlines([ring]);
+    expect(preview.children).toHaveLength(1);
+    expect((preview.children[0] as LineSegments).geometry.getAttribute('position').count).toBe(4 * 2);
+    engine.setPreviewOutlines([]);
+    expect(preview.children).toEqual([]);
   });
 });
