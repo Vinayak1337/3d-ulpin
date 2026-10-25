@@ -308377,7 +308377,7 @@
             "type": "integer",
             "minimum": 0,
             "exclusiveMinimum": true,
-            "maximum": 16777216
+            "maximum": 1073741824
           },
           "name": {
             "type": "string",
@@ -351469,7 +351469,7 @@
             "type": "integer",
             "minimum": 0,
             "exclusiveMinimum": true,
-            "maximum": 16777216
+            "maximum": 1073741824
           },
           "page": {
             "type": "integer",
