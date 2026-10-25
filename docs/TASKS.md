@@ -56,7 +56,7 @@ Size M, this PC: Docker. After: none. **Status: done 24 Oct (4c704191 on int3-pr
 
 ### S1.1b Full check set again on int3-pre 41d7a1c7, fix only what fails
 
-Size M, this PC: Docker (one disposable PostGIS container, no volume). After: S5.2a merged. **Status: running 25 Oct (codex, from int3-pre 41d7a1c7).**
+Size M, this PC: Docker (one disposable PostGIS container, no volume). After: S5.2a merged. **Status: done 25 Oct (merged into int3-pre, pins 5e447378): full backend 2389 pass, Studio 712 and 783 pass, geo and PostgreSQL controls pass; two real fixes (point publication followed the S5.14 step rule; CityGML readings stored under the old bounds are accepted); only the Studio decimalMark type error remains (S5.7b)**
 
 - **What:** S1.1 passed at 4c704191; about 40 merges have landed since. Run the same check set (S1.1 evidence lists it) plus the three geo interpreters now needed (CityJSON and points, rasters, IFC) before S1.4 merges int3-pre into staging. Fix only failing tests or real bugs, one commit each; Studio source failures are reported, not fixed.
 
