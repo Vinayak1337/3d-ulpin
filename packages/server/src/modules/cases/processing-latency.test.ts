@@ -6,10 +6,14 @@ import { mkdtemp, readFile, readdir, rm, rmdir, writeFile } from 'node:fs/promis
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
+import { Readable } from 'node:stream';
+import type { StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-selection.fixture';
 import { DISPATCH_LANES, dispatchCost, dispatchHeapBudgetMiB } from './dispatch-lanes';
 import { probeOriginal } from '../usp/ingestion/intake-probe';
 import { readZipMember } from '../usp/ingestion/intake-zip';
+import { loadProfileWorker, profileWorkerFixture } from '../usp/ingestion/streamed-profile-worker.fixture';
+import { readStreamingFeatures, sourceRecord } from '../usp/ingestion/streaming-vector-reader';
 
 // REH16's development ZIP, not evaluation truth. Durations are QW1 bAlone's measured job spans for this member.
 // Layer stubs deliberately use the same measured spans, not invented per-layer performance measurements.
@@ -24,7 +28,7 @@ type Row = SelectionFixtureJob & { status: string; itemCreated: number; stage: s
 type Event = { at: number; finish: () => void };
 type Driver = { dispatchTick: () => Promise<number>; dispatchWakeVersion: () => number };
 type Controls = { worker: (id: string) => Promise<void>; surface: () => Promise<void> };
-const globals = globalThis as typeof globalThis & { ulpinPool?: unknown; lq1Replay?: Controls };
+const globals = globalThis as typeof globalThis & { ulpinPool?: unknown; lq1Replay?: Controls; s13cProfile?: unknown };
 async function removeReplay(folder: string) {
   for (const name of await readdir(folder)) await rm(join(folder, name));
   await rmdir(folder);
@@ -32,7 +36,7 @@ async function removeReplay(folder: string) {
 
 async function withReplay(run: (folder: string) => Promise<void>) {
   const folder = await mkdtemp('E:/ulpin-tmp/s3-7-replay-');
-  const previousPool = globals.ulpinPool, previousControls = globals.lq1Replay;
+  const previousPool = globals.ulpinPool, previousControls = globals.lq1Replay, previousProfile = globals.s13cProfile;
   const budget = process.env.DISPATCH_MEMORY_MIB;
   process.env.DISPATCH_MEMORY_MIB = '1536';
   try {
@@ -40,6 +44,7 @@ async function withReplay(run: (folder: string) => Promise<void>) {
   } finally {
     globals.ulpinPool = previousPool;
     globals.lq1Replay = previousControls;
+    globals.s13cProfile = previousProfile;
     if (budget === undefined) delete process.env.DISPATCH_MEMORY_MIB;
     else process.env.DISPATCH_MEMORY_MIB = budget;
     await removeReplay(folder);
@@ -332,6 +337,97 @@ test('run 2 stream replay: a later ZIP starts within one tick while both whole-f
     assert.deepEqual(peaks, { memory: 1865, heap: 1865, vector: 2, stream: 2 });
   });
 });
+
+test('a long raw reader cannot block a small ZIP member profile or its mapping',
+  { skip: !existsSync(archivePath) }, async t => {
+    t.mock.timers.enable({ apis: ['Date'], now: epoch });
+    await withReplay(async folder => {
+      // Read the real development member into its usual bounded raw chunks; the long reader is a scheduling stub.
+      const zip = await readFile(archivePath);
+      const extracted = await readZipMember(async (start, end) => zip.subarray(start, end), zip.length,
+        member, 3 * 1024 ** 2);
+      const records: StreamingVectorRecord[] = [];
+      await readStreamingFeatures(Readable.from([Buffer.from(extracted.bytes)]), 'feature-collection',
+        async feature => { records.push(sourceRecord(feature)); });
+      const large = profileWorkerFixture(), small = profileWorkerFixture(10);
+      const workers = new Map([
+        [large.input.jobId, await loadProfileWorker(folder, large)],
+        [small.input.jobId, await loadProfileWorker(folder, small)],
+      ]);
+      for (let index = 0; index < records.length; index += 100) small.publish(records.slice(index, index + 100));
+      small.raw.state = 'completed';
+      small.raw.unknown_remainder = false;
+      process.env.DISPATCH_MEMORY_MIB = '927'; // One raw (415) plus one profile (512), not an increased cap.
+      const driver = await loadDriver(folder, false), state = replayState();
+      state.rows.length = 0;
+      let finishRaw!: () => void, profileRun: Promise<void> | undefined;
+      let peakMemoryMiB = 0;
+      const addProfile = (fixture: typeof small, itemCreated: number) => state.rows.push({
+        id: fixture.input.jobId, source_id: fixture.input.sourceId, case_id: fixture.input.caseId,
+        operation: 'streamed-profile', created_at: new Date(), status: 'queued', itemCreated, stage: 'profile',
+      });
+      const fixtures = [large, small];
+      globals.lq1Replay = { surface: async () => {}, worker: async id => {
+        const row = state.rows.find(row => row.id === id)!;
+        row.status = 'running';
+        peakMemoryMiB = Math.max(peakMemoryMiB, admissionPeaks(state.rows, 927).memory);
+        state.dispatched.push({ id, at: Date.now() - epoch });
+        const fixture = fixtures.find(value => value.input.jobId === id);
+        if (fixture) {
+          profileRun = workers.get(id)!.runStreamedProfileJob(id);
+          await profileRun;
+          row.status = fixture.job.status;
+          if (fixture === small && row.status === 'succeeded')
+            state.enqueue('zip', 'chunk-mapping', 'map', 750);
+        } else if (row.stage === 'raw') {
+          await new Promise<void>(resolve => { finishRaw = resolve; });
+          row.status = 'succeeded';
+        } else row.status = 'succeeded';
+      } };
+      const query = async (sql: string, values: any[] = []) => {
+        if (sql.startsWith('SELECT id::text')) return { rows: [], rowCount: 0 };
+        if (sql.includes('AS file_rank')) {
+          const eligible = state.rows.filter(row => !fixtures.some(fixture => fixture.input.jobId === row.id
+            && fixture.job.next_attempt_at.getTime() > Date.now()));
+          const rows = dispatchFixtureSelection(sql, values, eligible);
+          return { rows, rowCount: rows.length };
+        }
+        const fixture = fixtures.find(value => value.input.jobId === values[0]
+          || value.input.rawJobId === values[0]) ?? large;
+        return fixture.query(sql, values);
+      };
+      globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) };
+      try {
+        state.enqueue('large', 'streaming-vector', 'raw', 0);
+        addProfile(large, 0);
+        await driver.dispatchTick();
+        await profileRun;
+        await flush();
+        assert.ok(state.dispatched.some(row => row.id === large.input.jobId));
+        assert.equal(large.attempts.length, 0, 'a waiting profile spends no claim');
+        t.mock.timers.tick(750);
+        addProfile(small, 750);
+        await driver.dispatchTick();
+        await profileRun;
+        await flush();
+        const admitted = state.dispatched.find(row => row.id === small.input.jobId)!;
+        assert.equal(admitted.at, 750, 'the small profile gets the released slot and all 512 MiB within one tick');
+        await driver.dispatchTick();
+        await flush();
+        assert.ok(state.dispatched.some(row => row.id === 'zip:map'));
+        assert.equal(state.rows.find(row => row.id === 'large:raw')?.status, 'running');
+        assert.equal(small.generations.get(small.raw.sealed_chunks)?.coverage, 'sealed');
+        assert.ok(peakMemoryMiB <= 927 && peakMemoryMiB <= dispatchHeapBudgetMiB());
+        console.log(JSON.stringify({ replay: 'offline long-reader shape, real ZIP member; mapping scheduling stub',
+          member, features: records.length, profileAdmissionMs: admitted.at - 750,
+          mappingStartsMs: state.dispatched.find(row => row.id === 'zip:map')!.at,
+          peakMemoryMiB, peakHeapMiB: peakMemoryMiB, memoryBudgetMiB: 927 }));
+      } finally {
+        finishRaw?.();
+        await flush();
+      }
+    });
+  });
 
 test('two large files finish all four interleaved readers, including profiles arriving before raw', async () => {
   await withReplay(async folder => {
