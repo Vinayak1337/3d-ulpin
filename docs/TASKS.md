@@ -231,7 +231,7 @@ Size S, code only. After: S1.3 run 5. **Status: merged 26 Oct into int3-pre 998c
 
 ### S1.3s The chunk-mapping deadlock under load; the stale point batch
 
-Size S, code only. After: S1.3 run 5. **Status: running 25 Oct (task/s1-3s-mapping-deadlock from int3-pre bac06934).**
+Size S, code only. After: S1.3 run 5. **Status: merged into int3-pre 26 Oct (pins aa9a0518). Chunk mapping and the streaming publication now lock the case and source before the job, in one order; a lock-model test shows the old order deadlocks. A non-stale 409 in a point batch gets its own code (POINT_ATTEMPT_CHANGED, POINT_PUBLICATION_CHANGED). The live absence of 40P01 is checked in run 6.**
 
 - **What:** Name the two transactions behind run 5's 40P01 in chunk mapping, reproduce it in a test and fix the lock order (no retry added). List every 409 that point-batch-worker.ts maps to POINT_INPUT_STALE and give a non-stale one its own code.
 - **Files:** chunk-mapping.ts, chunk-mapping-worker.ts, the other transaction reordered, point-batch-worker.ts
@@ -1097,7 +1097,7 @@ Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
 
 ### S7.24 Cut taglines, helper text and secondary labels on every screen (owner, 25 Oct)
 
-Size M, UI (Claude CLI workers, six disjoint parts). After: S1.3 run 5 (the rehearsal runs alone); before the other S7 tasks, which then follow the same rule. **Status: S7.24b, c and d running 25 Oct from 23:55 (Claude CLI workers from int3-pre bac06934; first start paused at 23:30 when the PC ran out of memory, nothing lost); a, e and f next.**
+Size M, UI (Claude CLI workers, six disjoint parts). After: S1.3 run 5 (the rehearsal runs alone); before the other S7 tasks, which then follow the same rule. **Status: S7.24c merged into int3-pre 26 Oct (c80cd2bf); S7.24d merged after a fix that put back three values (2a4d18c0); S7.24b reviewed and sent back for one fix (three accessible names, one error step, one disabled reason); S7.24e running from bac06934; S7.24a and f running from 2a4d18c0.**
 
 - **Owner's words:** Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout instead. Lets rectify this for all pages, statuses, UIs, pop-ups etc.
 - **What:** Cut ledes, subtitles, explanatory sentences, hint props, captions that repeat a heading and smaller second labels. Where a screen would then be unclear, fix the layout (a shorter heading or label, grouping, order, column names, a section the officer opens), never move the sentence into a tooltip or collapsed help. State stays in its shortest form: a value and its label, a status, an error with what to do, an empty line, a value's state word (candidate, estimated, unknown), why a control is disabled, accessible names.
