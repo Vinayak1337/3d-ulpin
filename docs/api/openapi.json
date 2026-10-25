@@ -116755,7 +116755,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 524288
+                              "maximum": 2097152
                             },
                             "batch": {
                               "type": "object",
@@ -116763,13 +116763,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -132508,7 +132514,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 524288
+                              "maximum": 2097152
                             },
                             "batch": {
                               "type": "object",
@@ -132516,13 +132522,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -137265,13 +137277,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -142825,7 +142843,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 524288
+                              "maximum": 2097152
                             },
                             "batch": {
                               "type": "object",
@@ -142833,13 +142851,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -143062,7 +143086,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 524288
+                          "maximum": 2097152
                         },
                         "metadataSha256": {
                           "type": "string",
@@ -143130,7 +143154,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 5000000
+                              "maximum": 500000000
                             },
                             "scale": {
                               "type": "array",
@@ -143231,13 +143255,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -231593,7 +231623,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 524288
+                              "maximum": 2097152
                             },
                             "batch": {
                               "type": "object",
@@ -231601,13 +231631,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -231830,7 +231866,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 524288
+                          "maximum": 2097152
                         },
                         "metadataSha256": {
                           "type": "string",
@@ -231898,7 +231934,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 5000000
+                              "maximum": 500000000
                             },
                             "scale": {
                               "type": "array",
@@ -231999,13 +232035,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -310352,13 +310394,19 @@
                         "start": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 4999999
+                          "maximum": 499999999
                         },
                         "count": {
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 8192
+                          "maximum": 32768
+                        },
+                        "step": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 65536
                         }
                       },
                       "required": [
@@ -315610,7 +315658,7 @@
                           "type": "integer",
                           "minimum": 0,
                           "exclusiveMinimum": true,
-                          "maximum": 524288
+                          "maximum": 2097152
                         },
                         "metadataSha256": {
                           "type": "string",
@@ -315678,7 +315726,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 5000000
+                              "maximum": 500000000
                             },
                             "scale": {
                               "type": "array",
@@ -315779,13 +315827,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -321080,13 +321134,19 @@
                                 "start": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 4999999
+                                  "maximum": 499999999
                                 },
                                 "count": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 8192
+                                  "maximum": 32768
+                                },
+                                "step": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 65536
                                 }
                               },
                               "required": [
@@ -326467,7 +326527,7 @@
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 524288
+                              "maximum": 2097152
                             },
                             "metadataSha256": {
                               "type": "string",
@@ -326535,7 +326595,7 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "exclusiveMinimum": true,
-                                  "maximum": 5000000
+                                  "maximum": 500000000
                                 },
                                 "scale": {
                                   "type": "array",
@@ -326636,13 +326696,19 @@
                                     "start": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 4999999
+                                      "maximum": 499999999
                                     },
                                     "count": {
                                       "type": "integer",
                                       "minimum": 0,
                                       "exclusiveMinimum": true,
-                                      "maximum": 8192
+                                      "maximum": 32768
+                                    },
+                                    "step": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 65536
                                     }
                                   },
                                   "required": [
@@ -332613,13 +332679,19 @@
                                           "start": {
                                             "type": "integer",
                                             "minimum": 0,
-                                            "maximum": 4999999
+                                            "maximum": 499999999
                                           },
                                           "count": {
                                             "type": "integer",
                                             "minimum": 0,
                                             "exclusiveMinimum": true,
-                                            "maximum": 8192
+                                            "maximum": 32768
+                                          },
+                                          "step": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 65536
                                           }
                                         },
                                         "required": [
@@ -333930,13 +334002,19 @@
                                     "start": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 4999999
+                                      "maximum": 499999999
                                     },
                                     "count": {
                                       "type": "integer",
                                       "minimum": 0,
                                       "exclusiveMinimum": true,
-                                      "maximum": 8192
+                                      "maximum": 32768
+                                    },
+                                    "step": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 65536
                                     }
                                   },
                                   "required": [
@@ -375672,13 +375750,19 @@
                             "start": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 4999999
+                              "maximum": 499999999
                             },
                             "count": {
                               "type": "integer",
                               "minimum": 0,
                               "exclusiveMinimum": true,
-                              "maximum": 8192
+                              "maximum": 32768
+                            },
+                            "step": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 65536
                             }
                           },
                           "required": [
@@ -375884,13 +375968,19 @@
                       "start": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 4999999
+                        "maximum": 499999999
                       },
                       "count": {
                         "type": "integer",
                         "minimum": 0,
                         "exclusiveMinimum": true,
-                        "maximum": 8192
+                        "maximum": 32768
+                      },
+                      "step": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 65536
                       }
                     },
                     "required": [
@@ -375984,13 +376074,19 @@
                       "start": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 4999999
+                        "maximum": 499999999
                       },
                       "count": {
                         "type": "integer",
                         "minimum": 0,
                         "exclusiveMinimum": true,
-                        "maximum": 8192
+                        "maximum": 32768
+                      },
+                      "step": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 65536
                       }
                     },
                     "required": [
@@ -411095,13 +411191,19 @@
               "start": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 4999999
+                "maximum": 499999999
               },
               "count": {
                 "type": "integer",
                 "minimum": 0,
                 "exclusiveMinimum": true,
-                "maximum": 8192
+                "maximum": 32768
+              },
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 65536
               }
             },
             "required": [
@@ -411268,7 +411370,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 5000000
+                    "maximum": 500000000
                   },
                   "scale": {
                     "type": "array",
@@ -411369,13 +411471,19 @@
                       "start": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 4999999
+                        "maximum": 499999999
                       },
                       "count": {
                         "type": "integer",
                         "minimum": 0,
                         "exclusiveMinimum": true,
-                        "maximum": 8192
+                        "maximum": 32768
+                      },
+                      "step": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 65536
                       }
                     },
                     "required": [
@@ -411464,7 +411572,7 @@
                     "type": "integer",
                     "minimum": 0,
                     "exclusiveMinimum": true,
-                    "maximum": 524288
+                    "maximum": 2097152
                   },
                   "mediaType": {
                     "type": "string",

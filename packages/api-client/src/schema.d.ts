@@ -15054,6 +15054,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -18205,6 +18206,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -19167,6 +19169,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                     })[];
                 };
@@ -20393,6 +20396,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -20471,6 +20475,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         recordFields: {
                             name: string;
@@ -37787,6 +37792,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -37865,6 +37871,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         recordFields: {
                             name: string;
@@ -52581,6 +52588,7 @@ export interface components {
                 batch: {
                     start: number;
                     count: number;
+                    step?: number;
                 };
             })[];
         };
@@ -53731,6 +53739,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         recordFields: {
                             name: string;
@@ -54877,6 +54886,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                     })[];
                 };
@@ -56054,6 +56064,7 @@ export interface components {
                             batch: {
                                 start: number;
                                 count: number;
+                                step?: number;
                             };
                             recordFields: {
                                 name: string;
@@ -57336,6 +57347,7 @@ export interface components {
                                 batch: {
                                     start: number;
                                     count: number;
+                                    step?: number;
                                 };
                             })[];
                         };
@@ -57589,6 +57601,7 @@ export interface components {
                             batch: {
                                 start: number;
                                 count: number;
+                                step?: number;
                             };
                         })[];
                     };
@@ -66496,6 +66509,7 @@ export interface components {
                     batch: {
                         start: number;
                         count: number;
+                        step?: number;
                     } | null;
                 };
                 partKey: string;
@@ -66540,6 +66554,7 @@ export interface components {
                 batch: {
                     start: number;
                     count: number;
+                    step?: number;
                 } | null;
             };
             /** @description The exact part the reader read. */
@@ -66559,6 +66574,7 @@ export interface components {
                 batch: {
                     start: number;
                     count: number;
+                    step?: number;
                 } | null;
             };
             resultSha256: string;
@@ -73461,6 +73477,7 @@ export interface components {
             batch: {
                 start: number;
                 count: number;
+                step?: number;
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_point_batches_Response_202_application_json: {
@@ -73514,6 +73531,7 @@ export interface components {
                     batch: {
                         start: number;
                         count: number;
+                        step?: number;
                     };
                     recordFields: {
                         name: string;
