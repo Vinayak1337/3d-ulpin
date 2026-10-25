@@ -4,8 +4,8 @@ import { getHeapStatistics } from 'node:v8';
 import { TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 
 /** G22. The lanes of docs/next-steps/INGESTION-ARCHITECTURE.md section 8; an operation no row names is `other`. */
-export type DispatchLane = 'probe' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d' | 'link' | 'gpu'
-  | 'teacher' | 'other';
+export type DispatchLane = 'probe' | 'stream' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d'
+  | 'link' | 'gpu' | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
 type Hold = Cost & { operation: string; scratchMiB: number; inProcess: boolean };
 type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
@@ -25,6 +25,8 @@ const WORKBOOK_SCRATCH_MIB = TABULAR_STREAM_LIMITS.bytes / 1024 ** 2 + 1024;
 export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.freeze({
   // Header reads only: INTAKE_PROBE_LIMITS (64 KiB head and tail, 1 MiB directory); the processor inspects 16 MiB.
   probe: { concurrency: 8, mib: 64, scratchMiB: 0 },
+  // Two files' raw readers and profiles; raw readers never wait for their profiles to consume published parts.
+  stream: { concurrency: 4, mib: 512, scratchMiB: 0 },
   vector: { concurrency: 2, mib: 512, scratchMiB: 0 },
   // A table-profile read whose size its payload does not name.
   table: { concurrency: 2, mib: 256, scratchMiB: WORKBOOK_SCRATCH_MIB },
@@ -52,10 +54,10 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Objec
   inspect: { lane: 'probe', processor: true },
   // docs/evidence/gf1/g16/result.json memoryProof: peakRssMiB 414.9 for 500,000 features in 5000 parts. A tabular
   // read pins its table under `tabular`.
-  'streaming-vector': { lane: 'vector', mib: 415, workbook: 'tabular' },
+  'streaming-vector': { lane: 'stream', mib: 415, workbook: 'tabular' },
   // docs/evidence/gf1/lp3a/parts-result.json: peakRssKiB 435,232 cutting the 43 MB NYC GeoJSON into 487 parts.
   'intake-large': { lane: 'vector', mib: 426 },
-  'streamed-profile': { lane: 'vector' },
+  'streamed-profile': { lane: 'stream' },
   'projected-vector': { lane: 'vector', processor: true },
   'kml-native': { lane: 'vector' },
   'geoparquet-native': { lane: 'vector' },

@@ -7,7 +7,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-selection.fixture';
-import { DISPATCH_LANES, dispatchCost } from './dispatch-lanes';
+import { DISPATCH_LANES, dispatchCost, dispatchHeapBudgetMiB } from './dispatch-lanes';
 import { probeOriginal } from '../usp/ingestion/intake-probe';
 import { readZipMember } from '../usp/ingestion/intake-zip';
 
@@ -84,7 +84,7 @@ async function loadDriver(folder: string, baseline: boolean | 'lane'): Promise<D
     source = source.replace("'./dispatch-lanes'", JSON.stringify(path));
   }
   const workers = new Set(['intake-large-worker', 'streaming-vector-worker', 'streamed-profile-worker',
-    'chunk-mapping-worker']);
+    'chunk-mapping-worker', 'intake-native-derivative-worker']);
   source = source.replace(/import \{(\w+)\} from '(\.\.\/usp\/ingestion\/([^']+))';/g,
     (original, name: string, _specifier: string, module: string) => {
       if (workers.has(module)) return `const ${name} = (id: string) => globalThis.lq1Replay.worker(id);`;
@@ -101,13 +101,16 @@ async function loadDriver(folder: string, baseline: boolean | 'lane'): Promise<D
   return import(pathToFileURL(path).href) as Promise<Driver>;
 }
 
-function admissionPeaks(rows: Row[]) {
+function admissionPeaks(rows: Row[], budgetMiB = 1536) {
   const active = rows.filter(row => row.status === 'running').map(row => dispatchCost(row.operation));
   const memory = active.reduce((sum, cost) => sum + cost.mib, 0);
   const vector = active.filter(cost => cost.lane === 'vector').length;
-  assert.ok(memory <= 1536, 'the unchanged memory budget bounds every start');
+  const stream = active.filter(cost => cost.lane === 'stream').length;
+  assert.ok(memory <= budgetMiB, 'the unchanged memory budget bounds every start');
+  assert.ok(memory <= dispatchHeapBudgetMiB(), 'these in-process jobs also fit the unchanged heap budget');
   assert.ok(vector <= DISPATCH_LANES.vector.concurrency, 'the unchanged vector cap bounds every start');
-  return { memory, vector };
+  assert.ok(stream <= (DISPATCH_LANES.stream?.concurrency ?? 0), 'the stream cap bounds every start');
+  return { memory, vector, stream };
 }
 
 type ReplayWorkerState = { rows: Row[]; dispatched: { id: string; at: number }[]; questions: Map<string, number>;
@@ -250,10 +253,11 @@ test('all four reader sets retain lane and memory bounds across ticks and releas
   await withReplay(async folder => {
     const driver = await loadDriver(folder, false);
     for (const operation of ['streaming-vector', 'streamed-profile', 'chunk-mapping', 'intake-large']) {
-      for (const capacity of [2, 1]) {
-        process.env.DISPATCH_MEMORY_MIB = String(capacity === 2 ? 1536 : dispatchCost(operation).mib * 2 - 1);
+      const cost = dispatchCost(operation), concurrency = DISPATCH_LANES[cost.lane].concurrency;
+      for (const capacity of [concurrency, 1]) {
+        process.env.DISPATCH_MEMORY_MIB = String(capacity === 1 ? cost.mib * 2 - 1 : cost.mib * concurrency);
         const started: string[] = [], finish = new Map<string, () => void>();
-        const rows = Array.from({ length: 3 }, (_, index) => ({ id: `${operation}-${index}`, operation,
+        const rows = Array.from({ length: concurrency + 1 }, (_, index) => ({ id: `${operation}-${index}`, operation,
           source_id: `file-${index}`, case_id: 'slot-control', created_at: new Date(epoch + index) }));
         globals.lq1Replay = { surface: async () => {}, worker: id => {
           started.push(id);
@@ -267,7 +271,7 @@ test('all four reader sets retain lane and memory bounds across ticks and releas
           await driver.dispatchTick();
           assert.equal(started.length, capacity, `${operation}: first tick respects lane/memory`);
           await driver.dispatchTick();
-          assert.equal(started.length, capacity, 'held jobs never start twice; a third waits');
+          assert.equal(started.length, capacity, 'held jobs never start twice; the next reader waits');
           rows.splice(0, capacity);
           finish.get(started[0])!();
           await flush();
@@ -279,6 +283,90 @@ test('all four reader sets retain lane and memory bounds across ticks and releas
         }
       }
     }
+  });
+});
+
+test('run 2 stream replay: a later ZIP starts within one tick while both whole-file readers run', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withReplay(async folder => {
+    process.env.DISPATCH_MEMORY_MIB = '2048';
+    const driver = await loadDriver(folder, false), state = replayState();
+    state.rows.length = 0;
+    const peaks = { memory: 0, heap: 0, vector: 0, stream: 0 };
+    globals.lq1Replay = { surface: async () => {}, worker: async id => {
+      const row = state.rows.find(row => row.id === id)!;
+      assert.equal(row.status, 'queued');
+      row.status = 'running';
+      const active = admissionPeaks(state.rows, 2048);
+      for (const key of ['memory', 'vector', 'stream'] as const) peaks[key] = Math.max(peaks[key], active[key]);
+      peaks.heap = peaks.memory; // Every operation in this replay runs in this process.
+      state.dispatched.push({ id, at: Date.now() - epoch });
+      // Run 2 CN1 wall spans; 1 s parts are scheduling stubs, not measured conversion performance.
+      const duration = ({ 'streaming-vector': 522_668, 'streamed-profile': 523_639 } as Record<string, number>)
+        [row.operation] ?? 1000;
+      await new Promise<void>(finish => { state.events.push({ at: Date.now() + duration, finish }); });
+      row.status = 'succeeded';
+    } };
+    globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+      const rows = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, state.rows) : [];
+      return { rows, rowCount: rows.length };
+    } };
+    state.enqueue('cn1', 'streaming-vector', 'raw', 0);
+    state.enqueue('cn1', 'streamed-profile', 'profile', 0);
+    await driver.dispatchTick();
+    await flush();
+    t.mock.timers.tick(750);
+    for (let index = 0; index < 43; index++) state.enqueue('zip', 'intake-large', `part-${index}`, 750);
+    state.enqueue('zip', 'intake-native-derivative', 'derivative', 750);
+    for (let turns = 0; turns < 800 && state.rows.some(row => row.status !== 'succeeded'); turns++) {
+      await tickToCompletion(driver, state, ms => t.mock.timers.tick(ms));
+      const next = Math.min(Date.now() + 750, ...state.events.map(event => event.at));
+      advance(state, next, ms => t.mock.timers.tick(ms));
+      await flush();
+    }
+    const firstZipMs = state.dispatched.find(row => row.id.startsWith('zip:'))!.at;
+    console.log(JSON.stringify({ replay: 'run 2 shape, offline only', firstZipMs, peaks,
+      memoryBudgetMiB: 2048, heapBudgetMiB: dispatchHeapBudgetMiB() }));
+    assert.ok(firstZipMs - 750 <= 750, 'the ZIP must start within one tick of creation, not after stream EOF');
+    assert.equal(state.rows.filter(row => row.status === 'succeeded').length, 46);
+    assert.deepEqual(peaks, { memory: 1865, heap: 1865, vector: 2, stream: 2 });
+  });
+});
+
+test('two large files finish all four interleaved readers, including profiles arriving before raw', async () => {
+  await withReplay(async folder => {
+    process.env.DISPATCH_MEMORY_MIB = '4096';
+    const driver = await loadDriver(folder, false), state = replayState();
+    state.rows.length = 0;
+    const finish = new Map<string, () => void>(), done = new Set<string>();
+    const raw = new Map(['a', 'b'].map(file => [file, new Promise<void>(resolve => { finish.set(file, resolve); })]));
+    globals.lq1Replay = { surface: async () => {}, worker: async id => {
+      const row = state.rows.find(row => row.id === id)!;
+      row.status = 'running';
+      admissionPeaks(state.rows, 4096);
+      // Profiles wait for raw EOF; the raw reader never waits for profile consumption.
+      await raw.get(row.source_id);
+      row.status = 'succeeded';
+      done.add(id);
+    } };
+    globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+      const rows = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, state.rows) : [];
+      return { rows, rowCount: rows.length };
+    } };
+    try {
+      for (const [file, operation] of [['a', 'streamed-profile'], ['b', 'streamed-profile'],
+        ['a', 'streaming-vector'], ['b', 'streaming-vector']]) {
+        state.enqueue(file, operation, operation, 0);
+        await driver.dispatchTick();
+        await flush();
+        assert.equal(state.rows.filter(row => row.status === 'running').length, state.rows.length);
+      }
+    } finally {
+      for (const release of finish.values()) release();
+      await flush();
+    }
+    assert.equal(done.size, 4, 'neither pair waits on its own stream slots');
+    assert.equal(state.rows.filter(row => row.status === 'succeeded').length, 4);
   });
 });
 

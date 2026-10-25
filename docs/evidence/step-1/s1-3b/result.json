@@ -1,0 +1,48 @@
+{
+  "task": "S1.3b", "planStep": 1, "base": "9acfe29f19c411a1f3511aba447c9822d8710b56",
+  "result": "Whole-file readers use stream (4 slots); bounded parts/conversions retain vector (2 slots).",
+  "dependency": {
+    "streamingVectorWaitsForProfile": false,
+    "reason": "StreamingPartWriter flushes to storage/acceptSlot; no profile watermark or consumption wait.",
+    "profileWait": "runStreamedProfileJob polls published raw slots/closure, pausing 1000 ms between checks.",
+    "slotRule": "Four independently admitted slots fit two raw/profile pairs; no atomic pair admission needed.",
+    "unchanged": "Memory, heap, scratch, probe, SQL order, worker bounds; stream default 512 MiB, raw 415 MiB."
+  },
+  "inputs": {
+    "good": "E:/BhuAayam-data/task-data/reh14/act2/zp1-geojson-kml-csv.zip (existing realMix test read)",
+    "difficult": "Halifax CN1 108 MB GeoJSON: read-only run 2 telemetry, not a new original-file/runtime run",
+    "telemetry": "ae2be0b0:docs/evidence/step-1/s1-3/run2/jobs.json; E:/ulpin-tmp/s1-3r2/jobs-cn1.json",
+    "rawWallMs": 522668, "profileWallMs": 523639,
+    "qualification": "Offline actual-tick replay; ZIP has 43 parts + derivative; 1 s part spans are scheduling stubs."
+  },
+  "replay": {
+    "zipCreatedMs": 750, "tickMs": 750, "firstZipStartMs": 750, "zipWaitMs": 0, "jobsDone": 46,
+    "peaks": { "stream": 2, "vector": 2, "memoryMiB": 1865, "heapMiB": 1865 },
+    "budgets": { "memoryMiB": 2048, "heapMiB": 3264 },
+    "baseComparison": "Exact 9acfe29f lanes verified by git diff --exit-code; restored after one regression run.",
+    "baseFirstZipStartMs": 522668, "baseZipWaitMs": 521918, "baseExit": 1,
+    "baseFailure": "ZIP must start within one tick of creation, not after stream EOF",
+    "interleaved": "a-profile, b-profile, a-raw, b-raw; all four concurrently admitted and all four done"
+  },
+  "existingAssertionChanges": [
+    "processing.test.ts: raw/profile holds now fill stream at four, not vector at two; vector remains available.",
+    "processing-latency.test.ts: reader-set capacity derives from lane (stream 4, table/vector 2); next reader waits.",
+    "dispatch-heap.test.ts and dispatch-scratch.test.ts: no changes."
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s1-3b/{before,after}-*.log; base-regression.log",
+    "targetedTESTS": { "beforeExit": 0, "before": [49, 0, 4], "afterExit": 0, "after": [51, 0, 4] },
+    "newReplays": { "exit": 0, "pass": 2, "fail": 0 },
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "bothPassFailSkip": [827, 0, 3] },
+    "WORKING-RULES section 5 server command": {
+      "beforeExit": 0, "afterExit": 0, "bothPassFailSkip": [1045, 0, 5]
+    },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": [0, 1],
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": [0, 1],
+    "git diff --check": [0, 0],
+    "expectedStaleProducer": "packages/server/src/modules/cases/dispatch-lanes.ts; source-pins.json untouched"
+  },
+  "next": "Lead regenerates pins and verifies runtime latency in a permitted rehearsal; no runtime/Docker action taken."
+}

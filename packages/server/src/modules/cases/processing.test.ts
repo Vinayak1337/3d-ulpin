@@ -434,17 +434,21 @@ test('full-lane followers cannot hide short jobs or block processor polls', { sk
   assert.deepEqual(ids, ['poll', 'short']);
 });
 
-test('two occupied vector slots leave room in selection for a short link job without increasing capacity', () => {
+test('four occupied stream slots leave vector and link jobs selectable without increasing their capacity', () => {
   const held = new DispatchReservations();
   const big = 100000;
   assert.ok(held.admit(job('raw', 'streaming-vector'), big, [], at(0)));
   assert.ok(held.admit(job('profile', 'streamed-profile'), big, [], at(0)));
-  assert.deepEqual(held.unavailableLanes([]), ['vector']);
-  assert.equal(held.admit(job('conductor', 'intake-large'), big, [], at(233)), false);
+  assert.deepEqual(held.unavailableLanes([]), []);
+  assert.ok(held.admit(job('raw-2', 'streaming-vector'), big, [], at(0)));
+  assert.ok(held.admit(job('profile-2', 'streamed-profile'), big, [], at(0)));
+  assert.deepEqual(held.unavailableLanes([]), ['stream']);
+  assert.equal(held.admit(job('raw-3', 'streaming-vector'), big, [], at(233)), false);
+  assert.ok(held.admit(job('conductor', 'intake-large'), big, [], at(233)));
   assert.ok(held.admit(job('short', 'intake-run'), big, [], at(233)));
   held.release('raw');
   assert.deepEqual(held.unavailableLanes([]), []);
-  assert.ok(held.admit(job('conductor', 'intake-large'), big, [], at(234)));
+  assert.ok(held.admit(job('raw-3', 'streaming-vector'), big, [], at(234)));
 });
 
 test('a full vector lane cannot spend all twelve ready rows ahead of a short document job on fakes', async () => {
