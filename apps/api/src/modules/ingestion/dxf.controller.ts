@@ -70,7 +70,8 @@ export class DXFController{
   async artifact(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
     @Req()request:Request,@Res()response:Response){
     noQuery(request);const result=await this.dxf.artifact(caseId,sourceId,jobId);
-    response.set({'Content-Type':'application/json','Cache-Control':'private, no-store','Content-Length':String(result.bytes.length),'X-DXF-Native-Profile':result.profile,
+    response.set({'Content-Type':'application/json','Cache-Control':'private, no-store',
+      'Content-Length':String(result.bytes.length),'X-DXF-Native-Profile':result.profile,
       'X-Content-SHA256':result.sha256});response.send(result.bytes);
   }
   @Header('Cache-Control','private, no-store') @Header('X-Content-Type-Options','nosniff')

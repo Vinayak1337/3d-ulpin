@@ -254,9 +254,12 @@ export type IntakeNativeReaderEnd =
 function stoppedWords(end: Extract<IntakeNativeReaderEnd, { status: string }>): string {
   if (end.format === 'dxf' && end.status === 'failed') {
     let limit: string | undefined;
-    if (end.code === 'DXF_ENTITY_LIMIT') limit = `${DXF_LIMITS.entities.toLocaleString('en-IN')} entities including children`;
+    if (end.code === 'DXF_ENTITY_LIMIT') {
+      limit = `${DXF_LIMITS.entities.toLocaleString('en-IN')} entities including children`;
+    }
     if (end.code === 'DXF_OUTPUT_LIMIT') {
-      limit = `${DXF_LIMITS.pages} pages of ${mib(DXF_LIMITS.pageBytes)} MiB or a ${mib(DXF_LIMITS.artifactBytes)} MiB head`;
+      limit = `${DXF_LIMITS.pages} pages of ${mib(DXF_LIMITS.pageBytes)} MiB `
+        + `or a ${mib(DXF_LIMITS.artifactBytes)} MiB head`;
     }
     if (limit) return `The DXF reading exceeds its limit of ${limit}, so it is not read. `
       + 'The original is kept with its SHA-256.';

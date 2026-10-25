@@ -36,7 +36,8 @@ export function fusionDXFMetadataProjection(ordinals:number[],raw:unknown,summar
   const entityCount=records?selected.entityCount!:native.entities?.length??0;
   if(summary.sourceSha256!==native.sourceSha256||summary.sourceBytes!==native.sourceBytes||summary.dxfVersion!==native.dxfVersion||
     summary.schemaVersion!==native.schemaVersion||
-    summary.projectedEntityCount!==native.projectedEntityCountIncludingChildren||entityCount>summary.projectedEntityCount||
+    summary.projectedEntityCount!==native.projectedEntityCountIncludingChildren||
+    entityCount>summary.projectedEntityCount||
     native.units.state!==summary.units.state||native.units.code!==summary.units.code||native.units.name!==summary.units.name||
     native.units.conversion!==null||native.qualification.scope!=='source_local_inspection'||
     native.qualification.globalPlacement!=='not_assessed'||native.qualification.geometryValidity!=='not_assessed'||

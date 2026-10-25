@@ -442,7 +442,8 @@ def read_dxf(raw):
                    for r in projected if r["status"] != "supported" or r["limitations"]]
     result = {"schemaVersion": "dxf-native-inspection/2", "status": "available",
               "locatorRule": {"codeLine": "2 * tagIndex + 1", "valueLine": "2 * tagIndex + 2"},
-              "coordinateSemantics": "source values; WCS for LINE/3D POLYLINE, OCS for CIRCLE/ARC/TEXT/2D polylines/INSERT; MTEXT follows supplied direction",
+              "coordinateSemantics": ("source values; WCS for LINE/3D POLYLINE, "
+                                      "OCS for CIRCLE/ARC/TEXT/2D polylines/INSERT; MTEXT follows supplied direction"),
               "sourceSha256": hashlib.sha256(raw).hexdigest(), "sourceBytes": len(raw),
               "parser": {"name": "ezdxf", "version": PARSER_VERSION, "recovery": False},
               "dxfVersion": version, "encoding": {"name": encoding,

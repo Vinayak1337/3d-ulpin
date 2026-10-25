@@ -6,7 +6,8 @@ import {createRequire} from 'node:module';
 import {Readable} from 'node:stream';
 import {EventEmitter} from 'node:events';
 import {DXF_VERSION,DXFOriginalSchema,CaseIngestionChangeSchema} from '../packages/contracts/src/usp';
-import {DXFIngestionService,dxfSourceTx,dxfInput,assertDXFInputTx,assertDXFJobRow,isDXFProtectedSource,dxfResultBytes,dxfNativeEntities} from '../packages/server/src/modules/usp/ingestion/dxf';
+import {DXFIngestionService,dxfSourceTx,dxfInput,assertDXFInputTx,assertDXFJobRow,
+  isDXFProtectedSource,dxfResultBytes,dxfNativeEntities} from '../packages/server/src/modules/usp/ingestion/dxf';
 import {failDXFJob,runDXFJob} from '../packages/server/src/modules/usp/ingestion/dxf-worker';
 import {dxfConfig,assertDXFTools} from '../packages/server/src/modules/usp/ingestion/dxf-config';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';

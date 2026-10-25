@@ -152,12 +152,21 @@ class NativeDXFTests(unittest.TestCase):
         for name, value, code in (("MAX_INPUT_BYTES", 8, "INPUT_LIMIT"),
                                   ("MAX_ENTITIES", 2, "ENTITY_LIMIT"),
                                   ("MAX_POINTS", 1, "POINT_LIMIT"),
-                                  ("MAX_OUTPUT_BYTES", 100, "OUTPUT_LIMIT")):
+                                  ("MAX_OUTPUT_BYTES", 100, "OUTPUT_LIMIT"),
+                                  ("MAX_PAGE_BYTES", 100, "OUTPUT_LIMIT"),
+                                  ("MAX_PAGES", 0, "OUTPUT_LIMIT")):
             with self.subTest(name=name), patch.object(dxf, name, value):
                 with self.assertRaises(dxf.DXFError) as found:
                     result = dxf.read_dxf(raw)
                     dxf.write_dxf_pages(result, self.scratch)
                 self.assertEqual(found.exception.code, code)
+
+    def test_one_entity_over_the_new_bound_is_refused(self):
+        dxf._check_entity_count(dxf.MAX_ENTITIES)
+        with self.assertRaises(dxf.DXFError) as found:
+            dxf._check_entity_count(dxf.MAX_ENTITIES + 1)
+        self.assertEqual((found.exception.status, found.exception.code), ("limit", "ENTITY_LIMIT"))
+        self.assertIn(f"{dxf.MAX_ENTITIES:,}", str(found.exception))
 
     def test_supervisor_timeout_stops_its_child(self):
         with patch.object(dxf, "MAX_SECONDS", 0.001):

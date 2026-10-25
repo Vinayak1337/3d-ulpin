@@ -369,6 +369,26 @@ for (const format of Object.keys(inputs) as Format[]) {
     });
 }
 
+test('DXF capacity failures name the current bounds and keep the original', {
+  skip: !existsSync(inputs.dxf.path),
+}, async () => {
+  for (const code of ['DXF_ENTITY_LIMIT', 'DXF_OUTPUT_LIMIT']) {
+    const fixture = await batch('dxf'), { client, source, item } = fixture;
+    const original = structuredClone(source);
+    const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+    await settleIntakeNativeReaderTx(client, source.case_id, jobId, { format: 'dxf', status: 'failed', code });
+    assert.deepEqual(source, original);
+    assert.match(item.limit_reason, /The original is kept with its SHA-256/);
+    const limit = code === 'DXF_ENTITY_LIMIT' ? DXF_LIMITS.entities.toLocaleString('en-IN') : DXF_LIMITS.pages;
+    assert.ok(item.limit_reason.includes(String(limit)));
+    if (code === 'DXF_OUTPUT_LIMIT') {
+      assert.ok(item.limit_reason.includes(`${DXF_LIMITS.pageBytes / 1024 ** 2} MiB`));
+      assert.ok(item.limit_reason.includes(`${DXF_LIMITS.artifactBytes / 1024 ** 2} MiB head`));
+    }
+    assert.equal(item.records_seen, 0);
+  }
+});
+
 for (const format of ['cityjson', 'citygml'] as const) {
   test(`${format}: an accepted reading queues its outline conversion, citing the reading`, {
     skip: !existsSync(inputs[format].path),

@@ -75,7 +75,8 @@ def main():
             "codeHashes": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in paths.items()},
             "artifact": {"name": "drawing.json", "sha256": hashlib.sha256(encoded).hexdigest(), "bytes": len(encoded)},
             "sourceRecheckedBeforePublication": True}
-        for name, content in (("drawing.json", encoded), ("receipt.json", json.dumps(receipt, indent=2).encode("utf-8"))):
+        outputs = (("drawing.json", encoded), ("receipt.json", json.dumps(receipt, indent=2).encode("utf-8")))
+        for name, content in outputs:
             with (Path(staging.name) / name).open("xb") as handle:
                 handle.write(content)
         Path(staging.name).rename(output)

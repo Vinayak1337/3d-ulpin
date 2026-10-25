@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
 import {Readable} from 'node:stream';
-import {DXF_LIMITS,DXFArtifactSchema,DocumentResultSchema,DXFOriginalSchema,DXFResultSchema,DXFStatusSchema} from '../packages/contracts/src/usp';
+import {DXF_LIMITS,DXFArtifactSchema,DocumentResultSchema,DXFOriginalSchema,DXFResultSchema,DXFStatusSchema}
+  from '../packages/contracts/src/usp';
 import {SourceFusionRequestSchema,type SourceFusionSelection} from '../packages/contracts/src/source-fusion';
 import {assembleSourceFusion,fusionContextProjection,fusionSourceProjection,type SourceFusionDependencies} from '../packages/server/src/modules/usp/ingestion/source-fusion';
 import {fusionAuthorityBatch,readFusionResult,readFusionObject,type FusionAuthority,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
