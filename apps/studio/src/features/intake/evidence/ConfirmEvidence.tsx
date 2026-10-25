@@ -132,6 +132,10 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
   if (result && 'confirmation' in result) return <ConfirmedWords confirmation={result.confirmation} close={close} />;
   const decided = Object.keys(draft.choices).length > 0;
   const unavailable = sourcesOf(read.page, profile).some((source) => !retainedSource(source));
+  const name = nameOf(read.items);
+  // EV2: a file still being read, and not excluded, would make a press send nothing, so the press waits for it.
+  const reading = sourcesOf(read.page, profile).filter((source) => retainedSource(source) && !closedReading(source)
+    && draft.exclusions[source.itemId] === undefined).map((source) => name(source.itemId));
   return <form className={batch.stack} aria-label={`Confirm the evidence of the key ${profile.input.namespace}`}
     onSubmit={(event) => {
       event.preventDefault();
@@ -157,10 +161,15 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       </label>
     </fieldset>
     <span className="ul-row">
-      <Button type="submit" variant="primary" disabled={pending || unavailable || blocked}>Confirm the evidence</Button>
+      <Button type="submit" variant="primary" disabled={pending || unavailable || blocked || reading.length > 0}>
+        Confirm the evidence
+      </Button>
       <Button variant="ghost" disabled={pending} onClick={close}>Cancel</Button>
     </span>
     {unavailable ? <p className="ul-help">This key cannot be confirmed while a source is unavailable.</p> : null}
+    {!unavailable && reading.length ? <p className="ul-help">{`${reading.join(', ')} ${reading.length === 1 ? 'is'
+      : 'are'} still being read. Confirm when the reading closes, or exclude it with your reason to confirm `
+      + 'this key without it.'}</p> : null}
     {pending ? <p role="status">{pendingWords}</p> : null}
     {result && 'missing' in result ? <p className="ul-error" role="alert">{result.missing}</p> : null}
     {error ? <TableRefusal error={error} /> : null}
@@ -219,17 +228,19 @@ function SourceFields({ sources, items, draft, change }: {
 }
 
 /** The button reads every page of the file's matches under the key, not only the page shown. */
-function FileAccept({ name, reading, words, accept }: {
-  name: string; reading: boolean; words: string | undefined; accept: () => void;
+function FileAccept({ name, reading, open, words, accept }: {
+  name: string; reading: boolean; open: boolean; words: string | undefined; accept: () => void;
 }) {
   const id = useId();
   return <div className={batch.stack}>
     <span className="ul-row">
       <span id={id}>{name}</span>
-      <Button variant="soft" aria-describedby={id} onClick={accept}>
+      <Button variant="soft" aria-describedby={id} disabled={open} onClick={accept}>
         Accept every exact single match of this file
       </Button>
     </span>
+    {open ? <p className="ul-help">{`${name} is still being read; its matches can be accepted when the reading `
+      + 'closes.'}</p> : null}
     {reading ? <p role="status">{`Reading every exact single match of ${name}…`}</p> : null}
     {words ? <p className="ul-help" role="status">{words}</p> : null}
   </div>;
@@ -242,9 +253,10 @@ function DecisionFields({ profile, read, draft, change, files }: {
   const name = nameOf(read.items);
   return <fieldset className={styles.group}>
     <legend className="ul-label">Candidates of this key on this page</legend>
-    {sourcesOf(read.page, profile).filter(retainedSource).map(({ itemId }) => <FileAccept key={itemId}
-      name={name(itemId)} reading={files.reading === itemId} words={files.words[itemId]}
-      accept={() => files.accept(itemId)} />)}
+    {sourcesOf(read.page, profile).filter(retainedSource).map((source) => <FileAccept key={source.itemId}
+      name={name(source.itemId)} reading={files.reading === source.itemId} open={!closedReading(source)}
+      words={files.words[source.itemId]}
+      accept={() => files.accept(source.itemId)} />)}
     {files.error ? <TableRefusal error={files.error} /> : null}
     {candidates.length ? <div className={styles.scroll}>
       <DataTable caption="Decide each candidate" rows={[...candidates]} rowKey={(row) => row.candidateId} columns={[
