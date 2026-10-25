@@ -1,0 +1,81 @@
+{
+  "task": "S5.14",
+  "planStep": 5,
+  "base": "db2b80e917f17659184aba5e33da0bae7947f75c",
+  "status": "ready_for_review",
+  "reviewedCheckpoint": "830b7b6b",
+  "classification": "test_only public NYC research inputs; no Indian operational claim",
+  "logs": "E:/ulpin-tmp/s5-14/{before,after,review,final}-*.log",
+  "latestRuns": ["pnpm studio:typecheck", "pnpm studio:test", "pnpm typecheck:backend"],
+  "copc": {
+    "path": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/originals/20170504_980200.copc.laz",
+    "bytes": 77948603,
+    "sourcePoints": 12036869,
+    "batch": {"start": 0, "count": 32709, "step": 368},
+    "recordBytes": 30,
+    "artifactBytes": 981270,
+    "coldSeconds": [3.830, 6.546, 7.375],
+    "boundary": "fresh fake-S3 download, SHA-256 verification, cache write, decode and thin; not a live worker",
+    "assertions": "all XYZ within header bounds; seven source indices byte-equal; nonzero COPC batch byte-equal"
+  },
+  "regression": {
+    "path": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-lidar-2017.laz",
+    "bytes": 11110715,
+    "sourceSha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790",
+    "batch": {"start": 0, "count": 8192},
+    "artifactSha256": "83286b0b5d8edf731d469b0cce1b768ba5a9af22abcb905ab294cbbb6a8dcaec",
+    "comparison": "base reader executed from db2b80e9: same 245760 native bytes and hash"
+  },
+  "decisions": [
+    "Sequential lazrs: parallel COPC decoding attempted a 128849018850-byte sentinel allocation (exit 127).",
+    "Independent chunk sizes agree; installed lazrs nonzero COPC seeks disagree after variable-size chunks.",
+    "COPC selections stream their prefix from seek(0); ordinary LAS/LAZ seek directly to start.",
+    "One chunk of at most 1048576 records plus kept records; originals and coordinates unchanged.",
+    "Optional TS step stays absent in old input pins; result comparison normalizes absent step to one.",
+    "No part-plan, jobsPerSource, verified-cache, runtime, pin or published-schema edits."
+  ],
+  "checkTuple": "[exit, passed, failed, skipped]; typechecks and catalogue checks use exit only",
+  "checks": {
+    "pytest point_batch + surface_readers + verified_cache": {
+      "before": [0, 36, 0, 0], "after": [0, 43, 0, 0]
+    },
+    "pytest test_point_batch.py -s": {"after": [0, 20, 0, 0]},
+    "tsx point-batch-formats + intake-surface": {"after": [0, 38, 0, 0]},
+    "tsx point-batch-formats + point-publication + registry-point-citations + later-receipt + sufficiency": {
+      "before": [1, 7, 2, 0], "after": [1, 10, 2, 0]
+    },
+    "pnpm typecheck:backend": {"before": [0], "after": [0]},
+    "WORKING-RULES section 5 server command": {
+      "before": [0, 991, 0, 4], "after": [0, 991, 0, 4],
+      "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
+    },
+    "pnpm studio:test (Studio)": {"before": [0, 712, 0, 2], "after": [0, 712, 0, 2]},
+    "pnpm studio:test (api-client, scene, ui)": {"before": [0, 71, 0, 1], "after": [0, 71, 0, 1]},
+    "pnpm studio:typecheck": {"before": [2], "after": [2]},
+    "tsx apps/api/scripts/openapi.ts --check": {"before": [0], "after": [1]},
+    "scripts/api/check.py": {"before": [0], "after": [1]},
+    "git diff --check": {"after": [0], "baseline": "initial git status was clean"}
+  },
+  "environment": "TMP, TEMP, TMPDIR=E:/ulpin-tmp; VERIFIED_CACHE_DIR under E:/ulpin-tmp/s5-14",
+  "expectedStaleProducer": "packages/contracts/src/usp/point-batch.ts",
+  "baselineTypecheckFailure": "Studio table-placement-command.ts:65 missing decimalMark (S5.7).",
+  "baselineInitializationFailures": {
+    "base": "db2b80e9",
+    "verification": "Saved pre-edit logs from the clean base; the same five requested TypeScript files.",
+    "log": "E:/ulpin-tmp/s5-14/before-points.log",
+    "tests/point-publication.test.ts": "ReferenceError: Cannot access 'pointReaderSha' before initialization",
+    "tests/raster-point-later-receipt.test.ts":
+      "ReferenceError: Cannot access 'rasterReaderSha' before initialization",
+    "reviewLog": "E:/ulpin-tmp/s5-14/review-points.log",
+    "comparison": "Identical first errors at base and task head; no branch-only initialization failures."
+  },
+  "browserDeclaration": {
+    "file": "packages/contracts/src/upload-reader-limits.d.ts:4",
+    "change": "Authorized batchPoints: number added to the existing readonly declaration; runtime unchanged.",
+    "verification": "Final Studio typecheck reports only the baseline decimalMark error at line 65."
+  },
+  "next": [
+    "Lead integration and contract/pin refresh; S5.15 owns part-plan changes.",
+    "Baseline decimalMark and reader initialization failures remain outside this task."
+  ]
+}

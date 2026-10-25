@@ -90,13 +90,16 @@ def test_kept_laz_reads_its_first_and_last_batch():
     pins, s3 = _kept(name)
     first = read_point_batch({**pins, "batch": None}, s3=s3)
     recorded = RECORDED[name]["reader"]
-    assert first["artifactSha256"] == recorded["artifactSha256"]
     m = first["metadata"]
     assert m["sourcePointCount"] == 1726222 and m["horizontalAuthority"] == "EPSG:6347"
-    assert m["verticalReference"] == "NAVD88 height" and m["batch"] == {"start": 0, "count": 8192}
+    step = math.ceil(m["sourcePointCount"] / 32_768)
+    assert m["verticalReference"] == "NAVD88 height" and m["batch"] == {
+        "start": 0, "count": math.ceil(m["sourcePointCount"] / step), "step": step}
     tail = read_point_batch({**pins, "batch": {"start": 1720320, "count": 5902}}, s3=s3)
-    assert tail["metadata"]["batch"] == {"start": 1720320, "count": 5902}
+    assert tail["metadata"]["batch"] == {"start": 1720320, "count": 5902, "step": 1}
     assert len(base64.b64decode(tail["artifactBase64"])) == 5902 * 30
+    original_batch = read_point_batch({**pins, "batch": {"start": 0, "count": 8192}}, s3=s3)
+    assert original_batch["artifactSha256"] == recorded["artifactSha256"]
 
 
 PRACTICE = json.loads((ROOT / "docs/evidence/step-2/s2-2/manifest.json").read_text())

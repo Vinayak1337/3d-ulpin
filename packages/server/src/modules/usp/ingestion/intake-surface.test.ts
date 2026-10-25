@@ -80,10 +80,12 @@ test('above a reader limit the original is kept and the limit is named', () => {
   }
   const invalid = surfaceReader({ ...card, point: { format: 6 } } as never, 1024);
   assert.match((invalid as { limit: string }).limit, /this is LAS 1\.3 format 6/);
-  const oversized = surfaceReader({ ...card, point: { format: 1 } } as never, 17 * 1024 ** 2);
-  assert.match((oversized as { limit: string }).limit, /point cloud of at most 16 MiB/);
-  const over = surfaceReader({ ...card, point: { format: 1 }, counts: { points: 5_000_001 } } as never, 1024);
-  assert.match((over as { limit: string }).limit, /at most 5 million points/);
+  const readable = { ...card, point: { format: 1 }, counts: { points: POINT_BATCH_LIMITS.sourcePoints } };
+  assert.deepEqual(surfaceReader(readable as never, POINT_BATCH_LIMITS.originalBytes), { operation: 'point-batch' });
+  const oversized = surfaceReader(readable as never, POINT_BATCH_LIMITS.originalBytes + 1);
+  assert.match((oversized as { limit: string }).limit, /point cloud of at most 1024 MiB/);
+  const over = surfaceReader({ ...readable, counts: { points: POINT_BATCH_LIMITS.sourcePoints + 1 } } as never, 1024);
+  assert.match((over as { limit: string }).limit, /at most 500 million points/);
   const raster = { family: 'raster', format: 'geotiff', raster: null, counts: {} };
   assert.deepEqual(surfaceReader(raster as never, 401575010), { operation: 'raster-window' });
   const big = surfaceReader(raster as never, 2 * 1024 ** 3 + 1);
@@ -332,7 +334,7 @@ test('a part read outside the batch area is not on the map, and says so', async 
 for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geotiff'],
   ['LAZ', 'point', 'point_cloud', 'laz']] as const) {
   test(`a kept ${name} whose receipt is over its reader's bound rests with words; the publish goes on`, async () => {
-    const limitMiB = profile === 'raster' ? 2048 : 16;
+    const limitMiB = profile === 'raster' ? 2048 : POINT_BATCH_LIMITS.originalBytes / 1024 ** 2;
     const sha = 'd'.repeat(64), sourceId = '30000000-0000-4000-8000-000000000005';
     const over = (limitMiB + 1) * 1024 ** 2;
     const item: Record<string, any> = { item_id: itemId, case_id: caseId, source_id: sourceId, plan_ref: null,

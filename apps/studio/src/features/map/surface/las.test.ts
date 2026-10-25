@@ -18,18 +18,18 @@ function records(points: [number, number, number][]): ArrayBuffer {
 const turned: PlacedCorners = [[0, 0], [0, -100], [-100, -100], [-100, 0]];
 
 describe('a batch of LAS records', () => {
-  it('reads a batch of 8,192 points and lays each flat at its place in the placed corners', () => {
-    const points = Array.from({ length: 8192 },
+  it('reads a batch of 32,768 points and lays each flat at its place in the placed corners', () => {
+    const points = Array.from({ length: 32_768 },
       (_, n): [number, number, number] => [n % 128, Math.floor(n / 128), n % 7]);
     points[0] = [0, 0, 5]; // the SW corner of the native extent
     const read = readLasRecords(records(points));
-    expect(read.count).toBe(8192);
+    expect(read.count).toBe(32_768);
     const { positions, colors, sizeM } = placeBatch(read, turned);
-    expect(positions.length).toBe(8192 * 3);
-    expect(colors.length).toBe(8192 * 3);
+    expect(positions.length).toBe(32_768 * 3);
+    expect(colors.length).toBe(32_768 * 3);
     expect(sizeM).toBeGreaterThan(0);
     expect(Array.from(positions.subarray(0, 3))).toEqual([-100, 0, 0]); // SW
-    const ne = 127 + 63 * 128; // x 127, y 63: the NE corner
+    const ne = 127 + 255 * 128; // x 127, y 255: the NE corner
     expect(Array.from(positions.subarray(ne * 3, ne * 3 + 3))).toEqual([0, -100, 0]);
     expect(positions.filter((_, i) => i % 3 === 2).every((z) => z === 0)).toBe(true);
   });
@@ -57,9 +57,9 @@ describe('a batch of LAS records', () => {
     expect(red[0]!).toBeGreaterThan(red[2]!);
   });
 
-  it('refuses a batch over 8,192 points or not whole records, with words', () => {
-    const over = records(Array.from({ length: 8193 }, () => [0, 0, 0]));
-    expect(() => readLasRecords(over)).toThrow('This batch holds 8193 points; the reader writes at most 8192.');
+  it('refuses a batch over 32,768 points or not whole records, with words', () => {
+    const over = records(Array.from({ length: 32_769 }, () => [0, 0, 0]));
+    expect(() => readLasRecords(over)).toThrow('This batch holds 32769 points; the reader writes at most 32768.');
     expect(() => readLasRecords(new ArrayBuffer(31))).toThrow(SurfaceRefusal);
   });
 });
