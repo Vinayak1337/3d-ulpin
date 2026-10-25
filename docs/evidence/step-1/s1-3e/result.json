@@ -1,20 +1,57 @@
 {
   "task": "S1.3e",
   "planStep": 1,
-  "status": "blocked_owned_paths",
+  "status": "implemented_checks_complete",
   "base": "726bb2e8",
   "branch": "task/s1-3e-zip-quota-wait",
-  "codeChanged": false,
-  "finding": "fanOutZipLayers catches UPLOAD_QUOTA as member words and returns kept source IDs. runIntakeZipLayersJob unconditionally accepts that return as success; every thrown error instead fences the attempt and marks the job failed. The dispatcher only selects queued/running jobs whose next_attempt_at is due, so neither outcome schedules a quota retry.",
-  "requiredAdditionalPath": "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts",
-  "next": "Add the job runner to OWN. It must handle a quota-wait outcome by fencing the current attempt and atomically requeuing the job at freesAt, or DISPATCH_HEAD_OF_LINE_MS when null, instead of accepting or failing it. Persist an outer deadline derived from archive retention so restart and re-enrolment cannot extend the wait. Keep quota numbers and other final refusals unchanged.",
+  "implementationCommit": "5c7dc20d",
+  "decision": {
+    "bound": "30 minutes from the archive source created_at (retention), unchanged by restart or re-enrolment.",
+    "schedule": "Existing queued job and next_attempt_at: freesAt capped at the bound; null uses head-of-line 120 s.",
+    "admission": "Reuse intake-large pre-claim admission and false deferral; busy receipts spend no fenced attempt.",
+    "guards": "Reassert source, access, job status and active-attempt guards; completion uses the existing fence.",
+    "words": "Member says Waiting for a free receipt; its saved since timestamp supplies elapsed timeout seconds.",
+    "unchanged": "Quota numbers, other final refusals, dispatcher, protected readers, storage and generated pins."
+  },
+  "acceptance": [
+    "Known and null freesAt: five deferrals spend zero attempts, then retain and enrol without an officer step.",
+    "Large-member timeout: future expiry caps at retain + 1800 s; final words report 1800 seconds waited.",
+    "Re-enrolment cannot reset the bound; kept siblings are reused; original and member SHA-256 stay unchanged.",
+    "Empty, size and layer-count refusals stay final; an active attempt prevents admission."
+  ],
   "inputs": {
-    "examined": "Existing ZIP tests use public Uttam GeoJSON layers and a mixed Lake View archive; no originals were opened or processed for this blocked task.",
-    "reportedFailure": "S1.3 run 3: Absolute and Relative KML members refused with UPLOAD_QUOTA under a 20-file drop; rehearsal not opened or rerun."
+    "good": "Public test_only Uttam GeoJSON fixtures and their README; exact extracted bytes and hashes checked.",
+    "difficult": "Mixed Lake View ZIP; stored 20 MiB test layer repeats a real Google Open Buildings feature.",
+    "reportedFailure": "S1.3 run 3 KML Absolute/Relative quota refusals; no rehearsal files or runtime opened."
   },
   "checks": [
-    { "command": "git diff --check", "exitCode": 0, "whitespaceErrors": 0 },
-    { "command": "Acceptance, server set, typechecks, Studio tests and contract checks", "exitCode": null,
-      "reason": "Not run: stopped at the explicit owned-path boundary before implementation; no test result is claimed." }
-  ]
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-zip-layers.test.ts",
+      "before": { "exit": 0, "passed": 36 }, "after": { "exit": 0, "passed": 41, "failed": 0 } },
+    { "command": "Exact server set in docs/WORKING-RULES.md section 5",
+      "before": { "exit": 0, "passed": 1045, "skipped": 5 },
+      "after": { "exit": 0, "passed": 1050, "skipped": 5, "failed": 0 } },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4, "errors": 0 },
+    { "command": "pnpm studio:test", "before": { "exit": 0, "passed": 827, "skipped": 3 },
+      "after": { "exit": 1, "passed": 826, "failed": 1, "skipped": 3 } },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/surface/SurfacePreview.test.tsx",
+      "exit": 0, "passed": 4, "failed": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 1, "reason": "Expected stale producer pins; no route/schema change." },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 1,
+      "reason": "Expected stale producer pins; stops at intake-zip-layers-worker.ts." },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "checkNotes": {
+    "logs": "E:/ulpin-tmp/s1-3e-resume/; final-server-resumed.log is the completed post-restart server run.",
+    "interruption": "Restart interrupted final-server.log before summary; its incomplete run is not a pass.",
+    "studio": "SurfacePreview mosaic expected 2 drawImage calls, got 3 under parallel load; isolated file passes.",
+    "comparison": "Hypothesis: timing-sensitive repaint under contention; baseline is the failed post-change run.",
+    "comparisonBound": "One isolated 4-test file, no parallel server load; criterion 4/4, then stop. Passed.",
+    "stalePins": [
+      "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts",
+      "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts"
+    ]
+  },
+  "next": "Lead review and regenerate pins on integration; review unrelated Studio timing failure. No runtime run."
 }
