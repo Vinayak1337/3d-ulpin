@@ -198,7 +198,8 @@ export class SurfacePreviewReader {
     if (this.quarantined.size) notes.push(`${count(this.quarantined.size, 'part')} could not be read by the reader.`);
     if (this.listFailure) notes.push(this.listFailure);
     notes.push(...this.said);
-    const parts = [...this.parts.values()].sort((a, b) => a.partIndex - b.partIndex);
+    // Each view keeps its parts as they are now: a picture decoded later is never drawn into an earlier view.
+    const parts = [...this.parts.values()].sort((a, b) => a.partIndex - b.partIndex).map((part) => ({ ...part }));
     this.publish({ parts, reasons: grouped(this.notPlaced), notes });
   }
 }
