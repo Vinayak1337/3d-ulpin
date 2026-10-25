@@ -119,7 +119,7 @@ Size S, code only (reh-03 read-only if needed). After: S1.3 run 3. **Status: mer
 
 ### S1.3e A ZIP member refused by a full receipt allowance waits for a free receipt
 
-Size S, code only. After: S1.3 run 3. **Status: sent back 25 Oct (codex, task/s1-3e-zip-quota-wait b853e808). The waiting words and the 30-minute bound from archive retention are right, but the fan-out ran before any claim with no lease. Resumed 25 Oct on int3-pre with S1.3c merged: claim, fan out under the lease, and yield on a wait (the yield set gains intake-zip-layers); the waited seconds come from stored data, not from the words.**
+Size S, code only. After: S1.3 run 3. **Status: merged 25 Oct (int3-pre, task/s1-3e-zip-quota-wait 755c9fd7; pins regenerated; section 5 set 1,064 tests, 0 failed). First review sent back (b853e808). The waiting words and the 30-minute bound from archive retention are right, but the fan-out ran before any claim with no lease. Resumed 25 Oct on int3-pre with S1.3c merged: claim, fan out under the lease, and yield on a wait (the yield set gains intake-zip-layers); the waited seconds come from stored data, not from the words.**
 
 - **What:** A member refused UPLOAD_QUOTA stays inside the archive until the officer enrols it again. The ZIP layer job requeues for the refusal's freesAt under one outer bound, and the member says it waits.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-zip-layers.ts, intake-zip-layers-worker.ts; tests/intake-zip-layers.test.ts
