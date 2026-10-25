@@ -1,0 +1,2250 @@
+{
+ "task": "S7.24d",
+ "scope": "apps/studio/src/features/map/, line numbers at base bac06934",
+ "totals": {
+  "before": 373,
+  "cut": 37,
+  "shortened": 69,
+  "kept": 267
+ },
+ "strings": [
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:56",
+   "old": "City of New York Office of Technology and Innovation (OTI), BUILDING via NYC Open Data",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:57",
+   "old": "Swiss Dwellings (Zenodo 7070952), CC BY 4.0",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:175",
+   "old": "Enhanced view (note under the map, repeats the switch)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:176",
+   "old": "{overlay caption} (repeats the layer label)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:177",
+   "old": "{imagery sources · licence · states}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:178",
+   "old": "{window line} / {drawn count}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:179",
+   "old": "{undrawn note}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:185",
+   "old": "Enhanced view",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:185",
+   "old": "Roads",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:185",
+   "old": "Public land",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:185",
+   "old": "Trees",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:185",
+   "old": "Parcels",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:185",
+   "old": "Names",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:185",
+   "old": "Imagery",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:193",
+   "old": "{n} of {m} images did not load (Toggle hint: a failure state)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:198",
+   "old": "{surface line} (Toggle hint: what is drawn and not placed)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:293",
+   "old": "Findings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:294",
+   "old": "Underground",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:319",
+   "old": "{v} m³ void|overlap",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:326",
+   "old": "Trench · {n} m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:327",
+   "old": "{d} m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:329",
+   "old": "No survey",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:338",
+   "old": "Roof height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:340",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:346",
+   "old": "Rights",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:349",
+   "old": "Evidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:350",
+   "old": "Measured or documented",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:351",
+   "old": "Estimated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:355",
+   "old": "Utilities",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:360",
+   "old": "No survey",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:365",
+   "old": "Findings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:366",
+   "old": "Blocking",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:367",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:375",
+   "old": "{source CRS} · {ground} m · {datum}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:377",
+   "old": "Horizontal: {analysis CRS} (source {CRS}). Heights: {vertical reference}. (title)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:378",
+   "old": "No reference system: this area stays in its source’s local frame. (title, repeats the banner)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:379",
+   "old": "Click the other end of the trench",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:379",
+   "old": "Click two points on the ground to draw a trench",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:381",
+   "old": "Select a floor",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:382",
+   "old": "Select a unit",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:412",
+   "old": "Findings (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:425",
+   "old": "Map (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:443",
+   "old": "3D map of {area}. Search offers the same buildings; selected details open in the inspector.",
+   "verdict": "shorten",
+   "new": "3D map of {area}"
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:447",
+   "old": "This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.",
+   "verdict": "shorten",
+   "new": "Not placed on the map: the source states no coordinate reference system."
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:453",
+   "old": "The canonical record of this area could not be read, so its buildings are not drawn. {message}",
+   "verdict": "shorten",
+   "new": "Buildings not drawn: the area record could not be read. {message}"
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:470",
+   "old": "No geometry is recorded for this area yet",
+   "verdict": "shorten",
+   "new": "No geometry recorded"
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:472",
+   "old": "Buildings recorded without geometry are listed under Tools.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:472",
+   "old": "(new control, opens Tools on the list)",
+   "verdict": "keep",
+   "new": "{n} buildings without geometry"
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:483",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:495",
+   "old": "Tools",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:500",
+   "old": "Area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:500",
+   "old": "Building",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:500",
+   "old": "Floors",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:500",
+   "old": "Findings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:500",
+   "old": "Underground",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:500",
+   "old": "No survey (view state)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:510",
+   "old": "Illustrative styling. Geometry and records unchanged.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:513",
+   "old": "None",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:513",
+   "old": "Rights",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:513",
+   "old": "Utilities",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:513",
+   "old": "Height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:513",
+   "old": "Link",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:525",
+   "old": "Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:528",
+   "old": "Retire area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:540",
+   "old": "Close building details (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:569",
+   "old": "{name} and its register (floors, units, findings and history) are deleted from {area}.",
+   "verdict": "shorten",
+   "new": "Deletes {name} with its floors, units, findings and history."
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.tsx:570",
+   "old": "{name} deleted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:53",
+   "old": "Map (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:54",
+   "old": "Map tool sections (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:57",
+   "old": "View",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:57",
+   "old": "Layers",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:57",
+   "old": "Colour",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:57",
+   "old": "Check",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:79",
+   "old": "Colour by (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:97",
+   "old": "{key note}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:102",
+   "old": "Layers (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:107",
+   "old": "Details (disclosure of the layer notes)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:108",
+   "old": "{layers note}",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapSidebar.tsx:115",
+   "old": "Spaces on {floor}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:9",
+   "old": "Roads and open land",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:9",
+   "old": "Parcels",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:9",
+   "old": "Buildings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:9",
+   "old": "Utilities",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:72",
+   "old": "Import failed{warnings}. Upload the same files to retry; originals are retained.",
+   "verdict": "shorten",
+   "new": "Import failed{warnings}. Upload the same files to retry."
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:76",
+   "old": "The import could not be read: {message}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:84",
+   "old": "{n} {unit} accepted for review",
+   "verdict": "shorten",
+   "new": "{n} {unit} to review"
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:84",
+   "old": "{n} {unit} recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:84",
+   "old": "reading",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:84",
+   "old": "none accepted from this file",
+   "verdict": "shorten",
+   "new": "none"
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:86",
+   "old": "{n} features received (meta, repeats the rows)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:88",
+   "old": "{n} buildings drawn",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:89",
+   "old": "· recorded / · unrecorded proposals (meta, repeats the rows)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:90",
+   "old": "Importing {name} / Imported {name} / Importing into {area}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:95",
+   "old": "Done",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:97",
+   "old": "{n} skipped source features",
+   "verdict": "shorten",
+   "new": "{n} skipped features"
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:98",
+   "old": "Original feature indexes are zero-based. The original is retained unchanged.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:100",
+   "old": "Feature {i} · source ID {key|unknown} · {code}: {reason}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:113",
+   "old": "The import could not be read.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:115",
+   "old": "{detected} · {detail}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:118",
+   "old": "Adding floors / Floors added",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:119",
+   "old": "{n} levels · {n} units",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ImportTray.tsx:120",
+   "old": "Done",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:60",
+   "old": "Find a building (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:64",
+   "old": "Search buildings by ULPIN, name or registry ID (aria-label)",
+   "verdict": "shorten",
+   "new": "Search buildings"
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:65",
+   "old": "Find building… (placeholder)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:71",
+   "old": "Clear building search (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:77",
+   "old": "Searching records…",
+   "verdict": "shorten",
+   "new": "Searching…"
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:77",
+   "old": "{n} building(s) found",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:78",
+   "old": "Registry search is unavailable. No loaded buildings match.",
+   "verdict": "shorten",
+   "new": "Registry search unavailable. No loaded building matches."
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:79",
+   "old": "Matching record has no confirmed building to open.",
+   "verdict": "shorten",
+   "new": "No confirmed building for this record."
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:79",
+   "old": "No matching buildings.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:81",
+   "old": "Registry search is unavailable. Showing loaded buildings.",
+   "verdict": "shorten",
+   "new": "Registry search unavailable. Showing loaded buildings."
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:82",
+   "old": "Building search results (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:86",
+   "old": "{identifier|id} (the result row’s own value)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/BuildingSearch.tsx:90",
+   "old": "Showing the first 20. Refine your search.",
+   "verdict": "shorten",
+   "new": "First 20 shown. Refine the search."
+  },
+  {
+   "at": "apps/studio/src/features/map/CheckBadge.tsx:6",
+   "old": "Blocking",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/CheckBadge.tsx:6",
+   "old": "Passed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/CheckBadge.tsx:6",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/CheckBadge.tsx:6",
+   "old": "Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:36",
+   "old": "Comparison failed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:37",
+   "old": "Invalid simulation response",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:43",
+   "old": "Area plan check (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:44",
+   "old": "Plan scenario (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:45",
+   "old": "Simulated plan",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:46",
+   "old": "Matching plan",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:49",
+   "old": "Comparing… / Compare map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/PlanCheck.tsx:50",
+   "old": "Clear",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/RecordState.tsx:7",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/RecordState.tsx:8",
+   "old": "Candidate",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ScaleAndNorth.tsx:17",
+   "old": "{n} km / {n} m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ScaleAndNorth.tsx:21",
+   "old": "North arrow, view heading {deg}° (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ScaleAndNorth.tsx:25",
+   "old": "N",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/UndrawnBuildings.tsx:12",
+   "old": "Buildings without recorded geometry {n}",
+   "verdict": "shorten",
+   "new": "Buildings without geometry {n}"
+  },
+  {
+   "at": "apps/studio/src/features/map/UndrawnBuildings.tsx:19",
+   "old": "No footprint recorded · not drawn on the map (repeats the heading)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/UndrawnBuildings.tsx:20",
+   "old": "Open register of {name} (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/UndrawnBuildings.tsx:21",
+   "old": "Open register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:23",
+   "old": "Building",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:23",
+   "old": "Parcel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:23",
+   "old": "Road",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:23",
+   "old": "Public land",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:23",
+   "old": "Utility",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:32",
+   "old": "This area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:49",
+   "old": "Horizontal: … Heights: … (title)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:72",
+   "old": "3D map of {area}, drawn by the part in view.",
+   "verdict": "shorten",
+   "new": "3D map of {area}"
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:76",
+   "old": "The buildings in view could not be read. {message}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:90",
+   "old": "Close feature details (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:111",
+   "old": "Key",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:112",
+   "old": "Buildings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:113",
+   "old": "Recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:115",
+   "old": "Proposed, not yet confirmed",
+   "verdict": "shorten",
+   "new": "Candidate"
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:141",
+   "old": "Open register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:147",
+   "old": "Identifier",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:151",
+   "old": "Proposed in a batch, not yet confirmed.",
+   "verdict": "shorten",
+   "new": "Candidate (status badge beside the title)"
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:153",
+   "old": "Open batch to confirm (now a footer action)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/WindowedArea.tsx:156",
+   "old": "This area is drawn by the part in view, so only the identifier and kind are shown here.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapPage.tsx:19",
+   "old": "Areas could not be loaded / Try again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapPage.tsx:30",
+   "old": "No areas yet / Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapPage.tsx:31",
+   "old": "An area appears here once a GIS layer or survey is imported and committed.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapPage.tsx:55",
+   "old": "This area could not be opened / Back to Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapPage.tsx:56",
+   "old": "The area was not found.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapPage.tsx:67",
+   "old": "Loading the map (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/preview/PreviewKey.tsx:9",
+   "old": "Read so far",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/preview/PreviewKey.tsx:11",
+   "old": "Outlines read so far (repeats the summary; its dashed edge moved into the summary)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/preview/PreviewKey.tsx:14",
+   "old": "{file} {line}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/SurfaceKey.tsx:13",
+   "old": "Read surfaces",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/floorState.ts:10",
+   "old": "No floors recorded. Add a plan.",
+   "verdict": "shorten",
+   "new": "No floors recorded"
+  },
+  {
+   "at": "apps/studio/src/features/map/floorState.ts:11",
+   "old": "The register of this building lists no floor yet.",
+   "verdict": "shorten",
+   "new": "No floors recorded"
+  },
+  {
+   "at": "apps/studio/src/features/map/floorState.ts:20",
+   "old": "{n} reviewed levels from a level schedule: {labels}.",
+   "verdict": "shorten",
+   "new": "{n} reviewed levels: {labels}"
+  },
+  {
+   "at": "apps/studio/src/features/map/floorState.ts:28",
+   "old": "{n} room candidates, {m} waiting for review.",
+   "verdict": "shorten",
+   "new": "{n} room candidates, {m} to review"
+  },
+  {
+   "at": "apps/studio/src/features/map/floorState.ts:40",
+   "old": "{n} files added.",
+   "verdict": "shorten",
+   "new": "{n} files added"
+  },
+  {
+   "at": "apps/studio/src/features/map/heightBands.ts:6",
+   "old": "Under 10 m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/heightBands.ts:6",
+   "old": "10–20 m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/heightBands.ts:6",
+   "old": "20–40 m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/heightBands.ts:6",
+   "old": "40–80 m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/heightBands.ts:6",
+   "old": "80 m and over",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ledger.ts:8",
+   "old": "Exclusive unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ledger.ts:8",
+   "old": "Shared area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ledger.ts:8",
+   "old": "Public or authority",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ledger.ts:8",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ledger.ts:20",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ledger.ts:20",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/ledger.ts:20",
+   "old": "Draft",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/footprints.ts:173",
+   "old": "All {n} recorded features are drawn.",
+   "verdict": "shorten",
+   "new": "{n} features drawn"
+  },
+  {
+   "at": "apps/studio/src/features/map/footprints.ts:174",
+   "old": "{d} of {n} recorded features are drawn.",
+   "verdict": "shorten",
+   "new": "{d} of {n} features drawn"
+  },
+  {
+   "at": "apps/studio/src/features/map/footprints.ts:190",
+   "old": "Not drawn: {counts} recorded as lines, points or without geometry. The map draws areas only.",
+   "verdict": "shorten",
+   "new": "Not drawn: {counts} (lines, points or no geometry)"
+  },
+  {
+   "at": "apps/studio/src/features/map/areaWindow.ts:14",
+   "old": "This area has no buildings recorded or proposed to draw yet.",
+   "verdict": "shorten",
+   "new": "No buildings to draw"
+  },
+  {
+   "at": "apps/studio/src/features/map/areaWindow.ts:66",
+   "old": " ({n} proposed, not yet confirmed)",
+   "verdict": "shorten",
+   "new": " ({n} candidate(s))"
+  },
+  {
+   "at": "apps/studio/src/features/map/areaWindow.ts:67",
+   "old": "Loading {noun} in view: {n} so far",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/areaWindow.ts:68",
+   "old": "Showing {n} {noun} in view, the most drawn at once; move closer to see the rest.",
+   "verdict": "shorten",
+   "new": "{n} {noun} in view. Move closer to see the rest."
+  },
+  {
+   "at": "apps/studio/src/features/map/areaWindow.ts:69",
+   "old": "{all} {noun}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/areaWindow.ts:70",
+   "old": "{n} {noun} in view of {all}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:141",
+   "old": "Aerial · {year}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:142",
+   "old": "Aerial {year|date unknown} · georeferenced (caption)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:143",
+   "old": "{name}: georeferenced image; source coverage only.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:182",
+   "old": "LiDAR · {year}",
+   "verdict": "keep",
+   "new": "LiDAR · {year} · approximate (the alignment state kept from the cut caption)"
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:183",
+   "old": "LiDAR {year|date unknown} · approximate alignment (caption)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:184",
+   "old": "{m} m surface · {n} cells · Z offset {z} m. Approximate alignment; display only. Source elevations and gaps retained.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:204",
+   "old": "{name}: no supported overlay frame is available.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:207",
+   "old": "{name}: {error|overlay could not be loaded}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:226",
+   "old": "Test data, not official imagery",
+   "verdict": "shorten",
+   "new": "Test data"
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:229",
+   "old": "Not assessed for measurement",
+   "verdict": "shorten",
+   "new": "Not assessed"
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:232",
+   "old": "Capture date unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:236",
+   "old": "An image overlay needs four corners",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/overlays.ts:259",
+   "old": "{n} of {m} images did not load",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:76",
+   "old": "Links to register rows and pages",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:77",
+   "old": "Reading the links of this area…",
+   "verdict": "shorten",
+   "new": "Reading links…"
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:78",
+   "old": "No batch names a building of this area.",
+   "verdict": "shorten",
+   "new": "No links."
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:79",
+   "old": "The links could not be read. {message}",
+   "verdict": "shorten",
+   "new": "Links could not be read. {message}"
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:84",
+   "old": "{b} from {r} of {t} candidates read; the rest are listed in the batch.",
+   "verdict": "shorten",
+   "new": "{b} from {r} of {t} candidates read."
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:85",
+   "old": "{b} from {t} candidates. Unmatched rows and pages name no building.",
+   "verdict": "shorten",
+   "new": "{b} from {t} candidates."
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:89",
+   "old": "No link",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/linkBands.ts:93",
+   "old": "The server gave no answer.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/preview/readPreview.ts:54",
+   "old": "The preview shows the first {n} outlines read.",
+   "verdict": "shorten",
+   "new": "First {n} outlines shown."
+  },
+  {
+   "at": "apps/studio/src/features/map/preview/readPreview.ts:56",
+   "old": "Points and lines are not drawn in the preview: {n} read so far.",
+   "verdict": "shorten",
+   "new": "Points and lines not drawn: {n}."
+  },
+  {
+   "at": "apps/studio/src/features/map/preview/readPreview.ts:111",
+   "old": "The preview could not be read: {message}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/preview/useReadPreview.ts:8",
+   "old": "The outlines read so far are not drawn: this map’s frame is not a WGS 84 UTM zone with a stated origin.",
+   "verdict": "shorten",
+   "new": "Not drawn: the map has no WGS 84 UTM zone with a stated origin."
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:16",
+   "old": "Shaded by this part’s own range; heights are not measured. (shared with intake, outside OWN)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:17",
+   "old": "Coloured by height as written, not measured. (shared with intake, outside OWN)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:64",
+   "old": "It could not be read.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:80",
+   "old": "Only the first {cap} read parts are shown (parts {a} to {b}), the most drawn for one file; {n} later parts are not drawn.",
+   "verdict": "shorten",
+   "new": "First {cap} parts shown ({a} to {b}); {n} later parts not drawn."
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:88",
+   "old": "Display only.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:89",
+   "old": "No part is read yet.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:90",
+   "old": "{n} parts drawn and {m} not placed, of {k} read parts.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:92",
+   "old": "Not placed: {groups}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:95",
+   "old": "Outline only: {groups}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:96",
+   "old": "Not read for the map: {groups}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:97",
+   "old": "{n} parts could not be read by the reader.",
+   "verdict": "shorten",
+   "new": "{n} parts could not be read."
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:171",
+   "old": "Its parts could not be listed: {words}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:243",
+   "old": "The point display read does not state its exact batch count.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/parts.ts:249",
+   "old": "its content could not be read: {words}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/api.ts:35",
+   "old": "The part’s bytes differ from the size and SHA-256 its display read states.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/api.ts:63",
+   "old": "The map was closed.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/api.ts:75",
+   "old": "It could not be decoded.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/surface/api.ts:79",
+   "old": "The decoder stopped.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/imagery-pixels.ts:13",
+   "old": "Raster exceeds the bounded browser preview size",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/imagery-pixels.ts:16",
+   "old": "Only the verified Web Mercator RGB/RGBA imagery profile is supported",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:27",
+   "old": "The batch of this building could not be read. {failure}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:48",
+   "old": "Property card (heading, aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:53",
+   "old": "Open the property card (restates the heading)",
+   "verdict": "shorten",
+   "new": "Open card"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:67",
+   "old": "{cardsOnlyWords(1)}: what the press will make",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:68",
+   "old": "If a building stops, completed steps are kept. A card proves what the record cites, not ownership or a right. Buildings do not receive a space identity.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:70",
+   "old": "Your acknowledgement",
+   "verdict": "shorten",
+   "new": "Acknowledgement"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:74",
+   "old": "Type your own words. They will be stored exactly as you type them. (aria-describedby target)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:75",
+   "old": "{command error}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:76",
+   "old": "The outcome is not known. Send the same confirmation again to find or store it; the building and your words stay unchanged.",
+   "verdict": "shorten",
+   "new": "Outcome unknown. Send the same confirmation again."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:81",
+   "old": "Storing confirmation… / Send same confirmation again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:83",
+   "old": "Make the property card",
+   "verdict": "shorten",
+   "new": "Make card"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:85",
+   "old": "Type your acknowledgement before confirming.",
+   "verdict": "shorten",
+   "new": "Type an acknowledgement first."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:93",
+   "old": "{reason | readiness sentence}",
+   "verdict": "shorten",
+   "new": "{reason | readiness label}"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:94",
+   "old": "{locator} · {stage}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:95",
+   "old": "Open batch",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:102",
+   "old": "{readiness label}. {readiness sentence restating it}",
+   "verdict": "shorten",
+   "new": "{readiness label}"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:103",
+   "old": "{reason}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:104",
+   "old": "Open batch",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:110",
+   "old": "Property card · {name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:111",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingCard.tsx:112",
+   "old": "{readiness sentence} A card proves what the record cites, not ownership or a right.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:32",
+   "old": "{n} floor(s) / G + {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:33",
+   "old": "stilt",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:59",
+   "old": "Address",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:60",
+   "old": "Levels / None recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:61",
+   "old": "Units",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:63",
+   "old": "Height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:66",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:70",
+   "old": "Roof height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:82",
+   "old": "Findings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:84",
+   "old": "{n} blocking / {n} to review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:85",
+   "old": "Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:87",
+   "old": "Readiness / Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:88",
+   "old": "Captured by",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:89",
+   "old": "Source edited",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:91",
+   "old": "Overview / Rights / Evidence / Checks / History",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:104",
+   "old": "Parcel ULPIN · {code}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:105",
+   "old": "Building details (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:109",
+   "old": "Select a unit / Explore floors",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:110",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:112",
+   "old": "Open register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:124",
+   "old": "Gaps in this record (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:126",
+   "old": "Delete building / Delete {name} (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:166",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:190",
+   "old": "Declaration / Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:191",
+   "old": "Shares total",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:195",
+   "old": "Share basis",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:85",
+   "old": "Open findings mode (title, says what the button does)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:115",
+   "old": "Blocked: no floors recorded for this building. Add a plan or level schedule. (repeats Levels: None recorded)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:123",
+   "old": "Geometry and height come from the source. They do not establish ownership, floors or rights.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:152",
+   "old": "{server check method} as a note under an empty list",
+   "verdict": "shorten",
+   "new": "No checks run."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingInspector.tsx:163",
+   "old": "No history is recorded for this building.",
+   "verdict": "shorten",
+   "new": "No history recorded."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:28",
+   "old": "No register row or page names this building.",
+   "verdict": "shorten",
+   "new": "No links."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:36",
+   "old": "The links of this building could not be read. {message}",
+   "verdict": "shorten",
+   "new": "Links could not be read. {message}"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:37",
+   "old": "The server gave no answer.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:48",
+   "old": "Links to register rows and pages (heading, aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:50",
+   "old": "Reading the links of this building…",
+   "verdict": "shorten",
+   "new": "Reading links…"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:61",
+   "old": "Reading the links of this building…",
+   "verdict": "shorten",
+   "new": "Reading links…"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:65",
+   "old": "A file no longer listed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:66",
+   "old": "File name could not be read",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:66",
+   "old": "Reading the file name…",
+   "verdict": "shorten",
+   "new": "Reading…"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:72",
+   "old": "More links are listed in the batch. Open batch",
+   "verdict": "shorten",
+   "new": "More links in the batch (link)"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:85",
+   "old": "{file}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:86",
+   "old": "{outcome badge}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:88",
+   "old": "{place}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:89",
+   "old": "Key {key}, as written",
+   "verdict": "shorten",
+   "new": "Key {key}"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:90",
+   "old": "“{quote}”",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:91",
+   "old": "{outcome sentence} (repeats the outcome badge)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/BuildingLinks.tsx:93",
+   "old": "Also names {buildings}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:14",
+   "old": "Roof height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:29",
+   "old": "Page not stated / Page {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:30",
+   "old": "CSV logical row {n} / Sheet {s}, row {n}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:44",
+   "old": "Matched",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:44",
+   "old": "Several buildings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:44",
+   "old": "Conflicting",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:44",
+   "old": "Unmatched",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:66",
+   "old": "Confirmed by the officer and cited on the record, revision {n}.",
+   "verdict": "shorten",
+   "new": "Cited on the record, revision {n}."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:67",
+   "old": "Confirmed by the officer. The record does not cite it yet.",
+   "verdict": "shorten",
+   "new": "Confirmed, not cited yet."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:68",
+   "old": "Confirmed by the officer before its file was read again. It must be confirmed again.",
+   "verdict": "shorten",
+   "new": "File read again. Confirm again."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/evidence.ts:69",
+   "old": "Not confirmed. It stays a candidate until the officer confirms it.",
+   "verdict": "shorten",
+   "new": "Candidate"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:28",
+   "old": "Findings / Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:30",
+   "old": "Checks: Not assessed (repeats the title status)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:31",
+   "old": "Geometry / {state · purpose} / Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:32",
+   "old": "Open findings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:34",
+   "old": "Overlap, void and share checks need qualified 3D geometry for every space. This record has none yet, so nothing was checked. This is not a pass.",
+   "verdict": "shorten",
+   "new": "Not checked: no qualified 3D geometry."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:45",
+   "old": "Source",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:53",
+   "old": "{method|Check} · r{revision}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:61",
+   "old": "Needs evidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/FindingsInspector.tsx:72",
+   "old": "{server limitations} as a note under the finding",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/InspectorShell.tsx:24",
+   "old": "Inspector (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/InspectorShell.tsx:28",
+   "old": "Selection path (aria-label)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/InspectorShell.tsx:31",
+   "old": "/",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/InspectorShell.tsx:53",
+   "old": "Blocked: {reason}",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:22",
+   "old": "The registry lists no recorded unit for this space, so no review, code or card is recorded for it from here.",
+   "verdict": "shorten",
+   "new": "No recorded unit."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:24",
+   "old": "The record of this building could not be read.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:25",
+   "old": "The review, the code and the cards of this unit are recorded in the registry from its recorded unit.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:32",
+   "old": "Open recorded unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:69",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:75",
+   "old": "Source",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:80",
+   "old": "Needs evidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:90",
+   "old": "Carpet area / Declared / Share",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:94",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:102",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:104",
+   "old": "est.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:105",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:109",
+   "old": "Carpet area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:110",
+   "old": "Declared",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:111",
+   "old": "Share",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:112",
+   "old": "Parking",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:114",
+   "old": "Limits / Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:115",
+   "old": "Use / Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:117",
+   "old": "Within",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:118",
+   "old": "Rooms",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:119",
+   "old": "Cards",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:122",
+   "old": "Property Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:127",
+   "old": "Review area / Open finding",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:141",
+   "old": "Space details / Overview / Rights / Evidence",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:148",
+   "old": "{card unanswered}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:156",
+   "old": "Rights / Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:157",
+   "old": "Parties / Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:158",
+   "old": "Share / Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:119",
+   "old": "Listed by the registry",
+   "verdict": "shorten",
+   "new": "Listed"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/SpaceInspector.tsx:157",
+   "old": "not in the public record (beside Unknown)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:22",
+   "old": "Draw a trench",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:23",
+   "old": "Click the second end of the trench on the ground.",
+   "verdict": "shorten",
+   "new": "Click the other end on the ground."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:23",
+   "old": "Click two points on the ground to draw a trench. Everything recorded below it is listed here.",
+   "verdict": "shorten",
+   "new": "Click two points on the ground."
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:38",
+   "old": "Unknown · no utility survey",
+   "verdict": "shorten",
+   "new": "Unknown · no survey"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:52",
+   "old": "Unknown · no utility survey",
+   "verdict": "shorten",
+   "new": "Unknown · no survey"
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:41",
+   "old": "quality {q}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:43",
+   "old": "tolerance not stated / ± {t}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:55",
+   "old": "0 to {n} m",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/UndergroundInspector.tsx:57",
+   "old": "Draw another trench",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/registryState.ts:12",
+   "old": "Assigned",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/registryState.ts:12",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/registryState.ts:12",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/inspector/registryState.ts:12",
+   "old": "Draft",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/map/MapWorkspace.module.css:98",
+   "old": "content: \"\" (decorative pointer, no text)",
+   "verdict": "keep",
+   "new": null
+  }
+ ]
+}
