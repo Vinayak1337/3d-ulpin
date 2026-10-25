@@ -1,6 +1,7 @@
 import { api, ApiError, unwrap, type GetResponse, type paths } from '@ulpin/api-client';
 import { DOCUMENT_LIMITS, DOCUMENT_PAGE_LIMITS, documentScannedPages } from '@ulpin/contracts/upload-reader-limits';
 import { readBatchCase } from './table/retain';
+import { sizeWords } from './upload-model';
 
 export type PdfReading = GetResponse<
   '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}'
@@ -14,7 +15,6 @@ type CaseJob = GetResponse<'/api/v1/cases/{caseId}'>['jobs'][number];
 type RetryRoute = paths['/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry'];
 type RetryBody = RetryRoute['post']['requestBody']['content']['application/json'];
 
-const MiB = (bytes: number) => `${bytes / 1024 ** 2} MiB`;
 const active = (status: string) => status === 'queued' || status === 'running';
 
 /** This source's document jobs, newest first. */
@@ -188,8 +188,11 @@ export function createPdfOcrRun(caseId: string, sourceId: string, wait: typeof p
 export function pdfNoReadingWords(sizeBytes: number | null | undefined) {
   if (!sizeBytes || sizeBytes <= DOCUMENT_LIMITS.originalBytes) return 'No document reading is available for this '
     + 'file yet.';
-  return `This PDF is ${(sizeBytes / 1024 ** 2).toFixed(1)} MiB, above ${MiB(DOCUMENT_LIMITS.originalBytes)}, the `
-    + 'largest original the document reader and OCR take, so it is not read. The original is kept with its SHA-256.';
+  const bound = sizeWords(DOCUMENT_LIMITS.originalBytes);
+  // A size that rounds to the bound's words is stated in bytes, so the sentence never reads '1 GiB, above 1 GiB'.
+  const size = sizeWords(sizeBytes) === bound ? `${sizeBytes.toLocaleString('en-IN')} bytes` : sizeWords(sizeBytes);
+  return `This PDF is ${size}, above ${bound}, the largest original the document reader and OCR take, so it is not `
+    + 'read. The original is kept with its SHA-256.';
 }
 
 export function pdfOcrWords(reading: PdfReading) {
@@ -201,8 +204,8 @@ export function pdfOcrWords(reading: PdfReading) {
   if (reading.native?.code === 'NATIVE_TEXT_NOT_REQUESTED') return 'Only the selected page was requested for OCR; '
     + 'the text layer was not read.';
   if (pdfTextLayerUnread(reading)) return `The text layer was not read: the page reader takes a PDF of at most `
-    + `${MiB(DOCUMENT_LIMITS.nativeBytes)}. OCR takes a PDF of up to ${MiB(DOCUMENT_LIMITS.originalBytes)}, so its `
-    + 'pages can still be read as scanned pages.';
+    + `${sizeWords(DOCUMENT_LIMITS.nativeBytes)}. OCR takes a PDF of up to `
+    + `${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so its pages can still be read as scanned pages.`;
   if (pdfPagesUnknown(reading)) return 'The text-layer reading stopped; a selected page may still be read by OCR '
     + 'within the page renderer’s bounds.';
   return 'The text-layer reading is complete.';

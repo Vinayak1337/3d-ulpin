@@ -7,9 +7,10 @@ import real from '../../../../../docs/evidence/gf1/g10/result.json';
 import { createContractValidator } from '../../local/contract';
 import { readFileSync } from 'node:fs';
 import { BatchPdfSection } from './BatchPdfSection';
-import { createPdfOcrPress, createPdfOcrRun, pagesToRead, pdfOcrOffer, readPdfJob, type OcrPageRun,
-  type PdfReading } from './pdf-reading';
+import { createPdfOcrPress, createPdfOcrRun, pagesToRead, pdfNoReadingWords, pdfOcrOffer, readPdfJob,
+  type OcrPageRun, type PdfReading } from './pdf-reading';
 import { button, container, elements, propsOf, type FakeElement } from './fake-dom';
+import { sizeWords } from './upload-model';
 import type { IntakeItem } from './batch-model';
 import { DOCUMENT_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
@@ -180,13 +181,15 @@ it('a PDF above the page reader byte bound offers every page to OCR, within the 
   const page = await render(unread, { pageCount: 3 });
   try {
     expect(page.root.textContent).toContain('The text layer was not read: the page reader takes a PDF of at most '
-      + '10 MiB. OCR takes a PDF of up to 1024 MiB, so its pages can still be read as scanned pages.');
+      + '10 MiB. OCR takes a PDF of up to 1 GiB, so its pages can still be read as scanned pages.');
+    expect(page.root.textContent).not.toContain('1024 MiB');
     expect(boxes(page.root)).toHaveLength(3);
     expect(action(page.root)).toBeDefined();
   } finally { await page.unmount(); }
   const long = await render(unread, { pageCount: 12 });
   try {
-    expect(long.root.textContent).toContain('Choose one page number');
+    expect(long.root.textContent).toContain('The renderer opens originals of at most 400 pages and 1 GiB.');
+    expect(long.root.textContent).not.toContain('1024 MiB');
     expect(boxes(long.root)).toHaveLength(1);
     expect(propsOf(action(long.root)!).disabled).toBe(true);
   } finally { await long.unmount(); }
@@ -207,11 +210,16 @@ it('says a PDF above the document runtime byte bound is kept and not read, never
     const page = await render(reading(), { jobs: [], file: { ...item,
       sizeBytes: DOCUMENT_LIMITS.originalBytes + 1 } });
     try {
-      expect(page.root.textContent).toContain('This PDF is 1024.0 MiB, above 1024 MiB, the largest original the '
-        + 'document reader and OCR take, so it is not read. The original is kept with its SHA-256.');
+      expect(page.root.textContent).toContain('This PDF is 1,07,37,41,825 bytes, above 1 GiB, the largest original '
+        + 'the document reader and OCR take, so it is not read. The original is kept with its SHA-256.');
+      expect(page.root.textContent).not.toContain('1024 MiB');
       expect(page.root.textContent).not.toContain('yet');
       expect(action(page.root)).toBeUndefined();
     } finally { await page.unmount(); }
+    // test_only stated size: one and a half times the bound, stated in GiB.
+    expect(pdfNoReadingWords(DOCUMENT_LIMITS.originalBytes * 1.5)).toContain('This PDF is 1.5 GiB, above 1 GiB,');
+    expect(sizeWords(DOCUMENT_LIMITS.originalBytes)).toBe('1 GiB');
+    expect(sizeWords(Math.round(17.3 * 1024 ** 2))).toBe('17.3 MiB');
   });
 
 it('refreshes a cached case listing that predates the batch PDF job', async () => {
