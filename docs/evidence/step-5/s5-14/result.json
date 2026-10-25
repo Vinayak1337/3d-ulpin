@@ -2,10 +2,11 @@
   "task": "S5.14",
   "planStep": 5,
   "base": "db2b80e917f17659184aba5e33da0bae7947f75c",
-  "status": "scope_blocked_browser_declaration",
-  "reviewedCheckpoint": "585dda21",
+  "status": "ready_for_review",
+  "reviewedCheckpoint": "830b7b6b",
   "classification": "test_only public NYC research inputs; no Indian operational claim",
-  "logs": "E:/ulpin-tmp/s5-14/{before,after,review}-*.log",
+  "logs": "E:/ulpin-tmp/s5-14/{before,after,review,final}-*.log",
+  "latestRuns": ["pnpm studio:typecheck", "pnpm studio:test", "pnpm typecheck:backend"],
   "copc": {
     "path": "E:/BhuAayam-data/task-data/nyc-10013-multimodal/originals/20170504_980200.copc.laz",
     "bytes": 77948603,
@@ -68,15 +69,13 @@
     "reviewLog": "E:/ulpin-tmp/s5-14/review-points.log",
     "comparison": "Identical first errors at base and task head; no branch-only initialization failures."
   },
-  "scopeBlocker": {
+  "browserDeclaration": {
     "file": "packages/contracts/src/upload-reader-limits.d.ts:4",
-    "firstError": "error TS2339: Property 'batchPoints' does not exist on the narrow POINT_BATCH_LIMITS type.",
-    "needed": "Add batchPoints: number to the existing readonly declaration; runtime already exports it.",
-    "reason": "This declaration file is outside OWN; stopped without casts, duplicate limits or shim changes."
+    "change": "Authorized batchPoints: number added to the existing readonly declaration; runtime unchanged.",
+    "verification": "Final Studio typecheck reports only the baseline decimalMark error at line 65."
   },
   "next": [
-    "Authorize the single browser declaration property, rerun checks, then integrate and refresh pins/schema.",
-    "Authorized point-only fixture updates are complete; Studio tests and the section 5 server command pass.",
-    "Studio typecheck still has the confirmed decimalMark baseline error plus the declaration blocker."
+    "Lead integration and contract/pin refresh; S5.15 owns part-plan changes.",
+    "Baseline decimalMark and reader initialization failures remain outside this task."
   ]
 }
