@@ -199,7 +199,7 @@ Size S, code only. After: S1.3o. **Status: merged 25 Oct (int3-pre bf9bccbc, tas
 
 ### S1.3j A file dropped while two uploads are open waits for a free slot
 
-Size S, UI (Claude session). After: S1.3 run 4. **Status: running 25 Oct (Claude CLI worker, task/s1-3j-upload-wait from int3-pre bf9bccbc; started on the owner's word).**
+Size S, UI (Claude session). After: S1.3 run 4. **Status: merged 25 Oct into int3-pre 3c3e474f (branch a00174c0). A file refused for a full upload slot waits with words, retries with a backoff from 2 s to 30 s that uses freesAt, starts by itself in drop order, and stops after 30 minutes with Retry upload; every other refusal keeps its words. Studio 760 pass. Gap: a waiting file has no Cancel yet.**
 
 - **What:** The server allows two open large-original receipts per person; a third file dropped during the load phase was refused with 429 UPLOAD_QUOTA and a Retry upload button, and the officer had to notice. Studio keeps the file, says it waits for a free upload slot, and starts the upload itself when a receipt frees (poll the upload status, bounded by the refusal's freesAt and an outer bound), as S1.3e did for ZIP members on the server.
 - **Files:** apps/studio/src/features/intake/upload-api.ts, upload-model.ts, table/TableImportDialog.tsx and the map drop path that uploads
@@ -207,7 +207,7 @@ Size S, UI (Claude session). After: S1.3 run 4. **Status: running 25 Oct (Claude
 
 ### S1.3k After an import, the map frames the imported features so they are visible
 
-Size S, UI (Claude session). After: S1.3 run 4. **Status: running 25 Oct (Claude CLI worker, task/s1-3k-import-framing from int3-pre bf9bccbc; started on the owner's word).**
+Size S, UI (Claude session). After: S1.3 run 4. **Status: merged 25 Oct into int3-pre bac06934 (branch 776aee3a). Cause of the first miss: the camera framed the whole area (2,100 footprints over 5.3 by 11.1 km), not the package. Each package now frames its own drawn features (a readable box of about 80 footprints, densest window when spread), and a package never moves a camera the officer moved during the import. The second package's blank capture was the starting camera with nothing drawn yet; why nothing was drawn is not proven, so run 5 records the drawn count and the area read state at each capture. Studio 761 pass, scene 71 pass, build 0.**
 
 - **What:** In run 4 the ZIP's first package (2,000 NYC footprints) showed as a speck at 1 km scale, and the second package (66 features) at 20 m scale on empty ground (run4/b-first.png, b-second-blank.png). Name why the frame misses each package, and fix the framing so each package's features fill the view after import.
 - **Files:** apps/studio/src/features/ map and import view framing; packages/scene camera fit
