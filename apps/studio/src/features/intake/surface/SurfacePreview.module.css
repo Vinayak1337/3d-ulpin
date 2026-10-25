@@ -1,0 +1,25 @@
+.panel {
+  padding: var(--ui-space-4);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius-12);
+  background: var(--ui-surface);
+  display: grid;
+  gap: var(--ui-space-3);
+  min-width: 0;
+}
+
+.reasons {
+  margin: 0;
+  padding-left: var(--ui-space-4);
+  display: grid;
+  gap: var(--ui-space-1);
+  overflow-wrap: anywhere;
+}
+
+.canvas {
+  justify-self: start;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--ui-radius-8);
+  background: var(--ui-surface-subtle);
+}

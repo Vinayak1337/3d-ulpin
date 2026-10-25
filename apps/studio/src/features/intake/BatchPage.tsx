@@ -13,6 +13,8 @@ import { IfcStructure } from './ifc/IfcStructure';
 import { isIfcItem } from './ifc/structure-model';
 import { NativeReading } from './native/NativeReading';
 import { opensReading } from './native/reading-model';
+import { SurfacePreview } from './surface/SurfacePreview';
+import { opensPreview } from './surface/preview-model';
 import { LayoutQuestion } from './LayoutQuestion';
 import { PageImageQuestion } from './PageImageQuestion';
 import { PlanReadingSection } from './PlanReadingSection';
@@ -116,6 +118,7 @@ function ItemDetail({ caseId, item, items, refresh }: {
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}
     {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
     {opensReading(item) ? <NativeReading caseId={caseId} item={item} /> : null}
+    {opensPreview(item) ? <SurfacePreview item={item} /> : null}
     <BatchPdfSection caseId={caseId} item={item} />
     <PlanReadingSection caseId={caseId} item={item} refresh={refresh} />
     <BatchTableSection caseId={caseId} item={item} items={items} />
