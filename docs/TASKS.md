@@ -637,7 +637,7 @@ Size S, code only. After: S5.19 (artifact fields). **Status: done 25 Oct, merged
 
 ### S5.21 glTF/GLB and OBJ drawn in their own frame in the reading panel
 
-Size M, code only. After: None; can run in parallel with anything. Dispatch it last and drop it first: it is cut 1. **Status: running 25 Oct (UI session).**
+Size M, code only. After: None; can run in parallel with anything. Dispatch it last and drop it first: it is cut 1. **Status: merged 25 Oct (ee82d217).**
 
 - **What:** glTF and OBJ readings appear only as words ('kept as evidence, not on the map', intake-native-readers.ts:132, 207-223), although each accepted artifact already holds projected positions and indices (native_gltf.py:603-616; native_obj.py:200-207). Add a small own-frame mesh preview to packages/scene (three.js is already a dependency) and show it in the NativeReading panel from the existing .../gltf/jobs/{jobId}/native and .../obj/jobs/{jobId}/native routes. It is flat-lit and can be orbited, with words: own frame, axes and units as the reading states, not placed.
 - **Files:** new packages/scene/src/model-preview.ts plus its export in packages/scene/src/index.ts; apps/studio/src/features/intake/native/NativeReading.tsx:17-48, useNativeReading.ts, reading-model.ts (positions and indices from the artifact); apps/api/src/modules/ingestion/gltf.controller.ts:70-77 and obj.controller.ts:70-72 (read only)
