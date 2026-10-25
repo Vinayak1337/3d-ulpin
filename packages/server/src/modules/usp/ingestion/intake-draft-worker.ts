@@ -13,7 +13,7 @@ import { intakeDestination, intakeCaseArea } from './intake-destination';
 export { intakeDestination } from './intake-destination';
 import { ManualIngestionService } from './service';
 import { AdaptiveMappingService, caseOriginalTeacherGate } from './adaptive-mapping-service';
-import { compileMapping, geojsonInventory, setAsideWords } from './registry';
+import { compileMapping, GEOJSON_FEATURE_LIMIT, geojsonInventory, setAsideWords } from './registry';
 import { profileGisAttributes } from './column-profile';
 import { proposeMapping } from './mapping-teacher';
 import type { LayerMeanings } from './intake-reading';
@@ -157,12 +157,24 @@ async function layerProfile(source: IntakeSourceRow) {
 
 /** Durable meanings only: even a complete answer cannot author a feature layout or approve a record. */
 async function preparedLayerMeanings(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<LayerMeanings | null> {
+  try {
+    return await layerMeanings(input, attempt);
+  } catch {
+    // Optional field interpretation cannot change the existing layout job's outcome.
+    return null;
+  }
+}
+
+async function layerMeanings(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<LayerMeanings | null> {
+  const { item, source } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
+  const count = source.inspection?.manualProfile?.featureCount ?? item.card?.counts?.features;
+  if (item.card?.format !== 'geojson' || Number(source.bytes) > 16 * 1024 * 1024
+    || typeof count !== 'number' || count > GEOJSON_FEATURE_LIMIT) return null;
   const key = layerMeaningsKey(input);
   const previous = await pinned(input, attempt, async client => (await client.query(
     "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
     [input.caseId, key])).rows[0]?.result as LayerMeanings | undefined);
   if (previous) return previous;
-  const { source } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
   const provenance = source.inspection?.largeOriginal?.provenance ?? {};
   if (!caseOriginalTeacherGate(provenance).allowed) return null;
   const profile = await layerProfile(source);
@@ -176,6 +188,7 @@ async function preparedLayerMeanings(input: IntakeDraftInput, attempt: UspJobAtt
         throw new AppError(403, 'CASE_ORIGINAL_TEACHER_REFUSED', caseOriginalTeacherGate().words);
     },
   });
+  if (!result.fieldSources.length || result.fieldSources.some(field => field.source === 'unanswered')) return null;
   const meanings = { ...result, sourceId: input.sourceId, sourceRevision: input.sourceRevision,
     sourceSha256: input.sourceSha256, labelKind: 'pseudo_label' as const };
   await pinned(input, attempt, async client => {
@@ -186,8 +199,7 @@ async function preparedLayerMeanings(input: IntakeDraftInput, attempt: UspJobAtt
   return meanings;
 }
 
-async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt, profile: SourceProfile,
-  meanings: LayerMeanings | null) {
+async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt, profile: SourceProfile) {
   const key = `intake-draft-plan:${input.jobId}`;
   const previous = await pinned(input, attempt, async client => (await client.query(
     "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
@@ -195,8 +207,6 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
   if (previous) return previous;
   const remembered = await lookupIntakeMemory(profile, input.subject, (sql, values) =>
     pinned(input, attempt, async client => (await client.query(sql, values)).rows));
-  // The attribute route already asked what unknown fields mean; only memory or the officer supplies the layout.
-  if (meanings && !remembered) return null;
   const proposal = await proposeIntakeLayout(profile, remembered, intakeDraftKey(input.itemId, 0, 'propose'));
   if (!proposal) return null;
   await pinned(input, attempt, async client => {
@@ -225,10 +235,9 @@ export function alreadyInArea(error: unknown): Omit<IntakeDraftState, 'recordsSe
   return { state: 'read', placement: 'undecided', planRef, limitReason: error.message.slice(0, 2000) };
 }
 
-async function proposeRecipe(input: IntakeDraftInput, attempt: UspJobAttempt,
-  meanings: LayerMeanings | null): Promise<MappingReceipt | null> {
+async function proposeRecipe(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<MappingReceipt | null> {
   const profile = await manual.inspect(input.caseId, input.sourceId);
-  const proposal = await preparedProposal(input, attempt, profile, meanings);
+  const proposal = await preparedProposal(input, attempt, profile);
   if (!proposal) return null;
   const { source } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
   const gis = source.inspection?.gis;
@@ -274,7 +283,7 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
     await writeIntakeDraftTx(client, input.caseId, input.itemId, {
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-        origin: from, ...(pkg ? { packageId: pkg.id } : {}) }
+        origin: from, ...(pkg ? { packageId: pkg.id } : {}), ...(meanings ? { layerMeanings: meanings } : {}) }
         : { layoutQuestion: true, ...(meanings ? { layerMeanings: meanings } : {}) },
       recordsSeen: pkg?.features.length ?? 0,
       limitReason: receipt ? setAsideWords(pkg?.quarantine?.setAside) : noLayout,
@@ -298,7 +307,7 @@ async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
   if (input.tableSelection) return settleTable(input, attempt);
   const meanings = await preparedLayerMeanings(input, attempt);
   let current = await recipe(input, attempt);
-  if (!current) current = await proposeRecipe(input, attempt, meanings);
+  if (!current) current = await proposeRecipe(input, attempt);
   if (!current) {
     await transition(input, attempt, null, 'probed', meanings);
     return;

@@ -1,41 +1,48 @@
 {
-  "task": "S4.12", "planStep": 4, "status": "blocked_safe_checkpoint",
-  "works": "Recipe-free bounded layers show cached field candidates; retries and later jobs reuse them.",
+  "task": "S4.12", "planStep": 4, "status": "complete_replay_checks",
+  "works": "Bounded GeoJSON cards, including recipe-bearing cards, show cached unconfirmed field candidates.",
   "storage": "Existing operations table, kind intake-draft, keyed by item/source/revision/hash; no migration.",
   "routing": "First 100 features, five masked samples maximum; contact samples suppressed; shared owner gate.",
-  "review": "labelKind pseudo_label; no new mapping or registry record authored.",
-  "layout": "Memory or the officer supplies the feature layout; no second building-only request.",
+  "review": "Results carry labelKind pseudo_label; field candidates never approve a mapping or registry record.",
+  "layout": "The existing memory/building-key proposal path is unchanged and independent of field meanings.",
+  "fallback": "Non-GeoJSON, oversized, invalid, unavailable or failed interpretations return null only in this step.",
+  "ledger": "intakePlan strips supplemental layerMeanings before strict recipe validation; recipe refs remain visible.",
   "inputs": [
     { "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson", "purpose": "test_only",
       "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e", "features": 1662 },
     { "path": "fixtures/usp/D4/gf0-context-v1/osm-road-centrelines.geojson", "purpose": "test_only",
-      "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93", "features": 9 }
+      "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93", "features": 9 },
+    { "path": "E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml", "purpose": "test_only" }
   ],
-  "acceptance": { "enabledRequestsPerFile": 1, "disabledRequests": 0, "repeatRequests": 0,
-    "laterJobRequests": 0, "sampleBound": 5, "sourceHashesUnchanged": true, "basis": "sarvam",
-    "replayOutput": "Unknown meanings are intentional software controls, not verified semantic labels.",
-    "liveProviderCalls": 0 },
+  "acceptance": { "meaningsRequestsPerFile": 1, "independentLayoutRequestsPerFile": 1,
+    "disabledMeaningsRequests": 0, "repeatMeaningsRequests": 0, "laterJobMeaningsRequests": 0,
+    "requestColumns": "Exactly the rule-unknown columns", "sampleBound": 5, "sourceHashesUnchanged": true,
+    "basis": "sarvam", "recipeState": "proposed; same draft state as base", "liveProviderCalls": 0,
+    "replayOutput": "Unknown meanings are intentional software controls, not verified semantic labels." },
+  "regressions": [
+    "Declared feature count above 2000 and actual over-bound content both skip interpretation without failing.",
+    "Count control repeats retained NYC features in memory; no geometry or property values are invented.",
+    "KML cards and KML bytes misclassified as GeoJSON each preserve the base draft outcome.",
+    "Teacher errors preserve the base draft; existing layout errors still fail normally.",
+    "Recipe-bearing reading retains the plan reference and lists meanings with candidate/not-confirmed words."
+  ],
   "checks": {
-    "intake-draft.test.ts": { "exit": 0, "passed": 56 },
-    "threeRequestedFiles": { "beforeExit": 1, "afterExit": 1, "beforePassed": 74, "afterPassed": 77,
-      "failed": 1, "skipped": 1, "cause": "Existing NPZ test: Python lacks sklearn; help command confirms it." },
+    "intake-draft.test.ts": { "exit": 0, "passed": 62 },
+    "threeRequestedFiles": { "exit": 1, "passed": 83, "failed": 1, "skipped": 1,
+      "cause": "Unchanged NPZ test: default Python lacks sklearn; confirmed before review." },
     "reading_profile_adaptive_invariants": { "exit": 0, "passed": 38 },
-    "typecheck:backend": { "beforeExit": 0, "afterExit": 0 },
-    "serverSection5": { "beforeExit": "240s tool timeout", "beforePassed": 1031, "beforeFailed": 5,
-      "afterExit": 0, "afterPassed": 1039, "afterFailed": 0, "skipped": 5 },
-    "studio:typecheck": { "beforeExit": "tool timeout; four projects Done", "afterExit": 0 },
-    "studio:test": { "exit": 124, "note": "Three packages pass; upload has two failures of fifteen; timeout." },
-    "openapiCheck": { "beforeExit": 0, "afterExit": 1,
-      "note": "Linked/demo timed out; repository mode refused uninitialized environment. No setup run." },
-    "apiCheckPy": { "beforeExit": 0, "afterExit": 1,
-      "staleProducer": "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts" },
+    "typecheck:backend": { "exit": 0 }, "studio:typecheck": { "exit": 0 },
+    "serverSection5": { "exit": 0, "passed": 1045, "failed": 0, "skipped": 5 },
+    "studio:test_alone": { "exit": 0, "passed": 785, "skipped": 3, "studioPassed": 714 },
+    "openapiCheck": { "exit": 1, "cause": "Expected stale source-pins.json; published schema matched." },
+    "apiCheckPy": { "exit": 1, "cause": "Expected stale producer pins." },
     "diffCheck": { "exit": 0 }
   },
-  "blocker": "intake-ledger.ts:intakePlan strictly validates plan_ref; extra layerMeanings hides recipes.",
-  "safeBoundary": "Recipe projections stay unchanged; their meanings are cached but not displayed.",
-  "next": [
-    "Authorize intake-ledger.ts: exclude layerMeanings from plan validation; restore receipt projection and test.",
-    "Alternatively authorize intake-service.ts to load operations directly. Integration regenerates pins."
+  "staleProducers": [
+    "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.ts"
   ],
-  "logs": "E:/ulpin-tmp/s4-12-*.log"
+  "next": "Integration regenerates pins. Configure the existing Python environment with sklearn for the NPZ test.",
+  "logs": "E:/ulpin-tmp/s4-12-review-*.log"
 }
