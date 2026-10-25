@@ -529,7 +529,7 @@ Size M, code only. After: S5.9 (same PDF section of intake-draft.ts). It may run
 
 ### S5.11 Raster reader reads a 2 GB GeoTIFF/COG as preview windows at a step
 
-Size M, this PC: data drive. After: Step 1: the base rehearsal shows the act 1 TIF and LAZ getting raster-window and point-batch jobs (runtime proof of SA1 and LQ1). Can run in parallel with S5.12, S5.13 and S5.21. **Status: running 25 Oct (codex, from int3-pre 3e7c6615; checked on the two practice-kit TIFs).**
+Size M, this PC: data drive. After: Step 1: the base rehearsal shows the act 1 TIF and LAZ getting raster-window and point-batch jobs (runtime proof of SA1 and LQ1). Can run in parallel with S5.12, S5.13 and S5.21. **Status: merged 25 Oct into int3-pre (706a5f87, pins 31f0896b; USGS whole extent at step 43, Raichur at step 242; one verified copy per original; server set 991 pass).**
 
 - **What:** raster_window.py refuses originals over 16 MiB and reads only full-resolution 256-px windows, downloading and hashing the whole original for every window. Accept originals up to 2 GiB and add an optional whole-number window `step`: the output stays at most 256 x 256 px covering width*step x height*step source pixels, read with rasterio out_shape so GDAL uses COG overviews, and a null window becomes the whole extent at the step that fits 256 px (one overview). Download and verify each original once into a bounded private cache keyed by SHA-256 (atomic rename, least-recently-used eviction, free-space floor), reused by later windows and by point_batch.py _source_path. Report each band's valid min/max as an optional metadata field, so stored results still parse.
 - **Files:** services/geo/geo/raster_window.py:21-25 (bounds), 30-41 (_window), 54-151 (read; default window 92-93; download/hash 70-82); services/geo/geo/point_batch.py:39-58 (_source_path uses the shared cache helper); packages/contracts/src/usp/raster-window.ts:4-11 (originalBytes 16 MiB to 2 GiB, sourcePixels, RasterPixelWindowSchema x/y max 100,000, optional step), 31-49 (bands min/max optional; refine stays on output pixels); services/geo/tests/test_surface_readers.py
@@ -556,7 +556,7 @@ Size S, this PC: data drive. After: Owner prerequisite: a stable CPython 3.12 ba
 
 ### S5.14 Point reader: thinned batches from LAS/LAZ/COPC up to 1 GiB
 
-Size M, this PC: data drive. After: S5.11 (shared verified-copy helper). Can run in parallel with S5.12, S5.13, S5.17 and S5.18. **Status: open.**
+Size M, this PC: data drive. After: S5.11 (shared verified-copy helper). Can run in parallel with S5.12, S5.13, S5.17 and S5.18. **Status: running 25 Oct (codex, from int3-pre db2b80e9).**
 
 - **What:** point_batch.py refuses more than 16 MiB or 5 million points, so the real 74 MB NYC COPC (12,036,869 points) is kept, not drawn. Accept up to 1 GiB and 500 million points, and give the batch selection an optional `step`: it reads source points [start, start+count*step) with laspy's chunk iterator and keeps every step-th native record unchanged; batch null becomes a whole-cloud sample of at most 32,768 points. Batches grow to 32,768 points (artifactBytes 2 MiB) and the Studio LAS bound follows. It uses S5.11's verified cache.
 - **Files:** services/geo/geo/point_batch.py:18-21, 27-37 (_batch), 61-70 (_validate_header), 107-129 (_read_native_batch), 132-151; packages/contracts/src/usp/point-batch.ts:5-7 (POINT_BATCH_LIMITS), 24-25 (PointBatchSelectionSchema, optional step); apps/studio/src/features/map/surface/las.ts:5 (LAS_LIMITS.points); services/geo/tests/test_point_batch.py
@@ -592,7 +592,7 @@ Size M, this PC: data drive. After: Step 2 practice kit holds a real CityGML til
 
 ### S5.18 CityJSON reader takes a real tile and a CityJSONSeq file
 
-Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel with S5.17 and S5.19. **Status: running 25 Oct (codex, from int3-pre e3a03186; the CityJSONSeq part only, on the cjval sample sequences; the bounds wait for a real CityJSON tile, which the practice kit lacks).**
+Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel with S5.17 and S5.19. **Status: merged 25 Oct into int3-pre (sequence part only, db2b80e9: cjval cube_20_1.jsonl reads, line pointers /N; bounds wait for a real CityJSON tile).**
 
 - **What:** native_cityjson.py stops at 8 MiB, 1,000 CityObjects, 100,000 vertices and 15 s, and reads CityJSON 2.0 only, so a typical 3DBAG tile is over its limits. A CityJSONSeq (.city.jsonl) is detected as cityjson by its first object but is not one JSON document; it is expected to fail (not run). Raise the bounds and CITYJSON_LIMITS to what the practice kit's CityJSON needs, as measured, and read a CityJSONSeq as its header plus each feature line through the existing CityJSONFeature path, so outlines with a declared EPSG reach the map path (B3D1).
 - **Files:** services/geo/geo/native_cityjson.py:14-21 (bounds), 230-290 (envelopes and features, 249-267); services/geo/geo/cityjson_outline.py (read; change only if the sequence needs it); packages/server/src/modules/usp/ingestion/intake-signatures.ts:116-133 (jsonKind for the sequence); packages/contracts/src/usp/cityjson-ingestion.ts:4-5; services/geo/tests/test_native_cityjson.py, test_cityjson_outline.py
@@ -601,7 +601,7 @@ Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel wit
 
 ### S5.19 IFC reading adds a storey outline in the file's own frame
 
-Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned after this change). Can run in parallel with S5.15, S5.17 and S5.18. **Status: open.**
+Size L, this PC: data drive. After: S5.13 (to run live; the profile is re-pinned after this change). Can run in parallel with S5.15, S5.17 and S5.18. **Status: running 25 Oct (codex, from int3-pre db2b80e9; code only, the host profile is repinned after S5.13).**
 
 - **What:** The IFC reader is structure-only (native_ifc.py:1 and 617, GEOMETRY_NOT_INTERPRETED), but the plan's cut order still keeps an IFC 'summary and outline'. Add a bounded second pass using the pinned IfcOpenShell 0.8.5 geometry and shapely (dependencies.json): project each storey's IfcSlab shapes (else IfcSpace) to plan in the file's own frame and length unit, and join them into closed outline rings per storey. Store them in the accepted artifact with an outline count in the summary; the words say 'own frame, not placed', and a failed pass leaves the structure reading intact.
 - **Files:** services/geo/geo/native_ifc.py:27-52 (Limits), 383-460 (pass 1), 590-630 (result and findings); packages/contracts/src/usp/ifc-ingestion.ts (optional summary and artifact outline fields); packages/server/src/modules/usp/ingestion/intake-ifc.ts:48-56 (intakeIfcReadWords); services/geo/tests/test_native_ifc.py
