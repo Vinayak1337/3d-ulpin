@@ -1,0 +1,47 @@
+{ "at": "2026-10-22T17:18:07.415Z", "receipt": { "command": [
+"pnpm platform:doctor --profile demo --runtime ulpin-reh-02" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 1,
+"seconds": 15.173, "output": [ "  dailyCapPresent: false", "  providerKeysNamed: 0", "  providerKeysPresent: 0",
+"PASS Model gateway state", "  Context: desktop-linux; engine: 29.8.0",
+"PASS Docker local Linux engine and context/socket", "  23 existing volumes; 6 ulpin-reh-02 containers",
+"PASS Docker inventory readable", "PASS Existing ulpin-reh-02 volume ownership and attachments",
+"PASS postgres container healthy", "PASS postgres restart policy", "PASS minio container healthy",
+"PASS minio restart policy", "PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy",
+"PASS geo restart policy", "PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "  Pinned: ulpin-geo:git-b3b47f77661a",
+"PASS Processors run the pinned image, built from this checkout's services/geo", "FAIL API native process ownership",
+"  Fix: resume the demo launcher; do not adopt unrelated listener processes.",
+"PASS Dispatcher process ownership (liveness only)", "FAIL API /api/v1/health",
+"  Fix: start the existing NestJS API with the approved local operator/configuration and re",
+"store its failed dependencies.", "FAIL DB migrations applied (API structural admission)",
+"  Fix: have the runtime/DB owner review missing schema against this checkout and apply onl",
+"y approved additive migrations.", "FAIL API bound to the inspected ulpin-reh-02 database",
+"  Fix: point the approved API configuration at this existing ulpin database; do not mix ru", "ntime profiles.",
+"Doctor: 4 failure(s); runtime NOT qualified.", " ELIFECYCLE  Command failed with exit code 1." ], "error": null },
+"containers": [ "a75ae42af10f ulpin-reh-02-geo-1 ulpin-geo:git-b3b47f77661a running",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 running",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine running",
+"1981cf5bc4a9 ulpin-reh-02-worker-1 ulpin-geo:git-b3b47f77661a running" ], "state": { "volumes": [
+"ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ], "containers": [
+"a75ae42af10f ulpin-reh-02-geo-1 ulpin-geo:git-b3b47f77661a running",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 running",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine running",
+"1981cf5bc4a9 ulpin-reh-02-worker-1 ulpin-geo:git-b3b47f77661a running" ], "networks": [ "ulpin-reh-02_default" ],
+"listeners": [ { "LocalAddress": "127.0.0.1", "LocalPort": 21025, "OwningProcess": 20424 }, {
+"LocalAddress": "127.0.0.1", "LocalPort": 21024, "OwningProcess": 20424 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21023, "OwningProcess": 20424 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21022, "OwningProcess": 20424
+}, { "LocalAddress": "127.0.0.1", "LocalPort": 21021, "OwningProcess": 20424 } ] }, "images": [ {
+"name": "ulpin-geo:git-b3b47f77661a", "present": true,
+"id": "sha256:838c16bb8081f80b0e5dc3494f66e92e01031306853c90e0aefa3b2b67ee964e",
+"created": "2026-10-22T16:11:50.962862142Z", "labels": {
+"org.opencontainers.image.revision": "b3b47f77661abe26421a257979ba22fdb564ea62",
+"in.bhuaayam.ulpin.services-geo-tree": "bee6cc1a9f442bd4cde0b8f2db3eff98460a9200" } }, {
+"name": "ulpin-geo:git-a40b60238728", "present": true,
+"id": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+"created": "2026-10-20T21:08:52.428829505Z", "labels": {
+"org.opencontainers.image.revision": "a40b6023872819367ab4b3db43afbb7ffba892b0",
+"in.bhuaayam.ulpin.services-geo-tree": "eab382a5cdd44dd62df5789d46df12dc3937640d" } } ] }

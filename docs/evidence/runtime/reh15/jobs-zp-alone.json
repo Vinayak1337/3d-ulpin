@@ -1,0 +1,6 @@
+{ "at": "2026-10-22T17:40:52.441Z", "caseId": "c144c003-31ba-4991-8d6b-87fdbea266e4", "source": "nyc-footprints",
+"jobs": 6, "span": { "firstCreated": "2026-10-22T16:41:34.970766+00:00",
+"lastCompleted": "2026-10-22T16:46:10.987535+00:00" }, "queueSumS": 539.861, "execSumS": 13.175, "byOperation": {
+"intake-large": { "jobs": 4, "queueMaxS": 233.124, "execMaxS": 0.14, "retries": 0, "notDone": 0 }, "streaming-vector": {
+"jobs": 1, "queueMaxS": 18.141, "execMaxS": 6.17, "retries": 0, "notDone": 0 }, "streamed-profile": { "jobs": 1,
+"queueMaxS": 18.122, "execMaxS": 6.83, "retries": 0, "notDone": 0 } } }

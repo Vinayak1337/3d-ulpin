@@ -1,0 +1,22 @@
+{ "task": "REH15", "read": "jobs-act1.json (read-only rows), card read-back, presenter marks", "stampsUtc": {
+"click": "16:32:32.784", "confirmationCreated": "16:32:33.111", "commitJobCreated": "16:32:32.829",
+"commitClaimed": "16:33:04.877", "commitDone": "16:33:23.678", "recordedSeen": "16:33:28.003",
+"citedClaimed": "16:33:23.757", "citedSnapshot": "16:33:51.801", "citedCard": "16:34:12.548",
+"citedDone": "16:34:31.635", "footprintClaimed": "16:34:31.684", "footprintSnapshot": "16:34:31.987",
+"footprintCard": "16:34:32.234", "footprintDone": "16:34:32.436", "bothSeen": "16:34:34.238" }, "stages": [ {
+"stage": "commit: queue before claim", "seconds": 32.048, "note": "intake-run commit job waited 32 s for a claim" }, {
+"stage": "commit: execution", "seconds": 18.801 }, { "stage": "citation and snapshot (cited target)", "seconds": 28.044,
+"reh14": "about 42 s with the commit" }, { "stage": "plan and packet to card created", "seconds": 20.747,
+"reh14": "about 22 s" }, { "stage": "card render, publication and verification", "seconds": 19.087,
+"reh14": "about 20 s" }, { "stage": "footprint-only target, all stages", "seconds": 0.752,
+"note": "its job was created with the cited one at 16:33:23.667 and claimed only when the cited one ended" }, {
+"stage": "last target done to both seen in the page", "seconds": 1.802,
+"note": "the presenter polls every 3 s; the SSE event to first paint was not separated from the poll" } ], "totals": {
+"clickToBothSeen": 121.454, "confirmationToCitedCard": 99.437, "confirmationToFootprintCard": 119.123, "reh14": {
+"clickToBothSeen": 153.896, "confirmationToCitedCard": 129.574, "confirmationToFootprintCard": 152.244 } },
+"findings": [ [ "The two target runs are serial: the footprint-only target (under 1 s of work) waited 68 s ",
+"behind the cited one." ], "The largest single wait is the 32 s before the commit job is claimed, not execution.",
+"jobs.dispatched_at is null for every act 1 job; the first fenced attempt stands in for the claim." ],
+"qualification": [ [ "For processor jobs (raster-window, point-batch, intake-evidence) the attempt row is writte",
+"n when the result is" ], [
+"fenced, so their queue figure includes processor execution; for intake-run jobs it is the ", "in-process claim." ] ] }

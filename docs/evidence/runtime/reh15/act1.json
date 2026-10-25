@@ -1,0 +1,50 @@
+{ "caseId": "6e38560f-077a-4f70-bc0c-997e0c57e3ca", "caseName": "REH15 act 1 NYC test_only", "retryPressed": true,
+"inputs": "act1-files.json: the four REH14 originals, bytes and SHA-256 unchanged", "steps": [ {
+"step": "Add files, drop four originals", "words": "same four forecasts as REH14, word for word", "changed": "none" }, {
+"step": "Retain files and open batch", "seconds": 0.333, "words": "batch opens before uploads finish (as REH14)" }, {
+"step": "View layout, Approve layout", "secondsFromRetain": 26.398, "reh14": 32.638, "words": [
+"Each feature is: a building; Identifier: bin; Name: not stated; Height: not stated;",
+"Area: buildings original · new area; Remembered from an approved layout of the same columns" ],
+"changed": "new line Area: buildings original · new area" }, { "step": "Open the table, Read as a table",
+"seconds": 0.275, "words": "Read with commas, UTF-8; 753 records · 9 columns", "header": [
+"The table page header named another case: Niagara Falls Building Footprints 2018 ... Revision 0",
+"(REH14 act 2 package; this case had no package yet). REH14 showed buildings original Revision 1." ] }, {
+"step": "Open package (map)", "secondsFromApprove": 51.397, "reh14": 48.479,
+"words": "1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY (unchanged)" }, {
+"step": "Link a register by a key (bin, integer, column 0)", "secondsToClosed": 24.76, "reh14": 39.408,
+"words": "Closed: 753 read, 753 with a key, 0 without a key, 0 unread, 0 could not be read.", "counts": {
+"matched": 612, "no_match": 60, "several": 0, "conflicting": 81 } }, {
+"step": "Accept every exact single match; Confirm the evidence", "accepted": 100, "presses": 4,
+"outcome": "pass on 4th", "secondsFirstPressToStored": 315.439, "reh14": 11.206, "presses_detail": [ {
+"at": "16:27:12Z", "result": "refused in the page, no request",
+"words": "feature 1001543: its package has no current review, so it cannot be named yet." }, { "at": "16:28:40Z",
+"result": "POST 409 INTAKE_EVIDENCE_STALE", "words": [
+"Candidate 002bf86c-780d-5085-b763-d0c84676a877 is not at the pins named under this profile.",
+"The evidence and the buildings were read again; check them and confirm again." ] }, { "at": "16:30:24Z",
+"result": "POST 409 INTAKE_EVIDENCE_STALE, same candidate; stop rule applied" }, { "at": "16:32:17Z",
+"result": "POST 202 after a page reload and Accept every exact single match again",
+"confirmation": "c13d786f-8c7e-45a3-bbaf-7236a8a51588", "secondsToStored": 10.219 } ], "cause": [
+"The key closed at 16:27:06Z, before the package review (intake-run done 16:27:34Z). The review",
+"queued a second intake-evidence reading (16:27:13Z-16:27:59Z) that re-pinned every candidate.",
+"The open form kept the first reading's candidate hashes, so Confirm sent stale pins until reload." ] }, {
+"step": "Tick two buildings; Record packages and make chosen cards", "pressed": 1, "secondsToRecordedSeen": 55.219,
+"secondsToBothCardsSeen": 121.454, "reh14": { "recorded": 66.533, "bothCards": 153.896 }, "seenLines": [
+"1659 ready · 2 confirmed for a card (4.0 s)", "1661 recorded · 0 card (55.2 s)",
+"1659 recorded · 2 card made and verified · 0 stopped (121.5 s); both in one 3 s poll" ],
+"confirmation": "0e8fb724-424b-4563-ab1b-afcd4ea2667a" } ], "cited": { "feature": "1002842", "record": {
+"id": "e5bcd7fd-9f90-4485-a883-c93a265ae63c", "revision": 2 }, "card": { "id": "06ec9d41-2fd4-4576-b375-70ee1543bc8b",
+"revision": 1, "targetRevision": 2 }, "quotedRow": [ "bin: 1002842", "bbl: 1002197503", "borough: MN",
+"des_addres: 35 Vestry Street", "style_prim: Utilitarian", "date_low: 1907", "date_high: 1907", "mat_prim: Red Brick",
+"build_type: Stable" ], "locator": "gpmc-yuvp.csv, CSV logical row 288",
+"rowMatchesOriginal": "line 288 of the original CSV, all 9 fields", "secondsServerConfirmationToCard": 99.437,
+"verification": { "page": "Consistent", "checks": "6 of 6 passed", "snapshot": "Revision 2, unchanged since the card",
+"signature": "not assessed (NO_TRUSTED_KEY_POLICY)", "firstLoadSeconds": 22.27 }, "pdf": { "status": 200, "bytes": 7070
+}, "recordPage": [ "Building 1002842; Property Card: Card 06ec9d41 · revision 1 · cites record revision 2",
+"Documents 2: gpmc-yuvp.csv CSV logical row 288; buildings-original.geojson feature 1002842" ] }, "footprintOnly": {
+"feature": "1007046", "outside": "not among the 100 confirmed rows", "record": {
+"id": "6fd646ab-5230-4e4e-8088-df2fcefaf05f", "revision": 1 }, "card": { "id": "b26fad3c-2658-4e2c-9097-b7c55d55fd58",
+"revision": 1, "targetRevision": 1 }, "confirmedEvidence": "none", "secondsServerConfirmationToCard": 119.123,
+"verification": { "page": "Consistent", "checks": "6 of 6 passed", "firstLoadSeconds": 1.02 }, "pdf": { "status": 200,
+"bytes": 6843 }, "recordPage": { "documents": "Documents 1: buildings-original.geojson feature 1007046", "status422": 0,
+"otherRefusal": "404 GET /api/v1/buildings/6fd646ab-.../residents" } }, "surfacesAtCards": {
+"tif": "Read 9 of 9 windows, on the map", "laz": "Read 2 of 211 batches, on the map (16:38Z)" } }
