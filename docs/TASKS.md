@@ -85,7 +85,7 @@ Size S, code only. After: S1.2a (merged). **Status: done 25 Oct (merged on task/
 
 ### S1.3 Fresh-runtime rehearsal part 2: our own act 2 files alone and under load, with timings
 
-Size L, this PC: Docker. After: S1.2. **Status: failed 25 Oct (evidence e47274ed on task/s1-3-rehearsal; production build, RTX 3070 renderer). Passed: file f alone first map 183.5 s (REH15 738 s); no API or dispatcher exit; 426 health samples all healthy. Failed: under load eight large-file jobs ended on capacity refusals (429) instead of waiting, so file b under load drew no map; a LAZ upload was refused when sibling arrivals moved the case revision; four native readers refused TOOL_CHANGED on reh-03. EV2 overlap again not produced (prepare 3.9 s): accepted on intake-evidence-confirm tests and 0 re-confirmations in S1.2 run 2. Fix S1.3a merged 25 Oct; next run 2 with the native readers rebuilt and checked first.. Run 2 running 25 Oct on reh-03 at int3-pre 8bc550e6 (with S1.3a, S3.7, S5.13 and the a8c67f15 processor image). Run 2 failed 25 Oct (evidence ae2be0b0 on task/s1-3-rehearsal, int3-pre 8bc550e6): fixed since run 1: no job ended on a capacity refusal, the LAZ upload published 54/54 parts, five native readers verified, file b alone drew both parts in 33 s (run 1: 219 s), file f alone 181 s. Failed: under load the large Halifax file held both vector slots with its stream reader and its profile for 523 s, so every other vector job waited (the ZIP 460 s, CityGML and CityJSON conversions about 500 s); fix S1.3b. Not produced: paint timing (blank captures), EV2 during prepare, DXF live proof. PO1 page 3 is refused by the known whole-page OCR frame limit (above 2000 points a side). Run 3 after S1.3b, with the recorder fixes from run2/faults.json. Run 3 running 25 Oct on reh-03 at int3-pre 726bb2e8 (load phase, paint timing, EV2, DXF).**
+Size L, this PC: Docker. After: S1.2. **Status: failed 25 Oct (evidence e47274ed on task/s1-3-rehearsal; production build, RTX 3070 renderer). Passed: file f alone first map 183.5 s (REH15 738 s); no API or dispatcher exit; 426 health samples all healthy. Failed: under load eight large-file jobs ended on capacity refusals (429) instead of waiting, so file b under load drew no map; a LAZ upload was refused when sibling arrivals moved the case revision; four native readers refused TOOL_CHANGED on reh-03. EV2 overlap again not produced (prepare 3.9 s): accepted on intake-evidence-confirm tests and 0 re-confirmations in S1.2 run 2. Fix S1.3a merged 25 Oct; next run 2 with the native readers rebuilt and checked first.. Run 2 running 25 Oct on reh-03 at int3-pre 8bc550e6 (with S1.3a, S3.7, S5.13 and the a8c67f15 processor image). Run 2 failed 25 Oct (evidence ae2be0b0 on task/s1-3-rehearsal, int3-pre 8bc550e6): fixed since run 1: no job ended on a capacity refusal, the LAZ upload published 54/54 parts, five native readers verified, file b alone drew both parts in 33 s (run 1: 219 s), file f alone 181 s. Failed: under load the large Halifax file held both vector slots with its stream reader and its profile for 523 s, so every other vector job waited (the ZIP 460 s, CityGML and CityJSON conversions about 500 s); fix S1.3b. Not produced: paint timing (blank captures), EV2 during prepare, DXF live proof. PO1 page 3 is refused by the known whole-page OCR frame limit (above 2000 points a side). Run 3 after S1.3b, with the recorder fixes from run2/faults.json. Run 3 failed 25 Oct (evidence c5e7fb94 on task/s1-3-rehearsal, int3-pre 726bb2e8): fixed since run 2: the ZIP waits 12.8 s for its first reader (was 460 s), CityGML and CityJSON conversions 15 and 22 s (were about 500 s), every vector first dispatch under 60 s, DXF read live (229 records, 83 entities, declared metres). Failed: only one streamed profile may be active in the whole service, and Halifax held it, so the ZIP read its member but drew nothing in 900 s (S1.3c); Halifax raw passed its 10-minute read deadline under load and started again (S1.3d); two KML members of the ZIP were refused by the full receipt allowance (S1.3e); an enabled Record press during prepare sent no request (S1.3f); longest frame 189 ms with reh-02 also running. Run 4 after S1.3c to S1.3f.**
 
 - **What:** On ulpin-reh-03, run REH16's act 2 list. First file b (the zp1 ZIP) alone, measuring LQ1: layout, first map, both parts. Then file f (Niagara 26 MB GeoJSON) alone. Then the load phase, each file in its own batch. Record per file: forecast and tray words, reader outcome, map yes/no, seconds. Record job queue, execution and retry split, any S3.1 exit lines, health pool numbers every 5 s, and host CPU. Fix the REH17 act2-list CityJSON path first; it points at a reh16 file that doesn't exist. Stop reh-03 at the end.
 - **Files:** k3 docs/evidence/runtime/reh16/{act2-list.json,watch.mjs,jobs.mjs,checkpoint.json}; _tasks/reh17.md steps 4-5; E:/BhuAayam-data/task-data/reh16/act2 prepared inputs. Write: docs/evidence/step1/s1-3/result.json.
@@ -101,6 +101,38 @@ Size S, code only. After: S1.3 run 2. **Status: merged 25 Oct (int3-pre 511da8d4
 - **Files:** packages/server/src/modules/cases/dispatch-lanes.ts; processing-latency.test.ts, processing.test.ts, dispatch-heap.test.ts and dispatch-scratch.test.ts (lane assertions only); docs/design/INGESTION-ARCHITECTURE.md section 8
 - **Check:** a replay test with run 2's shape: one streaming large file, then a ZIP-like item with 43 parts and one conversion. The small item's first vector job starts within one tick, where it waited for the whole stream on the base commit. Two large files whose four readers arrive interleaved all finish.
 - **Tests:** processing-latency, processing, dispatch-heap and dispatch-scratch tests; pnpm typecheck:backend; the section 5 server command
+### S1.3c One large file's profile no longer blocks every other file's profile
+
+Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3c-profile-admission from 726bb2e8).**
+
+- **What:** STREAMED_PROFILE_LIMITS.active is 1 across the service, so a large file's profile row stops every other file at profile admission. Raise it to 2, half the stream lane, keeping S1.3b's proof that profiles and raw readers cannot fill the lane; replays for a ZIP beside a long large file and for every profile waiting on raw.
+- **Files:** packages/contracts/src/usp/streamed-profile.ts; streamed-profile tests; processing-latency.test.ts
+- **Tests:** processing-latency.test.ts; the section 5 server set; pnpm typecheck:backend
+
+### S1.3d Why the 108 MB raw read passed its deadline under load
+
+Size S, code only (reh-03 read-only if needed). After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3d-raw-deadline from 726bb2e8).**
+
+- **What:** The streaming read has one wall deadline (10 minutes per started 128 MiB) that also counts time held by backpressure; under load Halifax passed it and started again. Find where the read waited, then one bounded comparison; if the deadline counts waiting, bound lack of progress instead under a stated outer bound. Also say why the PB1 enrolment got 502 ETIMEDOUT through the preview proxy.
+- **Files:** the streaming-vector reader and worker; packages/server/src/infrastructure/storage.ts (openObjectStream)
+- **Tests:** the section 5 server set; streaming-vector-scale.test.ts
+
+### S1.3e A ZIP member refused by a full receipt allowance waits for a free receipt
+
+Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3e-zip-quota-wait from 726bb2e8; first pass stopped on scope, resumed with the worker file).**
+
+- **What:** A member refused UPLOAD_QUOTA stays inside the archive until the officer enrols it again. The ZIP layer job requeues for the refusal's freesAt under one outer bound, and the member says it waits.
+- **Files:** packages/server/src/modules/usp/ingestion/intake-zip-layers.ts, intake-zip-layers-worker.ts; tests/intake-zip-layers.test.ts
+- **Tests:** tests/intake-zip-layers.test.ts; the section 5 server set
+
+### S1.3f An enabled Record press during prepare sends its request or says why not
+
+Size S, UI (Claude session). After: S1.3 run 3. **Status: proposed 25 Oct (worktree E:/Projects/ulpin-wt/s1-3f, task/s1-3f-ev2-press from 726bb2e8).**
+
+- **What:** In run 3 the recorder pressed Record packages and make chosen cards while the package was being prepared; the button was recorded as enabled and no confirmation was sent. Name the cause; never an enabled button that does nothing.
+- **Files:** apps/studio/src/features/intake/run/ (Confirm.tsx, useConfirmationCommand.ts, model.ts)
+- **Tests:** pnpm studio:typecheck; pnpm studio:test; pnpm studio:build
+
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
 Size M, code only. After: S1.3. **Status: done 25 Oct (merged into task/int3-pre at 5ec9f884, pins 7861c386). Busy readers (429) and sibling revision races (STALE_REVISION) wait without spending attempts, up to 30 minutes; uploads tolerate a case revision that moved on. Server set 921 pass, 4 skipped. Live proof is S1.3 run 2.**
