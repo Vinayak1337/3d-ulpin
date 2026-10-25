@@ -312548,6 +312548,11 @@
                                   "additionalProperties": false
                                 }
                               ]
+                            },
+                            "storeyOutlineCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
                             }
                           },
                           "required": [
@@ -323417,6 +323422,11 @@
                                       "additionalProperties": false
                                     }
                                   ]
+                                },
+                                "storeyOutlineCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 10000
                                 }
                               },
                               "required": [
@@ -400447,6 +400457,11 @@
                                   "additionalProperties": false
                                 }
                               ]
+                            },
+                            "storeyOutlineCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
                             }
                           },
                           "required": [
@@ -402585,6 +402600,11 @@
                                   "additionalProperties": false
                                 }
                               ]
+                            },
+                            "storeyOutlineCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 10000
                             }
                           },
                           "required": [
@@ -412576,6 +412596,11 @@
                         "additionalProperties": false
                       }
                     ]
+                  },
+                  "storeyOutlineCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
                   }
                 },
                 "required": [

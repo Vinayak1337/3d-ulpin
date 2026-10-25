@@ -52996,6 +52996,7 @@ export interface components {
                             code: string;
                             reason: string;
                         };
+                        storeyOutlineCount?: number;
                     };
                     artifactSha256: string;
                     artifactBytes: number;
@@ -55321,6 +55322,7 @@ export interface components {
                                 code: string;
                                 reason: string;
                             };
+                            storeyOutlineCount?: number;
                         };
                         artifactSha256: string;
                         artifactBytes: number;
@@ -71365,6 +71367,7 @@ export interface components {
                                 code: string;
                                 reason: string;
                             };
+                            storeyOutlineCount?: number;
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -71802,6 +71805,7 @@ export interface components {
                                 code: string;
                                 reason: string;
                             };
+                            storeyOutlineCount?: number;
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -73769,6 +73773,7 @@ export interface components {
                         code: string;
                         reason: string;
                     };
+                    storeyOutlineCount?: number;
                 };
                 artifact: {
                     key: string;
