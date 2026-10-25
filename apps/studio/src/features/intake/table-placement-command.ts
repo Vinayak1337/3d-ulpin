@@ -4,13 +4,20 @@ import { layerCrsCode } from './layer-crs-command';
 export type TablePlacementBody =
   Schemas['POST_ingestion_cases_caseId_intake_items_itemId_table_placement_Request_application_json'];
 type Coordinates = TablePlacementBody['coordinates'];
-type Choice = Pick<TablePlacementBody, 'coordinates' | 'crs'>;
+type Choice = Pick<TablePlacementBody, 'coordinates' | 'crs' | 'decimalMark'>;
 
-/** What the officer picked: each column as its header position, '' while none is chosen, and the code as typed. */
-export interface TablePlacementForm { kind: Coordinates['kind']; x: string; y: string; column: string; crs: string }
+/**
+ * What the officer picked: each column as its header position, '' while none is chosen, the code as typed and the
+ * decimal mark of the x and y cells as stated, never read from the cells.
+ */
+export interface TablePlacementForm {
+  kind: Coordinates['kind']; x: string; y: string; column: string; crs: string;
+  decimalMark: TablePlacementBody['decimalMark'];
+}
 export interface TablePlacementState { busy: boolean; uncertain: boolean; error: string; started: boolean }
 
-export const emptyTablePlacement: TablePlacementForm = { kind: 'columns', x: '', y: '', column: '', crs: '' };
+export const emptyTablePlacement: TablePlacementForm = { kind: 'columns', x: '', y: '', column: '', crs: '',
+  decimalMark: 'point' };
 export const UNSTATED_CRS = 'Which coordinate system are these coordinates in? State its EPSG code, for example '
   + 'EPSG:4326 for longitude and latitude; none is assumed.';
 
@@ -18,20 +25,23 @@ export const UNSTATED_CRS = 'Which coordinate system are these coordinates in? S
 export function tablePlacementChoice(form: TablePlacementForm): Choice | string {
   const position = (value: string) => value === '' ? null : Number(value);
   let coordinates: Coordinates;
+  let decimalMark: Choice['decimalMark'] = 'point';
   if (form.kind === 'columns') {
     const x = position(form.x);
     const y = position(form.y);
     if (x === null || y === null) return 'Choose the column of x or longitude and the column of y or latitude.';
     if (x === y) return 'Choose two different columns for x and y.';
     coordinates = { kind: 'columns', x, y };
+    decimalMark = form.decimalMark;
   } else {
+    // WKT text is read with a decimal point only.
     const column = position(form.column);
     if (column === null) return 'Choose the column that holds the WKT text.';
     coordinates = { kind: 'wkt', column };
   }
   if (!form.crs.trim()) return UNSTATED_CRS;
   const crs = layerCrsCode(form.crs);
-  return crs ? { coordinates, crs } : 'Write the code as EPSG and its number, for example EPSG:32643.';
+  return crs ? { coordinates, crs, decimalMark } : 'Write the code as EPSG and its number, for example EPSG:32643.';
 }
 
 export function tablePlacementPress(state: TablePlacementState): string {
@@ -42,7 +52,7 @@ export function tablePlacementPress(state: TablePlacementState): string {
 
 /**
  * One request key per choice until its outcome is known, so a lost answer resends the same request; another
- * choice of columns or code is a new request with a new key.
+ * choice of columns, code or decimal mark is a new request with a new key.
  */
 export function createTablePlacementCommand(send: (body: TablePlacementBody) => Promise<unknown>,
   changed: (state: TablePlacementState) => void, refresh: () => void,
@@ -60,8 +70,8 @@ export function createTablePlacementCommand(send: (body: TablePlacementBody) => 
       publish({ error: choice });
       return;
     }
-    const same = pending && JSON.stringify([pending.coordinates, pending.crs])
-      === JSON.stringify([choice.coordinates, choice.crs]);
+    const same = pending && JSON.stringify([pending.coordinates, pending.crs, pending.decimalMark])
+      === JSON.stringify([choice.coordinates, choice.crs, choice.decimalMark]);
     const body: TablePlacementBody = same && pending ? pending : { requestKey: key(), ...choice };
     pending = body;
     publish({ busy: true, error: '' });
