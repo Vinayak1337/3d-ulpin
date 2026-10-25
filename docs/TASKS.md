@@ -721,7 +721,7 @@ Size M, this PC: data drive. After: S5.8a. Before: S5.22 rerun. **Status: runnin
 
 ### S5.12c The SurfacePreview mosaic test passes under full-suite load
 
-Size XS, UI (Claude session). **Status: proposed 25 Oct (worktree E:/Projects/ulpin-wt/s5-12c, task/s5-12c-mosaic-test from int3-pre 54468155).**
+Size XS, UI (Claude session). **Status: merged 25 Oct (int3-pre, c7385735). Cause: every published view shared the same part objects, so a picture decoded later reached an earlier frame and drew a third time. Each view now keeps its own copy; two deterministic tests cover a late decode. Studio 755 passed twice under worker load.**
 
 - **What:** The mosaic test sees three drawImage calls instead of two under the full Studio run and passes alone; it failed in three full runs on 25 Oct. Name the cause and fix it so each part is drawn once per settled state, with a deterministic regression test; never loosen the assertion.
 - **Files:** apps/studio/src/features/intake/surface/
