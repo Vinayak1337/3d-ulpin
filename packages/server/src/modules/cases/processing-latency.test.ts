@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, rmdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
@@ -25,6 +25,27 @@ type Event = { at: number; finish: () => void };
 type Driver = { dispatchTick: () => Promise<number>; dispatchWakeVersion: () => number };
 type Controls = { worker: (id: string) => Promise<void>; surface: () => Promise<void> };
 const globals = globalThis as typeof globalThis & { ulpinPool?: unknown; lq1Replay?: Controls };
+async function removeReplay(folder: string) {
+  for (const name of await readdir(folder)) await rm(join(folder, name));
+  await rmdir(folder);
+}
+
+async function withReplay(run: (folder: string) => Promise<void>) {
+  const folder = await mkdtemp('E:/ulpin-tmp/s3-7-replay-');
+  const previousPool = globals.ulpinPool, previousControls = globals.lq1Replay;
+  const budget = process.env.DISPATCH_MEMORY_MIB;
+  process.env.DISPATCH_MEMORY_MIB = '1536';
+  try {
+    await run(folder);
+  } finally {
+    globals.ulpinPool = previousPool;
+    globals.lq1Replay = previousControls;
+    if (budget === undefined) delete process.env.DISPATCH_MEMORY_MIB;
+    else process.env.DISPATCH_MEMORY_MIB = budget;
+    await removeReplay(folder);
+  }
+}
+
 async function flush() {
   for (let turn = 0; turn < 30; turn++) {
     await Promise.resolve();
@@ -50,10 +71,20 @@ async function realMix() {
 }
 
 /** Only dependency imports change: both versions execute their actual tick, reservations and worker finally paths. */
-async function loadDriver(folder: string, baseline: boolean): Promise<Driver> {
-  let source = baseline ? execFileSync('git', ['show', '70560f89:packages/server/src/modules/cases/processing.ts'],
+async function loadDriver(folder: string, baseline: boolean | 'lane'): Promise<Driver> {
+  const revision = baseline === 'lane' ? 'a8c67f15' : '70560f89';
+  let source = baseline ? execFileSync('git', ['show', `${revision}:packages/server/src/modules/cases/processing.ts`],
     { encoding: 'utf8' }) : await readFile(sourcePath, 'utf8');
-  const workers = new Set(['intake-large-worker', 'streaming-vector-worker', 'streamed-profile-worker']);
+  if (baseline === 'lane') {
+    const lanes = execFileSync('git', ['show', `${revision}:packages/server/src/modules/cases/dispatch-lanes.ts`],
+      { encoding: 'utf8' }).replace("'@ulpin/contracts/usp'",
+      JSON.stringify(resolve(dirname(sourcePath), '../../../../contracts/src/usp/index.ts')));
+    const path = join(folder, 'before-lanes.ts');
+    await writeFile(path, lanes);
+    source = source.replace("'./dispatch-lanes'", JSON.stringify(path));
+  }
+  const workers = new Set(['intake-large-worker', 'streaming-vector-worker', 'streamed-profile-worker',
+    'chunk-mapping-worker']);
   source = source.replace(/import \{(\w+)\} from '(\.\.\/usp\/ingestion\/([^']+))';/g,
     (original, name: string, _specifier: string, module: string) => {
       if (workers.has(module)) return `const ${name} = (id: string) => globalThis.lq1Replay.worker(id);`;
@@ -102,7 +133,7 @@ async function replayWorker(state: ReplayWorkerState, id: string) {
   return peaks;
 }
 
-function replayState() {
+function replayState(mixed = false) {
   const rows: Row[] = [], events: Event[] = [], dispatched: { id: string; at: number }[] = [];
   const questions = new Map<string, number>();
   let surfacePasses = 0, activeSurfaces = 0, peakSurfaces = 0, peakMemoryMiB = 0, peakVector = 0;
@@ -126,9 +157,19 @@ function replayState() {
     await delay(18_250);
     activeSurfaces--;
   };
-  // Six newly created layers precede the older member's new state-key job in job FIFO.
-  layers.forEach((name, index) => enqueue(name, 'intake-large', 'start', index + 1, epoch - 10 + index));
-  enqueue(member, 'intake-large', 'start', 0, epoch);
+  if (mixed) {
+    // Twelve scheduling stubs, not twelve acquired files: reuse the measured member's spans above.
+    const operations = ['streaming-vector', 'streaming-vector', 'streamed-profile', 'intake-large',
+      'chunk-mapping', 'streaming-vector', 'streamed-profile', 'intake-large', 'chunk-mapping',
+      'streaming-vector', 'streamed-profile', 'intake-large'];
+    const stages: Record<string, string> = { 'intake-large': 'start', 'streamed-profile': 'profile' };
+    operations.forEach((operation, index) =>
+      enqueue(`replay-${index}`, operation, stages[operation] ?? 'raw', index, epoch));
+  } else {
+    // Six newly created layers precede the older member's new state-key job in job FIFO.
+    layers.forEach((name, index) => enqueue(name, 'intake-large', 'start', index + 1, epoch - 10 + index));
+    enqueue(member, 'intake-large', 'start', 0, epoch);
+  }
   return { rows, events, dispatched, questions, enqueue, worker, surface,
     stats: () => ({ surfacePasses, peakSurfaces, peakMemoryMiB, peakVector }) };
 }
@@ -155,14 +196,15 @@ async function tickToCompletion(driver: Driver, state: Replay, tick: (millisecon
   await pending;
 }
 
-async function runReplay(driver: Driver, tick: (milliseconds: number) => void) {
-  const state = replayState();
+async function runReplay(driver: Driver, tick: (milliseconds: number) => void, mixed = false) {
+  const state = replayState(mixed);
+  const files = [...new Set(state.rows.map(row => row.source_id))];
   globals.lq1Replay = { worker: state.worker, surface: state.surface };
   globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
     const rows = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, state.rows) : [];
     return { rows, rowCount: rows.length };
   } };
-  for (let turns = 0; turns < 2000 && state.questions.size < 7; turns++) {
+  for (let turns = 0; turns < 2000 && state.questions.size < files.length; turns++) {
     const wake = driver.dispatchWakeVersion();
     await tickToCompletion(driver, state, tick);
     await flush();
@@ -171,8 +213,9 @@ async function runReplay(driver: Driver, tick: (milliseconds: number) => void) {
     advance(state, next, tick);
     await flush();
   }
-  assert.equal(state.questions.size, 7, 'all siblings must make progress within the bounded replay');
-  const first = state.dispatched.find(row => row.id.startsWith(`${member}:`))!.at;
+  assert.equal(state.questions.size, files.length, 'all siblings must make progress within the bounded replay');
+  const firstDispatches = files.map(file => state.dispatched.find(row => row.id.startsWith(`${file}:`))!.at);
+  const first = firstDispatches[files.indexOf(member)];
   const layout = state.questions.get(member)!;
   // Drain the single detached pass before its globals are restored; no background work leaks into other tests.
   while (state.events.length) {
@@ -180,19 +223,70 @@ async function runReplay(driver: Driver, tick: (milliseconds: number) => void) {
     await flush();
   }
   return { memberFirstDispatchMs: first, memberLayoutMs: layout,
+    allFirstDispatchMs: Math.max(...firstDispatches),
+    totalFirstDispatchMs: firstDispatches.reduce((sum, ms) => sum + ms, 0),
+    firstTickStreaming: state.dispatched.filter(event => event.at === 0
+      && state.rows.find(row => row.id === event.id)?.operation === 'streaming-vector').length,
     allLayoutsMs: Math.max(...state.questions.values()), ...state.stats(),
     dispatches: state.dispatched.length };
 }
+
+test('twelve-file replay starts two streaming readers in one tick and lowers every-file dispatch time', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withReplay(async folder => {
+    const before = await runReplay(await loadDriver(folder, 'lane'), ms => t.mock.timers.tick(ms), true);
+    t.mock.timers.setTime(epoch);
+    const after = await runReplay(await loadDriver(folder, false), ms => t.mock.timers.tick(ms), true);
+    assert.equal(before.firstTickStreaming, 1);
+    assert.equal(after.firstTickStreaming, 2);
+    assert.ok(after.totalFirstDispatchMs < before.totalFirstDispatchMs);
+    assert.ok(after.allFirstDispatchMs < before.allFirstDispatchMs);
+    console.log(JSON.stringify({ qualification: '12 scheduling stubs, measured REH16 member spans; not runtime',
+      baseline: 'a8c67f15', before, after }));
+  });
+});
+
+test('all four reader sets retain lane and memory bounds across ticks and release only their own jobs', async () => {
+  await withReplay(async folder => {
+    const driver = await loadDriver(folder, false);
+    for (const operation of ['streaming-vector', 'streamed-profile', 'chunk-mapping', 'intake-large']) {
+      for (const capacity of [2, 1]) {
+        process.env.DISPATCH_MEMORY_MIB = String(capacity === 2 ? 1536 : dispatchCost(operation).mib * 2 - 1);
+        const started: string[] = [], finish = new Map<string, () => void>();
+        const rows = Array.from({ length: 3 }, (_, index) => ({ id: `${operation}-${index}`, operation,
+          source_id: `file-${index}`, case_id: 'slot-control', created_at: new Date(epoch + index) }));
+        globals.lq1Replay = { surface: async () => {}, worker: id => {
+          started.push(id);
+          return new Promise<void>(resolve => { finish.set(id, resolve); });
+        } };
+        globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+          const picked = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, rows) : [];
+          return { rows: picked, rowCount: picked.length };
+        } };
+        try {
+          await driver.dispatchTick();
+          assert.equal(started.length, capacity, `${operation}: first tick respects lane/memory`);
+          await driver.dispatchTick();
+          assert.equal(started.length, capacity, 'held jobs never start twice; a third waits');
+          rows.splice(0, capacity);
+          finish.get(started[0])!();
+          await flush();
+          await driver.dispatchTick();
+          assert.equal(started.length, capacity + 1, 'one completion frees exactly one slot');
+        } finally {
+          for (const release of finish.values()) release();
+          await flush();
+        }
+      }
+    }
+  });
+});
 
 test('REH16 job-mix replay: an older member is dispatched before its six sibling layers without raising caps',
   { skip: !existsSync(archivePath) }, async t => {
     const input = await realMix();
     t.mock.timers.enable({ apis: ['Date'], now: epoch });
-    const folder = await mkdtemp('E:/ulpin-tmp/lq1-replay-');
-    const previousPool = globals.ulpinPool, previousControls = globals.lq1Replay;
-    const budget = process.env.DISPATCH_MEMORY_MIB;
-    process.env.DISPATCH_MEMORY_MIB = '1536';
-    try {
+    await withReplay(async folder => {
       const before = await runReplay(await loadDriver(folder, true), ms => t.mock.timers.tick(ms));
       t.mock.timers.setTime(epoch);
       const after = await runReplay(await loadDriver(folder, false), ms => t.mock.timers.tick(ms));
@@ -205,11 +299,5 @@ test('REH16 job-mix replay: an older member is dispatched before its six sibling
       console.log(JSON.stringify({ qualification: 'offline calibrated scheduling replay, not runtime latency',
         checkpoint: 'fan-out complete; sibling job FIFO precedes an older member item\'s follow-up',
         input, spansMs: spans, surfaceDelayMs: 18_250, memoryBudgetMiB: 1536, before, after }));
-    } finally {
-      globals.ulpinPool = previousPool;
-      globals.lq1Replay = previousControls;
-      if (budget === undefined) delete process.env.DISPATCH_MEMORY_MIB;
-      else process.env.DISPATCH_MEMORY_MIB = budget;
-      await rm(folder, { recursive: true, force: true });
-    }
+    });
   });
