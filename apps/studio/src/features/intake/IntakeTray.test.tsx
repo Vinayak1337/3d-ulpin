@@ -1,3 +1,6 @@
+import { button, container, elements, propsOf } from './fake-dom';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { expect, it, vi } from 'vitest';
@@ -72,4 +75,24 @@ it('a captured row fits five columns, with its size in KiB or MiB and no raw byt
   expect(html).toContain('1,662 features');
   expect(html).not.toContain('bytes');
   expect(html).not.toContain('Not applicable');
+});
+
+it('a kept surface not on the map offers View the surface, which chooses it; one on the map offers none', async () => {
+  const laz = { ...rested, itemId: '10000000-0000-4000-8000-000000000102', name: 'nyc-10013-lidar-2017.laz',
+    family: 'point_cloud', placement: 'waiting_for_anchor', existingAreaId: undefined,
+    limitReason: null } as IntakeItem;
+  const choose = vi.fn();
+  const root = container();
+  const view = createRoot(root as never);
+  await act(async () => view.render(<MemoryRouter>
+    <IntakeTray caseId={laz.caseId} items={[rested, laz]} packages={[]} choose={choose} refresh={vi.fn()} />
+  </MemoryRouter>));
+  const surface = button(root, 'View the surface');
+  expect(propsOf(surface)['aria-label']).toBe('View the surface: nyc-10013-lidar-2017.laz');
+  expect(elements(root).filter((node) => node.tagName === 'BUTTON' && node.textContent === 'View the surface'))
+    .toHaveLength(1);
+  await act(async () => propsOf(surface).onClick?.({}));
+  expect(choose).toHaveBeenCalledWith(laz);
+  await act(async () => view.unmount());
+  expect(tray({ ...laz, placement: 'on_map' })).not.toContain('View the surface');
 });
