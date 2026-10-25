@@ -525,6 +525,82 @@ test('reading route reads one accepted receipt, never an original, reader, model
   assert.equal(forbidden.mock.callCount(), 0);
 });
 
+test('CityGML inventory overflow adds only its bounded explanation; unrelated failures add nothing', async t => {
+  const original = nativeRoot + savedReadings[2][2];
+  if (!existsSync(original)) return t.skip('saved CityGML original is absent');
+  const bytes = readFileSync(original), card = await probe(bytes, basename(original));
+  const id = '10000000-0000-4000-8000-000000000001', other = '10000000-0000-4000-8000-000000000002';
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'reading-protocol-control';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  });
+  const binding = ingestionBinding(id);
+  // Job envelopes are protocol controls over an unchanged public CityGML original, not inventory claims.
+  const input = { jobId: id, caseId: id, sourceId: id, sourceRevision: 1, sourceSha256: digest(bytes),
+    sourceBytes: bytes.length, objectKey: 'protocol-original', caseRevision: 0,
+    caseContextSha256: fingerprint({ frame: null, context: null, siteId: null }),
+    subject: binding.subject, accessSha256: binding.access };
+  const stopped = { id, case_id: id, source_id: id, status: 'failed', error: 'CITYGML_OUTPUT_LIMIT',
+    payload: input, input_sha256: fingerprint(input), frame: null, context: null, site_id: null };
+  let job = structuredClone(stopped), currentCard = card, namedJob: string | null = id;
+  const client = { query: async (sql: string, values: unknown[]) => {
+    assert.match(sql, /^SELECT /, 'reading cannot write');
+    if (sql.includes('FROM cases')) return { rows: [{ id, archived: false, revision: 0 }] };
+    if (sql.includes('LIMIT 65')) return { rows: [] };
+    if (sql.startsWith('SELECT i.*')) return { rows: [{ source_id: id, card: currentCard,
+      plan_ref: { nativeReaderJobId: namedJob, ifcJobId: id } }] };
+    if (sql.includes('FROM jobs')) {
+      if (sql.includes("a.state='accepted'")) return { rows: [] };
+      assert.match(sql, /j.case_id=\$1 AND j.source_id=\$2 AND j.operation='citygml-native' AND j.id=\$3/);
+      assert.match(sql, /j.status='failed' AND j.error='CITYGML_OUTPUT_LIMIT'/);
+      assert.doesNotMatch(sql, /result_ref|usp_job_attempts/);
+      return { rows: job.case_id === values[0] && job.source_id === values[1] && job.id === values[2]
+        && job.status === 'failed' && job.error === 'CITYGML_OUTPUT_LIMIT' ? [job] : [] };
+    }
+    if (sql.includes('FROM sources')) return { rows: [{ id, case_id: id, revision: 1,
+      profile: 'citygml-native-v1', sha256: digest(bytes), bytes: bytes.length, object_key: input.objectKey,
+      inspection: { citygmlOriginal: { version: 'citygml-native/1', subject: binding.subject,
+        accessSha256: binding.access, sha256: digest(bytes), bytes: bytes.length,
+        receivedAt: new Date(0).toISOString(), lineageState: 'caller_declared', lineage: { issuer: null,
+          originalUrl: null, acquiredAt: null, permissionReference: null, geography: null, limitations: [] } } } }] };
+    throw new Error(`Unexpected reading SQL: ${sql}`);
+  } } as unknown as PoolClient;
+  const forbidden = async () => { throw new Error('No original or failed-job artifact may be read.'); };
+  const service = new IntakeService({ transaction: async action => action(client), object: forbidden,
+    read: forbidden, probe: forbidden, planModel: forbidden });
+  const baseline = readingOf({}, card), reading = await service.reading(id, id);
+  const added = reading.holds.filter(entry => !baseline.holds.some(prior => prior.words === entry.words));
+  assert.deepEqual(added, [{ basis: 'reader', words: 'The CityGML element inventory is larger than the reader lists '
+    + '(16 MiB), so its elements are not listed here; '
+    + 'building outlines are read directly from the unchanged original.' }]);
+  assert.deepEqual({ ...reading, holds: reading.holds.filter(entry => !added.includes(entry)) }, baseline);
+  for (const change of [{ error: 'CITYGML_TIMEOUT' }, { status: 'succeeded' }, { source_id: other },
+    { case_id: other }, { id: other }]) {
+    job = { ...structuredClone(stopped), ...change };
+    assert.deepEqual(await service.reading(id, id), baseline);
+  }
+  for (const change of [{ sourceRevision: 2 }, { sourceId: other }, { sourceSha256: '0'.repeat(64) },
+    { objectKey: 'other' }, { caseRevision: 1 }, { subject: 'other' }, { accessSha256: '0'.repeat(64) },
+    { caseContextSha256: '0'.repeat(64) }, { sourceBytes: bytes.length + 1 }, { jobId: other }, { caseId: other }]) {
+    const payload = { ...input, ...change };
+    job = { ...stopped, payload, input_sha256: fingerprint(payload) };
+    assert.deepEqual(await service.reading(id, id), baseline);
+  }
+  job = { ...stopped, input_sha256: '0'.repeat(64) };
+  assert.deepEqual(await service.reading(id, id), baseline);
+  job = structuredClone(stopped);
+  namedJob = null;
+  assert.deepEqual(await service.reading(id, id), baseline);
+  namedJob = id;
+  for (const format of ['cityjson', 'dxf'] as const) {
+    currentCard = { ...card, format };
+    assert.deepEqual(await service.reading(id, id), readingOf({}, currentCard));
+  }
+  assert.equal(digest(readFileSync(original)), digest(bytes), 'original bytes remain unchanged');
+});
+
 test('link reasons keep provenance, exact headers, meaning disagreements and closed-interval placement', async () => {
   // Meaning and extent envelope controls over real profiles, not assertions about these source records.
   const card = await probe(readFileSync(fixtures[2][0]), 'lgd-gurugram.csv');

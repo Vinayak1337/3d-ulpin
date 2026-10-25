@@ -324,7 +324,7 @@ export class IntakeService {
         const jobId = uuid.safeParse(row.plan_ref?.nativeReaderJobId ?? row.plan_ref?.ifcJobId);
         if (format === 'pdf' || reader && jobId.success) {
           const operation = format === 'pdf' ? 'document-extraction' : `${format}-native`;
-          const job = (await client.query(`SELECT j.id,j.payload,m.result_ref,m.input_sha256,
+          let job = (await client.query(`SELECT j.id,j.payload,m.result_ref,m.input_sha256,
             c.frame,c.context,c.site_id FROM jobs j JOIN cases c ON c.id=j.case_id
             JOIN usp_job_metadata m ON m.job_id=j.id
             JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence AND a.state='accepted'
@@ -333,6 +333,14 @@ export class IntakeService {
             AND a.completion_sha256=m.result_ref->>'sha256' AND a.input_sha256=m.input_sha256
             AND NOT (j.payload ? 'ocrSelection') ORDER BY j.created_at DESC LIMIT 1`,
           [caseId, source.id, operation, jobId.success ? jobId.data : null])).rows[0];
+          if (!job && format === 'citygml' && jobId.success && row.plan_ref?.nativeReaderJobId === jobId.data) {
+            job = (await client.query(`SELECT j.id,j.payload,j.status,j.error,m.input_sha256,
+              c.frame,c.context,c.site_id FROM jobs j JOIN cases c ON c.id=j.case_id
+              JOIN usp_job_metadata m ON m.job_id=j.id
+              WHERE j.case_id=$1 AND j.source_id=$2 AND j.operation='citygml-native' AND j.id=$3
+              AND j.status='failed' AND j.error='CITYGML_OUTPUT_LIMIT'
+              AND NOT (j.payload ? 'ocrSelection')`, [caseId, source.id, jobId.data])).rows[0];
+          }
           const input = job?.payload;
           if (input && fingerprint(input) === job.input_sha256
             && input.jobId === job.id && input.caseId === caseId && input.sourceId === source.id
@@ -341,7 +349,9 @@ export class IntakeService {
             && input.sourceSha256 === source.sha256 && input.sourceRevision === source.revision
             && input.sourceBytes === Number(source.bytes) && input.subject === scope.binding.subject
             && input.accessSha256 === scope.binding.access && input.caseRevision <= scope.current.revision) {
-            if (format === 'pdf') facts.document = (await readDocumentResult(DocumentInputSchema.parse(input),
+            if (format === 'citygml' && job.status === 'failed' && job.error === 'CITYGML_OUTPUT_LIMIT') {
+              facts.nativeStopped = { format, code: job.error };
+            } else if (format === 'pdf') facts.document = (await readDocumentResult(DocumentInputSchema.parse(input),
               job.result_ref.sha256, this.dependencies.object)).native;
             else if (reader) {
               const key = `${format}-native/${input.jobId}/${job.result_ref.sha256}.json`;
