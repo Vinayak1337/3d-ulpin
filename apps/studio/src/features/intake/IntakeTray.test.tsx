@@ -41,10 +41,9 @@ const closed = { cellKey: 'utm-20-e6-n12-l231-b270', caseId: null, itemId: null,
 const wide = { ...captured.manifest.items[0], state: 'read', placement: 'on_map',
   cellBatches: [opened, closed] } as unknown as IntakeItem;
 
-it('a wide file links each cell batch it may open and says the features there are not on this map', () => {
+it('a wide file links each cell batch it may open and names the cells it may not', () => {
   const html = tray(wide);
-  expect(html).toContain('The features of this file outside its first map area are in these separate batches, '
-    + 'each with its own layout and cards.');
+  expect(html).toContain(`aria-label="Separate cell batches of ${wide.name}"`);
   expect(html).toContain(`href="/studio/work/cases/${opened.caseId}/intake"`);
   expect(html).toContain(opened.cellKey);
   expect(html).toContain('In that batch: Read · On the map');
@@ -66,13 +65,15 @@ it('a 2,100-feature ZIP member offers View layout while keeping the archive pref
   expect(tray({ ...item, limitReason: reason })).toContain('>View layout</button>');
 });
 
-it('a captured row fits five columns, with its size in KiB or MiB and no raw bytes or Not applicable', () => {
+it('a captured row fits five columns, its format, size and counts in Contents, no raw bytes or Not applicable', () => {
   const html = tray(captured.manifest.items[0] as unknown as IntakeItem);
   const headers = [...html.matchAll(/<th[ >]/g)];
   expect(headers.length).toBeLessThanOrEqual(5);
-  for (const header of ['File', 'Status', 'Holds', 'Coordinates', 'Next step']) expect(html).toContain(`>${header}<`);
-  expect(html).toMatch(/\d(\.\d)? (KiB|MiB)/);
-  expect(html).toContain('1,662 features');
+  for (const header of ['File', 'Contents', 'Status', 'Coordinates', 'Next step']) {
+    expect(html).toContain(`>${header}<`);
+  }
+  expect(html).toMatch(/<td>GeoJSON · \d(\.\d)? (KiB|MiB) · 1,662 features<\/td>/);
+  expect(html).not.toContain('class="ul-help">Map features');
   expect(html).not.toContain('bytes');
   expect(html).not.toContain('Not applicable');
 });

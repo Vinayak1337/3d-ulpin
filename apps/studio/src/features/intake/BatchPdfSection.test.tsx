@@ -23,7 +23,7 @@ const statusSchema = statusRoute.responses['200'].content['application/json'].sc
 const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const caseId = id(1), sourceId = id(2), nativeJobId = id(3);
 const ocrJob = (page: number) => id(10 + page);
-const ocrLabel = 'Read the words on the selected pages (OCR)';
+const ocrLabel = 'Read the selected pages (OCR)';
 const sha = 'a'.repeat(64);
 const noText = (page: number) => `PDF page ${page} has no native text; image interpretation/OCR remains unresolved.`;
 // Page coverage is the retained real-input reading; ids and OCR text below are test_only protocol controls.
@@ -145,13 +145,12 @@ it('reads the pages the officer picks, one job each, says per page whether it re
       expect(bodies[0]).toMatchObject({ mode: 'native_only', expectedCaseRevision: 7, expectedSourceRevision: 1,
         sourceSha256: sha });
       expect(validate(statusSchema, completedOcr(3))).toEqual([]);
-      expect(page.root.textContent).toContain('Page 3: read; 1 candidate passage with page-and-region citations. '
-        + 'Text completeness is unverified.');
+      expect(page.root.textContent).toContain('Page 3: read; 1 candidate passage, completeness unverified.');
       expect(page.root.textContent).toContain('Page 6: not read.');
       expect(page.root.textContent).toContain('test_only control passage 5');
       expect(page.root.textContent).toContain('Page 5 · region [10.00, 20.00, 80.00, 40.00] pt');
-      expect(page.root.textContent).toContain('No rooms, levels or units are created');
-      expect(page.root.textContent).toContain('Every selected page has been read already; nothing will be requested.');
+      expect(page.root.textContent).not.toContain('No rooms, levels or units are created');
+      expect(page.root.textContent).toContain('Every selected page is read already.');
       expect(propsOf(action(page.root)!).disabled).toBe(true);
     } finally { await page.unmount(); }
   });
@@ -180,15 +179,14 @@ it('a PDF above the page reader byte bound offers every page to OCR, within the 
   expect(pdfOcrOffer(unread, 3)).toEqual({ pages: [1, 2, 3], refusal: '' });
   const page = await render(unread, { pageCount: 3 });
   try {
-    expect(page.root.textContent).toContain('The text layer was not read: the page reader takes a PDF of at most '
-      + '10 MiB. OCR takes a PDF of up to 1 GiB, so its pages can still be read as scanned pages.');
+    expect(page.root.textContent).toContain('The text layer was not read: the PDF is above 10 MiB.');
     expect(page.root.textContent).not.toContain('1024 MiB');
     expect(boxes(page.root)).toHaveLength(3);
     expect(action(page.root)).toBeDefined();
   } finally { await page.unmount(); }
   const long = await render(unread, { pageCount: 12 });
   try {
-    expect(long.root.textContent).toContain('The renderer opens originals of at most 400 pages and 1 GiB.');
+    expect(long.root.textContent).toContain('Page number, 1 to 12');
     expect(long.root.textContent).not.toContain('1024 MiB');
     expect(boxes(long.root)).toHaveLength(1);
     expect(propsOf(action(long.root)!).disabled).toBe(true);
@@ -210,14 +208,14 @@ it('says a PDF above the document runtime byte bound is kept and not read, never
     const page = await render(reading(), { jobs: [], file: { ...item,
       sizeBytes: DOCUMENT_LIMITS.originalBytes + 1 } });
     try {
-      expect(page.root.textContent).toContain('This PDF is 1,07,37,41,825 bytes, above 1 GiB, the largest original '
-        + 'the document reader and OCR take, so it is not read. The original is kept with its SHA-256.');
+      expect(page.root.textContent).toContain('This PDF is 1,07,37,41,825 bytes, above the 1 GiB limit, so it is '
+        + 'not read.');
       expect(page.root.textContent).not.toContain('1024 MiB');
       expect(page.root.textContent).not.toContain('yet');
       expect(action(page.root)).toBeUndefined();
     } finally { await page.unmount(); }
     // test_only stated size: one and a half times the bound, stated in GiB.
-    expect(pdfNoReadingWords(DOCUMENT_LIMITS.originalBytes * 1.5)).toContain('This PDF is 1.5 GiB, above 1 GiB,');
+    expect(pdfNoReadingWords(DOCUMENT_LIMITS.originalBytes * 1.5)).toContain('This PDF is 1.5 GiB, above the 1 GiB');
     expect(sizeWords(DOCUMENT_LIMITS.originalBytes)).toBe('1 GiB');
     expect(sizeWords(Math.round(17.3 * 1024 ** 2))).toBe('17.3 MiB');
   });
@@ -291,8 +289,7 @@ it('queues only the chosen page of a 12-page scan with the original pins', async
     expect(validate(requestSchema, bodies[0])).toEqual([]);
     expect(page.root.textContent).toContain('Page 11 · region [10.00, 20.00, 80.00, 40.00] pt');
     expect(page.root.textContent).toContain('Page 11: read; 1 candidate passage');
-    expect(page.root.textContent).toContain('Only the selected page was requested for OCR; '
-      + 'the text layer was not read.');
+    expect(page.root.textContent).toContain('The text layer was not read.');
     expect(validate(statusSchema, completedOcr(11))).toEqual([]);
   } finally { await page.unmount(); }
 });

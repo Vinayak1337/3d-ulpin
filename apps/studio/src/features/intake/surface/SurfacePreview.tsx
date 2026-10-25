@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { browserSurfaceIo, SurfaceDecoder } from '../../map/surface/api';
 import type { IntakeItem } from '../batch-model';
 import { drawPreview, previewFrame } from './preview-frame';
-import { DISPLAY_ONLY, SurfacePreviewReader, type PreviewView } from './preview-model';
+import { SurfacePreviewReader, type PreviewView } from './preview-model';
 import styles from './SurfacePreview.module.css';
 
 const NOTHING_READ: PreviewView = { parts: [], reasons: [], notes: [] };
@@ -36,16 +36,12 @@ export function SurfacePreview({ item }: { item: IntakeItem }) {
   }, [frame, view.parts]);
   if (!view.reasons.length) return null;
   return <section className={styles.panel} aria-label={`Not on the map: ${item.name}`}>
-    <h2 className="ul-heading">Drawn in the file's own frame · {item.name}</h2>
-    <p className="ul-help">
-      {DISPLAY_ONLY} The read parts are laid out by their corners in the file's own coordinates and units. Nothing
-      is placed, converted or measured.
-    </p>
+    <h2 className="ul-heading">Own frame · display only · {item.name}</h2>
     <ul className={styles.reasons}>
       {view.reasons.map((reason) => <li key={reason}>Not placed: {reason}</li>)}
     </ul>
     {frame ? <canvas ref={canvas} className={styles.canvas} width={frame.width} height={frame.height} role="img"
-      aria-label={`Read parts of ${item.name} in the file's own frame, display only, not on the map`} /> : null}
+      aria-label={`Read parts of ${item.name}`} /> : null}
     {view.notes.map((note) => <p key={note} className="ul-caption">{note}</p>)}
   </section>;
 }

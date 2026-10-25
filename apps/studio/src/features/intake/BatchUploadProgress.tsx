@@ -36,7 +36,7 @@ export function BatchUploadProgress({ caseId, refresh, settled }: {
 }
 
 function uploadStatus(upload: BatchUpload) {
-  if (!upload.pending) return 'This drop has finished. See each file’s outcome below.';
+  if (!upload.pending) return 'This drop has finished.';
   const current = upload.rows.findIndex(row => row.state === 'retaining');
   if (current < 0) return 'Waiting to send the first file.';
   return `File ${current + 1} of ${upload.rows.length}: ${upload.rows[current]!.name}`;
@@ -53,8 +53,6 @@ function UploadOutcomes({ upload, cancel, error }: {
   return <section className={styles.stack} aria-label="Files being retained">
     <h2 className="ul-heading">{upload.pending ? 'Retaining files' : 'Upload outcomes'}</h2>
     <p role="status">{uploadStatus(upload)}</p>
-    {upload.pending ? <p className="ul-help">Keep this page open while files are sent, one at a time.
-      After a reload, resume unfinished uploads below and pick waiting files again.</p> : null}
     <DropOutcomes rows={rows} />
     {stopped ? <div className="ul-row">
       <Button onClick={() => upload.active?.retry()}>Try again</Button>

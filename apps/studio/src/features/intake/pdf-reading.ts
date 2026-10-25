@@ -56,7 +56,7 @@ export function pdfOcrOffer(reading: PdfReading | undefined, pageCount: number |
   if (!reading?.native || pageCount === undefined) return { pages: [], refusal: '' };
   if (!Number.isSafeInteger(pageCount) || pageCount < 1 || pageCount > DOCUMENT_PAGE_LIMITS.pages) {
     return { pages: [], refusal: `OCR opens a PDF of at most ${DOCUMENT_PAGE_LIMITS.pages} pages; this `
-      + `one has ${pageCount}, so no page of it can be read by OCR. The original stays kept with its SHA-256.` };
+      + `one has ${pageCount}.` };
   }
   const pages = pdfPagesUnknown(reading) ? Array.from({ length: pageCount }, (_, at) => at + 1)
     : documentScannedPages(reading.native).filter(page => page <= pageCount);
@@ -191,8 +191,7 @@ export function pdfNoReadingWords(sizeBytes: number | null | undefined) {
   const bound = sizeWords(DOCUMENT_LIMITS.originalBytes);
   // A size that rounds to the bound's words is stated in bytes, so the sentence never reads '1 GiB, above 1 GiB'.
   const size = sizeWords(sizeBytes) === bound ? `${sizeBytes.toLocaleString('en-IN')} bytes` : sizeWords(sizeBytes);
-  return `This PDF is ${size}, above ${bound}, the largest original the document reader and OCR take, so it is not `
-    + 'read. The original is kept with its SHA-256.';
+  return `This PDF is ${size}, above the ${bound} limit, so it is not read.`;
 }
 
 export function pdfOcrWords(reading: PdfReading) {
@@ -201,21 +200,17 @@ export function pdfOcrWords(reading: PdfReading) {
   if (reading.status === 'stale') return 'This PDF reading is out of date. Open the batch again before retrying.';
   if (reading.status === 'failed') return `The PDF reading stopped before it finished (${reading.code
     ?? 'reason unknown'}).`;
-  if (reading.native?.code === 'NATIVE_TEXT_NOT_REQUESTED') return 'Only the selected page was requested for OCR; '
-    + 'the text layer was not read.';
-  if (pdfTextLayerUnread(reading)) return `The text layer was not read: the page reader takes a PDF of at most `
-    + `${sizeWords(DOCUMENT_LIMITS.nativeBytes)}. OCR takes a PDF of up to `
-    + `${sizeWords(DOCUMENT_LIMITS.originalBytes)}, so its pages can still be read as scanned pages.`;
-  if (pdfPagesUnknown(reading)) return 'The text-layer reading stopped; a selected page may still be read by OCR '
-    + 'within the page renderer’s bounds.';
+  if (reading.native?.code === 'NATIVE_TEXT_NOT_REQUESTED') return 'The text layer was not read.';
+  if (pdfTextLayerUnread(reading)) return `The text layer was not read: the PDF is above `
+    + `${sizeWords(DOCUMENT_LIMITS.nativeBytes)}.`;
+  if (pdfPagesUnknown(reading)) return 'The text-layer reading stopped.';
   return 'The text-layer reading is complete.';
 }
 
 /** What one press will do with the selected pages that are not yet read. */
 export function pdfOcrPressWords(pages: number, left: number) {
-  if (pages > left) return `This file can take ${left} more document readings (its history keeps `
-    + `${DOCUMENT_LIMITS.jobs}); pick at most ${left} pages.`;
-  if (!pages) return 'Every selected page has been read already; nothing will be requested.';
+  if (pages > left) return `This file can take ${left} more readings; pick at most ${left} pages.`;
+  if (!pages) return 'Every selected page is read already.';
   return `${pages} ${pages === 1 ? 'page' : 'pages'} will be read.`;
 }
 
@@ -225,9 +220,8 @@ export function pdfOcrPageWords(page: number, run: OcrPageRun | undefined, progr
   if (progress?.status === 'running') return `Page ${page}: OCR is reading it.`;
   const ocr = run?.reading.ocr;
   if (!run || !ocr) return `Page ${page}: not read.`;
-  if (ocr.outputStatus === 'failed') return `Page ${page}: OCR did not read it. ${ocr.issues.join(' ')} Configure `
-    + 'the document OCR runtime or resolve the stated limit before retrying.';
+  if (ocr.outputStatus === 'failed') return `Page ${page}: OCR did not read it. ${ocr.issues.join(' ')}`.trim();
   const count = run.passages.length;
-  return `Page ${page}: read; ${count} candidate ${count === 1 ? 'passage' : 'passages'} with page-and-region `
-    + `citations. Text completeness is unverified.${ocr.outputStatus === 'partial' ? ' The reading is partial.' : ''}`;
+  return `Page ${page}: read; ${count} candidate ${count === 1 ? 'passage' : 'passages'}, completeness unverified`
+    + `${ocr.outputStatus === 'partial' ? ', partial' : ''}.`;
 }

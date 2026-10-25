@@ -153,8 +153,6 @@ export type ModelPreviewPlan =
   | Exclude<ModelView, { state: 'mesh' }>
   | { state: 'read'; reader: ModelReader; artifact: ModelArtifactPins; summary: Record<string, unknown> };
 
-export const OWN_FRAME_WORDS = 'Drawn from the stored positions in the file\'s own frame, centred in the view. It is '
-  + 'not placed on the map, and nothing is converted, placed or measured: the drawing is for display only.';
 export const MODEL_MALFORMED = 'The accepted result is not in the shape its reader writes, so no preview is drawn.';
 const MODEL_READING = 'The model is being read from the accepted result.';
 const NOTHING_TO_DRAW = 'The reading holds no polygon the preview can draw.';
@@ -235,7 +233,7 @@ function gltfModel(native: Json): Built {
       { label: 'Drawn', value: `${drawn} from ${counted(positions.length, 'stored position')}` },
       { label: 'Not drawn', value: skipped ? `${counted(skipped, 'primitive')} not a projected triangle list`
         : 'None' },
-      { label: 'Node transforms', value: 'Not applied: the reading keeps them as declarations' },
+      { label: 'Node transforms', value: 'Not applied' },
     ] };
 }
 
@@ -277,7 +275,7 @@ function objModel(native: Json, summary: Json): Built {
       { label: 'Drawn', value: `${drawn} from ${counted(positions.length, 'stored position')}` },
       { label: 'Not drawn', value: skipped ? `${counted(skipped, 'face')} the reader did not project` : 'None' },
       ...(fans ? [{ label: 'Faces of more than three corners',
-        value: `${count(fans)}, filled as fans for display; the stored faces are unchanged` }] : []),
+        value: `${count(fans)}, filled as fans for display` }] : []),
     ] };
 }
 
@@ -287,8 +285,8 @@ export function modelView(reader: ModelReader, native: unknown, summary: Record<
     need(isRecord(native));
     const built = reader === 'gltf' ? gltfModel(native) : objModel(native, summary);
     if (!built.model.polygons.length) return { state: 'words', words: NOTHING_TO_DRAW };
-    return { state: 'mesh', model: built.model, label: built.label, lines: [...built.lines, { label: 'View',
-      value: 'Drag to turn, scroll to zoom. The second value (y) is drawn as up; this sets the view only.' }] };
+    return { state: 'mesh', model: built.model, label: built.label, lines: [...built.lines,
+      { label: 'Drawn as up', value: 'The second value (y)' }] };
   } catch (error) {
     return { state: 'words', words: error instanceof Refusal ? error.message : MODEL_MALFORMED };
   }

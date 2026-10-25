@@ -65,8 +65,7 @@ function LayoutReview({ receipt, origin, command, readFailed, change }: {
     {layoutLines(receipt, origin).map((line, index) => <p key={index}>{line}</p>)}
     <p>{recipeStateWords(receipt.state)}</p>
     {command.state.error ? <p role="alert">{command.state.error}</p> : null}
-    {command.state.uncertain ? <p>The outcome is not known. Send the same approval again;
-      its layout and request stay unchanged.</p> : null}
+    {command.state.uncertain ? <p role="status">The outcome is not known.</p> : null}
     {proposed || command.state.uncertain ? <div className="ul-row">
       <Button variant="primary" disabled={command.state.busy || readFailed}
         onClick={() => void command.approve(receipt)}>

@@ -2,8 +2,6 @@ import type { PlacedCorners } from '../../map/surface/las';
 import { isSurfaceItem, RANKED, SHADED, SURFACE_LIMITS, type IntakeItem, type PartDisplay, type PartPage,
   type SurfaceIo } from '../../map/surface/parts';
 
-export const DISPLAY_ONLY = 'Display only, not on the map.';
-
 type XY = readonly [number, number];
 /** A part's corners in the source's own coordinates and units, as its display read states them. */
 type SourceCorners = readonly [XY, XY, XY, XY];

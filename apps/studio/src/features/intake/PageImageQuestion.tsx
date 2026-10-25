@@ -58,8 +58,7 @@ export function PageImageAnswer({ item, preview, state, choose }: {
       </Button>)}
     </div> : null}
     {state.error ? <p role="alert">{state.error}</p> : null}
-    {state.uncertain ? <p className="ul-help">The outcome is not known. Choosing the same answer sends the same
-      request again.</p> : null}
+    {state.uncertain ? <p role="status">The outcome is not known.</p> : null}
   </section>;
 }
 

@@ -67,51 +67,36 @@ export function sizeWords(bytes: number): string {
  * that still takes a file above `bytes`, up to its own ceiling, on a condition only the bytes can settle.
  */
 interface ReaderForecast {
-  name: string; bytes: number; read?: string; note?: string;
+  name: string; bytes: number; read?: string;
   beyond?: { name: string; bytes: number; read: string };
 }
 
-const evidenceOnly = 'Its reading is kept as evidence, not placed on the map.';
-const groundOutlines = 'Building ground outlines may be prepared when the file states a usable horizontal EPSG '
-  + 'system and holds supported ground geometry. The outline file\'s own line says whether it reaches the map; '
-  + 'otherwise its reading is kept as evidence.';
 const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes,
-  read: 'Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most '
-    + `${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points`,
-  note: 'Waveform formats 4/5/9/10, extra dimensions and other versions or formats are kept, not read.' };
-const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes, note: evidenceOnly };
-const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes,
-  note: 'Choose Read as a table after upload.' };
+  read: `Points are read from LAS 1.2 to 1.4, formats 0–3 or 6–8, up to ${POINT_BATCH_LIMITS.sourcePoints / 1e6} `
+    + 'million points' };
+const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes };
+const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes };
 
 const readers: Record<string, ReaderForecast> = {
   geojson: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes },
   json: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes,
-    read: 'Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked',
-    note: `A CityJSON is read up to ${sizeWords(CITYJSON_LIMITS.originalBytes)} and glTF JSON up to `
-      + `${sizeWords(GLTF_LIMITS.originalBytes)}; other JSON is kept, not read. CityJSON building ground outlines `
-      + 'may be prepared when the file states a usable horizontal EPSG system and holds supported ground geometry. '
-      + 'The outline file\'s own line says whether it reaches the map; otherwise, and for glTF, the reading is kept '
-      + 'as evidence.' },
+    read: 'Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked' },
   cityjson: { name: 'CityJSON', bytes: CITYJSON_LIMITS.originalBytes,
-    read: 'Read by the CityJSON reader when its bytes show a CityJSON city model', note: groundOutlines },
-  dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes, note: evidenceOnly },
+    read: 'Read by the CityJSON reader when its bytes show a CityJSON city model' },
+  dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes },
   glb: gltfReader,
   gltf: gltfReader,
-  obj: { name: 'OBJ', bytes: OBJ_LIMITS.originalBytes, note: evidenceOnly },
+  obj: { name: 'OBJ', bytes: OBJ_LIMITS.originalBytes },
   gml: { name: 'CityGML', bytes: CITYGML_LIMITS.originalBytes,
-    read: 'Read by the CityGML reader when its bytes show a CityGML city model',
-    note: `Other GML is kept, not read. ${groundOutlines}` },
+    read: 'Read by the CityGML reader when its bytes show a CityGML city model' },
   gpkg: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kml: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kmz: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
-  shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
-    note: 'A complete shapefile set is needed.' },
+  shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   ifc: { name: 'IFC structure', bytes: IFC_LIMITS.originalBytes },
   pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes,
     beyond: { name: 'PDF document', bytes: DOCUMENT_LIMITS.originalBytes,
-      read: `Text layer not read above ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, but its pages can be read by OCR `
-        + `when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages, checked after upload; above `
-        + `${DOCUMENT_LIMITS.ocrBatchPages} pages, choose one page number` } },
+      read: `Pages read by OCR when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages` } },
   tif: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   tiff: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   las: pointReader,
@@ -138,8 +123,7 @@ export function readerEligibility(file: { name: string; size: number }) {
   const words = withinCeiling
     ? `${reader.read ?? `Will be read by the ${reader.name} reader`} (within ${sizeWords(reader.bytes)})`
     : `Will be kept, not read: larger than the ${sizeWords(top.bytes)} ${top.name} reader`;
-  return { reader: reader.name, ceilingBytes: withinCeiling ? reader.bytes : top.bytes, withinCeiling,
-    words: withinCeiling && reader.note ? `${words}. ${reader.note}` : words };
+  return { reader: reader.name, ceilingBytes: withinCeiling ? reader.bytes : top.bytes, withinCeiling, words };
 }
 
 /** D3. A file not added or still to add, kept as words only: never its bytes. */

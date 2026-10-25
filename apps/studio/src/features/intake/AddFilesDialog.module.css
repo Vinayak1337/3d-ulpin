@@ -5,7 +5,6 @@
 .drop:focus-within { outline: 2px solid var(--ui-focus); outline-offset: 3px; }
 .question { display: flex; align-items: center; gap: var(--ui-space-3); padding: 12px 14px; border-radius: var(--ui-radius-12); background: var(--ui-info-soft); }
 .questionText { flex: 1; }
-.answered { display: flex; align-items: center; gap: var(--ui-space-2); font-size: 13px; color: var(--ui-ink-soft); }
 .stepper { display: flex; gap: var(--ui-space-4); margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ui-muted); }
 .stepper li { display: flex; align-items: center; gap: 6px; }
 .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; background: var(--ui-surface-subtle); }

@@ -11,11 +11,11 @@ export function planReadingWords(reading: Reading): string {
   const prefix = `Page ${reading.page}: `;
   if (reading.status === 'queued') return prefix + 'candidate room reading is queued.';
   if (reading.status === 'failed') return prefix + `candidate room reading stopped (${reading.error
-    ?? 'reason unknown'}). Nothing was recorded.`;
+    ?? 'reason unknown'}).`;
   if (!reading.result) return prefix + 'no candidate room reading is available.';
   const count = reading.result.rooms.length;
   const scale = planScaleWords(reading.result);
-  return prefix + `${count} candidate ${count === 1 ? 'room' : 'rooms'} · ${scale}. Review before use.`;
+  return prefix + `${count} candidate ${count === 1 ? 'room' : 'rooms'} · ${scale}.`;
 }
 
 function planScaleWords(result: NonNullable<Reading['result']>): string {
@@ -30,9 +30,7 @@ export function PlanReadingSummary({ readings }: { readings: readonly Reading[] 
   return <ul aria-label="Candidate room readings">{readings.map(reading => <li key={reading.page}>
     {planReadingWords(reading)}
     {reading.result?.overlay ? <> <PlanOverlayLink overlay={reading.result.overlay} /></> : null}
-    {reading.result?.gaps.includes('image_ocr_unavailable') ? <p className="ul-help">
-      Photo labels were not read by OCR; literal room classes are unknown.
-    </p> : null}
+    {reading.result?.gaps.includes('image_ocr_unavailable') ? <p>Room classes unknown: labels not read.</p> : null}
   </li>)}</ul>;
 }
 
@@ -44,8 +42,7 @@ function PlanOverlayLink({ overlay }: { overlay: NonNullable<NonNullable<Reading
     setHref(url);
     return () => URL.revokeObjectURL(url);
   }, [overlay.base64, overlay.mediaType]);
-  return href ? <a href={href} target="_blank" rel="noreferrer"
-    aria-label="View candidate room overlay (opens a new tab)">View candidate room overlay</a> : null;
+  return href ? <a href={href} target="_blank" rel="noreferrer">View candidate room overlay</a> : null;
 }
 
 function usePlanPress(caseId: string, itemId: string, refresh: () => void) {
@@ -87,16 +84,12 @@ function CandidatePlanReading({ caseId, item, refresh }: {
   const { press, requested } = usePlanPress(caseId, item.itemId, refresh);
   return <section className={styles.question} aria-label={`Candidate rooms in ${item.name}`}>
     <h2 className="ul-heading">Candidate rooms · {item.name}</h2>
-    <p className="ul-help">This separate plan reading proposes room outlines in page pixels. It creates no map
-      placement, levels, units or records. A metric scale needs verified page dimension lines; without them
-      the reading says no scale.</p>
     {offer.isPending ? <Skeleton /> : null}
     {offer.error ? <p>The plan reader could not be checked. {offer.error.message}</p> : null}
     {offer.data && !offer.data.available ? <p>{offer.data.reason}</p> : null}
     {offer.data?.available ? <PlanPress item={item} pages={offer.data.pages} requested={requested}
       press={press} /> : null}
-    {press.error ? <Banner tone="warning">{press.error.message} If the outcome is not known, pressing again
-      sends the same request.</Banner> : null}
+    {press.error ? <Banner tone="warning">{press.error.message}</Banner> : null}
   </section>;
 }
 
@@ -107,7 +100,7 @@ function PlanPress({ item, pages, requested, press }: {
   const page = chosen !== null && pages.includes(chosen) ? chosen : pages[0];
   if (!pages.length) return <p>{item.sizeBytes !== null && item.sizeBytes > 16 * 1024 ** 2
     ? 'This original is above the plan reader\'s 16 MiB limit.'
-    : 'Read the words on a selected PDF page (OCR) first. Only an already-read page can propose rooms.'}</p>;
+    : 'Read a page by OCR first.'}</p>;
   const reading = item.planReadings?.find(entry => entry.page === page);
   const failed = reading?.status === 'failed';
   const attemptKey = failed ? reading.jobId : String(page);
@@ -119,8 +112,8 @@ function PlanPress({ item, pages, requested, press }: {
     </select></label>
     <div><Button variant="soft" disabled={press.isPending || already || page === undefined}
       onClick={() => page !== undefined && press.mutate({ page, attemptKey })}>
-      {failed ? 'Read candidate rooms again on the selected page' : 'Read candidate rooms on the selected page'}
+      {failed ? 'Read candidate rooms again' : 'Read candidate rooms'}
     </Button></div>
-    {already ? <p>That page has a candidate room reading; it will not be queued again.</p> : null}
+    {already ? <p>That page is already read.</p> : null}
   </>;
 }

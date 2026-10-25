@@ -88,8 +88,7 @@ it('names a reviewed zero-count package with no target, but never a package with
 });
 
 it('enables zero-selection confirmation only with packages and nonblank acknowledgement, with exact sentences', () => {
-  expect(confirmationWords(0)).toBe('These packages will be recorded in the register. '
-    + 'No building is chosen, so no card is made now.');
+  expect(confirmationWords(0)).toBe('These packages will be recorded; no card is made.');
   const empty = { ...page.packages[0]!, counts: zeroCounts() };
   expect(confirmingPackageWords(empty)).toBe('No building in this package; its features will be recorded.');
   const props = { page: { ...page, packages: [empty] }, choice: [], cards: null, closeCards: () => {},
@@ -105,7 +104,7 @@ it('enables zero-selection confirmation only with packages and nonblank acknowle
   const details = renderToStaticMarkup(createElement(PackageDetails, { pkg: empty, confirming: true }));
   expect(details).toContain(confirmingPackageWords(empty));
   expect(details).not.toContain('0 ready buildings will be recorded');
-  expect(confirmationWords(1)).toContain('The 1 chosen buildings');
+  expect(confirmationWords(1)).toBe('These packages will be recorded, with cards for the 1 chosen buildings.');
 });
 
 describe('the quiet-stream refetch rule', () => {

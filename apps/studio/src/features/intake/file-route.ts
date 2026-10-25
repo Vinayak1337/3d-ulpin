@@ -38,15 +38,15 @@ export function batchOrder(files: readonly File[]): File[] {
 
 /** TJ1: the words of a file that joins a batch; a table is read there. */
 export function batchRouteWords(name: string): string {
-  return fileRoute(name) === 'table' ? 'Table · kept in the batch, then read there as a table' : routeWords(name);
+  return fileRoute(name) === 'table' ? 'Table · joins the batch' : routeWords(name);
 }
 
 /** What will happen to one dropped file, in words from its route. */
 export function routeWords(name: string): string {
   if (fileRoute(name) === 'table') return 'Table · opens the table import';
-  if (/\.zip$/i.test(name)) return 'ZIP · the batch reads what it holds';
+  if (/\.zip$/i.test(name)) return 'ZIP · joins the batch';
   if (/\.(geojson|json|gpkg|kml|kmz)$/i.test(name)) return 'Map file · joins the batch';
-  if (/\.(shp|shx|dbf|prj|cpg)$/i.test(name)) return 'Shapefile part · read with its other parts as one shapefile';
+  if (/\.(shp|shx|dbf|prj|cpg)$/i.test(name)) return 'Shapefile part · joins the batch';
   if (/\.(pdf|docx?)$/i.test(name)) return 'Document · joins the batch';
   // XL1: an Excel 97-2003 workbook is kept; this version reads no cells of it.
   if (/\.xls$/i.test(name)) return 'Excel 97-2003 workbook · kept as evidence; its cells are not read';

@@ -34,8 +34,6 @@ export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned
 }
 
 /** CN1. A wide file's features outside its first map area are kept in separate batches; never on this map. */
-export const CELL_BATCHES_WORDS = 'The features of this file outside its first map area are in these separate '
-  + 'batches, each with its own layout and cards.';
 export type CellBatch = NonNullable<IntakeItem['cellBatches']>[number];
 
 /** Only a batch the server named for this officer opens; any other shows its cell and that it is separate. */
@@ -99,10 +97,11 @@ export function formatWords(format: IntakeItem['format']) {
   return formats[format] ?? format;
 }
 
-/** Kind, format and size on one line under the file name; the size is the item's bytes in KiB, MiB or GiB. */
-export function fileDetailWords(item: Pick<IntakeItem, 'family' | 'format' | 'sizeBytes'>) {
-  const size = item.sizeBytes == null ? 'Unknown size' : sizeWords(item.sizeBytes);
-  return `${familyWords(item.family)} · ${formatWords(item.format)} · ${size}`;
+/** The tray's Contents column: format (or family when no format is known), size, and what the card counts. */
+export function contentsWords(item: Pick<IntakeItem, 'family' | 'format' | 'sizeBytes' | 'card'>) {
+  const kind = item.format ? formatWords(item.format) : familyWords(item.family);
+  const size = item.sizeBytes == null ? 'size unknown' : sizeWords(item.sizeBytes);
+  return [kind, size, holdsWords(item.card)].filter(Boolean).join(' · ');
 }
 
 const holds = [['features', 'feature', 'features'], ['rows', 'row', 'rows'], ['pages', 'page', 'pages'],

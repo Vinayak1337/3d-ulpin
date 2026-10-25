@@ -21,7 +21,7 @@ const flush = () => act(() => new Promise(resolve => setTimeout(resolve, 10)));
 afterEach(() => vi.unstubAllGlobals());
 
 it('names candidate rooms and no scale without claiming a record or map placement', async () => {
-  expect(planReadingWords(readings[0]!)).toBe('Page 1: 1 candidate room · no scale. Review before use.');
+  expect(planReadingWords(readings[0]!)).toBe('Page 1: 1 candidate room · no scale.');
   const root = container();
   const view = createRoot(root as never);
   await act(async () => view.render(<PlanReadingSummary readings={readings} />));
@@ -84,14 +84,14 @@ it('offers reading again only for the selected failed page, retaining the stoppe
     <PlanReadingSummary readings={pdf.planReadings!} />
   </QueryClientProvider>));
   const button = () => elements(root).find(node => node.tagName === 'BUTTON')!;
-  expect(button().textContent).toBe('Read candidate rooms again on the selected page');
+  expect(button().textContent).toBe('Read candidate rooms again');
   expect(propsOf(button()).disabled).toBe(false);
-  expect(root.textContent).toContain('candidate room reading stopped (PLAN_READ_FAILED). Nothing was recorded.');
+  expect(root.textContent).toContain('candidate room reading stopped (PLAN_READ_FAILED).');
   expect(root.textContent).not.toContain('it will not be queued again');
   const select = elements(root).find(node => node.tagName === 'SELECT')!;
   for (const page of [2, 3, 4]) {
     await act(async () => propsOf(select).onChange?.({ target: { value: String(page) } }));
-    expect(button().textContent).toBe('Read candidate rooms on the selected page');
+    expect(button().textContent).toBe('Read candidate rooms');
     expect(propsOf(button()).disabled).toBe(page !== 4);
   }
   await act(async () => { view.unmount(); client.clear(); });
@@ -146,7 +146,7 @@ it('one press queues the selected OCR page and prevents another press for that p
     <PlanReadingSection caseId={caseId} item={pdf} refresh={refresh} />
   </QueryClientProvider>));
   const button = elements(root).find(node => node.tagName === 'BUTTON')!;
-  expect(button.textContent).toBe('Read candidate rooms on the selected page');
+  expect(button.textContent).toBe('Read candidate rooms');
   await act(async () => propsOf(button).onClick?.({}));
   await flush();
   expect(sent).toHaveLength(1);

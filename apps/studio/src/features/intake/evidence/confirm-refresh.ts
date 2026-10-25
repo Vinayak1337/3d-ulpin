@@ -60,8 +60,7 @@ export function useConfirmRefresh(caseId: string, profile: KeyProfile, read: Con
     current.change({ ...current.draft, choices,
       acknowledgement: changed ? '' : current.draft.acknowledgement });
     if (changed) setNotice([words,
-      'The current evidence and package reviews were read again. Check your selections and confirm again; '
-      + 'nothing was confirmed automatically.'].filter(Boolean).join(' '));
+      'Check your selections and confirm again.'].filter(Boolean).join(' '));
   }, [query.data]);
   return { query, notice, refused: () => { refused.current = true; },
     pending: query.isPending || query.isFetching || query.data !== applied.current };

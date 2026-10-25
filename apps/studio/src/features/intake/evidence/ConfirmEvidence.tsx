@@ -76,9 +76,9 @@ export function ConfirmEvidence({ caseId, profile, read, close, confirmed, store
   const files = useFileAccepts(caseId, current?.profile ?? profile, draft, confirmed, setDraft);
   const pending = press.isPending || files.reading !== null || refresh.pending;
   return <>
-    {refresh.notice && !finished ? <p role="status" className="ul-help">{refresh.notice}</p> : null}
+    {refresh.notice && !finished ? <p role="status">{refresh.notice}</p> : null}
     {refresh.query.error && !finished ? <div role="alert" className={batch.stack}>
-      <p>{refresh.query.error.message} Nothing can be confirmed until the evidence is read again.</p>
+      <p>{refresh.query.error.message}</p>
       <Button variant="soft" onClick={() => void refresh.query.refetch()}>Read the current evidence again</Button>
     </div> : null}
     <ConfirmEvidenceForm profile={current?.profile ?? profile} read={freshRead} draft={draft}
@@ -141,10 +141,6 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       event.preventDefault();
       submit();
     }}>
-    <p className="ul-help">
-      An accepted row or part becomes a citation on its building only; it never becomes a field, a right or an
-      issuance. Several and conflicting candidates are questions: reject one with your reason, or leave it.
-    </p>
     <fieldset className={batch.fieldset} disabled={pending}>
       <SourceFields sources={sourcesOf(read.page, profile)} items={read.items} draft={draft} change={change} />
       <DecisionFields profile={profile} read={read} draft={draft} change={change} files={files} />
@@ -152,10 +148,10 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       {decided ? null : <label className="ul-row">
         <input type="checkbox" checked={draft.noAdditions}
           onChange={(event) => change({ noAdditions: event.target.checked })} />
-        Nothing is accepted or rejected: confirm that this key adds no citations
+        This key adds no citations
       </label>}
       <label className="ul-field">
-        <span className="ul-label">Your acknowledgement, in your words</span>
+        <span className="ul-label">Your acknowledgement</span>
         <textarea className="ul-input" value={draft.acknowledgement} maxLength={500} required rows={3}
           onChange={(event) => change({ acknowledgement: event.target.value })} />
       </label>
@@ -166,15 +162,14 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       </Button>
       <Button variant="ghost" disabled={pending} onClick={close}>Cancel</Button>
     </span>
-    {unavailable ? <p className="ul-help">This key cannot be confirmed while a source is unavailable.</p> : null}
-    {!unavailable && reading.length ? <p className="ul-help">{`${reading.join(', ')} ${reading.length === 1 ? 'is'
-      : 'are'} still being read. Confirm when the reading closes, or exclude it with your reason to confirm `
-      + 'this key without it.'}</p> : null}
+    {unavailable ? <p>This key cannot be confirmed while a source is unavailable.</p> : null}
+    {!unavailable && reading.length ? <p>{`${reading.join(', ')} ${reading.length === 1 ? 'is'
+      : 'are'} still being read.`}</p> : null}
     {pending ? <p role="status">{pendingWords}</p> : null}
     {result && 'missing' in result ? <p className="ul-error" role="alert">{result.missing}</p> : null}
     {error ? <TableRefusal error={error} /> : null}
     {error instanceof ApiError && error.status === 409
-      ? <p className="ul-help">Read the current evidence, check your selections and confirm again.</p>
+      ? <p>Read the current evidence, check your selections and confirm again.</p>
       : null}
   </form>;
 }
@@ -185,8 +180,6 @@ function ConfirmedWords({ confirmation, close }: { confirmation: EvidenceConfirm
     <div role="status" className={batch.stack}>
       <p>{confirmation.note}</p>
       <p>Confirmation <span className="ul-mono">{confirmation.confirmationId}</span>.</p>
-      {confirmation.input.additions.kind === 'citations'
-        ? <p>The citations are written when the building is carried to its card.</p> : null}
     </div>
     <span className="ul-row"><Button onClick={close}>Close</Button></span>
   </div>;
@@ -208,8 +201,7 @@ function SourceFields({ sources, items, draft, change }: {
         <p><strong>{name(source.itemId)}</strong>. {coverageWords(source.coverage)} {source.source.reason}</p>
       </div>;
       const reason = draft.exclusions[source.itemId];
-      const state = reason !== undefined ? 'Excluded with your reason.' : closedReading(source) ? 'Included.'
-        : 'Can be confirmed when its reading closes.';
+      const state = reason !== undefined ? 'Excluded.' : closedReading(source) ? 'Included.' : 'Still being read.';
       return <div key={source.itemId} className={batch.stack}>
         <p><strong>{name(source.itemId)}</strong>. {coverageWords(source.coverage)} {state}</p>
         <label className="ul-row">
@@ -239,10 +231,8 @@ function FileAccept({ name, reading, open, words, accept }: {
         Accept every exact single match of this file
       </Button>
     </span>
-    {open ? <p className="ul-help">{`${name} is still being read; its matches can be accepted when the reading `
-      + 'closes.'}</p> : null}
     {reading ? <p role="status">{`Reading every exact single match of ${name}…`}</p> : null}
-    {words ? <p className="ul-help" role="status">{words}</p> : null}
+    {words ? <p role="status">{words}</p> : null}
   </div>;
 }
 
@@ -285,7 +275,7 @@ function CandidateDecision({ candidate, building, draft, change }: {
   const reason = choice?.decision === 'reject' ? choice.reason : null;
   const reject = (value: string | null) => change({ choices: setReject(draft.choices, candidate, value) });
   return <div className={batch.stack}>
-    <span>{`A question, never accepted. Buildings: ${building}.`}</span>
+    <span>{`Question · ${building}`}</span>
     <label className="ul-row">
       <input type="checkbox" checked={reason !== null} onChange={(event) => reject(event.target.checked ? '' : null)} />
       {`Reject ${candidate.key.literal}`}

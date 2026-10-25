@@ -138,8 +138,7 @@ it('uses the structured question, not a filename or reason, and never asks when 
 
 it('states only chosen answers in the summary and reads feature targets in the review', () => {
   expect(answerSummary(choices)).toBe('Each feature is a building, identified by doitt_id. '
-    + 'Name: not stated. Height: not stated. It goes to this batch\'s area, '
-    + 'or to a new area named after the file if the batch has none.');
+    + 'Name: not stated. Height: not stated.');
   const body = questionBody(profile, choices, 7, key)!;
   const stated = { ...receipt, plan: body.plan } as Recipe;
   expect(layoutLines(stated, 'teacher')).toContain('Each feature is: a building');

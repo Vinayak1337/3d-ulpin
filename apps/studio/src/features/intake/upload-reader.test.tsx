@@ -65,8 +65,7 @@ it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page 
   expect(readerEligibility({ name: 'plan.PDF', size: DOCUMENT_LIMITS.nativeBytes }))
     .toMatchObject({ reader: 'PDF native text', ceilingBytes: DOCUMENT_LIMITS.nativeBytes, withinCeiling: true });
   expect(words(DOCUMENT_LIMITS.nativeBytes)).toBe('Will be read by the PDF native text reader (within 10 MiB)');
-  const ocr = 'Text layer not read above 10 MiB, but its pages can be read by OCR when the PDF has at most 400 '
-    + 'pages, checked after upload; above 8 pages, choose one page number (within 1 GiB)';
+  const ocr = 'Pages read by OCR when the PDF has at most 400 pages (within 1 GiB)';
   for (const size of [DOCUMENT_LIMITS.nativeBytes + 1, DOCUMENT_LIMITS.originalBytes]) {
     expect(words(size)).toBe(ocr);
     expect(readerEligibility({ name: 'plan.pdf', size }))
@@ -81,39 +80,29 @@ it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page 
 
 it('forecasts only what the name and size settle: points, JSON, CityJSON, DXF, glTF, OBJ and GML kinds', () => {
   const words = (name: string, size = 1024) => readerEligibility({ name, size }).words;
-  const points = 'Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most '
-    + '500 million points (within 1 GiB). Waveform formats 4/5/9/10, extra dimensions and other versions or formats '
-    + 'are kept, not read.';
+  const points = 'Points are read from LAS 1.2 to 1.4, formats 0–3 or 6–8, up to 500 million points '
+    + '(within 1 GiB)';
   expect(words('scan.laz')).toBe(points);
   expect(words('scan.las')).toBe(points);
   expect(words('scan.laz', POINT_BATCH_LIMITS.originalBytes + 1))
     .toBe('Will be kept, not read: larger than the 1 GiB point cloud reader');
   expect(words('city.json')).toBe('Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked '
-    + '(within 1 GiB). A CityJSON is read up to 8 MiB and glTF JSON up to 16 MiB; other JSON is kept, not read. '
-    + 'CityJSON building ground outlines may be prepared when the file states a usable horizontal EPSG system '
-    + 'and holds supported ground geometry. The outline file\'s own line says whether it reaches the map; '
-    + 'otherwise, and for glTF, the reading is kept as evidence.');
-  const outlines = 'Building ground outlines may be prepared when the file states a usable horizontal EPSG system '
-    + 'and holds supported ground geometry. The outline file\'s own line says whether it reaches the map; '
-    + 'otherwise its reading is kept as evidence.';
+    + '(within 1 GiB)');
   expect(words('city.cityjson')).toBe('Read by the CityJSON reader when its bytes show a CityJSON city model '
-    + `(within 8 MiB). ${outlines}`);
+    + '(within 8 MiB)');
   expect(words('city.cityjson', CITYJSON_LIMITS.originalBytes + 1))
     .toBe('Will be kept, not read: larger than the 8 MiB CityJSON reader');
-  expect(words('plan.dxf')).toBe('Will be read by the DXF reader (within 16 MiB). '
-    + 'Its reading is kept as evidence, not placed on the map.');
+  expect(words('plan.dxf')).toBe('Will be read by the DXF reader (within 16 MiB)');
   for (const name of ['model.glb', 'model.gltf']) {
-    expect(words(name)).toBe('Will be read by the glTF reader (within 16 MiB). '
-      + 'Its reading is kept as evidence, not placed on the map.');
+    expect(words(name)).toBe('Will be read by the glTF reader (within 16 MiB)');
   }
   expect(words('model.glb', GLTF_LIMITS.originalBytes + 1))
     .toBe('Will be kept, not read: larger than the 16 MiB glTF reader');
-  expect(words('mesh.obj')).toBe('Will be read by the OBJ reader (within 16 MiB). '
-    + 'Its reading is kept as evidence, not placed on the map.');
+  expect(words('mesh.obj')).toBe('Will be read by the OBJ reader (within 16 MiB)');
   expect(words('mesh.obj', OBJ_LIMITS.originalBytes + 1))
     .toBe('Will be kept, not read: larger than the 16 MiB OBJ reader');
   expect(words('city.gml')).toBe('Read by the CityGML reader when its bytes show a CityGML city model '
-    + `(within 33 MiB). Other GML is kept, not read. ${outlines}`);
+    + '(within 33 MiB)');
   for (const name of ['scan.laz', 'city.json', 'city.cityjson', 'plan.dxf', 'model.glb', 'model.gltf', 'mesh.obj',
     'city.gml']) {
     expect(words(name)).not.toContain('Kind not known');

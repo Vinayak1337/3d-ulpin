@@ -117,7 +117,7 @@ it('a lost answer resends the same key; a refusal shows its words; another choic
     '30000000-0000-4000-8000-000000000002']);
 });
 
-it('the dialog offers the read headers by position, preselects no column or system, and says what follows', () => {
+it('the dialog offers the read headers by position, preselects no column or system, and states its start', () => {
   expect(renderToStaticMarkup(<PlaceOnMap caseId={item.caseId} itemId={item.itemId} name="mi-d10-02.csv"
     headers={headers} />)).toMatch(/<button[^>]*>Place on the map<\/button>/);
   const markup = (fields: Partial<TablePlacementForm>, state = idle) => renderToStaticMarkup(
@@ -129,22 +129,21 @@ it('the dialog offers the read headers by position, preselects no column or syst
   expect(html).not.toContain('aria-label="WKT column"');
   expect(html).toContain(`<option value="1">2. ${headers[1]}</option>`);
   expect(html.match(/<option value="" selected="">Choose a field<\/option>/g)).toHaveLength(2);
-  expect(html).toMatch(/<input[^>]*placeholder="EPSG:32643"[^>]*value=""\/>/);
-  expect(html).toContain('never placed at 0,0. Points stay points.');
+  expect(html).toMatch(/<span class="ul-label">EPSG code<\/span><input[^>]*value=""\/>/);
+  expect(html).not.toContain('placeholder=');
+  expect(html).not.toContain('class="ul-help"');
   // S5.7b: the officer states the decimal mark of x and y cells, point at first; WKT offers no choice.
-  expect(html).toContain('<legend class="ul-label">Decimal mark in the coordinate cells</legend>');
+  expect(html).toContain('<legend class="ul-label">Decimal mark</legend>');
   expect(html).toMatch(/<input type="radio"[^>]*checked="" value="point"\/>Point \(12\.34\)/);
   expect(html).toMatch(/<input type="radio"[^>]*value="comma"\/>Comma \(12,34\)/);
   expect(markup({ decimalMark: 'comma' })).toMatch(/checked="" value="comma"/);
   const wkt = markup({ kind: 'wkt', decimalMark: 'comma' });
   expect(wkt).toContain('aria-label="WKT column"');
   expect(wkt).not.toContain('type="radio"');
-  expect(wkt).toContain('WKT text is read with a decimal point, as in 12.34.');
   expect(markup({}, { ...idle, error: UNSTATED_CRS })).toContain('role="alert"');
   const started = markup({}, { ...idle, started: true });
   expect(started).toContain('role="status"');
   // The start promises a GeoJSON file, not the map: only that file's own line says whether it is on the map.
   expect(started).toContain('Preparing the rows of this table as a GeoJSON file has started.');
-  expect(started).toContain('its own line says whether it is on the map.');
   expect(started).not.toMatch(/rows were placed|on the map has started/);
 });

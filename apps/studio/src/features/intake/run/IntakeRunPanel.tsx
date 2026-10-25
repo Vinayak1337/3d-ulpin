@@ -79,7 +79,6 @@ export function CardsAction({ run, page, locked }: { run: RunState; page: Target
         Make cards for the next {INTAKE_TARGET_LIMITS.confirmationTargets}
       </Button>
     </div>
-    <p className="ul-help">This lists them on the confirmation below; nothing is made before you confirm.</p>
   </div>;
 }
 
@@ -92,7 +91,6 @@ function ChoiceControls({ run, locked }: { run: RunState; locked: boolean }) {
       </Button>
       <Button disabled={locked || run.choice.length === 0} onClick={run.clear}>Clear choice</Button>
     </div>
-    <p className="ul-help">Choose ready buildings here or tick their rows below. Other buildings stay listed.</p>
   </div>;
 }
 

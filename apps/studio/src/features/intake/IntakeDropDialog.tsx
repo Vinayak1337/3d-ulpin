@@ -3,7 +3,7 @@ import { Banner, Button, DataTable, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../api/queries';
 import { SourceCaseFields } from './table/TableImportFields';
 import { useRetainBatch } from './useRetainBatch';
-import { viaUpload, type FileOutcome } from './retain-batch';
+import type { FileOutcome } from './retain-batch';
 import { readerEligibility, sizeWords, uploadWords } from './upload-model';
 import styles from './Batch.module.css';
 
@@ -25,7 +25,6 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
       </Button></>
   )}>
     <div className={styles.stack}>
-      <p>Each original is retained unchanged, then checked in this batch. Nothing is recorded yet.</p>
       <fieldset className={styles.fieldset} disabled={pending}>
         <legend className="ul-visually-hidden">Choose the batch</legend>
         <SourceCaseFields cases={cases} caseId={caseId} setCaseId={setCaseId} name={name} setName={setName}
@@ -34,15 +33,7 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
             setMode(value);
           }} locked={created} />
       </fieldset>
-      <p className="ul-help">Reader estimates use file names and sizes, not checked contents. Other reader limits
-        and questions are checked after upload. Reading does not mean placement on the map or a recorded property.</p>
-      {files.some(viaUpload) ? <p className="ul-help">
-        The batch opens before upload finishes. Keep its page open to send the files and see progress.
-      </p> : null}
       <DropOutcomes rows={rows} readers />
-      {remainingFiles.length ? <p className="ul-help">
-        Other files stay separate. Continue with them from the batch after these files are retained.
-      </p> : null}
       {error ? <Banner tone="danger">{error}</Banner> : null}
     </div>
   </Dialog>;
