@@ -1063,6 +1063,17 @@ Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
 - **What:** V4 and V6. One studio-title per screen (the batch name), panel titles studio-heading; History and Evidence by key start collapsed with their count; one primary button per view, the rest secondary; file, batch and building names in Noto Sans, mono only for identifiers, hashes and coordinates; on the verify page the name first and the ID under it at id-code size.
 - **Check:** node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging passes; a test counts at most one primary button per rendered view of BatchPage, VerifyPage and AddFilesDialog.
 
+### S7.24 Cut taglines, helper text and secondary labels on every screen (owner, 25 Oct)
+
+Size M, UI (Claude CLI workers, six disjoint parts). After: S1.3 run 5 (the rehearsal runs alone); before the other S7 tasks, which then follow the same rule. **Status: cut 25 Oct; parts a to f queued until the rehearsal ends.**
+
+- **Owner's words:** Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout instead. Lets rectify this for all pages, statuses, UIs, pop-ups etc.
+- **What:** Cut ledes, subtitles, explanatory sentences, hint props, captions that repeat a heading and smaller second labels. Where a screen would then be unclear, fix the layout (a shorter heading or label, grouping, order, column names, a section the officer opens), never move the sentence into a tooltip or collapsed help. State stays in its shortest form: a value and its label, a status, an error with what to do, an empty line, a value's state word (candidate, estimated, unknown), why a control is disabled, accessible names.
+- **Parts (one writer per file):** S7.24a app frame, portal and the shared UI kit's own words; S7.24b intake except tables; S7.24c intake tables; S7.24d map and inspectors; S7.24e review; S7.24f register, identity, evidence, verify, manage, batches and placeholder.
+- **Check:** each part writes docs/evidence/step-7/s7-24x/strings.json (every visible string with its verdict and totals); no tagline, helper sentence or secondary label left in its files; tests updated to the state or layout, none of a state, error or accessible name deleted.
+- **Tests:** pnpm studio:typecheck; pnpm studio:test; pnpm studio:build
+- **Follow-up:** once all six merge, remove the packages/ui props no caller passes (Toggle hint, DataTable caption) in one small task.
+
 ## Step 8: Rehearsal 1 on the closed kit
 
 Thursday 29. Only the rehearsal worker runs on the PC.
