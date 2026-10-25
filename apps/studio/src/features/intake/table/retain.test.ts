@@ -10,7 +10,7 @@ describe('the case a table is read in', () => {
 
   it('N01 unchanged: the table import of a lone drop refuses a case already bound to a site', async () => {
     answer({ siteId: '10000000-0000-4000-8000-000000000002' });
-    await expect(readSourceCase(caseId)).rejects.toThrow('This table cannot be attached to a site.');
+    await expect(readSourceCase(caseId)).rejects.toThrow('Choose an active source case that is not attached to a site.');
     answer({});
     expect((await readSourceCase(caseId)).revision).toBe(2);
   });

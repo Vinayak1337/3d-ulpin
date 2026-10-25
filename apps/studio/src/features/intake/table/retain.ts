@@ -57,7 +57,7 @@ export async function createSourceCase(name: string) {
 export async function readSourceCase(caseId: string) {
   const detail = unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } }));
   if (detail.case.siteId || detail.case.archived) {
-    throw new Error('Choose an active, unassigned source case. This table cannot be attached to a site.');
+    throw new Error('Choose an active source case that is not attached to a site.');
   }
   return detail.case;
 }
