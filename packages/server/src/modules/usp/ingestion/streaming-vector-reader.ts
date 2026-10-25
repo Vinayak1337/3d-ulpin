@@ -1,15 +1,52 @@
 import {createHash} from 'node:crypto';
-import type {Readable} from 'node:stream';
-import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,
+import {Readable} from 'node:stream';
+import {STREAMING_VECTOR_LIMITS as limits,streamingRawReadMs,TABULAR_LIMITS,type TabularPin,
   type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {readTabularSource,admitTabularSource} from './tabular-source';
 import {readTabularWindows} from './tabular-stream';
 import {fingerprint} from '../../cases/domain';
 import {AppError} from '../../../infrastructure/errors';
+import {openObjectStream} from '../../../infrastructure/storage';
 
 const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
 const decode=(bytes:Buffer)=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
 type Framing='feature-collection'|'geojson-seq-rs'|'geojson-lines';
+
+/** Raw-only progress bounds include consumer backpressure and the last part's publication, even after EOF. */
+export async function readStreamingRaw<T>(key:string,bytes:number,etag:string|undefined,
+  consume:(body:Readable,published:()=>void)=>Promise<T>,
+  bounds={idleMs:limits.rawIdleMs,outerMs:streamingRawReadMs(bytes)}):Promise<T>{
+  const controller=new AbortController();
+  const stopped=()=>new AppError(503,'STORAGE_TIMEOUT','The bounded object read timed out.');
+  const expire=()=>controller.abort();
+  const outer=setTimeout(expire,bounds.outerMs);outer.unref();
+  let idle=setTimeout(expire,bounds.idleMs);idle.unref();
+  const progress=()=>{
+    if(controller.signal.aborted)throw stopped();
+    clearTimeout(idle);idle=setTimeout(expire,bounds.idleMs);idle.unref();
+  };
+  let object:Awaited<ReturnType<typeof openObjectStream>>|undefined,body:Readable|undefined;
+  let stopWait=()=>{};
+  try{
+    object=await openObjectStream(key,bytes,bounds.outerMs,etag,controller.signal);
+    if(controller.signal.aborted)throw stopped();
+    const source=object.body;
+    // An iterator preserves backpressure; a data listener here would start flowing before the parser attaches.
+    body=Readable.from((async function*(){
+      for await(const chunk of source){if(chunk.length)progress();yield chunk;}
+    })(),{objectMode:false});
+    const interrupted=new Promise<never>((_,reject)=>{
+      stopWait=()=>reject(stopped());controller.signal.addEventListener('abort',stopWait,{once:true});
+    });
+    const result=await Promise.race([consume(body,progress),interrupted]);
+    if(controller.signal.aborted)throw stopped();
+    return result;
+  }catch(error){if(controller.signal.aborted)throw stopped();throw error;}
+  finally{
+    clearTimeout(idle);clearTimeout(outer);controller.signal.removeEventListener('abort',stopWait);
+    body?.destroy();object?.body.destroy();controller.abort();
+  }
+}
 
 /** Inspect the original JSON tokens before JS can round numbers or replace duplicate keys. */
 function parseSourceValue(raw:Buffer):{value:unknown;issueCode:string|null}{
