@@ -59,36 +59,42 @@ async function read(total: number, consume: (record: StreamingVectorRecord) => v
   });
 }
 
-test('run 4 shape: geometry-set equality fires first; quarantine unknown independently rejects a valid used layout',
+test('run 4 shape: conversion-compatible MultiPolygons reach drafts; 11 quarantines do not change the layout',
   async () => {
     let inventory = emptyInventory(), prefix: StreamedProfileGeneration | undefined;
     const held: StreamingVectorRecord[] = [];
     await read(172409, record => {
       inventory = advanceStreamedInventory(inventory, [record]).inventory;
       if (inventory.recordsSeen === 100) prefix = profile(inventory);
-      if (record.featureIndex === 100 || record.disposition === 'quarantined') held.push(record);
+      if (record.featureIndex >= 100 && record.featureIndex < 147) held.push(record);
     });
     const observed = prefix!, layout = plan(observed), sealed = profile(inventory, true);
     assert.deepEqual([sealed.recordsSeen, sealed.accepted, sealed.quarantined], [172409, 172398, 11]);
     assert.deepEqual(observed.geometryTypes, ['Polygon']);
     assert.deepEqual(sealed.geometryTypes, ['MultiPolygon', 'Polygon']);
-    assert.equal(prefixLayoutMatchesSealed(layout, observed, sealed), false, 'current geometry-set guard fires');
-    const withoutUnknown = { ...sealed, paths: sealed.paths.map(path => ({ ...path, unknown: 0 })) };
-    assert.equal(prefixLayoutMatchesSealed(layout, observed, withoutUnknown), false, 'not only quarantine unknown');
-    const withoutNewGeometry = { ...sealed, geometryTypes: observed.geometryTypes };
-    assert.equal(prefixLayoutMatchesSealed(layout, observed, withoutNewGeometry), false, 'unknown also fires');
-    assert.equal(prefixLayoutMatchesSealed(layout, observed,
-      { ...withoutUnknown, geometryTypes: observed.geometryTypes }), true, 'isolate both current guards');
+    assert.equal(prefixLayoutMatchesSealed(layout, observed, sealed), true);
+    assert(sealed.paths.every(path => path.unknown === 11), 'quarantine counts stay in the inventory');
     assert.doesNotThrow(() => compileStreamedMapping({ ...layout, version: 'streamed-mapping/1',
       scope: 'accepted_source_features', source: sealed.source, profileGeneration: sealed.generation,
       profileHash: sealed.generationHash }, sealed), 'the approved conversions still admit the accepted file');
     const mapped = normalizeMappedChunk(held, layout, observed, id, 1, []);
     assert.equal(prefixMappingUsedPathHeld(mapped.records), false, 'neither guard is a mapped identity failure');
     assert.equal(mapped.records.filter(record => record.disposition === 'quarantined').length, 11);
-    assert(mapped.records[0].issueCodes.includes('SCHEMA_DRIFT_GEOMETRY'));
-    assert.equal(mapped.records[0].disposition, 'unresolved');
-    assert.equal(pairMappedFeatures(held, mapped.records, { after: -1, conflicts: new Set(), kind: 'building' }).length,
-      0, 'fixing only the seal still leaves the later compatible geometry held by the normalizer');
+    assert.equal(mapped.records.filter(record => record.disposition === 'observed').length, 36);
+    assert(mapped.records.every(record => !record.issueCodes.includes('SCHEMA_DRIFT_GEOMETRY')));
+    const drafts = pairMappedFeatures(held, mapped.records, { after: -1, conflicts: new Set(), kind: 'building' });
+    assert.equal(drafts.length, 36, 'all later compatible outlines reach the existing draft handoff');
+    assert(drafts.every(record => record.raw.disposition === 'accepted'));
+    for (const type of ['Point', 'LineString']) {
+      const incompatible = structuredClone(held[0]);
+      (incompatible.feature as { geometry: unknown }).geometry = { type,
+        coordinates: type === 'Point' ? [0, 0] : [[0, 0], [1, 1]] };
+      const changed = profile(advanceStreamedInventory(observed, [incompatible]).inventory, true);
+      assert.equal(prefixLayoutMatchesSealed(layout, observed, changed), false, `${type} is not a building outline`);
+      const refused = normalizeMappedChunk([incompatible], layout, observed, id, 1, []);
+      assert.equal(refused.records[0].disposition, 'unresolved');
+      assert(refused.records[0].issueCodes.includes('SCHEMA_DRIFT_GEOMETRY'));
+    }
   });
 
 test('byte-zero replay preserves prefix generation hash; a different mapping job cannot reuse its seal key',

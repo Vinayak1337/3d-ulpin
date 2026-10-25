@@ -2,7 +2,8 @@
   "task": "S1.3i",
   "planStep": 1,
   "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf",
-  "verdict": "FALSE_REJECTION; STOPPED_AT_OWN_BOUNDARY; NO_PRODUCTION_FIX",
+  "verdict": "FALSE_REJECTION_FIXED; REJECTION_WORDS_BLOCKED_AT_OWN_BOUNDARY",
+  "diagnosisCodeRefs": "1710369c (before fix)",
   "evidence": "5972c394:docs/evidence/step-1/s1-3/run4/{result,faults,files,jobs}.json; cn1",
   "codeRoot": "packages/server/src/modules/usp/ingestion/",
   "changedWriter": [
@@ -44,13 +45,19 @@
     "hypothesis": "Compatible polygon geometry and quarantine unknown are mistaken for changed used fields.",
     "success": "Synthetic GeoJSON: 172409 records, first 100 Polygon, later 36 MultiPolygon and 11 quarantines.",
     "result": [
-      "Baseline rejection reproduced. Ignoring unknown alone: false; ignoring added geometry alone: false;",
-      "ignoring both: true. Sealed compilation succeeds. Quarantines stay 11. Five invalid integer variants reject.",
-      "Byte-zero replay keeps generation hash; stale plan/seal/mapping keys return to compare, not changed."
+      "Baseline rejected; fixed seal matches. All 36 later MultiPolygons reach pairMappedFeatures/draft handoff.",
+      "All 11 stay quarantined and unknown=11 remains recorded. Point and LineString reject in both checks.",
+      "Five invalid integer variants still reject. Byte-zero replay and stale-key tests still pass."
+    ],
+    "design": [
+      "prefixGeometryCompatible asks compileMapping with the approved geometry operation and singleton type;",
+      "no second allowed-type list. The seal uses it; normalizer caches its answer per type per chunk.",
+      "Only quarantine unknown was removed from field-shape comparison. Accepted-field completeness stays."
     ],
     "stop": [
-      "chunk-mapping-normalizer.ts:51-71,142,166-167 outside OWN also holds compatible later MultiPolygons",
-      "as SCHEMA_DRIFT_GEOMETRY. intake-package-cuts.ts:89 excludes them. Test proves seal-only fix is incomplete."
+      "Requested first-failure words need intake-large-worker.ts comparePrefix:373-400 outside OWN.",
+      "It skips held records on profile failure and persists only changed:boolean. A type/field and first ordinal",
+      "must be retained there before intake-large.ts can show them. No worker or intake-package-cuts.ts edits."
     ]
   },
   "proposedOfficerWords": [
@@ -58,19 +65,20 @@
     "11 records remain quarantined. No used field was found to break the layout."
   ],
   "checks": {
-    "logs": "E:/ulpin-tmp/s1-3i/{before,after}-*.{log,exit}",
+    "logs": "E:/ulpin-tmp/s1-3i/resume/{before,after}-*.{log,exit}; targeted.log",
     "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
     "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
     "pnpm studio:test": { "before": 0, "after": 0, "passed": 831, "skipped": 3 },
-    "section5 server command": { "before": [0, 1060, 5], "after": [0, 1063, 5], "order": "exit,pass,skip" },
-    "tsx --test ingestion/{intake-large*,streamed-mapping*}.test.ts": { "exit": 0, "passed": 63 },
-    "openapi.ts --check": { "before": 0, "after": 0, "operations": 336, "schemas": 379 },
-    "python scripts/api/check.py": { "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    "section5 server command": { "before": [0, 1063, 5], "after": [0, 1063, 5], "order": "exit,pass,skip" },
+    "tsx intake-large*,streamed-mapping*,streamed-layout,chunk-mapping-normalizer tests": { "exit": 0, "passed": 73 },
+    "openapi.ts --check": { "before": 0, "after": 1, "reason": "expected stale source-pins.json" },
+    "python scripts/api/check.py": { "before": 0, "after": 1, "reason": "expected changed producer pin" },
     "git diff --check": { "before": 0, "after": 0 },
-    "intermediate": "Test callback typecheck failed once; corrected to Promise<void>; rerun passed. No stale pins."
+    "staleProducerPaths": ["chunk-mapping-normalizer.ts", "streamed-mapping.ts"]
   },
   "next": [
-    "Extend OWN to chunk-mapping-normalizer.ts and tests. Fix compatible geometry handling and quarantine unknown;",
-    "preserve true identity/text drift refusals and prove later compatible outlines reach drafts. No retry-key fix."
+    "Extend OWN narrowly to comparePrefix in intake-large-worker.ts, never its catch blocks, for rejection detail.",
+    "Then wire field/type and first ordinal into intake-large.ts projection and tests. Lead regenerates pins.",
+    "No retry-key fix or runtime/Docker action. No further real-file read on resume."
   ]
 }

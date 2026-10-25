@@ -68,14 +68,29 @@ export function compileStreamedMapping(plan:StreamedMappingPlan,profile:Streamed
   // No global uniqueness claim is made here. The mapped worker reserves keys across chunks.
   return mapping;
 }
-/** A mechanical closure check, not a new layout or approval. Counts grow; permitted types and completeness do not. */
+/** Ask the existing conversion registry about one geometry type, without unrelated field coverage checks.
+ * A singleton cannot qualify as a mixed file's set-aside pin or line. */
+export function prefixGeometryCompatible(plan: StreamedMappingPlan, profile: StreamedProfileGeneration,
+  type: string): boolean {
+  try {
+    compileMapping({ ...plan, operations: plan.operations.filter(op => op.target.endsWith('.geometry')) },
+      { ...layoutProfile(profile), geometryTypes: [type] });
+    return true;
+  } catch (error) {
+    if (error instanceof AppError && error.status === 422) return false;
+    throw error;
+  }
+}
+
+/** A mechanical closure check: accepted fields stay complete; geometry follows the approved conversion. */
 export function prefixLayoutMatchesSealed(plan: StreamedMappingPlan, prefix: StreamedProfileGeneration,
   sealed: StreamedProfileGeneration): boolean {
   compileStreamedMapping(plan, prefix);
   if (sealed.coverage !== 'sealed' || sealed.unknownRemainder
-    || fingerprint([...prefix.geometryTypes].sort()) !== fingerprint([...sealed.geometryTypes].sort())) return false;
+    || sealed.geometryTypes.some(type => !prefixGeometryCompatible(plan, sealed, type))) return false;
+  // Quarantines have no readable fields; their count is not accepted-source field drift.
   const shape = (path: StreamedProfilePath, total: number) => ({ types: [...path.types].sort(),
-    complete: path.values === total, nulls: path.explicitNull > 0, absent: path.absent > 0, unknown: path.unknown > 0,
+    complete: path.values === total, nulls: path.explicitNull > 0, absent: path.absent > 0,
     integers: path.integers === path.values,
     outline: path.outline && { types: [...path.outline.types].sort(), nulls: path.outline.explicitNull > 0,
       absent: path.outline.absent > 0, integers: path.outline.integers === path.outline.values } });
