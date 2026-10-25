@@ -1,0 +1,81 @@
+{
+  "task": "AUD3",
+  "gate": "P0 hygiene",
+  "qualification": "static composition forecast; no runtime gate claimed",
+  "branch": "task/aud3-judge-files",
+  "baseline": "26bc76fc20b761d9ca203ee1967cf5dba29a4ca3",
+  "readFirst": {
+    "branch": "origin/task/aud2-judge-formats",
+    "commit": "f946b497c7dde3aaec184749689d965a39b4d585",
+    "path": "docs/evidence/aud2/AUDIT.md"
+  },
+  "fetchedBranches": {
+    "B": ["origin/task/int2-post-roll", "26bc76fc20b761d9ca203ee1967cf5dba29a4ca3"],
+    "C": ["origin/task/cw1-wide-files", "90237d7fd5b8909f0b5d5b0cad4ab6c54aebe2db"],
+    "P": ["origin/task/pl1-scanned-plans", "abf3ae119fb75d992ed702e2f2fc3bd8033a4aa4"],
+    "Z": ["origin/task/gz1-shapefile-z", "9c69e134e5b0fde975ccaa50f17a7cd382819500"],
+    "J": ["origin/task/b3d1-3d-to-map", "d69df453d2aa4c5219c494236e15798cfe384163"],
+    "N": ["origin/task/nr4-gltf-obj-batch", "d335faf56be31d66cf0547ae611bff8364467376"]
+  },
+  "composition": {
+    "mergedOrBuiltHere": false,
+    "NIncludesJ": true,
+    "unavailableNotCredited": ["CW2 spatial-cell areas", "CG1 CityGML outlines"],
+    "sharedSeams": ["native_gis.py: preserve Z and CityJSON changes", "nativeParentState: preserve both edits"]
+  },
+  "scope": {
+    "codeFilesChanged": 0,
+    "realInputFilesOpened": 0,
+    "goodRealInput": null,
+    "difficultRealInput": null,
+    "runtimeAccess": false,
+    "dockerUsed": false,
+    "credentialsRead": false,
+    "restrictedPathsOpened": false,
+    "applicationTestsRun": false,
+    "runtimeGateClaimed": false
+  },
+  "audit": {
+    "kindRows": 45,
+    "rankedGaps": 15,
+    "misleadingWordGroups": 6,
+    "citationReferencesChecked": 185,
+    "branchFilePairsChecked": 99,
+    "positiveFactAnchorsChecked": 12,
+    "standaloneTableActionAbsentChecked": true,
+    "maximumMarkdownLineLength": 120
+  },
+  "highestPriorities": [
+    "Table derivative counts do not prove placement; success wording precedes layout/map work.",
+    "PDF forecast omits the 10-16 MiB OCR fallback.",
+    "Unresolved stated CRS can say Needs an answer without an eligible answer control.",
+    "JSON forecast excludes the now-wired glTF reader.",
+    "KML ZIP classification still suppresses independent images or extra KML documents.",
+    "Native conversion notWritten counts stay in lineage rather than parent officer words."
+  ],
+  "otherDeliveryRisks": [
+    "CW1 still uses one area and bypasses bounded-wide files; CW2 not audited.",
+    "Standalone CSV/XLSX table import does not expose batch placement.",
+    "At most 16 MiB tables refuse over 2000 rows; standalone content refusal can precede retention.",
+    "Plan photos remain previews; OCR words are not rooms; longer PDFs remain outside bounded OCR.",
+    "UTF-16 bounded table reading works but its placement window reader refuses it.",
+    "CityGML stays evidence-only until an outline bridge is reviewed; CG1 not audited."
+  ],
+  "deploymentPrerequisites": {
+    "combinedGeoImageRequired": true,
+    "reason": "Existing CSV2/NR3 plus GZ1 and CityJSON-outline processor source changes must reach the image.",
+    "NR4AloneNeedsGeoImage": false,
+    "hostProfilesAndPinsRequired": true,
+    "runtimeAvailabilityVerified": false
+  },
+  "checks": [
+    {"command": "git fetch origin", "exitCode": 0},
+    {"command": "inline source-citation, fact-anchor, row/rank and line-length checks", "exitCode": 0},
+    {"command": "python -m json.tool docs/evidence/aud3/result.json", "exitCode": 0},
+    {"command": "git diff --cached --check", "exitCode": 0},
+    {"command": "awk 'length>120 {exit 1}' docs/evidence/aud3/{AUDIT.md,result.json}", "exitCode": 0},
+    {"command": "owned-path and attribution checks on staged evidence", "exitCode": 0},
+    {"command": "git diff staging...HEAD -- docs/evidence/aud3/ (self-review)", "exitCode": 0}
+  ],
+  "rehearsal": "Required after integration; no previous branch measurements are requalified by this audit."
+}
