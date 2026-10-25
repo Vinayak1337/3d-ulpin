@@ -592,7 +592,7 @@ Size M, this PC: data drive. After: Step 2 practice kit holds a real CityGML til
 
 ### S5.17a Reading card says when a CityGML inventory was too large to list
 
-Size S, code only. After: S5.17. **Status: running 25 Oct (codex, from int3-pre 4e1c7690).**
+Size S, code only. After: S5.17. **Status: merged 25 Oct (int3-pre be375bb6; server set 999 pass)**
 
 - **What:** A CityGML above the 16 MiB inventory bound still has its outlines read, but its reading card is silent about the inventory. Load the failed native job code CITYGML_OUTPUT_LIMIT as one fact and say in one line that the element inventory is larger than the reader lists, outlines being read from the unchanged original.
 
@@ -648,7 +648,7 @@ The only working link is an exact key the officer declares by hand (it works for
 
 ### S6.1 The record panel lists a building's links to register rows and pages, with the reason
 
-Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: open.**
+Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: server half S6.1a running 25 Oct (codex, from int3-pre be375bb6); the Links list is a UI step after it**
 
 - **What:** A building's register match shows only in the batch evidence list, or later as a citation. The map's record panel shows only geometry, height and ledger sources. Add an optional featureId filter to the evidence read, matched through candidate->'anchors'. Add a Links list to the inspector; per candidate it shows:
 - the file, and the row or page in words;
