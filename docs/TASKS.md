@@ -151,7 +151,7 @@ Size S, code only. After: S1.3 run 4. **Status: running 25 Oct (codex, task/s1-3
 
 ### S1.3i Why Halifax's first-part layout was rejected when the whole file closed
 
-Size S, code only. After: S1.3 run 4. **Status: running 25 Oct (codex, task/s1-3i-prefix-check from int3-pre 1710369c).**
+Size S, code only. After: S1.3 run 4. **Status: merged 25 Oct (int3-pre d5758dc4, task/s1-3i-prefix-check 36a1d13b; pins regenerated; server set 1,072 tests, 0 failed). Cause: a false rejection by two guards. The sealed geometry-type set had to equal the prefix's (Halifax adds 36 MultiPolygons after the first part), and quarantined records counted as unknown values of the used fields; the normalizer also held later MultiPolygons as geometry drift. OBJECTID (all 172,409 safe integers) and the raw retry were ruled out. Fixed: a type in the approved prefix stays compatible, a new type is compatible when the approved conversion accepts it, quarantines stay counted but are not field drift, and a true rejection names the field or geometry type and the first record. Reviewed twice: approved set-aside points stayed compatible, and blank optional names stayed out of failures.**
 
 - **What:** The officer approved OBJECTID as the key and the geometry on the first part; after the raw retry and 11 quarantined records the closure said a field changed or could not be read, and nothing was drafted. Name the rule that fired: a real bad value, a quarantined record, or a stale check key after the retry. Fix a wrong check; if the rule is right, make the words name the field and the first record that broke it.
 - **Files:** intake-large.ts (prefix check), streamed-mapping.ts (seal check) and their tests
