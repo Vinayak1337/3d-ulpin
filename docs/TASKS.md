@@ -103,7 +103,7 @@ Size S, code only. After: S1.3 run 2. **Status: merged 25 Oct (int3-pre 511da8d4
 - **Tests:** processing-latency, processing, dispatch-heap and dispatch-scratch tests; pnpm typecheck:backend; the section 5 server command
 ### S1.3c One large file's profile no longer blocks every other file's profile
 
-Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3c-profile-admission from 726bb2e8). First pass (74e0707a) stopped as told: a waiting profile polls in process and holds a stream slot and 512 MiB for its whole wait. Resumed with the design: a profile with no ready chunk gives its slot back and is requeued, the 12-minute wait is measured durably, then the cap rises to 4. Second stop (24017374): every claim counts toward three attempts; resumed again with a narrow yield in jobs.ts that does not count as an attempt.**
+Size S, code only. After: S1.3 run 3. **Status: merged 25 Oct (int3-pre, task/s1-3c-profile-admission 898589a3; pins regenerated; section 5 set 1,058 tests, 0 failed). A profile with no ready chunk requeues before claiming; after a claim it publishes the ready chunks and yields without spending an attempt; the 12-minute wait is durable; the cap is 4. First pass (74e0707a) stopped as told: a waiting profile polls in process and holds a stream slot and 512 MiB for its whole wait. Resumed with the design: a profile with no ready chunk gives its slot back and is requeued, the 12-minute wait is measured durably, then the cap rises to 4. Second stop (24017374): every claim counts toward three attempts; resumed again with a narrow yield in jobs.ts that does not count as an attempt. Resumed once more after the 25 Oct session restart.**
 
 - **What:** STREAMED_PROFILE_LIMITS.active is 1 across the service, so a large file's profile row stops every other file at profile admission. Raise it to 2, half the stream lane, keeping S1.3b's proof that profiles and raw readers cannot fill the lane; replays for a ZIP beside a long large file and for every profile waiting on raw.
 - **Files:** packages/contracts/src/usp/streamed-profile.ts; streamed-profile tests; processing-latency.test.ts
@@ -111,7 +111,7 @@ Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3
 
 ### S1.3d Why the 108 MB raw read passed its deadline under load
 
-Size S, code only (reh-03 read-only if needed). After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3d-raw-deadline from 726bb2e8). First pass (b7735667): Halifax published all 923 parts with at most 16 s between them and timed out at 601 s because the whole-read bound counts serial publishing under load; the retry restarts at byte zero. Resumed with a 2-minute no-progress bound and a 30-minute-per-128-MiB outer bound, for the raw read only.**
+Size S, code only (reh-03 read-only if needed). After: S1.3 run 3. **Status: merged 25 Oct (int3-pre, task/s1-3d-raw-deadline 835e6126; pins regenerated). First pass (b7735667): Halifax published all 923 parts with at most 16 s between them and timed out at 601 s because the whole-read bound counts serial publishing under load; the retry restarts at byte zero. Fixed with a 2-minute no-progress bound (source bytes or a newly published part) and a 30-minute-per-128-MiB outer bound, for the raw read only; other readers unchanged. A retry still starts at byte zero; the PB1 cause stays unknown.**
 
 - **What:** The streaming read has one wall deadline (10 minutes per started 128 MiB) that also counts time held by backpressure; under load Halifax passed it and started again. Find where the read waited, then one bounded comparison; if the deadline counts waiting, bound lack of progress instead under a stated outer bound. Also say why the PB1 enrolment got 502 ETIMEDOUT through the preview proxy.
 - **Files:** the streaming-vector reader and worker; packages/server/src/infrastructure/storage.ts (openObjectStream)
@@ -119,7 +119,7 @@ Size S, code only (reh-03 read-only if needed). After: S1.3 run 3. **Status: run
 
 ### S1.3e A ZIP member refused by a full receipt allowance waits for a free receipt
 
-Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3e-zip-quota-wait from 726bb2e8; first pass stopped on scope, resumed with the worker file).**
+Size S, code only. After: S1.3 run 3. **Status: sent back 25 Oct (codex, task/s1-3e-zip-quota-wait b853e808). The waiting words and the 30-minute bound from archive retention are right, but the fan-out ran before any claim with no lease. Resumed 25 Oct on int3-pre with S1.3c merged: claim, fan out under the lease, and yield on a wait (the yield set gains intake-zip-layers); the waited seconds come from stored data, not from the words.**
 
 - **What:** A member refused UPLOAD_QUOTA stays inside the archive until the officer enrols it again. The ZIP layer job requeues for the refusal's freesAt under one outer bound, and the member says it waits.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-zip-layers.ts, intake-zip-layers-worker.ts; tests/intake-zip-layers.test.ts
@@ -127,7 +127,7 @@ Size S, code only. After: S1.3 run 3. **Status: running 25 Oct (codex, task/s1-3
 
 ### S1.3f An enabled Record press during prepare sends its request or says why not
 
-Size S, UI (Claude session). After: S1.3 run 3. **Status: proposed 25 Oct (worktree E:/Projects/ulpin-wt/s1-3f, task/s1-3f-ev2-press from 726bb2e8).**
+Size S, UI (Claude session). After: S1.3 run 3. **Status: merged 25 Oct (int3-pre 8720277e). Confirm the evidence and Accept every exact single match stay disabled while a retained source is still being read, with words naming it.**
 
 - **What:** In run 3 the recorder pressed Record packages and make chosen cards while the package was being prepared; the button was recorded as enabled and no confirmation was sent. Name the cause; never an enabled button that does nothing.
 - **Files:** apps/studio/src/features/intake/run/ (Confirm.tsx, useConfirmationCommand.ts, model.ts)
@@ -705,15 +705,31 @@ Size S, this PC: code. After: S5.22 run 1. **Status: merged 25 Oct (int3-pre b00
 
 ### S5.8a DXF count bounds measured on real drawings
 
-Size S, this PC: data drive. After: S5.22 run 1. Before: S5.8. **Status: running 25 Oct (codex, task/s5-8a-dxf-bounds from 726bb2e8). First pass (2fe1c41c) measured WikiHouse: 25,064 entities, 253,681 tags; the 16 MiB output is full after 28 percent because each tag is written up to three times. Resumed with inspection profile 2 (each tag value once, readers accept 1 and 2), then bounds from the output budget. Profile 2 (5fc1c2ed) still fills 16 MiB after 37 percent of WikiHouse; now measuring the full output by part before the next design.**
+Size S, this PC: data drive. After: S5.22 run 1. Before: S5.8. **Status: running 25 Oct (codex, task/s5-8a-dxf-bounds from 726bb2e8). First pass (2fe1c41c) measured WikiHouse: 25,064 entities, 253,681 tags; the 16 MiB output is full after 28 percent because each tag is written up to three times. Resumed with inspection profile 2 (each tag value once, readers accept 1 and 2), then bounds from the output budget. Profile 2 (5fc1c2ed) still fills 16 MiB after 37 percent of WikiHouse. Measured in full (74ae89b1, merged into int3-pre as evidence): 60.1 MB in profile 1, 45.6 MB in profile 2, 32.5 MB even without sourceTags; about 3 s and 0.59 GB peak. No single 16 MiB result can hold the drawing, so the bounds move to S5.8b.**
 
 - **What:** The practice-kit WikiHouse drawing (4,519,566 bytes) stops at MAX_ENTITIES 10,000. Measure it and 1_polylines.dxf with test-only raised counts, then set entity, record, point and tag bounds so a 16 MiB drawing stays inside the unchanged memory, time and output budgets with a stated margin, as S5.17 did. DXF_LIMITS follow exactly.
 - **Files:** services/geo/geo/native_dxf.py (bounds); packages/contracts/src/usp/dxf-ingestion.ts (limits); services/geo/tests/test_native_dxf.py
 - **Tests:** pytest test_native_dxf.py in the pinned DXF env; tests/dxf-read-compatibility.test.ts; pnpm typecheck:backend
 
+### S5.8b A DXF reading is stored in bounded pages
+
+Size M, this PC: data drive. After: S5.8a. Before: S5.22 rerun. **Status: running 25 Oct (codex, task/s5-8b-dxf-pages from int3-pre 97f7f2fb).**
+
+- **What:** Profile 2 (each tag value once) as a head of at most 16 MiB plus entity pages of at most 8 MiB, ordinals global, each page its own pinned private object. Count bounds come from the measured memory per entity with a 20 percent reserve; input, memory, seconds and threads stay. One reader loads only the pages that hold the asked ordinals; fusion, citations and the native download use it, and stored profile 1 artifacts still read and cite.
+- **Files:** services/geo/geo/native_dxf.py; scripts/usp/desktop-dxf-read.py; packages/contracts/src/usp/dxf-ingestion.ts; the DXF reader, processor, worker, fusion and citation files in packages/server; apps/api dxf.controller.ts
+- **Tests:** test_native_dxf.py in the pinned DXF env; tests/source-fusion-dxf.test.ts; tests/registry-dxf-citations.test.ts; tests/dxf-read-compatibility.test.ts; the section 5 server set
+
+### S5.12c The SurfacePreview mosaic test passes under full-suite load
+
+Size XS, UI (Claude session). **Status: proposed 25 Oct (worktree E:/Projects/ulpin-wt/s5-12c, task/s5-12c-mosaic-test from int3-pre 54468155).**
+
+- **What:** The mosaic test sees three drawImage calls instead of two under the full Studio run and passes alone; it failed in three full runs on 25 Oct. Name the cause and fix it so each part is drawn once per settled state, with a deterministic regression test; never loosen the assertion.
+- **Files:** apps/studio/src/features/intake/surface/
+- **Tests:** pnpm studio:typecheck; pnpm studio:test three times; pnpm studio:build
+
 ### S5.22c A surface row in a batch has a View the surface action
 
-Size XS, UI (Claude session). After: S5.12. **Status: proposed 25 Oct (worktree E:/Projects/ulpin-wt/s5-22c, task/s5-22c-surface-row from 726bb2e8).**
+Size XS, UI (Claude session). After: S5.12. **Status: merged 25 Oct (int3-pre 350a8e06).**
 
 - **What:** IntakeTray NextStep offers no action for a raster or point cloud not on the map, so in a batch of several files its preview never opens. Add a View the surface button when opensPreview(item).
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx; IntakeTray.test.tsx
