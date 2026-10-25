@@ -66,12 +66,13 @@ const NO_LOADED_OVERLAYS: LoadedOverlay[] = [];
 const NO_IMAGES: RetainedImages['overlays'] = [];
 const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
 
-export function MapWorkspace({ context }: { context: AreaContext }) {
+/** `contextFresh`: the context was read since the package in the URL was opened. */
+export function MapWorkspace({ context, contextFresh = true }: { context: AreaContext; contextFresh?: boolean }) {
   const features = context.displayFeatures;
   const { selection, dispatch, patch } = useSelection();
   const [searchParams, setSearchParams] = useSearchParams();
   const packageId = searchParams.get('package');
-  const importStreaming = packageId !== null && packageStreaming(context, packageId);
+  const importStreaming = packageId !== null && packageStreaming(context, packageId, contextFresh);
   const buildingImportId = searchParams.get('building-import');
   const buildingImport = useBuildingImport(buildingImportId);
   const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
@@ -397,7 +398,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
   const tray = packageId ? (
-    <MapImportTray packageId={packageId} context={context} engine={engine} frames={frames}
+    <MapImportTray packageId={packageId} context={context} contextFresh={contextFresh} engine={engine} frames={frames}
       onClose={() => closeParam('package')} />
   )
     : buildingImportId ? <BuildingImportTray importId={buildingImportId} onClose={() => closeParam('building-import')} /> : selection.mode === 'findings' && findings.length ? (
@@ -574,10 +575,12 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 }
 
 /** Keep the drawn count current without re-rendering the workspace on every camera or streamed frame. */
-function MapImportTray({ packageId, context, engine, frames, onClose }: {
-  packageId: string; context: AreaContext; engine: SceneEngine | null; frames: ViewFrames; onClose: () => void;
+function MapImportTray({ packageId, context, contextFresh, engine, frames, onClose }: {
+  packageId: string; context: AreaContext; contextFresh: boolean; engine: SceneEngine | null; frames: ViewFrames;
+  onClose: () => void;
 }) {
   const count = useCallback(() => engine?.drawnBuildings().count, [engine]);
   const drawnBuildings = useSyncExternalStore(frames.subscribe, count, count);
-  return <ImportTray packageId={packageId} context={context} drawnBuildings={drawnBuildings} onClose={onClose} />;
+  return <ImportTray packageId={packageId} context={context} contextFresh={contextFresh} drawnBuildings={drawnBuildings}
+    onClose={onClose} />;
 }

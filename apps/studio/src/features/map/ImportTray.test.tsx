@@ -16,11 +16,13 @@ vi.mock('./MapWorkspace', async () => {
   const { useCanonicalFootprints } = await import('./canonicalScene');
   const { ImportTray } = await import('./ImportTray');
   return {
-    MapWorkspace: function ImportLines({ context }: { context: AreaContext }) {
+    MapWorkspace: function ImportLines({ context, contextFresh }: { context: AreaContext; contextFresh: boolean }) {
       const packageId = useSearchParams()[0].get('package');
-      const importStreaming = packageId !== null && packageStreaming(context, packageId);
+      const importStreaming = packageId !== null && packageStreaming(context, packageId, contextFresh);
       useCanonicalFootprints(context.area.id, null, context.displayFeatures, importStreaming);
-      return packageId ? <ImportTray packageId={packageId} context={context} onClose={() => undefined} /> : null;
+      return packageId
+        ? <ImportTray packageId={packageId} context={context} contextFresh={contextFresh} onClose={() => undefined} />
+        : null;
     },
   };
 });
@@ -43,8 +45,8 @@ const shown = nyc.features.map(({ sourceGeometry: _s, geographicGeometry: _g, so
 const buildings = nyc.features.filter((feature) => feature.kind === 'building').length;
 
 /** The API as the map sees it, counting each read; the package state is the test's to move. `listed: false` is an
- * older package, beyond the newest ones the area context lists. */
-function countingApi({ listed = true } = {}) {
+ * older package, beyond the newest ones the area context lists; `gate` holds every context answer until it resolves. */
+function countingApi({ listed = true, gate = Promise.resolve() } = {}) {
   const reads = { context: 0, canonical: 0, package: 0, other: [] as string[] };
   let state = 'RECEIVED';
   const json = (value: unknown) => new Response(JSON.stringify(value), { headers: { 'content-type': 'application/json' } });
@@ -55,6 +57,7 @@ function countingApi({ listed = true } = {}) {
       : shown.map((feature) => ({ ...feature, displayState: 'unrecorded_proposal', proposalPackageId: PACKAGE }));
     if (path === `/api/v1/areas/${areaId}/context`) {
       reads.context++;
+      await gate;
       return json({ ...nyc, features: undefined, displayFeatures: proposals,
         packages: listed ? [{ id: PACKAGE, state, quarantine: null }] : [] });
     }
@@ -134,6 +137,27 @@ it('reads the streaming package from the area context alone, and stops reading o
   expect(api.reads.canonical).toBe(settled.canonical);
   expect(api.reads.package).toBe(1);
   expect(api.reads.other).toEqual([]);
+});
+
+it('opens a package over an area read cached from before it existed as streaming, and reads the area afresh', async () => {
+  let release!: () => void;
+  const api = countingApi({ gate: new Promise<void>((done) => { release = done; }) });
+  vi.stubGlobal('fetch', api.fetch);
+  // The area as read two minutes before the package was opened: it does not list the package yet.
+  client.setQueryData(queryKeys.areaContext(areaId), { ...nyc, features: undefined, displayFeatures: shown, packages: [] },
+    { updatedAt: Date.now() - 120 * SECOND });
+  const root = await openMap();
+  expect(api.reads).toEqual({ context: 1, canonical: 1, package: 0, other: [] });
+  expect(root.textContent).toContain(`Importing into ${nyc.area.name}`);
+  expect(root.textContent).not.toContain('Done');
+
+  // The fresh read lists the package as RECEIVED: the streaming counts hold from here.
+  release();
+  await wait(30 * SECOND);
+  expect(api.reads.package).toBe(0);
+  expect(api.reads.context).toBeLessThanOrEqual(7);
+  expect(root.textContent).toContain(`${formatCount(buildings)} buildings accepted for review`);
+  expect(root.textContent).not.toContain('Done');
 });
 
 it('opens an older package, which the area no longer lists, as settled: read once, never polled', async () => {

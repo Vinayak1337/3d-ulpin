@@ -42,14 +42,15 @@ function settledKeys(areaId: string): InvalidateQueryFilters[] {
  * nothing here moves the camera. While the package streams, its state, quarantine notice and feature counts are
  * read from the area context the map already reads (its unrecorded proposals carry the package id); the package
  * itself is read once it settles, for its name, warnings and skipped features. A demo import's context is the
- * package's own stream, so every feature in it is the package's.
+ * package's own stream, so every feature in it is the package's. `contextFresh`: the context was read since the
+ * package was opened; until then the package counts as streaming.
  */
-export function ImportTray({ packageId, context, drawnBuildings, onClose }: {
-  packageId: string; context: AreaContext; drawnBuildings?: number; onClose: () => void;
+export function ImportTray({ packageId, context, contextFresh = true, drawnBuildings, onClose }: {
+  packageId: string; context: AreaContext; contextFresh?: boolean; drawnBuildings?: number; onClose: () => void;
 }) {
   const demo = isDemoId(packageId);
   const listed = context.packages.find((pkg) => pkg.id === packageId);
-  const running = packageStreaming(context, packageId);
+  const running = packageStreaming(context, packageId, contextFresh);
   const read = useQuery({
     queryKey: queryKeys.importPackage(packageId),
     queryFn: async () => unwrap(await api.GET('/api/v1/import-packages/{packageId}', { params: { path: { packageId } } })),
