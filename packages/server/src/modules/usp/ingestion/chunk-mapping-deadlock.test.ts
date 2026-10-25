@@ -35,7 +35,7 @@ function locks() {
       const blocked = blockers(owner, resource, write);
       if (!blocked.length) return grant(owner, resource, write);
       if (waiting.some(wait => blocked.includes(wait.owner) && wait.blockers.includes(owner)))
-        throw new Error('Lock-order cycle in model: source SHARE -> raw job; raw job UPDATE -> source write');
+        throw new Error(`Lock-order cycle in model: ${owner} waits for ${resource} held by ${blocked.join(', ')}`);
       await new Promise<void>(done => waiting.push({ owner, resource, write, done, blockers: blocked }));
     },
     release(owner: string) {
@@ -109,6 +109,57 @@ test('raw receipt publication and mapping validation have no source/job lock cyc
   assert.ok(trace.some(sql => sql.includes('FOR UPDATE') && sql.includes('FROM sources')),
     'the receipt takes its existing source UPDATE before its job, without a late upgrade');
 });
+
+for (const phase of ['row', 'current']) {
+  test(`raw chunk ${phase} read has no cycle against source-first publication`, async () => {
+    const streaming = source('streaming-vector');
+    const start = streaming.indexOf(`    const ${phase}=await transaction(async client=>{`);
+    assert.ok(start >= 0, 'the production chunk transaction must be found');
+    const body = streaming.slice(start, streaming.indexOf('      const state=', start)).split('\n').slice(1).join('\n');
+    const helperStart = streaming.indexOf('export async function lockStreamingRowsTx');
+    const helper = streaming.slice(helperStart, streaming.indexOf('/** A retained', helperStart));
+    const read = new AsyncFunction('client', 'caseId', 'sourceId', 'jobId', 'AnyStreamingInputSchema',
+      'fingerprint', 'notFound', 'conflict', 'streamingReadContextTx', 'row', compile(helper + body));
+    const lock = locks(), sourceHeld = deferred(), readerBegan = deferred(), trace: string[] = [];
+    const client = (owner: string) => ({ query: async (sql: string) => {
+      trace.push(`${owner}: ${sql}`);
+      if (sql.includes('FROM sources') && sql.includes('FOR ')) {
+        if (owner === 'reader') readerBegan.resolve();
+        await lock.take(owner, 'source', sql.includes('UPDATE'));
+      }
+      if (sql.includes('FROM jobs') && sql.includes('FOR ')) {
+        await lock.take(owner, 'raw-job', sql.includes('UPDATE'));
+        if (owner === 'reader') readerBegan.resolve();
+      }
+      return { rows: [{ payload: {}, input_fingerprint: 'test_only' }] };
+    } });
+    const publisher = (async () => {
+      try {
+        await client('raw').query('SELECT id FROM cases WHERE id=$1 FOR SHARE');
+        await client('raw').query('SELECT id FROM sources WHERE id=$1 FOR UPDATE');
+        sourceHeld.resolve();
+        await readerBegan.promise;
+        await client('raw').query('SELECT * FROM jobs WHERE id=$1 FOR UPDATE');
+      } finally { lock.release('raw'); }
+    })();
+    const reader = (async () => {
+      await sourceHeld.promise;
+      try {
+        const db = client('reader');
+        const context = async () => {
+          await db.query('SELECT id FROM cases WHERE id=$1 FOR SHARE');
+          await db.query('SELECT * FROM sources WHERE id=$1 FOR SHARE');
+          return { freshness: {} };
+        };
+        await read(db, 'case', 'source', 'raw', { parse: (value: unknown) => value },
+          () => 'test_only', assert.fail, assert.fail, context, { input: {} });
+      } finally { lock.release('reader'); }
+    })();
+    const outcomes = await Promise.allSettled([publisher, reader]);
+    assert.deepEqual(outcomes.map(outcome => outcome.status), ['fulfilled', 'fulfilled'],
+      JSON.stringify({ phase, trace, outcomes: outcomes.map(o => o.status === 'rejected' ? String(o.reason) : 'ok') }));
+  });
+}
 
 test('mapped historical reads take case/source before either raw or mapping job SHARE', () => {
   const mapping = source('chunk-mapping');

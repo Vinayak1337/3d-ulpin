@@ -195,6 +195,7 @@ export class StreamingVectorService{
     const index=z.number().int().min(0).max(limits.chunks).parse(indexValue);
     const binding=ingestionBinding(caseId);
     const row=await transaction(async client=>{
+      await lockStreamingRowsTx(client,caseId,sourceId);
       const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
         "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
         ??notFound('Streaming import not found.');
@@ -220,6 +221,7 @@ export class StreamingVectorService{
     }
     assertIngestionBinding(binding);
     const current=await transaction(async client=>{
+      await lockStreamingRowsTx(client,caseId,sourceId);
       const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
         "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
         ??notFound('Streaming import not found.');
