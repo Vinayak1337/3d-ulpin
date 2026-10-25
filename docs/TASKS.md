@@ -159,7 +159,7 @@ Size S, code only. After: S1.3 run 4. **Status: merged 25 Oct (int3-pre d5758dc4
 
 ### S1.3l Lifetime ingestion caps become renewable quotas, starting with mapping
 
-Size M, code only. After: S1.3h. **Status: running 25 Oct (codex, task/s1-3l-renewable-caps from int3-pre 89c7e4d9).**
+Size M, code only. After: S1.3h. **Status: merged 25 Oct (int3-pre e86869b2, task/s1-3l-renewable-caps fb11b947; pins regenerated; server set 1,080 tests, 0 failed). Fixed: a mapping counts toward the 128 only while it holds work or is the current mapping of its source; failed, stale and superseded mappings are kept but no longer count, and the refusal says how many count and what frees one. The doctor now prints every ingestion bound (14 lines, counts only, warning at 75 percent, read only). Inventory: the streaming history is already per case; the profile history (128 in the whole service, never freed) and finished mappings in old cases still fill the service quota (S1.3n); the raster and point 64-source budgets also bound retained bytes and need their own task. The doctor query has not yet run against a live database; run 5 reads it.**
 
 - **What:** Mapping admission refuses every table and large map layer once 128 mapping imports exist in the whole service, of any state, and nothing frees one; one act 1 and act 2 run makes about 8, so a runtime used for rehearsals fills it. Design item B2 decided quotas instead of lifetime caps. List every lifetime cap B2 names (what it counts, whether anything frees it), make the mapping count only rows that hold work or are the current mapping of their source, add a read-only doctor line per cap with a warning at 75 percent, and say which other caps the same rule fits. No row is deleted and the other caps do not change in this task.
 - **Files:** packages/server/src/modules/usp/ingestion/chunk-mapping.ts (admission count) and its tests; scripts/platform/doctor and a new ingestion-quotas.mjs with its test
@@ -172,6 +172,14 @@ Size S, code only. After: S1.3h. **Status: running 25 Oct (codex, task/s1-3m-a3b
 - **What:** scripts/agent/a3b-wiring.test.ts fails 3 of 8 on int3-pre and 2 of 8 on staging; it last changed 11 Oct and is not in the section 5 set, so nothing caught it. Name each cause (stale test double or real fault), update stale doubles without weakening an assertion, and stop on a real fault.
 - **Files:** scripts/agent/a3b-wiring.test.ts and its own fixtures
 - **Tests:** the a3b test 8 of 8; pnpm typecheck:backend; the section 5 server set
+
+### S1.3n Profile and mapping history are kept per case
+
+Size S, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3n-case-history from int3-pre e86869b2).**
+
+- **What:** The profile history refuses every large file once 128 profiles exist in the whole service, and nothing frees one; finished mappings in old cases still fill the mapping quota. Count both per case, as the streaming history already is, and count only live or current rows; the global active limits stay.
+- **Files:** streamed-profile.ts and chunk-mapping.ts (admission count and words); their quota tests; scripts/platform/ingestion-quotas.mjs and its test
+- **Tests:** 128 in case A do not stop case B; 128 live in one case refuse; failed rows do not count; pnpm typecheck:backend; the section 5 server set
 
 ### S1.3j A file dropped while two uploads are open waits for a free slot
 
