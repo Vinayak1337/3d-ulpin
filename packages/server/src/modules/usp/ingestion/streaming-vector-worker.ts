@@ -195,6 +195,17 @@ export async function endImportTx(client:PoolClient,input:AnyStreamingInput,row:
   await queueIntakeLargeTx(client,input.sourceId);
 }
 
+/** Source writers must not upgrade SHARE after taking a job lock: mapping readers take source then raw job. */
+export async function assertStreamingPublicationInputTx(client:PoolClient,input:AnyStreamingInput,receipt=true){
+  if(input.framing!=='tabular'){
+    await client.query('SELECT id FROM cases WHERE id=$1 FOR SHARE',[input.caseId]);
+    const mode=receipt?'UPDATE':'NO KEY UPDATE';
+    await client.query(`SELECT id FROM sources WHERE case_id=$1 AND id=$2 FOR ${mode}`,
+      [input.caseId,input.sourceId]);
+  }
+  return assertStreamingInputTx(client,input);
+}
+
 /** CR1's words for a refused declaration stay beside where its receipt would be, for the officer's row. */
 async function keepCrsRefusalTx(client:PoolClient,input:AnyStreamingInput,words:string){
   await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedMapRefusal}',$2::jsonb)
@@ -204,7 +215,8 @@ async function keepCrsRefusalTx(client:PoolClient,input:AnyStreamingInput,words:
 async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,
   nextIndex:number,nextFeatureIndex:number,holdCollection:boolean,stale=false,words:string|null=null){
   await transaction(async client=>{
-    if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
+    if(words)await assertStreamingPublicationInputTx(client,input,false);
+    else if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
@@ -367,7 +379,7 @@ export async function runStreamingVectorJob(jobId:string){
         const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
         if(current.operation!=='streaming-vector'||state.sealed_chunks!==nextIndex||state.next_publish_index!==nextIndex||state.records!==result.features||state.unknown_remainder)
           conflict('The complete reader manifest is not published.');
-      },client=>assertStreamingInputTx(client,input).then(()=>{}),async client=>{
+      },client=>assertStreamingPublicationInputTx(client,input).then(()=>{}),async client=>{
         const status=await completeStreamingReadTx(client,input,{...result,quarantinedByCode:setAside},
           geometryCounts,reference);
         if(isWindowedTable(input))await queueFinishedTableEvidenceTx(client,input.caseId,jobId);
