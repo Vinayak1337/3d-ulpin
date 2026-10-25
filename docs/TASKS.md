@@ -167,7 +167,7 @@ Size M, code only. After: S1.3h. **Status: merged 25 Oct (int3-pre e86869b2, tas
 
 ### S1.3m The a3b agent wiring test passes again
 
-Size S, code only. After: S1.3h. **Status: running 25 Oct (codex, task/s1-3m-a3b-wiring from int3-pre 89c7e4d9).**
+Size S, code only. After: S1.3h. **Status: merged 25 Oct (int3-pre 068c1da7, task/s1-3m-a3b-wiring f25db1d3, plus the lead's fix keeping its control artifacts on E:; a3b 8 of 8; server set 1,080 tests, 0 failed). Causes, all stale test doubles, no product fault: the source double ignored the manual-profile filter added in e165cf2f (new on int3-pre); the XLSX test never set its geo interpreter (also on staging); the storage double returned no stream body (also on staging). The learner step now uses an offline stand-in that still checks one partial fit and checkpoint recovery. It fits the section 5 set (under 12 s, offline) but is not added yet.**
 
 - **What:** scripts/agent/a3b-wiring.test.ts fails 3 of 8 on int3-pre and 2 of 8 on staging; it last changed 11 Oct and is not in the section 5 set, so nothing caught it. Name each cause (stale test double or real fault), update stale doubles without weakening an assertion, and stop on a real fault.
 - **Files:** scripts/agent/a3b-wiring.test.ts and its own fixtures
@@ -180,6 +180,14 @@ Size S, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3n-cas
 - **What:** The profile history refuses every large file once 128 profiles exist in the whole service, and nothing frees one; finished mappings in old cases still fill the mapping quota. Count both per case, as the streaming history already is, and count only live or current rows; the global active limits stay.
 - **Files:** streamed-profile.ts and chunk-mapping.ts (admission count and words); their quota tests; scripts/platform/ingestion-quotas.mjs and its test
 - **Tests:** 128 in case A do not stop case B; 128 live in one case refuse; failed rows do not count; pnpm typecheck:backend; the section 5 server set
+
+### S1.3o Per-format retained-source budgets are kept per case
+
+Size M, code only. After: S1.3l. **Status: running 25 Oct (codex, task/s1-3o-case-retention from int3-pre 068c1da7).**
+
+- **What:** Ten direct-retain paths (raster, point, KML, CityGML, CityJSON, DXF, GeoParquet, glTF, IFC, OBJ) refuse a new original once the whole service holds 64 sources or 256 MiB of that format, never freed; one rehearsal ZIP retains six KML. Count each per case with the same numbers through one shared helper, and stop if nothing then bounds the service total.
+- **Files:** the ten format modules (budget lines only), one helper, retention-budget.test.ts
+- **Tests:** 64 in case A do not stop case B; 64 in one case refuse; the byte limit per case; pnpm typecheck:backend; the section 5 server set
 
 ### S1.3j A file dropped while two uploads are open waits for a free slot
 
