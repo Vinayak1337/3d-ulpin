@@ -1,0 +1,72 @@
+{
+  "task": "S5.8a", "planStep": 5, "status": "blocked_by_unchanged_output_budget",
+  "method": {
+    "python": "E:/BhuAayam-data/task-data/desktop-dxf-native/env/Scripts/python.exe",
+    "scratch": "E:/ulpin-tmp/s5-8a", "test_only": true,
+    "execution": "Fresh processes on byte-identical copies; read_dxf plus encode_dxf_result; no artifact saved.",
+    "testOnlyCounts": {"entities": 2000000, "records": 2000000, "points": 2000000, "tags": 2000000},
+    "unchanged": {"inputBytes": 16777216, "outputBytes": 16777216,
+      "memoryBytes": 2147483648, "seconds": 45, "threads": 2},
+    "guards": "Installed native_pdf memory guard; outer timeout 45s; original reader deadline/output guards.",
+    "instrumentation": "Tracemalloc runs are separate; process peaks use GetProcessMemoryInfo.",
+    "integrity": "Original and copy SHA256 match the task pins after all reads; no original modified."
+  },
+  "sources": [
+    {
+      "path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf",
+      "sha256": "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de",
+      "bytes": 82846, "entitiesIncludingChildren": 83, "records": 229, "points": 202, "tags": 6963,
+      "outcome": "available", "outputBytes": 249481,
+      "untraced": {"seconds": 0.512558, "peakWorkingSetBytes": 59588608, "peakPrivateBytes": 78602240},
+      "traced": {"seconds": 1.233465, "tracemallocPeakBytes": 28605113,
+        "peakWorkingSetBytes": 88649728, "peakPrivateBytes": 108728320}
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/practice-kit-20261024/wikihouse/Microhouse_WRENchassis_v0.5.dxf",
+      "sha256": "723ad587298e6841ca704dfc054ded2180f89a17821501ec49af8f1754be17c1",
+      "bytes": 4519566, "entitiesIncludingChildren": 25064, "records": 25235, "points": 24384, "tags": 253681,
+      "defaultOutcome": "ENTITY_LIMIT", "raisedCountsOutcome": "OUTPUT_LIMIT",
+      "outputBytes": null, "outputBytesReason": "No complete result; budget aborts during entity projection.",
+      "untraced": {"seconds": 1.430304, "peakWorkingSetBytes": 245006336, "peakPrivateBytes": 264617984},
+      "traced": {"seconds": 8.678092, "tracemallocPeakBytes": 194659298,
+        "peakWorkingSetBytes": 514433024, "peakPrivateBytes": 545533952},
+      "boundedDiagnostic": {"projectedRecordsEncodedAtFailure": 6962, "budgetOutputBytesAtFailure": 16779142,
+        "seconds": 1.378601, "peakWorkingSetBytes": 244957184, "peakPrivateBytes": 264114176}
+    }
+  ],
+  "decision": {
+    "boundsChanged": false, "contractChanged": false,
+    "comparison": "Hypothesis: entity-only increase suffices. Baseline ENTITY_LIMIT; success = complete <=16 MiB.",
+    "comparisonResult": "Changing only MAX_ENTITIES to 25064 also produces OUTPUT_LIMIT; stop, no budget bypass.",
+    "arithmetic": [
+      "WikiHouse input fraction = 4519566 / 16777216 = 0.269387; full-input scale = 3.712130.",
+      "Scaled counts ceil(observed * scale): entities 93041, records 93676, points 90517, tags 941697.",
+      "But current output accounting hits 16779142 > 16777216 after 6962 / 25064 = 27.777% of records.",
+      "A stated 20% output reserve permits only 0.8 * 16777216 = 13421772.8 bytes; even zero reserve fails.",
+      "Scaling only that aborted prefix to 16 MiB input gives 62286354 accounted bytes, not a full-output estimate.",
+      "Polylines scale = 16777216 / 82846 = 202.510876; full output predicts 50522615.76 > 16777216 bytes.",
+      "Therefore no count bounds admitting this WikiHouse drawing can satisfy the unchanged reader output guard."
+    ],
+    "caveat": "WikiHouse peaks/time cover the aborted parse, not full projection; no full-run resource claim.",
+    "scopeBlocker": "native_dxf.py _Budget.add/_project/read_dxf projection is outside bounds/words ownership.",
+    "acceptance": "Requested default-success test and new bounds not implemented; do not claim this drawing now reads."
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-8a; before/after logs, measurement JSON and temporary helpers",
+    "pytest": {"beforeExit": 1, "after": "not retried", "reason": "Pinned environment has no pytest module."},
+    "unittestSameSuite": {"exitCodes": [0, 0], "passedEach": 6},
+    "boundedComparison": {"exit": 0, "assertions": 3,
+      "cases": ["WikiHouse default ENTITY_LIMIT", "entity-only raise OUTPUT_LIMIT", "10001 entities ENTITY_LIMIT"]},
+    "compatibility": {"exitCodes": [0, 0], "passedEach": 3, "skippedEach": 1},
+    "backendTypecheck": {"exitCodes": [0, 0]}, "studioTypecheck": {"exitCodes": [0, 0]},
+    "studioTest": {"exitCodes": [0, 0], "passedEach": 827, "skippedEach": 3},
+    "ingestion": {"exitCodes": [0, 0], "passedEach": 1045, "skippedEach": 5},
+    "openapi": {"exitCodes": [0, 0]}, "apiCheck": {"exitCodes": [0, 0]}, "diffCheck": {"exitCodes": [0, 0]}
+  },
+  "next": [
+    "Lead must authorize a smaller projection/accounting change, or revise acceptance; counts alone cannot fix it.",
+    "Keep 16 MiB input/output, 2 GiB memory, 45s, two threads and source semantics unchanged; remeasure full result.",
+    "Then set matching Python/contract count bounds and add hash-checked WikiHouse success and over-bound regressions.",
+    "No pins, OpenAPI, host profiles, runtime or image changed; only this blocked measurement receipt is committed."
+  ]
+}
