@@ -220,7 +220,7 @@ async function doctor() {
   await attempt('DB migrations applied (API structural admission)', () => {
     const sha = createHash('sha256').update(readFileSync(join(root, 'database/manifest.json'))).digest('hex');
     return migrationReady(health, sha, selectedProject === 'ulpin-repo' ? 'repository' : 'linked');
-  }, 'have the runtime/DB owner review missing schema against this checkout and apply only approved additive migrations.');
+  }, 'run pnpm platform:start for this runtime to apply pending additive migrations, then rerun doctor.');
   await attempt(`API bound to the inspected ${selectedProject} database`, () => {
     if (!dbIdentity || !health) return false;
     const port = new URL(portUrl(postgres, 5432, '')).port;

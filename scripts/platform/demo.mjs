@@ -3,7 +3,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   createDemo, readDemo, definedRuntime, demoRuntime, runtimeDefinition, safeEnvironment, redact,
 } from './demo-config.mjs';
@@ -48,14 +48,30 @@ export function demoCompose(runtime, env, args, timeout, name = demoRuntime) {
   const pinned = { ...env, ULPIN_PROCESSOR_IMAGE: definition.processorImage };
   return execute('docker', composeArguments(runtime.context, args, definition), pinned, timeout);
 }
-function migrate(env, definition) {
+function migrate(env, definition, run = execute) {
   const preload = join(root, 'scripts/platform/isolated-env.cjs');
   const migrationEnv = { ...env, NODE_OPTIONS: `--require "${preload.replaceAll('\\', '/')}"` };
   console.log(`Applying existing additive migrations to ${definition.name} only (no seeds).`);
-  execute(process.platform === 'win32' ? 'cmd.exe' : 'pnpm',
+  run(process.platform === 'win32' ? 'cmd.exe' : 'pnpm',
     process.platform === 'win32' ? ['/d', '/s', '/c', 'pnpm db:migrate'] : ['db:migrate'], migrationEnv);
   const schema = join(root, 'scripts/platform/demo-schema.ts');
-  execute(process.execPath, ['--require', preload, '--import', 'tsx', schema], env);
+  run(process.execPath, ['--require', preload, '--import', 'tsx', schema], env);
+}
+
+function readSchema(env, run) {
+  const infrastructure = join(root, 'packages/server/src/infrastructure');
+  const readiness = JSON.stringify(pathToFileURL(join(infrastructure, 'database-readiness.ts')).href);
+  const database = JSON.stringify(pathToFileURL(join(infrastructure, 'db.ts')).href);
+  const script = `const { databaseReadiness } = await import(${readiness});
+const { closePool } = await import(${database});
+try { console.log(JSON.stringify((await databaseReadiness()).schema)); } finally { await closePool(); }`;
+  return JSON.parse(run(process.execPath, ['--require', join(root, 'scripts/platform/isolated-env.cjs'),
+    '--import', 'tsx', '--input-type=module', '--eval', script], env));
+}
+
+function schemaProblems(schema) {
+  return [...schema.missingMigrations, ...schema.missingRelations, ...schema.missingColumns,
+    ...(schema.invalidIndexes ? [`invalid indexes: ${schema.invalidIndexes}`] : [])].join(', ') || 'schema readiness';
 }
 
 /** The engine steps of stop, behind one seam so that a test can stand in for Docker. */
@@ -130,22 +146,39 @@ export function assertServingCheckout(name = demoRuntime, checkout = root) {
   }
 }
 
-function resume(definition, runtime, compose) {
+function resume(definition, runtime, env, compose, steps) {
   const { project } = definition;
   if (JSON.parse(readFileSync(definition.marker, 'utf8')).project !== project) {
     throw new Error('Unexpected demo bootstrap ownership marker.');
   }
-  const problems = startProblems(inventory(runtime, project), false, project);
+  const problems = startProblems(steps.inventory(runtime, project), false, project);
   if (problems.length) throw new Error(`Demo resume refused: ${problems.join(' ')} No replacements will be created.`);
   const services = ['postgres', 'minio', 'redis', 'geo', 'worker'];
   compose(['--profile', 'app', 'start', '--wait', '--wait-timeout', '120', ...services]);
+  let schema = readSchema(env, steps.execute);
+  if (schema.ready) {
+    console.log(`${definition.name}: no pending migrations; nothing applied.`);
+    return;
+  }
+  console.log(`${definition.name}: pending schema: ${schemaProblems(schema)}.`);
+  migrate(env, definition, steps.execute);
+  schema = readSchema(env, steps.execute);
+  if (!schema.ready) throw new Error(`Runtime resume refused; still missing or invalid: ${schemaProblems(schema)}.`);
 }
 
-async function startRuntime(definition, create) {
+const localStartup = {
+  connect: localEngine.connect, readDemo, compose: demoCompose, inventory, execute,
+  launchProcesses, waitForApi, clearStoppedOnPurpose, gatewayReport,
+};
+
+/** Startup commands share a seam with stop so tests never need a runtime or Docker. */
+export async function startRuntime(definition, create, overrides = {}) {
+  const steps = { ...localStartup, ...overrides };
+  const { launchProcesses, waitForApi, clearStoppedOnPurpose } = steps;
   assertServingCheckout(definition);
-  const runtime = dockerRuntime(); engine(runtime);
-  const env = create ? await createDemo(definition) : readDemo(definition);
-  const compose = (args, timeout) => demoCompose(runtime, env, args, timeout, definition);
+  const runtime = steps.connect();
+  const env = create ? await createDemo(definition) : steps.readDemo(definition);
+  const compose = (args, timeout) => steps.compose(runtime, env, args, timeout, definition);
   if (!existsSync(definition.marker)) {
     if (!create) {
       throw new Error('Demo bootstrap is incomplete; explicit --create is required to resume schema-only setup.');
@@ -157,15 +190,15 @@ async function startRuntime(definition, create) {
         + 'started. Build its document runtime, then start it.');
       return;
     }
-  } else resume(definition, runtime, compose);
+  } else resume(definition, runtime, env, compose, steps);
   await launchProcesses(env, definition);
   await waitForApi(env, definition);
   clearStoppedOnPurpose(definition);
-  const gateway = gatewayStateText(gatewayReport(env));
+  const gateway = gatewayStateText(steps.gatewayReport(env));
   console.log(`${definition.name} running: http://127.0.0.1:${env.API_PORT}/api/v1/health (${gateway}).`);
   const named = definition.rehearsal ? ['--runtime', definition.name] : [];
   const doctor = [join(root, 'scripts/platform/doctor'), '--profile', 'demo', ...named];
-  console.log(execute(process.execPath, doctor, env));
+  console.log(steps.execute(process.execPath, doctor, env));
 }
 
 export async function demoAction(action, create = false, name = demoRuntime) {
