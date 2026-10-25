@@ -1,0 +1,32 @@
+{
+  "task": "S5.22b",
+  "planStep": 5,
+  "base": "726bb2e82151a8f78453125876eed9d970e56c4f",
+  "decision": "readDemo applies demoStartEnvironment after validated settings/path reads on every start; no settings file changes. The capacity is imported through tsx/esm/api from LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies.",
+  "doctor": "Read-only stat -f -c '%a %S' /data in the inspected MinIO container measures available blocks on the expected project's object-storage volume. BigInt multiplication reports exact free bytes; insufficient space or unavailable/invalid probe fails closed.",
+  "acceptance": {
+    "start": "Demo and two rehearsal names, absent/zero/stale reservation: exact contract capacity; temporary settings unchanged.",
+    "disk": "Above/equal/below capacity with 4096-byte blocks: PASS/PASS/FAIL; absent volume binding and invalid output refused.",
+    "isolation": "Existing demo/rehearsal settings readers still reject settings from another runtime.",
+    "runtimeTouched": false
+  },
+  "checks": [
+    { "command": "node --test scripts/platform/runtime-name.test.mjs", "beforeExit": 0, "beforePassed": 7, "afterExit": 0, "afterPassed": 9 },
+    { "command": "node --test scripts/platform/{demo-document-runtime,demo-gateway,demo-native-readers,processes,runtime-gateway,runtime-image,runtime-paths,runtime-name,runtime-stop,runtime}.test.mjs", "exit": 0, "passed": 81, "skipped": 2, "failed": 0 },
+    { "command": "pnpm exec tsx --test scripts/agent/a3c-demo-paths.test.ts", "exit": 0, "passed": 1 },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "passed": 827, "skipped": 3, "files": 128 },
+    { "command": "WORKING-RULES section 5 domain test command, isolated demo environment", "beforeExit": 0, "afterExit": 0, "passed": 1045, "skipped": 5, "failed": 0 },
+    { "command": "ULPIN_PROFILE=demo NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeExit": 0, "afterExit": 0, "operations": 335, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 0, "operations": 335, "schemas": 379 },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "checkNotes": [
+    "The initial openapi invocation omitted ULPIN_PROFILE=demo and exited 1 at the preload guard; corrected isolated invocation passed before and after.",
+    "The first combined post-change check exceeded the 200-second command budget during studio:test; its log subsequently completed. One standalone 300-second bounded rerun passed.",
+    "No stale pins; product producers, generated schema, images and runtime files unchanged. Logs: E:/ulpin-tmp/s5-22b/."
+  ],
+  "inputs": "Only temporary synthetic settings and simulated filesystem metadata used. Task-provided S5.22 evidence names 346/401 MB rasters and an 800 MB GeoJSON sequence; no originals or runtime credentials opened here.",
+  "next": "Lead starts the reviewed rehearsal runtime, verifies the new doctor line and availability of stat in the pinned MinIO image, then retries the previously refused real uploads. No live capacity, upload or reader success is claimed."
+}

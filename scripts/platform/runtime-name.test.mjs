@@ -7,7 +7,11 @@ import { join, relative } from 'node:path';
 import {
   definedRuntime, demoDir, demoDocumentFile, demoFile, demoOcrFile, demoOcrProfileFile, demoProject, demoRuntime,
   demoTabularFile, readDemo, readDemoSettings, runtimeDefinition, runtimeSettings,
+  demoStartEnvironment, largeOriginalCapacityReport,
 } from './demo-config.mjs';
+import { tsImport } from 'tsx/esm/api';
+
+const { LARGE_ORIGINAL_V2_LIMITS } = await tsImport('../../packages/contracts/src/usp/ingestion.ts', import.meta.url);
 
 const secretKeys = ['POSTGRES_PASSWORD', 'S3_SECRET_KEY', 'GEO_SERVICE_TOKEN'];
 const madeUpSecrets = () => {
@@ -117,6 +121,39 @@ test('a rehearsal\'s settings are accepted under its own name only, and carry it
   for (const other of [undefined, 'ulpin-demo', 'ulpin-reh-02']) {
     assert.throws(() => readDemoSettings(file, other), /Unexpected demo setting [A-Z0-9_]+; refusing/);
   }
+});
+
+test('every demo-profile start supplies the contract reservation without rewriting existing settings', () => {
+  for (const name of ['ulpin-demo', 'ulpin-reh-01', 'ulpin-reh-02']) {
+    for (const stale of [undefined, '0', '1']) {
+      const settings = runtimeSettings(name, madeUpSecrets());
+      if (stale !== undefined) settings.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES = stale;
+      const file = settingsFile(settings), before = readFileSync(file, 'utf8');
+      const env = demoStartEnvironment(readDemoSettings(file, name));
+      assert.equal(env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES,
+        String(LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies));
+      assert.equal(readFileSync(file, 'utf8'), before);
+    }
+  }
+});
+
+test('doctor capacity passes at or above the reservation, fails below, and probes only the object volume', () => {
+  const env = demoStartEnvironment(runtimeSettings('ulpin-reh-02', madeUpSecrets()));
+  const required = LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies;
+  const minio = { id: 'object-store', mounts: [
+    { Type: 'volume', Destination: '/data', Name: 'ulpin-reh-02_minio-data' },
+  ] };
+  for (const free of [required + 4096, required, required - 4096]) {
+    const runtime = { docker: (...args) => {
+      assert.deepEqual(args, ['exec', minio.id, 'stat', '-f', '-c', '%a %S', '/data']);
+      return `${free / 4096} 4096`;
+    } };
+    assert.deepEqual(largeOriginalCapacityReport(env, runtime, minio), {
+      configuredBytes: String(required), freeBytes: String(free), passed: free >= required,
+    });
+  }
+  assert.throws(() => largeOriginalCapacityReport(env, {}, { ...minio, mounts: [] }), /volume binding/);
+  assert.throws(() => largeOriginalCapacityReport(env, { docker: () => 'unknown' }, minio), /free bytes/);
 });
 
 test('any other name is refused before anything is read', () => {
