@@ -20,9 +20,9 @@ export interface CardRow {
   unit: string | null;
 }
 
-const NO_CARD = 'No card has been issued for this unit.';
-const NONE_LISTED = 'No card is listed under the snapshots of this building that were read.';
-const NOT_ALL_LISTED = 'Older or unreadable snapshots of this building were not searched.';
+const NO_CARD = 'No card issued.';
+const NONE_LISTED = 'No card listed in the snapshots read.';
+const NOT_ALL_LISTED = 'Older or unreadable snapshots were not searched.';
 const UNIT_STATES: Record<NonNullable<ListedCard['snapshotState']>, string> = {
   same_revision: 'At its present revision',
   changed_revision: 'Changed since this card',
@@ -70,7 +70,7 @@ export function severalCards(rows: readonly CardRow[]): boolean {
 export function snapshotText(cards: UnitCards, createdAt: string): string {
   const read = cards.snapshots - cards.unread;
   const snapshots = read === 1 ? '1 snapshot' : `${read} snapshots`;
-  return `Read under ${snapshots}; the newest that lists a card is of ${formatDateTime(createdAt)}`;
+  return `${snapshots} read · newest with a card ${formatDateTime(createdAt)}`;
 }
 
 /**

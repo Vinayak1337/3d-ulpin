@@ -46,7 +46,6 @@ export interface CandidateLevel {
 export interface CandidateCard {
   id: string;
   kind: CandidateKind;
-  kindLabel: string;
   title: string;
   state: CandidateState;
   /** Only undecided candidates expose accept, reject or attach controls. */
@@ -205,7 +204,6 @@ export function candidateCard(candidate: CanonicalCandidate, levels: readonly Le
   return {
     id: candidate.candidateId,
     kind: candidate.kind,
-    kindLabel: candidate.kind === 'room' ? 'Room' : 'Roofprint',
     title: titleOf(candidate, candidate.kind),
     state,
     canDecide: !candidate.review && state === 'candidate',
