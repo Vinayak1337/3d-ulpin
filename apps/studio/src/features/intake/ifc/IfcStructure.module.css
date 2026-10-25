@@ -46,3 +46,41 @@
   padding: var(--ui-space-2) 0;
   color: var(--ui-ink-soft);
 }
+
+.storey {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+}
+
+.storey > :first-child {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.outline {
+  margin: 0;
+  width: 10rem;
+  display: grid;
+  gap: var(--ui-space-1);
+  overflow-wrap: anywhere;
+}
+
+.drawing {
+  box-sizing: border-box;
+  width: 10rem;
+  height: 7.5rem;
+  padding: var(--ui-space-2);
+  border: 1px solid var(--ui-divider);
+  border-radius: var(--ui-radius-8);
+  background: var(--ui-surface-subtle);
+}
+
+.drawing path {
+  fill: var(--ui-primary-soft);
+  stroke: var(--ui-primary);
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+}
