@@ -1097,7 +1097,7 @@ Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
 
 ### S7.24 Cut taglines, helper text and secondary labels on every screen (owner, 25 Oct)
 
-Size M, UI (Claude CLI workers, six disjoint parts). After: S1.3 run 5 (the rehearsal runs alone); before the other S7 tasks, which then follow the same rule. **Status: worktrees for S7.24b, c and d ready 25 Oct at int3-pre bac06934; their start was paused at 23:30 because the PC ran out of memory (other projects' test runs plus four fix workers); they start when memory frees, then a, e and f.**
+Size M, UI (Claude CLI workers, six disjoint parts). After: S1.3 run 5 (the rehearsal runs alone); before the other S7 tasks, which then follow the same rule. **Status: S7.24b, c and d running 25 Oct from 23:55 (Claude CLI workers from int3-pre bac06934; first start paused at 23:30 when the PC ran out of memory, nothing lost); a, e and f next.**
 
 - **Owner's words:** Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout instead. Lets rectify this for all pages, statuses, UIs, pop-ups etc.
 - **What:** Cut ledes, subtitles, explanatory sentences, hint props, captions that repeat a heading and smaller second labels. Where a screen would then be unclear, fix the layout (a shorter heading or label, grouping, order, column names, a section the officer opens), never move the sentence into a tooltip or collapsed help. State stays in its shortest form: a value and its label, a status, an error with what to do, an empty line, a value's state word (candidate, estimated, unknown), why a control is disabled, accessible names.
