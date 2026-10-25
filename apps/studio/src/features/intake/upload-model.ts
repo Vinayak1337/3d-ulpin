@@ -11,7 +11,7 @@ export type UploadEntry = GetResponse<'/api/v1/ingestion/cases/{caseId}/uploads'
 export type UploadCreate = Omit<Schemas['POST_ingestion_cases_caseId_uploads_Request_application_json'], 'provenance'>
   & { provenance: { origin: 'not_stated'; acquiredAt: string } };
 export interface UploadProgress {
-  phase: 'checking' | 'uploading' | 'verifying' | 'stopped' | 'cancelled';
+  phase: 'checking' | 'waiting' | 'uploading' | 'verifying' | 'stopped' | 'cancelled';
   doneBytes: number;
   totalBytes: number;
   part: number;
@@ -41,6 +41,7 @@ export function uploadGuard(receipt: Pick<UploadReceipt, 'revision' | 'currentCa
 export function uploadWords(progress: UploadProgress): string {
   const percent = Math.floor(progress.doneBytes / progress.totalBytes * 100);
   if (progress.phase === 'checking') return `Checking the file: ${percent}%`;
+  if (progress.phase === 'waiting') return progress.words || 'Waiting for a free upload slot. It starts by itself.';
   if (progress.phase === 'uploading') return `Uploading: ${percent}% (${MiB(progress.doneBytes)} of `
     + `${MiB(progress.totalBytes)} MiB)`;
   if (progress.phase === 'verifying') return progress.words || 'Verifying the upload';

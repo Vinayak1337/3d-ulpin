@@ -2,13 +2,16 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
 import { expect, it, vi } from 'vitest';
+import { DropOutcomes } from '../IntakeDropDialog';
+import { SLOT_STOPPED } from '../upload-command';
+import type { UploadProgress } from '../upload-model';
 import { TableImportDialog } from './TableImportDialog';
 
-const state = vi.hoisted(() => ({ error: null as Error | null }));
+const state = vi.hoisted(() => ({ error: null as Error | null, upload: null as UploadProgress | null }));
 vi.mock('../../../api/queries', () => ({ useWorkQueue: () => ({ data: { items: [] } }) }));
 vi.mock('./useRetainTable', () => ({
-  useRetainTable: () => ({ retain: { error: state.error, isPending: false, mutate: vi.fn() },
-    created: false, clearCreated: vi.fn(), upload: null, retryUpload: vi.fn(), job: null }),
+  useRetainTable: () => ({ retain: { error: state.error, isPending: Boolean(state.upload), mutate: vi.fn() },
+    created: false, clearCreated: vi.fn(), upload: state.upload, retryUpload: vi.fn(), job: null }),
 }));
 
 const caseId = '20000000-0000-4000-8000-000000000001';
@@ -54,4 +57,24 @@ it('TL1: unrelated or malformed error details never replace the original refusal
     expect(html).toContain(`${words} (STALE_REVISION)`);
     expect(html).not.toContain('Open that table');
   }
+});
+
+it('S1.3j: a table waiting for an upload slot says so with no Retry upload until the 30-minute wait stops', () => {
+  const words = 'Waiting for a free upload slot; 2 of your uploads are open. It starts by itself.';
+  const upload: UploadProgress = { phase: 'waiting', doneBytes: 0, totalBytes: 40, part: 1, parts: 1, words };
+  const show = () => renderToStaticMarkup(<MemoryRouter>
+    <TableImportDialog file={file} onClose={vi.fn()} onBack={vi.fn()} />
+  </MemoryRouter>);
+  state.error = null;
+  state.upload = upload;
+  expect(show()).toContain(`<p role="status">${words}</p>`);
+  expect(show()).not.toContain('Retry upload');
+  const row = renderToStaticMarkup(<DropOutcomes rows={[{ name: file.name, sizeBytes: 40, state: 'retaining',
+    upload }]} />);
+  expect(row).toContain(words);
+  expect(row).not.toContain('part 1 of 1');
+  state.upload = { ...upload, phase: 'stopped', words: SLOT_STOPPED };
+  expect(show()).toContain(`The upload stopped at part 1 of 1: ${SLOT_STOPPED}.`);
+  expect(show()).toContain('Retry upload');
+  state.upload = null;
 });

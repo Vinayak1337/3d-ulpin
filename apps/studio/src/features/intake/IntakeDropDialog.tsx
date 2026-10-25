@@ -58,6 +58,7 @@ export function DropOutcomes({ rows, readers = false }: { rows: FileOutcome[]; r
     { header: 'Outcome', cell: (row) => row.state === 'retaining' && row.upload
       ? uploadWords(row.upload) : outcomeWords[row.state] },
     { header: 'Upload progress', cell: (row) => row.state === 'retaining' && row.upload
+      && row.upload.phase !== 'waiting'
       ? `${sizeWords(row.upload.doneBytes)} of ${sizeWords(row.upload.totalBytes)}; `
         + `part ${row.upload.part} of ${row.upload.parts}` : null },
     { header: 'Reason', cell: (row) => row.message ?? null },
