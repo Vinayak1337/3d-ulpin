@@ -1,0 +1,102 @@
+{
+  "task": "AUD4",
+  "gate": "P0 hygiene; static audit only",
+  "branch": "task/aud4-judge-files",
+  "base": "a376daae78eb5ccfe573615b3eb0dbdf5193b803",
+  "deliverable": "docs/evidence/aud4/AUDIT.md",
+  "scope": {
+    "codeChanged": false, "runtimeQualified": false, "runtimeStarted": false, "dockerUsed": false,
+    "networkUsed": false, "credentialsRead": false, "externalOriginalsRead": false,
+    "prohibitedPathsOpened": false, "originalsModified": false, "pushed": false,
+    "temporaryDirectoryVariables": "TMP=TEMP=TMPDIR=E:/ulpin-tmp",
+    "routingAssumption": "Normal production route; opt-in development import profile off, flag not inspected."
+  },
+  "references": {
+    "aud3": {
+      "ref": "origin/task/aud3-judge-files",
+      "commit": "2571c9b0cc311ace1bd2553ce87e19ec0dcc32a2",
+      "read": "docs/evidence/aud3/AUDIT.md"
+    },
+    "nm1": {
+      "requestedRef": "origin/task/nm1-outline-names",
+      "requestedRefAvailable": false,
+      "usedRef": "task/nm1-outline-names",
+      "commit": "81cc01bd57cc478ccc5f8201be31d00cf5045e1d",
+      "readOnly": "docs/evidence/nm1/result.json",
+      "creditedToBase": false
+    },
+    "gb1": {
+      "ref": "origin/task/gb1-gltf-buffers",
+      "commit": "d4f1b78dee6c826f8919255b5d59aa937952efd1",
+      "readOnly": "docs/evidence/gb1/result.json",
+      "creditedToBase": false
+    }
+  },
+  "landedReceiptsRead": [
+    "zp1", "zp2", "mx1", "mx2", "mx3", "tc1", "tc2", "tc3", "w1", "wd1", "cw1", "cw3", "sw1",
+    "cg1", "cg2", "b3d1", "nr4", "pl1", "gz1", "tb2", "tr1", "il1", "mf1", "cc1", "rv1", "np1",
+    "zk1", "sl1", "u16", "sg1", "tl1", "xl1"
+  ],
+  "runningWorkExcludedFromBuildRecommendations": ["LP1", "PB1", "OD2", "GB2"],
+  "matrixRows": 55,
+  "aud3GapStates": {
+    "1": "closed", "2": "closed", "3": "closed", "4": "closed", "5": "closed",
+    "6": "partly", "7": "partly", "8": "closed", "9": "closed", "10": "open",
+    "11": "partly", "12": "partly", "13": "partly", "14": "open", "15": "partly"
+  },
+  "aud3StateMeaning": "Specific code defect only; closed is not a runtime gate pass.",
+  "rankedGaps": [
+    {"id": "N1", "title": "Studio still blocks the UTF-16 placement that U16 enables", "size": "S"},
+    {"id": "N2", "title": "3D forecast overpromises map placement on an EPSG condition alone", "size": "S"},
+    {"id": "N3", "title": "New standalone-table help again says prepared rows were placed", "size": "S"},
+    {"id": "N4", "title": "Generated duplicate-header names can overwrite another column", "size": "S"},
+    {"id": "N5", "title": "1252 fallback does not establish an unknown legacy encoding", "size": "M"},
+    {"id": "N6", "title": "Native readings and refusal locators lack a batch review opener", "size": "M"},
+    {"id": "N7", "title": "Wide-file child cases lack parent navigation", "size": "M"},
+    {"id": "N8", "title": "Valid large GeoJSON member order can prevent reading", "size": "M"},
+    {"id": "N9", "title": "Native lineage crash window and terminal-status replay mismatch", "size": "M"},
+    {"id": "N10", "title": "Long or large scanned PDFs still cannot yield OCR passages", "size": "M/L"}
+  ],
+  "rankQualification": "Qualitative exposure and consequence, not measured judge-file frequencies.",
+  "fixDetails": "AUDIT.md section 5 names functions, source facts, image needs and offline feasibility.",
+  "wordOnlyMicroFixes": [
+    {"id": "W4", "rank": "3b", "size": "S", "processorImageNeeded": true, "offlinePossible": true},
+    {"id": "W5", "rank": "3c", "size": "S", "processorImageNeeded": false, "offlinePossible": true}
+  ],
+  "wrongVisibleWordGroups": 5,
+  "additionalMetadataWordCaveats": 1,
+  "realInputsExecuted": [],
+  "isolatedControls": {
+    "method": "Node stdin; extract the actual propertyNames function and erase only TypeScript type syntax.",
+    "applicationImports": false,
+    "good": {"headers": ["key", "x", "y"], "columns": 3, "propertyKeys": 3},
+    "difficult": {"headers": ["key", "key (column 3)", "key"], "columns": 3, "propertyKeys": 2},
+    "difficultDuplicateKey": "key (column 3)",
+    "utf16SourceAssertions": {"studioRefusalPresent": true, "serverEncodingRefusalPresent": false},
+    "qualification": "Literal test-only protocol controls, not property records or real-input qualification."
+  },
+  "checks": [
+    {"command": "node (stdin: actual propertyNames control and UTF-16 source assertions)", "exit": 0},
+    {"command": "python -B - (stdin: JSON, matrix, citation ranges and 120-column check)", "exit": 0,
+      "matrixRows": 55, "fileCitations": 222, "lineRanges": 264, "citationErrors": 0, "longLines": 0},
+    {"command": "rg -n nativeReaderJobId apps/studio/src", "exit": 1, "expected": "No consumer found."},
+    {"command": "git diff --cached --check", "exit": 0},
+    {"command": "python -B - (stdin: staged paths must be inside docs/evidence/aud4/)", "exit": 0,
+      "stagedFiles": 2}
+  ],
+  "verificationLimits": [
+    "No product test suite, contract generator, build, host reader or private-data command was run.",
+    "No prior task's test counts are treated as a check of this combined base.",
+    "All candidate map/card paths still need the lead-owned combined-build rehearsal."
+  ],
+  "checkRecovery": [
+    "Missing NM1 remote ref: no fetch; read its pinned local branch result.json only.",
+    "Citation check first found two out-of-range spans; a stronger comma-range check found five more.",
+    "Collected all remaining range errors in one bounded pass, corrected citations, then checked the whole report."
+  ],
+  "next": [
+    "Correct N1-N3 and the N4 column-loss defect before claiming the latest merged routes in Studio.",
+    "Review held NM1 and GB1; do not duplicate the excluded running work.",
+    "Rebuild matching processor and host profiles, then rehearse ordinary and difficult real inputs."
+  ]
+}
