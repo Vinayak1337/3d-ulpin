@@ -1,40 +1,35 @@
 {
   "task": "S5.8b",
   "planStep": 5,
-  "status": "stopped_scope_extension_required",
+  "status": "stopped_limit_wording_scope_required",
   "base": "97f7f2fb14b855014fddd5de00b0b7791782603d",
-  "productionChanges": "None; stopped at the explicit OWN boundary before implementing paging.",
-  "blockers": [
-    {
-      "path": "packages/contracts/src/source-fusion.ts",
-      "outsideOwn": true,
-      "locations": [35, 133, 138, 140],
-      "reason": "DXF selection and projection ordinals are capped at 9999; availableNativeEntities and findings are capped at 10000. Higher entity bounds require corresponding DXF contract bounds so valid paged readings remain selectable and projectable. Do not change other formats."
-    },
-    {
-      "path": "packages/contracts/src/registry-document-evidence.ts",
-      "outsideOwn": "entityOrdinal change; OWN authorizes the DXF profile literal only",
-      "locations": [70],
-      "reason": "The DXF citation entityOrdinal is capped at 9999 and must match the newly measured entity bound. Changing only the profile literal cannot enable citations for higher global ordinals."
-    }
-  ],
-  "checks": {
-    "scopeProbe": {
-      "exitCode": 0,
-      "rejectionsConfirmed": 4,
-      "details": "Existing contracts reject selection ordinal 10000, projected ordinal 10000, coverage 10001 and citation ordinal 10000.",
-      "script": "E:/ulpin-tmp/s5-8b/probe.ts"
-    },
-    "targetedDXFTests": {
-      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/source-fusion-dxf.test.ts tests/registry-dxf-citations.test.ts tests/dxf-read-compatibility.test.ts",
-      "exitCode": 0,
-      "passed": 8,
-      "skipped": 1,
-      "failed": 0
-    },
-    "diffCheck": {"exitCode": 0},
-    "remainingChecks": "Not run after the scope stop; no producer code changed. No paging, WikiHouse completion, process-peak or new-limit acceptance claimed."
+  "priorStopCommit": "14c063b8",
+  "resolved": "Lead authorized DXF-only ordinal and coverage maxima in source-fusion.ts and registry-document-evidence.ts, sourced from DXF_LIMITS; the 25-selection cap remains.",
+  "productionChanges": "None; stopped at the remaining explicit OWN boundary before implementing paging.",
+  "blocker": {
+    "path": "packages/server/src/modules/usp/ingestion/intake-native-readers.ts",
+    "locations": [254, 255, 256, 257, 258],
+    "outsideOwn": "OWN permits profile-name edits only; the required change is in stoppedWords().",
+    "reason": "Design item 7 requires ENTITY_LIMIT and OUTPUT_LIMIT words to name the new numeric limits. stoppedWords() currently emits the format label and controlled failure code only. The supervisor suppresses parser messages; failDXFJob stores the controlled code; settleIntakeNativeReaderTx obtains the officer-facing limitReason from stoppedWords(). Updating Python error text alone cannot satisfy the displayed-words requirement.",
+    "needed": "Authorize DXF-only branches in stoppedWords() for DXF_ENTITY_LIMIT and DXF_OUTPUT_LIMIT, using DXF_LIMITS for all numeric values and preserving the kept-original sentence."
   },
-  "inputs": "Read S5.8a measurement evidence and profile-2 patch; no drawing opened or processed in this task.",
-  "next": "Lead to authorize DXF-only edits in source-fusion.ts and the registry DXF entityOrdinal bound, then resume the dispatched design. Pins, OpenAPI, runtime and host profiles remain unchanged."
+  "checks": {
+    "baselineDXFTests": {"exitCode": 0, "passed": 14, "skipped": 2, "failed": 0},
+    "backendTypecheck": {"exitCode": 0},
+    "studioTypecheck": {"exitCode": 0},
+    "studioTests": {"exitCode": 0, "passed": 827, "skipped": 3},
+    "section5ServerSet": {"exitCode": 0, "passed": 1045, "skipped": 5},
+    "openapiCheck": {"exitCode": 0},
+    "apiCheck": {"exitCode": 0},
+    "literalRequestedUnittestCommand": {
+      "exitCode": 1,
+      "errors": 1,
+      "reason": "Python -I removes the checkout from sys.path: ModuleNotFoundError: services before any DXF tests run. Resume with an isolated bootstrap that explicitly adds this checkout, as the earlier measurement did."
+    },
+    "logs": "E:/ulpin-tmp/s5-8b/before-*.log",
+    "diffCheck": {"exitCode": 0},
+    "acceptance": "Not run after scope stop; no paging, WikiHouse completion, process-peak or new-limit acceptance claimed."
+  },
+  "inputs": "Read S5.8a measurement evidence and profile-2 patch; baseline TypeScript tests used the retained small declared-unit and R12 artifacts. No WikiHouse processing in this task.",
+  "next": "Lead to authorize the DXF-only stoppedWords changes, then resume the dispatched design. Pins, OpenAPI, runtime and host profiles remain unchanged."
 }
