@@ -27,11 +27,10 @@ export function FindingsInspector({ register, ledger, findingId, buildingId, cru
     return (
       <InspectorShell rekey="findings" crumbs={crumbs} title="Findings" status={<StatusBadge status="Not assessed" />}>
         <DescriptionList items={[
-          { label: 'Checks', value: <StatusBadge status="Not assessed" /> },
           { label: 'Geometry', value: qualification ? `${qualification.state.replace('_', ' ')} · ${qualification.purpose.replace(/_/g, ' ')}` : <span className="ul-unknown">Unknown</span> },
           { label: 'Open findings', value: formatCount(0) },
         ]} />
-        <p className={styles.note}>Overlap, void and share checks need qualified 3D geometry for every space. This record has none yet, so nothing was checked. This is not a pass.</p>
+        <p className={styles.note}>Not checked: no qualified 3D geometry.</p>
       </InspectorShell>
     );
   }
@@ -69,7 +68,6 @@ export function FindingsInspector({ register, ledger, findingId, buildingId, cru
         ) : undefined}
         actions={detail?.actions.length ? <>{detail.actions.map(action)}</> : undefined}
       />
-      {finding.limitations?.length ? <ul className={styles.gaps}>{finding.limitations.map((l) => <li key={l}>{l}</li>)}</ul> : null}
     </div>
   );
 }

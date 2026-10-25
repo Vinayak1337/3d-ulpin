@@ -77,7 +77,7 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     await vi.waitFor(() => expect(view.lines[0]!.line).toContain('1 not placed'));
     expect(view.parts.map((part) => part.id)).toEqual(['i-1:0', 'i-1:2']);
     expect(view.parts[0]!.corners).toEqual([[0, 0], [10, 0], [10, 10], [0, 10]]); // SW, SE, NE, NW
-    expect(view.lines[0]!.line).toBe('Display only. 2 parts drawn and 1 not placed, of 3 read parts. '
+    expect(view.lines[0]!.line).toBe('2 parts drawn and 1 not placed, of 3 read parts. '
       + `Not placed: 1 part: ${OUTSIDE} ${SHADED}`);
   });
 
@@ -88,8 +88,7 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     await vi.waitFor(() => expect(view.parts).toHaveLength(SURFACE_LIMITS.drawnPerItem), { timeout: 5000 });
     expect(fake.asked).toHaveLength(256);
     expect(fake.most()).toBe(SURFACE_LIMITS.displayReads);
-    expect(view.lines[0]!.line).toContain('Only the first 256 read parts are shown (parts 0 to 255), the most drawn '
-      + 'for one file; 44 later parts are not drawn.');
+    expect(view.lines[0]!.line).toContain('First 256 parts shown (0 to 255); 44 later parts not drawn.');
   });
 
   it('draws new parts as the stream reports them, without reading drawn parts again', async () => {

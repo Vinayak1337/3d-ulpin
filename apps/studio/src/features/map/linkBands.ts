@@ -74,15 +74,14 @@ const n = (value: number) => value.toLocaleString('en-IN');
  */
 export function linkKey(read: LinkRead, coloured: number): LinkKey {
   const title = 'Links to register rows and pages';
-  if (read.state === 'reading') return { title, items: [], note: 'Reading the links of this area…' };
-  if (read.state === 'none') return { title, items: [], note: 'No batch names a building of this area.' };
-  if (read.state === 'failed') return { title, items: [], note: `The links could not be read. ${read.message}` };
+  if (read.state === 'reading') return { title, items: [], note: 'Reading links…' };
+  if (read.state === 'none') return { title, items: [], note: 'No links.' };
+  if (read.state === 'failed') return { title, items: [], note: `Links could not be read. ${read.message}` };
   const total = read.counts.matched + read.counts.several + read.counts.conflicting + read.counts.no_match;
   const buildings = `${n(coloured)} ${coloured === 1 ? 'building' : 'buildings'} coloured`;
   const note = read.reading || read.more
-    ? `${buildings} from ${n(read.candidates.length)} of ${n(total)} candidates read${read.more
-      ? '; the rest are listed in the batch.' : '.'}`
-    : `${buildings} from ${n(total)} candidates. Unmatched rows and pages name no building.`;
+    ? `${buildings} from ${n(read.candidates.length)} of ${n(total)} candidates read.`
+    : `${buildings} from ${n(total)} candidates.`;
   return { title, note, items: [
     ...LINK_BANDS.map((band) => ({ label: linkOutcomeWords[band.outcome], count: read.counts[band.outcome],
       ...(band.color ? { color: band.color } : {}), icon: band.icon })),

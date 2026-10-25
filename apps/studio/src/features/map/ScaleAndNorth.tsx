@@ -6,7 +6,7 @@ const STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 2000
 
 /** Readout: reference system, ground and datum when recorded, then the scale bar and north arrow. */
 export function ScaleAndNorth({ engine, frames, title, prefix }: {
-  engine: SceneEngine | null; frames: ViewFrames; title: string; prefix?: string;
+  engine: SceneEngine | null; frames: ViewFrames; title?: string; prefix?: string;
 }) {
   useViewFrame(frames);
   if (!engine) return null;

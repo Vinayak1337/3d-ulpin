@@ -130,8 +130,8 @@ it('keeps polygons only, at most the stated cap, and says what it leaves out', a
   await settle(PREVIEW_LIMITS.pollMs * 20);
   expect(run.afters).toHaveLength(asked);
   expect(run.last()[0]!.features).toHaveLength(PREVIEW_LIMITS.outlines);
-  expect(run.last()[0]!.line).toContain('The preview shows the first 20,000 outlines read.');
-  expect(run.last()[0]!.line).toContain('Points and lines are not drawn in the preview: 1 read so far.');
-  expect(previewKeyLines(run.last(), false)[0]!.line).toContain('not a WGS 84 UTM zone');
+  expect(run.last()[0]!.line).toContain('First 20,000 outlines shown.');
+  expect(run.last()[0]!.line).toContain('Points and lines not drawn: 1.');
+  expect(previewKeyLines(run.last(), false)[0]!.line).toContain('no WGS 84 UTM zone');
   expect(previewOutlines(run.last(), { analysisCrs: 'EPSG:4326', origin: [0, 0] })).toEqual([]);
 });

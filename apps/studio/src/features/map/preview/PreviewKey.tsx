@@ -6,9 +6,8 @@ export function PreviewKey({ lines, className }: { lines: PreviewLine[]; classNa
   if (!lines.length) return null;
   return (
     <details className={className} open>
-      <summary>Read so far</summary>
+      <summary><span className={styles.edge} aria-hidden="true" />Read so far</summary>
       <div className={styles.key}>
-        <p className={styles.item}><span className={styles.edge} aria-hidden="true" />Outlines read so far</p>
         {lines.map((line) => (
           <p key={line.itemId} className={styles.words} role="status">
             <strong>{line.label}</strong> {line.line}

@@ -6,8 +6,7 @@ import { Badge } from '@ulpin/ui';
 import type { IntakeItem } from '../../intake/batch-model';
 import { useIntakeManifest } from '../../intake/batch-queries';
 import { evidenceKey } from '../../intake/evidence/api';
-import { buildingWords, outcomeWords, type Candidate, type EvidencePage,
-  type Outcome } from '../../intake/evidence/model';
+import { buildingWords, type Candidate, type EvidencePage, type Outcome } from '../../intake/evidence/model';
 import { readTargetByFeature } from '../../intake/run/api';
 import type { Target } from '../../intake/run/model';
 import { buildingTargetKey } from './BuildingCard';
@@ -25,7 +24,7 @@ export async function readFeatureLinks(caseId: string, featureId: string): Promi
   })) as EvidencePage;
 }
 
-const NONE = 'No register row or page names this building.';
+const NONE = 'No links.';
 /** Amber, not red: a conflict or several buildings needs the officer's review; it is not a blocking finding. */
 const TONE: Record<Outcome, { tone: 'success' | 'warning' | 'neutral'; icon: typeof CheckCircle }> = {
   matched: { tone: 'success', icon: CheckCircle }, several: { tone: 'warning', icon: Warning },
@@ -33,7 +32,7 @@ const TONE: Record<Outcome, { tone: 'success' | 'warning' | 'neutral'; icon: typ
 };
 
 function Unread({ error }: { error: unknown }) {
-  return <p className={styles.note} role="alert">The links of this building could not be read.
+  return <p className={styles.note} role="alert">Links could not be read.
     {' '}{error instanceof ApiError ? error.message : 'The server gave no answer.'}</p>;
 }
 
@@ -47,7 +46,7 @@ export function BuildingLinks({ featureId, packageId }: { featureId: string; pac
   return <section className={styles.linksSection} aria-label="Links to register rows and pages">
     <h3 className={styles.sectionTitle}>Links to register rows and pages</h3>
     {read.error ? <Unread error={read.error} />
-      : read.isPending ? <p className={styles.note} role="status">Reading the links of this building…</p>
+      : read.isPending ? <p className={styles.note} role="status">Reading links…</p>
         : read.data ? <TargetLinks target={read.data} featureId={featureId} />
           : <p className={styles.note}>{NONE}</p>}
   </section>;
@@ -58,19 +57,18 @@ function TargetLinks({ target, featureId }: { target: Target; featureId: string 
     queryFn: () => readFeatureLinks(target.caseId, featureId) });
   const manifest = useIntakeManifest(target.caseId);
   if (read.error) return <Unread error={read.error} />;
-  if (read.isPending) return <p className={styles.note} role="status">Reading the links of this building…</p>;
+  if (read.isPending) return <p className={styles.note} role="status">Reading links…</p>;
   const page = read.data;
   if (!page.candidates.length) return <p className={styles.note}>{NONE}</p>;
   const fileName = (itemId: string) => manifest.data
     ? manifest.data.items.find((item: IntakeItem) => item.itemId === itemId)?.name ?? 'A file no longer listed'
-    : manifest.error ? 'File name could not be read' : 'Reading the file name…';
+    : manifest.error ? 'File name could not be read' : 'Reading…';
   return <>
     <ul className={styles.links}>
       {page.candidates.map((candidate) => <LinkRow key={candidate.candidateId} candidate={candidate}
         file={fileName(candidate.evidence.itemId)} page={page} target={target} />)}
     </ul>
-    {page.nextCursor ? <p className={styles.note}>More links are listed in the batch.
-      {' '}<Link to={batchPath(target.caseId)}>Open batch</Link></p> : null}
+    {page.nextCursor ? <Link to={batchPath(target.caseId)}>More links in the batch</Link> : null}
   </>;
 }
 
@@ -86,9 +84,8 @@ function LinkRow({ candidate, file, page, target }: {
       <Badge tone={look.tone} icon={look.icon}>{linkOutcomeWords[candidate.outcome]}</Badge>
     </span>
     <span>{linkPlaceWords(evidence)}</span>
-    <span>Key <span className="ul-mono">{linkKeyWords(candidate)}</span>, as written</span>
+    <span>Key <span className="ul-mono">{linkKeyWords(candidate)}</span></span>
     {evidence.kind === 'document_part' ? <span className="ul-muted">“{evidence.quote}”</span> : null}
-    {candidate.outcome !== 'matched' ? <span className="ul-muted">{outcomeWords[candidate.outcome]}</span> : null}
     {others.length ? <span className="ul-muted">
       Also names {buildingWords({ ...candidate, anchors: others }, [])}
     </span> : null}

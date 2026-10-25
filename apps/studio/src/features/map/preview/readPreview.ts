@@ -51,10 +51,8 @@ const count = (n: number) => n.toLocaleString('en-IN');
 /** The route's own words, then what this map leaves out of them. */
 function previewLine(follow: Follow): string {
   const out = follow.words ? [follow.words] : [];
-  if (follow.capped) out.push(`The preview shows the first ${count(PREVIEW_LIMITS.outlines)} outlines read.`);
-  if (follow.notDrawn) {
-    out.push(`Points and lines are not drawn in the preview: ${count(follow.notDrawn)} read so far.`);
-  }
+  if (follow.capped) out.push(`First ${count(PREVIEW_LIMITS.outlines)} outlines shown.`);
+  if (follow.notDrawn) out.push(`Points and lines not drawn: ${count(follow.notDrawn)}.`);
   if (follow.failure) out.push(follow.failure);
   return out.join(' ');
 }

@@ -77,15 +77,14 @@ function cappedWords(asked: Set<number>, published: number): string | null {
   const over = published - SURFACE_LIMITS.drawnPerItem;
   if (over <= 0) return null;
   const indices = [...asked].sort((a, b) => a - b);
-  return `Only the first ${SURFACE_LIMITS.drawnPerItem} read parts are shown (parts ${indices[0]} to `
-    + `${indices[indices.length - 1]}), the most drawn for one file; ${count(over, 'later part is', 'later parts are')}`
-    + ' not drawn.';
+  return `First ${SURFACE_LIMITS.drawnPerItem} parts shown (${indices[0]} to ${indices[indices.length - 1]}); `
+    + `${count(over, 'later part')} not drawn.`;
 }
 
 /** The line in the layer list: what is drawn, what is not placed and why, in the placement's own words. */
 export function surfaceLine(state: ItemParts): string {
   const { item, published, drawn, notPlaced, outlineOnly, failed } = state;
-  const out = ['Display only.'];
+  const out: string[] = [];
   if (!published.size) out.push(item.limitReason ?? 'No part is read yet.');
   else out.push(`${count(drawn.size, 'part')} drawn and ${notPlaced.size.toLocaleString('en-IN')} not placed, `
     + `of ${count(published.size, 'read part')}.`);
@@ -94,7 +93,7 @@ export function surfaceLine(state: ItemParts): string {
   if (capped) out.push(capped);
   if (outlineOnly.size) out.push(`Outline only: ${grouped(outlineOnly)}`);
   if (failed.size) out.push(`Not read for the map: ${grouped(failed)}`);
-  if (state.quarantined.size) out.push(`${count(state.quarantined.size, 'part')} could not be read by the reader.`);
+  if (state.quarantined.size) out.push(`${count(state.quarantined.size, 'part')} could not be read.`);
   if (state.listFailure) out.push(state.listFailure);
   out.push(...state.notes);
   return out.join(' ');

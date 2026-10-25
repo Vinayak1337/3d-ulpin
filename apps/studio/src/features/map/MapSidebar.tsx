@@ -34,7 +34,7 @@ const ICONS: Record<ViewKey, PhosphorIcon> = { area: MapTrifold, building: Build
  * floor its spaces as a list. Facts about the selection live only in the inspector on the right.
  */
 export function MapSidebar({
-  views, active, onView, colour, colourOptions, onColour, keySections, layers, onLayer, layersNote, floor, spaces,
+  views, active, onView, colour, colourOptions, onColour, keySections, layers, onLayer, floor, spaces,
   rightsColour, selectedSpaceId, onSelectSpace, planCheck, viewFooter, undrawn,
 }: {
   planCheck?: ReactNode;
@@ -45,7 +45,7 @@ export function MapSidebar({
   views: SidebarView[]; active: ViewKey; onView: (key: ViewKey) => void;
   colour: Colour; colourOptions: { value: Colour; label: string; disabled?: boolean }[]; onColour: (c: Colour) => void;
   keySections: KeySection[];
-  layers: LayerSwitch[]; onLayer: (key: string, on: boolean) => void; layersNote?: string | null;
+  layers: LayerSwitch[]; onLayer: (key: string, on: boolean) => void;
   floor: string | null; spaces: SpaceModel[]; rightsColour: (id: string) => string | null; selectedSpaceId: string | null; onSelectSpace: (s: SpaceModel) => void;
 }) {
   const [section, setSection] = useState<'view' | 'layers' | 'colour' | 'check'>('layers');
@@ -103,10 +103,6 @@ export function MapSidebar({
           <div className={styles.layers}>
             {layers.map((l) => <Toggle key={l.key} label={l.label} hint={l.hint} checked={l.checked} disabled={l.disabled} onChange={(on) => onLayer(l.key, on)} />)}
           </div>
-          {layersNote ? <details className={styles.notes}>
-            <summary>Details</summary>
-            <p className={styles.note}>{layersNote}</p>
-          </details> : null}
         </section>
       ) : null}
 

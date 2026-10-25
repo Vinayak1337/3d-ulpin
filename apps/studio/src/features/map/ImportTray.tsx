@@ -69,7 +69,7 @@ export function ImportTray({ packageId, context, contextFresh = true, drawnBuild
   useSettled(!running, filters);
   if (packageState === 'FAILED') {
     const warnings = pkg?.warnings.length ? `: ${pkg.warnings.join('; ')}` : '';
-    return <div className="ul-panel ul-pad ul-help">Import failed{warnings}. Upload the same files to retry; originals are retained.</div>;
+    return <div className="ul-panel ul-pad ul-help">Import failed{warnings}. Upload the same files to retry.</div>;
   }
   if (!pkg && !running && !demo) {
     if (read.isPending) return <div className="ul-panel ul-pad"><Skeleton /></div>;
@@ -81,21 +81,17 @@ export function ImportTray({ packageId, context, contextFresh = true, drawnBuild
   const recorded = packageState === 'COMMITTED';
   const rows: StreamRow[] = KINDS.map(({ kinds, label, unit }) => {
     const n = features.filter((f) => kinds.includes(String(f.kind))).length;
-    return { id: label, file: label, state: running ? 'running' : 'saved', detail: n ? `${formatCount(n)} ${unit} ${recorded ? 'recorded' : 'accepted for review'}` : running ? 'reading' : 'none accepted from this file' };
+    return { id: label, file: label, state: running ? 'running' : 'saved', detail: n ? `${formatCount(n)} ${unit} ${recorded ? 'recorded' : 'to review'}` : running ? 'reading' : 'none' };
   });
-  const received = `${formatCount(features.length)} features${demo ? ' received' : ''}`;
-  const drawn = demo && drawnBuildings !== undefined
-    ? ` · ${formatCount(drawnBuildings)} buildings drawn` : '';
-  const state = running ? '' : recorded ? ' · recorded' : ' · unrecorded proposals';
+  const drawn = demo && drawnBuildings !== undefined ? `${formatCount(drawnBuildings)} buildings drawn` : undefined;
   const title = pkg ? `${running ? 'Importing' : 'Imported'} ${pkg.name}` : `Importing into ${context.area.name}`;
   return (
     <div>
       <ImportStream title={title} rows={rows}
-        meta={notice ?? `${received}${drawn}${state}`}
+        meta={notice ?? drawn}
         aside={!running ? <Button variant="ghost" onClick={onClose}>Done</Button> : null} />
       {quarantine ? <details className="ul-panel ul-pad">
-        <summary>{formatCount(quarantine.rejected)} skipped source features</summary>
-        <p className="ul-help">Original feature indexes are zero-based. The original is retained unchanged.</p>
+        <summary>{formatCount(quarantine.rejected)} skipped features</summary>
         <ul>{quarantine.rejections.map((row) => <li key={row.featureIndex}>
           Feature {row.featureIndex} · source ID {row.sourceKey ?? 'unknown'} · {row.code}: {row.reason}
         </li>)}</ul>

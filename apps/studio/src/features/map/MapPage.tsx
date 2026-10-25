@@ -27,9 +27,7 @@ export function MapIndexRedirect() {
   if (!target) {
     return (
       <div className={styles.emptyPage}>
-        <EmptyState icon={MapTrifold} title="No areas yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
-          An area appears here once a GIS layer or survey is imported and committed.
-        </EmptyState>
+        <EmptyState icon={MapTrifold} title="No areas yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>} />
       </div>
     );
   }
