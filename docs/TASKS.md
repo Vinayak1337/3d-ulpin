@@ -215,7 +215,7 @@ Size S, UI (Claude session). After: S1.3 run 4. **Status: merged 25 Oct into int
 
 ### S1.3q Starting an existing runtime applies its pending additive migrations
 
-Size S, code only. After: S1.3 run 5. **Status: running 25 Oct (task/s1-3q-start-migrates from int3-pre bac06934).**
+Size S, code only. After: S1.3 run 5. **Status: merged 25 Oct into int3-pre c94aa654 (branch 996afeb5). resume() reads the schema after the stores start, applies the existing additive migrations only when something is missing, reads it again and refuses to launch with the missing names; the doctor's migration line names pnpm platform:start. Platform tests 128 pass. Live proof: run 6 start on reh-03.**
 
 - **What:** resume() in scripts/platform/demo.mjs starts the stores, reads database readiness, applies the existing additive migrations (db:migrate, demo-schema.ts) with postgres, minio and redis up when any are missing, reads readiness again, and refuses to launch the API and dispatcher with words if anything is still missing. No seed, create or reset.
 - **Files:** scripts/platform/demo.mjs and its tests; doctor migration line words
