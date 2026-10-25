@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire, syncBuiltinESMExports } from 'node:module';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { mock, test } from 'node:test';
@@ -175,7 +174,7 @@ async function controls<T>(run: () => Promise<T>) {
   const seed = process.env.ULPIN_TABULAR_LEARNER_SEED;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'local-os:a3b-software-control';
   process.env.ULPIN_MAPPING_TEACHER_ADAPTER = 'manual';
-  const artifactRoot = process.env.ULPIN_AGENT_TASK_ROOT ?? join(tmpdir(), 'a3b-wiring');
+  const artifactRoot = process.env.ULPIN_AGENT_TASK_ROOT ?? 'E:/BhuAayam-data/task-data/a3b';
   process.env.ULPIN_TABULAR_LEARNING_DIR = `${artifactRoot}/controls/${randomUUID()}`;
   try { return await run(); }
   finally {
