@@ -16,6 +16,7 @@ import { useReadingStatements } from '../../register/useReadingStatements';
 import { CheckBadge } from '../CheckBadge';
 import { RecordState } from '../RecordState';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerStatus, revisionChain, revisionKey } from '../ledger';
+import { BuildingLinks } from './BuildingLinks';
 import { featureEvidence } from './evidence';
 import { InspectorShell, type Crumb } from './InspectorShell';
 import styles from './Inspector.module.css';
@@ -127,23 +128,26 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
       ) : tab === 'rights' && ledger ? (
         <RightsSummary ledger={ledger} />
       ) : tab === 'evidence' ? (
-        <div className={styles.chips}>
-          {ledger
-            ? ledger.sources.map((s) => (
-              <Cited key={s.sourceId} sourceId={s.sourceId}>
-                <EvidenceChip kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({
-                  sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
-                })} />
-              </Cited>
-            ))
-            : evidence.geometry.map((ref) => (
-              <Cited key={ref.sourceId + ref.locator.text} sourceId={ref.sourceId}>
-                <EvidenceChip kind="feature" source={ref.label} locator={ref.locator.text}
-                  onOpen={() => openEvidence(ref)} />
-              </Cited>
-            ))}
-          {register?.missing.length ? <ul className={styles.gaps}>{register.missing.map((m) => <li key={m}>{m}</li>)}</ul> : null}
-        </div>
+        <>
+          <div className={styles.chips}>
+            {ledger
+              ? ledger.sources.map((s) => (
+                <Cited key={s.sourceId} sourceId={s.sourceId}>
+                  <EvidenceChip kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({
+                    sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
+                  })} />
+                </Cited>
+              ))
+              : evidence.geometry.map((ref) => (
+                <Cited key={ref.sourceId + ref.locator.text} sourceId={ref.sourceId}>
+                  <EvidenceChip kind="feature" source={ref.label} locator={ref.locator.text}
+                    onOpen={() => openEvidence(ref)} />
+                </Cited>
+              ))}
+            {register?.missing.length ? <ul className={styles.gaps}>{register.missing.map((m) => <li key={m}>{m}</li>)}</ul> : null}
+          </div>
+          <BuildingLinks featureId={feature.id} packageId={feature.proposalPackageId} />
+        </>
       ) : tab === 'checks' && ledger ? (
         ledger.checks.length === 0 ? <p className={styles.note}>{ledger.checkMethod}</p> : <ul className={styles.list}>
           {ledger.checks.map((c) => (
