@@ -1,31 +1,40 @@
 {
   "task": "S1.3r",
   "planStep": 1,
-  "status": "blocked_before_implementation",
+  "status": "implemented_code_checks_pass_except_expected_producer_pin",
   "base": "bac069349f9712e3a8e8c886f664390fb7835bf7",
-  "finding": "Admission counts queued and running imports together and refuses at 2; the dispatcher already waits at the shared stream lane bound of 4.",
-  "blocker": {
-    "acceptance": 3,
-    "path": "apps/studio/src/features/intake/table/Progress.tsx:34",
-    "reason": "The status cell renders job.status.replaceAll('_', ' ') directly. The strict StreamingVectorStatusSchema only permits status enum values and has no message field. Backend-only changes cannot display waiting for a free reading slot without misusing an issue field.",
-    "next": "Defer the status wording to a separate UI task, or authorize that path and its tests before implementation resumes. No contract change is proposed."
+  "scope": "The lead deferred Studio wording after the initial scope stop. No Studio, contract, dispatcher, runtime, Docker or demo changes.",
+  "decisions": {
+    "queue": "16 waiting imports per case holds a small batch; 64 service-wide bounds four such batches. Running jobs do not spend queue slots. The existing 128 kept-imports per-case history bound stays.",
+    "running": "DispatchReservations alone enforces DISPATCH_LANES.stream.concurrency (4, shared with streamed profiles). HTTP admission no longer duplicates a running limit.",
+    "doctor": "One aggregate read-only line reports service queue, busiest-case queue and running imports; each warns at 75 percent. Reads stream concurrency from dispatch-lanes.ts without importing its TS dependency tree; queue numbers have parity assertions.",
+    "cancellation": "Count only queued import receipts whose canonical jobs remain queued; cancellation frees capacity without deleting receipts. Existing canonical claim and source-pin checks remain authoritative."
   },
-  "sourceChanges": 0,
-  "realInputs": "None: inspection only; no runtime or data-drive reads.",
-  "checks": {
-    "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
-    "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
-    "pnpm studio:test": {
-      "status": "cancelled_when_stopping_for_scope_blocker",
-      "completedPackages": { "apiClientPassed": 2, "scenePassed": 71, "sceneSkipped": 1, "uiPassed": 7 },
-      "studioCounts": "unavailable"
-    },
-    "section5ServerSet": "not run",
-    "node --test scripts/platform/*.test.mjs": "not run",
-    "openapi --check": "not run",
-    "python scripts/api/check.py": "not run",
-    "git diff --check": { "exit": 0, "errors": 0 },
-    "newTestsAgainstBase": "not run: no implementation or new tests"
+  "acceptance": [
+    "Full lane queues a new import; dispatcher reservation refuses its start, then admits it after release and the canonical claim makes it running.",
+    "16 queued in one case or 64 across cases refuses with exact plain words, 429 STREAMING_CAPACITY and {limit,freesAt:null}; starting one frees capacity.",
+    "Same request key returns the same job even at queue capacity.",
+    "Queued cancellation prevents a claim and frees capacity; supersession preserves historical freshness and refuses the claim.",
+    "Doctor separately tests all three 75-percent edges and its read-only aggregate query."
+  ],
+  "redOnBase": {
+    "queueTests": { "exit": 1, "passed": 0, "failed": 5, "reason": "Old admission counts queued plus running and refuses at 2 before enqueue, replay or queued-control checks can proceed." },
+    "doctorTests": { "exit": 1, "passed": 8, "failed": 1, "reason": "Old doctor bound is 2 instead of the new service queue bound 64." },
+    "method": "Temporarily used each owned producer from bac06934 with the new tests, then restored current bytes. No checkout or branch change."
   },
-  "logs": "E:/ulpin-tmp/s1-3r-before-*.log; own baseline process tree stopped, exit 0"
+  "checksBeforeAfter": {
+    "pnpm typecheck:backend": { "before": [0, 0], "after": [0, 0], "counts": "exit, errors" },
+    "pnpm studio:typecheck": { "before": [0, 0], "after": [0, 0], "counts": "exit, errors" },
+    "pnpm studio:test": { "before": [0, 841, 3], "after": [0, 841, 3], "counts": "exit, passed, skipped across four packages" },
+    "WORKING-RULES section 5 server set": { "before": [1, 1092, 1, 5], "after": [0, 1098, 0, 5], "counts": "exit, passed, failed, skipped", "baselineFailure": "document-proposal-quotes Python subprocess returned null status with a 10-second timeout configured; passes in final set." },
+    "node --test scripts/platform/*.test.mjs": { "before": [0, 124, 0, 2], "after": [0, 125, 0, 2], "counts": "exit, passed, failed, skipped" },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": { "beforeExit": 0, "afterExit": 1, "reason": "Expected stale docs/api/source-pins.json; not regenerated." },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "beforeExit": 0, "afterExit": 1, "producer": "packages/server/src/modules/usp/ingestion/streaming-vector.ts" },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0 },
+    "targeted queue tests": { "exit": 0, "passed": 5 },
+    "targeted doctor tests": { "exit": 0, "passed": 9 }
+  },
+  "inputs": "Test-only metadata fixtures, including a full lane and full queues. No real file or runtime used for this admission-only change.",
+  "logs": "E:/ulpin-tmp/s1-3r-*.log",
+  "next": "Lead review/integration and producer-pin refresh; later UI task owns waiting words. Live rehearsal was not authorized."
 }
