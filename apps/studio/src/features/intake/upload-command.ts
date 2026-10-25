@@ -2,12 +2,27 @@ import { ApiError } from '@ulpin/api-client';
 import { hashFile } from './hash-file';
 import type { PartRequest, UploadTransport } from './upload-api';
 import { uploadGuard, uploadPlan } from './upload-model';
-import type { UploadCreate, UploadEntry, UploadGuard, UploadProgress, UploadReceipt } from './upload-model';
+import type { UploadCreate, UploadEntry, UploadGuard, UploadLimits, UploadProgress, UploadReceipt }
+  from './upload-model';
 
 export const NOT_THE_FILE = 'This is not the file this upload was started with.';
 export const FINISHING_AGAIN = 'The last finish was interrupted; finishing the upload again.';
 /** v2 storage job outcomes after which the job no longer holds the finish. */
 const ENDED_JOBS: readonly string[] = ['failed', 'stale', 'cancelled'];
+/** The open-receipt limits a finalize or abort frees, with the published count each names. */
+const SLOT_LIMITS: Record<string, { count: string; words: string }> = {
+  open_receipts: { count: 'maxActiveGlobal', words: 'uploads are open on this service' },
+  open_receipts_operator: { count: 'maxActivePerOperator', words: 'of your uploads are open' },
+  open_receipts_case: { count: 'maxActivePerCase', words: 'uploads are open in this case' },
+};
+const SLOT_FIRST_MS = 2000;
+const SLOT_LONGEST_MS = 30_000;
+export const SLOT_WAIT_MS = 30 * 60 * 1000;
+export const SLOT_STOPPED = 'no upload slot became free within 30 minutes';
+/** Commands that wait for an upload slot, by the order they were made; only the earliest asks the server. */
+const slotLine = new Set<number>();
+let lastTicket = 0;
+type ProfileLimits = UploadLimits['limits'] | UploadLimits['largeProfile']['limits'];
 
 /** A fresh upload states when its file was acquired; a resume continues the receipt it names, as admitted. */
 type Start = { acquiredAt: string; resume?: undefined } | { resume: UploadEntry; acquiredAt?: undefined };
@@ -33,7 +48,7 @@ export function createUploadCommand(options: Options) {
   const state: Control = { receipt: null, cancelled: false, waiting: null, abort: null, abortBody: null,
     progress: { phase: 'checking', doneBytes: 0, totalBytes: options.file.size, part: 1, parts: 0 } };
   const context = { ...options, hash: options.hash ?? hashFile, key: options.key ?? (() => crypto.randomUUID()),
-    pause: options.pause ?? (() => new Promise<void>(resolve => setTimeout(resolve, 5000))), state };
+    pause: options.pause ?? (() => sleep(5000)), state, ticket: ++lastTicket };
   return {
     run: () => runUpload(context),
     retry: () => {
@@ -49,7 +64,11 @@ export function createUploadCommand(options: Options) {
     },
   };
 }
-type Context = Options & { hash: typeof hashFile; key: () => string; pause: () => Promise<void>; state: Control };
+type Context = Options & {
+  hash: typeof hashFile; key: () => string; pause: () => Promise<void>; state: Control; ticket: number;
+};
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
 function publish(context: Context, update: Partial<UploadProgress>) {
   context.state.progress = { ...context.state.progress, ...update };
@@ -64,7 +83,8 @@ async function runUpload(context: Context): Promise<string | null> {
   publish(context, { parts: plan.parts });
   const sha256 = await context.hash(file, plan.partBytes, doneBytes => publish(context, { doneBytes }));
   if (state.cancelled) return null;
-  state.receipt = await openReceipt(context, sha256, plan.profile);
+  const profile = plan.profile === limits.limits.version ? limits.limits : limits.largeProfile.limits;
+  state.receipt = await openReceipt(context, sha256, profile);
   if (!state.receipt) return null;
   publish(context, { phase: 'uploading', doneBytes: state.receipt.receivedBytes });
   const stored = new Map(state.receipt.parts.map(part => [part.partNumber, part]));
@@ -113,7 +133,7 @@ function finishReleased(receipt: UploadReceipt) {
 }
 
 /** A resume names its receipt only after name, size and SHA-256 match the file; a mismatch sends nothing. */
-async function openReceipt(context: Context, sha256: string, profile: UploadCreate['profile']) {
+async function openReceipt(context: Context, sha256: string, profile: ProfileLimits) {
   const { file, transport } = context;
   if (context.resume) {
     const { resume } = context;
@@ -121,9 +141,72 @@ async function openReceipt(context: Context, sha256: string, profile: UploadCrea
     return guarded(context, () => transport.status(resume));
   }
   const body: UploadCreate = { requestKey: context.key(), expectedCaseRevision: await transport.revision(),
-    filename: file.name, mediaType: 'application/octet-stream', sha256, bytes: file.size, profile,
+    filename: file.name, mediaType: 'application/octet-stream', sha256, bytes: file.size, profile: profile.version,
     provenance: { origin: 'not_stated', acquiredAt: context.acquiredAt } };
-  return guarded(context, () => transport.create(body));
+  try { return await createWhenFree(context, body, profile); }
+  finally { slotLine.delete(context.ticket); }
+}
+
+/**
+ * S1.3j. A create refused for an open-receipt slot waits and asks again by itself, after an earlier waiting file has
+ * started, until 30 minutes pass; every other failure stops for the officer as before. The same body is sent again.
+ */
+async function createWhenFree(context: Context, body: UploadCreate, profile: ProfileLimits) {
+  let since = Date.now();
+  let delay = 0;
+  while (!context.state.cancelled) {
+    if (slotAhead(context.ticket)) {
+      publish(context, { phase: 'waiting', doneBytes: 0, words: 'Waiting for a free upload slot; an earlier file '
+        + 'goes first. It starts by itself.' });
+      await sleep(SLOT_FIRST_MS);
+      continue;
+    }
+    try { return await context.transport.create(body); }
+    catch (error) {
+      const slot = slotRefusal(error);
+      if (slot && Date.now() - since < SLOT_WAIT_MS) {
+        slotLine.add(context.ticket);
+        publish(context, { phase: 'waiting', doneBytes: 0, words: slotWords(slot.limit, profile) });
+        delay = slotDelay(delay, slot.freesAt);
+        await sleep(delay);
+        continue;
+      }
+      slotLine.delete(context.ticket);
+      await waitForOfficer(context, error, slot ? SLOT_STOPPED : undefined);
+      since = Date.now();
+      delay = 0;
+    }
+  }
+  return null;
+}
+
+function slotAhead(ticket: number) {
+  return [...slotLine].some(other => other < ticket);
+}
+
+/** The slot a 429 UPLOAD_QUOTA names and when it frees at the latest; null for every other failure. */
+function slotRefusal(error: unknown) {
+  if (!(error instanceof ApiError) || error.status !== 429) return null;
+  const wrapped = (error.body as { error?: { code?: unknown; details?: { limit?: unknown; freesAt?: unknown } } }
+    | null)?.error;
+  const limit = String(wrapped?.details?.limit);
+  if (wrapped?.code !== 'UPLOAD_QUOTA' || !Object.hasOwn(SLOT_LIMITS, limit)) return null;
+  const freesAt = wrapped.details?.freesAt;
+  return { limit, freesAt: typeof freesAt === 'string' ? Date.parse(freesAt) : NaN };
+}
+
+function slotWords(limit: string, profile: ProfileLimits) {
+  const { count, words } = SLOT_LIMITS[limit]!;
+  const open = (profile as Record<string, unknown>)[count];
+  const reason = typeof open === 'number' ? `${open} ${words}` : 'the open uploads are at their limit';
+  return `Waiting for a free upload slot; ${reason}. It starts by itself.`;
+}
+
+/** Doubles from 2 to 30 seconds; a slot whose receipt expires sooner is asked for just after it frees. */
+function slotDelay(previous: number, freesAt: number) {
+  const backoff = Math.min(SLOT_LONGEST_MS, Math.max(SLOT_FIRST_MS, previous * 2));
+  const untilFree = freesAt - Date.now() + 500;
+  return Number.isFinite(untilFree) ? Math.max(SLOT_FIRST_MS, Math.min(backoff, untilFree)) : backoff;
 }
 
 function partRequest(context: Context, number: number, bytes: Blob, hash: string,
@@ -178,8 +261,8 @@ async function guarded(context: Context, send: () => Promise<UploadReceipt>): Pr
   return null;
 }
 
-function waitForOfficer(context: Context, error: unknown) {
-  const words = error instanceof ApiError ? error.message : 'the server did not answer';
+function waitForOfficer(context: Context, error: unknown,
+  words = error instanceof ApiError ? error.message : 'the server did not answer') {
   publish(context, { phase: 'stopped', words });
   return new Promise<void>(resolve => { context.state.waiting = resolve; });
 }
