@@ -2,17 +2,17 @@
   "task": "S1.3o",
   "plan_step": 1,
   "base": "068c1da7171921e117a6a1bb66fa1de7f58ba766",
-  "status": "blocked_by_step_3_no_service_total_for_direct_retention",
-  "decision": "Stop before implementation. No helper, call-site changes or acceptance tests were added.",
+  "status": "complete_without_runtime_execution",
+  "initial_stop": "51f630d0 documented the missing shared reserve; the lead accepted that inventory.",
+  "lead_decision": "No new service total: physical object-store disk is the bound; lead adds free-disk doctor checks.",
   "paths": {
     "modules": "packages/server/src/modules/usp/ingestion/",
-    "contracts": "packages/contracts/src/usp/",
-    "storage": "packages/server/src/infrastructure/storage.ts"
+    "contracts": "packages/contracts/src/usp/"
   },
-  "inventory_basis": "Read-only at base; limits and refusal words unchanged. Module paths below are relative.",
+  "inventory_basis": "Base snapshot, read only. All ten checks are now per case; every limit remains unchanged.",
   "inventory_columns": [
-    "module:budget line", "profile", "source limit", "byte limit", "scope",
-    "large original route; native reader support", "429 code", "refusal label"
+    "module:base budget line", "profile", "source limit", "byte limit", "base scope",
+    "large original route; native reader support", "429 code", "base refusal label"
   ],
   "inventory": [
     ["raster-window.ts:160", "geotiff-raster-v1", 64, 268435456, "global",
@@ -20,7 +20,7 @@
     ["point-batch.ts:149", "laz-point-v1", 64, 268435456, "global",
       "upload receipt; native up to 1024 MiB", "POINT_RETENTION_BUDGET", "point"],
     ["kml.ts:160", "kml-native-v1", 64, 268435456, "global",
-      "upload receipt; this native reader requires kml-native-v1", "KML_RETENTION_BUDGET", "KML"],
+      "upload receipt; native requires kml-native-v1", "KML_RETENTION_BUDGET", "KML"],
     ["citygml.ts:167", "citygml-native-v1", 64, 268435456, "global",
       "upload receipt; native up to 33 MiB", "CITYGML_RETENTION_BUDGET", "CityGML"],
     ["cityjson.ts:161", "cityjson-native-v1", 64, 134217728, "global",
@@ -28,8 +28,7 @@
     ["dxf.ts:228", "dxf-native-v1", 64, 268435456, "global",
       "upload receipt; native up to 16 MiB", "DXF_RETENTION_BUDGET", "DXF"],
     ["geoparquet.ts:230", "geoparquet-native-v1", 64, 268435456, "global",
-      "upload receipt; this native reader requires geoparquet-native-v1", "GEOPARQUET_RETENTION_BUDGET",
-      "GeoParquet"],
+      "upload receipt; native requires geoparquet-native-v1", "GEOPARQUET_RETENTION_BUDGET", "GeoParquet"],
     ["gltf.ts:202", "gltf-native-v1", 64, 268435456, "global",
       "upload receipt; native up to 16 MiB", "GLTF_RETENTION_BUDGET", "Gltf"],
     ["ifc.ts:182", "ifc-native-v1", 64, 268435456, "global",
@@ -37,103 +36,67 @@
     ["obj.ts:167", "obj-native-v1", 64, 268435456, "global",
       "upload receipt; native up to 16 MiB", "OBJ_RETENTION_BUDGET", "Obj"]
   ],
-  "refusal": "The finite retained {refusal label} source budget is full; existing originals remain available.",
-  "inventory_notes": [
-    "Each check counts every sources row of its profile, regardless of case, status or family revision.",
-    "Superseded revisions count today and must still count after any eventual per-case change.",
-    "Direct retain ceilings in MiB: raster/point 16, KML 16, CityGML 33, CityJSON 8, DXF 16,",
-    "GeoParquet 32, glTF 16, IFC 32, OBJ 16. Larger direct requests fail before the budget check.",
-    "Upload receipt means LargeOriginalService.create/finalize, published as large-original-v1, not these profiles.",
-    "All ten formats can be kept as generic upload originals; these profile-specific checks do not run there.",
-    "Native support is distinct from keeping bytes; an above-reader-limit upload stays kept, not natively read.",
-    "Raster/point source loaders accept large-original-v1; DXF/CityGML/CityJSON/glTF/OBJ use batch native guards;",
-    "IFC has its own batch guard. KML/GeoParquet source loaders require their native profiles."
+  "old_refusal": "The finite retained {base refusal label} source budget is full; existing originals remain available.",
+  "large_original_scope": [
+    "All formats can be kept through LargeOriginalService as large-original-v1, bypassing these profile checks.",
+    "Native reading is separate from retaining bytes; above-reader-limit originals stay kept, not natively read.",
+    "large-original.ts:147-204 accounts only for upload receipts/parts, not direct sources; open global and",
+    "retained-plus-open per-case limits are 512 MiB for v1 and 7 GiB for v2. Configured capacity counts receipts.",
+    "storage.ts:137-166 putOriginal has no aggregate reservation; :321-324 checks bucket versioning, not capacity.",
+    "The former ten-profile ceiling was 640 rows / 2432 MiB (2550136832 bytes); it now applies per case."
   ],
-  "total_gap": {
-    "current_ten_profile_source_ceiling": 640,
-    "current_ten_profile_byte_ceiling": 2550136832,
-    "current_ten_profile_MiB_ceiling": 2432,
-    "after_requested_change": "Per-case ceilings; across N cases, up to 640*N rows and 2432*N MiB.",
-    "aggregate_after_change": "No service-wide direct-retention byte reserve is enforced by the inspected paths.",
-    "large_original_existing_limits": {
-      "v1_open_global_and_retained_plus_open_per_case_bytes": 536870912,
-      "v2_open_global_and_retained_plus_open_per_case_bytes": 7516192768,
-      "v1_declared_temporary_copy_ceiling_bytes": 1073741824,
-      "v2_declared_temporary_copy_ceiling_bytes": 23622320128
-    },
-    "large_original_accounting": [
-      "large-original.ts:147-163 quotaSql reads usp_source_uploads and usp_source_upload_parts only, not sources.",
-      "large-original.ts:193-198 bounds open bytes globally and retained-plus-open bytes per case, per version.",
-      "large-original.ts:199-204 compares retained receipt bytes + leftovers + 2*v1 open + 3*v2 open with",
-      "ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES, only when configuredBytes > 0; v2 requires configuration.",
-      "This comparison excludes every direct-retain original, even if capacity is configured.",
-      "The 1 GiB and 22 GiB contract constants are not a shared guard on these ten direct paths."
-    ],
-    "storage_accounting": [
-      "storage.ts:137-166 putOriginal conditionally writes immutable bytes and verifies size/hash; no byte reserve.",
-      "storage.ts:321-324 assertLargeOriginalStorageProfile checks bucket versioning, not capacity or total bytes.",
-      "No deployment/storage quota was assumed or inspected; runtime and credentials were not accessed."
-    ],
-    "required_decision": "Lead must decide the shared total and accounting scope before the per-case change proceeds.",
-    "outside_ownership": [
-      "packages/server/src/modules/usp/ingestion/large-original.ts",
-      "packages/server/src/infrastructure/storage.ts"
-    ]
-  },
+  "implementation": [
+    "retention-budget.ts caseRetentionBudgetTx selects sources by case_id and profile, with no revision/status filter.",
+    "Each module imports it and calls it on one line with the same existing contract limits and incoming byte count.",
+    "Existing case/admission locks, replay checks and all writes are unchanged; superseded revisions still count.",
+    "429 codes stay; words give this case's actual count/bytes, both limits, immutable originals and another case.",
+    "Details are {limit: case_retained_sources | case_retained_bytes, freesAt: null}. No new total or deletion."
+  ],
   "doctor": {
-    "purpose": "Counts-only busiest-case source count, one execution per binding; no identifiers or bytes returned.",
-    "sql_lines": [
+    "busiest_case_sql_lines": [
       "SELECT coalesce(max(n),0)::int AS busiest_case_sources FROM (",
       "  SELECT count(*) AS n FROM sources WHERE profile=$1 GROUP BY case_id",
       ") AS cases"
     ],
     "bindings": {
-      "raster-window": ["geotiff-raster-v1"],
-      "point-batch": ["laz-point-v1"],
-      "kml": ["kml-native-v1"],
-      "citygml": ["citygml-native-v1"],
-      "cityjson": ["cityjson-native-v1"],
-      "dxf": ["dxf-native-v1"],
-      "geoparquet": ["geoparquet-native-v1"],
-      "gltf": ["gltf-native-v1"],
-      "ifc": ["ifc-native-v1"],
-      "obj": ["obj-native-v1"]
+      "raster-window": ["geotiff-raster-v1"], "point-batch": ["laz-point-v1"],
+      "kml": ["kml-native-v1"], "citygml": ["citygml-native-v1"], "cityjson": ["cityjson-native-v1"],
+      "dxf": ["dxf-native-v1"], "geoparquet": ["geoparquet-native-v1"], "gltf": ["gltf-native-v1"],
+      "ifc": ["ifc-native-v1"], "obj": ["obj-native-v1"]
     },
-    "revision_rule": "No latest-revision or status filter: every retained row counts. SQL not run on a runtime."
+    "retained_bytes_sql": "SELECT coalesce(sum(bytes),0)::text AS retained_original_bytes FROM sources",
+    "scope": "Counts only, no identifiers; every source profile/status/revision counts. Not run against a runtime."
   },
-  "inputs": "Source code and S1.3l evidence only; no real originals acquired or opened for this blocked audit.",
+  "inputs": "Metadata-only SQL fixtures: case A/B, retained family revisions, 63/64 sources and exact byte edges.",
+  "test_method": "Execute actual call sites and helper SQL in memory with SQLite cast/placeholder adaptation only.",
   "checks": {
-    "logs": "E:/ulpin-tmp/s1-3o-*.log",
-    "phase": "Before/after evidence-only edit; production files are identical to base in both phases.",
-    "pnpm typecheck:backend": "exit 0 before/after",
-    "pnpm studio:typecheck": "exit 0 before/after",
-    "pnpm studio:test": "exit 0 before/after; 831 passed, 3 skipped across 128 files",
+    "logs": "E:/ulpin-tmp/s1-3o-*.log; final-* are the completed implementation checks",
+    "new_test": "retention-budget.test.ts: exit 0, 5 pass; S13O_BASE=1: exit 1, 0 pass, 5 fail on base",
+    "base_failure_reasons": "Cases spend one global count/byte budget (tests 1,3,4,5); old refusal words (test 2).",
+    "byte_matrix": "All ten profiles: other-case and other-profile isolation, exact edge admits, one extra byte refuses.",
+    "pnpm typecheck:backend": "exit 0 before/final",
+    "pnpm studio:typecheck": "exit 0 before/final",
+    "pnpm studio:test": "exit 0 before/final; 831 passed, 3 skipped across 128 files",
     "section_5_server_before": "exit 0; 1080 passed, 5 skipped, 0 failed (1085 tests)",
-    "section_5_server_after": "exit 1; 1079 passed, 5 skipped, 1 failed (1085 tests); see bounded comparison",
-    "ten_format_tests": "exit 0 before/after; 100 passed, 12 skipped, 0 failed (112 tests)",
-    "ten_format_command": [
-      "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false",
-      "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
-      "tests/{raster*,point*,kml*,citygml*,cityjson*,dxf*,geoparquet*,gltf*,ifc*,obj*}.test.ts"
-    ],
-    "openapi_check": "exit 0 before/after; 336 operations, 379 schemas; no stale pins",
-    "python scripts/api/check.py": "exit 0 before/after; 336 operations, 379 schemas; pins valid",
-    "git diff --check": "exit 0 before/after",
-    "new_acceptance_tests": "Not added or run: explicit step-3 stop before changing runtime behavior."
+    "section_5_server_initial_after": "exit 1; 1079 passed, 5 skipped, 1 ZIP probe-budget failure (1085 tests)",
+    "section_5_server_final_quiet": "exit 0; 1085 passed, 5 skipped, 0 failed (1090 tests, including new five)",
+    "format_before": "Prefix-named tests: exit 0; 100 passed, 12 skipped (112 tests)",
+    "format_final": "All 59 matching files: exit 0; 199 passed, 13 skipped (212 tests)",
+    "format_selection": "tests/*.test.ts names matching raster|point|kml|citygml|cityjson|dxf|geoparquet|gltf|ifc|obj",
+    "openapi_check": "before exit 0, final exit 1: expected stale docs/api/source-pins.json",
+    "python scripts/api/check.py": "before exit 0, final exit 1: expected producer changed citygml.ts",
+    "stale_producers": "Ten inventory modules plus retention-budget.ts, all under paths.modules; pins not changed.",
+    "git diff --check": "exit 0 before/final"
   },
-  "bounded_comparison": {
-    "failure": "tests/intake-zip-layers.test.ts mixed Lake View fixture: INTAKE_PROBE_BUDGET, 2117.8552 ms.",
-    "hypothesis": "Concurrent full-set execution exhausted this existing ZIP probe's wall-clock budget.",
-    "baseline": "Unchanged production code; full set passed before, failed this one test after.",
-    "comparison": "Run that exact test alone using --test-name-pattern, same isolated environment.",
-    "success_and_stop": "One isolated pass distinguishes timing sensitivity; no repeat full-set run or code changes.",
-    "result": "exit 0; 1 passed, 0 failed, 0 skipped; test 89.8008 ms. Timing sensitivity supported.",
-    "log": "E:/ulpin-tmp/s1-3o-zip-isolated.log"
+  "zip_comparison": {
+    "hypothesis": "Existing ZIP probe wall-clock budget exhausted under concurrent load, not changed retention code.",
+    "baseline": "Mixed Lake View fixture failed INTAKE_PROBE_BUDGET at 2117.8552 ms on unchanged production code.",
+    "comparison": "One exact isolated test; pass criterion: test passes without a timeout change; stop after that run.",
+    "isolated_result": "exit 0; 1 pass, 0 fail, 0 skip, 89.8008 ms; timing sensitivity supported.",
+    "lead_followup": "One quiet full-set rerun requested by lead; no other checks launched beside it; exit 0 above."
   },
   "next": [
-    "Lead decides service-wide original-byte reservation/accounting, including direct writes and upload receipts.",
-    "Then authorize any outside-owned changes; resume shared per-case helper and five base-failing tests.",
-    "Lead should track the existing ZIP probe wall-clock sensitivity; no test or deadline was changed here.",
-    "No new service total invented; no limit changed; no rows, objects, runtime or generated files changed."
+    "Lead regenerates producer pins and adds doctor counts plus retained-source bytes against free object-store disk.",
+    "No runtime, Docker, migration, contract limit, original, populated row, credentials or generated file changed."
   ]
 }
