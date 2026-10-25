@@ -1,0 +1,64 @@
+{
+  "task": "S1.3h",
+  "planStep": 1,
+  "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf",
+  "verdict": "stopped_not_reproduced; historical cause unproven; no production change",
+  "inputs": {
+    "revision": "5972c394",
+    "files": ["docs/evidence/step-1/s1-3/run4/jobs.json", "docs/evidence/step-1/s1-3/run4/admission.json"],
+    "observedDraftQueueSeconds": {"c-encoding": 433.26, "d-wkt": 416.659, "wd2": 410.595},
+    "qualification": "Saved summaries, not per-tick readiness or reservations; no rehearsal files reopened."
+  },
+  "codeFindings": {
+    "aFullLanes": "processing.ts:347-359 excludes held jobs, busy operations and full lanes before LIMIT 12.",
+    "aMemoryScratch": "Not ruled out: admission follows LIMIT; refused IDs are retained, not excluded (361-370).",
+    "bTeacher": "dispatch-lanes.ts:45 cap 2; processing.ts:489 singleton effectively allows one draft per process.",
+    "bEvidence": "Other draft wall maxima: b-load 6.938 s, ev2-load 10.691 s; no holder overlap timeline is saved.",
+    "cReady": "processing.ts:346-352 checks next_attempt_at and active leases; item state only affects ordering.",
+    "cClaim": "intake-draft-worker.ts:417-419 prepares tables BEFORE claim; usp/jobs.ts:257-258 stamps dispatch.",
+    "cPreparation": "intake-table-auto.ts:23-28,44-59,66-70 can requeue profile/capacity/revision waits for 2 s.",
+    "dMeasurement": "Creation-to-first-claim is not necessarily creation-to-first-worker-entry or ready queue time.",
+    "conclusion": "Full-lane window starvation not reproduced; preparation/readiness remains an unproven alternative."
+  },
+  "boundedReplay": {
+    "test": "processing-latency.test.ts: run 4 full-lane replay",
+    "hypothesis": "Full stream/vector lanes let their followers consume all 12 rows and hide a ready teacher job.",
+    "method": "Execute baseline processing.ts and unchanged real reservations; SQLite selection; worker stubs.",
+    "shape": {"activeStream": 4, "activeVector": 2, "cn1Parts": 16, "zipParts": 43, "streamFollowers": 24},
+    "draftCreatedMs": 0,
+    "draftReadyMs": 750,
+    "draftWorkerEntryMs": 750,
+    "readyToEntryMs": 0,
+    "selectedAtReady": ["table:draft"],
+    "excludedFullLanes": ["stream", "vector"],
+    "blockedFollowers": 83,
+    "activeMemoryMiBIncludingDraft": 2834,
+    "memoryBudgetMiB": 4096,
+    "heapBudgetMiB": 3264,
+    "scratchMiB": 0,
+    "successCriterion": "Baseline waits for the named selection defect; fixed draft enters within one ready tick.",
+    "result": "Baseline already enters within one tick; failure reproduction criterion NOT met.",
+    "stopCondition": "Triggered: no selection fix or second comparison attempted."
+  },
+  "checksBeforeAfter": {
+    "pnpm typecheck:backend": {"exit": [0, 0]},
+    "pnpm studio:typecheck": {"exit": [0, 0]},
+    "pnpm studio:test": {"exit": [0, 0], "passedEach": 831, "skippedEach": 3},
+    "processing-latency,processing,dispatch-heap,dispatch-scratch": {
+      "exit": [0, 0], "passed": [52, 53], "skippedEach": 4
+    },
+    "WORKING-RULES section 5 server set": {"exit": [0, 0], "passedEach": 1060, "skippedEach": 5},
+    "openapi.ts --check": {"exit": [0, 0], "operations": 336, "schemas": 379},
+    "python scripts/api/check.py": {"exit": [0, 0], "operations": 336, "schemas": 379},
+    "git diff --check": {"exit": [0, 0]},
+    "isolated baseline replay": {"exit": 0, "passed": 1},
+    "skips": "Focused: four PostgreSQL tests lack ULPIN_DISPATCH_TEST_DATABASE_URL; unchanged before/after.",
+    "logs": "E:/ulpin-tmp/s1-3h-{before,after}-*.log and s1-3h-replay.log; no stale producer pins."
+  },
+  "next": [
+    "Lead needs per-tick selected/refused/held IDs, resource budgets, full lanes and worker entry/exit times.",
+    "Capture each draft's next_attempt_at history, preparation outcome, raw/mapping creation and claim times.",
+    "Trace pre-claim SQL lock waits and singleton occupants; summaries cannot name minute-long holders.",
+    "If preparation is confirmed, intake-table-auto.ts and downstream admission services are outside OWN."
+  ]
+}

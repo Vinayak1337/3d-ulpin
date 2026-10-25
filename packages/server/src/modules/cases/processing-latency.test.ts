@@ -76,8 +76,10 @@ async function realMix() {
 }
 
 /** Only dependency imports change: both versions execute their actual tick, reservations and worker finally paths. */
-async function loadDriver(folder: string, baseline: boolean | 'lane'): Promise<Driver> {
-  const revision = baseline === 'lane' ? 'a8c67f15' : '70560f89';
+async function loadDriver(folder: string, baseline: boolean | 'lane' | 'draft'): Promise<Driver> {
+  let revision = '70560f89';
+  if (baseline === 'lane') revision = 'a8c67f15';
+  else if (baseline === 'draft') revision = '1710369c';
   let source = baseline ? execFileSync('git', ['show', `${revision}:packages/server/src/modules/cases/processing.ts`],
     { encoding: 'utf8' }) : await readFile(sourcePath, 'utf8');
   if (baseline === 'lane') {
@@ -89,7 +91,7 @@ async function loadDriver(folder: string, baseline: boolean | 'lane'): Promise<D
     source = source.replace("'./dispatch-lanes'", JSON.stringify(path));
   }
   const workers = new Set(['intake-large-worker', 'streaming-vector-worker', 'streamed-profile-worker',
-    'chunk-mapping-worker', 'intake-native-derivative-worker']);
+    'chunk-mapping-worker', 'intake-native-derivative-worker', 'intake-draft-worker']);
   source = source.replace(/import \{(\w+)\} from '(\.\.\/usp\/ingestion\/([^']+))';/g,
     (original, name: string, _specifier: string, module: string) => {
       if (workers.has(module)) return `const ${name} = (id: string) => globalThis.lq1Replay.worker(id);`;
@@ -335,6 +337,69 @@ test('run 2 stream replay: a later ZIP starts within one tick while both whole-f
     assert.ok(firstZipMs - 750 <= 750, 'the ZIP must start within one tick of creation, not after stream EOF');
     assert.equal(state.rows.filter(row => row.status === 'succeeded').length, 46);
     assert.deepEqual(peaks, { memory: 1865, heap: 1865, vector: 2, stream: 2 });
+  });
+});
+
+test('run 4 full-lane replay: the baseline draft starts within one tick, so the wait is not reproduced', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withReplay(async folder => {
+    process.env.DISPATCH_MEMORY_MIB = '4096';
+    const driver = await loadDriver(folder, 'draft'), state = replayState();
+    state.rows.length = 0;
+    const finish: (() => void)[] = [];
+    const selections: { at: number; ids: string[]; fullLanes: unknown }[] = [];
+    const readyAt = epoch + 750;
+    globals.lq1Replay = { surface: async () => {}, worker: async id => {
+      const row = state.rows.find(row => row.id === id)!;
+      assert.equal(row.status, 'queued');
+      row.status = 'running';
+      admissionPeaks(state.rows, 4096);
+      state.dispatched.push({ id, at: Date.now() - epoch });
+      await new Promise<void>(resolve => { finish.push(resolve); });
+      row.status = 'succeeded';
+    } };
+    globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+      // Model a durable next_attempt_at gate, not the time the draft row was created.
+      const eligible = state.rows.filter(row => row.stage !== 'draft' || Date.now() >= readyAt);
+      const rows = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, eligible) : [];
+      if (sql.includes('AS file_rank')) selections.push({ at: Date.now() - epoch,
+        ids: rows.map(row => String(row.id)), fullLanes: values[4] });
+      return { rows, rowCount: rows.length };
+    } };
+    try {
+      // Real run-4 shape, not file execution: CN1 and the ZIP occupy all stream and vector slots.
+      for (const [index, file] of ['cn1', 'zip'].entries()) {
+        state.enqueue(file, 'streaming-vector', 'raw', index);
+        state.enqueue(file, 'streamed-profile', 'profile', index);
+        state.enqueue(file, 'intake-large', 'layout', index);
+      }
+      state.enqueue('table', 'intake-draft', 'draft', 2);
+      await driver.dispatchTick();
+      await flush();
+      assert.equal(state.dispatched.length, 6, 'the draft is not ready during the first tick');
+      for (const [file, count] of [['cn1', 16], ['zip', 43]] as const) {
+        for (let index = 0; index < count; index++) state.enqueue(file, 'intake-large', `part-${index}`, 0);
+        for (let index = 0; index < 12; index++) state.enqueue(file, 'streamed-profile', `stream-${index}`, 0);
+      }
+      t.mock.timers.tick(750);
+      await driver.dispatchTick();
+      await flush();
+      const draft = state.dispatched.find(row => row.id === 'table:draft');
+      assert.ok(draft, 'baseline already selects and starts the ready draft despite 83 blocked followers');
+      assert.equal(draft.at - (readyAt - epoch), 0);
+      assert.deepEqual(selections[1], { at: 750, ids: ['table:draft'], fullLanes: ['stream', 'vector'] });
+      assert.equal(state.rows.filter(row => row.status === 'running').length, 7);
+      assert.equal(state.rows.filter(row => row.status === 'queued').length, 83);
+      console.log(JSON.stringify({ replay: 'run 4 full-lane shape; offline scheduling stubs, not file execution',
+        baseline: '1710369c', reproducedWait: false, blockedFollowers: 83, draftReadyMs: 750,
+        draftStartMs: draft.at, draftReadyToStartMs: draft.at - (readyAt - epoch),
+        activeMemoryMiB: admissionPeaks(state.rows, 4096).memory,
+        memoryBudgetMiB: 4096, heapBudgetMiB: dispatchHeapBudgetMiB(),
+        selection: selections[1], stop: 'No production fix: the specified replay does not reproduce the wait.' }));
+    } finally {
+      for (const release of finish) release();
+      await flush();
+    }
   });
 });
 
