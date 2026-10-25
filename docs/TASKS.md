@@ -777,7 +777,7 @@ Size M, code only. After: none; parallel with S7.1, S7.2, S7.3, S7.4, S7.6, S7.7
 
 ### S7.6 The map reads lightly while a package streams
 
-Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: running 25 Oct (UI session; sent back once: a cached context from before the package must not read as settled).**
+Size M, code only. After: none; parallel with S7.1-S7.5, S7.7. **Status: merged 25 Oct (9acfe29f; sent back once for a cached context read as settled).**
 
 - **What:** Today, while a package streams, the map downloads it every 700 ms, re-reads the whole area every 5 s and invalidates every query in the app when the import settles. Three changes: (1) Count features by kind from context.displayFeatures by proposalPackageId, and take state and quarantine from context.packages, which are already polled, instead of the 700 ms GET of the whole package (every feature with three geometries). (2) Stop the 5 s re-reads of the area context and the canonical area once the package leaves RECEIVED, even if ?package= stays in the URL. (3) When it settles, invalidate only this area's and this batch's keys. The demo-import path (isDemoId, demo-import.ts:110) keeps working.
 - **Files:** apps/studio/src/features/map/ImportTray.tsx:16-66 (useSettled 17-24, poll 33-37, counts 43-48); apps/studio/src/features/map/MapWorkspace.tsx:71-75, 125, 397-401, 574-580 (MapImportTray); apps/studio/src/features/map/MapPage.tsx:39-43; apps/studio/src/api/queries.ts:228-260; apps/studio/src/features/map/canonicalScene.ts:66-80
