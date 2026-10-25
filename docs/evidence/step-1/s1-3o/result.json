@@ -73,7 +73,7 @@
     "logs": "E:/ulpin-tmp/s1-3o-*.log; final-* are the completed implementation checks",
     "new_test": "retention-budget.test.ts: exit 0, 5 pass; S13O_BASE=1: exit 1, 0 pass, 5 fail on base",
     "base_failure_reasons": "Cases spend one global count/byte budget (tests 1,3,4,5); old refusal words (test 2).",
-    "byte_matrix": "All ten profiles: other-case and other-profile isolation, exact edge admits, one extra byte refuses.",
+    "byte_matrix": "All ten profiles: case/profile isolation, exact edge admits, one extra byte refuses.",
     "pnpm typecheck:backend": "exit 0 before/final",
     "pnpm studio:typecheck": "exit 0 before/final",
     "pnpm studio:test": "exit 0 before/final; 831 passed, 3 skipped across 128 files",
