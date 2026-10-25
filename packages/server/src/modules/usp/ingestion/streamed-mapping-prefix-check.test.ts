@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { mkdtempSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { Readable } from 'node:stream';
 import { StreamedPrefixMappingPlanSchema, type StreamedProfileGeneration,
   type StreamingVectorRecord } from '@ulpin/contracts/usp';
@@ -7,8 +9,9 @@ import { normalizeMappedChunk } from './chunk-mapping-normalizer';
 import { pairMappedFeatures } from './intake-package-cuts';
 import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
 import { streamedGenerationHash } from './streamed-profile';
-import { compileStreamedMapping, prefixLayoutMatchesSealed, prefixMappingUsedPathHeld,
+import { compileStreamedMapping, prefixLayoutMatchesSealed, prefixMappingFailure, prefixMappingUsedPathHeld,
   prefixSealCheckKey } from './streamed-mapping';
+import { intakeLargeProjection, type IntakeLargeStore } from './intake-large';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
 const id = '10000000-0000-4000-8000-000000000001';
@@ -94,8 +97,33 @@ test('run 4 shape: conversion-compatible MultiPolygons reach drafts; 11 quaranti
       const refused = normalizeMappedChunk([incompatible], layout, observed, id, 1, []);
       assert.equal(refused.records[0].disposition, 'unresolved');
       assert(refused.records[0].issueCodes.includes('SCHEMA_DRIFT_GEOMETRY'));
+      assert.deepEqual(prefixMappingFailure(refused.records, [incompatible]), {
+        sourcePath: '/features/*/geometry', recordOrdinal: 101, geometryType: type });
+      assert.throws(() => prefixMappingFailure(refused.records, [{ ...incompatible, rawSha256: 'b'.repeat(64) }]),
+        { status: 409 }, 'failure words cannot use a different raw record');
     }
   });
+
+test('an approved mixed prefix keeps set-aside points exactly as the base inventory-based normalizer', async () => {
+  const records: StreamingVectorRecord[] = [];
+  await read(100, record => records.push(record));
+  (records[99].feature as { geometry: unknown }).geometry = { type: 'Point', coordinates: [0, 0] };
+  const inventory = advanceStreamedInventory(emptyInventory(), records).inventory;
+  const observed = profile(inventory), sealed = profile(inventory, true), layout = plan(observed);
+  assert.equal(prefixLayoutMatchesSealed(layout, observed, sealed), true);
+  const mapped = normalizeMappedChunk(records, layout, observed, id, 0, []);
+  // Sealed layouts retain the base's inventory-based geometry check unchanged.
+  const base = normalizeMappedChunk(records, { ...layout, version: 'streamed-mapping/1',
+    scope: 'accepted_source_features', source: sealed.source, profileGeneration: sealed.generation,
+    profileHash: sealed.generationHash }, sealed, id, 0, []);
+  assert.deepEqual(mapped.records, base.records);
+  assert.deepEqual(mapped.keys, base.keys);
+  assert.deepEqual(mapped.records[99].issueCodes, ['GEOMETRY_KIND']);
+  assert.equal(mapped.records[99].disposition, 'unresolved');
+  assert.equal(prefixMappingFailure(mapped.records), undefined);
+  assert.equal(pairMappedFeatures(records, mapped.records,
+    { after: -1, conflicts: new Set(), kind: 'building' }).length, 99);
+});
 
 test('byte-zero replay preserves prefix generation hash; a different mapping job cannot reuse its seal key',
   async () => {
@@ -127,3 +155,80 @@ test('absent, null, fractional, text or unsafe OBJECTID still breaks the approve
     assert(prefixMappingUsedPathHeld(normalizeMappedChunk([later], layout, observed, id, 1, []).records));
   }
 });
+
+for (const geometry of [false, true]) {
+  test(`closure stores the first ${geometry ? 'geometry type' : 'field'} failure and names its record`, async () => {
+    const records: StreamingVectorRecord[] = [];
+    await read(100, record => records.push(record));
+    const observed = profile(advanceStreamedInventory(emptyInventory(), records).inventory), layout = plan(observed);
+    const later = [100, 101, 102].map(featureIndex => ({ ...structuredClone(records[0]), featureIndex }));
+    Object.assign(later[0], { disposition: 'quarantined', feature: null, issueCode: 'MISSING_GEOMETRY' });
+    for (const record of later.slice(1)) {
+      const feature = record.feature as { geometry: unknown; properties: { OBJECTID: unknown } };
+      if (geometry) feature.geometry = { type: 'Point', coordinates: [0, 0] };
+      else feature.properties.OBJECTID = null;
+    }
+    const sealed = profile(advanceStreamedInventory(observed, later).inventory, true);
+    const chunks = [later.slice(0, 1), later.slice(1)], reads: number[] = [], writes: string[] = [];
+    const receipt = { id, revision: 2, state: 'approved', plan: layout, planHash: hash, authoredBy: 'test_only',
+      authoredAt: '2026-10-25T00:00:00.000Z', approval: { subject: 'test_only', at: '2026-10-25T00:00:00.000Z',
+        planHash: hash, provenance: 'server_configured_local_operator' } };
+    const client = { query: async (sql: string, values: unknown[] = []) => {
+      if (sql.startsWith('SELECT body')) return { rows: [{ body: receipt }] };
+      if (sql.startsWith('SELECT chunk_index')) return { rows: [0, 1, 2].map(chunk_index => ({ chunk_index })) };
+      assert.match(sql, /^UPDATE sources SET inspection=/);
+      writes.push(values[1] as string);
+      return { rows: [] };
+    } };
+    const state = { key: hash, store: { reader: { job_id: id }, mapping: { job_id: id }, recipe: { id } } };
+    const response = (records: StreamingVectorRecord[]) => ({ current: true, sourceComplete: true,
+      unknownRemainder: false, payload: { records } });
+    const controls = { pinned: async (_input: unknown, _attempt: unknown,
+      work: (client: unknown, state: unknown) => Promise<unknown>) => work(client, state),
+    loadProvisionalStreamedProfileTx: async () => ({ profile: observed }), loadPrefixSealTx: async () => sealed,
+    heartbeat: () => async () => {}, reader: { chunk: async (_case: string, _source: string, _job: string,
+      index: number) => response(chunks[index]) }, mapper: { chunk: async (_case: string, _source: string,
+      _job: string, index: number) => {
+        reads.push(index);
+        return { ...response([]), payload: normalizeMappedChunk(chunks[index], layout, observed, id, index, []) };
+      } } };
+    await compareInIsolation(controls);
+    const check = JSON.parse(writes[0]);
+    assert.deepEqual(reads, [0, 1], 'profile mismatch still scans past a quarantine, then stops at the first failure');
+    assert.equal(check.changed, true);
+    assert.equal(check.key, prefixSealCheckKey(hash, sealed.generationHash, id));
+    assert.deepEqual(check.failure, { sourcePath: geometry ? '/features/*/geometry'
+      : '/features/*/properties/OBJECTID', recordOrdinal: 102, ...(geometry ? { geometryType: 'Point' } : {}) });
+    const store: IntakeLargeStore = { reader: null, profile: null, mapping: null, recipe: null, parts: 0,
+      unreviewed: 0, prefixFailure: check.failure };
+    const words = intakeLargeProjection('question', { reader: null, profile: null, mapping: null,
+      receiptVerified: false, recipeState: null, publishedPackages: 0, foldComplete: false, prefixCheck: 'changed' },
+    store, { bytes: 1, crsWords: null }).limitReason;
+    assert.match(words!, geometry ? /Geometry type Point at record 102/ : /OBJECTID at record 102/);
+  });
+}
+
+/** Execute the actual comparison body with only its pinned I/O boundaries replaced, as profile-worker tests do. */
+async function compareInIsolation(controls: object) {
+  const globals = globalThis as typeof globalThis & { s13iPrefix?: object }, previous = globals.s13iPrefix;
+  const folder = mkdtempSync('E:/ulpin-tmp/s1-3i-closure-'), target = `${folder}/comparison.ts`;
+  const source = readFileSync(new URL('./intake-large-worker.ts', import.meta.url), 'utf8');
+  const start = source.indexOf('async function comparePrefix('), end = source.indexOf('\nasync function step(', start);
+  assert(start >= 0 && end > start);
+  const mapping = new URL('./streamed-mapping.ts', import.meta.url).href;
+  const errors = new URL('../../../infrastructure/errors.ts', import.meta.url).href;
+  globals.s13iPrefix = controls;
+  try {
+    writeFileSync(target, `import {StreamedMappingReceiptSchema} from '@ulpin/contracts/usp';\n`
+      + `import {prefixLayoutMatchesSealed,prefixMappingFailure,prefixSealCheckKey} from '${mapping}';\n`
+      + `import {conflict} from '${errors}';\n`
+      + 'const {pinned,reader,mapper,heartbeat,loadProvisionalStreamedProfileTx,loadPrefixSealTx}'
+      + '=globalThis.s13iPrefix;\nexport ' + source.slice(start, end));
+    const worker = await import(pathToFileURL(target).href);
+    await worker.comparePrefix({ caseId: id, sourceId: id }, {});
+  } finally {
+    globals.s13iPrefix = previous;
+    unlinkSync(target);
+    rmdirSync(folder);
+  }
+}

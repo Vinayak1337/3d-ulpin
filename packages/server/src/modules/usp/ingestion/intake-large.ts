@@ -17,7 +17,7 @@ import { INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import { stableUuid } from './intake-run';
 import { setAsideWords } from './registry';
 import { isRetainedMapOriginal } from './retained-map-original';
-import { prefixSealCheckKey } from './streamed-mapping';
+import { PrefixLayoutFailureSchema, prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
   + 'An officer states what each feature is and which field identifies it.';
@@ -235,6 +235,7 @@ export type IntakeLargeStore = {
   profile: Stored<ProfileRow>;
   recipe: { id: string; revision: number; state: string; plan_version?: string; plan_hash?: string } | null;
   prefixCheck?: 'matched' | 'changed';
+  prefixFailure?: PrefixLayoutFailure;
   mapping: Stored<MappingRow>;
   parts: number;
   unreviewed: number;
@@ -313,6 +314,8 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
     && typeof check?.changed === 'boolean' && check.key === prefixSealCheckKey(store.recipe.plan_hash!,
       store.profile.layout_profile.generationHash, store.mapping.job_id)) {
     store.prefixCheck = check.changed ? 'changed' : 'matched';
+    const failure = PrefixLayoutFailureSchema.safeParse(check.failure);
+    if (check.changed && failure.success) store.prefixFailure = failure.data;
   }
   const retries = await intakeLargeRetriesTx(client, item);
   // Zero retries leaves the key as it was, so stored step jobs keep their ids.
@@ -457,6 +460,13 @@ function waitingWords(store: IntakeLargeStore): string | null {
     + 'The rest of the file is cut into packages as these are reviewed.';
 }
 
+function prefixChangedWords(failure: PrefixLayoutFailure | undefined): string {
+  const next = 'Nothing was drafted. State the layout again for the complete file.';
+  if (!failure) return 'A field used by the first-part layout changed or could not be read as stated. ' + next;
+  const field = failure.geometryType ? `Geometry type ${failure.geometryType}` : `Field ${failure.sourcePath}`;
+  return `${field} at record ${failure.recordOrdinal} does not fit the first-part layout. ${next}`;
+}
+
 /** What the row says in each state of the stored rows; only the drafting step writes the end. */
 export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLargeRows, store: IntakeLargeStore,
   failure: IntakeLargeFailure): IntakeLargeState {
@@ -468,9 +478,8 @@ export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLarge
   }
   if (phase === 'question') return { state: 'probed', placement: 'needs_answer',
     planRef: store.profile?.layout_profile ? { layoutProfile: store.profile.layout_profile } : null, ...numbers,
-    limitReason: rows.prefixCheck === 'changed' ? 'A field used by the first-part layout changed or could not be read '
-      + 'as stated. Nothing was drafted. State the layout again for the complete file.'
-      : INTAKE_LARGE_LAYOUT_QUESTION };
+    limitReason: rows.prefixCheck === 'changed'
+      ? prefixChangedWords(store.prefixFailure) : INTAKE_LARGE_LAYOUT_QUESTION };
   if (phase === 'layout' || phase === 'map' && !rows.mapping) return { state: 'planned', placement: 'undecided',
     planRef, ...numbers, limitReason: null };
   const prefixWords = phase === 'map' && rows.prefixRecipe

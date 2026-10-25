@@ -3,7 +3,8 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {MappingDecisionSchema,StreamedMappingAuthorSchema,StreamedPrefixMappingAuthorSchema,AnyStreamedMappingPlanSchema,
   StreamedMappingReceiptSchema,type StreamedMappingPlan,type StreamedMappingReceipt,
-  type StreamedProfileGeneration,type StreamedProfilePath, type ChunkMappingObservation} from '@ulpin/contracts/usp';
+  type StreamedProfileGeneration,type StreamedProfilePath, type ChunkMappingObservation,
+  type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import type {Mapping} from '../../areas/areas';
@@ -68,10 +69,10 @@ export function compileStreamedMapping(plan:StreamedMappingPlan,profile:Streamed
   // No global uniqueness claim is made here. The mapped worker reserves keys across chunks.
   return mapping;
 }
-/** Ask the existing conversion registry about one geometry type, without unrelated field coverage checks.
- * A singleton cannot qualify as a mixed file's set-aside pin or line. */
+/** Keep approved types, including mixed-file set-asides. Only a new type asks the conversion registry. */
 export function prefixGeometryCompatible(plan: StreamedMappingPlan, profile: StreamedProfileGeneration,
   type: string): boolean {
+  if (profile.geometryTypes.includes(type)) return true;
   try {
     compileMapping({ ...plan, operations: plan.operations.filter(op => op.target.endsWith('.geometry')) },
       { ...layoutProfile(profile), geometryTypes: [type] });
@@ -87,7 +88,7 @@ export function prefixLayoutMatchesSealed(plan: StreamedMappingPlan, prefix: Str
   sealed: StreamedProfileGeneration): boolean {
   compileStreamedMapping(plan, prefix);
   if (sealed.coverage !== 'sealed' || sealed.unknownRemainder
-    || sealed.geometryTypes.some(type => !prefixGeometryCompatible(plan, sealed, type))) return false;
+    || sealed.geometryTypes.some(type => !prefixGeometryCompatible(plan, prefix, type))) return false;
   // Quarantines have no readable fields; their count is not accepted-source field drift.
   const shape = (path: StreamedProfilePath, total: number) => ({ types: [...path.types].sort(),
     complete: path.values === total, nulls: path.explicitNull > 0, absent: path.absent > 0,
@@ -110,9 +111,37 @@ export function prefixLayoutMatchesSealed(plan: StreamedMappingPlan, prefix: Str
   }
 }
 
+export const PrefixLayoutFailureSchema = z.strictObject({ sourcePath: z.string().min(1).max(512),
+  recordOrdinal: z.number().int().positive(), geometryType: z.string().min(1).max(80).optional() });
+export type PrefixLayoutFailure = z.infer<typeof PrefixLayoutFailureSchema>;
+
+/** Ordered mapped parts retain the first used-field failure, not a duplicate, quarantine or set-aside. */
+export function prefixMappingFailure(records: ChunkMappingObservation[], raw?: StreamingVectorRecord[]):
+  PrefixLayoutFailure | undefined {
+  for (const record of records) {
+    if (record.disposition === 'quarantined') continue;
+    let sourcePath: string | null = null;
+    if (record.issueCodes.some(code => /^MAPPING_IDENTITY_(INVALID|ABSENT|NULL)$/.test(code)))
+      sourcePath = record.sourceKey.sourcePath;
+    else if (record.name.sourcePath && record.name.state !== 'known' && !record.issueCodes.includes('GEOMETRY_KIND'))
+      sourcePath = record.name.sourcePath;
+    else if (record.issueCodes.includes('SCHEMA_DRIFT_GEOMETRY')) sourcePath = '/features/*/geometry';
+    if (!sourcePath) continue;
+    const failure: PrefixLayoutFailure = { sourcePath, recordOrdinal: record.featureIndex + 1 };
+    if (sourcePath === '/features/*/geometry' && raw) {
+      const source = raw.find(item => item.featureIndex === record.featureIndex);
+      if (!source || source.disposition !== 'accepted' || source.rawSha256 !== record.rawSha256)
+        conflict('The geometry failure does not match its retained raw record.');
+      const geometry = (source.feature as { geometry?: { type?: unknown } }).geometry;
+      if (typeof geometry?.type !== 'string') conflict('The failed geometry type is unavailable.');
+      failure.geometryType = geometry.type;
+    }
+    return failure;
+  }
+}
+
 export function prefixMappingUsedPathHeld(records: ChunkMappingObservation[]): boolean {
-  return records.some(record => record.issueCodes.some(code =>
-    /^MAPPING_(IDENTITY_(INVALID|ABSENT|NULL)|TEXT_INVALID)$/.test(code)));
+  return prefixMappingFailure(records) !== undefined;
 }
 
 export function prefixSealCheckKey(planHash: string, sealedHash: string, mappingJobId: string): string {

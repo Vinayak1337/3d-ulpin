@@ -2,83 +2,60 @@
   "task": "S1.3i",
   "planStep": 1,
   "baseline": "1710369c64ae2029ad492123dec4147e48ec1dcf",
-  "verdict": "FALSE_REJECTION_FIXED; REJECTION_WORDS_BLOCKED_AT_OWN_BOUNDARY",
-  "diagnosisCodeRefs": "1710369c (before fix)",
+  "verdict": "FIXED_AND_TESTED; NO_LIVE_RUNTIME_ACTION",
   "evidence": "5972c394:docs/evidence/step-1/s1-3/run4/{result,faults,files,jobs}.json; cn1",
-  "codeRoot": "packages/server/src/modules/usp/ingestion/",
-  "changedWriter": [
-    "intake-large-worker.ts:385 negates prefixLayoutMatchesSealed; :389 skips the held-slot scan once true;",
-    ":397-399 stores changed=true. intake-large.ts:313-315 reads that exact seal key."
-  ],
-  "candidates": {
-    "a": [
-      "Ruled out: all 172409 original OBJECTID values are safe integers; absent/null/text/fractional/unsafe all 0.",
-      "registry.ts:195-198, chunk-mapping-normalizer.ts:23-25, streamed-profile-inventory.ts:37 enforce integers."
-    ],
-    "b": [
-      "Independent false rejection: streamed-profile-inventory.ts:49-54 excludes quarantines from accepted fields;",
-      ":86 sets unknown=quarantined. streamed-mapping.ts:78 compares unknown>0 as field shape: prefix 0, sealed 11."
-    ],
-    "c": [
-      "Ruled out: one raw job (two attempts), one profile job, one mapping job in run4.",
-      "streamed-profile-worker.ts:22-32 hashes immutable generation content, not attempt/fence.",
-      "streamed-mapping.ts:103-104 keys plan/seal/mapping; intake-large.ts:311-315 ignores stale keys, not changed."
-    ],
-    "d": [
-      "FIRST RETURN: streamed-mapping.ts:75-76 requires identical geometryTypes: Polygon vs Polygon+MultiPolygon.",
-      "registry.ts:18,173 accepts both for the approved building/geojson_geometry@1 layout. No operation broke."
-    ]
+  "diagnosisCodeRoot": "1710369c:packages/server/src/modules/usp/ingestion/",
+  "diagnosis": {
+    "changedWriter": "intake-large-worker.ts:385 negates prefixLayoutMatchesSealed; :397-399 stores changed=true.",
+    "a": ["All 172409 original OBJECTID are safe integers; absent/null/text/fractional/unsafe counts all 0.",
+      "registry.ts:195-198; chunk-mapping-normalizer.ts:23-25; streamed-profile-inventory.ts:37."],
+    "b": ["streamed-profile-inventory.ts:49-54 excludes quarantines; :86 sets unknown=quarantined.",
+      "streamed-mapping.ts:78 independently rejects the used fields' unknown>0 change: prefix 0, sealed 11."],
+    "c": ["One raw job, two attempts; one profile and mapping job. Generation excludes attempt/fence:",
+      "streamed-profile-worker.ts:22-32. Keys: streamed-mapping.ts:103-104; intake-large.ts:311-315 ignores stale."],
+    "d": ["FIRST RETURN: streamed-mapping.ts:75-76 requires equal geometryTypes: Polygon vs Polygon+MultiPolygon.",
+      "registry.ts:18,173 accepts both for the approved building/geojson_geometry@1 layout."]
   },
   "countsOnlyRead": {
-    "script": "E:/ulpin-tmp/s1-3i/inspect-counts.ts",
-    "input": "Halifax original under datasets/map-formats/halifax-regional-municipality; read in place",
-    "records": 172409, "structurallyAccepted": 172408, "structurallyQuarantined": 1,
-    "polygon": 172372, "multiPolygon": 36, "firstStructuralMultiPolygonOrdinal": 29375,
-    "firstStructuralQuarantineOrdinal": 72554, "mappedIdentityFailures": 0, "runtimeQuarantinedFromRun4": 11,
-    "qualification": [
-      "No runtime/PostGIS action. Structural read does not reproduce the additional 10 topology quarantines.",
-      "At least 26 MultiPolygons survive those 10 rejections: the geometry-set mismatch is certain.",
-      "Only counts reported; no original bytes, properties or per-record reading committed."
-    ]
+    "script": "E:/ulpin-tmp/s1-3i/inspect-counts.ts (initial diagnosis only; no further real-file read)",
+    "records": 172409, "absentNullTextFractionalUnsafeObjectId": [0, 0, 0, 0, 0],
+    "structurallyAccepted": 172408, "structurallyQuarantined": 1, "polygon": 172372, "multiPolygon": 36,
+    "firstStructuralMultiPolygonOrdinal": 29375, "firstStructuralQuarantineOrdinal": 72554,
+    "mappedIdentityFailures": 0, "runtimeQuarantinedFromRun4": 11,
+    "qualification": "No PostGIS rerun: 10 additional topology quarantines not reconstructed. Only counts committed."
   },
   "comparison": {
-    "hypothesis": "Compatible polygon geometry and quarantine unknown are mistaken for changed used fields.",
-    "success": "Synthetic GeoJSON: 172409 records, first 100 Polygon, later 36 MultiPolygon and 11 quarantines.",
-    "result": [
-      "Baseline rejected; fixed seal matches. All 36 later MultiPolygons reach pairMappedFeatures/draft handoff.",
-      "All 11 stay quarantined and unknown=11 remains recorded. Point and LineString reject in both checks.",
-      "Five invalid integer variants still reject. Byte-zero replay and stale-key tests still pass."
-    ],
-    "design": [
-      "prefixGeometryCompatible asks compileMapping with the approved geometry operation and singleton type;",
-      "no second allowed-type list. The seal uses it; normalizer caches its answer per type per chunk.",
-      "Only quarantine unknown was removed from field-shape comparison. Accepted-field completeness stays."
-    ],
-    "stop": [
-      "Requested first-failure words need intake-large-worker.ts comparePrefix:373-400 outside OWN.",
-      "It skips held records on profile failure and persists only changed:boolean. A type/field and first ordinal",
-      "must be retained there before intake-large.ts can show them. No worker or intake-package-cuts.ts edits."
-    ]
+    "hypothesis": "Approved geometry and quarantines are not changed used fields; approved set-asides remain allowed.",
+    "run4Shape": "Synthetic 172409: first 100 Polygon, later 36 MultiPolygon, 11 quarantined; fixed seal matches.",
+    "draftHandoff": "All 36 MultiPolygons pass pairMappedFeatures; all 11 stay quarantined with unknown=11 retained.",
+    "mixedPrefix": "Approved Polygon+Point matches. Full normalizer result equals 1710369c on the same 100 records.",
+    "baseComparison": "E:/ulpin-tmp/s1-3i/review2/compare-base.ts: exit 0; 99 observed, 1 set aside, 0 differences.",
+    "trueRejections": "New Point/LineString reject; absent/null/fractional/text/unsafe OBJECTID still reject.",
+    "words": "Actual comparePrefix body scans past a quarantine, stores first failure at ordinal 102, then stops.",
+    "wordTests": "Stored OBJECTID or Point detail projects record 102; stale-key failure detail is ignored.",
+    "retry": "Byte-zero replay keeps generation hash; stale plan/seal/mapping keys and failure details remain ignored."
   },
-  "proposedOfficerWords": [
-    "The stated building layout still fits the readable records. Later MultiPolygon outlines fit this layout.",
-    "11 records remain quarantined. No used field was found to break the layout."
+  "design": [
+    "prefixGeometryCompatible keeps approved types; only new types ask compileMapping with the approved geometry op.",
+    "The seal and normalizer share it. Quarantine unknown is not accepted-field drift; field completeness stays.",
+    "comparePrefix retains sourcePath, first recordOrdinal and, for geometry, the hash-matched raw geometryType.",
+    "intake-large.ts validates the stored detail under its exact seal key and projects the officer words.",
+    "No registry lists copied. No catch blocks, intake-package-cuts.ts, pins or runtime changed."
   ],
   "checks": {
-    "logs": "E:/ulpin-tmp/s1-3i/resume/{before,after}-*.{log,exit}; targeted.log",
+    "logs": "E:/ulpin-tmp/s1-3i/review2/{before,after}-*.{log,exit}; targeted.log; base-comparison.log",
     "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
     "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
     "pnpm studio:test": { "before": 0, "after": 0, "passed": 831, "skipped": 3 },
-    "section5 server command": { "before": [0, 1063, 5], "after": [0, 1063, 5], "order": "exit,pass,skip" },
-    "tsx intake-large*,streamed-mapping*,streamed-layout,chunk-mapping-normalizer tests": { "exit": 0, "passed": 73 },
-    "openapi.ts --check": { "before": 0, "after": 1, "reason": "expected stale source-pins.json" },
-    "python scripts/api/check.py": { "before": 0, "after": 1, "reason": "expected changed producer pin" },
+    "section5 server command": { "before": [0, 1063, 5], "after": [0, 1066, 5], "order": "exit,pass,skip" },
+    "tsx intake-large*,streamed-mapping*,streamed-layout,chunk-mapping-normalizer tests": { "exit": 0, "passed": 76 },
+    "openapi.ts --check": { "before": 1, "after": 1, "reason": "expected stale source-pins.json" },
+    "python scripts/api/check.py": { "before": 1, "after": 1, "reason": "expected changed producer pins" },
     "git diff --check": { "before": 0, "after": 0 },
-    "staleProducerPaths": ["chunk-mapping-normalizer.ts", "streamed-mapping.ts"]
+    "staleProducerPathsUnderCodeRoot": [
+      "chunk-mapping-normalizer.ts", "streamed-mapping.ts", "intake-large.ts", "intake-large-worker.ts"
+    ]
   },
-  "next": [
-    "Extend OWN narrowly to comparePrefix in intake-large-worker.ts, never its catch blocks, for rejection detail.",
-    "Then wire field/type and first ordinal into intake-large.ts projection and tests. Lead regenerates pins.",
-    "No retry-key fix or runtime/Docker action. No further real-file read on resume."
-  ]
+  "next": ["Lead regenerates pins and reviews integration. No live Halifax rerun claimed.",
+    "Legacy checks without failure detail keep fallback words; no unknown first ordinal is invented."]
 }

@@ -33,8 +33,8 @@ import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
 import { loadProvisionalStreamedProfileTx, StreamedProfileService } from './streamed-profile';
-import { loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingUsedPathHeld,
-  prefixSealCheckKey } from './streamed-mapping';
+import { loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingFailure,
+  prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 import { StreamingVectorService } from './streaming-vector';
 
 const reader = new StreamingVectorService();
@@ -369,7 +369,7 @@ async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
   await draftCut(input, attempt, fold, cutter.close(), true);
 }
 
-/** Inspect only held slots after closure. Duplicates keep their existing two-sided exclusion at the draft door. */
+/** Inspect held slots in order, even on profile mismatch, to retain the first used-field failure. */
 async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
   const prepared = await pinned(input, attempt, async (client, state) => {
     const receipt = StreamedMappingReceiptSchema.parse((await client.query(
@@ -380,23 +380,31 @@ async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
     const sealed = await loadPrefixSealTx(client, plan);
     const slots = (await client.query(`SELECT chunk_index FROM usp_chunk_mapping_slots
       WHERE job_id=$1 AND published AND unresolved>0 ORDER BY chunk_index`, [state.store.mapping!.job_id])).rows;
-    return { key: state.key, mappingJobId: state.store.mapping!.job_id, slots,
+    return { key: state.key, readerJobId: state.store.reader!.job_id, mappingJobId: state.store.mapping!.job_id, slots,
       checkKey: prefixSealCheckKey(receipt.planHash, sealed.generationHash, state.store.mapping!.job_id),
-      changed: !prefixLayoutMatchesSealed(plan, profile, sealed) };
+      changed: !prefixLayoutMatchesSealed(plan, profile, sealed),
+      failure: undefined as PrefixLayoutFailure | undefined };
   });
   const beat = heartbeat(input, attempt);
   for (const slot of prepared.slots) {
-    if (prepared.changed) break;
+    if (prepared.failure) break;
     const chunk = await mapper.chunk(input.caseId, input.sourceId, prepared.mappingJobId, slot.chunk_index);
     if (!chunk.current || !chunk.payload || chunk.unknownRemainder) conflict('The closed mapped part changed.');
-    prepared.changed = prefixMappingUsedPathHeld(chunk.payload.records);
+    prepared.failure = prefixMappingFailure(chunk.payload.records);
+    if (prepared.failure?.sourcePath === '/features/*/geometry') {
+      const raw = await reader.chunk(input.caseId, input.sourceId, prepared.readerJobId, slot.chunk_index);
+      if (!raw.current || !raw.sourceComplete || !raw.payload || raw.unknownRemainder)
+        conflict('The closed raw part changed.');
+      prepared.failure = prefixMappingFailure(chunk.payload.records, raw.payload.records);
+    }
+    prepared.changed ||= prepared.failure !== undefined;
     await beat();
   }
   await pinned(input, attempt, async (client, state) => {
     if (state.key !== prepared.key) conflict('The prefix closure context changed.');
     await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('intakePrefixSealCheck',$2::jsonb)
       WHERE id=$1`, [input.sourceId, JSON.stringify({ key: prepared.checkKey, mappingJobId: prepared.mappingJobId,
-      changed: prepared.changed })]);
+      changed: prepared.changed, ...(prepared.failure ? { failure: prepared.failure } : {}) })]);
   });
 }
 
