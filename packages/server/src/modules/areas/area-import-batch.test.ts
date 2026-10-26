@@ -69,7 +69,7 @@ test('a cut batches source lookup and draft writes, keeping source order and res
   assert(pkg.features.every((f: any) => f.height.value === null && f.revision === 0));
 });
 
-test('redraft keeps source-order locks on revision-zero outlines; recorded rows and identities stay unchanged', async () => {
+test('redraft keeps source-order locks; recorded outlines and linked identities stay unchanged', async () => {
   for (const revision of [0, 3]) {
     const { result, sent } = await cut(revision);
     const pkg = await result;
