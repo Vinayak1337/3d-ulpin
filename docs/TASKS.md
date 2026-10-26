@@ -255,7 +255,7 @@ Size S, code only. After: S1.3 run 6. **Status: merged 26 Oct (int3-pre 9ed2e8e5
 
 ### S1.3v Why one 103 MiB GeoJSON took 4.5 hours to close (diagnosis first)
 
-Size M, code only (reh-03 database read-only if needed). After: S1.3 run 6. **Status: running 26 Oct (task/s1-3v-large-closure at int3-pre 41c04392).**
+Size M, code only (reh-03 database read-only if needed). After: S1.3 run 6. **Status: diagnosis merged 26 Oct (int3-pre c537e208, branch 444d377e; no product change). Where the 4.5 hours went: at least 4,886 of 5,543 intake-large jobs were obsolete before they ran, queued behind their own step while it kept folding (161,294 s of summed queue); and unfinishedIntakePackagesTx reads the review fields of every earlier package body (2,778 bodies, 517 MiB) at 658 ms a count, at least four times per cut. The 8-package pressure stop never bound (0 to 4 unfinished). In the SQL replay a narrow review column cuts closure from 18.1 s to 1.7 s and dropping stale work to 7.7 s. The row said Reading file because the draft phase projects reading (intakeLargeProjection, publishIntakePartTx); it should say Preparing packages with the packages prepared and records read. Fixes: S1.3x, then the row words S1.3y.**
 
 - **What:** Halifax's raw read finished in 14 minutes but its 8,324 jobs ran until 00:02 UTC, 4.5 hours, and its row said Reading file while 116,416 buildings were ready in 1,563 packages. Name where every hour went from the recorded rows (queue, the one-step chain, the 8-package pressure stop, retries, step cost), say why the row said Reading, replay offline, and fix the top cause if it is bounded or write the design.
 - **Files:** intake-large, intake-part-draft and intake-run files; dispatch-lanes.ts for a limit only; the Studio row words if they change
@@ -263,11 +263,35 @@ Size M, code only (reh-03 database read-only if needed). After: S1.3 run 6. **St
 
 ### S1.3w The stalled no1 upload, the 503 upload-list reads and the aborted requests (diagnosis first)
 
-Size S, code only. After: S1.3 run 6. **Status: running 26 Oct (task/s1-3w-stalled-check at int3-pre 41c04392).**
+Size S, code only. After: S1.3 run 6. **Status: merged 26 Oct (int3-pre c9c2591f, branch fbe4311a; pins refreshed). The no1 check sat in hashFile, before any request: its hashing worker script was never fetched (file f waited about six minutes for the same fetch, then went on). Every one of the 30 upload-list 503s was a PostgreSQL deadlock on the list's own case FOR UPDATE; the list now reads one read-only snapshot with no case lock and turns a transient database error into DB_UNAVAILABLE with words. An upload with no progress for 2 minutes now stops and says what to do; 0 bytes shows as 0 KiB. The API filter logs the class and code of an untyped error. The 883 aborts were not traced to a trigger. Studio 777 pass, server set 1104 pass. Follow-up S1.3z: the check must not wait on a fetch.**
 
 - **What:** The no1 upload sat at Checking the file: 0% for the rest of run 6 with no intake item; 30 upload-list reads answered the filter's fallback 503 with no cause kept; 885 requests ended ERR_ABORTED. Name the step and cause of each from the recorded requests and logs, then make a stalled upload continue or stop with words, keep a safe cause for untyped API errors, and type the transient database errors.
 - **Files:** upload-command.ts, upload-model.ts, api-exception.filter.ts, the upload-list server function
 - **Tests:** pnpm typecheck:backend; pnpm studio:typecheck; pnpm studio:test
+
+### S1.3x Large-file closure cost: a stored review flag and no obsolete intake-large jobs
+
+Size M, code only. After: S1.3v. **Status: running 26 Oct (task/s1-3x-closure-cost at int3-pre c537e208).**
+
+- **What:** Add the additive migration usp_import_package_review_001, a stored generated review_current on import_packages, and count unfinished packages from it with a key join instead of reading every package body. A step that keeps folding queues one wake-up when it completes, not one per cut; wake-ups from other transactions stay. Rerun the S1.3v replay before and after.
+- **Files:** intake-ledger.ts, intake-large.ts, intake-large-worker.ts, usp/migrations.ts, database/manifest.json
+- **Tests:** pnpm typecheck:backend; the section 5 server set; the runtime-migrations test
+
+### S1.3y A large file's row says Preparing packages once its read is done
+
+Size S, code and UI. After: S1.3x (same files). **Status: waiting for S1.3x.**
+
+- **What:** While a large file's packages are still being drafted after its read, the row says Preparing packages, On the map, with the packages prepared and records read, not Reading file; the layout says Approved without the file is being read. A stored phase decides it; nothing is inferred from approval.
+- **Files:** intake-large.ts (intakeLargeProjection), intake-ledger.ts (publishIntakePartTx), the contract state if one is needed, Studio batch-model.ts and layout-model.ts
+- **Tests:** pnpm typecheck:backend; the section 5 server set; pnpm studio:test
+
+### S1.3z The file check must not wait on a network fetch
+
+Size S, UI. After: S1.3w. **Status: running 26 Oct (task/s1-3z-hash-worker at int3-pre c537e208).**
+
+- **What:** hashFile starts a new module worker per file, so the check waits for the worker script to be fetched; under load that fetch waited minutes or never came. Build the worker inline or create one reusable worker at start, prove with a test that no request is made, and count from the run 6 log how many requests the page held open to the Studio origin each second (Chrome allows six per origin over HTTP/1.1).
+- **Files:** hash-file.ts, file-hash.worker.ts, file-hash.ts, vite.config.ts if needed
+- **Tests:** pnpm studio:typecheck; pnpm studio:test; pnpm studio:build
 
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
