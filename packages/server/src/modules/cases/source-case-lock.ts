@@ -10,3 +10,10 @@ export async function lockSourceCaseDestinationTx(client:PoolClient,caseId:strin
   const canonicalId=z.uuid().parse(caseId).toLowerCase();
   await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[`registry-import:${canonicalId}`]);
 }
+
+/** Take the jobs.case_id foreign-key lock before any item/job/outbox write, not during a later INSERT.
+ * KEY SHARE excludes case FOR UPDATE but lets the cut's readers and non-key case updates keep sharing.
+ * If the transaction uses the destination advisory gate, take that gate first to avoid reversing its order. */
+export async function lockCaseEnqueueTx(client: PoolClient, caseId: string): Promise<void> {
+  await client.query('SELECT id FROM cases WHERE id=$1 FOR KEY SHARE', [caseId]);
+}

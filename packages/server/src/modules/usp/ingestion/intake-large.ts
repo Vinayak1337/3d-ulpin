@@ -335,7 +335,8 @@ export function intakeLargeAtRest(item: { state: string; placement: string }): b
 }
 
 /** The one wake-up. The key is read in the caller's transaction, so a state change cannot lose its job,
- * and an unchanged state names a job that exists already, whatever its status. */
+ * and an unchanged state names a job that exists already, whatever its status.
+ * Caller takes at least case KEY SHARE before its first write, so the job's FK cannot wait behind its own id. */
 export async function queueIntakeLargeTx(client: PoolClient, sourceId: string): Promise<string | null> {
   const state = await largeStateKey(client, sourceId);
   if (!state || intakeLargeAtRest(state.item)) return null;

@@ -7,9 +7,10 @@ import type { EvidencePointer, IntakeTargetArtefacts, PropertyCardVerification,
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
+import { lockCaseEnqueueTx } from '../../cases/source-case-lock';
 import { commitPackage, getPackage, reviewPackage } from '../../areas/areas';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
-  type UspJobAttempt } from '../jobs';
+  recordUspJobFailure, type UspJobAttempt } from '../jobs';
 import { generatePropertyCard, readPropertyCard } from '../packets/card-service';
 import { verifyPropertyCard } from '../packets/card-verification';
 import { confirmPacketPlan, createPacketPlan, executePacketPlan } from '../packets/plan-service';
@@ -67,6 +68,7 @@ function leaseLost(error: unknown): unknown {
 async function pinned<T>(run: Run, work: (client: PoolClient) => Promise<T>, repeatable = false): Promise<T> {
   return transaction(async client => {
     if (repeatable) await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+    await lockCaseEnqueueTx(client, run.input.caseId);
     await intakeCaseTx(client, run.input.caseId);
     assertRunBinding(run.input);
     await assertUspJobAttemptTx(client, run.attempt).catch(error => { throw leaseLost(error); });
@@ -548,6 +550,9 @@ export async function runIntakeRunJob(jobId: string, steps: IntakeRunSteps = int
     await advance(run);
     await complete(run);
   } catch (error) {
+    if (!(error instanceof AppError && error.code === leaseLostCode)) {
+      await recordUspJobFailure(run.attempt, 'INTAKE_RUN_RETRY', error);
+    }
     await fail(run, error);
     throw error;
   }
