@@ -366,11 +366,47 @@ test('each stored state change names one new job, and a second wake-up for the s
   }
   assert.equal(fixture.jobs.size, states.length + 1);
   fixture.tables.partOf = sourceId;
-  fixture.tables.parts = 2;
-  fixture.tables.unreviewed = 1;
+  fixture.tables.parts = 8;
+  fixture.tables.unreviewed = 8;
+  await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.tables.unreviewed = 7;
   const reviewed = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
   assert(!ids.has(reviewed));
-  assert.equal(fixture.jobs.size, states.length + 2);
+  assert.equal(fixture.jobs.size, states.length + 3);
+});
+
+test('reviews wake only witnessed pressure; delayed reviews and stale completion keep the continuation', async () => {
+  const fixture = store({ partOf: sourceId, parts: 8 });
+  for (const unreviewed of [0, 1, 2, 3, 4, 5, 6, 8]) {
+    fixture.tables.unreviewed = unreviewed;
+    assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), null);
+  }
+  assert.equal(fixture.jobs.size, 0);
+  // A paused fold's completion may settle before the review, or after it: either order keeps a job.
+  fixture.tables.unreviewed = 8;
+  const paused = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.tables.unreviewed = 7;
+  const released = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
+  assert(released && released !== paused);
+  assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), released);
+  fixture.tables.unreviewed = 6;
+  // Both reviews may commit before either enqueue runs: below seven must still wake witnessed pressure.
+  const continued = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
+  assert(continued && continued !== released);
+  // A queued job made obsolete by the second review still completes into this latest stored key.
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), continued);
+  const delayed = store({ partOf: sourceId, parts: 8, unreviewed: 8 });
+  await queueIntakeLargeTx(delayed.client, sourceId);
+  delayed.tables.unreviewed = 6;
+  assert(await queueIntakeLargePackageTx(delayed.client, 'protocol-package'));
+  const reviewFirst = store({ partOf: sourceId, parts: 8, unreviewed: 6 });
+  assert.equal(await queueIntakeLargePackageTx(reviewFirst.client, 'protocol-package'), null);
+  assert(await queueIntakeLargeTx(reviewFirst.client, sourceId));
+  // Without pressure, reviews need no job: the active fold queues its final cut key at completion.
+  fixture.tables.parts = 9;
+  fixture.tables.unreviewed = 0;
+  assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), null);
+  assert.notEqual(await queueIntakeLargeTx(fixture.client, sourceId), continued);
 });
 
 test('the key reads only stored rows; a finished review between cuts keeps the cut key', async () => {
