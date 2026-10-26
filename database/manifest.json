@@ -2969,6 +2969,82 @@
         "path": "packages/server/src/modules/usp/ingestion/intake-migration.ts",
         "function": "migrateIntakeLedgerTx"
       }
+    },
+    {
+      "id": "usp.import-package-review.check",
+      "source": {
+        "path": "database/sql/60-usp/29-import-package-review-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3x",
+        "acceptedBase": "c537e208ea899b89a6d8e95d774c25220f320ef4"
+      },
+      "file": "sql/60-usp/29-import-package-review-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        { "position": 1, "expression": "importPackageReviewName", "value": "usp_import_package_review_001" }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 64,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        { "ordinal": 1, "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c" }
+      ],
+      "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
+    },
+    {
+      "id": "usp.import-package-review.schema",
+      "source": {
+        "path": "database/sql/60-usp/30-import-package-review-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3x",
+        "acceptedBase": "c537e208ea899b89a6d8e95d774c25220f320ef4"
+      },
+      "file": "sql/60-usp/30-import-package-review-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.import-package-review.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.import-package-review.check",
+      "callMode": "one-query-call",
+      "order": 65,
+      "sha256": "55cee7c2f0e3471646ea19af1ed7ab60a1c2e43cd04f2f95600e78b83006a646",
+      "statements": [
+        { "ordinal": 1, "sha256": "6fe3dd255a894ed8cfa128d67205c746853bdcee52a970bc73d5fbf2b3004663" }
+      ],
+      "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
+    },
+    {
+      "id": "usp.import-package-review.mark",
+      "source": {
+        "path": "database/sql/60-usp/31-import-package-review-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3x",
+        "acceptedBase": "c537e208ea899b89a6d8e95d774c25220f320ef4"
+      },
+      "file": "sql/60-usp/31-import-package-review-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.import-package-review.schema succeeds",
+      "parameters": [
+        { "position": 1, "expression": "importPackageReviewName", "value": "usp_import_package_review_001" }
+      ],
+      "guardedBy": "usp.import-package-review.check",
+      "callMode": "one-query-call",
+      "order": 66,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        { "ordinal": 1, "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c" }
+      ],
+      "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
     }
   ],
   "plannedButAbsent": []

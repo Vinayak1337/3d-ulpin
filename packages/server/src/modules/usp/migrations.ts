@@ -64,5 +64,10 @@ export async function migrateUsp() {
       await client.query(sql('usp.job-failure-cause.schema'));
       await client.query(sql('usp.job-failure-cause.mark'), [jobFailureCauseName]);
     }
+    const importPackageReviewName = 'usp_import_package_review_001';
+    if (!(await client.query(sql('usp.import-package-review.check'), [importPackageReviewName])).rowCount) {
+      await client.query(sql('usp.import-package-review.schema'));
+      await client.query(sql('usp.import-package-review.mark'), [importPackageReviewName]);
+    }
   });
 }

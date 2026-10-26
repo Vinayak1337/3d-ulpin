@@ -13,7 +13,9 @@ test('a file admits seven unfinished package drafts but refuses the ninth', asyn
   let unfinished = 7;
   const client = { query: async (sql: string) => {
     assert(sql.includes("part.state IN ('queued','running')"));
-    assert(sql.includes('IS DISTINCT FROM'));
+    assert(sql.includes('AND NOT p.review_current'));
+    assert(sql.includes("p.id=(part.result_ref->>'packageId')::uuid"));
+    assert(!sql.includes('p.body'));
     return { rows: [{ n: unfinished }] };
   } } as PoolClient;
   await assertIntakePackagePressureTx(client, 'protocol-item');
