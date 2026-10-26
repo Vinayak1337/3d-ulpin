@@ -247,7 +247,7 @@ Size S, code only. After: S1.3 run 5. **Status: diagnosis merged 26 Oct into int
 
 ### S1.3u The intake-large enqueue deadlock; a cause for every fenced intake-run attempt
 
-Size S, code only. After: S1.3 run 6. **Status: running 26 Oct (task/s1-3u-enqueue-deadlock at int3-pre 41c04392).**
+Size S, code only. After: S1.3 run 6. **Status: merged 26 Oct (int3-pre 9ed2e8e5, branch 7eeb7134; pins refreshed). All 623 run 6 deadlock reports fall in one cycle with three shapes: a transaction holding the case row FOR UPDATE waits on another's uncommitted intake-large job or outbox stream row, which waits for the case row in its foreign-key check. Every enqueuing transaction that did not lock the case now takes FOR KEY SHARE before its first write (readers still share it). Two-connection PostgreSQL test on a throwaway database: 40P01 on 41c04392, none after. A fenced intake-run attempt now keeps its safe cause. Server set 1109 pass. Live check in run 7.**
 
 - **What:** Run 6 had 120 intake-large attempts end on 40P01. The reh-03 PostgreSQL log shows two transactions inserting the same stable intake-large job id: one holds the case row FOR UPDATE and waits on the other's uncommitted job row, the other waits for the case row in its foreign-key check (draftCut takes no case lock); the outbox stream insert races the same way. Reproduce it with two clients, take the case lock before the first write in every enqueuing transaction (weakest lock that removes the cycle), and record a cause for every fenced intake-run attempt (210 had none).
 - **Files:** intake-large.ts, intake-large-worker.ts, intake-run-worker.ts, source-case-lock.ts, outbox.ts, events.ts, the queueIntakeLargeTx callers (lock line only)
