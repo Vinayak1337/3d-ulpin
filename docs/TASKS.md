@@ -245,6 +245,30 @@ Size S, code only. After: S1.3 run 5. **Status: diagnosis merged 26 Oct into int
 - **Files:** apps/studio/vite.config.ts; the API bootstrap server settings
 - **Tests:** pnpm studio:build; pnpm typecheck:backend
 
+### S1.3u The intake-large enqueue deadlock; a cause for every fenced intake-run attempt
+
+Size S, code only. After: S1.3 run 6. **Status: running 26 Oct (task/s1-3u-enqueue-deadlock at int3-pre 41c04392).**
+
+- **What:** Run 6 had 120 intake-large attempts end on 40P01. The reh-03 PostgreSQL log shows two transactions inserting the same stable intake-large job id: one holds the case row FOR UPDATE and waits on the other's uncommitted job row, the other waits for the case row in its foreign-key check (draftCut takes no case lock); the outbox stream insert races the same way. Reproduce it with two clients, take the case lock before the first write in every enqueuing transaction (weakest lock that removes the cycle), and record a cause for every fenced intake-run attempt (210 had none).
+- **Files:** intake-large.ts, intake-large-worker.ts, intake-run-worker.ts, source-case-lock.ts, outbox.ts, events.ts, the queueIntakeLargeTx callers (lock line only)
+- **Tests:** pnpm typecheck:backend; the section 5 server set
+
+### S1.3v Why one 103 MiB GeoJSON took 4.5 hours to close (diagnosis first)
+
+Size M, code only (reh-03 database read-only if needed). After: S1.3 run 6. **Status: running 26 Oct (task/s1-3v-large-closure at int3-pre 41c04392).**
+
+- **What:** Halifax's raw read finished in 14 minutes but its 8,324 jobs ran until 00:02 UTC, 4.5 hours, and its row said Reading file while 116,416 buildings were ready in 1,563 packages. Name where every hour went from the recorded rows (queue, the one-step chain, the 8-package pressure stop, retries, step cost), say why the row said Reading, replay offline, and fix the top cause if it is bounded or write the design.
+- **Files:** intake-large, intake-part-draft and intake-run files; dispatch-lanes.ts for a limit only; the Studio row words if they change
+- **Tests:** pnpm typecheck:backend; the section 5 server set
+
+### S1.3w The stalled no1 upload, the 503 upload-list reads and the aborted requests (diagnosis first)
+
+Size S, code only. After: S1.3 run 6. **Status: running 26 Oct (task/s1-3w-stalled-check at int3-pre 41c04392).**
+
+- **What:** The no1 upload sat at Checking the file: 0% for the rest of run 6 with no intake item; 30 upload-list reads answered the filter's fallback 503 with no cause kept; 885 requests ended ERR_ABORTED. Name the step and cause of each from the recorded requests and logs, then make a stalled upload continue or stop with words, keep a safe cause for untyped API errors, and type the transient database errors.
+- **Files:** upload-command.ts, upload-model.ts, api-exception.filter.ts, the upload-list server function
+- **Tests:** pnpm typecheck:backend; pnpm studio:typecheck; pnpm studio:test
+
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
 Size M, code only. After: S1.3. **Status: done 25 Oct (merged into task/int3-pre at 5ec9f884, pins 7861c386). Busy readers (429) and sibling revision races (STALE_REVISION) wait without spending attempts, up to 30 minutes; uploads tolerate a case revision that moved on. Server set 921 pass, 4 skipped. Live proof is S1.3 run 2.**
