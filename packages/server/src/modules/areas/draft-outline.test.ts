@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
 import type { PhysicalFeature } from '@ulpin/contracts';
-import { writeDraftFeature } from './areas';
+import { writeDraftFeaturesTx } from './areas';
 
 /** Every statement that reads a physical feature's stored outline, each matched within one SQL string and required
  * to keep only recorded rows: a draft row now holds its outline in geographic_geometry, so a reader without the
@@ -53,21 +53,22 @@ async function draftStatements(linkedRevision?: number) {
   const outline = { type: 'Polygon', coordinates: [ring] };
   const feature = { id: 'f-1', areaId: 'a-1', identifier: 'S:B001', geometry: { type: 'Polygon', coordinates: [] },
     geographicGeometry: outline } as unknown as PhysicalFeature;
-  await writeDraftFeature(client as unknown as PoolClient, feature, 'r-1', linkedRevision);
+  await writeDraftFeaturesTx(client as unknown as PoolClient, 'test_only',
+    [{ feature, recordId: 'r-1', linkedRevision }]);
   return { sent, outline: JSON.stringify(outline) };
 }
 
 test('a draft row carries its outline in geographic_geometry and none in geometry', async () => {
   const { sent: [[sql, values]], outline } = await draftStatements();
   assert.match(sql, /INSERT INTO physical_features\(id,area_id,record_id,identifier,body,geographic_geometry\)/);
-  assert.match(sql, /ST_SetSRID\(ST_GeomFromGeoJSON\(\$6\),4326\)/);
-  assert.equal(values[5], outline);
+  assert.match(sql, /ST_SetSRID\(ST_GeomFromGeoJSON\(outline::text\),4326\)/);
+  assert.equal(JSON.stringify(JSON.parse(values[0] as string)[0].outline), outline);
   assert.doesNotMatch(sql, /[(,]geometry[,)=]/);
 });
 
 test('a redraft moves only a never-recorded row to its newer outline; a recorded row is left alone', async () => {
   const { sent: [[sql, values]], outline } = await draftStatements(0);
-  assert.match(sql, /^UPDATE physical_features SET geographic_geometry=ST_SetSRID\(ST_GeomFromGeoJSON\(\$2\),4326\)/);
+  assert.match(sql, /^UPDATE physical_features\s+SET geographic_geometry=/);
   assert.match(sql, /WHERE id=\$1 AND revision=0$/);
   assert.deepEqual(values, ['f-1', outline]);
   assert.deepEqual((await draftStatements(3)).sent, []);

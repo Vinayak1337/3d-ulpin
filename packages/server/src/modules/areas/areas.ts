@@ -330,20 +330,32 @@ export async function getPackage(id: string, client?: PoolClient): Promise<Impor
   };
   return client?read(client):transaction(read);
 }
-/** A draft row holds no recorded geometry: its outline goes in geographic_geometry, where the window reads find it,
- * and geometry stays empty until recording. A redraft of a feature not yet recorded takes the newer outline. */
-export async function writeDraftFeature(client: PoolClient, feature: PhysicalFeature, recordId: string | null,
-  linkedRevision?: number) {
-  const outline = JSON.stringify(feature.geographicGeometry);
-  if (linkedRevision === undefined) {
+type DraftFeatureWrite = { feature: PhysicalFeature; recordId: string | null; linkedRevision?: number };
+
+/** The site row is already locked. A draft's outline is displayed but never becomes recorded geometry.
+ * Redrafting moves only a never-recorded outline; a recorded row stays unchanged. */
+export async function writeDraftFeaturesTx(client: PoolClient, namespace: string, drafts: DraftFeatureWrite[]) {
+  const fresh = drafts.filter(draft => draft.linkedRevision === undefined);
+  if (fresh.length) {
+    const rows = fresh.map(({ feature: f, recordId }) => ({ id: f.id, area_id: f.areaId, record_id: recordId,
+      identifier: f.identifier, body: f, outline: f.geographicGeometry }));
     await client.query(`INSERT INTO physical_features(id,area_id,record_id,identifier,body,geographic_geometry)
-      VALUES($1,$2,$3,$4,$5,ST_SetSRID(ST_GeomFromGeoJSON($6),4326))`,
-    [feature.id, feature.areaId, recordId, feature.identifier, feature, outline]);
-  } else if (linkedRevision === 0) {
-    await client.query(`UPDATE physical_features SET geographic_geometry=ST_SetSRID(ST_GeomFromGeoJSON($2),4326)
-      WHERE id=$1 AND revision=0`, [feature.id, outline]);
+      SELECT id,area_id,record_id,identifier,body,ST_SetSRID(ST_GeomFromGeoJSON(outline::text),4326)
+      FROM jsonb_to_recordset($1::jsonb)
+      AS f(id uuid,area_id uuid,record_id uuid,identifier text,body jsonb,outline jsonb)`, [JSON.stringify(rows)]);
   }
+  // Existing rows retain their source-order locks; only fresh identities use batched inserts.
+  for (const { feature: f, linkedRevision } of drafts) {
+    if (linkedRevision === 0) await client.query(`UPDATE physical_features
+      SET geographic_geometry=ST_SetSRID(ST_GeomFromGeoJSON($2),4326) WHERE id=$1 AND revision=0`,
+    [f.id, JSON.stringify(f.geographicGeometry)]);
+  }
+  if (fresh.length) await client.query(`INSERT INTO source_feature_links(namespace,source_key,area_id,feature_id)
+    SELECT $1,source_key,area_id,feature_id FROM jsonb_to_recordset($2::jsonb)
+    AS l(source_key text,area_id uuid,feature_id uuid)`, [namespace, JSON.stringify(fresh.map(({ feature: f }) =>
+    ({ source_key: f.sourceKey, area_id: f.areaId, feature_id: f.id })))]);
 }
+
 async function savePackage(client: PoolClient, pkg: ImportPackage) {
   await assertPackageDocumentAuthority(client, pkg);
   await client.query(
@@ -872,13 +884,15 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
       );
       const features: PhysicalFeature[] = [];
       const derivedPartId = input.derivedObservation ? randomUUID() : undefined;
+      const linkedRows = (await client.query(`SELECT f.*,l.source_key FROM source_feature_links l
+        JOIN physical_features f ON f.id=l.feature_id WHERE l.namespace=$1 AND l.source_key=ANY($2::text[])`,
+      [input.namespace, normalized.features.map(candidate => candidate.sourceKey)])).rows;
+      const linkedByKey = new Map(linkedRows.map(row => [row.source_key, row]));
+      const nextOrdinals = new Map<string, number>();
+      const reservations: Record<string, unknown>[] = [];
+      const drafts: DraftFeatureWrite[] = [];
       for (const candidate of normalized.features) {
-        const linked = (
-          await client.query(
-            "SELECT f.* FROM source_feature_links l JOIN physical_features f ON f.id=l.feature_id WHERE l.namespace=$1 AND l.source_key=$2",
-            [input.namespace, candidate.sourceKey],
-          )
-        ).rows[0];
+        const linked = linkedByKey.get(candidate.sourceKey);
         if (linked && linked.body.kind !== candidate.kind)
           throw new AppError(
             422,
@@ -908,39 +922,21 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           !identifier &&
           (candidate.kind === "building" || candidate.kind === "parcel")
         ) {
-          const ordinal = Number(
-            (
-              await client.query(
-                "SELECT COALESCE(MAX(ordinal),0)+1 n FROM registry_records WHERE site_id=$1 AND kind=$2",
-                [site.id, candidate.kind],
-              )
-            ).rows[0].n,
-          );
+          let ordinal = nextOrdinals.get(candidate.kind);
+          if (ordinal === undefined) ordinal = Number((await client.query(
+            "SELECT COALESCE(MAX(ordinal),0)+1 n FROM registry_records WHERE site_id=$1 AND kind=$2",
+            [site.id, candidate.kind],
+          )).rows[0].n);
+          nextOrdinals.set(candidate.kind, ordinal + 1);
           identifier = `${site.identifier}:${candidate.kind === "building" ? "B" : "P"}${String(ordinal).padStart(3, "0")}`;
           recordId = id;
           // Reserve the existing permanent identity. Physical geometry stays in its full v2 representation;
           // revision zero deliberately keeps it out of the legacy rights publication path.
-          await client.query(
-            "INSERT INTO registry_records(id,site_id,kind,ordinal,identifier,body) VALUES($1,$2,$3,$4,$5,$6)",
-            [
-              id,
-              site.id,
-              candidate.kind,
-              ordinal,
-              identifier,
-              {
-                alias: candidate.sourceKey,
-                name: candidate.name,
-                kind: candidate.kind,
-                footprint: [],
-                links: [],
-                rights: [],
-                evidence: [],
-                synthetic: candidate.worldStatus === "synthetic",
-                representation: "physical_exterior",
-              },
-            ],
-          );
+          reservations.push({ id, site_id: site.id, kind: candidate.kind, ordinal, identifier, body: {
+            alias: candidate.sourceKey, name: candidate.name, kind: candidate.kind, footprint: [],
+            links: [], rights: [], evidence: [], synthetic: candidate.worldStatus === "synthetic",
+            representation: "physical_exterior",
+          } });
         }
         identifier ||= `OBS-${id}`;
         const feature: PhysicalFeature = {
@@ -1014,14 +1010,12 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
               : "physical_context",
         };
         features.push(feature);
-        await writeDraftFeature(client, feature, recordId, linked?.revision);
-        if (!linked) {
-          await client.query(
-            "INSERT INTO source_feature_links(namespace,source_key,area_id,feature_id) VALUES($1,$2,$3,$4)",
-            [input.namespace, candidate.sourceKey, areaRow.id, id],
-          );
-        }
+        drafts.push({ feature, recordId, linkedRevision: linked?.revision });
       }
+      if (reservations.length) await client.query(`INSERT INTO registry_records(id,site_id,kind,ordinal,identifier,body)
+        SELECT id,site_id,kind,ordinal,identifier,body FROM jsonb_to_recordset($1::jsonb)
+        AS r(id uuid,site_id uuid,kind text,ordinal int,identifier text,body jsonb)`, [JSON.stringify(reservations)]);
+      await writeDraftFeaturesTx(client, input.namespace, drafts);
       const questions = features
         .filter((f) => f.kind === "building" && f.height.value === null)
         .map((f) => ({

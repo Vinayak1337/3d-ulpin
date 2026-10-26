@@ -295,6 +295,10 @@ function keyInputs(store: IntakeLargeStore) {
     parts: store.parts, ...(store.prefixCheck ? { prefixCheck: store.prefixCheck } : {}) };
 }
 
+function wakeKey(store: IntakeLargeStore, retries: number, unreviewed = store.unreviewed): string {
+  return fingerprint({ ...keyInputs(store), unreviewed, ...(retries ? { retries } : {}) });
+}
+
 /** Cuts of one drafting step compare this, so a review finishing between two cuts does not stop the fold. */
 export function intakeLargeCutKey(store: IntakeLargeStore): string {
   return fingerprint(keyInputs(store));
@@ -319,8 +323,7 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
   }
   const retries = await intakeLargeRetriesTx(client, item);
   // Zero retries leaves the key as it was, so stored step jobs keep their ids.
-  return { item, source, store, key: fingerprint({ ...keyInputs(store), unreviewed: store.unreviewed,
-    ...(retries ? { retries } : {}) }) };
+  return { item, source, store, retries, key: wakeKey(store, retries) };
 }
 
 async function intakeLargeRetriesTx(client: PoolClient, item: IntakeLargeItem): Promise<number> {
@@ -337,9 +340,18 @@ export function intakeLargeAtRest(item: { state: string; placement: string }): b
 /** The one wake-up. The key is read in the caller's transaction, so a state change cannot lose its job,
  * and an unchanged state names a job that exists already, whatever its status.
  * Caller takes at least case KEY SHARE before its first write, so the job's FK cannot wait behind its own id. */
-export async function queueIntakeLargeTx(client: PoolClient, sourceId: string): Promise<string | null> {
+export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
+  afterReview = false): Promise<string | null> {
   const state = await largeStateKey(client, sourceId);
   if (!state || intakeLargeAtRest(state.item)) return null;
+  if (afterReview) {
+    if (state.store.unreviewed >= INTAKE_UNFINISHED_PACKAGE_LIMIT) return null;
+    const pressureKey = wakeKey(state.store, state.retries, INTAKE_UNFINISHED_PACKAGE_LIMIT);
+    const pressureJob = stableUuid(`intake-large/1:${sourceId}:${pressureKey}`);
+    const paused = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'",
+      [pressureJob])).rows[0];
+    if (!paused) return null;
+  }
   const jobId = stableUuid(`intake-large/1:${sourceId}:${state.key}`);
   const prior = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'", [jobId])).rows[0];
   if (prior) return prior.id;
@@ -421,12 +433,14 @@ export async function retryIntakeLargeItem(caseValue: string, itemValue: string,
   });
 }
 
-/** A finished review wakes the large file its package was cut from; other packages name no part row. */
+/** Reviews wake a paused fold, not every intermediate cut. Its eight-unreviewed job is the durable witness;
+ * completion always queues the final key. Several reviews may commit before their enqueue transactions, so
+ * test for that witness, not an exact seven-unreviewed count. An obsolete witness job also completes forward. */
 export async function queueIntakeLargePackageTx(client: PoolClient, packageId: string) {
   const row = (await client.query(`SELECT i.source_id FROM usp_intake_parts part
     JOIN usp_intake_items i ON i.item_id=part.item_id WHERE part.result_ref->>'packageId'=$1 LIMIT 1`,
   [packageId])).rows[0];
-  return row ? queueIntakeLargeTx(client, row.source_id) : null;
+  return row ? queueIntakeLargeTx(client, row.source_id, true) : null;
 }
 
 export function intakeLargeRows(store: IntakeLargeStore, source: IntakeLargeSource): IntakeLargeRows {
