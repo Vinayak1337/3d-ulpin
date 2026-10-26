@@ -279,7 +279,7 @@ Size M, code only. After: S1.3v. **Status: merged 26 Oct (int3-pre 2a923998, bra
 
 ### S1.3y A large file's row says Preparing packages once its read is done
 
-Size S, code and UI. After: S1.3x (same files). **Status: running 26 Oct (task/s1-3y-preparing-row at int3-pre 2a923998): a new item state preparing for the compare and draft phases.**
+Size S, code and UI. After: S1.3x (same files). **Status: merged 27 Oct (int3-pre 23b55211, branch c93ce09b; pins a8e10e6c). New item state preparing for the compare and draft phases, kept on part publish, with an additive migration (usp_intake_preparing_001) widening the state check. The map follows and draws a preparing file as a reading one; the row says Preparing packages with the packages prepared and records read; an approved layout says Approved. Lead fix b1697f09: a batch with no area still waits for it while a file prepares its packages (waitsForAreaTx).**
 
 - **What:** While a large file's packages are still being drafted after its read, the row says Preparing packages, On the map, with the packages prepared and records read, not Reading file; the layout says Approved without the file is being read. A stored phase decides it; nothing is inferred from approval.
 - **Files:** intake-large.ts (intakeLargeProjection), intake-ledger.ts (publishIntakePartTx), the contract state if one is needed, Studio batch-model.ts and layout-model.ts
@@ -295,7 +295,7 @@ Size S, UI. After: S1.3w. **Status: merged 26 Oct (int3-pre c2a32c8e, branch dac
 
 ### S1.3aa Fewer long-lived requests from the Studio
 
-Size S, UI. After: S1.3y (shares readPreview.ts). **Status: waiting for S1.3y.**
+Size S, UI. After: S1.3y (shares readPreview.ts). **Status: running 27 Oct (task/s1-3aa-fewer-requests at int3-pre a8e10e6c): the table rides the case stream, ended jobs stop their fallback polls, the map preview rests in a hidden page. The recorder's one page per act goes into the rehearsal 7 brief (its driver is a per-run script, not in Git).**
 
 - **What:** Fold the table EventSource (table/useTableStream.ts) into the case subscription, pause polls in hidden pages and stop settled ones (table/queries.ts fallback jobs, map/preview/readPreview.ts), so one Studio page holds at most a few open requests to its origin; and have the rehearsal recorder use one page per act instead of 24.
 - **Files:** apps/studio/src/features/intake/table/useTableStream.ts, case-subscription.ts, table/queries.ts, map/preview/readPreview.ts; the rehearsal dress script
