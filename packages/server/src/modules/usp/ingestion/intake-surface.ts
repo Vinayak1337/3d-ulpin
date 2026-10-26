@@ -147,7 +147,7 @@ async function sourceRefusalTx(client: PoolClient, item: { case_id: string; sour
 async function waitsForAreaTx(client: PoolClient, caseId: string) {
   return Boolean((await client.query(`SELECT 1 FROM cases c WHERE c.id=$1 AND c.site_id IS NULL AND EXISTS (
     SELECT 1 FROM usp_intake_items i WHERE i.case_id=c.id AND i.family='vector' AND i.placement='undecided'
-      AND i.state IN ('received','probed','planned','reading'))`, [caseId])).rowCount);
+      AND i.state IN ('received','probed','planned','reading','preparing'))`, [caseId])).rowCount);
 }
 
 /** A job read under another case context, access or reader than now: the pins the readers' stale check compares. */

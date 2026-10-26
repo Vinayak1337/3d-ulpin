@@ -513,7 +513,11 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
     }
     if (sql.startsWith('SELECT * FROM usp_intake_items') || sql.startsWith('SELECT case_id,plan_ref')
       || sql.startsWith('SELECT state,placement') || sql.startsWith('SELECT parts_planned')) return one(item);
-    if (sql.startsWith('SELECT 1 FROM cases c')) return one(!db.current.site_id && db.drafting ? {} : null);
+    if (sql.startsWith('SELECT 1 FROM cases c')) {
+      // A file still preparing its packages keeps the batch waiting for its area, as a reading one does.
+      assert.match(sql, /'reading','preparing'\)/);
+      return one(!db.current.site_id && db.drafting ? {} : null);
+    }
     if (sql.startsWith('SELECT id,revision,archived')) return one(db.current);
     if (sql.startsWith('SELECT * FROM sources')) return one(source);
     if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
