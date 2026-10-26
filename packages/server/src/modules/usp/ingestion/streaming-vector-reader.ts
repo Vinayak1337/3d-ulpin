@@ -12,9 +12,37 @@ const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
 const decode=(bytes:Buffer)=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
 type Framing='feature-collection'|'geojson-seq-rs'|'geojson-lines';
 
+/** Keep the live parser and hash. Reopen at a sealed feature boundary and discard already-delivered overlap. */
+async function* continueObject(initial:Awaited<ReturnType<typeof openObjectStream>>,
+  reopen:(start:number)=>ReturnType<typeof openObjectStream>,progress:()=>void,sealed:()=>number,signal:AbortSignal){
+  let object:typeof initial|undefined=initial,delivered=0,start=0,reopens=0;
+  try{
+    while(true){
+      try{
+        object??=await reopen(start);
+        let position=start;
+        for await(const value of object.body){
+          const chunk=Buffer.from(value),end=position+chunk.length;
+          if(chunk.length)progress();
+          if(end>delivered){
+            const fresh=chunk.subarray(Math.max(0,delivered-position));delivered=end;yield fresh;
+          }
+          position=end;
+        }
+        return;
+      }catch(error){
+        const code=(error as {code?:string}).code;
+        if(signal.aborted||!sealed()||reopens>=3
+          ||!['ECONNRESET','EPIPE','ETIMEDOUT','ERR_STREAM_PREMATURE_CLOSE'].includes(code??''))throw error;
+        object?.body.destroy();object=undefined;start=sealed();reopens++;
+      }
+    }
+  }finally{object?.body.destroy();}
+}
+
 /** Raw-only progress bounds include consumer backpressure and the last part's publication, even after EOF. */
 export async function readStreamingRaw<T>(key:string,bytes:number,etag:string|undefined,
-  consume:(body:Readable,published:()=>void)=>Promise<T>,
+  consume:(body:Readable,published:()=>void,sealed:(end:number)=>void)=>Promise<T>,
   bounds={idleMs:limits.rawIdleMs,outerMs:streamingRawReadMs(bytes)}):Promise<T>{
   const controller=new AbortController();
   const stopped=()=>new AppError(503,'STORAGE_TIMEOUT','The bounded object read timed out.');
@@ -26,19 +54,21 @@ export async function readStreamingRaw<T>(key:string,bytes:number,etag:string|un
     clearTimeout(idle);idle=setTimeout(expire,bounds.idleMs);idle.unref();
   };
   let object:Awaited<ReturnType<typeof openObjectStream>>|undefined,body:Readable|undefined;
-  let stopWait=()=>{};
+  let stopWait=()=>{},sealedEnd=0;
+  const sealed=(end:number)=>{if(Number.isSafeInteger(end)&&end>sealedEnd&&end<bytes)sealedEnd=end;};
   try{
     object=await openObjectStream(key,bytes,bounds.outerMs,etag,controller.signal);
     if(controller.signal.aborted)throw stopped();
-    const source=object.body;
-    // An iterator preserves backpressure; a data listener here would start flowing before the parser attaches.
-    body=Readable.from((async function*(){
-      for await(const chunk of source){if(chunk.length)progress();yield chunk;}
-    })(),{objectMode:false});
+    const pinnedEtag=object.etag;
+    // An iterator preserves backpressure; a data listener would flow before the parser attaches.
+    body=Readable.from(continueObject(object,
+      start=>openObjectStream(key,bytes,bounds.outerMs,pinnedEtag,controller.signal,start),
+      progress,()=>sealedEnd,controller.signal),
+    {objectMode:false});
     const interrupted=new Promise<never>((_,reject)=>{
       stopWait=()=>reject(stopped());controller.signal.addEventListener('abort',stopWait,{once:true});
     });
-    const result=await Promise.race([consume(body,progress),interrupted]);
+    const result=await Promise.race([consume(body,progress,sealed),interrupted]);
     if(controller.signal.aborted)throw stopped();
     return result;
   }catch(error){if(controller.signal.aborted)throw stopped();throw error;}

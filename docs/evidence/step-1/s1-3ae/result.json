@@ -1,0 +1,58 @@
+{
+  "task": "S1.3ae",
+  "planStep": 1,
+  "verdict": "Partial: bounded recovery proven; existing evidence cannot identify run8's reset sender.",
+  "reset": {
+    "source": "unknown: peer/store close versus host/network fault cannot be distinguished",
+    "observed": "187b1ece attempt 1 ECONNRESET / STREAMING_WORKER_ERROR; attempt 2 replayed from zero.",
+    "timing": "Primary dispatched 21:47:05.969794Z; first error sample 21:50:35.800230Z (209.830 s).",
+    "evidence": [
+      "c4e391cb:docs/evidence/step-1/s1-3/run8/{faults,jobs,telemetry}.json",
+      "E:/ulpin-tmp/s1-3r8/{jobs-cn1.json,jobs-rows/jobs-cn1.json,raw-read.jsonl,final-meta.json}",
+      "E:/ulpin-tmp/s1-3r8/{worker-during.log,connections.jsonl}"
+    ],
+    "storeLogs": "MinIO logs 2026-10-26T21:47:00Z to 21:51:00Z: exit 0, empty; worker log also empty.",
+    "client": "No handler override; Smithy 4.12.1: keepAlive=true, maxSockets=50, socket/request timeouts unset.",
+    "settingsDecision": "No client timeout cause demonstrated; settings unchanged. Own aborts use STORAGE_TIMEOUT.",
+    "tcp": "21:50:34.1826064Z: 268 TimeWait, 34 Established, 2 Listen; web ports only, no store socket trace."
+  },
+  "pauseComparison": {
+    "input": "test_only NYC fixture repeated: 104857941 bytes, 64330 features, 644 parts; no Halifax original.",
+    "hypothesis": "Server idle write timeout can reset backpressure; this does not attribute MinIO's reset.",
+    "method": "Loopback stub, actual default S3 client; iterator next-call gaps; encode/write/read/hash disk parts.",
+    "columns": ["holdMs", "stubTimeoutMs", "maxPauseMs", "seconds", "outcome"],
+    "reads": [[0, 0, 38.36, 10.50, "complete"], [1500, 0, 1511.56, 11.86, "complete"],
+      [1500, 250, 1517.20, 1.59, "one stub socket destruction; ECONNRESET"]],
+    "bound": "Three reads only. Script, result and log: E:/ulpin-tmp/s1-3ae/pause{.test.ts,-result.json,.log}."
+  },
+  "recovery": [
+    "Part payload records store exclusive byteEnd and featureIndex; notify raw reader after acceptSlot commits.",
+    "Range starts after last sealed feature. Transport discards already-delivered overlap before the live parser.",
+    "Parser/hash/metadata/partial value/pending part/tallies survive; no duplicate callbacks, no prefix reparse.",
+    "Three connection reopens per attempt maximum; original idle/outer bounds. New attempts still start at zero.",
+    "Require IfMatch, unchanged returned ETag, exact length/range and HTTP 206; changed ETag/412 refuse with 422.",
+    "No migration, contract, part limit, stored hash, runtime or container change. Only container logs read."
+  ],
+  "proof": [
+    "Failing-first: exit 1, ECONNRESET, 0 pass/1 fail. Fixed: byte/hash-identical encoded parts and source closure.",
+    "NYC features repeated; type-first and difficult late-type roots; partial final part; four cut offsets each.",
+    "Three resets succeed; fourth refuses; changed ETag, 412, ignored Range, pre-seal cuts refuse. Fixture unchanged."
+  ],
+  "checks": {
+    "before": "backend/studio types, Studio tests, OpenAPI, pins, diff: 0; Studio 873 pass/3 skip.",
+    "beforeServer": "exit 1, zero tests: pnpm.cmd Windows command length limit; then used direct node tsx CLI.",
+    "after": "backend/studio types and diff: 0; Studio: exit 0, 873 pass/3 skip; streaming: exit 0, 41 pass.",
+    "server": "exit 1: 1104 pass/16 fail/10 skip; temporary copied modules cannot resolve @ulpin/contracts/usp.",
+    "comparison": "Absolute tsconfig bounded comparison reproduced exactly the same 16 failures; stopped retrying.",
+    "openapiAndPins": "exit 1 each: expected stale producer pins; lead regenerates, unchanged here.",
+    "staleProducers": ["packages/server/src/infrastructure/storage.ts",
+      "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+      "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts"],
+    "logs": "E:/ulpin-tmp/s1-3ae/: before-*, after-*, *-final.log, server-absolute-config.*, failing-first.log"
+  },
+  "next": [
+    "Lead refreshes pins. Future authorised rehearsal needs store socket/packet tracing to identify the reset sender.",
+    "Outside-ownership test imports: chunk-mapping-worker.test.ts, streamed-mapping-prefix-check.test.ts,",
+    "streamed-profile-worker.test.ts. No test/configuration change outside ownership."
+  ]
+}
