@@ -51,6 +51,15 @@ function layer(io: SurfaceIo) {
 }
 
 describe('the read parts of a batch\'s kept surfaces', () => {
+  it('keeps drawing the read parts when the item reports preparing', async () => {
+    const fake = fakeIo(() => 1, () => placed);
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(1, 'preparing')]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(1));
+    expect(fake.asked).toEqual([0]);
+    parts.dispose();
+  });
+
   it('passes a native LAS stride from the accepted artifact and batch to the map decoder', async () => {
     const fake = fakeIo(() => 1, () => ({ ...placed,
       artifact: { mediaType: 'application/vnd.las.point-records', bytes: 56 },

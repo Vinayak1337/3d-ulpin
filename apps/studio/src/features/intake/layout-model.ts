@@ -27,7 +27,7 @@ export function approvalBody(receipt: Pick<Recipe, 'revision'>, requestKey: stri
 }
 
 export function recipeStateWords(state: Recipe['state']): string {
-  if (state === 'approved') return 'Approved; the file is being read.';
+  if (state === 'approved') return 'Approved.';
   if (state === 'executed') return "This layout has prepared the file's package and can no longer be changed.";
   return 'Proposed.';
 }

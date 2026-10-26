@@ -10,7 +10,7 @@ export type PreviewFeature = PreviewPage['features'][number];
  * reads the route again every `pollMs` while the file is read.
  */
 export const PREVIEW_LIMITS = Object.freeze({ page: 2000, outlines: 20_000, pollMs: 2000 });
-const FOLLOWED = new Set(['probed', 'planned', 'reading']);
+const FOLLOWED = new Set(['probed', 'planned', 'reading', 'preparing']);
 const FORMATS = new Set(['geojson', 'geojson-seq']);
 const POLYGONS = new Set(['Polygon', 'MultiPolygon']);
 

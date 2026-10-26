@@ -155,7 +155,7 @@ export function intakeItem(row: any) {
 }
 
 export type IntakeDraftState = {
-  state: 'probed' | 'planned' | 'reading' | 'read' | 'read_to_limit' | 'failed_part';
+  state: 'probed' | 'planned' | 'reading' | 'preparing' | 'read' | 'read_to_limit' | 'failed_part';
   placement: 'undecided' | 'needs_answer' | 'on_map' | 'waiting_for_anchor' | 'not_understood';
   planRef: Record<string, unknown> | null;
   recordsSeen: number;
@@ -232,7 +232,8 @@ export async function publishIntakePartTx(client: PoolClient, itemId: string, pa
     conflict('The published package part needs the exact closed reader count.');
   await client.query(`INSERT INTO usp_intake_parts(item_id,part_index,locator,state,counts,result_ref)
     VALUES($1,$2,$3,'published',$4,$5)`, [itemId, partIndex, locator, counts, result]);
-  await client.query(`UPDATE usp_intake_items SET parts_done=parts_done+1,state='reading',placement='on_map',
+  await client.query(`UPDATE usp_intake_items SET parts_done=parts_done+1,
+    state=CASE WHEN state='preparing' THEN state ELSE 'reading' END,placement='on_map',
     records_seen=GREATEST(records_seen,$2),updated_at=now() WHERE item_id=$1`, [itemId, counts.recordsSeen]);
   await appendIntakeItemTx(client, item.case_id, itemId);
 }

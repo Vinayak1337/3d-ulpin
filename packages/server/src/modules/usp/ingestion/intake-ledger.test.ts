@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { intakeItem } from './intake-ledger';
+import type { PoolClient } from 'pg';
+import type { ImportPackage } from '@ulpin/contracts';
+import { intakeItem, publishIntakePartTx } from './intake-ledger';
 import { probeOriginal } from './intake-probe';
 
 const id = '10000000-0000-4000-8000-000000000001';
@@ -11,6 +13,38 @@ const row = {
   parts_done: 0, records_seen: 0, limit_reason: null, pinned_by_officer: false,
   created_at: new Date('2026-10-11T00:00:00Z'), updated_at: new Date('2026-10-11T00:00:00Z'),
 };
+
+test('publishing a package keeps preparing; other active rows still become reading', async context => {
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'test_only-intake-publication';
+  context.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  });
+  for (const before of ['preparing', 'planned', 'reading']) {
+    let state = before, notified = false;
+    const client = { query: async (sql: string) => {
+      if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [{ ...row, state }] };
+      if (sql.startsWith('SELECT * FROM usp_intake_parts')) return { rows: [] };
+      if (sql.startsWith('SELECT count(*)')) return { rows: [{ n: 0 }] };
+      if (sql.startsWith('UPDATE usp_intake_items')) {
+        assert.match(sql, /state=CASE WHEN state='preparing' THEN state ELSE 'reading' END/);
+        state = before === 'preparing' ? before : 'reading';
+      }
+      if (sql.startsWith('SELECT item_id AS')) return { rows: [{ itemId: id, state, family: 'vector',
+        format: 'geojson', sizeClass: 'M', wave: 1, pinnedByOfficer: false }] };
+      if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: 0 }] };
+      if (sql.startsWith('UPDATE usp_outbox_streams')) return { rows: [{ sequence: '1' }] };
+      if (sql.startsWith('INSERT INTO usp_outbox(')) notified = true;
+      assert.match(sql, /^(INSERT INTO usp_intake_parts|UPDATE usp_intake_items|INSERT INTO usp_outbox)/);
+      return { rows: [] };
+    } } as PoolClient;
+    await publishIntakePartTx(client, id, 0, { id, sourceRevisionIds: [id] } as ImportPackage,
+      { cutIndex: 0 }, { recordsSeen: 4500 });
+    assert.equal(state, before === 'preparing' ? 'preparing' : 'reading');
+    assert.equal(notified, true);
+  }
+});
 
 test('the item publishes stored recipe facts before and after execution, not a lookup', () => {
   const proposed = { recipeId: id, recipeRevision: 1, recipeState: 'proposed', origin: 'teacher' };

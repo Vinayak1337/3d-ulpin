@@ -311,7 +311,7 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
   const item = await draftItemTx(client, source.id);
   if (!item || item.parent_item_id || item.family !== 'vector'
-    || !['probed', 'planned', 'reading'].includes(item.state)) return null;
+    || !['probed', 'planned', 'reading', 'preparing'].includes(item.state)) return null;
   if (publishedCard && item.plan_ref) return null;
   const retainedGeojson = source.profile === 'large-original-v1' && item.card && intakeGeojsonFraming(item.card);
   const adapter = retainedGeojson ? await retainedGeojsonAdapterTx(client, item, source) : null;

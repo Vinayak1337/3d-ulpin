@@ -163,7 +163,7 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
     partsPlanned: rows.reader?.sealed_chunks ?? null,
     partsDone: rows.mapping?.next_publish_index ?? 0, recordsSeen,
   };
-  if (phase === 'draft' || phase === 'end') return {
+  if (phase === 'compare' || phase === 'draft' || phase === 'end') return {
     partsPlanned: phase === 'end' && rows.publishedPackages > 0 ? rows.publishedPackages : null,
     partsDone: rows.publishedPackages, recordsSeen,
   };
@@ -485,7 +485,8 @@ export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLarge
     planRef, ...numbers, limitReason: null };
   const prefixWords = phase === 'map' && rows.prefixRecipe
     ? 'The layout is being applied while the file is read. Packages wait for the complete file to be checked.' : null;
-  return { state: 'reading', placement: store.parts ? 'on_map' : 'undecided',
+  return { state: phase === 'compare' || phase === 'draft' ? 'preparing' : 'reading',
+    placement: store.parts ? 'on_map' : 'undecided',
     planRef: phase === 'start' || phase === 'read' ? null : planRef, ...numbers,
     limitReason: phase === 'draft' ? waitingWords(store) : prefixWords };
 }

@@ -72,6 +72,16 @@ it('pages with after=next while reading, then stops when reading ends', async ()
     .toEqual(nyc.map((geometry) => (geometry.coordinates as number[][][][]).flat(2).length));
 });
 
+it('keeps the preview while packages are preparing, until a package is on the map', async () => {
+  const run = follow([page(false, 'stated', [outline(0)], null)]);
+  run.previews.sync([item({ state: 'preparing' })]);
+  await settle();
+  expect(run.last()[0]?.features).toEqual([outline(0)]);
+  run.previews.sync([item({ state: 'preparing', placement: 'on_map' })]);
+  expect(run.last()).toEqual([]);
+  run.previews.dispose();
+});
+
 it('replaces the drawn set when the basis changes, read again from the first outline', async () => {
   const run = follow([
     page(true, 'rfc7946_no_crs_read_yet', [outline(0)], 0),

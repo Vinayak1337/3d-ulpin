@@ -30,7 +30,7 @@ it('shows each proposal origin from the item, never infers one from an author', 
     expect(layoutLines(receipt, origin as NonNullable<IntakeItem['plan']>['origin'])).toContain(words);
   }
   expect(layoutLines(receipt, null)).toContain('The record does not say who proposed this layout.');
-  expect(recipeStateWords('approved')).toBe('Approved; the file is being read.');
+  expect(recipeStateWords('approved')).toBe('Approved.');
   expect(recipeStateWords('executed')).toBe("This layout has prepared the file's package and can no longer be changed.");
   expect(recipeStateWords('proposed')).toBe('Proposed.');
 });

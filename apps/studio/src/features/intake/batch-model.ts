@@ -7,8 +7,8 @@ export type IntakeItem = IntakeManifest['items'][number];
 
 const states: Record<IntakeItem['state'], string> = {
   received: 'Original received', probed: 'File checked', planned: 'Layout prepared', reading: 'Reading file',
-  read: 'Read', read_to_limit: 'Read to the limit', failed_part: 'Part could not be read',
-  probe_failed: 'File could not be checked',
+  preparing: 'Preparing packages', read: 'Read', read_to_limit: 'Read to the limit',
+  failed_part: 'Part could not be read', probe_failed: 'File could not be checked',
 };
 
 const placements: Record<IntakeItem['placement'], string> = {
@@ -25,6 +25,9 @@ export function packagePath(item: Pick<IntakeItem, 'plan'>, packages: readonly P
 
 export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned' | 'partsDone' | 'recordsSeen'>
   & Partial<Pick<IntakeItem, 'family'>>) {
+  if (item.state === 'preparing') {
+    return `${countWords(item.partsDone)} packages prepared · ${countWords(item.recordsSeen)} records read`;
+  }
   if (item.partsPlanned !== null) return `${countWords(item.partsDone)} of ${countWords(item.partsPlanned)} parts`;
   // A document is read page by page; its words are the item's reason, not a record count.
   if (item.state === 'reading' && item.family !== 'document') {

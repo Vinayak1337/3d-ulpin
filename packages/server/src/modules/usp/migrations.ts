@@ -69,5 +69,10 @@ export async function migrateUsp() {
       await client.query(sql('usp.import-package-review.schema'));
       await client.query(sql('usp.import-package-review.mark'), [importPackageReviewName]);
     }
+    const intakePreparingName = 'usp_intake_preparing_001';
+    if (!(await client.query(sql('usp.intake-preparing.check'), [intakePreparingName])).rowCount) {
+      await client.query(sql('usp.intake-preparing.schema'));
+      await client.query(sql('usp.intake-preparing.mark'), [intakePreparingName]);
+    }
   });
 }

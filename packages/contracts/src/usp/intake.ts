@@ -33,7 +33,7 @@ export const INTAKE_LEGACY_WORKBOOK_WORDS = 'It is kept as evidence; this versio
   + 'as XLSX or ODS and add that file to place its rows on the map.';
 export const IntakeSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']);
 export const IntakeStateSchema = z.enum([
-  'received', 'probed', 'planned', 'reading', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
+  'received', 'probed', 'planned', 'reading', 'preparing', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
 ]);
 export const IntakePlacementSchema = z.enum([
   'undecided', 'on_map', 'attached', 'waiting_for_anchor', 'needs_answer', 'not_understood',

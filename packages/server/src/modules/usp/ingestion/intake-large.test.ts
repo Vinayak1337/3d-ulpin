@@ -285,6 +285,20 @@ test('a terminal reader, profile or mapping is a refusal even beside completed r
   }
 });
 
+test('only compare and draft project preparing, with published packages rather than raw parts', () => {
+  const state = { ...sealedRows(), publishedPackages: 2 };
+  state.mapping = { ...state.reader! };
+  const store: IntakeLargeStore = { reader: null, profile: null, recipe: null, mapping: null,
+    parts: 2, unreviewed: 0 };
+  for (const phase of ['start', 'read', 'map', 'compare', 'draft'] as const) {
+    const projected = intakeLargeProjection(phase, state, store, { bytes: 1, crsWords: null });
+    const preparing = phase === 'compare' || phase === 'draft';
+    assert.equal(projected.state, preparing ? 'preparing' : 'reading');
+    assert.equal(projected.partsDone, preparing ? 2 : 45);
+    assert.equal(projected.recordsSeen, 4500);
+  }
+});
+
 test('phase counters mean raw parts, mapped parts and finally package cuts, not attempts', () => {
   const state = sealedRows();
   assert.deepEqual(intakeLargeNumbers('read', state), { partsPlanned: null, partsDone: 45, recordsSeen: 4500 });
