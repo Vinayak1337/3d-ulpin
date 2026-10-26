@@ -295,7 +295,7 @@ Size S, UI. After: S1.3w. **Status: merged 26 Oct (int3-pre c2a32c8e, branch dac
 
 ### S1.3aa Fewer long-lived requests from the Studio
 
-Size S, UI. After: S1.3y (shares readPreview.ts). **Status: running 27 Oct (task/s1-3aa-fewer-requests at int3-pre a8e10e6c): the table rides the case stream, ended jobs stop their fallback polls, the map preview rests in a hidden page. The recorder's one page per act goes into the rehearsal 7 brief (its driver is a per-run script, not in Git).**
+Size S, UI. After: S1.3y (shares readPreview.ts). **Status: merged 27 Oct (int3-pre e3140424, branch 0f44094d). Table fallback polls stop once their job has ended; the map preview makes no read while its page is hidden and reads each followed file once on return. Sharing the case stream with the table was dropped: the table replays from cursor=0, the shared stream tails the head (design in docs/evidence/step-1/s1-3aa/result.json). The recorder's one page per act goes into the rehearsal 7 brief.**
 
 - **What:** Fold the table EventSource (table/useTableStream.ts) into the case subscription, pause polls in hidden pages and stop settled ones (table/queries.ts fallback jobs, map/preview/readPreview.ts), so one Studio page holds at most a few open requests to its origin; and have the rehearsal recorder use one page per act instead of 24.
 - **Files:** apps/studio/src/features/intake/table/useTableStream.ts, case-subscription.ts, table/queries.ts, map/preview/readPreview.ts; the rehearsal dress script
