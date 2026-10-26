@@ -26,7 +26,9 @@ export function packagePath(item: Pick<IntakeItem, 'plan'>, packages: readonly P
 export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned' | 'partsDone' | 'recordsSeen'>
   & Partial<Pick<IntakeItem, 'family'>>) {
   if (item.state === 'preparing') {
-    return `${countWords(item.partsDone)} packages prepared · ${countWords(item.recordsSeen)} records read`;
+    const packages = item.partsDone === 1 ? 'package' : 'packages';
+    const records = item.recordsSeen === 1 ? 'record' : 'records';
+    return `${countWords(item.partsDone)} ${packages} prepared · ${countWords(item.recordsSeen)} ${records} read`;
   }
   if (item.partsPlanned !== null) return `${countWords(item.partsDone)} of ${countWords(item.partsPlanned)} parts`;
   // A document is read page by page; its words are the item's reason, not a record count.

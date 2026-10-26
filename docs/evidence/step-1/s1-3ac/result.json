@@ -1,0 +1,52 @@
+{
+  "task": "S1.3ac", "planStep": 1, "base": "e3140424e03a477fcd9b912439e4ca1f85e7a461",
+  "verdict": "PASS: reuse, stream, upload and plurals; rehearsal not rerun.",
+  "inputs": ["git show task/s1-3-rehearsal:docs/evidence/step-1/s1-3/run7/{faults,telemetry}.json",
+    "E:/ulpin-tmp/s1-3r7/{connections,proxy-trace}.jsonl and classified-browser-failures.json"],
+  "tcp": {
+    "method": "Nearest preceding/following samples (~5s apart); +/-10s extraction in scratch tcp-summary.json.",
+    "columns": ["offsetMs", "5189 client TW pid0", "5189 listener TW pid0", "5189 client EST pid16516",
+      "5189 listener EST pid31332", "21036 client TW pid0", "21036 listener TW pid0",
+      "21036 client EST pid31332", "21036 listener EST pid27684", "21036 other client EST by PID"],
+    "targetsNoBufferSpace": { "at": 1793042514618, "rows": [
+      [-362,149,5,2,2,56,146,2,7,{"8504":1,"44752":1,"28496":2,"14856":1}],
+      [4658,136,5,2,2,55,133,2,7,{"8504":1,"44752":1,"28496":2,"14856":1}]] },
+    "dxfPostNoBufferSpace": { "at": 1793042553805, "rows": [
+      [-4468,118,3,5,5,55,113,3,8,{"8504":1,"44752":1,"28496":2,"14856":1}],
+      [547,189,3,4,4,75,163,3,8,{"8504":1,"44752":1,"28496":2,"14856":1}]] },
+    "uploadsNoBufferSpace": { "at": 1793043985791, "rows": [
+      [-3054,2203,44,1,1,74,2012,1,6,{"8504":1,"44752":1,"28496":2,"14856":1}],
+      [1953,2190,47,1,1,74,2010,1,6,{"8504":1,"44752":1,"28496":2,"14856":1}]] },
+    "orthophotoPost502": { "at": 1793042385792, "rows": [
+      [-1827,111,6,6,6,55,113,2,5,{"8504":1,"44752":1,"28496":0,"14856":1}],
+      [3188,190,6,3,3,59,189,3,8,{"8504":1,"44752":1,"28496":2,"14856":1}]] },
+    "churn": ["YES: +/-10s upstream-socket counts respectively 21,236,372,118, all new/unreused, PID31332.",
+      "API-port TW totals respectively 202/188,168/238,2086/2084,168/248. TW owner PID0 cannot identify preview.",
+      "Direct probes also connect. Correlation is not proof of buffer exhaustion or a browser-hop fix."],
+    "502": "Socket assigned 1793042385793 connecting=true/reused=false; ETIMEDOUT at 1793042386105 before connect."
+  },
+  "design": ["One shared node:http Agent, keepAlive=true/maxSockets=16, for dev/preview API_PROXY.",
+    "Bounds connect pressure; one held stream leaves 15 slots for uploads/polls. Not a measured optimum.",
+    "changeOrigin and origin header unchanged; no deadlines, dependencies, backend or layout changes."],
+  "proxyTest": {
+    "command": "node apps/studio/scripts/proxy-keepalive.mjs", "exit": 0,
+    "method": "Actual config, env files disabled, ephemeral loopback preview/API; baseline removes only agent.",
+    "parallelRequests": 48, "beforeConnections": 48, "afterConnections": 16, "afterTotalConnections": 16,
+    "stream": "First event, 48 further GETs and 1 MiB POST complete while stream open, then final event and EOF.",
+    "extras": "Host/Origin asserted on every request; 30s bound, no retries; synthetic transport bytes only."
+  },
+  "words": "Preparing assertions: 1 package/1 record, 2 packages/2 records, zero and Indian-grouped large counts.",
+  "checksBeforeAndFinal": {
+    "pnpm typecheck:backend": "exit0; 2 projects", "pnpm studio:typecheck": "exit0; 4 projects",
+    "pnpm studio:test": "exit0; 873 pass/3 skip, 136 files", "pnpm studio:build": "exit0; 5505 modules",
+    "openapi.ts --check": "exit0; 336 operations/379 schemas", "scripts/api/check.py": "exit0; no stale pins",
+    "git diff --check": "exit0; no whitespace errors"
+  },
+  "invariants": ["pnpm exec invocation exit1: Windows command line too long, no tests started.",
+    "Direct node --import tsx --test equivalent before/after exit1: 1098 pass/16 fail/10 skip (1124).",
+    "All 16: MODULE_NOT_FOUND @ulpin/contracts/usp from existing scratch tests. No backend edits or more retries."],
+  "corrected": "Invalid null-count test input caused initial types/build exit2; removed, final checks pass.",
+  "logs": "E:/ulpin-tmp/s1-3ac/; before/after/final logs and tcp-summary.json",
+  "safety": "No container, demo, runtime, original, secret or closed input accessed; no real input replay.",
+  "next": "Lead reviews/reruns rehearsal; browser-hop connects and existing backend scratch import failures remain."
+}
