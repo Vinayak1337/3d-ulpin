@@ -299,6 +299,9 @@ test('enrollment queues one step job for a large GeoJSON within the ceiling and 
   assert.equal(await queueIntakeDraftTx(within.client, sourceRow() as IntakeSourceRow, card), jobId);
   assert.equal(within.jobs.size, 1);
   assert.equal(within.metadata(), 1);
+  within.tables.item!.state = 'preparing';
+  assert.equal(await queueIntakeDraftTx(within.client, sourceRow() as IntakeSourceRow, card), jobId);
+  assert.equal(within.jobs.size, 1);
   const above = store({ bytes: limits.sourceBytes + 1 });
   assert.equal(await queueIntakeLargeTx(above.client, sourceId), null);
   assert.equal(above.jobs.size, 0);
@@ -458,7 +461,7 @@ test('each stored state has its row: question, proposed and approved layout, map
   assert.deepEqual(project(mapping), { state: 'reading', placement: 'undecided', planRef: project(approved).planRef,
     partsPlanned: 487, partsDone: 120, recordsSeen: 48686, limitReason: null });
   const drafting = stored({ recipe: approved.recipe, mapping: { ...sealedReader(), job_id: mappingJob }, parts: 3 });
-  assert.deepEqual(project(drafting), { state: 'reading', placement: 'on_map', planRef: project(approved).planRef,
+  assert.deepEqual(project(drafting), { state: 'preparing', placement: 'on_map', planRef: project(approved).planRef,
     partsPlanned: null, partsDone: 3, recordsSeen: 48686, limitReason: null });
   assert.equal(project(drafting).planRef!.packageId, null);
   const waiting = { ...drafting, parts: 8, unreviewed: 8 };

@@ -3045,6 +3045,83 @@
         { "ordinal": 1, "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c" }
       ],
       "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
+    },
+    {
+      "id": "usp.intake-preparing.check",
+      "source": {
+        "path": "database/sql/60-usp/32-intake-preparing-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3y",
+        "acceptedBase": "2a9239983ca7f7bdb83bf445b33a341e475e5288"
+      },
+      "file": "sql/60-usp/32-intake-preparing-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        { "position": 1, "expression": "intakePreparingName", "value": "usp_intake_preparing_001" }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 67,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        { "ordinal": 1, "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c" }
+      ],
+      "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
+    },
+    {
+      "id": "usp.intake-preparing.schema",
+      "source": {
+        "path": "database/sql/60-usp/33-intake-preparing-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3y",
+        "acceptedBase": "2a9239983ca7f7bdb83bf445b33a341e475e5288"
+      },
+      "file": "sql/60-usp/33-intake-preparing-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.intake-preparing.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.intake-preparing.check",
+      "callMode": "one-query-call",
+      "order": 68,
+      "sha256": "7f034ee2bc204e06d533e0b090dfbe926365da887fb2baf00f76927a19575b52",
+      "statements": [
+        { "ordinal": 1, "sha256": "c5f6768c6d88bc930282096b2a0ab42571573cd6c4a0f153880c32718f750f15" },
+        { "ordinal": 2, "sha256": "042364fe589da6493f263a7a687b54d33b13486e7c3eb37e7cce8f804d97e06b" }
+      ],
+      "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
+    },
+    {
+      "id": "usp.intake-preparing.mark",
+      "source": {
+        "path": "database/sql/60-usp/34-intake-preparing-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "S1.3y",
+        "acceptedBase": "2a9239983ca7f7bdb83bf445b33a341e475e5288"
+      },
+      "file": "sql/60-usp/34-intake-preparing-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.intake-preparing.schema succeeds",
+      "parameters": [
+        { "position": 1, "expression": "intakePreparingName", "value": "usp_intake_preparing_001" }
+      ],
+      "guardedBy": "usp.intake-preparing.check",
+      "callMode": "one-query-call",
+      "order": 69,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        { "ordinal": 1, "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c" }
+      ],
+      "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
     }
   ],
   "plannedButAbsent": []

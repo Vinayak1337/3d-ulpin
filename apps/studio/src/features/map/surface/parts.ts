@@ -12,7 +12,7 @@ export type PartDisplay = GetResponse<`${PartsPath}/{partIndex}/display`>;
 /** At most this many parts of one file are drawn; at most this many display reads are in flight at once. */
 export const SURFACE_LIMITS = Object.freeze({ drawnPerItem: 256, displayReads: 4 });
 /** The tray states of an item whose parts are read; any other item has no parts to draw. */
-const READ_STATES = new Set(['planned', 'reading', 'read', 'read_to_limit', 'failed_part']);
+const READ_STATES = new Set(['planned', 'reading', 'preparing', 'read', 'read_to_limit', 'failed_part']);
 export const SHADED = 'Shaded by this part\'s own range; heights are not measured.';
 export const RANKED = 'Coloured by height as written, not measured.';
 
