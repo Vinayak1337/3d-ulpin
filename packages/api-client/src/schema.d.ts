@@ -65555,7 +65555,7 @@ export interface components {
             sizeClass: "S" | "M" | "L" | "XL" | null;
             wave: number;
             /** @enum {string} */
-            state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
+            state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
             /** @enum {string} */
             placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood";
             card: {
@@ -65951,7 +65951,7 @@ export interface components {
                 /** Format: uuid */
                 itemId: string | null;
                 /** @enum {string|null} */
-                state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
                 /** @enum {string|null} */
                 placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
             }[];
@@ -65997,7 +65997,7 @@ export interface components {
                 sizeClass: "S" | "M" | "L" | "XL" | null;
                 wave: number;
                 /** @enum {string} */
-                state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
+                state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
                 /** @enum {string} */
                 placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood";
                 card: {
@@ -66393,7 +66393,7 @@ export interface components {
                     /** Format: uuid */
                     itemId: string | null;
                     /** @enum {string|null} */
-                    state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                    state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
                     /** @enum {string|null} */
                     placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
                 }[];
