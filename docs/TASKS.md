@@ -303,11 +303,15 @@ Size S, UI. After: S1.3y (shares readPreview.ts). **Status: merged 27 Oct (int3-
 
 ### S1.3ab Halifax prepares its packages fast enough to close within 30 minutes of its read
 
-Size M, code. After: S1.3 run 7. **Status: running 27 Oct (task/s1-3ab-halifax-rate at int3-pre e3140424): split the wall time per package from the run 7 job rows, explain the 17 failed intake-large jobs, fix the largest share if bounded.**
+Size M, code. After: S1.3 run 7. **Status: diagnosis done 27 Oct (branch df493879, evidence only, not merged). 99.06 percent of Halifax's 1,519 s after its read was intake-large execution: serial cuts of about 2.3 s per package, 25.6 packages a minute; queueing 10 s, reviews and the pressure stop nil. The 17 unfinished jobs were queued wake-ups, not failures. 824 of 975 jobs were obsolete before they ran. Next: S1.3ad profiles one cut.**
+
+### S1.3ad Profile one package cut and fix its largest stage
+
+Size M, code. After: S1.3ab. **Status: running 27 Oct (task/s1-3ad-cut-profile at int3-pre 40756027): per-stage times per cut on public NYC features with the real normalize, who queues the obsolete wake-ups, a bounded fix or a design (no services/ change).**
 
 ### S1.3ac The Studio proxy reuses its API connections
 
-Size S, UI tooling. After: S1.3 run 7. **Status: running 27 Oct (task/s1-3ac-proxy-keepalive at int3-pre e3140424): one keep-alive agent for the Vite proxy, proved by an upstream connection count; 1 package prepared, not 1 packages.**
+Size S, UI tooling. After: S1.3 run 7. **Status: merged 27 Oct (int3-pre 40756027, branch 45e78df5). One keep-alive agent (16 sockets) for the Vite dev and preview proxy: 48 parallel requests open 16 upstream connections instead of 48; an event stream and an upload pass while held. At the run 7 failures the PC had up to 2,203 client sockets in TIME_WAIT. Words: 1 package prepared, 1 record read.**
 
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
