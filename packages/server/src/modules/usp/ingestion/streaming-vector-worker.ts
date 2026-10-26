@@ -302,7 +302,7 @@ export async function runStreamingVectorJob(jobId:string){
     return state.next_publish_index as number;
   });
   let nextFeatureIndex=0,lastHeartbeat=Date.now(),lastProgress=0;
-  let rawProgress=()=>{};
+  let rawProgress=()=>{},rawSealed=(_end:number)=>{};
   let holdCollection=input.framing==='feature-collection';
   const setAside:Record<string,number>={};
   const geometryCounts:StreamingVectorGeometrySummary['counts']={};
@@ -316,6 +316,7 @@ export async function runStreamingVectorJob(jobId:string){
     // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
     const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
     await acceptSlot(input,attempt,slot,progress,holdCollection);
+    if(input.framing==='feature-collection')rawSealed(records.at(-1)!.byteEnd);
     if(!holdCollection&&index>=initialPublishIndex)rawProgress();
   });
   // G13: a window is written by its own transaction; the part index follows the windows so the seal counts them.
@@ -334,8 +335,8 @@ export async function runStreamingVectorJob(jobId:string){
   };
   try{
     const etag=(await query('SELECT inspection FROM sources WHERE id=$1',[input.sourceId])).rows[0]?.inspection?.largeOriginal?.objectEtag;
-    const result=await readStreamingRaw(input.objectKey,input.sourceBytes,etag,async(body,published)=>{
-      rawProgress=published;
+    const result=await readStreamingRaw(input.objectKey,input.sourceBytes,etag,async(body,published,sealed)=>{
+      rawProgress=published;rawSealed=sealed;
       const consume=async(item:SourceFeature)=>{
         if(input.framing==='feature-collection')holdCollection=item.collectionTypeBeforeFeatures!==true;
         await pulse();const record=input.framing==='tabular'?tabularSourceRecord(item):sourceRecord(item);

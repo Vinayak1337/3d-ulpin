@@ -173,15 +173,21 @@ export async function removeOrphan(key: string, signal?:AbortSignal) {
 }
 
 /** Node streams remain bounded by backpressure; no whole-original byte array is allocated. */
-export async function openObjectStream(key: string, bytes: number, timeoutMs: number, etag?: string, signal?: AbortSignal) {
+export async function openObjectStream(key: string, bytes: number, timeoutMs: number, etag?: string,
+  signal?: AbortSignal, start = 0) {
+  if (!Number.isSafeInteger(start) || start < 0 || start >= bytes && start !== 0 || start > 0 && !etag)
+    throw new AppError(422,'SOURCE_INTEGRITY','A resumed read requires a pinned object and a valid byte boundary.');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs); timer.unref();
   const parentAbort=()=>controller.abort();signal?.addEventListener('abort',parentAbort,{once:true});
   if(signal?.aborted)controller.abort();
   try {
-    const result = await s3().send(new GetObjectCommand({Bucket:settings.s3Bucket,Key:key,...(etag?{IfMatch:etag}:{})}),{abortSignal:controller.signal});
+    const result = await s3().send(new GetObjectCommand({Bucket:settings.s3Bucket,Key:key,
+      ...(etag?{IfMatch:etag}:{}),...(start?{Range:`bytes=${start}-`}:{})}),{abortSignal:controller.signal});
     const body = result.Body as Readable | undefined;
-    if (!(body instanceof Readable) || result.ContentLength !== bytes || !result.ETag) {
+    if (!(body instanceof Readable) || result.ContentLength !== bytes-start || !result.ETag
+      || etag && result.ETag !== etag || start > 0 && (result.$metadata.httpStatusCode !== 206
+        || result.ContentRange !== `bytes ${start}-${bytes-1}/${bytes}`)) {
       body?.destroy(); throw new AppError(422,'SOURCE_INTEGRITY','Stored object size or streaming metadata does not match its receipt.');
     }
     const abort=()=>body.destroy(new AppError(503,'STORAGE_TIMEOUT','The bounded object read timed out.'));
@@ -190,7 +196,10 @@ export async function openObjectStream(key: string, bytes: number, timeoutMs: nu
     controller.signal.addEventListener('abort',abort,{once:true});
     return {body,etag:result.ETag};
   } catch(error) {const timedOut=controller.signal.aborted;clearTimeout(timer);signal?.removeEventListener('abort',parentAbort);controller.abort();
-    if(timedOut)throw new AppError(503,'STORAGE_TIMEOUT','The bounded object read was interrupted or timed out.');throw error;}
+    if(timedOut)throw new AppError(503,'STORAGE_TIMEOUT','The bounded object read was interrupted or timed out.');
+    if((error as {$metadata?:{httpStatusCode?:number}}).$metadata?.httpStatusCode===412)
+      throw new AppError(422,'SOURCE_INTEGRITY','The stored object changed during its pinned read.');
+    throw error;}
 }
 /** Copy into a new caller-owned private file with bounded memory; failed copies leave no partial original. */
 export async function streamRetainedOriginal(key: string, bytes: number, expectedHash: string, path: string,
