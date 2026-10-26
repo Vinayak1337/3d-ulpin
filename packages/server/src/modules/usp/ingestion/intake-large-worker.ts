@@ -314,8 +314,9 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
 }
 
-/** One cut, one transaction: it drafts only while the fold's stored context is unchanged, and queues what follows.
- * The last cut of the file also writes the end; `cut` is absent when the file ends after a stored cut. */
+/** One cut, one transaction: it drafts only while the fold's stored context is unchanged.
+ * Completion queues the final key, never an intermediate key behind this still-folding step.
+ * The last cut also writes the end; `cut` is absent when the file ends after a stored cut. */
 async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold,
   cut: IntakePackageCut | undefined, end: boolean): Promise<Outcome> {
   const features = cut ? await rawFeatures(fold, cut) : [];
@@ -323,16 +324,12 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
     : undefined;
   return pinned(input, attempt, async (client, state) => {
-    if (intakeLargeCutKey(state.store) !== fold.cutKey) {
-      await queueIntakeLargeTx(client, input.sourceId);
-      return 'stale';
-    }
+    if (intakeLargeCutKey(state.store) !== fold.cutKey) return 'stale';
     if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
       { ...fold.part, cutIndex: cut.index, features }, held);
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
     if (end) await writeEndTx(client, input, fold, after, cells);
     fold.cutKey = intakeLargeCutKey(after.store);
-    await queueIntakeLargeTx(client, input.sourceId);
     if (end) return 'end';
     return after.store.unreviewed >= INTAKE_UNFINISHED_PACKAGE_LIMIT ? 'pressure' : 'more';
   }, false);

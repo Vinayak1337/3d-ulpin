@@ -202,10 +202,10 @@ export async function writeIntakeLargeTx(client: PoolClient, caseId: string, ite
 /** Reviewed/committed packages have finished drafting; every other drafted or running part is unfinished. */
 export async function unfinishedIntakePackagesTx(client: PoolClient, itemId: string): Promise<number> {
   const row = (await client.query(`SELECT count(*)::int n FROM usp_intake_parts part
-    LEFT JOIN import_packages p ON p.id::text=part.result_ref->>'packageId'
+    LEFT JOIN import_packages p ON p.id=(part.result_ref->>'packageId')::uuid
     WHERE part.item_id=$1 AND (part.state IN ('queued','running') OR (part.state='published'
       AND p.state<>'COMMITTED'
-      AND p.body->'review'->'packageRevision' IS DISTINCT FROM p.body->'revision'))`, [itemId])).rows[0];
+      AND NOT p.review_current))`, [itemId])).rows[0];
   return Number(row.n);
 }
 
