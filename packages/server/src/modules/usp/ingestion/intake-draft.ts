@@ -4,7 +4,7 @@ import { DOCUMENT_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_TABLE_READER_FORM
   TabularSelectionSchema, type TabularSelection, type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
-import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
+import { lockCaseEnqueueTx, lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { citeIntakeReceipt, readIntakeDraftTx, saveIntakeCardTx, writeIntakeDraftTx, writeIntakeLargeTx,
   type IntakeDraftState } from './intake-ledger';
@@ -592,9 +592,10 @@ export type IntakeSourcePins = Pick<IntakeDraftInput, 'itemId' | 'caseId' | 'cas
   | 'sourceRevision' | 'sourceSha256' | 'sourcePin' | 'subject' | 'accessSha256'>;
 
 /** Case-first locking matches recipe execution; source pins remain exact across unrelated case edits.
- * Without `lockCase` the case row is left to callers whose readers share-lock it in their own transactions. */
+ * Without `lockCase`, KEY SHARE permits callers' separate readers while ordering the later job's FK lock. */
 export async function assertIntakeDraftTx(client: PoolClient, input: IntakeSourcePins, lockCase = true) {
   await lockSourceCaseDestinationTx(client, input.caseId);
+  if (!lockCase) await lockCaseEnqueueTx(client, input.caseId);
   const scope = await intakeCaseTx(client, input.caseId, lockCase);
   const { source, binding } = await intakeSourceTx(client, input.caseId, input.sourceId);
   const latest = (await client.query(`SELECT max(revision)::int revision FROM sources

@@ -1,0 +1,55 @@
+{
+  "task": "S1.3u", "planStep": 1, "base": "41c04392",
+  "verdict": "Code and local regressions pass; PostgreSQL before/after acceptance BLOCKED, not claimed.",
+  "inputs": ["docker logs --since 2026-10-25T19:30:00Z ulpin-reh-03-postgres-1 (stopped; logs only)",
+    "git show task/s1-3-rehearsal:docs/evidence/step-1/s1-3/run6/{faults,jobs}.json; F01/F03"],
+  "log": {"scratch": "E:/ulpin-tmp/s1-3u-postgres.log", "sha256":
+    "ed4dc389836649974c4a54f6168e5e21a9cffa427351538b7ee86e77363b7925",
+    "firstDeadlockUtc": "2026-10-25T19:33:31.142Z", "lastDeadlockUtc": "2026-10-25T23:45:20.391Z",
+    "reports": 623, "statementOccurrences": {"J": 1155, "O": 91, "C": 59},
+    "qualification": "Full requested log range; differs from dispatch's 1103/86/52 statement counts. Reports are not failed-attempt counts (F01: 66 during act, 120 at close-out). Tuple/index coordinates normalized; SQL-only cases FK context grouped as cases."},
+  "statements": {"J": "INSERT jobs(...,'intake-large',...) ON CONFLICT(id) DO NOTHING",
+    "O": "INSERT usp_outbox_streams(stream_id) ... ON CONFLICT DO NOTHING",
+    "C": "SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE"},
+  "transactionLocationsAtBase": {
+    "W": "Previously lockless writer: intake-run-worker.ts:67 pinned -> :87 prepare -> intake-large.ts:339 queueIntakeLargeTx; or intake-large-worker.ts:319 draftCut -> :61 pinned(false) -> queueIntakeLargeTx.",
+    "X": "Case UPDATE owner: intake-large-worker.ts:123 complete -> jobs.ts:311 acceptUspJobAttempt beforeLocks -> intake-draft.ts:596 assertIntakeDraftTx; or workspace at ingestion/service.ts:54 / caseRow at ingestion/large-original.ts:55.",
+    "C": "Case UPDATE waiter: ingestion/service.ts:54 workspace or ingestion/large-original.ts:55 caseRow.",
+    "R": "Case SHARE publisher: streamed-profile-worker.ts:71 publishChunk/:104 seal, chunk-mapping-worker.ts:276 complete, or streaming-vector-worker.ts:377 acceptance; assertStreamingInputTx/lockStreamingRowsTx take case SHARE before writes.",
+    "O": "outbox.ts:4 appendUspOutboxTx, or ingestion/events.ts:87 appendIntakeTargetsTx; J is intake-large.ts:357 queueIntakeLargeTx INSERT.",
+    "qualification": "Paths relative to packages/server/src/modules (ingestion paths under usp). PostgreSQL logs prove statements/edges, not JavaScript stacks or which candidate caller owned a PID; these are code-path explanations, not asserted PID attribution."},
+  "cycles": {
+    "job": "X holds case UPDATE, waits W's uncommitted unique job id; W holds that id, waits case KEY SHARE in jobs.case_id FK. J/J cases and J/J jobs are opposite victims of the same cycle.",
+    "stream": "X holds case UPDATE, waits W's uncommitted stream; W holds stream, then waits case KEY SHARE in the later jobs INSERT. J/O contexts are opposite victims of the same cycle; streams have no cases FK themselves.",
+    "queued": "R holds case SHARE and waits W's unique job/stream; C waits R's transaction for case UPDATE while retaining the tuple-queue position; W holds job/stream and its late FK waits behind C. Same inversion with an extra case-lock waiter, not a separate cause."},
+  "deadlockGroupsColumns": ["statements", "contextRelation", "reports", "transactions", "cycle", "coverage"],
+  "deadlockGroups": [
+    ["J/J", "cases", 421, "X,W", "job", "draft/run x jobs"],
+    ["J/J", "jobs", 78, "X,W", "job", "draft/run x jobs"],
+    ["J/O", "cases", 25, "X,W", "stream", "draft/run x usp_outbox_streams"],
+    ["J/O", "usp_outbox_streams", 40, "X,W", "stream", "draft/run x usp_outbox_streams"],
+    ["C/J/J", "cases", 33, "C,R,W", "queued", "same job cycle; early case lock removes W -> C"],
+    ["C/J/O", "cases", 24, "C,R,W", "queued", "same stream cycle; early case lock removes W -> C"],
+    ["C/J/O", "usp_outbox_streams", 2, "C,R,W", "queued", "same stream cycle; early case lock removes W -> C"]
+  ],
+  "fix": "lockCaseEnqueueTx takes only the FK's KEY SHARE, compatible with SHARE readers and NO KEY UPDATE. assertIntakeDraftTx(false) takes it after the existing destination advisory gate and before item locking; intake-run pinned takes it before job/target writes. Existing UPDATE paths stay unchanged. No late outbox lock (would introduce upload->case edges), retry loop, migration or index.",
+  "otherQueueCallers": "chunk-mapping-worker, streamed-profile-worker and streaming-vector-worker already take case SHARE through their input assertion or stale lockStreamingRowsTx; streamed-mapping author/approve do so in validatePlanTx. queueIntakeDraftTx callers hold case UPDATE. retryIntakeLargeItem and other large-worker paths hold UPDATE. Package wake-ups use the newly pinned intake-run prepare transaction.",
+  "cause": "runIntakeRunJob calls recordUspJobFailure(run.attempt, INTAKE_RUN_RETRY, error) before fail; leaseLostCode bypasses diagnostics. Injected 40P01 preserves sanitized failure_cause on the exact fenced attempt, with no raw detail.",
+  "checksColumns": ["command", "beforeExit", "beforeCounts", "afterExit", "afterCounts"],
+  "checks": [
+    ["pnpm typecheck:backend", 0, "typecheck", 0, "typecheck"],
+    ["pnpm studio:typecheck", 0, "4 projects", 0, "4 projects"],
+    ["pnpm studio:test", 0, "851 pass / 3 skip", 0, "851 pass / 3 skip"],
+    ["section 5 server set", 0, "1103 pass / 5 skip", 0, "1109 pass / 9 skip"],
+    ["pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", 0, "clean", 1, "expected stale source-pins.json"],
+    ["PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", 0, "clean", 1, "expected producer changed: source-case-lock.ts"],
+    ["git diff --check", 0, "clean", 0, "clean"]
+  ],
+  "serverLauncher": "Exact section 5 file set via node --import tsx --test, TSX_TSCONFIG_PATH=apps/api/tsconfig.json, NODE_PATH=E:/Projects/ulpin-wt/s1-3u/packages/server/node_modules plus the prescribed isolated-env/demo/REPO_DATA=false. pnpm launcher exceeded Windows command length; first direct run had 16 temp-module resolution failures, fixed by NODE_PATH (no product change). Logs: E:/ulpin-tmp/s1-3u-{before,after}-*.log.",
+  "regressions": {"lockModelAgainst41c04392": "S13U_BASE=41c04392: exit 1, 5 fail / 4 PostgreSQL skip",
+    "causeBeforeFix": "exit 1, 25 pass / 1 fail (failure_cause undefined)",
+    "targetedAfter": "intake-enqueue-deadlock.test.ts + intake-run.test.ts: exit 0, 31 pass / 4 PostgreSQL skip"},
+  "stalePinsNotRegenerated": ["cases/source-case-lock.ts", "usp/ingestion/intake-draft.ts",
+    "usp/ingestion/intake-large.ts", "usp/ingestion/intake-large-worker.ts", "usp/ingestion/intake-run-worker.ts"],
+  "next": "Supply an authorized existing test database via S13U_TEST_DATABASE_URL (127.0.0.1:25432/ulpin_t001_* or ulpin_usptest_*). None supplied; ports 25432/5432 unavailable. Run new two-client SQL tests against S13U_BASE=41c04392 expecting 40P01, then current code expecting success. No runtime/container started or changed; no original/data-drive reads. Integration refreshes producer pins. No rehearsal claim."
+}

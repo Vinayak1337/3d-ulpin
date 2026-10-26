@@ -57,7 +57,7 @@ const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
 };
 
 /** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
- * leaves the case row unlocked: its readers share-lock it from their own transactions. */
+ * takes only KEY SHARE on the case: its readers still share-lock it from their own transactions. */
 async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt | undefined,
   work: (client: PoolClient, state: State) => Promise<T>, lockCase = true): Promise<T> {
   return transaction(async client => {
