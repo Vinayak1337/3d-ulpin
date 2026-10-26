@@ -28,6 +28,8 @@ it('names package preparation and shows the item counts without saying it is sti
   expect(stateWords(item.state)).toBe('Preparing packages');
   expect(partProgressWords(item)).toBe('1,563 packages prepared · 1,72,409 records read');
   expect(partProgressWords({ ...item, partsDone: 0 })).toBe('0 packages prepared · 1,72,409 records read');
+  expect(partProgressWords({ ...item, partsDone: 1, recordsSeen: 1 })).toBe('1 package prepared · 1 record read');
+  expect(partProgressWords({ ...item, partsDone: 2, recordsSeen: 2 })).toBe('2 packages prepared · 2 records read');
   expect(isSettled(item)).toBe(false);
   expect(partProgressWords({ ...item, state: 'reading' })).toBe('Reading: 1,72,409 records so far');
 });

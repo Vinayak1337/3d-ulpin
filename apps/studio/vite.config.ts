@@ -1,12 +1,17 @@
 import { defineConfig } from 'vitest/config';
 import { rmSync } from 'node:fs';
+import { Agent } from 'node:http';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { studioDemoImport } from '../../scripts/demo-import/plugin.mjs';
 
 const API_TARGET = process.env.ULPIN_API_TARGET ?? 'http://127.0.0.1:3188';
 // The API checks Origin against its own allow-list: the proxy presents the target's origin, so local development passes.
-const API_PROXY = { '/api': { target: API_TARGET, changeOrigin: true, headers: { origin: API_TARGET } } };
+// Bound local connect pressure; a held event stream leaves 15 sockets for uploads and polling.
+const API_AGENT = new Agent({ keepAlive: true, maxSockets: 16 });
+const API_PROXY = {
+  '/api': { target: API_TARGET, agent: API_AGENT, changeOrigin: true, headers: { origin: API_TARGET } },
+};
 
 export default defineConfig({
   resolve: {
