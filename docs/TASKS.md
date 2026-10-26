@@ -271,7 +271,7 @@ Size S, code only. After: S1.3 run 6. **Status: merged 26 Oct (int3-pre c9c2591f
 
 ### S1.3x Large-file closure cost: a stored review flag and no obsolete intake-large jobs
 
-Size M, code only. After: S1.3v. **Status: running 26 Oct (task/s1-3x-closure-cost at int3-pre c537e208).**
+Size M, code only. After: S1.3v. **Status: merged 26 Oct (int3-pre 2a923998, branch eb0d1e61; pins refreshed). Migration usp_import_package_review_001 adds a stored generated review_current (2.2 s and an exclusive lock for 3,431 packages and 517 MiB in PGlite); the count reads it with a key join and no package body. A folding step queues its wake-up once at completion; wake-ups from other transactions are unchanged. SQL replay 21.8 s to 1.37 s; a three-cut fold makes one job, not three. Server set 1113 pass. Full closure time is measured in run 7.**
 
 - **What:** Add the additive migration usp_import_package_review_001, a stored generated review_current on import_packages, and count unfinished packages from it with a key join instead of reading every package body. A step that keeps folding queues one wake-up when it completes, not one per cut; wake-ups from other transactions stay. Rerun the S1.3v replay before and after.
 - **Files:** intake-ledger.ts, intake-large.ts, intake-large-worker.ts, usp/migrations.ts, database/manifest.json
@@ -279,7 +279,7 @@ Size M, code only. After: S1.3v. **Status: running 26 Oct (task/s1-3x-closure-co
 
 ### S1.3y A large file's row says Preparing packages once its read is done
 
-Size S, code and UI. After: S1.3x (same files). **Status: waiting for S1.3x.**
+Size S, code and UI. After: S1.3x (same files). **Status: running 26 Oct (task/s1-3y-preparing-row at int3-pre 2a923998): a new item state preparing for the compare and draft phases.**
 
 - **What:** While a large file's packages are still being drafted after its read, the row says Preparing packages, On the map, with the packages prepared and records read, not Reading file; the layout says Approved without the file is being read. A stored phase decides it; nothing is inferred from approval.
 - **Files:** intake-large.ts (intakeLargeProjection), intake-ledger.ts (publishIntakePartTx), the contract state if one is needed, Studio batch-model.ts and layout-model.ts
