@@ -1,6 +1,6 @@
 {
-  "task": "S1.3aa", "planStep": 1, "base": "a8e10e6c",
-  "verdict": "Stopped at DO 1's replay guard. No application/test changes; DO 2-4 not attempted.",
+  "task": "S1.3aa", "planStep": 1, "base": "a8e10e6c", "resumeBase": "771cc0de",
+  "verdict": "Built DO 2 and DO 3 with matching DO 4 tests. DO 1 dropped by decision; both stream files unchanged.",
   "scratch": "E:/ulpin-tmp/s1-3aa/",
   "replayMismatch": [
     "API events.controller.ts: absent cursor tails head; literal 0 replays retained events; N resumes after N.",
@@ -21,19 +21,17 @@
     "Owned case-subscription.ts/useTableStream.ts can hold this; run/events.ts and the API can remain unchanged."
   ],
   "requestCounts": {
-    "method": "Code paths, not sockets/run. K=distinct subscribed cases; P=active preview files; J=0..2 jobs.",
+    "method": "Code paths, not sockets/run. K=shared subscribed cases; P=active previews; J=0..2 selected jobs.",
     "batchWithMap": {
       "before": "K shared streams + up to P concurrent preview reads, including hidden pages.",
-      "afterActual": "Unchanged: K streams + up to P preview reads.",
-      "afterRequestedNotBuilt": "K streams + up to P visible preview reads; no new hidden reads.",
-      "oneCaseOnePreview": "Before/actual after: 1 stream + up to 1 preview read; requested hidden poll count: 0."
+      "afterActual": "K shared streams + up to P visible preview reads; zero new hidden reads or timers.",
+      "oneCaseOnePreview": "Visible before/after: 1 stream + up to 1 read; hidden: 1+1 before, 1+0 after drain."
     },
     "tableWithSharedCaseConsumer": {
       "before": "K shared streams + 1 table EventSource. J independent 2 s fallback pollers, even for ended jobs.",
-      "afterActual": "Unchanged: K+1 configured streams and J fallback pollers.",
-      "afterRequestedNotBuilt": "K streams; 0..J open-job fallback pollers; zero once all selected jobs end.",
-      "oneCaseTwoJobs": "Before/actual after: 2 healthy streams; up to 2 fallback job reads plus reconnect attempts.",
-      "withoutSharedConsumer": "Current table alone opens only 1 EventSource; requested shared version also opens 1."
+      "afterActual": "K+1 configured streams; only open/unknown-status jobs poll at 2 s during fallback (0..J).",
+      "oneCaseTwoJobs": "2 healthy streams before/after. Fallback job reads: up to 2 before, 0 after both settle.",
+      "withoutSharedConsumer": "1 table EventSource before/after; fallback reads up to J before, open jobs only after."
     },
     "limits": [
       "Preview has one sequential read chain per file, not one global poll. In-flight hidden reads may finish.",
@@ -42,23 +40,34 @@
       "Other queries/assets/uploads/demo-import excluded; these counts do not establish a whole-page socket ceiling."
     ]
   },
+  "implementation": [
+    "queries.ts uses each query's current response to stop its interval; no new useTableData wiring needed.",
+    "These endpoints use completed/completed_with_rejections/failed/stale, not succeeded/cancelled.",
+    "Mapping disabled/unavailable also settle; needs_input stays open. Unknown status still polls on fallback.",
+    "readPreview.ts cancels hidden timers and guards initial/pending reads; visible resumes each active file now.",
+    "In-flight reads finish without duplication. Dispose removes the listener; caps/refusals/finished reads stay stopped.",
+    "7 polling cases test 2 s cadence, settlement, independent jobs, needs_input and stream-up; 3 visibility cases added.",
+    "Existing paging/cap tests now verify visibility cannot restart them; no new text, server or API changes."
+  ],
   "checksBeforeAndAfter": {
-    "pnpm typecheck:backend": "0: 2 projects",
-    "pnpm studio:typecheck": "0: 4 projects",
-    "pnpm studio:test": "0: Studio 782 pass/2 skip, 123 files; dependencies 81 pass/1 skip",
-    "standardInvariants": "0: 1114 pass/10 skip/0 fail, 113 files; scratch invariants.cjs launches node directly",
-    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": "0: 336 ops/379 schemas",
-    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": "0: pins/manifests/models/dataset link valid",
-    "pnpm studio:build": "0",
-    "git diff --check": "0; report-only diff reviewed",
-    "uiDesignCheck": "N/A: no UI code/styles/words change. No new acceptance tests: stopped at explicit guard."
+    "logs": "E:/ulpin-tmp/s1-3aa/resume-{before,after}-*.log; commands each have their own log",
+    "pnpm typecheck:backend": "both 0: 2 projects",
+    "pnpm studio:typecheck": "both 0: 4 projects",
+    "pnpm studio:test": "both 0: Studio 782 -> 792 pass/2 skip, 123 files; dependencies 81 pass/1 skip",
+    "pnpm --filter @ulpin/studio exec vitest run queries.test.tsx readPreview.test.ts": "0: 20 pass, 2 files",
+    "standardInvariants": "both 0: 1114 pass/10 skip/0 fail, 113 files; scratch invariants.cjs launches node directly",
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": "both 0: 336 ops/379 schemas",
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": "both 0: pins/manifests/models/dataset link valid",
+    "pnpm studio:build": "both 0",
+    "git diff --check": "both 0; strict diff reviewed; KEEP files unchanged",
+    "uiDesignCheck": "scan-ui-diff 771cc0de exit 0: no candidates. Blocking/design system: none; no visual/text change."
   },
-  "launcherRecovery": [
+  "priorLauncherRecovery": [
     "Exact pnpm invariant command exit 1: Windows command line too long. Direct node bypassed the shell wrapper.",
     "Initial direct run: 1098 pass/16 fail/10 skip; temporary modules could not resolve @ulpin/contracts/usp.",
     "Added packages/server/node_modules to NODE_PATH: bounded full rerun passes, as does the after run."
   ],
-  "inputs": "Existing table controls (mi-d10-02.csv/mapping responses) and NYC preview suite; no new live file run.",
-  "next": "Approve shared replay support, then redispatch DO 1-4/tests. Settled-job and hidden-preview bugs remain.",
+  "inputs": "Existing mi-d10-02.csv and NYC outline controls; difficult status/CRS/refusal controls, no new real-file run.",
+  "next": "Review/integrate DO 2-3. Shared table replay remains separate future work; no runtime/socket ceiling proven.",
   "safety": "No runtime/container/image/provider/credentials/closed-data action; KEEP paths unchanged."
 }

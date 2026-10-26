@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement } from 'react';
+import { ApiError } from '@ulpin/api-client';
 import { utmForward } from '../overlays';
 import type { IntakeItem } from '../surface/parts';
 import { PREVIEW_LIMITS, ReadPreviews, type PreviewFeature, type PreviewFile, type PreviewPage } from './readPreview';
@@ -50,9 +51,77 @@ const settle = async (ms = 0) => {
 };
 
 beforeEach(() => { vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+
+function visibility() {
+  const target = new EventTarget();
+  const state = { visibilityState: 'visible',
+    addEventListener: vi.fn(target.addEventListener.bind(target)),
+    removeEventListener: vi.fn(target.removeEventListener.bind(target)) };
+  vi.stubGlobal('document', state);
+  return { state, set: (value: string) => {
+    state.visibilityState = value;
+    target.dispatchEvent(new Event('visibilitychange'));
+  } };
+}
+
+it('rests while hidden, resumes each followed file once immediately, and removes its listener', async () => {
+  const visible = visibility();
+  const run = follow(Array.from({ length: 12 }, () => page(true, 'stated', [], null)));
+  run.previews.sync([item(), item({ itemId: 'i-2' })]);
+  await settle();
+  expect(run.afters).toHaveLength(2);
+  visible.set('hidden');
+  run.previews.sync([item(), item({ itemId: 'i-2' }), item({ itemId: 'i-3' })]);
+  await settle(PREVIEW_LIMITS.pollMs * 5);
+  expect(run.afters).toHaveLength(2);
+  expect(vi.getTimerCount()).toBe(0);
+  visible.set('visible');
+  expect(run.afters).toHaveLength(5);
+  await settle(PREVIEW_LIMITS.pollMs);
+  expect(run.afters).toHaveLength(8);
+  run.previews.dispose();
+  expect(visible.state.removeEventListener).toHaveBeenCalledWith('visibilitychange',
+    visible.state.addEventListener.mock.calls[0]![1]);
+  visible.set('visible');
+  await settle(PREVIEW_LIMITS.pollMs * 5);
+  expect(run.afters).toHaveLength(8);
+});
+
+it('lets an in-flight read finish hidden without scheduling another or overlapping on resume', async () => {
+  const visible = visibility();
+  let answer!: (value: PreviewPage) => void;
+  const io = { page: vi.fn(() => new Promise<PreviewPage>(resolve => { answer = resolve; })) };
+  const previews = new ReadPreviews(io, () => {});
+  previews.sync([item()]);
+  visible.set('hidden');
+  visible.set('visible');
+  expect(io.page).toHaveBeenCalledOnce();
+  visible.set('hidden');
+  answer(page(true, 'stated', [], null));
+  await settle(PREVIEW_LIMITS.pollMs * 5);
+  expect(io.page).toHaveBeenCalledOnce();
+  expect(vi.getTimerCount()).toBe(0);
+  visible.set('visible');
+  expect(io.page).toHaveBeenCalledTimes(2);
+  previews.dispose();
+});
+
+it('does not restart a settled refusal on visibility changes', async () => {
+  const visible = visibility();
+  const io = { page: vi.fn(async () => { throw new ApiError(422, '', null); }) };
+  const previews = new ReadPreviews(io, () => {});
+  previews.sync([item()]);
+  await settle();
+  visible.set('hidden');
+  visible.set('visible');
+  await settle(PREVIEW_LIMITS.pollMs * 5);
+  expect(io.page).toHaveBeenCalledOnce();
+  previews.dispose();
+});
 
 it('pages with after=next while reading, then stops when reading ends', async () => {
+  const visible = visibility();
   const run = follow([
     page(true, 'rfc7946_no_crs_read_yet', [outline(0), outline(1)], 1),
     page(true, 'rfc7946_no_crs_read_yet', [outline(2)], 2),
@@ -62,8 +131,11 @@ it('pages with after=next while reading, then stops when reading ends', async ()
   await settle();
   await settle(PREVIEW_LIMITS.pollMs);
   await settle(PREVIEW_LIMITS.pollMs);
+  visible.set('hidden');
+  visible.set('visible');
   await settle(PREVIEW_LIMITS.pollMs * 10);
   expect(run.afters).toEqual([-1, 1, 2]);
+  run.previews.dispose();
   const drawn = previewOutlines(run.last(), reference);
   expect(drawn.map((input) => input.id)).toEqual(['i-1:0', 'i-1:1', 'i-1:2']);
   const [x, y] = utmForward(lon0!, lat0!, 18);
@@ -127,6 +199,7 @@ it('removes the preview when the first package reaches the map, or the read is s
 });
 
 it('keeps polygons only, at most the stated cap, and says what it leaves out', async () => {
+  const visible = visibility();
   const full = (from: number) => Array.from({ length: PREVIEW_LIMITS.page }, (_, n) => outline(from + n));
   const pages: PreviewPage[] = Array.from({ length: PREVIEW_LIMITS.outlines / PREVIEW_LIMITS.page + 1 },
     (_, n) => page(true, 'stated', full(n * PREVIEW_LIMITS.page), (n + 1) * PREVIEW_LIMITS.page - 1));
@@ -144,4 +217,9 @@ it('keeps polygons only, at most the stated cap, and says what it leaves out', a
   expect(run.last()[0]!.line).toContain('Points and lines not drawn: 1.');
   expect(previewKeyLines(run.last(), false)[0]!.line).toContain('no WGS 84 UTM zone');
   expect(previewOutlines(run.last(), { analysisCrs: 'EPSG:4326', origin: [0, 0] })).toEqual([]);
+  visible.set('hidden');
+  visible.set('visible');
+  await settle(PREVIEW_LIMITS.pollMs);
+  expect(run.afters).toHaveLength(asked);
+  run.previews.dispose();
 });

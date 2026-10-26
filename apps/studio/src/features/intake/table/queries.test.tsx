@@ -1,11 +1,14 @@
+import { container } from '../fake-dom';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createContractValidator } from '../../../local/contract';
-import { streamedTable, tableKey } from './queries';
+import { streamedTable, tableKey, useTableJobs } from './queries';
 import { TablePage } from './TablePage';
 import type { TableProfile, TableRowsPage } from './types';
 
@@ -55,6 +58,73 @@ function render(profile: TableProfile) {
 }
 
 const rowsPage = 'aria-label="Table records"';
+
+const jobs = JSON.parse(readFileSync(resolve(root, 'docs/evidence/gf-agent/ui/f2b/responses.json'), 'utf8')).files[0];
+const tick = (ms: number) => act(async () => { await vi.advanceTimersByTimeAsync(ms); });
+
+async function followJobs() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = createRoot(container() as never);
+  function Jobs({ fallback }: { fallback: boolean }) {
+    useTableJobs(caseId, sourceId, jobs.raw.jobId, jobs.mapping.jobId, fallback);
+    return null;
+  }
+  const render = (fallback: boolean) => act(async () => view.render(
+    <QueryClientProvider client={client}><Jobs fallback={fallback} /></QueryClientProvider>,
+  ));
+  await render(true);
+  await tick(1);
+  return { render, close: async () => {
+    await act(async () => view.unmount());
+    client.clear();
+  } };
+}
+
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+
+it.each(['completed', 'completed_with_rejections', 'failed', 'stale'])(
+  'stops each fallback poll after a %s response', async status => {
+    vi.useFakeTimers();
+    const calls = { raw: 0, mapping: 0 };
+    vi.stubGlobal('fetch', async (request: Request) => {
+      const kind = request.url.includes('/streaming-vector/') ? 'raw' : 'mapping';
+      calls[kind]++;
+      // Recorded responses with protocol-only status transitions; no new source facts.
+      return Response.json({ ...jobs[kind], status: calls[kind] === 1 ? 'running' : status });
+    });
+    const run = await followJobs();
+    try {
+      expect(calls).toEqual({ raw: 1, mapping: 1 });
+      await tick(1998);
+      expect(calls).toEqual({ raw: 1, mapping: 1 });
+      await tick(3);
+      expect(calls).toEqual({ raw: 2, mapping: 2 });
+      await tick(10_000);
+      expect(calls).toEqual({ raw: 2, mapping: 2 });
+    } finally { await run.close(); }
+  },
+);
+
+it.each(['disabled', 'unavailable', 'needs_input'])(
+  'polls only open jobs with a %s mapping, then stops when the stream returns', async status => {
+    vi.useFakeTimers();
+    const calls = { raw: 0, mapping: 0 };
+    vi.stubGlobal('fetch', async (request: Request) => {
+      const kind = request.url.includes('/streaming-vector/') ? 'raw' : 'mapping';
+      calls[kind]++;
+      return Response.json({ ...jobs[kind], status: kind === 'raw' ? 'queued' : status });
+    });
+    const run = await followJobs();
+    try {
+      await tick(4000);
+      const expected = { raw: 3, mapping: status === 'needs_input' ? 3 : 1 };
+      expect(calls).toEqual(expected);
+      await run.render(false);
+      await tick(6000);
+      expect(calls).toEqual(expected);
+    } finally { await run.close(); }
+  },
+);
 
 describe('a table the server reads in windows opens the streamed rows page', () => {
   it('matches isWindowedTable: a case original CSV or workbook above 16 MiB; nothing at or below it', () => {

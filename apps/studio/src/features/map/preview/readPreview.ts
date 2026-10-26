@@ -43,6 +43,8 @@ interface Follow {
   words: string | null;
   failure: string | null;
   capped: boolean;
+  active: boolean;
+  busy: boolean;
   timer?: ReturnType<typeof setTimeout>;
 }
 
@@ -71,8 +73,17 @@ function settledRefusal(error: unknown): boolean {
 export class ReadPreviews {
   private readonly follows = new Map<string, Follow>();
   private readonly controller = new AbortController();
+  private readonly visibility = typeof document === 'undefined' ? null : document;
+  private readonly visibilityChanged = () => {
+    for (const follow of this.follows.values()) {
+      clearTimeout(follow.timer);
+      if (this.visibility?.visibilityState !== 'hidden') void this.read(follow);
+    }
+  };
 
-  constructor(private readonly io: PreviewIo, private readonly publish: (files: PreviewFile[]) => void) {}
+  constructor(private readonly io: PreviewIo, private readonly publish: (files: PreviewFile[]) => void) {
+    this.visibility?.addEventListener('visibilitychange', this.visibilityChanged);
+  }
 
   sync(items: readonly IntakeItem[]): void {
     const live = new Map(items.filter(isPreviewItem).map((item) => [item.itemId, item]));
@@ -81,7 +92,7 @@ export class ReadPreviews {
       const known = this.follows.get(item.itemId);
       if (known) { known.item = item; continue; }
       const follow: Follow = { item, after: -1, basis: null, features: [], notDrawn: 0, words: null, failure: null,
-        capped: false };
+        capped: false, active: true, busy: false };
       this.follows.set(item.itemId, follow);
       void this.read(follow);
     }
@@ -89,6 +100,7 @@ export class ReadPreviews {
   }
 
   dispose(): void {
+    this.visibility?.removeEventListener('visibilitychange', this.visibilityChanged);
     this.controller.abort();
     for (const id of [...this.follows.keys()]) this.drop(id);
   }
@@ -100,6 +112,9 @@ export class ReadPreviews {
 
   private async read(follow: Follow): Promise<void> {
     const { signal } = this.controller;
+    if (signal.aborted || !follow.active || follow.busy || this.visibility?.visibilityState === 'hidden') return;
+    clearTimeout(follow.timer);
+    follow.busy = true;
     let page: PreviewPage;
     try {
       page = await this.io.page(follow.item, follow.after, signal);
@@ -107,9 +122,12 @@ export class ReadPreviews {
       if (signal.aborted || this.follows.get(follow.item.itemId) !== follow) return;
       if (error instanceof ApiError && error.status === 404) follow.failure = null;
       else follow.failure = `The preview could not be read: ${error instanceof Error ? error.message : String(error)}`;
+      follow.active = !settledRefusal(error);
       this.emit();
-      if (!settledRefusal(error)) this.again(follow, PREVIEW_LIMITS.pollMs);
+      if (follow.active) this.again(follow, PREVIEW_LIMITS.pollMs);
       return;
+    } finally {
+      follow.busy = false;
     }
     if (signal.aborted || this.follows.get(follow.item.itemId) !== follow) return;
     this.take(follow, page);
@@ -132,12 +150,14 @@ export class ReadPreviews {
     }
     follow.after = page.next ?? follow.after;
     this.emit();
-    if (page.reading && !follow.capped) {
+    follow.active = page.reading && !follow.capped;
+    if (follow.active) {
       this.again(follow, page.features.length >= PREVIEW_LIMITS.page ? 0 : PREVIEW_LIMITS.pollMs);
     }
   }
 
   private again(follow: Follow, delayMs: number): void {
+    if (this.visibility?.visibilityState === 'hidden') return;
     follow.timer = setTimeout(() => void this.read(follow), delayMs);
   }
 
