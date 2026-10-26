@@ -316,7 +316,7 @@ export async function runStreamingVectorJob(jobId:string){
     // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
     const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
     await acceptSlot(input,attempt,slot,progress,holdCollection);
-    if(input.framing==='feature-collection')rawSealed(records.at(-1)!.byteEnd);
+    const last=records.at(-1);if(input.framing==='feature-collection'&&last)rawSealed(last.byteEnd);
     if(!holdCollection&&index>=initialPublishIndex)rawProgress();
   });
   // G13: a window is written by its own transaction; the part index follows the windows so the seal counts them.
