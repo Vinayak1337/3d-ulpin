@@ -46,8 +46,8 @@ export function uploadWords(progress: UploadProgress): string {
     + `${MiB(progress.totalBytes)} MiB)`;
   if (progress.phase === 'verifying') return progress.words || 'Verifying the upload';
   if (progress.phase === 'cancelled') return 'Upload cancelled';
-  return `The upload stopped at part ${progress.part} of ${progress.parts}: `
-    + `${progress.words || 'the server did not answer'}.`;
+  const part = progress.parts > 0 ? ` at part ${progress.part} of ${progress.parts}` : '';
+  return `The upload stopped${part}: ${progress.words || 'the server did not answer'}.`;
 }
 
 function MiB(bytes: number): string {
@@ -58,6 +58,7 @@ function MiB(bytes: number): string {
 export function sizeWords(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1).replace(/\.0$/, '')} GiB`;
   if (bytes >= 1024 ** 2) return `${MiB(bytes)} MiB`;
+  if (bytes === 0) return '0 KiB';
   return `${Math.max(1, Math.round(bytes / 1024))} KiB`;
 }
 

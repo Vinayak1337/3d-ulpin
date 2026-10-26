@@ -19,6 +19,8 @@ const SLOT_FIRST_MS = 2000;
 const SLOT_LONGEST_MS = 30_000;
 export const SLOT_WAIT_MS = 30 * 60 * 1000;
 export const SLOT_STOPPED = 'no upload slot became free within 30 minutes';
+const UPLOAD_IDLE_MS = 120_000;
+class UploadSilence extends Error {}
 /** Commands that wait for an upload slot, by the order they were made; only the earliest asks the server. */
 const slotLine = new Set<number>();
 let lastTicket = 0;
@@ -41,11 +43,12 @@ interface Control {
   abort: Promise<void> | null;
   abortBody: UploadGuard | null;
   progress: UploadProgress;
+  silent: boolean;
 }
 
 /** Holds one upload through explicit retries; later files cannot start while this file is paused. */
 export function createUploadCommand(options: Options) {
-  const state: Control = { receipt: null, cancelled: false, waiting: null, abort: null, abortBody: null,
+  const state: Control = { receipt: null, cancelled: false, waiting: null, abort: null, abortBody: null, silent: false,
     progress: { phase: 'checking', doneBytes: 0, totalBytes: options.file.size, part: 1, parts: 0 } };
   const context = { ...options, hash: options.hash ?? hashFile, key: options.key ?? (() => crypto.randomUUID()),
     pause: options.pause ?? (() => sleep(5000)), state, ticket: ++lastTicket };
@@ -71,17 +74,57 @@ type Context = Options & {
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
 function publish(context: Context, update: Partial<UploadProgress>) {
+  if (context.state.silent) return;
   context.state.progress = { ...context.state.progress, ...update };
   context.publish(context.state.progress);
+}
+
+/** A silent operation ends this command, not a retry: the server may still have received its request. */
+function bounded<T>(context: Context, step: string, send: (activity: () => void) => Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const activity = () => {
+      if (settled) return;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        settled = true;
+        const error = new UploadSilence(`No progress for 2 minutes while ${step}. Refresh the batch; `
+          + 'resume the same file under Uploads not finished if listed, otherwise add it again');
+        publish(context, { phase: 'stopped', words: error.message });
+        context.state.silent = true;
+        reject(error);
+      }, UPLOAD_IDLE_MS);
+    };
+    activity();
+    Promise.resolve().then(() => send(activity)).then(value => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+    }, error => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+}
+
+async function checkedHash(context: Context, file: Blob, partBytes: number, whole = false) {
+  return bounded(context, 'checking the file', activity => context.hash(file, partBytes, doneBytes => {
+    activity();
+    if (whole) publish(context, { doneBytes });
+  }));
 }
 
 async function runUpload(context: Context): Promise<string | null> {
   const { file, transport, state, resume } = context;
   if (resume && (file.name !== resume.filename || file.size !== resume.bytes)) throw new Error(NOT_THE_FILE);
-  const limits = await transport.limits();
+  const limits = await bounded(context, 'reading upload limits', () => transport.limits());
   const plan = uploadPlan(file.size, limits);
   publish(context, { parts: plan.parts });
-  const sha256 = await context.hash(file, plan.partBytes, doneBytes => publish(context, { doneBytes }));
+  const sha256 = await checkedHash(context, file, plan.partBytes, true);
   if (state.cancelled) return null;
   const profile = plan.profile === limits.limits.version ? limits.limits : limits.largeProfile.limits;
   state.receipt = await openReceipt(context, sha256, profile);
@@ -92,7 +135,7 @@ async function runUpload(context: Context): Promise<string | null> {
     const prior = stored.get(number);
     if (prior?.state === 'received') continue;
     const bytes = file.slice((number - 1) * plan.partBytes, number * plan.partBytes);
-    const partHash = await context.hash(bytes, plan.partBytes, () => {});
+    const partHash = await checkedHash(context, bytes, plan.partBytes);
     // A part the server already bound keeps its request key; the server refuses any other binding.
     const part = partRequest(context, number, bytes, partHash, prior?.requestKey);
     await sendPart(context, part, limits.limits.maxPartAttempts);
@@ -111,7 +154,8 @@ async function runUpload(context: Context): Promise<string | null> {
       continue;
     }
     await context.pause();
-    state.receipt = await guarded(context, () => transport.status(state.receipt!));
+    state.receipt = await guarded(context, () => bounded(context, 'reading upload status',
+      () => transport.status(state.receipt!)));
   }
   if (state.cancelled) return null;
   if (state.receipt?.state !== 'retained' || !state.receipt.source)
@@ -122,7 +166,8 @@ async function runUpload(context: Context): Promise<string | null> {
 /** Sends the admitted SHA-256 under the receipt's current guard and a new request key. */
 async function finalize(context: Context, sha256: string) {
   const body = { ...uploadGuard(context.state.receipt!, context.key()), sha256 };
-  context.state.receipt = await guarded(context, () => context.transport.finalize(context.state.receipt!, body));
+  context.state.receipt = await guarded(context, () => bounded(context, 'finishing the upload',
+    () => context.transport.finalize(context.state.receipt!, body)));
 }
 
 /** v1: the finalization lease has expired. v2: the storage job ended without publishing the original. */
@@ -138,9 +183,10 @@ async function openReceipt(context: Context, sha256: string, profile: ProfileLim
   if (context.resume) {
     const { resume } = context;
     if (sha256 !== resume.sha256) throw new Error(NOT_THE_FILE);
-    return guarded(context, () => transport.status(resume));
+    return guarded(context, () => bounded(context, 'reading upload status', () => transport.status(resume)));
   }
-  const body: UploadCreate = { requestKey: context.key(), expectedCaseRevision: await transport.revision(),
+  const revision = await bounded(context, 'reading the batch revision', () => transport.revision());
+  const body: UploadCreate = { requestKey: context.key(), expectedCaseRevision: revision,
     filename: file.name, mediaType: 'application/octet-stream', sha256, bytes: file.size, profile: profile.version,
     provenance: { origin: 'not_stated', acquiredAt: context.acquiredAt } };
   try { return await createWhenFree(context, body, profile); }
@@ -161,8 +207,9 @@ async function createWhenFree(context: Context, body: UploadCreate, profile: Pro
       await sleep(SLOT_FIRST_MS);
       continue;
     }
-    try { return await context.transport.create(body); }
+    try { return await bounded(context, 'opening the upload', () => context.transport.create(body)); }
     catch (error) {
+      if (error instanceof UploadSilence) throw error;
       const slot = slotRefusal(error);
       if (slot && Date.now() - since < SLOT_WAIT_MS) {
         slotLine.add(context.ticket);
@@ -221,10 +268,12 @@ async function sendPart(context: Context, part: PartRequest, maximum: number) {
   while (!context.state.cancelled) {
     publish(context, { phase: 'uploading', part: part.number, doneBytes: context.state.receipt!.receivedBytes });
     try {
-      context.state.receipt = await context.transport.part(context.state.receipt!, part);
+      context.state.receipt = await bounded(context, `sending part ${part.number}`,
+        () => context.transport.part(context.state.receipt!, part));
       publish(context, { doneBytes: context.state.receipt.receivedBytes });
       return;
     } catch (error) {
+      if (error instanceof UploadSilence) throw error;
       failures++;
       const definite = error instanceof ApiError && error.status < 500;
       if (definite || failures >= maximum) {
@@ -239,7 +288,8 @@ async function sendPart(context: Context, part: PartRequest, maximum: number) {
 }
 
 async function reconcilePart(context: Context, part: PartRequest) {
-  const receipt = await context.transport.status(context.state.receipt!);
+  const receipt = await bounded(context, 'reading upload status',
+    () => context.transport.status(context.state.receipt!));
   context.state.receipt = receipt;
   const stored = receipt.parts.find(value => value.partNumber === part.number);
   const mismatched = stored && (stored.requestKey !== part.headers['X-Request-Key']
@@ -256,7 +306,10 @@ async function reconcilePart(context: Context, part: PartRequest) {
 async function guarded(context: Context, send: () => Promise<UploadReceipt>): Promise<UploadReceipt | null> {
   while (!context.state.cancelled) {
     try { return await send(); }
-    catch (error) { await waitForOfficer(context, error); }
+    catch (error) {
+      if (error instanceof UploadSilence) throw error;
+      await waitForOfficer(context, error);
+    }
   }
   return null;
 }

@@ -245,11 +245,22 @@ export class LargeOriginalService {
   }
   async list(caseIdValue:string){
     const caseId=uuid.parse(caseIdValue);
-    return transaction(async client=>{
-      const current=await caseRow(client,caseId);
-      const rows=(await client.query(listSql,[caseId,localOperatorSubject()])).rows;
-      return LargeUploadListSchema.parse({uploads:rows.map(row=>listed(row,current.revision))});
-    });
+    try{
+      // One read-only snapshot for revision and receipts; a list must not join the case/outbox write-lock cycle.
+      return await transaction(async client=>{
+        const current=(await client.query('SELECT id,revision FROM cases WHERE id=$1',[caseId])).rows[0];
+        if(!current)notFound('Source case not found.');
+        const rows=(await client.query(listSql,[caseId,localOperatorSubject()])).rows;
+        return LargeUploadListSchema.parse({uploads:rows.map(row=>listed(row,current.revision))});
+      },undefined,'repeatable_read_only');
+    }catch(error){
+      const code=(error as {code?:unknown}|null)?.code;
+      if(!(error instanceof AppError)&&typeof code==='string'
+        &&['40P01','40001','55P03','57014','53300','57P01','08006'].includes(code))
+        throw new AppError(503,'DB_UNAVAILABLE',
+          'The database could not read the upload list. Refresh the batch to try again.',{retryable:true});
+      throw error;
+    }
   }
   async claimPart(caseIdValue:string,idValue:string,value:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadPartSchema.parse(value);

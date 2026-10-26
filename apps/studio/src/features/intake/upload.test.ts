@@ -101,6 +101,55 @@ it('known refusal words stay visible; Cancel aborts once and sends no more parts
   expect(run.transport.finalize).not.toHaveBeenCalled();
 });
 
+it.each(['limits', 'hash', 'part-hash', 'revision', 'create', 'part'] as const)(
+  'a silent %s ends with an action, sends no retry and ignores a late result', async (step) => {
+    vi.useFakeTimers();
+    try {
+      const run = harness();
+      let complete!: (value: any) => void;
+      const pending = new Promise<any>(resolve => { complete = resolve; });
+      let hashProgress: ((bytes: number) => void) | undefined;
+      let hashes = 0;
+      const hash = vi.fn((_file: Blob, _size: number, progress: (bytes: number) => void) => {
+        hashes++;
+        if (step === 'hash' || (step === 'part-hash' && hashes === 2)) {
+          hashProgress = progress;
+          return pending;
+        }
+        return Promise.resolve('a'.repeat(64));
+      });
+      if (step !== 'hash' && step !== 'part-hash') run.transport[step].mockReturnValueOnce(pending);
+      const command = createUploadCommand({ file: new File(['file'], 'control.gpkg'),
+        acquiredAt: '2026-10-11T00:00:00Z', transport: run.transport, hash, publish: run.progress });
+      const finished = command.run().catch(error => error);
+      if (step === 'hash') {
+        await vi.advanceTimersByTimeAsync(100_000);
+        hashProgress?.(2);
+        await vi.advanceTimersByTimeAsync(100_000);
+        expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'checking', doneBytes: 2 }));
+        await vi.advanceTimersByTimeAsync(20_001);
+      } else await vi.advanceTimersByTimeAsync(120_001);
+      expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'stopped' }));
+      const error = await finished;
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toMatch(/Refresh the batch/);
+      const stopped = run.progress.mock.calls.length;
+      complete(step === 'hash' || step === 'part-hash' ? 'a'.repeat(64) : run.receipt);
+      hashProgress?.(4);
+      command.retry();
+      await vi.advanceTimersByTimeAsync(120_001);
+      expect(run.progress).toHaveBeenCalledTimes(stopped);
+      expect(run.transport.finalize).not.toHaveBeenCalled();
+      expect(run.transport.part).toHaveBeenCalledTimes(step === 'part' ? 1 : 0);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+it('a zero-byte check is shown as zero, not one KiB', async () => {
+  const { sizeWords } = await import('./upload-model');
+  expect(sizeWords(0)).toBe('0 KiB');
+});
+
 it('states only actual upload and intake progress, never converting unknown parts to zero', () => {
   const base = { doneBytes: 16 * 1024 ** 2, totalBytes: 43 * 1024 ** 2, part: 2, parts: 6 };
   expect(uploadWords({ ...base, phase: 'checking' })).toBe('Checking the file: 37%');
@@ -108,6 +157,8 @@ it('states only actual upload and intake progress, never converting unknown part
   expect(uploadWords({ ...base, phase: 'verifying' })).toBe('Verifying the upload');
   expect(uploadWords({ ...base, phase: 'stopped', words: 'Exact server words' }))
     .toBe('The upload stopped at part 2 of 6: Exact server words.');
+  expect(uploadWords({ ...base, phase: 'stopped', parts: 0, words: 'Refresh the batch' }))
+    .toBe('The upload stopped: Refresh the batch.');
   expect(partProgressWords({ state: 'reading', recordsSeen: 12, partsPlanned: null, partsDone: 0 }))
     .toBe('Reading: 12 records so far');
   expect(partProgressWords({ state: 'reading', recordsSeen: 12, partsPlanned: 3, partsDone: 1 })).toBe('1 of 3 parts');
