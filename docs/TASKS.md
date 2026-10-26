@@ -315,7 +315,7 @@ Size S, UI tooling. After: S1.3 run 7. **Status: merged 27 Oct (int3-pre 4075602
 
 ### S1.3ae The Halifax raw read survives a connection reset without starting over
 
-Size M, code. After: S1.3 run 8. **Status: running 27 Oct (task/s1-3ae-raw-reset at int3-pre 218fa836): name the reset's source; on a connection error resume by Range from the byte after the last sealed part, at most 3 times, ETag checked, parts byte-identical.**
+Size M, code. After: S1.3 run 8. **Status: merged 27 Oct into int3-pre 76eed374 (worker 10302807, lead guard 3cc52aeb). A GeoJSON raw read cut by a connection error reopens by Range from the byte after the last sealed part, at most 3 times per attempt, with the ETag pinned (a changed object or 412 refuses); parts and hashes byte-identical at four cut offsets; 41 streaming tests pass. The reset's sender is not named: the object store's log and the worker log were empty for 21:47 to 21:51 UTC and run 8 traced no store socket; a loopback stub showed a server idle write timeout during a backpressure pause gives exactly this ECONNRESET. Run 9 records the store connection.**
 
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
