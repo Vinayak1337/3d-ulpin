@@ -287,11 +287,19 @@ Size S, code and UI. After: S1.3x (same files). **Status: running 26 Oct (task/s
 
 ### S1.3z The file check must not wait on a network fetch
 
-Size S, UI. After: S1.3w. **Status: running 26 Oct (task/s1-3z-hash-worker at int3-pre c537e208).**
+Size S, UI. After: S1.3w. **Status: merged 26 Oct (int3-pre c2a32c8e, branch dac8bc7e). hashFile now uses an inline worker built into the bundle; a test fails if the worker script would be fetched; the build has no separate hash worker script. Run 6 count (lower bound, all 24 recorder pages on one origin): up to 35 requests open at once and six or more for 6,363 s; both stalled checks began inside such stretches. Chrome shares six connections per origin across all pages, so the recorder's many pages add to it. Follow-up S1.3aa: fewer long-lived requests.**
 
 - **What:** hashFile starts a new module worker per file, so the check waits for the worker script to be fetched; under load that fetch waited minutes or never came. Build the worker inline or create one reusable worker at start, prove with a test that no request is made, and count from the run 6 log how many requests the page held open to the Studio origin each second (Chrome allows six per origin over HTTP/1.1).
 - **Files:** hash-file.ts, file-hash.worker.ts, file-hash.ts, vite.config.ts if needed
 - **Tests:** pnpm studio:typecheck; pnpm studio:test; pnpm studio:build
+
+### S1.3aa Fewer long-lived requests from the Studio
+
+Size S, UI. After: S1.3y (shares readPreview.ts). **Status: waiting for S1.3y.**
+
+- **What:** Fold the table EventSource (table/useTableStream.ts) into the case subscription, pause polls in hidden pages and stop settled ones (table/queries.ts fallback jobs, map/preview/readPreview.ts), so one Studio page holds at most a few open requests to its origin; and have the rehearsal recorder use one page per act instead of 24.
+- **Files:** apps/studio/src/features/intake/table/useTableStream.ts, case-subscription.ts, table/queries.ts, map/preview/readPreview.ts; the rehearsal dress script
+- **Tests:** pnpm studio:typecheck; pnpm studio:test
 
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
