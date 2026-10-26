@@ -26,15 +26,15 @@ worker's exit wakes the lead.
 - **Failed or timed out:** read `logs/<task>.log`, then `git status` and `git log` in the worktree; resume the same
   session or re-dispatch with a RESUME file.
 
-**Spawners: only these two** (owner, 24 October):
+**Spawner: pi codex-pool workers for every task** (owner, 26 October: "Do the rest work via codex / Even for ui /
+You direct it what to do / Exactly"). `codex-subagent-win.mjs` takes all work: UI (step 7 and any change under
+`apps/studio`, `packages/ui` or `packages/scene`), backend, contracts, services, scripts, and tasks that need this
+PC's runtime, Docker, GPU or data drive. A UI task file says exactly what to change: the files and lines, the words
+to write, what stays, the layout and the tests. The Claude Code CLI (`claude-worker.sh`) is not dispatched while this
+rule stands. Until 26 October (owner, 24 October) Claude CLI workers took every UI task and codex took the rest.
 
-1. **Claude Code CLI workers** (`claude-worker.sh`) take every UI task: step 7 and any change under `apps/studio`,
-   `packages/ui` or `packages/scene`. They also take tasks that need this PC's runtime, Docker, GPU or data drive.
-2. **pi codex-pool workers** (`codex-subagent-win.mjs`) take the other code tasks (backend, contracts, services,
-   scripts). When the CLI is out of limit, codex may take any non-UI task; a UI task waits for the CLI.
-
-No cloud agents and no build work by the lead's own background agents (Agent tool). When both spawners are out of
-limit, start a timer for the soonest reset and stop. For teacher work, Claude teaches and codex does the learner work,
+No cloud agents and no build work by the lead's own background agents (Agent tool). When every codex account is out
+of limit, start a timer for the soonest reset and stop. For teacher work, Claude teaches and codex does the learner work,
 so that a different model checks the labels.
 
 **Capacity.** At most three workers at once, and only one of them may use this PC's runtime, Docker or GPU. Each shared
@@ -51,8 +51,10 @@ or agent from any project.
   `... cli.js -p --no-session --provider codex-<N> --model gpt-6-luna "Reply with the single word ok."` (the pool
   provider would send it to the first ready account instead). Check every account each time the pool is refreshed.
 - When a codex worker stops on a limit, refresh every account first, on its own, before any other dispatch (owner,
-  22 October). Then continue the task from its checkpoint on the other spawner if the task is not UI work; otherwise,
-  or when both are limited, start a timer for the soonest reset and stop.
+  22 October). Then start a timer for the soonest reset and stop. When it fires, continue with a fresh worker and a
+  short RESUME brief, not a `--session` resume of a session that ran long, because a resume sends its whole history
+  with every request. On 26 October accounts also drained within minutes of each reset, with nothing on this PC using
+  them. When a fresh account reaches its limit on a small session, stop launching and report it to the owner.
 - A timer only wakes the lead; it never dispatches anything by itself. Each background job lasts two hours at most, so
   chain the next timer when one returns.
 - **Hand-over:** the next worker gets `<task>-resume.full.md`: a RESUME header (branch and last commit, any uncommitted
