@@ -4,7 +4,7 @@ import type { Selection, TableJob, TableProfile } from './types';
 export type TableFormat = Selection['format'];
 
 /** The import dialog knows a dropped file only by its name; a batch item states its format on its card. */
-export function tableFormat(file: File): TableFormat {
+function tableFormat(file: File): TableFormat {
   if (/\.csv$/i.test(file.name)) return 'csv';
   return /\.ods$/i.test(file.name) ? 'ods' : 'xlsx';
 }
