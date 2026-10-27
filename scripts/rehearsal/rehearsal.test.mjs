@@ -319,9 +319,10 @@ test('listed answers use exact fields and Not stated, optionally approve, and ke
 
 test('position answer picks geometry exactly, or refuses with words without submitting', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: 1000 });
+  const byPosition = { ...officerAnswers.answers[1], identifierField: null, identifierBy: 'position' };
   for (const position of [true, false]) {
-    const fake = answerPage(t, { position }), file = { ...offeredFile(), name: officerAnswers.answers[1].file };
-    await answerLayout(fake.page, file, officerAnswers.answers[1]);
+    const fake = answerPage(t, { position }), file = { ...offeredFile(), name: byPosition.file };
+    await answerLayout(fake.page, file, byPosition);
     assert.equal(file.answer.state, position ? 'used' : 'unavailable');
     assert.deepEqual(fake.selections, position ? ['building', '/features/*/geometry', ''] : ['building']);
     if (!position) {
