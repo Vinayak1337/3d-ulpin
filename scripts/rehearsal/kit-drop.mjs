@@ -6,7 +6,8 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { win32 } from 'node:path';
 import { parseArgs } from 'node:util';
-import { allowedPath, checkedPath, readKit, runtimePlan } from './kit-manifest.mjs';
+import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
+import { answerLayout } from './officer-answers.mjs';
 import { batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
   rendererString, smoothness } from './presenter.mjs';
 import { dropExits, exitLines, get, jobTiming, processWatch, queueDepth } from './timing.mjs';
@@ -70,6 +71,9 @@ async function watchBatch(page, map, plan, result, api, studio, minutes) {
     for (const [index, [file, item]] of batchItems(result.files, intake.items).entries()) {
       if (item.sourceId) file.retained ??= Date.now();
       await observeRow(page, file, item);
+      if (result.files.includes(file)) {
+        await answerLayout(page, file, result.officerAnswers?.answers.find(answer => answer.file === file.name));
+      }
       const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
       const complete = item.state === 'read' && item.partsPlanned !== null
         && item.partsDone === item.partsPlanned && packages.length === item.partsDone && !targets.packagesTruncated;
@@ -130,7 +134,7 @@ async function finish(plan, result, api, session, stopWatch) {
   await save(plan, result);
 }
 
-async function run(plan, files, minutes) {
+async function run(plan, files, minutes, answers) {
   await new Promise((resolve, reject) => {
     const probe = createConnection({ host: '127.0.0.1', port: plan.studioPort });
     probe.once('connect', () => { probe.destroy(); reject(new Error('Preview port is already occupied')); });
@@ -142,6 +146,7 @@ async function run(plan, files, minutes) {
   const api = `${env.ULPIN_API_TARGET}/api/v1`;
   const studio = `http://127.0.0.1:${plan.studioPort}`;
   const result = newResult(plan.runtime, files);
+  if (answers) result.officerAnswers = answers;
   let preview;
   let session = {};
   let stopWatch;
@@ -189,14 +194,15 @@ async function run(plan, files, minutes) {
 async function main() {
   const { values } = parseArgs({ options: { runtime: { type: 'string' }, kit: { type: 'string' },
     out: { type: 'string' }, 'dry-run': { type: 'boolean' }, 'verify-hash': { type: 'boolean' },
-    minutes: { type: 'string', default: '30' } } });
+    answers: { type: 'string' }, minutes: { type: 'string', default: '30' } } });
   const plan = runtimePlan(values.runtime, values.out);
   const minutes = Number(values.minutes);
   if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 120) throw new Error('Minutes must be in (0, 120]');
+  const answers = values.answers ? await readAnswers(values.answers, plan.runtime) : null;
   const files = await readKit(values.kit, values['verify-hash']);
   await outputGuard(plan.out);
-  console.log(JSON.stringify({ ...plan, files, minutes, dryRun: Boolean(values['dry-run']) }, null, 2));
-  if (!values['dry-run']) await run(plan, files, minutes);
+  console.log(JSON.stringify({ ...plan, files, answers, minutes, dryRun: Boolean(values['dry-run']) }, null, 2));
+  if (!values['dry-run']) await run(plan, files, minutes, answers);
 }
 
 await main().catch(error => {

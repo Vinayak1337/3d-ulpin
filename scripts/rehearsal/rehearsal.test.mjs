@@ -5,13 +5,14 @@ import { mkdir, mkdtemp, readFile, rm, rmdir, stat, writeFile } from 'node:fs/pr
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
-import { allowedPath, readKit, runtimePlan } from './kit-manifest.mjs';
+import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
+import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
 import { batchItems, captureWatch, newResult, observeRow, recorder, smoothness } from './presenter.mjs';
 import { dropExits, exitLines, queueDepth } from './timing.mjs';
 import { setImmediate } from 'node:timers/promises';
 
-await mkdir('E:/ulpin-tmp/s3-12', { recursive: true });
-const scratch = await mkdtemp('E:/ulpin-tmp/s3-12/rehearsal-');
+await mkdir('E:/ulpin-tmp/s3-14', { recursive: true });
+const scratch = await mkdtemp('E:/ulpin-tmp/s3-14/rehearsal-');
 const miniPath = fileURLToPath(new URL('./mini-kit.json', import.meta.url));
 const mini = JSON.parse(await readFile(miniPath, 'utf8'));
 const fixture = JSON.parse(await readFile(new URL('./recorded.fixture.json', import.meta.url), 'utf8'));
@@ -218,15 +219,104 @@ test('exitLines keeps start and exit events; only timed exits count and no start
   assert.deepEqual(dropExits({ api: [records[0]] }, 4).api, { exitHook: 'present', exitsDuringDrop: [] });
 });
 
-test('dry-run prints files, isolated runtime, ports and output paths without creating output', async () => {
+const answersPath = 'docs/evidence/step-3/s3-14/rehearsal-officer-answers.json';
+const officerAnswers = JSON.parse(await readFile(answersPath, 'utf8'));
+test('answers reader requires every field, test_only true and a rehearsal runtime', async () => {
+  assert.deepEqual(await readAnswers(answersPath, 'ulpin-reh-05'), officerAnswers);
+  for (const field of ['file', 'kind', 'identifierField', 'nameField']) {
+    const body = structuredClone(officerAnswers);
+    delete body.answers[0][field];
+    await assert.rejects(readAnswers(await manifest(body), 'ulpin-reh-05'), /fields/);
+  }
+  await assert.rejects(readAnswers(await manifest({ ...officerAnswers, test_only: false }), 'ulpin-reh-05'));
+  await assert.rejects(readAnswers(await manifest({ ...officerAnswers, version: 'other' }), 'ulpin-reh-05'));
+  await assert.rejects(readAnswers('E:/not-read.json', 'ulpin-demo'), /Expected ulpin-reh-NN/);
+});
+const option = (value, disabled = false) => ({ value, text: value, disabled });
+const property = field => `/features/*/properties/${field}`;
+test('chooser matches BL_ID exactly and refuses disabled or ambiguous options', () => {
+  const options = [option(property('BL_ID_OLD')), option(property('BL_ID'))];
+  assert.equal(chooseOption(options, 'BL_ID', true), property('BL_ID'));
+  assert.equal(chooseOption([options[0]], 'BL_ID', true), null);
+  assert.equal(chooseOption([option(property('BL_ID'), true)], 'BL_ID', true), null);
+  assert.equal(chooseOption([options[1], options[1]], 'BL_ID', true), null);
+  assert.equal(chooseOption([option('')], null), '');
+});
+function answerPage(t, { missing = false, disabled = false, approve = false, alerts = [] } = {}) {
+  const presses = [], selections = [];
+  const options = [[option('building', disabled)], [option(property('BL_ID_OLD')),
+    ...(missing ? [] : [option(property('BL_ID'))])], [option(''), option(property('BL_ID'))]];
+  const button = name => ({ isVisible: async () => name !== 'Approve layout' || approve,
+    click: async () => {
+      presses.push(name);
+      t.mock.timers.tick(100);
+    } });
+  const layout = { waitFor: async () => {}, getAttribute: async () => 'Layout for test_only',
+    getByRole: (role, { name } = {}) => {
+      if (role === 'alert' || role === 'status') {
+        return { allTextContents: async () => role === 'alert' ? alerts : [] };
+      }
+      if (role === 'button') return button(name);
+      const index = ['What is each feature in this file?', 'Which field identifies each one?',
+        'Which field is its name?'].indexOf(name);
+      assert.notEqual(index, -1);
+      return { waitFor: async () => {}, evaluate: async () => options[index],
+        selectOption: async value => { selections.push(value); } };
+    } };
+  const page = { getByRole: (role, { name }) => name === 'Files in this batch'
+    ? { locator: () => ({ filter: () => ({ getByRole: (_, { name }) => button(name) }) }) } : layout,
+    waitForFunction: async () => {} };
+  return { page, presses, selections };
+}
+const offeredFile = () => ({ name: officerAnswers.answers[1].file, layoutQuestionOffered: 1000,
+  rowMatch: { kind: 'one', count: 1 } });
+test('missing field or disabled kind records unavailable, never submits, and never reopens', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1000 });
+  for (const config of [{ missing: true }, { disabled: true }]) {
+    const fake = answerPage(t, config), file = offeredFile();
+    await answerLayout(fake.page, file, officerAnswers.answers[1]);
+    await answerLayout(fake.page, file, officerAnswers.answers[1]);
+    assert.equal(file.answer.state, 'unavailable');
+    assert.deepEqual(file.answer.options[1].map(o => o.value), config.missing
+      ? [property('BL_ID_OLD')] : [property('BL_ID_OLD'), property('BL_ID')]);
+    assert.deepEqual(fake.presses, ['View layout']);
+    assert.equal(file.officerSeconds, null);
+  }
+});
+test('listed answers use exact fields and Not stated, optionally approve, and keep exact alerts', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1000 });
+  for (const config of [{}, { approve: true }, { alerts: ['The layout changed. Review it again.'] }]) {
+    const fake = answerPage(t, config), file = offeredFile();
+    await answerLayout(fake.page, file, null);
+    await answerLayout(fake.page, file, officerAnswers.answers[0]);
+    assert.deepEqual(fake.presses, []);
+    await answerLayout(fake.page, file, officerAnswers.answers[1]);
+    assert.deepEqual(fake.selections, ['building', property('BL_ID'), '']);
+    assert.deepEqual(fake.presses, config.approve
+      ? ['View layout', 'Use this layout', 'Approve layout'] : ['View layout', 'Use this layout']);
+    let state = config.approve ? 'approved' : 'used';
+    if (config.alerts) state = 'failed';
+    assert.equal(file.answer.state, state);
+    assert.deepEqual(file.answer.alerts, config.alerts ?? []);
+    assert.equal(file.officerSeconds, officerSeconds(file.answer));
+    assert.equal(file.officerSeconds, ((file.answer.approvedAt ?? file.answer.usedAt) - 1000) / 1000);
+  }
+  assert.equal(officerSeconds({ offeredAt: 1000, usedAt: 2500, approvedAt: 4000 }), 3);
+  assert.equal(officerSeconds({ offeredAt: 1000, usedAt: 2500, approvedAt: null }), 1.5);
+});
+
+test('dry-run with or without answers prints the guarded plan without creating output', async () => {
   const out = `${scratch}/never-created`;
-  const run = spawnSync(process.execPath, ['scripts/rehearsal/kit-drop.mjs', '--runtime', 'ulpin-reh-03',
-    '--kit', miniPath, '--out', out, '--dry-run'], { encoding: 'utf8' });
-  assert.equal(run.status, 0, run.stderr);
-  const plan = JSON.parse(run.stdout);
-  assert.equal(plan.files.length, 2);
-  assert.equal(plan.apiPort, 21036);
-  assert.equal(plan.studioPort, 5189);
-  assert.equal(plan.result, `${out}/result.json`);
-  await assert.rejects(stat(out), { code: 'ENOENT' });
+  for (const args of [[], ['--answers', answersPath]]) {
+    const run = spawnSync(process.execPath, ['scripts/rehearsal/kit-drop.mjs', '--runtime', 'ulpin-reh-03',
+      '--kit', miniPath, ...args, '--out', out, '--dry-run'], { encoding: 'utf8' });
+    assert.equal(run.status, 0, run.stderr);
+    const plan = JSON.parse(run.stdout);
+    assert.equal(plan.files.length, 2);
+    assert.deepEqual(plan.answers, args.length ? officerAnswers : null);
+    assert.equal(plan.apiPort, 21036);
+    assert.equal(plan.studioPort, 5189);
+    assert.equal(plan.result, `${out}/result.json`);
+    await assert.rejects(stat(out), { code: 'ENOENT' });
+  }
 });

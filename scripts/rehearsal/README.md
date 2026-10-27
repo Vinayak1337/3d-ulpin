@@ -17,8 +17,18 @@ The port must be free. There is no dev-server fallback. Demo and protected reh-0
 Prerequisites: healthy runtime on that port, local pnpm/Playwright dependencies, Chromium already installed on E:
 (`PLAYWRIGHT_BROWSERS_PATH`), and read-only `docker exec` access to that runtime's PostgreSQL for job timing.
 No install, image, container lifecycle or volume command is issued. Browser profiles/temp files stay on E:.
-The browser is headed, ANGLE D3D11, 1440x900. The officer answers layouts in Studio; meanings are never chosen here.
+The browser is headed, ANGLE D3D11, 1440x900. Without `--answers`, the officer answers layouts in Studio.
 `--minutes` bounds observation after the single multi-file retain action (default 30, maximum 120).
+
+Optional `--answers <file>` reads a `rehearsal-officer-answers/1` JSON document with `test_only: true` and an
+`answers` list, each with `file`, `kind`, `identifierField` and `nameField` (string or null for Not stated).
+Only `ulpin-reh-NN` runtimes are allowed (demo and reh-01 remain refused). The runner opens each listed kit
+original's visible layout question once, selects the supplied kind and exact property paths, then uses and, if
+shown, approves the layout through Studio. Missing or disabled options record `unavailable` with the option lists,
+without submitting; failures keep the exact alert words. The report retains the supplied answers as rehearsal
+officer provenance, per-file `answer.offeredAt`, `openedAt`, `usedAt`, `approvedAt`, `state` and `officerSeconds`.
+Officer seconds are `(approvedAt ?? usedAt) - offeredAt` divided by 1000, beside the unchanged `firstPartOnMap`
+observation measured from `dropAt` (the add press); no officer time is subtracted automatically.
 
 `result.json` holds per-file observed retention/layout moments, exact row/card/limit words, first/final map moments,
 non-overlapping batch/map frame captures (`maxMs`, `over100`, `longestTaskMs`), renderer, job queue/wall-exec/retries,
@@ -36,7 +46,7 @@ records `one`, `none` or `many` and the exact count; state and parts are still r
 
 Derived intake items whose `archiveItemId` or `parentItemId` points to a kit original are recorded in its `members`.
 Each member keeps its name, item ID and the same state, parts, layout, words and map observations as an original.
-Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; the runner does not open layouts.
+Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; their layouts are not opened.
 
 Batch and opened map frame counters are captured and reset every 10 seconds, independently of row/map waits.
 Each capture has browser-clock `from` and `to` timestamps; navigation and finish also flush partial windows.
