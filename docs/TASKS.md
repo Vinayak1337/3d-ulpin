@@ -1001,7 +1001,11 @@ Size S, code only. After: S6.2. **Status: done 25 Oct (merged into task/int3-pre
 
 ### S6.3 A suggested key or address link is declared in one press
 
-Size S, code only. After: S6.2, S4.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s6-3.md; branch task/s6-3-one-press-link at int3-pre f59fb694).**
+Size S, code only. After: S6.2, S4.8. **Status: merged 27 Oct (int3-pre 8aa2bf36; evidence docs/evidence/step-6/s6-3). Each key or address link on the reading card has Declare, which opens Evidence by key with DeclareKey filled (anchor, map path, table, column, kind integer when the path is integerIdEligible, namespace from the two headers); disabled until buildings are drafted; nothing is posted before the officer declares. Known weakness: the link carries its two field names only inside its words, so the client reads them from that exact phrasing (any other wording leaves the form blank): S6.3a gives the link its field names as data once S4.9 has merged (same contract file).**
+
+### S6.3a A reading link carries its two field names as data
+
+PLAN step 6. After S4.9 (both change the reading contract). The contract's reading link gains the field name on each side; intake-reading.ts fills them; declareFromLink reads them instead of matching the words, and the Declare request passes through component state instead of the query cache. **Status: open.**
 
 - **What:** A key or address link on the card opens DeclareKey filled in:
 - the map anchor and field, the table item, selection and column;
