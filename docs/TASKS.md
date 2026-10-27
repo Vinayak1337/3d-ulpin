@@ -492,7 +492,7 @@ Size M, code only. After: S3.2 (same file dispatch-lanes.ts); dispatch only if S
 
 ### S3.8 Practice-kit drop 1 on a fresh runtime: measure and list what fails
 
-Size M, this PC: Docker. After: S1.4, S2.1, S2.2, S3.1, S3.2, S3.3. **Status: open.**
+Size M, this PC: Docker. After: S1.4, S2.1, S2.2, S3.1, S3.2, S3.3. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-8.md; branch task/s3-8-kit-drop-1 at int3-pre 750243fd; owns ulpin-reh-04, alone on the PC). The kit is the s2-1 and s2-2 manifests, 17 files.**
 
 - **What:** Create ulpin-reh-04 empty with S1.2's procedure, at staging after S1.4 plus S3.1 and S3.2. Drop the whole practice kit at once with the S3.3 runner on a quiet PC. This is a measurement run: produce the failure list against the plan's done line (API never exits; first features within 60 s; no frame over 100 ms) and the kept-not-drawn list caused by the 16 to 32 MiB reader ceilings. Stop reh-04 at the end.
 - **Files:** scripts/rehearsal/kit-drop.mjs (S3.3); docs/evidence/step2/s2-1 and s2-2 manifests; docs/backend/DEMO-RUNTIME.md:296-311. Write: docs/evidence/step3/s3-8/result.json.
