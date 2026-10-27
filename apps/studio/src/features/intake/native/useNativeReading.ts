@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
+import { DXF_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { modelPreviewPlan, previewView, type ModelArtifactPins, type ModelReader, type ModelView,
   type NativeOmissions, type NativeReader, type NativeStatus } from './reading-model';
 import type { DxfInspection } from './DxfDrawing';
@@ -83,11 +84,11 @@ export async function readDxfArtifact(path: Pins, artifact: ModelArtifactPins, s
     throw new Error('The DXF inspection has no entity list.');
   }
   if (!head.pages) return head;
-  if (head.pages.length > 20) throw new Error('The DXF inspection has too many pages.');
+  if (head.pages.length > DXF_LIMITS.pages) throw new Error('The DXF inspection has too many pages.');
   const entities: DxfInspection['entities'] = [];
   for (const pin of head.pages) {
-    if (pin.firstOrdinal !== entities.length || pin.bytes > 8 * 1024 * 1024
-      || entities.length + pin.entityCount > 60_000) {
+    if (pin.firstOrdinal !== entities.length || pin.bytes > DXF_LIMITS.pageBytes
+      || entities.length + pin.entityCount > DXF_LIMITS.entities) {
       throw new Error('The DXF page order or size differs from its reading.');
     }
     const result = await api.GET(

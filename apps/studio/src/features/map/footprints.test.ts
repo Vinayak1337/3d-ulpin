@@ -30,6 +30,11 @@ describe('undrawnNote', () => {
   it('is silent when every feature is drawn', () => {
     expect(undrawnNote([line, polygon] as never)).toBeNull();
   });
+  it('counts a building drawn as a line and a geometry the map does not draw', () => {
+    const lineBuilding = { ...line, kind: 'building' };
+    const collection = { kind: 'parcel', geometry: { type: 'GeometryCollection', geometries: [] } };
+    expect(undrawnNote([lineBuilding, collection, polygon] as never)).toBe('Not drawn: 1 building feature, 1 parcel feature');
+  });
 });
 
 describe('drawingCountNote', () => {
@@ -155,7 +160,7 @@ describe('non-building lines and pins', () => {
         }
       }
       expect(toFootprints(features)).toEqual([]);
-      expect(undrawnNote(features)).toBeNull();
+      expect(undrawnNote(features)).toBe(kind === 'building' ? 'Not drawn: 3 building features' : null);
     }
   });
 });
