@@ -41,6 +41,8 @@ class ReviewControl {
 
   private contextRows(values: any[]) {
     const ownIds: string[] = values[12];
+    const unqualifiedCount = [...this.recorded.values()].filter(feature => feature.revision > 0
+      && !ownIds.includes(feature.id) && !this.qualifications.has(feature.id)).length;
     const rows = [...this.recorded.values()].filter(feature => feature.revision > 0 && !ownIds.includes(feature.id))
       .filter(feature => {
         const qualification = this.qualifications.get(feature.id);
@@ -49,14 +51,13 @@ class ReviewControl {
       }).map(body => ({ body, area_id: this.area.id, local_geometry: null,
         qualification_revision: this.qualifications.get(body.id)!.revision,
         metadata: { receiptId: 'technical-qualification-control' },
-        context_count: this.contextCountOverride ?? this.qualifications.size }));
+        context_count: this.contextCountOverride ?? this.qualifications.size,
+        unqualified_count: unqualifiedCount }));
+    if (!rows.length) return [{ body: null, unqualified_count: unqualifiedCount }];
     return this.reverseRows ? rows.reverse() : rows;
   }
 
   private read(sql: string, values: any[]): any[] | null {
-    if (sql.includes('AS unqualified_count')) return [{ unqualified_count: [...this.recorded.values()]
-      .filter(feature => feature.revision > 0 && !values[12].includes(feature.id)
-        && !this.qualifications.has(feature.id)).length }];
     if (sql.startsWith('WITH bounds')) return this.contextRows(values);
     if (sql.includes('FROM import_packages')) return [{ body: this.packages.get(values[0]) }];
     if (sql.includes('FROM sources')) return [...this.packages.values()].flatMap(pkg => pkg.sourceRevisionIds)
@@ -165,6 +166,19 @@ test('parallel reviews without qualified geometry avoid a second spatial scan un
     sql.includes('FROM import_packages') && sql.endsWith('FOR UPDATE'));
   assert(packageLock >= 0 && packageLock < control.queries.indexOf(locks[0]));
   assert(!control.queries.some(sql => sql.startsWith('UPDATE map_areas')));
+}));
+
+test('review reads spatial context and its unqualified count in one statement', async () => memory(async control => {
+  const pkg = control.addPackage();
+  control.addContext(true);
+  const unqualified = control.addPackage(1).features[0];
+  control.recorded.get(unqualified.id)!.revision = 1;
+  const reviewed = await reviewPackage(pkg.id, pkg.revision);
+  assert.equal(reviewed.review!.scope!.contextCount, 1);
+  assert.equal(reviewed.review!.scope!.unqualifiedInScope, 1);
+  const reads = control.queries.filter(sql => sql.includes('AS context_count') || sql.includes('AS unqualified_count'));
+  assert.equal(reads.length, 2, 'one shared spatial read outside and one under the area lock');
+  assert(reads.every(sql => sql.includes('scoped AS MATERIALIZED') && sql.includes('AS unqualified_count')));
 }));
 
 test('an edit finishing during the geo check refuses the in-flight review instead of saving stale findings',

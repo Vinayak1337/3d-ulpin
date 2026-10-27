@@ -5,4 +5,5 @@ import { query } from "../../infrastructure/db";
 export async function migrateAreas() {
   await query(sql('area.schema'));
   await query(sql('area.retire'));
+  await query(sql('area.review-context-indexes'));
 }

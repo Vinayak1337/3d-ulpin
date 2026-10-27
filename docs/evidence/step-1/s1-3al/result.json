@@ -1,0 +1,52 @@
+{
+  "task": "S1.3al", "planStep": 1, "status": "checkpoint; productive throughput comparison blocked",
+  "runtime": "ulpin-reh-03", "servingSha": "afb37488", "finalState": "stopped", "stopExit": 0,
+  "diagnosis": {
+    "node": "Index Scan using physical_geographic_gist; same node in both original statements",
+    "rowsFetchedThenFilteredPerPackage": [594732, 16882, 667722],
+    "sameAreaSubset": [110752, 3057, 124399], "allFetchedRowsWereRevisionZero": true,
+    "runtimeFeatures": { "revisionZero": 889009, "revisionOne": 1661 },
+    "why": "GiST already uses geographic_geometry && bounds, with matching SRID 4326. Wide package boxes intersect drafts across repeated rehearsal areas. revision>0 is only a heap filter; no recorded-only spatial index existed. Not an area_id index, SRID, id-array or per-row transform problem.",
+    "originalLocalRowsFiltered": [1661, 0, 1661],
+    "originalGeographicSharedHitBlocks": [325025, 10008, 374689],
+    "originalGeographicSharedReadBlocks": [255913, 5824, 278277]
+  },
+  "explainMilliseconds": {
+    "beforeContext": [1230.265, 47.536, 1207.623],
+    "beforeSeparateUnqualifiedCount": [1154.749, 18.709, 1242.757],
+    "afterCombinedContextAndCount": [1.062, 0.347, 0.777],
+    "afterCountIsolatedForDiagnosisOnly": [0.533, 0.241, 0.590],
+    "afterGeographicRowsFetched": [0, 0, 0], "afterGeographicSharedBlocks": [1, 1, 1],
+    "afterIndexes": ["physical_recorded_local_gist", "physical_recorded_geographic_gist"],
+    "scope": "Three initially NEEDS_INPUT Halifax packages; identical cached contextParameters values before/after. EXPLAIN ANALYZE BUFFERS; no settings/statistics changes."
+  },
+  "change": "Partial GiST indexes WHERE revision>0; one materialized spatial scope supplies rows and unqualified count. Correlated qualification existence retains OFFSET 0 to avoid broad analytical-view scans. Null count-only row is removed before pins/features. Selection predicates, margin, limits, fingerprints, locked shortcut and lock order unchanged.",
+  "migration": {
+    "file": "database/sql/20-area/review-context-indexes.sql", "appliedExit": 0,
+    "apply": "With preparation paused: docker exec -i ulpin-reh-03-postgres-1 sh -c 'psql -X -v ON_ERROR_STOP=1 -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"' < database/sql/20-area/review-context-indexes.sql",
+    "automatic": "Not registered: platform:start/db:migrate do not discover this standalone file. Automatic wiring needs database/manifest.json and packages/server/src/modules/areas/area-db.ts, outside OWN."
+  },
+  "equality": "All three real row-result hashes and count-result hashes match (empty context, unqualified_count=0). Optional read-only PostGIS regression uses retained NYC geometries in CTE controls: eight combinations of qualification/geographic/empty context, including nonempty rows/counts, explicit associations and groups. No runtime rows created for tests.",
+  "benchmark": {
+    "failure": "At 09:37:49 UTC the pending intake-large job exhausted three attempts: STALE_REVISION, A sealed part of this file is unavailable. pairedChunk in intake-large-worker.ts is outside OWN. No manual retry, requeue, row repair or original read.",
+    "baselineWindowEpochMs": [1793094166787.863, 1793094766787.863],
+    "baselineIdleWindowSeconds": 600, "packages": 0, "reviews": 0,
+    "cpuSampling": "61 PC Win32_Processor.LoadPercentage samples, approximately every 10 s; median 56%, p90 100%. Checks overlapped this idle window; not a capacity benchmark.",
+    "preludeOnly": { "reviews": 4, "effectiveFeaturesMedianP90Ms": [1737.27, 2020.06],
+      "reviewTotalMedianP90Ms": [1889.27, 6983.72] },
+    "productiveBeforeAfterPackagesPerMinute": null, "productiveBeforeAfterReviewsPerMinute": null,
+    "afterReviewEffectiveFeaturesAndTotal": null, "afterWindow": "Not run: no pending executable preparation."
+  },
+  "checks": {
+    "failingFirst": "exit 1 expected: 1 failed, 1 skipped; original has two spatial selector expansions, expected one",
+    "backendAndStudioTypes": "before/final exit 0", "studioTests": "before/final exit 0: 807 pass, 2 skip",
+    "serverSet": "before exit 0: 1142 pass, 10 skip; final exit 0: 1144 pass, 11 skip",
+    "areasWithPostgis": "exit 0: 119 pass; SQL equality also rerun after indexes: 2 pass",
+    "demoDoctor": "before/final/post-runtime exit 0 from demo checkout, unchanged 4ffd801a",
+    "openapiAndApiCheck": "before exit 0; final exit 1 expected stale producer pin: packages/server/src/modules/areas/areas.ts",
+    "diffCheck": "exit 0"
+  },
+  "inputs": ["Retained NYC import fixture", "Pending Halifax packages; original unopened; no acquisition"],
+  "raw": "E:/ulpin-tmp/s1-3al/: *-plan.json, *-result.json, parameters.json, preparation-failure.jsonl, baseline-cpu.jsonl, *-reviews.jsonl, *-checks logs",
+  "next": "Resolve sealed raw/mapped-part availability in a separate intake task; then run productive before/after windows with CPU samples. Explicitly apply the index file on each runtime, or authorize automatic migration wiring outside OWN. No throughput improvement claimed."
+}

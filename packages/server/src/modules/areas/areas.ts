@@ -1290,8 +1290,15 @@ const packageSpatialContextSql = `SELECT id FROM physical_features
     AND geographic_geometry && (SELECT geographic_extent FROM bounds)
     AND ST_Intersects(ST_SetSRID(ST_Translate(ST_Transform(geographic_geometry,$10::integer),
       -($11::double precision),-($12::double precision)),0),(SELECT local_extent FROM bounds))`;
-const packageContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
+const unqualifiedContextCountSql = `SELECT count(*)::integer AS unqualified_count
+  FROM scoped s JOIN physical_features f ON f.id=s.id
+  WHERE NOT EXISTS (SELECT 1 FROM usp_analytic_geometry q
+    WHERE q.namespace='area_feature' AND q.id=f.id AND q.revision=f.revision OFFSET 0)`;
+
+const packageContextSql = `${packageReviewBoundsSql}, scoped AS MATERIALIZED (
   ${packageSpatialContextSql}
+), selected AS MATERIALIZED (
+  SELECT id FROM scoped
   UNION
   SELECT f.id FROM property_associations a JOIN physical_features f ON f.id=a.to_id
   WHERE a.from_id=ANY($13::uuid[]) AND a.relationship='occupies_parcel' AND a.status='confirmed'
@@ -1300,8 +1307,8 @@ const packageContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
   SELECT f.id FROM block_groups g JOIN block_group_memberships m ON m.group_id=g.id
   JOIN physical_features f ON f.id=m.feature_id
   WHERE g.area_id=$1 AND f.area_id<>$1 AND f.revision>0 AND f.id<>ALL($13::uuid[])
-)
-SELECT f.body,f.area_id,q.qualification_revision,q.metadata,
+), context AS (
+SELECT f.id,f.body,f.area_id,q.qualification_revision,q.metadata,
   CASE WHEN f.area_id<>$1 AND $10::integer IS NOT NULL THEN
     ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$10::integer),
       -($11::double precision),-($12::double precision)),9,0) END local_geometry,
@@ -1309,12 +1316,11 @@ SELECT f.body,f.area_id,q.qualification_revision,q.metadata,
 FROM selected s JOIN physical_features f ON f.id=s.id
 JOIN LATERAL (SELECT qualification_revision,metadata FROM usp_analytic_geometry
   WHERE namespace='area_feature' AND id=f.id AND revision=f.revision OFFSET 0) q ON true
-ORDER BY f.id LIMIT 2001`;
-
-const unqualifiedContextCountSql = `${packageReviewBoundsSql}, scoped AS (${packageSpatialContextSql})
-  SELECT count(*)::integer AS unqualified_count FROM scoped s JOIN physical_features f ON f.id=s.id
-  WHERE NOT EXISTS (SELECT 1 FROM usp_analytic_geometry q
-    WHERE q.namespace='area_feature' AND q.id=f.id AND q.revision=f.revision)`;
+ORDER BY f.id LIMIT 2001
+)
+SELECT c.body,c.area_id,c.qualification_revision,c.metadata,c.local_geometry,c.context_count,u.unqualified_count
+FROM (${unqualifiedContextCountSql}) u LEFT JOIN context c ON true
+ORDER BY c.id`;
 
 type ReviewDependencyPins = {
   reference: string;
@@ -1383,7 +1389,9 @@ async function effectiveFeatures(pkg: ImportPackage, area: MapArea, client?: Poo
   const extent: PackageReviewScope['extent'] = [bounds[0] - margin, bounds[1] - margin,
     bounds[2] + margin, bounds[3] + margin];
   const run = client ? client.query.bind(client) : query;
-  const rows = (await run(packageContextSql, contextParameters(pkg, area, extent))).rows as ReviewContextRow[];
+  const result = (await run(packageContextSql, contextParameters(pkg, area, extent))).rows;
+  // The count's left join retains one null context row when no qualified context exists.
+  const rows = result.filter(row => row.body !== null) as ReviewContextRow[];
   const contextCount = Number(rows[0]?.context_count ?? rows.length);
   if (contextCount > 2000) {
     throw new AppError(422, 'AREA_CONTEXT_LIMIT',
@@ -1395,11 +1403,10 @@ async function effectiveFeatures(pkg: ImportPackage, area: MapArea, client?: Poo
   const canonicalRows = rows.filter(row => isQualifiedPin(qualified, geometryPin('area_feature', row.body)));
   const contextPins = canonicalRows.map(row => ({ id: row.body.id, revision: row.body.revision,
     qualification: { revision: Number(row.qualification_revision), fingerprint: sha256(canonical(row.metadata)) } }));
-  const count = (await run(unqualifiedContextCountSql, contextParameters(pkg, area, extent))).rows[0];
   const features = [...ownGeometry, ...await projectedFeatures(canonicalRows, area)]
     .sort((first, second) => first.id.localeCompare(second.id));
   return { features, scope: { extent, contextPins, areaRevisionAtReview: area.revision,
-    unqualifiedInScope: Number(count?.unqualified_count ?? 0) },
+    unqualifiedInScope: Number(result[0]?.unqualified_count ?? 0) },
     associations: await checkedAssociations(features, client) };
 }
 
