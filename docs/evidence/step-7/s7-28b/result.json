@@ -1,0 +1,48 @@
+{
+  "task": "S7.28b",
+  "planSteps": [3, 7],
+  "test_only": true,
+  "status": "done",
+  "fixture": {
+    "what": "The S7.28 synthetic area (21 packages x 2,000 squares, 42,000 features, drawn by window at its 15,000-building limit) with a batch whose large GeoJSON keeps being read: its read preview gains 60 outlines a second.",
+    "answeredBy": "Playwright routes in E:/ulpin-tmp/s7-28b/fixture.mjs (copied from S7.28); no server, no real data",
+    "browser": "Playwright Chromium headed, production build served by vite preview, 1440 x 900",
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "recorder": "E:/ulpin-tmp/s7-28b/measure.mjs: once 15,000 buildings are drawn, draw calls of one frame, 10 synced single renders (render plus a one-pixel read back), then PerformanceObserver long tasks and requestAnimationFrame gaps over 2 minutes of right-drag orbiting and 1 minute still, the preview growing throughout"
+  },
+  "cause": "Each footprint building was its own Mesh and its own EdgesGeometry LineSegments, drawn again in the shadow pass: about 39,000 draw calls for 15,000 buildings, about 90 ms per render.",
+  "fix": "Resting footprint buildings draw from batches (packages/scene/src/building-batch.ts) of up to 2,000 buildings of one rest look: one mesh and one set of edges each, filled in place as buildings arrive. A building that looks unlike its batch (selected, hovered, see-through near an explored building, still growing in) is collapsed in the batch and draws as its own mesh, which picks keep testing. Batching is always on; storey-by-storey buildings stay as before.",
+  "before": {
+    "buildings": 15000,
+    "drawCalls": 39172,
+    "renderMsMedian": 89.7,
+    "renderMsMax": 92.4,
+    "orbit2min": { "longTasks": 1280, "over100ms": 196, "longestMs": 347, "frameGapsOver100ms": 231, "longestFrameGapMs": 740 },
+    "still1min": { "longTasks": 29, "over100ms": 13, "longestMs": 175, "frameGapsOver100ms": 14, "longestFrameGapMs": 186 }
+  },
+  "after": {
+    "buildings": 15000,
+    "drawCalls": 181,
+    "renderMsMedian": 5.5,
+    "renderMsMax": 5.8,
+    "orbit2min": { "longTasks": 0, "over100ms": 0, "longestMs": 0, "frameGapsOver100ms": 0, "longestFrameGapMs": 0 },
+    "still1min": { "longTasks": 0, "over100ms": 0, "longestMs": 0, "frameGapsOver100ms": 0, "longestFrameGapMs": 0 },
+    "hoverRestyleMs": "1.4 to 5.6 over 12 hover changes"
+  },
+  "look": {
+    "how": "Screenshots of the canvas at one fixed camera (target at the drawn area's centre, camera 70 m east, 60 m up, 85 m south of it), at rest, with the centre building hovered and with it selected; before and after compared pixel by pixel",
+    "files": "E:/ulpin-tmp/s7-28b/{before,after}-{rest,hover,selected}.png",
+    "pickedAtCentre": { "before": "f-007482", "after": "f-007482" },
+    "pixelsDiffering": { "rest": 0, "hover": 0, "selected": 0 }
+  },
+  "tests": {
+    "file": "packages/scene/src/building-batch.test.ts",
+    "checks": [
+      "resting buildings of one look draw as one mesh and one set of edges, and a pick on each returns its id",
+      "selecting a building writes only its own range in the batch; moving the selection writes only the old and the new range",
+      "outcome colours stay in the batch of thematic buildings; a hovered building draws as its own mesh",
+      "changing or removing a building leaves an untouched batch identical by reference (mesh, edges, geometries, buffer version)",
+      "a growing building draws as its own mesh until it has grown in, then joins a batch"
+    ]
+  }
+}

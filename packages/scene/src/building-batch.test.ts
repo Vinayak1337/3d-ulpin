@@ -64,6 +64,9 @@ function drawAll(engine: Engine) {
 const ownMesh = (engine: Engine, id: string) => engine.entries.get(id).meshes[0] as Mesh;
 const batchOf = (engine: Engine, id: string) => engine.entries.get(id).batch;
 const positions = (mesh: Mesh | LineSegments) => mesh.geometry.getAttribute('position') as BufferAttribute;
+/** The same objects, by reference. */
+const same = (objects: object[], expected: object[]) =>
+  objects.length === expected.length && objects.every((object, index) => object === expected[index]);
 
 /** The batch's copy of a member's body, in the order the members joined. */
 function copyOf(engine: Engine, id: string, before: string[]): number[] {
@@ -85,7 +88,7 @@ describe('batched footprint buildings', () => {
     drawAll(engine);
     const batch = batchOf(engine, 'a');
     expect(batchOf(engine, 'c')).toBe(batch);
-    expect(engine.buildings.children).toEqual([batch.mesh, batch.lines]);
+    expect(same(engine.buildings.children, [batch.mesh, batch.lines])).toBe(true);
     expect(copyOf(engine, 'b', ['a'])).toEqual(Array.from(positions(ownMesh(engine, 'b')).array));
     expect(batch.mesh.geometry.drawRange.count).toBe(3 * positions(ownMesh(engine, 'a')).count);
     lookDown(engine, 25, -5);
@@ -111,7 +114,8 @@ describe('batched footprint buildings', () => {
     expect(batch.mesh.material).toBe(engine.m.bldgContext);
     expect(ownMesh(engine, 'b').material).toBe(engine.m.selected);
     const selected = engine.entries.get('b');
-    expect(engine.buildings.children).toEqual([batch.mesh, batch.lines, selected.meshes[0], selected.edges[0]]);
+    const drawn = [batch.mesh, batch.lines, selected.meshes[0], selected.edges[0]];
+    expect(same(engine.buildings.children, drawn)).toBe(true);
     expect(new Set(copyOf(engine, 'b', ['a'])).size).toBeLessThanOrEqual(3);
     expect(select('c')).toEqual([range(1), range(2)]);
     expect(copyOf(engine, 'b', ['a'])).toEqual(Array.from(positions(ownMesh(engine, 'b')).array));
@@ -156,13 +160,13 @@ describe('batched footprint buildings', () => {
     engine.setBuildings([inputs[1]!, inputs[2]!, inputs[3]!]);
     drawAll(engine);
     expect(batchOf(engine, 'u')).toBe(hatch);
-    expect([hatch.mesh, hatch.lines]).toEqual([mesh, lines]);
-    expect([hatch.mesh.geometry, hatch.lines.geometry]).toEqual([geometry, edges]);
+    expect(same([hatch.mesh, hatch.lines, hatch.mesh.geometry, hatch.lines.geometry], [mesh, lines, geometry, edges]))
+      .toBe(true);
     expect(positions(mesh).version).toBe(version);
     expect(batchOf(engine, 'b').size).toBe(1);
     expect(copyOf(engine, 'b', [])).toEqual(Array.from(positions(ownMesh(engine, 'b')).array));
     engine.setBuildings([inputs[2]!, inputs[3]!]);
-    expect(engine.buildings.children).toEqual([hatch.mesh, hatch.lines]);
+    expect(same(engine.buildings.children, [hatch.mesh, hatch.lines])).toBe(true);
   });
 
   it('draws a growing building as its own mesh until it has grown in', () => {
@@ -173,6 +177,6 @@ describe('batched footprint buildings', () => {
     expect(ownMesh(engine, 'a').parent).toBe(engine.buildings);
     engine.renderFrame(performance.now() + 1000);
     expect(ownMesh(engine, 'a').parent).toBeNull();
-    expect(engine.buildings.children).toEqual([batchOf(engine, 'a').mesh, batchOf(engine, 'a').lines]);
+    expect(same(engine.buildings.children, [batchOf(engine, 'a').mesh, batchOf(engine, 'a').lines])).toBe(true);
   });
 });
