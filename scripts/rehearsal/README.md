@@ -22,14 +22,35 @@ The browser is headed, ANGLE D3D11, 1440x900. The officer answers layouts in Stu
 
 `result.json` holds per-file observed retention/layout moments, exact row/card/limit words, first/final map moments,
 non-overlapping batch/map frame captures (`maxMs`, `over100`, `longestTaskMs`), renderer, job queue/wall-exec/retries,
-five-second health/pool samples and before/after S3.1 exit lines. Missing measurements stay null, not zero.
+five-second health/pool samples and before/after S3.1 start/exit lines. Missing measurements stay null, not zero.
 Map moments are upper bounds: canvas + package caption + two animation frames, with screenshots; **not proof every
 feature painted**. Final map observation requires all planned parts and a complete package listing; otherwise null.
 The map stays open after first observation; navigation splits its captures. Separate windows avoid hidden tabs;
 hidden/unmeasured pages, unknown GPUs and software renderers give **no smoothness verdict**, even with zero slow frames.
 Job exec is completion minus first dispatch, including retry/dependency wait.
 CPU time and retry-wait seconds are unknown.
-Exit files include historical lines; compare before/after. Missing exit files do not prove zero exits.
+Exit files include historical lines; missing exit files do not prove zero exits.
+
+Rows match the exact text of the tray's File-cell name button, not a substring of the whole row. `rowMatch`
+records `one`, `none` or `many` and the exact count; state and parts are still recorded when words cannot be read.
+
+Derived intake items whose `archiveItemId` or `parentItemId` points to a kit original are recorded in its `members`.
+Each member keeps its name, item ID and the same state, parts, layout, words and map observations as an original.
+Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; the runner does not open layouts.
+
+Batch and opened map frame counters are captured and reset every 10 seconds, independently of row/map waits.
+Each capture has browser-clock `from` and `to` timestamps; navigation and finish also flush partial windows.
+The smoothness rules are unchanged; an unopened map remains unmeasured.
+
+`process.queue` adds a timestamp and counts for `queued`, `dispatched` and `running` every 10 seconds once the
+case ID is known. It uses one SELECT with the same runtime/case validation and read-only psql guard as job timing.
+A failed query records null counts, never invented zeroes; nothing writes to the database.
+
+The opt-in S3.1 hook appends one minimal `start` line (event, PID, time), and timestamps/redacts `exit` lines.
+`process.api` and `process.dispatcher` report `exitHook` and `exitsDuringDrop`, filtering exits by `dropAt`.
+No start line means `exitHook: missing`, not proof of no exit. Historical lines remain in before/after snapshots;
+no message text or environment values are recorded. Existing processes need the updated hook on their next
+authorized start.
 
 The mini kit is test_only NYC GeoJSON plus Tweed GPKG. The requested external practice-kit manifest was absent;
 the GPKG path/hash came from its existing sibling receipt. The recorded fixture retains S1.3's figures, not a new run.

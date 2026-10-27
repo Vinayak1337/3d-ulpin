@@ -7,9 +7,9 @@ import { fileURLToPath } from 'node:url';
 import { win32 } from 'node:path';
 import { parseArgs } from 'node:util';
 import { allowedPath, checkedPath, readKit, runtimePlan } from './kit-manifest.mjs';
-import { captureFrames, drop, mapMoment, newResult, observeRow, recorder,
+import { batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
   rendererString, smoothness } from './presenter.mjs';
-import { exitLines, get, jobTiming, processWatch } from './timing.mjs';
+import { dropExits, exitLines, get, jobTiming, processWatch, queueDepth } from './timing.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -67,10 +67,8 @@ async function watchBatch(page, map, plan, result, api, studio, minutes) {
   while (Date.now() < deadline) {
     const intake = await get(api, `/ingestion/cases/${result.caseId}/intake`);
     const targets = await get(api, `/ingestion/cases/${result.caseId}/targets`);
-    for (const [index, file] of result.files.entries()) {
-      const item = intake.items.find(item => item.name === win32.basename(file.path));
-      if (!item?.sourceId) continue;
-      file.retained ??= Date.now();
+    for (const [index, [file, item]] of batchItems(result.files, intake.items).entries()) {
+      if (item.sourceId) file.retained ??= Date.now();
       await observeRow(page, file, item);
       const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
       const complete = item.state === 'read' && item.partsPlanned !== null
@@ -124,6 +122,7 @@ async function finish(plan, result, api, session, stopWatch) {
     try { result.jobs = jobTiming(plan.runtime, result.caseId); }
     catch (error) { result.jobsError = error.message; }
     result.process.exitsAfter = await exitLines(plan.runtime).catch(() => null);
+    if (result.dropAt) Object.assign(result.process, dropExits(result.process.exitsAfter, result.dropAt));
   }
   result.frames.verdict = result.status === 'incomplete' ? 'not_a_smoothness_verdict'
     : smoothness(result.renderer, [...result.frames.batch, ...result.frames.map]);
@@ -146,6 +145,7 @@ async function run(plan, files, minutes) {
   let preview;
   let session = {};
   let stopWatch;
+  let stopCaptures;
   try {
     await build(plan, env);
     const vite = fileURLToPath(new URL('../../apps/studio/node_modules/vite/bin/vite.js', import.meta.url));
@@ -157,6 +157,11 @@ async function run(plan, files, minutes) {
     result.process.exitsBefore = await exitLines(plan.runtime);
     stopWatch = processWatch(api);
     session = await presenter(env); // Separate headed windows avoid a background batch tab.
+    stopCaptures = captureWatch(session.page, session.map, result.frames, () => {
+      if (!result.caseId) return;
+      try { result.process.queue.push(queueDepth(plan.runtime, result.caseId)); }
+      catch { result.process.queue.push({ at: Date.now(), counts: null, error: 'Read-only queue query failed' }); }
+    });
     const dropped = await drop(session.page, studio, files);
     result.caseId = dropped.caseId;
     result.dropAt = dropped.at;
@@ -170,7 +175,10 @@ async function run(plan, files, minutes) {
     result.error = { name: error.name, message: error.message.slice(0, 300) };
     process.exitCode = 1;
   } finally {
-    try { await finish(plan, result, api, session, stopWatch); }
+    try {
+      await stopCaptures?.();
+      await finish(plan, result, api, session, stopWatch);
+    }
     finally {
       try { await session.browser?.close(); }
       finally { preview?.kill(); } // Only the preview created here; never the runtime.
