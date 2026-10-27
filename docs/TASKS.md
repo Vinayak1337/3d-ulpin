@@ -571,11 +571,19 @@ Size S, code only. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s3-16c.m
 
 ### S3.16d The rehearsal runner sees a package drawn on the map, and names the cause of every slow frame
 
-Size S, code only. After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s3-16d.md; branch task/s3-16d-map-moment. The map moment waits for a drawn-package signal instead of the removed words features · unrecorded proposals; every frame over 100 ms is recorded with its long-animation-frame scripts, or not_script, and matched to runner activity. **Status: round 1 done 28 Oct (538882e0, rehearsal tests 32 pass): the runner half. Round 2 (s3-16d-r1.md) puts data-drawn-packages on the map canvas; running.** 
+Size S, code only. After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s3-16d.md; branch task/s3-16d-map-moment. The map moment waits for a drawn-package signal instead of the removed words features · unrecorded proposals; every frame over 100 ms is recorded with its long-animation-frame scripts, or not_script, and matched to runner activity. **Status: round 1 done 28 Oct (538882e0, rehearsal tests 32 pass): the runner half. Round 2 (s3-16d-r1.md) puts data-drawn-packages on the map canvas when the open package has drawn. Merged 28 Oct (int3-pre cc32dc14; rehearsal 32 pass, map tests 160 pass, UI scan clean).**
+
+### S3.16e The rehearsal runner never blocks its own clock, so a slow read it reports is the server's
+
+Size S, code only. After: S5.31. Task file E:/Projects/ulpin-wt/_tasks/s3-16e.md; branch task/s3-16e-async-sampling. The runner's read-only job queries ran through spawnSync with a 30 s timeout, freezing its fetch timers and health sampler; both 30 s readings of drop 2 run 3 sit at that limit. Queries become asynchronous and runner event-loop delay is recorded, with each sample marked runnerBlocked when it overlaps one. **Status: running 28 Oct.** 
 
 ### S5.31 The batch targets read answers in under 2 s on a drop-sized case, and health in under 1 s, while jobs run
 
-Size M, code only (read-only queries on the stopped ulpin-reh-07 database). After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s5-31.md; branch task/s5-31-targets-read. Two targets reads took 29.6 s and 22.3 s and /health peaked at 30.2 s during drop 2 run 3; find whether a plan, a lock wait or the pool did it, and fix it with the answers unchanged. **Status: running 28 Oct.**
+Size M, code only (read-only queries on the stopped ulpin-reh-07 database). After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s5-31.md; branch task/s5-31-targets-read. Two targets reads took 29.6 s and 22.3 s and /health peaked at 30.2 s during drop 2 run 3; find whether a plan, a lock wait or the pool did it, and fix it with the answers unchanged. **Status: merged 28 Oct (evidence only, int3-pre). Cause not shown offline: no lock conflict (plain MVCC reads), but the targets read costs 1.2 s warm on an idle database, 1.0 s of it package facts detoasting each package body several times, 155 ms the drafted OR EXISTS; HeadBucket in /health has no deadline. Fixes S5.32 and S3.16e.**
+
+### S5.32 The batch targets read costs under 150 ms on the drop 2 case, and the storage health probe has a deadline
+
+Size M, code only (read-only queries on the stopped ulpin-reh-07 database). After: S5.31. Task file E:/Projects/ulpin-wt/_tasks/s5-32.md; branch task/s5-32-targets-cost. Package facts read each body once or not at all, drafted uses indexes, same answers; checkStorage gets a 3 s deadline. **Status: running 28 Oct.**
 ### IMG7 Processor image for int3 dee55fc8
 
 Size S, this PC: Docker build only. After: S5.25, S5.27, S1.3ao. Task file E:/Projects/ulpin-wt/_tasks/img7.md; branch task/img7-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at 7580d766 by IMG6's method, smoke test, pin in scripts/platform/processor-image.json. **Status: merged 28 Oct (int3-pre 2b72f962). ulpin-geo:git-7580d7661c31 built from services/geo at 7580d766 (999 MB, both labels, five smoke imports pass, fitz absent); the demo and the old pinned image unchanged. The platform suite fails 7 of 132 on an exit-record test left behind by d965e2f4 (S3.16b).**
