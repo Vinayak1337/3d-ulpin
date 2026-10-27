@@ -6,6 +6,7 @@ import {type ChunkMappingObservation,type MappingPlan,type SourceProfile,type St
 import {sha256} from '../../../infrastructure/storage';
 import {compileMapping,setAsideGeometryTypes} from './registry';
 import {compileStreamedMapping,prefixGeometryCompatible} from './streamed-mapping';
+import {sourceFeaturePosition} from './streaming-vector-reader';
 
 type Plan=MappingPlan|StreamedMappingPlan;
 type Profile=SourceProfile|StreamedProfileGeneration;
@@ -36,13 +37,17 @@ const field=(feature:Record<string,unknown>,path:string,integer=false):Field=>{
 };
 const keyOperation=(plan:Plan)=>plan.operations.find(op=>op.target.endsWith('.sourceKey'))!;
 const integerKey=(plan:Plan)=>keyOperation(plan).conversionId==='literal_integer_identifier@1';
+const sourceKeyField=(record:StreamingVectorRecord,path:string,integer:boolean,position:boolean):Field=>position
+  ?{state:'known',value:`position:${sourceFeaturePosition(record)}`,sourcePath:path}
+  :field(record.feature as Record<string,unknown>,path,integer);
 export function candidateKeyHashes(records:StreamingVectorRecord[],plan:Plan|MappingPlanV2){
   const path=isMappingPlanV2(plan)?plan.fields.find(op=>op.target==='building.sourceKey')?.sourceField
     :keyOperation(plan).sourcePath;
   if(!path)return [];
   const integer=!isMappingPlanV2(plan)&&integerKey(plan);
+  const position=!isMappingPlanV2(plan)&&keyOperation(plan).conversionId==='feature_position@1';
   return [...new Set(records.filter(record=>record.disposition==='accepted').map(record=>{
-    const value=field(record.feature as Record<string,unknown>,path,integer);
+    const value=sourceKeyField(record,path,integer,position);
     return value.state==='known'?sha256(value.value!):null;
   }).filter((value):value is string=>value!==null))];
 }
@@ -124,6 +129,7 @@ function normalizeLegacyMappedChunk(records:StreamingVectorRecord[],plan:Plan,pr
   // A chunk can observe a permitted subset; the slot names the pinned allowed inventory.
   const schemaFingerprint=profile.source.schemaFingerprint;
   const keyPath=keyOperation(plan).sourcePath,integer=integerKey(plan),kind=plan.kind??'building';
+  const position=keyOperation(plan).conversionId==='feature_position@1';
   const namePath=plan.operations.find(op=>op.target.endsWith('.name'))?.sourcePath;
   const byHash=new Map(existing.map(row=>[row.source_key_sha256,{value:row.source_key,firstIndex:row.first_feature_index}]));
   const keys:KeyDecision[]=[],observations:ChunkMappingObservation[]=[];
@@ -147,10 +153,11 @@ function normalizeLegacyMappedChunk(records:StreamingVectorRecord[],plan:Plan,pr
       sourcePath:'/features/*/geometry' as const};
     issues.push(...sourceShapeIssues(feature,profile,geometryMatches));
     if(setAsideGeometryTypes(kind,[String((feature.geometry as {type?:unknown}|null|undefined)?.type)]).length){
-      observations.push(setAsideObservation(record,field(feature,keyPath,integer),namePath,geometryRef,issues));
+      observations.push(setAsideObservation(record,sourceKeyField(record,keyPath,integer,position),
+        namePath,geometryRef,issues));
       continue;
     }
-    let sourceKey=field(feature,keyPath,integer),name=namePath?field(feature,namePath):unknown();
+    let sourceKey=sourceKeyField(record,keyPath,integer,position),name=namePath?field(feature,namePath):unknown();
     if(name.state==='known'&&!literalTextValueValid(name.value!)){
       name=unknown(namePath);issues.push('MAPPING_TEXT_INVALID');
     }

@@ -51,6 +51,7 @@ import { assertProvedPartBounds } from "../usp/ingestion/intake-package-cuts";
 import { assertAreaRowLive } from "./area-retire";
 
 export type Mapping = {
+  sourceKeyConversion?: "feature_position@1";
   idField?: string;
   nameField?: string;
   kind: PhysicalFeature["kind"];
@@ -593,7 +594,7 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
   const area = await importAreaDestination(adapter, client);
   const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
   mark('destination');
-  const normalized = await normalizeAreaImport(adapter, data, area);
+  const normalized = await normalizeAreaImport(adapter, data, area, part.positions);
   mark('normalizeRequest');
   remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
   const quarantine = gisQuarantine(normalized.disposition, input.sourceSha256);
@@ -648,7 +649,7 @@ async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "na
 }
 
 /** The normalizer rejects an outline kind's pins and lines one by one; the package counts them by kind. */
-async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?: MapArea) {
+async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?: MapArea, sourcePositions?: number[]) {
   const normalized = await areaGeo<Normalized>("normalize", {
     format: input.format,
     data,
@@ -659,6 +660,7 @@ async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?:
         }
       : {}),
     mapping: input.mapping,
+    ...(input.mapping.sourceKeyConversion === "feature_position@1" && sourcePositions ? { sourcePositions } : {}),
     worldStatus: input.worldStatus || "observed",
     ...(area?.reference
       ? {

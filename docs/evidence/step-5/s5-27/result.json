@@ -1,0 +1,38 @@
+{
+  "task": "S5.27",
+  "planStep": 5,
+  "status": "implemented_code_only",
+  "base": "34e5ff970997901d7da184d2939a6b86ce991b1a",
+  "implementationBase": "b6b6be17",
+  "placesBeforeChange": [
+    { "place": "packages/contracts/src/usp/ingestion.ts:14-21,42-63", "role": "Conversion enum and retained plan validation; now validates the position target/path pair." },
+    { "place": "packages/contracts/src/usp/streamed-profile.ts:46-91", "role": "Streamed/prefix plan validation uses the same position target/path rule." },
+    { "place": "packages/contracts/src/usp/intake.ts:442-453", "role": "Exact-key linking stays field-only; unchanged and regression-tested." },
+    { "place": "packages/server/src/modules/usp/ingestion/registry.ts:9-16,168-216", "role": "Registry and common compiler now produce sourceKeyConversion: feature_position@1." },
+    { "place": "packages/server/src/modules/usp/ingestion/service.ts:115-137", "role": "Retained integrity/pin checks delegate to the common compiler; unchanged." },
+    { "place": "packages/server/src/modules/usp/ingestion/streamed-mapping.ts:47-112", "role": "Streamed/prefix compilation delegates to the common compiler; geometry inventory membership and prefix closure remain enforced; unchanged." },
+    { "place": "packages/server/src/modules/usp/ingestion/chunk-mapping-normalizer.ts:22-48,121-176", "role": "Position keys cover candidate hashes, set-asides, mapped observations and cross-chunk reservations." },
+    { "place": "packages/server/src/modules/usp/ingestion/proved-area-part.ts:72-86,89-125,129-177", "role": "Integer-token guard remains integer-only; proved features now carry original locator positions separately from unchanged features." },
+    { "place": "packages/server/src/modules/areas/areas.ts:53-55,575-625,651-661", "role": "Internal mapping and Python bridge carry proved original positions; existing local-to-global feature-index remapping stays unchanged." },
+    { "place": "services/geo/geo/area.py:327-338,341-358,403-448,477-484", "role": "Retained/default and proved/explicit position keys, including set-asides; validates ordered positive paired positions." },
+    { "place": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:228-233,266-281,407-409", "role": "Locator authority; shared sourceFeaturePosition reads sequencePosition.number, otherwise featureIndex + 1." }
+  ],
+  "decisions": {
+    "sourcePath": "Accepted: reuse /features/*/geometry only for feature.sourceKey with feature_position@1. This preserves required inventory paths and avoids broadening field-only exact-key linking. MappingOperationSchema stays pickable; retained and streamed/prefix plans validate the pair.",
+    "option": "Accepted: Position in the file appears only when no identifier field qualifies, keeping the question shortest. No helper text added. Existing identifier filters and tests are unchanged.",
+    "position": "Accepted: position:<sequencePosition.number> for line/record-delimited originals, otherwise position:<featureIndex + 1>. Proved cuts carry those original numbers, never subset indexes. Summary and recipe review say identified by its position in the file, not an official identifier."
+  },
+  "tests": {
+    "baseline": { "typecheckBackend": 0, "studioTypecheck": 0, "studioTest": "0; Studio 932 pass, 2 skip; client 2, scene 79/1 skip, UI 8", "server": "0; 1193 tests, 1176 pass, 0 fail, 17 skip", "openapiCheck": "0; 336 operations, 379 schemas", "apiCheck": 0, "diffCheck": 0 },
+    "red": { "positionKeyTest": "1; original four acceptance tests fail on unsupported conversion", "StreamedLayoutAnswerTest": "1; 1 fail, 13 pass, missing option", "pythonPositionTestAgainstBaseArea": "1; 10 fail" },
+    "final": { "pnpm typecheck:backend": 0, "pnpm studio:typecheck": 0, "pnpm studio:test": "0; Studio 933 pass, 2 skip; client 2, scene 79/1 skip, UI 8", "node scripts/test-server.mjs": "0; 121 files, 1198 tests, 1181 pass, 0 fail, 17 skip", "openapi.ts --check": "0; 336 operations, 379 schemas", "python scripts/api/check.py": 0, "cd apps/studio && npx vitest run src/features/intake": "0; 61 files, 470 pass", "position-key.test.ts": "0; 5 pass", "pytest tests/test_position_key.py": "0; 10 pass", "git diff --check": 0 },
+    "coverage": "Target/path rejection; field-only exact linking; retained no-field GeoJSON; streamed lines 1/2 and blank-line positions 1/3; cross-chunk hashes/reservations; prefix closure; original-position cuts; unchanged bytes, geometry and unknown heights; invalid proved positions; both Studio selects, mappings, summaries and generated-contract validation.",
+    "regeneration": "refresh-contract.ts b6b6be17 and pnpm studio:api-types both exit 0; contract, producer pins and API types refreshed with the permitted scripts.",
+    "diagnostics": "Initial standalone preload needed ULPIN_PROFILE=demo; corrected. Operation-level refinement broke intake's existing .pick; validation now lives in plans. Two concurrent backend-check attempts hit harness timeouts; bounded direct server/API checks passed (67s/28s), then serialized and final standard backend checks passed. Full supplementary test_area.py collection exits 2 because the available geo interpreter lacks fastapi; focused normalizer tests require no API dependencies and pass.",
+    "logs": "E:/ulpin-tmp/s5-27/"
+  },
+  "inputs": { "good": "Existing full server tests read NYC buildings-original.geojson (1662 features).", "difficult": "Practice-kit Microsoft india-123133321.geojsonl: read-only 64 KiB bound, first two unchanged lines mapped and normalized separately with original positions. Vendor predictions, test_only, CDLA Permissive 2.0. Their separation triggers the existing 50 km area bound if combined; neither geometry nor coordinates were changed." },
+  "uiDesignCheck": "Blocking: none. Design system: none. Native labelled selects, keyboard behavior and existing styling retained; no fabricated record value or official identifier shown. Static review only, no browser/zoom claim. scan-ui-diff.mjs b6b6be17 exits 0, no candidates.",
+  "safety": "No migration, runtime, provider calls, acquisition, secrets or closed-kit access. No changes to intake-zip-layers, gzip or citygml files. Originals were read only.",
+  "next": "Lead review/integration. No full-file drawing claim: the 2,224,797-feature India payload still exceeds the existing 500,000-feature ceiling. Runtime rehearsal remains outside this code-only task; full Python API suite needs fastapi in its test interpreter."
+}

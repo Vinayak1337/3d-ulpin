@@ -50,8 +50,9 @@ function fieldLines(plan: Recipe['plan']): string[] {
   const identifier = plan.operations.find(operation => operation.target === `${prefix}.sourceKey`);
   const name = plan.operations.find(operation => operation.target === `${prefix}.name`);
   const feature = plan.kind ? kindWords[plan.kind] : 'a building (the older layout form states nothing else)';
-  const lines = [`Each feature is: ${feature}`,
-    identifier ? `Identifier: ${fieldWords(identifier.sourcePath)}` : `Identifier: ${notSupplied}`,
+  let identity = identifier ? `Identifier: ${fieldWords(identifier.sourcePath)}` : `Identifier: ${notSupplied}`;
+  if (identifier?.conversionId === 'feature_position@1') identity = 'Identified by its position in the file';
+  const lines = [`Each feature is: ${feature}`, identity,
     name ? `Name: ${fieldWords(name.sourcePath)}` : 'Name: not stated'];
   if (plan.version === 'streamed-prefix-mapping/1') {
     lines.push(`Taken from the first ${countWords(plan.prefix.recordsSeen)} features read`);
