@@ -275,6 +275,12 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
   useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
   // The package in the URL frames the map by its own features once drawn; the whole area when none is named.
   const packageIds = useMemo(() => packageFeatureIds(features, packageId), [features, packageId]);
+  const packageDrawnSnapshot = useCallback(() => {
+    const drawn = engine?.drawnBuildings();
+    for (const id of packageIds) if (drawn?.has(id)) return true;
+    return false;
+  }, [engine, packageIds]);
+  const packageDrawn = useSyncExternalStore(frames.subscribe, packageDrawnSnapshot, packageDrawnSnapshot);
   useEffect(() => { engine?.setImportFocus(packageId, packageIds); }, [engine, packageId, packageIds]);
 
   const { onView: readView } = windowed;
@@ -430,7 +436,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     <EvidenceProvider snapshot={snapshot}>
       <div className={styles.workspace}>
         <section className={`${styles.canvasColumn} ${tray ? styles.withTray : ''}`} aria-label="Map">
-          <div className={styles.canvasWrap}>
+          <div className={styles.canvasWrap} data-drawn-packages={packageDrawn ? packageId : undefined}>
             <SceneView
               className={styles.canvas}
               base={base}
