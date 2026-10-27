@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, readdir, rm, rmdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import test from 'node:test';
 import { CHUNK_MAPPING_LIMITS as limits } from '@ulpin/contracts/usp';
 import { DispatchReservations, DISPATCH_LANES } from '../../cases/dispatch-lanes';
@@ -12,7 +13,7 @@ async function withWorker(windowed: boolean,
   run: (fixture: ReturnType<typeof mappingWorkerFixture>, worker: () => Promise<void>) => Promise<void>) {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown; s13hMapping?: unknown };
   const saved = { pool: globals.ulpinPool, controls: globals.s13hMapping };
-  const folder = await mkdtemp('E:/ulpin-tmp/s1-3h-mapping-');
+  const folder = await mkdtemp(join(tmpdir(), 'mapping-worker-'));
   const fixture = mappingWorkerFixture(0, windowed);
   globals.ulpinPool = fixture.pool;
   try {

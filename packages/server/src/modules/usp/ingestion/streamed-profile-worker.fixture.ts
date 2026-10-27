@@ -129,6 +129,8 @@ export async function loadProfileWorker(folder: string, fixture: ReturnType<type
   source = source.replace('import {assertStreamedProfileInputTx,readStreamedGenerationTx,streamedGenerationHash}',
     'const {assertStreamedProfileInputTx,readStreamedGenerationTx} = globalThis.s13cProfile;\n'
       + 'import {streamedGenerationHash}');
+  source = source.replaceAll("'@ulpin/contracts/usp'",
+    JSON.stringify(fileURLToPath(import.meta.resolve('@ulpin/contracts/usp'))));
   source = source.replace(/(['"])(\.\.?\/[^'"]+)\1/g,
     (_match, _quote: string, specifier: string) => JSON.stringify(resolve(dirname(path), specifier)));
   const target = join(folder, `profile-worker-${fixture.input.jobId}.ts`);
