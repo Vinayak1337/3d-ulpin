@@ -25,10 +25,11 @@ function reviewControl(pkg: ImportPackage, neighbours: PhysicalFeature[] = [], q
     if (sql.includes('FROM map_areas')) return { rows: [area] };
     const eligible = neighbours.filter(feature => qualified.some(record => record.id === feature.id
       && record.revision === feature.revision && sameCanonicalGeometryPayload(record as any, feature as any)));
-    if (sql.includes('AS unqualified_count')) return { rows: [{ unqualified_count: neighbours.length - eligible.length }] };
-    if (sql.startsWith('WITH bounds')) return { rows: eligible.map(body => ({ body, area_id: pkg.areaId,
-      local_geometry: null, qualification_revision: 1, metadata: { receiptId: 'technical-qualified-control' },
-      context_count: eligible.length })) };
+    if (sql.startsWith('WITH bounds')) return { rows: eligible.length ? eligible.map(body => ({ body,
+      area_id: pkg.areaId, local_geometry: null, qualification_revision: 1,
+      metadata: { receiptId: 'technical-qualified-control' }, context_count: eligible.length,
+      unqualified_count: neighbours.length - eligible.length }))
+      : [{ body: null, unqualified_count: neighbours.length }] };
     if (sql.includes('FROM usp_analytic_geometry')) return { rows: qualified.map(body => ({
       id: body.id, revision: body.revision, body,
     })) };
