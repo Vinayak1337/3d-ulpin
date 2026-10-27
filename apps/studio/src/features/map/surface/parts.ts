@@ -7,8 +7,7 @@ import type { PartPicture } from './pixels';
 type PartsPath = '/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts';
 export type IntakeItem = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake'>['items'][number];
 export type PartPage = GetResponse<PartsPath>;
-export type PartDisplay = GetResponse<`${PartsPath}/{partIndex}/display`>
-  & { valueRange?: { kind: 'band' | 'z'; low: number; high: number; basis: string } };
+export type PartDisplay = GetResponse<`${PartsPath}/{partIndex}/display`>;
 
 /** At most this many parts of one file are drawn; at most this many display reads are in flight at once. */
 export const SURFACE_LIMITS = Object.freeze({ drawnPerItem: 256, displayReads: 4 });

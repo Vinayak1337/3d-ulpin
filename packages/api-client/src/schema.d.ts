@@ -66618,6 +66618,14 @@ export interface components {
                 status: "known" | "unknown";
                 name: string | null;
             };
+            /** @description The one range every part of this item is shaded on, for display only; absent when none is stated. Band values are as read; Z bounds are in raw LAS record integers. */
+            valueRange?: {
+                /** @enum {string} */
+                kind: "band" | "z";
+                low: number;
+                high: number;
+                basis: string;
+            };
             /** @description In the source's own coordinate system and units: a window's corners from its affine (upper left, upper right, lower right, lower left), or the XY extent of a batch's native records. */
             sourceCorners: ((number)[] | (number)[] | (number)[] | (number)[])[];
             placement: {
