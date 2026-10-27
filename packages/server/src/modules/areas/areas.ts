@@ -1593,27 +1593,36 @@ export async function createPackageCorrection(id: string, requestKey: string) {
     return next;
   });
 }
-export async function reviewPackage(id: string, expectedRevision: number) {
+export async function reviewPackage(id: string, expectedRevision: number, timing?: PartTiming) {
+  const mark = partStageTimer(timing);
   const pkg = await getPackage(id);
+  mark('getPackage');
   if (isGeometryFreePackage(pkg)) return reviewSourceBuildings(id, expectedRevision);
   if (pkg.sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Review the derived footprint draft or assign documents to a property before recording.");
   const areaRow = (await query("SELECT * FROM map_areas WHERE id=$1", [pkg.areaId])).rows[0]
     || notFound("Map area not found.");
   const area = areaFrom(areaRow);
+  mark('areaRead');
   if (pkg.revision !== expectedRevision) conflict();
   const snapshot = await effectiveFeatures(pkg, area);
+  mark('effectiveFeatures');
   const admission = await splitPackageReviewGeometry(snapshot.features, pkg, snapshot.scope);
+  mark('split');
   await requireQualifiedGeometryRecords('FIND', 'area_feature', admission.requireQualification);
+  mark('qualification');
   const checkFeatures = admission.checkFeatures;
   const checkLinks = snapshot.associations;
   const result = await areaGeo<{ findings: AreaFinding[]; coverage: string[] }>(
     "check",
     { features: checkFeatures, associations: checkLinks, reference: area.reference },
   );
+  mark('geoCheck');
   result.coverage.push(...admission.coverage);
   result.findings = await enrichFindings(result.findings, checkFeatures, area.id);
+  mark('enrichFindings');
   const inputFingerprint = packageReviewFingerprint(pkg, area, snapshot, expectedRevision + 1);
   const dependencies = reviewDependencies(pkg, area, snapshot);
+  mark('fingerprint');
   for (const question of pkg.questions.filter(
     (q) => q.kind === "conflicting_claims" && !q.answer,
   ))
@@ -1624,14 +1633,19 @@ export async function reviewPackage(id: string, expectedRevision: number) {
       message: question.message,
       featureIds: [question.entityId],
     });
-  return transaction(async (client) => {
+  const reviewed = await transaction(async (client) => {
+    mark('transactionBegin');
     const current = await lockedPackage(client, id, expectedRevision) as ReviewPinnedPackage;
+    mark('packageLock');
     const lockedArea = areaFrom((await client.query("SELECT * FROM map_areas WHERE id=$1 FOR UPDATE",
       [pkg.areaId])).rows[0]);
+    mark('areaLock');
     const latest = await effectiveFeatures(current, lockedArea, client);
+    mark('effectiveFeaturesLocked');
     if (packageReviewFingerprint(current, lockedArea, latest, expectedRevision + 1) !== inputFingerprint) {
       conflict(await reviewPinDifference(dependencies, reviewDependencies(current, lockedArea, latest), client));
     }
+    mark('fingerprintLocked');
     // Height questions only block 3D conclusions. The operator may review footprint observations independently.
     current.revision++;
     current.state = "REVIEWED";
@@ -1647,8 +1661,11 @@ export async function reviewPackage(id: string, expectedRevision: number) {
         unqualifiedInScope: snapshot.scope.unqualifiedInScope, areaRevisionAtReview: area.revision },
     };
     await savePackage(client, current);
+    mark('save');
     return current;
   });
+  mark('commit');
+  return reviewed;
 }
 export async function commitPackage(
   id: string,

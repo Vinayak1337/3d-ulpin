@@ -104,7 +104,8 @@ async function preparePackage(run: Run, packageId: string, timing: PartTiming) {
   let pkg = await run.steps.package(packageId);
   mark('packageRead');
   try {
-    if (!reviewed(pkg)) await run.steps.review(pkg.id, pkg.revision);
+    if (!reviewed(pkg)) await run.steps.review(pkg.id, pkg.revision,
+      (stage, ms) => timing(`review${stage[0].toUpperCase()}${stage.slice(1)}`, ms));
     mark('review');
     pkg = await run.steps.package(packageId);
     mark('packageReload');
