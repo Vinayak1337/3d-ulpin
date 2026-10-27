@@ -1,0 +1,29 @@
+{
+  "task": "S7.25",
+  "planStep": 7,
+  "base": "dfae5fbf",
+  "result": "One pill chip per file or batch state: Reading (info, percent when parts are known), Needs you (warning), Ready (success), Kept only (neutral), Stopped (danger). The Batches list Step cell shows the batch chip.",
+  "inputs": [
+    "Captured buildings-original.geojson manifest row: docs/evidence/gf1/lq1a/controls-second.json; each test row sets only the facts that give its state, as the existing intake tests do."
+  ],
+  "decisions": [
+    "itemChip order: stopped (not_understood with the server's stopped sentence) first, then needs you (itemPendingKinds), then reading (not isSettled), then ready (on_map, attached or a drafted package), else kept only.",
+    "Stopped uses the stopped facts without the sourceId condition, so a stopped file that cannot be retried still reads Stopped.",
+    "probe_failed and failed_part items with no pending answer are settled and not placed, so they read Kept only.",
+    "Percent is floor(partsDone / partsPlanned * 100), capped at 100; null when partsPlanned is null.",
+    "batchChip: waiting above 0 gives Needs you; Files or Reading gives Reading; Cards gives Ready; Your answers or Confirm with nothing waiting keeps the step text.",
+    "No CSS change: the badge fits the 112px Step column and is nowrap."
+  ],
+  "trayWiring": "IntakeTray Status cell: replace `{stateWords(item.state)} · {placementWords(item.placement)}` with `<StatusChip chip={itemChip(item, items)} />`.",
+  "checks": {
+    "vitest status-chip and batches": { "exit": 0, "files": 5, "passed": 27 },
+    "pnpm studio:typecheck": { "after": 0, "projects": 4 },
+    "pnpm studio:test": { "after": 0, "studioPassed": 872, "studioSkipped": 2 },
+    "pnpm typecheck:backend": { "after": 0 },
+    "node scripts/test-server.mjs": { "after": 0, "passed": 1163, "skipped": 16, "failed": 0 },
+    "openapi_check": { "after": 0, "operations": 336, "schemas": 379 },
+    "python scripts/api/check.py": { "after": 0, "stalePins": 0 },
+    "scan-ui-diff.mjs task/int3-pre": { "exit": 0, "candidates": 0 },
+    "git diff --check": { "after": 0 }
+  }
+}
