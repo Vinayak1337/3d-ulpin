@@ -41,7 +41,7 @@ export function Confirm(props: Props) {
   const needsWords = !props.stale && count > 0 && !typed;
   let reason = '';
   if (!locked) {
-    if (props.stale) reason = 'The current batch could not be read. Refresh it before confirming.';
+    if (props.stale) reason = 'The batch could not be read. Refresh it first.';
     else if (!count) reason = cards ? 'No cards chosen.' : 'Choose a package.';
     else if (!typed) reason = 'Type the confirmation.';
   }

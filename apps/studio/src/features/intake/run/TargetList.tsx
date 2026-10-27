@@ -73,7 +73,7 @@ function TargetRow({ target, props }: { target: Target; props: Props }) {
       <span className={styles.locator}>{target.locator}</span>
     </label>
     {reason ? <DisabledReason id={reasonId} action={action}>{reason}</DisabledReason> : null}
-    <p>{readinessLabels[target.readiness]}</p>
+    {reason === readinessLabels[target.readiness] ? null : <p>{readinessLabels[target.readiness]}</p>}
     <ArtefactLinks target={target} onOpen={() => props.onOpen(target)} />
   </li>;
 }
