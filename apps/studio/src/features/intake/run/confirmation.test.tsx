@@ -92,7 +92,7 @@ it('names the first recording blocker, with no reason for an enabled or in-fligh
     [{ page: { ...page, packages: [] }, acknowledgement: '' }, 'Choose a package.'],
     [{ cards: [] }, 'No cards chosen.'],
     [{ acknowledgement: ' ' }, 'Type the confirmation.'],
-    [{ stale: true }, 'The current batch could not be read.'],
+    [{ stale: true }, 'The batch could not be read.'],
   ];
   for (const [patch, reason] of blockers) {
     const html = renderToStaticMarkup(<Confirm {...props} {...patch} />);
