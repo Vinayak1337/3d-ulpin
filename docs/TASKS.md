@@ -1334,7 +1334,7 @@ Size M, UI. After: S3.11c found it. Task file E:/Projects/ulpin-wt/_tasks/s7-28.
 
 ### S7.29 Choosing a file while a drop is still uploading never reloads the page or drops the unsent files
 
-Size S, UI. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s7-29.md; branch task/s7-29-upload-navigation. The upload blocker stops only a change of page, not a change of the chosen item. **Status: running 28 Oct.**
+Size S, UI. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s7-29.md; branch task/s7-29-upload-navigation. The upload blocker stops only a change of page, not a change of the chosen item. **Status: merged 28 Oct (int3-pre; intake tests pass). Choosing a file or a hash change keeps the queue in the same page; a real departure still asks.**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: S7.23a merged 27 Oct (int3-pre 7b0eee5c; Studio 922 passed): the batch title is the batch name, one primary press outside dialogs (needs-model primaryPress: layout, table or record), Evidence by key starts closed with its count, verify titles ul-title. S7.23b merged 27 Oct (int3-pre 39406d3d; Studio 928 passed): the current step and the chosen page-image label carry a 2 px primary underline instead of the primary variant; exactly one primary in every batch page state and every Add files view.**
