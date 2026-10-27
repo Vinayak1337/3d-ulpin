@@ -17,12 +17,12 @@ import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
 import { intakeItem } from './intake-ledger';
 import type { MapArea } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
-import { registerUspJobInputTx } from '../jobs';
+import { registerUspJobInputTx, USP_JOB_LIMITS } from '../jobs';
 import { fingerprint } from '../../cases/domain';
 import { IntakePageImageInputSchema, labelPageImageTx, settlePageImageTx } from './intake-page-image';
 import { probeOriginal } from './intake-probe';
 import { prepareIntakeTable } from './intake-table-auto';
-import { StreamingVectorService } from './streaming-vector';
+import { StreamingVectorService, streamingReaderSha } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
 import { ManualIngestionService } from './service';
 import { sha256 } from '../../../infrastructure/storage';
@@ -92,6 +92,11 @@ type Protocol = {
 function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
   if (sql.startsWith('SELECT * FROM usp_intake_items')) return [tray];
+  if (sql.includes('FROM operations') && sql.includes('LEFT JOIN jobs'))
+    return values[1].flatMap((key: string) => {
+      const receipt = state.operations.get(key);
+      return receipt ? [{ ...receipt, payload: jobs.find(job => job.id === receipt.result.jobId)?.payload }] : [];
+    });
   if (sql.includes('FROM operations')) return state.operations.has(values[1]) ? [state.operations.get(values[1])] : [];
   if (sql.startsWith('SELECT id,revision FROM cases') || sql.startsWith('SELECT id FROM cases'))
     return [{ id: caseId, revision: state.revision }];
@@ -108,6 +113,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
     return job && state.registered?.has(job.id) ? [{ logical_state: job.status, input_sha256: job.input_fingerprint,
       input_manifest_id: job.source_id }] : [];
   }
+  if (sql.startsWith('SELECT 1 FROM usp_job_attempts') || sql.startsWith('SELECT job_id FROM usp_job_metadata'))
+    return [];
   if (sql.startsWith('SELECT * FROM usp_job_attempts')) return state.attempt ? [state.attempt] : [];
   if (sql.startsWith('SELECT body FROM usp_mapping_recipes WHERE source_id='))
     return state.receipt ? [{ body: state.receipt }] : [];
@@ -118,6 +125,8 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT state,placement,plan_ref')) return [state.projection];
   if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
+  if (sql.startsWith('SELECT c.revision,r.revision AS recipe_revision')) return [{ revision: state.revision,
+    recipe_revision: state.receipt?.revision, recipe_state: state.receipt?.state }];
   if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: state.revision }];
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
@@ -133,7 +142,13 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
 }
 function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
-  if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql) || sql.startsWith('UPDATE jobs SET next_attempt_at=')) return [];
+  if (sql.startsWith('UPDATE jobs SET next_attempt_at=')) {
+    const job = jobs.find(job => job.id === values[0]);
+    job.attempts = (job.attempts ?? 0) + (values[2] ? 1 : 0);
+    job.error = values[1];
+    return [job];
+  }
+  if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql)) return [];
   if (sql.startsWith('UPDATE sources SET inspection=')) {
     Object.assign(src.inspection!, JSON.parse(values[1]));
     return [];
@@ -177,7 +192,9 @@ function protocolJobWrite(sql: string, values: any[], { jobs, state }: Protocol)
     return [];
   }
   if (sql.startsWith('UPDATE jobs SET status=')) {
-    jobs.find(job => job.id === values[0]).status = /SET status='([^']+)'/.exec(sql)?.[1] ?? values[1];
+    Object.assign(jobs.find(job => job.id === values[0]), {
+      status: /SET status='([^']+)'/.exec(sql)?.[1] ?? values[1], error: values[2],
+    });
     return [];
   }
   if (sql.startsWith('INSERT INTO usp_job_metadata')) {
@@ -468,6 +485,8 @@ test('lgd-gurugram reads once and queues both pinned proposal commands without a
         const id = intakeDraftKey(sourceId, 0, kind);
         calls.push({ kind, caseValue, sourceValue, request });
         fixture.state.operations.set(`${kind}:${request.requestKey}`, { result: { jobId: id } });
+        fixture.jobs.push({ id, payload: { readerSha256: streamingReaderSha(), tabular: request.tabular,
+          rawJobId: request.rawJobId } });
         return { jobId: id };
       });
     }
@@ -493,7 +512,7 @@ test('lgd-gurugram reads once and queues both pinned proposal commands without a
     fixture.state.revision++;
     assert.equal(await prepareIntakeTable(input), true);
     assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
-    assert.equal(fixture.jobs.length, 1);
+    assert.equal(fixture.jobs.length, 3);
     assert.equal(calls.length, 2);
     assert.equal(fixture.statements.filter(sql => sql.startsWith('UPDATE sources SET inspection=')).length, 1);
     assert(!fixture.statements.some(sql => /INSERT INTO.*(?:request|recipe|approval)/.test(sql)));
@@ -507,6 +526,101 @@ test('lgd-gurugram reads once and queues both pinned proposal commands without a
   assert(jobId);
 });
 
+for (const obsolete of ['reader', 'tabular', 'current'] as const) {
+  test(`saved raw ${obsolete} pins choose a current read instead of silently waiting`, async () => {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+    await tableCommands(fixture, bytes, async () => {
+      const profile = await new ManualIngestionService().tableFromOriginal(caseId, sourceId, {
+        requestKey: intakeDraftKey(sourceId, 0, 'table-read'), expectedWorkspaceRevision: 0,
+        selection: input.tableSelection,
+      }, input);
+      assert.equal(profile.version, 'manual-tabular/1');
+      const tabular = fixture.src.inspection!.manualProfile.tabular;
+      const oldId = intakeDraftKey(sourceId, 0, 'obsolete-raw');
+      fixture.jobs.push({ id: oldId, payload: { readerSha256: obsolete === 'reader' ? '0'.repeat(64)
+        : streamingReaderSha(), tabular: obsolete === 'tabular' ? null : tabular } });
+      const oldKey = intakeDraftKey(sourceId, 0, 'table-streaming-vector');
+      fixture.state.operations.set(`streaming-vector:${oldKey}`, { result: { jobId: oldId } });
+      let rereads = 0;
+      mock.method(StreamingVectorService.prototype, 'enqueue', async (_case: string, _source: string, request: any) => {
+        rereads++;
+        assert.notEqual(request.requestKey, oldKey);
+        assert.deepEqual(request.tabular, tabular);
+        return { jobId: sourceId };
+      });
+      mock.method(ChunkMappingService.prototype, 'enqueue', async (_case: string, _source: string, request: any) => {
+        if (request.rawJobId === oldId && obsolete !== 'current')
+          throw new AppError(409, 'STALE_REVISION', 'Obsolete saved raw pins.');
+        return { jobId: caseId };
+      });
+      assert.equal(await prepareIntakeTable(input), true);
+      assert.equal(rereads, obsolete === 'current' ? 0 : 1);
+    });
+  });
+}
+
+for (const cause of ['STREAMING_CAPACITY', 'STALE_REVISION']) {
+  test(`temporary ${cause} waits end with a cause at the job limit, not by age`, async () => {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+    await tableCommands(fixture, bytes, async () => {
+      let occupied = true;
+      mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+        if (occupied) throw new AppError(429, cause, 'Temporary admission refusal.');
+        return { jobId: sourceId };
+      });
+      mock.method(ChunkMappingService.prototype, 'enqueue', async () => ({ jobId: caseId }));
+      fixture.jobs[0].created_at = '2000-01-01T00:00:00Z';
+      assert.equal(await prepareIntakeTable(input), false);
+      occupied = false;
+      fixture.state.revision++;
+      assert.equal(await prepareIntakeTable(input), true);
+      occupied = true;
+      fixture.jobs[0].attempts = 0;
+      for (let index = 1; index < USP_JOB_LIMITS.maxAttempts; index++)
+        assert.equal(await prepareIntakeTable(input), false);
+      assert.equal(fixture.jobs[0].error, cause);
+      await runIntakeDraftJob(input.jobId);
+      assert.equal(fixture.jobs[0].status, 'failed');
+      assert.equal(fixture.jobs[0].error, `TABLE_ADMISSION_${cause}_EXHAUSTED`);
+      assert.equal(fixture.state.attempt, undefined, 'admission failures claim no fenced attempt');
+    });
+  });
+}
+
+test('newer table work or a changed selection ends only the old job with a cause', async () => {
+  for (const newer of ['approved', 'recipe', 'selection'] as const) {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+    await tableCommands(fixture, bytes, async () => {
+      await new ManualIngestionService().tableFromOriginal(caseId, sourceId, {
+        requestKey: intakeDraftKey(sourceId, 0, 'table-read'), expectedWorkspaceRevision: 0,
+        selection: input.tableSelection,
+      }, input);
+      if (newer === 'approved') {
+        fixture.tray.plan_ref = { recipeId: caseId, recipeRevision: 1, recipeState: 'approved' };
+        fixture.state.receipt = remembered;
+      } else if (newer === 'recipe') fixture.state.receipt = remembered;
+      else fixture.src.inspection!.manualProfile.tabular.selection.headerRows = [2];
+      mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+        assert.fail('Superseded table work must not admit another raw read.');
+      });
+      const before = fingerprint({ tray: fixture.tray, receipt: fixture.state.receipt });
+      assert.equal(await prepareIntakeTable(input), false);
+      assert.equal(fixture.jobs[0].status, 'stale');
+      assert.equal(fixture.jobs[0].error, 'TABLE_DRAFT_SUPERSEDED');
+      assert.equal(fingerprint({ tray: fixture.tray, receipt: fixture.state.receipt }), before);
+    });
+  }
+});
+
 test('a streamed table read waits without spending an attempt or admitting a mapper before its profile', async () => {
   const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
   const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
@@ -517,7 +631,7 @@ test('a streamed table read waits without spending an attempt or admitting a map
       jobId: sourceId, caseId, sourceId, sourceRevision: 1, status: 'running', issueCode: null, message: null }));
     assert.equal(await prepareIntakeTable(input), false);
     assert(fixture.statements.some(sql => sql.startsWith('UPDATE jobs SET next_attempt_at=')));
-    assert(!fixture.statements.some(sql => sql.includes('usp_job_attempts')));
+    assert(!fixture.statements.some(sql => /(?:INSERT INTO|UPDATE) usp_job_attempts/.test(sql)));
     assert.equal(fixture.jobs.length, 1);
     assert.equal(fixture.src.inspection!.manualProfile, undefined);
   });
