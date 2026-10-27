@@ -56,6 +56,13 @@ The smoothness rules are unchanged; an unopened map remains unmeasured.
 case ID is known. It uses one SELECT with the same runtime/case validation and read-only psql guard as job timing.
 A failed query records null counts, never invented zeroes; nothing writes to the database.
 
+Each watch pass reads the case intake and targets with a 15-second limit; the health sample keeps its 4.5 seconds.
+Every read is kept in `process.polls` as `at`, `path` and `ms`. A read that fails or times out adds the error `name`
+and skips that pass: the runner waits a second and reads again, so a slow intake is a measurement, not the end of
+the run. An error thrown while observing a file's row or answering its layout is kept on that file in
+`watchErrors` (`at`, `name`, the first 300 characters of the message, and `count` and `lastAt` when the same error
+repeats); the runner moves on to the next file.
+
 The opt-in S3.1 hook appends one minimal `start` line (event, PID, time), and timestamps/redacts `exit` lines.
 `process.api` and `process.dispatcher` report `exitHook` and `exitsDuringDrop`, filtering exits by `dropAt`.
 No start line means `exitHook: missing`, not proof of no exit. Historical lines remain in before/after snapshots;

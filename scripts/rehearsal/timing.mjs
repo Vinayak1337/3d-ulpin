@@ -3,8 +3,8 @@ import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import os from 'node:os';
 
-export async function get(api, path) {
-  const response = await fetch(`${api}${path}`, { signal: AbortSignal.timeout(4500), redirect: 'error' });
+export async function get(api, path, timeoutMs = 4500) {
+  const response = await fetch(`${api}${path}`, { signal: AbortSignal.timeout(timeoutMs), redirect: 'error' });
   if (!response.ok) throw new Error(`GET ${path}: HTTP ${response.status}`);
   const body = await response.json();
   return body.data ?? body;

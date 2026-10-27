@@ -63,35 +63,78 @@ async function waitPreview(studio, child) {
   throw new Error('Preview did not become ready');
 }
 
-async function watchBatch(page, map, plan, result, api, studio, minutes) {
-  const deadline = Date.now() + minutes * 60000;
-  while (Date.now() < deadline) {
-    const intake = await get(api, `/ingestion/cases/${result.caseId}/intake`);
-    const targets = await get(api, `/ingestion/cases/${result.caseId}/targets`);
-    for (const [index, [file, item]] of batchItems(result.files, intake.items).entries()) {
-      if (item.sourceId) file.retained ??= Date.now();
-      await observeRow(page, file, item);
-      if (result.files.includes(file)) {
-        await answerLayout(page, file, result.officerAnswers?.answers.find(answer => answer.file === file.name));
-      }
-      const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
-      const complete = item.state === 'read' && item.partsPlanned !== null
-        && item.partsDone === item.partsPlanned && packages.length === item.partsDone && !targets.packagesTruncated;
-      if (item.placement !== 'on_map' || !packages.length) continue;
-      for (const phase of ['firstPartOnMap', 'lastPartOnMap']) {
-        if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !complete)) continue;
-        try {
-          const pkg = phase === 'firstPartOnMap' ? packages[0] : packages.at(-1);
-          file[phase] = await mapMoment(map, studio, pkg, plan.out, `${index}-${phase}`, result.frames.map);
-          result.renderer ??= file[phase].renderer;
-        } catch (error) {
-          file.mapErrors ??= {};
-          file.mapErrors[phase] = error.name;
-        }
+const pollMs = 15000; // Intake and targets reads under load; the health sampler keeps its own 4.5 s.
+const watchIo = { get, observeRow, answerLayout, sleep };
+
+async function poll(io, api, path, polls) {
+  const at = Date.now();
+  try {
+    const body = await io.get(api, path, pollMs);
+    polls.push({ at, path, ms: Date.now() - at });
+    return body;
+  } catch (error) {
+    polls.push({ at, path, ms: Date.now() - at, error: error.name }); // A slow read is a measurement, not a stop.
+    return null;
+  }
+}
+
+function watchError(file, error) {
+  const name = error?.name ?? 'Error';
+  const message = String(error?.message ?? error).slice(0, 300);
+  file.watchErrors ??= [];
+  const last = file.watchErrors.at(-1);
+  if (last?.name === name && last.message === message) {
+    last.count += 1;
+    last.lastAt = Date.now();
+    return;
+  }
+  file.watchErrors.push({ at: Date.now(), name, message, count: 1, lastAt: null });
+}
+
+async function watchFile(io, page, file, item, result) {
+  try {
+    await io.observeRow(page, file, item);
+    if (result.files.includes(file)) {
+      await io.answerLayout(page, file, result.officerAnswers?.answers.find(answer => answer.file === file.name));
+    }
+    return true;
+  } catch (error) {
+    watchError(file, error);
+    return false;
+  }
+}
+
+async function watchPass(io, page, map, plan, result, studio, intake, targets) {
+  for (const [index, [file, item]] of batchItems(result.files, intake.items).entries()) {
+    if (item.sourceId) file.retained ??= Date.now();
+    if (!await watchFile(io, page, file, item, result)) continue;
+    const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
+    const complete = item.state === 'read' && item.partsPlanned !== null
+      && item.partsDone === item.partsPlanned && packages.length === item.partsDone && !targets.packagesTruncated;
+    if (item.placement !== 'on_map' || !packages.length) continue;
+    for (const phase of ['firstPartOnMap', 'lastPartOnMap']) {
+      if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !complete)) continue;
+      try {
+        const pkg = phase === 'firstPartOnMap' ? packages[0] : packages.at(-1);
+        file[phase] = await mapMoment(map, studio, pkg, plan.out, `${index}-${phase}`, result.frames.map);
+        result.renderer ??= file[phase].renderer;
+      } catch (error) {
+        file.mapErrors ??= {};
+        file.mapErrors[phase] = error.name;
       }
     }
+  }
+}
+
+export async function watchBatch(page, map, plan, result, api, studio, minutes, io = watchIo) {
+  const deadline = Date.now() + minutes * 60000;
+  const polls = result.process.polls ??= [];
+  while (Date.now() < deadline) {
+    const intake = await poll(io, api, `/ingestion/cases/${result.caseId}/intake`, polls);
+    const targets = intake ? await poll(io, api, `/ingestion/cases/${result.caseId}/targets`, polls) : null;
+    if (targets) await watchPass(io, page, map, plan, result, studio, intake, targets);
     await save(plan, result);
-    await sleep(1000);
+    await io.sleep(1000);
   }
 }
 
@@ -205,7 +248,9 @@ async function main() {
   if (!values['dry-run']) await run(plan, files, minutes, answers);
 }
 
-await main().catch(error => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (import.meta.main) {
+  await main().catch(error => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}
